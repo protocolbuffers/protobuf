@@ -246,15 +246,14 @@ public class RubyMessage extends RubyObject {
     public IRubyObject dup(ThreadContext context) {
         RubyMessage dup = (RubyMessage) metaClass.newInstance(context, Block.NULL_BLOCK);
         IRubyObject value;
-        for (Descriptors.FieldDescriptor fieldDescriptor : builder.getAllFields().keySet()) {
+        for (Descriptors.FieldDescriptor fieldDescriptor : this.descriptor.getFields()) {
             if (fieldDescriptor.isRepeated()) {
-                dup.repeatedFields.put(fieldDescriptor, getRepeatedField(context, fieldDescriptor));
-            } else if (builder.hasField(fieldDescriptor)) {
-                dup.fields.put(fieldDescriptor, wrapField(context, fieldDescriptor, builder.getField(fieldDescriptor)));
+                dup.addRepeatedField(fieldDescriptor, this.getRepeatedField(context, fieldDescriptor));
+            } else if (fields.containsKey(fieldDescriptor)) {
+                dup.fields.put(fieldDescriptor, fields.get(fieldDescriptor));
+            } else if (this.builder.hasField(fieldDescriptor)) {
+                dup.fields.put(fieldDescriptor, wrapField(context, fieldDescriptor, this.builder.getField(fieldDescriptor)));
             }
-        }
-        for (Descriptors.FieldDescriptor fieldDescriptor : fields.keySet()) {
-            dup.fields.put(fieldDescriptor, fields.get(fieldDescriptor));
         }
         for (Descriptors.FieldDescriptor fieldDescriptor : maps.keySet()) {
             dup.maps.put(fieldDescriptor, maps.get(fieldDescriptor));
@@ -339,16 +338,20 @@ public class RubyMessage extends RubyObject {
         return ret;
     }
 
-    @JRubyMethod(name = "to_h")
+    @JRubyMethod(name = {"to_h", "to_hash"})
     public IRubyObject toHash(ThreadContext context) {
         Ruby runtime = context.runtime;
         RubyHash ret = RubyHash.newHash(runtime);
         for (Descriptors.FieldDescriptor fdef : this.descriptor.getFields()) {
             IRubyObject value = getField(context, fdef);
-            if (value.respondsTo("to_h")) {
-                value = Helpers.invoke(context, value, "to_h");
+            if (!value.isNil()) {
+                if (value.respondsTo("to_h")) {
+                    value = Helpers.invoke(context, value, "to_h");
+                } else if (value.respondsTo("to_a")) {
+                    value = Helpers.invoke(context, value, "to_a");
+                }
             }
-            ret.fastASet(runtime.newString(fdef.getName()), value);
+            ret.fastASet(runtime.newSymbol(fdef.getName()), value);
         }
         return ret;
     }
@@ -411,6 +414,7 @@ public class RubyMessage extends RubyObject {
         for (int i = 0; i < count; i++) {
             ret.push(context, wrapField(context, fieldDescriptor, this.builder.getRepeatedField(fieldDescriptor, i)));
         }
+        addRepeatedField(fieldDescriptor, ret);
         return ret;
     }
 
@@ -659,14 +663,14 @@ public class RubyMessage extends RubyObject {
             } else {
                 Descriptors.FieldDescriptor.Type fieldType = fieldDescriptor.getType();
                 IRubyObject typeClass = context.runtime.getObject();
+                boolean addValue = true;
                 if (fieldType == Descriptors.FieldDescriptor.Type.MESSAGE) {
                     typeClass = ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor)).msgclass(context);
+                    if (value.isNil()){
+                        addValue = false;
+                    }
                 } else if (fieldType == Descriptors.FieldDescriptor.Type.ENUM) {
                     typeClass = ((RubyEnumDescriptor) getDescriptorForField(context, fieldDescriptor)).enummodule(context);
-                }
-                Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
-                // Convert integer enum to symbol
-                if (fieldType == Descriptors.FieldDescriptor.Type.ENUM) {
                     Descriptors.EnumDescriptor enumDescriptor = fieldDescriptor.getEnumType();
                     if (Utils.isRubyNum(value)) {
                         Descriptors.EnumValueDescriptor val =
@@ -674,7 +678,12 @@ public class RubyMessage extends RubyObject {
                         if (val.getIndex() != -1) value = context.runtime.newSymbol(val.getName());
                     }
                 }
-                this.fields.put(fieldDescriptor, value);
+                if (addValue) {
+                    Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+                    this.fields.put(fieldDescriptor, value);
+                } else {
+                    this.fields.remove(fieldDescriptor);
+                }
             }
         }
         return context.runtime.getNil();

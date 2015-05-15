@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.TestProtos;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
 {
@@ -17,7 +17,7 @@ namespace Google.ProtocolBuffers
             }
             public IEnumerator<T> GetEnumerator()
             {
-                Assert.False(_enumerated);
+                Assert.IsFalse(_enumerated);
                 _enumerated = true;
                 yield return _item;
             }
@@ -27,49 +27,49 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        [Fact]
+        [Test]
         public void DoesNotEnumerateTwiceForMessageList()
         {
             TestAllTypes.Builder b = new TestAllTypes.Builder();
             b.AddRangeRepeatedForeignMessage(new OneTimeEnumerator<ForeignMessage>(ForeignMessage.DefaultInstance));
         }
 
-        [Fact]
+        [Test]
         public void DoesNotEnumerateTwiceForPrimitiveList()
         {
             TestAllTypes.Builder b = new TestAllTypes.Builder();
             b.AddRangeRepeatedInt32(new OneTimeEnumerator<int>(1));
         }
 
-        [Fact]
+        [Test]
         public void DoesNotEnumerateTwiceForStringList()
         {
             TestAllTypes.Builder b = new TestAllTypes.Builder();
             b.AddRangeRepeatedString(new OneTimeEnumerator<string>("test"));
         }
 
-        [Fact]
+        [Test]
         public void DoesNotEnumerateTwiceForEnumList()
         {
             TestAllTypes.Builder b = new TestAllTypes.Builder();
             b.AddRangeRepeatedForeignEnum(new OneTimeEnumerator<ForeignEnum>(ForeignEnum.FOREIGN_BAR));
         }
         
-        [Fact]
+        [Test]
         public void DoesNotAddNullToMessageListByAddRange()
         {
             TestAllTypes.Builder b = new TestAllTypes.Builder();
             Assert.Throws<ArgumentNullException>(() => b.AddRangeRepeatedForeignMessage(new ForeignMessage[] { null }));
         }
 
-        [Fact]
+        [Test]
         public void DoesNotAddNullToMessageListByAdd()
         {
             TestAllTypes.Builder b = new TestAllTypes.Builder();
             Assert.Throws<ArgumentNullException>(() => b.AddRepeatedForeignMessage((ForeignMessage)null));
         }
 
-        [Fact]
+        [Test]
         public void DoesNotAddNullToMessageListBySet()
         {
             TestAllTypes.Builder b = new TestAllTypes.Builder();
@@ -77,21 +77,21 @@ namespace Google.ProtocolBuffers
             Assert.Throws<ArgumentNullException>(() => b.SetRepeatedForeignMessage(0, (ForeignMessage)null));
         }
 
-        [Fact]
+        [Test]
         public void DoesNotAddNullToStringListByAddRange()
         {
             TestAllTypes.Builder b = new TestAllTypes.Builder();
             Assert.Throws<ArgumentNullException>(() => b.AddRangeRepeatedString(new String[] { null }));
         }
 
-        [Fact]
+        [Test]
         public void DoesNotAddNullToStringListByAdd()
         {
             TestAllTypes.Builder b = new TestAllTypes.Builder();
             Assert.Throws<ArgumentNullException>(() => b.AddRepeatedString(null));
         }
 
-        [Fact]
+        [Test]
         public void DoesNotAddNullToStringListBySet()
         {
             TestAllTypes.Builder b = new TestAllTypes.Builder();

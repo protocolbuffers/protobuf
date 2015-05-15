@@ -154,6 +154,8 @@ module BasicTest
       assert m.optional_bytes == "world"
       m.optional_msg = TestMessage2.new(:foo => 42)
       assert m.optional_msg == TestMessage2.new(:foo => 42)
+      m.optional_msg = nil
+      assert m.optional_msg == nil
     end
 
     def test_ctor_args
@@ -176,7 +178,7 @@ module BasicTest
                           :optional_msg => TestMessage2.new,
                           :repeated_string => ["hello", "there", "world"])
       expected = '<BasicTest::TestMessage: optional_int32: -42, optional_int64: 0, optional_uint32: 0, optional_uint64: 0, optional_bool: false, optional_float: 0.0, optional_double: 0.0, optional_string: "", optional_bytes: "", optional_msg: <BasicTest::TestMessage2: foo: 0>, optional_enum: :A, repeated_int32: [], repeated_int64: [], repeated_uint32: [], repeated_uint64: [], repeated_bool: [], repeated_float: [], repeated_double: [], repeated_string: ["hello", "there", "world"], repeated_bytes: [], repeated_msg: [], repeated_enum: []>'
-      assert m.inspect == expected
+      assert_equal expected, m.inspect
     end
 
     def test_hash
@@ -274,7 +276,7 @@ module BasicTest
 
       assert l.inspect == '[5, 2, 3, 4]'
 
-      l.insert(7, 8, 9)
+      l.concat([7, 8, 9])
       assert l == [5, 2, 3, 4, 7, 8, 9]
       assert l.pop == 9
       assert l == [5, 2, 3, 4, 7, 8]
@@ -312,6 +314,17 @@ module BasicTest
       assert l4 == [0, 0, 0, 0, 0, 42, 100]
       l4 << 101 << 102
       assert l4 == [0, 0, 0, 0, 0, 42, 100, 101, 102]
+    end
+
+    def test_parent_rptfield
+      #make sure we set the RepeatedField and can add to it
+      m = TestMessage.new
+      assert m.repeated_string == []
+      m.repeated_string << 'ok'
+      m.repeated_string.push('ok2')
+      assert m.repeated_string == ['ok', 'ok2']
+      m.repeated_string += ['ok3']
+      assert m.repeated_string == ['ok', 'ok2', 'ok3']
     end
 
     def test_rptfield_msg
@@ -375,6 +388,39 @@ module BasicTest
       assert_raise ArgumentError do
         l = Google::Protobuf::RepeatedField.new(:message, [TestMessage2.new])
       end
+    end
+
+    def test_rptfield_array_ducktyping
+      l = Google::Protobuf::RepeatedField.new(:int32)
+      length_methods = %w(count length size)
+      length_methods.each do |lm|
+        assert l.send(lm)  == 0
+      end
+      # out of bounds returns a nil
+      assert l[0] == nil
+      assert l[1] == nil
+      assert l[-1] == nil
+      l.push 4
+      length_methods.each do |lm|
+        assert l.send(lm) == 1
+      end
+      assert l[0] == 4
+      assert l[1] == nil
+      assert l[-1] == 4
+      assert l[-2] == nil
+
+      l.push 2
+      length_methods.each do |lm|
+        assert l.send(lm) == 2
+      end
+      assert l[0] == 4
+      assert l[1] == 2
+      assert l[2] == nil
+      assert l[-1] == 2
+      assert l[-2] == 4
+      assert l[-3] == nil
+
+      #adding out of scope will backfill with empty objects
     end
 
     def test_map_basic
@@ -712,9 +758,12 @@ module BasicTest
       m = TestMessage.new
       m.optional_string = "hello"
       m.optional_int32 = 42
-      m.repeated_msg.push TestMessage2.new(:foo => 100)
-      m.repeated_msg.push TestMessage2.new(:foo => 200)
-
+      tm1 = TestMessage2.new(:foo => 100)
+      tm2 = TestMessage2.new(:foo => 200)
+      m.repeated_msg.push tm1
+      assert m.repeated_msg[-1] == tm1
+      m.repeated_msg.push tm2
+      assert m.repeated_msg[-1] == tm2
       m2 = m.dup
       assert m == m2
       m.optional_int32 += 1
@@ -773,6 +822,67 @@ module BasicTest
       assert m == m2
     end
 
+    def test_encode_decode_helpers
+      m = TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      json = m.to_json
+      m2 = TestMessage.decode_json(json)
+      assert m2.optional_string == 'foo'
+      assert m2.repeated_string == ['bar1', 'bar2']
+
+      proto = m.to_proto
+      m2 = TestMessage.decode(proto)
+      assert m2.optional_string == 'foo'
+      assert m2.repeated_string == ['bar1', 'bar2']
+    end
+
+    def test_protobuf_encode_decode_helpers
+      m = TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      encoded_msg = Google::Protobuf.encode(m)
+      assert_equal m.to_proto, encoded_msg
+
+      decoded_msg = Google::Protobuf.decode(TestMessage, encoded_msg)
+      assert_equal TestMessage.decode(m.to_proto), decoded_msg
+    end
+
+    def test_protobuf_encode_decode_json_helpers
+      m = TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      encoded_msg = Google::Protobuf.encode_json(m)
+      assert_equal m.to_json, encoded_msg
+
+      decoded_msg = Google::Protobuf.decode_json(TestMessage, encoded_msg)
+      assert_equal TestMessage.decode_json(m.to_json), decoded_msg
+    end
+
+    def test_to_h
+      m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      expected_result = {
+        :optional_bool=>true,
+        :optional_bytes=>"",
+        :optional_double=>-10.100001,
+        :optional_enum=>:Default,
+        :optional_float=>0.0,
+        :optional_int32=>0,
+        :optional_int64=>0,
+        :optional_msg=>nil,
+        :optional_string=>"foo",
+        :optional_uint32=>0,
+        :optional_uint64=>0,
+        :repeated_bool=>[],
+        :repeated_bytes=>[],
+        :repeated_double=>[],
+        :repeated_enum=>[],
+        :repeated_float=>[],
+        :repeated_int32=>[],
+        :repeated_int64=>[],
+        :repeated_msg=>[],
+        :repeated_string=>["bar1", "bar2"],
+        :repeated_uint32=>[],
+        :repeated_uint64=>[]
+      }
+      assert_equal expected_result, m.to_h
+    end
+
+
     def test_def_errors
       s = Google::Protobuf::DescriptorPool.new
       assert_raise TypeError do
@@ -826,7 +936,6 @@ module BasicTest
       m['a.b'] = 4
       assert m['a.b'] == 4
     end
-
 
     def test_int_ranges
       m = TestMessage.new
@@ -933,7 +1042,6 @@ module BasicTest
       assert_raise RangeError do
         m.optional_uint64 = 1.5
       end
-
     end
 
     def test_stress_test
@@ -988,7 +1096,8 @@ module BasicTest
     end
 
     def test_json
-      skip("Unimplemented") if RUBY_PLATFORM == "java"
+      # TODO: Fix JSON in JRuby version.
+      return if RUBY_PLATFORM == "java"
       m = TestMessage.new(:optional_int32 => 1234,
                           :optional_int64 => -0x1_0000_0000,
                           :optional_uint32 => 0x8000_0000,
@@ -1019,7 +1128,8 @@ module BasicTest
     end
 
     def test_json_maps
-      skip("Unimplemented") if RUBY_PLATFORM == "java"
+      # TODO: Fix JSON in JRuby version.
+      return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
       expected = '{"map_string_int32":{"a":1},"map_string_msg":{}}'
       assert MapMessage.encode_json(m) == expected

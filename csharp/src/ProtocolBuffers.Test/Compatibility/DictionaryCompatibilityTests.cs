@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.Serialization;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers.Compatibility
 {
+    [TestFixture]
     public class DictionaryCompatibilityTests : CompatibilityTests
     {
         protected override object SerializeMessage<TMessage, TBuilder>(TMessage message)
@@ -25,7 +26,7 @@ namespace Google.ProtocolBuffers.Compatibility
             IDictionary<string, object> left = (IDictionary<string, object>)lhs;
             IDictionary<string, object> right = (IDictionary<string, object>)rhs;
 
-            Assert.Equal(
+            Assert.AreEqual(
                 String.Join(",", new List<string>(left.Keys).ToArray()),
                 String.Join(",", new List<string>(right.Keys).ToArray())
             );

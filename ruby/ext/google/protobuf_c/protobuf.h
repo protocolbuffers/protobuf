@@ -361,19 +361,20 @@ extern VALUE cRepeatedField;
 RepeatedField* ruby_to_RepeatedField(VALUE value);
 
 VALUE RepeatedField_each(VALUE _self);
-VALUE RepeatedField_index(VALUE _self, VALUE _index);
+VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self);
 void* RepeatedField_index_native(VALUE _self, int index);
 VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val);
 void RepeatedField_reserve(RepeatedField* self, int new_size);
 VALUE RepeatedField_push(VALUE _self, VALUE val);
 void RepeatedField_push_native(VALUE _self, void* data);
-VALUE RepeatedField_pop(VALUE _self);
+VALUE RepeatedField_pop_one(VALUE _self);
 VALUE RepeatedField_insert(int argc, VALUE* argv, VALUE _self);
 VALUE RepeatedField_replace(VALUE _self, VALUE list);
 VALUE RepeatedField_clear(VALUE _self);
 VALUE RepeatedField_length(VALUE _self);
 VALUE RepeatedField_dup(VALUE _self);
 VALUE RepeatedField_deep_copy(VALUE _self);
+VALUE RepeatedField_to_ary(VALUE _self);
 VALUE RepeatedField_eq(VALUE _self, VALUE _other);
 VALUE RepeatedField_hash(VALUE _self);
 VALUE RepeatedField_inspect(VALUE _self);
@@ -496,11 +497,6 @@ VALUE Message_decode(VALUE klass, VALUE data);
 VALUE Message_encode(VALUE klass, VALUE msg_rb);
 VALUE Message_decode_json(VALUE klass, VALUE data);
 VALUE Message_encode_json(VALUE klass, VALUE msg_rb);
-
-VALUE Google_Protobuf_encode(VALUE self, VALUE msg_rb);
-VALUE Google_Protobuf_decode(VALUE self, VALUE klass, VALUE msg_rb);
-VALUE Google_Protobuf_encode_json(VALUE self, VALUE msg_rb);
-VALUE Google_Protobuf_decode_json(VALUE self, VALUE klass, VALUE msg_rb);
 
 VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj);
 

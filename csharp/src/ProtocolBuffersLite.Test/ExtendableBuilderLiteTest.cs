@@ -37,29 +37,29 @@
 using System;
 using System.Collections.Generic;
 using Google.ProtocolBuffers.TestProtos;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
 {
     public class ExtendableBuilderLiteTest
     {
-        [Fact]
+        [Test]
         public void TestHasExtensionT()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
                 .SetExtension(UnittestLite.OptionalInt32ExtensionLite, 123);
 
-            Assert.True(builder.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
+            Assert.IsTrue(builder.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
         }
 
-        [Fact]
+        [Test]
         public void TestHasExtensionTMissing()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder();
-            Assert.False(builder.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
+            Assert.IsFalse(builder.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
         }
 
-        [Fact]
+        [Test]
         public void TestGetExtensionCountT()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
@@ -67,17 +67,17 @@ namespace Google.ProtocolBuffers
                 .AddExtension(UnittestLite.RepeatedInt32ExtensionLite, 2)
                 .AddExtension(UnittestLite.RepeatedInt32ExtensionLite, 3);
 
-            Assert.Equal(3, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
+            Assert.AreEqual(3, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
         }
 
-        [Fact]
+        [Test]
         public void TestGetExtensionCountTEmpty()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder();
-            Assert.Equal(0, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
+            Assert.AreEqual(0, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
         }
 
-        [Fact]
+        [Test]
         public void TestGetExtensionTNull()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder();
@@ -85,23 +85,23 @@ namespace Google.ProtocolBuffers
             Assert.Null(value);
         }
 
-        [Fact]
+        [Test]
         public void TestGetExtensionTValue()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
                 .SetExtension(UnittestLite.OptionalInt32ExtensionLite, 3);
 
-            Assert.Equal(3, builder.GetExtension(UnittestLite.OptionalInt32ExtensionLite));
+            Assert.AreEqual(3, builder.GetExtension(UnittestLite.OptionalInt32ExtensionLite));
         }
 
-        [Fact]
+        [Test]
         public void TestGetExtensionTEmpty()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder();
-            Assert.Equal(0, builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite).Count);
+            Assert.AreEqual(0, builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite).Count);
         }
 
-        [Fact]
+        [Test]
         public void TestGetExtensionTList()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
@@ -110,10 +110,10 @@ namespace Google.ProtocolBuffers
                 .AddExtension(UnittestLite.RepeatedInt32ExtensionLite, 3);
 
             IList<int> values = builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite);
-            Assert.Equal(3, values.Count);
+            Assert.AreEqual(3, values.Count);
         }
 
-        [Fact]
+        [Test]
         public void TestGetExtensionTIndex()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
@@ -122,17 +122,17 @@ namespace Google.ProtocolBuffers
                 .AddExtension(UnittestLite.RepeatedInt32ExtensionLite, 2);
 
             for (int i = 0; i < 3; i++)
-                Assert.Equal(i, builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, i));
+                Assert.AreEqual(i, builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, i));
         }
 
-        [Fact]
+        [Test]
         public void TestGetExtensionTIndexOutOfRange()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder();
             Assert.Throws<ArgumentOutOfRangeException>(() => builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, 0));
         }
 
-        [Fact]
+        [Test]
         public void TestSetExtensionTIndex()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
@@ -141,107 +141,107 @@ namespace Google.ProtocolBuffers
                 .AddExtension(UnittestLite.RepeatedInt32ExtensionLite, 2);
 
             for (int i = 0; i < 3; i++)
-                Assert.Equal(i, builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, i));
+                Assert.AreEqual(i, builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, i));
 
             builder.SetExtension(UnittestLite.RepeatedInt32ExtensionLite, 0, 5);
             builder.SetExtension(UnittestLite.RepeatedInt32ExtensionLite, 1, 6);
             builder.SetExtension(UnittestLite.RepeatedInt32ExtensionLite, 2, 7);
 
             for (int i = 0; i < 3; i++)
-                Assert.Equal(5 + i, builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, i));
+                Assert.AreEqual(5 + i, builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, i));
         }
 
-        [Fact]
+        [Test]
         public void TestSetExtensionTIndexOutOfRange()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder();
             Assert.Throws<ArgumentOutOfRangeException>(() => builder.SetExtension(UnittestLite.RepeatedInt32ExtensionLite, 0, -1));
         }
 
-        [Fact]
+        [Test]
         public void TestClearExtensionTList()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
                 .AddExtension(UnittestLite.RepeatedInt32ExtensionLite, 0);
-            Assert.Equal(1, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
+            Assert.AreEqual(1, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
 
             builder.ClearExtension(UnittestLite.RepeatedInt32ExtensionLite);
-            Assert.Equal(0, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
+            Assert.AreEqual(0, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
         }
 
-        [Fact]
+        [Test]
         public void TestClearExtensionTValue()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
                 .SetExtension(UnittestLite.OptionalInt32ExtensionLite, 0);
-            Assert.True(builder.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
+            Assert.IsTrue(builder.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
 
             builder.ClearExtension(UnittestLite.OptionalInt32ExtensionLite);
-            Assert.False(builder.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
+            Assert.IsFalse(builder.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
         }
 
-        [Fact]
+        [Test]
         public void TestIndexedByDescriptor()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder();
-            Assert.False(builder.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
+            Assert.IsFalse(builder.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
 
             builder[UnittestLite.OptionalInt32ExtensionLite.Descriptor] = 123;
 
-            Assert.True(builder.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
-            Assert.Equal(123, builder.GetExtension(UnittestLite.OptionalInt32ExtensionLite));
+            Assert.IsTrue(builder.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
+            Assert.AreEqual(123, builder.GetExtension(UnittestLite.OptionalInt32ExtensionLite));
         }
 
-        [Fact]
+        [Test]
         public void TestIndexedByDescriptorAndOrdinal()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
                 .AddExtension(UnittestLite.RepeatedInt32ExtensionLite, 0);
-            Assert.Equal(1, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
+            Assert.AreEqual(1, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
 
             IFieldDescriptorLite f = UnittestLite.RepeatedInt32ExtensionLite.Descriptor;
             builder[f, 0] = 123;
 
-            Assert.Equal(1, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
-            Assert.Equal(123, builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, 0));
+            Assert.AreEqual(1, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
+            Assert.AreEqual(123, builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, 0));
         }
 
-        [Fact]
+        [Test]
         public void TestIndexedByDescriptorAndOrdinalOutOfRange()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder();
-            Assert.Equal(0, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
+            Assert.AreEqual(0, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
 
             IFieldDescriptorLite f = UnittestLite.RepeatedInt32ExtensionLite.Descriptor;
             Assert.Throws<ArgumentOutOfRangeException>(() => builder[f, 0] = 123);
         }
 
-        [Fact]
+        [Test]
         public void TestClearFieldByDescriptor()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
                 .AddExtension(UnittestLite.RepeatedInt32ExtensionLite, 0);
-            Assert.Equal(1, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
+            Assert.AreEqual(1, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
 
             IFieldDescriptorLite f = UnittestLite.RepeatedInt32ExtensionLite.Descriptor;
             builder.ClearField(f);
-            Assert.Equal(0, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
+            Assert.AreEqual(0, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
         }
 
-        [Fact]
+        [Test]
         public void TestAddRepeatedFieldByDescriptor()
         {
             TestAllExtensionsLite.Builder builder = TestAllExtensionsLite.CreateBuilder()
                 .AddExtension(UnittestLite.RepeatedInt32ExtensionLite, 0);
-            Assert.Equal(1, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
+            Assert.AreEqual(1, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
 
             IFieldDescriptorLite f = UnittestLite.RepeatedInt32ExtensionLite.Descriptor;
             builder.AddRepeatedField(f, 123);
-            Assert.Equal(2, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
-            Assert.Equal(123, builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, 1));
+            Assert.AreEqual(2, builder.GetExtensionCount(UnittestLite.RepeatedInt32ExtensionLite));
+            Assert.AreEqual(123, builder.GetExtension(UnittestLite.RepeatedInt32ExtensionLite, 1));
         }
 
-        [Fact]
+        [Test]
         public void TestMissingExtensionsLite()
         {
             const int optionalInt32 = 12345678;
@@ -252,21 +252,21 @@ namespace Google.ProtocolBuffers
             builder.AddExtension(UnittestLite.RepeatedDoubleExtensionLite, 1.3);
             TestAllExtensionsLite msg = builder.Build();
 
-            Assert.True(msg.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
-            Assert.Equal(3, msg.GetExtensionCount(UnittestLite.RepeatedDoubleExtensionLite));
+            Assert.IsTrue(msg.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
+            Assert.AreEqual(3, msg.GetExtensionCount(UnittestLite.RepeatedDoubleExtensionLite));
 
             byte[] bits = msg.ToByteArray();
             TestAllExtensionsLite copy = TestAllExtensionsLite.ParseFrom(bits);
-            Assert.False(copy.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
-            Assert.Equal(0, copy.GetExtensionCount(UnittestLite.RepeatedDoubleExtensionLite));
-            Assert.NotEqual(msg, copy);
+            Assert.IsFalse(copy.HasExtension(UnittestLite.OptionalInt32ExtensionLite));
+            Assert.AreEqual(0, copy.GetExtensionCount(UnittestLite.RepeatedDoubleExtensionLite));
+            Assert.AreNotEqual(msg, copy);
 
             //The lite runtime removes all unknown fields and extensions
             byte[] copybits = copy.ToByteArray();
-            Assert.Equal(0, copybits.Length);
+            Assert.AreEqual(0, copybits.Length);
         }
 
-        [Fact]
+        [Test]
         public void TestMissingFieldsLite()
         {
             TestAllTypesLite msg = TestAllTypesLite.CreateBuilder()
@@ -276,13 +276,11 @@ namespace Google.ProtocolBuffers
 
             byte[] bits = msg.ToByteArray();
             IMessageLite copy = TestAllExtensionsLite.ParseFrom(bits);
-            // Use explicit call to Equals to avoid xUnit checking for type equality.
-            Assert.False(msg.Equals(copy));
-            Assert.False(copy.Equals(msg));
+            Assert.AreNotEqual(msg, copy);
 
             //The lite runtime removes all unknown fields and extensions
             byte[] copybits = copy.ToByteArray();
-            Assert.Equal(0, copybits.Length);
+            Assert.AreEqual(0, copybits.Length);
         }
     }
 }

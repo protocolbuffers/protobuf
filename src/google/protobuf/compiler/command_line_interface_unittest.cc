@@ -288,6 +288,7 @@ void CommandLineInterfaceTest::Run(const string& command) {
 
   if (!disallow_plugins_) {
     cli_.AllowPlugins("prefix-");
+#ifndef GOOGLE_THIRD_PARTY_PROTOBUF
     const char* possible_paths[] = {
       // When building with shared libraries, libtool hides the real executable
       // in .libs and puts a fake wrapper in the current directory.
@@ -316,6 +317,11 @@ void CommandLineInterfaceTest::Run(const string& command) {
     }
 
     if (plugin_path.empty()) {
+#else
+    string plugin_path = "third_party/protobuf/test_plugin";
+
+    if (access(plugin_path.c_str(), F_OK) != 0) {
+#endif  // GOOGLE_THIRD_PARTY_PROTOBUF
       GOOGLE_LOG(ERROR)
           << "Plugin executable not found.  Plugin tests are likely to fail.";
     } else {

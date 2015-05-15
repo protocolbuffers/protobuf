@@ -1,8 +1,9 @@
 using System.IO;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers.Compatibility
 {
+    [TestFixture]
     public class TextCompatibilityTests : CompatibilityTests
     {
         protected override object SerializeMessage<TMessage, TBuilder>(TMessage message)
@@ -18,14 +19,14 @@ namespace Google.ProtocolBuffers.Compatibility
             return builder;
         }
         //This test can take a very long time to run.
-        [Fact]
+        [Test]
         public override void RoundTripMessage2OptimizeSize()
         {
             //base.RoundTripMessage2OptimizeSize();
         }
 
         //This test can take a very long time to run.
-        [Fact]
+        [Test]
         public override void RoundTripMessage2OptimizeSpeed()
         {
             //base.RoundTripMessage2OptimizeSpeed();

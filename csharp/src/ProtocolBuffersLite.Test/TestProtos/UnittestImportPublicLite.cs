@@ -92,7 +92,9 @@ namespace Google.ProtocolBuffers.TestProtos {
     #region Lite runtime methods
     public override int GetHashCode() {
       int hash = GetType().GetHashCode();
-      if (hasE) hash ^= e_.GetHashCode();
+      if (hasE) {
+        hash ^= e_.GetHashCode();
+      }
       return hash;
     }
 

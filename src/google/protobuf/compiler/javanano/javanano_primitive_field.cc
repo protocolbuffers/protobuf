@@ -364,6 +364,14 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   }
 }
 
+void RepeatedPrimitiveFieldGenerator::
+GenerateFixClonedCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (this.$name$ != null && this.$name$.length > 0) {\n"
+    "  cloned.$name$ = this.$name$.clone();\n"
+    "}\n");
+}
+
 void PrimitiveFieldGenerator::
 GenerateEqualsCode(io::Printer* printer) const {
   // We define equality as serialized form equality. If generate_has(),

@@ -4,13 +4,13 @@ using System.Text;
 using System.Xml;
 using Google.ProtocolBuffers.Serialization;
 using Google.ProtocolBuffers.TestProtos;
-using Xunit;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers
 {
     public class TestWriterFormatXml
     {
-        [Fact]
+        [Test]
         public void Example_FromXml()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -20,10 +20,10 @@ namespace Google.ProtocolBuffers
             Extensions.MergeFromXml(builder, rdr);
 
             TestXmlMessage message = builder.Build();
-            Assert.Equal(true, message.Valid);
+            Assert.AreEqual(true, message.Valid);
         }
 
-        [Fact]
+        [Test]
         public void Example_ToXml()
         {
             TestXmlMessage message =
@@ -34,10 +34,10 @@ namespace Google.ProtocolBuffers
             //3.5: string Xml = message.ToXml();
             string Xml = Extensions.ToXml(message);
 
-            Assert.Equal(@"<root><valid>true</valid></root>", Xml);
+            Assert.AreEqual(@"<root><valid>true</valid></root>", Xml);
         }
 
-        [Fact]
+        [Test]
         public void Example_WriteXmlUsingICodedOutputStream()
         {
             TestXmlMessage message =
@@ -54,11 +54,11 @@ namespace Google.ProtocolBuffers
                 message.WriteTo(stream);         //write the message normally
 
                 writer.WriteMessageEnd();        //manually write the end message '}'
-                Assert.Equal(@"<root><valid>true</valid></root>", output.ToString());
+                Assert.AreEqual(@"<root><valid>true</valid></root>", output.ToString());
             }
         }
 
-        [Fact]
+        [Test]
         public void Example_ReadXmlUsingICodedInputStream()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -71,29 +71,29 @@ namespace Google.ProtocolBuffers
             reader.ReadMessageEnd();    //manually read the end message '}'
         }
 
-        [Fact]
+        [Test]
         public void TestToXmlParseFromXml()
         {
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
             string xml = Extensions.ToXml(msg);
-            Assert.Equal("<root><default_bool>true</default_bool></root>", xml);
+            Assert.AreEqual("<root><default_bool>true</default_bool></root>", xml);
             TestAllTypes copy = Extensions.MergeFromXml(new TestAllTypes.Builder(), XmlReader.Create(new StringReader(xml))).Build();
-            Assert.True(copy.HasDefaultBool && copy.DefaultBool);
-            Assert.Equal(msg, copy);
+            Assert.IsTrue(copy.HasDefaultBool && copy.DefaultBool);
+            Assert.AreEqual(msg, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestToXmlParseFromXmlWithRootName()
         {
             TestAllTypes msg = new TestAllTypes.Builder().SetDefaultBool(true).Build();
             string xml = Extensions.ToXml(msg, "message");
-            Assert.Equal("<message><default_bool>true</default_bool></message>", xml);
+            Assert.AreEqual("<message><default_bool>true</default_bool></message>", xml);
             TestAllTypes copy = Extensions.MergeFromXml(new TestAllTypes.Builder(), "message", XmlReader.Create(new StringReader(xml))).Build();
-            Assert.True(copy.HasDefaultBool && copy.DefaultBool);
-            Assert.Equal(msg, copy);
+            Assert.IsTrue(copy.HasDefaultBool && copy.DefaultBool);
+            Assert.AreEqual(msg, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestEmptyMessage()
         {
             TestXmlChild message = TestXmlChild.CreateBuilder()
@@ -111,9 +111,9 @@ namespace Google.ProtocolBuffers
             string xml = sw.ToString();
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlChild copy = rdr.Merge(TestXmlChild.CreateBuilder()).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
-        [Fact]
+        [Test]
         public void TestRepeatedField()
         {
             TestXmlChild message = TestXmlChild.CreateBuilder()
@@ -128,10 +128,10 @@ namespace Google.ProtocolBuffers
             string xml = sw.ToString();
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlChild copy = rdr.Merge(TestXmlChild.CreateBuilder()).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestNestedEmptyMessage()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -144,10 +144,10 @@ namespace Google.ProtocolBuffers
             string xml = sw.ToString();
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestNestedMessage()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -160,10 +160,10 @@ namespace Google.ProtocolBuffers
             string xml = sw.ToString();
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestBooleanTypes()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -176,10 +176,10 @@ namespace Google.ProtocolBuffers
             string xml = sw.ToString();
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestFullMessage()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -206,10 +206,10 @@ namespace Google.ProtocolBuffers
 
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestFullMessageWithRichTypes()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -239,10 +239,10 @@ namespace Google.ProtocolBuffers
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             rdr.Options = XmlReaderOptions.ReadNestedArrays;
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestFullMessageWithUnknownFields()
         {
             TestXmlMessage origial = TestXmlMessage.CreateBuilder()
@@ -261,7 +261,7 @@ namespace Google.ProtocolBuffers
                 .Build();
             TestXmlNoFields message = TestXmlNoFields.CreateBuilder().MergeFrom(origial.ToByteArray()).Build();
 
-            Assert.Equal(0, message.AllFields.Count);
+            Assert.AreEqual(0, message.AllFields.Count);
 
             StringWriter sw = new StringWriter();
             XmlFormatWriter.CreateInstance(sw)
@@ -273,9 +273,9 @@ namespace Google.ProtocolBuffers
             using (XmlReader x = XmlReader.Create(new StringReader(xml)))
             {
                 x.MoveToContent();
-                Assert.Equal(XmlNodeType.Element, x.NodeType);
+                Assert.AreEqual(XmlNodeType.Element, x.NodeType);
                 //should always be empty
-                Assert.True(x.IsEmptyElement ||
+                Assert.IsTrue(x.IsEmptyElement ||
                     (x.Read() && x.NodeType == XmlNodeType.EndElement)
                     );
             }
@@ -283,10 +283,10 @@ namespace Google.ProtocolBuffers
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             rdr.Options = XmlReaderOptions.ReadNestedArrays;
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
-            Assert.Equal(TestXmlMessage.DefaultInstance, copy);
+            Assert.AreEqual(TestXmlMessage.DefaultInstance, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestMessageWithXmlText()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -299,10 +299,10 @@ namespace Google.ProtocolBuffers
 
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestXmlWithWhitespace()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -315,10 +315,10 @@ namespace Google.ProtocolBuffers
 
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder()).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestXmlWithExtensionText()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -335,10 +335,10 @@ namespace Google.ProtocolBuffers
 
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestXmlWithExtensionMessage()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -355,10 +355,10 @@ namespace Google.ProtocolBuffers
 
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestXmlWithExtensionArray()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -377,10 +377,10 @@ namespace Google.ProtocolBuffers
 
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestXmlWithExtensionEnum()
         {
             TestXmlMessage message = TestXmlMessage.CreateBuilder()
@@ -397,10 +397,10 @@ namespace Google.ProtocolBuffers
 
             XmlFormatReader rdr = XmlFormatReader.CreateInstance(xml);
             TestXmlMessage copy = rdr.Merge(TestXmlMessage.CreateBuilder(), registry).Build();
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestXmlReadEmptyRoot()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -413,7 +413,7 @@ namespace Google.ProtocolBuffers
             reader.ReadMessageEnd();    //manually read the end message '}'
         }
 
-        [Fact]
+        [Test]
         public void TestXmlReadEmptyChild()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -422,11 +422,11 @@ namespace Google.ProtocolBuffers
             reader.ReadMessageStart();  //manually read the begin the message '{'
 
             builder.MergeFrom(reader);  //write the message normally
-            Assert.True(builder.HasText);
-            Assert.Equal(String.Empty, builder.Text);
+            Assert.IsTrue(builder.HasText);
+            Assert.AreEqual(String.Empty, builder.Text);
         }
 
-        [Fact]
+        [Test]
         public void TestXmlReadWriteWithoutRoot()
         {
             TestXmlMessage.Builder builder = TestXmlMessage.CreateBuilder();
@@ -442,7 +442,7 @@ namespace Google.ProtocolBuffers
                 output.Flush();
                 xml = sw.ToString();
             }
-            Assert.Equal("<text>abc</text><number>123</number>", xml);
+            Assert.AreEqual("<text>abc</text><number>123</number>", xml);
 
             TestXmlMessage copy;
             using (XmlReader xr = XmlReader.Create(new StringReader(xml), new XmlReaderSettings() { ConformanceLevel = ConformanceLevel.Fragment }))
@@ -451,10 +451,10 @@ namespace Google.ProtocolBuffers
                 copy = TestXmlMessage.CreateBuilder().MergeFrom(input).Build();
             }
 
-            Assert.Equal(message, copy);
+            Assert.AreEqual(message, copy);
         }
 
-        [Fact]
+        [Test]
         public void TestRecursiveLimit()
         {
             StringBuilder sb = new StringBuilder(8192);

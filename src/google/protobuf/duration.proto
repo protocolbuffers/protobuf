@@ -44,7 +44,7 @@ option csharp_namespace = "Google.ProtocolBuffers";
 // two Timestamp values is a Duration and it can be added or subtracted
 // from a Timestamp. Range is approximately +-10,000 years.
 //
-// Example 1: compute Duration from two Timestamps in pseudo code.
+// Example 1: Compute Duration from two Timestamps in pseudo code.
 //
 //     Timestamp start = ...;
 //     Timestamp end = ...;
@@ -61,7 +61,7 @@ option csharp_namespace = "Google.ProtocolBuffers";
 //       duration.nanos += 1000000000;
 //     }
 //
-// Example 2: compute Timestamp from Timestamp + Duration in pseudo code.
+// Example 2: Compute Timestamp from Timestamp + Duration in pseudo code.
 //
 //     Timestamp start = ...;
 //     Duration duration = ...;
@@ -85,9 +85,9 @@ message Duration {
 
   // Signed fractions of a second at nanosecond resolution of the span
   // of time. Durations less than one second are represented with a 0
-  // seconds field and a positive or negative nanos field. For durations
-  // of one second or more, a non-zero value for the nanos field must be
-  // of the same sign as the seconds field. Must be from -999,999,999
+  // `seconds` field and a positive or negative `nanos` field. For durations
+  // of one second or more, a non-zero value for the `nanos` field must be
+  // of the same sign as the `seconds` field. Must be from -999,999,999
   // to +999,999,999 inclusive.
   int32 nanos = 2;
 }

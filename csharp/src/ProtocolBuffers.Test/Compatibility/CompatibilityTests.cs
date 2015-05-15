@@ -1,13 +1,13 @@
 ﻿using System;
 using Google.ProtocolBuffers.TestProtos;
-using Xunit;
+using NUnit.Framework;
 
 
 namespace Google.ProtocolBuffers.Compatibility
 {
     /// <summary>
     /// This abstract base implements several tests to ensure that well-known messages can be written
-    /// and read to/from various formats without losing data.  Implementations overload the two serailization
+    /// and read to/from various formats without losing data.  Implementations override the two serialization
     /// methods to provide the tests with the means to read and write for a given format.
     /// </summary>
     public abstract class CompatibilityTests
@@ -22,10 +22,10 @@ namespace Google.ProtocolBuffers.Compatibility
 
         protected virtual void AssertOutputEquals(object lhs, object rhs)
         {
-            Assert.Equal<object>(lhs, rhs);
+            Assert.AreEqual(lhs, rhs);
         }
 
-        [Fact]
+        [Test]
         public virtual void RoundTripWithEmptyChildMessageSize()
         {
             SizeMessage1 msg = SizeMessage1.CreateBuilder()
@@ -37,12 +37,12 @@ namespace Google.ProtocolBuffers.Compatibility
 
             SizeMessage1 copy = DeserializeMessage<SizeMessage1, SizeMessage1.Builder>(content, SizeMessage1.CreateBuilder(), ExtensionRegistry.Empty).BuildPartial();
 
-            Assert.Equal(msg, copy);
+            Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<SizeMessage1, SizeMessage1.Builder>(copy));
-            Assert.Equal(Convert.ToBase64String(contents), Convert.ToBase64String(copy.ToByteArray()));
+            Assert.AreEqual(Convert.ToBase64String(contents), Convert.ToBase64String(copy.ToByteArray()));
         }
 
-        [Fact]
+        [Test]
         public virtual void RoundTripWithEmptyChildMessageSpeed()
         {
             SpeedMessage1 msg = SpeedMessage1.CreateBuilder()
@@ -54,12 +54,12 @@ namespace Google.ProtocolBuffers.Compatibility
 
             SpeedMessage1 copy = DeserializeMessage<SpeedMessage1, SpeedMessage1.Builder>(content, SpeedMessage1.CreateBuilder(), ExtensionRegistry.Empty).BuildPartial();
 
-            Assert.Equal(msg, copy);
+            Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<SpeedMessage1, SpeedMessage1.Builder>(copy));
-            Assert.Equal(Convert.ToBase64String(contents), Convert.ToBase64String(copy.ToByteArray()));
+            Assert.AreEqual(Convert.ToBase64String(contents), Convert.ToBase64String(copy.ToByteArray()));
         }
 
-        [Fact]
+        [Test]
         public virtual void RoundTripMessage1OptimizeSize()
         {
             SizeMessage1 msg = SizeMessage1.CreateBuilder().MergeFrom(TestResources.google_message1).Build();
@@ -67,12 +67,12 @@ namespace Google.ProtocolBuffers.Compatibility
 
             SizeMessage1 copy = DeserializeMessage<SizeMessage1, SizeMessage1.Builder>(content, SizeMessage1.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
-            Assert.Equal(msg, copy);
+            Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<SizeMessage1, SizeMessage1.Builder>(copy));
-            Assert.Equal(Convert.ToBase64String(TestResources.google_message1), Convert.ToBase64String(copy.ToByteArray()));
+            Assert.AreEqual(Convert.ToBase64String(TestResources.google_message1), Convert.ToBase64String(copy.ToByteArray()));
         }
 
-        [Fact]
+        [Test]
         public virtual void RoundTripMessage2OptimizeSize()
         {
             SizeMessage2 msg = SizeMessage2.CreateBuilder().MergeFrom(TestResources.google_message2).Build();
@@ -80,12 +80,12 @@ namespace Google.ProtocolBuffers.Compatibility
 
             SizeMessage2 copy = DeserializeMessage<SizeMessage2, SizeMessage2.Builder>(content, SizeMessage2.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
-            Assert.Equal(msg, copy);
+            Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<SizeMessage2, SizeMessage2.Builder>(copy));
-            Assert.Equal(Convert.ToBase64String(TestResources.google_message2), Convert.ToBase64String(copy.ToByteArray()));
+            Assert.AreEqual(Convert.ToBase64String(TestResources.google_message2), Convert.ToBase64String(copy.ToByteArray()));
         }
 
-        [Fact]
+        [Test]
         public virtual void RoundTripMessage1OptimizeSpeed()
         {
             SpeedMessage1 msg = SpeedMessage1.CreateBuilder().MergeFrom(TestResources.google_message1).Build();
@@ -93,12 +93,12 @@ namespace Google.ProtocolBuffers.Compatibility
 
             SpeedMessage1 copy = DeserializeMessage<SpeedMessage1, SpeedMessage1.Builder>(content, SpeedMessage1.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
-            Assert.Equal(msg, copy);
+            Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<SpeedMessage1, SpeedMessage1.Builder>(copy));
-            Assert.Equal(Convert.ToBase64String(TestResources.google_message1), Convert.ToBase64String(copy.ToByteArray()));
+            Assert.AreEqual(Convert.ToBase64String(TestResources.google_message1), Convert.ToBase64String(copy.ToByteArray()));
         }
 
-        [Fact]
+        [Test]
         public virtual void RoundTripMessage2OptimizeSpeed()
         {
             SpeedMessage2 msg = SpeedMessage2.CreateBuilder().MergeFrom(TestResources.google_message2).Build();
@@ -106,9 +106,9 @@ namespace Google.ProtocolBuffers.Compatibility
 
             SpeedMessage2 copy = DeserializeMessage<SpeedMessage2, SpeedMessage2.Builder>(content, SpeedMessage2.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
-            Assert.Equal(msg, copy);
+            Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<SpeedMessage2, SpeedMessage2.Builder>(copy));
-            Assert.Equal(Convert.ToBase64String(TestResources.google_message2), Convert.ToBase64String(copy.ToByteArray()));
+            Assert.AreEqual(Convert.ToBase64String(TestResources.google_message2), Convert.ToBase64String(copy.ToByteArray()));
         }
 
         #region Test message builders
@@ -185,7 +185,7 @@ namespace Google.ProtocolBuffers.Compatibility
 
         #endregion
 
-        [Fact]
+        [Test]
         public void TestRoundTripAllTypes()
         {
             TestAllTypes msg = AddAllTypes(new TestAllTypes.Builder()).Build();
@@ -193,12 +193,12 @@ namespace Google.ProtocolBuffers.Compatibility
 
             TestAllTypes copy = DeserializeMessage<TestAllTypes, TestAllTypes.Builder>(content, TestAllTypes.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
-            Assert.Equal(msg, copy);
+            Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<TestAllTypes, TestAllTypes.Builder>(copy));
-            Assert.Equal(Convert.ToBase64String(msg.ToByteArray()), Convert.ToBase64String(copy.ToByteArray()));
+            Assert.AreEqual(Convert.ToBase64String(msg.ToByteArray()), Convert.ToBase64String(copy.ToByteArray()));
         }
 
-        [Fact]
+        [Test]
         public void TestRoundTripRepeatedTypes()
         {
             TestAllTypes msg = AddRepeatedTypes(new TestAllTypes.Builder(), 5).Build();
@@ -206,12 +206,12 @@ namespace Google.ProtocolBuffers.Compatibility
 
             TestAllTypes copy = DeserializeMessage<TestAllTypes, TestAllTypes.Builder>(content, TestAllTypes.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
-            Assert.Equal(msg, copy);
+            Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<TestAllTypes, TestAllTypes.Builder>(copy));
-            Assert.Equal(Convert.ToBase64String(msg.ToByteArray()), Convert.ToBase64String(copy.ToByteArray()));
+            Assert.AreEqual(Convert.ToBase64String(msg.ToByteArray()), Convert.ToBase64String(copy.ToByteArray()));
         }
 
-        [Fact]
+        [Test]
         public void TestRoundTripPackedTypes()
         {
             TestPackedTypes msg = AddPackedTypes(new TestPackedTypes.Builder(), 5).Build();
@@ -219,9 +219,9 @@ namespace Google.ProtocolBuffers.Compatibility
 
             TestPackedTypes copy = DeserializeMessage<TestPackedTypes, TestPackedTypes.Builder>(content, TestPackedTypes.CreateBuilder(), ExtensionRegistry.Empty).Build();
 
-            Assert.Equal(msg, copy);
+            Assert.AreEqual(msg, copy);
             AssertOutputEquals(content, SerializeMessage<TestPackedTypes, TestPackedTypes.Builder>(copy));
-            Assert.Equal(Convert.ToBase64String(msg.ToByteArray()), Convert.ToBase64String(copy.ToByteArray()));
+            Assert.AreEqual(Convert.ToBase64String(msg.ToByteArray()), Convert.ToBase64String(copy.ToByteArray()));
         }
     }
 }

@@ -329,6 +329,30 @@ VALUE Message_inspect(VALUE _self) {
   return str;
 }
 
+
+VALUE Message_to_h(VALUE _self) {
+  MessageHeader* self;
+  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+
+  VALUE hash = rb_hash_new();
+
+  upb_msg_field_iter it;
+  for (upb_msg_field_begin(&it, self->descriptor->msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    const upb_fielddef* field = upb_msg_iter_field(&it);
+    VALUE msg_value = layout_get(self->descriptor->layout, Message_data(self), field);
+    VALUE msg_key   = ID2SYM(rb_intern(upb_fielddef_name(field)));
+    if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+      msg_value = RepeatedField_to_ary(msg_value);
+    }
+    rb_hash_aset(hash, msg_key, msg_value);
+  }
+  return hash;
+}
+
+
+
 /*
  * call-seq:
  *     Message.[](index) => value
@@ -399,6 +423,10 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
       rb_cObject);
   rb_iv_set(klass, kDescriptorInstanceVar, get_def_obj(desc->msgdef));
   rb_define_alloc_func(klass, Message_alloc);
+  rb_require("google/protobuf/message_exts");
+  rb_include_module(klass, rb_eval_string("Google::Protobuf::MessageExts"));
+  rb_extend_object(klass, rb_eval_string("Google::Protobuf::MessageExts::ClassMethods"));
+
   rb_define_method(klass, "method_missing",
                    Message_method_missing, -1);
   rb_define_method(klass, "initialize", Message_initialize, -1);
@@ -407,6 +435,8 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
   rb_define_method(klass, "clone", Message_dup, 0);
   rb_define_method(klass, "==", Message_eq, 1);
   rb_define_method(klass, "hash", Message_hash, 0);
+  rb_define_method(klass, "to_h", Message_to_h, 0);
+  rb_define_method(klass, "to_hash", Message_to_h, 0);
   rb_define_method(klass, "inspect", Message_inspect, 0);
   rb_define_method(klass, "[]", Message_index, 1);
   rb_define_method(klass, "[]=", Message_index_set, 2);
@@ -415,6 +445,7 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
   rb_define_singleton_method(klass, "decode_json", Message_decode_json, 1);
   rb_define_singleton_method(klass, "encode_json", Message_encode_json, 1);
   rb_define_singleton_method(klass, "descriptor", Message_descriptor, 0);
+
   return klass;
 }
 

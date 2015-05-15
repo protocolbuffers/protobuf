@@ -35,7 +35,7 @@
 #endregion
 
 using System.IO;
-using Xunit;
+using NUnit.Framework;
 using NestedMessage = Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage;
 
 namespace Google.ProtocolBuffers
@@ -54,7 +54,7 @@ namespace Google.ProtocolBuffers
                                                                    (1 << 3) | 2, 0, // Field 1, no data (third message)
                                                                };
 
-        [Fact]
+        [Test]
         public void ThreeMessages()
         {
             NestedMessage message1 = new NestedMessage.Builder {Bb = 5}.Build();

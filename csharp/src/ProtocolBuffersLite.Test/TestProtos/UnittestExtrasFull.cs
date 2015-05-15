@@ -420,7 +420,6 @@ namespace Google.ProtocolBuffers.TestProtos {
         public bool HasZip {
           get { return hasZip; }
         }
-        [global::System.CLSCompliant(false)]
         public uint Zip {
           get { return zip_; }
         }
@@ -619,12 +618,10 @@ namespace Google.ProtocolBuffers.TestProtos {
           public bool HasZip {
             get { return result.hasZip; }
           }
-          [global::System.CLSCompliant(false)]
           public uint Zip {
             get { return result.Zip; }
             set { SetZip(value); }
           }
-          [global::System.CLSCompliant(false)]
           public Builder SetZip(uint value) {
             PrepareBuilder();
             result.hasZip = true;

@@ -7,7 +7,7 @@ using pb = global::Google.ProtocolBuffers;
 using pbc = global::Google.ProtocolBuffers.Collections;
 using pbd = global::Google.ProtocolBuffers.Descriptors;
 using scg = global::System.Collections.Generic;
-namespace Google.ProtocolBuffers.TestProtos {
+namespace Google.ProtocolBuffers.TestProtos.Proto3 {
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestNoFieldPresence {
@@ -18,13 +18,13 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
     #region Static variables
     internal static pbd::MessageDescriptor internal__static_proto2_nofieldpresence_unittest_TestAllTypes__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder> internal__static_proto2_nofieldpresence_unittest_TestAllTypes__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes, global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Builder> internal__static_proto2_nofieldpresence_unittest_TestAllTypes__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_proto2_nofieldpresence_unittest_TestAllTypes_NestedMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder> internal__static_proto2_nofieldpresence_unittest_TestAllTypes_NestedMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Builder> internal__static_proto2_nofieldpresence_unittest_TestAllTypes_NestedMessage__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_proto2_nofieldpresence_unittest_TestProto2Required__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestProto2Required, global::Google.ProtocolBuffers.TestProtos.TestProto2Required.Builder> internal__static_proto2_nofieldpresence_unittest_TestProto2Required__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.Proto3.TestProto2Required, global::Google.ProtocolBuffers.TestProtos.Proto3.TestProto2Required.Builder> internal__static_proto2_nofieldpresence_unittest_TestProto2Required__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_proto2_nofieldpresence_unittest_ForeignMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ForeignMessage, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder> internal__static_proto2_nofieldpresence_unittest_ForeignMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage, global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.Builder> internal__static_proto2_nofieldpresence_unittest_ForeignMessage__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -90,25 +90,25 @@ namespace Google.ProtocolBuffers.TestProtos {
             "ZWQSLwoGcHJvdG8yGAEgASgLMh8ucHJvdG9idWZfdW5pdHRlc3QuVGVzdFJl", 
             "cXVpcmVkIhsKDkZvcmVpZ25NZXNzYWdlEgkKAWMYASABKAUqQAoLRm9yZWln", 
             "bkVudW0SDwoLRk9SRUlHTl9GT08QABIPCgtGT1JFSUdOX0JBUhABEg8KC0ZP", 
-            "UkVJR05fQkFaEAJCJKoCIUdvb2dsZS5Qcm90b2NvbEJ1ZmZlcnMuVGVzdFBy", 
-          "b3Rvc2IGcHJvdG8z"));
+            "UkVJR05fQkFaEAJCK6oCKEdvb2dsZS5Qcm90b2NvbEJ1ZmZlcnMuVGVzdFBy", 
+          "b3Rvcy5Qcm90bzNiBnByb3RvMw=="));
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_proto2_nofieldpresence_unittest_TestAllTypes__Descriptor = Descriptor.MessageTypes[0];
         internal__static_proto2_nofieldpresence_unittest_TestAllTypes__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder>(internal__static_proto2_nofieldpresence_unittest_TestAllTypes__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes, global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Builder>(internal__static_proto2_nofieldpresence_unittest_TestAllTypes__Descriptor,
                 new string[] { "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalProto2Message", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalStringPiece", "OptionalCord", "OptionalLazyMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedProto2Message", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "RepeatedLazyMessage", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofEnum", });
         internal__static_proto2_nofieldpresence_unittest_TestAllTypes_NestedMessage__Descriptor = internal__static_proto2_nofieldpresence_unittest_TestAllTypes__Descriptor.NestedTypes[0];
         internal__static_proto2_nofieldpresence_unittest_TestAllTypes_NestedMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder>(internal__static_proto2_nofieldpresence_unittest_TestAllTypes_NestedMessage__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage, global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Builder>(internal__static_proto2_nofieldpresence_unittest_TestAllTypes_NestedMessage__Descriptor,
                 new string[] { "Bb", });
         internal__static_proto2_nofieldpresence_unittest_TestProto2Required__Descriptor = Descriptor.MessageTypes[1];
         internal__static_proto2_nofieldpresence_unittest_TestProto2Required__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestProto2Required, global::Google.ProtocolBuffers.TestProtos.TestProto2Required.Builder>(internal__static_proto2_nofieldpresence_unittest_TestProto2Required__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.Proto3.TestProto2Required, global::Google.ProtocolBuffers.TestProtos.Proto3.TestProto2Required.Builder>(internal__static_proto2_nofieldpresence_unittest_TestProto2Required__Descriptor,
                 new string[] { "Proto2", });
         internal__static_proto2_nofieldpresence_unittest_ForeignMessage__Descriptor = Descriptor.MessageTypes[2];
         internal__static_proto2_nofieldpresence_unittest_ForeignMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.ForeignMessage, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder>(internal__static_proto2_nofieldpresence_unittest_ForeignMessage__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage, global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.Builder>(internal__static_proto2_nofieldpresence_unittest_ForeignMessage__Descriptor,
                 new string[] { "C", });
         pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
         RegisterAllExtensions(registry);
@@ -152,11 +152,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
 
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_TestAllTypes__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.Proto3.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_TestAllTypes__Descriptor; }
     }
 
     protected override pb::FieldAccess.FieldAccessorTable<TestAllTypes, TestAllTypes.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_TestAllTypes__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.Proto3.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_TestAllTypes__FieldAccessorTable; }
     }
 
     #region Nested types
@@ -187,33 +187,23 @@ namespace Google.ProtocolBuffers.TestProtos {
         }
 
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.ProtocolBuffers.TestProtos.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_TestAllTypes_NestedMessage__Descriptor; }
+          get { return global::Google.ProtocolBuffers.TestProtos.Proto3.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_TestAllTypes_NestedMessage__Descriptor; }
         }
 
         protected override pb::FieldAccess.FieldAccessorTable<NestedMessage, NestedMessage.Builder> InternalFieldAccessors {
-          get { return global::Google.ProtocolBuffers.TestProtos.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_TestAllTypes_NestedMessage__FieldAccessorTable; }
+          get { return global::Google.ProtocolBuffers.TestProtos.Proto3.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_TestAllTypes_NestedMessage__FieldAccessorTable; }
         }
 
         public const int BbFieldNumber = 1;
-        private bool hasBb;
         private int bb_;
-        public bool HasBb {
-          get { return hasBb; }
-        }
         public int Bb {
           get { return bb_; }
-        }
-
-        public override bool IsInitialized {
-          get {
-            return true;
-          }
         }
 
         public override void WriteTo(pb::ICodedOutputStream output) {
           CalcSerializedSize();
           string[] field_names = _nestedMessageFieldNames;
-          if (hasBb) {
+          if (Bb != 0) {
             output.WriteInt32(1, field_names[0], Bb);
           }
           UnknownFields.WriteTo(output);
@@ -233,7 +223,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           if (size != -1) return size;
 
           size = 0;
-          if (hasBb) {
+          if (Bb != 0) {
             size += pb::CodedOutputStream.ComputeInt32Size(1, Bb);
           }
           size += UnknownFields.SerializedSize;
@@ -331,11 +321,11 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
 
           public override pbd::MessageDescriptor DescriptorForType {
-            get { return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Descriptor; }
+            get { return global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Descriptor; }
           }
 
           public override NestedMessage DefaultInstanceForType {
-            get { return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance; }
+            get { return global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.DefaultInstance; }
           }
 
           public override NestedMessage BuildPartial() {
@@ -356,9 +346,9 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
 
           public override Builder MergeFrom(NestedMessage other) {
-            if (other == global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance) return this;
+            if (other == global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.DefaultInstance) return this;
             PrepareBuilder();
-            if (other.HasBb) {
+            if (other.Bb != 0) {
               Bb = other.Bb;
             }
             this.MergeUnknownFields(other.UnknownFields);
@@ -405,7 +395,7 @@ namespace Google.ProtocolBuffers.TestProtos {
                   break;
                 }
                 case 8: {
-                  result.hasBb = input.ReadInt32(ref result.bb_);
+                  input.ReadInt32(ref result.bb_);
                   break;
                 }
               }
@@ -418,28 +408,23 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
 
 
-          public bool HasBb {
-            get { return result.hasBb; }
-          }
           public int Bb {
             get { return result.Bb; }
             set { SetBb(value); }
           }
           public Builder SetBb(int value) {
             PrepareBuilder();
-            result.hasBb = true;
             result.bb_ = value;
             return this;
           }
           public Builder ClearBb() {
             PrepareBuilder();
-            result.hasBb = false;
             result.bb_ = 0;
             return this;
           }
         }
         static NestedMessage() {
-          object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnittestNoFieldPresence.Descriptor, null);
+          object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.Proto3.UnittestNoFieldPresence.Descriptor, null);
         }
       }
 
@@ -447,177 +432,113 @@ namespace Google.ProtocolBuffers.TestProtos {
     #endregion
 
     public const int OptionalInt32FieldNumber = 1;
-    private bool hasOptionalInt32;
     private int optionalInt32_;
-    public bool HasOptionalInt32 {
-      get { return hasOptionalInt32; }
-    }
     public int OptionalInt32 {
       get { return optionalInt32_; }
     }
 
     public const int OptionalInt64FieldNumber = 2;
-    private bool hasOptionalInt64;
     private long optionalInt64_;
-    public bool HasOptionalInt64 {
-      get { return hasOptionalInt64; }
-    }
     public long OptionalInt64 {
       get { return optionalInt64_; }
     }
 
     public const int OptionalUint32FieldNumber = 3;
-    private bool hasOptionalUint32;
     private uint optionalUint32_;
-    public bool HasOptionalUint32 {
-      get { return hasOptionalUint32; }
-    }
-    [global::System.CLSCompliant(false)]
     public uint OptionalUint32 {
       get { return optionalUint32_; }
     }
 
     public const int OptionalUint64FieldNumber = 4;
-    private bool hasOptionalUint64;
     private ulong optionalUint64_;
-    public bool HasOptionalUint64 {
-      get { return hasOptionalUint64; }
-    }
-    [global::System.CLSCompliant(false)]
     public ulong OptionalUint64 {
       get { return optionalUint64_; }
     }
 
     public const int OptionalSint32FieldNumber = 5;
-    private bool hasOptionalSint32;
     private int optionalSint32_;
-    public bool HasOptionalSint32 {
-      get { return hasOptionalSint32; }
-    }
     public int OptionalSint32 {
       get { return optionalSint32_; }
     }
 
     public const int OptionalSint64FieldNumber = 6;
-    private bool hasOptionalSint64;
     private long optionalSint64_;
-    public bool HasOptionalSint64 {
-      get { return hasOptionalSint64; }
-    }
     public long OptionalSint64 {
       get { return optionalSint64_; }
     }
 
     public const int OptionalFixed32FieldNumber = 7;
-    private bool hasOptionalFixed32;
     private uint optionalFixed32_;
-    public bool HasOptionalFixed32 {
-      get { return hasOptionalFixed32; }
-    }
-    [global::System.CLSCompliant(false)]
     public uint OptionalFixed32 {
       get { return optionalFixed32_; }
     }
 
     public const int OptionalFixed64FieldNumber = 8;
-    private bool hasOptionalFixed64;
     private ulong optionalFixed64_;
-    public bool HasOptionalFixed64 {
-      get { return hasOptionalFixed64; }
-    }
-    [global::System.CLSCompliant(false)]
     public ulong OptionalFixed64 {
       get { return optionalFixed64_; }
     }
 
     public const int OptionalSfixed32FieldNumber = 9;
-    private bool hasOptionalSfixed32;
     private int optionalSfixed32_;
-    public bool HasOptionalSfixed32 {
-      get { return hasOptionalSfixed32; }
-    }
     public int OptionalSfixed32 {
       get { return optionalSfixed32_; }
     }
 
     public const int OptionalSfixed64FieldNumber = 10;
-    private bool hasOptionalSfixed64;
     private long optionalSfixed64_;
-    public bool HasOptionalSfixed64 {
-      get { return hasOptionalSfixed64; }
-    }
     public long OptionalSfixed64 {
       get { return optionalSfixed64_; }
     }
 
     public const int OptionalFloatFieldNumber = 11;
-    private bool hasOptionalFloat;
     private float optionalFloat_;
-    public bool HasOptionalFloat {
-      get { return hasOptionalFloat; }
-    }
     public float OptionalFloat {
       get { return optionalFloat_; }
     }
 
     public const int OptionalDoubleFieldNumber = 12;
-    private bool hasOptionalDouble;
     private double optionalDouble_;
-    public bool HasOptionalDouble {
-      get { return hasOptionalDouble; }
-    }
     public double OptionalDouble {
       get { return optionalDouble_; }
     }
 
     public const int OptionalBoolFieldNumber = 13;
-    private bool hasOptionalBool;
     private bool optionalBool_;
-    public bool HasOptionalBool {
-      get { return hasOptionalBool; }
-    }
     public bool OptionalBool {
       get { return optionalBool_; }
     }
 
     public const int OptionalStringFieldNumber = 14;
-    private bool hasOptionalString;
     private string optionalString_ = "";
-    public bool HasOptionalString {
-      get { return hasOptionalString; }
-    }
     public string OptionalString {
       get { return optionalString_; }
     }
 
     public const int OptionalBytesFieldNumber = 15;
-    private bool hasOptionalBytes;
     private pb::ByteString optionalBytes_ = pb::ByteString.Empty;
-    public bool HasOptionalBytes {
-      get { return hasOptionalBytes; }
-    }
     public pb::ByteString OptionalBytes {
       get { return optionalBytes_; }
     }
 
     public const int OptionalNestedMessageFieldNumber = 18;
     private bool hasOptionalNestedMessage;
-    private global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage optionalNestedMessage_;
+    private global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage optionalNestedMessage_;
     public bool HasOptionalNestedMessage {
       get { return hasOptionalNestedMessage; }
     }
-    public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage OptionalNestedMessage {
-      get { return optionalNestedMessage_ ?? global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance; }
+    public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage OptionalNestedMessage {
+      get { return optionalNestedMessage_ ?? global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.DefaultInstance; }
     }
 
     public const int OptionalForeignMessageFieldNumber = 19;
     private bool hasOptionalForeignMessage;
-    private global::Google.ProtocolBuffers.TestProtos.ForeignMessage optionalForeignMessage_;
+    private global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage optionalForeignMessage_;
     public bool HasOptionalForeignMessage {
       get { return hasOptionalForeignMessage; }
     }
-    public global::Google.ProtocolBuffers.TestProtos.ForeignMessage OptionalForeignMessage {
-      get { return optionalForeignMessage_ ?? global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance; }
+    public global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage OptionalForeignMessage {
+      get { return optionalForeignMessage_ ?? global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.DefaultInstance; }
     }
 
     public const int OptionalProto2MessageFieldNumber = 20;
@@ -631,53 +552,37 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
 
     public const int OptionalNestedEnumFieldNumber = 21;
-    private bool hasOptionalNestedEnum;
-    private global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum optionalNestedEnum_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum.FOO;
-    public bool HasOptionalNestedEnum {
-      get { return hasOptionalNestedEnum; }
-    }
-    public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum OptionalNestedEnum {
+    private global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum optionalNestedEnum_ = global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum.FOO;
+    public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum OptionalNestedEnum {
       get { return optionalNestedEnum_; }
     }
 
     public const int OptionalForeignEnumFieldNumber = 22;
-    private bool hasOptionalForeignEnum;
-    private global::Google.ProtocolBuffers.TestProtos.ForeignEnum optionalForeignEnum_ = global::Google.ProtocolBuffers.TestProtos.ForeignEnum.FOREIGN_FOO;
-    public bool HasOptionalForeignEnum {
-      get { return hasOptionalForeignEnum; }
-    }
-    public global::Google.ProtocolBuffers.TestProtos.ForeignEnum OptionalForeignEnum {
+    private global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum optionalForeignEnum_ = global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum.FOREIGN_FOO;
+    public global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum OptionalForeignEnum {
       get { return optionalForeignEnum_; }
     }
 
     public const int OptionalStringPieceFieldNumber = 24;
-    private bool hasOptionalStringPiece;
     private string optionalStringPiece_ = "";
-    public bool HasOptionalStringPiece {
-      get { return hasOptionalStringPiece; }
-    }
     public string OptionalStringPiece {
       get { return optionalStringPiece_; }
     }
 
     public const int OptionalCordFieldNumber = 25;
-    private bool hasOptionalCord;
     private string optionalCord_ = "";
-    public bool HasOptionalCord {
-      get { return hasOptionalCord; }
-    }
     public string OptionalCord {
       get { return optionalCord_; }
     }
 
     public const int OptionalLazyMessageFieldNumber = 30;
     private bool hasOptionalLazyMessage;
-    private global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage optionalLazyMessage_;
+    private global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage optionalLazyMessage_;
     public bool HasOptionalLazyMessage {
       get { return hasOptionalLazyMessage; }
     }
-    public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage OptionalLazyMessage {
-      get { return optionalLazyMessage_ ?? global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance; }
+    public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage OptionalLazyMessage {
+      get { return optionalLazyMessage_ ?? global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.DefaultInstance; }
     }
 
     public const int RepeatedInt32FieldNumber = 31;
@@ -706,28 +611,24 @@ namespace Google.ProtocolBuffers.TestProtos {
 
     public const int RepeatedUint32FieldNumber = 33;
     private pbc::PopsicleList<uint> repeatedUint32_ = new pbc::PopsicleList<uint>();
-    [global::System.CLSCompliant(false)]
     public scg::IList<uint> RepeatedUint32List {
       get { return pbc::Lists.AsReadOnly(repeatedUint32_); }
     }
     public int RepeatedUint32Count {
       get { return repeatedUint32_.Count; }
     }
-    [global::System.CLSCompliant(false)]
     public uint GetRepeatedUint32(int index) {
       return repeatedUint32_[index];
     }
 
     public const int RepeatedUint64FieldNumber = 34;
     private pbc::PopsicleList<ulong> repeatedUint64_ = new pbc::PopsicleList<ulong>();
-    [global::System.CLSCompliant(false)]
     public scg::IList<ulong> RepeatedUint64List {
       get { return pbc::Lists.AsReadOnly(repeatedUint64_); }
     }
     public int RepeatedUint64Count {
       get { return repeatedUint64_.Count; }
     }
-    [global::System.CLSCompliant(false)]
     public ulong GetRepeatedUint64(int index) {
       return repeatedUint64_[index];
     }
@@ -758,28 +659,24 @@ namespace Google.ProtocolBuffers.TestProtos {
 
     public const int RepeatedFixed32FieldNumber = 37;
     private pbc::PopsicleList<uint> repeatedFixed32_ = new pbc::PopsicleList<uint>();
-    [global::System.CLSCompliant(false)]
     public scg::IList<uint> RepeatedFixed32List {
       get { return pbc::Lists.AsReadOnly(repeatedFixed32_); }
     }
     public int RepeatedFixed32Count {
       get { return repeatedFixed32_.Count; }
     }
-    [global::System.CLSCompliant(false)]
     public uint GetRepeatedFixed32(int index) {
       return repeatedFixed32_[index];
     }
 
     public const int RepeatedFixed64FieldNumber = 38;
     private pbc::PopsicleList<ulong> repeatedFixed64_ = new pbc::PopsicleList<ulong>();
-    [global::System.CLSCompliant(false)]
     public scg::IList<ulong> RepeatedFixed64List {
       get { return pbc::Lists.AsReadOnly(repeatedFixed64_); }
     }
     public int RepeatedFixed64Count {
       get { return repeatedFixed64_.Count; }
     }
-    [global::System.CLSCompliant(false)]
     public ulong GetRepeatedFixed64(int index) {
       return repeatedFixed64_[index];
     }
@@ -869,26 +766,26 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
 
     public const int RepeatedNestedMessageFieldNumber = 48;
-    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> repeatedNestedMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>();
-    public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> RepeatedNestedMessageList {
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage> repeatedNestedMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage>();
+    public scg::IList<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage> RepeatedNestedMessageList {
       get { return repeatedNestedMessage_; }
     }
     public int RepeatedNestedMessageCount {
       get { return repeatedNestedMessage_.Count; }
     }
-    public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage GetRepeatedNestedMessage(int index) {
+    public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage GetRepeatedNestedMessage(int index) {
       return repeatedNestedMessage_[index];
     }
 
     public const int RepeatedForeignMessageFieldNumber = 49;
-    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> repeatedForeignMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage>();
-    public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> RepeatedForeignMessageList {
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage> repeatedForeignMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage>();
+    public scg::IList<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage> RepeatedForeignMessageList {
       get { return repeatedForeignMessage_; }
     }
     public int RepeatedForeignMessageCount {
       get { return repeatedForeignMessage_.Count; }
     }
-    public global::Google.ProtocolBuffers.TestProtos.ForeignMessage GetRepeatedForeignMessage(int index) {
+    public global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage GetRepeatedForeignMessage(int index) {
       return repeatedForeignMessage_[index];
     }
 
@@ -905,26 +802,26 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
 
     public const int RepeatedNestedEnumFieldNumber = 51;
-    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> repeatedNestedEnum_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>();
-    public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> RepeatedNestedEnumList {
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum> repeatedNestedEnum_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum>();
+    public scg::IList<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum> RepeatedNestedEnumList {
       get { return pbc::Lists.AsReadOnly(repeatedNestedEnum_); }
     }
     public int RepeatedNestedEnumCount {
       get { return repeatedNestedEnum_.Count; }
     }
-    public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum GetRepeatedNestedEnum(int index) {
+    public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum GetRepeatedNestedEnum(int index) {
       return repeatedNestedEnum_[index];
     }
 
     public const int RepeatedForeignEnumFieldNumber = 52;
-    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> repeatedForeignEnum_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>();
-    public scg::IList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> RepeatedForeignEnumList {
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum> repeatedForeignEnum_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum>();
+    public scg::IList<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum> RepeatedForeignEnumList {
       get { return pbc::Lists.AsReadOnly(repeatedForeignEnum_); }
     }
     public int RepeatedForeignEnumCount {
       get { return repeatedForeignEnum_.Count; }
     }
-    public global::Google.ProtocolBuffers.TestProtos.ForeignEnum GetRepeatedForeignEnum(int index) {
+    public global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum GetRepeatedForeignEnum(int index) {
       return repeatedForeignEnum_[index];
     }
 
@@ -953,110 +850,91 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
 
     public const int RepeatedLazyMessageFieldNumber = 57;
-    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> repeatedLazyMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage>();
-    public scg::IList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> RepeatedLazyMessageList {
+    private pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage> repeatedLazyMessage_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage>();
+    public scg::IList<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage> RepeatedLazyMessageList {
       get { return repeatedLazyMessage_; }
     }
     public int RepeatedLazyMessageCount {
       get { return repeatedLazyMessage_.Count; }
     }
-    public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage GetRepeatedLazyMessage(int index) {
+    public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage GetRepeatedLazyMessage(int index) {
       return repeatedLazyMessage_[index];
     }
 
     public const int OneofUint32FieldNumber = 111;
-    private bool hasOneofUint32;
     private uint oneofUint32_;
-    public bool HasOneofUint32 {
-      get { return hasOneofUint32; }
-    }
-    [global::System.CLSCompliant(false)]
     public uint OneofUint32 {
       get { return oneofUint32_; }
     }
 
     public const int OneofNestedMessageFieldNumber = 112;
     private bool hasOneofNestedMessage;
-    private global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage oneofNestedMessage_;
+    private global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage oneofNestedMessage_;
     public bool HasOneofNestedMessage {
       get { return hasOneofNestedMessage; }
     }
-    public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage OneofNestedMessage {
-      get { return oneofNestedMessage_ ?? global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance; }
+    public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage OneofNestedMessage {
+      get { return oneofNestedMessage_ ?? global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.DefaultInstance; }
     }
 
     public const int OneofStringFieldNumber = 113;
-    private bool hasOneofString;
     private string oneofString_ = "";
-    public bool HasOneofString {
-      get { return hasOneofString; }
-    }
     public string OneofString {
       get { return oneofString_; }
     }
 
     public const int OneofEnumFieldNumber = 114;
-    private bool hasOneofEnum;
-    private global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum oneofEnum_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum.FOO;
-    public bool HasOneofEnum {
-      get { return hasOneofEnum; }
-    }
-    public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum OneofEnum {
+    private global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum oneofEnum_ = global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum.FOO;
+    public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum OneofEnum {
       get { return oneofEnum_; }
-    }
-
-    public override bool IsInitialized {
-      get {
-        return true;
-      }
     }
 
     public override void WriteTo(pb::ICodedOutputStream output) {
       CalcSerializedSize();
       string[] field_names = _testAllTypesFieldNames;
-      if (hasOptionalInt32) {
+      if (OptionalInt32 != 0) {
         output.WriteInt32(1, field_names[13], OptionalInt32);
       }
-      if (hasOptionalInt64) {
+      if (OptionalInt64 != 0L) {
         output.WriteInt64(2, field_names[14], OptionalInt64);
       }
-      if (hasOptionalUint32) {
+      if (OptionalUint32 != 0) {
         output.WriteUInt32(3, field_names[25], OptionalUint32);
       }
-      if (hasOptionalUint64) {
+      if (OptionalUint64 != 0UL) {
         output.WriteUInt64(4, field_names[26], OptionalUint64);
       }
-      if (hasOptionalSint32) {
+      if (OptionalSint32 != 0) {
         output.WriteSInt32(5, field_names[21], OptionalSint32);
       }
-      if (hasOptionalSint64) {
+      if (OptionalSint64 != 0L) {
         output.WriteSInt64(6, field_names[22], OptionalSint64);
       }
-      if (hasOptionalFixed32) {
+      if (OptionalFixed32 != 0) {
         output.WriteFixed32(7, field_names[8], OptionalFixed32);
       }
-      if (hasOptionalFixed64) {
+      if (OptionalFixed64 != 0UL) {
         output.WriteFixed64(8, field_names[9], OptionalFixed64);
       }
-      if (hasOptionalSfixed32) {
+      if (OptionalSfixed32 != 0) {
         output.WriteSFixed32(9, field_names[19], OptionalSfixed32);
       }
-      if (hasOptionalSfixed64) {
+      if (OptionalSfixed64 != 0L) {
         output.WriteSFixed64(10, field_names[20], OptionalSfixed64);
       }
-      if (hasOptionalFloat) {
+      if (OptionalFloat != 0F) {
         output.WriteFloat(11, field_names[10], OptionalFloat);
       }
-      if (hasOptionalDouble) {
+      if (OptionalDouble != 0D) {
         output.WriteDouble(12, field_names[7], OptionalDouble);
       }
-      if (hasOptionalBool) {
+      if (OptionalBool != false) {
         output.WriteBool(13, field_names[4], OptionalBool);
       }
-      if (hasOptionalString) {
+      if (OptionalString != "") {
         output.WriteString(14, field_names[23], OptionalString);
       }
-      if (hasOptionalBytes) {
+      if (OptionalBytes != pb::ByteString.Empty) {
         output.WriteBytes(15, field_names[5], OptionalBytes);
       }
       if (hasOptionalNestedMessage) {
@@ -1068,16 +946,16 @@ namespace Google.ProtocolBuffers.TestProtos {
       if (hasOptionalProto2Message) {
         output.WriteMessage(20, field_names[18], OptionalProto2Message);
       }
-      if (hasOptionalNestedEnum) {
+      if (OptionalNestedEnum != global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum.FOO) {
         output.WriteEnum(21, field_names[16], (int) OptionalNestedEnum, OptionalNestedEnum);
       }
-      if (hasOptionalForeignEnum) {
+      if (OptionalForeignEnum != global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum.FOREIGN_FOO) {
         output.WriteEnum(22, field_names[11], (int) OptionalForeignEnum, OptionalForeignEnum);
       }
-      if (hasOptionalStringPiece) {
+      if (OptionalStringPiece != "") {
         output.WriteString(24, field_names[24], OptionalStringPiece);
       }
-      if (hasOptionalCord) {
+      if (OptionalCord != "") {
         output.WriteString(25, field_names[6], OptionalCord);
       }
       if (hasOptionalLazyMessage) {
@@ -1152,16 +1030,16 @@ namespace Google.ProtocolBuffers.TestProtos {
       if (repeatedLazyMessage_.Count > 0) {
         output.WriteMessageArray(57, field_names[38], repeatedLazyMessage_);
       }
-      if (hasOneofUint32) {
+      if (OneofUint32 != 0) {
         output.WriteUInt32(111, field_names[3], OneofUint32);
       }
       if (hasOneofNestedMessage) {
         output.WriteMessage(112, field_names[1], OneofNestedMessage);
       }
-      if (hasOneofString) {
+      if (OneofString != "") {
         output.WriteString(113, field_names[2], OneofString);
       }
-      if (hasOneofEnum) {
+      if (OneofEnum != global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum.FOO) {
         output.WriteEnum(114, field_names[0], (int) OneofEnum, OneofEnum);
       }
       UnknownFields.WriteTo(output);
@@ -1181,49 +1059,49 @@ namespace Google.ProtocolBuffers.TestProtos {
       if (size != -1) return size;
 
       size = 0;
-      if (hasOptionalInt32) {
+      if (OptionalInt32 != 0) {
         size += pb::CodedOutputStream.ComputeInt32Size(1, OptionalInt32);
       }
-      if (hasOptionalInt64) {
+      if (OptionalInt64 != 0L) {
         size += pb::CodedOutputStream.ComputeInt64Size(2, OptionalInt64);
       }
-      if (hasOptionalUint32) {
+      if (OptionalUint32 != 0) {
         size += pb::CodedOutputStream.ComputeUInt32Size(3, OptionalUint32);
       }
-      if (hasOptionalUint64) {
+      if (OptionalUint64 != 0UL) {
         size += pb::CodedOutputStream.ComputeUInt64Size(4, OptionalUint64);
       }
-      if (hasOptionalSint32) {
+      if (OptionalSint32 != 0) {
         size += pb::CodedOutputStream.ComputeSInt32Size(5, OptionalSint32);
       }
-      if (hasOptionalSint64) {
+      if (OptionalSint64 != 0L) {
         size += pb::CodedOutputStream.ComputeSInt64Size(6, OptionalSint64);
       }
-      if (hasOptionalFixed32) {
+      if (OptionalFixed32 != 0) {
         size += pb::CodedOutputStream.ComputeFixed32Size(7, OptionalFixed32);
       }
-      if (hasOptionalFixed64) {
+      if (OptionalFixed64 != 0UL) {
         size += pb::CodedOutputStream.ComputeFixed64Size(8, OptionalFixed64);
       }
-      if (hasOptionalSfixed32) {
+      if (OptionalSfixed32 != 0) {
         size += pb::CodedOutputStream.ComputeSFixed32Size(9, OptionalSfixed32);
       }
-      if (hasOptionalSfixed64) {
+      if (OptionalSfixed64 != 0L) {
         size += pb::CodedOutputStream.ComputeSFixed64Size(10, OptionalSfixed64);
       }
-      if (hasOptionalFloat) {
+      if (OptionalFloat != 0F) {
         size += pb::CodedOutputStream.ComputeFloatSize(11, OptionalFloat);
       }
-      if (hasOptionalDouble) {
+      if (OptionalDouble != 0D) {
         size += pb::CodedOutputStream.ComputeDoubleSize(12, OptionalDouble);
       }
-      if (hasOptionalBool) {
+      if (OptionalBool != false) {
         size += pb::CodedOutputStream.ComputeBoolSize(13, OptionalBool);
       }
-      if (hasOptionalString) {
+      if (OptionalString != "") {
         size += pb::CodedOutputStream.ComputeStringSize(14, OptionalString);
       }
-      if (hasOptionalBytes) {
+      if (OptionalBytes != pb::ByteString.Empty) {
         size += pb::CodedOutputStream.ComputeBytesSize(15, OptionalBytes);
       }
       if (hasOptionalNestedMessage) {
@@ -1235,16 +1113,16 @@ namespace Google.ProtocolBuffers.TestProtos {
       if (hasOptionalProto2Message) {
         size += pb::CodedOutputStream.ComputeMessageSize(20, OptionalProto2Message);
       }
-      if (hasOptionalNestedEnum) {
+      if (OptionalNestedEnum != global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum.FOO) {
         size += pb::CodedOutputStream.ComputeEnumSize(21, (int) OptionalNestedEnum);
       }
-      if (hasOptionalForeignEnum) {
+      if (OptionalForeignEnum != global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum.FOREIGN_FOO) {
         size += pb::CodedOutputStream.ComputeEnumSize(22, (int) OptionalForeignEnum);
       }
-      if (hasOptionalStringPiece) {
+      if (OptionalStringPiece != "") {
         size += pb::CodedOutputStream.ComputeStringSize(24, OptionalStringPiece);
       }
-      if (hasOptionalCord) {
+      if (OptionalCord != "") {
         size += pb::CodedOutputStream.ComputeStringSize(25, OptionalCord);
       }
       if (hasOptionalLazyMessage) {
@@ -1356,10 +1234,10 @@ namespace Google.ProtocolBuffers.TestProtos {
         size += dataSize;
         size += 2 * repeatedBytes_.Count;
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage element in RepeatedNestedMessageList) {
+      foreach (global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage element in RepeatedNestedMessageList) {
         size += pb::CodedOutputStream.ComputeMessageSize(48, element);
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.ForeignMessage element in RepeatedForeignMessageList) {
+      foreach (global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage element in RepeatedForeignMessageList) {
         size += pb::CodedOutputStream.ComputeMessageSize(49, element);
       }
       foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypes element in RepeatedProto2MessageList) {
@@ -1368,7 +1246,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       {
         int dataSize = 0;
         if (repeatedNestedEnum_.Count > 0) {
-          foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum element in repeatedNestedEnum_) {
+          foreach (global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum element in repeatedNestedEnum_) {
             dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
           }
           size += dataSize;
@@ -1378,7 +1256,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       {
         int dataSize = 0;
         if (repeatedForeignEnum_.Count > 0) {
-          foreach (global::Google.ProtocolBuffers.TestProtos.ForeignEnum element in repeatedForeignEnum_) {
+          foreach (global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum element in repeatedForeignEnum_) {
             dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
           }
           size += dataSize;
@@ -1401,19 +1279,19 @@ namespace Google.ProtocolBuffers.TestProtos {
         size += dataSize;
         size += 2 * repeatedCord_.Count;
       }
-      foreach (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage element in RepeatedLazyMessageList) {
+      foreach (global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage element in RepeatedLazyMessageList) {
         size += pb::CodedOutputStream.ComputeMessageSize(57, element);
       }
-      if (hasOneofUint32) {
+      if (OneofUint32 != 0) {
         size += pb::CodedOutputStream.ComputeUInt32Size(111, OneofUint32);
       }
       if (hasOneofNestedMessage) {
         size += pb::CodedOutputStream.ComputeMessageSize(112, OneofNestedMessage);
       }
-      if (hasOneofString) {
+      if (OneofString != "") {
         size += pb::CodedOutputStream.ComputeStringSize(113, OneofString);
       }
-      if (hasOneofEnum) {
+      if (OneofEnum != global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum.FOO) {
         size += pb::CodedOutputStream.ComputeEnumSize(114, (int) OneofEnum);
       }
       size += UnknownFields.SerializedSize;
@@ -1534,11 +1412,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Descriptor; }
       }
 
       public override TestAllTypes DefaultInstanceForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.TestAllTypes.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.DefaultInstance; }
       }
 
       public override TestAllTypes BuildPartial() {
@@ -1559,51 +1437,51 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public override Builder MergeFrom(TestAllTypes other) {
-        if (other == global::Google.ProtocolBuffers.TestProtos.TestAllTypes.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.DefaultInstance) return this;
         PrepareBuilder();
-        if (other.HasOptionalInt32) {
+        if (other.OptionalInt32 != 0) {
           OptionalInt32 = other.OptionalInt32;
         }
-        if (other.HasOptionalInt64) {
+        if (other.OptionalInt64 != 0L) {
           OptionalInt64 = other.OptionalInt64;
         }
-        if (other.HasOptionalUint32) {
+        if (other.OptionalUint32 != 0) {
           OptionalUint32 = other.OptionalUint32;
         }
-        if (other.HasOptionalUint64) {
+        if (other.OptionalUint64 != 0UL) {
           OptionalUint64 = other.OptionalUint64;
         }
-        if (other.HasOptionalSint32) {
+        if (other.OptionalSint32 != 0) {
           OptionalSint32 = other.OptionalSint32;
         }
-        if (other.HasOptionalSint64) {
+        if (other.OptionalSint64 != 0L) {
           OptionalSint64 = other.OptionalSint64;
         }
-        if (other.HasOptionalFixed32) {
+        if (other.OptionalFixed32 != 0) {
           OptionalFixed32 = other.OptionalFixed32;
         }
-        if (other.HasOptionalFixed64) {
+        if (other.OptionalFixed64 != 0UL) {
           OptionalFixed64 = other.OptionalFixed64;
         }
-        if (other.HasOptionalSfixed32) {
+        if (other.OptionalSfixed32 != 0) {
           OptionalSfixed32 = other.OptionalSfixed32;
         }
-        if (other.HasOptionalSfixed64) {
+        if (other.OptionalSfixed64 != 0L) {
           OptionalSfixed64 = other.OptionalSfixed64;
         }
-        if (other.HasOptionalFloat) {
+        if (other.OptionalFloat != 0F) {
           OptionalFloat = other.OptionalFloat;
         }
-        if (other.HasOptionalDouble) {
+        if (other.OptionalDouble != 0D) {
           OptionalDouble = other.OptionalDouble;
         }
-        if (other.HasOptionalBool) {
+        if (other.OptionalBool != false) {
           OptionalBool = other.OptionalBool;
         }
-        if (other.HasOptionalString) {
+        if (other.OptionalString != "") {
           OptionalString = other.OptionalString;
         }
-        if (other.HasOptionalBytes) {
+        if (other.OptionalBytes != pb::ByteString.Empty) {
           OptionalBytes = other.OptionalBytes;
         }
         if (other.HasOptionalNestedMessage) {
@@ -1615,16 +1493,16 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (other.HasOptionalProto2Message) {
           MergeOptionalProto2Message(other.OptionalProto2Message);
         }
-        if (other.HasOptionalNestedEnum) {
+        if (other.OptionalNestedEnum != global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum.FOO) {
           OptionalNestedEnum = other.OptionalNestedEnum;
         }
-        if (other.HasOptionalForeignEnum) {
+        if (other.OptionalForeignEnum != global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum.FOREIGN_FOO) {
           OptionalForeignEnum = other.OptionalForeignEnum;
         }
-        if (other.HasOptionalStringPiece) {
+        if (other.OptionalStringPiece != "") {
           OptionalStringPiece = other.OptionalStringPiece;
         }
-        if (other.HasOptionalCord) {
+        if (other.OptionalCord != "") {
           OptionalCord = other.OptionalCord;
         }
         if (other.HasOptionalLazyMessage) {
@@ -1699,16 +1577,16 @@ namespace Google.ProtocolBuffers.TestProtos {
         if (other.repeatedLazyMessage_.Count != 0) {
           result.repeatedLazyMessage_.Add(other.repeatedLazyMessage_);
         }
-        if (other.HasOneofUint32) {
+        if (other.OneofUint32 != 0) {
           OneofUint32 = other.OneofUint32;
         }
         if (other.HasOneofNestedMessage) {
           MergeOneofNestedMessage(other.OneofNestedMessage);
         }
-        if (other.HasOneofString) {
+        if (other.OneofString != "") {
           OneofString = other.OneofString;
         }
-        if (other.HasOneofEnum) {
+        if (other.OneofEnum != global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum.FOO) {
           OneofEnum = other.OneofEnum;
         }
         this.MergeUnknownFields(other.UnknownFields);
@@ -1755,67 +1633,67 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 8: {
-              result.hasOptionalInt32 = input.ReadInt32(ref result.optionalInt32_);
+              input.ReadInt32(ref result.optionalInt32_);
               break;
             }
             case 16: {
-              result.hasOptionalInt64 = input.ReadInt64(ref result.optionalInt64_);
+              input.ReadInt64(ref result.optionalInt64_);
               break;
             }
             case 24: {
-              result.hasOptionalUint32 = input.ReadUInt32(ref result.optionalUint32_);
+              input.ReadUInt32(ref result.optionalUint32_);
               break;
             }
             case 32: {
-              result.hasOptionalUint64 = input.ReadUInt64(ref result.optionalUint64_);
+              input.ReadUInt64(ref result.optionalUint64_);
               break;
             }
             case 40: {
-              result.hasOptionalSint32 = input.ReadSInt32(ref result.optionalSint32_);
+              input.ReadSInt32(ref result.optionalSint32_);
               break;
             }
             case 48: {
-              result.hasOptionalSint64 = input.ReadSInt64(ref result.optionalSint64_);
+              input.ReadSInt64(ref result.optionalSint64_);
               break;
             }
             case 61: {
-              result.hasOptionalFixed32 = input.ReadFixed32(ref result.optionalFixed32_);
+              input.ReadFixed32(ref result.optionalFixed32_);
               break;
             }
             case 65: {
-              result.hasOptionalFixed64 = input.ReadFixed64(ref result.optionalFixed64_);
+              input.ReadFixed64(ref result.optionalFixed64_);
               break;
             }
             case 77: {
-              result.hasOptionalSfixed32 = input.ReadSFixed32(ref result.optionalSfixed32_);
+              input.ReadSFixed32(ref result.optionalSfixed32_);
               break;
             }
             case 81: {
-              result.hasOptionalSfixed64 = input.ReadSFixed64(ref result.optionalSfixed64_);
+              input.ReadSFixed64(ref result.optionalSfixed64_);
               break;
             }
             case 93: {
-              result.hasOptionalFloat = input.ReadFloat(ref result.optionalFloat_);
+              input.ReadFloat(ref result.optionalFloat_);
               break;
             }
             case 97: {
-              result.hasOptionalDouble = input.ReadDouble(ref result.optionalDouble_);
+              input.ReadDouble(ref result.optionalDouble_);
               break;
             }
             case 104: {
-              result.hasOptionalBool = input.ReadBool(ref result.optionalBool_);
+              input.ReadBool(ref result.optionalBool_);
               break;
             }
             case 114: {
-              result.hasOptionalString = input.ReadString(ref result.optionalString_);
+              input.ReadString(ref result.optionalString_);
               break;
             }
             case 122: {
-              result.hasOptionalBytes = input.ReadBytes(ref result.optionalBytes_);
+              input.ReadBytes(ref result.optionalBytes_);
               break;
             }
             case 146: {
-              global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder();
+              global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.CreateBuilder();
               if (result.hasOptionalNestedMessage) {
                 subBuilder.MergeFrom(OptionalNestedMessage);
               }
@@ -1824,7 +1702,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 154: {
-              global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder();
+              global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.CreateBuilder();
               if (result.hasOptionalForeignMessage) {
                 subBuilder.MergeFrom(OptionalForeignMessage);
               }
@@ -1844,7 +1722,6 @@ namespace Google.ProtocolBuffers.TestProtos {
             case 168: {
               object unknown;
               if(input.ReadEnum(ref result.optionalNestedEnum_, out unknown)) {
-                result.hasOptionalNestedEnum = true;
               } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
@@ -1856,7 +1733,6 @@ namespace Google.ProtocolBuffers.TestProtos {
             case 176: {
               object unknown;
               if(input.ReadEnum(ref result.optionalForeignEnum_, out unknown)) {
-                result.hasOptionalForeignEnum = true;
               } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
@@ -1866,15 +1742,15 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 194: {
-              result.hasOptionalStringPiece = input.ReadString(ref result.optionalStringPiece_);
+              input.ReadString(ref result.optionalStringPiece_);
               break;
             }
             case 202: {
-              result.hasOptionalCord = input.ReadString(ref result.optionalCord_);
+              input.ReadString(ref result.optionalCord_);
               break;
             }
             case 242: {
-              global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder();
+              global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.CreateBuilder();
               if (result.hasOptionalLazyMessage) {
                 subBuilder.MergeFrom(OptionalLazyMessage);
               }
@@ -1956,11 +1832,11 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 386: {
-              input.ReadMessageArray(tag, field_name, result.repeatedNestedMessage_, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance, extensionRegistry);
+              input.ReadMessageArray(tag, field_name, result.repeatedNestedMessage_, global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.DefaultInstance, extensionRegistry);
               break;
             }
             case 394: {
-              input.ReadMessageArray(tag, field_name, result.repeatedForeignMessage_, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance, extensionRegistry);
+              input.ReadMessageArray(tag, field_name, result.repeatedForeignMessage_, global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.DefaultInstance, extensionRegistry);
               break;
             }
             case 402: {
@@ -1970,7 +1846,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             case 410:
             case 408: {
               scg::ICollection<object> unknownItems;
-              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum>(tag, field_name, result.repeatedNestedEnum_, out unknownItems);
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum>(tag, field_name, result.repeatedNestedEnum_, out unknownItems);
               if (unknownItems != null) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
@@ -1984,7 +1860,7 @@ namespace Google.ProtocolBuffers.TestProtos {
             case 418:
             case 416: {
               scg::ICollection<object> unknownItems;
-              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.ForeignEnum>(tag, field_name, result.repeatedForeignEnum_, out unknownItems);
+              input.ReadEnumArray<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum>(tag, field_name, result.repeatedForeignEnum_, out unknownItems);
               if (unknownItems != null) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
@@ -2004,15 +1880,15 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 458: {
-              input.ReadMessageArray(tag, field_name, result.repeatedLazyMessage_, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance, extensionRegistry);
+              input.ReadMessageArray(tag, field_name, result.repeatedLazyMessage_, global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.DefaultInstance, extensionRegistry);
               break;
             }
             case 888: {
-              result.hasOneofUint32 = input.ReadUInt32(ref result.oneofUint32_);
+              input.ReadUInt32(ref result.oneofUint32_);
               break;
             }
             case 898: {
-              global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder();
+              global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Builder subBuilder = global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.CreateBuilder();
               if (result.hasOneofNestedMessage) {
                 subBuilder.MergeFrom(OneofNestedMessage);
               }
@@ -2021,13 +1897,12 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 906: {
-              result.hasOneofString = input.ReadString(ref result.oneofString_);
+              input.ReadString(ref result.oneofString_);
               break;
             }
             case 912: {
               object unknown;
               if(input.ReadEnum(ref result.oneofEnum_, out unknown)) {
-                result.hasOneofEnum = true;
               } else if(unknown is int) {
                 if (unknownFields == null) {
                   unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
@@ -2046,277 +1921,201 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
 
-      public bool HasOptionalInt32 {
-        get { return result.hasOptionalInt32; }
-      }
       public int OptionalInt32 {
         get { return result.OptionalInt32; }
         set { SetOptionalInt32(value); }
       }
       public Builder SetOptionalInt32(int value) {
         PrepareBuilder();
-        result.hasOptionalInt32 = true;
         result.optionalInt32_ = value;
         return this;
       }
       public Builder ClearOptionalInt32() {
         PrepareBuilder();
-        result.hasOptionalInt32 = false;
         result.optionalInt32_ = 0;
         return this;
       }
 
-      public bool HasOptionalInt64 {
-        get { return result.hasOptionalInt64; }
-      }
       public long OptionalInt64 {
         get { return result.OptionalInt64; }
         set { SetOptionalInt64(value); }
       }
       public Builder SetOptionalInt64(long value) {
         PrepareBuilder();
-        result.hasOptionalInt64 = true;
         result.optionalInt64_ = value;
         return this;
       }
       public Builder ClearOptionalInt64() {
         PrepareBuilder();
-        result.hasOptionalInt64 = false;
         result.optionalInt64_ = 0L;
         return this;
       }
 
-      public bool HasOptionalUint32 {
-        get { return result.hasOptionalUint32; }
-      }
-      [global::System.CLSCompliant(false)]
       public uint OptionalUint32 {
         get { return result.OptionalUint32; }
         set { SetOptionalUint32(value); }
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetOptionalUint32(uint value) {
         PrepareBuilder();
-        result.hasOptionalUint32 = true;
         result.optionalUint32_ = value;
         return this;
       }
       public Builder ClearOptionalUint32() {
         PrepareBuilder();
-        result.hasOptionalUint32 = false;
         result.optionalUint32_ = 0;
         return this;
       }
 
-      public bool HasOptionalUint64 {
-        get { return result.hasOptionalUint64; }
-      }
-      [global::System.CLSCompliant(false)]
       public ulong OptionalUint64 {
         get { return result.OptionalUint64; }
         set { SetOptionalUint64(value); }
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetOptionalUint64(ulong value) {
         PrepareBuilder();
-        result.hasOptionalUint64 = true;
         result.optionalUint64_ = value;
         return this;
       }
       public Builder ClearOptionalUint64() {
         PrepareBuilder();
-        result.hasOptionalUint64 = false;
         result.optionalUint64_ = 0UL;
         return this;
       }
 
-      public bool HasOptionalSint32 {
-        get { return result.hasOptionalSint32; }
-      }
       public int OptionalSint32 {
         get { return result.OptionalSint32; }
         set { SetOptionalSint32(value); }
       }
       public Builder SetOptionalSint32(int value) {
         PrepareBuilder();
-        result.hasOptionalSint32 = true;
         result.optionalSint32_ = value;
         return this;
       }
       public Builder ClearOptionalSint32() {
         PrepareBuilder();
-        result.hasOptionalSint32 = false;
         result.optionalSint32_ = 0;
         return this;
       }
 
-      public bool HasOptionalSint64 {
-        get { return result.hasOptionalSint64; }
-      }
       public long OptionalSint64 {
         get { return result.OptionalSint64; }
         set { SetOptionalSint64(value); }
       }
       public Builder SetOptionalSint64(long value) {
         PrepareBuilder();
-        result.hasOptionalSint64 = true;
         result.optionalSint64_ = value;
         return this;
       }
       public Builder ClearOptionalSint64() {
         PrepareBuilder();
-        result.hasOptionalSint64 = false;
         result.optionalSint64_ = 0L;
         return this;
       }
 
-      public bool HasOptionalFixed32 {
-        get { return result.hasOptionalFixed32; }
-      }
-      [global::System.CLSCompliant(false)]
       public uint OptionalFixed32 {
         get { return result.OptionalFixed32; }
         set { SetOptionalFixed32(value); }
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetOptionalFixed32(uint value) {
         PrepareBuilder();
-        result.hasOptionalFixed32 = true;
         result.optionalFixed32_ = value;
         return this;
       }
       public Builder ClearOptionalFixed32() {
         PrepareBuilder();
-        result.hasOptionalFixed32 = false;
         result.optionalFixed32_ = 0;
         return this;
       }
 
-      public bool HasOptionalFixed64 {
-        get { return result.hasOptionalFixed64; }
-      }
-      [global::System.CLSCompliant(false)]
       public ulong OptionalFixed64 {
         get { return result.OptionalFixed64; }
         set { SetOptionalFixed64(value); }
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetOptionalFixed64(ulong value) {
         PrepareBuilder();
-        result.hasOptionalFixed64 = true;
         result.optionalFixed64_ = value;
         return this;
       }
       public Builder ClearOptionalFixed64() {
         PrepareBuilder();
-        result.hasOptionalFixed64 = false;
         result.optionalFixed64_ = 0UL;
         return this;
       }
 
-      public bool HasOptionalSfixed32 {
-        get { return result.hasOptionalSfixed32; }
-      }
       public int OptionalSfixed32 {
         get { return result.OptionalSfixed32; }
         set { SetOptionalSfixed32(value); }
       }
       public Builder SetOptionalSfixed32(int value) {
         PrepareBuilder();
-        result.hasOptionalSfixed32 = true;
         result.optionalSfixed32_ = value;
         return this;
       }
       public Builder ClearOptionalSfixed32() {
         PrepareBuilder();
-        result.hasOptionalSfixed32 = false;
         result.optionalSfixed32_ = 0;
         return this;
       }
 
-      public bool HasOptionalSfixed64 {
-        get { return result.hasOptionalSfixed64; }
-      }
       public long OptionalSfixed64 {
         get { return result.OptionalSfixed64; }
         set { SetOptionalSfixed64(value); }
       }
       public Builder SetOptionalSfixed64(long value) {
         PrepareBuilder();
-        result.hasOptionalSfixed64 = true;
         result.optionalSfixed64_ = value;
         return this;
       }
       public Builder ClearOptionalSfixed64() {
         PrepareBuilder();
-        result.hasOptionalSfixed64 = false;
         result.optionalSfixed64_ = 0L;
         return this;
       }
 
-      public bool HasOptionalFloat {
-        get { return result.hasOptionalFloat; }
-      }
       public float OptionalFloat {
         get { return result.OptionalFloat; }
         set { SetOptionalFloat(value); }
       }
       public Builder SetOptionalFloat(float value) {
         PrepareBuilder();
-        result.hasOptionalFloat = true;
         result.optionalFloat_ = value;
         return this;
       }
       public Builder ClearOptionalFloat() {
         PrepareBuilder();
-        result.hasOptionalFloat = false;
         result.optionalFloat_ = 0F;
         return this;
       }
 
-      public bool HasOptionalDouble {
-        get { return result.hasOptionalDouble; }
-      }
       public double OptionalDouble {
         get { return result.OptionalDouble; }
         set { SetOptionalDouble(value); }
       }
       public Builder SetOptionalDouble(double value) {
         PrepareBuilder();
-        result.hasOptionalDouble = true;
         result.optionalDouble_ = value;
         return this;
       }
       public Builder ClearOptionalDouble() {
         PrepareBuilder();
-        result.hasOptionalDouble = false;
         result.optionalDouble_ = 0D;
         return this;
       }
 
-      public bool HasOptionalBool {
-        get { return result.hasOptionalBool; }
-      }
       public bool OptionalBool {
         get { return result.OptionalBool; }
         set { SetOptionalBool(value); }
       }
       public Builder SetOptionalBool(bool value) {
         PrepareBuilder();
-        result.hasOptionalBool = true;
         result.optionalBool_ = value;
         return this;
       }
       public Builder ClearOptionalBool() {
         PrepareBuilder();
-        result.hasOptionalBool = false;
         result.optionalBool_ = false;
         return this;
       }
 
-      public bool HasOptionalString {
-        get { return result.hasOptionalString; }
-      }
       public string OptionalString {
         get { return result.OptionalString; }
         set { SetOptionalString(value); }
@@ -2324,20 +2123,15 @@ namespace Google.ProtocolBuffers.TestProtos {
       public Builder SetOptionalString(string value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
-        result.hasOptionalString = true;
         result.optionalString_ = value;
         return this;
       }
       public Builder ClearOptionalString() {
         PrepareBuilder();
-        result.hasOptionalString = false;
         result.optionalString_ = "";
         return this;
       }
 
-      public bool HasOptionalBytes {
-        get { return result.hasOptionalBytes; }
-      }
       public pb::ByteString OptionalBytes {
         get { return result.OptionalBytes; }
         set { SetOptionalBytes(value); }
@@ -2345,13 +2139,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       public Builder SetOptionalBytes(pb::ByteString value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
-        result.hasOptionalBytes = true;
         result.optionalBytes_ = value;
         return this;
       }
       public Builder ClearOptionalBytes() {
         PrepareBuilder();
-        result.hasOptionalBytes = false;
         result.optionalBytes_ = pb::ByteString.Empty;
         return this;
       }
@@ -2359,30 +2151,30 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasOptionalNestedMessage {
        get { return result.hasOptionalNestedMessage; }
       }
-      public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage OptionalNestedMessage {
+      public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage OptionalNestedMessage {
         get { return result.OptionalNestedMessage; }
         set { SetOptionalNestedMessage(value); }
       }
-      public Builder SetOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+      public Builder SetOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.hasOptionalNestedMessage = true;
         result.optionalNestedMessage_ = value;
         return this;
       }
-      public Builder SetOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
+      public Builder SetOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.hasOptionalNestedMessage = true;
         result.optionalNestedMessage_ = builderForValue.Build();
         return this;
       }
-      public Builder MergeOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+      public Builder MergeOptionalNestedMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         if (result.hasOptionalNestedMessage &&
-            result.optionalNestedMessage_ != global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance) {
-            result.optionalNestedMessage_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder(result.optionalNestedMessage_).MergeFrom(value).BuildPartial();
+            result.optionalNestedMessage_ != global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.DefaultInstance) {
+            result.optionalNestedMessage_ = global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.CreateBuilder(result.optionalNestedMessage_).MergeFrom(value).BuildPartial();
         } else {
           result.optionalNestedMessage_ = value;
         }
@@ -2399,30 +2191,30 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasOptionalForeignMessage {
        get { return result.hasOptionalForeignMessage; }
       }
-      public global::Google.ProtocolBuffers.TestProtos.ForeignMessage OptionalForeignMessage {
+      public global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage OptionalForeignMessage {
         get { return result.OptionalForeignMessage; }
         set { SetOptionalForeignMessage(value); }
       }
-      public Builder SetOptionalForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+      public Builder SetOptionalForeignMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.hasOptionalForeignMessage = true;
         result.optionalForeignMessage_ = value;
         return this;
       }
-      public Builder SetOptionalForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+      public Builder SetOptionalForeignMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.hasOptionalForeignMessage = true;
         result.optionalForeignMessage_ = builderForValue.Build();
         return this;
       }
-      public Builder MergeOptionalForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+      public Builder MergeOptionalForeignMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         if (result.hasOptionalForeignMessage &&
-            result.optionalForeignMessage_ != global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance) {
-            result.optionalForeignMessage_ = global::Google.ProtocolBuffers.TestProtos.ForeignMessage.CreateBuilder(result.optionalForeignMessage_).MergeFrom(value).BuildPartial();
+            result.optionalForeignMessage_ != global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.DefaultInstance) {
+            result.optionalForeignMessage_ = global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.CreateBuilder(result.optionalForeignMessage_).MergeFrom(value).BuildPartial();
         } else {
           result.optionalForeignMessage_ = value;
         }
@@ -2476,49 +2268,36 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      public bool HasOptionalNestedEnum {
-       get { return result.hasOptionalNestedEnum; }
-      }
-      public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum OptionalNestedEnum {
+      public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum OptionalNestedEnum {
         get { return result.OptionalNestedEnum; }
         set { SetOptionalNestedEnum(value); }
       }
-      public Builder SetOptionalNestedEnum(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum value) {
+      public Builder SetOptionalNestedEnum(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum value) {
         PrepareBuilder();
-        result.hasOptionalNestedEnum = true;
         result.optionalNestedEnum_ = value;
         return this;
       }
       public Builder ClearOptionalNestedEnum() {
         PrepareBuilder();
-        result.hasOptionalNestedEnum = false;
-        result.optionalNestedEnum_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum.FOO;
+        result.optionalNestedEnum_ = global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum.FOO;
         return this;
       }
 
-      public bool HasOptionalForeignEnum {
-       get { return result.hasOptionalForeignEnum; }
-      }
-      public global::Google.ProtocolBuffers.TestProtos.ForeignEnum OptionalForeignEnum {
+      public global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum OptionalForeignEnum {
         get { return result.OptionalForeignEnum; }
         set { SetOptionalForeignEnum(value); }
       }
-      public Builder SetOptionalForeignEnum(global::Google.ProtocolBuffers.TestProtos.ForeignEnum value) {
+      public Builder SetOptionalForeignEnum(global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum value) {
         PrepareBuilder();
-        result.hasOptionalForeignEnum = true;
         result.optionalForeignEnum_ = value;
         return this;
       }
       public Builder ClearOptionalForeignEnum() {
         PrepareBuilder();
-        result.hasOptionalForeignEnum = false;
-        result.optionalForeignEnum_ = global::Google.ProtocolBuffers.TestProtos.ForeignEnum.FOREIGN_FOO;
+        result.optionalForeignEnum_ = global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum.FOREIGN_FOO;
         return this;
       }
 
-      public bool HasOptionalStringPiece {
-        get { return result.hasOptionalStringPiece; }
-      }
       public string OptionalStringPiece {
         get { return result.OptionalStringPiece; }
         set { SetOptionalStringPiece(value); }
@@ -2526,20 +2305,15 @@ namespace Google.ProtocolBuffers.TestProtos {
       public Builder SetOptionalStringPiece(string value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
-        result.hasOptionalStringPiece = true;
         result.optionalStringPiece_ = value;
         return this;
       }
       public Builder ClearOptionalStringPiece() {
         PrepareBuilder();
-        result.hasOptionalStringPiece = false;
         result.optionalStringPiece_ = "";
         return this;
       }
 
-      public bool HasOptionalCord {
-        get { return result.hasOptionalCord; }
-      }
       public string OptionalCord {
         get { return result.OptionalCord; }
         set { SetOptionalCord(value); }
@@ -2547,13 +2321,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       public Builder SetOptionalCord(string value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
-        result.hasOptionalCord = true;
         result.optionalCord_ = value;
         return this;
       }
       public Builder ClearOptionalCord() {
         PrepareBuilder();
-        result.hasOptionalCord = false;
         result.optionalCord_ = "";
         return this;
       }
@@ -2561,30 +2333,30 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasOptionalLazyMessage {
        get { return result.hasOptionalLazyMessage; }
       }
-      public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage OptionalLazyMessage {
+      public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage OptionalLazyMessage {
         get { return result.OptionalLazyMessage; }
         set { SetOptionalLazyMessage(value); }
       }
-      public Builder SetOptionalLazyMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+      public Builder SetOptionalLazyMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.hasOptionalLazyMessage = true;
         result.optionalLazyMessage_ = value;
         return this;
       }
-      public Builder SetOptionalLazyMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
+      public Builder SetOptionalLazyMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.hasOptionalLazyMessage = true;
         result.optionalLazyMessage_ = builderForValue.Build();
         return this;
       }
-      public Builder MergeOptionalLazyMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+      public Builder MergeOptionalLazyMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         if (result.hasOptionalLazyMessage &&
-            result.optionalLazyMessage_ != global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance) {
-            result.optionalLazyMessage_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder(result.optionalLazyMessage_).MergeFrom(value).BuildPartial();
+            result.optionalLazyMessage_ != global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.DefaultInstance) {
+            result.optionalLazyMessage_ = global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.CreateBuilder(result.optionalLazyMessage_).MergeFrom(value).BuildPartial();
         } else {
           result.optionalLazyMessage_ = value;
         }
@@ -2658,30 +2430,25 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      [global::System.CLSCompliant(false)]
       public pbc::IPopsicleList<uint> RepeatedUint32List {
         get { return PrepareBuilder().repeatedUint32_; }
       }
       public int RepeatedUint32Count {
         get { return result.RepeatedUint32Count; }
       }
-      [global::System.CLSCompliant(false)]
       public uint GetRepeatedUint32(int index) {
         return result.GetRepeatedUint32(index);
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetRepeatedUint32(int index, uint value) {
         PrepareBuilder();
         result.repeatedUint32_[index] = value;
         return this;
       }
-      [global::System.CLSCompliant(false)]
       public Builder AddRepeatedUint32(uint value) {
         PrepareBuilder();
         result.repeatedUint32_.Add(value);
         return this;
       }
-      [global::System.CLSCompliant(false)]
       public Builder AddRangeRepeatedUint32(scg::IEnumerable<uint> values) {
         PrepareBuilder();
         result.repeatedUint32_.Add(values);
@@ -2693,30 +2460,25 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      [global::System.CLSCompliant(false)]
       public pbc::IPopsicleList<ulong> RepeatedUint64List {
         get { return PrepareBuilder().repeatedUint64_; }
       }
       public int RepeatedUint64Count {
         get { return result.RepeatedUint64Count; }
       }
-      [global::System.CLSCompliant(false)]
       public ulong GetRepeatedUint64(int index) {
         return result.GetRepeatedUint64(index);
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetRepeatedUint64(int index, ulong value) {
         PrepareBuilder();
         result.repeatedUint64_[index] = value;
         return this;
       }
-      [global::System.CLSCompliant(false)]
       public Builder AddRepeatedUint64(ulong value) {
         PrepareBuilder();
         result.repeatedUint64_.Add(value);
         return this;
       }
-      [global::System.CLSCompliant(false)]
       public Builder AddRangeRepeatedUint64(scg::IEnumerable<ulong> values) {
         PrepareBuilder();
         result.repeatedUint64_.Add(values);
@@ -2788,30 +2550,25 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      [global::System.CLSCompliant(false)]
       public pbc::IPopsicleList<uint> RepeatedFixed32List {
         get { return PrepareBuilder().repeatedFixed32_; }
       }
       public int RepeatedFixed32Count {
         get { return result.RepeatedFixed32Count; }
       }
-      [global::System.CLSCompliant(false)]
       public uint GetRepeatedFixed32(int index) {
         return result.GetRepeatedFixed32(index);
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetRepeatedFixed32(int index, uint value) {
         PrepareBuilder();
         result.repeatedFixed32_[index] = value;
         return this;
       }
-      [global::System.CLSCompliant(false)]
       public Builder AddRepeatedFixed32(uint value) {
         PrepareBuilder();
         result.repeatedFixed32_.Add(value);
         return this;
       }
-      [global::System.CLSCompliant(false)]
       public Builder AddRangeRepeatedFixed32(scg::IEnumerable<uint> values) {
         PrepareBuilder();
         result.repeatedFixed32_.Add(values);
@@ -2823,30 +2580,25 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      [global::System.CLSCompliant(false)]
       public pbc::IPopsicleList<ulong> RepeatedFixed64List {
         get { return PrepareBuilder().repeatedFixed64_; }
       }
       public int RepeatedFixed64Count {
         get { return result.RepeatedFixed64Count; }
       }
-      [global::System.CLSCompliant(false)]
       public ulong GetRepeatedFixed64(int index) {
         return result.GetRepeatedFixed64(index);
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetRepeatedFixed64(int index, ulong value) {
         PrepareBuilder();
         result.repeatedFixed64_[index] = value;
         return this;
       }
-      [global::System.CLSCompliant(false)]
       public Builder AddRepeatedFixed64(ulong value) {
         PrepareBuilder();
         result.repeatedFixed64_.Add(value);
         return this;
       }
-      [global::System.CLSCompliant(false)]
       public Builder AddRangeRepeatedFixed64(scg::IEnumerable<ulong> values) {
         PrepareBuilder();
         result.repeatedFixed64_.Add(values);
@@ -3072,40 +2824,40 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> RepeatedNestedMessageList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage> RepeatedNestedMessageList {
         get { return PrepareBuilder().repeatedNestedMessage_; }
       }
       public int RepeatedNestedMessageCount {
         get { return result.RepeatedNestedMessageCount; }
       }
-      public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage GetRepeatedNestedMessage(int index) {
+      public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage GetRepeatedNestedMessage(int index) {
         return result.GetRepeatedNestedMessage(index);
       }
-      public Builder SetRepeatedNestedMessage(int index, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+      public Builder SetRepeatedNestedMessage(int index, global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.repeatedNestedMessage_[index] = value;
         return this;
       }
-      public Builder SetRepeatedNestedMessage(int index, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
+      public Builder SetRepeatedNestedMessage(int index, global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.repeatedNestedMessage_[index] = builderForValue.Build();
         return this;
       }
-      public Builder AddRepeatedNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+      public Builder AddRepeatedNestedMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.repeatedNestedMessage_.Add(value);
         return this;
       }
-      public Builder AddRepeatedNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
+      public Builder AddRepeatedNestedMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.repeatedNestedMessage_.Add(builderForValue.Build());
         return this;
       }
-      public Builder AddRangeRepeatedNestedMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> values) {
+      public Builder AddRangeRepeatedNestedMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage> values) {
         PrepareBuilder();
         result.repeatedNestedMessage_.Add(values);
         return this;
@@ -3116,40 +2868,40 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> RepeatedForeignMessageList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage> RepeatedForeignMessageList {
         get { return PrepareBuilder().repeatedForeignMessage_; }
       }
       public int RepeatedForeignMessageCount {
         get { return result.RepeatedForeignMessageCount; }
       }
-      public global::Google.ProtocolBuffers.TestProtos.ForeignMessage GetRepeatedForeignMessage(int index) {
+      public global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage GetRepeatedForeignMessage(int index) {
         return result.GetRepeatedForeignMessage(index);
       }
-      public Builder SetRepeatedForeignMessage(int index, global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+      public Builder SetRepeatedForeignMessage(int index, global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.repeatedForeignMessage_[index] = value;
         return this;
       }
-      public Builder SetRepeatedForeignMessage(int index, global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+      public Builder SetRepeatedForeignMessage(int index, global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.repeatedForeignMessage_[index] = builderForValue.Build();
         return this;
       }
-      public Builder AddRepeatedForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage value) {
+      public Builder AddRepeatedForeignMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.repeatedForeignMessage_.Add(value);
         return this;
       }
-      public Builder AddRepeatedForeignMessage(global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Builder builderForValue) {
+      public Builder AddRepeatedForeignMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.repeatedForeignMessage_.Add(builderForValue.Build());
         return this;
       }
-      public Builder AddRangeRepeatedForeignMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ForeignMessage> values) {
+      public Builder AddRangeRepeatedForeignMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage> values) {
         PrepareBuilder();
         result.repeatedForeignMessage_.Add(values);
         return this;
@@ -3204,26 +2956,26 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> RepeatedNestedEnumList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum> RepeatedNestedEnumList {
         get { return PrepareBuilder().repeatedNestedEnum_; }
       }
       public int RepeatedNestedEnumCount {
         get { return result.RepeatedNestedEnumCount; }
       }
-      public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum GetRepeatedNestedEnum(int index) {
+      public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum GetRepeatedNestedEnum(int index) {
         return result.GetRepeatedNestedEnum(index);
       }
-      public Builder SetRepeatedNestedEnum(int index, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum value) {
+      public Builder SetRepeatedNestedEnum(int index, global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum value) {
         PrepareBuilder();
         result.repeatedNestedEnum_[index] = value;
         return this;
       }
-      public Builder AddRepeatedNestedEnum(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum value) {
+      public Builder AddRepeatedNestedEnum(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum value) {
         PrepareBuilder();
         result.repeatedNestedEnum_.Add(value);
         return this;
       }
-      public Builder AddRangeRepeatedNestedEnum(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum> values) {
+      public Builder AddRangeRepeatedNestedEnum(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum> values) {
         PrepareBuilder();
         result.repeatedNestedEnum_.Add(values);
         return this;
@@ -3234,26 +2986,26 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> RepeatedForeignEnumList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum> RepeatedForeignEnumList {
         get { return PrepareBuilder().repeatedForeignEnum_; }
       }
       public int RepeatedForeignEnumCount {
         get { return result.RepeatedForeignEnumCount; }
       }
-      public global::Google.ProtocolBuffers.TestProtos.ForeignEnum GetRepeatedForeignEnum(int index) {
+      public global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum GetRepeatedForeignEnum(int index) {
         return result.GetRepeatedForeignEnum(index);
       }
-      public Builder SetRepeatedForeignEnum(int index, global::Google.ProtocolBuffers.TestProtos.ForeignEnum value) {
+      public Builder SetRepeatedForeignEnum(int index, global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum value) {
         PrepareBuilder();
         result.repeatedForeignEnum_[index] = value;
         return this;
       }
-      public Builder AddRepeatedForeignEnum(global::Google.ProtocolBuffers.TestProtos.ForeignEnum value) {
+      public Builder AddRepeatedForeignEnum(global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum value) {
         PrepareBuilder();
         result.repeatedForeignEnum_.Add(value);
         return this;
       }
-      public Builder AddRangeRepeatedForeignEnum(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.ForeignEnum> values) {
+      public Builder AddRangeRepeatedForeignEnum(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignEnum> values) {
         PrepareBuilder();
         result.repeatedForeignEnum_.Add(values);
         return this;
@@ -3328,40 +3080,40 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> RepeatedLazyMessageList {
+      public pbc::IPopsicleList<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage> RepeatedLazyMessageList {
         get { return PrepareBuilder().repeatedLazyMessage_; }
       }
       public int RepeatedLazyMessageCount {
         get { return result.RepeatedLazyMessageCount; }
       }
-      public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage GetRepeatedLazyMessage(int index) {
+      public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage GetRepeatedLazyMessage(int index) {
         return result.GetRepeatedLazyMessage(index);
       }
-      public Builder SetRepeatedLazyMessage(int index, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+      public Builder SetRepeatedLazyMessage(int index, global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.repeatedLazyMessage_[index] = value;
         return this;
       }
-      public Builder SetRepeatedLazyMessage(int index, global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
+      public Builder SetRepeatedLazyMessage(int index, global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.repeatedLazyMessage_[index] = builderForValue.Build();
         return this;
       }
-      public Builder AddRepeatedLazyMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+      public Builder AddRepeatedLazyMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.repeatedLazyMessage_.Add(value);
         return this;
       }
-      public Builder AddRepeatedLazyMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
+      public Builder AddRepeatedLazyMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.repeatedLazyMessage_.Add(builderForValue.Build());
         return this;
       }
-      public Builder AddRangeRepeatedLazyMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage> values) {
+      public Builder AddRangeRepeatedLazyMessage(scg::IEnumerable<global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage> values) {
         PrepareBuilder();
         result.repeatedLazyMessage_.Add(values);
         return this;
@@ -3372,24 +3124,17 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      public bool HasOneofUint32 {
-        get { return result.hasOneofUint32; }
-      }
-      [global::System.CLSCompliant(false)]
       public uint OneofUint32 {
         get { return result.OneofUint32; }
         set { SetOneofUint32(value); }
       }
-      [global::System.CLSCompliant(false)]
       public Builder SetOneofUint32(uint value) {
         PrepareBuilder();
-        result.hasOneofUint32 = true;
         result.oneofUint32_ = value;
         return this;
       }
       public Builder ClearOneofUint32() {
         PrepareBuilder();
-        result.hasOneofUint32 = false;
         result.oneofUint32_ = 0;
         return this;
       }
@@ -3397,30 +3142,30 @@ namespace Google.ProtocolBuffers.TestProtos {
       public bool HasOneofNestedMessage {
        get { return result.hasOneofNestedMessage; }
       }
-      public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage OneofNestedMessage {
+      public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage OneofNestedMessage {
         get { return result.OneofNestedMessage; }
         set { SetOneofNestedMessage(value); }
       }
-      public Builder SetOneofNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+      public Builder SetOneofNestedMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         result.hasOneofNestedMessage = true;
         result.oneofNestedMessage_ = value;
         return this;
       }
-      public Builder SetOneofNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
+      public Builder SetOneofNestedMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.Builder builderForValue) {
         pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
         PrepareBuilder();
         result.hasOneofNestedMessage = true;
         result.oneofNestedMessage_ = builderForValue.Build();
         return this;
       }
-      public Builder MergeOneofNestedMessage(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage value) {
+      public Builder MergeOneofNestedMessage(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
         if (result.hasOneofNestedMessage &&
-            result.oneofNestedMessage_ != global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance) {
-            result.oneofNestedMessage_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.CreateBuilder(result.oneofNestedMessage_).MergeFrom(value).BuildPartial();
+            result.oneofNestedMessage_ != global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.DefaultInstance) {
+            result.oneofNestedMessage_ = global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedMessage.CreateBuilder(result.oneofNestedMessage_).MergeFrom(value).BuildPartial();
         } else {
           result.oneofNestedMessage_ = value;
         }
@@ -3434,9 +3179,6 @@ namespace Google.ProtocolBuffers.TestProtos {
         return this;
       }
 
-      public bool HasOneofString {
-        get { return result.hasOneofString; }
-      }
       public string OneofString {
         get { return result.OneofString; }
         set { SetOneofString(value); }
@@ -3444,39 +3186,32 @@ namespace Google.ProtocolBuffers.TestProtos {
       public Builder SetOneofString(string value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
-        result.hasOneofString = true;
         result.oneofString_ = value;
         return this;
       }
       public Builder ClearOneofString() {
         PrepareBuilder();
-        result.hasOneofString = false;
         result.oneofString_ = "";
         return this;
       }
 
-      public bool HasOneofEnum {
-       get { return result.hasOneofEnum; }
-      }
-      public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum OneofEnum {
+      public global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum OneofEnum {
         get { return result.OneofEnum; }
         set { SetOneofEnum(value); }
       }
-      public Builder SetOneofEnum(global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum value) {
+      public Builder SetOneofEnum(global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum value) {
         PrepareBuilder();
-        result.hasOneofEnum = true;
         result.oneofEnum_ = value;
         return this;
       }
       public Builder ClearOneofEnum() {
         PrepareBuilder();
-        result.hasOneofEnum = false;
-        result.oneofEnum_ = global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedEnum.FOO;
+        result.oneofEnum_ = global::Google.ProtocolBuffers.TestProtos.Proto3.TestAllTypes.Types.NestedEnum.FOO;
         return this;
       }
     }
     static TestAllTypes() {
-      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnittestNoFieldPresence.Descriptor, null);
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.Proto3.UnittestNoFieldPresence.Descriptor, null);
     }
   }
 
@@ -3499,11 +3234,11 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
 
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_TestProto2Required__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.Proto3.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_TestProto2Required__Descriptor; }
     }
 
     protected override pb::FieldAccess.FieldAccessorTable<TestProto2Required, TestProto2Required.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_TestProto2Required__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.Proto3.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_TestProto2Required__FieldAccessorTable; }
     }
 
     public const int Proto2FieldNumber = 1;
@@ -3514,15 +3249,6 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
     public global::Google.ProtocolBuffers.TestProtos.TestRequired Proto2 {
       get { return proto2_ ?? global::Google.ProtocolBuffers.TestProtos.TestRequired.DefaultInstance; }
-    }
-
-    public override bool IsInitialized {
-      get {
-        if (HasProto2) {
-          if (!Proto2.IsInitialized) return false;
-        }
-        return true;
-      }
     }
 
     public override void WriteTo(pb::ICodedOutputStream output) {
@@ -3646,11 +3372,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.TestProto2Required.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.Proto3.TestProto2Required.Descriptor; }
       }
 
       public override TestProto2Required DefaultInstanceForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.TestProto2Required.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.Proto3.TestProto2Required.DefaultInstance; }
       }
 
       public override TestProto2Required BuildPartial() {
@@ -3671,7 +3397,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public override Builder MergeFrom(TestProto2Required other) {
-        if (other == global::Google.ProtocolBuffers.TestProtos.TestProto2Required.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.Proto3.TestProto2Required.DefaultInstance) return this;
         PrepareBuilder();
         if (other.HasProto2) {
           MergeProto2(other.Proto2);
@@ -3779,7 +3505,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
     }
     static TestProto2Required() {
-      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnittestNoFieldPresence.Descriptor, null);
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.Proto3.UnittestNoFieldPresence.Descriptor, null);
     }
   }
 
@@ -3802,33 +3528,23 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
 
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_ForeignMessage__Descriptor; }
+      get { return global::Google.ProtocolBuffers.TestProtos.Proto3.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_ForeignMessage__Descriptor; }
     }
 
     protected override pb::FieldAccess.FieldAccessorTable<ForeignMessage, ForeignMessage.Builder> InternalFieldAccessors {
-      get { return global::Google.ProtocolBuffers.TestProtos.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_ForeignMessage__FieldAccessorTable; }
+      get { return global::Google.ProtocolBuffers.TestProtos.Proto3.UnittestNoFieldPresence.internal__static_proto2_nofieldpresence_unittest_ForeignMessage__FieldAccessorTable; }
     }
 
     public const int CFieldNumber = 1;
-    private bool hasC;
     private int c_;
-    public bool HasC {
-      get { return hasC; }
-    }
     public int C {
       get { return c_; }
-    }
-
-    public override bool IsInitialized {
-      get {
-        return true;
-      }
     }
 
     public override void WriteTo(pb::ICodedOutputStream output) {
       CalcSerializedSize();
       string[] field_names = _foreignMessageFieldNames;
-      if (hasC) {
+      if (C != 0) {
         output.WriteInt32(1, field_names[0], C);
       }
       UnknownFields.WriteTo(output);
@@ -3848,7 +3564,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       if (size != -1) return size;
 
       size = 0;
-      if (hasC) {
+      if (C != 0) {
         size += pb::CodedOutputStream.ComputeInt32Size(1, C);
       }
       size += UnknownFields.SerializedSize;
@@ -3946,11 +3662,11 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.ForeignMessage.Descriptor; }
+        get { return global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.Descriptor; }
       }
 
       public override ForeignMessage DefaultInstanceForType {
-        get { return global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance; }
+        get { return global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.DefaultInstance; }
       }
 
       public override ForeignMessage BuildPartial() {
@@ -3971,9 +3687,9 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public override Builder MergeFrom(ForeignMessage other) {
-        if (other == global::Google.ProtocolBuffers.TestProtos.ForeignMessage.DefaultInstance) return this;
+        if (other == global::Google.ProtocolBuffers.TestProtos.Proto3.ForeignMessage.DefaultInstance) return this;
         PrepareBuilder();
-        if (other.HasC) {
+        if (other.C != 0) {
           C = other.C;
         }
         this.MergeUnknownFields(other.UnknownFields);
@@ -4020,7 +3736,7 @@ namespace Google.ProtocolBuffers.TestProtos {
               break;
             }
             case 8: {
-              result.hasC = input.ReadInt32(ref result.c_);
+              input.ReadInt32(ref result.c_);
               break;
             }
           }
@@ -4033,28 +3749,23 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
 
-      public bool HasC {
-        get { return result.hasC; }
-      }
       public int C {
         get { return result.C; }
         set { SetC(value); }
       }
       public Builder SetC(int value) {
         PrepareBuilder();
-        result.hasC = true;
         result.c_ = value;
         return this;
       }
       public Builder ClearC() {
         PrepareBuilder();
-        result.hasC = false;
         result.c_ = 0;
         return this;
       }
     }
     static ForeignMessage() {
-      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.UnittestNoFieldPresence.Descriptor, null);
+      object.ReferenceEquals(global::Google.ProtocolBuffers.TestProtos.Proto3.UnittestNoFieldPresence.Descriptor, null);
     }
   }
 

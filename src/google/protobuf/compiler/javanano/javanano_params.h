@@ -66,6 +66,8 @@ class Params {
   bool parcelable_messages_;
   bool reftypes_primitive_enums_;
   bool generate_clear_;
+  bool generate_clone_;
+  bool generate_intdefs_;
 
  public:
   Params(const string & base_name) :
@@ -81,7 +83,9 @@ class Params {
     ignore_services_(false),
     parcelable_messages_(false),
     reftypes_primitive_enums_(false),
-    generate_clear_(true) {
+    generate_clear_(true),
+    generate_clone_(false),
+    generate_intdefs_(false) {
   }
 
   const string& base_name() const {
@@ -230,6 +234,20 @@ class Params {
   }
   bool generate_clear() const {
     return generate_clear_;
+  }
+
+  void set_generate_clone(bool value) {
+    generate_clone_ = value;
+  }
+  bool generate_clone() const {
+    return generate_clone_;
+  }
+
+  void set_generate_intdefs(bool value) {
+    generate_intdefs_ = value;
+  }
+  bool generate_intdefs() const {
+    return generate_intdefs_;
   }
 };
 

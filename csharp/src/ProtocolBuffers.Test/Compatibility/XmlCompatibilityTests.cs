@@ -1,9 +1,11 @@
 using System.IO;
 using System.Xml;
 using Google.ProtocolBuffers.Serialization;
+using NUnit.Framework;
 
 namespace Google.ProtocolBuffers.Compatibility
 {
+    [TestFixture]
     public class XmlCompatibilityTests : CompatibilityTests
     {
         protected override object SerializeMessage<TMessage, TBuilder>(TMessage message)
@@ -21,6 +23,7 @@ namespace Google.ProtocolBuffers.Compatibility
         }
     }
 
+    [TestFixture]
     public class XmlCompatibilityFormattedTests : CompatibilityTests
     {
         protected override object SerializeMessage<TMessage, TBuilder>(TMessage message)

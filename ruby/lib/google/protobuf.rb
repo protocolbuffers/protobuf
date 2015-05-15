@@ -28,9 +28,36 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# require mixins before we hook them into the java & c code
+require 'google/protobuf/message_exts'
+
 if RUBY_PLATFORM == "java"
   require 'json'
   require 'google/protobuf_java'
 else
   require 'google/protobuf_c'
+end
+
+require 'google/protobuf/repeated_field'
+
+module Google
+  module Protobuf
+
+    def self.encode(msg)
+      msg.to_proto
+    end
+
+    def self.encode_json(msg)
+      msg.to_json
+    end
+
+    def self.decode(klass, proto)
+      klass.decode(proto)
+    end
+
+    def self.decode_json(klass, json)
+      klass.decode_json(json)
+    end
+
+  end
 end
