@@ -211,6 +211,8 @@ static size_t align_up(size_t size) {
 
 UPB_FORCEINLINE static void *seeded_alloc(void *ud, void *ptr, size_t oldsize,
                                           size_t size) {
+  UPB_UNUSED(ptr);
+
   upb_seededalloc *a = ud;
   size = align_up(size);
 
@@ -224,7 +226,14 @@ UPB_FORCEINLINE static void *seeded_alloc(void *ud, void *ptr, size_t oldsize,
   } else {
     // Slow path: fallback to other allocator.
     a->need_cleanup = true;
-    return a->alloc(a->alloc_ud, ptr, oldsize, size);
+    // Is `ptr` part of the user-provided initial block? Don't pass it to the
+    // default allocator if so; otherwise, it may try to realloc() the block.
+    char *chptr = ptr;
+    if (chptr >= a->mem_base && chptr < a->mem_limit) {
+      return a->alloc(a->alloc_ud, NULL, 0, size);
+    } else {
+      return a->alloc(a->alloc_ud, ptr, oldsize, size);
+    }
   }
 }
 
