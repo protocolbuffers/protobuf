@@ -86,7 +86,7 @@ static VALUE which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
   size_t case_ofs =
       self->descriptor->layout->
       fields[upb_fielddef_index(first_field)].case_offset;
-  uint32_t oneof_case = *((uint32_t*)(Message_data(self) + case_ofs));
+  uint32_t oneof_case = *((uint32_t*)((char*)Message_data(self) + case_ofs));
 
   if (oneof_case == ONEOF_CASE_NONE) {
     return Qnil;
