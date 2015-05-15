@@ -3,6 +3,16 @@
 # You first need to make sure protoc has been built (see instructions on
 # building protoc in root of this repository)
 
+# This script performs a few fix-ups as part of generation. These are:
+# - descriptor.proto is renamed to descriptor_proto_file.proto before
+#   generation, to avoid the naming collision between the class for the file
+#   descriptor and its Descriptor property
+# - This change also impacts UnittestCustomOptions, which expects to
+#   use a class of Descriptor when it's actually been renamed to
+#   DescriptorProtoFile.
+# - Issue 307 (codegen for double-nested types) breaks Unittest.proto and
+#   its lite equivalents.
+
 set -ex
 
 # cd to repository root
@@ -26,7 +36,12 @@ if [ -z "$PROTOC" ]; then
 fi
 
 # Descriptor proto
-#TODO(jtattermusch): generate descriptor.proto
+# TODO(jonskeet): Remove fixup
+cp src/google/protobuf/descriptor.proto src/google/protobuf/descriptor_proto_file.proto
+$PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers/DescriptorProtos \
+    src/google/protobuf/descriptor_proto_file.proto
+rm src/google/protobuf/descriptor_proto_file.proto
+
 
 # ProtocolBuffers.Test protos
 $PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
@@ -62,6 +77,16 @@ $PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffersLite.Test/TestProtos \
 $PROTOC -Icsharp/protos/extest --csharp_out=csharp/src/ProtocolBuffersLite.Test/TestProtos \
     csharp/protos/extest/unittest_extras_full.proto \
     csharp/protos/extest/unittest_extras_lite.proto
+
+# TODO(jonskeet): Remove fixup; see issue #307
+sed -i -e 's/RepeatedFieldsGenerator\.Group/RepeatedFieldsGenerator.Types.Group/g' \
+    csharp/src/ProtocolBuffers.Test/TestProtos/Unittest.cs \
+    csharp/src/ProtocolBuffersLite.Test/TestProtos/Unittest.cs \
+    csharp/src/ProtocolBuffersLite.Test/TestProtos/UnittestLite.cs
+
+# TODO(jonskeet): Remove fixup
+sed -i -e 's/DescriptorProtos\.Descriptor\./DescriptorProtos.DescriptorProtoFile./g' \
+    csharp/src/ProtocolBuffers.Test/TestProtos/UnittestCustomOptions.cs
 
 # AddressBook sample protos
 $PROTOC -Iexamples --csharp_out=csharp/src/AddressBook \
