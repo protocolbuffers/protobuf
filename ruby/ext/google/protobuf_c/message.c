@@ -330,6 +330,12 @@ VALUE Message_inspect(VALUE _self) {
 }
 
 
+/*
+ * call-seq:
+ *     Message.to_h => {}
+ *
+ * Returns the message as a Ruby Hash object, with keys as symbols.
+ */
 VALUE Message_to_h(VALUE _self) {
   MessageHeader* self;
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
@@ -342,17 +348,20 @@ VALUE Message_to_h(VALUE _self) {
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
     VALUE msg_value = layout_get(self->descriptor->layout, Message_data(self),
-                                 field);
-    VALUE msg_key   = ID2SYM(rb_intern(upb_fielddef_name(field)));
-    if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+                                  field);
+    VALUE msg_key   = rb_str_new2(upb_fielddef_name(field));
+    if (is_map_field(field)) {
+      msg_value = Map_to_h(msg_value);
+    } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       msg_value = RepeatedField_to_ary(msg_value);
+    } else if (msg_value != Qnil &&
+                 upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
+      msg_value = Message_to_h(msg_value);
     }
     rb_hash_aset(hash, msg_key, msg_value);
   }
   return hash;
 }
-
-
 
 /*
  * call-seq:

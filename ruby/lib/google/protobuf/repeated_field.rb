@@ -70,7 +70,7 @@ module Google
       def_delegators :to_ary,
         :&, :*, :-, :'<=>',
         :assoc, :bsearch, :combination, :compact, :count, :cycle,
-        :drop, :drop_while, :eql?, :fetch, :find_index, :flatten,
+        :drop, :drop_while, :each_index, :eql?, :fetch, :find_index, :flatten,
         :include?, :index, :inspect, :join,
         :pack, :permutation, :product, :pretty_print, :pretty_print_cycle,
         :rassoc, :repeated_combination, :repeated_permutation, :reverse,
@@ -104,7 +104,6 @@ module Google
       end
 
       # array aliases into enumerable
-      alias_method :each_index, :each_with_index
       alias_method :slice, :[]
       alias_method :values_at, :select
       alias_method :map, :collect
