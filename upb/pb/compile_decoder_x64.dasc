@@ -327,29 +327,29 @@ static void emit_static_asm(jitcompiler *jc) {
   |  jmp   <1
   |
   | // For getting a value that spans a buffer seam.  Falls back to C.
-  | // Args: rdi=C decoding function (prototype: int f(upb_pbdecoder*, void*))
-  asmlabel(jc, "getvalue_slow");
-  |->getvalue_slow:
-  |  sub   rsp, 16         // Stack is [8-byte value, 8-byte func pointer]
-  |  mov   [rsp + 8], rdi  // Need to preserve fptr across suspends.
+  |.macro getvalue_slow, func, bytes
+  |  sub   rsp, 8           // Need stack space for func to write value to.
   |1:
   |  mov   qword [rsp], 0   // For parsing routines that only parse 32 bits.
   |  mov   ARG1_64, DECODER
   |  mov   ARG2_64, rsp
   |  mov   DECODER->checkpoint, PTR
   |  commit_regs
-  |  call  aword [rsp + 8]
+  |  callp func
   |  load_regs
   |  test  eax, eax
   |  jns   >2
   |  // Success; return parsed data (in rdx AND xmm0).
   |  mov   rdx, [rsp]
   |  movsd xmm0, qword [rsp]
-  |  add   rsp, 16
+  |  add   rsp, 8
+  |  sub   PTR, bytes       // Bias our buffer pointer to rejoin the fast-path.
+  |  mov   DECODER->ptr, PTR
   |  ret
   |2:
   |  call  ->exitjit   // Return eax from decode function.
   |  jmp   <1
+  |.endmacro
   |
   asmlabel(jc, "parse_unknown");
   | // Args: edx=fieldnum, cl=wire type
@@ -385,20 +385,12 @@ static void emit_static_asm(jitcompiler *jc) {
   asmlabel(jc, "skip_decode_f32_fallback");
   |->skipf32_fallback:
   |->decodef32_fallback:
-  |  mov64    rdi, (uintptr_t)upb_pbdecoder_decode_f32
-  |  call     ->getvalue_slow
-  |  sub      PTR, 4
-  |  mov      DECODER->ptr, PTR
-  |  ret
+  |  getvalue_slow upb_pbdecoder_decode_f32, 4
   |
   asmlabel(jc, "skip_decode_f64_fallback");
   |->skipf64_fallback:
   |->decodef64_fallback:
-  |  mov64    rdi, (uintptr_t)upb_pbdecoder_decode_f64
-  |  call     ->getvalue_slow
-  |  sub      PTR, 8
-  |  mov      DECODER->ptr, PTR
-  |  ret
+  |  getvalue_slow upb_pbdecoder_decode_f64, 8
   |
   | // Called for varint >= 1 byte.
   asmlabel(jc, "skip_decode_v32_fallback");
@@ -476,11 +468,7 @@ static void emit_static_asm(jitcompiler *jc) {
   asmlabel(jc, "decode_varint_slow");
   |->decode_varint_slow:
   |  // Slow path: end of buffer or error (varint length >= 10).
-  |  mov64    rdi, (uintptr_t)upb_pbdecoder_decode_varint_slow
-  |  call     ->getvalue_slow
-  |  sub      PTR, 1
-  |  mov      DECODER->ptr, PTR
-  |  ret
+  |  getvalue_slow upb_pbdecoder_decode_varint_slow, 1
   |
   | // Args: rsi=expected tag, return=rax (DECODE_{OK,MISMATCH})
   asmlabel(jc, "checktag_fallback");
