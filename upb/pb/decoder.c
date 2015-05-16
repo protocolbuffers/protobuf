@@ -874,7 +874,7 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
       assert(getop(*d->pc) == OP_TAG1 ||
              getop(*d->pc) == OP_TAG2 ||
              getop(*d->pc) == OP_TAGN ||
-             getop(*d->pc == OP_DISPATCH));
+             getop(*d->pc) == OP_DISPATCH);
       d->pc = p;
     }
     upb_pbdecoder_decode(closure, handler_data, &dummy, 0, NULL);

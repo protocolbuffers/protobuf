@@ -74,6 +74,18 @@ genfiles_script() {
   git diff --exit-code
 }
 
+# Tests the ndebug build.
+ndebug_install() {
+  sudo apt-get update -qq
+  sudo apt-get install lua5.2 liblua5.2-dev protobuf-compiler libprotobuf-dev
+}
+ndebug_script() {
+  # Override of USER_CPPFLAGS removes -UNDEBUG.
+  export USER_CPPFLAGS="`pkg-config lua5.2 --cflags` -g -fomit-frame-pointer"
+  make -j12 tests googlepbtests testlua WITH_JIT=yes
+  make test
+}
+
 # A run that executes with coverage support and uploads to coveralls.io
 coverage_install() {
   sudo apt-get update -qq
@@ -81,8 +93,8 @@ coverage_install() {
   sudo pip install cpp-coveralls
 }
 coverage_script() {
-  make -j12 tests googlepbtests testlua WITH_JIT=yes \
-      USER_CPPFLAGS="--coverage -O0 `pkg-config lua5.2 --cflags`"
+  export USER_CPPFLAGS="--coverage -O0 `pkg-config lua5.2 --cflags`"
+  make -j12 tests googlepbtests testlua WITH_JIT=yes
   make test
 }
 coverage_after_success() {
@@ -98,6 +110,12 @@ if [ "$CC" != "gcc" ] && [ "$UPB_TRAVIS_BUILD" == "coverage" ]; then
   # coverage build only works for GCC.
   exit
 fi
+
+# Enable asserts and ref debugging (though some configurations override this).
+export USER_CPPFLAGS="-UNDEBUG -DUPB_DEBUG_REFS -DUPB_THREAD_UNSAFE -g"
+
+# Enable verbose build.
+export Q=
 
 set -e
 set -x

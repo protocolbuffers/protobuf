@@ -11,5 +11,6 @@ env:
   - UPB_TRAVIS_BUILD=core32
   - UPB_TRAVIS_BUILD=withprotobuf
   - UPB_TRAVIS_BUILD=lua
+  - UPB_TRAVIS_BUILD=ndebug
   - UPB_TRAVIS_BUILD=coverage
   - UPB_TRAVIS_BUILD=genfiles

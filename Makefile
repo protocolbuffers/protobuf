@@ -33,7 +33,7 @@ all: lib tests tools/upbc lua python
 testall: test pythontest
 
 # Set this to have user-specific flags (especially things like -O0 and -g).
-USER_CPPFLAGS=
+USER_CPPFLAGS?=
 
 # Build with "make WITH_JIT=yes" (or anything besides "no") to enable the JIT.
 WITH_JIT=no
@@ -72,7 +72,7 @@ ifneq ($(UPB_FAIL_WARNINGS), no)
 endif
 
 # Build with "make Q=" to see all commands that are being executed.
-Q=@
+Q?=@
 
 # Function to expand a wildcard pattern recursively.
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
