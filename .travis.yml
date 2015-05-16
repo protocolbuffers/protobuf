@@ -5,12 +5,17 @@ compiler:
 install: ./travis.sh install
 script: ./travis.sh script
 after_success: ./travis.sh after_success
+after_failure: ./travis.sh after_failure
 env:
-  - UPB_TRAVIS_BUILD=bare
-  - UPB_TRAVIS_BUILD=barejit
-  - UPB_TRAVIS_BUILD=core32
-  - UPB_TRAVIS_BUILD=withprotobuf
-  - UPB_TRAVIS_BUILD=lua
-  - UPB_TRAVIS_BUILD=ndebug
-  - UPB_TRAVIS_BUILD=coverage
-  - UPB_TRAVIS_BUILD=genfiles
+  global:
+    - secure: "Rk5UxBrSGzyuJsOc7DO3ZTSMj0LbKTpBKS7PlvYIPgcU8+DYd3ZbkvWuJb1qD3CDp0J/9X8XWK2c51taiNlSsiqwS6/ympj7VX/k5VbtG0NauWwMoNZnpB0JHaIW1Qn5O/rI4B0zLCraObD/ythXeFOzevpMbfZcB5DIbNsgD8c="
+    - secure: "E9G9109pmBVh085+f3ZDFCUqObCjHJymZW/knx0/ABJ3xK9O91RXEEkQTIaKDDasHcx9eujU9yK8F6gFgFulEZLxLvS5if5RFXeK5G1YX/MxWjA6Jh2j0dnSbGdd5Q+Lj8/tBqo50ry59qGYqaUPZ9aCXanal3ymbl2lA96n5qE="
+  matrix:
+    - UPB_TRAVIS_BUILD=bare
+    - UPB_TRAVIS_BUILD=barejit
+    - UPB_TRAVIS_BUILD=core32
+    - UPB_TRAVIS_BUILD=withprotobuf
+    - UPB_TRAVIS_BUILD=lua
+    - UPB_TRAVIS_BUILD=ndebug
+    - UPB_TRAVIS_BUILD=coverage
+    - UPB_TRAVIS_BUILD=genfiles

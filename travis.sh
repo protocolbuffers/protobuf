@@ -101,6 +101,20 @@ coverage_after_success() {
   coveralls --exclude dynasm --exclude tests --exclude upb/bindings/linux --gcov-options '\-lp'
 }
 
+set -e
+set -x
+
+if [ "$1" == "after_failure" ]; then
+  # Upload failing tree to S3.
+  curl -sL https://raw.githubusercontent.com/travis-ci/artifacts/master/install | bash
+  PATH="$PATH:$HOME/bin"
+  export ARTIFACTS_BUCKET=haberman-upb-travis-artifacts2
+  ARCHIVE=failing-artifacts.tar.gz
+  tar zcvf $ARCHIVE $(git ls-files -o)
+  artifacts upload $ARCHIVE
+  exit
+fi
+
 if [ "$1" == "after_success" ] && [ "$UPB_TRAVIS_BUILD" != "coverage" ]; then
   # after_success is only used for coverage.
   exit
@@ -116,9 +130,6 @@ export USER_CPPFLAGS="-UNDEBUG -DUPB_DEBUG_REFS -DUPB_THREAD_UNSAFE -g"
 
 # Enable verbose build.
 export Q=
-
-set -e
-set -x
 
 # Make any compiler warning fail the build.
 export UPB_FAIL_WARNINGS=true
