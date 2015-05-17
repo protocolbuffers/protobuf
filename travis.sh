@@ -104,6 +104,9 @@ coverage_after_success() {
 set -e
 set -x
 
+$CC --version
+$CXX --version
+
 if [ "$1" == "after_failure" ]; then
   # Upload failing tree to S3.
   curl -sL https://raw.githubusercontent.com/travis-ci/artifacts/master/install | bash

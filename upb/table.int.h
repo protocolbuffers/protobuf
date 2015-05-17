@@ -152,33 +152,46 @@ FUNCS(fptr,     fptr,         upb_func*,    UPB_CTYPE_FPTR);
 
 /* upb_table ******************************************************************/
 
-typedef union {
-  uintptr_t num;
-  struct {
-    // We own this. NULL-terminated but may also contain binary data; see
-    // explicit length below.
-    // TODO: move the length to the start of the string in order to reduce
-    // tabkey's size (to one machine word) in a way that supports static
-    // initialization.
-    const char *str;
-    size_t length;
-  } s;
-} upb_tabkey;
+#define UPB_TABKEY_NUM(n) n
+#define UPB_TABKEY_NONE 0
+// The preprocessor isn't quite powerful enough to turn the compile-time string
+// length into a byte-wise string representation, so code generation needs to
+// help it along.
+//
+// "len1" is the low byte and len4 is the high byte.  For big endian we'll need
+// to define a version of this that flips it around.
+#define UPB_TABKEY_STR(len1, len2, len3, len4, strval) \
+    (uintptr_t)(len1 len2 len3 len4 strval)
 
-#define UPB_TABKEY_NUM(n) {n}
-#ifdef UPB_C99
-// Given that |s| is a string literal, sizeof(s) gives us a
-// compile-time-constant strlen(). We must ensure that this works for static
-// data initializers.
-#define UPB_TABKEY_STR(strval) { .s = { .str = strval,                    \
-                                        .length = sizeof(strval) - 1 } }
-#endif
-// TODO(haberman): C++
-#define UPB_TABKEY_NONE {0}
+// Either:
+//   1. an actual integer key, or
+//   2. a pointer to a string prefixed by its uint32_t length, owned by us.
+//
+// ...depending on whether this is a string table or an int table.  We would
+// make this a union of those two types, but C89 doesn't support statically
+// initializing a non-first union member.
+typedef uintptr_t upb_tabkey;
+
+// Ideally we could use a structure like this instead of the memcpy() calls:
+//
+// typedef struct {
+//   uint32_t len;
+//   char data[1];  // Allocate to correct length.
+// } upb_tabstr;
+//
+// But unfortuantely in C89 there is no way to statically initialize such a
+// thing.  So instead of memcpy() the length in and out of the string.
+
+UPB_INLINE char *upb_tabstr(upb_tabkey key, uint32_t *len) {
+  char* mem = (char*)key;
+  if (len) memcpy(len, mem, sizeof(*len));
+  return mem + sizeof(*len);
+}
 
 typedef struct _upb_tabent {
   upb_tabkey key;
   _upb_value val;
+
   // Internal chaining.  This is const so we can create static initializers for
   // tables.  We cast away const sometimes, but *only* when the containing
   // upb_table is known to be non-const.  This requires a bit of care, but
@@ -235,16 +248,14 @@ UPB_INLINE size_t upb_table_size(const upb_table *t) {
 
 // Internal-only functions, in .h file only out of necessity.
 UPB_INLINE bool upb_tabent_isempty(const upb_tabent *e) {
-  return e->key.num == 0;
+  return e->key == 0;
 }
 
 // Used by some of the unit tests for generic hashing functionality.
 uint32_t MurmurHash2(const void * key, size_t len, uint32_t seed);
 
-UPB_INLINE upb_tabkey upb_intkey(uintptr_t key) {
-  upb_tabkey k;
-  k.num = key;
-  return k;
+UPB_INLINE uintptr_t upb_intkey(uintptr_t key) {
+  return key;
 }
 
 UPB_INLINE uint32_t upb_inthash(uintptr_t key) {
@@ -350,7 +361,7 @@ UPB_INLINE bool upb_inttable_lookup32(const upb_inttable *t, uint32_t key,
     const upb_tabent *e;
     if (t->t.entries == NULL) return false;
     for (e = upb_getentry(&t->t, upb_inthash(key)); true; e = e->next) {
-      if ((uint32_t)e->key.num == key) {
+      if ((uint32_t)e->key == key) {
         _upb_value_setval(v, e->val, t->t.ctype);
         return true;
       }
