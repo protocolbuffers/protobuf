@@ -158,10 +158,14 @@ FUNCS(fptr,     fptr,         upb_func*,    UPB_CTYPE_FPTR);
 // length into a byte-wise string representation, so code generation needs to
 // help it along.
 //
-// "len1" is the low byte and len4 is the high byte.  For big endian we'll need
-// to define a version of this that flips it around.
+// "len1" is the low byte and len4 is the high byte.
+#ifdef UPB_BIG_ENDIAN
+#define UPB_TABKEY_STR(len1, len2, len3, len4, strval) \
+    (uintptr_t)(len4 len3 len2 len1 strval)
+#else
 #define UPB_TABKEY_STR(len1, len2, len3, len4, strval) \
     (uintptr_t)(len1 len2 len3 len4 strval)
+#endif
 
 // Either:
 //   1. an actual integer key, or

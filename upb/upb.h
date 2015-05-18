@@ -25,6 +25,12 @@
 #define UPB_INLINE static inline
 #endif
 
+// Define this manually if you're on big endian and your compiler doesn't
+// provide these preprocessor symbols.
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+#define UPB_BIG_ENDIAN
+#endif
+
 // For use in C/C++ source files (not headers), forces inlining within the file.
 #ifdef __GNUC__
 #define UPB_FORCEINLINE inline __attribute__((always_inline))
