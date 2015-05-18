@@ -467,6 +467,7 @@ typedef GPB_ENUM(GPBFileOptions_FieldNumber) {
   GPBFileOptions_FieldNumber_JavaStringCheckUtf8 = 27,
   GPBFileOptions_FieldNumber_CcEnableArenas = 31,
   GPBFileOptions_FieldNumber_ObjcClassPrefix = 36,
+  GPBFileOptions_FieldNumber_CsharpNamespace = 37,
   GPBFileOptions_FieldNumber_UninterpretedOptionArray = 999,
 };
 
@@ -564,6 +565,10 @@ typedef GPB_ENUM(GPBFileOptions_FieldNumber) {
 // generated classes from this .proto. There is no default.
 @property(nonatomic, readwrite) BOOL hasObjcClassPrefix;
 @property(nonatomic, readwrite, copy) NSString *objcClassPrefix;
+
+// Namespace for generated classes; defaults to the package.
+@property(nonatomic, readwrite) BOOL hasCsharpNamespace;
+@property(nonatomic, readwrite, copy) NSString *csharpNamespace;
 
 // The parser stores options it doesn't recognize here. See above.
 // |uninterpretedOptionArray| contains |GPBUninterpretedOption|

@@ -1105,6 +1105,7 @@ typedef struct GPBMethodDescriptorProto_Storage {
 @dynamic hasDeprecated, deprecated;
 @dynamic hasCcEnableArenas, ccEnableArenas;
 @dynamic hasObjcClassPrefix, objcClassPrefix;
+@dynamic hasCsharpNamespace, csharpNamespace;
 @dynamic uninterpretedOptionArray;
 
 typedef struct GPBFileOptions_Storage {
@@ -1122,6 +1123,7 @@ typedef struct GPBFileOptions_Storage {
   NSString *javaOuterClassname;
   NSString *goPackage;
   NSString *objcClassPrefix;
+  NSString *csharpNamespace;
   NSMutableArray *uninterpretedOptionArray;
 } GPBFileOptions_Storage;
 
@@ -1270,6 +1272,17 @@ typedef struct GPBFileOptions_Storage {
         .flags = GPBFieldOptional,
         .type = GPBTypeString,
         .offset = offsetof(GPBFileOptions_Storage, objcClassPrefix),
+        .defaultValue.valueString = nil,
+        .typeSpecific.className = NULL,
+        .fieldOptions = NULL,
+      },
+      {
+        .name = "csharpNamespace",
+        .number = GPBFileOptions_FieldNumber_CsharpNamespace,
+        .hasIndex = 13,
+        .flags = GPBFieldOptional,
+        .type = GPBTypeString,
+        .offset = offsetof(GPBFileOptions_Storage, csharpNamespace),
         .defaultValue.valueString = nil,
         .typeSpecific.className = NULL,
         .fieldOptions = NULL,
