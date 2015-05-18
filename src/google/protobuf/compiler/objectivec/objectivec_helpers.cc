@@ -28,12 +28,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <arpa/inet.h>
-#include <errno.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <unistd.h>
-
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -46,14 +40,6 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/stubs/strutil.h>
 
-#ifndef htonl
-#include <netinet/in.h>
-#endif
-
-#ifndef O_EXLOCK
-#include <sys/file.h>
-#endif
-
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error case, so it seem to be ok to use as a back door for errors.
 
@@ -65,7 +51,6 @@ namespace objectivec {
 namespace {
 
 hash_set<string> gClassWhitelist;
-stringstream gClassListStream;
 
 // islower()/isupper()/tolower()/toupper() change based on locale.
 
@@ -754,7 +739,7 @@ string DefaultValue(const FieldDescriptor* field) {
 
         // Must convert to a standard byte order for packing length into
         // a cstring.
-        uint32_t length = htonl(default_string.length());
+        uint32 length = ghtonl(default_string.length());
         string bytes((const char*)&length, sizeof(length));
         bytes.append(default_string);
         return "(NSData*)\"" + CEscape(bytes) + "\"";
@@ -807,60 +792,6 @@ string BuildCommentsString(const SourceLocation& location) {
         prefix + StringReplace(lines[i], "$", "&#36;", true) + suffix;
   }
   return final_comments;
-}
-
-bool WriteClassList(string* error) {
-  const char* file_name = getenv("GPB_CLASSLIST_PATH");
-  if (file_name != NULL) {
-#ifndef O_EXLOCK
-    int fd = open(file_name, O_WRONLY | O_APPEND | O_CREAT,
-                  (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH));
-#else
-    int fd = open(file_name, O_WRONLY | O_APPEND | O_EXLOCK | O_CREAT,
-                  (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH));
-#endif
-    if (fd == -1) {
-      if (error != NULL) {
-        stringstream err_stream;
-        err_stream << endl << file_name << ":0:0: error:"
-                   << "Unable to open (" << errno << ")";
-        *error = err_stream.str();
-      }
-      return false;
-    }
-#ifndef O_EXLOCK
-    if (flock(fd, LOCK_EX) < 0) {
-      if (error != NULL) {
-        stringstream err_stream;
-        err_stream << endl << file_name << ":0:0: error:"
-                   << "Unable to lock (" << errno << ")";
-        *error = err_stream.str();
-      }
-      return false;
-    }
-#endif
-    // Need a local to hold the list so the cstring stays valid for the
-    // write call.
-    const string& class_list_str = gClassListStream.str();
-    int write_out = write(fd, class_list_str.c_str(), class_list_str.length());
-    int close_out = close(fd);
-    if (write_out == -1 || close_out == -1) {
-      if (error != NULL) {
-        stringstream err_stream;
-        err_stream << endl << file_name << ":0:0: error:"
-                   << "Unable to write (" << errno << ")";
-        *error = err_stream.str();
-      }
-      return false;
-    }
-  }
-  return true;
-}
-
-void WriteClassNameToClassList(const string& name) {
-  if (gClassListStream.good()) {
-    gClassListStream << name << '\n';
-  }
 }
 
 bool InitializeClassWhitelist(string* error) {
@@ -917,7 +848,7 @@ bool FilterClass(const string& name) {
   return gClassWhitelist.size() > 0;
 }
 
-void TextFormatDecodeData::AddString(int32_t key,
+void TextFormatDecodeData::AddString(int32 key,
                                      const string& input_for_decode,
                                      const string& desired_output) {
   for (vector<DataEntry>::const_iterator i = entries_.begin();
@@ -973,14 +904,14 @@ class DecodeDataBuilder {
   }
 
  private:
-  static const uint8_t kAddUnderscore = 0b10000000;
+  static const uint8 kAddUnderscore = 0x80;
 
-  static const uint8_t kOpAsIs = 0b00000000;
-  static const uint8_t kOpFirstUpper = 0b01000000;
-  static const uint8_t kOpFirstLower = 0b00100000;
-  static const uint8_t kOpAllUpper = 0b01100000;
+  static const uint8 kOpAsIs        = 0x00;
+  static const uint8 kOpFirstUpper  = 0x40;
+  static const uint8 kOpFirstLower  = 0x20;
+  static const uint8 kOpAllUpper    = 0x60;
 
-  static const int kMaxSegmentLen = 0b00011111;
+  static const int kMaxSegmentLen     = 0x1f;
 
   void AddChar(const char desired) {
     ++segment_len_;
@@ -988,7 +919,7 @@ class DecodeDataBuilder {
   }
 
   void Push() {
-    uint8_t op = (op_ | segment_len_);
+    uint8 op = (op_ | segment_len_);
     if (need_underscore_) op |= kAddUnderscore;
     if (op != 0) {
       decode_data_ += (char)op;
@@ -1020,7 +951,7 @@ class DecodeDataBuilder {
 
   bool need_underscore_;
   bool is_all_upper_;
-  uint8_t op_;
+  uint8 op_;
   int segment_len_;
 
   string decode_data_;

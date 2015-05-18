@@ -40,13 +40,14 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <sstream>
 
+namespace google {
+namespace protobuf {
+
 // This is also found in GPBBootstrap.h, and needs to be kept in sync.  It
 // is the version check done to ensure generated code works with the current
 // runtime being used.
-const int32_t GOOGLE_PROTOBUF_OBJC_GEN_VERSION = 30000;
+const int32 GOOGLE_PROTOBUF_OBJC_GEN_VERSION = 30000;
 
-namespace google {
-namespace protobuf {
 namespace compiler {
 namespace objectivec {
 FileGenerator::FileGenerator(const FileDescriptor *file)

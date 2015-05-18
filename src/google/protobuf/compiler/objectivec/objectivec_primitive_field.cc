@@ -76,6 +76,9 @@ const char* PrimitiveTypeName(const FieldDescriptor* descriptor) {
     case OBJECTIVECTYPE_MESSAGE:
       return NULL;
   }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return NULL;
 }
 
 const char* PrimitiveArrayTypeName(const FieldDescriptor* descriptor) {
@@ -104,6 +107,9 @@ const char* PrimitiveArrayTypeName(const FieldDescriptor* descriptor) {
     case OBJECTIVECTYPE_MESSAGE:
       return "";  // Want NSArray
   }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return NULL;
 }
 
 void SetPrimitiveVariables(const FieldDescriptor* descriptor,
@@ -154,7 +160,6 @@ void RepeatedPrimitiveFieldGenerator::FinishInitialization(void) {
     variables_["array_comment"] = "";
   }
 }
-
 
 }  // namespace objectivec
 }  // namespace compiler

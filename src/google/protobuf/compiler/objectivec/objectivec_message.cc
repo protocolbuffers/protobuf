@@ -119,6 +119,9 @@ int OrderGroupForFieldDescriptor(const FieldDescriptor* descriptor) {
     case FieldDescriptor::TYPE_BOOL:
       return 1;
   }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return 0;
 }
 
 struct FieldOrderingByStorageSize {
@@ -302,8 +305,6 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
     }
     return;
   }
-
-  WriteClassNameToClassList(class_name_);
 
   if (IsFiltered()) {
     printer->Print("// $filter_reason$\n\n",

@@ -142,9 +142,6 @@ string BuildFlagsString(const vector<string>& strings);
 
 string BuildCommentsString(const SourceLocation& location);
 
-bool WriteClassList(string* error);
-void WriteClassNameToClassList(const string& name);
-
 bool InitializeClassWhitelist(string* error);
 bool FilterClass(const string& name);
 
@@ -154,7 +151,7 @@ class TextFormatDecodeData {
  public:
   TextFormatDecodeData() {}
 
-  void AddString(int32_t key, const string& input_for_decode,
+  void AddString(int32 key, const string& input_for_decode,
                  const string& desired_output);
   size_t num_entries() const { return entries_.size(); }
   string Data() const;
@@ -165,7 +162,7 @@ class TextFormatDecodeData {
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextFormatDecodeData);
 
-  typedef std::pair<int32_t, string> DataEntry;
+  typedef std::pair<int32, string> DataEntry;
   vector<DataEntry> entries_;
 };
 
