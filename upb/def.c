@@ -9,12 +9,12 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "upb/descriptor/descriptor.upb.h"
+#include "upb/structdefs.int.h"
 #include "upb/handlers.h"
 
 typedef struct {
   size_t len;
-  char str[1];  // Null-terminated string data follows.
+  char str[1];  /* Null-terminated string data follows. */
 } str_t;
 
 static str_t *newstr(const char *data, size_t len) {
@@ -28,7 +28,7 @@ static str_t *newstr(const char *data, size_t len) {
 
 static void freestr(str_t *s) { free(s); }
 
-// isalpha() etc. from <ctype.h> are locale-dependent, which we don't want.
+/* isalpha() etc. from <ctype.h> are locale-dependent, which we don't want. */
 static bool upb_isbetween(char c, char low, char high) {
   return c >= low && c <= high;
 }
@@ -43,7 +43,8 @@ static bool upb_isalphanum(char c) {
 
 static bool upb_isident(const char *str, size_t len, bool full, upb_status *s) {
   bool start = true;
-  for (size_t i = 0; i < len; i++) {
+  size_t i;
+  for (i = 0; i < len; i++) {
     char c = str[i];
     if (c == '.') {
       if (start || !full) {
@@ -88,39 +89,22 @@ bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s) {
 upb_def *upb_def_dup(const upb_def *def, const void *o) {
   switch (def->type) {
     case UPB_DEF_MSG:
-      return UPB_UPCAST(upb_msgdef_dup(upb_downcast_msgdef(def), o));
+      return upb_msgdef_upcast_mutable(
+          upb_msgdef_dup(upb_downcast_msgdef(def), o));
     case UPB_DEF_FIELD:
-      return UPB_UPCAST(upb_fielddef_dup(upb_downcast_fielddef(def), o));
+      return upb_fielddef_upcast_mutable(
+          upb_fielddef_dup(upb_downcast_fielddef(def), o));
     case UPB_DEF_ENUM:
-      return UPB_UPCAST(upb_enumdef_dup(upb_downcast_enumdef(def), o));
+      return upb_enumdef_upcast_mutable(
+          upb_enumdef_dup(upb_downcast_enumdef(def), o));
     default: assert(false); return NULL;
   }
-}
-
-bool upb_def_isfrozen(const upb_def *def) {
-  return upb_refcounted_isfrozen(UPB_UPCAST(def));
-}
-
-void upb_def_ref(const upb_def *def, const void *owner) {
-  upb_refcounted_ref(UPB_UPCAST(def), owner);
-}
-
-void upb_def_unref(const upb_def *def, const void *owner) {
-  upb_refcounted_unref(UPB_UPCAST(def), owner);
-}
-
-void upb_def_donateref(const upb_def *def, const void *from, const void *to) {
-  upb_refcounted_donateref(UPB_UPCAST(def), from, to);
-}
-
-void upb_def_checkref(const upb_def *def, const void *owner) {
-  upb_refcounted_checkref(UPB_UPCAST(def), owner);
 }
 
 static bool upb_def_init(upb_def *def, upb_deftype_t type,
                          const struct upb_refcounted_vtbl *vtbl,
                          const void *owner) {
-  if (!upb_refcounted_init(UPB_UPCAST(def), vtbl, owner)) return false;
+  if (!upb_refcounted_init(upb_def_upcast_mutable(def), vtbl, owner)) return false;
   def->type = type;
   def->fullname = NULL;
   def->came_from_user = false;
@@ -132,7 +116,7 @@ static void upb_def_uninit(upb_def *def) {
 }
 
 static const char *msgdef_name(const upb_msgdef *m) {
-  const char *name = upb_def_fullname(UPB_UPCAST(m));
+  const char *name = upb_def_fullname(upb_msgdef_upcast(m));
   return name ? name : "(anonymous)";
 }
 
@@ -155,13 +139,15 @@ static bool upb_validate_field(upb_fielddef *f, upb_status *s) {
   }
 
   if (upb_fielddef_hassubdef(f)) {
+    const upb_def *subdef;
+
     if (f->subdef_is_symbolic) {
       upb_status_seterrf(s, "field '%s.%s' has not been resolved",
                          msgdef_name(f->msg.def), upb_fielddef_name(f));
       return false;
     }
 
-    const upb_def *subdef = upb_fielddef_subdef(f);
+    subdef = upb_fielddef_subdef(f);
     if (subdef == NULL) {
       upb_status_seterrf(s, "field %s.%s is missing required subdef",
                          msgdef_name(f->msg.def), upb_fielddef_name(f));
@@ -180,14 +166,14 @@ static bool upb_validate_field(upb_fielddef *f, upb_status *s) {
     bool has_default_name = upb_fielddef_enumhasdefaultstr(f);
     bool has_default_number = upb_fielddef_enumhasdefaultint32(f);
 
-    // Previously verified by upb_validate_enumdef().
+    /* Previously verified by upb_validate_enumdef(). */
     assert(upb_enumdef_numvals(upb_fielddef_enumsubdef(f)) > 0);
 
-    // We've already validated that we have an associated enumdef and that it
-    // has at least one member, so at least one of these should be true.
-    // Because if the user didn't set anything, we'll pick up the enum's
-    // default, but if the user *did* set something we should at least pick up
-    // the one they set (int32 or string).
+    /* We've already validated that we have an associated enumdef and that it
+     * has at least one member, so at least one of these should be true.
+     * Because if the user didn't set anything, we'll pick up the enum's
+     * default, but if the user *did* set something we should at least pick up
+     * the one they set (int32 or string). */
     assert(has_default_name || has_default_number);
 
     if (!has_default_name) {
@@ -206,13 +192,13 @@ static bool upb_validate_field(upb_fielddef *f, upb_status *s) {
       return false;
     }
 
-    // Lift the effective numeric default into the field's default slot, in case
-    // we were only getting it "by reference" from the enumdef.
+    /* Lift the effective numeric default into the field's default slot, in case
+     * we were only getting it "by reference" from the enumdef. */
     upb_fielddef_setdefaultint32(f, upb_fielddef_defaultint32(f));
   }
 
-  // Ensure that MapEntry submessages only appear as repeated fields, not
-  // optional/required (singular) fields.
+  /* Ensure that MapEntry submessages only appear as repeated fields, not
+   * optional/required (singular) fields. */
   if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE &&
       upb_fielddef_msgsubdef(f) != NULL) {
     const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
@@ -239,8 +225,8 @@ static bool upb_validate_enumdef(const upb_enumdef *e, upb_status *s) {
   return true;
 }
 
-// All submessage fields are lower than all other fields.
-// Secondly, fields are increasing in order.
+/* All submessage fields are lower than all other fields.
+ * Secondly, fields are increasing in order. */
 uint32_t field_rank(const upb_fielddef *f) {
   uint32_t ret = upb_fielddef_number(f);
   const uint32_t high_bit = 1 << 30;
@@ -257,14 +243,15 @@ int cmp_fields(const void *p1, const void *p2) {
 }
 
 static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
-  // Sort fields.  upb internally relies on UPB_TYPE_MESSAGE fields having the
-  // lowest indexes, but we do not publicly guarantee this.
+  /* Sort fields.  upb internally relies on UPB_TYPE_MESSAGE fields having the
+   * lowest indexes, but we do not publicly guarantee this. */
+  upb_msg_field_iter j;
+  int i;
+  uint32_t selector;
   int n = upb_msgdef_numfields(m);
   upb_fielddef **fields = malloc(n * sizeof(*fields));
   if (!fields) return false;
 
-  upb_msg_field_iter j;
-  int i;
   m->submsg_field_count = 0;
   for(i = 0, upb_msg_field_begin(&j, m);
       !upb_msg_field_done(&j);
@@ -283,7 +270,7 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
 
   qsort(fields, n, sizeof(*fields), cmp_fields);
 
-  uint32_t selector = UPB_STATIC_SELECTOR_COUNT + m->submsg_field_count;
+  selector = UPB_STATIC_SELECTOR_COUNT + m->submsg_field_count;
   for (i = 0; i < n; i++) {
     upb_fielddef *f = fields[i];
     f->index_ = i;
@@ -293,38 +280,42 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   m->selector_count = selector;
 
 #ifndef NDEBUG
-  // Verify that all selectors for the message are distinct.
-  //
+  {
+    /* Verify that all selectors for the message are distinct. */
 #define TRY(type) \
-  if (upb_handlers_getselector(f, type, &sel)) upb_inttable_insert(&t, sel, v);
+    if (upb_handlers_getselector(f, type, &sel)) upb_inttable_insert(&t, sel, v);
 
-  upb_inttable t;
-  upb_inttable_init(&t, UPB_CTYPE_BOOL);
-  upb_value v = upb_value_bool(true);
-  upb_selector_t sel;
-  upb_inttable_insert(&t, UPB_STARTMSG_SELECTOR, v);
-  upb_inttable_insert(&t, UPB_ENDMSG_SELECTOR, v);
-  for(upb_msg_field_begin(&j, m);
-      !upb_msg_field_done(&j);
-      upb_msg_field_next(&j)) {
-    upb_fielddef *f = upb_msg_iter_field(&j);
-    // These calls will assert-fail in upb_table if the value already exists.
-    TRY(UPB_HANDLER_INT32);
-    TRY(UPB_HANDLER_INT64)
-    TRY(UPB_HANDLER_UINT32)
-    TRY(UPB_HANDLER_UINT64)
-    TRY(UPB_HANDLER_FLOAT)
-    TRY(UPB_HANDLER_DOUBLE)
-    TRY(UPB_HANDLER_BOOL)
-    TRY(UPB_HANDLER_STARTSTR)
-    TRY(UPB_HANDLER_STRING)
-    TRY(UPB_HANDLER_ENDSTR)
-    TRY(UPB_HANDLER_STARTSUBMSG)
-    TRY(UPB_HANDLER_ENDSUBMSG)
-    TRY(UPB_HANDLER_STARTSEQ)
-    TRY(UPB_HANDLER_ENDSEQ)
+    upb_inttable t;
+    upb_value v;
+    upb_selector_t sel;
+
+    upb_inttable_init(&t, UPB_CTYPE_BOOL);
+    v = upb_value_bool(true);
+    upb_inttable_insert(&t, UPB_STARTMSG_SELECTOR, v);
+    upb_inttable_insert(&t, UPB_ENDMSG_SELECTOR, v);
+    for(upb_msg_field_begin(&j, m);
+        !upb_msg_field_done(&j);
+        upb_msg_field_next(&j)) {
+      upb_fielddef *f = upb_msg_iter_field(&j);
+      /* These calls will assert-fail in upb_table if the value already
+       * exists. */
+      TRY(UPB_HANDLER_INT32);
+      TRY(UPB_HANDLER_INT64)
+      TRY(UPB_HANDLER_UINT32)
+      TRY(UPB_HANDLER_UINT64)
+      TRY(UPB_HANDLER_FLOAT)
+      TRY(UPB_HANDLER_DOUBLE)
+      TRY(UPB_HANDLER_BOOL)
+      TRY(UPB_HANDLER_STARTSTR)
+      TRY(UPB_HANDLER_STRING)
+      TRY(UPB_HANDLER_ENDSTR)
+      TRY(UPB_HANDLER_STARTSUBMSG)
+      TRY(UPB_HANDLER_ENDSUBMSG)
+      TRY(UPB_HANDLER_STARTSEQ)
+      TRY(UPB_HANDLER_ENDSEQ)
+    }
+    upb_inttable_uninit(&t);
   }
-  upb_inttable_uninit(&t);
 #undef TRY
 #endif
 
@@ -333,14 +324,17 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
 }
 
 bool upb_def_freeze(upb_def *const* defs, int n, upb_status *s) {
+  int i;
+  int maxdepth;
+  bool ret;
   upb_status_clear(s);
 
-  // First perform validation, in two passes so we can check that we have a
-  // transitive closure without needing to search.
-  for (int i = 0; i < n; i++) {
+  /* First perform validation, in two passes so we can check that we have a
+   * transitive closure without needing to search. */
+  for (i = 0; i < n; i++) {
     upb_def *def = defs[i];
     if (upb_def_isfrozen(def)) {
-      // Could relax this requirement if it's annoying.
+      /* Could relax this requirement if it's annoying. */
       upb_status_seterrmsg(s, "def is already frozen");
       goto err;
     } else if (def->type == UPB_DEF_FIELD) {
@@ -351,14 +345,14 @@ bool upb_def_freeze(upb_def *const* defs, int n, upb_status *s) {
         goto err;
       }
     } else {
-      // Set now to detect transitive closure in the second pass.
+      /* Set now to detect transitive closure in the second pass. */
       def->came_from_user = true;
     }
   }
 
-  // Second pass of validation.  Also assign selector bases and indexes, and
-  // compact tables.
-  for (int i = 0; i < n; i++) {
+  /* Second pass of validation.  Also assign selector bases and indexes, and
+   * compact tables. */
+  for (i = 0; i < n; i++) {
     upb_msgdef *m = upb_dyncast_msgdef_mutable(defs[i]);
     upb_enumdef *e = upb_dyncast_enumdef_mutable(defs[i]);
     if (m) {
@@ -371,17 +365,17 @@ bool upb_def_freeze(upb_def *const* defs, int n, upb_status *s) {
     }
   }
 
-  // Def graph contains FieldDefs between each MessageDef, so double the limit.
-  int maxdepth = UPB_MAX_MESSAGE_DEPTH * 2;
+  /* Def graph contains FieldDefs between each MessageDef, so double the
+   * limit. */
+  maxdepth = UPB_MAX_MESSAGE_DEPTH * 2;
 
-  // Validation all passed; freeze the defs.
-  bool ret =
-      upb_refcounted_freeze((upb_refcounted * const *)defs, n, s, maxdepth);
+  /* Validation all passed; freeze the defs. */
+  ret = upb_refcounted_freeze((upb_refcounted * const *)defs, n, s, maxdepth);
   assert(!(s && ret != upb_ok(s)));
   return ret;
 
 err:
-  for (int i = 0; i < n; i++) {
+  for (i = 0; i < n; i++) {
     defs[i]->came_from_user = false;
   }
   assert(!(s && upb_ok(s)));
@@ -396,12 +390,12 @@ static void upb_enumdef_free(upb_refcounted *r) {
   upb_inttable_iter i;
   upb_inttable_begin(&i, &e->iton);
   for( ; !upb_inttable_done(&i); upb_inttable_next(&i)) {
-    // To clean up the upb_strdup() from upb_enumdef_addval().
+    /* To clean up the upb_strdup() from upb_enumdef_addval(). */
     free(upb_value_getcstr(upb_inttable_iter_value(&i)));
   }
   upb_strtable_uninit(&e->ntoi);
   upb_inttable_uninit(&e->iton);
-  upb_def_uninit(UPB_UPCAST(e));
+  upb_def_uninit(upb_enumdef_upcast_mutable(e));
   free(e);
 }
 
@@ -409,7 +403,8 @@ upb_enumdef *upb_enumdef_new(const void *owner) {
   static const struct upb_refcounted_vtbl vtbl = {NULL, &upb_enumdef_free};
   upb_enumdef *e = malloc(sizeof(*e));
   if (!e) return NULL;
-  if (!upb_def_init(UPB_UPCAST(e), UPB_DEF_ENUM, &vtbl, owner)) goto err2;
+  if (!upb_def_init(upb_enumdef_upcast_mutable(e), UPB_DEF_ENUM, &vtbl, owner))
+    goto err2;
   if (!upb_strtable_init(&e->ntoi, UPB_CTYPE_INT32)) goto err2;
   if (!upb_inttable_init(&e->iton, UPB_CTYPE_CSTR)) goto err1;
   return e;
@@ -422,9 +417,9 @@ err2:
 }
 
 upb_enumdef *upb_enumdef_dup(const upb_enumdef *e, const void *owner) {
+  upb_enum_iter i;
   upb_enumdef *new_e = upb_enumdef_new(owner);
   if (!new_e) return NULL;
-  upb_enum_iter i;
   for(upb_enum_begin(&i, e); !upb_enum_done(&i); upb_enum_next(&i)) {
     bool success = upb_enumdef_addval(
         new_e, upb_enum_iter_name(&i),upb_enum_iter_number(&i), NULL);
@@ -436,39 +431,18 @@ upb_enumdef *upb_enumdef_dup(const upb_enumdef *e, const void *owner) {
   return new_e;
 }
 
-bool upb_enumdef_isfrozen(const upb_enumdef *e) {
-  return upb_def_isfrozen(UPB_UPCAST(e));
-}
-
-void upb_enumdef_ref(const upb_enumdef *e, const void *owner) {
-  upb_def_ref(UPB_UPCAST(e), owner);
-}
-
-void upb_enumdef_unref(const upb_enumdef *e, const void *owner) {
-  upb_def_unref(UPB_UPCAST(e), owner);
-}
-
-void upb_enumdef_donateref(
-    const upb_enumdef *e, const void *from, const void *to) {
-  upb_def_donateref(UPB_UPCAST(e), from, to);
-}
-
-void upb_enumdef_checkref(const upb_enumdef *e, const void *owner) {
-  upb_def_checkref(UPB_UPCAST(e), owner);
-}
-
 bool upb_enumdef_freeze(upb_enumdef *e, upb_status *status) {
-  upb_def *d = UPB_UPCAST(e);
+  upb_def *d = upb_enumdef_upcast_mutable(e);
   return upb_def_freeze(&d, 1, status);
 }
 
 const char *upb_enumdef_fullname(const upb_enumdef *e) {
-  return upb_def_fullname(UPB_UPCAST(e));
+  return upb_def_fullname(upb_enumdef_upcast(e));
 }
 
 bool upb_enumdef_setfullname(upb_enumdef *e, const char *fullname,
                              upb_status *s) {
-  return upb_def_setfullname(UPB_UPCAST(e), fullname, s);
+  return upb_def_setfullname(upb_enumdef_upcast_mutable(e), fullname, s);
 }
 
 bool upb_enumdef_addval(upb_enumdef *e, const char *name, int32_t num,
@@ -517,7 +491,7 @@ int upb_enumdef_numvals(const upb_enumdef *e) {
 }
 
 void upb_enum_begin(upb_enum_iter *i, const upb_enumdef *e) {
-  // We iterate over the ntoi table, to account for duplicate numbers.
+  /* We iterate over the ntoi table, to account for duplicate numbers. */
   upb_strtable_begin(i, &e->ntoi);
 }
 
@@ -562,13 +536,13 @@ static void visitfield(const upb_refcounted *r, upb_refcounted_visit *visit,
                        void *closure) {
   const upb_fielddef *f = (const upb_fielddef*)r;
   if (upb_fielddef_containingtype(f)) {
-    visit(r, UPB_UPCAST2(upb_fielddef_containingtype(f)), closure);
+    visit(r, upb_msgdef_upcast2(upb_fielddef_containingtype(f)), closure);
   }
   if (upb_fielddef_containingoneof(f)) {
-    visit(r, UPB_UPCAST2(upb_fielddef_containingoneof(f)), closure);
+    visit(r, upb_oneofdef_upcast2(upb_fielddef_containingoneof(f)), closure);
   }
   if (upb_fielddef_subdef(f)) {
-    visit(r, UPB_UPCAST(upb_fielddef_subdef(f)), closure);
+    visit(r, upb_def_upcast(upb_fielddef_subdef(f)), closure);
   }
 }
 
@@ -577,26 +551,27 @@ static void freefield(upb_refcounted *r) {
   upb_fielddef_uninit_default(f);
   if (f->subdef_is_symbolic)
     free(f->sub.name);
-  upb_def_uninit(UPB_UPCAST(f));
+  upb_def_uninit(upb_fielddef_upcast_mutable(f));
   free(f);
 }
 
 static const char *enumdefaultstr(const upb_fielddef *f) {
+  const upb_enumdef *e;
   assert(f->type_is_set_ && f->type_ == UPB_TYPE_ENUM);
-  const upb_enumdef *e = upb_fielddef_enumsubdef(f);
+  e = upb_fielddef_enumsubdef(f);
   if (f->default_is_string && f->defaultval.bytes) {
-    // Default was explicitly set as a string.
+    /* Default was explicitly set as a string. */
     str_t *s = f->defaultval.bytes;
     return s->str;
   } else if (e) {
     if (!f->default_is_string) {
-      // Default was explicitly set as an integer; look it up in enumdef.
+      /* Default was explicitly set as an integer; look it up in enumdef. */
       const char *name = upb_enumdef_iton(e, f->defaultval.sint);
       if (name) {
         return name;
       }
     } else {
-      // Default is completely unset; pull enumdef default.
+      /* Default is completely unset; pull enumdef default. */
       if (upb_enumdef_numvals(e) > 0) {
         const char *name = upb_enumdef_iton(e, upb_enumdef_default(e));
         assert(name);
@@ -608,21 +583,22 @@ static const char *enumdefaultstr(const upb_fielddef *f) {
 }
 
 static bool enumdefaultint32(const upb_fielddef *f, int32_t *val) {
+  const upb_enumdef *e;
   assert(f->type_is_set_ && f->type_ == UPB_TYPE_ENUM);
-  const upb_enumdef *e = upb_fielddef_enumsubdef(f);
+  e = upb_fielddef_enumsubdef(f);
   if (!f->default_is_string) {
-    // Default was explicitly set as an integer.
+    /* Default was explicitly set as an integer. */
     *val = f->defaultval.sint;
     return true;
   } else if (e) {
     if (f->defaultval.bytes) {
-      // Default was explicitly set as a str; try to lookup corresponding int.
+      /* Default was explicitly set as a str; try to lookup corresponding int. */
       str_t *s = f->defaultval.bytes;
       if (upb_enumdef_ntoiz(e, s->str, val)) {
         return true;
       }
     } else {
-      // Default is unset; try to pull in enumdef default.
+      /* Default is unset; try to pull in enumdef default. */
       if (upb_enumdef_numvals(e) > 0) {
         *val = upb_enumdef_default(e);
         return true;
@@ -632,11 +608,11 @@ static bool enumdefaultint32(const upb_fielddef *f, int32_t *val) {
   return false;
 }
 
-upb_fielddef *upb_fielddef_new(const void *owner) {
+upb_fielddef *upb_fielddef_new(const void *o) {
   static const struct upb_refcounted_vtbl vtbl = {visitfield, freefield};
   upb_fielddef *f = malloc(sizeof(*f));
   if (!f) return NULL;
-  if (!upb_def_init(UPB_UPCAST(f), UPB_DEF_FIELD, &vtbl, owner)) {
+  if (!upb_def_init(upb_fielddef_upcast_mutable(f), UPB_DEF_FIELD, &vtbl, o)) {
     free(f);
     return NULL;
   }
@@ -654,19 +630,20 @@ upb_fielddef *upb_fielddef_new(const void *owner) {
   f->lazy_ = false;
   f->packed_ = true;
 
-  // For the moment we default this to UPB_INTFMT_VARIABLE, since it will work
-  // with all integer types and is in some since more "default" since the most
-  // normal-looking proto2 types int32/int64/uint32/uint64 use variable.
-  //
-  // Other options to consider:
-  // - there is no default; users must set this manually (like type).
-  // - default signed integers to UPB_INTFMT_ZIGZAG, since it's more likely to
-  //   be an optimal default for signed integers.
+  /* For the moment we default this to UPB_INTFMT_VARIABLE, since it will work
+   * with all integer types and is in some since more "default" since the most
+   * normal-looking proto2 types int32/int64/uint32/uint64 use variable.
+   *
+   * Other options to consider:
+   * - there is no default; users must set this manually (like type).
+   * - default signed integers to UPB_INTFMT_ZIGZAG, since it's more likely to
+   *   be an optimal default for signed integers. */
   f->intfmt = UPB_INTFMT_VARIABLE;
   return f;
 }
 
 upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner) {
+  const char *srcname;
   upb_fielddef *newf = upb_fielddef_new(owner);
   if (!newf) return NULL;
   upb_fielddef_settype(newf, upb_fielddef_type(f));
@@ -681,9 +658,8 @@ upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner) {
     newf->defaultval = f->defaultval;
   }
 
-  const char *srcname;
   if (f->subdef_is_symbolic) {
-    srcname = f->sub.name;  // Might be NULL.
+    srcname = f->sub.name;  /* Might be NULL. */
   } else {
     srcname = f->sub.def ? upb_def_fullname(f->sub.def) : NULL;
   }
@@ -700,27 +676,6 @@ upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner) {
   }
 
   return newf;
-}
-
-bool upb_fielddef_isfrozen(const upb_fielddef *f) {
-  return upb_def_isfrozen(UPB_UPCAST(f));
-}
-
-void upb_fielddef_ref(const upb_fielddef *f, const void *owner) {
-  upb_def_ref(UPB_UPCAST(f), owner);
-}
-
-void upb_fielddef_unref(const upb_fielddef *f, const void *owner) {
-  upb_def_unref(UPB_UPCAST(f), owner);
-}
-
-void upb_fielddef_donateref(
-    const upb_fielddef *f, const void *from, const void *to) {
-  upb_def_donateref(UPB_UPCAST(f), from, to);
-}
-
-void upb_fielddef_checkref(const upb_fielddef *f, const void *owner) {
-  upb_def_checkref(UPB_UPCAST(f), owner);
 }
 
 bool upb_fielddef_typeisset(const upb_fielddef *f) {
@@ -765,7 +720,7 @@ bool upb_fielddef_packed(const upb_fielddef *f) {
 }
 
 const char *upb_fielddef_name(const upb_fielddef *f) {
-  return upb_def_fullname(UPB_UPCAST(f));
+  return upb_def_fullname(upb_fielddef_upcast(f));
 }
 
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f) {
@@ -795,8 +750,8 @@ bool upb_fielddef_setcontainingtypename(upb_fielddef *f, const char *name,
     upb_status_seterrmsg(s, "field has already been added to a message.");
     return false;
   }
-  // TODO: validate name (upb_isident() doesn't quite work atm because this name
-  // may have a leading ".").
+  /* TODO: validate name (upb_isident() doesn't quite work atm because this name
+   * may have a leading "."). */
   release_containingtype(f);
   f->msg.name = upb_strdup(name);
   f->msg_is_symbolic = true;
@@ -808,7 +763,7 @@ bool upb_fielddef_setname(upb_fielddef *f, const char *name, upb_status *s) {
     upb_status_seterrmsg(s, "Already added to message or oneof");
     return false;
   }
-  return upb_def_setfullname(UPB_UPCAST(f), name, s);
+  return upb_def_setfullname(upb_fielddef_upcast_mutable(f), name, s);
 }
 
 static void chkdefaulttype(const upb_fielddef *f, upb_fieldtype_t type) {
@@ -868,7 +823,7 @@ const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len) {
   if (upb_fielddef_type(f) == UPB_TYPE_ENUM) {
     const char *ret = enumdefaultstr(f);
     assert(ret);
-    // Enum defaults can't have embedded NULLs.
+    /* Enum defaults can't have embedded NULLs. */
     if (len) *len = strlen(ret);
     return ret;
   }
@@ -899,7 +854,7 @@ static void upb_fielddef_init_default(upb_fielddef *f) {
       break;
     case UPB_TYPE_MESSAGE: break;
     case UPB_TYPE_ENUM:
-      // This is our special sentinel that indicates "not set" for an enum.
+      /* This is our special sentinel that indicates "not set" for an enum. */
       f->default_is_string = true;
       f->defaultval.bytes = NULL;
       break;
@@ -1145,6 +1100,7 @@ void upb_fielddef_setdefaultdouble(upb_fielddef *f, double value) {
 
 bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len,
                                 upb_status *s) {
+  str_t *str2;
   assert(upb_fielddef_isstring(f) || f->type_ == UPB_TYPE_ENUM);
   if (f->type_ == UPB_TYPE_ENUM && !upb_isident(str, len, false, s))
     return false;
@@ -1157,7 +1113,7 @@ bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len,
     assert(f->type_ == UPB_TYPE_ENUM);
   }
 
-  str_t *str2 = newstr(str, len);
+  str2 = newstr(str, len);
   f->defaultval.bytes = str2;
   f->default_is_string = true;
   return true;
@@ -1170,8 +1126,8 @@ void upb_fielddef_setdefaultcstr(upb_fielddef *f, const char *str,
 }
 
 bool upb_fielddef_enumhasdefaultint32(const upb_fielddef *f) {
-  assert(f->type_is_set_ && f->type_ == UPB_TYPE_ENUM);
   int32_t val;
+  assert(f->type_is_set_ && f->type_ == UPB_TYPE_ENUM);
   return enumdefaultint32(f, &val);
 }
 
@@ -1218,12 +1174,12 @@ bool upb_fielddef_setsubdef(upb_fielddef *f, const upb_def *subdef,
 
 bool upb_fielddef_setmsgsubdef(upb_fielddef *f, const upb_msgdef *subdef,
                                upb_status *s) {
-  return upb_fielddef_setsubdef(f, UPB_UPCAST(subdef), s);
+  return upb_fielddef_setsubdef(f, upb_msgdef_upcast(subdef), s);
 }
 
 bool upb_fielddef_setenumsubdef(upb_fielddef *f, const upb_enumdef *subdef,
                                 upb_status *s) {
-  return upb_fielddef_setsubdef(f, UPB_UPCAST(subdef), s);
+  return upb_fielddef_setsubdef(f, upb_enumdef_upcast(subdef), s);
 }
 
 bool upb_fielddef_setsubdefname(upb_fielddef *f, const char *name,
@@ -1233,8 +1189,8 @@ bool upb_fielddef_setsubdefname(upb_fielddef *f, const char *name,
     upb_status_seterrmsg(s, "field type does not accept a subdef");
     return false;
   }
-  // TODO: validate name (upb_isident() doesn't quite work atm because this name
-  // may have a leading ".").
+  /* TODO: validate name (upb_isident() doesn't quite work atm because this name
+   * may have a leading "."). */
   release_subdef(f);
   f->sub.name = upb_strdup(name);
   f->subdef_is_symbolic = true;
@@ -1283,20 +1239,20 @@ bool upb_fielddef_checkdescriptortype(int32_t type) {
 
 static void visitmsg(const upb_refcounted *r, upb_refcounted_visit *visit,
                      void *closure) {
+  upb_msg_oneof_iter o;
   const upb_msgdef *m = (const upb_msgdef*)r;
   upb_msg_field_iter i;
   for(upb_msg_field_begin(&i, m);
       !upb_msg_field_done(&i);
       upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
-    visit(r, UPB_UPCAST2(f), closure);
+    visit(r, upb_fielddef_upcast2(f), closure);
   }
-  upb_msg_oneof_iter o;
   for(upb_msg_oneof_begin(&o, m);
       !upb_msg_oneof_done(&o);
       upb_msg_oneof_next(&o)) {
     upb_oneofdef *f = upb_msg_iter_oneof(&o);
-    visit(r, UPB_UPCAST2(f), closure);
+    visit(r, upb_oneofdef_upcast2(f), closure);
   }
 }
 
@@ -1305,7 +1261,7 @@ static void freemsg(upb_refcounted *r) {
   upb_strtable_uninit(&m->ntoo);
   upb_strtable_uninit(&m->ntof);
   upb_inttable_uninit(&m->itof);
-  upb_def_uninit(UPB_UPCAST(m));
+  upb_def_uninit(upb_msgdef_upcast_mutable(m));
   free(m);
 }
 
@@ -1313,7 +1269,8 @@ upb_msgdef *upb_msgdef_new(const void *owner) {
   static const struct upb_refcounted_vtbl vtbl = {visitmsg, freemsg};
   upb_msgdef *m = malloc(sizeof(*m));
   if (!m) return NULL;
-  if (!upb_def_init(UPB_UPCAST(m), UPB_DEF_MSG, &vtbl, owner)) goto err2;
+  if (!upb_def_init(upb_msgdef_upcast_mutable(m), UPB_DEF_MSG, &vtbl, owner))
+    goto err2;
   if (!upb_inttable_init(&m->itof, UPB_CTYPE_PTR)) goto err3;
   if (!upb_strtable_init(&m->ntof, UPB_CTYPE_PTR)) goto err2;
   if (!upb_strtable_init(&m->ntoo, UPB_CTYPE_PTR)) goto err1;
@@ -1330,25 +1287,28 @@ err3:
 }
 
 upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner) {
+  bool ok;
+  upb_msg_field_iter i;
+  upb_msg_oneof_iter o;
+
   upb_msgdef *newm = upb_msgdef_new(owner);
   if (!newm) return NULL;
-  bool ok = upb_def_setfullname(UPB_UPCAST(newm),
-                                upb_def_fullname(UPB_UPCAST(m)), NULL);
+  ok = upb_def_setfullname(upb_msgdef_upcast_mutable(newm),
+                           upb_def_fullname(upb_msgdef_upcast(m)),
+                           NULL);
   newm->map_entry = m->map_entry;
   UPB_ASSERT_VAR(ok, ok);
-  upb_msg_field_iter i;
   for(upb_msg_field_begin(&i, m);
       !upb_msg_field_done(&i);
       upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_fielddef_dup(upb_msg_iter_field(&i), &f);
-    // Fields in oneofs are dup'd below.
+    /* Fields in oneofs are dup'd below. */
     if (upb_fielddef_containingoneof(f)) continue;
     if (!f || !upb_msgdef_addfield(newm, f, &f, NULL)) {
       upb_msgdef_unref(newm, owner);
       return NULL;
     }
   }
-  upb_msg_oneof_iter o;
   for(upb_msg_oneof_begin(&o, m);
       !upb_msg_oneof_done(&o);
       upb_msg_oneof_next(&o)) {
@@ -1361,43 +1321,22 @@ upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner) {
   return newm;
 }
 
-bool upb_msgdef_isfrozen(const upb_msgdef *m) {
-  return upb_def_isfrozen(UPB_UPCAST(m));
-}
-
-void upb_msgdef_ref(const upb_msgdef *m, const void *owner) {
-  upb_def_ref(UPB_UPCAST(m), owner);
-}
-
-void upb_msgdef_unref(const upb_msgdef *m, const void *owner) {
-  upb_def_unref(UPB_UPCAST(m), owner);
-}
-
-void upb_msgdef_donateref(
-    const upb_msgdef *m, const void *from, const void *to) {
-  upb_def_donateref(UPB_UPCAST(m), from, to);
-}
-
-void upb_msgdef_checkref(const upb_msgdef *m, const void *owner) {
-  upb_def_checkref(UPB_UPCAST(m), owner);
-}
-
 bool upb_msgdef_freeze(upb_msgdef *m, upb_status *status) {
-  upb_def *d = UPB_UPCAST(m);
+  upb_def *d = upb_msgdef_upcast_mutable(m);
   return upb_def_freeze(&d, 1, status);
 }
 
 const char *upb_msgdef_fullname(const upb_msgdef *m) {
-  return upb_def_fullname(UPB_UPCAST(m));
+  return upb_def_fullname(upb_msgdef_upcast(m));
 }
 
 bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname,
                             upb_status *s) {
-  return upb_def_setfullname(UPB_UPCAST(m), fullname, s);
+  return upb_def_setfullname(upb_msgdef_upcast_mutable(m), fullname, s);
 }
 
-// Helper: check that the field |f| is safe to add to msgdef |m|. Set an error
-// on status |s| and return false if not.
+/* Helper: check that the field |f| is safe to add to msgdef |m|. Set an error
+ * on status |s| and return false if not. */
 static bool check_field_add(const upb_msgdef *m, const upb_fielddef *f,
                             upb_status *s) {
   if (upb_fielddef_containingtype(f) != NULL) {
@@ -1427,40 +1366,42 @@ static void add_field(upb_msgdef *m, upb_fielddef *f, const void *ref_donor) {
 
 bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f, const void *ref_donor,
                          upb_status *s) {
-  // TODO: extensions need to have a separate namespace, because proto2 allows a
-  // top-level extension (ie. one not in any package) to have the same name as a
-  // field from the message.
-  //
-  // This also implies that there needs to be a separate lookup-by-name method
-  // for extensions.  It seems desirable for iteration to return both extensions
-  // and non-extensions though.
-  //
-  // We also need to validate that the field number is in an extension range iff
-  // it is an extension.
-
-  // This method is idempotent. Check if |f| is already part of this msgdef and
-  // return immediately if so.
+  /* TODO: extensions need to have a separate namespace, because proto2 allows a
+   * top-level extension (ie. one not in any package) to have the same name as a
+   * field from the message.
+   *
+   * This also implies that there needs to be a separate lookup-by-name method
+   * for extensions.  It seems desirable for iteration to return both extensions
+   * and non-extensions though.
+   *
+   * We also need to validate that the field number is in an extension range iff
+   * it is an extension.
+   *
+   * This method is idempotent. Check if |f| is already part of this msgdef and
+   * return immediately if so. */
   if (upb_fielddef_containingtype(f) == m) {
     return true;
   }
 
-  // Check constraints for all fields before performing any action.
+  /* Check constraints for all fields before performing any action. */
   if (!check_field_add(m, f, s)) {
     return false;
   } else if (upb_fielddef_containingoneof(f) != NULL) {
-    // Fields in a oneof can only be added by adding the oneof to the msgdef.
+    /* Fields in a oneof can only be added by adding the oneof to the msgdef. */
     upb_status_seterrmsg(s, "fielddef is part of a oneof");
     return false;
   }
 
-  // Constraint checks ok, perform the action.
+  /* Constraint checks ok, perform the action. */
   add_field(m, f, ref_donor);
   return true;
 }
 
 bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
                          upb_status *s) {
-  // Check various conditions that would prevent this oneof from being added.
+  upb_oneof_iter it;
+
+  /* Check various conditions that would prevent this oneof from being added. */
   if (upb_oneofdef_containingtype(o)) {
     upb_status_seterrmsg(s, "oneofdef already belongs to a message");
     return false;
@@ -1472,9 +1413,8 @@ bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
     return false;
   }
 
-  // Check that all of the oneof's fields do not conflict with names or numbers
-  // of fields already in the message.
-  upb_oneof_iter it;
+  /* Check that all of the oneof's fields do not conflict with names or numbers
+   * of fields already in the message. */
   for (upb_oneof_begin(&it, o); !upb_oneof_done(&it); upb_oneof_next(&it)) {
     const upb_fielddef *f = upb_oneof_iter_field(&it);
     if (!check_field_add(m, f, s)) {
@@ -1482,15 +1422,15 @@ bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
     }
   }
 
-  // Everything checks out -- commit now.
+  /* Everything checks out -- commit now. */
 
-  // Add oneof itself first.
+  /* Add oneof itself first. */
   o->parent = m;
   upb_strtable_insert(&m->ntoo, upb_oneofdef_name(o), upb_value_ptr(o));
   upb_ref2(o, m);
   upb_ref2(m, o);
 
-  // Add each field of the oneof directly to the msgdef.
+  /* Add each field of the oneof directly to the msgdef. */
   for (upb_oneof_begin(&it, o); !upb_oneof_done(&it); upb_oneof_next(&it)) {
     upb_fielddef *f = upb_oneof_iter_field(&it);
     add_field(m, f, NULL);
@@ -1582,10 +1522,10 @@ static void visitoneof(const upb_refcounted *r, upb_refcounted_visit *visit,
   upb_oneof_iter i;
   for (upb_oneof_begin(&i, o); !upb_oneof_done(&i); upb_oneof_next(&i)) {
     const upb_fielddef *f = upb_oneof_iter_field(&i);
-    visit(r, UPB_UPCAST2(f), closure);
+    visit(r, upb_fielddef_upcast2(f), closure);
   }
   if (o->parent) {
-    visit(r, UPB_UPCAST2(o->parent), closure);
+    visit(r, upb_msgdef_upcast2(o->parent), closure);
   }
 }
 
@@ -1593,7 +1533,7 @@ static void freeoneof(upb_refcounted *r) {
   upb_oneofdef *o = (upb_oneofdef*)r;
   upb_strtable_uninit(&o->ntof);
   upb_inttable_uninit(&o->itof);
-  upb_def_uninit(UPB_UPCAST(o));
+  upb_def_uninit(upb_oneofdef_upcast_mutable(o));
   free(o);
 }
 
@@ -1602,7 +1542,9 @@ upb_oneofdef *upb_oneofdef_new(const void *owner) {
   upb_oneofdef *o = malloc(sizeof(*o));
   o->parent = NULL;
   if (!o) return NULL;
-  if (!upb_def_init(UPB_UPCAST(o), UPB_DEF_ONEOF, &vtbl, owner)) goto err2;
+  if (!upb_def_init(upb_oneofdef_upcast_mutable(o), UPB_DEF_ONEOF, &vtbl,
+                    owner))
+    goto err2;
   if (!upb_inttable_init(&o->itof, UPB_CTYPE_PTR)) goto err2;
   if (!upb_strtable_init(&o->ntof, UPB_CTYPE_PTR)) goto err1;
   return o;
@@ -1615,12 +1557,13 @@ err2:
 }
 
 upb_oneofdef *upb_oneofdef_dup(const upb_oneofdef *o, const void *owner) {
+  bool ok;
+  upb_oneof_iter i;
   upb_oneofdef *newo = upb_oneofdef_new(owner);
   if (!newo) return NULL;
-  bool ok = upb_def_setfullname(UPB_UPCAST(newo),
-                                upb_def_fullname(UPB_UPCAST(o)), NULL);
+  ok = upb_def_setfullname(upb_oneofdef_upcast_mutable(newo),
+                           upb_def_fullname(upb_oneofdef_upcast(o)), NULL);
   UPB_ASSERT_VAR(ok, ok);
-  upb_oneof_iter i;
   for (upb_oneof_begin(&i, o); !upb_oneof_done(&i); upb_oneof_next(&i)) {
     upb_fielddef *f = upb_fielddef_dup(upb_oneof_iter_field(&i), &f);
     if (!f || !upb_oneofdef_addfield(newo, f, &f, NULL)) {
@@ -1631,29 +1574,8 @@ upb_oneofdef *upb_oneofdef_dup(const upb_oneofdef *o, const void *owner) {
   return newo;
 }
 
-bool upb_oneofdef_isfrozen(const upb_oneofdef *o) {
-  return upb_def_isfrozen(UPB_UPCAST(o));
-}
-
-void upb_oneofdef_ref(const upb_oneofdef *o, const void *owner) {
-  upb_def_ref(UPB_UPCAST(o), owner);
-}
-
-void upb_oneofdef_unref(const upb_oneofdef *o, const void *owner) {
-  upb_def_unref(UPB_UPCAST(o), owner);
-}
-
-void upb_oneofdef_donateref(const upb_oneofdef *o, const void *from,
-                           const void *to) {
-  upb_def_donateref(UPB_UPCAST(o), from, to);
-}
-
-void upb_oneofdef_checkref(const upb_oneofdef *o, const void *owner) {
-  upb_def_checkref(UPB_UPCAST(o), owner);
-}
-
 const char *upb_oneofdef_name(const upb_oneofdef *o) {
-  return upb_def_fullname(UPB_UPCAST(o));
+  return upb_def_fullname(upb_oneofdef_upcast(o));
 }
 
 bool upb_oneofdef_setname(upb_oneofdef *o, const char *fullname,
@@ -1662,7 +1584,7 @@ bool upb_oneofdef_setname(upb_oneofdef *o, const char *fullname,
     upb_status_seterrmsg(s, "oneof already added to a message");
     return false;
   }
-  return upb_def_setfullname(UPB_UPCAST(o), fullname, s);
+  return upb_def_setfullname(upb_oneofdef_upcast_mutable(o), fullname, s);
 }
 
 const upb_msgdef *upb_oneofdef_containingtype(const upb_oneofdef *o) {
@@ -1679,20 +1601,20 @@ bool upb_oneofdef_addfield(upb_oneofdef *o, upb_fielddef *f,
   assert(!upb_oneofdef_isfrozen(o));
   assert(!o->parent || !upb_msgdef_isfrozen(o->parent));
 
-  // This method is idempotent. Check if |f| is already part of this oneofdef
-  // and return immediately if so.
+  /* This method is idempotent. Check if |f| is already part of this oneofdef
+   * and return immediately if so. */
   if (upb_fielddef_containingoneof(f) == o) {
     return true;
   }
 
-  // The field must have an OPTIONAL label.
+  /* The field must have an OPTIONAL label. */
   if (upb_fielddef_label(f) != UPB_LABEL_OPTIONAL) {
     upb_status_seterrmsg(s, "fields in oneof must have OPTIONAL label");
     return false;
   }
 
-  // Check that no field with this name or number exists already in the oneof.
-  // Also check that the field is not already part of a oneof.
+  /* Check that no field with this name or number exists already in the oneof.
+   * Also check that the field is not already part of a oneof. */
   if (upb_fielddef_name(f) == NULL || upb_fielddef_number(f) == 0) {
     upb_status_seterrmsg(s, "field name or number were not set");
     return false;
@@ -1705,21 +1627,21 @@ bool upb_oneofdef_addfield(upb_oneofdef *o, upb_fielddef *f,
     return false;
   }
 
-  // We allow adding a field to the oneof either if the field is not part of a
-  // msgdef, or if it is and we are also part of the same msgdef.
+  /* We allow adding a field to the oneof either if the field is not part of a
+   * msgdef, or if it is and we are also part of the same msgdef. */
   if (o->parent == NULL) {
-    // If we're not in a msgdef, the field cannot be either. Otherwise we would
-    // need to magically add this oneof to a msgdef to remain consistent, which
-    // is surprising behavior.
+    /* If we're not in a msgdef, the field cannot be either. Otherwise we would
+     * need to magically add this oneof to a msgdef to remain consistent, which
+     * is surprising behavior. */
     if (upb_fielddef_containingtype(f) != NULL) {
       upb_status_seterrmsg(s, "fielddef already belongs to a message, but "
                               "oneof does not");
       return false;
     }
   } else {
-    // If we're in a msgdef, the user can add fields that either aren't in any
-    // msgdef (in which case they're added to our msgdef) or already a part of
-    // our msgdef.
+    /* If we're in a msgdef, the user can add fields that either aren't in any
+     * msgdef (in which case they're added to our msgdef) or already a part of
+     * our msgdef. */
     if (upb_fielddef_containingtype(f) != NULL &&
         upb_fielddef_containingtype(f) != o->parent) {
       upb_status_seterrmsg(s, "fielddef belongs to a different message "
@@ -1728,8 +1650,8 @@ bool upb_oneofdef_addfield(upb_oneofdef *o, upb_fielddef *f,
     }
   }
 
-  // Commit phase. First add the field to our parent msgdef, if any, because
-  // that may fail; then add the field to our own tables.
+  /* Commit phase. First add the field to our parent msgdef, if any, because
+   * that may fail; then add the field to our own tables. */
 
   if (o->parent != NULL && upb_fielddef_containingtype(f) == NULL) {
     if (!upb_msgdef_addfield((upb_msgdef*)o->parent, f, NULL, s)) {

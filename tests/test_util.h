@@ -38,8 +38,8 @@ bool parse_buffer(upb::BytesSink* sink, void* subc, const char* buf,
     memcpy(buf2, buf + start, len);
 
     if (verbose) {
-      fprintf(stderr, "Calling parse(%zu) for bytes %zu-%zu of the input\n",
-              len, start, end);
+      fprintf(stderr, "Calling parse(%u) for bytes %u-%u of the input\n",
+              (unsigned)len, (unsigned)start, (unsigned)end);
     }
 
     size_t parsed = sink->PutBuffer(subc, buf2, len, &global_handle);
@@ -48,18 +48,18 @@ bool parse_buffer(upb::BytesSink* sink, void* subc, const char* buf,
     if (verbose) {
       if (parsed == len) {
         fprintf(stderr,
-                "parse(%zu) = %zu, complete byte count indicates success\n",
-                len, len);
+                "parse(%u) = %u, complete byte count indicates success\n",
+                (unsigned)len, (unsigned)len);
       } else if (parsed > len) {
         fprintf(stderr,
-                "parse(%zu) = %zu, long byte count indicates success and skip"
-                "of the next %zu bytes\n",
-                len, parsed, parsed - len);
+                "parse(%u) = %u, long byte count indicates success and skip"
+                "of the next %u bytes\n",
+                (unsigned)len, (unsigned)parsed, (unsigned)(parsed - len));
       } else {
         fprintf(stderr,
-                "parse(%zu) = %zu, short byte count indicates failure; "
-                "last %zu bytes were not consumed\n",
-                len, parsed, len - parsed);
+                "parse(%u) = %u, short byte count indicates failure; "
+                "last %u bytes were not consumed\n",
+                (unsigned)len, (unsigned)parsed, (unsigned)(len - parsed));
       }
     }
 
@@ -73,8 +73,8 @@ bool parse_buffer(upb::BytesSink* sink, void* subc, const char* buf,
                 "Error: decode function returned complete byte count but set "
                 "error status\n");
       }
-      fprintf(stderr, "Status: %s, parsed=%zu, len=%zu\n",
-              status->error_message(), parsed, len);
+      fprintf(stderr, "Status: %s, parsed=%u, len=%u\n",
+              status->error_message(), (unsigned)parsed, (unsigned)len);
       ASSERT(false);
     }
 

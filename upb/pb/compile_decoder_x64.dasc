@@ -143,13 +143,13 @@ static upb_func *gethandler(const upb_handlers *h, upb_selector_t sel) {
   return h ? upb_handlers_gethandler(h, sel) : NULL;
 }
 
-// Defines an "assembly label" for the current code generation offset.
-// This label exists *purely* for debugging purposes: it is emitted into
-// the .so, and printed as part of JIT debugging output when UPB_JIT_LOAD_SO is
-// defined.
-//
-// We would define this in the .c file except that it conditionally defines a
-// pclabel.
+/* Defines an "assembly label" for the current code generation offset.
+ * This label exists *purely* for debugging purposes: it is emitted into
+ * the .so, and printed as part of JIT debugging output when UPB_JIT_LOAD_SO is
+ * defined.
+ *
+ * We would define this in the .c file except that it conditionally defines a
+ * pclabel. */
 static void asmlabel(jitcompiler *jc, const char *fmt, ...) {
 #ifndef NDEBUG
   int ofs = jc->dynasm->section->ofs;
@@ -167,37 +167,39 @@ static void asmlabel(jitcompiler *jc, const char *fmt, ...) {
   va_end(args);
 
   int pclabel = alloc_pclabel(jc);
-  // Normally we would prefer to allocate this inline with the codegen,
-  // ie.
-  //   |=>asmlabel(...)
-  // But since we do this conditionally, only when UPB_JIT_LOAD_SO is defined,
-  // we do it here instead.
+  /* Normally we would prefer to allocate this inline with the codegen,
+   * ie.
+   *   |=>asmlabel(...)
+   * But since we do this conditionally, only when UPB_JIT_LOAD_SO is defined,
+   * we do it here instead. */
   |=>pclabel:
   upb_inttable_insert(&jc->asmlabels, pclabel, upb_value_ptr(str));
 #endif
 }
 
-// Should only be called when the associated handler is known to exist.
+/* Should only be called when the associated handler is known to exist. */
 static bool alwaysok(const upb_handlers *h, upb_selector_t sel) {
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
   bool ok = upb_handlers_getattr(h, sel, &attr);
+  bool ret;
+
   UPB_ASSERT_VAR(ok, ok);
-  bool ret = upb_handlerattr_alwaysok(&attr);
+  ret = upb_handlerattr_alwaysok(&attr);
   upb_handlerattr_uninit(&attr);
   return ret;
 }
 
-// Emit static assembly routines; code that does not vary based on the message
-// schema.  Since it's not input-dependent, we only need one single copy of it.
-// For the moment we generate a single copy per generated handlers.  Eventually
-// we should generate this code at compile time and link it into the binary so
-// we have one copy total.  To do that we'll want to be sure that it is within
-// 2GB of our JIT code, so that branches between the two are near (rel32).
-//
-// We'd put this assembly in a .s file directly, but DynASM's ability to
-// calculate structure offsets automatically is too useful to pass up (it's way
-// more convenient to write DECODER->sink than [rbx + 0x96], especially since
-// the latter would have to be changed whenever the structure is updated).
+/* Emit static assembly routines; code that does not vary based on the message
+ * schema.  Since it's not input-dependent, we only need one single copy of it.
+ * For the moment we generate a single copy per generated handlers.  Eventually
+ * we should generate this code at compile time and link it into the binary so
+ * we have one copy total.  To do that we'll want to be sure that it is within
+ * 2GB of our JIT code, so that branches between the two are near (rel32).
+ *
+ * We'd put this assembly in a .s file directly, but DynASM's ability to
+ * calculate structure offsets automatically is too useful to pass up (it's way
+ * more convenient to write DECODER->sink than [rbx + 0x96], especially since
+ * the latter would have to be changed whenever the structure is updated). */
 static void emit_static_asm(jitcompiler *jc) {
   | // Trampolines for entering/exiting the JIT.  These are a bit tricky to
   | // support full resuming; when we suspend we copy the JIT's portion of
@@ -526,15 +528,17 @@ static void jitprimitive(jitcompiler *jc, opcode op,
     X, F64, F32, V64, V64, V32, F64, F32, V64, X, X, X, X, V32, V32, F32, F64,
     V32, V64 };
   static char fastpath_bytes[] = { 1, 1, 4, 8 };
-  const valtype_t type = types[op];
-  const int fastbytes = fastpath_bytes[type];
+  const valtype_t vtype = types[op];
+  const int fastbytes = fastpath_bytes[vtype];
   upb_func *handler = gethandler(h, sel);
+  upb_fieldtype_t ftype;
+  const upb_shim_data *data;
 
   if (handler) {
     |1:
     |  chkneob  fastbytes, >3
     |2:
-    switch (type) {
+    switch (vtype) {
     case V32:
       |  call   ->decodev32_fallback
       break;
@@ -551,7 +555,7 @@ static void jitprimitive(jitcompiler *jc, opcode op,
     }
     |  jmp    >4
 
-    // Fast path decode; for when check_bytes bytes are available.
+    /* Fast path decode; for when check_bytes bytes are available. */
     |3:
     switch (op) {
     case OP_PARSE_SFIXED32:
@@ -569,19 +573,19 @@ static void jitprimitive(jitcompiler *jc, opcode op,
       |  movsd  xmm0, qword [PTR]
       break;
     default:
-      // Inline one byte of varint decoding.
+      /* Inline one byte of varint decoding. */
       |  movzx  edx, byte [PTR]
       |  test   dl, dl
       |  js     <2   // Fallback to slow path for >1 byte varint.
       break;
     }
 
-    // Second-stage decode; used for both fast and slow paths
-    // (only needed for a few types).
+    /* Second-stage decode; used for both fast and slow paths */
+    /* (only needed for a few types). */
     |4:
     switch (op) {
     case OP_PARSE_SINT32:
-      // 32-bit zig-zag decode.
+      /* 32-bit zig-zag decode. */
       |  mov    eax, edx
       |  shr    edx, 1
       |  and    eax, 1
@@ -589,7 +593,7 @@ static void jitprimitive(jitcompiler *jc, opcode op,
       |  xor    edx, eax
       break;
     case OP_PARSE_SINT64:
-      // 64-bit zig-zag decode.
+      /* 64-bit zig-zag decode. */
       |  mov    rax, rdx
       |  shr    rdx, 1
       |  and    rax, 1
@@ -603,11 +607,10 @@ static void jitprimitive(jitcompiler *jc, opcode op,
     default: break;
     }
 
-    // Call callback (or specialize if we can).
-    upb_fieldtype_t type;
-    const upb_shim_data *data = upb_shim_getdata(h, sel, &type);
+    /* Call callback (or specialize if we can). */
+    data = upb_shim_getdata(h, sel, &ftype);
     if (data) {
-      switch (type) {
+      switch (ftype) {
         case UPB_TYPE_INT64:
         case UPB_TYPE_UINT64:
           |  mov   [CLOSURE + data->offset], rdx
@@ -645,14 +648,14 @@ static void jitprimitive(jitcompiler *jc, opcode op,
       }
     }
 
-    // We do this last so that the checkpoint is not advanced past the user's
-    // data until the callback has returned success.
+    /* We do this last so that the checkpoint is not advanced past the user's
+     * data until the callback has returned success. */
     |  add    PTR, fastbytes
   } else {
-    // No handler registered for this value, just skip it.
+    /* No handler registered for this value, just skip it. */
     |  chkneob  fastbytes, >3
     |2:
-    switch (type) {
+    switch (vtype) {
     case V32:
       |  call   ->skipv32_fallback
       break;
@@ -668,9 +671,9 @@ static void jitprimitive(jitcompiler *jc, opcode op,
     case X: break;
     }
 
-    // Fast-path skip.
+    /* Fast-path skip. */
     |3:
-    if (type == V32 || type == V64) {
+    if (vtype == V32 || vtype == V64) {
       |  test   byte [PTR], 0x80
       |  jnz    <2
     }
@@ -680,21 +683,21 @@ static void jitprimitive(jitcompiler *jc, opcode op,
 
 static void jitdispatch(jitcompiler *jc,
                         const upb_pbdecodermethod *method) {
-  // Lots of room for tweaking/optimization here.
+  /* Lots of room for tweaking/optimization here. */
 
   const upb_inttable *dispatch = &method->dispatch;
   bool has_hash_entries = (dispatch->t.count > 0);
 
-  // Whether any of the fields for this message can have two wire types which
-  // are both valid (packed & non-packed).
-  //
-  // OPT: populate this more precisely; not all messages with hash entries have
-  // this characteristic.
+  /* Whether any of the fields for this message can have two wire types which
+   * are both valid (packed & non-packed).
+   *
+   * OPT: populate this more precisely; not all messages with hash entries have
+   * this characteristic. */
   bool has_multi_wiretype = has_hash_entries;
 
   |=>define_jmptarget(jc, &method->dispatch):
   |1:
-  // Decode the field tag.
+  /* Decode the field tag. */
   |  mov     aword DECODER->checkpoint, PTR
   |  chkeob  2, >6
   |  movzx   edx, byte [PTR]
@@ -721,8 +724,8 @@ static void jitdispatch(jitcompiler *jc,
   |  shr     edx, 3
   |  and     cl, 7
 
-  // See comment attached to upb_pbdecodermethod.dispatch for layout of the
-  // dispatch table.
+  /* See comment attached to upb_pbdecodermethod.dispatch for layout of the
+   * dispatch table. */
   |2:
   |  cmp     edx, dispatch->array_size
   if (has_hash_entries) {
@@ -794,15 +797,16 @@ static void jitdispatch(jitcompiler *jc,
 
 static void jittag(jitcompiler *jc, uint64_t tag, int n, int ofs,
                    const upb_pbdecodermethod *method) {
-  // Internally we parse unknown fields; if this runs us into DELIMEND we jump
-  // to the corresponding DELIMEND target (either msg end or repeated field
-  // end), which we find from the OP_CHECKDELIM which must have necessarily
-  // preceded us.
+  /* Internally we parse unknown fields; if this runs us into DELIMEND we jump
+   * to the corresponding DELIMEND target (either msg end or repeated field
+   * end), which we find from the OP_CHECKDELIM which must have necessarily
+   * preceded us. */
   uint32_t last_instruction = *(jc->pc - 2);
   int last_arg = (int32_t)last_instruction >> 8;
-  assert((last_instruction & 0xff) == OP_CHECKDELIM);
   uint32_t *delimend = (jc->pc - 1) + last_arg;
   const size_t ptr_words = sizeof(void*) / sizeof(uint32_t);
+
+  assert((last_instruction & 0xff) == OP_CHECKDELIM);
 
   if (getop(*(jc->pc - 1)) == OP_TAGN) {
     jc->pc += ptr_words;
@@ -861,7 +865,7 @@ static void jittag(jitcompiler *jc, uint64_t tag, int n, int ofs,
   |5:
 }
 
-// Compile the bytecode to x64.
+/* Compile the bytecode to x64. */
 static void jitbytecode(jitcompiler *jc) {
   upb_pbdecodermethod *method = NULL;
   const upb_handlers *h = NULL;
@@ -872,13 +876,13 @@ static void jitbytecode(jitcompiler *jc) {
     int32_t longofs = arg;
 
     if (op != OP_SETDISPATCH) {
-      // Skipped for SETDISPATCH because it defines its own asmlabel for the
-      // dispatch code it emits.
+      /* Skipped for SETDISPATCH because it defines its own asmlabel for the
+       * dispatch code it emits. */
       asmlabel(jc, "0x%lx.%s", pcofs(jc), upb_pbdecoder_getopname(op));
 
-      // Skipped for SETDISPATCH because it should point at the function
-      // prologue, not the dispatch function that is emitted first.
-      // TODO: optimize this to only define pclabels that are actually used.
+      /* Skipped for SETDISPATCH because it should point at the function
+       * prologue, not the dispatch function that is emitted first.
+       * TODO: optimize this to only define pclabels that are actually used. */
       |=>define_jmptarget(jc, jc->pc):
     }
 
@@ -888,7 +892,7 @@ static void jitbytecode(jitcompiler *jc) {
     case OP_STARTMSG: {
       upb_func *startmsg = gethandler(h, UPB_STARTMSG_SELECTOR);
       if (startmsg) {
-        // bool startmsg(void *closure, const void *hd)
+        /* bool startmsg(void *closure, const void *hd) */
         |1:
         |  mov   ARG1_64, CLOSURE
         |  load_handler_data h, UPB_STARTMSG_SELECTOR
@@ -909,7 +913,7 @@ static void jitbytecode(jitcompiler *jc) {
       upb_func *endmsg = gethandler(h, UPB_ENDMSG_SELECTOR);
       |9:
       if (endmsg) {
-        // bool endmsg(void *closure, const void *hd, upb_status *status)
+        /* bool endmsg(void *closure, const void *hd, upb_status *status) */
         |  mov   ARG1_64, CLOSURE
         |  load_handler_data h, UPB_ENDMSG_SELECTOR
         |  mov   ARG3_64, DECODER->status
@@ -919,27 +923,28 @@ static void jitbytecode(jitcompiler *jc) {
     }
     case OP_SETDISPATCH: {
       uint32_t *op_pc = jc->pc - 1;
-
-      // Load info for new method.
+      const char *msgname;
       upb_inttable *dispatch;
+
+      /* Load info for new method. */
       memcpy(&dispatch, jc->pc, sizeof(void*));
       jc->pc += sizeof(void*) / sizeof(uint32_t);
-      // The OP_SETDISPATCH bytecode contains a pointer that is
-      // &method->dispatch; we want to go backwards and recover method.
+      /* The OP_SETDISPATCH bytecode contains a pointer that is
+       * &method->dispatch; we want to go backwards and recover method. */
       method =
           (void*)((char*)dispatch - offsetof(upb_pbdecodermethod, dispatch));
-      // May be NULL, in which case no handlers for this message will be found.
-      // OPT: we should do better by completely skipping the message in this
-      // case instead of parsing it field by field.  We should also do the skip
-      // in the containing message's code.
+      /* May be NULL, in which case no handlers for this message will be found.
+       * OPT: we should do better by completely skipping the message in this
+       * case instead of parsing it field by field.  We should also do the skip
+       * in the containing message's code. */
       h = method->dest_handlers_;
-      const char *msgname = upb_msgdef_fullname(upb_handlers_msgdef(h));
+      msgname = upb_msgdef_fullname(upb_handlers_msgdef(h));
 
-      // Emit dispatch code for new method.
+      /* Emit dispatch code for new method. */
       asmlabel(jc, "0x%lx.dispatch.%s", pcofs(jc), msgname);
       jitdispatch(jc, method);
 
-      // Emit function prologue for new method.
+      /* Emit function prologue for new method. */
       asmlabel(jc, "0x%lx.parse.%s", pcofs(jc), msgname);
       |=>define_jmptarget(jc, op_pc):
       |=>define_jmptarget(jc, method):
@@ -967,9 +972,9 @@ static void jitbytecode(jitcompiler *jc) {
     case OP_STARTSTR: {
       upb_func *start = gethandler(h, arg);
       if (start) {
-        // void *startseq(void *closure, const void *hd)
-        // void *startsubmsg(void *closure, const void *hd)
-        // void *startstr(void *closure, const void *hd, size_t size_hint)
+        /* void *startseq(void *closure, const void *hd)
+         * void *startsubmsg(void *closure, const void *hd)
+         * void *startstr(void *closure, const void *hd, size_t size_hint) */
         |1:
         |  mov   ARG1_64, CLOSURE
         |  load_handler_data h, arg
@@ -987,7 +992,7 @@ static void jitbytecode(jitcompiler *jc) {
         }
         |  mov   CLOSURE, rax
       } else {
-        // TODO: nop is only required because of asmlabel().
+        /* TODO: nop is only required because of asmlabel(). */
         |  nop
       }
       break;
@@ -997,9 +1002,9 @@ static void jitbytecode(jitcompiler *jc) {
     case OP_ENDSTR: {
       upb_func *end = gethandler(h, arg);
       if (end) {
-        // bool endseq(void *closure, const void *hd)
-        // bool endsubmsg(void *closure, const void *hd)
-        // bool endstr(void *closure, const void *hd)
+        /* bool endseq(void *closure, const void *hd)
+         * bool endsubmsg(void *closure, const void *hd)
+         * bool endstr(void *closure, const void *hd) */
         |1:
         |  mov   ARG1_64, CLOSURE
         |  load_handler_data h, arg
@@ -1012,7 +1017,7 @@ static void jitbytecode(jitcompiler *jc) {
           |2:
         }
       } else {
-        // TODO: nop is only required because of asmlabel().
+        /* TODO: nop is only required because of asmlabel(). */
         |  nop
       }
       break;
@@ -1028,7 +1033,8 @@ static void jitbytecode(jitcompiler *jc) {
       |  jmp   <1
       |2:
       if (str) {
-        // size_t str(void *closure, const void *hd, const char *str, size_t n)
+        /* size_t str(void *closure, const void *hd, const char *str,
+         *            size_t n) */
         |  mov   ARG1_64, CLOSURE
         |  load_handler_data h, arg
         |  mov   ARG3_64, PTR
@@ -1072,7 +1078,7 @@ static void jitbytecode(jitcompiler *jc) {
       |  mov   CLOSURE, FRAME->sink.closure
       break;
     case OP_SETDELIM:
-      // OPT: experiment with testing vs old offset to optimize away.
+      /* OPT: experiment with testing vs old offset to optimize away. */
       |  mov   DATAEND, DECODER->end
       |  add   DELIMEND, FRAME->end_ofs
       |  cmp   DELIMEND, DECODER->buf

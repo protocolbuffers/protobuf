@@ -15,28 +15,40 @@
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
 #include "upb/sink.h"
+#include "upb/structdefs.int.h"
 #include "upb/table.int.h"
 
-// Opcode definitions.  The canonical meaning of each opcode is its
-// implementation in the interpreter (the JIT is written to match this).
-//
-// All instructions have the opcode in the low byte.
-// Instruction format for most instructions is:
-//
-// +-------------------+--------+
-// |     arg (24)      | op (8) |
-// +-------------------+--------+
-//
-// Exceptions are indicated below.  A few opcodes are multi-word.
+/* C++ names are not actually used since this type isn't exposed to users. */
+#ifdef __cplusplus
+namespace upb {
+namespace pb {
+class MessageGroup;
+}  /* namespace pb */
+}  /* namespace upb */
+#endif
+UPB_DECLARE_DERIVED_TYPE(upb::pb::MessageGroup, upb::RefCounted,
+                         mgroup, upb_refcounted)
+
+/* Opcode definitions.  The canonical meaning of each opcode is its
+ * implementation in the interpreter (the JIT is written to match this).
+ *
+ * All instructions have the opcode in the low byte.
+ * Instruction format for most instructions is:
+ *
+ * +-------------------+--------+
+ * |     arg (24)      | op (8) |
+ * +-------------------+--------+
+ *
+ * Exceptions are indicated below.  A few opcodes are multi-word. */
 typedef enum {
-  // Opcodes 1-8, 13, 15-18 parse their respective descriptor types.
-  // Arg for all of these is the upb selector for this field.
+  /* Opcodes 1-8, 13, 15-18 parse their respective descriptor types.
+   * Arg for all of these is the upb selector for this field. */
 #define T(type) OP_PARSE_ ## type = UPB_DESCRIPTOR_TYPE_ ## type
   T(DOUBLE), T(FLOAT), T(INT64), T(UINT64), T(INT32), T(FIXED64), T(FIXED32),
   T(BOOL), T(UINT32), T(SFIXED32), T(SFIXED64), T(SINT32), T(SINT64),
 #undef T
-  OP_STARTMSG       = 9,   // No arg.
-  OP_ENDMSG         = 10,  // No arg.
+  OP_STARTMSG       = 9,   /* No arg. */
+  OP_ENDMSG         = 10,  /* No arg. */
   OP_STARTSEQ       = 11,
   OP_ENDSEQ         = 12,
   OP_STARTSUBMSG    = 14,
@@ -45,148 +57,185 @@ typedef enum {
   OP_STRING         = 21,
   OP_ENDSTR         = 22,
 
-  OP_PUSHTAGDELIM   = 23,  // No arg.
-  OP_PUSHLENDELIM   = 24,  // No arg.
-  OP_POP            = 25,  // No arg.
-  OP_SETDELIM       = 26,  // No arg.
-  OP_SETBIGGROUPNUM = 27,  // two words: | unused (24) | opc || groupnum (32) |
+  OP_PUSHTAGDELIM   = 23,  /* No arg. */
+  OP_PUSHLENDELIM   = 24,  /* No arg. */
+  OP_POP            = 25,  /* No arg. */
+  OP_SETDELIM       = 26,  /* No arg. */
+  OP_SETBIGGROUPNUM = 27,  /* two words:
+                            *   | unused (24)     | opc (8) |
+                            *   |        groupnum (32)      | */
   OP_CHECKDELIM     = 28,
   OP_CALL           = 29,
   OP_RET            = 30,
   OP_BRANCH         = 31,
 
-  // Different opcodes depending on how many bytes expected.
-  OP_TAG1           = 32,  // | expected tag (16) | jump target (8) | opc (8) |
-  OP_TAG2           = 33,  // | expected tag (16) | jump target (8) | opc (8) |
-  OP_TAGN           = 34,  // three words:
-                           //   | unused (16) | jump target(8) | opc (8) |
-                           //   |           expected tag 1 (32)          |
-                           //   |           expected tag 2 (32)          |
+  /* Different opcodes depending on how many bytes expected. */
+  OP_TAG1           = 32,  /* | match tag (16) | jump target (8) | opc (8) | */
+  OP_TAG2           = 33,  /* | match tag (16) | jump target (8) | opc (8) | */
+  OP_TAGN           = 34,  /* three words: */
+                           /*   | unused (16) | jump target(8) | opc (8) | */
+                           /*   |           match tag 1 (32)             | */
+                           /*   |           match tag 2 (32)             | */
 
-  OP_SETDISPATCH    = 35,  // N words:
-                           //   | unused (24)         | opc |
-                           //   | upb_inttable* (32 or 64)  |
+  OP_SETDISPATCH    = 35,  /* N words: */
+                           /*   | unused (24)         | opc | */
+                           /*   | upb_inttable* (32 or 64)  | */
 
-  OP_DISPATCH       = 36,  // No arg.
+  OP_DISPATCH       = 36,  /* No arg. */
 
-  OP_HALT           = 37,  // No arg.
+  OP_HALT           = 37   /* No arg. */
 } opcode;
 
 #define OP_MAX OP_HALT
 
 UPB_INLINE opcode getop(uint32_t instr) { return instr & 0xff; }
 
-// Method group; represents a set of decoder methods that had their code
-// emitted together, and must therefore be freed together.  Immutable once
-// created.  It is possible we may want to expose this to users at some point.
-//
-// Overall ownership of Decoder objects looks like this:
-//
-//                +----------+
-//                |          | <---> DecoderMethod
-//                | method   |
-// CodeCache ---> |  group   | <---> DecoderMethod
-//                |          |
-//                | (mgroup) | <---> DecoderMethod
-//                +----------+
-typedef struct {
+/* Method group; represents a set of decoder methods that had their code
+ * emitted together, and must therefore be freed together.  Immutable once
+ * created.  It is possible we may want to expose this to users at some point.
+ *
+ * Overall ownership of Decoder objects looks like this:
+ *
+ *                +----------+
+ *                |          | <---> DecoderMethod
+ *                | method   |
+ * CodeCache ---> |  group   | <---> DecoderMethod
+ *                |          |
+ *                | (mgroup) | <---> DecoderMethod
+ *                +----------+
+ */
+struct mgroup {
   upb_refcounted base;
 
-  // Maps upb_msgdef/upb_handlers -> upb_pbdecodermethod.  We own refs on the
-  // methods.
+  /* Maps upb_msgdef/upb_handlers -> upb_pbdecodermethod.  We own refs on the
+   * methods. */
   upb_inttable methods;
 
-  // When we add the ability to link to previously existing mgroups, we'll
-  // need an array of mgroups we reference here, and own refs on them.
+  /* When we add the ability to link to previously existing mgroups, we'll
+   * need an array of mgroups we reference here, and own refs on them. */
 
-  // The bytecode for our methods, if any exists.  Owned by us.
+  /* The bytecode for our methods, if any exists.  Owned by us. */
   uint32_t *bytecode;
   uint32_t *bytecode_end;
 
 #ifdef UPB_USE_JIT_X64
-  // JIT-generated machine code, if any.
+  /* JIT-generated machine code, if any. */
   upb_string_handlerfunc *jit_code;
-  // The size of the jit_code (required to munmap()).
+  /* The size of the jit_code (required to munmap()). */
   size_t jit_size;
   char *debug_info;
   void *dl;
 #endif
-} mgroup;
+};
 
-// The maximum that any submessages can be nested.  Matches proto2's limit.
-// This specifies the size of the decoder's statically-sized array and therefore
-// setting it high will cause the upb::pb::Decoder object to be larger.
-//
-// If necessary we can add a runtime-settable property to Decoder that allow
-// this to be larger than the compile-time setting, but this would add
-// complexity, particularly since we would have to decide how/if to give users
-// the ability to set a custom memory allocation function.
+/* The maximum that any submessages can be nested.  Matches proto2's limit.
+ * This specifies the size of the decoder's statically-sized array and therefore
+ * setting it high will cause the upb::pb::Decoder object to be larger.
+ *
+ * If necessary we can add a runtime-settable property to Decoder that allow
+ * this to be larger than the compile-time setting, but this would add
+ * complexity, particularly since we would have to decide how/if to give users
+ * the ability to set a custom memory allocation function. */
 #define UPB_DECODER_MAX_NESTING 64
 
-// Internal-only struct used by the decoder.
+/* Internal-only struct used by the decoder. */
 typedef struct {
-  // Space optimization note: we store two pointers here that the JIT
-  // doesn't need at all; the upb_handlers* inside the sink and
-  // the dispatch table pointer.  We can optimze so that the JIT uses
-  // smaller stack frames than the interpreter.  The only thing we need
-  // to guarantee is that the fallback routines can find end_ofs.
+  /* Space optimization note: we store two pointers here that the JIT
+   * doesn't need at all; the upb_handlers* inside the sink and
+   * the dispatch table pointer.  We can optimze so that the JIT uses
+   * smaller stack frames than the interpreter.  The only thing we need
+   * to guarantee is that the fallback routines can find end_ofs. */
   upb_sink sink;
 
-  // The absolute stream offset of the end-of-frame delimiter.
-  // Non-delimited frames (groups and non-packed repeated fields) reuse the
-  // delimiter of their parent, even though the frame may not end there.
-  //
-  // NOTE: the JIT stores a slightly different value here for non-top frames.
-  // It stores the value relative to the end of the enclosed message.  But the
-  // top frame is still stored the same way, which is important for ensuring
-  // that calls from the JIT into C work correctly.
+  /* The absolute stream offset of the end-of-frame delimiter.
+   * Non-delimited frames (groups and non-packed repeated fields) reuse the
+   * delimiter of their parent, even though the frame may not end there.
+   *
+   * NOTE: the JIT stores a slightly different value here for non-top frames.
+   * It stores the value relative to the end of the enclosed message.  But the
+   * top frame is still stored the same way, which is important for ensuring
+   * that calls from the JIT into C work correctly. */
   uint64_t end_ofs;
   const uint32_t *base;
 
-  // 0 indicates a length-delimited field.
-  // A positive number indicates a known group.
-  // A negative number indicates an unknown group.
+  /* 0 indicates a length-delimited field.
+   * A positive number indicates a known group.
+   * A negative number indicates an unknown group. */
   int32_t groupnum;
-  upb_inttable *dispatch;  // Not used by the JIT.
+  upb_inttable *dispatch;  /* Not used by the JIT. */
 } upb_pbdecoder_frame;
+
+struct upb_pbdecodermethod {
+  upb_refcounted base;
+
+  /* While compiling, the base is relative in "ofs", after compiling it is
+   * absolute in "ptr". */
+  union {
+    uint32_t ofs;     /* PC offset of method. */
+    void *ptr;        /* Pointer to bytecode or machine code for this method. */
+  } code_base;
+
+  /* The decoder method group to which this method belongs.  We own a ref.
+   * Owning a ref on the entire group is more coarse-grained than is strictly
+   * necessary; all we truly require is that methods we directly reference
+   * outlive us, while the group could contain many other messages we don't
+   * require.  But the group represents the messages that were
+   * allocated+compiled together, so it makes the most sense to free them
+   * together also. */
+  const upb_refcounted *group;
+
+  /* Whether this method is native code or bytecode. */
+  bool is_native_;
+
+  /* The handler one calls to invoke this method. */
+  upb_byteshandler input_handler_;
+
+  /* The destination handlers this method is bound to.  We own a ref. */
+  const upb_handlers *dest_handlers_;
+
+  /* Dispatch table -- used by both bytecode decoder and JIT when encountering a
+   * field number that wasn't the one we were expecting to see.  See
+   * decoder.int.h for the layout of this table. */
+  upb_inttable dispatch;
+};
 
 struct upb_pbdecoder {
   upb_env *env;
 
-  // Our input sink.
+  /* Our input sink. */
   upb_bytessink input_;
 
-  // The decoder method we are parsing with (owned).
+  /* The decoder method we are parsing with (owned). */
   const upb_pbdecodermethod *method_;
 
   size_t call_len;
   const uint32_t *pc, *last;
 
-  // Current input buffer and its stream offset.
+  /* Current input buffer and its stream offset. */
   const char *buf, *ptr, *end, *checkpoint;
 
-  // End of the delimited region, relative to ptr, or NULL if not in this buf.
+  /* End of the delimited region, relative to ptr, NULL if not in this buf. */
   const char *delim_end;
 
-  // End of the delimited region, relative to ptr, or end if not in this buf.
+  /* End of the delimited region, relative to ptr, end if not in this buf. */
   const char *data_end;
 
-  // Overall stream offset of "buf."
+  /* Overall stream offset of "buf." */
   uint64_t bufstart_ofs;
 
-  // Buffer for residual bytes not parsed from the previous buffer.
-  // The maximum number of residual bytes we require is 12; a five-byte
-  // unknown tag plus an eight-byte value, less one because the value
-  // is only a partial value.
+  /* Buffer for residual bytes not parsed from the previous buffer.
+   * The maximum number of residual bytes we require is 12; a five-byte
+   * unknown tag plus an eight-byte value, less one because the value
+   * is only a partial value. */
   char residual[12];
   char *residual_end;
 
-  // Stores the user buffer passed to our decode function.
+  /* Stores the user buffer passed to our decode function. */
   const char *buf_param;
   size_t size_param;
   const upb_bufhandle *handle;
 
-  // Our internal stack.
+  /* Our internal stack. */
   upb_pbdecoder_frame *stack, *top, *limit;
   const uint32_t **callstack;
   size_t stack_size;
@@ -194,22 +243,22 @@ struct upb_pbdecoder {
   upb_status *status;
 
 #ifdef UPB_USE_JIT_X64
-  // Used momentarily by the generated code to store a value while a user
-  // function is called.
+  /* Used momentarily by the generated code to store a value while a user
+   * function is called. */
   uint32_t tmp_len;
 
   const void *saved_rsp;
 #endif
 };
 
-// Decoder entry points; used as handlers.
+/* Decoder entry points; used as handlers. */
 void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint);
 void *upb_pbdecoder_startjit(void *closure, const void *hd, size_t size_hint);
 size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
                             size_t size, const upb_bufhandle *handle);
 bool upb_pbdecoder_end(void *closure, const void *handler_data);
 
-// Decoder-internal functions that the JIT calls to handle fallback paths.
+/* Decoder-internal functions that the JIT calls to handle fallback paths. */
 int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
                              size_t size, const upb_bufhandle *handle);
 size_t upb_pbdecoder_suspend(upb_pbdecoder *d);
@@ -221,41 +270,42 @@ int32_t upb_pbdecoder_decode_f32(upb_pbdecoder *d, uint32_t *u32);
 int32_t upb_pbdecoder_decode_f64(upb_pbdecoder *d, uint64_t *u64);
 void upb_pbdecoder_seterr(upb_pbdecoder *d, const char *msg);
 
-// Error messages that are shared between the bytecode and JIT decoders.
+/* Error messages that are shared between the bytecode and JIT decoders. */
 extern const char *kPbDecoderStackOverflow;
 
-// Access to decoderplan members needed by the decoder.
+/* Access to decoderplan members needed by the decoder. */
 const char *upb_pbdecoder_getopname(unsigned int op);
 
-// JIT codegen entry point.
+/* JIT codegen entry point. */
 void upb_pbdecoder_jit(mgroup *group);
 void upb_pbdecoder_freejit(mgroup *group);
+UPB_REFCOUNTED_CMETHODS(mgroup, mgroup_upcast)
 
-// A special label that means "do field dispatch for this message and branch to
-// wherever that takes you."
+/* A special label that means "do field dispatch for this message and branch to
+ * wherever that takes you." */
 #define LABEL_DISPATCH 0
 
-// A special slot in the dispatch table that stores the epilogue (ENDMSG and/or
-// RET) for branching to when we find an appropriate ENDGROUP tag.
+/* A special slot in the dispatch table that stores the epilogue (ENDMSG and/or
+ * RET) for branching to when we find an appropriate ENDGROUP tag. */
 #define DISPATCH_ENDMSG 0
 
-// It's important to use this invalid wire type instead of 0 (which is a valid
-// wire type).
+/* It's important to use this invalid wire type instead of 0 (which is a valid
+ * wire type). */
 #define NO_WIRE_TYPE 0xff
 
-// The dispatch table layout is:
-//   [field number] -> [ 48-bit offset ][ 8-bit wt2 ][ 8-bit wt1 ]
-//
-// If wt1 matches, jump to the 48-bit offset.  If wt2 matches, lookup
-// (UPB_MAX_FIELDNUMBER + fieldnum) and jump there.
-//
-// We need two wire types because of packed/non-packed compatibility.  A
-// primitive repeated field can use either wire type and be valid.  While we
-// could key the table on fieldnum+wiretype, the table would be 8x sparser.
-//
-// Storing two wire types in the primary value allows us to quickly rule out
-// the second wire type without needing to do a separate lookup (this case is
-// less common than an unknown field).
+/* The dispatch table layout is:
+ *   [field number] -> [ 48-bit offset ][ 8-bit wt2 ][ 8-bit wt1 ]
+ *
+ * If wt1 matches, jump to the 48-bit offset.  If wt2 matches, lookup
+ * (UPB_MAX_FIELDNUMBER + fieldnum) and jump there.
+ *
+ * We need two wire types because of packed/non-packed compatibility.  A
+ * primitive repeated field can use either wire type and be valid.  While we
+ * could key the table on fieldnum+wiretype, the table would be 8x sparser.
+ *
+ * Storing two wire types in the primary value allows us to quickly rule out
+ * the second wire type without needing to do a separate lookup (this case is
+ * less common than an unknown field). */
 UPB_INLINE uint64_t upb_pbdecoder_packdispatch(uint64_t ofs, uint8_t wt1,
                                                uint8_t wt2) {
   return (ofs << 16) | (wt2 << 8) | wt1;
@@ -268,17 +318,17 @@ UPB_INLINE void upb_pbdecoder_unpackdispatch(uint64_t dispatch, uint64_t *ofs,
   *ofs = dispatch >> 16;
 }
 
-// All of the functions in decoder.c that return int32_t return values according
-// to the following scheme:
-//   1. negative values indicate a return code from the following list.
-//   2. positive values indicate that error or end of buffer was hit, and
-//      that the decode function should immediately return the given value
-//      (the decoder state has already been suspended and is ready to be
-//      resumed).
+/* All of the functions in decoder.c that return int32_t return values according
+ * to the following scheme:
+ *   1. negative values indicate a return code from the following list.
+ *   2. positive values indicate that error or end of buffer was hit, and
+ *      that the decode function should immediately return the given value
+ *      (the decoder state has already been suspended and is ready to be
+ *      resumed). */
 #define DECODE_OK -1
-#define DECODE_MISMATCH -2  // Used only from checktag_slow().
-#define DECODE_ENDGROUP -3  // Used only from checkunknown().
+#define DECODE_MISMATCH -2  /* Used only from checktag_slow(). */
+#define DECODE_ENDGROUP -3  /* Used only from checkunknown(). */
 
 #define CHECK_RETURN(x) { int32_t ret = x; if (ret >= 0) return ret; }
 
-#endif  // UPB_DECODER_INT_H_
+#endif  /* UPB_DECODER_INT_H_ */

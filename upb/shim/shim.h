@@ -32,33 +32,33 @@ namespace upb {
 struct Shim {
   typedef upb_shim_data Data;
 
-  // Sets a handler for the given field that writes the value to the given
-  // offset and, if hasbit >= 0, sets a bit at the given bit offset.  Returns
-  // true if the handler was set successfully.
+  /* Sets a handler for the given field that writes the value to the given
+   * offset and, if hasbit >= 0, sets a bit at the given bit offset.  Returns
+   * true if the handler was set successfully. */
   static bool Set(Handlers *h, const FieldDef *f, size_t ofs, int32_t hasbit);
 
-  // If this handler is a shim, returns the corresponding upb::Shim::Data and
-  // stores the type in "type".  Otherwise returns NULL.
+  /* If this handler is a shim, returns the corresponding upb::Shim::Data and
+   * stores the type in "type".  Otherwise returns NULL. */
   static const Data* GetData(const Handlers* h, Handlers::Selector s,
                              FieldDef::Type* type);
 };
 
-}  // namespace upb
+}  /* namespace upb */
 
 #endif
 
-UPB_BEGIN_EXTERN_C  // {
+UPB_BEGIN_EXTERN_C
 
-// C API.
+/* C API. */
 bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
                   int32_t hasbit);
 const upb_shim_data *upb_shim_getdata(const upb_handlers *h, upb_selector_t s,
                                       upb_fieldtype_t *type);
 
-UPB_END_EXTERN_C  // }
+UPB_END_EXTERN_C
 
 #ifdef __cplusplus
-// C++ Wrappers.
+/* C++ Wrappers. */
 namespace upb {
 inline bool Shim::Set(Handlers* h, const FieldDef* f, size_t ofs,
                       int32_t hasbit) {
@@ -68,7 +68,7 @@ inline const Shim::Data* Shim::GetData(const Handlers* h, Handlers::Selector s,
                                        FieldDef::Type* type) {
   return upb_shim_getdata(h, s, type);
 }
-}  // namespace upb
+}  /* namespace upb */
 #endif
 
-#endif  // UPB_SHIM_H
+#endif  /* UPB_SHIM_H */

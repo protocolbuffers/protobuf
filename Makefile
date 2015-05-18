@@ -43,19 +43,23 @@ WITH_JIT=no
 UPB_FAIL_WARNINGS?=no
 
 # Basic compiler/flag setup.
+# We are C89/C++98, with the one exception that we need stdint and "long long."
 CC?=cc
 CXX?=c++
-CFLAGS=-std=c99
-CXXFLAGS=-Wno-unused-private-field
+CFLAGS=
+CXXFLAGS=
 INCLUDE=-I.
+CSTD=-std=c89 -pedantic -Wno-long-long
+CXXSTD=-std=c++98 -pedantic -Wno-long-long
 WARNFLAGS=-Wall -Wextra -Wpointer-arith
-WARNFLAGS_CXX=-Wall -Wextra -Wpointer-arith
+WARNFLAGS_CXX=$(WARNFLAGS) -Wno-unused-private-field
 CPPFLAGS=$(INCLUDE) -DNDEBUG $(USER_CPPFLAGS)
 LUA=lua  # 5.1 and 5.2 should both be supported
 
 ifneq ($(WITH_JIT), no)
   USE_JIT=true
   CPPFLAGS += -DUPB_USE_JIT_X64
+  EXTRA_LIBS += -ldl
 endif
 
 ifeq ($(CC), clang)
@@ -168,11 +172,16 @@ upb_pb_SRCS = \
 # If Lua is present we can use DynASM to regenerate the .h file.
 ifdef USE_JIT
 upb_pb_SRCS += upb/pb/compile_decoder_x64.c
-obj/upb/pb/compile_decoder_x64.o obj/upb/pb/compile_decoder_x64.lo: upb/pb/compile_decoder_x64.h
+
+# The JIT can't compile with -Wpedantic, since it does some inherently
+# platform-specific things like casting between data pointers and function
+# pointers.  Also DynASM emits some GNU extensions.
+obj/upb/pb/compile_decoder_x64.o : CSTD = -std=gnu89
+obj/upb/pb/compile_decoder_x64.lo : CSTD = -std=gnu89
 
 upb/pb/compile_decoder_x64.h: upb/pb/compile_decoder_x64.dasc
 	$(E) DYNASM $<
-	$(Q) $(LUA) dynasm/dynasm.lua upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
+	$(Q) $(LUA) dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
 endif
 
 upb_json_SRCS = \
@@ -221,19 +230,19 @@ $(UPB_LIBS): lib/lib%.a: $(call make_objs,o)
 
 obj/upb/%.o: upb/%.c | $$(@D)/.
 	$(E) CC $<
-	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 obj/upb/%.o: upb/%.cc | $$(@D)/.
 	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(Q) $(CXX) $(OPT) $(CXXSTD) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 obj/upb/%.lo: upb/%.c | $$(@D)/.
 	$(E) 'CC -fPIC' $<
-	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $< -fPIC
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $< -fPIC
 
 obj/upb/%.lo: upb/%.cc | $$(@D)/.
 	$(E) CXX -fPIC $<
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< -fPIC
+	$(Q) $(CXX) $(OPT) $(CXXSTD) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< -fPIC
 
 # Note: mkdir -p is technically susceptible to races when used with make -j.
 %/.:
@@ -246,7 +255,7 @@ upb/descriptor/descriptor.pb: upb/descriptor/descriptor.proto
 
 genfiles: upb/descriptor/descriptor.pb tools/upbc
 	./tools/upbc upb/descriptor/descriptor.pb upb/descriptor/descriptor google_protobuf_descriptor
-	lua dynasm/dynasm.lua upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
+	$(LUA) dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
 
 # upbc depends on these Lua extensions.
 UPBC_LUA_EXTS = \
@@ -288,28 +297,28 @@ tests: $(TESTS)
 
 tests/testmain.o: tests/testmain.cc
 	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(Q) $(CXX) $(OPT) $(CXXSTD) $(WARNFLAGS_CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 $(C_TESTS): % : %.c tests/testmain.o $$(LIBS)
 	$(E) CC $<
-	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -o $@ tests/testmain.o $< $(LIBS)
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -o $@ tests/testmain.o $< $(LIBS)
 
 $(CC_TESTS): % : %.cc tests/testmain.o $$(LIBS)
 	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -Wno-deprecated -o $@ tests/testmain.o $< $(LIBS)
+	$(Q) $(CXX) $(OPT) $(CXXSTD) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -Wno-deprecated -o $@ tests/testmain.o $< $(LIBS)
 
 # Several of these tests don't actually test these libs, but use them
 # incidentally to load a descriptor
 LOAD_DESCRIPTOR_LIBS = lib/libupb.pb.a lib/libupb.descriptor.a
 
 # Specify which libs each test depends on.
-tests/pb/test_varint: LIBS = lib/libupb.pb.a lib/libupb.a
-tests/test_def: LIBS = $(LOAD_DESCRIPTOR_LIBS) lib/libupb.a
-tests/test_handlers: LIBS = lib/libupb.descriptor.a lib/libupb.a
-tests/pb/test_decoder: LIBS = lib/libupb.pb.a lib/libupb.a
-tests/test_cpp: LIBS = $(LOAD_DESCRIPTOR_LIBS) lib/libupb.a
-tests/test_table: LIBS = lib/libupb.a
-tests/json/test_json: LIBS = lib/libupb.a lib/libupb.json.a
+tests/pb/test_varint: LIBS = lib/libupb.pb.a lib/libupb.a $(EXTRA_LIBS)
+tests/test_def: LIBS = $(LOAD_DESCRIPTOR_LIBS) lib/libupb.a $(EXTRA_LIBS)
+tests/test_handlers: LIBS = lib/libupb.descriptor.a lib/libupb.a $(EXTRA_LIBS)
+tests/pb/test_decoder: LIBS = lib/libupb.pb.a lib/libupb.a $(EXTRA_LIBS)
+tests/test_cpp: LIBS = $(LOAD_DESCRIPTOR_LIBS) lib/libupb.a $(EXTRA_LIBS)
+tests/test_table: LIBS = lib/libupb.a $(EXTRA_LIBS)
+tests/json/test_json: LIBS = lib/libupb.a lib/libupb.json.a $(EXTRA_LIBS)
 
 tests/test_def: tests/test.proto.pb
 
@@ -382,7 +391,8 @@ GOOGLEPB_TEST_LIBS = \
   lib/libupb.bindings.googlepb.a \
   lib/libupb.pb.a \
   lib/libupb.descriptor.a \
-  lib/libupb.a
+  lib/libupb.a \
+  $(EXTRA_LIBS)
 
 GOOGLEPB_TEST_DEPS = \
   tests/bindings/googlepb/test_vs_proto2.cc \
@@ -456,15 +466,15 @@ LUA_LIB_DEPS = \
 
 upb/bindings/lua/upb_c.so: upb/bindings/lua/upb.c $(LUA_LIB_DEPS)
 	$(E) CC upb/bindings/lua/upb.c
-	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS) $(LUA_LIB_DEPS)
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS) $(LUA_LIB_DEPS)
 
 upb/bindings/lua/upb/table_c.so: upb/bindings/lua/upb/table.c lib/libupb_pic.a
 	$(E) CC upb/bindings/lua/upb/table.c
-	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS)
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS)
 
 upb/bindings/lua/upb/pb_c.so: upb/bindings/lua/upb/pb.c $(LUA_LIB_DEPS)
 	$(E) CC upb/bindings/lua/upb/pb.c
-	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS)
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS)
 
 
 # Python extension #############################################################

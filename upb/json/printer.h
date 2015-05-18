@@ -18,11 +18,11 @@
 namespace upb {
 namespace json {
 class Printer;
-}  // namespace json
-}  // namespace upb
+}  /* namespace json */
+}  /* namespace upb */
 #endif
 
-UPB_DECLARE_TYPE(upb::json::Printer, upb_json_printer);
+UPB_DECLARE_TYPE(upb::json::Printer, upb_json_printer)
 
 
 /* upb::json::Printer *********************************************************/
@@ -31,29 +31,29 @@ UPB_DECLARE_TYPE(upb::json::Printer, upb_json_printer);
 
 #ifdef __cplusplus
 
-// Prints an incoming stream of data to a BytesSink in JSON format.
+/* Prints an incoming stream of data to a BytesSink in JSON format. */
 class upb::json::Printer {
  public:
   static Printer* Create(Environment* env, const upb::Handlers* handlers,
                          BytesSink* output);
 
-  // The input to the printer.
+  /* The input to the printer. */
   Sink* input();
 
-  // Returns handlers for printing according to the specified schema.
+  /* Returns handlers for printing according to the specified schema. */
   static reffed_ptr<const Handlers> NewHandlers(const upb::MessageDef* md);
 
   static const size_t kSize = UPB_JSON_PRINTER_SIZE;
 
  private:
-  UPB_DISALLOW_POD_OPS(Printer, upb::json::Printer);
+  UPB_DISALLOW_POD_OPS(Printer, upb::json::Printer)
 };
 
 #endif
 
 UPB_BEGIN_EXTERN_C
 
-// Native C API.
+/* Native C API. */
 upb_json_printer *upb_json_printer_create(upb_env *e, const upb_handlers *h,
                                           upb_bytessink *output);
 upb_sink *upb_json_printer_input(upb_json_printer *p);
@@ -76,9 +76,9 @@ inline reffed_ptr<const Handlers> Printer::NewHandlers(
   const Handlers* h = upb_json_printer_newhandlers(md, &h);
   return reffed_ptr<const Handlers>(h, &h);
 }
-}  // namespace json
-}  // namespace upb
+}  /* namespace json */
+}  /* namespace upb */
 
 #endif
 
-#endif  // UPB_JSON_TYPED_PRINTER_H_
+#endif  /* UPB_JSON_TYPED_PRINTER_H_ */

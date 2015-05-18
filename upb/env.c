@@ -21,18 +21,17 @@ static void *seeded_alloc(void *ud, void *ptr, size_t oldsize, size_t size);
 
 /* Default allocator **********************************************************/
 
-// Just use realloc, keeping all allocated blocks in a linked list to destroy at
-// the end.
+/* Just use realloc, keeping all allocated blocks in a linked list to destroy at
+ * the end. */
 
 typedef struct mem_block {
-  // List is doubly-linked, because in cases where realloc() moves an existing
-  // block, we need to be able to remove the old pointer from the list
-  // efficiently.
+  /* List is doubly-linked, because in cases where realloc() moves an existing
+   * block, we need to be able to remove the old pointer from the list
+   * efficiently. */
   struct mem_block *prev, *next;
 #ifndef NDEBUG
-  size_t size;  // Doesn't include mem_block structure.
+  size_t size;  /* Doesn't include mem_block structure. */
 #endif
-  char data[];
 } mem_block;
 
 typedef struct {
@@ -40,10 +39,12 @@ typedef struct {
 } default_alloc_ud;
 
 static void *default_alloc(void *_ud, void *ptr, size_t oldsize, size_t size) {
-  UPB_UNUSED(oldsize);
   default_alloc_ud *ud = _ud;
+  mem_block *from, *block;
+  void *ret;
+  UPB_UNUSED(oldsize);
 
-  mem_block *from = ptr ? (void*)((char*)ptr - sizeof(mem_block)) : NULL;
+  from = ptr ? (void*)((char*)ptr - sizeof(mem_block)) : NULL;
 
 #ifndef NDEBUG
   if (from) {
@@ -51,8 +52,11 @@ static void *default_alloc(void *_ud, void *ptr, size_t oldsize, size_t size) {
   }
 #endif
 
-  mem_block *block = realloc(from, size + sizeof(mem_block));
+  /* TODO(haberman): we probably need to provide even better alignment here,
+   * like 16-byte alignment of the returned data pointer. */
+  block = realloc(from, size + sizeof(mem_block));
   if (!block) return NULL;
+  ret = (char*)block + sizeof(*block);
 
 #ifndef NDEBUG
   block->size = size;
@@ -60,20 +64,20 @@ static void *default_alloc(void *_ud, void *ptr, size_t oldsize, size_t size) {
 
   if (from) {
     if (block != from) {
-      // The block was moved, so pointers in next and prev blocks must be
-      // updated to its new location.
+      /* The block was moved, so pointers in next and prev blocks must be
+       * updated to its new location. */
       if (block->next) block->next->prev = block;
       if (block->prev) block->prev->next = block;
     }
   } else {
-    // Insert at head of linked list.
+    /* Insert at head of linked list. */
     block->prev = NULL;
     block->next = ud->head;
     if (block->next) block->next->prev = block;
     ud->head = block;
   }
 
-  return &block->data;
+  return ret;
 }
 
 static void default_alloc_cleanup(void *_ud) {
@@ -106,14 +110,14 @@ static bool write_err_to(void *ud, const upb_status *status) {
 /* upb_env ********************************************************************/
 
 void upb_env_init(upb_env *e) {
+  default_alloc_ud *ud = (default_alloc_ud*)&e->default_alloc_ud;
   e->ok_ = true;
   e->bytes_allocated = 0;
   e->cleanup_head = NULL;
 
-  default_alloc_ud *ud = (default_alloc_ud*)&e->default_alloc_ud;
   ud->head = NULL;
 
-  // Set default functions.
+  /* Set default functions. */
   upb_env_setallocfunc(e, default_alloc, ud);
   upb_env_seterrorfunc(e, default_err, NULL);
 }
@@ -126,8 +130,8 @@ void upb_env_uninit(upb_env *e) {
     ent = ent->next;
   }
 
-  // Must do this after running cleanup functions, because this will delete
-  // the memory we store our cleanup entries in!
+  /* Must do this after running cleanup functions, because this will delete
+     the memory we store our cleanup entries in! */
   if (e->alloc == default_alloc) {
     default_alloc_cleanup(e->alloc_ud);
   }
@@ -174,8 +178,8 @@ bool upb_env_addcleanup(upb_env *e, upb_cleanup_func *func, void *ud) {
 void *upb_env_malloc(upb_env *e, size_t size) {
   e->bytes_allocated += size;
   if (e->alloc == seeded_alloc) {
-    // This is equivalent to the next branch, but allows inlining for a
-    // measurable perf benefit.
+    /* This is equivalent to the next branch, but allows inlining for a
+     * measurable perf benefit. */
     return seeded_alloc(e->alloc_ud, NULL, 0, size);
   } else {
     return e->alloc(e->alloc_ud, NULL, 0, size);
@@ -183,12 +187,13 @@ void *upb_env_malloc(upb_env *e, size_t size) {
 }
 
 void *upb_env_realloc(upb_env *e, void *ptr, size_t oldsize, size_t size) {
+  char *ret;
   assert(oldsize <= size);
-  char *ret = e->alloc(e->alloc_ud, ptr, oldsize, size);
+  ret = e->alloc(e->alloc_ud, ptr, oldsize, size);
 
 #ifndef NDEBUG
-  // Overwrite non-preserved memory to ensure callers are passing the oldsize
-  // that they truly require.
+  /* Overwrite non-preserved memory to ensure callers are passing the oldsize
+   * that they truly require. */
   memset(ret + oldsize, 0xff, size - oldsize);
 #endif
 
@@ -202,7 +207,7 @@ size_t upb_env_bytesallocated(const upb_env *e) {
 
 /* upb_seededalloc ************************************************************/
 
-// Be conservative and choose 16 in case anyone is using SSE.
+/* Be conservative and choose 16 in case anyone is using SSE. */
 static const size_t maxalign = 16;
 
 static size_t align_up(size_t size) {
@@ -211,24 +216,24 @@ static size_t align_up(size_t size) {
 
 UPB_FORCEINLINE static void *seeded_alloc(void *ud, void *ptr, size_t oldsize,
                                           size_t size) {
+  upb_seededalloc *a = ud;
   UPB_UNUSED(ptr);
 
-  upb_seededalloc *a = ud;
   size = align_up(size);
 
   assert(a->mem_limit >= a->mem_ptr);
 
   if (oldsize == 0 && size <= (size_t)(a->mem_limit - a->mem_ptr)) {
-    // Fast path: we can satisfy from the initial allocation.
+    /* Fast path: we can satisfy from the initial allocation. */
     void *ret = a->mem_ptr;
     a->mem_ptr += size;
     return ret;
   } else {
-    // Slow path: fallback to other allocator.
-    a->need_cleanup = true;
-    // Is `ptr` part of the user-provided initial block? Don't pass it to the
-    // default allocator if so; otherwise, it may try to realloc() the block.
     char *chptr = ptr;
+    /* Slow path: fallback to other allocator. */
+    a->need_cleanup = true;
+    /* Is `ptr` part of the user-provided initial block? Don't pass it to the
+     * default allocator if so; otherwise, it may try to realloc() the block. */
     if (chptr >= a->mem_base && chptr < a->mem_limit) {
       return a->alloc(a->alloc_ud, NULL, 0, size);
     } else {
@@ -238,13 +243,13 @@ UPB_FORCEINLINE static void *seeded_alloc(void *ud, void *ptr, size_t oldsize,
 }
 
 void upb_seededalloc_init(upb_seededalloc *a, void *mem, size_t len) {
+  default_alloc_ud *ud = (default_alloc_ud*)&a->default_alloc_ud;
   a->mem_base = mem;
   a->mem_ptr = mem;
   a->mem_limit = (char*)mem + len;
   a->need_cleanup = false;
   a->returned_allocfunc = false;
 
-  default_alloc_ud *ud = (default_alloc_ud*)&a->default_alloc_ud;
   ud->head = NULL;
 
   upb_seededalloc_setfallbackalloc(a, default_alloc, ud);

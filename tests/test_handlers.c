@@ -18,13 +18,13 @@ static bool startmsg(void *c, const void *hd) {
 }
 
 static void test_error() {
-  // Test creating handlers of a static msgdef.
+  /* Test creating handlers of a static msgdef. */
   const upb_symtab *s = upbdefs_google_protobuf_descriptor(&s);
   upb_handlers *h =
       upb_handlers_new(upbdefs_google_protobuf_DescriptorProto(s), &h);
   upb_symtab_unref(s, &s);
 
-  // Attempt to set the same handler twice causes error.
+  /* Attempt to set the same handler twice causes error. */
   ASSERT(upb_ok(upb_handlers_status(h)));
   upb_handlers_setstartmsg(h, &startmsg, NULL);
   ASSERT(upb_ok(upb_handlers_status(h)));
@@ -32,7 +32,7 @@ static void test_error() {
   ASSERT(!upb_ok(upb_handlers_status(h)));
   ASSERT(!upb_handlers_freeze(&h, 1, NULL));
 
-  // Clearing the error will let us proceed.
+  /* Clearing the error will let us proceed. */
   upb_handlers_clearerr(h);
   ASSERT(upb_handlers_freeze(&h, 1, NULL));
   ASSERT(upb_handlers_isfrozen(h));
