@@ -173,6 +173,10 @@ function LinkTable:objs(objtype)
   end
 end
 
+function LinkTable:empty(objtype)
+  return #self.obj_arrays[objtype] == 0
+end
+
 --[[
 
   Dumper: an object that can dump C initializers for several constructs.
@@ -405,9 +409,13 @@ local function dump_defs_c(symtab, basename, namespace, append)
   append('#include "upb/symtab.h"\n\n')
   append("static const upb_msgdef %s;\n", linktab:cdecl(upb.DEF_MSG))
   append("static const upb_fielddef %s;\n", linktab:cdecl(upb.DEF_FIELD))
-  append("static const upb_enumdef %s;\n", linktab:cdecl(upb.DEF_ENUM))
+  if not linktab:empty(upb.DEF_ENUM) then
+    append("static const upb_enumdef %s;\n", linktab:cdecl(upb.DEF_ENUM))
+  end
   append("static const upb_tabent %s;\n", linktab:cdecl("strentries"))
-  append("static const upb_tabent %s;\n", linktab:cdecl("intentries"))
+  if not linktab:empty("intentries") then
+    append("static const upb_tabent %s;\n", linktab:cdecl("intentries"))
+  end
   append("static const _upb_value %s;\n", linktab:cdecl("arrays"))
   append("\n")
   append("#ifdef UPB_DEBUG_REFS\n")
@@ -469,21 +477,23 @@ local function dump_defs_c(symtab, basename, namespace, append)
   end
   append("};\n\n")
 
-  append("static const upb_enumdef %s = {\n", linktab:cdecl(upb.DEF_ENUM))
-  for e in linktab:objs(upb.DEF_ENUM) do
-    local tables = gettables(e)
-    -- UPB_ENUMDEF_INIT(name, ntoi, iton, defaultval)
-    append('  UPB_ENUMDEF_INIT("%s", %s, %s, %d, ' ..
-           '&reftables[%d], &reftables[%d]),\n',
-           e:full_name(),
-           dumper:strtable(tables.str),
-           dumper:inttable(tables.int),
-           --e:default())
-           0,
-           reftable, reftable + 1)
-    reftable = reftable + 2
+  if not linktab:empty(upb.DEF_ENUM) then
+    append("static const upb_enumdef %s = {\n", linktab:cdecl(upb.DEF_ENUM))
+    for e in linktab:objs(upb.DEF_ENUM) do
+      local tables = gettables(e)
+      -- UPB_ENUMDEF_INIT(name, ntoi, iton, defaultval)
+      append('  UPB_ENUMDEF_INIT("%s", %s, %s, %d, ' ..
+             '&reftables[%d], &reftables[%d]),\n',
+             e:full_name(),
+             dumper:strtable(tables.str),
+             dumper:inttable(tables.int),
+             --e:default())
+             0,
+             reftable, reftable + 1)
+      reftable = reftable + 2
+    end
+    append("};\n\n")
   end
-  append("};\n\n")
 
   append("static const upb_tabent %s = {\n", linktab:cdecl("strentries"))
   for ent in linktab:objs("strentries") do
@@ -491,11 +501,13 @@ local function dump_defs_c(symtab, basename, namespace, append)
   end
   append("};\n\n");
 
-  append("static const upb_tabent %s = {\n", linktab:cdecl("intentries"))
-  for ent in linktab:objs("intentries") do
-    append(dumper:tabent(ent))
+  if not linktab:empty("intentries") then
+    append("static const upb_tabent %s = {\n", linktab:cdecl("intentries"))
+    for ent in linktab:objs("intentries") do
+      append(dumper:tabent(ent))
+    end
+    append("};\n\n");
   end
-  append("};\n\n");
 
   append("static const _upb_value %s = {\n", linktab:cdecl("arrays"))
   for ent in linktab:objs("arrays") do
