@@ -53,7 +53,7 @@ rb_data_type_t Message_type = {
 };
 
 VALUE Message_alloc(VALUE klass) {
-  VALUE descriptor = rb_iv_get(klass, kDescriptorInstanceVar);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
   MessageHeader* msg = (MessageHeader*)ALLOC_N(
       uint8_t, sizeof(MessageHeader) + desc->layout->size);
@@ -63,7 +63,7 @@ VALUE Message_alloc(VALUE klass) {
   // a collection happens during object creation in layout_init().
   VALUE ret = TypedData_Wrap_Struct(klass, &Message_type, msg);
   msg->descriptor = desc;
-  rb_iv_set(ret, kDescriptorInstanceVar, descriptor);
+  rb_ivar_set(ret, descriptor_instancevar_interned, descriptor);
 
   layout_init(desc->layout, Message_data(msg));
 
@@ -341,7 +341,8 @@ VALUE Message_to_h(VALUE _self) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    VALUE msg_value = layout_get(self->descriptor->layout, Message_data(self), field);
+    VALUE msg_value = layout_get(self->descriptor->layout, Message_data(self),
+                                 field);
     VALUE msg_key   = ID2SYM(rb_intern(upb_fielddef_name(field)));
     if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       msg_value = RepeatedField_to_ary(msg_value);
@@ -400,7 +401,7 @@ VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
  * message class's type.
  */
 VALUE Message_descriptor(VALUE klass) {
-  return rb_iv_get(klass, kDescriptorInstanceVar);
+  return rb_ivar_get(klass, descriptor_instancevar_interned);
 }
 
 VALUE build_class_from_descriptor(Descriptor* desc) {
@@ -421,11 +422,13 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
       // their own toplevel constant class name.
       rb_intern("Message"),
       rb_cObject);
-  rb_iv_set(klass, kDescriptorInstanceVar, get_def_obj(desc->msgdef));
+  rb_ivar_set(klass, descriptor_instancevar_interned,
+              get_def_obj(desc->msgdef));
   rb_define_alloc_func(klass, Message_alloc);
   rb_require("google/protobuf/message_exts");
   rb_include_module(klass, rb_eval_string("Google::Protobuf::MessageExts"));
-  rb_extend_object(klass, rb_eval_string("Google::Protobuf::MessageExts::ClassMethods"));
+  rb_extend_object(
+      klass, rb_eval_string("Google::Protobuf::MessageExts::ClassMethods"));
 
   rb_define_method(klass, "method_missing",
                    Message_method_missing, -1);
@@ -458,7 +461,7 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
  */
 VALUE enum_lookup(VALUE self, VALUE number) {
   int32_t num = NUM2INT(number);
-  VALUE desc = rb_iv_get(self, kDescriptorInstanceVar);
+  VALUE desc = rb_ivar_get(self, descriptor_instancevar_interned);
   EnumDescriptor* enumdesc = ruby_to_EnumDescriptor(desc);
 
   const char* name = upb_enumdef_iton(enumdesc->enumdef, num);
@@ -478,7 +481,7 @@ VALUE enum_lookup(VALUE self, VALUE number) {
  */
 VALUE enum_resolve(VALUE self, VALUE sym) {
   const char* name = rb_id2name(SYM2ID(sym));
-  VALUE desc = rb_iv_get(self, kDescriptorInstanceVar);
+  VALUE desc = rb_ivar_get(self, descriptor_instancevar_interned);
   EnumDescriptor* enumdesc = ruby_to_EnumDescriptor(desc);
 
   int32_t num = 0;
@@ -498,7 +501,7 @@ VALUE enum_resolve(VALUE self, VALUE sym) {
  * EnumDescriptor corresponding to this enum type.
  */
 VALUE enum_descriptor(VALUE self) {
-  return rb_iv_get(self, kDescriptorInstanceVar);
+  return rb_ivar_get(self, descriptor_instancevar_interned);
 }
 
 VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
@@ -523,7 +526,8 @@ VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
   rb_define_singleton_method(mod, "lookup", enum_lookup, 1);
   rb_define_singleton_method(mod, "resolve", enum_resolve, 1);
   rb_define_singleton_method(mod, "descriptor", enum_descriptor, 0);
-  rb_iv_set(mod, kDescriptorInstanceVar, get_def_obj(enumdesc->enumdef));
+  rb_ivar_set(mod, descriptor_instancevar_interned,
+              get_def_obj(enumdesc->enumdef));
 
   return mod;
 }

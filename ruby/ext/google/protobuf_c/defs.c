@@ -34,8 +34,6 @@
 // Common utilities.
 // -----------------------------------------------------------------------------
 
-const char* kDescriptorInstanceVar = "descriptor";
-
 static const char* get_str(VALUE str) {
   Check_Type(str, T_STRING);
   return RSTRING_PTR(str);
@@ -1590,9 +1588,9 @@ VALUE Builder_add_message(VALUE _self, VALUE name) {
  * call-seq:
  *     Builder.add_enum(name, &block)
  *
- * Creates a new, empty enum descriptor with the given name, and invokes the block in
- * the context of an EnumBuilderContext on that descriptor. The block can then
- * call EnumBuilderContext#add_value to define the enum values.
+ * Creates a new, empty enum descriptor with the given name, and invokes the
+ * block in the context of an EnumBuilderContext on that descriptor. The block
+ * can then call EnumBuilderContext#add_value to define the enum values.
  *
  * This is the recommended, idiomatic way to build enum definitions.
  */

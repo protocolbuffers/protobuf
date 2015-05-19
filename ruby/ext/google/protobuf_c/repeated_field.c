@@ -117,7 +117,8 @@ VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
       if (index < 0 || index >= self->size) {
         return Qnil;
       }
-      void* memory = (void *) (((uint8_t *)self->elements) + index * element_size);
+      void* memory = (void *) (((uint8_t *)self->elements) +
+                               index * element_size);
       return native_slot_get(field_type, field_type_class, memory);
     }else{
       /* check if idx is Range */
@@ -497,13 +498,13 @@ VALUE RepeatedField_concat(VALUE _self, VALUE list) {
 
 
 void validate_type_class(upb_fieldtype_t type, VALUE klass) {
-  if (rb_iv_get(klass, kDescriptorInstanceVar) == Qnil) {
+  if (rb_ivar_get(klass, descriptor_instancevar_interned) == Qnil) {
     rb_raise(rb_eArgError,
              "Type class has no descriptor. Please pass a "
              "class or enum as returned by the DescriptorPool.");
   }
   if (type == UPB_TYPE_MESSAGE) {
-    VALUE desc = rb_iv_get(klass, kDescriptorInstanceVar);
+    VALUE desc = rb_ivar_get(klass, descriptor_instancevar_interned);
     if (!RB_TYPE_P(desc, T_DATA) || !RTYPEDDATA_P(desc) ||
         RTYPEDDATA_TYPE(desc) != &_Descriptor_type) {
       rb_raise(rb_eArgError, "Descriptor has an incorrect type.");
@@ -513,7 +514,7 @@ void validate_type_class(upb_fieldtype_t type, VALUE klass) {
                "Message class was not returned by the DescriptorPool.");
     }
   } else if (type == UPB_TYPE_ENUM) {
-    VALUE enumdesc = rb_iv_get(klass, kDescriptorInstanceVar);
+    VALUE enumdesc = rb_ivar_get(klass, descriptor_instancevar_interned);
     if (!RB_TYPE_P(enumdesc, T_DATA) || !RTYPEDDATA_P(enumdesc) ||
         RTYPEDDATA_TYPE(enumdesc) != &_EnumDescriptor_type) {
       rb_raise(rb_eArgError, "Descriptor has an incorrect type.");
