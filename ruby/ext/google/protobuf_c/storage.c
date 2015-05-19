@@ -415,7 +415,8 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
     // Align current offset up to |size| granularity.
     off = align_up_to(off, field_size);
     layout->fields[upb_fielddef_index(field)].offset = off;
-    layout->fields[upb_fielddef_index(field)].case_offset = MESSAGE_FIELD_NO_CASE;
+    layout->fields[upb_fielddef_index(field)].case_offset =
+        MESSAGE_FIELD_NO_CASE;
     off += field_size;
   }
 

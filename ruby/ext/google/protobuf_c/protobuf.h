@@ -161,8 +161,6 @@ extern VALUE cOneofBuilderContext;
 extern VALUE cEnumBuilderContext;
 extern VALUE cBuilder;
 
-extern const char* kDescriptorInstanceVar;
-
 // We forward-declare all of the Ruby method implementations here because we
 // sometimes call the methods directly across .c files, rather than going
 // through Ruby's method dispatching (e.g. during message parse). It's cleaner
@@ -529,5 +527,7 @@ void check_upb_status(const upb_status* status, const char* msg);
     code;                                                                     \
     check_upb_status(&status, msg);                                           \
 } while (0)
+
+extern ID descriptor_instancevar_interned;
 
 #endif  // __GOOGLE_PROTOBUF_RUBY_PROTOBUF_H__

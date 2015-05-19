@@ -644,7 +644,8 @@ static bool env_error_func(void* ud, const upb_status* status) {
   // Free the env -- rb_raise will longjmp up the stack past the encode/decode
   // function so it would not otherwise have been freed.
   stackenv_uninit(se);
-  rb_raise(rb_eRuntimeError, se->ruby_error_template, upb_status_errmsg(status));
+  rb_raise(rb_eRuntimeError, se->ruby_error_template,
+           upb_status_errmsg(status));
   // Never reached: rb_raise() always longjmp()s up the stack, past all of our
   // code, back to Ruby.
   return false;
@@ -673,7 +674,7 @@ static void stackenv_uninit(stackenv* se) {
  * and returns a message object with the corresponding field values.
  */
 VALUE Message_decode(VALUE klass, VALUE data) {
-  VALUE descriptor = rb_iv_get(klass, kDescriptorInstanceVar);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
   VALUE msgklass = Descriptor_msgclass(descriptor);
 
@@ -711,7 +712,7 @@ VALUE Message_decode(VALUE klass, VALUE data) {
  * and returns a message object with the corresponding field values.
  */
 VALUE Message_decode_json(VALUE klass, VALUE data) {
-  VALUE descriptor = rb_iv_get(klass, kDescriptorInstanceVar);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
   VALUE msgklass = Descriptor_msgclass(descriptor);
 
@@ -846,7 +847,7 @@ static void putsubmsg(VALUE submsg, const upb_fielddef *f, upb_sink *sink,
   if (submsg == Qnil) return;
 
   upb_sink subsink;
-  VALUE descriptor = rb_iv_get(submsg, kDescriptorInstanceVar);
+  VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
   Descriptor* subdesc = ruby_to_Descriptor(descriptor);
 
   upb_sink_startsubmsg(sink, getsel(f, UPB_HANDLER_STARTSUBMSG), &subsink);
@@ -968,7 +969,8 @@ static void putmap(VALUE map, const upb_fielddef *f, upb_sink *sink,
     VALUE value = Map_iter_value(&it);
 
     upb_sink entry_sink;
-    upb_sink_startsubmsg(&subsink, getsel(f, UPB_HANDLER_STARTSUBMSG), &entry_sink);
+    upb_sink_startsubmsg(&subsink, getsel(f, UPB_HANDLER_STARTSUBMSG),
+                         &entry_sink);
     upb_sink_startmsg(&entry_sink);
 
     put_ruby_value(key, key_field, Qnil, depth + 1, &entry_sink);
@@ -1098,7 +1100,7 @@ static const upb_handlers* msgdef_json_serialize_handlers(Descriptor* desc) {
  * wire format.
  */
 VALUE Message_encode(VALUE klass, VALUE msg_rb) {
-  VALUE descriptor = rb_iv_get(klass, kDescriptorInstanceVar);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
 
   stringsink sink;
@@ -1129,7 +1131,7 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
  * Encodes the given message object into its serialized JSON representation.
  */
 VALUE Message_encode_json(VALUE klass, VALUE msg_rb) {
-  VALUE descriptor = rb_iv_get(klass, kDescriptorInstanceVar);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
 
   stringsink sink;
