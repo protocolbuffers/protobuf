@@ -1139,7 +1139,7 @@ FileDescriptorProto* FileDescriptorProto::New(::google::protobuf::Arena* arena) 
 }
 
 void FileDescriptorProto::Clear() {
-  if (_has_bits_[0 / 32] & 3) {
+  if (_has_bits_[0 / 32] & 3u) {
     if (has_name()) {
       name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
@@ -1147,7 +1147,7 @@ void FileDescriptorProto::Clear() {
       package_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
   }
-  if (_has_bits_[8 / 32] & 3584) {
+  if (_has_bits_[8 / 32] & 3584u) {
     if (has_options()) {
       if (options_ != NULL) options_->::google::protobuf::FileOptions::Clear();
     }
@@ -2656,7 +2656,7 @@ DescriptorProto* DescriptorProto::New(::google::protobuf::Arena* arena) const {
 }
 
 void DescriptorProto::Clear() {
-  if (_has_bits_[0 / 32] & 129) {
+  if (_has_bits_[0 / 32] & 129u) {
     if (has_name()) {
       name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
@@ -3613,7 +3613,7 @@ FieldDescriptorProto* FieldDescriptorProto::New(::google::protobuf::Arena* arena
 }
 
 void FieldDescriptorProto::Clear() {
-  if (_has_bits_[0 / 32] & 255) {
+  if (_has_bits_[0 / 32] & 255u) {
     if (has_name()) {
       name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
@@ -4898,7 +4898,7 @@ EnumDescriptorProto* EnumDescriptorProto::New(::google::protobuf::Arena* arena) 
 }
 
 void EnumDescriptorProto::Clear() {
-  if (_has_bits_[0 / 32] & 5) {
+  if (_has_bits_[0 / 32] & 5u) {
     if (has_name()) {
       name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
@@ -5369,7 +5369,7 @@ EnumValueDescriptorProto* EnumValueDescriptorProto::New(::google::protobuf::Aren
 }
 
 void EnumValueDescriptorProto::Clear() {
-  if (_has_bits_[0 / 32] & 7) {
+  if (_has_bits_[0 / 32] & 7u) {
     if (has_name()) {
       name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
@@ -5831,7 +5831,7 @@ ServiceDescriptorProto* ServiceDescriptorProto::New(::google::protobuf::Arena* a
 }
 
 void ServiceDescriptorProto::Clear() {
-  if (_has_bits_[0 / 32] & 5) {
+  if (_has_bits_[0 / 32] & 5u) {
     if (has_name()) {
       name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
@@ -6318,7 +6318,7 @@ void MethodDescriptorProto::Clear() {
            ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
 } while (0)
 
-  if (_has_bits_[0 / 32] & 63) {
+  if (_has_bits_[0 / 32] & 63u) {
     ZR_(client_streaming_, server_streaming_);
     if (has_name()) {
       name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -7110,7 +7110,7 @@ void FileOptions::Clear() {
            ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
 } while (0)
 
-  if (_has_bits_[0 / 32] & 255) {
+  if (_has_bits_[0 / 32] & 255u) {
     ZR_(java_multiple_files_, cc_generic_services_);
     if (has_java_package()) {
       java_package_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -7123,7 +7123,7 @@ void FileOptions::Clear() {
       go_package_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
   }
-  if (_has_bits_[8 / 32] & 16128) {
+  if (_has_bits_[8 / 32] & 16128u) {
     ZR_(java_generic_services_, cc_enable_arenas_);
     if (has_objc_class_prefix()) {
       objc_class_prefix_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -9054,7 +9054,7 @@ void FieldOptions::Clear() {
            ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
 } while (0)
 
-  if (_has_bits_[0 / 32] & 31) {
+  if (_has_bits_[0 / 32] & 31u) {
     ZR_(ctype_, weak_);
   }
 
@@ -11109,7 +11109,7 @@ UninterpretedOption_NamePart* UninterpretedOption_NamePart::New(::google::protob
 }
 
 void UninterpretedOption_NamePart::Clear() {
-  if (_has_bits_[0 / 32] & 3) {
+  if (_has_bits_[0 / 32] & 3u) {
     if (has_name_part()) {
       name_part_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
@@ -11434,7 +11434,7 @@ void UninterpretedOption::Clear() {
            ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
 } while (0)
 
-  if (_has_bits_[0 / 32] & 126) {
+  if (_has_bits_[0 / 32] & 126u) {
     ZR_(positive_int_value_, double_value_);
     if (has_identifier_value()) {
       identifier_value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -12284,7 +12284,7 @@ SourceCodeInfo_Location* SourceCodeInfo_Location::New(::google::protobuf::Arena*
 }
 
 void SourceCodeInfo_Location::Clear() {
-  if (_has_bits_[0 / 32] & 12) {
+  if (_has_bits_[0 / 32] & 12u) {
     if (has_leading_comments()) {
       leading_comments_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }

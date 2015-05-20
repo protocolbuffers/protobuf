@@ -724,7 +724,7 @@ CodeGeneratorResponse_File* CodeGeneratorResponse_File::New(::google::protobuf::
 }
 
 void CodeGeneratorResponse_File::Clear() {
-  if (_has_bits_[0 / 32] & 7) {
+  if (_has_bits_[0 / 32] & 7u) {
     if (has_name()) {
       name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
