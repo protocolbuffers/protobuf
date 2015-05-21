@@ -2,8 +2,8 @@
 // source: google/protobuf/timestamp.proto
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
-
 #import "google/protobuf/Timestamp.pbobjc.h"
+// @@protoc_insertion_point(imports)
 
 #pragma mark - GPBTimestampRoot
 
@@ -83,3 +83,5 @@ typedef struct GPBTimestamp_Storage {
 
 @end
 
+
+// @@protoc_insertion_point(global_scope)

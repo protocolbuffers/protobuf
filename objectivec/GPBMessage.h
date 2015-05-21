@@ -28,14 +28,27 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#import "GPBRootObject.h"
+#import <Foundation/Foundation.h>
+
+#import "GPBBootstrap.h"
 
 @class GPBDescriptor;
 @class GPBCodedInputStream;
 @class GPBCodedOutputStream;
 @class GPBExtensionField;
+@class GPBExtensionRegistry;
 @class GPBFieldDescriptor;
 @class GPBUnknownFieldSet;
+
+CF_EXTERN_C_BEGIN
+
+// NSError domain used for errors.
+extern NSString *const GPBMessageErrorDomain;
+
+typedef NS_ENUM(NSInteger, GPBMessageErrorCode) {
+  GPBMessageErrorCodeMalformedData = -100,
+  GPBMessageErrorCodeMissingRequiredField = -101,
+};
 
 // In DEBUG ONLY, an NSException is thrown when a parsed message doesn't
 // contain required fields. This key allows you to retrieve the parsed message
@@ -44,12 +57,14 @@
 extern NSString *const GPBExceptionMessageKey;
 #endif  // DEBUG
 
-// NOTE:
-// If you add a instance method/property to this class that may conflict with
-// methods declared in protos, you need to update objective_helpers.cc.
+CF_EXTERN_C_END
+
+@interface GPBMessage : NSObject<NSSecureCoding, NSCopying>
+
+// NOTE: If you add a instance method/property to this class that may conflict
+// with methods declared in protos, you need to update objective_helpers.cc.
 // The main cases are methods that take no arguments, or setFoo:/hasFoo: type
 // methods.
-@interface GPBMessage : GPBRootObject<NSCoding, NSCopying>
 
 @property(nonatomic, readonly) GPBUnknownFieldSet *unknownFields;
 
@@ -59,29 +74,38 @@ extern NSString *const GPBExceptionMessageKey;
 // Returns an autoreleased instance.
 + (instancetype)message;
 
-// Create a message based on a variety of inputs.
-// In DEBUG ONLY
-// @throws NSInternalInconsistencyException The message is missing one or more
-//         required fields (i.e. -[isInitialized] returns false). Use
-//         GGPBExceptionMessageKey to retrieve the message from |userInfo|.
-+ (instancetype)parseFromData:(NSData *)data;
+// Create a message based on a variety of inputs.  If there is a data parse
+// error, nil is returned and if not NULL, errorPtr is filled in.
+// NOTE: In DEBUG ONLY, the message is also checked for all required field,
+// if one is missing, the parse will fail (returning nil, filling in errorPtr).
++ (instancetype)parseFromData:(NSData *)data error:(NSError **)errorPtr;
 + (instancetype)parseFromData:(NSData *)data
-            extensionRegistry:(GPBExtensionRegistry *)extensionRegistry;
+            extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+                        error:(NSError **)errorPtr;
 + (instancetype)parseFromCodedInputStream:(GPBCodedInputStream *)input
                         extensionRegistry:
-                            (GPBExtensionRegistry *)extensionRegistry;
+                            (GPBExtensionRegistry *)extensionRegistry
+                                    error:(NSError **)errorPtr;
 
-// Create a message based on delimited input.
+// Create a message based on delimited input.  If there is a data parse
+// error, nil is returned and if not NULL, errorPtr is filled in.
 + (instancetype)parseDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
                                  extensionRegistry:
-                                     (GPBExtensionRegistry *)extensionRegistry;
+                                     (GPBExtensionRegistry *)extensionRegistry
+                                             error:(NSError **)errorPtr;
 
-- (instancetype)initWithData:(NSData *)data;
+// If there is a data parse error, nil is returned and if not NULL, errorPtr is
+// filled in.
+// NOTE: In DEBUG ONLY, the message is also checked for all required field,
+// if one is missing, the parse will fail (returning nil, filling in errorPtr).
+- (instancetype)initWithData:(NSData *)data error:(NSError **)errorPtr;
 - (instancetype)initWithData:(NSData *)data
-           extensionRegistry:(GPBExtensionRegistry *)extensionRegistry;
+           extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+                       error:(NSError **)errorPtr;
 - (instancetype)initWithCodedInputStream:(GPBCodedInputStream *)input
                        extensionRegistry:
-                           (GPBExtensionRegistry *)extensionRegistry;
+                           (GPBExtensionRegistry *)extensionRegistry
+                                   error:(NSError **)errorPtr;
 
 // Serializes the message and writes it to output.
 - (void)writeToCodedOutputStream:(GPBCodedOutputStream *)output;
@@ -93,11 +117,10 @@ extern NSString *const GPBExceptionMessageKey;
 - (void)writeDelimitedToOutputStream:(NSOutputStream *)output;
 
 // Serializes the message to an NSData. Note that this value is not cached, so
-// if you are using it repeatedly, cache it yourself.
-// In DEBUG ONLY:
-// @throws NSInternalInconsistencyException The message is missing one or more
-//         required fields (i.e. -[isInitialized] returns false). Use
-//         GPBExceptionMessageKey to retrieve the message from |userInfo|.
+// if you are using it repeatedly, cache it yourself. If there is an error
+// while generating the data, nil is returned.
+// NOTE: In DEBUG ONLY, the message is also checked for all required field,
+// if one is missing, nil will be returned.
 - (NSData *)data;
 
 // Same as -[data], except a delimiter is added to the start of the data
@@ -106,16 +129,16 @@ extern NSString *const GPBExceptionMessageKey;
 
 // Returns the size of the object if it were serialized.
 // This is not a cached value. If you are following a pattern like this:
-// size_t size = [aMsg serializedSize];
-// NSMutableData *foo = [NSMutableData dataWithCapacity:size + sizeof(size)];
-// [foo writeSize:size];
-// [foo appendData:[aMsg data]];
+//   size_t size = [aMsg serializedSize];
+//   NSMutableData *foo = [NSMutableData dataWithCapacity:size + sizeof(size)];
+//   [foo writeSize:size];
+//   [foo appendData:[aMsg data]];
 // you would be better doing:
-// NSData *data = [aMsg data];
-// NSUInteger size = [aMsg length];
-// NSMutableData *foo = [NSMutableData dataWithCapacity:size + sizeof(size)];
-// [foo writeSize:size];
-// [foo appendData:data];
+//   NSData *data = [aMsg data];
+//   NSUInteger size = [aMsg length];
+//   NSMutableData *foo = [NSMutableData dataWithCapacity:size + sizeof(size)];
+//   [foo writeSize:size];
+//   [foo appendData:data];
 - (size_t)serializedSize;
 
 // Return the descriptor for the message
@@ -123,8 +146,8 @@ extern NSString *const GPBExceptionMessageKey;
 - (GPBDescriptor *)descriptor;
 
 // Extensions use boxed values (NSNumbers) for PODs, NSMutableArrays for
-// repeated. If the extension is a Message, just like fields, one will be
-// auto created for you and returned.
+// repeated. If the extension is a Message one will be auto created for you
+// and returned similar to fields.
 - (BOOL)hasExtension:(GPBExtensionField *)extension;
 - (id)getExtension:(GPBExtensionField *)extension;
 - (void)setExtension:(GPBExtensionField *)extension value:(id)value;
@@ -141,6 +164,7 @@ extern NSString *const GPBExceptionMessageKey;
 
 // Parses a message of this type from the input and merges it with this
 // message.
+// NOTE: This will throw if there is an error parsing the data.
 - (void)mergeFromData:(NSData *)data
     extensionRegistry:(GPBExtensionRegistry *)extensionRegistry;
 

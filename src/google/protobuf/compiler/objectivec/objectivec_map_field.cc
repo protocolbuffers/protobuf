@@ -76,6 +76,8 @@ const char* MapEntryTypeName(const FieldDescriptor* descriptor, bool isKey) {
       return "Object";
   }
 
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return NULL;
 }

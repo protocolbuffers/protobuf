@@ -41,7 +41,7 @@
 #include <google/protobuf/stubs/strutil.h>
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
-// error case, so it seem to be ok to use as a back door for errors.
+// error cases, so it seems to be ok to use as a back door for errors.
 
 namespace google {
 namespace protobuf {
@@ -53,6 +53,11 @@ namespace {
 hash_set<string> gClassWhitelist;
 
 // islower()/isupper()/tolower()/toupper() change based on locale.
+//
+// src/google/protobuf/stubs/strutil.h:150 has the same pattern. For the
+// Objective C plugin, test failures were seen on TravisCI because isupper('A')
+// was coming back false for some server's locale.  This approach avoids any
+// such issues.
 
 bool IsLower(const char c) {
   return ('a' <= c && c <= 'z');
@@ -205,10 +210,9 @@ const char* const kReservedWordList[] = {
     // Only need to add instance methods that may conflict with
     // method declared in protos. The main cases are methods
     // that take no arguments, or setFoo:/hasFoo: type methods.
-    // These are currently in the same order as in GPBMessage.h.
-    "unknownFields", "extensionRegistry", "isInitialized",
-    "data", "delimitedData", "serializedSize",
-    "descriptor", "extensionsCurrentlySet", "clear", "sortedExtensionsInUse",
+    "clear", "data", "delimitedData", "descriptor", "extensionRegistry",
+    "extensionsCurrentlySet", "isInitialized", "serializedSize",
+    "sortedExtensionsInUse", "unknownFields",
 
     // MacTypes.h names
     "Fixed", "Fract", "Size", "LogicalAddress", "PhysicalAddress", "ByteCount",
@@ -335,7 +339,32 @@ string FilePath(const FileDescriptor* file) {
 
 string FileClassPrefix(const FileDescriptor* file) {
   // Default is empty string, no need to check has_objc_class_prefix.
-  return file->options().objc_class_prefix();
+  string result = file->options().objc_class_prefix();
+  return result;
+}
+
+void ValidateObjCClassPrefix(const FileDescriptor* file) {
+  string prefix = file->options().objc_class_prefix();
+  if (prefix.length() > 0) {
+    // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
+    // error cases, so it seems to be ok to use as a back door for errors.
+    if (!IsUpper(prefix[0])) {
+      cerr << endl
+           << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
+           << prefix << "\";' in '" << file->name() << "';"
+           << " it should start with a capital letter."
+           << endl;
+      cerr.flush();
+    }
+    if (prefix.length() < 3) {
+      cerr << endl
+           << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
+           << prefix << "\";' in '" << file->name() << "';"
+           << " Apple recommends they should be at least 3 characters long."
+           << endl;
+      cerr.flush();
+    }
+  }
 }
 
 string FileClassName(const FileDescriptor* file) {
@@ -468,7 +497,7 @@ string OneofEnumName(const OneofDescriptor* descriptor) {
   const Descriptor* fieldDescriptor = descriptor->containing_type();
   string name = ClassName(fieldDescriptor);
   name += "_" + UnderscoresToCamelCase(descriptor->name(), true) + "_OneOfCase";
-  // No sanitize needed because it the OS never has names that end in OneOfCase.
+  // No sanitize needed because the OS never has names that end in _OneOfCase.
   return name;
 }
 
@@ -560,6 +589,8 @@ string GetCapitalizedType(const FieldDescriptor* field) {
       return "Message";
   }
 
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return NULL;
 }
@@ -607,6 +638,8 @@ ObjectiveCType GetObjectiveCType(FieldDescriptor::Type field_type) {
       return OBJECTIVECTYPE_MESSAGE;
   }
 
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return OBJECTIVECTYPE_INT32;
 }
@@ -683,6 +716,8 @@ string GPBValueFieldName(const FieldDescriptor* field) {
       return "valueMessage";
   }
 
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return NULL;
 }
@@ -753,6 +788,8 @@ string DefaultValue(const FieldDescriptor* field) {
       return "nil";
   }
 
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return NULL;
 }

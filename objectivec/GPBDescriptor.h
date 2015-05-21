@@ -56,7 +56,6 @@ typedef NS_ENUM(NSInteger, GPBFieldType) {
 @property(nonatomic, readonly, strong) NSArray *fields;
 @property(nonatomic, readonly, strong) NSArray *oneofs;
 @property(nonatomic, readonly, strong) NSArray *enums;
-@property(nonatomic, readonly, strong) NSArray *extensions;
 @property(nonatomic, readonly) const GPBExtensionRange *extensionRanges;
 @property(nonatomic, readonly) NSUInteger extensionRangesCount;
 @property(nonatomic, readonly, assign) GPBFileDescriptor *file;
@@ -68,8 +67,6 @@ typedef NS_ENUM(NSInteger, GPBFieldType) {
 - (GPBFieldDescriptor *)fieldWithName:(NSString *)name;
 - (GPBOneofDescriptor *)oneofWithName:(NSString *)name;
 - (GPBEnumDescriptor *)enumWithName:(NSString *)name;
-- (GPBFieldDescriptor *)extensionWithNumber:(uint32_t)fieldNumber;
-- (GPBFieldDescriptor *)extensionWithName:(NSString *)name;
 
 @end
 

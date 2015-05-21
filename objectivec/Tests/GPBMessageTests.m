@@ -34,6 +34,7 @@
 
 #import "GPBArray_PackagePrivate.h"
 #import "GPBDescriptor.h"
+#import "GPBDictionary_PackagePrivate.h"
 #import "GPBField_PackagePrivate.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
@@ -47,22 +48,8 @@
 @implementation MessageTests
 
 // TODO(thomasvl): this should get split into a few files of logic junks, it is
-// a jumble
-// of things at the moment (and the testutils have a bunch of the real
+// a jumble of things at the moment (and the testutils have a bunch of the real
 // assertions).
-
-#ifdef DEBUG
-- (void)assertBlock:(void (^)())block
-    throwsWithMessageInUserInfo:(GPBMessage *)message {
-  @try {
-    block();
-    XCTAssertTrue(NO);
-  }
-  @catch (NSException *e) {
-    XCTAssertEqualObjects([e userInfo][GPBExceptionMessageKey], message);
-  }
-}
-#endif  // DEBUG
 
 - (TestAllTypes *)mergeSource {
   TestAllTypes *message = [TestAllTypes message];
@@ -290,14 +277,18 @@
   XCTAssertTrue(message.initialized);
 }
 
-#ifdef DEBUG
-- (void)testUninitializedException {
+- (void)testDataFromUninitialized {
   TestRequired *message = [TestRequired message];
-  [self assertBlock:^{
-    [message data];
-  } throwsWithMessageInUserInfo:message];
-}
+  NSData *data = [message data];
+  // In DEBUG, the data generation will fail, but in non DEBUG, it passes
+  // because the check isn't done (for speed).
+#ifdef DEBUG
+  XCTAssertNil(data);
+#else
+  XCTAssertNotNil(data);
+  XCTAssertFalse(message.initialized);
 #endif  // DEBUG
+}
 
 - (void)testInitialized {
   // We're mostly testing that no exception is thrown.
@@ -305,18 +296,22 @@
   XCTAssertFalse(message.initialized);
 }
 
-#ifdef DEBUG
-- (void)testNestedUninitializedException {
+- (void)testDataFromNestedUninitialized {
   TestRequiredForeign *message = [TestRequiredForeign message];
   [message setOptionalMessage:[TestRequired message]];
   message.repeatedMessageArray = [NSMutableArray array];
   [message.repeatedMessageArray addObject:[TestRequired message]];
   [message.repeatedMessageArray addObject:[TestRequired message]];
-  [self assertBlock:^{
-    [message data];
-  } throwsWithMessageInUserInfo:message];
-}
+  NSData *data = [message data];
+  // In DEBUG, the data generation will fail, but in non DEBUG, it passes
+  // because the check isn't done (for speed).
+#ifdef DEBUG
+  XCTAssertNil(data);
+#else
+  XCTAssertNotNil(data);
+  XCTAssertFalse(message.initialized);
 #endif  // DEBUG
+}
 
 - (void)testNestedInitialized {
   // We're mostly testing that no exception is thrown.
@@ -330,13 +325,23 @@
   XCTAssertFalse(message.initialized);
 }
 
-#ifdef DEBUG
 - (void)testParseUninitialized {
-  [self assertBlock:^{
-    [TestRequired parseFromData:GPBEmptyNSData()];
-  } throwsWithMessageInUserInfo:[TestRequired message]];
-}
+  NSError *error = nil;
+  TestRequired *msg =
+      [TestRequired parseFromData:GPBEmptyNSData() error:&error];
+  // In DEBUG, the parse will fail, but in non DEBUG, it passes because
+  // the check isn't done (for speed).
+#ifdef DEBUG
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBMessageErrorDomain);
+  XCTAssertEqual(error.code, GPBMessageErrorCodeMissingRequiredField);
+#else
+  XCTAssertNotNil(msg);
+  XCTAssertNil(error);
+  XCTAssertFalse(msg.initialized);
 #endif  // DEBUG
+}
 
 - (void)testCoding {
   NSData *data =
@@ -1033,7 +1038,7 @@
   message3.repeatedStringArray = [NSMutableArray arrayWithObject:@"wee"];
   XCTAssertNotNil(message.repeatedInt32Array);
   XCTAssertNotNil(message.repeatedStringArray);
-  TestAllTypes *message4 = [message3 copy];
+  TestAllTypes *message4 = [[message3 copy] autorelease];
   XCTAssertNotEqual(message3.repeatedInt32Array, message4.repeatedInt32Array);
   XCTAssertEqualObjects(message3.repeatedInt32Array,
                         message4.repeatedInt32Array);
@@ -1153,6 +1158,205 @@
   [message.a.iArray removeAll];
   XCTAssertFalse([message hasA]);
   [message.a.strArray removeAllObjects];
+  XCTAssertFalse([message hasA]);
+}
+
+- (void)testDefaultingMaps {
+  // Basic tests for default creation of maps in a message.
+  TestRecursiveMessageWithRepeatedField *message =
+      [TestRecursiveMessageWithRepeatedField message];
+  TestRecursiveMessageWithRepeatedField *message2 =
+      [TestRecursiveMessageWithRepeatedField message];
+
+  // Simply accessing the map should not make any fields visible.
+  XCTAssertNotNil(message.a.a.iToI);
+  XCTAssertFalse([message hasA]);
+  XCTAssertFalse([message.a hasA]);
+  XCTAssertNotNil(message2.a.a.strToStr);
+  XCTAssertFalse([message2 hasA]);
+  XCTAssertFalse([message2.a hasA]);
+
+  // But adding an element to the map should.
+  [message.a.a.iToI setValue:100 forKey:200];
+  XCTAssertTrue([message hasA]);
+  XCTAssertTrue([message.a hasA]);
+  XCTAssertEqual([message.a.a.iToI count], (NSUInteger)1);
+  [message2.a.a.strToStr setObject:@"foo" forKey:@"bar"];
+  XCTAssertTrue([message2 hasA]);
+  XCTAssertTrue([message2.a hasA]);
+  XCTAssertEqual([message2.a.a.strToStr count], (NSUInteger)1);
+}
+
+- (void)testAutocreatedMapShared {
+  // Multiple objects pointing to the same map.
+  TestRecursiveMessageWithRepeatedField *message1a =
+      [TestRecursiveMessageWithRepeatedField message];
+  TestRecursiveMessageWithRepeatedField *message1b =
+      [TestRecursiveMessageWithRepeatedField message];
+  message1a.a.iToI = message1b.a.iToI;
+  XCTAssertTrue([message1a hasA]);
+  XCTAssertFalse([message1b hasA]);
+  [message1a.a.iToI setValue:1 forKey:2];
+  XCTAssertTrue([message1a hasA]);
+  XCTAssertTrue([message1b hasA]);
+  XCTAssertEqual(message1a.a.iToI, message1b.a.iToI);
+
+  TestRecursiveMessageWithRepeatedField *message2a =
+      [TestRecursiveMessageWithRepeatedField message];
+  TestRecursiveMessageWithRepeatedField *message2b =
+      [TestRecursiveMessageWithRepeatedField message];
+  message2a.a.strToStr = message2b.a.strToStr;
+  XCTAssertTrue([message2a hasA]);
+  XCTAssertFalse([message2b hasA]);
+  [message2a.a.strToStr setObject:@"bar" forKey:@"foo"];
+  XCTAssertTrue([message2a hasA]);
+  XCTAssertTrue([message2b hasA]);
+  XCTAssertEqual(message2a.a.strToStr, message2b.a.strToStr);
+}
+
+- (void)testAutocreatedMapCopy {
+  // Copy should not copy autocreated maps.
+  TestRecursiveMessageWithRepeatedField *message =
+      [TestRecursiveMessageWithRepeatedField message];
+  XCTAssertNotNil(message.strToStr);
+  XCTAssertNotNil(message.iToI);
+  TestRecursiveMessageWithRepeatedField *message2 =
+      [[message copy] autorelease];
+  // Pointer conparisions.
+  XCTAssertNotEqual(message.strToStr, message2.strToStr);
+  XCTAssertNotEqual(message.iToI, message2.iToI);
+
+  // Mutable copy should copy empty arrays that were explicitly set (end up
+  // with different objects that are equal).
+  TestRecursiveMessageWithRepeatedField *message3 =
+      [TestRecursiveMessageWithRepeatedField message];
+  message3.iToI = [GPBInt32Int32Dictionary dictionaryWithValue:10 forKey:20];
+  message3.strToStr =
+      [NSMutableDictionary dictionaryWithObject:@"abc" forKey:@"123"];
+  XCTAssertNotNil(message.iToI);
+  XCTAssertNotNil(message.iToI);
+  TestRecursiveMessageWithRepeatedField *message4 =
+      [[message3 copy] autorelease];
+  XCTAssertNotEqual(message3.iToI, message4.iToI);
+  XCTAssertEqualObjects(message3.iToI, message4.iToI);
+  XCTAssertNotEqual(message3.strToStr, message4.strToStr);
+  XCTAssertEqualObjects(message3.strToStr, message4.strToStr);
+}
+
+- (void)testAutocreatedMapRetain {
+  // Should be able to retain autocreated map while the creator is dealloced.
+  TestRecursiveMessageWithRepeatedField *message =
+      [TestRecursiveMessageWithRepeatedField message];
+
+  @autoreleasepool {
+    TestRecursiveMessageWithRepeatedField *message2 =
+        [TestRecursiveMessageWithRepeatedField message];
+    message.iToI = message2.iToI;
+    message.strToStr = message2.strToStr;
+    // Pointer conparision
+    XCTAssertEqual(message.iToI->_autocreator, message2);
+    XCTAssertTrue([message.strToStr
+        isKindOfClass:[GPBAutocreatedDictionary class]]);
+    XCTAssertEqual(
+        ((GPBAutocreatedDictionary *)message.strToStr)->_autocreator,
+        message2);
+  }
+
+  XCTAssertNil(message.iToI->_autocreator);
+  XCTAssertTrue(
+      [message.strToStr isKindOfClass:[GPBAutocreatedDictionary class]]);
+  XCTAssertNil(
+      ((GPBAutocreatedDictionary *)message.strToStr)->_autocreator);
+}
+
+- (void)testSetNilAutocreatedMap {
+  // Setting map to nil should cause it to lose its delegate.
+  TestRecursiveMessageWithRepeatedField *message =
+      [TestRecursiveMessageWithRepeatedField message];
+  GPBInt32Int32Dictionary *iToI = [message.iToI retain];
+  GPBAutocreatedDictionary *strToStr =
+      (GPBAutocreatedDictionary *)[message.strToStr retain];
+  XCTAssertTrue([strToStr isKindOfClass:[GPBAutocreatedDictionary class]]);
+  XCTAssertEqual(iToI->_autocreator, message);
+  XCTAssertEqual(strToStr->_autocreator, message);
+  message.iToI = nil;
+  message.strToStr = nil;
+  XCTAssertNil(iToI->_autocreator);
+  XCTAssertNil(strToStr->_autocreator);
+  [iToI release];
+  [strToStr release];
+}
+
+- (void)testReplaceAutocreatedMap {
+  // Replacing map should orphan the old one and cause its creator to become
+  // visible.
+  {
+    TestRecursiveMessageWithRepeatedField *message =
+        [TestRecursiveMessageWithRepeatedField message];
+    XCTAssertNotNil(message.a);
+    XCTAssertNotNil(message.a.iToI);
+    XCTAssertFalse([message hasA]);
+    GPBInt32Int32Dictionary *iToI = [message.a.iToI retain];
+    XCTAssertEqual(iToI->_autocreator, message.a);  // Pointer comparision
+    message.a.iToI = [GPBInt32Int32Dictionary dictionaryWithValue:6 forKey:7];
+    XCTAssertTrue([message hasA]);
+    XCTAssertNotEqual(message.a.iToI, iToI);  // Pointer comparision
+    XCTAssertNil(iToI->_autocreator);
+    [iToI release];
+  }
+
+  {
+    TestRecursiveMessageWithRepeatedField *message =
+        [TestRecursiveMessageWithRepeatedField message];
+    XCTAssertNotNil(message.a);
+    XCTAssertNotNil(message.a.strToStr);
+    XCTAssertFalse([message hasA]);
+    GPBAutocreatedDictionary *strToStr =
+        (GPBAutocreatedDictionary *)[message.a.strToStr retain];
+    XCTAssertTrue([strToStr isKindOfClass:[GPBAutocreatedDictionary class]]);
+    XCTAssertEqual(strToStr->_autocreator, message.a);  // Pointer comparision
+    message.a.strToStr =
+        [NSMutableDictionary dictionaryWithObject:@"abc" forKey:@"def"];
+    XCTAssertTrue([message hasA]);
+    XCTAssertNotEqual(message.a.strToStr, strToStr);  // Pointer comparision
+    XCTAssertNil(strToStr->_autocreator);
+    [strToStr release];
+  }
+}
+
+- (void)testSetAutocreatedMapToSelf {
+  // Setting map to itself should cause it to become visible.
+  {
+    TestRecursiveMessageWithRepeatedField *message =
+        [TestRecursiveMessageWithRepeatedField message];
+    XCTAssertNotNil(message.a);
+    XCTAssertNotNil(message.a.iToI);
+    XCTAssertFalse([message hasA]);
+    message.a.iToI = message.a.iToI;
+    XCTAssertTrue([message hasA]);
+    XCTAssertNil(message.a.iToI->_autocreator);
+  }
+
+  {
+    TestRecursiveMessageWithRepeatedField *message =
+        [TestRecursiveMessageWithRepeatedField message];
+    XCTAssertNotNil(message.a);
+    XCTAssertNotNil(message.a.strToStr);
+    XCTAssertFalse([message hasA]);
+    message.a.strToStr = message.a.strToStr;
+    XCTAssertTrue([message hasA]);
+    XCTAssertTrue([message.a.strToStr isKindOfClass:[GPBAutocreatedDictionary class]]);
+    XCTAssertNil(((GPBAutocreatedDictionary *)message.a.strToStr)->_autocreator);
+  }
+}
+
+- (void)testAutocreatedMapRemoveAllValues {
+  // Calling removeAll on autocreated map should not cause it to be visible.
+  TestRecursiveMessageWithRepeatedField *message =
+      [TestRecursiveMessageWithRepeatedField message];
+  [message.a.iToI removeAll];
+  XCTAssertFalse([message hasA]);
+  [message.a.strToStr removeAllObjects];
   XCTAssertFalse([message hasA]);
 }
 
@@ -1555,7 +1759,8 @@
   GPBMessage *message = [GPBMessage message];
   [message setUnknownFields:unknowns];
   NSData *data = [message data];
-  GPBMessage *message2 = [GPBMessage parseFromData:data extensionRegistry:nil];
+  GPBMessage *message2 =
+      [GPBMessage parseFromData:data extensionRegistry:nil error:NULL];
   XCTAssertEqualObjects(message, message2);
 }
 
@@ -1579,9 +1784,11 @@
   GPBCodedInputStream *input =
       [GPBCodedInputStream streamWithData:delimitedData];
   GPBMessage *message3 = [GPBMessage parseDelimitedFromCodedInputStream:input
-                                                      extensionRegistry:nil];
+                                                      extensionRegistry:nil
+                                                                  error:NULL];
   GPBMessage *message4 = [GPBMessage parseDelimitedFromCodedInputStream:input
-                                                      extensionRegistry:nil];
+                                                      extensionRegistry:nil
+                                                                  error:NULL];
   XCTAssertEqualObjects(message1, message3);
   XCTAssertEqualObjects(message2, message4);
 }
@@ -1673,7 +1880,7 @@
   XCTAssertEqual(msg.bar, EnumTestMsg_MyEnum_One);
   XCTAssertEqual(msg.baz, EnumTestMsg_MyEnum_NegOne);
   // Bounce to wire and back.
-  EnumTestMsg *msgPrime = [EnumTestMsg parseFromData:[msg data]];
+  EnumTestMsg *msgPrime = [EnumTestMsg parseFromData:[msg data] error:NULL];
   XCTAssertEqualObjects(msgPrime, msg);
   XCTAssertEqual(msgPrime.foo, EnumTestMsg_MyEnum_Zero);
   XCTAssertEqual(msgPrime.bar, EnumTestMsg_MyEnum_One);
@@ -1685,7 +1892,7 @@
   XCTAssertEqual(msg.bar, EnumTestMsg_MyEnum_Two);
   XCTAssertEqual(msg.baz, EnumTestMsg_MyEnum_NegTwo);
   // Bounce to wire and back.
-  msgPrime = [EnumTestMsg parseFromData:[msg data]];
+  msgPrime = [EnumTestMsg parseFromData:[msg data] error:NULL];
   XCTAssertEqualObjects(msgPrime, msg);
   XCTAssertEqual(msgPrime.foo, EnumTestMsg_MyEnum_Zero);
   XCTAssertEqual(msgPrime.bar, EnumTestMsg_MyEnum_Two);
@@ -1706,7 +1913,7 @@
   XCTAssertEqual([msg.mumbleArray valueAtIndex:3], EnumTestMsg_MyEnum_NegOne);
   XCTAssertEqual([msg.mumbleArray valueAtIndex:4], EnumTestMsg_MyEnum_NegTwo);
   // Bounce to wire and back.
-  msgPrime = [EnumTestMsg parseFromData:[msg data]];
+  msgPrime = [EnumTestMsg parseFromData:[msg data] error:NULL];
   XCTAssertEqualObjects(msgPrime, msg);
   XCTAssertEqual([msgPrime.mumbleArray valueAtIndex:0],
                  EnumTestMsg_MyEnum_Zero);

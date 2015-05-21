@@ -198,9 +198,10 @@ javanano_EXTRA_DIST=                                                            
   javanano/pom.xml
 
 objectivec_EXTRA_DIST=                                                       \
-  objectivec/DevTools/generate_descriptors_proto.sh                          \
+  objectivec/DevTools/check_version_stamps.sh                                \
   objectivec/DevTools/pddm.py                                                \
   objectivec/DevTools/pddm_tests.py                                          \
+  objectivec/generate_descriptors_proto.sh                                   \
   objectivec/google/protobuf/Descriptor.pbobjc.h                             \
   objectivec/google/protobuf/Descriptor.pbobjc.m                             \
   objectivec/google/protobuf/Duration.pbobjc.h                               \
@@ -227,7 +228,6 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBExtensionField_PackagePrivate.h                              \
   objectivec/GPBExtensionRegistry.h                                          \
   objectivec/GPBExtensionRegistry.m                                          \
-  objectivec/GPBExtensionRegistry_PackagePrivate.h                           \
   objectivec/GPBField.h                                                      \
   objectivec/GPBField.m                                                      \
   objectivec/GPBField_PackagePrivate.h                                       \

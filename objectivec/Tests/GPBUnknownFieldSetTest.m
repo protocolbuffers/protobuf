@@ -56,7 +56,7 @@
 - (void)setUp {
   allFields_ = [self allSetRepeatedCount:kGPBDefaultRepeatCount];
   allFieldsData_ = [allFields_ data];
-  emptyMessage_ = [TestEmptyMessage parseFromData:allFieldsData_];
+  emptyMessage_ = [TestEmptyMessage parseFromData:allFieldsData_ error:NULL];
   unknownFields_ = emptyMessage_.unknownFields;
 }
 
@@ -176,7 +176,7 @@
   [fields addField:field];
 
   NSData* data = fields.data;
-  TestAllTypes* destination = [TestAllTypes parseFromData:data];
+  TestAllTypes* destination = [TestAllTypes parseFromData:data error:NULL];
 
   [self assertAllFieldsSet:destination repeatedCount:kGPBDefaultRepeatCount];
   XCTAssertEqual(destination.unknownFields.countOfFields, (NSUInteger)1);
@@ -191,8 +191,10 @@
   // when parsing.
 
   NSData* bizarroData = [self getBizarroData];
-  TestAllTypes* allTypesMessage = [TestAllTypes parseFromData:bizarroData];
-  TestEmptyMessage* emptyMessage = [TestEmptyMessage parseFromData:bizarroData];
+  TestAllTypes* allTypesMessage =
+      [TestAllTypes parseFromData:bizarroData error:NULL];
+  TestEmptyMessage* emptyMessage =
+      [TestEmptyMessage parseFromData:bizarroData error:NULL];
 
   // All fields should have been interpreted as unknown, so the debug strings
   // should be the same.
@@ -204,7 +206,7 @@
   // they are declared as extension numbers.
 
   TestEmptyMessageWithExtensions* message =
-      [TestEmptyMessageWithExtensions parseFromData:allFieldsData_];
+      [TestEmptyMessageWithExtensions parseFromData:allFieldsData_ error:NULL];
 
   XCTAssertEqual(unknownFields_.countOfFields,
                  message.unknownFields.countOfFields);
@@ -217,8 +219,9 @@
 
   NSData* bizarroData = [self getBizarroData];
   TestAllExtensions* allExtensionsMessage =
-      [TestAllExtensions parseFromData:bizarroData];
-  TestEmptyMessage* emptyMessage = [TestEmptyMessage parseFromData:bizarroData];
+      [TestAllExtensions parseFromData:bizarroData error:NULL];
+  TestEmptyMessage* emptyMessage =
+      [TestEmptyMessage parseFromData:bizarroData error:NULL];
 
   // All fields should have been interpreted as unknown, so the debug strings
   // should be the same.

@@ -37,6 +37,13 @@
 @class TestPackedExtensions;
 @class GPBExtensionRegistry;
 
+
+// Helper for uses of C arrays in tests cases.
+#ifndef GPBARRAYSIZE
+#define GPBARRAYSIZE(a) ((sizeof(a) / sizeof((a[0]))))
+#endif  // GPBARRAYSIZE
+
+
 // The number of repetitions of any repeated objects inside of test messages.
 extern const uint32_t kGPBDefaultRepeatCount;
 

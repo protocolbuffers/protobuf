@@ -149,7 +149,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 //%PDDM-DEFINE ARRAY_IMMUTABLE_CORE(NAME, TYPE, ACCESSOR_NAME, FORMAT)
 //%- (void)dealloc {
-//%  NSAssert(!_autocreator, @"Autocreator must be cleared before release.");
+//%  NSAssert(!_autocreator,
+//%           @"%@: Autocreator must be cleared before release, autocreator: %@",
+//%           [self class], _autocreator);
 //%  free(_values);
 //%  [super dealloc];
 //%}
@@ -214,7 +216,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 //%  if (values == NULL || count == 0) return;
 //%MUTATION_HOOK_##HOOK_1()  NSUInteger initialCount = _count;
 //%  NSUInteger newCount = initialCount + count;
-//%MAYBE_GROW_TO_SET_COUNT(newCount);
+//%MAYBE_GROW_TO_SET_COUNT(newCount)
 //%  memcpy(&_values[initialCount], values, count * sizeof(TYPE));
 //%  if (_autocreator) {
 //%    GPBAutocreatedArrayModified(_autocreator, self);
@@ -225,7 +227,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 //%VALIDATE_RANGE(index, _count + 1)
 //%MUTATION_HOOK_##HOOK_2()  NSUInteger initialCount = _count;
 //%  NSUInteger newCount = initialCount + 1;
-//%MAYBE_GROW_TO_SET_COUNT(newCount);
+//%MAYBE_GROW_TO_SET_COUNT(newCount)
 //%  if (index != initialCount) {
 //%    memmove(&_values[index + 1], &_values[index], (initialCount - index) * sizeof(TYPE));
 //%  }
@@ -355,7 +357,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (void)dealloc {
-  NSAssert(!_autocreator, @"Autocreator must be cleared before release.");
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   free(_values);
   [super dealloc];
 }
@@ -442,7 +446,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   memcpy(&_values[initialCount], values, count * sizeof(int32_t));
   if (_autocreator) {
     GPBAutocreatedArrayModified(_autocreator, self);
@@ -460,7 +464,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   if (index != initialCount) {
     memmove(&_values[index + 1], &_values[index], (initialCount - index) * sizeof(int32_t));
   }
@@ -598,7 +602,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (void)dealloc {
-  NSAssert(!_autocreator, @"Autocreator must be cleared before release.");
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   free(_values);
   [super dealloc];
 }
@@ -685,7 +691,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   memcpy(&_values[initialCount], values, count * sizeof(uint32_t));
   if (_autocreator) {
     GPBAutocreatedArrayModified(_autocreator, self);
@@ -703,7 +709,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   if (index != initialCount) {
     memmove(&_values[index + 1], &_values[index], (initialCount - index) * sizeof(uint32_t));
   }
@@ -841,7 +847,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (void)dealloc {
-  NSAssert(!_autocreator, @"Autocreator must be cleared before release.");
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   free(_values);
   [super dealloc];
 }
@@ -928,7 +936,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   memcpy(&_values[initialCount], values, count * sizeof(int64_t));
   if (_autocreator) {
     GPBAutocreatedArrayModified(_autocreator, self);
@@ -946,7 +954,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   if (index != initialCount) {
     memmove(&_values[index + 1], &_values[index], (initialCount - index) * sizeof(int64_t));
   }
@@ -1084,7 +1092,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (void)dealloc {
-  NSAssert(!_autocreator, @"Autocreator must be cleared before release.");
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   free(_values);
   [super dealloc];
 }
@@ -1171,7 +1181,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   memcpy(&_values[initialCount], values, count * sizeof(uint64_t));
   if (_autocreator) {
     GPBAutocreatedArrayModified(_autocreator, self);
@@ -1189,7 +1199,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   if (index != initialCount) {
     memmove(&_values[index + 1], &_values[index], (initialCount - index) * sizeof(uint64_t));
   }
@@ -1327,7 +1337,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (void)dealloc {
-  NSAssert(!_autocreator, @"Autocreator must be cleared before release.");
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   free(_values);
   [super dealloc];
 }
@@ -1414,7 +1426,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   memcpy(&_values[initialCount], values, count * sizeof(float));
   if (_autocreator) {
     GPBAutocreatedArrayModified(_autocreator, self);
@@ -1432,7 +1444,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   if (index != initialCount) {
     memmove(&_values[index + 1], &_values[index], (initialCount - index) * sizeof(float));
   }
@@ -1570,7 +1582,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (void)dealloc {
-  NSAssert(!_autocreator, @"Autocreator must be cleared before release.");
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   free(_values);
   [super dealloc];
 }
@@ -1657,7 +1671,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   memcpy(&_values[initialCount], values, count * sizeof(double));
   if (_autocreator) {
     GPBAutocreatedArrayModified(_autocreator, self);
@@ -1675,7 +1689,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   if (index != initialCount) {
     memmove(&_values[index + 1], &_values[index], (initialCount - index) * sizeof(double));
   }
@@ -1813,7 +1827,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (void)dealloc {
-  NSAssert(!_autocreator, @"Autocreator must be cleared before release.");
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   free(_values);
   [super dealloc];
 }
@@ -1900,7 +1916,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   memcpy(&_values[initialCount], values, count * sizeof(BOOL));
   if (_autocreator) {
     GPBAutocreatedArrayModified(_autocreator, self);
@@ -1918,7 +1934,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   if (index != initialCount) {
     memmove(&_values[index + 1], &_values[index], (initialCount - index) * sizeof(BOOL));
   }
@@ -2083,7 +2099,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 // This block of code is generated, do not edit it directly.
 
 - (void)dealloc {
-  NSAssert(!_autocreator, @"Autocreator must be cleared before release.");
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   free(_values);
   [super dealloc];
 }
@@ -2229,7 +2247,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   memcpy(&_values[initialCount], values, count * sizeof(int32_t));
   if (_autocreator) {
     GPBAutocreatedArrayModified(_autocreator, self);
@@ -2247,7 +2265,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   if (index != initialCount) {
     memmove(&_values[index + 1], &_values[index], (initialCount - index) * sizeof(int32_t));
   }
@@ -2332,7 +2350,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   memcpy(&_values[initialCount], values, count * sizeof(int32_t));
   if (_autocreator) {
     GPBAutocreatedArrayModified(_autocreator, self);
@@ -2355,7 +2373,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   if (newCount > _capacity) {
     [self internalResizeToCapacity:CapacityFromCount(newCount)];
   }
-  _count = newCount;;
+  _count = newCount;
   if (index != initialCount) {
     memmove(&_values[index + 1], &_values[index], (initialCount - index) * sizeof(int32_t));
   }
@@ -2407,7 +2425,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (void)dealloc {
-  NSAssert(!_autocreator, @"Autocreator must be cleared before release.");
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_array release];
   [super dealloc];
 }

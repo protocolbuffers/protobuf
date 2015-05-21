@@ -2,8 +2,8 @@
 // source: google/protobuf/descriptor.proto
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
-
 #import "google/protobuf/Descriptor.pbobjc.h"
+// @@protoc_insertion_point(imports)
 
 #pragma mark - GPBDescriptorRoot
 
@@ -2216,3 +2216,5 @@ typedef struct GPBSourceCodeInfo_Location_Storage {
 
 @end
 
+
+// @@protoc_insertion_point(global_scope)

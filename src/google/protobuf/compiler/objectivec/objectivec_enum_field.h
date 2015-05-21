@@ -47,9 +47,10 @@ class EnumFieldGenerator : public SingleFieldGenerator {
   virtual void GenerateFieldDescriptionTypeSpecific(io::Printer* printer) const;
   virtual void GenerateCFunctionDeclarations(io::Printer* printer) const;
   virtual void GenerateCFunctionImplementations(io::Printer* printer) const;
+  virtual void DetermineForwardDeclarations(set<string>* fwd_decls) const;
 
  protected:
-  EnumFieldGenerator(const FieldDescriptor* descriptor);
+  explicit EnumFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~EnumFieldGenerator();
 
  private:

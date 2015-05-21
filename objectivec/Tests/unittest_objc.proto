@@ -44,6 +44,8 @@ message TestRecursiveMessageWithRepeatedField {
   optional TestRecursiveMessageWithRepeatedField a = 1;
   repeated int32 i = 2;
   repeated string str = 3;
+  map<int32, int32> i_to_i = 4;
+  map<string, string> str_to_str = 5;
 }
 
 // Recursive message and extension to for testing autocreators at different

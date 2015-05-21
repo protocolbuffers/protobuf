@@ -63,7 +63,7 @@ class MessageGenerator {
   void GenerateMessageHeader(io::Printer* printer);
   void GenerateSource(io::Printer* printer);
   void GenerateExtensionRegistrationSource(io::Printer* printer);
-  void DetermineDependencies(set<string>* dependencies);
+  void DetermineForwardDeclarations(set<string>* fwd_decls);
 
   // This only speaks for this message, not sub message/enums.
   bool IsFiltered() const { return filter_reason_.length() > 0; }

@@ -31,10 +31,7 @@
 #import <XCTest/XCTest.h>
 
 #import "GPBCodedInputStream_PackagePrivate.h"
-
-#ifndef GPBARRAYSIZE
-#define GPBARRAYSIZE(a) ((sizeof(a) / sizeof((a[0]))))
-#endif  // GPBARRAYSIZE
+#import "GPBTestUtilities.h"
 
 @interface TestClass : NSObject
 @property(nonatomic, retain) NSString *foo;

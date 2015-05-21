@@ -40,3 +40,7 @@
 + (void)globallyRegisterExtension:(GPBExtensionField *)field;
 
 @end
+
+// Returns YES if the selector was resolved and added to the class,
+// NO otherwise.
+BOOL GPBResolveExtensionClassMethod(Class self, SEL sel);

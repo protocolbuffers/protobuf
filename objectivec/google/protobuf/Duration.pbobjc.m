@@ -2,8 +2,8 @@
 // source: google/protobuf/duration.proto
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
-
 #import "google/protobuf/Duration.pbobjc.h"
+// @@protoc_insertion_point(imports)
 
 #pragma mark - GPBDurationRoot
 
@@ -83,3 +83,5 @@ typedef struct GPBDuration_Storage {
 
 @end
 
+
+// @@protoc_insertion_point(global_scope)

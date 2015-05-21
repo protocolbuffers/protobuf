@@ -37,6 +37,14 @@
 @class GPBExtensionRegistry;
 @class GPBFieldDescriptor;
 
+@protocol GPBDictionaryInternalsProtocol
+- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
+- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
+                         asField:(GPBFieldDescriptor *)field;
+- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
+- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@end
+
 //%PDDM-DEFINE DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(KEY_NAME)
 //%DICTIONARY_POD_PRIV_INTERFACES_FOR_KEY(KEY_NAME)
 //%DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, Object, Object)
@@ -51,12 +59,10 @@
 //%DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, Enum, Enum)
 
 //%PDDM-DEFINE DICTIONARY_PRIVATE_INTERFACES(KEY_NAME, VALUE_NAME, HELPER)
-//%@interface GPB##KEY_NAME##VALUE_NAME##Dictionary ()
-//%- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-//%- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-//%                         asField:(GPBFieldDescriptor *)field;
-//%- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-//%- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+//%@interface GPB##KEY_NAME##VALUE_NAME##Dictionary () <GPBDictionaryInternalsProtocol> {
+//% @package
+//%  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+//%}
 //%EXTRA_DICTIONARY_PRIVATE_INTERFACES_##HELPER()@end
 //%
 
@@ -76,79 +82,61 @@
 //%PDDM-EXPAND DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(UInt32)
 // This block of code is generated, do not edit it directly.
 
-@interface GPBUInt32UInt32Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt32UInt32Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt32Int32Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt32Int32Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt32UInt64Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt32UInt64Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt32Int64Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt32Int64Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt32BoolDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt32BoolDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt32FloatDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt32FloatDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt32DoubleDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt32DoubleDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt32EnumDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt32EnumDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
                                    forKey:(GPBValue *)key
                                   keyType:(GPBType)keyType;
 @end
 
-@interface GPBUInt32ObjectDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt32ObjectDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 - (BOOL)isInitialized;
 - (instancetype)deepCopyWithZone:(NSZone *)zone
     __attribute__((ns_returns_retained));
@@ -157,79 +145,61 @@
 //%PDDM-EXPAND DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(Int32)
 // This block of code is generated, do not edit it directly.
 
-@interface GPBInt32UInt32Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt32UInt32Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt32Int32Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt32Int32Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt32UInt64Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt32UInt64Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt32Int64Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt32Int64Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt32BoolDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt32BoolDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt32FloatDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt32FloatDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt32DoubleDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt32DoubleDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt32EnumDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt32EnumDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
                                    forKey:(GPBValue *)key
                                   keyType:(GPBType)keyType;
 @end
 
-@interface GPBInt32ObjectDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt32ObjectDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 - (BOOL)isInitialized;
 - (instancetype)deepCopyWithZone:(NSZone *)zone
     __attribute__((ns_returns_retained));
@@ -238,79 +208,61 @@
 //%PDDM-EXPAND DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(UInt64)
 // This block of code is generated, do not edit it directly.
 
-@interface GPBUInt64UInt32Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt64UInt32Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt64Int32Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt64Int32Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt64UInt64Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt64UInt64Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt64Int64Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt64Int64Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt64BoolDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt64BoolDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt64FloatDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt64FloatDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt64DoubleDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt64DoubleDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBUInt64EnumDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt64EnumDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
                                    forKey:(GPBValue *)key
                                   keyType:(GPBType)keyType;
 @end
 
-@interface GPBUInt64ObjectDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBUInt64ObjectDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 - (BOOL)isInitialized;
 - (instancetype)deepCopyWithZone:(NSZone *)zone
     __attribute__((ns_returns_retained));
@@ -319,79 +271,61 @@
 //%PDDM-EXPAND DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(Int64)
 // This block of code is generated, do not edit it directly.
 
-@interface GPBInt64UInt32Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt64UInt32Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt64Int32Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt64Int32Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt64UInt64Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt64UInt64Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt64Int64Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt64Int64Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt64BoolDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt64BoolDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt64FloatDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt64FloatDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt64DoubleDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt64DoubleDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBInt64EnumDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt64EnumDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
                                    forKey:(GPBValue *)key
                                   keyType:(GPBType)keyType;
 @end
 
-@interface GPBInt64ObjectDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBInt64ObjectDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 - (BOOL)isInitialized;
 - (instancetype)deepCopyWithZone:(NSZone *)zone
     __attribute__((ns_returns_retained));
@@ -400,79 +334,61 @@
 //%PDDM-EXPAND DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(Bool)
 // This block of code is generated, do not edit it directly.
 
-@interface GPBBoolUInt32Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBBoolUInt32Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBBoolInt32Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBBoolInt32Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBBoolUInt64Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBBoolUInt64Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBBoolInt64Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBBoolInt64Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBBoolBoolDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBBoolBoolDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBBoolFloatDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBBoolFloatDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBBoolDoubleDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBBoolDoubleDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBBoolEnumDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBBoolEnumDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
                                    forKey:(GPBValue *)key
                                   keyType:(GPBType)keyType;
 @end
 
-@interface GPBBoolObjectDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBBoolObjectDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 - (BOOL)isInitialized;
 - (instancetype)deepCopyWithZone:(NSZone *)zone
     __attribute__((ns_returns_retained));
@@ -481,74 +397,68 @@
 //%PDDM-EXPAND DICTIONARY_POD_PRIV_INTERFACES_FOR_KEY(String)
 // This block of code is generated, do not edit it directly.
 
-@interface GPBStringUInt32Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBStringUInt32Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBStringInt32Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBStringInt32Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBStringUInt64Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBStringUInt64Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBStringInt64Dictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBStringInt64Dictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBStringBoolDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBStringBoolDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBStringFloatDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBStringFloatDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBStringDoubleDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBStringDoubleDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 @end
 
-@interface GPBStringEnumDictionary ()
-- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
-- (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
-                         asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
-- (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
+@interface GPBStringEnumDictionary () <GPBDictionaryInternalsProtocol> {
+ @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
                                    forKey:(GPBValue *)key
                                   keyType:(GPBType)keyType;
 @end
 
 //%PDDM-EXPAND-END (6 expansions)
+
+#pragma mark - NSDictionary Subclass
+
+@interface GPBAutocreatedDictionary : NSMutableDictionary {
+  @package
+  GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
+}
+@end
+
+#pragma mark - Helpers
 
 CF_EXTERN_C_BEGIN
 
