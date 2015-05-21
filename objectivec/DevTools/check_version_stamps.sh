@@ -25,7 +25,7 @@ readonly ConstantName=GOOGLE_PROTOBUF_OBJC_GEN_VERSION
 readonly PluginSrc="${ProtoRootDir}/src/google/protobuf/compiler/objectivec/objectivec_file.cc"
 readonly PluginVersion=$( \
     cat "${PluginSrc}" \
-        | sed -n -e "s:const int32_t ${ConstantName} = \([0-9]*\);:\1:p"
+        | sed -n -e "s:const int32 ${ConstantName} = \([0-9]*\);:\1:p"
 )
 
 if [[ -z "${PluginVersion}" ]] ; then

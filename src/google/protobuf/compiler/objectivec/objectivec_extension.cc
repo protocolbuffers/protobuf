@@ -77,7 +77,6 @@ ExtensionGenerator::ExtensionGenerator(const string& root_class_name,
 ExtensionGenerator::~ExtensionGenerator() {}
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
-  WriteClassNameToClassList(root_class_and_method_name_);
   if (IsFiltered()) {
     printer->Print("// $filter_reason$\n\n", "filter_reason", filter_reason_);
     return;

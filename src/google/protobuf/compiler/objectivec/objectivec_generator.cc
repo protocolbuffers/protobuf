@@ -82,10 +82,6 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
     file_generator.GenerateSource(&printer);
   }
 
-  if (!WriteClassList(error)) {
-    return false;
-  }
-
   return true;
 }
 
