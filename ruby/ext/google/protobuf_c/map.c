@@ -82,7 +82,7 @@ static void table_key(Map* self, VALUE key,
     case UPB_TYPE_INT64:
     case UPB_TYPE_UINT32:
     case UPB_TYPE_UINT64:
-      native_slot_set(self->key_type, Qnil, buf, key);
+      native_slot_set(self->key_type, Qnil, NULL, buf, key, false);
       *out_key = buf;
       *out_length = native_slot_size(self->key_type);
       break;
@@ -111,7 +111,7 @@ static VALUE table_key_to_ruby(Map* self, const char* buf, size_t length) {
     case UPB_TYPE_INT64:
     case UPB_TYPE_UINT32:
     case UPB_TYPE_UINT64:
-      return native_slot_get(self->key_type, Qnil, buf);
+      return native_slot_get(self->key_type, Qnil, NULL, buf, false);
 
     default:
       assert(false);
@@ -169,6 +169,7 @@ VALUE Map_alloc(VALUE klass) {
   Map* self = ALLOC(Map);
   memset(self, 0, sizeof(Map));
   self->value_type_class = Qnil;
+  self->value_subdesc = NULL;
   VALUE ret = TypedData_Wrap_Struct(klass, &Map_type, self);
   return ret;
 }
@@ -244,8 +245,12 @@ VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
   int init_value_arg = 2;
   if (needs_typeclass(self->value_type) && argc > 2) {
     self->value_type_class = argv[2];
-    validate_type_class(self->value_type, self->value_type_class);
+    VALUE rb_subdesc =
+        validate_type_class(self->value_type, self->value_type_class);
     init_value_arg = 3;
+    if (self->value_type == UPB_TYPE_MESSAGE) {
+      self->value_subdesc = ruby_to_Descriptor(rb_subdesc);
+    }
   }
 
   // Table value type is always UINT64: this ensures enough space to store the
@@ -284,7 +289,9 @@ VALUE Map_each(VALUE _self) {
     void* mem = value_memory(&v);
     VALUE value = native_slot_get(self->value_type,
                                   self->value_type_class,
-                                  mem);
+                                  self->value_subdesc,
+                                  mem,
+                                  /* is_from_serialize = */ false);
 
     rb_yield_values(2, key, value);
   }
@@ -335,7 +342,9 @@ VALUE Map_values(VALUE _self) {
     void* mem = value_memory(&v);
     VALUE value = native_slot_get(self->value_type,
                                   self->value_type_class,
-                                  mem);
+                                  self->value_subdesc,
+                                  mem,
+                                  /* is_from_serialize = */ false);
 
     rb_ary_push(ret, value);
   }
@@ -361,7 +370,11 @@ VALUE Map_index(VALUE _self, VALUE key) {
   upb_value v;
   if (upb_strtable_lookup2(&self->table, keyval, length, &v)) {
     void* mem = value_memory(&v);
-    return native_slot_get(self->value_type, self->value_type_class, mem);
+    return native_slot_get(self->value_type,
+                           self->value_type_class,
+                           self->value_subdesc,
+                           mem,
+                           /* is_from_serialize = */ false);
   } else {
     return Qnil;
   }
@@ -378,6 +391,10 @@ VALUE Map_index(VALUE _self, VALUE key) {
 VALUE Map_index_set(VALUE _self, VALUE key, VALUE value) {
   Map* self = ruby_to_Map(_self);
 
+  if (value == Qnil) {
+    rb_raise(rb_eTypeError, "Cannot set a repeated field element to nil");
+  }
+
   char keybuf[TABLE_KEY_BUF_LENGTH];
   const char* keyval = NULL;
   size_t length = 0;
@@ -385,7 +402,12 @@ VALUE Map_index_set(VALUE _self, VALUE key, VALUE value) {
 
   upb_value v;
   void* mem = value_memory(&v);
-  native_slot_set(self->value_type, self->value_type_class, mem, value);
+  native_slot_set(self->value_type,
+                  self->value_type_class,
+                  self->value_subdesc,
+                  mem,
+                  value,
+                  /* is_from_parse = */ false);
 
   // Replace any existing value by issuing a 'remove' operation first.
   upb_strtable_remove2(&self->table, keyval, length, NULL);
@@ -437,7 +459,11 @@ VALUE Map_delete(VALUE _self, VALUE key) {
   upb_value v;
   if (upb_strtable_remove2(&self->table, keyval, length, &v)) {
     void* mem = value_memory(&v);
-    return native_slot_get(self->value_type, self->value_type_class, mem);
+    return native_slot_get(self->value_type,
+                           self->value_type_class,
+                           self->value_subdesc,
+                           mem,
+                           /* is_from_serialize = */ false);
   } else {
     return Qnil;
   }
@@ -536,7 +562,7 @@ VALUE Map_deep_copy(VALUE _self) {
     void* mem = value_memory(&v);
     upb_value dup;
     void* dup_mem = value_memory(&dup);
-    native_slot_deep_copy(self->value_type, dup_mem, mem);
+    native_slot_deep_copy(self->value_type, self->value_subdesc, dup_mem, mem);
 
     if (!upb_strtable_insert2(&new_self->table,
                               upb_strtable_iter_key(&it),
@@ -639,7 +665,9 @@ VALUE Map_hash(VALUE _self) {
     void* mem = value_memory(&v);
     VALUE value = native_slot_get(self->value_type,
                                   self->value_type_class,
-                                  mem);
+                                  self->value_subdesc,
+                                  mem,
+                                  /* is_from_serialize = */ false);
 
     h = rb_hash_uint(h, NUM2LONG(rb_funcall(key, hash_sym, 0)));
     h = rb_hash_uint(h, NUM2LONG(rb_funcall(value, hash_sym, 0)));
@@ -675,7 +703,9 @@ VALUE Map_inspect(VALUE _self) {
     void* mem = value_memory(&v);
     VALUE value = native_slot_get(self->value_type,
                                   self->value_type_class,
-                                  mem);
+                                  self->value_subdesc,
+                                  mem,
+                                  /* is_from_serialize = */ false);
 
     if (!first) {
       str = rb_str_cat2(str, ", ");
@@ -777,7 +807,19 @@ VALUE Map_iter_value(Map_iter* iter) {
   void* mem = value_memory(&v);
   return native_slot_get(iter->self->value_type,
                          iter->self->value_type_class,
-                         mem);
+                         iter->self->value_subdesc,
+                         mem,
+                         /* is_from_serialize = */ false);
+}
+
+VALUE Map_iter_value_for_serialize(Map_iter* iter) {
+  upb_value v = upb_strtable_iter_value(&iter->it);
+  void* mem = value_memory(&v);
+  return native_slot_get(iter->self->value_type,
+                         iter->self->value_type_class,
+                         iter->self->value_subdesc,
+                         mem,
+                         /* is_from_serialize = */ true);
 }
 
 void Map_register(VALUE module) {

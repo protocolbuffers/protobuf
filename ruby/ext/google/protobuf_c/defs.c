@@ -228,7 +228,9 @@ DEFINE_CLASS(Descriptor, "Google::Protobuf::Descriptor");
 void Descriptor_mark(void* _self) {
   Descriptor* self = _self;
   rb_gc_mark(self->klass);
-  rb_gc_mark(self->typeclass_references);
+  rb_gc_mark(self->udt_parse_hook);
+  rb_gc_mark(self->udt_serialize_hook);
+  rb_gc_mark(self->udt_verify_hook);
 }
 
 void Descriptor_free(void* _self) {
@@ -273,7 +275,11 @@ VALUE Descriptor_alloc(VALUE klass) {
   self->fill_method = NULL;
   self->pb_serialize_handlers = NULL;
   self->json_serialize_handlers = NULL;
-  self->typeclass_references = rb_ary_new();
+  self->udt_parse_hook = Qnil;
+  self->udt_serialize_hook = Qnil;
+  self->udt_verify_hook = Qnil;
+  // Initialize to `true` conservatively until layout is frozen.
+  self->has_udts_transitively = true;
   return ret;
 }
 
@@ -288,6 +294,9 @@ void Descriptor_register(VALUE module) {
   rb_define_method(klass, "each_oneof", Descriptor_each_oneof, 0);
   rb_define_method(klass, "lookup_oneof", Descriptor_lookup_oneof, 1);
   rb_define_method(klass, "msgclass", Descriptor_msgclass, 0);
+  rb_define_method(klass, "udt_parse_hook", Descriptor_udt_parse_hook, 0);
+  rb_define_method(klass, "udt_serialize_hook", Descriptor_udt_serialize_hook, 0);
+  rb_define_method(klass, "udt_verify_hook", Descriptor_udt_verify_hook, 0);
   rb_define_method(klass, "name", Descriptor_name, 0);
   rb_define_method(klass, "name=", Descriptor_name_set, 1);
   rb_include_module(klass, rb_mEnumerable);
@@ -460,6 +469,111 @@ VALUE Descriptor_msgclass(VALUE _self) {
     self->klass = build_class_from_descriptor(self);
   }
   return self->klass;
+}
+
+static void check_hook_conditions(Descriptor* self) {
+  if (upb_def_isfrozen((const upb_def*)self->msgdef)) {
+    rb_raise(rb_eRuntimeError,
+             "Cannot set hook on a Descriptor already in a pool.");
+  }
+  if (!rb_block_given_p()) {
+    rb_raise(rb_eRuntimeError,
+             "Block must be given to udt_parse_hook");
+  }
+}
+
+/*
+ * call-seq:
+ *     Descriptor.udt_parse_hook(&block)
+ *
+ * Sets a user-defined type (UDT) parse hook: the block is invoked with its
+ * single argument a submessage (of this descriptor's type) from the wire, and
+ * is expected to return a value of a possibly different type that is exposed to
+ * the user.
+ */
+VALUE Descriptor_udt_parse_hook(VALUE _self) {
+  DEFINE_SELF(Descriptor, self, _self);
+  check_hook_conditions(self);
+  self->udt_parse_hook = rb_block_proc();
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     Descriptor.udt_serialize_hook(&block)
+ *
+ * Sets a user-defined type (UDT) serialize hook: the block is invoked with its
+ * single argument equal to the field value as set by the user, and is expected
+ * to return a message of the type described by this descriptor to put on the
+ * wire.
+ */
+VALUE Descriptor_udt_serialize_hook(VALUE _self) {
+  DEFINE_SELF(Descriptor, self, _self);
+  check_hook_conditions(self);
+  self->udt_serialize_hook = rb_block_proc();
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     Descriptor.udt_verify_hook(&block)
+ *
+ * Sets a user-defined type (UDT) verify hook: the block is invoked with its
+ * single argument equal to the field value as set by the user, and should raise
+ * an exception if the value is invalid.
+ */
+VALUE Descriptor_udt_verify_hook(VALUE _self) {
+  DEFINE_SELF(Descriptor, self, _self);
+  check_hook_conditions(self);
+  self->udt_verify_hook = rb_block_proc();
+  return Qnil;
+}
+
+bool Descriptor_is_udt(Descriptor* desc) {
+  return (desc != NULL) && (desc->udt_parse_hook != Qnil);
+}
+
+bool Descriptor_recursively_has_udts_internal(Descriptor* desc,
+                                              upb_inttable* visited) {
+  if (!desc) {
+    return false;
+  }
+  if (Descriptor_is_udt(desc)) {
+    return true;
+  }
+  upb_inttable_insertptr(visited, desc, upb_value_int32(1));
+
+  upb_msg_field_iter it;
+  for (upb_msg_field_begin(&it, desc->msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    const upb_fielddef* f = upb_msg_iter_field(&it);
+    if (upb_fielddef_type(f) != UPB_TYPE_MESSAGE) {
+      continue;
+    }
+
+    Descriptor* subdesc =
+        ruby_to_Descriptor(get_def_obj(upb_fielddef_msgsubdef(f)));
+
+    upb_value lookupval;
+    if (upb_inttable_lookupptr(visited, subdesc, &lookupval)) {
+      continue;
+    }
+
+    if (Descriptor_recursively_has_udts_internal(subdesc, visited)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool Descriptor_recursively_has_udts(Descriptor* desc) {
+  upb_inttable visited;
+  upb_inttable_init(&visited, UPB_CTYPE_INT32);
+  bool result = Descriptor_recursively_has_udts_internal(desc, &visited);
+  upb_inttable_uninit(&visited);
+  return result;
 }
 
 // -----------------------------------------------------------------------------
@@ -787,7 +901,10 @@ VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
   if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
     rb_raise(rb_eTypeError, "get method called on wrong message type");
   }
-  return layout_get(msg->descriptor->layout, Message_data(msg), self->fielddef);
+  return layout_get(msg->descriptor->layout,
+                    Message_data(msg),
+                    self->fielddef,
+                    /* is_from_serialize = */ false);
 }
 
 /*
@@ -805,7 +922,11 @@ VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
   if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
     rb_raise(rb_eTypeError, "set method called on wrong message type");
   }
-  layout_set(msg->descriptor->layout, Message_data(msg), self->fielddef, value);
+  layout_set(msg->descriptor->layout,
+             Message_data(msg),
+             self->fielddef,
+             value,
+             /* is_from_parse = */ false);
   return Qnil;
 }
 
@@ -1133,6 +1254,12 @@ void MessageBuilderContext_register(VALUE module) {
   rb_define_method(klass, "repeated", MessageBuilderContext_repeated, -1);
   rb_define_method(klass, "map", MessageBuilderContext_map, -1);
   rb_define_method(klass, "oneof", MessageBuilderContext_oneof, 1);
+  rb_define_method(klass, "udt_parse_hook",
+                   MessageBuilderContext_udt_parse_hook, 0);
+  rb_define_method(klass, "udt_serialize_hook",
+                   MessageBuilderContext_udt_serialize_hook, 0);
+  rb_define_method(klass, "udt_verify_hook",
+                   MessageBuilderContext_udt_verify_hook, 0);
   cMessageBuilderContext = klass;
   rb_gc_register_address(&cMessageBuilderContext);
 }
@@ -1368,6 +1495,51 @@ VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name) {
   rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
   Descriptor_add_oneof(self->descriptor, oneofdef);
 
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     MessageBuilderContext.udt_parse_hook(&block) => nil
+ *
+ * Invokes #udt_parse_hook on the Descriptor being built, thus setting a
+ * user-defined type (UDT) parse hook using the provided block.
+ */
+VALUE MessageBuilderContext_udt_parse_hook(VALUE _self) {
+  DEFINE_SELF(MessageBuilderContext, self, _self);
+  VALUE block = rb_block_proc();
+  rb_funcall_with_block(self->descriptor, rb_intern("udt_parse_hook"),
+                        0, NULL, block);
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     MessageBuilderContext.udt_serialize_hook(&block) => nil
+ *
+ * Invokes #udt_serialize_hook on the Descriptor being built, thus setting a
+ * user-defined type (UDT) serialize hook using the provided block.
+ */
+VALUE MessageBuilderContext_udt_serialize_hook(VALUE _self) {
+  DEFINE_SELF(MessageBuilderContext, self, _self);
+  VALUE block = rb_block_proc();
+  rb_funcall_with_block(self->descriptor, rb_intern("udt_serialize_hook"),
+                        0, NULL, block);
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     MessageBuilderContext.udt_verify_hook(&block) => nil
+ *
+ * Invokes #udt_verify_hook on the Descriptor being built, thus setting a
+ * user-defined type (UDT) verify hook using the provided block.
+ */
+VALUE MessageBuilderContext_udt_verify_hook(VALUE _self) {
+  DEFINE_SELF(MessageBuilderContext, self, _self);
+  VALUE block = rb_block_proc();
+  rb_funcall_with_block(self->descriptor, rb_intern("udt_verify_hook"),
+                        0, NULL, block);
   return Qnil;
 }
 

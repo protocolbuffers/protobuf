@@ -152,17 +152,19 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
                                           name, name_len);
 
   if (f == NULL) {
-    rb_raise(rb_eArgError, "Unknown field");
+    rb_raise(rb_eArgError, "Unknown field: %s", name);
   }
 
   if (setter) {
     if (argc < 2) {
       rb_raise(rb_eArgError, "No value provided to setter.");
     }
-    layout_set(self->descriptor->layout, Message_data(self), f, argv[1]);
+    layout_set(self->descriptor->layout, Message_data(self), f, argv[1],
+               /* is_from_parse = */ false);
     return Qnil;
   } else {
-    return layout_get(self->descriptor->layout, Message_data(self), f);
+    return layout_get(self->descriptor->layout, Message_data(self), f,
+                      /* is_from_serialize = */ false);
   }
 }
 
@@ -188,19 +190,22 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
       rb_raise(rb_eArgError,
                "Expected Hash object as initializer value for map field.");
     }
-    VALUE map = layout_get(self->descriptor->layout, Message_data(self), f);
+    VALUE map = layout_get(self->descriptor->layout, Message_data(self), f,
+                           /* is_from_serialize = */ false);
     Map_merge_into_self(map, val);
   } else if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
     if (TYPE(val) != T_ARRAY) {
       rb_raise(rb_eArgError,
                "Expected array as initializer value for repeated field.");
     }
-    VALUE ary = layout_get(self->descriptor->layout, Message_data(self), f);
+    VALUE ary = layout_get(self->descriptor->layout, Message_data(self), f,
+                           /* is_from_serialize = */ false);
     for (int i = 0; i < RARRAY_LEN(val); i++) {
       RepeatedField_push(ary, rb_ary_entry(val, i));
     }
   } else {
-    layout_set(self->descriptor->layout, Message_data(self), f, val);
+    layout_set(self->descriptor->layout, Message_data(self), f, val,
+               /* is_from_parse = */ false);
   }
   return 0;
 }
@@ -341,8 +346,10 @@ VALUE Message_to_h(VALUE _self) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    VALUE msg_value = layout_get(self->descriptor->layout, Message_data(self),
-                                 field);
+    VALUE msg_value = layout_get(self->descriptor->layout,
+                                 Message_data(self),
+                                 field,
+                                 /* is_from_serialize = */ false);
     VALUE msg_key   = ID2SYM(rb_intern(upb_fielddef_name(field)));
     if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       msg_value = RepeatedField_to_ary(msg_value);
@@ -370,7 +377,8 @@ VALUE Message_index(VALUE _self, VALUE field_name) {
   if (field == NULL) {
     return Qnil;
   }
-  return layout_get(self->descriptor->layout, Message_data(self), field);
+  return layout_get(self->descriptor->layout, Message_data(self), field,
+                    /* is_from_serialize = */ false);
 }
 
 /*
@@ -389,7 +397,8 @@ VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
   if (field == NULL) {
     rb_raise(rb_eArgError, "Unknown field: %s", RSTRING_PTR(field_name));
   }
-  layout_set(self->descriptor->layout, Message_data(self), field, value);
+  layout_set(self->descriptor->layout, Message_data(self), field, value,
+             /* is_from_parse = */ false);
   return Qnil;
 }
 
@@ -404,9 +413,28 @@ VALUE Message_descriptor(VALUE klass) {
   return rb_ivar_get(klass, descriptor_instancevar_interned);
 }
 
+void validate_desc(Descriptor* desc) {
+  // Ensure that if any UDT hook is set, all are.
+  if (desc->udt_parse_hook != Qnil ||
+      desc->udt_serialize_hook != Qnil ||
+      desc->udt_verify_hook != Qnil) {
+    if (desc->udt_parse_hook == Qnil) {
+      rb_raise(rb_eRuntimeError, "UDT parse hook not set on UDT type");
+    }
+    if (desc->udt_serialize_hook == Qnil) {
+      rb_raise(rb_eRuntimeError, "UDT serialize hook not set on UDT type");
+    }
+    if (desc->udt_verify_hook == Qnil) {
+      rb_raise(rb_eRuntimeError, "UDT verify hook not set on UDT type");
+    }
+  }
+}
+
 VALUE build_class_from_descriptor(Descriptor* desc) {
+  validate_desc(desc);
   if (desc->layout == NULL) {
     desc->layout = create_layout(desc->msgdef);
+    desc->has_udts_transitively = Descriptor_recursively_has_udts(desc);
   }
   if (desc->fill_method == NULL) {
     desc->fill_method = new_fillmsg_decodermethod(desc, &desc->fill_method);

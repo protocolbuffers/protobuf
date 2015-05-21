@@ -108,14 +108,33 @@ void native_slot_validate_string_encoding(upb_fieldtype_t type, VALUE value) {
 }
 
 void native_slot_set(upb_fieldtype_t type, VALUE type_class,
-                     void* memory, VALUE value) {
-  native_slot_set_value_and_case(type, type_class, memory, value, NULL, 0);
+                     Descriptor* subdesc,
+                     void* memory, VALUE value,
+                     bool is_from_parse) {
+  native_slot_set_value_and_case(type, type_class, subdesc,
+                                 memory, value, NULL, 0,
+                                 is_from_parse);
 }
 
-void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
+void native_slot_set_value_and_case(upb_fieldtype_t type,
+                                    VALUE type_class,
+                                    Descriptor* subdesc,
                                     void* memory, VALUE value,
                                     uint32_t* case_memory,
-                                    uint32_t case_number) {
+                                    uint32_t case_number,
+                                    bool is_from_parse) {
+  // If arriving from a parse codepath, and this is a UDT, convert to the user
+  // type. If arriving from a user codepath, and this is a UDT, invoke the user
+  // type validator.
+  if (Descriptor_is_udt(subdesc) && value != Qnil) {
+    if (is_from_parse) {
+      value = rb_funcall(subdesc->udt_parse_hook, rb_intern("call"), 1,
+                         value);
+    } else {
+      rb_funcall(subdesc->udt_verify_hook, rb_intern("call"), 1, value);
+    }
+  }
+
   // Note that in order to atomically change the value in memory and the case
   // value (w.r.t. Ruby VM calls), we must set the value at |memory| only after
   // all Ruby VM calls are complete. The case is then set at the bottom of this
@@ -157,7 +176,7 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
     case UPB_TYPE_MESSAGE: {
       if (CLASS_OF(value) == CLASS_OF(Qnil)) {
         value = Qnil;
-      } else if (CLASS_OF(value) != type_class) {
+      } else if (CLASS_OF(value) != type_class && !Descriptor_is_udt(subdesc)) {
         rb_raise(rb_eTypeError,
                  "Invalid type %s to assign to submessage field.",
                  rb_class2name(CLASS_OF(value)));
@@ -219,7 +238,9 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
 
 VALUE native_slot_get(upb_fieldtype_t type,
                       VALUE type_class,
-                      const void* memory) {
+                      Descriptor* subdesc,
+                      const void* memory,
+                      bool is_from_serialize) {
   switch (type) {
     case UPB_TYPE_FLOAT:
       return DBL2NUM(DEREF(memory, float));
@@ -229,8 +250,15 @@ VALUE native_slot_get(upb_fieldtype_t type,
       return DEREF(memory, int8_t) ? Qtrue : Qfalse;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
-    case UPB_TYPE_MESSAGE:
-      return DEREF(memory, VALUE);
+    case UPB_TYPE_MESSAGE: {
+      if (Descriptor_is_udt(subdesc) && is_from_serialize &&
+          DEREF(memory, VALUE) != Qnil) {
+        return rb_funcall(subdesc->udt_serialize_hook, rb_intern("call"), 2,
+                          DEREF(memory, VALUE), subdesc->klass);
+      } else {
+        return DEREF(memory, VALUE);
+      }
+    }
     case UPB_TYPE_ENUM: {
       int32_t val = DEREF(memory, int32_t);
       VALUE symbol = enum_lookup(type_class, INT2NUM(val));
@@ -307,7 +335,9 @@ void native_slot_dup(upb_fieldtype_t type, void* to, void* from) {
   memcpy(to, from, native_slot_size(type));
 }
 
-void native_slot_deep_copy(upb_fieldtype_t type, void* to, void* from) {
+void native_slot_deep_copy(upb_fieldtype_t type,
+                           Descriptor* subdesc,
+                           void* to, void* from) {
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
@@ -318,8 +348,15 @@ void native_slot_deep_copy(upb_fieldtype_t type, void* to, void* from) {
     }
     case UPB_TYPE_MESSAGE: {
       VALUE from_val = DEREF(from, VALUE);
-      DEREF(to, VALUE) = (from_val != Qnil) ?
-          Message_deep_copy(from_val) : Qnil;
+      VALUE to_val = Qnil;
+      if (from_val != Qnil) {
+        if (Descriptor_is_udt(subdesc)) {
+          to_val = rb_funcall(from_val, rb_intern("dup"), 0);
+        } else {
+          to_val = Message_deep_copy(from_val);
+        }
+      }
+      DEREF(to, VALUE) = to_val;
       break;
     }
     default:
@@ -327,7 +364,8 @@ void native_slot_deep_copy(upb_fieldtype_t type, void* to, void* from) {
   }
 }
 
-bool native_slot_eq(upb_fieldtype_t type, void* mem1, void* mem2) {
+bool native_slot_eq(upb_fieldtype_t type,
+                    void* mem1, void* mem2) {
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
@@ -503,6 +541,15 @@ VALUE field_type_class(const upb_fielddef* field) {
   return type_class;
 }
 
+Descriptor* field_subdesc(const upb_fielddef* field) {
+  if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
+    const upb_msgdef* submsg = upb_fielddef_msgsubdef(field);
+    return ruby_to_Descriptor(get_def_obj(submsg));
+  } else {
+    return NULL;
+  }
+}
+
 static void* slot_memory(MessageLayout* layout,
                          const void* storage,
                          const upb_fielddef* field) {
@@ -513,14 +560,14 @@ static void* slot_memory(MessageLayout* layout,
 static uint32_t* slot_oneof_case(MessageLayout* layout,
                                  const void* storage,
                                  const upb_fielddef* field) {
-  return (uint32_t *)(((uint8_t *)storage) +
-      layout->fields[upb_fielddef_index(field)].case_offset);
+  MessageField* fieldinfo = &layout->fields[upb_fielddef_index(field)];
+  return (uint32_t *)(((uint8_t *)storage) + fieldinfo->case_offset);
 }
-
 
 VALUE layout_get(MessageLayout* layout,
                  const void* storage,
-                 const upb_fielddef* field) {
+                 const upb_fielddef* field,
+                 bool is_from_parse) {
   void* memory = slot_memory(layout, storage, field);
   uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
 
@@ -530,13 +577,17 @@ VALUE layout_get(MessageLayout* layout,
     }
     return native_slot_get(upb_fielddef_type(field),
                            field_type_class(field),
-                           memory);
+                           field_subdesc(field),
+                           memory,
+                           is_from_parse);
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
     return *((VALUE *)memory);
   } else {
     return native_slot_get(upb_fielddef_type(field),
                            field_type_class(field),
-                           memory);
+                           field_subdesc(field),
+                           memory,
+                           is_from_parse);
   }
 }
 
@@ -594,7 +645,8 @@ static void check_map_field_type(VALUE val, const upb_fielddef* field) {
 void layout_set(MessageLayout* layout,
                 void* storage,
                 const upb_fielddef* field,
-                VALUE val) {
+                VALUE val,
+                bool is_from_parse) {
   void* memory = slot_memory(layout, storage, field);
   uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
 
@@ -617,9 +669,12 @@ void layout_set(MessageLayout* layout,
       // use native_slot_set_value_and_case(), which ensures that both the value
       // and case number are altered atomically (w.r.t. the Ruby VM).
       native_slot_set_value_and_case(
-          upb_fielddef_type(field), field_type_class(field),
+          upb_fielddef_type(field),
+          field_type_class(field),
+          field_subdesc(field),
           memory, val,
-          oneof_case, upb_fielddef_number(field));
+          oneof_case, upb_fielddef_number(field),
+          is_from_parse);
     }
   } else if (is_map_field(field)) {
     check_map_field_type(val, field);
@@ -628,8 +683,11 @@ void layout_set(MessageLayout* layout,
     check_repeated_field_type(val, field);
     DEREF(memory, VALUE) = val;
   } else {
-    native_slot_set(upb_fielddef_type(field), field_type_class(field),
-                    memory, val);
+    native_slot_set(upb_fielddef_type(field),
+                    field_type_class(field),
+                    field_subdesc(field),
+                    memory, val,
+                    is_from_parse);
   }
 }
 
@@ -755,7 +813,10 @@ void layout_deep_copy(MessageLayout* layout, void* to, void* from) {
     if (upb_fielddef_containingoneof(field)) {
       if (*from_oneof_case == upb_fielddef_number(field)) {
         *to_oneof_case = *from_oneof_case;
-        native_slot_deep_copy(upb_fielddef_type(field), to_memory, from_memory);
+        native_slot_deep_copy(upb_fielddef_type(field),
+                              field_subdesc(field),
+                              to_memory,
+                              from_memory);
       }
     } else if (is_map_field(field)) {
       DEREF(to_memory, VALUE) =
@@ -764,7 +825,10 @@ void layout_deep_copy(MessageLayout* layout, void* to, void* from) {
       DEREF(to_memory, VALUE) =
           RepeatedField_deep_copy(DEREF(from_memory, VALUE));
     } else {
-      native_slot_deep_copy(upb_fielddef_type(field), to_memory, from_memory);
+      native_slot_deep_copy(upb_fielddef_type(field),
+                            field_subdesc(field),
+                            to_memory,
+                            from_memory);
     }
   }
 }
@@ -817,7 +881,7 @@ VALUE layout_hash(MessageLayout* layout, void* storage) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    VALUE field_val = layout_get(layout, storage, field);
+    VALUE field_val = layout_get(layout, storage, field, false);
     h = rb_hash_uint(h, NUM2LONG(rb_funcall(field_val, hash_sym, 0)));
   }
   h = rb_hash_end(h);
@@ -834,7 +898,7 @@ VALUE layout_inspect(MessageLayout* layout, void* storage) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    VALUE field_val = layout_get(layout, storage, field);
+    VALUE field_val = layout_get(layout, storage, field, false);
 
     if (!first) {
       str = rb_str_cat2(str, ", ");

@@ -109,6 +109,9 @@ public class RubyRepeatedField extends RubyObject {
      */
     @JRubyMethod(name = "[]=")
     public IRubyObject indexSet(ThreadContext context, IRubyObject index, IRubyObject value) {
+        if (value == context.runtime.getNil()) {
+            throw context.runtime.newTypeError("Cannot set repeated field entry to nil");
+        }
         int arrIndex = normalizeArrayIndex(index);
         Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
         IRubyObject defaultValue = defaultValue(context);
@@ -164,6 +167,9 @@ public class RubyRepeatedField extends RubyObject {
      */
     @JRubyMethod(name = {"push", "<<"})
     public IRubyObject push(ThreadContext context, IRubyObject value) {
+        if (value == context.runtime.getNil()) {
+            throw context.runtime.newTypeError("Cannot add nil to repeated field");
+        }
         if (!(fieldType == Descriptors.FieldDescriptor.Type.MESSAGE &&
             value == context.runtime.getNil())) {
             Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
