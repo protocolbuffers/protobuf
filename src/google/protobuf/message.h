@@ -98,11 +98,11 @@
 //
 //     // Use the reflection interface to examine the contents.
 //     const Reflection* reflection = foo->GetReflection();
-//     assert(reflection->GetString(foo, text_field) == "Hello World!");
-//     assert(reflection->FieldSize(foo, numbers_field) == 3);
-//     assert(reflection->GetRepeatedInt32(foo, numbers_field, 0) == 1);
-//     assert(reflection->GetRepeatedInt32(foo, numbers_field, 1) == 5);
-//     assert(reflection->GetRepeatedInt32(foo, numbers_field, 2) == 42);
+//     assert(reflection->GetString(*foo, text_field) == "Hello World!");
+//     assert(reflection->FieldSize(*foo, numbers_field) == 3);
+//     assert(reflection->GetRepeatedInt32(*foo, numbers_field, 0) == 1);
+//     assert(reflection->GetRepeatedInt32(*foo, numbers_field, 1) == 5);
+//     assert(reflection->GetRepeatedInt32(*foo, numbers_field, 2) == 42);
 //
 //     delete foo;
 //   }
@@ -229,6 +229,11 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // Computes (an estimate of) the total number of bytes currently used for
   // storing the message in memory.  The default implementation calls the
   // Reflection object's SpaceUsed() method.
+  //
+  // SpaceUsed() is noticeably slower than ByteSize(), as it is implemented
+  // using reflection (rather than the generated code implementation for
+  // ByteSize()). Like ByteSize(), its CPU time is linear in the number of
+  // fields defined for the proto.
   virtual int SpaceUsed() const;
 
   // Debugging & Testing----------------------------------------------

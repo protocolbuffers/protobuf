@@ -41,8 +41,8 @@ message Foo {
     BAR = 1;
     BAZ = 2;
   }
-  optional int32 int32_value = 1;
-  optional NestedEnum enum_value = 2;
+  int32 int32_value = 1;
+  NestedEnum enum_value = 2;
 }
 
 message FooWithExtraFields {
@@ -52,7 +52,7 @@ message FooWithExtraFields {
     BAZ = 2;
     QUX = 3;
   }
-  optional int32 int32_value = 1;
-  optional NestedEnum enum_value = 2;
-  optional int32 extra_int32_value = 3;
+  int32 int32_value = 1;
+  NestedEnum enum_value = 2;
+  int32 extra_int32_value = 3;
 }

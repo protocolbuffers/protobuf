@@ -267,7 +267,7 @@ const int Type::kSourceContextFieldNumber;
 #endif  // !_MSC_VER
 
 Type::Type()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Type)
 }
@@ -332,7 +332,7 @@ Type* Type::New(::google::protobuf::Arena* arena) const {
 
 void Type::Clear() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (source_context_ != NULL) delete source_context_;
+  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
   source_context_ = NULL;
   fields_.Clear();
   oneofs_.Clear();
@@ -369,12 +369,15 @@ bool Type::MergePartialFromCodedStream(
       case 2: {
         if (tag == 18) {
          parse_fields:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_fields:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_fields()));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(18)) goto parse_fields;
+        if (input->ExpectTag(18)) goto parse_loop_fields;
+        input->UnsafeDecrementRecursionDepth();
         if (input->ExpectTag(26)) goto parse_oneofs;
         break;
       }
@@ -402,12 +405,15 @@ bool Type::MergePartialFromCodedStream(
       case 4: {
         if (tag == 34) {
          parse_options:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_options:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_options()));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(34)) goto parse_options;
+        if (input->ExpectTag(34)) goto parse_loop_options;
+        input->UnsafeDecrementRecursionDepth();
         if (input->ExpectTag(42)) goto parse_source_context;
         break;
       }
@@ -587,9 +593,9 @@ int Type::ByteSize() const {
 
 void Type::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Type* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Type*>(
-      &from);
+  const Type* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Type>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -654,7 +660,7 @@ void Type::InternalSwap(Type* other) {
 // Type
 
 // optional string name = 1;
- void Type::clear_name() {
+void Type::clear_name() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& Type::name() const {
@@ -697,10 +703,10 @@ void Type::InternalSwap(Type* other) {
 }
 
 // repeated .google.protobuf.Field fields = 2;
- int Type::fields_size() const {
+int Type::fields_size() const {
   return fields_.size();
 }
- void Type::clear_fields() {
+void Type::clear_fields() {
   fields_.Clear();
 }
  const ::google::protobuf::Field& Type::fields(int index) const {
@@ -727,10 +733,10 @@ Type::mutable_fields() {
 }
 
 // repeated string oneofs = 3;
- int Type::oneofs_size() const {
+int Type::oneofs_size() const {
   return oneofs_.size();
 }
- void Type::clear_oneofs() {
+void Type::clear_oneofs() {
   oneofs_.Clear();
 }
  const ::std::string& Type::oneofs(int index) const {
@@ -781,10 +787,10 @@ Type::mutable_oneofs() {
 }
 
 // repeated .google.protobuf.Option options = 4;
- int Type::options_size() const {
+int Type::options_size() const {
   return options_.size();
 }
- void Type::clear_options() {
+void Type::clear_options() {
   options_.Clear();
 }
  const ::google::protobuf::Option& Type::options(int index) const {
@@ -811,11 +817,11 @@ Type::mutable_options() {
 }
 
 // optional .google.protobuf.SourceContext source_context = 5;
- bool Type::has_source_context() const {
+bool Type::has_source_context() const {
   return !_is_default_instance_ && source_context_ != NULL;
 }
- void Type::clear_source_context() {
-  if (source_context_ != NULL) delete source_context_;
+void Type::clear_source_context() {
+  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
   source_context_ = NULL;
 }
  const ::google::protobuf::SourceContext& Type::source_context() const {
@@ -941,7 +947,7 @@ const int Field::kOptionsFieldNumber;
 #endif  // !_MSC_VER
 
 Field::Field()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Field)
 }
@@ -1153,12 +1159,15 @@ bool Field::MergePartialFromCodedStream(
       case 9: {
         if (tag == 74) {
          parse_options:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_options:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_options()));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(74)) goto parse_options;
+        if (input->ExpectTag(74)) goto parse_loop_options;
+        input->UnsafeDecrementRecursionDepth();
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -1370,9 +1379,9 @@ int Field::ByteSize() const {
 
 void Field::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Field* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Field*>(
-      &from);
+  const Field* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Field>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1454,7 +1463,7 @@ void Field::InternalSwap(Field* other) {
 // Field
 
 // optional .google.protobuf.Field.Kind kind = 1;
- void Field::clear_kind() {
+void Field::clear_kind() {
   kind_ = 0;
 }
  ::google::protobuf::Field_Kind Field::kind() const {
@@ -1468,7 +1477,7 @@ void Field::InternalSwap(Field* other) {
 }
 
 // optional .google.protobuf.Field.Cardinality cardinality = 2;
- void Field::clear_cardinality() {
+void Field::clear_cardinality() {
   cardinality_ = 0;
 }
  ::google::protobuf::Field_Cardinality Field::cardinality() const {
@@ -1482,7 +1491,7 @@ void Field::InternalSwap(Field* other) {
 }
 
 // optional int32 number = 3;
- void Field::clear_number() {
+void Field::clear_number() {
   number_ = 0;
 }
  ::google::protobuf::int32 Field::number() const {
@@ -1496,7 +1505,7 @@ void Field::InternalSwap(Field* other) {
 }
 
 // optional string name = 4;
- void Field::clear_name() {
+void Field::clear_name() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& Field::name() const {
@@ -1539,7 +1548,7 @@ void Field::InternalSwap(Field* other) {
 }
 
 // optional string type_url = 6;
- void Field::clear_type_url() {
+void Field::clear_type_url() {
   type_url_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& Field::type_url() const {
@@ -1582,7 +1591,7 @@ void Field::InternalSwap(Field* other) {
 }
 
 // optional int32 oneof_index = 7;
- void Field::clear_oneof_index() {
+void Field::clear_oneof_index() {
   oneof_index_ = 0;
 }
  ::google::protobuf::int32 Field::oneof_index() const {
@@ -1596,7 +1605,7 @@ void Field::InternalSwap(Field* other) {
 }
 
 // optional bool packed = 8;
- void Field::clear_packed() {
+void Field::clear_packed() {
   packed_ = false;
 }
  bool Field::packed() const {
@@ -1610,10 +1619,10 @@ void Field::InternalSwap(Field* other) {
 }
 
 // repeated .google.protobuf.Option options = 9;
- int Field::options_size() const {
+int Field::options_size() const {
   return options_.size();
 }
- void Field::clear_options() {
+void Field::clear_options() {
   options_.Clear();
 }
  const ::google::protobuf::Option& Field::options(int index) const {
@@ -1651,7 +1660,7 @@ const int Enum::kSourceContextFieldNumber;
 #endif  // !_MSC_VER
 
 Enum::Enum()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Enum)
 }
@@ -1716,7 +1725,7 @@ Enum* Enum::New(::google::protobuf::Arena* arena) const {
 
 void Enum::Clear() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (source_context_ != NULL) delete source_context_;
+  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
   source_context_ = NULL;
   enumvalue_.Clear();
   options_.Clear();
@@ -1752,26 +1761,31 @@ bool Enum::MergePartialFromCodedStream(
       case 2: {
         if (tag == 18) {
          parse_enumvalue:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_enumvalue:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_enumvalue()));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(18)) goto parse_enumvalue;
-        if (input->ExpectTag(26)) goto parse_options;
+        if (input->ExpectTag(18)) goto parse_loop_enumvalue;
+        if (input->ExpectTag(26)) goto parse_loop_options;
+        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
       // repeated .google.protobuf.Option options = 3;
       case 3: {
         if (tag == 26) {
-         parse_options:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_options:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_options()));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(26)) goto parse_options;
+        if (input->ExpectTag(26)) goto parse_loop_options;
+        input->UnsafeDecrementRecursionDepth();
         if (input->ExpectTag(34)) goto parse_source_context;
         break;
       }
@@ -1924,9 +1938,9 @@ int Enum::ByteSize() const {
 
 void Enum::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Enum* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Enum*>(
-      &from);
+  const Enum* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Enum>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1989,7 +2003,7 @@ void Enum::InternalSwap(Enum* other) {
 // Enum
 
 // optional string name = 1;
- void Enum::clear_name() {
+void Enum::clear_name() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& Enum::name() const {
@@ -2032,10 +2046,10 @@ void Enum::InternalSwap(Enum* other) {
 }
 
 // repeated .google.protobuf.EnumValue enumvalue = 2;
- int Enum::enumvalue_size() const {
+int Enum::enumvalue_size() const {
   return enumvalue_.size();
 }
- void Enum::clear_enumvalue() {
+void Enum::clear_enumvalue() {
   enumvalue_.Clear();
 }
  const ::google::protobuf::EnumValue& Enum::enumvalue(int index) const {
@@ -2062,10 +2076,10 @@ Enum::mutable_enumvalue() {
 }
 
 // repeated .google.protobuf.Option options = 3;
- int Enum::options_size() const {
+int Enum::options_size() const {
   return options_.size();
 }
- void Enum::clear_options() {
+void Enum::clear_options() {
   options_.Clear();
 }
  const ::google::protobuf::Option& Enum::options(int index) const {
@@ -2092,11 +2106,11 @@ Enum::mutable_options() {
 }
 
 // optional .google.protobuf.SourceContext source_context = 4;
- bool Enum::has_source_context() const {
+bool Enum::has_source_context() const {
   return !_is_default_instance_ && source_context_ != NULL;
 }
- void Enum::clear_source_context() {
-  if (source_context_ != NULL) delete source_context_;
+void Enum::clear_source_context() {
+  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
   source_context_ = NULL;
 }
  const ::google::protobuf::SourceContext& Enum::source_context() const {
@@ -2139,7 +2153,7 @@ const int EnumValue::kOptionsFieldNumber;
 #endif  // !_MSC_VER
 
 EnumValue::EnumValue()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.EnumValue)
 }
@@ -2251,12 +2265,15 @@ bool EnumValue::MergePartialFromCodedStream(
       case 3: {
         if (tag == 26) {
          parse_options:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_options:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_options()));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(26)) goto parse_options;
+        if (input->ExpectTag(26)) goto parse_loop_options;
+        input->UnsafeDecrementRecursionDepth();
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -2372,9 +2389,9 @@ int EnumValue::ByteSize() const {
 
 void EnumValue::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const EnumValue* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const EnumValue*>(
-      &from);
+  const EnumValue* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const EnumValue>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -2435,7 +2452,7 @@ void EnumValue::InternalSwap(EnumValue* other) {
 // EnumValue
 
 // optional string name = 1;
- void EnumValue::clear_name() {
+void EnumValue::clear_name() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& EnumValue::name() const {
@@ -2478,7 +2495,7 @@ void EnumValue::InternalSwap(EnumValue* other) {
 }
 
 // optional int32 number = 2;
- void EnumValue::clear_number() {
+void EnumValue::clear_number() {
   number_ = 0;
 }
  ::google::protobuf::int32 EnumValue::number() const {
@@ -2492,10 +2509,10 @@ void EnumValue::InternalSwap(EnumValue* other) {
 }
 
 // repeated .google.protobuf.Option options = 3;
- int EnumValue::options_size() const {
+int EnumValue::options_size() const {
   return options_.size();
 }
- void EnumValue::clear_options() {
+void EnumValue::clear_options() {
   options_.Clear();
 }
  const ::google::protobuf::Option& EnumValue::options(int index) const {
@@ -2531,7 +2548,7 @@ const int Option::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 Option::Option()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Option)
 }
@@ -2596,7 +2613,7 @@ Option* Option::New(::google::protobuf::Arena* arena) const {
 
 void Option::Clear() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (value_ != NULL) delete value_;
+  if (GetArenaNoVirtual() == NULL && value_ != NULL) delete value_;
   value_ = NULL;
 }
 
@@ -2732,9 +2749,9 @@ int Option::ByteSize() const {
 
 void Option::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Option* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Option*>(
-      &from);
+  const Option* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Option>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -2793,7 +2810,7 @@ void Option::InternalSwap(Option* other) {
 // Option
 
 // optional string name = 1;
- void Option::clear_name() {
+void Option::clear_name() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& Option::name() const {
@@ -2836,11 +2853,11 @@ void Option::InternalSwap(Option* other) {
 }
 
 // optional .google.protobuf.Any value = 2;
- bool Option::has_value() const {
+bool Option::has_value() const {
   return !_is_default_instance_ && value_ != NULL;
 }
- void Option::clear_value() {
-  if (value_ != NULL) delete value_;
+void Option::clear_value() {
+  if (GetArenaNoVirtual() == NULL && value_ != NULL) delete value_;
   value_ = NULL;
 }
  const ::google::protobuf::Any& Option::value() const {

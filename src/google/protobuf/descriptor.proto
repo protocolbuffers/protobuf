@@ -106,6 +106,18 @@ message DescriptorProto {
   repeated OneofDescriptorProto oneof_decl = 8;
 
   optional MessageOptions options = 7;
+
+  // Range of reserved tag numbers. Reserved tag numbers may not be used by
+  // fields or extension ranges in the same message. Reserved ranges may
+  // not overlap.
+  message ReservedRange {
+    optional int32 start = 1; // Inclusive.
+    optional int32 end = 2;   // Exclusive.
+  }
+  repeated ReservedRange reserved_range = 9;
+  // Reserved field names, which may not be used by fields in the same message.
+  // A given name may only be reserved once.
+  repeated string reserved_name = 10;
 }
 
 // Describes a field within a message.
@@ -251,11 +263,11 @@ message MethodDescriptorProto {
 // * For options which will be published and used publicly by multiple
 //   independent entities, e-mail protobuf-global-extension-registry@google.com
 //   to reserve extension numbers. Simply provide your project name (e.g.
-//   Object-C plugin) and your porject website (if available) -- there's no need
-//   to explain how you intend to use them. Usually you only need one extension
-//   number. You can declare multiple options with only one extension number by
-//   putting them in a sub-message. See the Custom Options section of the docs
-//   for examples:
+//   Objective-C plugin) and your project website (if available) -- there's no
+//   need to explain how you intend to use them. Usually you only need one
+//   extension number. You can declare multiple options with only one extension
+//   number by putting them in a sub-message. See the Custom Options section of
+//   the docs for examples:
 //   https://developers.google.com/protocol-buffers/docs/proto#options
 //   If this turns out to be popular, a web service will be set up
 //   to automatically assign option numbers.
@@ -442,10 +454,31 @@ message FieldOptions {
   // The packed option can be enabled for repeated primitive fields to enable
   // a more efficient representation on the wire. Rather than repeatedly
   // writing the tag and type for each element, the entire array is encoded as
-  // a single length-delimited blob.
+  // a single length-delimited blob. In proto3, only explicit setting it to
+  // false will avoid using packed encoding.
   optional bool packed = 2;
 
 
+  // The jstype option determines the JavaScript type used for values of the
+  // field.  The option is permitted only for 64 bit integral and fixed types
+  // (int64, uint64, sint64, fixed64, sfixed64).  By default these types are
+  // represented as JavaScript strings.  This avoids loss of precision that can
+  // happen when a large value is converted to a floating point JavaScript
+  // numbers.  Specifying JS_NUMBER for the jstype causes the generated
+  // JavaScript code to use the JavaScript "number" type instead of strings.
+  // This option is an enum to permit additional types to be added,
+  // e.g. goog.math.Integer.
+  optional JSType jstype = 6 [default = JS_NORMAL];
+  enum JSType {
+    // Use the default type.
+    JS_NORMAL = 0;
+
+    // Use JavaScript strings.
+    JS_STRING = 1;
+
+    // Use JavaScript numbers.
+    JS_NUMBER = 2;
+  }
 
   // Should this field be parsed lazily?  Lazy applies only to message-type
   // fields.  It means that when the outer message is initially parsed, the

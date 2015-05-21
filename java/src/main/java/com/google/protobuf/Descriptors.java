@@ -644,6 +644,30 @@ public final class Descriptors {
       return false;
     }
 
+    /** Determines if the given field number is reserved. */
+    public boolean isReservedNumber(final int number) {
+      for (final DescriptorProto.ReservedRange range :
+          proto.getReservedRangeList()) {
+        if (range.getStart() <= number && number < range.getEnd()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /** Determines if the given field name is reserved. */
+    public boolean isReservedName(final String name) {
+      if (name == null) {
+        throw new NullPointerException();
+      }
+      for (final String reservedName : proto.getReservedNameList()) {
+        if (reservedName.equals(name)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     /**
      * Indicates whether the message can be extended.  That is, whether it has
      * any "extensions x to y" ranges declared on it.
@@ -917,9 +941,18 @@ public final class Descriptors {
       return proto.getLabel() == FieldDescriptorProto.Label.LABEL_REPEATED;
     }
 
-    /** Does this field have the {@code [packed = true]} option? */
+    /** Does this field have the {@code [packed = true]} option or is this field
+     *  packable in proto3 and not explicitly setted to unpacked?
+     */
     public boolean isPacked() {
-      return getOptions().getPacked();
+      if (!isPackable()) {
+        return false;
+      }
+      if (getFile().getSyntax() == FileDescriptor.Syntax.PROTO2) {
+        return getOptions().getPacked();
+      } else {
+        return !getOptions().hasPacked() || getOptions().getPacked();
+      }
     }
 
     /** Can this field be packed? i.e. is it a repeated primitive field? */
@@ -2316,6 +2349,11 @@ public final class Descriptors {
     public Descriptor getContainingType() { return containingType; }
 
     public int getFieldCount() { return fieldCount; }
+
+    /** Get a list of this message type's fields. */
+    public List<FieldDescriptor> getFields() {
+      return Collections.unmodifiableList(Arrays.asList(fields));
+    }
 
     public FieldDescriptor getField(int index) {
       return fields[index];

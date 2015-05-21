@@ -312,7 +312,7 @@ const int DoubleValue::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 DoubleValue::DoubleValue()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.DoubleValue)
 }
@@ -458,9 +458,9 @@ int DoubleValue::ByteSize() const {
 
 void DoubleValue::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const DoubleValue* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const DoubleValue*>(
-      &from);
+  const DoubleValue* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const DoubleValue>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -514,7 +514,7 @@ void DoubleValue::InternalSwap(DoubleValue* other) {
 // DoubleValue
 
 // optional double value = 1;
- void DoubleValue::clear_value() {
+void DoubleValue::clear_value() {
   value_ = 0;
 }
  double DoubleValue::value() const {
@@ -536,7 +536,7 @@ const int FloatValue::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 FloatValue::FloatValue()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.FloatValue)
 }
@@ -682,9 +682,9 @@ int FloatValue::ByteSize() const {
 
 void FloatValue::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const FloatValue* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const FloatValue*>(
-      &from);
+  const FloatValue* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const FloatValue>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -738,7 +738,7 @@ void FloatValue::InternalSwap(FloatValue* other) {
 // FloatValue
 
 // optional float value = 1;
- void FloatValue::clear_value() {
+void FloatValue::clear_value() {
   value_ = 0;
 }
  float FloatValue::value() const {
@@ -760,7 +760,7 @@ const int Int64Value::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 Int64Value::Int64Value()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Int64Value)
 }
@@ -908,9 +908,9 @@ int Int64Value::ByteSize() const {
 
 void Int64Value::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Int64Value* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Int64Value*>(
-      &from);
+  const Int64Value* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Int64Value>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -964,7 +964,7 @@ void Int64Value::InternalSwap(Int64Value* other) {
 // Int64Value
 
 // optional int64 value = 1;
- void Int64Value::clear_value() {
+void Int64Value::clear_value() {
   value_ = GOOGLE_LONGLONG(0);
 }
  ::google::protobuf::int64 Int64Value::value() const {
@@ -986,7 +986,7 @@ const int UInt64Value::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 UInt64Value::UInt64Value()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.UInt64Value)
 }
@@ -1134,9 +1134,9 @@ int UInt64Value::ByteSize() const {
 
 void UInt64Value::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const UInt64Value* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const UInt64Value*>(
-      &from);
+  const UInt64Value* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const UInt64Value>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1190,7 +1190,7 @@ void UInt64Value::InternalSwap(UInt64Value* other) {
 // UInt64Value
 
 // optional uint64 value = 1;
- void UInt64Value::clear_value() {
+void UInt64Value::clear_value() {
   value_ = GOOGLE_ULONGLONG(0);
 }
  ::google::protobuf::uint64 UInt64Value::value() const {
@@ -1212,7 +1212,7 @@ const int Int32Value::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 Int32Value::Int32Value()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Int32Value)
 }
@@ -1360,9 +1360,9 @@ int Int32Value::ByteSize() const {
 
 void Int32Value::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Int32Value* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Int32Value*>(
-      &from);
+  const Int32Value* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Int32Value>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1416,7 +1416,7 @@ void Int32Value::InternalSwap(Int32Value* other) {
 // Int32Value
 
 // optional int32 value = 1;
- void Int32Value::clear_value() {
+void Int32Value::clear_value() {
   value_ = 0;
 }
  ::google::protobuf::int32 Int32Value::value() const {
@@ -1438,7 +1438,7 @@ const int UInt32Value::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 UInt32Value::UInt32Value()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.UInt32Value)
 }
@@ -1586,9 +1586,9 @@ int UInt32Value::ByteSize() const {
 
 void UInt32Value::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const UInt32Value* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const UInt32Value*>(
-      &from);
+  const UInt32Value* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const UInt32Value>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1642,7 +1642,7 @@ void UInt32Value::InternalSwap(UInt32Value* other) {
 // UInt32Value
 
 // optional uint32 value = 1;
- void UInt32Value::clear_value() {
+void UInt32Value::clear_value() {
   value_ = 0u;
 }
  ::google::protobuf::uint32 UInt32Value::value() const {
@@ -1664,7 +1664,7 @@ const int BoolValue::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 BoolValue::BoolValue()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.BoolValue)
 }
@@ -1810,9 +1810,9 @@ int BoolValue::ByteSize() const {
 
 void BoolValue::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const BoolValue* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const BoolValue*>(
-      &from);
+  const BoolValue* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const BoolValue>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1866,7 +1866,7 @@ void BoolValue::InternalSwap(BoolValue* other) {
 // BoolValue
 
 // optional bool value = 1;
- void BoolValue::clear_value() {
+void BoolValue::clear_value() {
   value_ = false;
 }
  bool BoolValue::value() const {
@@ -1888,7 +1888,7 @@ const int StringValue::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 StringValue::StringValue()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.StringValue)
 }
@@ -2051,9 +2051,9 @@ int StringValue::ByteSize() const {
 
 void StringValue::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const StringValue* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const StringValue*>(
-      &from);
+  const StringValue* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const StringValue>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -2108,7 +2108,7 @@ void StringValue::InternalSwap(StringValue* other) {
 // StringValue
 
 // optional string value = 1;
- void StringValue::clear_value() {
+void StringValue::clear_value() {
   value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& StringValue::value() const {
@@ -2159,7 +2159,7 @@ const int BytesValue::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 BytesValue::BytesValue()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.BytesValue)
 }
@@ -2310,9 +2310,9 @@ int BytesValue::ByteSize() const {
 
 void BytesValue::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const BytesValue* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const BytesValue*>(
-      &from);
+  const BytesValue* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const BytesValue>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -2367,7 +2367,7 @@ void BytesValue::InternalSwap(BytesValue* other) {
 // BytesValue
 
 // optional bytes value = 1;
- void BytesValue::clear_value() {
+void BytesValue::clear_value() {
   value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& BytesValue::value() const {

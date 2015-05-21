@@ -82,12 +82,38 @@ class FieldGenerator {
   // implementation is empty.
   virtual void GenerateStaticMembers(io::Printer* /*printer*/) const {}
 
+  // Generate prototypes for accessors that will manipulate imported
+  // messages inline.  These are for .proto.h headers.
+  //
+  // In .proto.h mode, the headers of imports are not #included. However,
+  // functions that manipulate the imported message types need access to
+  // the class definition of the imported message, meaning that the headers
+  // must be #included. To get around this, functions that manipulate
+  // imported message objects are defined as dependent functions in a base
+  // template class. By making them dependent template functions, the
+  // function templates will not be instantiated until they are called, so
+  // we can defer to those translation units to #include the necessary
+  // generated headers.
+  //
+  // See:
+  // http://en.cppreference.com/w/cpp/language/class_template#Implicit_instantiation
+  //
+  // Most field types don't need this, so the default implementation is empty.
+  virtual void GenerateDependentAccessorDeclarations(
+      io::Printer* printer) const {}
+
   // Generate prototypes for all of the accessor functions related to this
   // field.  These are placed inside the class definition.
   virtual void GenerateAccessorDeclarations(io::Printer* printer) const = 0;
 
+  // Generate inline definitions of depenent accessor functions for this field.
+  // These are placed inside the header after all class definitions.
+  virtual void GenerateDependentInlineAccessorDefinitions(
+    io::Printer* printer) const {}
+
   // Generate inline definitions of accessor functions for this field.
   // These are placed inside the header after all class definitions.
+  // In non-.proto.h mode, this generates dependent accessor functions as well.
   virtual void GenerateInlineAccessorDefinitions(
     io::Printer* printer, bool is_inline) const = 0;
 

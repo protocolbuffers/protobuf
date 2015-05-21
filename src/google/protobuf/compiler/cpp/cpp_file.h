@@ -80,6 +80,35 @@ class FileGenerator {
   void GenerateNamespaceOpeners(io::Printer* printer);
   void GenerateNamespaceClosers(io::Printer* printer);
 
+  // Generates top or bottom of a header file.
+  void GenerateTopHeaderGuard(io::Printer* printer);
+  void GenerateBottomHeaderGuard(io::Printer* printer);
+
+  // Generates #include directives.
+  void GenerateLibraryIncludes(io::Printer* printer);
+  void GenerateDependencyIncludes(io::Printer* printer);
+
+  // Generates a couple of different pieces before definitions:
+  void GenerateGlobalStateFunctionDeclarations(io::Printer* printer);
+
+  // Generates types for classes.
+  void GenerateMessageForwardDeclarations(io::Printer* printer);
+  void GenerateMessageDefinitions(io::Printer* printer);
+
+  // Generates enum definitions.
+  void GenerateEnumDefinitions(io::Printer* printer);
+
+  // Generates generic service definitions.
+  void GenerateServiceDefinitions(io::Printer* printer);
+
+  // Generates extension identifiers.
+  void GenerateExtensionIdentifiers(io::Printer* printer);
+
+  // Generates inline function defintions.
+  void GenerateInlineFunctionDefinitions(io::Printer* printer);
+
+  void GenerateProto2NamespaceEnumSpecializations(io::Printer* printer);
+
   const FileDescriptor* file_;
 
   google::protobuf::scoped_array<google::protobuf::scoped_ptr<MessageGenerator> > message_generators_;

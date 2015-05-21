@@ -314,7 +314,7 @@ def MessageSizer(field_number, is_repeated, is_packed):
 
 
 # --------------------------------------------------------------------
-# MessageSet is special.
+# MessageSet is special: it needs custom logic to compute its size properly.
 
 
 def MessageSetItemSizer(field_number):
@@ -338,6 +338,32 @@ def MessageSetItemSizer(field_number):
 
   return FieldSize
 
+
+# --------------------------------------------------------------------
+# Map is special: it needs custom logic to compute its size properly.
+
+
+def MapSizer(field_descriptor):
+  """Returns a sizer for a map field."""
+
+  # Can't look at field_descriptor.message_type._concrete_class because it may
+  # not have been initialized yet.
+  message_type = field_descriptor.message_type
+  message_sizer = MessageSizer(field_descriptor.number, False, False)
+
+  def FieldSize(map_value):
+    total = 0
+    for key in map_value:
+      value = map_value[key]
+      # It's wasteful to create the messages and throw them away one second
+      # later since we'll do the same for the actual encode.  But there's not an
+      # obvious way to avoid this within the current design without tons of code
+      # duplication.
+      entry_msg = message_type._concrete_class(key=key, value=value)
+      total += message_sizer(entry_msg)
+    return total
+
+  return FieldSize
 
 # ====================================================================
 # Encoders!
@@ -784,5 +810,32 @@ def MessageSetItemEncoder(field_number):
     local_EncodeVarint(write, value.ByteSize())
     value._InternalSerialize(write)
     return write(end_bytes)
+
+  return EncodeField
+
+
+# --------------------------------------------------------------------
+# As before, Map is special.
+
+
+def MapEncoder(field_descriptor):
+  """Encoder for extensions of MessageSet.
+
+  Maps always have a wire format like this:
+    message MapEntry {
+      key_type key = 1;
+      value_type value = 2;
+    }
+    repeated MapEntry map = N;
+  """
+  # Can't look at field_descriptor.message_type._concrete_class because it may
+  # not have been initialized yet.
+  message_type = field_descriptor.message_type
+  encode_message = MessageEncoder(field_descriptor.number, False, False)
+
+  def EncodeField(write, value):
+    for key in value:
+      entry_msg = message_type._concrete_class(key=key, value=value[key])
+      encode_message(write, entry_msg)
 
   return EncodeField

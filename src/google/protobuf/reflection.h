@@ -39,6 +39,7 @@
 #endif
 
 #include <google/protobuf/message.h>
+#include <google/protobuf/generated_enum_util.h>
 
 namespace google {
 namespace protobuf {

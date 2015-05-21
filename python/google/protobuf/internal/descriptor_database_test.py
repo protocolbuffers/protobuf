@@ -35,7 +35,6 @@
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import unittest
-
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import factory_test2_pb2
 from google.protobuf import descriptor_database

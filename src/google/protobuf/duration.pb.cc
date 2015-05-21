@@ -117,7 +117,7 @@ const int Duration::kNanosFieldNumber;
 #endif  // !_MSC_VER
 
 Duration::Duration()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Duration)
 }
@@ -310,9 +310,9 @@ int Duration::ByteSize() const {
 
 void Duration::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Duration* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Duration*>(
-      &from);
+  const Duration* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Duration>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -370,7 +370,7 @@ void Duration::InternalSwap(Duration* other) {
 // Duration
 
 // optional int64 seconds = 1;
- void Duration::clear_seconds() {
+void Duration::clear_seconds() {
   seconds_ = GOOGLE_LONGLONG(0);
 }
  ::google::protobuf::int64 Duration::seconds() const {
@@ -384,7 +384,7 @@ void Duration::InternalSwap(Duration* other) {
 }
 
 // optional int32 nanos = 2;
- void Duration::clear_nanos() {
+void Duration::clear_nanos() {
   nanos_ = 0;
 }
  ::google::protobuf::int32 Duration::nanos() const {

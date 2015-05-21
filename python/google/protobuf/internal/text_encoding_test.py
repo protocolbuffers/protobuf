@@ -33,7 +33,6 @@
 """Tests for google.protobuf.text_encoding."""
 
 import unittest
-
 from google.protobuf import text_encoding
 
 TEST_VALUES = [

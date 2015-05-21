@@ -898,7 +898,7 @@ static ItemDescriptor GetByIndex(PyContainer* self, int index) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyFieldDescriptor_New(item);
+  return PyFieldDescriptor_FromDescriptor(item);
 }
 
 static const string& GetItemName(ItemDescriptor item) {
@@ -956,7 +956,7 @@ static ItemDescriptor GetByIndex(PyContainer* self, int index) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyMessageDescriptor_New(item);
+  return PyMessageDescriptor_FromDescriptor(item);
 }
 
 static const string& GetItemName(ItemDescriptor item) {
@@ -1006,7 +1006,7 @@ static ItemDescriptor GetByIndex(PyContainer* self, int index) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyEnumDescriptor_New(item);
+  return PyEnumDescriptor_FromDescriptor(item);
 }
 
 static const string& GetItemName(ItemDescriptor item) {
@@ -1082,7 +1082,7 @@ static ItemDescriptor GetByIndex(PyContainer* self, int index) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyEnumValueDescriptor_New(item);
+  return PyEnumValueDescriptor_FromDescriptor(item);
 }
 
 static const string& GetItemName(ItemDescriptor item) {
@@ -1124,7 +1124,7 @@ static ItemDescriptor GetByIndex(PyContainer* self, int index) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyFieldDescriptor_New(item);
+  return PyFieldDescriptor_FromDescriptor(item);
 }
 
 static const string& GetItemName(ItemDescriptor item) {
@@ -1174,7 +1174,7 @@ static ItemDescriptor GetByIndex(PyContainer* self, int index) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyOneofDescriptor_New(item);
+  return PyOneofDescriptor_FromDescriptor(item);
 }
 
 static const string& GetItemName(ItemDescriptor item) {
@@ -1238,7 +1238,7 @@ static ItemDescriptor GetByNumber(PyContainer* self, int number) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyEnumValueDescriptor_New(item);
+  return PyEnumValueDescriptor_FromDescriptor(item);
 }
 
 static const string& GetItemName(ItemDescriptor item) {
@@ -1302,7 +1302,7 @@ static ItemDescriptor GetByIndex(PyContainer* self, int index) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyFieldDescriptor_New(item);
+  return PyFieldDescriptor_FromDescriptor(item);
 }
 
 static int GetItemIndex(ItemDescriptor item) {
@@ -1354,7 +1354,7 @@ static ItemDescriptor GetByIndex(PyContainer* self, int index) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyMessageDescriptor_New(item);
+  return PyMessageDescriptor_FromDescriptor(item);
 }
 
 static const string& GetItemName(ItemDescriptor item) {
@@ -1400,7 +1400,7 @@ static ItemDescriptor GetByIndex(PyContainer* self, int index) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyEnumDescriptor_New(item);
+  return PyEnumDescriptor_FromDescriptor(item);
 }
 
 static const string& GetItemName(ItemDescriptor item) {
@@ -1446,7 +1446,7 @@ static ItemDescriptor GetByIndex(PyContainer* self, int index) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyFieldDescriptor_New(item);
+  return PyFieldDescriptor_FromDescriptor(item);
 }
 
 static const string& GetItemName(ItemDescriptor item) {
@@ -1488,7 +1488,7 @@ static ItemDescriptor GetByIndex(PyContainer* self, int index) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyFileDescriptor_New(item);
+  return PyFileDescriptor_FromDescriptor(item);
 }
 
 static DescriptorContainerDef ContainerDef = {
@@ -1522,7 +1522,7 @@ static ItemDescriptor GetByIndex(PyContainer* self, int index) {
 }
 
 static PyObject* NewObjectFromItem(ItemDescriptor item) {
-  return PyFileDescriptor_New(item);
+  return PyFileDescriptor_FromDescriptor(item);
 }
 
 static DescriptorContainerDef ContainerDef = {

@@ -93,7 +93,7 @@ void UnknownFieldSet::InternalMergeFrom(const UnknownFieldSet& other) {
     fields_ = new vector<UnknownField>();
     for (int i = 0; i < other_field_count; i++) {
       fields_->push_back((*other.fields_)[i]);
-      fields_->back().DeepCopy();
+      fields_->back().DeepCopy((*other.fields_)[i]);
     }
   }
 }
@@ -104,7 +104,7 @@ void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
     if (fields_ == NULL) fields_ = new vector<UnknownField>();
     for (int i = 0; i < other_field_count; i++) {
       fields_->push_back((*other.fields_)[i]);
-      fields_->back().DeepCopy();
+      fields_->back().DeepCopy((*other.fields_)[i]);
     }
   }
 }
@@ -202,7 +202,7 @@ UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
 void UnknownFieldSet::AddField(const UnknownField& field) {
   if (fields_ == NULL) fields_ = new vector<UnknownField>();
   fields_->push_back(field);
-  fields_->back().DeepCopy();
+  fields_->back().DeepCopy(field);
 }
 
 void UnknownFieldSet::DeleteSubrange(int start, int num) {
@@ -303,7 +303,7 @@ void UnknownField::Reset() {
   }
 }
 
-void UnknownField::DeepCopy() {
+void UnknownField::DeepCopy(const UnknownField& other) {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
       length_delimited_.string_value_ = new string(

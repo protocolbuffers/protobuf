@@ -226,7 +226,6 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
       "  } else {\n"
       "    $clear_hasbit$\n"
       "  }\n"
-      "  $set_hasbit$\n"
       "  $name$_.UnsafeArenaSetAllocated($default_variable$,\n"
       "      $name$, GetArenaNoVirtual());\n"
       "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"

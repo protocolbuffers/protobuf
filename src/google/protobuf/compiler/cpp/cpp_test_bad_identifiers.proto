@@ -131,23 +131,23 @@ message TestConflictingSymbolNamesExtension {                    // NO_PROTO3
   }                                                              // NO_PROTO3
 }                                                                // NO_PROTO3
 
-message TestConflictingEnumNames {
-  enum NestedConflictingEnum {
-    and = 1;
-    class = 2;
-    int = 3;
-    typedef = 4;
-    XOR = 5;
-  }
+message TestConflictingEnumNames {  // NO_PROTO3
+  enum NestedConflictingEnum {      // NO_PROTO3
+    and = 1;                        // NO_PROTO3
+    class = 2;                      // NO_PROTO3
+    int = 3;                        // NO_PROTO3
+    typedef = 4;                    // NO_PROTO3
+    XOR = 5;                        // NO_PROTO3
+  }                                 // NO_PROTO3
 
-  optional NestedConflictingEnum conflicting_enum = 1;
-}
+  optional NestedConflictingEnum conflicting_enum = 1;  // NO_PROTO3
+}  // NO_PROTO3
 
-enum ConflictingEnum {
-  NOT_EQ = 1;
-  volatile = 2;
-  return = 3;
-}
+enum ConflictingEnum {  // NO_PROTO3
+  NOT_EQ = 1;           // NO_PROTO3
+  volatile = 2;         // NO_PROTO3
+  return = 3;           // NO_PROTO3
+}  // NO_PROTO3
 
 message DummyMessage {}
 

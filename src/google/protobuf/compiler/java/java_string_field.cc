@@ -208,7 +208,7 @@ GenerateInterfaceMembers(io::Printer* printer) const {
 void ImmutableStringFieldGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private java.lang.Object $name$_;\n");
+    "private volatile java.lang.Object $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
 
   if (SupportFieldPresence(descriptor_->file())) {

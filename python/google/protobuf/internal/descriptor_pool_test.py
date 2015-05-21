@@ -37,6 +37,7 @@ __author__ = 'matthewtoia@google.com (Matt Toia)'
 import os
 import unittest
 
+import unittest
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import api_implementation
@@ -224,6 +225,13 @@ class DescriptorPoolTest(unittest.TestCase):
     self.pool = descriptor_pool.DescriptorPool(db)
     db.Add(self.factory_test1_fd)
     db.Add(self.factory_test2_fd)
+    self.testFindMessageTypeByName()
+
+  def testAddSerializedFile(self):
+    db = descriptor_database.DescriptorDatabase()
+    self.pool = descriptor_pool.DescriptorPool(db)
+    self.pool.AddSerializedFile(self.factory_test1_fd.SerializeToString())
+    self.pool.AddSerializedFile(self.factory_test2_fd.SerializeToString())
     self.testFindMessageTypeByName()
 
   def testComplexNesting(self):
@@ -508,6 +516,43 @@ class AddDescriptorTest(unittest.TestCase):
     with self.assertRaises(KeyError):
       pool.FindFileContainingSymbol(
           'protobuf_unittest.TestAllTypes')
+
+
+@unittest.skipIf(
+    api_implementation.Type() != 'cpp',
+    'default_pool is only supported by the C++ implementation')
+class DefaultPoolTest(unittest.TestCase):
+
+  def testFindMethods(self):
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf.pyext import _message
+    pool = _message.default_pool
+    self.assertIs(
+        pool.FindFileByName('google/protobuf/unittest.proto'),
+        unittest_pb2.DESCRIPTOR)
+    self.assertIs(
+        pool.FindMessageTypeByName('protobuf_unittest.TestAllTypes'),
+        unittest_pb2.TestAllTypes.DESCRIPTOR)
+    self.assertIs(
+        pool.FindFieldByName('protobuf_unittest.TestAllTypes.optional_int32'),
+        unittest_pb2.TestAllTypes.DESCRIPTOR.fields_by_name['optional_int32'])
+    self.assertIs(
+        pool.FindExtensionByName('protobuf_unittest.optional_int32_extension'),
+        unittest_pb2.DESCRIPTOR.extensions_by_name['optional_int32_extension'])
+    self.assertIs(
+        pool.FindEnumTypeByName('protobuf_unittest.ForeignEnum'),
+        unittest_pb2.ForeignEnum.DESCRIPTOR)
+    self.assertIs(
+        pool.FindOneofByName('protobuf_unittest.TestAllTypes.oneof_field'),
+        unittest_pb2.TestAllTypes.DESCRIPTOR.oneofs_by_name['oneof_field'])
+
+  def testAddFileDescriptor(self):
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf.pyext import _message
+    pool = _message.default_pool
+    file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
+    pool.Add(file_desc)
+    pool.AddSerializedFile(file_desc.SerializeToString())
 
 
 TEST1_FILE = ProtoFile(

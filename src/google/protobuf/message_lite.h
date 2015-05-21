@@ -238,6 +238,9 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // Computes the serialized size of the message.  This recursively calls
   // ByteSize() on all embedded messages.  If a subclass does not override
   // this, it MUST override SetCachedSize().
+  //
+  // ByteSize() is generally linear in the number of fields defined for the
+  // proto.
   virtual int ByteSize() const = 0;
 
   // Serializes the message without recomputing the size.  The message must

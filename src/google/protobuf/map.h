@@ -422,6 +422,7 @@ class Map {
   int default_enum_value_;
 
   friend class ::google::protobuf::Arena;
+  typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   template <typename K, typename V,
             internal::WireFormatLite::FieldType key_wire_type,

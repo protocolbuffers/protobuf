@@ -470,12 +470,20 @@ inline bool WireFormatLite::ReadGroupNoVirtual(
   if (!value->
       MessageType_WorkAroundCppLookupDefect::MergePartialFromCodedStream(input))
     return false;
-  input->DecrementRecursionDepth();
+  input->UnsafeDecrementRecursionDepth();
   // Make sure the last thing read was an end tag for this group.
   if (!input->LastTagWas(MakeTag(field_number, WIRETYPE_END_GROUP))) {
     return false;
   }
   return true;
+}
+template<typename MessageType_WorkAroundCppLookupDefect>
+inline bool WireFormatLite::ReadGroupNoVirtualNoRecursionDepth(
+    int field_number, io::CodedInputStream* input,
+    MessageType_WorkAroundCppLookupDefect* value) {
+  return value->MessageType_WorkAroundCppLookupDefect::
+             MergePartialFromCodedStream(input) &&
+         input->LastTagWas(MakeTag(field_number, WIRETYPE_END_GROUP));
 }
 template<typename MessageType_WorkAroundCppLookupDefect>
 inline bool WireFormatLite::ReadMessageNoVirtual(
@@ -490,6 +498,17 @@ inline bool WireFormatLite::ReadMessageNoVirtual(
   // Make sure that parsing stopped when the limit was hit, not at an endgroup
   // tag.
   return input->DecrementRecursionDepthAndPopLimit(p.first);
+}
+template<typename MessageType_WorkAroundCppLookupDefect>
+inline bool WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+    io::CodedInputStream* input, MessageType_WorkAroundCppLookupDefect* value) {
+  io::CodedInputStream::Limit old_limit = input->ReadLengthAndPushLimit();
+  if (!value->
+      MessageType_WorkAroundCppLookupDefect::MergePartialFromCodedStream(input))
+    return false;
+  // Make sure that parsing stopped when the limit was hit, not at an endgroup
+  // tag.
+  return input->CheckEntireMessageConsumedAndPopLimit(old_limit);
 }
 
 // ===================================================================

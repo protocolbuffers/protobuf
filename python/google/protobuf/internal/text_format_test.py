@@ -37,8 +37,10 @@ __author__ = 'kenton@google.com (Kenton Varda)'
 import re
 import unittest
 
+import unittest
 from google.protobuf.internal import _parameterized
 
+from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
@@ -309,31 +311,6 @@ class TextFormatTest(TextFormatBase):
          r'"unknown_field".'),
         text_format.Parse, text, message)
 
-  def testParseGroupNotClosed(self, message_module):
-    message = message_module.TestAllTypes()
-    text = 'RepeatedGroup: <'
-    self.assertRaisesRegexp(
-        text_format.ParseError, '1:16 : Expected ">".',
-        text_format.Parse, text, message)
-
-    text = 'RepeatedGroup: {'
-    self.assertRaisesRegexp(
-        text_format.ParseError, '1:16 : Expected "}".',
-        text_format.Parse, text, message)
-
-  def testParseEmptyGroup(self, message_module):
-    message = message_module.TestAllTypes()
-    text = 'OptionalGroup: {}'
-    text_format.Parse(text, message)
-    self.assertTrue(message.HasField('optionalgroup'))
-
-    message.Clear()
-
-    message = message_module.TestAllTypes()
-    text = 'OptionalGroup: <>'
-    text_format.Parse(text, message)
-    self.assertTrue(message.HasField('optionalgroup'))
-
   def testParseBadEnumValue(self, message_module):
     message = message_module.TestAllTypes()
     text = 'optional_nested_enum: BARR'
@@ -408,6 +385,14 @@ class TextFormatTest(TextFormatBase):
 # Ideally the schemas would be made more similar so these tests could pass.
 class OnlyWorksWithProto2RightNowTests(TextFormatBase):
 
+  def testPrintAllFieldsPointy(self, message_module):
+    message = unittest_pb2.TestAllTypes()
+    test_util.SetAllFields(message)
+    self.CompareToGoldenFile(
+        self.RemoveRedundantZeros(
+            text_format.MessageToString(message, pointy_brackets=True)),
+        'text_format_unittest_data_pointy_oneof.txt')
+
   def testParseGolden(self):
     golden_text = '\n'.join(self.ReadGolden('text_format_unittest_data.txt'))
     parsed_message = unittest_pb2.TestAllTypes()
@@ -471,8 +456,49 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
     test_util.SetAllFields(message)
     self.assertEquals(message, parsed_message)
 
+  def testPrintMap(self):
+    message = map_unittest_pb2.TestMap()
 
-# Tests of proto2-only features (MessageSet and extensions).
+    message.map_int32_int32[-123] = -456
+    message.map_int64_int64[-2**33] = -2**34
+    message.map_uint32_uint32[123] = 456
+    message.map_uint64_uint64[2**33] = 2**34
+    message.map_string_string["abc"] = "123"
+    message.map_int32_foreign_message[111].c = 5
+
+    # Maps are serialized to text format using their underlying repeated
+    # representation.
+    self.CompareToGoldenText(
+        text_format.MessageToString(message),
+        'map_int32_int32 {\n'
+        '  key: -123\n'
+        '  value: -456\n'
+        '}\n'
+        'map_int64_int64 {\n'
+        '  key: -8589934592\n'
+        '  value: -17179869184\n'
+        '}\n'
+        'map_uint32_uint32 {\n'
+        '  key: 123\n'
+        '  value: 456\n'
+        '}\n'
+        'map_uint64_uint64 {\n'
+        '  key: 8589934592\n'
+        '  value: 17179869184\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "abc"\n'
+        '  value: "123"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    c: 5\n'
+        '  }\n'
+        '}\n')
+
+
+# Tests of proto2-only features (MessageSet, extensions, etc.).
 class Proto2Tests(TextFormatBase):
 
   def testPrintMessageSet(self):
@@ -619,6 +645,69 @@ class Proto2Tests(TextFormatBase):
         ('1:36 : Message type "protobuf_unittest.TestAllTypes" should not '
          'have multiple "optional_int32" fields.'),
         text_format.Parse, text, message)
+
+  def testParseGroupNotClosed(self):
+    message = unittest_pb2.TestAllTypes()
+    text = 'RepeatedGroup: <'
+    self.assertRaisesRegexp(
+        text_format.ParseError, '1:16 : Expected ">".',
+        text_format.Parse, text, message)
+    text = 'RepeatedGroup: {'
+    self.assertRaisesRegexp(
+        text_format.ParseError, '1:16 : Expected "}".',
+        text_format.Parse, text, message)
+
+  def testParseEmptyGroup(self):
+    message = unittest_pb2.TestAllTypes()
+    text = 'OptionalGroup: {}'
+    text_format.Parse(text, message)
+    self.assertTrue(message.HasField('optionalgroup'))
+
+    message.Clear()
+
+    message = unittest_pb2.TestAllTypes()
+    text = 'OptionalGroup: <>'
+    text_format.Parse(text, message)
+    self.assertTrue(message.HasField('optionalgroup'))
+
+  # Maps aren't really proto2-only, but our test schema only has maps for
+  # proto2.
+  def testParseMap(self):
+    text = ('map_int32_int32 {\n'
+            '  key: -123\n'
+            '  value: -456\n'
+            '}\n'
+            'map_int64_int64 {\n'
+            '  key: -8589934592\n'
+            '  value: -17179869184\n'
+            '}\n'
+            'map_uint32_uint32 {\n'
+            '  key: 123\n'
+            '  value: 456\n'
+            '}\n'
+            'map_uint64_uint64 {\n'
+            '  key: 8589934592\n'
+            '  value: 17179869184\n'
+            '}\n'
+            'map_string_string {\n'
+            '  key: "abc"\n'
+            '  value: "123"\n'
+            '}\n'
+            'map_int32_foreign_message {\n'
+            '  key: 111\n'
+            '  value {\n'
+            '    c: 5\n'
+            '  }\n'
+            '}\n')
+    message = map_unittest_pb2.TestMap()
+    text_format.Parse(text, message)
+
+    self.assertEqual(-456, message.map_int32_int32[-123])
+    self.assertEqual(-2**34, message.map_int64_int64[-2**33])
+    self.assertEqual(456, message.map_uint32_uint32[123])
+    self.assertEqual(2**34, message.map_uint64_uint64[2**33])
+    self.assertEqual("123", message.map_string_string["abc"])
+    self.assertEqual(5, message.map_int32_foreign_message[111].c)
 
 
 class TokenizerTest(unittest.TestCase):

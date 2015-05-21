@@ -30,9 +30,11 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.MapFieldLite.MutatabilityAwareMap;
+
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +53,7 @@ import java.util.Map;
  * and getList() concurrently in multiple threads. If write-access is needed,
  * all access must be synchronized.
  */
-public class MapField<K, V> {
+public class MapField<K, V> implements MutabilityOracle {
   /**
    * Indicates where the data of this map field is currently stored.
    * 
@@ -72,8 +74,9 @@ public class MapField<K, V> {
    */
   private enum StorageMode {MAP, LIST, BOTH}
 
+  private volatile boolean isMutable;
   private volatile StorageMode mode;
-  private Map<K, V> mapData;
+  private MutatabilityAwareMap<K, V> mapData;
   private List<Message> listData;
   
   // Convert between a map entry Message and a key-value pair.
@@ -110,20 +113,19 @@ public class MapField<K, V> {
   private MapField(
       Converter<K, V> converter,
       StorageMode mode,
-      Map<K, V> mapData,
-      List<Message> listData) {
+      Map<K, V> mapData) {
     this.converter = converter;
+    this.isMutable = true;
     this.mode = mode;
-    this.mapData = mapData;
-    this.listData = listData;
+    this.mapData = new MutatabilityAwareMap<K, V>(this, mapData);
+    this.listData = null;
   }
     
   private MapField(
       MapEntry<K, V> defaultEntry,
       StorageMode mode,
-      Map<K, V> mapData,
-      List<Message> listData) {
-    this(new ImmutableMessageConverter<K, V>(defaultEntry), mode, mapData, listData);
+      Map<K, V> mapData) {
+    this(new ImmutableMessageConverter<K, V>(defaultEntry), mode, mapData);
   }
   
   
@@ -131,14 +133,14 @@ public class MapField<K, V> {
   public static <K, V> MapField<K, V> emptyMapField(
       MapEntry<K, V> defaultEntry) {
     return new MapField<K, V>(
-        defaultEntry, StorageMode.MAP, Collections.<K, V>emptyMap(), null);
+        defaultEntry, StorageMode.MAP, Collections.<K, V>emptyMap());
   }
   
   
   /** Creates a new mutable empty MapField. */
   public static <K, V> MapField<K, V> newMapField(MapEntry<K, V> defaultEntry) {
     return new MapField<K, V>(
-        defaultEntry, StorageMode.MAP, new HashMap<K, V>(), null);
+        defaultEntry, StorageMode.MAP, new LinkedHashMap<K, V>());
   }
   
   
@@ -151,7 +153,7 @@ public class MapField<K, V> {
     converter.convertMessageToKeyAndValue(message, map);
   }
 
-  private List<Message> convertMapToList(Map<K, V> mapData) {
+  private List<Message> convertMapToList(MutatabilityAwareMap<K, V> mapData) {
     List<Message> listData = new ArrayList<Message>();
     for (Map.Entry<K, V> entry : mapData.entrySet()) {
       listData.add(
@@ -161,12 +163,12 @@ public class MapField<K, V> {
     return listData;
   }
 
-  private Map<K, V> convertListToMap(List<Message> listData) {
-    Map<K, V> mapData = new HashMap<K, V>();
+  private MutatabilityAwareMap<K, V> convertListToMap(List<Message> listData) {
+    Map<K, V> mapData = new LinkedHashMap<K, V>();
     for (Message item : listData) {
       convertMessageToKeyAndValue(item, mapData);
     }
-    return mapData;
+    return new MutatabilityAwareMap<K, V>(this, mapData);
   }
   
   /** Returns the content of this MapField as a read-only Map. */
@@ -199,7 +201,7 @@ public class MapField<K, V> {
   }
   
   public void clear() {
-    mapData = new HashMap<K, V>();
+    mapData = new MutatabilityAwareMap<K, V>(this, new LinkedHashMap<K, V>());
     mode = StorageMode.MAP;
   }
   
@@ -221,7 +223,7 @@ public class MapField<K, V> {
   /** Returns a deep copy of this MapField. */
   public MapField<K, V> copy() {
     return new MapField<K, V>(
-        converter, StorageMode.MAP, MapFieldLite.copy(getMap()), null);
+        converter, StorageMode.MAP, MapFieldLite.copy(getMap()));
   }
   
   /** Gets the content of this MapField as a read-only List. */
@@ -255,5 +257,30 @@ public class MapField<K, V> {
    */
   Message getMapEntryMessageDefaultInstance() {
     return converter.getMessageDefaultInstance();
+  }
+  
+  /**
+   * Makes this list immutable. All subsequent modifications will throw an
+   * {@link UnsupportedOperationException}.
+   */
+  public void makeImmutable() {
+    isMutable = false;
+  }
+  
+  /**
+   * Returns whether this field can be modified.
+   */
+  public boolean isMutable() {
+    return isMutable;
+  }
+  
+  /* (non-Javadoc)
+   * @see com.google.protobuf.MutabilityOracle#ensureMutable()
+   */
+  @Override
+  public void ensureMutable() {
+    if (!isMutable()) {
+      throw new UnsupportedOperationException();
+    }
   }
 }

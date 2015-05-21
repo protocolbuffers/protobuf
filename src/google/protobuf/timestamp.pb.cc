@@ -117,7 +117,7 @@ const int Timestamp::kNanosFieldNumber;
 #endif  // !_MSC_VER
 
 Timestamp::Timestamp()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Timestamp)
 }
@@ -310,9 +310,9 @@ int Timestamp::ByteSize() const {
 
 void Timestamp::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Timestamp* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Timestamp*>(
-      &from);
+  const Timestamp* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Timestamp>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -370,7 +370,7 @@ void Timestamp::InternalSwap(Timestamp* other) {
 // Timestamp
 
 // optional int64 seconds = 1;
- void Timestamp::clear_seconds() {
+void Timestamp::clear_seconds() {
   seconds_ = GOOGLE_LONGLONG(0);
 }
  ::google::protobuf::int64 Timestamp::seconds() const {
@@ -384,7 +384,7 @@ void Timestamp::InternalSwap(Timestamp* other) {
 }
 
 // optional int32 nanos = 2;
- void Timestamp::clear_nanos() {
+void Timestamp::clear_nanos() {
   nanos_ = 0;
 }
  ::google::protobuf::int32 Timestamp::nanos() const {

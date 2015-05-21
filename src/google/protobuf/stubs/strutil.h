@@ -683,12 +683,6 @@ string Join(const Range& components,
 }
 
 // ----------------------------------------------------------------------
-// ToHex()
-//    Return a lower-case hex string representation of the given integer.
-// ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT string ToHex(uint64 num);
-
-// ----------------------------------------------------------------------
 // GlobalReplaceSubstring()
 //    Replaces all instances of a substring in a string.  Does nothing
 //    if 'substring' is empty.  Returns the number of replacements.

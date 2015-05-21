@@ -33,7 +33,6 @@
 """Tests for google.protobuf.symbol_database."""
 
 import unittest
-
 from google.protobuf import unittest_pb2
 from google.protobuf import symbol_database
 

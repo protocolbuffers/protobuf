@@ -91,6 +91,7 @@ def GenerateUnittestProtos():
   if not os.path.exists("../.git"):
     return
 
+  generate_proto("../src/google/protobuf/map_unittest.proto")
   generate_proto("../src/google/protobuf/unittest.proto")
   generate_proto("../src/google/protobuf/unittest_custom_options.proto")
   generate_proto("../src/google/protobuf/unittest_import.proto")

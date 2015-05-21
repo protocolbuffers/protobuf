@@ -465,10 +465,21 @@ struct ShutdownRepeatedFieldRegister {
 }  // namespace internal
 
 namespace internal {
-// Macro defined in repeated_field.h. We can only define the Message-specific
-// GenericTypeHandler specializations here because we depend on Message, which
-// is not part of proto2-lite hence is not available in repeated_field.h.
-DEFINE_SPECIALIZATIONS_FOR_BASE_PROTO_TYPES_NOINLINE(Message);
+template<>
+Message* GenericTypeHandler<Message>::NewFromPrototype(
+    const Message* prototype, google::protobuf::Arena* arena) {
+  return prototype->New(arena);
+}
+template<>
+google::protobuf::Arena* GenericTypeHandler<Message>::GetArena(
+    Message* value) {
+  return value->GetArena();
+}
+template<>
+void* GenericTypeHandler<Message>::GetMaybeArenaPointer(
+    Message* value) {
+  return value->GetMaybeArenaPointer();
+}
 }  // namespace internal
 
 }  // namespace protobuf

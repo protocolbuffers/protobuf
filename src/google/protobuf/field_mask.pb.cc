@@ -114,7 +114,7 @@ const int FieldMask::kPathsFieldNumber;
 #endif  // !_MSC_VER
 
 FieldMask::FieldMask()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.FieldMask)
 }
@@ -277,9 +277,9 @@ int FieldMask::ByteSize() const {
 
 void FieldMask::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const FieldMask* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const FieldMask*>(
-      &from);
+  const FieldMask* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const FieldMask>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -331,10 +331,10 @@ void FieldMask::InternalSwap(FieldMask* other) {
 // FieldMask
 
 // repeated string paths = 1;
- int FieldMask::paths_size() const {
+int FieldMask::paths_size() const {
   return paths_.size();
 }
- void FieldMask::clear_paths() {
+void FieldMask::clear_paths() {
   paths_.Clear();
 }
  const ::std::string& FieldMask::paths(int index) const {

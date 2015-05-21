@@ -295,6 +295,7 @@ void ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   failures_ = 0;
 
   for (int i = 1; i <= FieldDescriptor::MAX_TYPE; i++) {
+    if (i == FieldDescriptor::TYPE_GROUP) continue;
     TestPrematureEOFForType(static_cast<WireFormatLite::FieldType>(i));
   }
 

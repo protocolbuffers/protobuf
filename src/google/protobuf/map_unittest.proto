@@ -62,7 +62,7 @@ message TestMap {
 }
 
 message TestMapSubmessage {
-  optional TestMap test_map = 1;
+  TestMap test_map = 1;
 }
 
 message TestMessageMap {
@@ -103,4 +103,18 @@ message TestArenaMap {
   map<bool    , bool    > map_bool_bool         = 13;
   map<int32   , MapEnum > map_int32_enum        = 14;
   map<int32   , ForeignMessage> map_int32_foreign_message = 15;
+}
+
+// Previously, message containing enum called Type cannot be used as value of
+// map field.
+message MessageContainingEnumCalledType {
+  enum Type {
+    TYPE_FOO = 0;
+  }
+  map<int32, MessageContainingEnumCalledType> type = 1;
+}
+
+// Previously, message cannot contain map field called "entry".
+message MessageContainingMapCalledEntry {
+  map<int32, int32> entry = 1;
 }

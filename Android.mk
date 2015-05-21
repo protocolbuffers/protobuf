@@ -90,14 +90,20 @@ COMPILER_SRC_FILES :=  \
     src/google/protobuf/compiler/cpp/cpp_string_field.cc \
     src/google/protobuf/compiler/java/java_enum.cc \
     src/google/protobuf/compiler/java/java_enum_field.cc \
+    src/google/protobuf/compiler/java/java_enum_field_lite.cc \
     src/google/protobuf/compiler/java/java_extension.cc \
     src/google/protobuf/compiler/java/java_field.cc \
     src/google/protobuf/compiler/java/java_file.cc \
     src/google/protobuf/compiler/java/java_generator.cc \
     src/google/protobuf/compiler/java/java_helpers.cc \
     src/google/protobuf/compiler/java/java_message.cc \
+    src/google/protobuf/compiler/java/java_message_lite.cc \
+    src/google/protobuf/compiler/java/java_message_builder.cc \
+    src/google/protobuf/compiler/java/java_message_builder_lite.cc \
     src/google/protobuf/compiler/java/java_message_field.cc \
+    src/google/protobuf/compiler/java/java_message_field_lite.cc \
     src/google/protobuf/compiler/java/java_primitive_field.cc \
+    src/google/protobuf/compiler/java/java_primitive_field_lite.cc \
     src/google/protobuf/compiler/java/java_service.cc \
     src/google/protobuf/compiler/javamicro/javamicro_enum.cc \
     src/google/protobuf/compiler/javamicro/javamicro_enum_field.cc \

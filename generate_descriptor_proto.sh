@@ -43,8 +43,11 @@ declare -a RUNTIME_PROTO_FILES=(\
   google/protobuf/wrappers.proto)
 
 CORE_PROTO_IS_CORRECT=0
+PROCESS_ROUND=1
+echo "Updating descriptor protos..."
 while [ $CORE_PROTO_IS_CORRECT -ne 1 ]
 do
+  echo "Round $PROCESS_ROUND"
   CORE_PROTO_IS_CORRECT=1
   for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]}; do
     BASE_NAME=${PROTO_FILE%.*}
@@ -86,5 +89,7 @@ do
   done
   rm google/protobuf/compiler/plugin.pb.h.tmp
   rm google/protobuf/compiler/plugin.pb.cc.tmp
+
+  PROCESS_ROUND=$((PROCESS_ROUND + 1))
 done
 cd ..

@@ -35,10 +35,10 @@
 #include <google/protobuf/compiler/java/java_file.h>
 
 #include <memory>
-#include <set>
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
+#include <set>
 
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_enum.h>
@@ -153,6 +153,12 @@ void CollectExtensions(const FileDescriptorProto& file_proto,
   }
 }
 
+// Compare two field descriptors, returning true if the first should come
+// before the second.
+bool CompareFieldsByName(const FieldDescriptor *a, const FieldDescriptor *b) {
+  return a->full_name() < b->full_name();
+}
+
 // Our static initialization methods can become very, very large.
 // So large that if we aren't careful we end up blowing the JVM's
 // 64K bytes of bytecode/method. Fortunately, since these static
@@ -166,7 +172,6 @@ void MaybeRestartJavaMethod(io::Printer* printer,
                             int *method_num,
                             const char *chain_statement,
                             const char *method_decl) {
- 
   // The goal here is to stay under 64K bytes of jvm bytecode/method,
   // since otherwise we hit a hardcoded limit in the jvm and javac will
   // then fail with the error "code too large". This limit lets our
@@ -183,6 +188,7 @@ void MaybeRestartJavaMethod(io::Printer* printer,
     *bytecode_estimate = 0;
   }
 }
+
 
 }  // namespace
 

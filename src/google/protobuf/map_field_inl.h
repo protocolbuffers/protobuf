@@ -216,7 +216,7 @@ MapField<Key, T, kKeyFieldType, kValueFieldType,
       repeated_field_ = new RepeatedPtrField<Message>();
     } else {
       repeated_field_ =
-          Arena::Create<RepeatedPtrField<Message> >(arena_, arena_);
+          Arena::CreateMessage<RepeatedPtrField<Message> >(arena_);
     }
   }
   const Map<Key, T>& map = GetInternalMap();

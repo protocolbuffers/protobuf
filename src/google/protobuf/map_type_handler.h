@@ -129,11 +129,11 @@ class MapCppTypeHandler : public MapCommonTypeHandler<Type> {
   // Return bytes used by value in Map.
   static int SpaceUsedInMap(const Type& value) { return value.SpaceUsed(); }
   static inline void Clear(Type** value) {
-    if (*value != NULL) (*value)->Type::Clear();
+    if (*value != NULL) (*value)->Clear();
   }
   static inline void ClearMaybeByDefaultEnum(Type** value,
                                              int default_enum_value) {
-    if (*value != NULL) (*value)->Type::Clear();
+    if (*value != NULL) (*value)->Clear();
   }
   static inline void Merge(const Type& from, Type** to) {
     (*to)->MergeFrom(from);

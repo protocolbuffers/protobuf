@@ -244,7 +244,8 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
       "{\n"
       "  ::google::protobuf::scoped_ptr<$map_classname$> entry;\n"
       "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
-      "      it = $name$().begin(); it != $name$().end(); ++it) {\n");
+      "      it = this->$name$().begin();\n"
+      "      it != this->$name$().end(); ++it) {\n");
 
   // If entry is allocated by arena, its desctructor should be avoided.
   if (SupportsArenas(descriptor_)) {
@@ -277,7 +278,8 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
       "{\n"
       "  ::google::protobuf::scoped_ptr<$map_classname$> entry;\n"
       "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
-      "      it = $name$().begin(); it != $name$().end(); ++it) {\n");
+      "      it = this->$name$().begin();\n"
+      "      it != this->$name$().end(); ++it) {\n");
 
   // If entry is allocated by arena, its desctructor should be avoided.
   if (SupportsArenas(descriptor_)) {
@@ -312,7 +314,8 @@ GenerateByteSize(io::Printer* printer) const {
       "{\n"
       "  ::google::protobuf::scoped_ptr<$map_classname$> entry;\n"
       "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
-      "      it = $name$().begin(); it != $name$().end(); ++it) {\n");
+      "      it = this->$name$().begin();\n"
+      "      it != this->$name$().end(); ++it) {\n");
 
   // If entry is allocated by arena, its desctructor should be avoided.
   if (SupportsArenas(descriptor_)) {

@@ -936,7 +936,7 @@ inline bool Type::has_source_context() const {
   return !_is_default_instance_ && source_context_ != NULL;
 }
 inline void Type::clear_source_context() {
-  if (source_context_ != NULL) delete source_context_;
+  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
   source_context_ = NULL;
 }
 inline const ::google::protobuf::SourceContext& Type::source_context() const {
@@ -1270,7 +1270,7 @@ inline bool Enum::has_source_context() const {
   return !_is_default_instance_ && source_context_ != NULL;
 }
 inline void Enum::clear_source_context() {
-  if (source_context_ != NULL) delete source_context_;
+  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
   source_context_ = NULL;
 }
 inline const ::google::protobuf::SourceContext& Enum::source_context() const {
@@ -1445,7 +1445,7 @@ inline bool Option::has_value() const {
   return !_is_default_instance_ && value_ != NULL;
 }
 inline void Option::clear_value() {
-  if (value_ != NULL) delete value_;
+  if (GetArenaNoVirtual() == NULL && value_ != NULL) delete value_;
   value_ = NULL;
 }
 inline const ::google::protobuf::Any& Option::value() const {
@@ -1478,6 +1478,14 @@ inline void Option::set_allocated_value(::google::protobuf::Any* value) {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 
 // @@protoc_insertion_point(namespace_scope)
 

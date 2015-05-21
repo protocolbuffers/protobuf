@@ -32,23 +32,24 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/text_format.h>
+
 #include <math.h>
 #include <stdlib.h>
 #include <limits>
 
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/io/tokenizer.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_mset.pb.h>
-#include <google/protobuf/test_util.h>
-
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/googletest.h>
-#include <gtest/gtest.h>
+#include <google/protobuf/test_util.h>
+#include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_mset.pb.h>
+#include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/testing/googletest.h>
+#include <gtest/gtest.h>
+
 
 namespace google {
 namespace protobuf {
@@ -451,7 +452,7 @@ TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
 class CustomMessageFieldValuePrinter : public TextFormat::FieldValuePrinter {
  public:
   virtual string PrintInt32(int32 v) const {
-    return StrCat(FieldValuePrinter::PrintInt32(v), "  # x", ToHex(v));
+    return StrCat(FieldValuePrinter::PrintInt32(v), "  # x", strings::Hex(v));
   }
 
   virtual string PrintMessageStart(const Message& message,

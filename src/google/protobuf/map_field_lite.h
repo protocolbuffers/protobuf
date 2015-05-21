@@ -109,7 +109,7 @@ template <typename Key, typename T,
 MapFieldLite<Key, T, key_wire_type, value_wire_type,
              default_enum_value>::MapFieldLite(Arena* arena)
   : arena_(arena) {
-  map_ = Arena::Create<Map<Key, T> >(arena, arena);
+  map_ = Arena::CreateMessage<Map<Key, T> >(arena);
   SetDefaultEnumValue();
 }
 

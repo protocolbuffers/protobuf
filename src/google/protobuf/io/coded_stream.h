@@ -197,6 +197,11 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // Read raw bytes, copying them into the given buffer.
   bool ReadRaw(void* buffer, int size);
 
+  // Like the above, with inlined optimizations. This should only be used
+  // by the protobuf implementation.
+  inline bool InternalReadRawInline(void* buffer,
+                                    int size) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+
   // Like ReadRaw, but reads into a string.
   //
   // Implementation Note:  ReadString() grows the string gradually as it
@@ -387,8 +392,13 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // under the limit, false if it has gone over.
   bool IncrementRecursionDepth();
 
-  // Decrements the recursion depth.
+  // Decrements the recursion depth if possible.
   void DecrementRecursionDepth();
+
+  // Decrements the recursion depth blindly.  This is faster than
+  // DecrementRecursionDepth().  It should be used only if all previous
+  // increments to recursion depth were successful.
+  void UnsafeDecrementRecursionDepth();
 
   // Shorthand for make_pair(PushLimit(byte_limit), --recursion_budget_).
   // Using this can reduce code size and complexity in some cases.  The caller
@@ -398,14 +408,24 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   std::pair<CodedInputStream::Limit, int> IncrementRecursionDepthAndPushLimit(
       int byte_limit);
 
+  // Shorthand for PushLimit(ReadVarint32(&length) ? length : 0).
+  Limit ReadLengthAndPushLimit();
+
   // Helper that is equivalent to: {
   //  bool result = ConsumedEntireMessage();
   //  PopLimit(limit);
-  //  DecrementRecursionDepth();
+  //  UnsafeDecrementRecursionDepth();
   //  return result; }
   // Using this can reduce code size and complexity in some cases.
   // Do not use unless the current recursion depth is greater than zero.
   bool DecrementRecursionDepthAndPopLimit(Limit limit);
+
+  // Helper that is equivalent to: {
+  //  bool result = ConsumedEntireMessage();
+  //  PopLimit(limit);
+  //  return result; }
+  // Using this can reduce code size and complexity in some cases.
+  bool CheckEntireMessageConsumedAndPopLimit(Limit limit);
 
   // Extension Registry ----------------------------------------------
   // ADVANCED USAGE:  99.9% of people can ignore this section.
@@ -568,9 +588,13 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // optimization. The Slow method is yet another fallback when the buffer is
   // not large enough. Making the slow path out-of-line speeds up the common
   // case by 10-15%. The slow path is fairly uncommon: it only triggers when a
-  // message crosses multiple buffers.
-  bool ReadVarint32Fallback(uint32* value);
-  bool ReadVarint64Fallback(uint64* value);
+  // message crosses multiple buffers.  Note: ReadVarint32Fallback() and
+  // ReadVarint64Fallback() are called frequently and generally not inlined, so
+  // they have been optimized to avoid "out" parameters.  The former returns -1
+  // if it fails and the uint32 it read otherwise.  The latter has a bool
+  // indicating success or failure as part of its return type.
+  int64 ReadVarint32Fallback(uint32 first_byte_or_zero);
+  std::pair<uint64, bool> ReadVarint64Fallback();
   bool ReadVarint32Slow(uint32* value);
   bool ReadVarint64Slow(uint64* value);
   bool ReadLittleEndian32Fallback(uint32* value);
@@ -578,7 +602,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // Fallback/slow methods for reading tags. These do not update last_tag_,
   // but will set legitimate_message_end_ if we are at the end of the input
   // stream.
-  uint32 ReadTagFallback();
+  uint32 ReadTagFallback(uint32 first_byte_or_zero);
   uint32 ReadTagSlow();
   bool ReadStringFallback(string* buffer, int size);
 
@@ -818,13 +842,18 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
 // methods optimize for that case.
 
 inline bool CodedInputStream::ReadVarint32(uint32* value) {
-  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_) && *buffer_ < 0x80) {
-    *value = *buffer_;
-    Advance(1);
-    return true;
-  } else {
-    return ReadVarint32Fallback(value);
+  uint32 v = 0;
+  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_)) {
+    v = *buffer_;
+    if (v < 0x80) {
+      *value = v;
+      Advance(1);
+      return true;
+    }
   }
+  int64 result = ReadVarint32Fallback(v);
+  *value = static_cast<uint32>(result);
+  return result >= 0;
 }
 
 inline bool CodedInputStream::ReadVarint64(uint64* value) {
@@ -832,9 +861,10 @@ inline bool CodedInputStream::ReadVarint64(uint64* value) {
     *value = *buffer_;
     Advance(1);
     return true;
-  } else {
-    return ReadVarint64Fallback(value);
   }
+  std::pair<uint64, bool> p = ReadVarint64Fallback();
+  *value = p.first;
+  return p.second;
 }
 
 // static
@@ -903,14 +933,17 @@ inline bool CodedInputStream::ReadLittleEndian64(uint64* value) {
 }
 
 inline uint32 CodedInputStream::ReadTag() {
-  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_) && buffer_[0] < 0x80) {
-    last_tag_ = buffer_[0];
-    Advance(1);
-    return last_tag_;
-  } else {
-    last_tag_ = ReadTagFallback();
-    return last_tag_;
+  uint32 v = 0;
+  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_)) {
+    v = *buffer_;
+    if (v < 0x80) {
+      last_tag_ = v;
+      Advance(1);
+      return v;
+    }
   }
+  last_tag_ = ReadTagFallback(v);
+  return last_tag_;
 }
 
 inline std::pair<uint32, bool> CodedInputStream::ReadTagWithCutoff(
@@ -918,10 +951,12 @@ inline std::pair<uint32, bool> CodedInputStream::ReadTagWithCutoff(
   // In performance-sensitive code we can expect cutoff to be a compile-time
   // constant, and things like "cutoff >= kMax1ByteVarint" to be evaluated at
   // compile time.
+  uint32 first_byte_or_zero = 0;
   if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_)) {
     // Hot case: buffer_ non_empty, buffer_[0] in [1, 128).
     // TODO(gpike): Is it worth rearranging this? E.g., if the number of fields
     // is large enough then is it better to check for the two-byte case first?
+    first_byte_or_zero = buffer_[0];
     if (static_cast<int8>(buffer_[0]) > 0) {
       const uint32 kMax1ByteVarint = 0x7f;
       uint32 tag = last_tag_ = buffer_[0];
@@ -948,7 +983,7 @@ inline std::pair<uint32, bool> CodedInputStream::ReadTagWithCutoff(
     }
   }
   // Slow path
-  last_tag_ = ReadTagFallback();
+  last_tag_ = ReadTagFallback(first_byte_or_zero);
   return std::make_pair(last_tag_, static_cast<uint32>(last_tag_ - 1) < cutoff);
 }
 
@@ -1175,6 +1210,11 @@ inline bool CodedInputStream::IncrementRecursionDepth() {
 
 inline void CodedInputStream::DecrementRecursionDepth() {
   if (recursion_budget_ < recursion_limit_) ++recursion_budget_;
+}
+
+inline void CodedInputStream::UnsafeDecrementRecursionDepth() {
+  assert(recursion_budget_ < recursion_limit_);
+  ++recursion_budget_;
 }
 
 inline void CodedInputStream::SetExtensionRegistry(const DescriptorPool* pool,

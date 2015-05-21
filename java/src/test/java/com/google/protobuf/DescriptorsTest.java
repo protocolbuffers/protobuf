@@ -56,6 +56,7 @@ import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
 import protobuf_unittest.UnittestProto.TestMultipleExtensionRanges;
 import protobuf_unittest.UnittestProto.TestRequired;
+import protobuf_unittest.UnittestProto.TestReservedFields;
 import protobuf_unittest.UnittestProto.TestService;
 
 import junit.framework.TestCase;
@@ -687,6 +688,9 @@ public class DescriptorsTest extends TestCase {
 
     assertEquals(4, oneofDescriptor.getFieldCount());
     assertSame(oneofDescriptor.getField(1), field);
+
+    assertEquals(4, oneofDescriptor.getFields().size());
+    assertEquals(oneofDescriptor.getFields().get(1), field);
   }
 
   public void testMessageDescriptorExtensions() throws Exception {
@@ -700,6 +704,19 @@ public class DescriptorsTest extends TestCase {
     assertFalse(TestMultipleExtensionRanges.getDescriptor().isExtensionNumber(43));
     assertFalse(TestMultipleExtensionRanges.getDescriptor().isExtensionNumber(4142));
     assertTrue(TestMultipleExtensionRanges.getDescriptor().isExtensionNumber(4143));
+  }
+
+  public void testReservedFields() {
+    Descriptor d = TestReservedFields.getDescriptor();
+    assertTrue(d.isReservedNumber(2));
+    assertFalse(d.isReservedNumber(8));
+    assertTrue(d.isReservedNumber(9));
+    assertTrue(d.isReservedNumber(10));
+    assertTrue(d.isReservedNumber(11));
+    assertFalse(d.isReservedNumber(12));
+    assertFalse(d.isReservedName("foo"));
+    assertTrue(d.isReservedName("bar"));
+    assertTrue(d.isReservedName("baz"));
   }
 
   public void testToString() {

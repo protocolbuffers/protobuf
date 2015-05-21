@@ -312,7 +312,7 @@ class LIBPROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
 // A DescriptorDatabase that fetches files from a given pool.
 class LIBPROTOBUF_EXPORT DescriptorPoolDatabase : public DescriptorDatabase {
  public:
-  DescriptorPoolDatabase(const DescriptorPool& pool);
+  explicit DescriptorPoolDatabase(const DescriptorPool& pool);
   ~DescriptorPoolDatabase();
 
   // implements DescriptorDatabase -----------------------------------
@@ -341,7 +341,7 @@ class LIBPROTOBUF_EXPORT MergedDescriptorDatabase : public DescriptorDatabase {
   // Merge more than two databases.  The sources remain property of the caller.
   // The vector may be deleted after the constructor returns but the
   // DescriptorDatabases need to stick around.
-  MergedDescriptorDatabase(const vector<DescriptorDatabase*>& sources);
+  explicit MergedDescriptorDatabase(const vector<DescriptorDatabase*>& sources);
   ~MergedDescriptorDatabase();
 
   // implements DescriptorDatabase -----------------------------------

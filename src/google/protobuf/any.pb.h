@@ -27,6 +27,7 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/unknown_field_set.h>
+#include "google/protobuf/any.h"
 // @@protoc_insertion_point(includes)
 
 namespace google {
@@ -55,6 +56,14 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message {
 
   static const ::google::protobuf::Descriptor* descriptor();
   static const Any& default_instance();
+
+  // implements Any -----------------------------------------------
+
+  void PackFrom(const ::google::protobuf::Message& message);
+  bool UnpackTo(::google::protobuf::Message* message) const;
+  template<typename T> bool Is() const {
+    return _any_metadata_.Is<T>();
+  }
 
   void Swap(Any* other);
 
@@ -127,6 +136,7 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message {
   ::google::protobuf::internal::ArenaStringPtr type_url_;
   ::google::protobuf::internal::ArenaStringPtr value_;
   mutable int _cached_size_;
+  ::google::protobuf::internal::AnyMetadata _any_metadata_;
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fany_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fany_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fany_2eproto();

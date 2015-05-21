@@ -829,7 +829,7 @@ void WireFormat::SerializeFieldWithCachedSizes(
     count = 1;
   }
 
-  const bool is_packed = field->options().packed();
+  const bool is_packed = field->is_packed();
   if (is_packed && count > 0) {
     WireFormatLite::WriteTag(field->number(),
         WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
@@ -996,7 +996,7 @@ int WireFormat::FieldByteSize(
 
   const int data_size = FieldDataOnlyByteSize(field, message);
   int our_size = data_size;
-  if (field->options().packed()) {
+  if (field->is_packed()) {
     if (data_size > 0) {
       // Packed fields get serialized like a string, not their native type.
       // Technically this doesn't really matter; the size only changes if it's

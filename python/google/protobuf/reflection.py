@@ -144,7 +144,6 @@ class GeneratedProtocolMessageType(type):
     _InitMessage(descriptor, cls)
     superclass = super(GeneratedProtocolMessageType, cls)
     superclass.__init__(name, bases, dictionary)
-    setattr(descriptor, '_concrete_class', cls)
 
 
 def ParseMessage(descriptor, byte_str):

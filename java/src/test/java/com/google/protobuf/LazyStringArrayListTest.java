@@ -30,9 +30,13 @@
 
 package com.google.protobuf;
 
+import static java.util.Arrays.asList;
+
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -170,5 +174,189 @@ public class LazyStringArrayListTest extends TestCase {
     assertSame(STRING_A, list2.get(0));
     assertSame(BYTE_STRING_B, list2.getByteString(1));
     assertSame(BYTE_STRING_C, list2.getByteString(2));
+  }
+  
+  public void testModificationWithIteration() {
+    LazyStringArrayList list = new LazyStringArrayList();
+    list.addAll(asList(STRING_A, STRING_B, STRING_C));
+    Iterator<String> iterator = list.iterator();
+    assertEquals(3, list.size());
+    assertEquals(STRING_A, list.get(0));
+    assertEquals(STRING_A, iterator.next());
+    
+    // Does not structurally modify.
+    iterator = list.iterator();
+    list.set(0, STRING_B);
+    iterator.next();
+    
+    list.remove(0);
+    try {
+      iterator.next();
+      fail();
+    } catch (ConcurrentModificationException e) {
+      // expected
+    }
+    
+    iterator = list.iterator();
+    list.add(0, STRING_C);
+    try {
+      iterator.next();
+      fail();
+    } catch (ConcurrentModificationException e) {
+      // expected
+    }
+  }
+  
+  public void testMakeImmutable() {
+    LazyStringArrayList list = new LazyStringArrayList();
+    list.add(STRING_A);
+    list.add(STRING_B);
+    list.add(STRING_C);
+    list.makeImmutable();
+    assertGenericListImmutable(list, STRING_A);
+    
+    // LazyStringArrayList has extra methods not covered in the generic
+    // assertion.
+    
+    try {
+      list.add(BYTE_STRING_A.toByteArray());
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.add(BYTE_STRING_A);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.addAllByteArray(asList(BYTE_STRING_A.toByteArray()));
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.addAllByteString(asList(BYTE_STRING_A));
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.mergeFrom(new LazyStringArrayList());
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.set(0, BYTE_STRING_A.toByteArray());
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.set(0, BYTE_STRING_A);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+  }
+  
+  public void testImmutabilityPropagation() {
+    LazyStringArrayList list = new LazyStringArrayList();
+    list.add(STRING_A);
+    list.makeImmutable();
+
+    assertGenericListImmutable(list.asByteStringList(), BYTE_STRING_A);
+    
+    // Arrays use reference equality so need to retrieve the underlying value
+    // to properly test deep immutability.
+    List<byte[]> byteArrayList = list.asByteArrayList();
+    assertGenericListImmutable(byteArrayList, byteArrayList.get(0));
+  }
+  
+  private static <T> void assertGenericListImmutable(List<T> list, T value) {
+    try {
+      list.add(value);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.add(0, value);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.addAll(asList(value));
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.addAll(0, asList(value));
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+
+    try {
+      list.clear();
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.remove(0);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.remove(value);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.removeAll(asList(value));
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.retainAll(asList());
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.retainAll(asList());
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    
+    try {
+      list.set(0, value);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
   }
 }

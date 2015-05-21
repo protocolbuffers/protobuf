@@ -330,6 +330,17 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   template<typename MessageType>
   static inline bool ReadMessageNoVirtual(input, MessageType* value);
 
+  // The same, but do not modify input's recursion depth.  This is useful
+  // when reading a bunch of groups or messages in a loop, because then the
+  // recursion depth can be incremented before the loop and decremented after.
+  template<typename MessageType>
+  static inline bool ReadGroupNoVirtualNoRecursionDepth(field_number, input,
+                                                        MessageType* value);
+
+  template<typename MessageType>
+  static inline bool ReadMessageNoVirtualNoRecursionDepth(input,
+                                                          MessageType* value);
+
   // Write a tag.  The Write*() functions typically include the tag, so
   // normally there's no need to call this unless using the Write*NoTag()
   // variants.

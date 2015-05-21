@@ -1141,6 +1141,14 @@ class LIBPROTOBUF_EXPORT Mutex {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Mutex);
 };
 
+// Undefine the macros  to workaround the conflicts with Google internal
+// MutexLock implementation.
+// TODO(liujisi): Remove the undef once internal macros are removed.
+#undef MutexLock
+#undef ReaderMutexLock
+#undef WriterMutexLock
+#undef MutexLockMaybe
+
 // MutexLock(mu) acquires mu when constructed and releases it when destroyed.
 class LIBPROTOBUF_EXPORT MutexLock {
  public:

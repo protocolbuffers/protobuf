@@ -114,7 +114,7 @@ const int SourceContext::kFileNameFieldNumber;
 #endif  // !_MSC_VER
 
 SourceContext::SourceContext()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.SourceContext)
 }
@@ -277,9 +277,9 @@ int SourceContext::ByteSize() const {
 
 void SourceContext::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const SourceContext* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const SourceContext*>(
-      &from);
+  const SourceContext* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const SourceContext>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -334,7 +334,7 @@ void SourceContext::InternalSwap(SourceContext* other) {
 // SourceContext
 
 // optional string file_name = 1;
- void SourceContext::clear_file_name() {
+void SourceContext::clear_file_name() {
   file_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& SourceContext::file_name() const {

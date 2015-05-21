@@ -95,6 +95,8 @@ const Descriptor* FindMessageTypeByName(PyDescriptorPool* self,
 const Descriptor* RegisterMessageClass(
     PyDescriptorPool* self, PyObject* message_class, PyObject* descriptor);
 
+// The function below are also exposed as methods of the DescriptorPool type.
+
 // Retrieves the Python class registered with the given message descriptor.
 //
 // Returns a *borrowed* reference if found, otherwise returns NULL with an
@@ -134,12 +136,8 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg);
 
 }  // namespace cdescriptor_pool
 
-// Implement the Python "_BuildFile" method, it takes a serialized
-// FileDescriptorProto, and adds it to the C++ DescriptorPool.
-// It returns a new FileDescriptor object, or NULL when an exception is raised.
-PyObject* Python_BuildFile(PyObject* ignored, PyObject* args);
-
 // Retrieve the global descriptor pool owned by the _message module.
+// Returns a *borrowed* reference.
 PyDescriptorPool* GetDescriptorPool();
 
 // Initialize objects used by this module.

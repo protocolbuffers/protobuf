@@ -1285,24 +1285,6 @@ char* FloatToBuffer(float value, char* buffer) {
   return buffer;
 }
 
-string ToHex(uint64 num) {
-  if (num == 0) {
-    return string("0");
-  }
-
-  // Compute hex bytes in reverse order, writing to the back of the
-  // buffer.
-  char buf[16];  // No more than 16 hex digits needed.
-  char* bufptr = buf + 16;
-  static const char kHexChars[] = "0123456789abcdef";
-  while (num != 0) {
-    *--bufptr = kHexChars[num & 0xf];
-    num >>= 4;
-  }
-
-  return string(bufptr, buf + 16 - bufptr);
-}
-
 namespace strings {
 
 AlphaNum::AlphaNum(strings::Hex hex) {

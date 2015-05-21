@@ -50,7 +50,9 @@ import pickle
 import sys
 import unittest
 
+import unittest
 from google.protobuf.internal import _parameterized
+from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf.internal import api_implementation
@@ -125,10 +127,17 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(unpickled_message, golden_message)
 
   def testPositiveInfinity(self, message_module):
-    golden_data = (b'\x5D\x00\x00\x80\x7F'
-                   b'\x61\x00\x00\x00\x00\x00\x00\xF0\x7F'
-                   b'\xCD\x02\x00\x00\x80\x7F'
-                   b'\xD1\x02\x00\x00\x00\x00\x00\x00\xF0\x7F')
+    if message_module is unittest_pb2:
+      golden_data = (b'\x5D\x00\x00\x80\x7F'
+                     b'\x61\x00\x00\x00\x00\x00\x00\xF0\x7F'
+                     b'\xCD\x02\x00\x00\x80\x7F'
+                     b'\xD1\x02\x00\x00\x00\x00\x00\x00\xF0\x7F')
+    else:
+      golden_data = (b'\x5D\x00\x00\x80\x7F'
+                     b'\x61\x00\x00\x00\x00\x00\x00\xF0\x7F'
+                     b'\xCA\x02\x04\x00\x00\x80\x7F'
+                     b'\xD2\x02\x08\x00\x00\x00\x00\x00\x00\xF0\x7F')
+
     golden_message = message_module.TestAllTypes()
     golden_message.ParseFromString(golden_data)
     self.assertTrue(IsPosInf(golden_message.optional_float))
@@ -138,10 +147,17 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(golden_data, golden_message.SerializeToString())
 
   def testNegativeInfinity(self, message_module):
-    golden_data = (b'\x5D\x00\x00\x80\xFF'
-                   b'\x61\x00\x00\x00\x00\x00\x00\xF0\xFF'
-                   b'\xCD\x02\x00\x00\x80\xFF'
-                   b'\xD1\x02\x00\x00\x00\x00\x00\x00\xF0\xFF')
+    if message_module is unittest_pb2:
+      golden_data = (b'\x5D\x00\x00\x80\xFF'
+                     b'\x61\x00\x00\x00\x00\x00\x00\xF0\xFF'
+                     b'\xCD\x02\x00\x00\x80\xFF'
+                     b'\xD1\x02\x00\x00\x00\x00\x00\x00\xF0\xFF')
+    else:
+      golden_data = (b'\x5D\x00\x00\x80\xFF'
+                     b'\x61\x00\x00\x00\x00\x00\x00\xF0\xFF'
+                     b'\xCA\x02\x04\x00\x00\x80\xFF'
+                     b'\xD2\x02\x08\x00\x00\x00\x00\x00\x00\xF0\xFF')
+
     golden_message = message_module.TestAllTypes()
     golden_message.ParseFromString(golden_data)
     self.assertTrue(IsNegInf(golden_message.optional_float))
@@ -1034,64 +1050,132 @@ class Proto2Test(unittest.TestCase):
     self.assertEqual(len(parsing_merge.Extensions[
         unittest_pb2.TestParsingMerge.repeated_ext]), 3)
 
+  def testPythonicInit(self):
+    message = unittest_pb2.TestAllTypes(
+        optional_int32=100,
+        optional_fixed32=200,
+        optional_float=300.5,
+        optional_bytes=b'x',
+        optionalgroup={'a': 400},
+        optional_nested_message={'bb': 500},
+        optional_nested_enum='BAZ',
+        repeatedgroup=[{'a': 600},
+                       {'a': 700}],
+        repeated_nested_enum=['FOO', unittest_pb2.TestAllTypes.BAR],
+        default_int32=800,
+        oneof_string='y')
+    self.assertTrue(isinstance(message, unittest_pb2.TestAllTypes))
+    self.assertEqual(100, message.optional_int32)
+    self.assertEqual(200, message.optional_fixed32)
+    self.assertEqual(300.5, message.optional_float)
+    self.assertEqual(b'x', message.optional_bytes)
+    self.assertEqual(400, message.optionalgroup.a)
+    self.assertTrue(isinstance(message.optional_nested_message,
+                               unittest_pb2.TestAllTypes.NestedMessage))
+    self.assertEqual(500, message.optional_nested_message.bb)
+    self.assertEqual(unittest_pb2.TestAllTypes.BAZ,
+                     message.optional_nested_enum)
+    self.assertEqual(2, len(message.repeatedgroup))
+    self.assertEqual(600, message.repeatedgroup[0].a)
+    self.assertEqual(700, message.repeatedgroup[1].a)
+    self.assertEqual(2, len(message.repeated_nested_enum))
+    self.assertEqual(unittest_pb2.TestAllTypes.FOO,
+                     message.repeated_nested_enum[0])
+    self.assertEqual(unittest_pb2.TestAllTypes.BAR,
+                     message.repeated_nested_enum[1])
+    self.assertEqual(800, message.default_int32)
+    self.assertEqual('y', message.oneof_string)
+    self.assertFalse(message.HasField('optional_int64'))
+    self.assertEqual(0, len(message.repeated_float))
+    self.assertEqual(42, message.default_int64)
+
+    message = unittest_pb2.TestAllTypes(optional_nested_enum=u'BAZ')
+    self.assertEqual(unittest_pb2.TestAllTypes.BAZ,
+                     message.optional_nested_enum)
+
+    with self.assertRaises(ValueError):
+      unittest_pb2.TestAllTypes(
+          optional_nested_message={'INVALID_NESTED_FIELD': 17})
+
+    with self.assertRaises(TypeError):
+      unittest_pb2.TestAllTypes(
+          optional_nested_message={'bb': 'INVALID_VALUE_TYPE'})
+
+    with self.assertRaises(ValueError):
+      unittest_pb2.TestAllTypes(optional_nested_enum='INVALID_LABEL')
+
+    with self.assertRaises(ValueError):
+      unittest_pb2.TestAllTypes(repeated_nested_enum='FOO')
+
 
 # Class to test proto3-only features/behavior (updated field presence & enums)
 class Proto3Test(unittest.TestCase):
+
+  # Utility method for comparing equality with a map.
+  def assertMapIterEquals(self, map_iter, dict_value):
+    # Avoid mutating caller's copy.
+    dict_value = dict(dict_value)
+
+    for k, v in map_iter:
+      self.assertEqual(v, dict_value[k])
+      del dict_value[k]
+
+    self.assertEqual({}, dict_value)
 
   def testFieldPresence(self):
     message = unittest_proto3_arena_pb2.TestAllTypes()
 
     # We can't test presence of non-repeated, non-submessage fields.
     with self.assertRaises(ValueError):
-      message.HasField("optional_int32")
+      message.HasField('optional_int32')
     with self.assertRaises(ValueError):
-      message.HasField("optional_float")
+      message.HasField('optional_float')
     with self.assertRaises(ValueError):
-      message.HasField("optional_string")
+      message.HasField('optional_string')
     with self.assertRaises(ValueError):
-      message.HasField("optional_bool")
+      message.HasField('optional_bool')
 
     # But we can still test presence of submessage fields.
-    self.assertFalse(message.HasField("optional_nested_message"))
+    self.assertFalse(message.HasField('optional_nested_message'))
 
     # As with proto2, we can't test presence of fields that don't exist, or
     # repeated fields.
     with self.assertRaises(ValueError):
-      message.HasField("field_doesnt_exist")
+      message.HasField('field_doesnt_exist')
 
     with self.assertRaises(ValueError):
-      message.HasField("repeated_int32")
+      message.HasField('repeated_int32')
     with self.assertRaises(ValueError):
-      message.HasField("repeated_nested_message")
+      message.HasField('repeated_nested_message')
 
     # Fields should default to their type-specific default.
     self.assertEqual(0, message.optional_int32)
     self.assertEqual(0, message.optional_float)
-    self.assertEqual("", message.optional_string)
+    self.assertEqual('', message.optional_string)
     self.assertEqual(False, message.optional_bool)
     self.assertEqual(0, message.optional_nested_message.bb)
 
     # Setting a submessage should still return proper presence information.
     message.optional_nested_message.bb = 0
-    self.assertTrue(message.HasField("optional_nested_message"))
+    self.assertTrue(message.HasField('optional_nested_message'))
 
     # Set the fields to non-default values.
     message.optional_int32 = 5
     message.optional_float = 1.1
-    message.optional_string = "abc"
+    message.optional_string = 'abc'
     message.optional_bool = True
     message.optional_nested_message.bb = 15
 
     # Clearing the fields unsets them and resets their value to default.
-    message.ClearField("optional_int32")
-    message.ClearField("optional_float")
-    message.ClearField("optional_string")
-    message.ClearField("optional_bool")
-    message.ClearField("optional_nested_message")
+    message.ClearField('optional_int32')
+    message.ClearField('optional_float')
+    message.ClearField('optional_string')
+    message.ClearField('optional_bool')
+    message.ClearField('optional_nested_message')
 
     self.assertEqual(0, message.optional_int32)
     self.assertEqual(0, message.optional_float)
-    self.assertEqual("", message.optional_string)
+    self.assertEqual('', message.optional_string)
     self.assertEqual(False, message.optional_bool)
     self.assertEqual(0, message.optional_nested_message.bb)
 
@@ -1112,6 +1196,393 @@ class Proto3Test(unittest.TestCase):
     m2.ParseFromString(serialized)
     self.assertEqual(1234567, m2.optional_nested_enum)
     self.assertEqual(7654321, m2.repeated_nested_enum[0])
+
+  # Map isn't really a proto3-only feature. But there is no proto2 equivalent
+  # of google/protobuf/map_unittest.proto right now, so it's not easy to
+  # test both with the same test like we do for the other proto2/proto3 tests.
+  # (google/protobuf/map_protobuf_unittest.proto is very different in the set
+  # of messages and fields it contains).
+  def testScalarMapDefaults(self):
+    msg = map_unittest_pb2.TestMap()
+
+    # Scalars start out unset.
+    self.assertFalse(-123 in msg.map_int32_int32)
+    self.assertFalse(-2**33 in msg.map_int64_int64)
+    self.assertFalse(123 in msg.map_uint32_uint32)
+    self.assertFalse(2**33 in msg.map_uint64_uint64)
+    self.assertFalse('abc' in msg.map_string_string)
+    self.assertFalse(888 in msg.map_int32_enum)
+
+    # Accessing an unset key returns the default.
+    self.assertEqual(0, msg.map_int32_int32[-123])
+    self.assertEqual(0, msg.map_int64_int64[-2**33])
+    self.assertEqual(0, msg.map_uint32_uint32[123])
+    self.assertEqual(0, msg.map_uint64_uint64[2**33])
+    self.assertEqual('', msg.map_string_string['abc'])
+    self.assertEqual(0, msg.map_int32_enum[888])
+
+    # It also sets the value in the map
+    self.assertTrue(-123 in msg.map_int32_int32)
+    self.assertTrue(-2**33 in msg.map_int64_int64)
+    self.assertTrue(123 in msg.map_uint32_uint32)
+    self.assertTrue(2**33 in msg.map_uint64_uint64)
+    self.assertTrue('abc' in msg.map_string_string)
+    self.assertTrue(888 in msg.map_int32_enum)
+
+    self.assertTrue(isinstance(msg.map_string_string['abc'], unicode))
+
+    # Accessing an unset key still throws TypeError of the type of the key
+    # is incorrect.
+    with self.assertRaises(TypeError):
+      msg.map_string_string[123]
+
+    self.assertFalse(123 in msg.map_string_string)
+
+  def testMapGet(self):
+    # Need to test that get() properly returns the default, even though the dict
+    # has defaultdict-like semantics.
+    msg = map_unittest_pb2.TestMap()
+
+    self.assertIsNone(msg.map_int32_int32.get(5))
+    self.assertEquals(10, msg.map_int32_int32.get(5, 10))
+    self.assertIsNone(msg.map_int32_int32.get(5))
+
+    msg.map_int32_int32[5] = 15
+    self.assertEquals(15, msg.map_int32_int32.get(5))
+
+    self.assertIsNone(msg.map_int32_foreign_message.get(5))
+    self.assertEquals(10, msg.map_int32_foreign_message.get(5, 10))
+
+    submsg = msg.map_int32_foreign_message[5]
+    self.assertIs(submsg, msg.map_int32_foreign_message.get(5))
+
+  def testScalarMap(self):
+    msg = map_unittest_pb2.TestMap()
+
+    self.assertEqual(0, len(msg.map_int32_int32))
+    self.assertFalse(5 in msg.map_int32_int32)
+
+    msg.map_int32_int32[-123] = -456
+    msg.map_int64_int64[-2**33] = -2**34
+    msg.map_uint32_uint32[123] = 456
+    msg.map_uint64_uint64[2**33] = 2**34
+    msg.map_string_string['abc'] = '123'
+    msg.map_int32_enum[888] = 2
+
+    self.assertEqual([], msg.FindInitializationErrors())
+
+    self.assertEqual(1, len(msg.map_string_string))
+
+    # Bad key.
+    with self.assertRaises(TypeError):
+      msg.map_string_string[123] = '123'
+
+    # Verify that trying to assign a bad key doesn't actually add a member to
+    # the map.
+    self.assertEqual(1, len(msg.map_string_string))
+
+    # Bad value.
+    with self.assertRaises(TypeError):
+      msg.map_string_string['123'] = 123
+
+    serialized = msg.SerializeToString()
+    msg2 = map_unittest_pb2.TestMap()
+    msg2.ParseFromString(serialized)
+
+    # Bad key.
+    with self.assertRaises(TypeError):
+      msg2.map_string_string[123] = '123'
+
+    # Bad value.
+    with self.assertRaises(TypeError):
+      msg2.map_string_string['123'] = 123
+
+    self.assertEqual(-456, msg2.map_int32_int32[-123])
+    self.assertEqual(-2**34, msg2.map_int64_int64[-2**33])
+    self.assertEqual(456, msg2.map_uint32_uint32[123])
+    self.assertEqual(2**34, msg2.map_uint64_uint64[2**33])
+    self.assertEqual('123', msg2.map_string_string['abc'])
+    self.assertEqual(2, msg2.map_int32_enum[888])
+
+  def testStringUnicodeConversionInMap(self):
+    msg = map_unittest_pb2.TestMap()
+
+    unicode_obj = u'\u1234'
+    bytes_obj = unicode_obj.encode('utf8') 
+
+    msg.map_string_string[bytes_obj] = bytes_obj
+
+    (key, value) = msg.map_string_string.items()[0]
+
+    self.assertEqual(key, unicode_obj)
+    self.assertEqual(value, unicode_obj)
+
+    self.assertTrue(isinstance(key, unicode))
+    self.assertTrue(isinstance(value, unicode))
+
+  def testMessageMap(self):
+    msg = map_unittest_pb2.TestMap()
+
+    self.assertEqual(0, len(msg.map_int32_foreign_message))
+    self.assertFalse(5 in msg.map_int32_foreign_message)
+
+    msg.map_int32_foreign_message[123]
+    # get_or_create() is an alias for getitem.
+    msg.map_int32_foreign_message.get_or_create(-456)
+
+    self.assertEqual(2, len(msg.map_int32_foreign_message))
+    self.assertIn(123, msg.map_int32_foreign_message)
+    self.assertIn(-456, msg.map_int32_foreign_message)
+    self.assertEqual(2, len(msg.map_int32_foreign_message))
+
+    # Bad key.
+    with self.assertRaises(TypeError):
+      msg.map_int32_foreign_message['123']
+
+    # Can't assign directly to submessage.
+    with self.assertRaises(ValueError):
+      msg.map_int32_foreign_message[999] = msg.map_int32_foreign_message[123]
+
+    # Verify that trying to assign a bad key doesn't actually add a member to
+    # the map.
+    self.assertEqual(2, len(msg.map_int32_foreign_message))
+
+    serialized = msg.SerializeToString()
+    msg2 = map_unittest_pb2.TestMap()
+    msg2.ParseFromString(serialized)
+
+    self.assertEqual(2, len(msg2.map_int32_foreign_message))
+    self.assertIn(123, msg2.map_int32_foreign_message)
+    self.assertIn(-456, msg2.map_int32_foreign_message)
+    self.assertEqual(2, len(msg2.map_int32_foreign_message))
+
+  def testMergeFrom(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_int32[12] = 34
+    msg.map_int32_int32[56] = 78
+    msg.map_int64_int64[22] = 33
+    msg.map_int32_foreign_message[111].c = 5
+    msg.map_int32_foreign_message[222].c = 10
+
+    msg2 = map_unittest_pb2.TestMap()
+    msg2.map_int32_int32[12] = 55
+    msg2.map_int64_int64[88] = 99
+    msg2.map_int32_foreign_message[222].c = 15
+
+    msg2.MergeFrom(msg)
+
+    self.assertEqual(34, msg2.map_int32_int32[12])
+    self.assertEqual(78, msg2.map_int32_int32[56])
+    self.assertEqual(33, msg2.map_int64_int64[22])
+    self.assertEqual(99, msg2.map_int64_int64[88])
+    self.assertEqual(5, msg2.map_int32_foreign_message[111].c)
+    self.assertEqual(10, msg2.map_int32_foreign_message[222].c)
+
+    # Verify that there is only one entry per key, even though the MergeFrom
+    # may have internally created multiple entries for a single key in the
+    # list representation.
+    as_dict = {}
+    for key in msg2.map_int32_foreign_message:
+      self.assertFalse(key in as_dict)
+      as_dict[key] = msg2.map_int32_foreign_message[key].c
+
+    self.assertEqual({111: 5, 222: 10}, as_dict)
+
+    # Special case: test that delete of item really removes the item, even if
+    # there might have physically been duplicate keys due to the previous merge.
+    # This is only a special case for the C++ implementation which stores the
+    # map as an array.
+    del msg2.map_int32_int32[12]
+    self.assertFalse(12 in msg2.map_int32_int32)
+
+    del msg2.map_int32_foreign_message[222]
+    self.assertFalse(222 in msg2.map_int32_foreign_message)
+
+  def testIntegerMapWithLongs(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_int32[long(-123)] = long(-456)
+    msg.map_int64_int64[long(-2**33)] = long(-2**34)
+    msg.map_uint32_uint32[long(123)] = long(456)
+    msg.map_uint64_uint64[long(2**33)] = long(2**34)
+
+    serialized = msg.SerializeToString()
+    msg2 = map_unittest_pb2.TestMap()
+    msg2.ParseFromString(serialized)
+
+    self.assertEqual(-456, msg2.map_int32_int32[-123])
+    self.assertEqual(-2**34, msg2.map_int64_int64[-2**33])
+    self.assertEqual(456, msg2.map_uint32_uint32[123])
+    self.assertEqual(2**34, msg2.map_uint64_uint64[2**33])
+
+  def testMapAssignmentCausesPresence(self):
+    msg = map_unittest_pb2.TestMapSubmessage()
+    msg.test_map.map_int32_int32[123] = 456
+
+    serialized = msg.SerializeToString()
+    msg2 = map_unittest_pb2.TestMapSubmessage()
+    msg2.ParseFromString(serialized)
+
+    self.assertEqual(msg, msg2)
+
+    # Now test that various mutations of the map properly invalidate the
+    # cached size of the submessage.
+    msg.test_map.map_int32_int32[888] = 999
+    serialized = msg.SerializeToString()
+    msg2.ParseFromString(serialized)
+    self.assertEqual(msg, msg2)
+
+    msg.test_map.map_int32_int32.clear()
+    serialized = msg.SerializeToString()
+    msg2.ParseFromString(serialized)
+    self.assertEqual(msg, msg2)
+
+  def testMapAssignmentCausesPresenceForSubmessages(self):
+    msg = map_unittest_pb2.TestMapSubmessage()
+    msg.test_map.map_int32_foreign_message[123].c = 5
+
+    serialized = msg.SerializeToString()
+    msg2 = map_unittest_pb2.TestMapSubmessage()
+    msg2.ParseFromString(serialized)
+
+    self.assertEqual(msg, msg2)
+
+    # Now test that various mutations of the map properly invalidate the
+    # cached size of the submessage.
+    msg.test_map.map_int32_foreign_message[888].c = 7
+    serialized = msg.SerializeToString()
+    msg2.ParseFromString(serialized)
+    self.assertEqual(msg, msg2)
+
+    msg.test_map.map_int32_foreign_message[888].MergeFrom(
+        msg.test_map.map_int32_foreign_message[123])
+    serialized = msg.SerializeToString()
+    msg2.ParseFromString(serialized)
+    self.assertEqual(msg, msg2)
+
+    msg.test_map.map_int32_foreign_message.clear()
+    serialized = msg.SerializeToString()
+    msg2.ParseFromString(serialized)
+    self.assertEqual(msg, msg2)
+
+  def testModifyMapWhileIterating(self):
+    msg = map_unittest_pb2.TestMap()
+
+    string_string_iter = iter(msg.map_string_string)
+    int32_foreign_iter = iter(msg.map_int32_foreign_message)
+
+    msg.map_string_string['abc'] = '123'
+    msg.map_int32_foreign_message[5].c = 5
+
+    with self.assertRaises(RuntimeError):
+      for key in string_string_iter:
+        pass
+
+    with self.assertRaises(RuntimeError):
+      for key in int32_foreign_iter:
+        pass
+
+  def testSubmessageMap(self):
+    msg = map_unittest_pb2.TestMap()
+
+    submsg = msg.map_int32_foreign_message[111]
+    self.assertIs(submsg, msg.map_int32_foreign_message[111])
+    self.assertTrue(isinstance(submsg, unittest_pb2.ForeignMessage))
+
+    submsg.c = 5
+
+    serialized = msg.SerializeToString()
+    msg2 = map_unittest_pb2.TestMap()
+    msg2.ParseFromString(serialized)
+
+    self.assertEqual(5, msg2.map_int32_foreign_message[111].c)
+
+    # Doesn't allow direct submessage assignment.
+    with self.assertRaises(ValueError):
+      msg.map_int32_foreign_message[88] = unittest_pb2.ForeignMessage()
+
+  def testMapIteration(self):
+    msg = map_unittest_pb2.TestMap()
+
+    for k, v in msg.map_int32_int32.iteritems():
+      # Should not be reached.
+      self.assertTrue(False)
+
+    msg.map_int32_int32[2] = 4
+    msg.map_int32_int32[3] = 6
+    msg.map_int32_int32[4] = 8
+    self.assertEqual(3, len(msg.map_int32_int32))
+
+    matching_dict = {2: 4, 3: 6, 4: 8}
+    self.assertMapIterEquals(msg.map_int32_int32.iteritems(), matching_dict)
+
+  def testMapIterationClearMessage(self):
+    # Iterator needs to work even if message and map are deleted.
+    msg = map_unittest_pb2.TestMap()
+
+    msg.map_int32_int32[2] = 4
+    msg.map_int32_int32[3] = 6
+    msg.map_int32_int32[4] = 8
+
+    it = msg.map_int32_int32.iteritems()
+    del msg
+
+    matching_dict = {2: 4, 3: 6, 4: 8}
+    self.assertMapIterEquals(it, matching_dict)
+
+  def testMapConstruction(self):
+    msg = map_unittest_pb2.TestMap(map_int32_int32={1: 2, 3: 4})
+    self.assertEqual(2, msg.map_int32_int32[1])
+    self.assertEqual(4, msg.map_int32_int32[3])
+
+    msg = map_unittest_pb2.TestMap(
+        map_int32_foreign_message={3: unittest_pb2.ForeignMessage(c=5)})
+    self.assertEqual(5, msg.map_int32_foreign_message[3].c)
+
+  def testMapValidAfterFieldCleared(self):
+    # Map needs to work even if field is cleared.
+    # For the C++ implementation this tests the correctness of
+    # ScalarMapContainer::Release()
+    msg = map_unittest_pb2.TestMap()
+    map = msg.map_int32_int32
+
+    map[2] = 4
+    map[3] = 6
+    map[4] = 8
+
+    msg.ClearField('map_int32_int32')
+    matching_dict = {2: 4, 3: 6, 4: 8}
+    self.assertMapIterEquals(map.iteritems(), matching_dict)
+
+  def testMapIterValidAfterFieldCleared(self):
+    # Map iterator needs to work even if field is cleared.
+    # For the C++ implementation this tests the correctness of
+    # ScalarMapContainer::Release()
+    msg = map_unittest_pb2.TestMap()
+
+    msg.map_int32_int32[2] = 4
+    msg.map_int32_int32[3] = 6
+    msg.map_int32_int32[4] = 8
+
+    it = msg.map_int32_int32.iteritems()
+
+    msg.ClearField('map_int32_int32')
+    matching_dict = {2: 4, 3: 6, 4: 8}
+    self.assertMapIterEquals(it, matching_dict)
+
+  def testMapDelete(self):
+    msg = map_unittest_pb2.TestMap()
+
+    self.assertEqual(0, len(msg.map_int32_int32))
+
+    msg.map_int32_int32[4] = 6
+    self.assertEqual(1, len(msg.map_int32_int32))
+
+    with self.assertRaises(KeyError):
+      del msg.map_int32_int32[88]
+
+    del msg.map_int32_int32[4]
+    self.assertEqual(0, len(msg.map_int32_int32))
+
 
 
 class ValidTypeNamesTest(unittest.TestCase):
