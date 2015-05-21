@@ -73,6 +73,8 @@ message Value {
 
     // Represents a repeated `Value`.
     ListValue list_value = 6;
+    // Represents a void value
+    void void_value = 7;
   }
 }
 

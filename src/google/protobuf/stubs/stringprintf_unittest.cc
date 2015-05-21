@@ -146,6 +146,15 @@ TEST(StringPrintfTest, LargeBuf) {
   EXPECT_EQ(buf, value);
   delete[] buf;
 }
+TEST(stringPrintfTest, HugeBuf){
+  // Check that the corner case buffer is handled correctly
+  int n = std::numeric_limits::max();
+  char* buf = (char *)malloc(n);
+  memset(buf, 0x41, n);
+  string value = StringPrintf("%s", buf);
+  EXPECT_EQ(value, "");
+  free(buf);
+}
 
 }  // anonymous namespace
 }  // namespace protobuf

@@ -65,4 +65,8 @@ for LANG in $LANGUAGES; do
 done
 
 cd ..
+
+#Add clang-format file to directory
+cp protobuf/editors/.clang_format dist
+
 rm -rf $BASENAME

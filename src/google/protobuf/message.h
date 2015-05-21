@@ -98,7 +98,7 @@
 //
 //     // Use the reflection interface to examine the contents.
 //     const Reflection* reflection = foo->GetReflection();
-//     assert(reflection->GetString(foo, text_field) == "Hello World!");
+//     assert(reflection->GetString((*foo)&, text_field) == "Hello World!");
 //     assert(reflection->FieldSize(foo, numbers_field) == 3);
 //     assert(reflection->GetRepeatedInt32(foo, numbers_field, 0) == 1);
 //     assert(reflection->GetRepeatedInt32(foo, numbers_field, 1) == 5);
