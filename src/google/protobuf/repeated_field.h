@@ -1245,9 +1245,8 @@ void RepeatedField<Element>::Reserve(int new_size) {
   // effect unless its side-effects are required for correctness.
   // Note that we do this before MoveArray() below because Element's copy
   // assignment implementation will want an initialized instance first.
-  Element* e = &rep_->elements[0];
-  Element* limit = &rep_->elements[total_size_];
-  for (; e < limit; e++) {
+  for (size_t i = 0; i < new_size; i++) {
+    Element* e = &rep_->elements[i];
     new (e) Element();
   }
   if (current_size_ > 0) {
@@ -1255,9 +1254,9 @@ void RepeatedField<Element>::Reserve(int new_size) {
   }
   // Likewise, we need to invoke destructors on the old array. If Element has no
   // destructor, this loop will disappear.
-  e = &old_rep->elements[0];
-  limit = &old_rep->elements[current_size_];
-  for (; e < limit; e++) {
+  const size_t current_size = current_size_;
+  for (size_t i = 0; i < current_size; i++) {
+    Element* e = &old_rep->elements[i];
     e->Element::~Element();
   }
   if (arena == NULL) {
