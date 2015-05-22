@@ -64,10 +64,15 @@ using internal::WireFormatLite;
 
 namespace {
 
-void PrintFieldComment(io::Printer* printer, const FieldDescriptor* field) {
-  // Print the field's proto-syntax definition as a comment.  We don't want to
-  // print group bodies so we cut off after the first line.
-  string def = field->DebugString();
+template <class T>
+void PrintFieldComment(io::Printer* printer, const T* field) {
+  // Print the field's (or oneof's) proto-syntax definition as a comment.
+  // We don't want to print group bodies so we cut off after the first
+  // line.
+  DebugStringOptions options;
+  options.elide_group_body = true;
+  options.elide_oneof_body = true;
+  string def = field->DebugStringWithOptions(options);
   printer->Print("// $def$\n",
     "def", def.substr(0, def.find_first_of('\n')));
 }
@@ -280,6 +285,10 @@ void OptimizePadding(vector<const FieldDescriptor*>* fields) {
   }
 }
 
+string MessageTypeProtoName(const FieldDescriptor* field) {
+  return field->message_type()->full_name();
+}
+
 // Emits an if-statement with a condition that evaluates to true if |field| is
 // considered non-default (will be sent over the wire), for message types
 // without true field presence. Should only be called if
@@ -379,7 +388,8 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
       enum_generators_(
           new google::protobuf::scoped_ptr<EnumGenerator>[descriptor->enum_type_count()]),
       extension_generators_(new google::protobuf::scoped_ptr<
-          ExtensionGenerator>[descriptor->extension_count()]) {
+          ExtensionGenerator>[descriptor->extension_count()]),
+      use_dependent_base_(false) {
 
   for (int i = 0; i < descriptor->nested_type_count(); i++) {
     nested_generators_[i].reset(
@@ -401,13 +411,16 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
     if (descriptor->field(i)->is_required()) {
       ++num_required_fields_;
     }
+    if (options.proto_h && IsFieldDependent(descriptor->field(i))) {
+      use_dependent_base_ = true;
+    }
   }
 }
 
 MessageGenerator::~MessageGenerator() {}
 
 void MessageGenerator::
-GenerateForwardDeclaration(io::Printer* printer) {
+GenerateMessageForwardDeclaration(io::Printer* printer) {
   printer->Print("class $classname$;\n",
                  "classname", classname_);
 
@@ -416,7 +429,17 @@ GenerateForwardDeclaration(io::Printer* printer) {
     // message cannot be a top level class, we just need to avoid calling
     // GenerateForwardDeclaration here.
     if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
-    nested_generators_[i]->GenerateForwardDeclaration(printer);
+    nested_generators_[i]->GenerateMessageForwardDeclaration(printer);
+  }
+}
+
+void MessageGenerator::
+GenerateEnumForwardDeclaration(io::Printer* printer) {
+  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    nested_generators_[i]->GenerateEnumForwardDeclaration(printer);
+  }
+  for (int i = 0; i < descriptor_->enum_type_count(); i++) {
+    enum_generators_[i]->GenerateForwardDeclaration(printer);
   }
 }
 
@@ -442,6 +465,35 @@ GenerateGetEnumDescriptorSpecializations(io::Printer* printer) {
 }
 
 void MessageGenerator::
+GenerateDependentFieldAccessorDeclarations(io::Printer* printer) {
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+
+    PrintFieldComment(printer, field);
+
+    map<string, string> vars;
+    SetCommonFieldVariables(field, &vars, options_);
+
+    if (use_dependent_base_ && IsFieldDependent(field)) {
+      // If the message is dependent, the inline clear_*() method will need
+      // to delete the message type, so it must be in the dependent base
+      // class. (See also GenerateFieldAccessorDeclarations.)
+      printer->Print(vars, "void clear_$name$()$deprecation$;\n");
+    }
+    // Generate type-specific accessor declarations.
+    field_generators_.get(field).GenerateDependentAccessorDeclarations(printer);
+    printer->Print("\n");
+  }
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
+    PrintFieldComment(printer, oneof);
+    printer->Print(
+      "void clear_$oneof_name$();\n",
+      "oneof_name", oneof->name());
+  }
+}
+
+void MessageGenerator::
 GenerateFieldAccessorDeclarations(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
@@ -451,6 +503,19 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
     map<string, string> vars;
     SetCommonFieldVariables(field, &vars, options_);
     vars["constant_name"] = FieldConstantName(field);
+
+    bool dependent_field = use_dependent_base_ && IsFieldDependent(field);
+    if (dependent_field) {
+      // If this field is dependent, the dependent base class determines
+      // the message type from the derived class (which is a template
+      // parameter). This typedef is for that:
+      printer->Print(
+          "private:\n"
+          "typedef $field_type$ $dependent_type$;\n"
+          "public:\n",
+          "field_type", FieldMessageTypeName(field),
+          "dependent_type", DependentTypeName(field));
+    }
 
     if (field->is_repeated()) {
       printer->Print(vars, "int $name$_size() const$deprecation$;\n");
@@ -463,7 +528,11 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
           "public:\n");
     }
 
-    printer->Print(vars, "void clear_$name$()$deprecation$;\n");
+    if (!dependent_field) {
+      // If this field is dependent, then its clear_() method is in the
+      // depenent base class. (See also GenerateDependentAccessorDeclarations.)
+      printer->Print(vars, "void clear_$name$()$deprecation$;\n");
+    }
     printer->Print(vars, "static const int $constant_name$ = $number$;\n");
 
     // Generate type-specific accessor declarations.
@@ -490,6 +559,188 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
 }
 
 void MessageGenerator::
+GenerateDependentFieldAccessorDefinitions(io::Printer* printer) {
+  if (!use_dependent_base_) return;
+
+  printer->Print("// $classname$\n\n", "classname",
+                 DependentBaseClassTemplateName(descriptor_));
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+
+    PrintFieldComment(printer, field);
+
+    // These functions are not really dependent: they are part of the
+    // (non-dependent) derived class. However, they need to live outside
+    // any #ifdef guards, so we treat them as if they were dependent.
+    //
+    // See the comment in FileGenerator::GenerateInlineFunctionDefinitions
+    // for a more complete explanation.
+    if (use_dependent_base_ && IsFieldDependent(field)) {
+      map<string, string> vars;
+      SetCommonFieldVariables(field, &vars, options_);
+      vars["inline"] = "inline ";
+      if (field->containing_oneof()) {
+        vars["field_name"] = UnderscoresToCamelCase(field->name(), true);
+        vars["oneof_name"] = field->containing_oneof()->name();
+        vars["oneof_index"] = SimpleItoa(field->containing_oneof()->index());
+        GenerateOneofMemberHasBits(field, vars, printer);
+      } else if (!field->is_repeated()) {
+        // There will be no header guard, so this always has to be inline.
+        GenerateSingularFieldHasBits(field, vars, printer);
+      }
+      // vars needed for clear_(), which is in the dependent base:
+      // (See also GenerateDependentFieldAccessorDeclarations.)
+      vars["tmpl"] = "template<class T>\n";
+      vars["dependent_classname"] =
+          DependentBaseClassTemplateName(descriptor_) + "<T>";
+      vars["this_message"] = "reinterpret_cast<T*>(this)->";
+      vars["this_const_message"] = "reinterpret_cast<const T*>(this)->";
+      GenerateFieldClear(field, vars, printer);
+    }
+
+    // Generate type-specific accessors.
+    field_generators_.get(field)
+        .GenerateDependentInlineAccessorDefinitions(printer);
+
+    printer->Print("\n");
+  }
+
+  // Generate has_$name$() and clear_has_$name$() functions for oneofs
+  // Similar to other has-bits, these must always be in the header if we
+  // are using a dependent base class.
+  GenerateOneofHasBits(printer, true /* is_inline */);
+}
+
+void MessageGenerator::
+GenerateSingularFieldHasBits(const FieldDescriptor* field,
+                             map<string, string> vars,
+                             io::Printer* printer) {
+  if (HasFieldPresence(descriptor_->file())) {
+    // N.B.: without field presence, we do not use has-bits or generate
+    // has_$name$() methods.
+    vars["has_array_index"] = SimpleItoa(field->index() / 32);
+    vars["has_mask"] = StrCat(strings::Hex(1u << (field->index() % 32),
+                                           strings::Hex::ZERO_PAD_8));
+    printer->Print(vars,
+      "$inline$"
+      "bool $classname$::has_$name$() const {\n"
+      "  return (_has_bits_[$has_array_index$] & 0x$has_mask$u) != 0;\n"
+      "}\n"
+      "$inline$"
+      "void $classname$::set_has_$name$() {\n"
+      "  _has_bits_[$has_array_index$] |= 0x$has_mask$u;\n"
+      "}\n"
+      "$inline$"
+      "void $classname$::clear_has_$name$() {\n"
+      "  _has_bits_[$has_array_index$] &= ~0x$has_mask$u;\n"
+      "}\n");
+  } else {
+    // Message fields have a has_$name$() method.
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      bool is_lazy = false;
+      if (is_lazy) {
+        printer->Print(vars,
+          "$inline$"
+          "bool $classname$::has_$name$() const {\n"
+          "  return !$name$_.IsCleared();\n"
+          "}\n");
+      } else {
+        printer->Print(vars,
+          "$inline$"
+          "bool $classname$::has_$name$() const {\n"
+          "  return !_is_default_instance_ && $name$_ != NULL;\n"
+          "}\n");
+      }
+    }
+  }
+}
+
+void MessageGenerator::
+GenerateOneofHasBits(io::Printer* printer, bool is_inline) {
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    map<string, string> vars;
+    vars["oneof_name"] = descriptor_->oneof_decl(i)->name();
+    vars["oneof_index"] = SimpleItoa(descriptor_->oneof_decl(i)->index());
+    vars["cap_oneof_name"] =
+        ToUpper(descriptor_->oneof_decl(i)->name());
+    vars["classname"] = classname_;
+    vars["inline"] = (is_inline ? "inline " : "");
+    printer->Print(
+        vars,
+        "$inline$"
+        "bool $classname$::has_$oneof_name$() const {\n"
+        "  return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;\n"
+        "}\n"
+        "$inline$"
+        "void $classname$::clear_has_$oneof_name$() {\n"
+        "  _oneof_case_[$oneof_index$] = $cap_oneof_name$_NOT_SET;\n"
+        "}\n");
+  }
+}
+
+void MessageGenerator::
+GenerateOneofMemberHasBits(const FieldDescriptor* field,
+                           const map<string, string>& vars,
+                           io::Printer* printer) {
+  // Singular field in a oneof
+  // N.B.: Without field presence, we do not use has-bits or generate
+  // has_$name$() methods, but oneofs still have set_has_$name$().
+  // Oneofs also have has_$name$() but only as a private helper
+  // method, so that generated code is slightly cleaner (vs.  comparing
+  // _oneof_case_[index] against a constant everywhere).
+  printer->Print(vars,
+    "$inline$"
+    "bool $classname$::has_$name$() const {\n"
+    "  return $oneof_name$_case() == k$field_name$;\n"
+    "}\n");
+  printer->Print(vars,
+    "$inline$"
+    "void $classname$::set_has_$name$() {\n"
+    "  _oneof_case_[$oneof_index$] = k$field_name$;\n"
+    "}\n");
+}
+
+void MessageGenerator::
+GenerateFieldClear(const FieldDescriptor* field,
+                   const map<string, string>& vars,
+                   io::Printer* printer) {
+  // Generate clear_$name$() (See GenerateFieldAccessorDeclarations and
+  // GenerateDependentFieldAccessorDeclarations, $dependent_classname$ is
+  // set by the Generate*Definitions functions.)
+  printer->Print(vars,
+    "$tmpl$"
+    "$inline$"
+    "void $dependent_classname$::clear_$name$() {\n");
+
+  printer->Indent();
+
+  if (field->containing_oneof()) {
+    // Clear this field only if it is the active field in this oneof,
+    // otherwise ignore
+    printer->Print(vars,
+      "if ($this_message$has_$name$()) {\n");
+    printer->Indent();
+    field_generators_.get(field).GenerateClearingCode(printer);
+    printer->Print(vars,
+      "$this_message$clear_has_$oneof_name$();\n");
+    printer->Outdent();
+    printer->Print("}\n");
+  } else {
+    field_generators_.get(field).GenerateClearingCode(printer);
+    if (HasFieldPresence(descriptor_->file())) {
+      if (!field->is_repeated()) {
+        printer->Print(vars,
+                       "$this_message$clear_has_$name$();\n");
+      }
+    }
+  }
+
+  printer->Outdent();
+  printer->Print("}\n");
+}
+
+void MessageGenerator::
 GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline) {
   printer->Print("// $classname$\n\n", "classname", classname_);
 
@@ -500,100 +751,36 @@ GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline) {
 
     map<string, string> vars;
     SetCommonFieldVariables(field, &vars, options_);
-    vars["inline"] = is_inline ? "inline" : "";
+    vars["inline"] = is_inline ? "inline " : "";
 
     // Generate has_$name$() or $name$_size().
     if (field->is_repeated()) {
       printer->Print(vars,
-        "$inline$ int $classname$::$name$_size() const {\n"
+        "$inline$"
+        "int $classname$::$name$_size() const {\n"
         "  return $name$_.size();\n"
         "}\n");
     } else if (field->containing_oneof()) {
-      // Singular field in a oneof
-      // N.B.: Without field presence, we do not use has-bits or generate
-      // has_$name$() methods, but oneofs still have set_has_$name$().
-      // Oneofs also have has_$name$() but only as a private helper
-      // method, so that generated code is slightly cleaner (vs.  comparing
-      // _oneof_case_[index] against a constant everywhere).
       vars["field_name"] = UnderscoresToCamelCase(field->name(), true);
       vars["oneof_name"] = field->containing_oneof()->name();
       vars["oneof_index"] = SimpleItoa(field->containing_oneof()->index());
-      printer->Print(vars,
-        "$inline$ bool $classname$::has_$name$() const {\n"
-        "  return $oneof_name$_case() == k$field_name$;\n"
-        "}\n");
-      printer->Print(vars,
-        "$inline$ void $classname$::set_has_$name$() {\n"
-        "  _oneof_case_[$oneof_index$] = k$field_name$;\n"
-        "}\n");
+      if (!use_dependent_base_ || !IsFieldDependent(field)) {
+        GenerateOneofMemberHasBits(field, vars, printer);
+      }
     } else {
       // Singular field.
-      if (HasFieldPresence(descriptor_->file())) {
-        // N.B.: without field presence, we do not use has-bits or generate
-        // has_$name$() methods.
-        char buffer[kFastToBufferSize];
-        vars["has_array_index"] = SimpleItoa(field->index() / 32);
-        vars["has_mask"] = FastHex32ToBuffer(1u << (field->index() % 32),
-                                             buffer);
-        printer->Print(vars,
-          "$inline$ bool $classname$::has_$name$() const {\n"
-          "  return (_has_bits_[$has_array_index$] & 0x$has_mask$u) != 0;\n"
-          "}\n"
-          "$inline$ void $classname$::set_has_$name$() {\n"
-          "  _has_bits_[$has_array_index$] |= 0x$has_mask$u;\n"
-          "}\n"
-          "$inline$ void $classname$::clear_has_$name$() {\n"
-          "  _has_bits_[$has_array_index$] &= ~0x$has_mask$u;\n"
-          "}\n"
-          );
-      } else {
-        // Message fields have a has_$name$() method.
-        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-          bool is_lazy = false;
-          if (is_lazy) {
-            printer->Print(vars,
-              "$inline$ bool $classname$::has_$name$() const {\n"
-              "  return !$name$_.IsCleared();\n"
-              "}\n");
-          } else {
-            printer->Print(vars,
-              "$inline$ bool $classname$::has_$name$() const {\n"
-              "  return !_is_default_instance_ && $name$_ != NULL;\n"
-              "}\n");
-          }
-        }
+      if (!use_dependent_base_ || !IsFieldDependent(field)) {
+        GenerateSingularFieldHasBits(field, vars, printer);
       }
     }
 
-    // Generate clear_$name$()
-    printer->Print(vars,
-      "$inline$ void $classname$::clear_$name$() {\n");
-
-    printer->Indent();
-
-    if (field->containing_oneof()) {
-      // Clear this field only if it is the active field in this oneof,
-      // otherwise ignore
-      printer->Print(vars,
-        "if (has_$name$()) {\n");
-      printer->Indent();
-      field_generators_.get(field).GenerateClearingCode(printer);
-      printer->Print(vars,
-        "clear_has_$oneof_name$();\n");
-      printer->Outdent();
-      printer->Print("}\n");
-    } else {
-      field_generators_.get(field).GenerateClearingCode(printer);
-      if (HasFieldPresence(descriptor_->file())) {
-        if (!field->is_repeated()) {
-          printer->Print(vars,
-                         "clear_has_$name$();\n");
-        }
-      }
+    if (!use_dependent_base_ || !IsFieldDependent(field)) {
+      vars["tmpl"] = "";
+      vars["dependent_classname"] = vars["classname"];
+      vars["this_message"] = "";
+      vars["this_const_message"] = "";
+      GenerateFieldClear(field, vars, printer);
     }
-
-    printer->Outdent();
-    printer->Print("}\n");
 
     // Generate type-specific accessors.
     field_generators_.get(field).GenerateInlineAccessorDefinitions(printer,
@@ -602,23 +789,11 @@ GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline) {
     printer->Print("\n");
   }
 
-  // Generate has_$name$() and clear_has_$name$() functions for oneofs
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    map<string, string> vars;
-    vars["oneof_name"] = descriptor_->oneof_decl(i)->name();
-    vars["oneof_index"] = SimpleItoa(descriptor_->oneof_decl(i)->index());
-    vars["cap_oneof_name"] =
-        ToUpper(descriptor_->oneof_decl(i)->name());
-    vars["classname"] = classname_;
-    vars["inline"] = is_inline ? "inline" : "";
-    printer->Print(
-      vars,
-      "$inline$ bool $classname$::has_$oneof_name$() const {\n"
-      "  return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;\n"
-      "}\n"
-      "$inline$ void $classname$::clear_has_$oneof_name$() {\n"
-      "  _oneof_case_[$oneof_index$] = $cap_oneof_name$_NOT_SET;\n"
-      "}\n");
+  if (!use_dependent_base_) {
+    // Generate has_$name$() and clear_has_$name$() functions for oneofs
+    // If we aren't using a dependent base, they can be with the other functions
+    // that are #ifdef-guarded.
+    GenerateOneofHasBits(printer, is_inline);
   }
 }
 
@@ -648,6 +823,34 @@ static bool CanClearByZeroing(const FieldDescriptor* field) {
 }
 
 void MessageGenerator::
+GenerateDependentBaseClassDefinition(io::Printer* printer) {
+  if (!use_dependent_base_) {
+    return;
+  }
+
+  map<string, string> vars;
+  vars["classname"] = DependentBaseClassTemplateName(descriptor_);
+  vars["superclass"] = SuperClassName(descriptor_);
+
+  printer->Print(vars,
+    "template <class T>\n"
+    "class $classname$ : public $superclass$ {\n"
+    " public:\n");
+  printer->Indent();
+
+  printer->Print(vars,
+    "$classname$() {}\n"
+    "virtual ~$classname$() {}\n"
+    "\n");
+
+  // Generate dependent accessor methods for all fields.
+  GenerateDependentFieldAccessorDeclarations(printer);
+
+  printer->Outdent();
+  printer->Print("};\n");
+}
+
+void MessageGenerator::
 GenerateClassDefinition(io::Printer* printer) {
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     // map entry message doesn't need class definition. Since map entry message
@@ -660,6 +863,11 @@ GenerateClassDefinition(io::Printer* printer) {
     printer->Print("\n");
   }
 
+  if (use_dependent_base_) {
+    GenerateDependentBaseClassDefinition(printer);
+      printer->Print("\n");
+  }
+
   map<string, string> vars;
   vars["classname"] = classname_;
   vars["field_count"] = SimpleItoa(descriptor_->field_count());
@@ -669,11 +877,18 @@ GenerateClassDefinition(io::Printer* printer) {
   } else {
     vars["dllexport"] = options_.dllexport_decl + " ";
   }
-  vars["superclass"] = SuperClassName(descriptor_);
-
+  if (use_dependent_base_) {
+    vars["superclass"] =
+        DependentBaseClassTemplateName(descriptor_) + "<" + classname_ + ">";
+  } else {
+    vars["superclass"] = SuperClassName(descriptor_);
+  }
   printer->Print(vars,
-    "class $dllexport$$classname$ : public $superclass$ {\n"
-    " public:\n");
+    "class $dllexport$$classname$ : public $superclass$ {\n");
+  if (use_dependent_base_) {
+    printer->Print(vars, "  friend class $superclass$;\n");
+  }
+  printer->Print(" public:\n");
   printer->Indent();
 
   printer->Print(vars,
@@ -782,6 +997,19 @@ GenerateClassDefinition(io::Printer* printer) {
     printer->Print(vars,
       "void UnsafeArenaSwap($classname$* other);\n");
   }
+
+  if (IsAnyMessage(descriptor_)) {
+    printer->Print(vars,
+      "// implements Any -----------------------------------------------\n"
+      "\n"
+      "void PackFrom(const ::google::protobuf::Message& message);\n"
+      "bool UnpackTo(::google::protobuf::Message* message) const;\n"
+      "template<typename T> bool Is() const {\n"
+      "  return _any_metadata_.Is<T>();\n"
+      "}\n"
+      "\n");
+  }
+
   printer->Print(vars,
     "void Swap($classname$* other);\n"
     "\n"
@@ -973,11 +1201,18 @@ GenerateClassDefinition(io::Printer* printer) {
 
   // Generate oneof function declarations
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    printer->Print(
-        "inline bool has_$oneof_name$() const;\n"
-        "void clear_$oneof_name$();\n"
-        "inline void clear_has_$oneof_name$();\n\n",
-        "oneof_name", descriptor_->oneof_decl(i)->name());
+    if (use_dependent_base_) {
+      printer->Print(
+          "inline bool has_$oneof_name$() const;\n"
+          "inline void clear_has_$oneof_name$();\n\n",
+          "oneof_name", descriptor_->oneof_decl(i)->name());
+    } else {
+      printer->Print(
+          "inline bool has_$oneof_name$() const;\n"
+          "void clear_$oneof_name$();\n"
+          "inline void clear_has_$oneof_name$();\n\n",
+          "oneof_name", descriptor_->oneof_decl(i)->name());
+    }
   }
 
   if (HasGeneratedMethods(descriptor_->file()) &&
@@ -1139,6 +1374,12 @@ GenerateClassDefinition(io::Printer* printer) {
       "\n");
   }
 
+  // Generate _any_metadata_ for the Any type.
+  if (IsAnyMessage(descriptor_)) {
+    printer->Print(vars,
+      "::google::protobuf::internal::AnyMetadata _any_metadata_;\n");
+  }
+
   // Declare AddDescriptors(), BuildDescriptors(), and ShutdownFile() as
   // friends so that they can access private static variables like
   // default_instance_ and reflection_.
@@ -1172,6 +1413,21 @@ GenerateClassDefinition(io::Printer* printer) {
 }
 
 void MessageGenerator::
+GenerateDependentInlineMethods(io::Printer* printer) {
+  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    // map entry message doesn't need inline methods. Since map entry message
+    // cannot be a top level class, we just need to avoid calling
+    // GenerateInlineMethods here.
+    if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
+    nested_generators_[i]->GenerateDependentInlineMethods(printer);
+    printer->Print(kThinSeparator);
+    printer->Print("\n");
+  }
+
+  GenerateDependentFieldAccessorDefinitions(printer);
+}
+
+void MessageGenerator::
 GenerateInlineMethods(io::Printer* printer, bool is_inline) {
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     // map entry message doesn't need inline methods. Since map entry message
@@ -1196,7 +1452,8 @@ GenerateInlineMethods(io::Printer* printer, bool is_inline) {
     vars["inline"] = is_inline ? "inline " : "";
     printer->Print(
         vars,
-        "$inline$$class_name$::$camel_oneof_name$Case $class_name$::"
+        "$inline$"
+        "$class_name$::$camel_oneof_name$Case $class_name$::"
         "$oneof_name$_case() const {\n"
         "  return $class_name$::$camel_oneof_name$Case("
         "_oneof_case_[$oneof_index$]);\n"
@@ -1494,6 +1751,19 @@ GenerateShutdownCode(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateClassMethods(io::Printer* printer) {
+  if (IsAnyMessage(descriptor_)) {
+    printer->Print(
+      "void $classname$::PackFrom(const ::google::protobuf::Message& message) {\n"
+      "  _any_metadata_.PackFrom(message);\n"
+      "}\n"
+      "\n"
+      "bool $classname$::UnpackTo(::google::protobuf::Message* message) const {\n"
+      "  return _any_metadata_.UnpackTo(message);\n"
+      "}\n"
+      "\n",
+      "classname", classname_);
+  }
+
   for (int i = 0; i < descriptor_->enum_type_count(); i++) {
     enum_generators_[i]->GenerateMethods(printer);
   }
@@ -1767,7 +2037,7 @@ GenerateArenaDestructorCode(io::Printer* printer) {
   if (need_registration) {
     printer->Print(
         "inline void $classname$::RegisterArenaDtor(::google::protobuf::Arena* arena) {\n"
-        "  if (arena != NULL) {"
+        "  if (arena != NULL) {\n"
         "    arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);\n"
         "  }\n"
         "}\n",
@@ -1782,18 +2052,23 @@ GenerateArenaDestructorCode(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateStructors(io::Printer* printer) {
-  string superclass = SuperClassName(descriptor_);
-  string initializer_with_arena;
-  if (UseUnknownFieldSet(descriptor_->file())) {
-    initializer_with_arena = "_internal_metadata_(arena)";
+  string superclass;
+  if (use_dependent_base_) {
+    superclass =
+        DependentBaseClassTemplateName(descriptor_) + "<" + classname_ + ">";
   } else {
-    initializer_with_arena = "_arena_ptr_(arena)";
+    superclass = SuperClassName(descriptor_);
   }
+  string initializer_with_arena = superclass + "()";
+
   if (descriptor_->extension_range_count() > 0) {
-      initializer_with_arena  = string("\n  _extensions_(arena)") +
-        (!initializer_with_arena.empty() ?  ", " : "") + initializer_with_arena;
+    initializer_with_arena += ",\n  _extensions_(arena)";
+  }
+
+  if (UseUnknownFieldSet(descriptor_->file())) {
+    initializer_with_arena += ",\n  _internal_metadata_(arena)";
   } else {
-    initializer_with_arena  = "\n  " + initializer_with_arena;
+    initializer_with_arena += ",\n  _arena_ptr_(arena)";
   }
 
   // Initialize member variables with arena constructor.
@@ -1804,16 +2079,21 @@ GenerateStructors(io::Printer* printer) {
           FieldName(descriptor_->field(i)) + string("_(arena)");
     }
   }
-  initializer_with_arena = superclass + "()" +
-      (!initializer_with_arena.empty() ?  "," : " ") + initializer_with_arena;
+
+  if (IsAnyMessage(descriptor_)) {
+    initializer_with_arena += ",\n  _any_metadata_(&type_url, &value_)";
+  }
 
   string initializer_null;
   initializer_null = (UseUnknownFieldSet(descriptor_->file()) ?
-    ", _internal_metadata_(NULL) " : ", _arena_ptr_(NULL)");
+    ", _internal_metadata_(NULL)" : ", _arena_ptr_(NULL)");
+  if (IsAnyMessage(descriptor_)) {
+    initializer_null += ", _any_metadata_(&type_url_, &value_)";
+  }
 
   printer->Print(
       "$classname$::$classname$()\n"
-      "  : $superclass$() $initializer$ {\n"
+      "  : $superclass$()$initializer$ {\n"
       "  SharedCtor();\n"
       "  // @@protoc_insertion_point(constructor:$full_name$)\n"
       "}\n",
@@ -1894,10 +2174,14 @@ GenerateStructors(io::Printer* printer) {
     "full_name", descriptor_->full_name());
   if (UseUnknownFieldSet(descriptor_->file())) {
     printer->Print(
-        ",\n    _internal_metadata_(NULL) {\n");
+        ",\n    _internal_metadata_(NULL)");
   } else if (!UseUnknownFieldSet(descriptor_->file())) {
-    printer->Print(",\n    _arena_ptr_(NULL) {\n");
+    printer->Print(",\n    _arena_ptr_(NULL)");
   }
+  if (IsAnyMessage(descriptor_)) {
+    printer->Print(",\n    _any_metadata_(&type_url_, &value_)");
+  }
+  printer->Print(" {\n");
   printer->Print(
     "  SharedCtor();\n"
     "  MergeFrom(from);\n"
@@ -2124,7 +2408,11 @@ GenerateClear(io::Printer* printer) {
       have_enclosing_if = true;
     }
 
-    field_generators_.get(field).GenerateClearingCode(printer);
+    if (use_dependent_base_ && IsFieldDependent(field)) {
+      printer->Print("clear_$name$();\n", "name", fieldname);
+    } else {
+      field_generators_.get(field).GenerateClearingCode(printer);
+    }
 
     if (have_enclosing_if) {
       printer->Outdent();
@@ -2147,7 +2435,11 @@ GenerateClear(io::Printer* printer) {
     const FieldDescriptor* field = descriptor_->field(i);
 
     if (field->is_repeated()) {
-      field_generators_.get(field).GenerateClearingCode(printer);
+      if (use_dependent_base_ && IsFieldDependent(field)) {
+        printer->Print("clear_$name$();\n", "name", FieldName(field));
+      } else {
+        field_generators_.get(field).GenerateClearingCode(printer);
+      }
     }
   }
 
@@ -2184,19 +2476,38 @@ void MessageGenerator::
 GenerateOneofClear(io::Printer* printer) {
   // Generated function clears the active field and union case (e.g. foo_case_).
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    printer->Print(
-        "void $classname$::clear_$oneofname$() {\n",
-        "classname", classname_,
-        "oneofname", descriptor_->oneof_decl(i)->name());
+    map<string, string> oneof_vars;
+    oneof_vars["classname"] = classname_;
+    oneof_vars["oneofname"] = descriptor_->oneof_decl(i)->name();
+    string message_class;
+
+    if (use_dependent_base_) {
+      oneof_vars["tmpl"] = "template<class T>\n";
+      oneof_vars["inline"] = "inline ";
+      oneof_vars["dependent_classname"] =
+          DependentBaseClassTemplateName(descriptor_) + "<T>";
+      oneof_vars["this_message"] = "reinterpret_cast<T*>(this)->";
+      message_class = "T::";
+    } else {
+      oneof_vars["tmpl"] = "";
+      oneof_vars["inline"] = "";
+      oneof_vars["dependent_classname"] = classname_;
+      oneof_vars["this_message"] = "";
+    }
+
+    printer->Print(oneof_vars,
+        "$tmpl$"
+        "$inline$"
+        "void $dependent_classname$::clear_$oneofname$() {\n");
     printer->Indent();
-    printer->Print(
-        "switch($oneofname$_case()) {\n",
-        "oneofname", descriptor_->oneof_decl(i)->name());
+    printer->Print(oneof_vars,
+        "switch($this_message$$oneofname$_case()) {\n");
     printer->Indent();
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
       printer->Print(
-          "case k$field_name$: {\n",
+          "case $message_class$k$field_name$: {\n",
+          "message_class", message_class,
           "field_name", UnderscoresToCamelCase(field->name(), true));
       printer->Indent();
       // We clear only allocated objects in oneofs
@@ -2213,16 +2524,20 @@ GenerateOneofClear(io::Printer* printer) {
           "}\n");
     }
     printer->Print(
-        "case $cap_oneof_name$_NOT_SET: {\n"
+        "case $message_class$$cap_oneof_name$_NOT_SET: {\n"
         "  break;\n"
         "}\n",
+        "message_class", message_class,
         "cap_oneof_name",
         ToUpper(descriptor_->oneof_decl(i)->name()));
     printer->Outdent();
     printer->Print(
         "}\n"
-        "_oneof_case_[$oneof_index$] = $cap_oneof_name$_NOT_SET;\n",
+        "$this_message$_oneof_case_[$oneof_index$] = "
+        "$message_class$$cap_oneof_name$_NOT_SET;\n",
+        "this_message", oneof_vars["this_message"],
         "oneof_index", SimpleItoa(i),
+        "message_class", message_class,
         "cap_oneof_name",
         ToUpper(descriptor_->oneof_decl(i)->name()));
     printer->Outdent();
@@ -2333,9 +2648,9 @@ GenerateMergeFrom(io::Printer* printer) {
     // system, as the GOOGLE_CHECK above ensured that we have the same descriptor
     // for each message.
     printer->Print(
-      "const $classname$* source =\n"
-      "  ::google::protobuf::internal::dynamic_cast_if_available<const $classname$*>(\n"
-      "    &from);\n"
+      "const $classname$* source = \n"
+      "    ::google::protobuf::internal::DynamicCastToGenerated<const $classname$>(\n"
+      "        &from);\n"
       "if (source == NULL) {\n"
       "  ::google::protobuf::internal::ReflectionOps::Merge(from, this);\n"
       "} else {\n"
@@ -2585,8 +2900,24 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
 
     printer->Indent();
 
+    // Find repeated messages and groups now, to simplify what follows.
+    hash_set<int> fields_with_parse_loop;
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = ordered_fields[i];
+      if (field->is_repeated() &&
+          (field->type() == FieldDescriptor::TYPE_MESSAGE ||
+           field->type() == FieldDescriptor::TYPE_GROUP)) {
+        fields_with_parse_loop.insert(i);
+      }
+    }
+
+    // need_label is true if we generated "goto parse_$name$" while handling the
+    // previous field.
+    bool need_label = false;
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      const FieldDescriptor* field = ordered_fields[i];
+      const bool loops = fields_with_parse_loop.count(i) > 0;
+      const bool next_field_loops = fields_with_parse_loop.count(i + 1) > 0;
 
       PrintFieldComment(printer, field);
 
@@ -2600,9 +2931,16 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       printer->Print("if (tag == $commontag$) {\n",
                      "commontag", SimpleItoa(WireFormat::MakeTag(field)));
 
-      if (i > 0 || (field->is_repeated() && !field->options().packed())) {
+      if (need_label ||
+          (field->is_repeated() && !field->options().packed() && !loops)) {
         printer->Print(
-          " parse_$name$:\n",
+            " parse_$name$:\n",
+            "name", field->name());
+      }
+      if (loops) {
+        printer->Print(
+          "  DO_(input->IncrementRecursionDepth());\n"
+          " parse_loop_$name$:\n",
           "name", field->name());
       }
 
@@ -2644,26 +2982,53 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
 
       // switch() is slow since it can't be predicted well.  Insert some if()s
       // here that attempt to predict the next tag.
-      if (field->is_repeated() && !field->options().packed()) {
-        // Expect repeats of this field.
+      // For non-packed repeated fields, expect the same tag again.
+      if (loops) {
+        printer->Print(
+          "if (input->ExpectTag($tag$)) goto parse_loop_$name$;\n",
+          "tag", SimpleItoa(WireFormat::MakeTag(field)),
+          "name", field->name());
+      } else if (field->is_repeated() && !field->options().packed()) {
         printer->Print(
           "if (input->ExpectTag($tag$)) goto parse_$name$;\n",
           "tag", SimpleItoa(WireFormat::MakeTag(field)),
           "name", field->name());
       }
 
-      if (i + 1 < descriptor_->field_count()) {
-        // Expect the next field in order.
-        const FieldDescriptor* next_field = ordered_fields[i + 1];
+      // Have we emitted "if (input->ExpectTag($next_tag$)) ..." yet?
+      bool emitted_goto_next_tag = false;
+
+      // For repeated messages/groups, we need to decrement recursion depth,
+      // unless the next tag is also for a repeated message/group.
+      if (loops) {
+        if (next_field_loops) {
+          const FieldDescriptor* next_field = ordered_fields[i + 1];
+          printer->Print(
+            "if (input->ExpectTag($next_tag$)) goto parse_loop_$next_name$;\n",
+            "next_tag", SimpleItoa(WireFormat::MakeTag(next_field)),
+            "next_name", next_field->name());
+          emitted_goto_next_tag = true;
+        }
         printer->Print(
-          "if (input->ExpectTag($next_tag$)) goto parse_$next_name$;\n",
-          "next_tag", SimpleItoa(WireFormat::MakeTag(next_field)),
-          "next_name", next_field->name());
-      } else {
-        // Expect EOF.
-        // TODO(kenton):  Expect group end-tag?
-        printer->Print(
-          "if (input->ExpectAtEnd()) goto success;\n");
+          "input->UnsafeDecrementRecursionDepth();\n");
+      }
+
+      // If there are more fields, expect the next one.
+      need_label = false;
+      if (!emitted_goto_next_tag) {
+        if (i + 1 == descriptor_->field_count()) {
+          // Expect EOF.
+          // TODO(kenton):  Expect group end-tag?
+          printer->Print(
+            "if (input->ExpectAtEnd()) goto success;\n");
+        } else {
+          const FieldDescriptor* next_field = ordered_fields[i + 1];
+          printer->Print(
+            "if (input->ExpectTag($next_tag$)) goto parse_$next_name$;\n",
+            "next_tag", SimpleItoa(WireFormat::MakeTag(next_field)),
+            "next_name", next_field->name());
+          need_label = true;
+        }
       }
 
       printer->Print(
@@ -2999,9 +3364,7 @@ static string ConditionalToCheckBitmasks(const vector<uint32>& masks) {
   vector<string> parts;
   for (int i = 0; i < masks.size(); i++) {
     if (masks[i] == 0) continue;
-    char buffer[kFastToBufferSize];
-    FastHex32ToBuffer(masks[i], buffer);
-    string m = StrCat("0x", buffer);
+    string m = StrCat("0x", strings::Hex(masks[i], strings::Hex::ZERO_PAD_8));
     // Each xor evaluates to 0 if the expected bits are present.
     parts.push_back(StrCat("((_has_bits_[", i, "] & ", m, ") ^ ", m, ")"));
   }
@@ -3293,11 +3656,10 @@ GenerateIsInitialized(io::Printer* printer) {
       }
 
       if (mask != 0) {
-        char buffer[kFastToBufferSize];
         printer->Print(
           "if ((_has_bits_[$i$] & 0x$mask$) != 0x$mask$) return false;\n",
           "i", SimpleItoa(i),
-          "mask", FastHex32ToBuffer(mask, buffer));
+          "mask", StrCat(strings::Hex(mask, strings::Hex::ZERO_PAD_8)));
       }
     }
   }

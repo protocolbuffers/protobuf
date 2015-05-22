@@ -1725,7 +1725,7 @@ public final class TextFormat {
    * {@link #escapeBytes(ByteString)}.  Two-digit hex escapes (starting with
    * "\x") are also recognized.
    */
-  static ByteString unescapeBytes(final CharSequence charString)
+  public static ByteString unescapeBytes(final CharSequence charString)
       throws InvalidEscapeSequenceException {
     // First convert the Java character sequence to UTF-8 bytes.
     ByteString input = ByteString.copyFromUtf8(charString.toString());
@@ -1808,7 +1808,7 @@ public final class TextFormat {
    * Thrown by {@link TextFormat#unescapeBytes} and
    * {@link TextFormat#unescapeText} when an invalid escape sequence is seen.
    */
-  static class InvalidEscapeSequenceException extends IOException {
+  public static class InvalidEscapeSequenceException extends IOException {
     private static final long serialVersionUID = -8164033650142593304L;
 
     InvalidEscapeSequenceException(final String description) {

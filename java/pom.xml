@@ -145,6 +145,7 @@
                   <arg value="src/test/java/com/google/protobuf/map_for_proto2_lite_test.proto" />
                   <arg value="src/test/java/com/google/protobuf/map_for_proto2_test.proto" />
                   <arg value="src/test/java/com/google/protobuf/map_test.proto" />
+                  <arg value="src/test/java/com/google/protobuf/map_initialization_order_test.proto" />
                 </exec>
               </tasks>
               <testSourceRoot>target/generated-test-sources</testSourceRoot>
@@ -256,25 +257,33 @@
               <includes>
                 <include>**/AbstractMessageLite.java</include>
                 <include>**/AbstractParser.java</include>
+                <include>**/AbstractProtobufList.java</include>
                 <include>**/BoundedByteString.java</include>
+                <include>**/BooleanArrayList.java</include>
                 <include>**/ByteString.java</include>
                 <include>**/CodedInputStream.java</include>
                 <include>**/CodedOutputStream.java</include>
+                <include>**/DoublerrayList.java</include>
                 <include>**/ExtensionLite.java</include>
                 <include>**/ExtensionRegistryLite.java</include>
                 <include>**/FieldSet.java</include>
+                <include>**/FloatArrayList.java</include>
                 <include>**/GeneratedMessageLite.java</include>
+                <include>**/IntArrayList.java</include>
                 <include>**/Internal.java</include>
                 <include>**/InvalidProtocolBufferException.java</include>
                 <include>**/LazyFieldLite.java</include>
                 <include>**/LazyStringArrayList.java</include>
                 <include>**/LazyStringList.java</include>
                 <include>**/LiteralByteString.java</include>
+                <include>**/LongArrayList.java</include>
                 <include>**/MapEntryLite.java</include>
                 <include>**/MapFieldLite.java</include>
                 <include>**/MessageLite.java</include>
                 <include>**/MessageLiteOrBuilder.java</include>
+                <include>**/MutabilityOracle.java</include>
                 <include>**/Parser.java</include>
+                <include>**/ProtobufArrayList.java</include>
                 <include>**/ProtocolStringList.java</include>
                 <include>**/RopeByteString.java</include>
                 <include>**/SmallSortedMap.java</include>
@@ -286,8 +295,14 @@
               </includes>
               <testIncludes>
                 <testInclude>**/*Lite.java</testInclude>
+                <testInclude>**/BooleanArrayListTest.java</testInclude>
+                <testInclude>**/DoubleArrayListTest.java</testInclude>
+                <testInclude>**/FloatArrayListTest.java</testInclude>
+                <testInclude>**/IntArrayListTest.java</testInclude>
                 <testInclude>**/LazyMessageLiteTest.java</testInclude>
                 <testInclude>**/LiteTest.java</testInclude>
+                <testInclude>**/LongArrayListTest.java</testInclude>
+                <testInclude>**/ProtobufArrayListTest.java</testInclude>
                 <testInclude>**/UnknownFieldSetLiteTest.java</testInclude>
               </testIncludes>
             </configuration>

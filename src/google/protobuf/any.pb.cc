@@ -111,13 +111,21 @@ static void MergeFromFail(int line) {
 
 // ===================================================================
 
+void Any::PackFrom(const ::google::protobuf::Message& message) {
+  _any_metadata_.PackFrom(message);
+}
+
+bool Any::UnpackTo(::google::protobuf::Message* message) const {
+  return _any_metadata_.UnpackTo(message);
+}
+
 #ifndef _MSC_VER
 const int Any::kTypeUrlFieldNumber;
 const int Any::kValueFieldNumber;
 #endif  // !_MSC_VER
 
 Any::Any()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL), _any_metadata_(&type_url_, &value_) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Any)
 }
@@ -128,7 +136,8 @@ void Any::InitAsDefaultInstance() {
 
 Any::Any(const Any& from)
   : ::google::protobuf::Message(),
-    _internal_metadata_(NULL) {
+    _internal_metadata_(NULL),
+    _any_metadata_(&type_url_, &value_) {
   SharedCtor();
   MergeFrom(from);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
@@ -316,9 +325,9 @@ int Any::ByteSize() const {
 
 void Any::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Any* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Any*>(
-      &from);
+  const Any* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Any>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -378,7 +387,7 @@ void Any::InternalSwap(Any* other) {
 // Any
 
 // optional string type_url = 1;
- void Any::clear_type_url() {
+void Any::clear_type_url() {
   type_url_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& Any::type_url() const {
@@ -421,7 +430,7 @@ void Any::InternalSwap(Any* other) {
 }
 
 // optional bytes value = 2;
- void Any::clear_value() {
+void Any::clear_value() {
   value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& Any::value() const {

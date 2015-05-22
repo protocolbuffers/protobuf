@@ -262,7 +262,7 @@ RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
   : descriptor_(descriptor) {
   SetPrimitiveVariables(descriptor, &variables_, options);
 
-  if (descriptor->options().packed()) {
+  if (descriptor->is_packed()) {
     variables_["packed_reader"] = "ReadPackedPrimitive";
     variables_["repeated_reader"] = "ReadRepeatedPrimitiveNoInline";
   } else {
@@ -277,7 +277,7 @@ void RepeatedPrimitiveFieldGenerator::
 GeneratePrivateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "::google::protobuf::RepeatedField< $type$ > $name$_;\n");
-  if (descriptor_->options().packed() && HasGeneratedMethods(descriptor_->file())) {
+  if (descriptor_->is_packed() && HasGeneratedMethods(descriptor_->file())) {
     printer->Print(variables_,
       "mutable int _$name$_cached_byte_size_;\n");
   }
@@ -364,7 +364,7 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
-  if (descriptor_->options().packed()) {
+  if (descriptor_->is_packed()) {
     // Write the tag and the size.
     printer->Print(variables_,
       "if (this->$name$_size() > 0) {\n"
@@ -377,7 +377,7 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   }
   printer->Print(variables_,
       "for (int i = 0; i < this->$name$_size(); i++) {\n");
-  if (descriptor_->options().packed()) {
+  if (descriptor_->is_packed()) {
     printer->Print(variables_,
       "  ::google::protobuf::internal::WireFormatLite::Write$declared_type$NoTag(\n"
       "    this->$name$(i), output);\n");
@@ -391,7 +391,7 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
-  if (descriptor_->options().packed()) {
+  if (descriptor_->is_packed()) {
     // Write the tag and the size.
     printer->Print(variables_,
       "if (this->$name$_size() > 0) {\n"
@@ -405,7 +405,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   }
   printer->Print(variables_,
       "for (int i = 0; i < this->$name$_size(); i++) {\n");
-  if (descriptor_->options().packed()) {
+  if (descriptor_->is_packed()) {
     printer->Print(variables_,
       "  target = ::google::protobuf::internal::WireFormatLite::\n"
       "    Write$declared_type$NoTagToArray(this->$name$(i), target);\n");
@@ -435,7 +435,7 @@ GenerateByteSize(io::Printer* printer) const {
       "data_size = $fixed_size$ * this->$name$_size();\n");
   }
 
-  if (descriptor_->options().packed()) {
+  if (descriptor_->is_packed()) {
     printer->Print(variables_,
       "if (data_size > 0) {\n"
       "  total_size += $tag_size$ +\n"

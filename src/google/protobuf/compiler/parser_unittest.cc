@@ -620,6 +620,36 @@ TEST_F(ParseMessageTest, NestedEnum) {
     "}");
 }
 
+TEST_F(ParseMessageTest, ReservedRange) {
+  ExpectParsesTo(
+    "message TestMessage {\n"
+    "  required int32 foo = 1;\n"
+    "  reserved 2, 15, 9 to 11, 3;\n"
+    "}\n",
+
+    "message_type {"
+    "  name: \"TestMessage\""
+    "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:1 }"
+    "  reserved_range { start:2   end:3         }"
+    "  reserved_range { start:15  end:16        }"
+    "  reserved_range { start:9   end:12        }"
+    "  reserved_range { start:3   end:4         }"
+    "}");
+}
+
+TEST_F(ParseMessageTest, ReservedNames) {
+  ExpectParsesTo(
+    "message TestMessage {\n"
+    "  reserved \"foo\", \"bar\";\n"
+    "}\n",
+
+    "message_type {"
+    "  name: \"TestMessage\""
+    "  reserved_name: \"foo\""
+    "  reserved_name: \"bar\""
+    "}");
+}
+
 TEST_F(ParseMessageTest, ExtensionRange) {
   ExpectParsesTo(
     "message TestMessage {\n"
@@ -715,19 +745,17 @@ TEST_F(ParseMessageTest, MultipleExtensionsOneExtendee) {
     "            type_name:\"TestMessage\" extendee: \"Extendee1\" }");
 }
 
-TEST_F(ParseMessageTest, OptionalOptionalLabelProto3) {
+TEST_F(ParseMessageTest, OptionalLabelProto3) {
   ExpectParsesTo(
     "syntax = \"proto3\";\n"
     "message TestMessage {\n"
     "  int32 foo = 1;\n"
-    "  optional int32 bar = 2;\n"
     "}\n",
 
     "syntax: \"proto3\" "
     "message_type {"
     "  name: \"TestMessage\""
-    "  field { name:\"foo\" label:LABEL_OPTIONAL type:TYPE_INT32 number:1 }"
-    "  field { name:\"bar\" label:LABEL_OPTIONAL type:TYPE_INT32 number:2 } }");
+    "  field { name:\"foo\" label:LABEL_OPTIONAL type:TYPE_INT32 number:1 } }");
 }
 
 // ===================================================================
@@ -1230,6 +1258,18 @@ TEST_F(ParseErrorTest, EofInAggregateValue) {
       "1:0: Unexpected end of stream while parsing aggregate value.\n");
 }
 
+TEST_F(ParseErrorTest, ExplicitOptionalLabelProto3) {
+  ExpectHasErrors(
+      "syntax = 'proto3';\n"
+      "message TestMessage {\n"
+      "  optional int32 foo = 1;\n"
+      "}\n",
+      "2:11: Explicit 'optional' labels are disallowed in the Proto3 syntax. "
+      "To define 'optional' fields in Proto3, simply remove the 'optional' "
+      "label, as fields are 'optional' by default.\n");
+}
+
+
 // -------------------------------------------------------------------
 // Enum errors
 
@@ -1245,6 +1285,33 @@ TEST_F(ParseErrorTest, EnumValueMissingNumber) {
     "  FOO;\n"
     "}\n",
     "1:5: Missing numeric value for enum constant.\n");
+}
+
+// -------------------------------------------------------------------
+// Reserved field number errors
+
+TEST_F(ParseErrorTest, ReservedMaxNotAllowed) {
+  ExpectHasErrors(
+    "message Foo {\n"
+    "  reserved 10 to max;\n"
+    "}\n",
+    "1:17: Expected integer.\n");
+}
+
+TEST_F(ParseErrorTest, ReservedMixNameAndNumber) {
+  ExpectHasErrors(
+    "message Foo {\n"
+    "  reserved 10, \"foo\";\n"
+    "}\n",
+    "1:15: Expected field number range.\n");
+}
+
+TEST_F(ParseErrorTest, ReservedMissingQuotes) {
+  ExpectHasErrors(
+    "message Foo {\n"
+    "  reserved foo;\n"
+    "}\n",
+    "1:11: Expected field name or number range.\n");
 }
 
 // -------------------------------------------------------------------

@@ -129,6 +129,9 @@ class IntValueChecker(object):
     proposed_value = self._TYPE(proposed_value)
     return proposed_value
 
+  def DefaultValue(self):
+    return 0
+
 
 class EnumValueChecker(object):
 
@@ -145,6 +148,9 @@ class EnumValueChecker(object):
     if proposed_value not in self._enum_type.values_by_number:
       raise ValueError('Unknown enum value: %d' % proposed_value)
     return proposed_value
+
+  def DefaultValue(self):
+    return self._enum_type.values[0].number
 
 
 class UnicodeValueChecker(object):
@@ -170,6 +176,9 @@ class UnicodeValueChecker(object):
                          'unicode objects before being added.' %
                          (proposed_value))
     return proposed_value
+
+  def DefaultValue(self):
+    return u""
 
 
 class Int32ValueChecker(IntValueChecker):

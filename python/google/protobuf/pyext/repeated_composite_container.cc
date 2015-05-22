@@ -367,8 +367,8 @@ int AssignSubscript(RepeatedCompositeContainer* self,
   }
 
   // Delete from the underlying Message, if any.
-  if (self->message != NULL) {
-    if (cmessage::InternalDeleteRepeatedField(self->message,
+  if (self->parent != NULL) {
+    if (cmessage::InternalDeleteRepeatedField(self->parent,
                                               self->parent_field_descriptor,
                                               slice,
                                               self->child_messages) < 0) {
@@ -572,47 +572,35 @@ static PyObject* Pop(RepeatedCompositeContainer* self,
   return item;
 }
 
-// The caller takes ownership of the returned Message.
-Message* ReleaseLast(const FieldDescriptor* field,
-                     const Descriptor* type,
-                     Message* message) {
+// Release field of parent message and transfer the ownership to target.
+void ReleaseLastTo(CMessage* parent,
+                   const FieldDescriptor* field,
+                   CMessage* target) {
+  GOOGLE_CHECK_NOTNULL(parent);
   GOOGLE_CHECK_NOTNULL(field);
-  GOOGLE_CHECK_NOTNULL(type);
-  GOOGLE_CHECK_NOTNULL(message);
+  GOOGLE_CHECK_NOTNULL(target);
 
-  Message* released_message = message->GetReflection()->ReleaseLast(
-      message, field);
+  shared_ptr<Message> released_message(
+      parent->message->GetReflection()->ReleaseLast(parent->message, field));
   // TODO(tibell): Deal with proto1.
 
   // ReleaseMessage will return NULL which differs from
   // child_cmessage->message, if the field does not exist.  In this case,
   // the latter points to the default instance via a const_cast<>, so we
   // have to reset it to a new mutable object since we are taking ownership.
-  if (released_message == NULL) {
+  if (released_message.get() == NULL) {
     const Message* prototype =
-        cmessage::GetMessageFactory()->GetPrototype(type);
+        cmessage::GetMessageFactory()->GetPrototype(
+            target->message->GetDescriptor());
     GOOGLE_CHECK_NOTNULL(prototype);
-    return prototype->New();
-  } else {
-    return released_message;
+    released_message.reset(prototype->New());
   }
-}
 
-// Release field of message and transfer the ownership to cmessage.
-void ReleaseLastTo(const FieldDescriptor* field,
-                   Message* message,
-                   CMessage* cmessage) {
-  GOOGLE_CHECK_NOTNULL(field);
-  GOOGLE_CHECK_NOTNULL(message);
-  GOOGLE_CHECK_NOTNULL(cmessage);
-
-  shared_ptr<Message> released_message(
-      ReleaseLast(field, cmessage->message->GetDescriptor(), message));
-  cmessage->parent = NULL;
-  cmessage->parent_field_descriptor = NULL;
-  cmessage->message = released_message.get();
-  cmessage->read_only = false;
-  cmessage::SetOwner(cmessage, released_message);
+  target->parent = NULL;
+  target->parent_field_descriptor = NULL;
+  target->message = released_message.get();
+  target->read_only = false;
+  cmessage::SetOwner(target, released_message);
 }
 
 // Called to release a container using
@@ -635,7 +623,7 @@ int Release(RepeatedCompositeContainer* self) {
   for (Py_ssize_t i = size - 1; i >= 0; --i) {
     CMessage* child_cmessage = reinterpret_cast<CMessage*>(
         PyList_GET_ITEM(self->child_messages, i));
-    ReleaseLastTo(field, message, child_cmessage);
+    ReleaseLastTo(self->parent, field, child_cmessage);
   }
 
   // Detach from containing message.
@@ -732,9 +720,7 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject RepeatedCompositeContainer_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  // Keep the fully qualified _message symbol in a line for opensource.
-  "google.protobuf.pyext._message."
-  "RepeatedCompositeContainer",        // tp_name
+  FULL_MODULE_NAME ".RepeatedCompositeContainer",  // tp_name
   sizeof(RepeatedCompositeContainer),  // tp_basicsize
   0,                                   //  tp_itemsize
   (destructor)repeated_composite_container::Dealloc,  //  tp_dealloc

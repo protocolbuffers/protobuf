@@ -155,6 +155,78 @@ void Printer::Print(const char* text,
   Print(vars, text);
 }
 
+void Printer::Print(const char* text,
+                    const char* variable1, const string& value1,
+                    const char* variable2, const string& value2,
+                    const char* variable3, const string& value3,
+                    const char* variable4, const string& value4,
+                    const char* variable5, const string& value5) {
+  map<string, string> vars;
+  vars[variable1] = value1;
+  vars[variable2] = value2;
+  vars[variable3] = value3;
+  vars[variable4] = value4;
+  vars[variable5] = value5;
+  Print(vars, text);
+}
+
+void Printer::Print(const char* text,
+                    const char* variable1, const string& value1,
+                    const char* variable2, const string& value2,
+                    const char* variable3, const string& value3,
+                    const char* variable4, const string& value4,
+                    const char* variable5, const string& value5,
+                    const char* variable6, const string& value6) {
+  map<string, string> vars;
+  vars[variable1] = value1;
+  vars[variable2] = value2;
+  vars[variable3] = value3;
+  vars[variable4] = value4;
+  vars[variable5] = value5;
+  vars[variable6] = value6;
+  Print(vars, text);
+}
+
+void Printer::Print(const char* text,
+                    const char* variable1, const string& value1,
+                    const char* variable2, const string& value2,
+                    const char* variable3, const string& value3,
+                    const char* variable4, const string& value4,
+                    const char* variable5, const string& value5,
+                    const char* variable6, const string& value6,
+                    const char* variable7, const string& value7) {
+  map<string, string> vars;
+  vars[variable1] = value1;
+  vars[variable2] = value2;
+  vars[variable3] = value3;
+  vars[variable4] = value4;
+  vars[variable5] = value5;
+  vars[variable6] = value6;
+  vars[variable7] = value7;
+  Print(vars, text);
+}
+
+void Printer::Print(const char* text,
+                    const char* variable1, const string& value1,
+                    const char* variable2, const string& value2,
+                    const char* variable3, const string& value3,
+                    const char* variable4, const string& value4,
+                    const char* variable5, const string& value5,
+                    const char* variable6, const string& value6,
+                    const char* variable7, const string& value7,
+                    const char* variable8, const string& value8) {
+  map<string, string> vars;
+  vars[variable1] = value1;
+  vars[variable2] = value2;
+  vars[variable3] = value3;
+  vars[variable4] = value4;
+  vars[variable5] = value5;
+  vars[variable6] = value6;
+  vars[variable7] = value7;
+  vars[variable8] = value8;
+  Print(vars, text);
+}
+
 void Printer::Indent() {
   indent_ += "  ";
 }

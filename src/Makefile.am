@@ -88,6 +88,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/stubs/type_traits.h                           \
   google/protobuf/any.pb.h                                      \
   google/protobuf/api.pb.h                                      \
+  google/protobuf/any.h                                         \
   google/protobuf/arena.h                                       \
   google/protobuf/arenastring.h                                 \
   google/protobuf/descriptor_database.h                         \
@@ -186,6 +187,7 @@ libprotobuf_la_SOURCES =                                       \
   $(libprotobuf_lite_la_SOURCES)                               \
   google/protobuf/any.pb.cc                                    \
   google/protobuf/api.pb.cc                                    \
+  google/protobuf/any.cc                                       \
   google/protobuf/descriptor.cc                                \
   google/protobuf/descriptor_database.cc                       \
   google/protobuf/descriptor.pb.cc                             \
@@ -264,6 +266,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_enum.cc                   \
   google/protobuf/compiler/java/java_enum_field.cc             \
   google/protobuf/compiler/java/java_enum_field.h              \
+  google/protobuf/compiler/java/java_enum_field_lite.cc        \
+  google/protobuf/compiler/java/java_enum_field_lite.h         \
   google/protobuf/compiler/java/java_enum.h                    \
   google/protobuf/compiler/java/java_extension.cc              \
   google/protobuf/compiler/java/java_extension.h               \
@@ -278,22 +282,38 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_helpers.h                 \
   google/protobuf/compiler/java/java_lazy_message_field.cc     \
   google/protobuf/compiler/java/java_lazy_message_field.h      \
+  google/protobuf/compiler/java/java_lazy_message_field_lite.cc\
+  google/protobuf/compiler/java/java_lazy_message_field_lite.h \
   google/protobuf/compiler/java/java_map_field.cc              \
   google/protobuf/compiler/java/java_map_field.h               \
+  google/protobuf/compiler/java/java_map_field_lite.cc         \
+  google/protobuf/compiler/java/java_map_field_lite.h          \
   google/protobuf/compiler/java/java_message.cc                \
+  google/protobuf/compiler/java/java_message_lite.cc           \
+  google/protobuf/compiler/java/java_message_builder.cc        \
+  google/protobuf/compiler/java/java_message_builder_lite.cc   \
   google/protobuf/compiler/java/java_message_field.cc          \
   google/protobuf/compiler/java/java_message_field.h           \
+  google/protobuf/compiler/java/java_message_field_lite.cc     \
+  google/protobuf/compiler/java/java_message_field_lite.h      \
   google/protobuf/compiler/java/java_message.h                 \
+  google/protobuf/compiler/java/java_message_lite.h            \
+  google/protobuf/compiler/java/java_message_builder.h         \
+  google/protobuf/compiler/java/java_message_builder_lite.h    \
   google/protobuf/compiler/java/java_name_resolver.cc          \
   google/protobuf/compiler/java/java_name_resolver.h           \
   google/protobuf/compiler/java/java_primitive_field.cc        \
   google/protobuf/compiler/java/java_primitive_field.h         \
+  google/protobuf/compiler/java/java_primitive_field_lite.cc   \
+  google/protobuf/compiler/java/java_primitive_field_lite.h    \
   google/protobuf/compiler/java/java_shared_code_generator.cc  \
   google/protobuf/compiler/java/java_shared_code_generator.h   \
   google/protobuf/compiler/java/java_service.cc                \
   google/protobuf/compiler/java/java_service.h                 \
   google/protobuf/compiler/java/java_string_field.cc           \
   google/protobuf/compiler/java/java_string_field.h            \
+  google/protobuf/compiler/java/java_string_field_lite.cc      \
+  google/protobuf/compiler/java/java_string_field_lite.h       \
   google/protobuf/compiler/java/java_doc_comment.cc            \
   google/protobuf/compiler/java/java_doc_comment.h             \
   google/protobuf/compiler/javanano/javanano_enum.cc           \
@@ -381,6 +401,7 @@ protoc_SOURCES = google/protobuf/compiler/main.cc
 # Tests ==============================================================
 
 protoc_inputs =                                                \
+  google/protobuf/any_test.proto                               \
   google/protobuf/map_lite_unittest.proto                      \
   google/protobuf/map_proto2_unittest.proto                    \
   google/protobuf/map_unittest.proto                           \
@@ -419,6 +440,7 @@ EXTRA_DIST =                                                   \
   google/protobuf/testdata/golden_message_proto3               \
   google/protobuf/testdata/golden_packed_fields_message        \
   google/protobuf/testdata/bad_utf8_string                     \
+  google/protobuf/testdata/map_test_data.txt                   \
   google/protobuf/testdata/text_format_unittest_data.txt       \
   google/protobuf/testdata/text_format_unittest_data_oneof_implemented.txt  \
   google/protobuf/testdata/text_format_unittest_data_pointy.txt             \
@@ -443,6 +465,8 @@ protoc_lite_outputs =                                          \
 
 protoc_outputs =                                               \
   $(protoc_lite_outputs)                                       \
+  google/protobuf/any_test.pb.cc                               \
+  google/protobuf/any_test.pb.h                                \
   google/protobuf/map_proto2_unittest.pb.cc                    \
   google/protobuf/map_proto2_unittest.pb.h                     \
   google/protobuf/map_unittest.pb.cc                           \
@@ -543,6 +567,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/stringprintf_unittest.cc               \
   google/protobuf/stubs/template_util_unittest.cc              \
   google/protobuf/stubs/type_traits_unittest.cc                \
+  google/protobuf/any_test.cc                                  \
   google/protobuf/arenastring_unittest.cc                      \
   google/protobuf/arena_unittest.cc                            \
   google/protobuf/descriptor_database_unittest.cc              \
@@ -604,6 +629,8 @@ nodist_protobuf_lazy_descriptor_test_SOURCES = $(protoc_outputs)
 protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la
 protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_test_SOURCES =                                           \
+  google/protobuf/arena_test_util.cc                                   \
+  google/protobuf/arena_test_util.h                                    \
   google/protobuf/lite_unittest.cc                                     \
   google/protobuf/map_lite_test_util.cc                                \
   google/protobuf/map_lite_test_util.h                                 \

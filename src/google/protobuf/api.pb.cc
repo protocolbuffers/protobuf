@@ -162,7 +162,7 @@ const int Api::kSourceContextFieldNumber;
 #endif  // !_MSC_VER
 
 Api::Api()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Api)
 }
@@ -230,7 +230,7 @@ Api* Api::New(::google::protobuf::Arena* arena) const {
 void Api::Clear() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   version_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (source_context_ != NULL) delete source_context_;
+  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
   source_context_ = NULL;
   methods_.Clear();
   options_.Clear();
@@ -266,26 +266,31 @@ bool Api::MergePartialFromCodedStream(
       case 2: {
         if (tag == 18) {
          parse_methods:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_methods:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_methods()));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(18)) goto parse_methods;
-        if (input->ExpectTag(26)) goto parse_options;
+        if (input->ExpectTag(18)) goto parse_loop_methods;
+        if (input->ExpectTag(26)) goto parse_loop_options;
+        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
       // repeated .google.protobuf.Option options = 3;
       case 3: {
         if (tag == 26) {
-         parse_options:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_options:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_options()));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(26)) goto parse_options;
+        if (input->ExpectTag(26)) goto parse_loop_options;
+        input->UnsafeDecrementRecursionDepth();
         if (input->ExpectTag(34)) goto parse_version;
         break;
       }
@@ -483,9 +488,9 @@ int Api::ByteSize() const {
 
 void Api::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Api* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Api*>(
-      &from);
+  const Api* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Api>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -553,7 +558,7 @@ void Api::InternalSwap(Api* other) {
 // Api
 
 // optional string name = 1;
- void Api::clear_name() {
+void Api::clear_name() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& Api::name() const {
@@ -596,10 +601,10 @@ void Api::InternalSwap(Api* other) {
 }
 
 // repeated .google.protobuf.Method methods = 2;
- int Api::methods_size() const {
+int Api::methods_size() const {
   return methods_.size();
 }
- void Api::clear_methods() {
+void Api::clear_methods() {
   methods_.Clear();
 }
  const ::google::protobuf::Method& Api::methods(int index) const {
@@ -626,10 +631,10 @@ Api::mutable_methods() {
 }
 
 // repeated .google.protobuf.Option options = 3;
- int Api::options_size() const {
+int Api::options_size() const {
   return options_.size();
 }
- void Api::clear_options() {
+void Api::clear_options() {
   options_.Clear();
 }
  const ::google::protobuf::Option& Api::options(int index) const {
@@ -656,7 +661,7 @@ Api::mutable_options() {
 }
 
 // optional string version = 4;
- void Api::clear_version() {
+void Api::clear_version() {
   version_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& Api::version() const {
@@ -699,11 +704,11 @@ Api::mutable_options() {
 }
 
 // optional .google.protobuf.SourceContext source_context = 5;
- bool Api::has_source_context() const {
+bool Api::has_source_context() const {
   return !_is_default_instance_ && source_context_ != NULL;
 }
- void Api::clear_source_context() {
-  if (source_context_ != NULL) delete source_context_;
+void Api::clear_source_context() {
+  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
   source_context_ = NULL;
 }
  const ::google::protobuf::SourceContext& Api::source_context() const {
@@ -749,7 +754,7 @@ const int Method::kOptionsFieldNumber;
 #endif  // !_MSC_VER
 
 Method::Method()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Method)
 }
@@ -929,12 +934,15 @@ bool Method::MergePartialFromCodedStream(
       case 6: {
         if (tag == 50) {
          parse_options:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_options:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_options()));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(50)) goto parse_options;
+        if (input->ExpectTag(50)) goto parse_loop_options;
+        input->UnsafeDecrementRecursionDepth();
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -1119,9 +1127,9 @@ int Method::ByteSize() const {
 
 void Method::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Method* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Method*>(
-      &from);
+  const Method* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Method>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1196,7 +1204,7 @@ void Method::InternalSwap(Method* other) {
 // Method
 
 // optional string name = 1;
- void Method::clear_name() {
+void Method::clear_name() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& Method::name() const {
@@ -1239,7 +1247,7 @@ void Method::InternalSwap(Method* other) {
 }
 
 // optional string request_type_url = 2;
- void Method::clear_request_type_url() {
+void Method::clear_request_type_url() {
   request_type_url_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& Method::request_type_url() const {
@@ -1282,7 +1290,7 @@ void Method::InternalSwap(Method* other) {
 }
 
 // optional bool request_streaming = 3;
- void Method::clear_request_streaming() {
+void Method::clear_request_streaming() {
   request_streaming_ = false;
 }
  bool Method::request_streaming() const {
@@ -1296,7 +1304,7 @@ void Method::InternalSwap(Method* other) {
 }
 
 // optional string response_type_url = 4;
- void Method::clear_response_type_url() {
+void Method::clear_response_type_url() {
   response_type_url_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  const ::std::string& Method::response_type_url() const {
@@ -1339,7 +1347,7 @@ void Method::InternalSwap(Method* other) {
 }
 
 // optional bool response_streaming = 5;
- void Method::clear_response_streaming() {
+void Method::clear_response_streaming() {
   response_streaming_ = false;
 }
  bool Method::response_streaming() const {
@@ -1353,10 +1361,10 @@ void Method::InternalSwap(Method* other) {
 }
 
 // repeated .google.protobuf.Option options = 6;
- int Method::options_size() const {
+int Method::options_size() const {
   return options_.size();
 }
- void Method::clear_options() {
+void Method::clear_options() {
   options_.Clear();
 }
  const ::google::protobuf::Option& Method::options(int index) const {

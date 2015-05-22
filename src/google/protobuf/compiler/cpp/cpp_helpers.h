@@ -66,6 +66,10 @@ extern const char kThinSeparator[];
 string ClassName(const Descriptor* descriptor, bool qualified);
 string ClassName(const EnumDescriptor* enum_descriptor, bool qualified);
 
+// Name of the CRTP class template (for use with proto_h).
+// This is a class name, like "ProtoName_InternalBase".
+string DependentBaseClassTemplateName(const Descriptor* descriptor);
+
 string SuperClassName(const Descriptor* descriptor);
 
 // Get the (unqualified) name that should be used for this field in C++ code.
@@ -87,6 +91,20 @@ inline const Descriptor* FieldScope(const FieldDescriptor* field) {
   return field->is_extension() ?
     field->extension_scope() : field->containing_type();
 }
+
+// Returns true if the given 'field_descriptor' has a message type that is
+// a dependency of the file where the field is defined (i.e., the field
+// type is defined in a different file than the message holding the field).
+//
+// This only applies to Message-typed fields. Enum-typed fields may refer
+// to an enum in a dependency; however, enums are specified and
+// forward-declared with an enum-base, so the definition is not required to
+// manipulate the field value.
+bool IsFieldDependent(const FieldDescriptor* field_descriptor);
+
+// Returns the name that should be used for forcing dependent lookup from a
+// dependent base class.
+string DependentTypeName(const FieldDescriptor* field);
 
 // Returns the fully-qualified type name field->message_type().  Usually this
 // is just ClassName(field->message_type(), true);
@@ -241,6 +259,9 @@ inline bool SupportsArenas(const Descriptor* desc) {
 inline bool SupportsArenas(const FieldDescriptor* field) {
   return SupportsArenas(field->file());
 }
+
+bool IsAnyMessage(const FileDescriptor* descriptor);
+bool IsAnyMessage(const Descriptor* descriptor);
 
 }  // namespace cpp
 }  // namespace compiler

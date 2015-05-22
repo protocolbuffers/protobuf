@@ -41,6 +41,7 @@ import map_test.MapTestProto.TestOnChangeEventPropagation;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -178,7 +179,117 @@ public class MapTest extends TestCase {
     assertEquals(0, message.getInt32ToMessageField().size());
     assertEquals(0, message.getStringToInt32Field().size());
   }
+  
+  public void testMutableMapLifecycle() {
+    TestMap.Builder builder = TestMap.newBuilder();
+    Map<Integer, Integer> intMap = builder.getMutableInt32ToInt32Field();
+    intMap.put(1, 2);
+    assertEquals(newMap(1, 2), builder.build().getInt32ToInt32Field());
+    try {
+      intMap.put(2, 3);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    assertEquals(newMap(1, 2), builder.getInt32ToInt32Field());
+    builder.getMutableInt32ToInt32Field().put(2, 3);
+    assertEquals(newMap(1, 2, 2, 3), builder.getInt32ToInt32Field());
 
+    Map<Integer, TestMap.EnumValue> enumMap = builder.getMutableInt32ToEnumField();
+    enumMap.put(1, TestMap.EnumValue.BAR);
+    assertEquals(newMap(1, TestMap.EnumValue.BAR), builder.build().getInt32ToEnumField());
+    try {
+      enumMap.put(2, TestMap.EnumValue.FOO);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    assertEquals(newMap(1, TestMap.EnumValue.BAR), builder.getInt32ToEnumField());
+    builder.getMutableInt32ToEnumField().put(2, TestMap.EnumValue.FOO);
+    assertEquals(
+        newMap(1, TestMap.EnumValue.BAR, 2, TestMap.EnumValue.FOO),
+        builder.getInt32ToEnumField());
+    
+    Map<Integer, String> stringMap = builder.getMutableInt32ToStringField();
+    stringMap.put(1, "1");
+    assertEquals(newMap(1, "1"), builder.build().getInt32ToStringField());
+    try {
+      stringMap.put(2, "2");
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    assertEquals(newMap(1, "1"), builder.getInt32ToStringField());
+    builder.getMutableInt32ToStringField().put(2, "2");
+    assertEquals(
+        newMap(1, "1", 2, "2"),
+        builder.getInt32ToStringField());
+    
+    Map<Integer, TestMap.MessageValue> messageMap = builder.getMutableInt32ToMessageField();
+    messageMap.put(1, TestMap.MessageValue.getDefaultInstance());
+    assertEquals(newMap(1, TestMap.MessageValue.getDefaultInstance()),
+        builder.build().getInt32ToMessageField());
+    try {
+      messageMap.put(2, TestMap.MessageValue.getDefaultInstance());
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    assertEquals(newMap(1, TestMap.MessageValue.getDefaultInstance()),
+        builder.getInt32ToMessageField());
+    builder.getMutableInt32ToMessageField().put(2, TestMap.MessageValue.getDefaultInstance());
+    assertEquals(
+        newMap(1, TestMap.MessageValue.getDefaultInstance(),
+            2, TestMap.MessageValue.getDefaultInstance()),
+        builder.getInt32ToMessageField());
+  }
+
+  public void testMutableMapLifecycle_collections() {
+    TestMap.Builder builder = TestMap.newBuilder();
+    Map<Integer, Integer> intMap = builder.getMutableInt32ToInt32Field();
+    intMap.put(1, 2);
+    assertEquals(newMap(1, 2), builder.build().getInt32ToInt32Field());
+    try {
+      intMap.remove(2);
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    try {
+      intMap.entrySet().remove(new Object());
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    try {
+      intMap.entrySet().iterator().remove();
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    try {
+      intMap.keySet().remove(new Object());
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    try {
+      intMap.values().remove(new Object());
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    try {
+      intMap.values().iterator().remove();
+      fail();
+    } catch (UnsupportedOperationException e) {
+      // expected
+    }
+    assertEquals(newMap(1, 2), intMap);
+    assertEquals(newMap(1, 2), builder.getInt32ToInt32Field());
+    assertEquals(newMap(1, 2), builder.build().getInt32ToInt32Field());
+  }
+  
   public void testGettersAndSetters() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     TestMap message = builder.build();
@@ -610,5 +721,27 @@ public class MapTest extends TestCase {
     for (Map.Entry<Integer, Integer> entry : message.getInt32ToEnumFieldValue().entrySet()) {
       assertEquals(data.get(entry.getKey()) + 1, entry.getValue().intValue());
     }
+  }
+
+  public void testIterationOrder() throws Exception {
+    TestMap.Builder builder = TestMap.newBuilder();
+    setMapValues(builder);
+    TestMap message = builder.build();
+
+    assertEquals(Arrays.asList("1", "2", "3"),
+        new ArrayList<String>(message.getStringToInt32Field().keySet()));
+  }
+  
+  private static <K, V> Map<K, V> newMap(K key1, V value1) {
+    Map<K, V> map = new HashMap<K, V>();
+    map.put(key1, value1);
+    return map;
+  }
+  
+  private static <K, V> Map<K, V> newMap(K key1, V value1, K key2, V value2) {
+    Map<K, V> map = new HashMap<K, V>();
+    map.put(key1, value1);
+    map.put(key2, value2);
+    return map;
   }
 }

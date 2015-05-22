@@ -115,10 +115,15 @@ class CommandLineInterfaceTest : public testing::Test {
   // Create a subdirectory within temp_directory_.
   void CreateTempDir(const string& name);
 
+#ifdef PROTOBUF_OPENSOURCE
   // Change working directory to temp directory.
   void SwitchToTempDirectory() {
     File::ChangeWorkingDirectory(temp_directory_);
   }
+#else  // !PROTOBUF_OPENSOURCE
+  // TODO(teboring): Figure out how to change and get working directory in
+  // google3.
+#endif  // !PROTOBUF_OPENSOURCE
 
   void SetInputsAreProtoPathRelative(bool enable) {
     cli_.SetInputsAreProtoPathRelative(enable);
@@ -986,6 +991,7 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileGivenTwoInputs) {
       "Can only process one input file when using --dependency_out=FILE.\n");
 }
 
+#ifdef PROTOBUF_OPENSOURCE
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
   CreateTempFile("foo.proto",
     "syntax = \"proto2\";\n"
@@ -1011,6 +1017,10 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile) {
 
   File::ChangeWorkingDirectory(current_working_directory);
 }
+#else  // !PROTOBUF_OPENSOURCE
+// TODO(teboring): Figure out how to change and get working directory in
+// google3.
+#endif  // !PROTOBUF_OPENSOURCE
 
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
   CreateTempFile("foo.proto",

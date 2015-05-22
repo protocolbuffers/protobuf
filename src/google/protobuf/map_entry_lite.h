@@ -267,17 +267,18 @@ class LIBPROTOBUF_EXPORT MapEntryLite : public MessageLite {
   // google::protobuf::Map is enum. We cannot create a reference to int from an enum.
   static MapEntryLite* EnumWrap(const Key& key, const Value value,
                                 Arena* arena) {
-    return Arena::Create<MapEnumEntryWrapper<
+    return Arena::CreateMessage<MapEnumEntryWrapper<
         Key, Value, kKeyFieldType, kValueFieldType, default_enum_value> >(
-        arena, key, value, arena);
+        arena, key, value);
   }
 
   // Like above, but for all the other types. This avoids value copy to create
   // MapEntryLite from google::protobuf::Map in serialization.
   static MapEntryLite* Wrap(const Key& key, const Value& value, Arena* arena) {
-    return Arena::Create<MapEntryWrapper<Key, Value, kKeyFieldType,
-                                         kValueFieldType, default_enum_value> >(
-        arena, key, value, arena);
+    return Arena::CreateMessage<MapEntryWrapper<Key, Value, kKeyFieldType,
+                                                kValueFieldType,
+                                                default_enum_value> >(
+        arena, key, value);
   }
 
  protected:
@@ -308,7 +309,7 @@ class LIBPROTOBUF_EXPORT MapEntryLite : public MessageLite {
     typedef typename Base::ValCppType ValCppType;
 
    public:
-    MapEntryWrapper(const K& key, const V& value, Arena* arena)
+    MapEntryWrapper(Arena* arena, const K& key, const V& value)
         : MapEntryLite<K, V, k_wire_type, v_wire_type, default_enum>(arena),
           key_(key),
           value_(value) {
@@ -323,6 +324,7 @@ class LIBPROTOBUF_EXPORT MapEntryLite : public MessageLite {
     const Value& value_;
 
     friend class ::google::protobuf::Arena;
+    typedef void InternalArenaConstructable_;
     typedef void DestructorSkippable_;
   };
 
@@ -341,7 +343,7 @@ class LIBPROTOBUF_EXPORT MapEntryLite : public MessageLite {
     typedef typename Base::ValCppType ValCppType;
 
    public:
-    MapEnumEntryWrapper(const K& key, const V& value, Arena* arena)
+    MapEnumEntryWrapper(Arena* arena, const K& key, const V& value)
         : MapEntryLite<K, V, k_wire_type, v_wire_type, default_enum>(arena),
           key_(key),
           value_(value) {
@@ -355,7 +357,7 @@ class LIBPROTOBUF_EXPORT MapEntryLite : public MessageLite {
     const KeyCppType& key_;
     const ValCppType value_;
 
-    friend class ::google::protobuf::Arena;
+    friend class LIBPROTOBUF_EXPORT google::protobuf::Arena;
     typedef void DestructorSkippable_;
   };
 

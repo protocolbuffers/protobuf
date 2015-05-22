@@ -39,6 +39,7 @@
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
 #include <string>
+#include <typeinfo>
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
@@ -47,11 +48,14 @@
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_arena.pb.h>
 #include <google/protobuf/unittest_no_arena.pb.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <gtest/gtest.h>
 
@@ -125,6 +129,29 @@ class MustBeConstructedWithOneThroughFour {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MustBeConstructedWithOneThroughFour);
 };
 
+// A class that takes eight different types as constructor arguments.
+class MustBeConstructedWithOneThroughEight {
+ public:
+  MustBeConstructedWithOneThroughEight(
+      int one, const char* two, const string& three,
+      const PleaseDontCopyMe* four, int five, const char* six,
+      const string& seven, const string& eight)
+      : one_(one), two_(two), three_(three), four_(four), five_(five),
+        six_(six), seven_(seven), eight_(eight) {}
+
+  int one_;
+  const char* const two_;
+  string three_;
+  const PleaseDontCopyMe* four_;
+  int five_;
+  const char* const six_;
+  string seven_;
+  string eight_;
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MustBeConstructedWithOneThroughEight);
+};
+
 }  // namespace
 
 TEST(ArenaTest, ArenaConstructable) {
@@ -156,7 +183,7 @@ TEST(ArenaTest, BasicCreate) {
   EXPECT_EQ(2, notifier.GetCount());
 }
 
-TEST(ArenaTest, CreateWithManyConstructorArguments) {
+TEST(ArenaTest, CreateWithFourConstructorArguments) {
   Arena arena;
   const string three("3");
   const PleaseDontCopyMe four(4);
@@ -168,6 +195,26 @@ TEST(ArenaTest, CreateWithManyConstructorArguments) {
   ASSERT_STREQ("2", new_object->two_);
   ASSERT_EQ("3", new_object->three_);
   ASSERT_EQ(4, new_object->four_->value());
+}
+
+TEST(ArenaTest, CreateWithEightConstructorArguments) {
+  Arena arena;
+  const string three("3");
+  const PleaseDontCopyMe four(4);
+  const string seven("7");
+  const string eight("8");
+  const MustBeConstructedWithOneThroughEight* new_object =
+      Arena::Create<MustBeConstructedWithOneThroughEight>(
+          &arena, 1, "2", three, &four, 5, "6", seven, eight);
+  EXPECT_TRUE(new_object != NULL);
+  ASSERT_EQ(1, new_object->one_);
+  ASSERT_STREQ("2", new_object->two_);
+  ASSERT_EQ("3", new_object->three_);
+  ASSERT_EQ(4, new_object->four_->value());
+  ASSERT_EQ(5, new_object->five_);
+  ASSERT_STREQ("6", new_object->six_);
+  ASSERT_EQ("7", new_object->seven_);
+  ASSERT_EQ("8", new_object->eight_);
 }
 
 TEST(ArenaTest, InitialBlockTooSmall) {
@@ -1113,6 +1160,19 @@ TEST(ArenaTest, GetArenaShouldReturnNullForNonArenaAllocatedMessages) {
   EXPECT_EQ(NULL, Arena::GetArena(const_pointer_to_message));
 }
 
+TEST(ArenaTest, UnsafeSetAllocatedOnArena) {
+  ::google::protobuf::Arena arena;
+  TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
+  EXPECT_FALSE(message->has_optional_string());
+
+  string owned_string = "test with long enough content to heap-allocate";
+  message->unsafe_arena_set_allocated_optional_string(&owned_string);
+  EXPECT_TRUE(message->has_optional_string());
+
+  message->unsafe_arena_set_allocated_optional_string(NULL);
+  EXPECT_FALSE(message->has_optional_string());
+}
+
 // A helper utility class to only contain static hook functions, some
 // counters to be used to verify the counters have been called and a cookie
 // value to be verified.
@@ -1122,6 +1182,13 @@ class ArenaHooksTestUtil {
     ++num_init;
     int* cookie = new int(kCookieValue);
     return static_cast<void*>(cookie);
+  }
+
+  static void on_allocation(const std::type_info* /*unused*/, uint64 alloc_size,
+                            void* cookie) {
+    ++num_allocations;
+    int cookie_value = *static_cast<int*>(cookie);
+    EXPECT_EQ(kCookieValue, cookie_value);
   }
 
   static void on_reset(::google::protobuf::Arena* arena, void* cookie,
@@ -1141,10 +1208,12 @@ class ArenaHooksTestUtil {
 
   static const int kCookieValue = 999;
   static uint32 num_init;
+  static uint32 num_allocations;
   static uint32 num_reset;
   static uint32 num_destruct;
 };
 uint32 ArenaHooksTestUtil::num_init = 0;
+uint32 ArenaHooksTestUtil::num_allocations = 0;
 uint32 ArenaHooksTestUtil::num_reset = 0;
 uint32 ArenaHooksTestUtil::num_destruct = 0;
 const int ArenaHooksTestUtil::kCookieValue;
@@ -1153,6 +1222,7 @@ const int ArenaHooksTestUtil::kCookieValue;
 TEST(ArenaTest, ArenaHooksSanity) {
   ::google::protobuf::ArenaOptions options;
   options.on_arena_init = ArenaHooksTestUtil::on_init;
+  options.on_arena_allocation = ArenaHooksTestUtil::on_allocation;
   options.on_arena_reset = ArenaHooksTestUtil::on_reset;
   options.on_arena_destruction = ArenaHooksTestUtil::on_destruction;
 
@@ -1160,6 +1230,9 @@ TEST(ArenaTest, ArenaHooksSanity) {
   {
     ::google::protobuf::Arena arena(options);
     EXPECT_EQ(1, ArenaHooksTestUtil::num_init);
+    EXPECT_EQ(0, ArenaHooksTestUtil::num_allocations);
+    ::google::protobuf::Arena::Create<uint64>(&arena);
+    EXPECT_EQ(1, ArenaHooksTestUtil::num_allocations);
 
     arena.Reset();
     arena.Reset();

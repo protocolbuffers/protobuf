@@ -51,16 +51,6 @@ namespace python {
 
 namespace extension_dict {
 
-// TODO(tibell): Always use self->message for clarity, just like in
-// RepeatedCompositeContainer.
-static Message* GetMessage(ExtensionDict* self) {
-  if (self->parent != NULL) {
-    return self->parent->message;
-  } else {
-    return self->message;
-  }
-}
-
 PyObject* len(ExtensionDict* self) {
 #if PY_MAJOR_VERSION >= 3
   return PyLong_FromLong(PyDict_Size(self->values));
@@ -89,7 +79,7 @@ int ReleaseExtension(ExtensionDict* self,
     }
   } else if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     if (cmessage::ReleaseSubMessage(
-            GetMessage(self), descriptor,
+            self->parent, descriptor,
             reinterpret_cast<CMessage*>(extension)) < 0) {
       return -1;
     }
@@ -109,7 +99,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
 
   if (descriptor->label() != FieldDescriptor::LABEL_REPEATED &&
       descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-    return cmessage::InternalGetScalar(self->parent, descriptor);
+    return cmessage::InternalGetScalar(self->parent->message, descriptor);
   }
 
   PyObject* value = PyDict_GetItem(self->values, key);
@@ -266,8 +256,7 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject ExtensionDict_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  "google.protobuf.internal."
-  "cpp._message.ExtensionDict",        // tp_name
+  FULL_MODULE_NAME ".ExtensionDict",   // tp_name
   sizeof(ExtensionDict),               // tp_basicsize
   0,                                   //  tp_itemsize
   (destructor)extension_dict::dealloc,  //  tp_dealloc

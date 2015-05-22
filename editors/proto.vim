@@ -57,7 +57,7 @@ syn keyword pbSyntax     syntax import option
 syn keyword pbStructure  package message group oneof
 syn keyword pbRepeat     optional required repeated
 syn keyword pbDefault    default
-syn keyword pbExtend     extend extensions to max
+syn keyword pbExtend     extend extensions to max reserved
 syn keyword pbRPC        service rpc returns
 
 syn keyword pbType      int32 int64 uint32 uint64 sint32 sint64

@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
 #define GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
 
+
 namespace google {
 namespace protobuf {
 namespace internal {

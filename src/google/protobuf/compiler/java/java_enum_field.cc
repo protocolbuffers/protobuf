@@ -67,7 +67,13 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
   (*variables)["default_number"] = SimpleItoa(
       descriptor->default_value_enum()->number());
-  (*variables)["tag"] = SimpleItoa(internal::WireFormat::MakeTag(descriptor));
+  if (descriptor->is_packed()) {
+    (*variables)["tag"] = SimpleItoa(internal::WireFormatLite::MakeTag(
+        descriptor->number(),
+        internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED));
+  } else {
+    (*variables)["tag"] = SimpleItoa(internal::WireFormat::MakeTag(descriptor));
+  }
   (*variables)["tag_size"] = SimpleItoa(
       internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
@@ -641,7 +647,7 @@ GenerateMembers(io::Printer* printer) const {
       "}\n");
   }
 
-  if (descriptor_->options().packed() &&
+  if (descriptor_->is_packed() &&
       HasGeneratedMethods(descriptor_->containing_type())) {
     printer->Print(variables_,
       "private int $name$MemoizedSerializedSize;\n");
@@ -884,7 +890,7 @@ GenerateParsingDoneCode(io::Printer* printer) const {
 
 void RepeatedImmutableEnumFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
-  if (descriptor_->options().packed()) {
+  if (descriptor_->is_packed()) {
     printer->Print(variables_,
       "if (get$capitalized_name$List().size() > 0) {\n"
       "  output.writeRawVarint32($tag$);\n"
@@ -915,7 +921,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "}\n");
   printer->Print(
     "size += dataSize;\n");
-  if (descriptor_->options().packed()) {
+  if (descriptor_->is_packed()) {
     printer->Print(variables_,
       "if (!get$capitalized_name$List().isEmpty()) {"
       "  size += $tag_size$;\n"
@@ -928,7 +934,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   }
 
   // cache the data size for packed fields.
-  if (descriptor_->options().packed()) {
+  if (descriptor_->is_packed()) {
     printer->Print(variables_,
       "$name$MemoizedSerializedSize = dataSize;\n");
   }

@@ -35,6 +35,7 @@
 import unittest
 
 from google3.testing.pybase import fake_target_util
+import unittest
 
 
 class ArenaNcTest(unittest.TestCase):

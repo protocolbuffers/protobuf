@@ -941,6 +941,22 @@ TEST(GeneratedMessageTest, ExtensionConstantValues) {
   EXPECT_EQ(unittest::kRepeatedNestedEnumExtensionFieldNumber, 51);
 }
 
+TEST(GeneratedMessageTest, ParseFromTruncated) {
+  const string long_string = string(128, 'q');
+  FileDescriptorProto p;
+  p.add_extension()->set_name(long_string);
+  const string msg = p.SerializeAsString();
+  int successful_count = 0;
+  for (int i = 0; i <= msg.size(); i++) {
+    if (p.ParseFromArray(msg.c_str(), i)) {
+      ++successful_count;
+    }
+  }
+  // We don't really care about how often we succeeded.
+  // As long as we didn't crash, we're happy.
+  EXPECT_GE(successful_count, 1);
+}
+
 // ===================================================================
 
 TEST(GeneratedEnumTest, EnumValuesAsSwitchCases) {

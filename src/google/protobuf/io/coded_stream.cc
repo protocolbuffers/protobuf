@@ -156,11 +156,22 @@ CodedInputStream::IncrementRecursionDepthAndPushLimit(int byte_limit) {
   return std::make_pair(PushLimit(byte_limit), --recursion_budget_);
 }
 
+CodedInputStream::Limit CodedInputStream::ReadLengthAndPushLimit() {
+  uint32 length;
+  return PushLimit(ReadVarint32(&length) ? length : 0);
+}
+
 bool CodedInputStream::DecrementRecursionDepthAndPopLimit(Limit limit) {
   bool result = ConsumedEntireMessage();
   PopLimit(limit);
   GOOGLE_DCHECK_LT(recursion_budget_, recursion_limit_);
   ++recursion_budget_;
+  return result;
+}
+
+bool CodedInputStream::CheckEntireMessageConsumedAndPopLimit(Limit limit) {
+  bool result = ConsumedEntireMessage();
+  PopLimit(limit);
   return result;
 }
 
@@ -245,20 +256,7 @@ bool CodedInputStream::GetDirectBufferPointer(const void** data, int* size) {
 }
 
 bool CodedInputStream::ReadRaw(void* buffer, int size) {
-  int current_buffer_size;
-  while ((current_buffer_size = BufferSize()) < size) {
-    // Reading past end of buffer.  Copy what we have, then refresh.
-    memcpy(buffer, buffer_, current_buffer_size);
-    buffer = reinterpret_cast<uint8*>(buffer) + current_buffer_size;
-    size -= current_buffer_size;
-    Advance(current_buffer_size);
-    if (!Refresh()) return false;
-  }
-
-  memcpy(buffer, buffer_, size);
-  Advance(size);
-
-  return true;
+  return InternalReadRawInline(buffer, size);
 }
 
 bool CodedInputStream::ReadString(string* buffer, int size) {
@@ -336,17 +334,23 @@ bool CodedInputStream::ReadLittleEndian64Fallback(uint64* value) {
 
 namespace {
 
-inline const uint8* ReadVarint32FromArray(
-    const uint8* buffer, uint32* value) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
-inline const uint8* ReadVarint32FromArray(const uint8* buffer, uint32* value) {
+// Read a varint from the given buffer, write it to *value, and return a pair.
+// The first part of the pair is true iff the read was successful.  The second
+// part is buffer + (number of bytes read).  This function is always inlined,
+// so returning a pair is costless.
+inline ::std::pair<bool, const uint8*> ReadVarint32FromArray(
+    uint32 first_byte, const uint8* buffer,
+    uint32* value) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+inline ::std::pair<bool, const uint8*> ReadVarint32FromArray(
+    uint32 first_byte, const uint8* buffer, uint32* value) {
   // Fast path:  We have enough bytes left in the buffer to guarantee that
   // this read won't cross the end, so we can skip the checks.
+  GOOGLE_DCHECK_EQ(*buffer, first_byte);
+  GOOGLE_DCHECK_EQ(first_byte & 0x80, 0x80) << first_byte;
   const uint8* ptr = buffer;
   uint32 b;
-  uint32 result;
-
-  b = *(ptr++); result  = b      ; if (!(b & 0x80)) goto done;
-  result -= 0x80;
+  uint32 result = first_byte - 0x80;
+  ++ptr;  // We just processed the first byte.  Move on to the second.
   b = *(ptr++); result += b <<  7; if (!(b & 0x80)) goto done;
   result -= 0x80 << 7;
   b = *(ptr++); result += b << 14; if (!(b & 0x80)) goto done;
@@ -364,38 +368,42 @@ inline const uint8* ReadVarint32FromArray(const uint8* buffer, uint32* value) {
 
   // We have overrun the maximum size of a varint (10 bytes).  Assume
   // the data is corrupt.
-  return NULL;
+  return std::make_pair(false, ptr);
 
  done:
   *value = result;
-  return ptr;
+  return std::make_pair(true, ptr);
 }
 
 }  // namespace
 
 bool CodedInputStream::ReadVarint32Slow(uint32* value) {
-  uint64 result;
   // Directly invoke ReadVarint64Fallback, since we already tried to optimize
   // for one-byte varints.
-  if (!ReadVarint64Fallback(&result)) return false;
-  *value = (uint32)result;
-  return true;
+  std::pair<uint64, bool> p = ReadVarint64Fallback();
+  *value = static_cast<uint32>(p.first);
+  return p.second;
 }
 
-bool CodedInputStream::ReadVarint32Fallback(uint32* value) {
+int64 CodedInputStream::ReadVarint32Fallback(uint32 first_byte_or_zero) {
   if (BufferSize() >= kMaxVarintBytes ||
       // Optimization:  We're also safe if the buffer is non-empty and it ends
       // with a byte that would terminate a varint.
       (buffer_end_ > buffer_ && !(buffer_end_[-1] & 0x80))) {
-    const uint8* end = ReadVarint32FromArray(buffer_, value);
-    if (end == NULL) return false;
-    buffer_ = end;
-    return true;
+    GOOGLE_DCHECK_NE(first_byte_or_zero, 0)
+        << "Caller should provide us with *buffer_ when buffer is non-empty";
+    uint32 temp;
+    ::std::pair<bool, const uint8*> p =
+          ReadVarint32FromArray(first_byte_or_zero, buffer_, &temp);
+    if (!p.first) return -1;
+    buffer_ = p.second;
+    return temp;
   } else {
     // Really slow case: we will incur the cost of an extra function call here,
     // but moving this out of line reduces the size of this function, which
     // improves the common case. In micro benchmarks, this is worth about 10-15%
-    return ReadVarint32Slow(value);
+    uint32 temp;
+    return ReadVarint32Slow(&temp) ? static_cast<int64>(temp) : -1;
   }
 }
 
@@ -425,18 +433,24 @@ uint32 CodedInputStream::ReadTagSlow() {
   return static_cast<uint32>(result);
 }
 
-uint32 CodedInputStream::ReadTagFallback() {
+uint32 CodedInputStream::ReadTagFallback(uint32 first_byte_or_zero) {
   const int buf_size = BufferSize();
   if (buf_size >= kMaxVarintBytes ||
       // Optimization:  We're also safe if the buffer is non-empty and it ends
       // with a byte that would terminate a varint.
       (buf_size > 0 && !(buffer_end_[-1] & 0x80))) {
-    uint32 tag;
-    const uint8* end = ReadVarint32FromArray(buffer_, &tag);
-    if (end == NULL) {
+    GOOGLE_DCHECK_EQ(first_byte_or_zero, buffer_[0]);
+    if (first_byte_or_zero == 0) {
+      ++buffer_;
       return 0;
     }
-    buffer_ = end;
+    uint32 tag;
+    ::std::pair<bool, const uint8*> p =
+        ReadVarint32FromArray(first_byte_or_zero, buffer_, &tag);
+    if (!p.first) {
+      return 0;
+    }
+    buffer_ = p.second;
     return tag;
   } else {
     // We are commonly at a limit when attempting to read tags. Try to quickly
@@ -479,7 +493,7 @@ bool CodedInputStream::ReadVarint64Slow(uint64* value) {
   return true;
 }
 
-bool CodedInputStream::ReadVarint64Fallback(uint64* value) {
+std::pair<uint64, bool> CodedInputStream::ReadVarint64Fallback() {
   if (BufferSize() >= kMaxVarintBytes ||
       // Optimization:  We're also safe if the buffer is non-empty and it ends
       // with a byte that would terminate a varint.
@@ -517,16 +531,18 @@ bool CodedInputStream::ReadVarint64Fallback(uint64* value) {
 
     // We have overrun the maximum size of a varint (10 bytes).  The data
     // must be corrupt.
-    return false;
+    return std::make_pair(0, false);
 
    done:
     Advance(ptr - buffer_);
-    *value = (static_cast<uint64>(part0)      ) |
-             (static_cast<uint64>(part1) << 28) |
-             (static_cast<uint64>(part2) << 56);
-    return true;
+    return std::make_pair((static_cast<uint64>(part0)) |
+                              (static_cast<uint64>(part1) << 28) |
+                              (static_cast<uint64>(part2) << 56),
+                          true);
   } else {
-    return ReadVarint64Slow(value);
+    uint64 temp;
+    bool success = ReadVarint64Slow(&temp);
+    return std::make_pair(temp, success);
   }
 }
 

@@ -43,8 +43,6 @@
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
-#define C(str) const_cast<char*>(str)
-
 #if PY_MAJOR_VERSION >= 3
   #define PyString_FromStringAndSize PyUnicode_FromStringAndSize
   #define PyString_Check PyUnicode_Check
@@ -257,8 +255,14 @@ namespace descriptor {
 // Creates or retrieve a Python descriptor of the specified type.
 // Objects are interned: the same descriptor will return the same object if it
 // was kept alive.
+// 'was_created' is an optional pointer to a bool, and is set to true if a new
+// object was allocated.
 // Always return a new reference.
-PyObject* NewInternedDescriptor(PyTypeObject* type, const void* descriptor) {
+PyObject* NewInternedDescriptor(PyTypeObject* type, const void* descriptor,
+                                bool* was_created) {
+  if (was_created) {
+    *was_created = false;
+  }
   if (descriptor == NULL) {
     PyErr_BadInternalCall();
     return NULL;
@@ -283,6 +287,9 @@ PyObject* NewInternedDescriptor(PyTypeObject* type, const void* descriptor) {
   GetDescriptorPool()->interned_descriptors->insert(
       std::make_pair(descriptor, reinterpret_cast<PyObject*>(py_descriptor)));
 
+  if (was_created) {
+    *was_created = true;
+  }
   return reinterpret_cast<PyObject*>(py_descriptor);
 }
 
@@ -298,9 +305,7 @@ static PyGetSetDef Getters[] = {
 
 PyTypeObject PyBaseDescriptor_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  // Keep the fully qualified _message symbol in a line for opensource.
-  "google.protobuf.internal._message."
-  "DescriptorBase",                     // tp_name
+  FULL_MODULE_NAME ".DescriptorBase",   // tp_name
   sizeof(PyBaseDescriptor),             // tp_basicsize
   0,                                    // tp_itemsize
   (destructor)Dealloc,                  // tp_dealloc
@@ -357,7 +362,7 @@ static PyObject* GetFullName(PyBaseDescriptor* self, void *closure) {
 }
 
 static PyObject* GetFile(PyBaseDescriptor *self, void *closure) {
-  return PyFileDescriptor_New(_GetDescriptor(self)->file());
+  return PyFileDescriptor_FromDescriptor(_GetDescriptor(self)->file());
 }
 
 static PyObject* GetConcreteClass(PyBaseDescriptor* self, void *closure) {
@@ -365,17 +370,6 @@ static PyObject* GetConcreteClass(PyBaseDescriptor* self, void *closure) {
       GetDescriptorPool(), _GetDescriptor(self)));
   Py_XINCREF(concrete_class);
   return concrete_class;
-}
-
-static int SetConcreteClass(PyBaseDescriptor *self, PyObject *value,
-                            void *closure) {
-  // This attribute is also set from reflection.py. Check that it's actually a
-  // no-op.
-  if (value != cdescriptor_pool::GetMessageClass(
-          GetDescriptorPool(), _GetDescriptor(self))) {
-    PyErr_SetString(PyExc_AttributeError, "Cannot change _concrete_class");
-  }
-  return 0;
 }
 
 static PyObject* GetFieldsByName(PyBaseDescriptor* self, void *closure) {
@@ -452,7 +446,7 @@ static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
   const Descriptor* containing_type =
       _GetDescriptor(self)->containing_type();
   if (containing_type) {
-    return PyMessageDescriptor_New(containing_type);
+    return PyMessageDescriptor_FromDescriptor(containing_type);
   } else {
     Py_RETURN_NONE;
   }
@@ -515,29 +509,34 @@ static PyObject* GetSyntax(PyBaseDescriptor *self, void *closure) {
 }
 
 static PyGetSetDef Getters[] = {
-  { C("name"), (getter)GetName, NULL, "Last name", NULL},
-  { C("full_name"), (getter)GetFullName, NULL, "Full name", NULL},
-  { C("_concrete_class"), (getter)GetConcreteClass, (setter)SetConcreteClass, "concrete class", NULL},
-  { C("file"), (getter)GetFile, NULL, "File descriptor", NULL},
+  { "name", (getter)GetName, NULL, "Last name"},
+  { "full_name", (getter)GetFullName, NULL, "Full name"},
+  { "_concrete_class", (getter)GetConcreteClass, NULL, "concrete class"},
+  { "file", (getter)GetFile, NULL, "File descriptor"},
 
-  { C("fields"), (getter)GetFieldsSeq, NULL, "Fields sequence", NULL},
-  { C("fields_by_name"), (getter)GetFieldsByName, NULL, "Fields by name", NULL},
-  { C("fields_by_number"), (getter)GetFieldsByNumber, NULL, "Fields by number", NULL},
-  { C("nested_types"), (getter)GetNestedTypesSeq, NULL, "Nested types sequence", NULL},
-  { C("nested_types_by_name"), (getter)GetNestedTypesByName, NULL, "Nested types by name", NULL},
-  { C("extensions"), (getter)GetExtensions, NULL, "Extensions Sequence", NULL},
-  { C("extensions_by_name"), (getter)GetExtensionsByName, NULL, "Extensions by name", NULL},
-  { C("extension_ranges"), (getter)GetExtensionRanges, NULL, "Extension ranges", NULL},
-  { C("enum_types"), (getter)GetEnumsSeq, NULL, "Enum sequence", NULL},
-  { C("enum_types_by_name"), (getter)GetEnumTypesByName, NULL, "Enum types by name", NULL},
-  { C("enum_values_by_name"), (getter)GetEnumValuesByName, NULL, "Enum values by name", NULL},
-  { C("oneofs_by_name"), (getter)GetOneofsByName, NULL, "Oneofs by name", NULL},
-  { C("oneofs"), (getter)GetOneofsSeq, NULL, "Oneofs by name", NULL},
-  { C("containing_type"), (getter)GetContainingType, (setter)SetContainingType, "Containing type", NULL},
-  { C("is_extendable"), (getter)IsExtendable, (setter)NULL, NULL, NULL},
-  { C("has_options"), (getter)GetHasOptions, (setter)SetHasOptions, "Has Options", NULL},
-  { C("_options"), (getter)NULL, (setter)SetOptions, "Options", NULL},
-  { C("syntax"), (getter)GetSyntax, (setter)NULL, "Syntax", NULL},
+  { "fields", (getter)GetFieldsSeq, NULL, "Fields sequence"},
+  { "fields_by_name", (getter)GetFieldsByName, NULL, "Fields by name"},
+  { "fields_by_number", (getter)GetFieldsByNumber, NULL, "Fields by number"},
+  { "nested_types", (getter)GetNestedTypesSeq, NULL, "Nested types sequence"},
+  { "nested_types_by_name", (getter)GetNestedTypesByName, NULL,
+    "Nested types by name"},
+  { "extensions", (getter)GetExtensions, NULL, "Extensions Sequence"},
+  { "extensions_by_name", (getter)GetExtensionsByName, NULL,
+    "Extensions by name"},
+  { "extension_ranges", (getter)GetExtensionRanges, NULL, "Extension ranges"},
+  { "enum_types", (getter)GetEnumsSeq, NULL, "Enum sequence"},
+  { "enum_types_by_name", (getter)GetEnumTypesByName, NULL,
+    "Enum types by name"},
+  { "enum_values_by_name", (getter)GetEnumValuesByName, NULL,
+    "Enum values by name"},
+  { "oneofs_by_name", (getter)GetOneofsByName, NULL, "Oneofs by name"},
+  { "oneofs", (getter)GetOneofsSeq, NULL, "Oneofs by name"},
+  { "containing_type", (getter)GetContainingType, (setter)SetContainingType,
+    "Containing type"},
+  { "is_extendable", (getter)IsExtendable, (setter)NULL},
+  { "has_options", (getter)GetHasOptions, (setter)SetHasOptions, "Has Options"},
+  { "_options", (getter)NULL, (setter)SetOptions, "Options"},
+  { "syntax", (getter)GetSyntax, (setter)NULL, "Syntax"},
   {NULL}
 };
 
@@ -552,9 +551,7 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject PyMessageDescriptor_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  // Keep the fully qualified _message symbol in a line for opensource.
-  C("google.protobuf.internal._message."
-    "MessageDescriptor"),      // tp_name
+  FULL_MODULE_NAME ".MessageDescriptor",  // tp_name
   sizeof(PyBaseDescriptor),             // tp_basicsize
   0,                                    // tp_itemsize
   0,                                    // tp_dealloc
@@ -573,7 +570,7 @@ PyTypeObject PyMessageDescriptor_Type = {
   0,                                    // tp_setattro
   0,                                    // tp_as_buffer
   Py_TPFLAGS_DEFAULT,                   // tp_flags
-  C("A Message Descriptor"),            // tp_doc
+  "A Message Descriptor",               // tp_doc
   0,                                    // tp_traverse
   0,                                    // tp_clear
   0,                                    // tp_richcompare
@@ -586,10 +583,10 @@ PyTypeObject PyMessageDescriptor_Type = {
   &descriptor::PyBaseDescriptor_Type,   // tp_base
 };
 
-PyObject* PyMessageDescriptor_New(
+PyObject* PyMessageDescriptor_FromDescriptor(
     const Descriptor* message_descriptor) {
   return descriptor::NewInternedDescriptor(
-      &PyMessageDescriptor_Type, message_descriptor);
+      &PyMessageDescriptor_Type, message_descriptor, NULL);
 }
 
 const Descriptor* PyMessageDescriptor_AsDescriptor(PyObject* obj) {
@@ -715,7 +712,7 @@ static PyObject* GetCDescriptor(PyObject *self, void *closure) {
 static PyObject *GetEnumType(PyBaseDescriptor *self, void *closure) {
   const EnumDescriptor* enum_type = _GetDescriptor(self)->enum_type();
   if (enum_type) {
-    return PyEnumDescriptor_New(enum_type);
+    return PyEnumDescriptor_FromDescriptor(enum_type);
   } else {
     Py_RETURN_NONE;
   }
@@ -728,7 +725,7 @@ static int SetEnumType(PyBaseDescriptor *self, PyObject *value, void *closure) {
 static PyObject *GetMessageType(PyBaseDescriptor *self, void *closure) {
   const Descriptor* message_type = _GetDescriptor(self)->message_type();
   if (message_type) {
-    return PyMessageDescriptor_New(message_type);
+    return PyMessageDescriptor_FromDescriptor(message_type);
   } else {
     Py_RETURN_NONE;
   }
@@ -743,7 +740,7 @@ static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
   const Descriptor* containing_type =
       _GetDescriptor(self)->containing_type();
   if (containing_type) {
-    return PyMessageDescriptor_New(containing_type);
+    return PyMessageDescriptor_FromDescriptor(containing_type);
   } else {
     Py_RETURN_NONE;
   }
@@ -758,7 +755,7 @@ static PyObject* GetExtensionScope(PyBaseDescriptor *self, void *closure) {
   const Descriptor* extension_scope =
       _GetDescriptor(self)->extension_scope();
   if (extension_scope) {
-    return PyMessageDescriptor_New(extension_scope);
+    return PyMessageDescriptor_FromDescriptor(extension_scope);
   } else {
     Py_RETURN_NONE;
   }
@@ -768,7 +765,7 @@ static PyObject* GetContainingOneof(PyBaseDescriptor *self, void *closure) {
   const OneofDescriptor* containing_oneof =
       _GetDescriptor(self)->containing_oneof();
   if (containing_oneof) {
-    return PyOneofDescriptor_New(containing_oneof);
+    return PyOneofDescriptor_FromDescriptor(containing_oneof);
   } else {
     Py_RETURN_NONE;
   }
@@ -803,26 +800,30 @@ static int SetOptions(PyBaseDescriptor *self, PyObject *value,
 
 
 static PyGetSetDef Getters[] = {
-  { C("full_name"), (getter)GetFullName, NULL, "Full name", NULL},
-  { C("name"), (getter)GetName, NULL, "Unqualified name", NULL},
-  { C("type"), (getter)GetType, NULL, "C++ Type", NULL},
-  { C("cpp_type"), (getter)GetCppType, NULL, "C++ Type", NULL},
-  { C("label"), (getter)GetLabel, NULL, "Label", NULL},
-  { C("number"), (getter)GetNumber, NULL, "Number", NULL},
-  { C("index"), (getter)GetIndex, NULL, "Index", NULL},
-  { C("default_value"), (getter)GetDefaultValue, NULL, "Default Value", NULL},
-  { C("has_default_value"), (getter)HasDefaultValue, NULL, NULL, NULL},
-  { C("is_extension"), (getter)IsExtension, NULL, "ID", NULL},
-  { C("id"), (getter)GetID, NULL, "ID", NULL},
-  { C("_cdescriptor"), (getter)GetCDescriptor, NULL, "HAACK REMOVE ME", NULL},
+  { "full_name", (getter)GetFullName, NULL, "Full name"},
+  { "name", (getter)GetName, NULL, "Unqualified name"},
+  { "type", (getter)GetType, NULL, "C++ Type"},
+  { "cpp_type", (getter)GetCppType, NULL, "C++ Type"},
+  { "label", (getter)GetLabel, NULL, "Label"},
+  { "number", (getter)GetNumber, NULL, "Number"},
+  { "index", (getter)GetIndex, NULL, "Index"},
+  { "default_value", (getter)GetDefaultValue, NULL, "Default Value"},
+  { "has_default_value", (getter)HasDefaultValue},
+  { "is_extension", (getter)IsExtension, NULL, "ID"},
+  { "id", (getter)GetID, NULL, "ID"},
+  { "_cdescriptor", (getter)GetCDescriptor, NULL, "HAACK REMOVE ME"},
 
-  { C("message_type"), (getter)GetMessageType, (setter)SetMessageType, "Message type", NULL},
-  { C("enum_type"), (getter)GetEnumType, (setter)SetEnumType, "Enum type", NULL},
-  { C("containing_type"), (getter)GetContainingType, (setter)SetContainingType, "Containing type", NULL},
-  { C("extension_scope"), (getter)GetExtensionScope, (setter)NULL, "Extension scope", NULL},
-  { C("containing_oneof"), (getter)GetContainingOneof, (setter)SetContainingOneof, "Containing oneof", NULL},
-  { C("has_options"), (getter)GetHasOptions, (setter)SetHasOptions, "Has Options", NULL},
-  { C("_options"), (getter)NULL, (setter)SetOptions, "Options", NULL},
+  { "message_type", (getter)GetMessageType, (setter)SetMessageType,
+    "Message type"},
+  { "enum_type", (getter)GetEnumType, (setter)SetEnumType, "Enum type"},
+  { "containing_type", (getter)GetContainingType, (setter)SetContainingType,
+    "Containing type"},
+  { "extension_scope", (getter)GetExtensionScope, (setter)NULL,
+    "Extension scope"},
+  { "containing_oneof", (getter)GetContainingOneof, (setter)SetContainingOneof,
+    "Containing oneof"},
+  { "has_options", (getter)GetHasOptions, (setter)SetHasOptions, "Has Options"},
+  { "_options", (getter)NULL, (setter)SetOptions, "Options"},
   {NULL}
 };
 
@@ -835,8 +836,7 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject PyFieldDescriptor_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  C("google.protobuf.internal."
-    "_message.FieldDescriptor"),        // tp_name
+  FULL_MODULE_NAME ".FieldDescriptor",  // tp_name
   sizeof(PyBaseDescriptor),             // tp_basicsize
   0,                                    // tp_itemsize
   0,                                    // tp_dealloc
@@ -855,7 +855,7 @@ PyTypeObject PyFieldDescriptor_Type = {
   0,                                    // tp_setattro
   0,                                    // tp_as_buffer
   Py_TPFLAGS_DEFAULT,                   // tp_flags
-  C("A Field Descriptor"),              // tp_doc
+  "A Field Descriptor",                 // tp_doc
   0,                                    // tp_traverse
   0,                                    // tp_clear
   0,                                    // tp_richcompare
@@ -868,10 +868,10 @@ PyTypeObject PyFieldDescriptor_Type = {
   &descriptor::PyBaseDescriptor_Type,   // tp_base
 };
 
-PyObject* PyFieldDescriptor_New(
+PyObject* PyFieldDescriptor_FromDescriptor(
     const FieldDescriptor* field_descriptor) {
   return descriptor::NewInternedDescriptor(
-      &PyFieldDescriptor_Type, field_descriptor);
+      &PyFieldDescriptor_Type, field_descriptor, NULL);
 }
 
 const FieldDescriptor* PyFieldDescriptor_AsDescriptor(PyObject* obj) {
@@ -900,7 +900,7 @@ static PyObject* GetName(PyBaseDescriptor *self, void *closure) {
 }
 
 static PyObject* GetFile(PyBaseDescriptor *self, void *closure) {
-  return PyFileDescriptor_New(_GetDescriptor(self)->file());
+  return PyFileDescriptor_FromDescriptor(_GetDescriptor(self)->file());
 }
 
 static PyObject* GetEnumvaluesByName(PyBaseDescriptor* self, void *closure) {
@@ -919,7 +919,7 @@ static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
   const Descriptor* containing_type =
       _GetDescriptor(self)->containing_type();
   if (containing_type) {
-    return PyMessageDescriptor_New(containing_type);
+    return PyMessageDescriptor_FromDescriptor(containing_type);
   } else {
     Py_RETURN_NONE;
   }
@@ -964,16 +964,19 @@ static PyMethodDef Methods[] = {
 };
 
 static PyGetSetDef Getters[] = {
-  { C("full_name"), (getter)GetFullName, NULL, "Full name", NULL},
-  { C("name"), (getter)GetName, NULL, "last name", NULL},
-  { C("file"), (getter)GetFile, NULL, "File descriptor", NULL},
-  { C("values"), (getter)GetEnumvaluesSeq, NULL, "values", NULL},
-  { C("values_by_name"), (getter)GetEnumvaluesByName, NULL, "Enumvalues by name", NULL},
-  { C("values_by_number"), (getter)GetEnumvaluesByNumber, NULL, "Enumvalues by number", NULL},
+  { "full_name", (getter)GetFullName, NULL, "Full name"},
+  { "name", (getter)GetName, NULL, "last name"},
+  { "file", (getter)GetFile, NULL, "File descriptor"},
+  { "values", (getter)GetEnumvaluesSeq, NULL, "values"},
+  { "values_by_name", (getter)GetEnumvaluesByName, NULL,
+    "Enum values by name"},
+  { "values_by_number", (getter)GetEnumvaluesByNumber, NULL,
+    "Enum values by number"},
 
-  { C("containing_type"), (getter)GetContainingType, (setter)SetContainingType, "Containing type", NULL},
-  { C("has_options"), (getter)GetHasOptions, (setter)SetHasOptions, "Has Options", NULL},
-  { C("_options"), (getter)NULL, (setter)SetOptions, "Options", NULL},
+  { "containing_type", (getter)GetContainingType, (setter)SetContainingType,
+    "Containing type"},
+  { "has_options", (getter)GetHasOptions, (setter)SetHasOptions, "Has Options"},
+  { "_options", (getter)NULL, (setter)SetOptions, "Options"},
   {NULL}
 };
 
@@ -981,9 +984,7 @@ static PyGetSetDef Getters[] = {
 
 PyTypeObject PyEnumDescriptor_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  // Keep the fully qualified _message symbol in a line for opensource.
-  C("google.protobuf.internal._message."
-    "EnumDescriptor"),                  // tp_name
+  FULL_MODULE_NAME ".EnumDescriptor",   // tp_name
   sizeof(PyBaseDescriptor),             // tp_basicsize
   0,                                    // tp_itemsize
   0,                                    // tp_dealloc
@@ -1002,7 +1003,7 @@ PyTypeObject PyEnumDescriptor_Type = {
   0,                                    // tp_setattro
   0,                                    // tp_as_buffer
   Py_TPFLAGS_DEFAULT,                   // tp_flags
-  C("A Enum Descriptor"),               // tp_doc
+  "A Enum Descriptor",                  // tp_doc
   0,                                    // tp_traverse
   0,                                    // tp_clear
   0,                                    // tp_richcompare
@@ -1015,10 +1016,10 @@ PyTypeObject PyEnumDescriptor_Type = {
   &descriptor::PyBaseDescriptor_Type,   // tp_base
 };
 
-PyObject* PyEnumDescriptor_New(
+PyObject* PyEnumDescriptor_FromDescriptor(
     const EnumDescriptor* enum_descriptor) {
   return descriptor::NewInternedDescriptor(
-      &PyEnumDescriptor_Type, enum_descriptor);
+      &PyEnumDescriptor_Type, enum_descriptor, NULL);
 }
 
 namespace enumvalue_descriptor {
@@ -1042,7 +1043,7 @@ static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
 }
 
 static PyObject* GetType(PyBaseDescriptor *self, void *closure) {
-  return PyEnumDescriptor_New(_GetDescriptor(self)->type());
+  return PyEnumDescriptor_FromDescriptor(_GetDescriptor(self)->type());
 }
 
 static PyObject* GetHasOptions(PyBaseDescriptor *self, void *closure) {
@@ -1069,13 +1070,13 @@ static int SetOptions(PyBaseDescriptor *self, PyObject *value,
 
 
 static PyGetSetDef Getters[] = {
-  { C("name"), (getter)GetName, NULL, "name", NULL},
-  { C("number"), (getter)GetNumber, NULL, "number", NULL},
-  { C("index"), (getter)GetIndex, NULL, "index", NULL},
-  { C("type"), (getter)GetType, NULL, "index", NULL},
+  { "name", (getter)GetName, NULL, "name"},
+  { "number", (getter)GetNumber, NULL, "number"},
+  { "index", (getter)GetIndex, NULL, "index"},
+  { "type", (getter)GetType, NULL, "index"},
 
-  { C("has_options"), (getter)GetHasOptions, (setter)SetHasOptions, "Has Options", NULL},
-  { C("_options"), (getter)NULL, (setter)SetOptions, "Options", NULL},
+  { "has_options", (getter)GetHasOptions, (setter)SetHasOptions, "Has Options"},
+  { "_options", (getter)NULL, (setter)SetOptions, "Options"},
   {NULL}
 };
 
@@ -1088,8 +1089,7 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject PyEnumValueDescriptor_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  C("google.protobuf.internal."
-    "_message.EnumValueDescriptor"),    // tp_name
+  FULL_MODULE_NAME ".EnumValueDescriptor",  // tp_name
   sizeof(PyBaseDescriptor),             // tp_basicsize
   0,                                    // tp_itemsize
   0,                                    // tp_dealloc
@@ -1108,7 +1108,7 @@ PyTypeObject PyEnumValueDescriptor_Type = {
   0,                                    // tp_setattro
   0,                                    // tp_as_buffer
   Py_TPFLAGS_DEFAULT,                   // tp_flags
-  C("A EnumValue Descriptor"),          // tp_doc
+  "A EnumValue Descriptor",             // tp_doc
   0,                                    // tp_traverse
   0,                                    // tp_clear
   0,                                    // tp_richcompare
@@ -1121,10 +1121,10 @@ PyTypeObject PyEnumValueDescriptor_Type = {
   &descriptor::PyBaseDescriptor_Type,   // tp_base
 };
 
-PyObject* PyEnumValueDescriptor_New(
+PyObject* PyEnumValueDescriptor_FromDescriptor(
     const EnumValueDescriptor* enumvalue_descriptor) {
   return descriptor::NewInternedDescriptor(
-      &PyEnumValueDescriptor_Type, enumvalue_descriptor);
+      &PyEnumValueDescriptor_Type, enumvalue_descriptor, NULL);
 }
 
 namespace file_descriptor {
@@ -1218,18 +1218,20 @@ static PyObject* CopyToProto(PyFileDescriptor *self, PyObject *target) {
 }
 
 static PyGetSetDef Getters[] = {
-  { C("name"), (getter)GetName, NULL, "name", NULL},
-  { C("package"), (getter)GetPackage, NULL, "package", NULL},
-  { C("serialized_pb"), (getter)GetSerializedPb, NULL, NULL, NULL},
-  { C("message_types_by_name"), (getter)GetMessageTypesByName, NULL, "Messages by name", NULL},
-  { C("enum_types_by_name"), (getter)GetEnumTypesByName, NULL, "Enums by name", NULL},
-  { C("extensions_by_name"), (getter)GetExtensionsByName, NULL, "Extensions by name", NULL},
-  { C("dependencies"), (getter)GetDependencies, NULL, "Dependencies", NULL},
-  { C("public_dependencies"), (getter)GetPublicDependencies, NULL, "Dependencies", NULL},
+  { "name", (getter)GetName, NULL, "name"},
+  { "package", (getter)GetPackage, NULL, "package"},
+  { "serialized_pb", (getter)GetSerializedPb},
+  { "message_types_by_name", (getter)GetMessageTypesByName, NULL,
+    "Messages by name"},
+  { "enum_types_by_name", (getter)GetEnumTypesByName, NULL, "Enums by name"},
+  { "extensions_by_name", (getter)GetExtensionsByName, NULL,
+    "Extensions by name"},
+  { "dependencies", (getter)GetDependencies, NULL, "Dependencies"},
+  { "public_dependencies", (getter)GetPublicDependencies, NULL, "Dependencies"},
 
-  { C("has_options"), (getter)GetHasOptions, (setter)SetHasOptions, "Has Options", NULL},
-  { C("_options"), (getter)NULL, (setter)SetOptions, "Options", NULL},
-  { C("syntax"), (getter)GetSyntax, (setter)NULL, "Syntax", NULL},
+  { "has_options", (getter)GetHasOptions, (setter)SetHasOptions, "Has Options"},
+  { "_options", (getter)NULL, (setter)SetOptions, "Options"},
+  { "syntax", (getter)GetSyntax, (setter)NULL, "Syntax"},
   {NULL}
 };
 
@@ -1243,11 +1245,10 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject PyFileDescriptor_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  C("google.protobuf.internal."
-    "_message.FileDescriptor"),         // tp_name
+  FULL_MODULE_NAME ".FileDescriptor",   // tp_name
   sizeof(PyFileDescriptor),             // tp_basicsize
   0,                                    // tp_itemsize
-  (destructor)file_descriptor::Dealloc, // tp_dealloc
+  (destructor)file_descriptor::Dealloc,  // tp_dealloc
   0,                                    // tp_print
   0,                                    // tp_getattr
   0,                                    // tp_setattr
@@ -1263,7 +1264,7 @@ PyTypeObject PyFileDescriptor_Type = {
   0,                                    // tp_setattro
   0,                                    // tp_as_buffer
   Py_TPFLAGS_DEFAULT,                   // tp_flags
-  C("A File Descriptor"),               // tp_doc
+  "A File Descriptor",                  // tp_doc
   0,                                    // tp_traverse
   0,                                    // tp_clear
   0,                                    // tp_richcompare
@@ -1284,23 +1285,28 @@ PyTypeObject PyFileDescriptor_Type = {
   PyObject_Del,                         // tp_free
 };
 
-PyObject* PyFileDescriptor_New(const FileDescriptor* file_descriptor) {
-  return descriptor::NewInternedDescriptor(
-      &PyFileDescriptor_Type, file_descriptor);
+PyObject* PyFileDescriptor_FromDescriptor(
+    const FileDescriptor* file_descriptor) {
+  return PyFileDescriptor_FromDescriptorWithSerializedPb(file_descriptor,
+                                                         NULL);
 }
 
-PyObject* PyFileDescriptor_NewWithPb(
+PyObject* PyFileDescriptor_FromDescriptorWithSerializedPb(
     const FileDescriptor* file_descriptor, PyObject *serialized_pb) {
-  PyObject* py_descriptor = PyFileDescriptor_New(file_descriptor);
+  bool was_created;
+  PyObject* py_descriptor = descriptor::NewInternedDescriptor(
+      &PyFileDescriptor_Type, file_descriptor, &was_created);
   if (py_descriptor == NULL) {
     return NULL;
   }
-  if (serialized_pb != NULL) {
+  if (was_created) {
     PyFileDescriptor* cfile_descriptor =
         reinterpret_cast<PyFileDescriptor*>(py_descriptor);
     Py_XINCREF(serialized_pb);
     cfile_descriptor->serialized_pb = serialized_pb;
   }
+  // TODO(amauryfa): In the case of a cached object, check that serialized_pb
+  // is the same as before.
 
   return py_descriptor;
 }
@@ -1333,19 +1339,19 @@ static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
   const Descriptor* containing_type =
       _GetDescriptor(self)->containing_type();
   if (containing_type) {
-    return PyMessageDescriptor_New(containing_type);
+    return PyMessageDescriptor_FromDescriptor(containing_type);
   } else {
     Py_RETURN_NONE;
   }
 }
 
 static PyGetSetDef Getters[] = {
-  { C("name"), (getter)GetName, NULL, "Name", NULL},
-  { C("full_name"), (getter)GetFullName, NULL, "Full name", NULL},
-  { C("index"), (getter)GetIndex, NULL, "Index", NULL},
+  { "name", (getter)GetName, NULL, "Name"},
+  { "full_name", (getter)GetFullName, NULL, "Full name"},
+  { "index", (getter)GetIndex, NULL, "Index"},
 
-  { C("containing_type"), (getter)GetContainingType, NULL, "Containing type", NULL},
-  { C("fields"), (getter)GetFields, NULL, "Fields", NULL},
+  { "containing_type", (getter)GetContainingType, NULL, "Containing type"},
+  { "fields", (getter)GetFields, NULL, "Fields"},
   {NULL}
 };
 
@@ -1353,8 +1359,7 @@ static PyGetSetDef Getters[] = {
 
 PyTypeObject PyOneofDescriptor_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  C("google.protobuf.internal."
-    "_message.OneofDescriptor"),        // tp_name
+  FULL_MODULE_NAME ".OneofDescriptor",  // tp_name
   sizeof(PyBaseDescriptor),             // tp_basicsize
   0,                                    // tp_itemsize
   0,                                    // tp_dealloc
@@ -1373,7 +1378,7 @@ PyTypeObject PyOneofDescriptor_Type = {
   0,                                    // tp_setattro
   0,                                    // tp_as_buffer
   Py_TPFLAGS_DEFAULT,                   // tp_flags
-  C("A Oneof Descriptor"),              // tp_doc
+  "A Oneof Descriptor",                 // tp_doc
   0,                                    // tp_traverse
   0,                                    // tp_clear
   0,                                    // tp_richcompare
@@ -1386,10 +1391,10 @@ PyTypeObject PyOneofDescriptor_Type = {
   &descriptor::PyBaseDescriptor_Type,   // tp_base
 };
 
-PyObject* PyOneofDescriptor_New(
+PyObject* PyOneofDescriptor_FromDescriptor(
     const OneofDescriptor* oneof_descriptor) {
   return descriptor::NewInternedDescriptor(
-      &PyOneofDescriptor_Type, oneof_descriptor);
+      &PyOneofDescriptor_Type, oneof_descriptor, NULL);
 }
 
 // Add a enum values to a type dictionary.

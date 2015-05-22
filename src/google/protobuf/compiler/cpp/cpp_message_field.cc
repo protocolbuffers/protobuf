@@ -72,7 +72,8 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
 MessageFieldGenerator::
 MessageFieldGenerator(const FieldDescriptor* descriptor,
                       const Options& options)
-  : descriptor_(descriptor) {
+  : descriptor_(descriptor),
+    dependent_field_(options.proto_h && IsFieldDependent(descriptor)) {
   SetMessageVariables(descriptor, &variables_, options);
 }
 
@@ -81,6 +82,10 @@ MessageFieldGenerator::~MessageFieldGenerator() {}
 void MessageFieldGenerator::
 GeneratePrivateMembers(io::Printer* printer) const {
   printer->Print(variables_, "$type$* $name$_;\n");
+}
+
+void MessageFieldGenerator::
+GenerateDependentAccessorDeclarations(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::
@@ -144,6 +149,8 @@ void MessageFieldGenerator::GenerateNonInlineAccessorDefinitions(
       "  return temp;\n"
       "}\n");
     if (SupportsArenas(descriptor_->message_type())) {
+      // NOTE: the same logic is mirrored in weak_message_field.cc. Any
+      // arena-related semantics changes should be made in both places.
         printer->Print(variables_,
           "void $classname$::_slow_set_allocated_$name$(\n"
           "    ::google::protobuf::Arena* message_arena, $type$** $name$) {\n"
@@ -178,6 +185,10 @@ void MessageFieldGenerator::GenerateNonInlineAccessorDefinitions(
       ":$full_name$)\n"
       "}\n");
   }
+}
+
+void MessageFieldGenerator::
+GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::
@@ -294,7 +305,7 @@ GenerateClearingCode(io::Printer* printer) const {
     // If we don't have has-bits, message presence is indicated only by ptr !=
     // NULL. Thus on clear, we need to delete the object.
     printer->Print(variables_,
-      "if ($name$_ != NULL) delete $name$_;\n"
+      "if (GetArenaNoVirtual() == NULL && $name$_ != NULL) delete $name$_;\n"
       "$name$_ = NULL;\n");
   } else {
     printer->Print(variables_,
@@ -364,6 +375,10 @@ MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
 }
 
 MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {}
+
+void MessageOneofFieldGenerator::
+GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
+}
 
 void MessageOneofFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer,
@@ -560,6 +575,10 @@ GeneratePrivateMembers(io::Printer* printer) const {
 }
 
 void RepeatedMessageFieldGenerator::
+GenerateDependentAccessorDeclarations(io::Printer* printer) const {
+}
+
+void RepeatedMessageFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
     "const $type$& $name$(int index) const$deprecation$;\n"
@@ -570,6 +589,10 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
     "    $name$() const$deprecation$;\n"
     "::google::protobuf::RepeatedPtrField< $type$ >*\n"
     "    mutable_$name$()$deprecation$;\n");
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
 }
 
 void RepeatedMessageFieldGenerator::
@@ -627,11 +650,13 @@ void RepeatedMessageFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
   if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     printer->Print(variables_,
-      "DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(\n"
+      "DO_(::google::protobuf::internal::WireFormatLite::"
+      "ReadMessageNoVirtualNoRecursionDepth(\n"
       "      input, add_$name$()));\n");
   } else {
     printer->Print(variables_,
-      "DO_(::google::protobuf::internal::WireFormatLite::ReadGroupNoVirtual(\n"
+      "DO_(::google::protobuf::internal::WireFormatLite::"
+      "ReadGroupNoVirtualNoRecursionDepth(\n"
       "      $number$, input, add_$name$()));\n");
   }
 }

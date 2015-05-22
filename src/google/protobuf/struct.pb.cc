@@ -217,7 +217,7 @@ const int Struct::kFieldsFieldNumber;
 #endif  // !_MSC_VER
 
 Struct::Struct()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Struct)
 }
@@ -295,7 +295,8 @@ bool Struct::MergePartialFromCodedStream(
       // map<string, .google.protobuf.Value> fields = 1;
       case 1: {
         if (tag == 10) {
-         parse_fields:
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_fields:
           ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry(fields_.NewEntry());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
               input, entry.get()));
@@ -303,7 +304,8 @@ bool Struct::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(10)) goto parse_fields;
+        if (input->ExpectTag(10)) goto parse_loop_fields;
+        input->UnsafeDecrementRecursionDepth();
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -336,7 +338,8 @@ void Struct::SerializeWithCachedSizes(
   {
     ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
     for (::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_iterator
-        it = fields().begin(); it != fields().end(); ++it) {
+        it = this->fields().begin();
+        it != this->fields().end(); ++it) {
       entry.reset(fields_.NewEntryWrapper(it->first, it->second));
       ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
           1, *entry, output);
@@ -353,7 +356,8 @@ void Struct::SerializeWithCachedSizes(
   {
     ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
     for (::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_iterator
-        it = fields().begin(); it != fields().end(); ++it) {
+        it = this->fields().begin();
+        it != this->fields().end(); ++it) {
       entry.reset(fields_.NewEntryWrapper(it->first, it->second));
       target = ::google::protobuf::internal::WireFormatLite::
           WriteMessageNoVirtualToArray(
@@ -373,7 +377,8 @@ int Struct::ByteSize() const {
   {
     ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
     for (::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_iterator
-        it = fields().begin(); it != fields().end(); ++it) {
+        it = this->fields().begin();
+        it != this->fields().end(); ++it) {
       entry.reset(fields_.NewEntryWrapper(it->first, it->second));
       total_size += ::google::protobuf::internal::WireFormatLite::
           MessageSizeNoVirtual(*entry);
@@ -388,9 +393,9 @@ int Struct::ByteSize() const {
 
 void Struct::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Struct* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Struct*>(
-      &from);
+  const Struct* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Struct>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -442,10 +447,10 @@ void Struct::InternalSwap(Struct* other) {
 // Struct
 
 // map<string, .google.protobuf.Value> fields = 1;
- int Struct::fields_size() const {
+int Struct::fields_size() const {
   return fields_.size();
 }
- void Struct::clear_fields() {
+void Struct::clear_fields() {
   fields_.Clear();
 }
  const ::google::protobuf::Map< ::std::string, ::google::protobuf::Value >&
@@ -473,7 +478,7 @@ const int Value::kListValueFieldNumber;
 #endif  // !_MSC_VER
 
 Value::Value()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Value)
 }
@@ -845,9 +850,9 @@ int Value::ByteSize() const {
 
 void Value::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Value* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Value*>(
-      &from);
+  const Value* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Value>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -928,13 +933,13 @@ void Value::InternalSwap(Value* other) {
 // Value
 
 // optional .google.protobuf.NullValue null_value = 1;
- bool Value::has_null_value() const {
+bool Value::has_null_value() const {
   return kind_case() == kNullValue;
 }
- void Value::set_has_null_value() {
+void Value::set_has_null_value() {
   _oneof_case_[0] = kNullValue;
 }
- void Value::clear_null_value() {
+void Value::clear_null_value() {
   if (has_null_value()) {
     kind_.null_value_ = 0;
     clear_has_kind();
@@ -957,13 +962,13 @@ void Value::InternalSwap(Value* other) {
 }
 
 // optional double number_value = 2;
- bool Value::has_number_value() const {
+bool Value::has_number_value() const {
   return kind_case() == kNumberValue;
 }
- void Value::set_has_number_value() {
+void Value::set_has_number_value() {
   _oneof_case_[0] = kNumberValue;
 }
- void Value::clear_number_value() {
+void Value::clear_number_value() {
   if (has_number_value()) {
     kind_.number_value_ = 0;
     clear_has_kind();
@@ -986,13 +991,13 @@ void Value::InternalSwap(Value* other) {
 }
 
 // optional string string_value = 3;
- bool Value::has_string_value() const {
+bool Value::has_string_value() const {
   return kind_case() == kStringValue;
 }
- void Value::set_has_string_value() {
+void Value::set_has_string_value() {
   _oneof_case_[0] = kStringValue;
 }
- void Value::clear_string_value() {
+void Value::clear_string_value() {
   if (has_string_value()) {
     kind_.string_value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     clear_has_kind();
@@ -1066,13 +1071,13 @@ void Value::InternalSwap(Value* other) {
 }
 
 // optional bool bool_value = 4;
- bool Value::has_bool_value() const {
+bool Value::has_bool_value() const {
   return kind_case() == kBoolValue;
 }
- void Value::set_has_bool_value() {
+void Value::set_has_bool_value() {
   _oneof_case_[0] = kBoolValue;
 }
- void Value::clear_bool_value() {
+void Value::clear_bool_value() {
   if (has_bool_value()) {
     kind_.bool_value_ = false;
     clear_has_kind();
@@ -1095,13 +1100,13 @@ void Value::InternalSwap(Value* other) {
 }
 
 // optional .google.protobuf.Struct struct_value = 5;
- bool Value::has_struct_value() const {
+bool Value::has_struct_value() const {
   return kind_case() == kStructValue;
 }
- void Value::set_has_struct_value() {
+void Value::set_has_struct_value() {
   _oneof_case_[0] = kStructValue;
 }
- void Value::clear_struct_value() {
+void Value::clear_struct_value() {
   if (has_struct_value()) {
     delete kind_.struct_value_;
     clear_has_kind();
@@ -1141,13 +1146,13 @@ void Value::InternalSwap(Value* other) {
 }
 
 // optional .google.protobuf.ListValue list_value = 6;
- bool Value::has_list_value() const {
+bool Value::has_list_value() const {
   return kind_case() == kListValue;
 }
- void Value::set_has_list_value() {
+void Value::set_has_list_value() {
   _oneof_case_[0] = kListValue;
 }
- void Value::clear_list_value() {
+void Value::clear_list_value() {
   if (has_list_value()) {
     delete kind_.list_value_;
     clear_has_kind();
@@ -1186,10 +1191,10 @@ void Value::InternalSwap(Value* other) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.list_value)
 }
 
- bool Value::has_kind() const {
+bool Value::has_kind() const {
   return kind_case() != KIND_NOT_SET;
 }
- void Value::clear_has_kind() {
+void Value::clear_has_kind() {
   _oneof_case_[0] = KIND_NOT_SET;
 }
 Value::KindCase Value::kind_case() const {
@@ -1204,7 +1209,7 @@ const int ListValue::kValuesFieldNumber;
 #endif  // !_MSC_VER
 
 ListValue::ListValue()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.ListValue)
 }
@@ -1278,13 +1283,15 @@ bool ListValue::MergePartialFromCodedStream(
       // repeated .google.protobuf.Value values = 1;
       case 1: {
         if (tag == 10) {
-         parse_values:
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(input->IncrementRecursionDepth());
+         parse_loop_values:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_values()));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(10)) goto parse_values;
+        if (input->ExpectTag(10)) goto parse_loop_values;
+        input->UnsafeDecrementRecursionDepth();
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -1355,9 +1362,9 @@ int ListValue::ByteSize() const {
 
 void ListValue::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const ListValue* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const ListValue*>(
-      &from);
+  const ListValue* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const ListValue>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
@@ -1409,10 +1416,10 @@ void ListValue::InternalSwap(ListValue* other) {
 // ListValue
 
 // repeated .google.protobuf.Value values = 1;
- int ListValue::values_size() const {
+int ListValue::values_size() const {
   return values_.size();
 }
- void ListValue::clear_values() {
+void ListValue::clear_values() {
   values_.Clear();
 }
  const ::google::protobuf::Value& ListValue::values(int index) const {

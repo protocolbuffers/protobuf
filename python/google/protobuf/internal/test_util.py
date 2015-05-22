@@ -75,7 +75,8 @@ def SetAllNonLazyFields(message):
   message.optional_string   = u'115'
   message.optional_bytes    = b'116'
 
-  message.optionalgroup.a = 117
+  if IsProto2(message):
+    message.optionalgroup.a = 117
   message.optional_nested_message.bb = 118
   message.optional_foreign_message.c = 119
   message.optional_import_message.d = 120
@@ -109,7 +110,8 @@ def SetAllNonLazyFields(message):
   message.repeated_string.append(u'215')
   message.repeated_bytes.append(b'216')
 
-  message.repeatedgroup.add().a = 217
+  if IsProto2(message):
+    message.repeatedgroup.add().a = 217
   message.repeated_nested_message.add().bb = 218
   message.repeated_foreign_message.add().c = 219
   message.repeated_import_message.add().d = 220
@@ -140,7 +142,8 @@ def SetAllNonLazyFields(message):
   message.repeated_string.append(u'315')
   message.repeated_bytes.append(b'316')
 
-  message.repeatedgroup.add().a = 317
+  if IsProto2(message):
+    message.repeatedgroup.add().a = 317
   message.repeated_nested_message.add().bb = 318
   message.repeated_foreign_message.add().c = 319
   message.repeated_import_message.add().d = 320
@@ -396,7 +399,8 @@ def ExpectAllFieldsSet(test_case, message):
   test_case.assertTrue(message.HasField('optional_string'))
   test_case.assertTrue(message.HasField('optional_bytes'))
 
-  test_case.assertTrue(message.HasField('optionalgroup'))
+  if IsProto2(message):
+    test_case.assertTrue(message.HasField('optionalgroup'))
   test_case.assertTrue(message.HasField('optional_nested_message'))
   test_case.assertTrue(message.HasField('optional_foreign_message'))
   test_case.assertTrue(message.HasField('optional_import_message'))
@@ -430,7 +434,8 @@ def ExpectAllFieldsSet(test_case, message):
   test_case.assertEqual('115', message.optional_string)
   test_case.assertEqual(b'116', message.optional_bytes)
 
-  test_case.assertEqual(117, message.optionalgroup.a)
+  if IsProto2(message):
+    test_case.assertEqual(117, message.optionalgroup.a)
   test_case.assertEqual(118, message.optional_nested_message.bb)
   test_case.assertEqual(119, message.optional_foreign_message.c)
   test_case.assertEqual(120, message.optional_import_message.d)
@@ -463,7 +468,8 @@ def ExpectAllFieldsSet(test_case, message):
   test_case.assertEqual(2, len(message.repeated_string))
   test_case.assertEqual(2, len(message.repeated_bytes))
 
-  test_case.assertEqual(2, len(message.repeatedgroup))
+  if IsProto2(message):
+    test_case.assertEqual(2, len(message.repeatedgroup))
   test_case.assertEqual(2, len(message.repeated_nested_message))
   test_case.assertEqual(2, len(message.repeated_foreign_message))
   test_case.assertEqual(2, len(message.repeated_import_message))
@@ -491,7 +497,8 @@ def ExpectAllFieldsSet(test_case, message):
   test_case.assertEqual('215', message.repeated_string[0])
   test_case.assertEqual(b'216', message.repeated_bytes[0])
 
-  test_case.assertEqual(217, message.repeatedgroup[0].a)
+  if IsProto2(message):
+    test_case.assertEqual(217, message.repeatedgroup[0].a)
   test_case.assertEqual(218, message.repeated_nested_message[0].bb)
   test_case.assertEqual(219, message.repeated_foreign_message[0].c)
   test_case.assertEqual(220, message.repeated_import_message[0].d)
@@ -521,7 +528,8 @@ def ExpectAllFieldsSet(test_case, message):
   test_case.assertEqual('315', message.repeated_string[1])
   test_case.assertEqual(b'316', message.repeated_bytes[1])
 
-  test_case.assertEqual(317, message.repeatedgroup[1].a)
+  if IsProto2(message):
+    test_case.assertEqual(317, message.repeatedgroup[1].a)
   test_case.assertEqual(318, message.repeated_nested_message[1].bb)
   test_case.assertEqual(319, message.repeated_foreign_message[1].c)
   test_case.assertEqual(320, message.repeated_import_message[1].d)

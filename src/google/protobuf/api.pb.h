@@ -466,7 +466,7 @@ inline bool Api::has_source_context() const {
   return !_is_default_instance_ && source_context_ != NULL;
 }
 inline void Api::clear_source_context() {
-  if (source_context_ != NULL) delete source_context_;
+  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
   source_context_ = NULL;
 }
 inline const ::google::protobuf::SourceContext& Api::source_context() const {
@@ -690,6 +690,8 @@ Method::mutable_options() {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 
 // @@protoc_insertion_point(namespace_scope)
 

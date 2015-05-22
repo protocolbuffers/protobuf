@@ -111,7 +111,7 @@ static void MergeFromFail(int line) {
 #endif  // !_MSC_VER
 
 Empty::Empty()
-  : ::google::protobuf::Message() , _internal_metadata_(NULL)  {
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Empty)
 }
@@ -221,9 +221,9 @@ int Empty::ByteSize() const {
 
 void Empty::MergeFrom(const ::google::protobuf::Message& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
-  const Empty* source =
-    ::google::protobuf::internal::dynamic_cast_if_available<const Empty*>(
-      &from);
+  const Empty* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const Empty>(
+          &from);
   if (source == NULL) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {

@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.AbstractList;
@@ -531,5 +532,133 @@ public class Internal {
         return valueConverter.doForward(oldValue);
       }
     }
+  }
+
+  /**
+   * Extends {@link List} to add the capability to make the list immutable and inspect if it is
+   * modifiable.
+   */
+  public static interface ProtobufList<E> extends List<E> {
+
+    /**
+     * Makes this list immutable. All subsequent modifications will throw an
+     * {@link UnsupportedOperationException}.
+     */
+    void makeImmutable();
+
+    /**
+     * Returns whether this list can be modified via the publicly accessible {@link List} methods.
+     */
+    boolean isModifiable();
+  }
+
+  /**
+   * A {@link java.util.List} implementation that avoids boxing the elements into Integers if
+   * possible. Does not support null elements.
+   */
+  public static interface IntList extends ProtobufList<Integer> {
+
+    /**
+     * Like {@link #get(int)} but more efficient in that it doesn't box the returned value.
+     */
+    int getInt(int index);
+
+    /**
+     * Like {@link #add(Integer)} but more efficient in that it doesn't box the element.
+     */
+    void addInt(int element);
+
+    /**
+     * Like {@link #set(int, Integer)} but more efficient in that it doesn't box the element.
+     */
+    int setInt(int index, int element);
+  }
+
+  /**
+   * A {@link java.util.List} implementation that avoids boxing the elements into Booleans if
+   * possible. Does not support null elements.
+   */
+  public static interface BooleanList extends ProtobufList<Boolean> {
+
+    /**
+     * Like {@link #get(int)} but more efficient in that it doesn't box the returned value.
+     */
+    boolean getBoolean(int index);
+
+    /**
+     * Like {@link #add(Boolean)} but more efficient in that it doesn't box the element.
+     */
+    void addBoolean(boolean element);
+
+    /**
+     * Like {@link #set(int, Boolean)} but more efficient in that it doesn't box the element.
+     */
+    boolean setBoolean(int index, boolean element);
+  }
+
+  /**
+   * A {@link java.util.List} implementation that avoids boxing the elements into Longs if
+   * possible. Does not support null elements.
+   */
+  public static interface LongList extends ProtobufList<Long> {
+
+    /**
+     * Like {@link #get(int)} but more efficient in that it doesn't box the returned value.
+     */
+    long getLong(int index);
+
+    /**
+     * Like {@link #add(Long)} but more efficient in that it doesn't box the element.
+     */
+    void addLong(long element);
+
+    /**
+     * Like {@link #set(int, Long)} but more efficient in that it doesn't box the element.
+     */
+    long setLong(int index, long element);
+  }
+
+  /**
+   * A {@link java.util.List} implementation that avoids boxing the elements into Doubles if
+   * possible. Does not support null elements.
+   */
+  public static interface DoubleList extends ProtobufList<Double> {
+
+    /**
+     * Like {@link #get(int)} but more efficient in that it doesn't box the returned value.
+     */
+    double getDouble(int index);
+
+    /**
+     * Like {@link #add(Double)} but more efficient in that it doesn't box the element.
+     */
+    void addDouble(double element);
+
+    /**
+     * Like {@link #set(int, Double)} but more efficient in that it doesn't box the element.
+     */
+    double setDouble(int index, double element);
+  }
+
+  /**
+   * A {@link java.util.List} implementation that avoids boxing the elements into Floats if
+   * possible. Does not support null elements.
+   */
+  public static interface FloatList extends ProtobufList<Float> {
+
+    /**
+     * Like {@link #get(int)} but more efficient in that it doesn't box the returned value.
+     */
+    float getFloat(int index);
+
+    /**
+     * Like {@link #add(Float)} but more efficient in that it doesn't box the element.
+     */
+    void addFloat(float element);
+
+    /**
+     * Like {@link #set(int, Float)} but more efficient in that it doesn't box the element.
+     */
+    float setFloat(int index, float element);
   }
 }

@@ -208,6 +208,17 @@ class LIBPROTOBUF_EXPORT TextFormat {
           print_message_fields_in_index_order;
     }
 
+    // If expand==true, expand google.protobuf.Any payloads. The output
+    // will be of form
+    //    [type_url] { <value_printed_in_text> }
+    //
+    // If expand==false, print Any using the default printer. The output will
+    // look like
+    //    type_url: "<type_url>"  value: "serialized_content"
+    void SetExpandAny(bool expand) {
+      expand_any_ = expand;
+    }
+
     // Register a custom field-specific FieldValuePrinter for fields
     // with a particular FieldDescriptor.
     // Returns "true" if the registration succeeded, or "false", if there is
@@ -259,6 +270,8 @@ class LIBPROTOBUF_EXPORT TextFormat {
     void PrintUnknownFields(const UnknownFieldSet& unknown_fields,
                             TextGenerator& generator) const;
 
+    bool PrintAny(const Message& message, TextGenerator& generator) const;
+
     int initial_indent_level_;
 
     bool single_line_mode_;
@@ -270,6 +283,8 @@ class LIBPROTOBUF_EXPORT TextFormat {
     bool hide_unknown_fields_;
 
     bool print_message_fields_in_index_order_;
+
+    bool expand_any_;
 
     google::protobuf::scoped_ptr<const FieldValuePrinter> default_field_value_printer_;
     typedef map<const FieldDescriptor*,

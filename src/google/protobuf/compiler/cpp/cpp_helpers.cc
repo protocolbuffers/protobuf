@@ -51,6 +51,9 @@ namespace cpp {
 
 namespace {
 
+static const char kAnyMessageName[] = "Any";
+static const char kAnyProtoFile[] = "google/protobuf/any.proto";
+
 string DotsToUnderscores(const string& name) {
   return StringReplace(name, ".", "_", true);
 }
@@ -162,6 +165,10 @@ string ClassName(const EnumDescriptor* enum_descriptor, bool qualified) {
 }
 
 
+string DependentBaseClassTemplateName(const Descriptor* descriptor) {
+  return ClassName(descriptor, false) + "_InternalBase";
+}
+
 string SuperClassName(const Descriptor* descriptor) {
   return HasDescriptorMethods(descriptor->file()) ?
       "::google::protobuf::Message" : "::google::protobuf::MessageLite";
@@ -198,6 +205,47 @@ string FieldConstantName(const FieldDescriptor *field) {
   }
 
   return result;
+}
+
+bool IsFieldDependent(const FieldDescriptor* field) {
+  if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+    return false;
+  }
+  if (field->containing_oneof() != NULL) {
+    // Oneof fields will always be dependent.
+    //
+    // This is a unique case for field codegen. Field generators are
+    // responsible for generating all the field-specific accessor
+    // functions, except for the clear_*() function; instead, field
+    // generators produce inline clearing code.
+    //
+    // For non-oneof fields, the Message class uses the inline clearing
+    // code to define the field's clear_*() function, as well as in the
+    // destructor. For oneof fields, the Message class generates a much
+    // more complicated clear_*() function, which clears only the oneof
+    // member that is set, in addition to clearing methods for each of the
+    // oneof members individually.
+    //
+    // Since oneofs do not have their own generator class, the Message code
+    // generation logic would be significantly complicated in order to
+    // split dependent and non-dependent manipulation logic based on
+    // whether the oneof truly needs to be dependent; so, for oneof fields,
+    // we just assume it (and its constituents) should be manipulated by a
+    // dependent base class function.
+    //
+    // This is less precise than how dependent message-typed fields are
+    // handled, but the cost is limited to only the generated code for the
+    // oneof field, which seems like an acceptable tradeoff.
+    return true;
+  }
+  if (field->file() == field->message_type()->file()) {
+    return false;
+  }
+  return true;
+}
+
+string DependentTypeName(const FieldDescriptor* field) {
+  return "InternalBase_" + field->name() + "_T";
 }
 
 string FieldMessageTypeName(const FieldDescriptor* field) {
@@ -360,7 +408,7 @@ string FilenameIdentifier(const string& filename) {
     } else {
       // Not alphanumeric.  To avoid any possibility of name conflicts we
       // use the hex code for the character.
-      StrAppend(&result, "_", ToHex(static_cast<uint8>(filename[i])));
+      StrAppend(&result, "_", strings::Hex(static_cast<uint8>(filename[i])));
     }
   }
   return result;
@@ -519,6 +567,15 @@ FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field) {
   // Open-source protobuf release only supports STRING ctype.
   return FieldOptions::STRING;
 
+}
+
+bool IsAnyMessage(const FileDescriptor* descriptor) {
+  return descriptor->name() == kAnyProtoFile;
+}
+
+bool IsAnyMessage(const Descriptor* descriptor) {
+  return descriptor->name() == kAnyMessageName &&
+         descriptor->file()->name() == kAnyProtoFile;
 }
 
 }  // namespace cpp

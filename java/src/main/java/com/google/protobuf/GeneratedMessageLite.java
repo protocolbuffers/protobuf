@@ -30,6 +30,12 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Internal.BooleanList;
+import com.google.protobuf.Internal.DoubleList;
+import com.google.protobuf.Internal.FloatList;
+import com.google.protobuf.Internal.IntList;
+import com.google.protobuf.Internal.LongList;
+import com.google.protobuf.Internal.ProtobufList;
 import com.google.protobuf.WireFormat.FieldType;
 
 import java.io.IOException;
@@ -76,7 +82,11 @@ public abstract class GeneratedMessageLite<
   private static final long serialVersionUID = 1L;
 
   /** For use by generated code only.  */
-  protected UnknownFieldSetLite unknownFields;
+  protected UnknownFieldSetLite unknownFields =
+      UnknownFieldSetLite.getDefaultInstance();
+  
+  /** For use by generated code only.  */
+  protected int memoizedSerializedSize = -1;
   
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final Parser<MessageType> getParserForType() {
@@ -109,10 +119,67 @@ public abstract class GeneratedMessageLite<
     return unknownFields.mergeFieldFrom(tag, input);
   }
 
-  // The default behavior. If a message has required fields in its subtree, the
-  // generated code will override.
-  public boolean isInitialized() {
-    return true;
+  public final boolean isInitialized() {
+    return dynamicMethod(MethodToInvoke.IS_INITIALIZED, Boolean.TRUE) != null;
+  }
+
+  public final BuilderType toBuilder() {
+    BuilderType builder = (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER);
+    builder.mergeFrom((MessageType) this);
+    return builder;
+  }
+
+  /**
+   * Defines which method path to invoke in {@link GeneratedMessageLite
+   * #dynamicMethod(MethodToInvoke, Object...)}.
+   * <p>
+   * For use by generated code only.
+   */
+  public static enum MethodToInvoke {
+    IS_INITIALIZED,
+    PARSE_PARTIAL_FROM,
+    MERGE_FROM,
+    MAKE_IMMUTABLE,
+    NEW_INSTANCE,
+    NEW_BUILDER;
+  }
+
+  /**
+   * A method that implements different types of operations described in {@link MethodToInvoke}.
+   * Theses different kinds of operations are required to implement message-level operations for
+   * builders in the runtime. This method bundles those operations to reduce the generated methods
+   * count.
+   * <ul>
+   * <li>{@code PARSE_PARTIAL_FROM} is parameterized with an {@link CodedInputStream} and
+   * {@link ExtensionRegistryLite}. It consumes the input stream, parsing the contents into the
+   * returned protocol buffer. If parsing throws an {@link InvalidProtocolBufferException}, the
+   * implementation wraps it in a RuntimeException
+   * <li>{@code NEW_INSTANCE} returns a new instance of the protocol buffer
+   * <li>{@code IS_INITIALIZED} is parameterized with a {@code Boolean} detailing whether to
+   * memoize. It returns {@code null} for false and the default instance for true. We optionally
+   * memoize to support the Builder case, where memoization is not desired.
+   * <li>{@code NEW_BUILDER} returns a {@code BuilderType} instance.
+   * <li>{@code MERGE_FROM} is parameterized with a {@code MessageType} and merges the fields from
+   * that instance into this instance.
+   * <li>{@code MAKE_IMMUTABLE} sets all internal fields to an immutable state.
+   * </ul>
+   * This method, plus the implementation of the Builder, enables the Builder class to be proguarded
+   * away entirely on Android.
+   * <p>
+   * For use by generated code only.
+   */
+  protected abstract Object dynamicMethod(
+      MethodToInvoke method,
+      Object... args);
+
+  /**
+   * Merge some unknown fields into the {@link UnknownFieldSetLite} for this
+   * message.
+   *
+   * <p>For use by generated code only.
+   */
+  protected final void mergeUnknownFields(UnknownFieldSetLite unknownFields) {
+    this.unknownFields = UnknownFieldSetLite.concat(this.unknownFields, unknownFields);
   }
 
   @SuppressWarnings("unchecked")
@@ -122,24 +189,37 @@ public abstract class GeneratedMessageLite<
           extends AbstractMessageLite.Builder<BuilderType> {
 
     private final MessageType defaultInstance;
-
-    /** For use by generated code only. */
-    protected UnknownFieldSetLite unknownFields =
-        UnknownFieldSetLite.getDefaultInstance();
+    protected MessageType instance;
+    protected boolean isBuilt;
 
     protected Builder(MessageType defaultInstance) {
       this.defaultInstance = defaultInstance;
+      this.instance = (MessageType) defaultInstance.dynamicMethod(MethodToInvoke.NEW_INSTANCE);
+      isBuilt = false;
     }
 
-    // The default behavior. If a message has required fields in its subtree,
-    // the generated code will override.
-    public boolean isInitialized() {
-      return true;
+    /**
+     * Called before any method that would mutate the builder to ensure that it correctly copies
+     * any state before the write happens to preserve immutability guarantees.
+     */
+    protected void copyOnWrite() {
+      if (isBuilt) {
+        MessageType newInstance = (MessageType) instance.dynamicMethod(MethodToInvoke.NEW_INSTANCE);
+        newInstance.dynamicMethod(MethodToInvoke.MERGE_FROM, instance);
+        instance = newInstance;
+        isBuilt = false;
+      }
     }
 
     //@Override (Java 1.6 override semantics, but we must support 1.5)
-    public BuilderType clear() {
-      unknownFields = UnknownFieldSetLite.getDefaultInstance();
+    public final boolean isInitialized() {
+      return GeneratedMessageLite.isInitialized(instance, false /* shouldMemoize */);
+    }
+
+    //@Override (Java 1.6 override semantics, but we must support 1.5)
+    public final BuilderType clear() {
+      // No need to copy on write since we're dropping the instance anyways.
+      instance = (MessageType) instance.dynamicMethod(MethodToInvoke.NEW_INSTANCE);
       return (BuilderType) this;
     }
 
@@ -151,8 +231,12 @@ public abstract class GeneratedMessageLite<
       return builder;
     }
 
-    /** All subclasses implement this. */
-    public abstract MessageType buildPartial();
+    //@Override (Java 1.6 override semantics, but we must support 1.5)
+    public MessageType buildPartial() {
+      instance.dynamicMethod(MethodToInvoke.MAKE_IMMUTABLE);
+      isBuilt = true;
+      return instance;
+    }
 
     //@Override (Java 1.6 override semantics, but we must support 1.5)
     public final MessageType build() {
@@ -162,9 +246,13 @@ public abstract class GeneratedMessageLite<
       }
       return result;
     }
-
+    
     /** All subclasses implement this. */
-    public abstract BuilderType mergeFrom(MessageType message);
+    public BuilderType mergeFrom(MessageType message) {
+      copyOnWrite();
+      instance.dynamicMethod(MethodToInvoke.MERGE_FROM, message);
+      return (BuilderType) this;
+    }
     
     public MessageType getDefaultInstanceForType() {
       return defaultInstance;
@@ -180,18 +268,6 @@ public abstract class GeneratedMessageLite<
         ExtensionRegistryLite extensionRegistry,
         int tag) throws IOException {
       return unknownFields.mergeFieldFrom(tag, input);
-    }
-
-    /**
-     * Merge some unknown fields into the {@link UnknownFieldSetLite} for this
-     * message.
-     *
-     * <p>For use by generated code only.
-     */
-    protected final BuilderType mergeUnknownFields(
-        final UnknownFieldSetLite unknownFields) {
-      this.unknownFields = UnknownFieldSetLite.concat(this.unknownFields, unknownFields);
-      return (BuilderType) this;
     }
     
     public BuilderType mergeFrom(
@@ -259,19 +335,13 @@ public abstract class GeneratedMessageLite<
      */
     protected FieldSet<ExtensionDescriptor> extensions = FieldSet.newFieldSet();
 
-    // -1 => not memoized, 0 => false, 1 => true.
-    private byte memoizedIsInitialized = -1;
-
-    // The default behavior. If a message has required fields in its subtree,
-    // the generated code will override.
-    public boolean isInitialized() {
-      if (memoizedIsInitialized == -1) {
-        memoizedIsInitialized = (byte) (extensions.isInitialized() ? 1 : 0);
+    protected final void mergeExtensionFields(final MessageType other) {
+      if (extensions.isImmutable()) {
+        extensions = extensions.clone();
       }
-
-      return memoizedIsInitialized == 1;
+      extensions.mergeFrom(((ExtendableMessage) other).extensions);
     }
-
+    
     private void verifyExtensionContainingType(
         final GeneratedExtension<MessageType, ?> extension) {
       if (extension.getContainingTypeDefaultInstance() !=
@@ -420,46 +490,38 @@ public abstract class GeneratedMessageLite<
       implements ExtendableMessageOrBuilder<MessageType, BuilderType> {
     protected ExtendableBuilder(MessageType defaultInstance) {
       super(defaultInstance);
-    }
-
-    private FieldSet<ExtensionDescriptor> extensions = FieldSet.emptySet();
-    private boolean extensionsIsMutable;
-
-    // The default behavior. If a message has required fields in its subtree,
-    // the generated code will override.
-    public boolean isInitialized() {
-      return extensions.isInitialized();
+      
+      // TODO(dweis): This is kind of an unnecessary clone since we construct a
+      //     new instance in the parent constructor which makes the extensions
+      //     immutable. This extra allocation shouldn't matter in practice
+      //     though.
+      instance.extensions = instance.extensions.clone();
     }
 
     // For immutable message conversion.
     void internalSetExtensionSet(FieldSet<ExtensionDescriptor> extensions) {
-      this.extensions = extensions;
+      copyOnWrite();
+      instance.extensions = extensions;
     }
 
-    @Override
-    public BuilderType clear() {
-      extensions.clear();
-      extensionsIsMutable = false;
-      return super.clear();
-    }
-
-    private void ensureExtensionsIsMutable() {
-      if (!extensionsIsMutable) {
-        extensions = extensions.clone();
-        extensionsIsMutable = true;
+    // @Override (Java 1.6 override semantics, but we must support 1.5)
+    protected void copyOnWrite() {
+      if (!isBuilt) {
+        return;
       }
+      
+      super.copyOnWrite();
+      instance.extensions = instance.extensions.clone();
     }
 
-    /**
-     * Called by the build code path to create a copy of the extensions for
-     * building the message.
-     * <p>
-     * For use by generated code only.
-     */
-    protected final FieldSet<ExtensionDescriptor> buildExtensions() {
-      extensions.makeImmutable();
-      extensionsIsMutable = false;
-      return extensions;
+    // @Override (Java 1.6 override semantics, but we must support 1.5)
+    public final MessageType buildPartial() {
+      if (isBuilt) {
+        return instance;
+      }
+
+      instance.extensions.makeImmutable();
+      return super.buildPartial();
     }
 
     private void verifyExtensionContainingType(
@@ -477,22 +539,14 @@ public abstract class GeneratedMessageLite<
     //@Override (Java 1.6 override semantics, but we must support 1.5)
     public final <Type> boolean hasExtension(
         final ExtensionLite<MessageType, Type> extension) {
-      GeneratedExtension<MessageType, Type> extensionLite =
-          checkIsLite(extension);
-      
-      verifyExtensionContainingType(extensionLite);
-      return extensions.hasField(extensionLite.descriptor);
+      return instance.hasExtension(extension);
     }
 
     /** Get the number of elements in a repeated extension. */
     //@Override (Java 1.6 override semantics, but we must support 1.5)
     public final <Type> int getExtensionCount(
         final ExtensionLite<MessageType, List<Type>> extension) {
-      GeneratedExtension<MessageType, List<Type>> extensionLite =
-          checkIsLite(extension);
-      
-      verifyExtensionContainingType(extensionLite);
-      return extensions.getRepeatedFieldCount(extensionLite.descriptor);
+      return instance.getExtensionCount(extension);
     }
 
     /** Get the value of an extension. */
@@ -500,16 +554,7 @@ public abstract class GeneratedMessageLite<
     @SuppressWarnings("unchecked")
     public final <Type> Type getExtension(
         final ExtensionLite<MessageType, Type> extension) {
-      GeneratedExtension<MessageType, Type> extensionLite =
-          checkIsLite(extension);
-      
-      verifyExtensionContainingType(extensionLite);
-      final Object value = extensions.getField(extensionLite.descriptor);
-      if (value == null) {
-        return extensionLite.defaultValue;
-      } else {
-        return (Type) extensionLite.fromFieldSetType(value);
-      }
+      return instance.getExtension(extension);
     }
 
     /** Get one element of a repeated extension. */
@@ -518,12 +563,7 @@ public abstract class GeneratedMessageLite<
     public final <Type> Type getExtension(
         final ExtensionLite<MessageType, List<Type>> extension,
         final int index) {
-      GeneratedExtension<MessageType, List<Type>> extensionLite =
-          checkIsLite(extension);
-      
-      verifyExtensionContainingType(extensionLite);
-      return (Type) extensionLite.singularFromFieldSetType(
-          extensions.getRepeatedField(extensionLite.descriptor, index));
+      return instance.getExtension(extension, index);
     }
 
     // This is implemented here only to work around an apparent bug in the
@@ -542,9 +582,8 @@ public abstract class GeneratedMessageLite<
           checkIsLite(extension);
       
       verifyExtensionContainingType(extensionLite);
-      ensureExtensionsIsMutable();
-      extensions.setField(extensionLite.descriptor,
-                          extensionLite.toFieldSetType(value));
+      copyOnWrite();
+      instance.extensions.setField(extensionLite.descriptor, extensionLite.toFieldSetType(value));
       return (BuilderType) this;
     }
 
@@ -556,9 +595,9 @@ public abstract class GeneratedMessageLite<
           checkIsLite(extension);
       
       verifyExtensionContainingType(extensionLite);
-      ensureExtensionsIsMutable();
-      extensions.setRepeatedField(extensionLite.descriptor, index,
-                                  extensionLite.singularToFieldSetType(value));
+      copyOnWrite();
+      instance.extensions.setRepeatedField(
+          extensionLite.descriptor, index, extensionLite.singularToFieldSetType(value));
       return (BuilderType) this;
     }
 
@@ -570,9 +609,9 @@ public abstract class GeneratedMessageLite<
           checkIsLite(extension);
       
       verifyExtensionContainingType(extensionLite);
-      ensureExtensionsIsMutable();
-      extensions.addRepeatedField(extensionLite.descriptor,
-                                  extensionLite.singularToFieldSetType(value));
+      copyOnWrite();
+      instance.extensions.addRepeatedField(
+          extensionLite.descriptor, extensionLite.singularToFieldSetType(value));
       return (BuilderType) this;
     }
 
@@ -582,19 +621,9 @@ public abstract class GeneratedMessageLite<
       GeneratedExtension<MessageType, ?> extensionLite = checkIsLite(extension);
       
       verifyExtensionContainingType(extensionLite);
-      ensureExtensionsIsMutable();
-      extensions.clearField(extensionLite.descriptor);
+      copyOnWrite();
+      instance.extensions.clearField(extensionLite.descriptor);
       return (BuilderType) this;
-    }
-
-    /** Called by subclasses to check if all extensions are initialized. */
-    protected boolean extensionsAreInitialized() {
-      return extensions.isInitialized();
-    }
-
-    protected final void mergeExtensionFields(final MessageType other) {
-      ensureExtensionsIsMutable();
-      extensions.mergeFrom(((ExtendableMessage) other).extensions);
     }
   }
 
@@ -1112,5 +1141,134 @@ public abstract class GeneratedMessageLite<
     public BuilderType newBuilderForType() {
       return (BuilderType) defaultInstance.toBuilder();
     }
+  }
+
+  /**
+   * A static helper method for checking if a message is initialized, optionally memoizing.
+   * <p>
+   * For use by generated code only.
+   */
+  protected static final <T extends GeneratedMessageLite<T, ?>> boolean isInitialized(
+      T message, boolean shouldMemoize) {
+    return message.dynamicMethod(MethodToInvoke.IS_INITIALIZED, shouldMemoize) != null;
+  }
+  
+  protected static final <T extends GeneratedMessageLite<T, ?>> void makeImmutable(T message) {
+    message.dynamicMethod(MethodToInvoke.MAKE_IMMUTABLE);
+  }
+  
+  /**
+   * A static helper method for parsing a partial from input using the extension registry and the
+   * instance.
+   */
+  static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
+      T instance, CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+          throws InvalidProtocolBufferException {
+    try {
+      return (T) instance.dynamicMethod(
+          MethodToInvoke.PARSE_PARTIAL_FROM, input, extensionRegistry);
+    } catch (RuntimeException e) {
+      if (e.getCause() instanceof InvalidProtocolBufferException) {
+        throw (InvalidProtocolBufferException) e.getCause();
+      }
+      throw e;
+    }
+  }
+  
+  /**
+   * A {@link Parser} implementation that delegates to the default instance.
+   * <p>
+   * For use by generated code only.
+   */
+  protected static class DefaultInstanceBasedParser<T extends GeneratedMessageLite<T, ?>>
+      extends AbstractParser<T> {
+    
+    private T defaultInstance;
+    
+    public DefaultInstanceBasedParser(T defaultInstance) {
+      this.defaultInstance = defaultInstance;
+    }
+    
+    @Override
+    public T parsePartialFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+        throws InvalidProtocolBufferException {
+      return GeneratedMessageLite.parsePartialFrom(defaultInstance, input, extensionRegistry);
+    }
+  }
+  
+  protected static IntList newIntList() {
+    return new IntArrayList();
+  }
+  
+  protected static IntList newIntList(List<Integer> toCopy) {
+    return new IntArrayList(toCopy);
+  }
+  
+  protected static IntList emptyIntList() {
+    return IntArrayList.emptyList();
+  }
+  
+  protected static LongList newLongList() {
+    return new LongArrayList();
+  }
+  
+  protected static LongList newLongList(List<Long> toCopy) {
+    return new LongArrayList(toCopy);
+  }
+  
+  protected static LongList emptyLongList() {
+    return LongArrayList.emptyList();
+  }
+  
+  protected static FloatList newFloatList() {
+    return new FloatArrayList();
+  }
+  
+  protected static FloatList newFloatList(List<Float> toCopy) {
+    return new FloatArrayList(toCopy);
+  }
+  
+  protected static FloatList emptyFloatList() {
+    return FloatArrayList.emptyList();
+  }
+  
+  protected static DoubleList newDoubleList() {
+    return new DoubleArrayList();
+  }
+  
+  protected static DoubleList newDoubleList(List<Double> toCopy) {
+    return new DoubleArrayList(toCopy);
+  }
+  
+  protected static DoubleList emptyDoubleList() {
+    return DoubleArrayList.emptyList();
+  }
+  
+  protected static BooleanList newBooleanList() {
+    return new BooleanArrayList();
+  }
+  
+  protected static BooleanList newBooleanList(List<Boolean> toCopy) {
+    return new BooleanArrayList(toCopy);
+  }
+  
+  protected static BooleanList emptyBooleanList() {
+    return BooleanArrayList.emptyList();
+  }
+  
+  protected static <E> ProtobufList<E> newProtobufList() {
+    return new ProtobufArrayList<E>();
+  }
+  
+  protected static <E> ProtobufList<E> newProtobufList(List<E> toCopy) {
+    return new ProtobufArrayList<E>(toCopy);
+  }
+  
+  protected static <E> ProtobufList<E> emptyProtobufList() {
+    return ProtobufArrayList.emptyList();
+  }
+  
+  protected static LazyStringArrayList emptyLazyStringArrayList() {
+    return LazyStringArrayList.emptyList();
   }
 }

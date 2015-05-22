@@ -221,7 +221,7 @@ MessageLite* ExtensionSet::AddMessage(const FieldDescriptor* descriptor,
     GOOGLE_DCHECK_EQ(cpp_type(extension->type), FieldDescriptor::CPPTYPE_MESSAGE);
     extension->is_repeated = true;
     extension->repeated_message_value =
-        ::google::protobuf::Arena::Create<RepeatedPtrField<MessageLite> >(arena_, arena_);
+        ::google::protobuf::Arena::CreateMessage<RepeatedPtrField<MessageLite> >(arena_);
   } else {
     GOOGLE_DCHECK_TYPE(*extension, REPEATED, MESSAGE);
   }

@@ -29,7 +29,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <google/protobuf/arena.h>
-#include <google/protobuf/stubs/common.h>
 
 #ifdef ADDRESS_SANITIZER
 #include <sanitizer/asan_interface.h>
@@ -155,9 +154,15 @@ void Arena::AddListNode(void* elem, void (*cleanup)(void*)) {
             reinterpret_cast<google::protobuf::internal::AtomicWord>(node)));
 }
 
-void* Arena::AllocateAligned(size_t n) {
+void* Arena::AllocateAligned(const std::type_info* allocated, size_t n) {
   // Align n to next multiple of 8 (from Hacker's Delight, Chapter 3.)
   n = (n + 7) & -8;
+
+  // Monitor allocation if needed.
+  if (GOOGLE_PREDICT_FALSE(hooks_cookie_ != NULL) &&
+      options_.on_arena_allocation != NULL) {
+    options_.on_arena_allocation(allocated, n, hooks_cookie_);
+  }
 
   // If this thread already owns a block in this arena then try to use that.
   // This fast path optimizes the case where multiple threads allocate from the

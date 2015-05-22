@@ -2258,6 +2258,27 @@ TEST(TextFormatMapTest, SerializeAndParse) {
   MapTestUtil::ExpectMapFieldsSet(dest);
 }
 
+TEST(TextFormatMapTest, Sorted) {
+  unittest::TestMap message;
+  MapTestUtil::MapReflectionTester tester(message.GetDescriptor());
+  tester.SetMapFieldsViaReflection(&message);
+
+  string expected_text;
+  GOOGLE_CHECK_OK(File::GetContents(
+      TestSourceDir() +
+          "/google/protobuf/"
+          "testdata/map_test_data.txt",
+      &expected_text, true));
+
+  EXPECT_EQ(message.DebugString(), expected_text);
+
+  // Test again on the reverse order.
+  unittest::TestMap message2;
+  tester.SetMapFieldsViaReflection(&message2);
+  tester.SwapMapsViaReflection(&message2);
+  EXPECT_EQ(message2.DebugString(), expected_text);
+}
+
 
 // arena support =================================================
 TEST(ArenaTest, ParsingAndSerializingNoHeapAllocation) {

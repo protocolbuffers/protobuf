@@ -100,6 +100,10 @@ def MessageToString(message, as_utf8=False, as_one_line=False,
     return result.rstrip()
   return result
 
+def _IsMapEntry(field):
+  return (field.type == descriptor.FieldDescriptor.TYPE_MESSAGE and
+          field.message_type.has_options and
+          field.message_type.GetOptions().map_entry)
 
 def PrintMessage(message, out, indent=0, as_utf8=False, as_one_line=False,
                  pointy_brackets=False, use_index_order=False,
@@ -108,7 +112,19 @@ def PrintMessage(message, out, indent=0, as_utf8=False, as_one_line=False,
   if use_index_order:
     fields.sort(key=lambda x: x[0].index)
   for field, value in fields:
-    if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+    if _IsMapEntry(field):
+      for key in value:
+        # This is slow for maps with submessage entires because it copies the
+        # entire tree.  Unfortunately this would take significant refactoring
+        # of this file to work around.
+        #
+        # TODO(haberman): refactor and optimize if this becomes an issue.
+        entry_submsg = field.message_type._concrete_class(
+            key=key, value=value[key])
+        PrintField(field, entry_submsg, out, indent, as_utf8, as_one_line,
+                   pointy_brackets=pointy_brackets,
+                   use_index_order=use_index_order, float_format=float_format)
+    elif field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
       for element in value:
         PrintField(field, element, out, indent, as_utf8, as_one_line,
                    pointy_brackets=pointy_brackets,
@@ -367,6 +383,7 @@ def _MergeField(tokenizer, message, allow_multiple_scalars):
               message_descriptor.full_name, name))
 
   if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
+    is_map_entry = _IsMapEntry(field)
     tokenizer.TryConsume(':')
 
     if tokenizer.TryConsume('<'):
@@ -378,6 +395,8 @@ def _MergeField(tokenizer, message, allow_multiple_scalars):
     if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
       if field.is_extension:
         sub_message = message.Extensions[field].add()
+      elif is_map_entry:
+        sub_message = field.message_type._concrete_class()
       else:
         sub_message = getattr(message, field.name).add()
     else:
@@ -391,6 +410,14 @@ def _MergeField(tokenizer, message, allow_multiple_scalars):
       if tokenizer.AtEnd():
         raise tokenizer.ParseErrorPreviousToken('Expected "%s".' % (end_token))
       _MergeField(tokenizer, sub_message, allow_multiple_scalars)
+
+    if is_map_entry:
+      value_cpptype = field.message_type.fields_by_name['value'].cpp_type
+      if value_cpptype == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
+        value = getattr(message, field.name)[sub_message.key]
+        value.MergeFrom(sub_message.value)
+      else:
+        getattr(message, field.name)[sub_message.key] = sub_message.value
   else:
     _MergeScalarField(tokenizer, message, field, allow_multiple_scalars)
 
@@ -701,13 +728,16 @@ class _Tokenizer(object):
     String literals (whether bytes or text) can come in multiple adjacent
     tokens which are automatically concatenated, like in C or Python.  This
     method only consumes one token.
+
+    Raises:
+      ParseError: When the wrong format data is found.
     """
     text = self.token
     if len(text) < 1 or text[0] not in ('\'', '"'):
-      raise self._ParseError('Expected string but found: "%r"' % text)
+      raise self._ParseError('Expected string but found: %r' % (text,))
 
     if len(text) < 2 or text[-1] != text[0]:
-      raise self._ParseError('String missing ending quote.')
+      raise self._ParseError('String missing ending quote: %r' % (text,))
 
     try:
       result = text_encoding.CUnescape(text[1:-1])

@@ -180,6 +180,16 @@ TEST(ArenaTest, ReleaseMessage) {
   EXPECT_EQ(118, nested->bb());
 }
 
+TEST(ArenaTest, MessageFieldClear) {
+  // GitHub issue #310: https://github.com/google/protobuf/issues/310
+  Arena arena;
+  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  arena_message->mutable_optional_nested_message()->set_bb(118);
+  // This should not crash, but prior to the bugfix, it tried to use `operator
+  // delete` the nested message (which is on the arena):
+  arena_message->Clear();
+}
+
 }  // namespace
 }  // namespace protobuf
 }  // namespace google

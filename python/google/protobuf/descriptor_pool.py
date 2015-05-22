@@ -113,6 +113,20 @@ class DescriptorPool(object):
 
     self._internal_db.Add(file_desc_proto)
 
+  def AddSerializedFile(self, serialized_file_desc_proto):
+    """Adds the FileDescriptorProto and its types to this pool.
+
+    Args:
+      serialized_file_desc_proto: A bytes string, serialization of the
+        FileDescriptorProto to add.
+    """
+
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf import descriptor_pb2
+    file_desc_proto = descriptor_pb2.FileDescriptorProto.FromString(
+        serialized_file_desc_proto)
+    self.Add(file_desc_proto)
+
   def AddDescriptor(self, desc):
     """Adds a Descriptor to the pool, non-recursively.
 
@@ -320,17 +334,17 @@ class DescriptorPool(object):
                                           file_descriptor, None, scope))
 
         for index, extension_proto in enumerate(file_proto.extension):
-          extension_desc = self.MakeFieldDescriptor(
+          extension_desc = self._MakeFieldDescriptor(
               extension_proto, file_proto.package, index, is_extension=True)
           extension_desc.containing_type = self._GetTypeFromScope(
               file_descriptor.package, extension_proto.extendee, scope)
-          self.SetFieldType(extension_proto, extension_desc,
+          self._SetFieldType(extension_proto, extension_desc,
                             file_descriptor.package, scope)
           file_descriptor.extensions_by_name[extension_desc.name] = (
               extension_desc)
 
         for desc_proto in file_proto.message_type:
-          self.SetAllFieldTypes(file_proto.package, desc_proto, scope)
+          self._SetAllFieldTypes(file_proto.package, desc_proto, scope)
 
         if file_proto.package:
           desc_proto_prefix = _PrefixWithDot(file_proto.package)
@@ -381,10 +395,11 @@ class DescriptorPool(object):
     enums = [
         self._ConvertEnumDescriptor(enum, desc_name, file_desc, None, scope)
         for enum in desc_proto.enum_type]
-    fields = [self.MakeFieldDescriptor(field, desc_name, index)
+    fields = [self._MakeFieldDescriptor(field, desc_name, index)
               for index, field in enumerate(desc_proto.field)]
     extensions = [
-        self.MakeFieldDescriptor(extension, desc_name, index, is_extension=True)
+        self._MakeFieldDescriptor(extension, desc_name, index,
+                                  is_extension=True)
         for index, extension in enumerate(desc_proto.extension)]
     oneofs = [
         descriptor.OneofDescriptor(desc.name, '.'.join((desc_name, desc.name)),
@@ -464,8 +479,8 @@ class DescriptorPool(object):
     self._enum_descriptors[enum_name] = desc
     return desc
 
-  def MakeFieldDescriptor(self, field_proto, message_name, index,
-                          is_extension=False):
+  def _MakeFieldDescriptor(self, field_proto, message_name, index,
+                           is_extension=False):
     """Creates a field descriptor from a FieldDescriptorProto.
 
     For message and enum type fields, this method will do a look up
@@ -506,7 +521,7 @@ class DescriptorPool(object):
         extension_scope=None,
         options=field_proto.options)
 
-  def SetAllFieldTypes(self, package, desc_proto, scope):
+  def _SetAllFieldTypes(self, package, desc_proto, scope):
     """Sets all the descriptor's fields's types.
 
     This method also sets the containing types on any extensions.
@@ -527,18 +542,18 @@ class DescriptorPool(object):
       nested_package = '.'.join([package, desc_proto.name])
 
     for field_proto, field_desc in zip(desc_proto.field, main_desc.fields):
-      self.SetFieldType(field_proto, field_desc, nested_package, scope)
+      self._SetFieldType(field_proto, field_desc, nested_package, scope)
 
     for extension_proto, extension_desc in (
         zip(desc_proto.extension, main_desc.extensions)):
       extension_desc.containing_type = self._GetTypeFromScope(
           nested_package, extension_proto.extendee, scope)
-      self.SetFieldType(extension_proto, extension_desc, nested_package, scope)
+      self._SetFieldType(extension_proto, extension_desc, nested_package, scope)
 
     for nested_type in desc_proto.nested_type:
-      self.SetAllFieldTypes(nested_package, nested_type, scope)
+      self._SetAllFieldTypes(nested_package, nested_type, scope)
 
-  def SetFieldType(self, field_proto, field_desc, package, scope):
+  def _SetFieldType(self, field_proto, field_desc, package, scope):
     """Sets the field's type, cpp_type, message_type and enum_type.
 
     Args:

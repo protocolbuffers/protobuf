@@ -208,6 +208,7 @@ class LIBPROTOBUF_EXPORT MapField : public MapFieldBase,
   void SetAssignDescriptorCallback(void (*callback)());
 
  private:
+  typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
 
   // MapField needs MapEntry's default instance to create new MapEntry.

@@ -296,6 +296,10 @@
         >
       </File>
       <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_enum_field_lite.h"
+        >
+      </File>
+      <File
         RelativePath="..\src\google\protobuf\compiler\java\java_extension.h"
         >
       </File>
@@ -324,11 +328,31 @@
         >
       </File>
       <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_lazy_message_field_lite.h"
+        >
+      </File>
+      <File
         RelativePath="..\src\google\protobuf\compiler\java\java_message.h"
         >
       </File>
       <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_message_lite.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_message_builder.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_message_builder_lite.h"
+        >
+      </File>
+      <File
         RelativePath="..\src\google\protobuf\compiler\java\java_message_field.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_message_field_lite.h"
         >
       </File>
       <File
@@ -337,6 +361,10 @@
       </File>
       <File
         RelativePath="..\src\google\protobuf\compiler\java\java_primitive_field.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_primitive_field_lite.h"
         >
       </File>
       <File
@@ -349,6 +377,10 @@
       </File>
       <File
         RelativePath="..\src\google\protobuf\compiler\java\java_string_field.h"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_string_field_lite.h"
         >
       </File>
       <File
@@ -608,7 +640,15 @@
         >
       </File>
       <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_lazy_message_field_lite.cc"
+        >
+      </File>
+      <File
         RelativePath="..\src\google\protobuf\compiler\java\java_map_field.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_map_field_lite.cc"
         >
       </File>
       <File
@@ -616,7 +656,23 @@
         >
       </File>
       <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_message_lite.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_message_builder.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_message_builder_lite.cc"
+        >
+      </File>
+      <File
         RelativePath="..\src\google\protobuf\compiler\java\java_message_field.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_message_field_lite.cc"
         >
       </File>
       <File
@@ -625,6 +681,10 @@
       </File>
       <File
         RelativePath="..\src\google\protobuf\compiler\java\java_primitive_field.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_primitive_field_lite.cc"
         >
       </File>
       <File
@@ -637,6 +697,10 @@
       </File>
       <File
         RelativePath="..\src\google\protobuf\compiler\java\java_string_field.cc"
+        >
+      </File>
+      <File
+        RelativePath="..\src\google\protobuf\compiler\java\java_string_field_lite.cc"
         >
       </File>
       <File

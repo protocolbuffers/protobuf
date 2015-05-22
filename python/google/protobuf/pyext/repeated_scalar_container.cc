@@ -102,7 +102,7 @@ static int AssignItem(RepeatedScalarContainer* self,
 
   if (arg == NULL) {
     ScopedPyObjectPtr py_index(PyLong_FromLong(index));
-    return cmessage::InternalDeleteRepeatedField(message, field_descriptor,
+    return cmessage::InternalDeleteRepeatedField(self->parent, field_descriptor,
                                                  py_index, NULL);
   }
 
@@ -470,7 +470,7 @@ static int AssSubscript(RepeatedScalarContainer* self,
 
   if (value == NULL) {
     return cmessage::InternalDeleteRepeatedField(
-        message, field_descriptor, slice, NULL);
+        self->parent, field_descriptor, slice, NULL);
   }
 
   if (!create_list) {
@@ -769,9 +769,7 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject RepeatedScalarContainer_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  // Keep the fully qualified _message symbol in a line for opensource.
-  "google.protobuf.pyext._message."
-  "RepeatedScalarContainer",           // tp_name
+  FULL_MODULE_NAME ".RepeatedScalarContainer",  // tp_name
   sizeof(RepeatedScalarContainer),     // tp_basicsize
   0,                                   //  tp_itemsize
   (destructor)repeated_scalar_container::Dealloc,  //  tp_dealloc

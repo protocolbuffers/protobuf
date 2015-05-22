@@ -40,6 +40,7 @@
 
 #include <string>
 #include <vector>
+#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
 // TODO(jasonh): Remove this once the compiler change to directly include this
 // is released to components.
@@ -595,6 +596,42 @@ inline To dynamic_cast_if_available(From from) {
 #else
   return dynamic_cast<To>(from);
 #endif
+}
+
+// Tries to downcast this message to a generated message type.
+// Returns NULL if this class is not an instance of T.
+//
+// This is like dynamic_cast_if_available, except it works even when
+// dynamic_cast is not available by using Reflection.  However it only works
+// with Message objects.
+//
+// TODO(haberman): can we remove dynamic_cast_if_available in favor of this?
+template <typename T>
+T* DynamicCastToGenerated(const Message* from) {
+  // Compile-time assert that T is a generated type that has a
+  // default_instance() accessor, but avoid actually calling it.
+  const T&(*get_default_instance)() = &T::default_instance;
+  (void)get_default_instance;
+
+  // Compile-time assert that T is a subclass of google::protobuf::Message.
+  const Message* unused = static_cast<T*>(NULL);
+  (void)unused;
+
+#if defined(GOOGLE_PROTOBUF_NO_RTTI) || \
+  (defined(_MSC_VER) && !defined(_CPPRTTI))
+  bool ok = &T::default_instance() ==
+            from->GetReflection()->GetMessageFactory()->GetPrototype(
+                from->GetDescriptor());
+  return ok ? down_cast<T*>(from) : NULL;
+#else
+  return dynamic_cast<T*>(from);
+#endif
+}
+
+template <typename T>
+T* DynamicCastToGenerated(Message* from) {
+  const Message* message_const = from;
+  return const_cast<T*>(DynamicCastToGenerated<const T>(message_const));
 }
 
 }  // namespace internal

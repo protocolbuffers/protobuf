@@ -307,7 +307,8 @@ public class LiteralByteStringTest extends TestCase {
 
   public void testToString_returnsCanonicalEmptyString() throws UnsupportedEncodingException{
     assertSame(classUnderTest + " must be the same string references",
-        ByteString.EMPTY.toString(Internal.UTF_8), new LiteralByteString(new byte[]{}).toString(Internal.UTF_8));
+        ByteString.EMPTY.toString(Internal.UTF_8),
+        new LiteralByteString(new byte[]{}).toString(Internal.UTF_8));
   }
 
   public void testToString_raisesException() throws UnsupportedEncodingException{

@@ -364,6 +364,14 @@ class LIBPROTOBUF_EXPORT Parser {
                        const LocationRecorder& extensions_location,
                        const FileDescriptorProto* containing_file);
 
+  // Parse an "reserved" declaration.
+  bool ParseReserved(DescriptorProto* message,
+                     const LocationRecorder& message_location);
+  bool ParseReservedNames(DescriptorProto* message,
+                          const LocationRecorder& parent_location);
+  bool ParseReservedNumbers(DescriptorProto* message,
+                            const LocationRecorder& parent_location);
+
   // Parse an "extend" declaration.  (See also comments for
   // ParseMessageField().)
   bool ParseExtend(RepeatedPtrField<FieldDescriptorProto>* extensions,

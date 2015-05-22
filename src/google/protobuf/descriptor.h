@@ -135,10 +135,14 @@ struct DebugStringOptions {
   // example, the C++ code generation for fields in the proto compiler) rely on
   // DebugString() output being unobstructed by user comments.
   bool include_comments;
+  // If true, elide the braced body in the debug string.
+  bool elide_group_body;
+  bool elide_oneof_body;
 
   DebugStringOptions()
-      : include_comments(false)
-  {}
+      : include_comments(false),
+        elide_group_body(false),
+        elide_oneof_body(false) {}
 };
 
 // Describes a type of protocol message, or a particular group within a
@@ -298,6 +302,36 @@ class LIBPROTOBUF_EXPORT Descriptor {
   // this message type's scope.
   const FieldDescriptor* FindExtensionByCamelcaseName(const string& name) const;
 
+  // Reserved fields -------------------------------------------------
+
+  // A range of reserved field numbers.
+  struct ReservedRange {
+    int start;  // inclusive
+    int end;    // exclusive
+  };
+
+  // The number of reserved ranges in this message type.
+  int reserved_range_count() const;
+  // Gets an reserved range by index, where 0 <= index <
+  // reserved_range_count(). These are returned in the order they were defined
+  // in the .proto file.
+  const ReservedRange* reserved_range(int index) const;
+
+  // Returns true if the number is in one of the reserved ranges.
+  bool IsReservedNumber(int number) const;
+
+  // Returns NULL if no reserved range contains the given number.
+  const ReservedRange* FindReservedRangeContainingNumber(int number) const;
+
+  // The number of reserved field names in this message type.
+  int reserved_name_count() const;
+
+  // Gets a reserved name by index, where 0 <= index < reserved_name_count().
+  const string& reserved_name(int index) const;
+
+  // Returns true if the field name is reserved.
+  bool IsReservedName(const string& name) const;
+
   // Source Location ---------------------------------------------------
 
   // Updates |*out_location| to the source location of the complete
@@ -343,6 +377,10 @@ class LIBPROTOBUF_EXPORT Descriptor {
   ExtensionRange* extension_ranges_;
   int extension_count_;
   FieldDescriptor* extensions_;
+  int reserved_range_count_;
+  ReservedRange* reserved_ranges_;
+  int reserved_name_count_;
+  const string** reserved_names_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<Descriptor>() and AllocateArray<Descriptor>() in descriptor.cc
   // and update them to initialize the field.
@@ -1567,6 +1605,12 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, extension_range,
                                const Descriptor::ExtensionRange*)
 PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, extension,
                                const FieldDescriptor*)
+
+PROTOBUF_DEFINE_ACCESSOR(Descriptor, reserved_range_count, int)
+PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, reserved_range,
+                               const Descriptor::ReservedRange*)
+PROTOBUF_DEFINE_ACCESSOR(Descriptor, reserved_name_count, int)
+
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(Descriptor, MessageOptions);
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, is_placeholder, bool)
 
@@ -1665,6 +1709,25 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(FileDescriptor, extension,
 
 inline bool Descriptor::IsExtensionNumber(int number) const {
   return FindExtensionRangeContainingNumber(number) != NULL;
+}
+
+inline bool Descriptor::IsReservedNumber(int number) const {
+  return FindReservedRangeContainingNumber(number) != NULL;
+}
+
+inline bool Descriptor::IsReservedName(const string& name) const {
+  for (int i = 0; i < reserved_name_count(); i++) {
+    if (name == reserved_name(i)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because reserved_names_ is actually
+// an array of pointers rather than the usual array of objects.
+inline const string& Descriptor::reserved_name(int index) const {
+  return *reserved_names_[index];
 }
 
 inline bool FieldDescriptor::is_required() const {

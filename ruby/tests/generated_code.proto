@@ -3,17 +3,17 @@ syntax = "proto3";
 package A.B.C;
 
 message TestMessage {
-  optional int32 optional_int32 = 1;
-  optional int64 optional_int64 = 2;
-  optional uint32 optional_uint32 = 3;
-  optional uint64 optional_uint64 = 4;
-  optional bool optional_bool = 5;
-  optional double optional_double = 6;
-  optional float optional_float = 7;
-  optional string optional_string = 8;
-  optional bytes optional_bytes = 9;
-  optional TestEnum optional_enum = 10;
-  optional TestMessage optional_msg = 11;
+  int32 optional_int32 = 1;
+  int64 optional_int64 = 2;
+  uint32 optional_uint32 = 3;
+  uint64 optional_uint64 = 4;
+  bool optional_bool = 5;
+  double optional_double = 6;
+  float optional_float = 7;
+  string optional_string = 8;
+  bytes optional_bytes = 9;
+  TestEnum optional_enum = 10;
+  TestMessage optional_msg = 11;
 
   repeated int32 repeated_int32 = 21;
   repeated int64 repeated_int64 = 22;
@@ -53,10 +53,10 @@ message TestMessage {
   map<string, bool> map_string_bool = 70;
 
   message NestedMessage {
-    optional int32 foo = 1;
+    int32 foo = 1;
   }
 
-  optional NestedMessage nested_message = 80;
+  NestedMessage nested_message = 80;
 }
 
 enum TestEnum {

@@ -161,13 +161,13 @@ int SetOwner(RepeatedCompositeContainer* self,
              const shared_ptr<Message>& new_owner);
 
 // Removes the last element of the repeated message field 'field' on
-// the Message 'message', and transfers the ownership of the released
-// Message to 'cmessage'.
+// the Message 'parent', and transfers the ownership of the released
+// Message to 'target'.
 //
 // Corresponds to reflection api method ReleaseMessage.
-void ReleaseLastTo(const FieldDescriptor* field,
-                   Message* message,
-                   CMessage* cmessage);
+void ReleaseLastTo(CMessage* parent,
+                   const FieldDescriptor* field,
+                   CMessage* target);
 
 }  // namespace repeated_composite_container
 }  // namespace python

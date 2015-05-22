@@ -83,7 +83,6 @@ class ImmutableFieldGenerator {
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
   virtual void GenerateFieldBuilderInitializationCode(io::Printer* printer)
       const = 0;
-  virtual void GenerateStaticInitializationCode(io::Printer* printer) const {}
 
   virtual void GenerateEqualsCode(io::Printer* printer) const = 0;
   virtual void GenerateHashCode(io::Printer* printer) const = 0;
@@ -92,6 +91,37 @@ class ImmutableFieldGenerator {
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableFieldGenerator);
+};
+
+class ImmutableFieldLiteGenerator {
+ public:
+  ImmutableFieldLiteGenerator() {}
+  virtual ~ImmutableFieldLiteGenerator();
+
+  virtual int GetNumBitsForMessage() const = 0;
+  virtual int GetNumBitsForBuilder() const = 0;
+  virtual void GenerateInterfaceMembers(io::Printer* printer) const = 0;
+  virtual void GenerateMembers(io::Printer* printer) const = 0;
+  virtual void GenerateBuilderMembers(io::Printer* printer) const = 0;
+  virtual void GenerateInitializationCode(io::Printer* printer) const = 0;
+  virtual void GenerateMergingCode(io::Printer* printer) const = 0;
+  virtual void GenerateDynamicMethodMakeImmutableCode(io::Printer* printer)
+      const = 0;
+  virtual void GenerateParsingCode(io::Printer* printer) const = 0;
+  virtual void GenerateParsingCodeFromPacked(io::Printer* printer) const;
+  virtual void GenerateParsingDoneCode(io::Printer* printer) const = 0;
+  virtual void GenerateSerializationCode(io::Printer* printer) const = 0;
+  virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
+  virtual void GenerateFieldBuilderInitializationCode(io::Printer* printer)
+      const = 0;
+
+  virtual void GenerateEqualsCode(io::Printer* printer) const = 0;
+  virtual void GenerateHashCode(io::Printer* printer) const = 0;
+
+  virtual string GetBoxedType() const = 0;
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableFieldLiteGenerator);
 };
 
 

@@ -70,12 +70,23 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
 
 EnumGenerator::~EnumGenerator() {}
 
+void EnumGenerator::GenerateForwardDeclaration(io::Printer* printer) {
+  if (!options_.proto_h) {
+    return;
+  }
+  map<string, string> vars;
+  vars["classname"] = classname_;
+  printer->Print(vars, "enum $classname$ : int;\n");
+  printer->Print(vars, "bool $classname$_IsValid(int value);\n");
+}
+
 void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   map<string, string> vars;
   vars["classname"] = classname_;
   vars["short_name"] = descriptor_->name();
+  vars["enumbase"] = classname_ + (options_.proto_h ? " : int" : "");
 
-  printer->Print(vars, "enum $classname$ {\n");
+  printer->Print(vars, "enum $enumbase$ {\n");
   printer->Indent();
 
   const EnumValueDescriptor* min_value = descriptor_->value(0);
@@ -89,7 +100,6 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
     vars["number"] = Int32ToString(descriptor_->value(i)->number());
     vars["prefix"] = (descriptor_->containing_type() == NULL) ?
       "" : classname_ + "_";
-
 
     if (i > 0) printer->Print(",\n");
     printer->Print(vars, "$prefix$$name$ = $number$");

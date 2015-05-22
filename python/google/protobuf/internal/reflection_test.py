@@ -39,8 +39,8 @@ import copy
 import gc
 import operator
 import struct
-import unittest
 
+import unittest
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -1798,8 +1798,8 @@ class ReflectionTest(unittest.TestCase):
   def testBadArguments(self):
     # Some of these assertions used to segfault.
     from google.protobuf.pyext import _message
-    self.assertRaises(TypeError, _message.Message._GetFieldDescriptor, 3)
-    self.assertRaises(TypeError, _message.Message._GetExtensionDescriptor, 42)
+    self.assertRaises(TypeError, _message.default_pool.FindFieldByName, 3)
+    self.assertRaises(TypeError, _message.default_pool.FindExtensionByName, 42)
     self.assertRaises(TypeError,
                       unittest_pb2.TestAllTypes().__getattribute__, 42)
 
