@@ -81,7 +81,17 @@
                 <exec executable="../src/protoc">
                   <arg value="--java_out=target/generated-sources" />
                   <arg value="--proto_path=../src" />
+                  <arg value="../src/google/protobuf/any.proto" />
+                  <arg value="../src/google/protobuf/api.proto" />
                   <arg value="../src/google/protobuf/descriptor.proto" />
+                  <arg value="../src/google/protobuf/duration.proto" />
+                  <arg value="../src/google/protobuf/empty.proto" />
+                  <arg value="../src/google/protobuf/field_mask.proto" />
+                  <arg value="../src/google/protobuf/source_context.proto" />
+                  <arg value="../src/google/protobuf/struct.proto" />
+                  <arg value="../src/google/protobuf/timestamp.proto" />
+                  <arg value="../src/google/protobuf/type.proto" />
+                  <arg value="../src/google/protobuf/wrappers.proto" />
                 </exec>
               </tasks>
               <sourceRoot>target/generated-sources</sourceRoot>
@@ -130,6 +140,7 @@
                   <arg value="../src/google/protobuf/unittest_lite_imports_nonlite.proto" />
                   <arg value="../src/google/protobuf/unittest_enormous_descriptor.proto" />
                   <arg value="../src/google/protobuf/unittest_no_generic_services.proto" />
+                  <arg value="../src/google/protobuf/unittest_well_known_types.proto" />
                   <arg value="src/test/java/com/google/protobuf/field_presence_test.proto" />
                   <arg value="src/test/java/com/google/protobuf/map_for_proto2_lite_test.proto" />
                   <arg value="src/test/java/com/google/protobuf/map_for_proto2_test.proto" />
@@ -157,6 +168,24 @@
         </configuration>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>../src</directory>
+        <includes>
+          <include>google/protobuf/any.proto</include>
+          <include>google/protobuf/api.proto</include>
+          <include>google/protobuf/descriptor.proto</include>
+          <include>google/protobuf/duration.proto</include>
+          <include>google/protobuf/empty.proto</include>
+          <include>google/protobuf/field_mask.proto</include>
+          <include>google/protobuf/source_context.proto</include>
+          <include>google/protobuf/struct.proto</include>
+          <include>google/protobuf/timestamp.proto</include>
+          <include>google/protobuf/type.proto</include>
+          <include>google/protobuf/wrappers.proto</include>
+        </includes>
+      </resource>
+    </resources>
   </build>
   <profiles>
     <profile>
