@@ -181,6 +181,68 @@ bool TryCreateParentDirectory(const string& prefix, const string& filename) {
   return true;
 }
 
+// Get the absolute path of this protoc binary.
+bool GetProtocAbsolutePath(string* path) {
+#ifdef _WIN32
+  char buffer[MAX_PATH];
+  int len = GetModuleFileName(NULL, buffer, MAX_PATH);
+#else
+  char buffer[PATH_MAX];
+  int len = readlink("/proc/self/exe", buffer, PATH_MAX);
+#endif
+  if (len > 0) {
+    path->assign(buffer, len);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+// Whether a path is where google/protobuf/descriptor.proto and other well-known
+// type protos are installed.
+bool IsInstalledProtoPath(const string& path) {
+  // Checking the descriptor.proto file should be good enough.
+  string file_path = path + "/google/protobuf/descriptor.proto";
+  return access(file_path.c_str(), F_OK) != -1;
+}
+
+// Add the paths where google/protobuf/descritor.proto and other well-known
+// type protos are installed.
+void AddDefaultProtoPaths(vector<pair<string, string> >* paths) {
+  // TODO(xiaofeng): The code currently only checks relative paths of where
+  // the protoc binary is installed. We probably should make it handle more
+  // cases than that.
+  string path;
+  if (!GetProtocAbsolutePath(&path)) {
+    return;
+  }
+  // Strip the binary name.
+  size_t pos = path.find_last_of("/\\");
+  if (pos == string::npos || pos == 0) {
+    return;
+  }
+  path = path.substr(0, pos);
+  // Check the binary's directory.
+  if (IsInstalledProtoPath(path)) {
+    paths->push_back(pair<string, string>("", path));
+    return;
+  }
+  // Check if there is an include subdirectory.
+  if (IsInstalledProtoPath(path + "/include")) {
+    paths->push_back(pair<string, string>("", path + "/include"));
+    return;
+  }
+  // Check if the upper level directory has an "include" subdirectory.
+  pos = path.find_last_of("/\\");
+  if (pos == string::npos || pos == 0) {
+    return;
+  }
+  path = path.substr(0, pos);
+  if (IsInstalledProtoPath(path + "/include")) {
+    paths->push_back(pair<string, string>("", path + "/include"));
+    return;
+  }
+}
 }  // namespace
 
 // A MultiFileErrorCollector that prints errors to stderr.
@@ -643,6 +705,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     case PARSE_ARGUMENT_DONE_AND_CONTINUE:
       break;
   }
+
+  AddDefaultProtoPaths(&proto_path_);
 
   // Set up the source tree.
   DiskSourceTree source_tree;
