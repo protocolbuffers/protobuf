@@ -77,6 +77,8 @@ const char* PrimitiveTypeName(const FieldDescriptor* descriptor) {
       return NULL;
   }
 
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return NULL;
 }
@@ -108,6 +110,8 @@ const char* PrimitiveArrayTypeName(const FieldDescriptor* descriptor) {
       return "";  // Want NSArray
   }
 
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return NULL;
 }

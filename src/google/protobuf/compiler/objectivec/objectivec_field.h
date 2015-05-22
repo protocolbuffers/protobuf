@@ -65,6 +65,8 @@ class FieldGenerator {
   virtual void GenerateCFunctionDeclarations(io::Printer* printer) const;
   virtual void GenerateCFunctionImplementations(io::Printer* printer) const;
 
+  virtual void DetermineForwardDeclarations(set<string>* fwd_decls) const;
+
   void SetOneofIndexBase(int index_base);
 
   string variable(const char* key) const {
@@ -79,7 +81,7 @@ class FieldGenerator {
   string raw_field_name() const { return variable("raw_field_name"); }
 
  protected:
-  FieldGenerator(const FieldDescriptor* descriptor);
+  explicit FieldGenerator(const FieldDescriptor* descriptor);
 
   virtual void FinishInitialization(void);
   virtual bool WantsHasProperty(void) const = 0;
@@ -101,7 +103,7 @@ class SingleFieldGenerator : public FieldGenerator {
   virtual void GeneratePropertyImplementation(io::Printer* printer) const;
 
  protected:
-  SingleFieldGenerator(const FieldDescriptor* descriptor);
+  explicit SingleFieldGenerator(const FieldDescriptor* descriptor);
   virtual bool WantsHasProperty(void) const;
 
  private:
@@ -117,7 +119,7 @@ class ObjCObjFieldGenerator : public SingleFieldGenerator {
   virtual void GeneratePropertyDeclaration(io::Printer* printer) const;
 
  protected:
-  ObjCObjFieldGenerator(const FieldDescriptor* descriptor);
+  explicit ObjCObjFieldGenerator(const FieldDescriptor* descriptor);
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ObjCObjFieldGenerator);
@@ -133,7 +135,7 @@ class RepeatedFieldGenerator : public ObjCObjFieldGenerator {
   virtual void GeneratePropertyImplementation(io::Printer* printer) const;
 
  protected:
-  RepeatedFieldGenerator(const FieldDescriptor* descriptor);
+  explicit RepeatedFieldGenerator(const FieldDescriptor* descriptor);
   virtual void FinishInitialization(void);
   virtual bool WantsHasProperty(void) const;
 
@@ -144,7 +146,7 @@ class RepeatedFieldGenerator : public ObjCObjFieldGenerator {
 // Convenience class which constructs FieldGenerators for a Descriptor.
 class FieldGeneratorMap {
  public:
-  FieldGeneratorMap(const Descriptor* descriptor);
+  explicit FieldGeneratorMap(const Descriptor* descriptor);
   ~FieldGeneratorMap();
 
   const FieldGenerator& get(const FieldDescriptor* field) const;

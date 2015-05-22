@@ -98,4 +98,25 @@ message Message3 {
     Message3 oneof_message  = 68;
         Enum oneof_enum     = 69;
   }
+
+  // Some token map cases, too many combinations to list them all.
+  map<int32   , int32   > map_int32_int32       = 70;
+  map<int64   , int64   > map_int64_int64       = 71;
+  map<uint32  , uint32  > map_uint32_uint32     = 72;
+  map<uint64  , uint64  > map_uint64_uint64     = 73;
+  map<sint32  , sint32  > map_sint32_sint32     = 74;
+  map<sint64  , sint64  > map_sint64_sint64     = 75;
+  map<fixed32 , fixed32 > map_fixed32_fixed32   = 76;
+  map<fixed64 , fixed64 > map_fixed64_fixed64   = 77;
+  map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 78;
+  map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 79;
+  map<int32   , float   > map_int32_float       = 80;
+  map<int32   , double  > map_int32_double      = 81;
+  map<bool    , bool    > map_bool_bool         = 82;
+  map<string  , string  > map_string_string     = 83;
+  map<string  , bytes   > map_string_bytes      = 84;
+  map<string  , Message3> map_string_message    = 85;
+  map<int32   , bytes   > map_int32_bytes       = 86;
+  map<int32   , Enum    > map_int32_enum        = 87;
+  map<int32   , Message3> map_int32_message     = 88;
 }

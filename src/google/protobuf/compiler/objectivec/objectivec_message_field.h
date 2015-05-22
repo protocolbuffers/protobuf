@@ -44,9 +44,12 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  MessageFieldGenerator(const FieldDescriptor* descriptor);
+  explicit MessageFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~MessageFieldGenerator();
   virtual bool WantsHasProperty(void) const;
+
+ public:
+  virtual void DetermineForwardDeclarations(set<string>* fwd_decls) const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageFieldGenerator);
@@ -56,7 +59,7 @@ class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor);
+  explicit RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~RepeatedMessageFieldGenerator();
 
  private:

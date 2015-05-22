@@ -49,7 +49,7 @@ namespace objectivec {
 
 class EnumGenerator {
  public:
-  EnumGenerator(const EnumDescriptor* descriptor);
+  explicit EnumGenerator(const EnumDescriptor* descriptor);
   ~EnumGenerator();
 
   void GenerateHeader(io::Printer* printer);

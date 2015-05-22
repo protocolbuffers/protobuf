@@ -48,7 +48,7 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
   virtual void GenerateFieldDescriptionTypeSpecific(io::Printer* printer) const;
 
  protected:
-  MapFieldGenerator(const FieldDescriptor* descriptor);
+  explicit MapFieldGenerator(const FieldDescriptor* descriptor);
   virtual ~MapFieldGenerator();
 
  private:

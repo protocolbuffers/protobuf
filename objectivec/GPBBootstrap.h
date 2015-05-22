@@ -51,11 +51,11 @@
 // the Swift bridge will have one where the names line up to support short
 // names since they are scoped to the enum.
 // https://developer.apple.com/library/ios/documentation/Swift/Conceptual/BuildingCocoaApps/InteractingWithCAPIs.html#//apple_ref/doc/uid/TP40014216-CH8-XID_11
-#define GPB_ENUM(X) enum X##_ : int32_t X; typedef NS_ENUM(int32_t, X##_)
-// GPB_ENUM_FWD_DECLARE is used for forward declaring enums ex:
+#define GPB_ENUM(X) NS_ENUM(int32_t, X)
+// GPB_ENUM_FWD_DECLARE is used for forward declaring enums, ex:
 //   GPB_ENUM_FWD_DECLARE(Foo_Enum)
 //   @property (nonatomic) Foo_Enum value;
-#define GPB_ENUM_FWD_DECLARE(_name) enum _name : int32_t
+#define GPB_ENUM_FWD_DECLARE(X) enum X : int32_t
 
 // Based upon CF_INLINE. Forces inlining in release.
 #if !defined(DEBUG)

@@ -93,7 +93,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
 @implementation GPBDescriptor {
   Class messageClass_;
   NSArray *enums_;
-  NSArray *extensions_;
   GPBFileDescriptor *file_;
   BOOL wireFormat_;
 }
@@ -102,7 +101,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
 @synthesize fields = fields_;
 @synthesize oneofs = oneofs_;
 @synthesize enums = enums_;
-@synthesize extensions = extensions_;
 @synthesize extensionRanges = extensionRanges_;
 @synthesize extensionRangesCount = extensionRangesCount_;
 @synthesize file = file_;
@@ -161,13 +159,11 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
     [enums addObject:enumDescriptor];
   }
 
-  // TODO(dmaclach): Add support for extensions
   GPBDescriptor *descriptor = [[self alloc] initWithClass:messageClass
                                                      file:file
                                                    fields:fields
                                                    oneofs:oneofs
                                                     enums:enums
-                                               extensions:nil
                                           extensionRanges:ranges
                                      extensionRangesCount:rangeCount
                                               storageSize:storageSize
@@ -226,7 +222,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
                        fields:(NSArray *)fields
                        oneofs:(NSArray *)oneofs
                         enums:(NSArray *)enums
-                   extensions:(NSArray *)extensions
               extensionRanges:(const GPBExtensionRange *)extensionRanges
          extensionRangesCount:(NSUInteger)extensionRangesCount
                   storageSize:(size_t)storageSize
@@ -237,7 +232,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
     fields_ = [fields retain];
     oneofs_ = [oneofs retain];
     enums_ = [enums retain];
-    extensions_ = [extensions retain];
     extensionRanges_ = extensionRanges;
     extensionRangesCount_ = extensionRangesCount;
     storageSize_ = storageSize;
@@ -250,7 +244,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
   [fields_ release];
   [oneofs_ release];
   [enums_ release];
-  [extensions_ release];
   [super dealloc];
 }
 
@@ -292,24 +285,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
 
 - (GPBEnumDescriptor *)enumWithName:(NSString *)name {
   for (GPBEnumDescriptor *descriptor in enums_) {
-    if ([descriptor.name isEqual:name]) {
-      return descriptor;
-    }
-  }
-  return nil;
-}
-
-- (GPBFieldDescriptor *)extensionWithNumber:(uint32_t)fieldNumber {
-  for (GPBFieldDescriptor *descriptor in extensions_) {
-    if (GPBFieldNumber(descriptor) == fieldNumber) {
-      return descriptor;
-    }
-  }
-  return nil;
-}
-
-- (GPBFieldDescriptor *)extensionWithName:(NSString *)name {
-  for (GPBFieldDescriptor *descriptor in extensions_) {
     if ([descriptor.name isEqual:name]) {
       return descriptor;
     }
@@ -366,7 +341,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
 }
 
 - (NSString *)name {
-  return [NSString stringWithUTF8String:oneofDescription_->name];
+  return @(oneofDescription_->name);
 }
 
 - (GPBFieldDescriptor *)fieldWithNumber:(uint32_t)fieldNumber {
@@ -455,7 +430,8 @@ uint32_t GPBFieldTag(GPBFieldDescriptor *self) {
                                              freeWhenDone:NO];
         GPBExtensionRegistry *registry = [rootClass extensionRegistry];
         fieldOptions_ = [[GPBFieldOptions parseFromData:optionsData
-                                      extensionRegistry:registry] retain];
+                                      extensionRegistry:registry
+                                                  error:NULL] retain];
       }
     }
 
@@ -532,7 +508,7 @@ uint32_t GPBFieldTag(GPBFieldDescriptor *self) {
 }
 
 - (NSString *)name {
-  return [NSString stringWithUTF8String:description_->name];
+  return @(description_->name);
 }
 
 - (BOOL)isRequired {
@@ -809,7 +785,7 @@ uint32_t GPBFieldTag(GPBFieldDescriptor *self) {
 
   NSString *result = nil;
   // Naming adds an underscore between enum name and value name, skip that also.
-  NSString *shortName = [NSString stringWithUTF8String:valueDescriptor->name];
+  NSString *shortName = @(valueDescriptor->name);
 
   // See if it is in the map of special format handling.
   if (extraTextFormatInfo_) {
@@ -846,7 +822,7 @@ uint32_t GPBFieldTag(GPBFieldDescriptor *self) {
 }
 
 - (NSString *)singletonName {
-  return [NSString stringWithUTF8String:description_->singletonName];
+  return @(description_->singletonName);
 }
 
 - (const char *)singletonNameC {

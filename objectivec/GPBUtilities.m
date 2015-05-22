@@ -93,7 +93,9 @@ void GPBClearMessageField(GPBMessage *self, GPBFieldDescriptor *field) {
 }
 
 BOOL GPBGetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber) {
-  NSCAssert(self->messageStorage_ != NULL, @"How?");
+  NSCAssert(self->messageStorage_ != NULL,
+            @"%@: All messages should have storage (from init)",
+            [self class]);
   if (idx < 0) {
     NSCAssert(fieldNumber != 0, @"Invalid field number.");
     BOOL hasIvar = (self->messageStorage_->_has_storage_[-idx] == fieldNumber);
@@ -109,7 +111,8 @@ BOOL GPBGetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber) {
 }
 
 uint32_t GPBGetHasOneof(GPBMessage *self, int32_t idx) {
-  NSCAssert(idx < 0, @"invalid index for oneof.");
+  NSCAssert(idx < 0, @"%@: invalid index (%d) for oneof.",
+            [self class], idx);
   uint32_t result = self->messageStorage_->_has_storage_[-idx];
   return result;
 }
@@ -145,7 +148,9 @@ void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
   // Like GPBClearMessageField(), free the memory if an objecttype is set,
   // pod types don't need to do anything.
   GPBFieldDescriptor *fieldSet = [oneof fieldWithNumber:fieldNumberSet];
-  NSCAssert(fieldSet, @"oneof set to something not in the oneof?");
+  NSCAssert(fieldSet,
+            @"%@: oneof set to something (%u) not in the oneof?",
+            [self class], fieldNumberSet);
   if (fieldSet && GPBFieldStoresObject(fieldSet)) {
     uint8_t *storage = (uint8_t *)self->messageStorage_;
     id *typePtr = (id *)&storage[fieldSet->description_->offset];
@@ -189,7 +194,9 @@ void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
 //%  if (oneof) {
 //%    GPBMaybeClearOneof(self, oneof, GPBFieldNumber(field));
 //%  }
-//%  NSCAssert(self->messageStorage_ != NULL, @"How?");
+//%  NSCAssert(self->messageStorage_ != NULL,
+//%            @"%@: All messages should have storage (from init)",
+//%            [self class]);
 //%#if defined(__clang_analyzer__)
 //%  if (self->messageStorage_ == NULL) return;
 //%#endif
@@ -263,7 +270,9 @@ void GPBSetObjectIvarWithFieldInternal(GPBMessage *self,
 void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
                                                GPBFieldDescriptor *field,
                                                id value, GPBFileSyntax syntax) {
-  NSCAssert(self->messageStorage_ != NULL, @"How?");
+  NSCAssert(self->messageStorage_ != NULL,
+            @"%@: All messages should have storage (from init)",
+            [self class]);
 #if defined(__clang_analyzer__)
   if (self->messageStorage_ == NULL) return;
 #endif
@@ -328,7 +337,7 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
   if (oldValue) {
     if (isMapOrArray) {
       if (field.fieldType == GPBFieldTypeRepeated) {
-        // If the old message value was autocreated by us, then clear it.
+        // If the old array was autocreated by us, then clear it.
         if (GPBTypeIsObject(fieldType)) {
           GPBAutocreatedArray *autoArray = oldValue;
           if (autoArray->_autocreator == self) {
@@ -339,6 +348,21 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
           GPBInt32Array *gpbArray = oldValue;
           if (gpbArray->_autocreator == self) {
             gpbArray->_autocreator = nil;
+          }
+        }
+      } else { // GPBFieldTypeMap
+        // If the old map was autocreated by us, then clear it.
+        if ((field.mapKeyType == GPBTypeString) &&
+            GPBTypeIsObject(fieldType)) {
+          GPBAutocreatedDictionary *autoDict = oldValue;
+          if (autoDict->_autocreator == self) {
+            autoDict->_autocreator = nil;
+          }
+        } else {
+          // Type doesn't matter, it is a GPB*Dictionary.
+          GPBInt32Int32Dictionary *gpbDict = oldValue;
+          if (gpbDict->_autocreator == self) {
+            gpbDict->_autocreator = nil;
           }
         }
       }
@@ -461,7 +485,9 @@ void GPBSetBoolIvarWithFieldInternal(GPBMessage *self,
   if (oneof) {
     GPBMaybeClearOneof(self, oneof, GPBFieldNumber(field));
   }
-  NSCAssert(self->messageStorage_ != NULL, @"How?");
+  NSCAssert(self->messageStorage_ != NULL,
+            @"%@: All messages should have storage (from init)",
+            [self class]);
 #if defined(__clang_analyzer__)
   if (self->messageStorage_ == NULL) return;
 #endif
@@ -507,7 +533,9 @@ void GPBSetInt32IvarWithFieldInternal(GPBMessage *self,
   if (oneof) {
     GPBMaybeClearOneof(self, oneof, GPBFieldNumber(field));
   }
-  NSCAssert(self->messageStorage_ != NULL, @"How?");
+  NSCAssert(self->messageStorage_ != NULL,
+            @"%@: All messages should have storage (from init)",
+            [self class]);
 #if defined(__clang_analyzer__)
   if (self->messageStorage_ == NULL) return;
 #endif
@@ -553,7 +581,9 @@ void GPBSetUInt32IvarWithFieldInternal(GPBMessage *self,
   if (oneof) {
     GPBMaybeClearOneof(self, oneof, GPBFieldNumber(field));
   }
-  NSCAssert(self->messageStorage_ != NULL, @"How?");
+  NSCAssert(self->messageStorage_ != NULL,
+            @"%@: All messages should have storage (from init)",
+            [self class]);
 #if defined(__clang_analyzer__)
   if (self->messageStorage_ == NULL) return;
 #endif
@@ -599,7 +629,9 @@ void GPBSetInt64IvarWithFieldInternal(GPBMessage *self,
   if (oneof) {
     GPBMaybeClearOneof(self, oneof, GPBFieldNumber(field));
   }
-  NSCAssert(self->messageStorage_ != NULL, @"How?");
+  NSCAssert(self->messageStorage_ != NULL,
+            @"%@: All messages should have storage (from init)",
+            [self class]);
 #if defined(__clang_analyzer__)
   if (self->messageStorage_ == NULL) return;
 #endif
@@ -645,7 +677,9 @@ void GPBSetUInt64IvarWithFieldInternal(GPBMessage *self,
   if (oneof) {
     GPBMaybeClearOneof(self, oneof, GPBFieldNumber(field));
   }
-  NSCAssert(self->messageStorage_ != NULL, @"How?");
+  NSCAssert(self->messageStorage_ != NULL,
+            @"%@: All messages should have storage (from init)",
+            [self class]);
 #if defined(__clang_analyzer__)
   if (self->messageStorage_ == NULL) return;
 #endif
@@ -691,7 +725,9 @@ void GPBSetFloatIvarWithFieldInternal(GPBMessage *self,
   if (oneof) {
     GPBMaybeClearOneof(self, oneof, GPBFieldNumber(field));
   }
-  NSCAssert(self->messageStorage_ != NULL, @"How?");
+  NSCAssert(self->messageStorage_ != NULL,
+            @"%@: All messages should have storage (from init)",
+            [self class]);
 #if defined(__clang_analyzer__)
   if (self->messageStorage_ == NULL) return;
 #endif
@@ -737,7 +773,9 @@ void GPBSetDoubleIvarWithFieldInternal(GPBMessage *self,
   if (oneof) {
     GPBMaybeClearOneof(self, oneof, GPBFieldNumber(field));
   }
-  NSCAssert(self->messageStorage_ != NULL, @"How?");
+  NSCAssert(self->messageStorage_ != NULL,
+            @"%@: All messages should have storage (from init)",
+            [self class]);
 #if defined(__clang_analyzer__)
   if (self->messageStorage_ == NULL) return;
 #endif
@@ -1152,30 +1190,32 @@ static void AppendTextFormatForMessageField(GPBMessage *message,
                                             GPBFieldDescriptor *field,
                                             NSMutableString *toStr,
                                             NSString *lineIndent) {
-  id array;
-  NSUInteger arrayCount;
+  id arrayOrMap;
+  NSUInteger count;
   GPBFieldType fieldType = field.fieldType;
   switch (fieldType) {
     case GPBFieldTypeSingle:
-      array = nil;
-      arrayCount = (GPBGetHasIvarField(message, field) ? 1 : 0);
+      arrayOrMap = nil;
+      count = (GPBGetHasIvarField(message, field) ? 1 : 0);
       break;
 
     case GPBFieldTypeRepeated:
-      array = GPBGetObjectIvarWithFieldNoAutocreate(message, field);
-      arrayCount = [(NSArray *)array count];
+      // Will be NSArray or GPB*Array, type doesn't matter, they both
+      // implement count.
+      arrayOrMap = GPBGetObjectIvarWithFieldNoAutocreate(message, field);
+      count = [(NSArray *)arrayOrMap count];
       break;
 
     case GPBFieldTypeMap: {
-      // Could be a GPB*Dictionary or NSMutableDictionary, type doesn't matter,
-      // just want count.
-      array = GPBGetObjectIvarWithFieldNoAutocreate(message, field);
-      arrayCount = [(NSArray *)array count];
+      // Will be GPB*Dictionary or NSMutableDictionary, type doesn't matter,
+      // they both implement count.
+      arrayOrMap = GPBGetObjectIvarWithFieldNoAutocreate(message, field);
+      count = [(NSDictionary *)arrayOrMap count];
       break;
     }
   }
 
-  if (arrayCount == 0) {
+  if (count == 0) {
     // Nothing to print, out of here.
     return;
   }
@@ -1189,7 +1229,7 @@ static void AppendTextFormatForMessageField(GPBMessage *message,
     fieldName = [NSString stringWithFormat:@"%u", GPBFieldNumber(field)];
     // If there is only one entry, put the objc name as a comment, other wise
     // add it before the the repeated values.
-    if (arrayCount > 1) {
+    if (count > 1) {
       [toStr appendFormat:@"%@# %@\n", lineIndent, field.name];
     } else {
       lineEnding = [NSString stringWithFormat:@"  # %@", field.name];
@@ -1197,16 +1237,17 @@ static void AppendTextFormatForMessageField(GPBMessage *message,
   }
 
   if (fieldType == GPBFieldTypeMap) {
-    AppendTextFormatForMapMessageField(array, field, toStr, lineIndent,
+    AppendTextFormatForMapMessageField(arrayOrMap, field, toStr, lineIndent,
                                        fieldName, lineEnding);
     return;
   }
 
+  id array = arrayOrMap;
   const BOOL isRepeated = (array != nil);
 
   GPBType fieldDataType = GPBGetFieldType(field);
   BOOL isMessageField = GPBTypeIsMessage(fieldDataType);
-  for (NSUInteger j = 0; j < arrayCount; ++j) {
+  for (NSUInteger j = 0; j < count; ++j) {
     // Start the line.
     [toStr appendFormat:@"%@%@%s ", lineIndent, fieldName,
                         (isMessageField ? "" : ":")];
@@ -1291,7 +1332,7 @@ static void AppendTextFormatForMessageField(GPBMessage *message,
     // End the line.
     [toStr appendFormat:@"%@\n", lineEnding];
 
-  }  // for(arrayCount)
+  }  // for(count)
 }
 
 static void AppendTextFormatForMessageExtensionRange(GPBMessage *message,

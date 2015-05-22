@@ -39,14 +39,20 @@
 #import "GPBDescriptor_PackagePrivate.h"
 #import "GPBDictionary_PackagePrivate.h"
 #import "GPBExtensionField_PackagePrivate.h"
-#import "GPBExtensionRegistry_PackagePrivate.h"
+#import "GPBExtensionRegistry.h"
+#import "GPBRootObject_PackagePrivate.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
+
+NSString *const GPBMessageErrorDomain =
+    GPBNSStringifySymbol(GPBMessageErrorDomain);
 
 #ifdef DEBUG
 NSString *const GPBExceptionMessageKey =
     GPBNSStringifySymbol(GPBExceptionMessage);
 #endif  // DEBUG
+
+static NSString *const kGPBDataCoderKey = @"GPBData";
 
 //
 // PLEASE REMEMBER:
@@ -78,12 +84,31 @@ static id GetOrCreateArrayIvarWithField(GPBMessage *self,
                                         GPBFieldDescriptor *field,
                                         GPBFileSyntax syntax);
 static id GetArrayIvarWithField(GPBMessage *self, GPBFieldDescriptor *field);
+static id CreateMapForField(GPBFieldDescriptor *field,
+                            GPBMessage *autocreator)
+    __attribute__((ns_returns_retained));
 static id GetOrCreateMapIvarWithField(GPBMessage *self,
                                       GPBFieldDescriptor *field,
                                       GPBFileSyntax syntax);
+static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field);
 static NSMutableDictionary *CloneExtensionMap(NSDictionary *extensionMap,
                                               NSZone *zone)
     __attribute__((ns_returns_retained));
+
+static NSError *MessageError(NSInteger code, NSDictionary *userInfo) {
+  return [NSError errorWithDomain:GPBMessageErrorDomain
+                             code:code
+                         userInfo:userInfo];
+}
+
+static NSError *MessageErrorWithReason(NSInteger code, NSString *reason) {
+  NSDictionary *userInfo = nil;
+  if ([reason length]) {
+    userInfo = @{ @"Reason" : reason };
+  }
+  return MessageError(code, userInfo);
+}
+
 
 static void CheckExtension(GPBMessage *self, GPBExtensionField *extension) {
   if ([[self class] descriptor] != [extension containingType]) {
@@ -201,6 +226,303 @@ static id CreateArrayForField(GPBFieldDescriptor *field,
   return result;
 }
 
+static id CreateMapForField(GPBFieldDescriptor *field,
+                            GPBMessage *autocreator) {
+  id result;
+  GPBType keyType = field.mapKeyType;
+  GPBType valueType = GPBGetFieldType(field);
+  switch (keyType) {
+    case GPBTypeBool:
+      switch (valueType) {
+        case GPBTypeBool:
+          result = [[GPBBoolBoolDictionary alloc] init];
+          break;
+        case GPBTypeFixed32:
+        case GPBTypeUInt32:
+          result = [[GPBBoolUInt32Dictionary alloc] init];
+          break;
+        case GPBTypeInt32:
+        case GPBTypeSFixed32:
+        case GPBTypeSInt32:
+          result = [[GPBBoolInt32Dictionary alloc] init];
+          break;
+        case GPBTypeFixed64:
+        case GPBTypeUInt64:
+          result = [[GPBBoolUInt64Dictionary alloc] init];
+          break;
+        case GPBTypeInt64:
+        case GPBTypeSFixed64:
+        case GPBTypeSInt64:
+          result = [[GPBBoolInt64Dictionary alloc] init];
+          break;
+        case GPBTypeFloat:
+          result = [[GPBBoolFloatDictionary alloc] init];
+          break;
+        case GPBTypeDouble:
+          result = [[GPBBoolDoubleDictionary alloc] init];
+          break;
+        case GPBTypeEnum:
+          result = [[GPBBoolEnumDictionary alloc]
+              initWithValidationFunction:field.enumDescriptor.enumVerifier];
+          break;
+        case GPBTypeData:
+        case GPBTypeMessage:
+        case GPBTypeString:
+          result = [[GPBBoolObjectDictionary alloc] init];
+          break;
+        case GPBTypeGroup:
+          NSCAssert(NO, @"shouldn't happen");
+          return nil;
+      }
+      break;
+    case GPBTypeFixed32:
+    case GPBTypeUInt32:
+      switch (valueType) {
+        case GPBTypeBool:
+          result = [[GPBUInt32BoolDictionary alloc] init];
+          break;
+        case GPBTypeFixed32:
+        case GPBTypeUInt32:
+          result = [[GPBUInt32UInt32Dictionary alloc] init];
+          break;
+        case GPBTypeInt32:
+        case GPBTypeSFixed32:
+        case GPBTypeSInt32:
+          result = [[GPBUInt32Int32Dictionary alloc] init];
+          break;
+        case GPBTypeFixed64:
+        case GPBTypeUInt64:
+          result = [[GPBUInt32UInt64Dictionary alloc] init];
+          break;
+        case GPBTypeInt64:
+        case GPBTypeSFixed64:
+        case GPBTypeSInt64:
+          result = [[GPBUInt32Int64Dictionary alloc] init];
+          break;
+        case GPBTypeFloat:
+          result = [[GPBUInt32FloatDictionary alloc] init];
+          break;
+        case GPBTypeDouble:
+          result = [[GPBUInt32DoubleDictionary alloc] init];
+          break;
+        case GPBTypeEnum:
+          result = [[GPBUInt32EnumDictionary alloc]
+              initWithValidationFunction:field.enumDescriptor.enumVerifier];
+          break;
+        case GPBTypeData:
+        case GPBTypeMessage:
+        case GPBTypeString:
+          result = [[GPBUInt32ObjectDictionary alloc] init];
+          break;
+        case GPBTypeGroup:
+          NSCAssert(NO, @"shouldn't happen");
+          return nil;
+      }
+      break;
+    case GPBTypeInt32:
+    case GPBTypeSFixed32:
+    case GPBTypeSInt32:
+      switch (valueType) {
+        case GPBTypeBool:
+          result = [[GPBInt32BoolDictionary alloc] init];
+          break;
+        case GPBTypeFixed32:
+        case GPBTypeUInt32:
+          result = [[GPBInt32UInt32Dictionary alloc] init];
+          break;
+        case GPBTypeInt32:
+        case GPBTypeSFixed32:
+        case GPBTypeSInt32:
+          result = [[GPBInt32Int32Dictionary alloc] init];
+          break;
+        case GPBTypeFixed64:
+        case GPBTypeUInt64:
+          result = [[GPBInt32UInt64Dictionary alloc] init];
+          break;
+        case GPBTypeInt64:
+        case GPBTypeSFixed64:
+        case GPBTypeSInt64:
+          result = [[GPBInt32Int64Dictionary alloc] init];
+          break;
+        case GPBTypeFloat:
+          result = [[GPBInt32FloatDictionary alloc] init];
+          break;
+        case GPBTypeDouble:
+          result = [[GPBInt32DoubleDictionary alloc] init];
+          break;
+        case GPBTypeEnum:
+          result = [[GPBInt32EnumDictionary alloc]
+              initWithValidationFunction:field.enumDescriptor.enumVerifier];
+          break;
+        case GPBTypeData:
+        case GPBTypeMessage:
+        case GPBTypeString:
+          result = [[GPBInt32ObjectDictionary alloc] init];
+          break;
+        case GPBTypeGroup:
+          NSCAssert(NO, @"shouldn't happen");
+          return nil;
+      }
+      break;
+    case GPBTypeFixed64:
+    case GPBTypeUInt64:
+      switch (valueType) {
+        case GPBTypeBool:
+          result = [[GPBUInt64BoolDictionary alloc] init];
+          break;
+        case GPBTypeFixed32:
+        case GPBTypeUInt32:
+          result = [[GPBUInt64UInt32Dictionary alloc] init];
+          break;
+        case GPBTypeInt32:
+        case GPBTypeSFixed32:
+        case GPBTypeSInt32:
+          result = [[GPBUInt64Int32Dictionary alloc] init];
+          break;
+        case GPBTypeFixed64:
+        case GPBTypeUInt64:
+          result = [[GPBUInt64UInt64Dictionary alloc] init];
+          break;
+        case GPBTypeInt64:
+        case GPBTypeSFixed64:
+        case GPBTypeSInt64:
+          result = [[GPBUInt64Int64Dictionary alloc] init];
+          break;
+        case GPBTypeFloat:
+          result = [[GPBUInt64FloatDictionary alloc] init];
+          break;
+        case GPBTypeDouble:
+          result = [[GPBUInt64DoubleDictionary alloc] init];
+          break;
+        case GPBTypeEnum:
+          result = [[GPBUInt64EnumDictionary alloc]
+              initWithValidationFunction:field.enumDescriptor.enumVerifier];
+          break;
+        case GPBTypeData:
+        case GPBTypeMessage:
+        case GPBTypeString:
+          result = [[GPBUInt64ObjectDictionary alloc] init];
+          break;
+        case GPBTypeGroup:
+          NSCAssert(NO, @"shouldn't happen");
+          return nil;
+      }
+      break;
+    case GPBTypeInt64:
+    case GPBTypeSFixed64:
+    case GPBTypeSInt64:
+      switch (valueType) {
+        case GPBTypeBool:
+          result = [[GPBInt64BoolDictionary alloc] init];
+          break;
+        case GPBTypeFixed32:
+        case GPBTypeUInt32:
+          result = [[GPBInt64UInt32Dictionary alloc] init];
+          break;
+        case GPBTypeInt32:
+        case GPBTypeSFixed32:
+        case GPBTypeSInt32:
+          result = [[GPBInt64Int32Dictionary alloc] init];
+          break;
+        case GPBTypeFixed64:
+        case GPBTypeUInt64:
+          result = [[GPBInt64UInt64Dictionary alloc] init];
+          break;
+        case GPBTypeInt64:
+        case GPBTypeSFixed64:
+        case GPBTypeSInt64:
+          result = [[GPBInt64Int64Dictionary alloc] init];
+          break;
+        case GPBTypeFloat:
+          result = [[GPBInt64FloatDictionary alloc] init];
+          break;
+        case GPBTypeDouble:
+          result = [[GPBInt64DoubleDictionary alloc] init];
+          break;
+        case GPBTypeEnum:
+          result = [[GPBInt64EnumDictionary alloc]
+              initWithValidationFunction:field.enumDescriptor.enumVerifier];
+          break;
+        case GPBTypeData:
+        case GPBTypeMessage:
+        case GPBTypeString:
+          result = [[GPBInt64ObjectDictionary alloc] init];
+          break;
+        case GPBTypeGroup:
+          NSCAssert(NO, @"shouldn't happen");
+          return nil;
+      }
+      break;
+    case GPBTypeString:
+      switch (valueType) {
+        case GPBTypeBool:
+          result = [[GPBStringBoolDictionary alloc] init];
+          break;
+        case GPBTypeFixed32:
+        case GPBTypeUInt32:
+          result = [[GPBStringUInt32Dictionary alloc] init];
+          break;
+        case GPBTypeInt32:
+        case GPBTypeSFixed32:
+        case GPBTypeSInt32:
+          result = [[GPBStringInt32Dictionary alloc] init];
+          break;
+        case GPBTypeFixed64:
+        case GPBTypeUInt64:
+          result = [[GPBStringUInt64Dictionary alloc] init];
+          break;
+        case GPBTypeInt64:
+        case GPBTypeSFixed64:
+        case GPBTypeSInt64:
+          result = [[GPBStringInt64Dictionary alloc] init];
+          break;
+        case GPBTypeFloat:
+          result = [[GPBStringFloatDictionary alloc] init];
+          break;
+        case GPBTypeDouble:
+          result = [[GPBStringDoubleDictionary alloc] init];
+          break;
+        case GPBTypeEnum:
+          result = [[GPBStringEnumDictionary alloc]
+              initWithValidationFunction:field.enumDescriptor.enumVerifier];
+          break;
+        case GPBTypeData:
+        case GPBTypeMessage:
+        case GPBTypeString:
+          if (autocreator) {
+            result = [[GPBAutocreatedDictionary alloc] init];
+          } else {
+            result = [[NSMutableDictionary alloc] init];
+          }
+          break;
+        case GPBTypeGroup:
+          NSCAssert(NO, @"shouldn't happen");
+          return nil;
+      }
+      break;
+
+    case GPBTypeFloat:
+    case GPBTypeDouble:
+    case GPBTypeEnum:
+    case GPBTypeData:
+    case GPBTypeGroup:
+    case GPBTypeMessage:
+      NSCAssert(NO, @"shouldn't happen");
+      return nil;
+  }
+
+  if (autocreator) {
+    if ((keyType == GPBTypeString) && GPBTypeIsObject(valueType)) {
+      GPBAutocreatedDictionary *autoDict = result;
+      autoDict->_autocreator =  autocreator;
+    } else {
+      GPBInt32Int32Dictionary *gpbDict = result;
+      gpbDict->_autocreator = autocreator;
+    }
+  }
+
+  return result;
+}
 
 #if !defined(__clang_analyzer__)
 // These functions are blocked from the analyzer because the analyzer sees the
@@ -249,285 +571,27 @@ static id GetOrCreateMapIvarWithField(GPBMessage *self,
                                       GPBFileSyntax syntax) {
   id dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
   if (!dict) {
-    GPBType keyType = field.mapKeyType;
-    GPBType valueType = GPBGetFieldType(field);
-    switch (keyType) {
-      case GPBTypeBool:
-        switch (valueType) {
-          case GPBTypeBool:
-            dict = [[GPBBoolBoolDictionary alloc] init];
-            break;
-          case GPBTypeFixed32:
-          case GPBTypeUInt32:
-            dict = [[GPBBoolUInt32Dictionary alloc] init];
-            break;
-          case GPBTypeInt32:
-          case GPBTypeSFixed32:
-          case GPBTypeSInt32:
-            dict = [[GPBBoolInt32Dictionary alloc] init];
-            break;
-          case GPBTypeFixed64:
-          case GPBTypeUInt64:
-            dict = [[GPBBoolUInt64Dictionary alloc] init];
-            break;
-          case GPBTypeInt64:
-          case GPBTypeSFixed64:
-          case GPBTypeSInt64:
-            dict = [[GPBBoolInt64Dictionary alloc] init];
-            break;
-          case GPBTypeFloat:
-            dict = [[GPBBoolFloatDictionary alloc] init];
-            break;
-          case GPBTypeDouble:
-            dict = [[GPBBoolDoubleDictionary alloc] init];
-            break;
-          case GPBTypeEnum:
-            dict = [[GPBBoolEnumDictionary alloc]
-                initWithValidationFunction:field.enumDescriptor.enumVerifier];
-            break;
-          case GPBTypeData:
-          case GPBTypeMessage:
-          case GPBTypeString:
-            dict = [[GPBBoolObjectDictionary alloc] init];
-            break;
-          case GPBTypeGroup:
-            NSCAssert(NO, @"shouldn't happen");
-            return nil;
-        }
-        break;
-      case GPBTypeFixed32:
-      case GPBTypeUInt32:
-        switch (valueType) {
-          case GPBTypeBool:
-            dict = [[GPBUInt32BoolDictionary alloc] init];
-            break;
-          case GPBTypeFixed32:
-          case GPBTypeUInt32:
-            dict = [[GPBUInt32UInt32Dictionary alloc] init];
-            break;
-          case GPBTypeInt32:
-          case GPBTypeSFixed32:
-          case GPBTypeSInt32:
-            dict = [[GPBUInt32Int32Dictionary alloc] init];
-            break;
-          case GPBTypeFixed64:
-          case GPBTypeUInt64:
-            dict = [[GPBUInt32UInt64Dictionary alloc] init];
-            break;
-          case GPBTypeInt64:
-          case GPBTypeSFixed64:
-          case GPBTypeSInt64:
-            dict = [[GPBUInt32Int64Dictionary alloc] init];
-            break;
-          case GPBTypeFloat:
-            dict = [[GPBUInt32FloatDictionary alloc] init];
-            break;
-          case GPBTypeDouble:
-            dict = [[GPBUInt32DoubleDictionary alloc] init];
-            break;
-          case GPBTypeEnum:
-            dict = [[GPBUInt32EnumDictionary alloc]
-                initWithValidationFunction:field.enumDescriptor.enumVerifier];
-            break;
-          case GPBTypeData:
-          case GPBTypeMessage:
-          case GPBTypeString:
-            dict = [[GPBUInt32ObjectDictionary alloc] init];
-            break;
-          case GPBTypeGroup:
-            NSCAssert(NO, @"shouldn't happen");
-            return nil;
-        }
-        break;
-      case GPBTypeInt32:
-      case GPBTypeSFixed32:
-      case GPBTypeSInt32:
-        switch (valueType) {
-          case GPBTypeBool:
-            dict = [[GPBInt32BoolDictionary alloc] init];
-            break;
-          case GPBTypeFixed32:
-          case GPBTypeUInt32:
-            dict = [[GPBInt32UInt32Dictionary alloc] init];
-            break;
-          case GPBTypeInt32:
-          case GPBTypeSFixed32:
-          case GPBTypeSInt32:
-            dict = [[GPBInt32Int32Dictionary alloc] init];
-            break;
-          case GPBTypeFixed64:
-          case GPBTypeUInt64:
-            dict = [[GPBInt32UInt64Dictionary alloc] init];
-            break;
-          case GPBTypeInt64:
-          case GPBTypeSFixed64:
-          case GPBTypeSInt64:
-            dict = [[GPBInt32Int64Dictionary alloc] init];
-            break;
-          case GPBTypeFloat:
-            dict = [[GPBInt32FloatDictionary alloc] init];
-            break;
-          case GPBTypeDouble:
-            dict = [[GPBInt32DoubleDictionary alloc] init];
-            break;
-          case GPBTypeEnum:
-            dict = [[GPBInt32EnumDictionary alloc]
-                initWithValidationFunction:field.enumDescriptor.enumVerifier];
-            break;
-          case GPBTypeData:
-          case GPBTypeMessage:
-          case GPBTypeString:
-            dict = [[GPBInt32ObjectDictionary alloc] init];
-            break;
-          case GPBTypeGroup:
-            NSCAssert(NO, @"shouldn't happen");
-            return nil;
-        }
-        break;
-      case GPBTypeFixed64:
-      case GPBTypeUInt64:
-        switch (valueType) {
-          case GPBTypeBool:
-            dict = [[GPBUInt64BoolDictionary alloc] init];
-            break;
-          case GPBTypeFixed32:
-          case GPBTypeUInt32:
-            dict = [[GPBUInt64UInt32Dictionary alloc] init];
-            break;
-          case GPBTypeInt32:
-          case GPBTypeSFixed32:
-          case GPBTypeSInt32:
-            dict = [[GPBUInt64Int32Dictionary alloc] init];
-            break;
-          case GPBTypeFixed64:
-          case GPBTypeUInt64:
-            dict = [[GPBUInt64UInt64Dictionary alloc] init];
-            break;
-          case GPBTypeInt64:
-          case GPBTypeSFixed64:
-          case GPBTypeSInt64:
-            dict = [[GPBUInt64Int64Dictionary alloc] init];
-            break;
-          case GPBTypeFloat:
-            dict = [[GPBUInt64FloatDictionary alloc] init];
-            break;
-          case GPBTypeDouble:
-            dict = [[GPBUInt64DoubleDictionary alloc] init];
-            break;
-          case GPBTypeEnum:
-            dict = [[GPBUInt64EnumDictionary alloc]
-                initWithValidationFunction:field.enumDescriptor.enumVerifier];
-            break;
-          case GPBTypeData:
-          case GPBTypeMessage:
-          case GPBTypeString:
-            dict = [[GPBUInt64ObjectDictionary alloc] init];
-            break;
-          case GPBTypeGroup:
-            NSCAssert(NO, @"shouldn't happen");
-            return nil;
-        }
-        break;
-      case GPBTypeInt64:
-      case GPBTypeSFixed64:
-      case GPBTypeSInt64:
-        switch (valueType) {
-          case GPBTypeBool:
-            dict = [[GPBInt64BoolDictionary alloc] init];
-            break;
-          case GPBTypeFixed32:
-          case GPBTypeUInt32:
-            dict = [[GPBInt64UInt32Dictionary alloc] init];
-            break;
-          case GPBTypeInt32:
-          case GPBTypeSFixed32:
-          case GPBTypeSInt32:
-            dict = [[GPBInt64Int32Dictionary alloc] init];
-            break;
-          case GPBTypeFixed64:
-          case GPBTypeUInt64:
-            dict = [[GPBInt64UInt64Dictionary alloc] init];
-            break;
-          case GPBTypeInt64:
-          case GPBTypeSFixed64:
-          case GPBTypeSInt64:
-            dict = [[GPBInt64Int64Dictionary alloc] init];
-            break;
-          case GPBTypeFloat:
-            dict = [[GPBInt64FloatDictionary alloc] init];
-            break;
-          case GPBTypeDouble:
-            dict = [[GPBInt64DoubleDictionary alloc] init];
-            break;
-          case GPBTypeEnum:
-            dict = [[GPBInt64EnumDictionary alloc]
-                initWithValidationFunction:field.enumDescriptor.enumVerifier];
-            break;
-          case GPBTypeData:
-          case GPBTypeMessage:
-          case GPBTypeString:
-            dict = [[GPBInt64ObjectDictionary alloc] init];
-            break;
-          case GPBTypeGroup:
-            NSCAssert(NO, @"shouldn't happen");
-            return nil;
-        }
-        break;
-      case GPBTypeString:
-        switch (valueType) {
-          case GPBTypeBool:
-            dict = [[GPBStringBoolDictionary alloc] init];
-            break;
-          case GPBTypeFixed32:
-          case GPBTypeUInt32:
-            dict = [[GPBStringUInt32Dictionary alloc] init];
-            break;
-          case GPBTypeInt32:
-          case GPBTypeSFixed32:
-          case GPBTypeSInt32:
-            dict = [[GPBStringInt32Dictionary alloc] init];
-            break;
-          case GPBTypeFixed64:
-          case GPBTypeUInt64:
-            dict = [[GPBStringUInt64Dictionary alloc] init];
-            break;
-          case GPBTypeInt64:
-          case GPBTypeSFixed64:
-          case GPBTypeSInt64:
-            dict = [[GPBStringInt64Dictionary alloc] init];
-            break;
-          case GPBTypeFloat:
-            dict = [[GPBStringFloatDictionary alloc] init];
-            break;
-          case GPBTypeDouble:
-            dict = [[GPBStringDoubleDictionary alloc] init];
-            break;
-          case GPBTypeEnum:
-            dict = [[GPBStringEnumDictionary alloc]
-                initWithValidationFunction:field.enumDescriptor.enumVerifier];
-            break;
-          case GPBTypeData:
-          case GPBTypeMessage:
-          case GPBTypeString:
-            dict = [[NSMutableDictionary alloc] init];
-            break;
-          case GPBTypeGroup:
-            NSCAssert(NO, @"shouldn't happen");
-            return nil;
-        }
-        break;
-
-      case GPBTypeFloat:
-      case GPBTypeDouble:
-      case GPBTypeEnum:
-      case GPBTypeData:
-      case GPBTypeGroup:
-      case GPBTypeMessage:
-        NSCAssert(NO, @"shouldn't happen");
-        return nil;
-    }
-
+    // No lock needed, this is called from places expecting to mutate
+    // so no threading protection is needed.
+    dict = CreateMapForField(field, nil);
     GPBSetRetainedObjectIvarWithFieldInternal(self, field, dict, syntax);
+  }
+  return dict;
+}
+
+// This is like GPBGetObjectIvarWithField(), but for maps, it should
+// only be used to wire the method into the class.
+static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
+  id dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+  if (!dict) {
+    // Check again after getting the lock.
+    OSSpinLockLock(&self->readOnlyMutex_);
+    dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+    if (!dict) {
+      dict = CreateMapForField(field, self);
+      GPBSetAutocreatedRetainedObjectIvarWithField(self, field, dict);
+    }
+    OSSpinLockUnlock(&self->readOnlyMutex_);
   }
   return dict;
 }
@@ -595,7 +659,30 @@ void GPBAutocreatedArrayModified(GPBMessage *self, id array) {
       }
     }
   }
-  NSCAssert(NO, @"Unknown array.");
+  NSCAssert(NO, @"Unknown autocreated %@ for %@.", [array class], self);
+}
+
+void GPBAutocreatedDictionaryModified(GPBMessage *self, id dictionary) {
+  // When one of our autocreated dicts adds elements, make it visible.
+  GPBDescriptor *descriptor = [[self class] descriptor];
+  for (GPBFieldDescriptor *field in descriptor->fields_) {
+    if (field.fieldType == GPBFieldTypeMap) {
+      id curDict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
+      if (curDict == dictionary) {
+        if ((field.mapKeyType == GPBTypeString) &&
+            GPBFieldTypeIsObject(field)) {
+          GPBAutocreatedDictionary *autoDict = dictionary;
+          autoDict->_autocreator = nil;
+        } else {
+          GPBInt32Int32Dictionary *gpbDict = dictionary;
+          gpbDict->_autocreator = nil;
+        }
+        GPBBecomeVisibleToAutocreator(self);
+        return;
+      }
+    }
+  }
+  NSCAssert(NO, @"Unknown autocreated %@ for %@.", [dictionary class], self);
 }
 
 void GPBClearMessageAutocreator(GPBMessage *self) {
@@ -617,7 +704,8 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
            : [self->autocreator_->autocreatedExtensionMap_
                  objectForKey:self->autocreatorExtension_]);
   NSCAssert(autocreatorHas || autocreatorFieldValue != self,
-            @"Cannot clear autocreator because it still refers to self.");
+            @"Cannot clear autocreator because it still refers to self, self: %@.",
+            self);
 
 #endif  // DEBUG && !defined(NS_BLOCK_ASSERTIONS)
 
@@ -636,26 +724,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   return self->unknownFields_;
 }
 
-#ifdef DEBUG
-static void DebugRaiseExceptionIfNotInitialized(GPBMessage *message) {
-  if (!message.initialized) {
-    NSString *reason =
-        [NSString stringWithFormat:@"Uninitialized Message %@", message];
-    NSDictionary *userInfo =
-        message ? @{GPBExceptionMessageKey : message} : nil;
-    NSException *exception =
-        [NSException exceptionWithName:NSInternalInconsistencyException
-                                reason:reason
-                              userInfo:userInfo];
-    [exception raise];
-  }
-}
-#else
-GPB_INLINE void DebugRaiseExceptionIfNotInitialized(GPBMessage *message) {
-#pragma unused(message)
-}
-#endif  // DEBUG
-
 @implementation GPBMessage
 
 + (void)initialize {
@@ -663,14 +731,20 @@ GPB_INLINE void DebugRaiseExceptionIfNotInitialized(GPBMessage *message) {
   if ([self class] == pbMessageClass) {
     // This is here to start up the "base" class descriptor.
     [self descriptor];
+    // Message shares extension method resolving with GPBRootObject so insure
+    // it is started up at the same time.
+    (void)[GPBRootObject class];
   } else if ([self superclass] == pbMessageClass) {
     // This is here to start up all the "message" subclasses. Just needs to be
     // done for the messages, not any of the subclasses.
     // This must be done in initialize to enforce thread safety of start up of
-    // the protocol buffer library. All of the extension registries must be
-    // created in either "+load" or "+initialize".
+    // the protocol buffer library.
+    // Note: The generated code for -descriptor calls
+    // +[GPBDescriptor allocDescriptorForClass:...], passing the GPBRootObject
+    // subclass for the file.  That call chain is what ensures that *Root class
+    // is started up to support extension resolution off the message class
+    // (+resolveClassMethod: below) in a thread safe manner.
     [self descriptor];
-    [self extensionRegistry];
   }
 }
 
@@ -728,25 +802,63 @@ GPB_INLINE void DebugRaiseExceptionIfNotInitialized(GPBMessage *message) {
   return self;
 }
 
-- (instancetype)initWithData:(NSData *)data {
-  return [self initWithData:data extensionRegistry:nil];
+- (instancetype)initWithData:(NSData *)data error:(NSError **)errorPtr {
+  return [self initWithData:data extensionRegistry:nil error:errorPtr];
 }
 
 - (instancetype)initWithData:(NSData *)data
-           extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
+           extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+                       error:(NSError **)errorPtr {
   if ((self = [self init])) {
-    [self mergeFromData:data extensionRegistry:extensionRegistry];
-    DebugRaiseExceptionIfNotInitialized(self);
+    @try {
+      [self mergeFromData:data extensionRegistry:extensionRegistry];
+    }
+    @catch (NSException *exception) {
+      [self release];
+      self = nil;
+      if (errorPtr) {
+        *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
+                                           exception.reason);
+      }
+    }
+#ifdef DEBUG
+    if (self && !self.initialized) {
+      [self release];
+      self = nil;
+      if (errorPtr) {
+        *errorPtr = MessageError(GPBMessageErrorCodeMissingRequiredField, nil);
+      }
+    }
+#endif
   }
   return self;
 }
 
 - (instancetype)initWithCodedInputStream:(GPBCodedInputStream *)input
                        extensionRegistry:
-                           (GPBExtensionRegistry *)extensionRegistry {
+                           (GPBExtensionRegistry *)extensionRegistry
+                                   error:(NSError **)errorPtr {
   if ((self = [self init])) {
-    [self mergeFromCodedInputStream:input extensionRegistry:extensionRegistry];
-    DebugRaiseExceptionIfNotInitialized(self);
+    @try {
+      [self mergeFromCodedInputStream:input extensionRegistry:extensionRegistry];
+    }
+    @catch (NSException *exception) {
+      [self release];
+      self = nil;
+      if (errorPtr) {
+        *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
+                                           exception.reason);
+      }
+    }
+#ifdef DEBUG
+    if (self && !self.initialized) {
+      [self release];
+      self = nil;
+      if (errorPtr) {
+        *errorPtr = MessageError(GPBMessageErrorCodeMissingRequiredField, nil);
+      }
+    }
+#endif
   }
   return self;
 }
@@ -900,6 +1012,20 @@ GPB_INLINE void DebugRaiseExceptionIfNotInitialized(GPBMessage *message) {
               gpbArray->_autocreator = nil;
             }
           }
+        } else {
+          if ((field.mapKeyType == GPBTypeString) &&
+              GPBFieldTypeIsObject(field)) {
+            GPBAutocreatedDictionary *autoDict = arrayOrMap;
+            if (autoDict->_autocreator == self) {
+              autoDict->_autocreator = nil;
+            }
+          } else {
+            // Type doesn't matter, it is a GPB*Dictionary.
+            GPBInt32Int32Dictionary *gpbDict = arrayOrMap;
+            if (gpbDict->_autocreator == self) {
+              gpbDict->_autocreator = nil;
+            }
+          }
         }
         [arrayOrMap release];
       }
@@ -960,7 +1086,8 @@ GPB_INLINE void DebugRaiseExceptionIfNotInitialized(GPBMessage *message) {
           }
         } else {
           NSAssert(field.isOptional,
-                   @"If not required or optional, what was it?");
+                   @"%@: Single message field %@ not required or optional?",
+                   [self class], field.name);
           if (GPBGetHasIvarField(self, field)) {
             GPBMessage *message = GPBGetMessageIvarWithField(self, field);
             if (!message.initialized) {
@@ -1025,11 +1152,27 @@ GPB_INLINE void DebugRaiseExceptionIfNotInitialized(GPBMessage *message) {
 }
 
 - (NSData *)data {
-  DebugRaiseExceptionIfNotInitialized(self);
+#ifdef DEBUG
+  if (!self.initialized) {
+    return nil;
+  }
+#endif
   NSMutableData *data = [NSMutableData dataWithLength:[self serializedSize]];
   GPBCodedOutputStream *stream =
       [[GPBCodedOutputStream alloc] initWithData:data];
-  [self writeToCodedOutputStream:stream];
+  @try {
+    [self writeToCodedOutputStream:stream];
+  }
+  @catch (NSException *exception) {
+    // This really shouldn't happen. The only way writeToCodedOutputStream:
+    // could throw is if something in the library has a bug and the
+    // serializedSize was wrong.
+#ifdef DEBUG
+    NSLog(@"%@: Internal exception while building message data: %@",
+          [self class], exception);
+#endif
+    data = nil;
+  }
   [stream release];
   return data;
 }
@@ -1041,7 +1184,19 @@ GPB_INLINE void DebugRaiseExceptionIfNotInitialized(GPBMessage *message) {
       [NSMutableData dataWithLength:(serializedSize + varintSize)];
   GPBCodedOutputStream *stream =
       [[GPBCodedOutputStream alloc] initWithData:data];
-  [self writeDelimitedToCodedOutputStream:stream];
+  @try {
+    [self writeDelimitedToCodedOutputStream:stream];
+  }
+  @catch (NSException *exception) {
+    // This really shouldn't happen.  The only way writeToCodedOutputStream:
+    // could throw is if something in the library has a bug and the
+    // serializedSize was wrong.
+#ifdef DEBUG
+    NSLog(@"%@: Internal exception while building message delimitedData: %@",
+          [self class], exception);
+#endif
+    data = nil;
+  }
   [stream release];
   return data;
 }
@@ -1717,32 +1872,55 @@ GPB_INLINE void DebugRaiseExceptionIfNotInitialized(GPBMessage *message) {
 
 #pragma mark - Parse From Data Support
 
-+ (instancetype)parseFromData:(NSData *)data {
-  return [self parseFromData:data extensionRegistry:nil];
++ (instancetype)parseFromData:(NSData *)data error:(NSError **)errorPtr {
+  return [self parseFromData:data extensionRegistry:nil error:errorPtr];
 }
 
 + (instancetype)parseFromData:(NSData *)data
-            extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
+            extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+                        error:(NSError **)errorPtr {
   return [[[self alloc] initWithData:data
-                   extensionRegistry:extensionRegistry] autorelease];
+                   extensionRegistry:extensionRegistry
+                               error:errorPtr] autorelease];
 }
 
 + (instancetype)parseFromCodedInputStream:(GPBCodedInputStream *)input
-                        extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
+                        extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+                                    error:(NSError **)errorPtr {
   return
       [[[self alloc] initWithCodedInputStream:input
-                            extensionRegistry:extensionRegistry] autorelease];
+                            extensionRegistry:extensionRegistry
+                                        error:errorPtr] autorelease];
 }
 
 #pragma mark - Parse Delimited From Data Support
 
 + (instancetype)parseDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
                                  extensionRegistry:
-                                     (GPBExtensionRegistry *)extensionRegistry {
+                                     (GPBExtensionRegistry *)extensionRegistry
+                                             error:(NSError **)errorPtr {
   GPBMessage *message = [[[self alloc] init] autorelease];
-  [message mergeDelimitedFromCodedInputStream:input
-                            extensionRegistry:extensionRegistry];
-  DebugRaiseExceptionIfNotInitialized(message);
+  @try {
+    [message mergeDelimitedFromCodedInputStream:input
+                              extensionRegistry:extensionRegistry];
+  }
+  @catch (NSException *exception) {
+    [message release];
+    message = nil;
+    if (errorPtr) {
+      *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
+                                         exception.reason);
+    }
+  }
+#ifdef DEBUG
+  if (message && !message.initialized) {
+    [message release];
+    message = nil;
+    if (errorPtr) {
+      *errorPtr = MessageError(GPBMessageErrorCodeMissingRequiredField, nil);
+    }
+  }
+#endif
   return message;
 }
 
@@ -4661,7 +4839,9 @@ static BOOL IvarSetEnum(GPBFieldDescriptor *field, void *voidContext) {
         context.impToAdd = imp_implementationWithBlock(^(id obj, BOOL value) {
           if (value) {
             [NSException raise:NSInvalidArgumentException
-                        format:@"has fields can only be set to NO"];
+                        format:@"%@: %@ can only be set to NO (to clear field).",
+                               [obj class],
+                               NSStringFromSelector(field->setHasSel_)];
           }
           GPBClearMessageField(obj, field);
         });
@@ -4684,9 +4864,15 @@ static BOOL IvarSetEnum(GPBFieldDescriptor *field, void *voidContext) {
       }
     } else {
       if (sel == field->getSel_) {
-        context.impToAdd = imp_implementationWithBlock(^(id obj) {
-          return GetArrayIvarWithField(obj, field);
-        });
+        if (field.fieldType == GPBFieldTypeRepeated) {
+          context.impToAdd = imp_implementationWithBlock(^(id obj) {
+            return GetArrayIvarWithField(obj, field);
+          });
+        } else {
+          context.impToAdd = imp_implementationWithBlock(^(id obj) {
+            return GetMapIvarWithField(obj, field);
+          });
+        }
         context.encodingSelector = @selector(getArray);
         break;
       } else if (sel == field->setSel_) {
@@ -4711,18 +4897,37 @@ static BOOL IvarSetEnum(GPBFieldDescriptor *field, void *voidContext) {
   return [super resolveInstanceMethod:sel];
 }
 
++ (BOOL)resolveClassMethod:(SEL)sel {
+  // Extensions scoped to a Message and looked up via class methods.
+  if (GPBResolveExtensionClassMethod(self, sel)) {
+    return YES;
+  }
+  return [super resolveClassMethod:sel];
+}
+
 #pragma mark - NSCoding Support
+
++ (BOOL)supportsSecureCoding {
+  return YES;
+}
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
   self = [self init];
   if (self) {
-    [self mergeFromData:[aDecoder decodeDataObject] extensionRegistry:nil];
+    NSData *data =
+        [aDecoder decodeObjectOfClass:[NSData class] forKey:kGPBDataCoderKey];
+    if (data.length) {
+      [self mergeFromData:data extensionRegistry:nil];
+    }
   }
   return self;
 }
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
-  [aCoder encodeDataObject:[self data]];
+  NSData *data = [self data];
+  if (data.length) {
+    [aCoder encodeObject:data forKey:kGPBDataCoderKey];
+  }
 }
 
 #pragma mark - KVC Support

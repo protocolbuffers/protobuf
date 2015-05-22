@@ -31,6 +31,7 @@
 #import "GPBRootObject_PackagePrivate.h"
 
 #import <objc/runtime.h>
+#import <libkern/OSAtomic.h>
 
 #import <CoreFoundation/CoreFoundation.h>
 
@@ -95,9 +96,11 @@ static CFHashCode GPBRootExtensionKeyHash(const void *value) {
   return jenkins_one_at_a_time_hash(key);
 }
 
+static OSSpinLock gExtensionSingletonDictionaryLock_ = OS_SPINLOCK_INIT;
 static CFMutableDictionaryRef gExtensionSingletonDictionary = NULL;
 
 + (void)initialize {
+  // Ensure the global is started up.
   if (!gExtensionSingletonDictionary) {
     CFDictionaryKeyCallBacks keyCallBacks = {
       // See description above for reason for using custom dictionary.
@@ -112,6 +115,13 @@ static CFMutableDictionaryRef gExtensionSingletonDictionary = NULL;
         CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &keyCallBacks,
                                   &kCFTypeDictionaryValueCallBacks);
   }
+
+  if ([self superclass] == [GPBRootObject class]) {
+    // This is here to start up all the per file "Root" subclasses.
+    // This must be done in initialize to enforce thread safety of start up of
+    // the protocol buffer library.
+    [self extensionRegistry];
+  }
 }
 
 + (GPBExtensionRegistry *)extensionRegistry {
@@ -122,39 +132,54 @@ static CFMutableDictionaryRef gExtensionSingletonDictionary = NULL;
 
 + (void)globallyRegisterExtension:(GPBExtensionField *)field {
   const char *key = [field.descriptor singletonNameC];
-  // Register happens at startup, so there is no thread safety issue in
-  // modifying the dictionary.
+  OSSpinLockLock(&gExtensionSingletonDictionaryLock_);
   CFDictionarySetValue(gExtensionSingletonDictionary, key, field);
+  OSSpinLockUnlock(&gExtensionSingletonDictionaryLock_);
 }
 
-static id ExtensionForName(id self, SEL _cmd) {
+GPB_INLINE id ExtensionForName(id self, SEL _cmd) {
   // Really fast way of doing "classname_selName".
   // This came up as a hotspot (creation of NSString *) when accessing a
   // lot of extensions.
-  const char *className = class_getName(self);
   const char *selName = sel_getName(_cmd);
+  if (selName[0] == '_') {
+    return nil;  // Apple internal selector.
+  }
+  size_t selNameLen = 0;
+  while (1) {
+    char c = selName[selNameLen];
+    if (c == '\0') {  // String end.
+      break;
+    }
+    if (c == ':') {
+      return nil;  // Selector took an arg, not one of the runtime methods.
+    }
+    ++selNameLen;
+  }
+
+  const char *className = class_getName(self);
   size_t classNameLen = strlen(className);
-  size_t selNameLen = strlen(selName);
   char key[classNameLen + selNameLen + 2];
   memcpy(key, className, classNameLen);
   key[classNameLen] = '_';
   memcpy(&key[classNameLen + 1], selName, selNameLen);
   key[classNameLen + 1 + selNameLen] = '\0';
+  OSSpinLockLock(&gExtensionSingletonDictionaryLock_);
   id extension = (id)CFDictionaryGetValue(gExtensionSingletonDictionary, key);
-  // We can't remove the key from the dictionary here (as an optimization),
-  // because resolveClassMethod can happen on any thread and we'd then need
-  // a lock.
+  if (extension) {
+    // The method is getting wired in to the class, so no need to keep it in
+    // the dictionary.
+    CFDictionaryRemoveValue(gExtensionSingletonDictionary, key);
+  }
+  OSSpinLockUnlock(&gExtensionSingletonDictionaryLock_);
   return extension;
 }
 
-+ (BOOL)resolveClassMethod:(SEL)sel {
+BOOL GPBResolveExtensionClassMethod(Class self, SEL sel) {
   // Another option would be to register the extensions with the class at
   // globallyRegisterExtension:
   // Timing the two solutions, this solution turned out to be much faster
   // and reduced startup time, and runtime memory.
-  // On an iPhone 5s:
-  // ResolveClassMethod: 1515583 nanos
-  // globallyRegisterExtension: 2453083 nanos
   // The advantage to globallyRegisterExtension is that it would reduce the
   // size of the protos somewhat because the singletonNameC wouldn't need
   // to include the class name. For a class with a lot of extensions it
@@ -169,7 +194,17 @@ static id ExtensionForName(id self, SEL _cmd) {
 #pragma unused(obj)
       return extension;
     });
-    return class_addMethod(metaClass, sel, imp, encoding);
+    if (class_addMethod(metaClass, sel, imp, encoding)) {
+      return YES;
+    }
+  }
+  return NO;
+}
+
+
++ (BOOL)resolveClassMethod:(SEL)sel {
+  if (GPBResolveExtensionClassMethod(self, sel)) {
+    return YES;
   }
   return [super resolveClassMethod:sel];
 }

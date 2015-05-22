@@ -120,6 +120,8 @@ int OrderGroupForFieldDescriptor(const FieldDescriptor* descriptor) {
       return 1;
   }
 
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return 0;
 }
@@ -188,7 +190,7 @@ MessageGenerator::MessageGenerator(const string& root_classname,
       extension_generators_.push_back(
           new ExtensionGenerator(class_name_, descriptor_->extension(i)));
     }
-    // No need to oneofs if this message is filtered
+    // No need to generate oneofs if this message is filtered.
     for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
       OneofGenerator* generator = new OneofGenerator(descriptor_->oneof_decl(i));
       oneof_generators_.push_back(generator);
@@ -253,15 +255,24 @@ void MessageGenerator::GenerateStaticVariablesInitialization(
   }
 }
 
-void MessageGenerator::DetermineDependencies(set<string>* dependencies) {
+void MessageGenerator::DetermineForwardDeclarations(set<string>* fwd_decls) {
   if (!IsFiltered() && !IsMapEntryMessage(descriptor_)) {
-    dependencies->insert("@class " + class_name_);
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
+      // If it is a the field is repeated, the type will be and *Array,
+      // and we don't need any forward decl.
+      if (fieldDescriptor->is_repeated()) {
+        continue;
+      }
+      field_generators_.get(fieldDescriptor)
+          .DetermineForwardDeclarations(fwd_decls);
+    }
   }
 
   for (vector<MessageGenerator*>::iterator iter =
            nested_message_generators_.begin();
        iter != nested_message_generators_.end(); ++iter) {
-    (*iter)->DetermineDependencies(dependencies);
+    (*iter)->DetermineForwardDeclarations(fwd_decls);
   }
 }
 
@@ -361,13 +372,13 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
         "classname", class_name_,
         "comments", message_comments);
 
-    vector<bool> seen_oneofs(descriptor_->oneof_decl_count(), false);
+    vector<char> seen_oneofs(descriptor_->oneof_decl_count(), 0);
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = descriptor_->field(i);
       if (field->containing_oneof() != NULL) {
         const int oneof_index = field->containing_oneof()->index();
         if (!seen_oneofs[oneof_index]) {
-          seen_oneofs[oneof_index] = true;
+          seen_oneofs[oneof_index] = 1;
           oneof_generators_[oneof_index]->GeneratePublicCasePropertyDeclaration(
               printer);
         }

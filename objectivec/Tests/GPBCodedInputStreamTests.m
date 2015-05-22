@@ -184,7 +184,7 @@
   XCTAssertEqual(message.serializedSize, (size_t)rawBytes.length);
 
   TestAllTypes* message2 =
-      [TestAllTypes parseFromData:rawBytes extensionRegistry:nil];
+      [TestAllTypes parseFromData:rawBytes extensionRegistry:nil error:NULL];
   [self assertAllFieldsSet:message2 repeatedCount:kGPBDefaultRepeatCount];
 }
 
@@ -227,8 +227,9 @@
   // reading.
   GPBCodedInputStream* stream =
       [GPBCodedInputStream streamWithData:message.data];
-  TestAllTypes* message2 =
-      [TestAllTypes parseFromCodedInputStream:stream extensionRegistry:nil];
+  TestAllTypes* message2 = [TestAllTypes parseFromCodedInputStream:stream
+                                                 extensionRegistry:nil
+                                                             error:NULL];
 
   XCTAssertEqualObjects(message.optionalBytes, message2.optionalBytes);
 
@@ -280,8 +281,9 @@
   NSData* data =
       [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
   GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
-  TestAllTypes* message =
-      [TestAllTypes parseFromCodedInputStream:input extensionRegistry:nil];
+  TestAllTypes* message = [TestAllTypes parseFromCodedInputStream:input
+                                                extensionRegistry:nil
+                                                            error:NULL];
   // Make sure we can read string properties twice without crashing.
   XCTAssertEqual([message.defaultString length], (NSUInteger)0);
   XCTAssertEqualObjects(@"", message.defaultString);

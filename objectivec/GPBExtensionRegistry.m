@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#import "GPBExtensionRegistry_PackagePrivate.h"
+#import "GPBExtensionRegistry.h"
 
 #import "GPBBootstrap.h"
 #import "GPBDescriptor.h"
@@ -50,6 +50,14 @@
 - (void)dealloc {
   [mutableClassMap_ release];
   [super dealloc];
+}
+
+- (instancetype)copyWithZone:(NSZone *)zone {
+  GPBExtensionRegistry *result = [[[self class] allocWithZone:zone] init];
+  if (result && mutableClassMap_.count) {
+    [result->mutableClassMap_ addEntriesFromDictionary:mutableClassMap_];
+  }
+  return result;
 }
 
 - (NSMutableDictionary *)extensionMapForContainingType:
