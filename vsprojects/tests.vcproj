@@ -207,8 +207,12 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File RelativePath=".\google\protobuf\map_lite_unittest.pb.cc"></File>
+			<File RelativePath=".\google\protobuf\unittest_import_lite.pb.cc"></File>
+			<File RelativePath=".\google\protobuf\unittest_lite.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\compiler\cpp\cpp_test_bad_identifiers.pb.cc"></File>
-			<File RelativePath=".\google\protobuf\unittest_preserve_unknown_enum2.pb.cc"></File>
+			<File RelativePath=".\google\protobuf\compiler\cpp\cpp_test_large_enum_value.pb.cc"></File>
+			<File RelativePath=".\google\protobuf\any_test.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\map_proto2_unittest.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\map_unittest.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_arena.pb.cc"></File>
@@ -216,21 +220,22 @@
 			<File RelativePath=".\google\protobuf\unittest_drop_unknown_fields.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_embed_optimize_for.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_empty.pb.cc"></File>
-			<File RelativePath=".\google\protobuf\unittest_import_lite.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_import.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_import_public_lite.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_import_public.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_lite_imports_nonlite.pb.cc"></File>
-			<File RelativePath=".\google\protobuf\unittest_lite.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_mset.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_no_arena_import.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_no_arena.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_no_field_presence.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_no_generic_services.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_optimize_for.pb.cc"></File>
-			<File RelativePath=".\google\protobuf\unittest.pb.cc"></File>
+			<File RelativePath=".\google\protobuf\unittest_preserve_unknown_enum2.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_preserve_unknown_enum.pb.cc"></File>
 			<File RelativePath=".\google\protobuf\unittest_proto3_arena.pb.cc"></File>
+			<File RelativePath=".\google\protobuf\unittest_well_known_types.pb.cc"></File>
+			<File RelativePath=".\google\protobuf\unittest.pb.cc"></File>
+			<File RelativePath="..\src\google\protobuf\any_test.cc"></File>
 			<File RelativePath="..\src\google\protobuf\arenastring_unittest.cc"></File>
 			<File RelativePath="..\src\google\protobuf\arena_test_util.cc"></File>
 			<File RelativePath="..\src\google\protobuf\arena_unittest.cc"></File>
@@ -243,6 +248,7 @@
 			<File RelativePath="..\src\google\protobuf\compiler\java\java_doc_comment_unittest.cc"></File>
 			<File RelativePath="..\src\google\protobuf\compiler\java\java_plugin_unittest.cc"></File>
 			<File RelativePath="..\src\google\protobuf\compiler\mock_code_generator.cc"></File>
+			<File RelativePath="..\src\google\protobuf\compiler\objectivec\objectivec_helpers_unittest.cc"></File>
 			<File RelativePath="..\src\google\protobuf\compiler\parser_unittest.cc"></File>
 			<File RelativePath="..\src\google\protobuf\compiler\python\python_plugin_unittest.cc"></File>
 			<File RelativePath="..\src\google\protobuf\descriptor_database_unittest.cc"></File>
@@ -277,8 +283,33 @@
 			<File RelativePath="..\src\google\protobuf\test_util.cc"></File>
 			<File RelativePath="..\src\google\protobuf\text_format_unittest.cc"></File>
 			<File RelativePath="..\src\google\protobuf\unknown_field_set_unittest.cc"></File>
+			<File RelativePath="..\src\google\protobuf\well_known_types_unittest.cc"></File>
 			<File RelativePath="..\src\google\protobuf\wire_format_unittest.cc"></File>
 		</Filter>
+		<File
+			RelativePath="..\src\google\protobuf\any_test.proto"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating any_test.pb.{h,cc}..."
+					CommandLine="Debug\protoc -I../src --cpp_out=. ../src/google/protobuf/any_test.proto"
+					Outputs="google\protobuf\any_test.pb.h;google\protobuf\any_test.pb.cc"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating any_test.pb.{h,cc}..."
+					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/any_test.proto"
+					Outputs="google\protobuf\any_test.pb.h;google\protobuf\any_test.pb.cc"
+				/>
+			</FileConfiguration>
+		</File>
 		<File
 			RelativePath="..\src\google\protobuf\unittest_preserve_unknown_enum2.proto"
 			>
@@ -300,6 +331,54 @@
 					Description="Generating unittest_preserve_unknown_enum2.pb.{h,cc}..."
 					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_preserve_unknown_enum2.proto"
 					Outputs="google\protobuf\unittest_preserve_unknown_enum2.pb.h;google\protobuf\unittest_preserve_unknown_enum2.pb.cc"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\src\google\protobuf\unittest_well_known_types.proto"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating unittest_well_known_types.pb.{h,cc}..."
+					CommandLine="Debug\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_well_known_types.proto"
+					Outputs="google\protobuf\unittest_well_known_types.pb.h;google\protobuf\unittest_well_known_types.pb.cc"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating unittest_well_known_types.pb.{h,cc}..."
+					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/unittest_well_known_types.proto"
+					Outputs="google\protobuf\unittest_well_known_types.pb.h;google\protobuf\unittest_well_known_types.pb.cc"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\src\google\protobuf\map_lite_unittest.proto"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating map_lite_unittest.pb.{h,cc}..."
+					CommandLine="Debug\protoc -I../src --cpp_out=. ../src/google/protobuf/map_lite_unittest.proto"
+					Outputs="google\protobuf\map_lite_unittest.pb.h;google\protobuf\map_lite_unittest.pb.cc"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating map_lite_unittest.pb.{h,cc}..."
+					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/map_lite_unittest.proto"
+					Outputs="google\protobuf\map_lite_unittest.pb.h;google\protobuf\map_lite_unittest.pb.cc"
 				/>
 			</FileConfiguration>
 		</File>
@@ -852,6 +931,30 @@
 					Description="Generating cpp_test_bad_identifiers.pb.{h,cc}..."
 					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto"
 					Outputs="google\protobuf\compiler\cpp\cpp_test_bad_identifiers.pb.h;google\protobuf\compiler\cpp\cpp_test_bad_identifiers.pb.cc"
+				/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\src\google\protobuf\compiler\cpp\cpp_test_large_enum_value.proto"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating cpp_test_large_enum_value.pb.{h,cc}..."
+					CommandLine="Debug\protoc -I../src --cpp_out=. ../src/google/protobuf/compiler/cpp/cpp_test_large_enum_value.proto"
+					Outputs="google\protobuf\compiler\cpp\cpp_test_large_enum_value.pb.h;google\protobuf\compiler\cpp\cpp_test_large_enum_value.pb.cc"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCustomBuildTool"
+					Description="Generating cpp_test_large_enum_value.pb.{h,cc}..."
+					CommandLine="Release\protoc -I../src --cpp_out=. ../src/google/protobuf/compiler/cpp/cpp_test_large_enum_value.proto"
+					Outputs="google\protobuf\compiler\cpp\cpp_test_large_enum_value.pb.h;google\protobuf\compiler\cpp\cpp_test_large_enum_value.pb.cc"
 				/>
 			</FileConfiguration>
 		</File>
