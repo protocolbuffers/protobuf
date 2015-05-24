@@ -212,11 +212,11 @@ void
 MapField<Key, T, kKeyFieldType, kValueFieldType,
          default_enum_value>::SyncRepeatedFieldWithMapNoLock() const {
   if (repeated_field_ == NULL) {
-    if (arena_ == NULL) {
+    if (MapFieldBase::arena_ == NULL) {
       repeated_field_ = new RepeatedPtrField<Message>();
     } else {
-      repeated_field_ =
-          Arena::CreateMessage<RepeatedPtrField<Message> >(arena_);
+      repeated_field_ = Arena::CreateMessage<RepeatedPtrField<Message> >(
+          MapFieldBase::arena_);
     }
   }
   const Map<Key, T>& map = GetInternalMap();
@@ -229,7 +229,8 @@ MapField<Key, T, kKeyFieldType, kValueFieldType,
        it != map.end(); ++it) {
     InitDefaultEntryOnce();
     GOOGLE_CHECK(default_entry_ != NULL);
-    EntryType* new_entry = down_cast<EntryType*>(default_entry_->New(arena_));
+    EntryType* new_entry =
+        down_cast<EntryType*>(default_entry_->New(MapFieldBase::arena_));
     repeated_field->AddAllocated(new_entry);
     (*new_entry->mutable_key()) = it->first;
     (*new_entry->mutable_value()) = it->second;
