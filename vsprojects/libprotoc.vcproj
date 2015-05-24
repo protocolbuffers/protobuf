@@ -160,6 +160,7 @@
       <File RelativePath="..\src\google\protobuf\compiler\cpp\cpp_file.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\cpp\cpp_generator.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\cpp\cpp_helpers.h"></File>
+      <File RelativePath="..\src\google\protobuf\compiler\cpp\cpp_map_field.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\cpp\cpp_message.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\cpp\cpp_message_field.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\cpp\cpp_options.h"></File>
@@ -193,6 +194,8 @@
       <File RelativePath="..\src\google\protobuf\compiler\java\java_helpers.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\java\java_lazy_message_field.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\java\java_lazy_message_field_lite.h"></File>
+      <File RelativePath="..\src\google\protobuf\compiler\java\java_map_field.h"></File>
+      <File RelativePath="..\src\google\protobuf\compiler\java\java_map_field_lite.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\java\java_message.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\java\java_message_lite.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\java\java_message_builder.h"></File>
@@ -207,7 +210,6 @@
       <File RelativePath="..\src\google\protobuf\compiler\java\java_string_field.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\java\java_string_field_lite.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\java\java_doc_comment.h"></File>
-      <File RelativePath="..\src\google\protobuf\compiler\java\java_doc_comment.cc"></File>
       <File RelativePath="..\src\google\protobuf\compiler\javanano\javanano_enum_field.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\javanano\javanano_enum.h"></File>
       <File RelativePath="..\src\google\protobuf\compiler\javanano\javanano_extension.h"></File>
@@ -284,6 +286,7 @@
       <File RelativePath="..\src\google\protobuf\compiler\java\java_doc_comment.cc"></File>
       <File RelativePath="..\src\google\protobuf\compiler\java\java_enum.cc"></File>
       <File RelativePath="..\src\google\protobuf\compiler\java\java_enum_field.cc"></File>
+      <File RelativePath="..\src\google\protobuf\compiler\java\java_enum_field_lite.cc"></File>
       <File RelativePath="..\src\google\protobuf\compiler\java\java_extension.cc"></File>
       <File RelativePath="..\src\google\protobuf\compiler\java\java_field.cc"></File>
       <File RelativePath="..\src\google\protobuf\compiler\java\java_file.cc"></File>
