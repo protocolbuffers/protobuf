@@ -178,24 +178,12 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\src\google\protobuf\test_util_lite.h"
-				>
-			</File>
 			<File RelativePath=".\google\protobuf\map_lite_unittest.pb.h"></File>
+			<File RelativePath=".\google\protobuf\unittest_import_lite.pb.h"></File>
+			<File RelativePath=".\google\protobuf\unittest_import_public_lite.pb.h"></File>
+			<File RelativePath=".\google\protobuf\unittest_lite.pb.h"></File>
 			<File RelativePath="..\src\google\protobuf\map_lite_test_util.h"></File>
-			<File
-				RelativePath=".\google\protobuf\unittest_lite.pb.h"
-				>
-			</File>
-			<File
-				RelativePath=".\google\protobuf\unittest_import_lite.pb.h"
-				>
-			</File>
-			<File
-				RelativePath=".\google\protobuf\unittest_import_public_lite.pb.h"
-				>
-			</File>
+			<File RelativePath="..\src\google\protobuf\test_util_lite.h"></File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -208,28 +196,13 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
-			<File
-				RelativePath="..\src\google\protobuf\lite_unittest.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\src\google\protobuf\test_util_lite.cc"
-				>
-			</File>
-			<File
-				RelativePath=".\google\protobuf\unittest_lite.pb.cc"
-				>
-			</File>
 			<File RelativePath=".\google\protobuf\map_lite_unittest.pb.cc"></File>
+			<File RelativePath=".\google\protobuf\unittest_import_lite.pb.cc"></File>
+			<File RelativePath=".\google\protobuf\unittest_import_public_lite.pb.cc"></File>
+			<File RelativePath=".\google\protobuf\unittest_lite.pb.cc"></File>
+			<File RelativePath="..\src\google\protobuf\lite_unittest.cc"></File>
 			<File RelativePath="..\src\google\protobuf\map_lite_test_util.cc"></File>
-			<File
-				RelativePath=".\google\protobuf\unittest_import_lite.pb.cc"
-				>
-			</File>
-			<File
-				RelativePath=".\google\protobuf\unittest_import_public_lite.pb.cc"
-				>
-			</File>
+			<File RelativePath="..\src\google\protobuf\test_util_lite.cc"></File>
 		</Filter>
 		<File
 			RelativePath="..\src\google\protobuf\unittest_lite.proto"
