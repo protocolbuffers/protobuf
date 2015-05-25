@@ -87,9 +87,12 @@ vsprojects/Release
 
 # Directories created by opening the Objective C Xcode projects.
 objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcuserdata/
+objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_OSX.xccheckout
 objectivec/ProtocolBuffers_OSX.xcodeproj/xcuserdata/
 objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcuserdata/
+objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_iOS.xccheckout
 objectivec/ProtocolBuffers_iOS.xcodeproj/xcuserdata/
+objectivec/**/.DS_Store
 
 # Comformance test output
 conformance/.libs/

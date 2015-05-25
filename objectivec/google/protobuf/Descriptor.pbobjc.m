@@ -273,6 +273,8 @@ typedef struct GPBFileDescriptorProto_Storage {
 @dynamic extensionRangeArray;
 @dynamic oneofDeclArray;
 @dynamic hasOptions, options;
+@dynamic reservedRangeArray;
+@dynamic reservedNameArray;
 
 typedef struct GPBDescriptorProto_Storage {
   uint32_t _has_storage_[1];
@@ -284,6 +286,8 @@ typedef struct GPBDescriptorProto_Storage {
   NSMutableArray *extensionArray;
   GPBMessageOptions *options;
   NSMutableArray *oneofDeclArray;
+  NSMutableArray *reservedRangeArray;
+  NSMutableArray *reservedNameArray;
 } GPBDescriptorProto_Storage;
 
 // This method is threadsafe because it is initially called
@@ -380,6 +384,28 @@ typedef struct GPBDescriptorProto_Storage {
         .typeSpecific.className = GPBStringifySymbol(GPBOneofDescriptorProto),
         .fieldOptions = NULL,
       },
+      {
+        .name = "reservedRangeArray",
+        .number = GPBDescriptorProto_FieldNumber_ReservedRangeArray,
+        .hasIndex = GPBNoHasBit,
+        .flags = GPBFieldRepeated,
+        .type = GPBTypeMessage,
+        .offset = offsetof(GPBDescriptorProto_Storage, reservedRangeArray),
+        .defaultValue.valueMessage = nil,
+        .typeSpecific.className = GPBStringifySymbol(GPBDescriptorProto_ReservedRange),
+        .fieldOptions = NULL,
+      },
+      {
+        .name = "reservedNameArray",
+        .number = GPBDescriptorProto_FieldNumber_ReservedNameArray,
+        .hasIndex = GPBNoHasBit,
+        .flags = GPBFieldRepeated,
+        .type = GPBTypeString,
+        .offset = offsetof(GPBDescriptorProto_Storage, reservedNameArray),
+        .defaultValue.valueMessage = nil,
+        .typeSpecific.className = NULL,
+        .fieldOptions = NULL,
+      },
     };
     descriptor = [GPBDescriptor allocDescriptorForClass:[GPBDescriptorProto class]
                                               rootClass:[GPBDescriptorRoot class]
@@ -454,6 +480,67 @@ typedef struct GPBDescriptorProto_ExtensionRange_Storage {
                                                  ranges:NULL
                                              rangeCount:0
                                             storageSize:sizeof(GPBDescriptorProto_ExtensionRange_Storage)
+                                             wireFormat:NO];
+  }
+  return descriptor;
+}
+
+@end
+
+#pragma mark - GPBDescriptorProto_ReservedRange
+
+@implementation GPBDescriptorProto_ReservedRange
+
+@dynamic hasStart, start;
+@dynamic hasEnd, end;
+
+typedef struct GPBDescriptorProto_ReservedRange_Storage {
+  uint32_t _has_storage_[1];
+  int32_t start;
+  int32_t end;
+} GPBDescriptorProto_ReservedRange_Storage;
+
+// This method is threadsafe because it is initially called
+// in +initialize for each subclass.
++ (GPBDescriptor *)descriptor {
+  static GPBDescriptor *descriptor = NULL;
+  if (!descriptor) {
+    static GPBMessageFieldDescription fields[] = {
+      {
+        .name = "start",
+        .number = GPBDescriptorProto_ReservedRange_FieldNumber_Start,
+        .hasIndex = 0,
+        .flags = GPBFieldOptional,
+        .type = GPBTypeInt32,
+        .offset = offsetof(GPBDescriptorProto_ReservedRange_Storage, start),
+        .defaultValue.valueInt32 = 0,
+        .typeSpecific.className = NULL,
+        .fieldOptions = NULL,
+      },
+      {
+        .name = "end",
+        .number = GPBDescriptorProto_ReservedRange_FieldNumber_End,
+        .hasIndex = 1,
+        .flags = GPBFieldOptional,
+        .type = GPBTypeInt32,
+        .offset = offsetof(GPBDescriptorProto_ReservedRange_Storage, end),
+        .defaultValue.valueInt32 = 0,
+        .typeSpecific.className = NULL,
+        .fieldOptions = NULL,
+      },
+    };
+    descriptor = [GPBDescriptor allocDescriptorForClass:[GPBDescriptorProto_ReservedRange class]
+                                              rootClass:[GPBDescriptorRoot class]
+                                                   file:GPBDescriptorRoot_FileDescriptor()
+                                                 fields:fields
+                                             fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
+                                                 oneofs:NULL
+                                             oneofCount:0
+                                                  enums:NULL
+                                              enumCount:0
+                                                 ranges:NULL
+                                             rangeCount:0
+                                            storageSize:sizeof(GPBDescriptorProto_ReservedRange_Storage)
                                              wireFormat:NO];
   }
   return descriptor;
@@ -1462,6 +1549,7 @@ typedef struct GPBMessageOptions_Storage {
 
 @dynamic hasCtype, ctype;
 @dynamic hasPacked, packed;
+@dynamic hasJstype, jstype;
 @dynamic hasLazy, lazy;
 @dynamic hasDeprecated, deprecated;
 @dynamic hasWeak, weak;
@@ -1474,6 +1562,7 @@ typedef struct GPBFieldOptions_Storage {
   BOOL lazy;
   BOOL weak;
   GPBFieldOptions_CType ctype;
+  GPBFieldOptions_JSType jstype;
   NSMutableArray *uninterpretedOptionArray;
 } GPBFieldOptions_Storage;
 
@@ -1508,7 +1597,7 @@ typedef struct GPBFieldOptions_Storage {
       {
         .name = "deprecated",
         .number = GPBFieldOptions_FieldNumber_Deprecated,
-        .hasIndex = 3,
+        .hasIndex = 4,
         .flags = GPBFieldOptional | GPBFieldHasDefaultValue,
         .type = GPBTypeBool,
         .offset = offsetof(GPBFieldOptions_Storage, deprecated),
@@ -1519,7 +1608,7 @@ typedef struct GPBFieldOptions_Storage {
       {
         .name = "lazy",
         .number = GPBFieldOptions_FieldNumber_Lazy,
-        .hasIndex = 2,
+        .hasIndex = 3,
         .flags = GPBFieldOptional | GPBFieldHasDefaultValue,
         .type = GPBTypeBool,
         .offset = offsetof(GPBFieldOptions_Storage, lazy),
@@ -1528,9 +1617,20 @@ typedef struct GPBFieldOptions_Storage {
         .fieldOptions = NULL,
       },
       {
+        .name = "jstype",
+        .number = GPBFieldOptions_FieldNumber_Jstype,
+        .hasIndex = 2,
+        .flags = GPBFieldOptional | GPBFieldHasDefaultValue | GPBFieldHasEnumDescriptor,
+        .type = GPBTypeEnum,
+        .offset = offsetof(GPBFieldOptions_Storage, jstype),
+        .defaultValue.valueEnum = GPBFieldOptions_JSType_JsNormal,
+        .typeSpecific.enumDescFunc = GPBFieldOptions_JSType_EnumDescriptor,
+        .fieldOptions = NULL,
+      },
+      {
         .name = "weak",
         .number = GPBFieldOptions_FieldNumber_Weak,
-        .hasIndex = 4,
+        .hasIndex = 5,
         .flags = GPBFieldOptional | GPBFieldHasDefaultValue,
         .type = GPBTypeBool,
         .offset = offsetof(GPBFieldOptions_Storage, weak),
@@ -1552,6 +1652,7 @@ typedef struct GPBFieldOptions_Storage {
     };
     static GPBMessageEnumDescription enums[] = {
       { .enumDescriptorFunc = GPBFieldOptions_CType_EnumDescriptor },
+      { .enumDescriptorFunc = GPBFieldOptions_JSType_EnumDescriptor },
     };
     static GPBExtensionRange ranges[] = {
       { .start = 1000, .end = 536870912 },
@@ -1598,6 +1699,35 @@ BOOL GPBFieldOptions_CType_IsValidValue(int32_t value__) {
     case GPBFieldOptions_CType_String:
     case GPBFieldOptions_CType_Cord:
     case GPBFieldOptions_CType_StringPiece:
+      return YES;
+    default:
+      return NO;
+  }
+}
+
+#pragma mark - Enum GPBFieldOptions_JSType
+
+GPBEnumDescriptor *GPBFieldOptions_JSType_EnumDescriptor(void) {
+  static GPBEnumDescriptor *descriptor = NULL;
+  if (!descriptor) {
+    static GPBMessageEnumValueDescription values[] = {
+      { .name = "JsNormal", .number = GPBFieldOptions_JSType_JsNormal },
+      { .name = "JsString", .number = GPBFieldOptions_JSType_JsString },
+      { .name = "JsNumber", .number = GPBFieldOptions_JSType_JsNumber },
+    };
+    descriptor = [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol(GPBFieldOptions_JSType)
+                                                   values:values
+                                               valueCount:sizeof(values) / sizeof(GPBMessageEnumValueDescription)
+                                             enumVerifier:GPBFieldOptions_JSType_IsValidValue];
+  }
+  return descriptor;
+}
+
+BOOL GPBFieldOptions_JSType_IsValidValue(int32_t value__) {
+  switch (value__) {
+    case GPBFieldOptions_JSType_JsNormal:
+    case GPBFieldOptions_JSType_JsString:
+    case GPBFieldOptions_JSType_JsNumber:
       return YES;
     default:
       return NO;

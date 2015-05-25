@@ -177,6 +177,13 @@ static NSData *DataFromCStr(const char *str) {
   XCTAssertEqual([field.varintList valueAtIndex:0],
                  (uint64_t)Message3_Enum_Extra3);
 
+  // TODO(teboring): This test could fail without explicitly marking the repeated_enum in Message3
+  // to be unpacked. This is becaucse proto3 repeated primitive field is packed by default. However,
+  // the proto2 primitive repeated field is still unpacked by default. Previously, parsing of the
+  // repeated_enum field would fail. To fix it:
+  // 1) Objective-C implementation of parsing should be able to parse packed field for unpacked
+  // field and vice versa.
+  // 2) repeated_packed_enum in Message3 should be removed, because it's unnecessary now.
   field = [unknownFields getField:Message2_FieldNumber_RepeatedEnumArray];
   XCTAssertEqual(field.varintList.count, 1U);
   XCTAssertEqual([field.varintList valueAtIndex:0],
