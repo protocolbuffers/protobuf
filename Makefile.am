@@ -216,28 +216,28 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/DevTools/full_mac_build.sh                                      \
   objectivec/DevTools/pddm.py                                                \
   objectivec/DevTools/pddm_tests.py                                          \
-  objectivec//google/protobuf/Any.pbobjc.h                                   \
-  objectivec//google/protobuf/Any.pbobjc.m                                   \
-  objectivec//google/protobuf/Api.pbobjc.h                                   \
-  objectivec//google/protobuf/Api.pbobjc.m                                   \
-  objectivec//google/protobuf/Descriptor.pbobjc.h                            \
-  objectivec//google/protobuf/Descriptor.pbobjc.m                            \
-  objectivec//google/protobuf/Duration.pbobjc.h                              \
-  objectivec//google/protobuf/Duration.pbobjc.m                              \
-  objectivec//google/protobuf/Empty.pbobjc.h                                 \
-  objectivec//google/protobuf/Empty.pbobjc.m                                 \
-  objectivec//google/protobuf/FieldMask.pbobjc.h                             \
-  objectivec//google/protobuf/FieldMask.pbobjc.m                             \
-  objectivec//google/protobuf/SourceContext.pbobjc.h                         \
-  objectivec//google/protobuf/SourceContext.pbobjc.m                         \
-  objectivec//google/protobuf/Struct.pbobjc.h                                \
-  objectivec//google/protobuf/Struct.pbobjc.m                                \
-  objectivec//google/protobuf/Timestamp.pbobjc.h                             \
-  objectivec//google/protobuf/Timestamp.pbobjc.m                             \
-  objectivec//google/protobuf/Type.pbobjc.h                                  \
-  objectivec//google/protobuf/Type.pbobjc.m                                  \
-  objectivec//google/protobuf/Wrappers.pbobjc.h                              \
-  objectivec//google/protobuf/Wrappers.pbobjc.m                              \
+  objectivec/google/protobuf/Any.pbobjc.h                                    \
+  objectivec/google/protobuf/Any.pbobjc.m                                    \
+  objectivec/google/protobuf/Api.pbobjc.h                                    \
+  objectivec/google/protobuf/Api.pbobjc.m                                    \
+  objectivec/google/protobuf/Descriptor.pbobjc.h                             \
+  objectivec/google/protobuf/Descriptor.pbobjc.m                             \
+  objectivec/google/protobuf/Duration.pbobjc.h                               \
+  objectivec/google/protobuf/Duration.pbobjc.m                               \
+  objectivec/google/protobuf/Empty.pbobjc.h                                  \
+  objectivec/google/protobuf/Empty.pbobjc.m                                  \
+  objectivec/google/protobuf/FieldMask.pbobjc.h                              \
+  objectivec/google/protobuf/FieldMask.pbobjc.m                              \
+  objectivec/google/protobuf/SourceContext.pbobjc.h                          \
+  objectivec/google/protobuf/SourceContext.pbobjc.m                          \
+  objectivec/google/protobuf/Struct.pbobjc.h                                 \
+  objectivec/google/protobuf/Struct.pbobjc.m                                 \
+  objectivec/google/protobuf/Timestamp.pbobjc.h                              \
+  objectivec/google/protobuf/Timestamp.pbobjc.m                              \
+  objectivec/google/protobuf/Type.pbobjc.h                                   \
+  objectivec/google/protobuf/Type.pbobjc.m                                   \
+  objectivec/google/protobuf/Wrappers.pbobjc.h                               \
+  objectivec/google/protobuf/Wrappers.pbobjc.m                               \
   objectivec/GPBArray.h                                                      \
   objectivec/GPBArray.m                                                      \
   objectivec/GPBArray_PackagePrivate.h                                       \
