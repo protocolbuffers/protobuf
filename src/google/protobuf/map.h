@@ -199,7 +199,7 @@ class Map {
   typedef MapAllocator<std::pair<const Key, MapPair<Key, T>*> > Allocator;
 
   // Iterators
-  class LIBPROTOBUF_EXPORT const_iterator
+  class const_iterator
       : public std::iterator<std::forward_iterator_tag, value_type, ptrdiff_t,
                              const value_type*, const value_type&> {
     typedef typename hash_map<Key, value_type*, hash<Key>, equal_to<Key>,
@@ -229,7 +229,7 @@ class Map {
     InnerIt it_;
   };
 
-  class LIBPROTOBUF_EXPORT iterator : public std::iterator<std::forward_iterator_tag, value_type> {
+  class iterator : public std::iterator<std::forward_iterator_tag, value_type> {
     typedef typename hash_map<Key, value_type*, hasher, equal_to<Key>,
                               Allocator>::iterator InnerIt;
 
@@ -428,7 +428,7 @@ class Map {
             internal::WireFormatLite::FieldType key_wire_type,
             internal::WireFormatLite::FieldType value_wire_type,
             int default_enum_value>
-  friend class LIBPROTOBUF_EXPORT internal::MapFieldLite;
+  friend class internal::MapFieldLite;
 };
 
 }  // namespace protobuf

@@ -973,6 +973,9 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSetWithSourceInfo) {
   EXPECT_TRUE(descriptor_set.file(1).has_source_code_info());
 }
 
+#ifdef _WIN32
+// TODO(teboring): Figure out how to write test on windows.
+#else
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileGivenTwoInputs) {
   CreateTempFile("foo.proto",
     "syntax = \"proto2\";\n"
@@ -1042,6 +1045,7 @@ TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileForAbsolutePath) {
                     "$tmpdir/bar.proto.MockCodeGenerator.test_generator: "
                     "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 }
+#endif  // !_WIN32
 
 // -------------------------------------------------------------------
 

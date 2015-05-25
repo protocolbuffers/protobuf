@@ -43,7 +43,7 @@ namespace protobuf {
 namespace internal {
 
 // Helper class used to implement google::protobuf::Any.
-class AnyMetadata {
+class LIBPROTOBUF_EXPORT AnyMetadata {
   typedef ArenaStringPtr UrlType;
   typedef ArenaStringPtr ValueType;
  public:

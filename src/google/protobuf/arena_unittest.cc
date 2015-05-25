@@ -1232,8 +1232,11 @@ TEST(ArenaTest, ArenaHooksSanity) {
     EXPECT_EQ(1, ArenaHooksTestUtil::num_init);
     EXPECT_EQ(0, ArenaHooksTestUtil::num_allocations);
     ::google::protobuf::Arena::Create<uint64>(&arena);
+#ifdef _WIN32
+    EXPECT_EQ(2, ArenaHooksTestUtil::num_allocations);
+#else
     EXPECT_EQ(1, ArenaHooksTestUtil::num_allocations);
-
+#endif
     arena.Reset();
     arena.Reset();
     EXPECT_EQ(2, ArenaHooksTestUtil::num_reset);

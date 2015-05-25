@@ -146,7 +146,7 @@ template <typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType,
           int default_enum_value = 0>
-class LIBPROTOBUF_EXPORT MapField : public MapFieldBase,
+class MapField : public MapFieldBase,
                  public MapFieldLite<Key, T, kKeyFieldType, kValueFieldType,
                                      default_enum_value> {
   // Handlers for key/value wire type. Provide utilities to parse/serialize
