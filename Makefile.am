@@ -216,6 +216,7 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/DevTools/full_mac_build.sh                                      \
   objectivec/DevTools/pddm.py                                                \
   objectivec/DevTools/pddm_tests.py                                          \
+  objectivec/generate_descriptors_proto.sh                                   \
   objectivec/google/protobuf/Any.pbobjc.h                                    \
   objectivec/google/protobuf/Any.pbobjc.m                                    \
   objectivec/google/protobuf/Api.pbobjc.h                                    \
