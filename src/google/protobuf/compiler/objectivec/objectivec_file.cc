@@ -50,11 +50,17 @@ const int32 GOOGLE_PROTOBUF_OBJC_GEN_VERSION = 30000;
 
 namespace compiler {
 namespace objectivec {
+
 FileGenerator::FileGenerator(const FileDescriptor *file)
     : file_(file),
       root_class_name_(FileClassName(file)),
       is_filtered_(true),
-      all_extensions_filtered_(true) {
+      all_extensions_filtered_(true),
+      is_public_dep_(false) {
+  // Validate the objc prefix, do this even if the file's contents are filtered
+  // to catch a bad prefix as soon as it is found.
+  ValidateObjCClassPrefix(file_);
+
   for (int i = 0; i < file_->enum_type_count(); i++) {
     EnumGenerator *generator = new EnumGenerator(file_->enum_type(i));
     // The enums are exposed via C functions, so they will dead strip if
@@ -96,7 +102,9 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
       "\n",
       "filename", file_->name());
 
-  printer->Print("#import \"GPBProtocolBuffers.h\"\n\n");
+  printer->Print(
+      "#import \"GPBProtocolBuffers.h\"\n"
+      "\n");
 
   // Add some verification that the generated code matches the source the
   // code is being compiled with.
@@ -108,31 +116,34 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
       "protoc_gen_objc_version",
       SimpleItoa(GOOGLE_PROTOBUF_OBJC_GEN_VERSION));
 
-  if (!IsFiltered()) {
-    const vector<FileGenerator *> &dependency_generators =
-        DependencyGenerators();
-    if (dependency_generators.size() > 0) {
-      for (vector<FileGenerator *>::const_iterator iter =
-               dependency_generators.begin();
-           iter != dependency_generators.end(); ++iter) {
-        printer->Print("#import \"$header$.pbobjc.h\"\n",
-                       "header", (*iter)->Path());
-      }
-      printer->Print("\n");
+  const vector<FileGenerator *> &dependency_generators =
+      DependencyGenerators();
+  for (vector<FileGenerator *>::const_iterator iter =
+           dependency_generators.begin();
+       iter != dependency_generators.end(); ++iter) {
+    if ((*iter)->IsPublicDependency()) {
+      printer->Print("#import \"$header$.pbobjc.h\"\n",
+                     "header", (*iter)->Path());
     }
   }
+
+  printer->Print(
+      "// @@protoc_insertion_point(imports)\n"
+      "\n");
 
   printer->Print("CF_EXTERN_C_BEGIN\n\n");
 
   if (!IsFiltered()) {
-    set<string> dependencies;
-    DetermineDependencies(&dependencies);
-    for (set<string>::const_iterator i(dependencies.begin());
-         i != dependencies.end(); ++i) {
+    set<string> fwd_decls;
+    for (vector<MessageGenerator *>::iterator iter = message_generators_.begin();
+         iter != message_generators_.end(); ++iter) {
+      (*iter)->DetermineForwardDeclarations(&fwd_decls);
+    }
+    for (set<string>::const_iterator i(fwd_decls.begin());
+         i != fwd_decls.end(); ++i) {
       printer->Print("$value$;\n", "value", *i);
     }
-
-    if (dependencies.begin() != dependencies.end()) {
+    if (fwd_decls.begin() != fwd_decls.end()) {
       printer->Print("\n");
     }
   }
@@ -156,7 +167,14 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
         "#pragma mark - $root_class_name$\n"
         "\n"
         "@interface $root_class_name$ : GPBRootObject\n"
-        "@end\n\n",
+        "\n"
+        "// The base class provides:\n"
+        "//   + (GPBExtensionRegistry *)extensionRegistry;\n"
+        "// which is an GPBExtensionRegistry that includes all the extensions defined by\n"
+        "// this file and all files that it depends on.\n"
+        "\n"
+        "@end\n"
+        "\n",
         "root_class_name", root_class_name_);
   }
 
@@ -189,33 +207,10 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
   }
 
   printer->Print("CF_EXTERN_C_END\n");
-}
 
-void DetermineDependenciesWorker(set<string> *dependencies,
-                                 set<string> *seen_files,
-                                 const string &classname,
-                                 const FileDescriptor *file) {
-  if (seen_files->find(file->name()) != seen_files->end()) {
-    // don't infinitely recurse
-    return;
-  }
-
-  seen_files->insert(file->name());
-
-  for (int i = 0; i < file->dependency_count(); i++) {
-    DetermineDependenciesWorker(dependencies, seen_files, classname,
-                                file->dependency(i));
-  }
-  for (int i = 0; i < file->message_type_count(); i++) {
-    MessageGenerator(classname, file->message_type(i))
-        .DetermineDependencies(dependencies);
-  }
-}
-
-void FileGenerator::DetermineDependencies(set<string> *dependencies) {
-  set<string> seen_files;
-  DetermineDependenciesWorker(dependencies, &seen_files, root_class_name_,
-                              file_);
+  printer->Print(
+    "\n"
+    "// @@protoc_insertion_point(global_scope)\n");
 }
 
 void FileGenerator::GenerateSource(io::Printer *printer) {
@@ -225,6 +220,25 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
       "\n",
       "filename", file_->name());
 
+  string header_file = Path() + ".pbobjc.h";
+  printer->Print(
+      "#import \"GPBProtocolBuffers_RuntimeSupport.h\"\n"
+      "#import \"$header_file$\"\n",
+      "header_file", header_file);
+  const vector<FileGenerator *> &dependency_generators =
+      DependencyGenerators();
+  for (vector<FileGenerator *>::const_iterator iter =
+           dependency_generators.begin();
+       iter != dependency_generators.end(); ++iter) {
+    if (!(*iter)->IsPublicDependency()) {
+      printer->Print("#import \"$header$.pbobjc.h\"\n",
+                     "header", (*iter)->Path());
+    }
+  }
+  printer->Print(
+      "// @@protoc_insertion_point(imports)\n"
+      "\n");
+
   if (IsFiltered()) {
     printer->Print(
         "// File empty because all messages, extensions and enum have been filtered.\n"
@@ -232,22 +246,17 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
         "\n"
         "// Dummy symbol that will be stripped but will avoid linker warnings about\n"
         "// no symbols in the .o form compiling this file.\n"
-        "static int $root_class_name$_dummy __attribute__((unused,used)) = 0;\n",
+        "static int $root_class_name$_dummy __attribute__((unused,used)) = 0;\n"
+        "\n"
+        "// @@protoc_insertion_point(global_scope)\n",
         "root_class_name", root_class_name_);
     return;
   }
 
-  printer->Print("#import \"GPBProtocolBuffers_RuntimeSupport.h\"\n\n");
-
-  string header_file = Path() + ".pbobjc.h";
-
   printer->Print(
-      "#import \"$header_file$\"\n"
-      "\n"
       "#pragma mark - $root_class_name$\n"
       "\n"
       "@implementation $root_class_name$\n\n",
-      "header_file", header_file,
       "root_class_name", root_class_name_);
 
   bool generated_extensions = false;
@@ -326,12 +335,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
           "  }\n"
           "  return registry;\n"
           "}\n"
-          "\n"
-          "+ (void)load {\n"
-          "  @autoreleasepool {\n"
-          "    [self extensionRegistry]; // Construct extension registry.\n"
-          "  }\n"
-          "}\n\n");
+          "\n");
     }
   }
 
@@ -374,19 +378,31 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
        iter != message_generators_.end(); ++iter) {
     (*iter)->GenerateSource(printer);
   }
+
+  printer->Print(
+    "\n"
+    "// @@protoc_insertion_point(global_scope)\n");
 }
 
 const string FileGenerator::Path() const { return FilePath(file_); }
 
 const vector<FileGenerator *> &FileGenerator::DependencyGenerators() {
   if (file_->dependency_count() != dependency_generators_.size()) {
+    set<string> public_import_names;
+    for (int i = 0; i < file_->public_dependency_count(); i++) {
+      public_import_names.insert(file_->public_dependency(i)->name());
+    }
     for (int i = 0; i < file_->dependency_count(); i++) {
       FileGenerator *generator = new FileGenerator(file_->dependency(i));
+      const string& name = file_->dependency(i)->name();
+      bool public_import = (public_import_names.count(name) != 0);
+      generator->SetIsPublicDependency(public_import);
       dependency_generators_.push_back(generator);
     }
   }
   return dependency_generators_;
 }
+
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf

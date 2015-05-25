@@ -82,6 +82,7 @@ typedef struct GPBMessage_Storage *GPBMessage_StoragePtr;
 // -[CodedInputStream checkLastTagWas:] after calling this to
 // verify that the last tag seen was the appropriate end-group tag,
 // or zero for EOF.
+// NOTE: This will throw if there is an error while parsing.
 - (void)mergeFromCodedInputStream:(GPBCodedInputStream *)input
                 extensionRegistry:(GPBExtensionRegistry *)extensionRegistry;
 
@@ -113,9 +114,10 @@ BOOL GPBWasMessageAutocreatedBy(GPBMessage *message, GPBMessage *parent);
 // visible to its autocreator.
 void GPBBecomeVisibleToAutocreator(GPBMessage *self);
 
-// Call this when an array is mutabled so the parent message that autocreated
-// it can react.
+// Call this when an array/dictionary is mutated so the parent message that
+// autocreated it can react.
 void GPBAutocreatedArrayModified(GPBMessage *self, id array);
+void GPBAutocreatedDictionaryModified(GPBMessage *self, id dictionary);
 
 // Clear the autocreator, if any. Asserts if the autocreator still has an
 // autocreated reference to this message.

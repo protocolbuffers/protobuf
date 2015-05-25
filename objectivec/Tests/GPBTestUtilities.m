@@ -32,6 +32,7 @@
 
 #import "google/protobuf/MapUnittest.pbobjc.h"
 #import "google/protobuf/Unittest.pbobjc.h"
+#import "google/protobuf/UnittestImport.pbobjc.h"
 
 const uint32_t kGPBDefaultRepeatCount = 2;
 
@@ -1060,25 +1061,6 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 }
 
 - (void)setAllMapFields:(TestMap *)message numEntries:(uint32_t)count {
-  message.mapInt32Int32 = [GPBInt32Int32Dictionary dictionary];
-  message.mapInt64Int64 = [GPBInt64Int64Dictionary dictionary];
-  message.mapUint32Uint32 = [GPBUInt32UInt32Dictionary dictionary];
-  message.mapUint64Uint64 = [GPBUInt64UInt64Dictionary dictionary];
-  message.mapSint32Sint32 = [GPBInt32Int32Dictionary dictionary];
-  message.mapSint64Sint64 = [GPBInt64Int64Dictionary dictionary];
-  message.mapFixed32Fixed32 = [GPBUInt32UInt32Dictionary dictionary];
-  message.mapFixed64Fixed64 = [GPBUInt64UInt64Dictionary dictionary];
-  message.mapSfixed32Sfixed32 = [GPBInt32Int32Dictionary dictionary];
-  message.mapSfixed64Sfixed64 = [GPBInt64Int64Dictionary dictionary];
-  message.mapInt32Float = [GPBInt32FloatDictionary dictionary];
-  message.mapInt32Double = [GPBInt32DoubleDictionary dictionary];
-  message.mapBoolBool = [GPBBoolBoolDictionary dictionary];
-  message.mapStringString = [NSMutableDictionary dictionary];
-  message.mapInt32Bytes = [GPBInt32ObjectDictionary dictionary];
-  message.mapInt32Enum = [GPBInt32EnumDictionary
-      dictionaryWithValidationFunction:MapEnum_IsValidValue];
-  message.mapInt32ForeignMessage = [GPBInt32ObjectDictionary dictionary];
-
   for (uint32_t i = 0; i < count; i++) {
     [message.mapInt32Int32 setValue:(i + 1) forKey:100 + i * 100];
     [message.mapInt64Int64 setValue:(i + 1) forKey:101 + i * 100];

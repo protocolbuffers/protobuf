@@ -49,7 +49,7 @@ namespace objectivec {
 
 class OneofGenerator {
  public:
-  OneofGenerator(const OneofDescriptor* descriptor);
+  explicit OneofGenerator(const OneofDescriptor* descriptor);
   ~OneofGenerator();
 
   void SetOneofIndexBase(int index_base);

@@ -66,7 +66,7 @@ ExtensionGenerator::ExtensionGenerator(const string& root_class_name,
   }
   if (descriptor->is_map()) {
     // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
-    // error case, so it seem to be ok to use as a back door for errors.
+    // error cases, so it seems to be ok to use as a back door for errors.
     cerr << "error: Extension is a map<>!"
          << " That used to be blocked by the compiler." << endl;
     cerr.flush();
@@ -107,7 +107,7 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
 
   std::vector<string> options;
   if (descriptor_->is_repeated()) options.push_back("GPBExtensionRepeated");
-  if (descriptor_->options().packed()) options.push_back("GPBExtensionPacked");
+  if (descriptor_->is_packed()) options.push_back("GPBExtensionPacked");
   if (descriptor_->containing_type()->options().message_set_wire_format())
     options.push_back("GPBExtensionSetWireFormat");
 

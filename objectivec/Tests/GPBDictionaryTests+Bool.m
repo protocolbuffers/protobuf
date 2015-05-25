@@ -33,11 +33,8 @@
 
 #import "GPBDictionary.h"
 
+#import "GPBTestUtilities.h"
 #import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
-
-#ifndef GPBARRAYSIZE
-#define GPBARRAYSIZE(a) ((sizeof(a) / sizeof((a[0]))))
-#endif  // GPBARRAYSIZE
 
 // Pull in the macros (using an external file because expanding all tests
 // in a single file makes a file that is failing to work with within Xcode.

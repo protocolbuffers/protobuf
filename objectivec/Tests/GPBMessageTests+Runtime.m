@@ -35,6 +35,7 @@
 #import "GPBMessage.h"
 
 #import "google/protobuf/MapUnittest.pbobjc.h"
+#import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto3.pbobjc.h"
 
@@ -772,6 +773,8 @@
   XCTAssertThrowsSpecificNamed(msg.oneofEnum = 666, NSException,
                                NSInvalidArgumentException);
   XCTAssertEqual(msg.oneofEnum, Message2_Enum_Bar);
+
+  [msg release];
 }
 
 - (void)testAccessingProto3UnknownEnumValues {
@@ -1261,7 +1264,7 @@
     Message2_O_OneOfCase_OneofEnum,
   };
 
-  for (size_t i = 0; i < (sizeof(values) / sizeof((values[0]))); ++i) {
+  for (size_t i = 0; i < GPBARRAYSIZE(values); ++i) {
     switch (values[i]) {
       case Message2_O_OneOfCase_OneofInt32:
         msg.oneofInt32 = 1;
@@ -1318,7 +1321,7 @@
         msg.oneofEnum = Message2_Enum_Bar;
         break;
       default:
-        XCTFail(@"shouldn't happen, loop: %zd", i);
+        XCTFail(@"shouldn't happen, loop: %zd, value: %d", i, values[i]);
         break;
     }
 
@@ -1770,7 +1773,7 @@
     Message3_O_OneOfCase_OneofEnum,
   };
 
-  for (size_t i = 0; i < (sizeof(values) / sizeof((values[0]))); ++i) {
+  for (size_t i = 0; i < GPBARRAYSIZE(values); ++i) {
     switch (values[i]) {
       case Message3_O_OneOfCase_OneofInt32:
         msg.oneofInt32 = 1;
@@ -1824,7 +1827,7 @@
         msg.oneofEnum = Message3_Enum_Baz;
         break;
       default:
-        XCTFail(@"shouldn't happen, loop: %zd", i);
+        XCTFail(@"shouldn't happen, loop: %zd, value: %d", i, values[i]);
         break;
     }
 

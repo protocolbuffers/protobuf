@@ -720,10 +720,6 @@
 //
 
 //%PDDM-DEFINE TEST_HELPERS(KEY_NAME, KEY_TYPE, KisP)
-//%#ifndef GPBARRAYSIZE
-//%#define GPBARRAYSIZE(a) ((sizeof(a) / sizeof((a[0]))))
-//%#endif  // GPBARRAYSIZE
-//%
 //%// To let the testing macros work, add some extra methods to simplify things.
 //%@interface GPB##KEY_NAME##EnumDictionary (TestingTweak)
 //%+ (instancetype)dictionaryWithValue:(int32_t)value forKey:(KEY_TYPE##KisP$S##KisP)key;

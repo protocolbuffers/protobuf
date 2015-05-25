@@ -66,7 +66,9 @@
 - (void)readMessage:(GPBMessage *)message
     extensionRegistry:(GPBExtensionRegistry *)extensionRegistry;
 
-// Reads and discards a single field, given its tag value.
+// Reads and discards a single field, given its tag value. Returns NO if the
+// tag is an endgroup tag, in which case nothing is skipped.  Otherwise,
+// returns YES.
 - (BOOL)skipField:(int32_t)tag;
 
 // Reads and discards an entire message.  This will read either until EOF
@@ -74,8 +76,8 @@
 - (void)skipMessage;
 
 // Verifies that the last call to readTag() returned the given tag value.
-// This is used to verify that a nested group ended with the correct
-// end tag.
+// This is used to verify that a nested group ended with the correct end tag.
+// Throws NSParseErrorException if value does not match the last tag.
 - (void)checkLastTagWas:(int32_t)value;
 
 @end

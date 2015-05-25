@@ -45,8 +45,10 @@
 // directly.
 // ------------------------------------------------------------------
 
-#define kMapKeyFieldNumber 1
-#define kMapValueFieldNumber 2
+enum {
+  kMapKeyFieldNumber = 1,
+  kMapValueFieldNumber = 2,
+};
 
 static BOOL DictDefault_IsValidValue(int32_t value) {
   // Anything but the bad value marker is allowed.
@@ -55,58 +57,62 @@ static BOOL DictDefault_IsValidValue(int32_t value) {
 
 //%PDDM-DEFINE SERIALIZE_SUPPORT_2_TYPE(VALUE_NAME, VALUE_TYPE, GPBTYPE_NAME1, GPBTYPE_NAME2)
 //%GPB_INLINE size_t ComputeDict##VALUE_NAME##FieldSize(VALUE_TYPE value, uint32_t fieldNum, GPBType wireType) {
-//%  NSCAssert((wireType == GPBType##GPBTYPE_NAME1) || (wireType == GPBType##GPBTYPE_NAME2),
-//%            @"bad type: %d", wireType);
 //%  if (wireType == GPBType##GPBTYPE_NAME1) {
 //%    return GPBCompute##GPBTYPE_NAME1##Size(fieldNum, value);
-//%  } else {  // wireType == GPBType##GPBTYPE_NAME2
+//%  } else if (wireType == GPBType##GPBTYPE_NAME2) {
 //%    return GPBCompute##GPBTYPE_NAME2##Size(fieldNum, value);
+//%  } else {
+//%    NSCAssert(NO, @"Unexpected type %d", wireType);
+//%    return 0;
 //%  }
 //%}
 //%
 //%GPB_INLINE void WriteDict##VALUE_NAME##Field(GPBCodedOutputStream *stream, VALUE_TYPE value, uint32_t fieldNum, GPBType wireType) {
-//%  NSCAssert((wireType == GPBType##GPBTYPE_NAME1) || (wireType == GPBType##GPBTYPE_NAME2),
-//%            @"bad type: %d", wireType);
 //%  if (wireType == GPBType##GPBTYPE_NAME1) {
 //%    [stream write##GPBTYPE_NAME1##:fieldNum value:value];
-//%  } else {  // wireType == GPBType##GPBTYPE_NAME2
+//%  } else if (wireType == GPBType##GPBTYPE_NAME2) {
 //%    [stream write##GPBTYPE_NAME2##:fieldNum value:value];
+//%  } else {
+//%    NSCAssert(NO, @"Unexpected type %d", wireType);
 //%  }
 //%}
 //%
 //%PDDM-DEFINE SERIALIZE_SUPPORT_3_TYPE(VALUE_NAME, VALUE_TYPE, GPBTYPE_NAME1, GPBTYPE_NAME2, GPBTYPE_NAME3)
 //%GPB_INLINE size_t ComputeDict##VALUE_NAME##FieldSize(VALUE_TYPE value, uint32_t fieldNum, GPBType wireType) {
-//%  NSCAssert((wireType == GPBType##GPBTYPE_NAME1) || (wireType == GPBType##GPBTYPE_NAME2) || (wireType == GPBType##GPBTYPE_NAME3),
-//%            @"bad type: %d", wireType);
 //%  if (wireType == GPBType##GPBTYPE_NAME1) {
 //%    return GPBCompute##GPBTYPE_NAME1##Size(fieldNum, value);
 //%  } else if (wireType == GPBType##GPBTYPE_NAME2) {
 //%    return GPBCompute##GPBTYPE_NAME2##Size(fieldNum, value);
-//%  } else {  // wireType == GPBType##GPBTYPE_NAME3
+//%  } else if (wireType == GPBType##GPBTYPE_NAME3) {
 //%    return GPBCompute##GPBTYPE_NAME3##Size(fieldNum, value);
+//%  } else {
+//%    NSCAssert(NO, @"Unexpected type %d", wireType);
+//%    return 0;
 //%  }
 //%}
 //%
 //%GPB_INLINE void WriteDict##VALUE_NAME##Field(GPBCodedOutputStream *stream, VALUE_TYPE value, uint32_t fieldNum, GPBType wireType) {
-//%  NSCAssert((wireType == GPBType##GPBTYPE_NAME1) || (wireType == GPBType##GPBTYPE_NAME2) || (wireType == GPBType##GPBTYPE_NAME3),
-//%            @"bad type: %d", wireType);
 //%  if (wireType == GPBType##GPBTYPE_NAME1) {
 //%    [stream write##GPBTYPE_NAME1##:fieldNum value:value];
 //%  } else if (wireType == GPBType##GPBTYPE_NAME2) {
 //%    [stream write##GPBTYPE_NAME2##:fieldNum value:value];
-//%  } else {  // wireType == GPBType##GPBTYPE_NAME3
+//%  } else if (wireType == GPBType##GPBTYPE_NAME3) {
 //%    [stream write##GPBTYPE_NAME3##:fieldNum value:value];
+//%  } else {
+//%    NSCAssert(NO, @"Unexpected type %d", wireType);
 //%  }
 //%}
 //%
 //%PDDM-DEFINE SIMPLE_SERIALIZE_SUPPORT(VALUE_NAME, VALUE_TYPE, VisP)
 //%GPB_INLINE size_t ComputeDict##VALUE_NAME##FieldSize(VALUE_TYPE VisP##value, uint32_t fieldNum, GPBType wireType) {
 //%  NSCAssert(wireType == GPBType##VALUE_NAME, @"bad type: %d", wireType);
+//%  #pragma unused(wireType)  // For when asserts are off in release.
 //%  return GPBCompute##VALUE_NAME##Size(fieldNum, value);
 //%}
 //%
 //%GPB_INLINE void WriteDict##VALUE_NAME##Field(GPBCodedOutputStream *stream, VALUE_TYPE VisP##value, uint32_t fieldNum, GPBType wireType) {
 //%  NSCAssert(wireType == GPBType##VALUE_NAME, @"bad type: %d", wireType);
+//%  #pragma unused(wireType)  // For when asserts are off in release.
 //%  [stream write##VALUE_NAME##:fieldNum value:value];
 //%}
 //%
@@ -125,171 +131,185 @@ static BOOL DictDefault_IsValidValue(int32_t value) {
 // This block of code is generated, do not edit it directly.
 
 GPB_INLINE size_t ComputeDictInt32FieldSize(int32_t value, uint32_t fieldNum, GPBType wireType) {
-  NSCAssert((wireType == GPBTypeInt32) || (wireType == GPBTypeSInt32) || (wireType == GPBTypeSFixed32),
-            @"bad type: %d", wireType);
   if (wireType == GPBTypeInt32) {
     return GPBComputeInt32Size(fieldNum, value);
   } else if (wireType == GPBTypeSInt32) {
     return GPBComputeSInt32Size(fieldNum, value);
-  } else {  // wireType == GPBTypeSFixed32
+  } else if (wireType == GPBTypeSFixed32) {
     return GPBComputeSFixed32Size(fieldNum, value);
+  } else {
+    NSCAssert(NO, @"Unexpected type %d", wireType);
+    return 0;
   }
 }
 
 GPB_INLINE void WriteDictInt32Field(GPBCodedOutputStream *stream, int32_t value, uint32_t fieldNum, GPBType wireType) {
-  NSCAssert((wireType == GPBTypeInt32) || (wireType == GPBTypeSInt32) || (wireType == GPBTypeSFixed32),
-            @"bad type: %d", wireType);
   if (wireType == GPBTypeInt32) {
     [stream writeInt32:fieldNum value:value];
   } else if (wireType == GPBTypeSInt32) {
     [stream writeSInt32:fieldNum value:value];
-  } else {  // wireType == GPBTypeSFixed32
+  } else if (wireType == GPBTypeSFixed32) {
     [stream writeSFixed32:fieldNum value:value];
+  } else {
+    NSCAssert(NO, @"Unexpected type %d", wireType);
   }
 }
 
 GPB_INLINE size_t ComputeDictUInt32FieldSize(uint32_t value, uint32_t fieldNum, GPBType wireType) {
-  NSCAssert((wireType == GPBTypeUInt32) || (wireType == GPBTypeFixed32),
-            @"bad type: %d", wireType);
   if (wireType == GPBTypeUInt32) {
     return GPBComputeUInt32Size(fieldNum, value);
-  } else {  // wireType == GPBTypeFixed32
+  } else if (wireType == GPBTypeFixed32) {
     return GPBComputeFixed32Size(fieldNum, value);
+  } else {
+    NSCAssert(NO, @"Unexpected type %d", wireType);
+    return 0;
   }
 }
 
 GPB_INLINE void WriteDictUInt32Field(GPBCodedOutputStream *stream, uint32_t value, uint32_t fieldNum, GPBType wireType) {
-  NSCAssert((wireType == GPBTypeUInt32) || (wireType == GPBTypeFixed32),
-            @"bad type: %d", wireType);
   if (wireType == GPBTypeUInt32) {
     [stream writeUInt32:fieldNum value:value];
-  } else {  // wireType == GPBTypeFixed32
+  } else if (wireType == GPBTypeFixed32) {
     [stream writeFixed32:fieldNum value:value];
+  } else {
+    NSCAssert(NO, @"Unexpected type %d", wireType);
   }
 }
 
 GPB_INLINE size_t ComputeDictInt64FieldSize(int64_t value, uint32_t fieldNum, GPBType wireType) {
-  NSCAssert((wireType == GPBTypeInt64) || (wireType == GPBTypeSInt64) || (wireType == GPBTypeSFixed64),
-            @"bad type: %d", wireType);
   if (wireType == GPBTypeInt64) {
     return GPBComputeInt64Size(fieldNum, value);
   } else if (wireType == GPBTypeSInt64) {
     return GPBComputeSInt64Size(fieldNum, value);
-  } else {  // wireType == GPBTypeSFixed64
+  } else if (wireType == GPBTypeSFixed64) {
     return GPBComputeSFixed64Size(fieldNum, value);
+  } else {
+    NSCAssert(NO, @"Unexpected type %d", wireType);
+    return 0;
   }
 }
 
 GPB_INLINE void WriteDictInt64Field(GPBCodedOutputStream *stream, int64_t value, uint32_t fieldNum, GPBType wireType) {
-  NSCAssert((wireType == GPBTypeInt64) || (wireType == GPBTypeSInt64) || (wireType == GPBTypeSFixed64),
-            @"bad type: %d", wireType);
   if (wireType == GPBTypeInt64) {
     [stream writeInt64:fieldNum value:value];
   } else if (wireType == GPBTypeSInt64) {
     [stream writeSInt64:fieldNum value:value];
-  } else {  // wireType == GPBTypeSFixed64
+  } else if (wireType == GPBTypeSFixed64) {
     [stream writeSFixed64:fieldNum value:value];
+  } else {
+    NSCAssert(NO, @"Unexpected type %d", wireType);
   }
 }
 
 GPB_INLINE size_t ComputeDictUInt64FieldSize(uint64_t value, uint32_t fieldNum, GPBType wireType) {
-  NSCAssert((wireType == GPBTypeUInt64) || (wireType == GPBTypeFixed64),
-            @"bad type: %d", wireType);
   if (wireType == GPBTypeUInt64) {
     return GPBComputeUInt64Size(fieldNum, value);
-  } else {  // wireType == GPBTypeFixed64
+  } else if (wireType == GPBTypeFixed64) {
     return GPBComputeFixed64Size(fieldNum, value);
+  } else {
+    NSCAssert(NO, @"Unexpected type %d", wireType);
+    return 0;
   }
 }
 
 GPB_INLINE void WriteDictUInt64Field(GPBCodedOutputStream *stream, uint64_t value, uint32_t fieldNum, GPBType wireType) {
-  NSCAssert((wireType == GPBTypeUInt64) || (wireType == GPBTypeFixed64),
-            @"bad type: %d", wireType);
   if (wireType == GPBTypeUInt64) {
     [stream writeUInt64:fieldNum value:value];
-  } else {  // wireType == GPBTypeFixed64
+  } else if (wireType == GPBTypeFixed64) {
     [stream writeFixed64:fieldNum value:value];
+  } else {
+    NSCAssert(NO, @"Unexpected type %d", wireType);
   }
 }
 
 GPB_INLINE size_t ComputeDictBoolFieldSize(BOOL value, uint32_t fieldNum, GPBType wireType) {
   NSCAssert(wireType == GPBTypeBool, @"bad type: %d", wireType);
+  #pragma unused(wireType)  // For when asserts are off in release.
   return GPBComputeBoolSize(fieldNum, value);
 }
 
 GPB_INLINE void WriteDictBoolField(GPBCodedOutputStream *stream, BOOL value, uint32_t fieldNum, GPBType wireType) {
   NSCAssert(wireType == GPBTypeBool, @"bad type: %d", wireType);
+  #pragma unused(wireType)  // For when asserts are off in release.
   [stream writeBool:fieldNum value:value];
 }
 
 GPB_INLINE size_t ComputeDictEnumFieldSize(int32_t value, uint32_t fieldNum, GPBType wireType) {
   NSCAssert(wireType == GPBTypeEnum, @"bad type: %d", wireType);
+  #pragma unused(wireType)  // For when asserts are off in release.
   return GPBComputeEnumSize(fieldNum, value);
 }
 
 GPB_INLINE void WriteDictEnumField(GPBCodedOutputStream *stream, int32_t value, uint32_t fieldNum, GPBType wireType) {
   NSCAssert(wireType == GPBTypeEnum, @"bad type: %d", wireType);
+  #pragma unused(wireType)  // For when asserts are off in release.
   [stream writeEnum:fieldNum value:value];
 }
 
 GPB_INLINE size_t ComputeDictFloatFieldSize(float value, uint32_t fieldNum, GPBType wireType) {
   NSCAssert(wireType == GPBTypeFloat, @"bad type: %d", wireType);
+  #pragma unused(wireType)  // For when asserts are off in release.
   return GPBComputeFloatSize(fieldNum, value);
 }
 
 GPB_INLINE void WriteDictFloatField(GPBCodedOutputStream *stream, float value, uint32_t fieldNum, GPBType wireType) {
   NSCAssert(wireType == GPBTypeFloat, @"bad type: %d", wireType);
+  #pragma unused(wireType)  // For when asserts are off in release.
   [stream writeFloat:fieldNum value:value];
 }
 
 GPB_INLINE size_t ComputeDictDoubleFieldSize(double value, uint32_t fieldNum, GPBType wireType) {
   NSCAssert(wireType == GPBTypeDouble, @"bad type: %d", wireType);
+  #pragma unused(wireType)  // For when asserts are off in release.
   return GPBComputeDoubleSize(fieldNum, value);
 }
 
 GPB_INLINE void WriteDictDoubleField(GPBCodedOutputStream *stream, double value, uint32_t fieldNum, GPBType wireType) {
   NSCAssert(wireType == GPBTypeDouble, @"bad type: %d", wireType);
+  #pragma unused(wireType)  // For when asserts are off in release.
   [stream writeDouble:fieldNum value:value];
 }
 
 GPB_INLINE size_t ComputeDictStringFieldSize(NSString *value, uint32_t fieldNum, GPBType wireType) {
   NSCAssert(wireType == GPBTypeString, @"bad type: %d", wireType);
+  #pragma unused(wireType)  // For when asserts are off in release.
   return GPBComputeStringSize(fieldNum, value);
 }
 
 GPB_INLINE void WriteDictStringField(GPBCodedOutputStream *stream, NSString *value, uint32_t fieldNum, GPBType wireType) {
   NSCAssert(wireType == GPBTypeString, @"bad type: %d", wireType);
+  #pragma unused(wireType)  // For when asserts are off in release.
   [stream writeString:fieldNum value:value];
 }
 
 GPB_INLINE size_t ComputeDictObjectFieldSize(id value, uint32_t fieldNum, GPBType wireType) {
-  NSCAssert((wireType == GPBTypeMessage) || (wireType == GPBTypeString) || (wireType == GPBTypeData),
-            @"bad type: %d", wireType);
   if (wireType == GPBTypeMessage) {
     return GPBComputeMessageSize(fieldNum, value);
   } else if (wireType == GPBTypeString) {
     return GPBComputeStringSize(fieldNum, value);
-  } else {  // wireType == GPBTypeData
+  } else if (wireType == GPBTypeData) {
     return GPBComputeDataSize(fieldNum, value);
+  } else {
+    NSCAssert(NO, @"Unexpected type %d", wireType);
+    return 0;
   }
 }
 
 GPB_INLINE void WriteDictObjectField(GPBCodedOutputStream *stream, id value, uint32_t fieldNum, GPBType wireType) {
-  NSCAssert((wireType == GPBTypeMessage) || (wireType == GPBTypeString) || (wireType == GPBTypeData),
-            @"bad type: %d", wireType);
   if (wireType == GPBTypeMessage) {
     [stream writeMessage:fieldNum value:value];
   } else if (wireType == GPBTypeString) {
     [stream writeString:fieldNum value:value];
-  } else {  // wireType == GPBTypeData
+  } else if (wireType == GPBTypeData) {
     [stream writeData:fieldNum value:value];
+  } else {
+    NSCAssert(NO, @"Unexpected type %d", wireType);
   }
 }
 
 //%PDDM-EXPAND-END SERIALIZE_SUPPORT_HELPERS()
 
 size_t GPBDictionaryComputeSizeInternalHelper(NSDictionary *dict, GPBFieldDescriptor *field) {
-  NSCAssert(field.mapKeyType == GPBTypeString, @"Unexpected key type");
   GPBType mapValueType = GPBGetFieldType(field);
   __block size_t result = 0;
   [dict enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
@@ -319,7 +339,7 @@ void GPBDictionaryWriteToStreamInternalHelper(GPBCodedOutputStream *outputStream
 
     // Write the size and fields.
     [outputStream writeInt32NoTag:(int32_t)msgSize];
-    [outputStream writeString:kMapValueFieldNumber value:obj];
+    [outputStream writeString:kMapKeyFieldNumber value:key];
     WriteDictObjectField(outputStream, obj, kMapValueFieldNumber, mapValueType);
   }];
 }
@@ -327,6 +347,7 @@ void GPBDictionaryWriteToStreamInternalHelper(GPBCodedOutputStream *outputStream
 BOOL GPBDictionaryIsInitializedInternalHelper(NSDictionary *dict, GPBFieldDescriptor *field) {
   NSCAssert(field.mapKeyType == GPBTypeString, @"Unexpected key type");
   NSCAssert(GPBGetFieldType(field) == GPBTypeMessage, @"Unexpected value type");
+  #pragma unused(field)  // For when asserts are off in release.
   for (GPBMessage *msg in [dict objectEnumerator]) {
     if (!msg.initialized) {
       return NO;
@@ -488,8 +509,12 @@ void GPBDictionaryReadEntry(id mapDictionary,
     }
   }
 
-  if (GPBTypeIsObject(keyType)) [key.valueString release];
-  if (GPBTypeIsObject(valueType)) [value.valueString release];
+  if (GPBTypeIsObject(keyType)) {
+    [key.valueString release];
+  }
+  if (GPBTypeIsObject(valueType)) {
+    [value.valueString release];
+  }
 }
 
 //
@@ -751,6 +776,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%  }
 //%
 //%  [_dictionary setObject:WRAPPED##VHELPER(value) forKey:WRAPPED##KHELPER(key)];
+//%  if (_autocreator) {
+//%    GPBAutocreatedDictionaryModified(_autocreator, self);
+//%  }
 //%}
 //%
 //%@end
@@ -758,6 +786,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 //%PDDM-DEFINE DICTIONARY_IMMUTABLE_CORE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, KHELPER, VHELPER, ACCESSOR_NAME)
 //%- (void)dealloc {
+//%  NSAssert(!_autocreator,
+//%           @"%@: Autocreator must be cleared before release, autocreator: %@",
+//%           [self class], _autocreator);
 //%  [_dictionary release];
 //%  [super dealloc];
 //%}
@@ -854,11 +885,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%- (void)add##ACCESSOR_NAME##EntriesFromDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)otherDictionary {
 //%  if (otherDictionary) {
 //%    [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+//%    if (_autocreator) {
+//%      GPBAutocreatedDictionaryModified(_autocreator, self);
+//%    }
 //%  }
 //%}
 //%
 //%- (void)set##ACCESSOR_NAME##Value:(VALUE_TYPE)value forKey:(KEY_TYPE##KisP$S##KisP)key {
 //%  [_dictionary setObject:WRAPPED##VHELPER(value) forKey:WRAPPED##KHELPER(key)];
+//%  if (_autocreator) {
+//%    GPBAutocreatedDictionaryModified(_autocreator, self);
+//%  }
 //%}
 //%
 //%- (void)removeValueForKey:(KEY_TYPE##KisP$S##KisP)aKey {
@@ -930,7 +967,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%  return [self initWithValues:NULL forKeys:NULL count:0];
 //%}
 //%
-//%BOOL_DICT_DEALLOC##HELPER()- (instancetype)copyWithZone:(NSZone *)zone {
+//%BOOL_DICT_DEALLOC##HELPER()
+//%
+//%- (instancetype)copyWithZone:(NSZone *)zone {
 //%  return [[GPBBool##VALUE_NAME##Dictionary allocWithZone:zone] initWithDictionary:self];
 //%}
 //%
@@ -1158,7 +1197,14 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%  return self;
 //%}
 //%PDDM-DEFINE BOOL_DICT_DEALLOCPOD()
-// Empty
+//%#if !defined(NS_BLOCK_ASSERTIONS)
+//%- (void)dealloc {
+//%  NSAssert(!_autocreator,
+//%           @"%@: Autocreator must be cleared before release, autocreator: %@",
+//%           [self class], _autocreator);
+//%  [super dealloc];
+//%}
+//%#endif  // !defined(NS_BLOCK_ASSERTIONS)
 //%PDDM-DEFINE BOOL_DICT_W_HASPOD(IDX, REF)
 //%BOOL_DICT_HASPOD(IDX, REF)
 //%PDDM-DEFINE BOOL_DICT_HASPOD(IDX, REF)
@@ -1189,6 +1235,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%        _values[i] = otherDictionary->_values[i];
 //%      }
 //%    }
+//%    if (_autocreator) {
+//%      GPBAutocreatedDictionaryModified(_autocreator, self);
+//%    }
 //%  }
 //%}
 //%
@@ -1196,6 +1245,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%  int idx = (key ? 1 : 0);
 //%  _values[idx] = value;
 //%  _valueSet[idx] = YES;
+//%  if (_autocreator) {
+//%    GPBAutocreatedDictionaryModified(_autocreator, self);
+//%  }
 //%}
 //%
 //%- (void)removeValueForKey:(BOOL)aKey {
@@ -1333,12 +1385,13 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%}
 //%PDDM-DEFINE BOOL_DICT_DEALLOCOBJECT()
 //%- (void)dealloc {
+//%  NSAssert(!_autocreator,
+//%           @"%@: Autocreator must be cleared before release, autocreator: %@",
+//%           [self class], _autocreator);
 //%  [_values[0] release];
 //%  [_values[1] release];
 //%  [super dealloc];
 //%}
-//%
-//%
 //%PDDM-DEFINE BOOL_DICT_W_HASOBJECT(IDX, REF)
 //%(BOOL_DICT_HASOBJECT(IDX, REF))
 //%PDDM-DEFINE BOOL_DICT_HASOBJECT(IDX, REF)
@@ -1363,6 +1416,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%        _values[i] = [otherDictionary->_values[i] retain];
 //%      }
 //%    }
+//%    if (_autocreator) {
+//%      GPBAutocreatedDictionaryModified(_autocreator, self);
+//%    }
 //%  }
 //%}
 //%
@@ -1370,6 +1426,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%  int idx = (key ? 1 : 0);
 //%  [_values[idx] release];
 //%  _values[idx] = [value retain];
+//%  if (_autocreator) {
+//%    GPBAutocreatedDictionaryModified(_autocreator, self);
+//%  }
 //%}
 //%
 //%- (void)removeValueForKey:(BOOL)aKey {
@@ -1466,6 +1525,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -1570,11 +1632,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt32UInt32Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(uint32_t)value forKey:(uint32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint32_t)aKey {
@@ -1662,6 +1730,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -1766,11 +1837,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt32Int32Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(int32_t)value forKey:(uint32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint32_t)aKey {
@@ -1858,6 +1935,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -1962,11 +2042,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt32UInt64Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(uint64_t)value forKey:(uint32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint32_t)aKey {
@@ -2054,6 +2140,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -2158,11 +2247,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt32Int64Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(int64_t)value forKey:(uint32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint32_t)aKey {
@@ -2250,6 +2345,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -2354,11 +2452,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt32BoolDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(BOOL)value forKey:(uint32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint32_t)aKey {
@@ -2446,6 +2550,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -2550,11 +2657,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt32FloatDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(float)value forKey:(uint32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint32_t)aKey {
@@ -2642,6 +2755,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -2746,11 +2862,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt32DoubleDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(double)value forKey:(uint32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint32_t)aKey {
@@ -2866,6 +2988,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -3008,11 +3133,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addRawEntriesFromDictionary:(GPBUInt32EnumDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setRawValue:(int32_t)value forKey:(uint32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint32_t)aKey {
@@ -3031,6 +3162,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   }
 
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 @end
@@ -3110,6 +3244,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -3234,11 +3371,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt32ObjectDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(id)value forKey:(uint32_t)key {
   [_dictionary setObject:value forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint32_t)aKey {
@@ -3329,6 +3472,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -3433,11 +3579,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt32UInt32Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(uint32_t)value forKey:(int32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int32_t)aKey {
@@ -3525,6 +3677,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -3629,11 +3784,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt32Int32Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(int32_t)value forKey:(int32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int32_t)aKey {
@@ -3721,6 +3882,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -3825,11 +3989,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt32UInt64Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(uint64_t)value forKey:(int32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int32_t)aKey {
@@ -3917,6 +4087,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -4021,11 +4194,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt32Int64Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(int64_t)value forKey:(int32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int32_t)aKey {
@@ -4113,6 +4292,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -4217,11 +4399,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt32BoolDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(BOOL)value forKey:(int32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int32_t)aKey {
@@ -4309,6 +4497,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -4413,11 +4604,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt32FloatDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(float)value forKey:(int32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int32_t)aKey {
@@ -4505,6 +4702,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -4609,11 +4809,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt32DoubleDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(double)value forKey:(int32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int32_t)aKey {
@@ -4729,6 +4935,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -4871,11 +5080,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addRawEntriesFromDictionary:(GPBInt32EnumDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setRawValue:(int32_t)value forKey:(int32_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int32_t)aKey {
@@ -4894,6 +5109,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   }
 
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 @end
@@ -4973,6 +5191,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -5097,11 +5318,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt32ObjectDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(id)value forKey:(int32_t)key {
   [_dictionary setObject:value forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int32_t)aKey {
@@ -5192,6 +5419,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -5296,11 +5526,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt64UInt32Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(uint32_t)value forKey:(uint64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint64_t)aKey {
@@ -5388,6 +5624,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -5492,11 +5731,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt64Int32Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(int32_t)value forKey:(uint64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint64_t)aKey {
@@ -5584,6 +5829,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -5688,11 +5936,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt64UInt64Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(uint64_t)value forKey:(uint64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint64_t)aKey {
@@ -5780,6 +6034,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -5884,11 +6141,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt64Int64Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(int64_t)value forKey:(uint64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint64_t)aKey {
@@ -5976,6 +6239,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -6080,11 +6346,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt64BoolDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(BOOL)value forKey:(uint64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint64_t)aKey {
@@ -6172,6 +6444,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -6276,11 +6551,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt64FloatDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(float)value forKey:(uint64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint64_t)aKey {
@@ -6368,6 +6649,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -6472,11 +6756,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt64DoubleDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(double)value forKey:(uint64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint64_t)aKey {
@@ -6592,6 +6882,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -6734,11 +7027,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addRawEntriesFromDictionary:(GPBUInt64EnumDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setRawValue:(int32_t)value forKey:(uint64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint64_t)aKey {
@@ -6757,6 +7056,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   }
 
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 @end
@@ -6836,6 +7138,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -6960,11 +7265,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBUInt64ObjectDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(id)value forKey:(uint64_t)key {
   [_dictionary setObject:value forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(uint64_t)aKey {
@@ -7055,6 +7366,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -7159,11 +7473,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt64UInt32Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(uint32_t)value forKey:(int64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int64_t)aKey {
@@ -7251,6 +7571,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -7355,11 +7678,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt64Int32Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(int32_t)value forKey:(int64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int64_t)aKey {
@@ -7447,6 +7776,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -7551,11 +7883,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt64UInt64Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(uint64_t)value forKey:(int64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int64_t)aKey {
@@ -7643,6 +7981,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -7747,11 +8088,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt64Int64Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(int64_t)value forKey:(int64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int64_t)aKey {
@@ -7839,6 +8186,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -7943,11 +8293,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt64BoolDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(BOOL)value forKey:(int64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int64_t)aKey {
@@ -8035,6 +8391,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -8139,11 +8498,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt64FloatDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(float)value forKey:(int64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int64_t)aKey {
@@ -8231,6 +8596,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -8335,11 +8703,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt64DoubleDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(double)value forKey:(int64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int64_t)aKey {
@@ -8455,6 +8829,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -8597,11 +8974,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addRawEntriesFromDictionary:(GPBInt64EnumDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setRawValue:(int32_t)value forKey:(int64_t)key {
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int64_t)aKey {
@@ -8620,6 +9003,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   }
 
   [_dictionary setObject:@(value) forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 @end
@@ -8699,6 +9085,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -8823,11 +9212,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBInt64ObjectDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(id)value forKey:(int64_t)key {
   [_dictionary setObject:value forKey:@(key)];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(int64_t)aKey {
@@ -8918,6 +9313,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -9022,11 +9420,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBStringUInt32Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(uint32_t)value forKey:(NSString *)key {
   [_dictionary setObject:@(value) forKey:key];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(NSString *)aKey {
@@ -9114,6 +9518,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -9218,11 +9625,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBStringInt32Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(int32_t)value forKey:(NSString *)key {
   [_dictionary setObject:@(value) forKey:key];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(NSString *)aKey {
@@ -9310,6 +9723,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -9414,11 +9830,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBStringUInt64Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(uint64_t)value forKey:(NSString *)key {
   [_dictionary setObject:@(value) forKey:key];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(NSString *)aKey {
@@ -9506,6 +9928,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -9610,11 +10035,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBStringInt64Dictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(int64_t)value forKey:(NSString *)key {
   [_dictionary setObject:@(value) forKey:key];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(NSString *)aKey {
@@ -9702,6 +10133,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -9806,11 +10240,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBStringBoolDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(BOOL)value forKey:(NSString *)key {
   [_dictionary setObject:@(value) forKey:key];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(NSString *)aKey {
@@ -9898,6 +10338,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -10002,11 +10445,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBStringFloatDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(float)value forKey:(NSString *)key {
   [_dictionary setObject:@(value) forKey:key];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(NSString *)aKey {
@@ -10094,6 +10543,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -10198,11 +10650,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addEntriesFromDictionary:(GPBStringDoubleDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setValue:(double)value forKey:(NSString *)key {
   [_dictionary setObject:@(value) forKey:key];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(NSString *)aKey {
@@ -10318,6 +10776,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
 }
@@ -10460,11 +10921,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)addRawEntriesFromDictionary:(GPBStringEnumDictionary *)otherDictionary {
   if (otherDictionary) {
     [_dictionary addEntriesFromDictionary:otherDictionary->_dictionary];
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
 - (void)setRawValue:(int32_t)value forKey:(NSString *)key {
   [_dictionary setObject:@(value) forKey:key];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(NSString *)aKey {
@@ -10483,6 +10950,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   }
 
   [_dictionary setObject:@(value) forKey:key];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 @end
@@ -10571,6 +11041,15 @@ void GPBDictionaryReadEntry(id mapDictionary,
   #pragma unused(numItems)
   return [self initWithValues:NULL forKeys:NULL count:0];
 }
+
+#if !defined(NS_BLOCK_ASSERTIONS)
+- (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
+  [super dealloc];
+}
+#endif  // !defined(NS_BLOCK_ASSERTIONS)
 
 - (instancetype)copyWithZone:(NSZone *)zone {
   return [[GPBBoolUInt32Dictionary allocWithZone:zone] initWithDictionary:self];
@@ -10695,6 +11174,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
         _values[i] = otherDictionary->_values[i];
       }
     }
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
@@ -10702,6 +11184,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   int idx = (key ? 1 : 0);
   _values[idx] = value;
   _valueSet[idx] = YES;
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(BOOL)aKey {
@@ -10796,6 +11281,15 @@ void GPBDictionaryReadEntry(id mapDictionary,
   #pragma unused(numItems)
   return [self initWithValues:NULL forKeys:NULL count:0];
 }
+
+#if !defined(NS_BLOCK_ASSERTIONS)
+- (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
+  [super dealloc];
+}
+#endif  // !defined(NS_BLOCK_ASSERTIONS)
 
 - (instancetype)copyWithZone:(NSZone *)zone {
   return [[GPBBoolInt32Dictionary allocWithZone:zone] initWithDictionary:self];
@@ -10920,6 +11414,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
         _values[i] = otherDictionary->_values[i];
       }
     }
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
@@ -10927,6 +11424,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   int idx = (key ? 1 : 0);
   _values[idx] = value;
   _valueSet[idx] = YES;
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(BOOL)aKey {
@@ -11021,6 +11521,15 @@ void GPBDictionaryReadEntry(id mapDictionary,
   #pragma unused(numItems)
   return [self initWithValues:NULL forKeys:NULL count:0];
 }
+
+#if !defined(NS_BLOCK_ASSERTIONS)
+- (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
+  [super dealloc];
+}
+#endif  // !defined(NS_BLOCK_ASSERTIONS)
 
 - (instancetype)copyWithZone:(NSZone *)zone {
   return [[GPBBoolUInt64Dictionary allocWithZone:zone] initWithDictionary:self];
@@ -11145,6 +11654,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
         _values[i] = otherDictionary->_values[i];
       }
     }
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
@@ -11152,6 +11664,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   int idx = (key ? 1 : 0);
   _values[idx] = value;
   _valueSet[idx] = YES;
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(BOOL)aKey {
@@ -11246,6 +11761,15 @@ void GPBDictionaryReadEntry(id mapDictionary,
   #pragma unused(numItems)
   return [self initWithValues:NULL forKeys:NULL count:0];
 }
+
+#if !defined(NS_BLOCK_ASSERTIONS)
+- (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
+  [super dealloc];
+}
+#endif  // !defined(NS_BLOCK_ASSERTIONS)
 
 - (instancetype)copyWithZone:(NSZone *)zone {
   return [[GPBBoolInt64Dictionary allocWithZone:zone] initWithDictionary:self];
@@ -11370,6 +11894,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
         _values[i] = otherDictionary->_values[i];
       }
     }
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
@@ -11377,6 +11904,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   int idx = (key ? 1 : 0);
   _values[idx] = value;
   _valueSet[idx] = YES;
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(BOOL)aKey {
@@ -11471,6 +12001,15 @@ void GPBDictionaryReadEntry(id mapDictionary,
   #pragma unused(numItems)
   return [self initWithValues:NULL forKeys:NULL count:0];
 }
+
+#if !defined(NS_BLOCK_ASSERTIONS)
+- (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
+  [super dealloc];
+}
+#endif  // !defined(NS_BLOCK_ASSERTIONS)
 
 - (instancetype)copyWithZone:(NSZone *)zone {
   return [[GPBBoolBoolDictionary allocWithZone:zone] initWithDictionary:self];
@@ -11595,6 +12134,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
         _values[i] = otherDictionary->_values[i];
       }
     }
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
@@ -11602,6 +12144,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   int idx = (key ? 1 : 0);
   _values[idx] = value;
   _valueSet[idx] = YES;
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(BOOL)aKey {
@@ -11696,6 +12241,15 @@ void GPBDictionaryReadEntry(id mapDictionary,
   #pragma unused(numItems)
   return [self initWithValues:NULL forKeys:NULL count:0];
 }
+
+#if !defined(NS_BLOCK_ASSERTIONS)
+- (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
+  [super dealloc];
+}
+#endif  // !defined(NS_BLOCK_ASSERTIONS)
 
 - (instancetype)copyWithZone:(NSZone *)zone {
   return [[GPBBoolFloatDictionary allocWithZone:zone] initWithDictionary:self];
@@ -11820,6 +12374,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
         _values[i] = otherDictionary->_values[i];
       }
     }
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
@@ -11827,6 +12384,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   int idx = (key ? 1 : 0);
   _values[idx] = value;
   _valueSet[idx] = YES;
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(BOOL)aKey {
@@ -11921,6 +12481,15 @@ void GPBDictionaryReadEntry(id mapDictionary,
   #pragma unused(numItems)
   return [self initWithValues:NULL forKeys:NULL count:0];
 }
+
+#if !defined(NS_BLOCK_ASSERTIONS)
+- (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
+  [super dealloc];
+}
+#endif  // !defined(NS_BLOCK_ASSERTIONS)
 
 - (instancetype)copyWithZone:(NSZone *)zone {
   return [[GPBBoolDoubleDictionary allocWithZone:zone] initWithDictionary:self];
@@ -12045,6 +12614,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
         _values[i] = otherDictionary->_values[i];
       }
     }
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
@@ -12052,6 +12624,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   int idx = (key ? 1 : 0);
   _values[idx] = value;
   _valueSet[idx] = YES;
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(BOOL)aKey {
@@ -12143,6 +12718,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
   [_values[0] release];
   [_values[1] release];
   [super dealloc];
@@ -12285,6 +12863,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
         _values[i] = [otherDictionary->_values[i] retain];
       }
     }
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
@@ -12292,6 +12873,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   int idx = (key ? 1 : 0);
   [_values[idx] release];
   _values[idx] = [value retain];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(BOOL)aKey {
@@ -12417,6 +13001,15 @@ void GPBDictionaryReadEntry(id mapDictionary,
 #pragma unused(numItems)
   return [self initWithValidationFunction:func rawValues:NULL forKeys:NULL count:0];
 }
+
+#if !defined(NS_BLOCK_ASSERTIONS)
+- (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
+  [super dealloc];
+}
+#endif  // !defined(NS_BLOCK_ASSERTIONS)
 
 - (instancetype)copyWithZone:(NSZone *)zone {
   return [[GPBBoolEnumDictionary allocWithZone:zone] initWithDictionary:self];
@@ -12595,6 +13188,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
         _values[i] = otherDictionary->_values[i];
       }
     }
+    if (_autocreator) {
+      GPBAutocreatedDictionaryModified(_autocreator, self);
+    }
   }
 }
 
@@ -12607,12 +13203,18 @@ void GPBDictionaryReadEntry(id mapDictionary,
   int idx = (key ? 1 : 0);
   _values[idx] = value;
   _valueSet[idx] = YES;
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)setRawValue:(int32_t)rawValue forKey:(BOOL)key {
   int idx = (key ? 1 : 0);
   _values[idx] = rawValue;
   _valueSet[idx] = YES;
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
 }
 
 - (void)removeValueForKey:(BOOL)aKey {
@@ -12622,6 +13224,113 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)removeAll {
   _valueSet[0] = NO;
   _valueSet[1] = NO;
+}
+
+@end
+
+#pragma mark - NSDictionary Subclass
+
+@implementation GPBAutocreatedDictionary {
+  NSMutableDictionary *_dictionary;
+}
+
+- (void)dealloc {
+  NSAssert(!_autocreator,
+           @"%@: Autocreator must be cleared before release, autocreator: %@",
+           [self class], _autocreator);
+  [_dictionary release];
+  [super dealloc];
+}
+
+#pragma mark Required NSDictionary overrides
+
+- (instancetype)initWithObjects:(const id [])objects
+                        forKeys:(const id<NSCopying> [])keys
+                          count:(NSUInteger)count {
+  self = [super init];
+  if (self) {
+    _dictionary = [[NSMutableDictionary alloc] initWithObjects:objects
+                                                       forKeys:keys
+                                                         count:count];
+  }
+  return self;
+}
+
+- (NSUInteger)count {
+  return [_dictionary count];
+}
+
+- (id)objectForKey:(id)aKey {
+  return [_dictionary objectForKey:aKey];
+}
+
+- (NSEnumerator *)keyEnumerator {
+  if (_dictionary == nil) {
+    _dictionary = [[NSMutableDictionary alloc] init];
+  }
+  return [_dictionary keyEnumerator];
+}
+
+#pragma mark Required NSMutableDictionary overrides
+
+// Only need to call GPBAutocreatedDictionaryModified() when adding things
+// since we only autocreate empty dictionaries.
+
+- (void)setObject:(id)anObject forKey:(id<NSCopying>)aKey {
+  if (_dictionary == nil) {
+    _dictionary = [[NSMutableDictionary alloc] init];
+  }
+  [_dictionary setObject:anObject forKey:aKey];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
+}
+
+- (void)removeObjectForKey:(id)aKey {
+  [_dictionary removeObjectForKey:aKey];
+}
+
+#pragma mark Extra things hooked
+
+- (id)copyWithZone:(NSZone *)zone {
+  if (_dictionary == nil) {
+    _dictionary = [[NSMutableDictionary alloc] init];
+  }
+  return [_dictionary copyWithZone:zone];
+}
+
+- (id)mutableCopyWithZone:(NSZone *)zone {
+  if (_dictionary == nil) {
+    _dictionary = [[NSMutableDictionary alloc] init];
+  }
+  return [_dictionary mutableCopyWithZone:zone];
+}
+
+- (id)objectForKeyedSubscript:(id)key {
+  return [_dictionary objectForKeyedSubscript:key];
+}
+
+- (void)setObject:(id)obj forKeyedSubscript:(id<NSCopying>)key {
+  if (_dictionary == nil) {
+    _dictionary = [[NSMutableDictionary alloc] init];
+  }
+  [_dictionary setObject:obj forKeyedSubscript:key];
+  if (_autocreator) {
+    GPBAutocreatedDictionaryModified(_autocreator, self);
+  }
+}
+
+- (void)enumerateKeysAndObjectsUsingBlock:(void (^)(id key,
+                                                    id obj,
+                                                    BOOL *stop))block {
+  [_dictionary enumerateKeysAndObjectsUsingBlock:block];
+}
+
+- (void)enumerateKeysAndObjectsWithOptions:(NSEnumerationOptions)opts
+                                usingBlock:(void (^)(id key,
+                                                     id obj,
+                                                     BOOL *stop))block {
+  [_dictionary enumerateKeysAndObjectsWithOptions:opts usingBlock:block];
 }
 
 @end

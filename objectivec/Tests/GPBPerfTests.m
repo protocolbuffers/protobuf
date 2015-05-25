@@ -30,6 +30,7 @@
 
 #import "GPBTestUtilities.h"
 #import "google/protobuf/Unittest.pbobjc.h"
+#import "google/protobuf/UnittestImport.pbobjc.h"
 #import "google/protobuf/UnittestObjc.pbobjc.h"
 
 //
@@ -57,7 +58,7 @@ static const uint32_t kRepeatedCount = 100;
       [self setAllFields:message repeatedCount:kRepeatedCount];
       NSData* rawBytes = [message data];
       [message release];
-      message = [[TestAllTypes alloc] initWithData:rawBytes];
+      message = [[TestAllTypes alloc] initWithData:rawBytes error:NULL];
       [message release];
     }
   }];
@@ -71,7 +72,7 @@ static const uint32_t kRepeatedCount = 100;
       NSData* rawBytes = [message data];
       [message release];
       TestAllExtensions* message2 =
-          [[TestAllExtensions alloc] initWithData:rawBytes];
+          [[TestAllExtensions alloc] initWithData:rawBytes error:NULL];
       [message2 release];
     }
   }];
@@ -84,7 +85,7 @@ static const uint32_t kRepeatedCount = 100;
       [self setPackedFields:message repeatedCount:kRepeatedCount];
       NSData* rawBytes = [message data];
       [message release];
-      message = [[TestPackedTypes alloc] initWithData:rawBytes];
+      message = [[TestPackedTypes alloc] initWithData:rawBytes error:NULL];
       [message release];
     }
   }];
@@ -98,7 +99,7 @@ static const uint32_t kRepeatedCount = 100;
       NSData* rawBytes = [message data];
       [message release];
       TestPackedExtensions* message2 =
-          [[TestPackedExtensions alloc] initWithData:rawBytes];
+          [[TestPackedExtensions alloc] initWithData:rawBytes error:NULL];
       [message2 release];
     }
   }];

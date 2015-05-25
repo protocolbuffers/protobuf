@@ -80,7 +80,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   if (descriptor->is_repeated()) field_flags.push_back("GPBFieldRepeated");
   if (descriptor->is_required()) field_flags.push_back("GPBFieldRequired");
   if (descriptor->is_optional()) field_flags.push_back("GPBFieldOptional");
-  if (descriptor->options().packed()) field_flags.push_back("GPBFieldPacked");
+  if (descriptor->is_packed()) field_flags.push_back("GPBFieldPacked");
 
   // ObjC custom flags.
   if (descriptor->has_default_value())
@@ -235,6 +235,11 @@ void FieldGenerator::GenerateCFunctionImplementations(
   // Nothing
 }
 
+void FieldGenerator::DetermineForwardDeclarations(
+    set<string>* fwd_decls) const {
+  // Nothing
+}
+
 void FieldGenerator::GenerateFieldDescription(
     io::Printer* printer) const {
   printer->Print(
@@ -282,12 +287,16 @@ void FieldGenerator::SetOneofIndexBase(int index_base) {
   if (descriptor_->containing_oneof() != NULL) {
     int index = descriptor_->containing_oneof()->index() + index_base;
     // Flip the sign to mark it as a oneof.
-    variables_["has_index"] = SimpleItoa(-index);;
+    variables_["has_index"] = SimpleItoa(-index);
   }
 }
 
 void FieldGenerator::FinishInitialization(void) {
-  // Nothing
+  // If "property_type" wasn't set, make it "storage_type".
+  if ((variables_.find("property_type") == variables_.end()) &&
+      (variables_.find("storage_type") != variables_.end())) {
+    variables_["property_type"] = variable("storage_type");
+  }
 }
 
 SingleFieldGenerator::SingleFieldGenerator(
@@ -313,7 +322,7 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
   }
   printer->Print(
       variables_,
-      "@property(nonatomic, readwrite) $storage_type$ $name$;\n"
+      "@property(nonatomic, readwrite) $property_type$ $name$;\n"
       "\n");
 }
 
@@ -369,12 +378,12 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   }
   printer->Print(
       variables_,
-      "@property(nonatomic, readwrite, $property_storage_attribute$) $storage_type$ *$name$$storage_attribute$;\n");
+      "@property(nonatomic, readwrite, $property_storage_attribute$) $property_type$ *$name$$storage_attribute$;\n");
   if (IsInitName(variables_.at("name"))) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
     printer->Print(variables_,
-                   "- ($storage_type$ *)$name$ GPB_METHOD_FAMILY_NONE;\n");
+                   "- ($property_type$ *)$name$ GPB_METHOD_FAMILY_NONE;\n");
   }
   printer->Print("\n");
 }

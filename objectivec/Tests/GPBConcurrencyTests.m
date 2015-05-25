@@ -31,9 +31,15 @@
 #import "GPBTestUtilities.h"
 
 #import "google/protobuf/Unittest.pbobjc.h"
+#import "google/protobuf/UnittestObjc.pbobjc.h"
 
 static const int kNumThreads = 100;
 static const int kNumMessages = 100;
+
+// NOTE: Most of these tests don't "fail" in the sense that the XCTAsserts
+// trip.  Rather, the asserts simply exercise the apis, and if there is
+// a concurancy issue, the NSAsserts in the runtime code fire and/or the
+// code just crashes outright.
 
 @interface ConcurrencyTests : GPBTestCase
 @end
@@ -129,6 +135,48 @@ static const int kNumMessages = 100;
   [self joinThreads:threads];
   for (TestAllTypes *message in messages) {
     XCTAssertEqual([message.repeatedStringArray count], (NSUInteger)0);
+  }
+}
+
+- (void)readInt32Int32Map:(NSArray *)messages {
+  for (int i = 0; i < 10; i++) {
+    for (TestRecursiveMessageWithRepeatedField *message in messages) {
+      XCTAssertEqual([message.iToI count], (NSUInteger)0);
+    }
+  }
+}
+
+- (void)testConcurrentReadOfUnsetInt32Int32MapField {
+  NSArray *messages =
+      [self createMessagesWithType:[TestRecursiveMessageWithRepeatedField class]];
+  NSArray *threads =
+      [self createThreadsWithSelector:@selector(readInt32Int32Map:)
+                               object:messages];
+  [self startThreads:threads];
+  [self joinThreads:threads];
+  for (TestRecursiveMessageWithRepeatedField *message in messages) {
+    XCTAssertEqual([message.iToI count], (NSUInteger)0);
+  }
+}
+
+- (void)readStringStringMap:(NSArray *)messages {
+  for (int i = 0; i < 10; i++) {
+    for (TestRecursiveMessageWithRepeatedField *message in messages) {
+      XCTAssertEqual([message.strToStr count], (NSUInteger)0);
+    }
+  }
+}
+
+- (void)testConcurrentReadOfUnsetStringStringMapField {
+  NSArray *messages =
+      [self createMessagesWithType:[TestRecursiveMessageWithRepeatedField class]];
+  NSArray *threads =
+      [self createThreadsWithSelector:@selector(readStringStringMap:)
+                               object:messages];
+  [self startThreads:threads];
+  [self joinThreads:threads];
+  for (TestRecursiveMessageWithRepeatedField *message in messages) {
+    XCTAssertEqual([message.strToStr count], (NSUInteger)0);
   }
 }
 

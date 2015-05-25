@@ -65,6 +65,12 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor)
 
 MessageFieldGenerator::~MessageFieldGenerator() {}
 
+void MessageFieldGenerator::DetermineForwardDeclarations(
+    set<string>* fwd_decls) const {
+  // Class name is already in "storage_type".
+  fwd_decls->insert("@class " + variable("storage_type"));
+}
+
 bool MessageFieldGenerator::WantsHasProperty(void) const {
   if (descriptor_->containing_oneof() != NULL) {
     // If in a oneof, it uses the oneofcase instead of a has bit.

@@ -29,7 +29,7 @@ readonly PluginVersion=$( \
 )
 
 if [[ -z "${PluginVersion}" ]] ; then
-    die "Failed to fine ${ConstantName} in the plugin source (${PluginSrc})."
+    die "Failed to find ${ConstantName} in the plugin source (${PluginSrc})."
 fi
 
 # Collect version from runtime sources.
@@ -41,7 +41,7 @@ readonly RuntimeVersion=$( \
 )
 
 if [[ -z "${RuntimeVersion}" ]] ; then
-    die "Failed to fine ${ConstantName} in the runtime source (${RuntimeSrc})."
+    die "Failed to find ${ConstantName} in the runtime source (${RuntimeSrc})."
 fi
 
 # Compare them.

@@ -35,6 +35,7 @@
 #import "GPBMessage.h"
 
 #import "google/protobuf/MapUnittest.pbobjc.h"
+#import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestPreserveUnknownEnum.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto3.pbobjc.h"
@@ -431,7 +432,7 @@
   XCTAssertNotNil(dst.oneofGroup);
   XCTAssertNotEqual(dst.oneofGroup, mergedGroup);  // Pointer comparision.
 
-  // Back to something else ot make sure message clears out ok.
+  // Back to something else to make sure message clears out ok.
 
   src.oneofInt32 = 10;
   [dst mergeFrom:src];
@@ -640,7 +641,7 @@
   XCTAssertEqualObjects(mergedSubMessage, subMessage);
   XCTAssertEqualObjects(dst.oneofBytes, oneofBytesDefault);
 
-  // Back to something else ot make sure message clears out ok.
+  // Back to something else to make sure message clears out ok.
 
   src.oneofInt32 = 10;
   [dst mergeFrom:src];

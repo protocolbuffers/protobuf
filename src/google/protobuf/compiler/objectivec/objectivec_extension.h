@@ -47,8 +47,8 @@ namespace objectivec {
 
 class ExtensionGenerator {
  public:
-  explicit ExtensionGenerator(const string& root_class_name,
-                              const FieldDescriptor* descriptor);
+  ExtensionGenerator(const string& root_class_name,
+                     const FieldDescriptor* descriptor);
   ~ExtensionGenerator();
 
   void GenerateMembersHeader(io::Printer* printer);

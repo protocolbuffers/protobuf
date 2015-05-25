@@ -29,14 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #import <Foundation/Foundation.h>
-
 #import <XCTest/XCTest.h>
 
 #import "GPBArray.h"
 
-#ifndef GPBARRAYSIZE
-#define GPBARRAYSIZE(a) ((sizeof(a) / sizeof((a[0]))))
-#endif  // GPBARRAYSIZE
+#import "GPBTestUtilities.h"
 
 // To let the testing macros work, add some extra methods to simplify things.
 @interface GPBEnumArray (TestingTweak)
@@ -233,6 +230,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 //%  // Should be new object but equal.
 //%  XCTAssertNotEqual(array, array2);
 //%  XCTAssertEqualObjects(array, array2);
+//%  [array2 release];
+//%  [array release];
 //%}
 //%
 //%- (void)testArrayFromArray {
@@ -248,6 +247,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 //%  // Should be new pointer, but equal objects.
 //%  XCTAssertNotEqual(array, array2);
 //%  XCTAssertEqualObjects(array, array2);
+//%  [array release];
 //%}
 //%
 //%- (void)testAdds {
@@ -275,6 +275,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 //%  XCTAssertEqual([array valueAtIndex:2], VAL3);
 //%  XCTAssertEqual([array valueAtIndex:3], VAL4);
 //%  XCTAssertEqual([array valueAtIndex:4], VAL1);
+//%  [array2 release];
 //%}
 //%
 //%- (void)testInsert {
@@ -307,6 +308,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 //%  XCTAssertEqual([array valueAtIndex:3], VAL2);
 //%  XCTAssertEqual([array valueAtIndex:4], VAL3);
 //%  XCTAssertEqual([array valueAtIndex:5], VAL4);
+//%  [array release];
 //%}
 //%
 //%- (void)testRemove {
@@ -343,6 +345,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 //%  XCTAssertEqual(array.count, 0U);
 //%  XCTAssertThrowsSpecificNamed([array removeValueAtIndex:0],
 //%                               NSException, NSRangeException);
+//%  [array release];
 //%}
 //%
 //%- (void)testInplaceMutation {
@@ -381,6 +384,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 //%                               NSException, NSRangeException);
 //%  XCTAssertThrowsSpecificNamed([array exchangeValueAtIndex:1 withValueAtIndex:4],
 //%                               NSException, NSRangeException);
+//%  [array release];
 //%}
 //%
 //%- (void)testInternalResizing {
@@ -405,6 +409,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 //%  XCTAssertEqual(array.count, 404U);
 //%  [array removeAll];
 //%  XCTAssertEqual(array.count, 0U);
+//%  [array release];
 //%}
 //%
 //%@end
@@ -558,6 +563,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new object but equal.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array2 release];
+  [array release];
 }
 
 - (void)testArrayFromArray {
@@ -573,6 +580,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array release];
 }
 
 - (void)testAdds {
@@ -600,6 +608,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:2], 3);
   XCTAssertEqual([array valueAtIndex:3], 4);
   XCTAssertEqual([array valueAtIndex:4], 1);
+  [array2 release];
 }
 
 - (void)testInsert {
@@ -632,6 +641,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:3], 2);
   XCTAssertEqual([array valueAtIndex:4], 3);
   XCTAssertEqual([array valueAtIndex:5], 4);
+  [array release];
 }
 
 - (void)testRemove {
@@ -668,6 +678,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array removeValueAtIndex:0],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInplaceMutation {
@@ -706,6 +717,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
                                NSException, NSRangeException);
   XCTAssertThrowsSpecificNamed([array exchangeValueAtIndex:1 withValueAtIndex:4],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInternalResizing {
@@ -730,6 +742,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 404U);
   [array removeAll];
   XCTAssertEqual(array.count, 0U);
+  [array release];
 }
 
 @end
@@ -883,6 +896,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new object but equal.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array2 release];
+  [array release];
 }
 
 - (void)testArrayFromArray {
@@ -898,6 +913,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array release];
 }
 
 - (void)testAdds {
@@ -925,6 +941,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:2], 13U);
   XCTAssertEqual([array valueAtIndex:3], 14U);
   XCTAssertEqual([array valueAtIndex:4], 11U);
+  [array2 release];
 }
 
 - (void)testInsert {
@@ -957,6 +974,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:3], 12U);
   XCTAssertEqual([array valueAtIndex:4], 13U);
   XCTAssertEqual([array valueAtIndex:5], 14U);
+  [array release];
 }
 
 - (void)testRemove {
@@ -993,6 +1011,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array removeValueAtIndex:0],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInplaceMutation {
@@ -1031,6 +1050,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
                                NSException, NSRangeException);
   XCTAssertThrowsSpecificNamed([array exchangeValueAtIndex:1 withValueAtIndex:4],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInternalResizing {
@@ -1055,6 +1075,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 404U);
   [array removeAll];
   XCTAssertEqual(array.count, 0U);
+  [array release];
 }
 
 @end
@@ -1208,6 +1229,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new object but equal.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array2 release];
+  [array release];
 }
 
 - (void)testArrayFromArray {
@@ -1223,6 +1246,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array release];
 }
 
 - (void)testAdds {
@@ -1250,6 +1274,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:2], 33LL);
   XCTAssertEqual([array valueAtIndex:3], 34LL);
   XCTAssertEqual([array valueAtIndex:4], 31LL);
+  [array2 release];
 }
 
 - (void)testInsert {
@@ -1282,6 +1307,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:3], 32LL);
   XCTAssertEqual([array valueAtIndex:4], 33LL);
   XCTAssertEqual([array valueAtIndex:5], 34LL);
+  [array release];
 }
 
 - (void)testRemove {
@@ -1318,6 +1344,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array removeValueAtIndex:0],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInplaceMutation {
@@ -1356,6 +1383,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
                                NSException, NSRangeException);
   XCTAssertThrowsSpecificNamed([array exchangeValueAtIndex:1 withValueAtIndex:4],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInternalResizing {
@@ -1380,6 +1408,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 404U);
   [array removeAll];
   XCTAssertEqual(array.count, 0U);
+  [array release];
 }
 
 @end
@@ -1533,6 +1562,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new object but equal.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array2 release];
+  [array release];
 }
 
 - (void)testArrayFromArray {
@@ -1548,6 +1579,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array release];
 }
 
 - (void)testAdds {
@@ -1575,6 +1607,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:2], 43ULL);
   XCTAssertEqual([array valueAtIndex:3], 44ULL);
   XCTAssertEqual([array valueAtIndex:4], 41ULL);
+  [array2 release];
 }
 
 - (void)testInsert {
@@ -1607,6 +1640,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:3], 42ULL);
   XCTAssertEqual([array valueAtIndex:4], 43ULL);
   XCTAssertEqual([array valueAtIndex:5], 44ULL);
+  [array release];
 }
 
 - (void)testRemove {
@@ -1643,6 +1677,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array removeValueAtIndex:0],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInplaceMutation {
@@ -1681,6 +1716,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
                                NSException, NSRangeException);
   XCTAssertThrowsSpecificNamed([array exchangeValueAtIndex:1 withValueAtIndex:4],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInternalResizing {
@@ -1705,6 +1741,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 404U);
   [array removeAll];
   XCTAssertEqual(array.count, 0U);
+  [array release];
 }
 
 @end
@@ -1858,6 +1895,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new object but equal.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array2 release];
+  [array release];
 }
 
 - (void)testArrayFromArray {
@@ -1873,6 +1912,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array release];
 }
 
 - (void)testAdds {
@@ -1900,6 +1940,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:2], 53.f);
   XCTAssertEqual([array valueAtIndex:3], 54.f);
   XCTAssertEqual([array valueAtIndex:4], 51.f);
+  [array2 release];
 }
 
 - (void)testInsert {
@@ -1932,6 +1973,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:3], 52.f);
   XCTAssertEqual([array valueAtIndex:4], 53.f);
   XCTAssertEqual([array valueAtIndex:5], 54.f);
+  [array release];
 }
 
 - (void)testRemove {
@@ -1968,6 +2010,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array removeValueAtIndex:0],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInplaceMutation {
@@ -2006,6 +2049,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
                                NSException, NSRangeException);
   XCTAssertThrowsSpecificNamed([array exchangeValueAtIndex:1 withValueAtIndex:4],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInternalResizing {
@@ -2030,6 +2074,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 404U);
   [array removeAll];
   XCTAssertEqual(array.count, 0U);
+  [array release];
 }
 
 @end
@@ -2183,6 +2228,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new object but equal.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array2 release];
+  [array release];
 }
 
 - (void)testArrayFromArray {
@@ -2198,6 +2245,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array release];
 }
 
 - (void)testAdds {
@@ -2225,6 +2273,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:2], 63.);
   XCTAssertEqual([array valueAtIndex:3], 64.);
   XCTAssertEqual([array valueAtIndex:4], 61.);
+  [array2 release];
 }
 
 - (void)testInsert {
@@ -2257,6 +2306,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:3], 62.);
   XCTAssertEqual([array valueAtIndex:4], 63.);
   XCTAssertEqual([array valueAtIndex:5], 64.);
+  [array release];
 }
 
 - (void)testRemove {
@@ -2293,6 +2343,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array removeValueAtIndex:0],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInplaceMutation {
@@ -2331,6 +2382,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
                                NSException, NSRangeException);
   XCTAssertThrowsSpecificNamed([array exchangeValueAtIndex:1 withValueAtIndex:4],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInternalResizing {
@@ -2355,6 +2407,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 404U);
   [array removeAll];
   XCTAssertEqual(array.count, 0U);
+  [array release];
 }
 
 @end
@@ -2508,6 +2561,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new object but equal.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array2 release];
+  [array release];
 }
 
 - (void)testArrayFromArray {
@@ -2523,6 +2578,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array release];
 }
 
 - (void)testAdds {
@@ -2550,6 +2606,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:2], FALSE);
   XCTAssertEqual([array valueAtIndex:3], FALSE);
   XCTAssertEqual([array valueAtIndex:4], TRUE);
+  [array2 release];
 }
 
 - (void)testInsert {
@@ -2582,6 +2639,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:3], TRUE);
   XCTAssertEqual([array valueAtIndex:4], FALSE);
   XCTAssertEqual([array valueAtIndex:5], FALSE);
+  [array release];
 }
 
 - (void)testRemove {
@@ -2618,6 +2676,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array removeValueAtIndex:0],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInplaceMutation {
@@ -2656,6 +2715,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
                                NSException, NSRangeException);
   XCTAssertThrowsSpecificNamed([array exchangeValueAtIndex:1 withValueAtIndex:4],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInternalResizing {
@@ -2680,6 +2740,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 404U);
   [array removeAll];
   XCTAssertEqual(array.count, 0U);
+  [array release];
 }
 
 @end
@@ -2833,6 +2894,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new object but equal.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array2 release];
+  [array release];
 }
 
 - (void)testArrayFromArray {
@@ -2848,6 +2911,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   // Should be new pointer, but equal objects.
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
+  [array release];
 }
 
 - (void)testAdds {
@@ -2875,6 +2939,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:2], 73);
   XCTAssertEqual([array valueAtIndex:3], 74);
   XCTAssertEqual([array valueAtIndex:4], 71);
+  [array2 release];
 }
 
 - (void)testInsert {
@@ -2907,6 +2972,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:3], 72);
   XCTAssertEqual([array valueAtIndex:4], 73);
   XCTAssertEqual([array valueAtIndex:5], 74);
+  [array release];
 }
 
 - (void)testRemove {
@@ -2943,6 +3009,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array removeValueAtIndex:0],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInplaceMutation {
@@ -2981,6 +3048,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
                                NSException, NSRangeException);
   XCTAssertThrowsSpecificNamed([array exchangeValueAtIndex:1 withValueAtIndex:4],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testInternalResizing {
@@ -3005,6 +3073,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 404U);
   [array removeAll];
   XCTAssertEqual(array.count, 0U);
+  [array release];
 }
 
 @end
@@ -3165,6 +3234,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array2 rawValueAtIndex:1], 72);
   XCTAssertEqual([array2 rawValueAtIndex:2], 1000);
   XCTAssertEqual([array2 valueAtIndex:2], kGPBUnrecognizedEnumeratorValue);
+  [array2 release];
+  [array release];
 }
 
 - (void)testArrayFromArray {
@@ -3182,6 +3253,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertNotEqual(array, array2);
   XCTAssertEqualObjects(array, array2);
   XCTAssertEqual(array.validationFunc, array2.validationFunc);
+  [array release];
 }
 
 - (void)testUnknownAdds {
@@ -3197,7 +3269,6 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertThrowsSpecificNamed([array addValues:kValues1 count:GPBARRAYSIZE(kValues1)],
                                NSException, NSInvalidArgumentException);
   XCTAssertEqual(array.count, 0U);
-
   [array release];
 }
 
@@ -3229,7 +3300,6 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:2], kGPBUnrecognizedEnumeratorValue);
   XCTAssertEqual([array rawValueAtIndex:3], 74);
   XCTAssertEqual([array rawValueAtIndex:4], 71);
-
   [array release];
 }
 
@@ -3256,6 +3326,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertThrowsSpecificNamed([array insertValue:374 atIndex:3],
                                NSException, NSInvalidArgumentException);
   XCTAssertEqual(array.count, 3U);
+  [array release];
 }
 
 - (void)testRawInsert {
@@ -3292,7 +3363,6 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array rawValueAtIndex:4], 73);
   XCTAssertEqual([array rawValueAtIndex:5], 374);
   XCTAssertEqual([array valueAtIndex:5], kGPBUnrecognizedEnumeratorValue);
-
   [array release];
 }
 
@@ -3313,6 +3383,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual([array valueAtIndex:1], 72);
   XCTAssertEqual([array valueAtIndex:2], 73);
   XCTAssertEqual([array valueAtIndex:3], 74);
+  [array release];
 }
 
 
@@ -3336,6 +3407,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 
   XCTAssertThrowsSpecificNamed([array replaceValueAtIndex:4 withRawValue:74],
                                NSException, NSRangeException);
+  [array release];
 }
 
 - (void)testRawInternalResizing {
@@ -3360,6 +3432,7 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 404U);
   [array removeAll];
   XCTAssertEqual(array.count, 0U);
+  [array release];
 }
 
 @end

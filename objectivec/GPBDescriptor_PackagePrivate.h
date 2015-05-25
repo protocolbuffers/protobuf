@@ -186,7 +186,6 @@ typedef struct GPBExtensionDescription {
                        fields:(NSArray *)fields
                        oneofs:(NSArray *)oneofs
                         enums:(NSArray *)enums
-                   extensions:(NSArray *)extensions
               extensionRanges:(const GPBExtensionRange *)ranges
          extensionRangesCount:(NSUInteger)rangeCount
                   storageSize:(size_t)storage

@@ -33,6 +33,7 @@
 
 #import "GPBDictionary.h"
 
+#import "GPBTestUtilities.h"
 #import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
 
 // Pull in the macros (using an external file because expanding all tests
@@ -41,10 +42,6 @@
 
 //%PDDM-EXPAND TEST_FOR_POD_KEY(UInt32, uint32_t, 1U, 2U, 3U, 4U)
 // This block of code is generated, do not edit it directly.
-
-#ifndef GPBARRAYSIZE
-#define GPBARRAYSIZE(a) ((sizeof(a) / sizeof((a[0]))))
-#endif  // GPBARRAYSIZE
 
 // To let the testing macros work, add some extra methods to simplify things.
 @interface GPBUInt32EnumDictionary (TestingTweak)
