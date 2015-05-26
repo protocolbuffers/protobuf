@@ -75,11 +75,7 @@ message Message3 {
   repeated    bytes repeated_bytes    = 45;
   // No 'group' in proto3.
   repeated Message3 repeated_message  = 48;
-  // TODO(teboring): In proto3, repeated primitive field is packed by default.
-  // testProto2UnknownEnumToUnknownField needs repeated_enum to be unpacked.
-  // Remove this option when testProto2UnknownEnumToUnknownField.
-  repeated     Enum repeated_enum     = 49 [packed=false];
-  repeated     Enum repeated_packed_enum = 50 [packed=true];
+  repeated     Enum repeated_enum     = 49;
 
   oneof o {
        int32 oneof_int32    = 51;
