@@ -350,6 +350,7 @@ java_EXTRA_DIST=                                                             \
   java/src/main/java/com/google/protobuf/UnknownFieldSetLite.java            \
   java/src/main/java/com/google/protobuf/UnmodifiableLazyStringList.java     \
   java/src/main/java/com/google/protobuf/Utf8.java                           \
+  java/src/test/java/com/google/protobuf/WellKnownTypesTest.java             \
   java/src/main/java/com/google/protobuf/WireFormat.java                     \
   java/src/test/java/com/google/protobuf/AbstractMessageTest.java            \
   java/src/test/java/com/google/protobuf/BoundedByteStringTest.java          \
@@ -404,6 +405,7 @@ java_EXTRA_DIST=                                                             \
   java/src/test/java/com/google/protobuf/lite_equals_and_hash.proto          \
   java/src/test/java/com/google/protobuf/map_for_proto2_lite_test.proto      \
   java/src/test/java/com/google/protobuf/map_for_proto2_test.proto           \
+  java/src/test/java/com/google/protobuf/map_initialization_order_test.proto \
   java/src/test/java/com/google/protobuf/map_test.proto                      \
   java/src/test/java/com/google/protobuf/multiple_files_test.proto           \
   java/src/test/java/com/google/protobuf/nested_builders_test.proto          \
@@ -418,6 +420,7 @@ java_EXTRA_DIST=                                                             \
   java/src/test/java/com/google/protobuf/test_check_utf8.proto               \
   java/src/test/java/com/google/protobuf/test_check_utf8_size.proto          \
   java/src/test/java/com/google/protobuf/test_custom_options.proto           \
+  java/src/test/java/com/google/protobuf/test_extra_interfaces.proto         \
   java/pom.xml                                                               \
   java/README.md
 
