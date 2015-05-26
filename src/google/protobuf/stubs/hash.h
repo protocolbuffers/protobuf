@@ -93,9 +93,12 @@ template <typename Key, typename Data,
           typename EqualKey = std::equal_to<Key>,
           typename Alloc = std::allocator< std::pair<const Key, Data> > >
 class hash_map : public std::map<Key, Data, HashFcn, EqualKey, Alloc> {
+  typedef std::map<Key, Data, HashFcn, EqualKey, Alloc> BaseClass;
+
  public:
-  hash_map(int = 0, const HashFcn& = HashFcn(), const EqualKey& = EqualKey(),
-           const Alloc& = Alloc()) {}
+  hash_map(int a = 0, const HashFcn& b = HashFcn(),
+           const EqualKey& c = EqualKey(),
+           const Alloc& d = Alloc()) : BaseClass(a, b, c, d) {}
 };
 
 template <typename Key,
@@ -133,9 +136,13 @@ template <typename Key, typename Data,
 class hash_map
     : public GOOGLE_PROTOBUF_HASH_NAMESPACE::GOOGLE_PROTOBUF_HASH_MAP_CLASS<
           Key, Data, HashFcn, EqualKey, Alloc> {
+  typedef GOOGLE_PROTOBUF_HASH_NAMESPACE::GOOGLE_PROTOBUF_HASH_MAP_CLASS<
+      Key, Data, HashFcn, EqualKey, Alloc> BaseClass;
+
  public:
-  hash_map(int = 0, const HashFcn& = HashFcn(), const EqualKey& = EqualKey(),
-           const Alloc& = Alloc()) {}
+  hash_map(int a = 0, const HashFcn& b = HashFcn(),
+           const EqualKey& c = EqualKey(),
+           const Alloc& d = Alloc()) : BaseClass(a, b, c, d) {}
 };
 
 template <typename Key, typename HashFcn = hash<Key>,
@@ -187,9 +194,13 @@ template <typename Key, typename Data,
 class hash_map
     : public GOOGLE_PROTOBUF_HASH_NAMESPACE::GOOGLE_PROTOBUF_HASH_MAP_CLASS<
           Key, Data, HashFcn, EqualKey, Alloc> {
+  typedef GOOGLE_PROTOBUF_HASH_NAMESPACE::GOOGLE_PROTOBUF_HASH_MAP_CLASS<
+      Key, Data, HashFcn, EqualKey, Alloc> BaseClass;
+
  public:
-  hash_map(int = 0, const HashFcn& = HashFcn(), const EqualKey& = EqualKey(),
-           const Alloc& = Alloc()) {}
+  hash_map(int a = 0, const HashFcn& b = HashFcn(),
+           const EqualKey& c = EqualKey(),
+           const Alloc& d = Alloc()) : BaseClass(a, b, c, d) {}
 };
 
 template <typename Key, typename HashFcn = hash<Key>,
