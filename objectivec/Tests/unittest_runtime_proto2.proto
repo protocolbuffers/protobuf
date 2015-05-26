@@ -78,9 +78,8 @@ message Message2 {
   repeated group RepeatedGroup = 46 {
     optional int32 a = 47;
   }
-  repeated Message2 repeated_message     = 48;
-  repeated Enum     repeated_enum        = 49;
-  repeated Enum     repeated_packed_enum = 50 [packed=true];
+  repeated Message2 repeated_message  = 48;
+  repeated Enum     repeated_enum     = 49;
 
   oneof o {
        int32 oneof_int32    = 51 [default = 100];

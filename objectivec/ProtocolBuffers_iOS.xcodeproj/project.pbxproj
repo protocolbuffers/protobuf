@@ -875,7 +875,7 @@
 					"\"$(DEVELOPER_DIR)/usr/lib\"",
 				);
 				PRODUCT_NAME = UnitTests;
-				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/Tests/UnitTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iOSTestHarness.app/iOSTestHarness";
@@ -903,7 +903,7 @@
 					"\"$(DEVELOPER_DIR)/usr/lib\"",
 				);
 				PRODUCT_NAME = UnitTests;
-				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/Tests/UnitTests-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iOSTestHarness.app/iOSTestHarness";
 			};

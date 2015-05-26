@@ -92,7 +92,8 @@ objectivec/ProtocolBuffers_OSX.xcodeproj/xcuserdata/
 objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcuserdata/
 objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_iOS.xccheckout
 objectivec/ProtocolBuffers_iOS.xcodeproj/xcuserdata/
-objectivec/**/.DS_Store
+# OS X's Finder creates these for state about opened windows/etc.
+**/.DS_Store
 
 # Comformance test output
 conformance/.libs/
