@@ -147,6 +147,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/compiler/java/java_names.h                    \
   google/protobuf/compiler/javanano/javanano_generator.h        \
   google/protobuf/compiler/objectivec/objectivec_generator.h    \
+  google/protobuf/compiler/objectivec/objectivec_helpers.h     \
   google/protobuf/compiler/python/python_generator.h            \
   google/protobuf/compiler/ruby/ruby_generator.h                \
   google/protobuf/compiler/csharp/csharp_generator.h
