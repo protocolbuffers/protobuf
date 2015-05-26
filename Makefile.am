@@ -606,6 +606,7 @@ objectivec_EXTRA_DIST=                                                       \
   Protobuf.podspec
 
 python_EXTRA_DIST=                                                           \
+  python/MANIFEST.in                                                         \
   python/google/protobuf/internal/api_implementation.cc                      \
   python/google/protobuf/internal/api_implementation.py                      \
   python/google/protobuf/internal/containers.py                              \
@@ -657,6 +658,8 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/extension_dict.cc                             \
   python/google/protobuf/pyext/message.h                                     \
   python/google/protobuf/pyext/message.cc                                    \
+  python/google/protobuf/pyext/message_map_container.cc                      \
+  python/google/protobuf/pyext/message_map_container.h                       \
   python/google/protobuf/pyext/proto2_api_test.proto                         \
   python/google/protobuf/pyext/python.proto                                  \
   python/google/protobuf/pyext/python_protobuf.h                             \
@@ -664,6 +667,8 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/repeated_composite_container.cc               \
   python/google/protobuf/pyext/repeated_scalar_container.h                   \
   python/google/protobuf/pyext/repeated_scalar_container.cc                  \
+  python/google/protobuf/pyext/scalar_map_container.cc                       \
+  python/google/protobuf/pyext/scalar_map_container.h                        \
   python/google/protobuf/pyext/scoped_pyobject_ptr.h                         \
   python/google/protobuf/pyext/__init__.py                                   \
   python/google/protobuf/descriptor.py                                       \
@@ -687,6 +692,9 @@ python_EXTRA_DIST=                                                           \
   python/README.md
 
 ruby_EXTRA_DIST=                                                             \
+  ruby/Gemfile                                                               \
+  ruby/Gemfile.lock                                                          \
+  ruby/.gitignore                                                            \
   ruby/README.md                                                             \
   ruby/Rakefile                                                              \
   ruby/ext/google/protobuf_c/defs.c                                          \
@@ -701,12 +709,35 @@ ruby_EXTRA_DIST=                                                             \
   ruby/ext/google/protobuf_c/upb.c                                           \
   ruby/ext/google/protobuf_c/upb.h                                           \
   ruby/google-protobuf.gemspec                                               \
+  ruby/lib/google/protobuf/message_exts.rb                                   \
+  ruby/lib/google/protobuf/repeated_field.rb                                 \
   ruby/lib/google/protobuf.rb                                                \
+  ruby/pom.xml                                                               \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyBuilder.java              \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyDescriptor.java           \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyDescriptorPool.java       \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyEnumBuilderContext.java   \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyEnumDescriptor.java       \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyEnum.java                 \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyFieldDescriptor.java      \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyMap.java                  \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyMessageBuilderContext.java \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyMessage.java              \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyOneofBuilderContext.java  \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyOneofDescriptor.java      \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyProtobuf.java             \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyRepeatedField.java        \
+  ruby/src/main/java/com/google/protobuf/jruby/SentinelOuterClass.java       \
+  ruby/src/main/java/com/google/protobuf/jruby/Utils.java                    \
+  ruby/src/main/java/google/ProtobufJavaService.java                         \
+  ruby/src/main/sentinel.proto                                               \
   ruby/tests/basic.rb                                                        \
+  ruby/tests/repeated_field_test.rb                                          \
   ruby/tests/stress.rb                                                       \
   ruby/tests/generated_code.proto                                            \
   ruby/tests/generated_code.rb                                               \
-  ruby/tests/generated_code_test.rb
+  ruby/tests/generated_code_test.rb                                          \
+  ruby/travis-test.sh
 
 all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST)
 
