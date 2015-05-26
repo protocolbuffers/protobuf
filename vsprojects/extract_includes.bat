@@ -9,14 +9,20 @@ md include\google\protobuf\compiler\java
 md include\google\protobuf\compiler\javanano
 md include\google\protobuf\compiler\python
 md include\google\protobuf\compiler\ruby
+copy ..\src\google\protobuf\any.pb.h include\google\protobuf\any.pb.h
+copy ..\src\google\protobuf\api.pb.h include\google\protobuf\api.pb.h
+copy ..\src\google\protobuf\any.h include\google\protobuf\any.h
 copy ..\src\google\protobuf\arena.h include\google\protobuf\arena.h
 copy ..\src\google\protobuf\arenastring.h include\google\protobuf\arenastring.h
 copy ..\src\google\protobuf\compiler\code_generator.h include\google\protobuf\compiler\code_generator.h
 copy ..\src\google\protobuf\compiler\command_line_interface.h include\google\protobuf\compiler\command_line_interface.h
 copy ..\src\google\protobuf\compiler\cpp\cpp_generator.h include\google\protobuf\compiler\cpp\cpp_generator.h
+copy ..\src\google\protobuf\compiler\csharp\csharp_generator.h include\google\protobuf\compiler\csharp\csharp_generator.h
 copy ..\src\google\protobuf\compiler\importer.h include\google\protobuf\compiler\importer.h
 copy ..\src\google\protobuf\compiler\java\java_generator.h include\google\protobuf\compiler\java\java_generator.h
+copy ..\src\google\protobuf\compiler\java\java_names.h include\google\protobuf\compiler\java\java_names.h
 copy ..\src\google\protobuf\compiler\javanano\javanano_generator.h include\google\protobuf\compiler\javanano\javanano_generator.h
+copy ..\src\google\protobuf\compiler\objectivec\objectivec_generator.h include\google\protobuf\compiler\objectivec\objectivec_generator.h
 copy ..\src\google\protobuf\compiler\parser.h include\google\protobuf\compiler\parser.h
 copy ..\src\google\protobuf\compiler\plugin.h include\google\protobuf\compiler\plugin.h
 copy ..\src\google\protobuf\compiler\plugin.pb.h include\google\protobuf\compiler\plugin.pb.h
@@ -26,7 +32,9 @@ copy ..\src\google\protobuf\descriptor_database.h include\google\protobuf\descri
 copy ..\src\google\protobuf\descriptor.h include\google\protobuf\descriptor.h
 copy ..\src\google\protobuf\descriptor.pb.h include\google\protobuf\descriptor.pb.h
 copy ..\src\google\protobuf\dynamic_message.h include\google\protobuf\dynamic_message.h
+copy ..\src\google\protobuf\empty.pb.h include\google\protobuf\empty.pb.h
 copy ..\src\google\protobuf\extension_set.h include\google\protobuf\extension_set.h
+copy ..\src\google\protobuf\field_mask.pb.h include\google\protobuf\field_mask.pb.h
 copy ..\src\google\protobuf\generated_enum_reflection.h include\google\protobuf\generated_enum_reflection.h
 copy ..\src\google\protobuf\generated_enum_util.h include\google\protobuf\generated_enum_util.h
 copy ..\src\google\protobuf\generated_message_reflection.h include\google\protobuf\generated_message_reflection.h
@@ -42,8 +50,8 @@ copy ..\src\google\protobuf\io\zero_copy_stream_impl_lite.h include\google\proto
 copy ..\src\google\protobuf\map_entry.h include\google\protobuf\map_entry.h
 copy ..\src\google\protobuf\map_entry_lite.h include\google\protobuf\map_entry_lite.h
 copy ..\src\google\protobuf\map_field.h include\google\protobuf\map_field.h
-copy ..\src\google\protobuf\map_field_lite.h include\google\protobuf\map_field_lite.h
 copy ..\src\google\protobuf\map_field_inl.h include\google\protobuf\map_field_inl.h
+copy ..\src\google\protobuf\map_field_lite.h include\google\protobuf\map_field_lite.h
 copy ..\src\google\protobuf\map.h include\google\protobuf\map.h
 copy ..\src\google\protobuf\map_type_handler.h include\google\protobuf\map_type_handler.h
 copy ..\src\google\protobuf\message.h include\google\protobuf\message.h
@@ -54,6 +62,8 @@ copy ..\src\google\protobuf\reflection_ops.h include\google\protobuf\reflection_
 copy ..\src\google\protobuf\repeated_field.h include\google\protobuf\repeated_field.h
 copy ..\src\google\protobuf\repeated_field_reflection.h include\google\protobuf\repeated_field_reflection.h
 copy ..\src\google\protobuf\service.h include\google\protobuf\service.h
+copy ..\src\google\protobuf\source_context.pb.h include\google\protobuf\source_context.pb.h
+copy ..\src\google\protobuf\struct.pb.h include\google\protobuf\struct.pb.h
 copy ..\src\google\protobuf\stubs\atomicops.h include\google\protobuf\stubs\atomicops.h
 copy ..\src\google\protobuf\stubs\atomicops_internals_aix.h include\google\protobuf\stubs\atomicops_internals_aix.h
 copy ..\src\google\protobuf\stubs\atomicops_internals_arm64_gcc.h include\google\protobuf\stubs\atomicops_internals_arm64_gcc.h
@@ -72,16 +82,20 @@ copy ..\src\google\protobuf\stubs\atomic_sequence_num.h include\google\protobuf\
 copy ..\src\google\protobuf\stubs\casts.h include\google\protobuf\stubs\casts.h
 copy ..\src\google\protobuf\stubs\common.h include\google\protobuf\stubs\common.h
 copy ..\src\google\protobuf\stubs\fastmem.h include\google\protobuf\stubs\fastmem.h
+copy ..\src\google\protobuf\stubs\hash.h include\google\protobuf\stubs\hash.h
 copy ..\src\google\protobuf\stubs\once.h include\google\protobuf\stubs\once.h
 copy ..\src\google\protobuf\stubs\platform_macros.h include\google\protobuf\stubs\platform_macros.h
+copy ..\src\google\protobuf\stubs\shared_ptr.h include\google\protobuf\stubs\shared_ptr.h
 copy ..\src\google\protobuf\stubs\singleton.h include\google\protobuf\stubs\singleton.h
-copy ..\src\google\protobuf\stubs\hash.h include\google\protobuf\stubs\hash.h
 copy ..\src\google\protobuf\stubs\stl_util.h include\google\protobuf\stubs\stl_util.h
 copy ..\src\google\protobuf\stubs\template_util.h include\google\protobuf\stubs\template_util.h
 copy ..\src\google\protobuf\stubs\type_traits.h include\google\protobuf\stubs\type_traits.h
 copy ..\src\google\protobuf\text_format.h include\google\protobuf\text_format.h
+copy ..\src\google\protobuf\timestamp.pb.h include\google\protobuf\timestamp.pb.h
+copy ..\src\google\protobuf\type.pb.h include\google\protobuf\type.pb.h
 copy ..\src\google\protobuf\unknown_field_set.h include\google\protobuf\unknown_field_set.h
 copy ..\src\google\protobuf\wire_format.h include\google\protobuf\wire_format.h
 copy ..\src\google\protobuf\wire_format_lite.h include\google\protobuf\wire_format_lite.h
 copy ..\src\google\protobuf\wire_format_lite_inl.h include\google\protobuf\wire_format_lite_inl.h
+copy ..\src\google\protobuf\wrappers.pb.h include\google\protobuf\wrappers.pb.h
 copy google\protobuf\stubs\pbconfig.h include\google\protobuf\stubs\pbconfig.h
