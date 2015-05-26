@@ -68,7 +68,11 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
         repeated_field_(NULL),
         entry_descriptor_(NULL),
         assign_descriptor_callback_(NULL),
-        state_(STATE_MODIFIED_MAP) {}
+        state_(STATE_MODIFIED_MAP) {
+    // Mutex's destructor needs to be called explicitly to release resources
+    // acquired in its constructor.
+    arena->OwnDestructor(&mutex_);
+  }
   virtual ~MapFieldBase();
 
   // Returns reference to internal repeated field. Data written using
