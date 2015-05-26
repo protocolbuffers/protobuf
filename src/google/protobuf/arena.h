@@ -413,12 +413,6 @@ class LIBPROTOBUF_EXPORT Arena {
   // trivially destructible.
   template <typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
   static T* CreateArray(::google::protobuf::Arena* arena, size_t num_elements) {
-#if __cplusplus >= 201103L
-    static_assert(std::is_trivially_default_constructible<T>::value,
-                  "CreateArray requires a trivially constructible type");
-    static_assert(std::is_trivially_destructible<T>::value,
-                  "CreateArray requires a trivially destructible type");
-#endif
     if (arena == NULL) {
       return static_cast<T*>(::operator new[](num_elements * sizeof(T)));
     } else {
