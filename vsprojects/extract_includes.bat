@@ -23,6 +23,7 @@ copy ..\src\google\protobuf\compiler\java\java_generator.h include\google\protob
 copy ..\src\google\protobuf\compiler\java\java_names.h include\google\protobuf\compiler\java\java_names.h
 copy ..\src\google\protobuf\compiler\javanano\javanano_generator.h include\google\protobuf\compiler\javanano\javanano_generator.h
 copy ..\src\google\protobuf\compiler\objectivec\objectivec_generator.h include\google\protobuf\compiler\objectivec\objectivec_generator.h
+copy ..\src\google\protobuf\compiler\objectivec\objectivec_helpers.h include\google\protobuf\compiler\objectivec\objectivec_helpers.h
 copy ..\src\google\protobuf\compiler\parser.h include\google\protobuf\compiler\parser.h
 copy ..\src\google\protobuf\compiler\plugin.h include\google\protobuf\compiler\plugin.h
 copy ..\src\google\protobuf\compiler\plugin.pb.h include\google\protobuf\compiler\plugin.pb.h
