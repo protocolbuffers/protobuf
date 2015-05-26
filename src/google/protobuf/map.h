@@ -167,11 +167,23 @@ class Map {
       }
     }
 
+#if __cplusplus >= 201103L
+    template<class NodeType, class... Args>
+    void construct(NodeType* p, Args&&... args) {
+      new (p) NodeType(std::forward<Args>(args)...);
+    }
+
+    template<class NodeType>
+    void destroy(NodeType* p) {
+      if (arena_ == NULL) p->~NodeType();
+    }
+#else
     void construct(pointer p, const_reference t) { new (p) value_type(t); }
 
     void destroy(pointer p) {
       if (arena_ == NULL) p->~value_type();
     }
+#endif
 
     template <typename X>
     struct rebind {
