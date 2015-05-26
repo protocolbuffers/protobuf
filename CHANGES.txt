@@ -1,3 +1,102 @@
+2015-05-25 version 3.0.0-alpha-3 (Objective-C/C#):
+  General
+  * Introduced two new language implementations (Objective-C, C#) to proto3.
+  * Disallowed "optional" keyword in proto3 syntax.
+  * Removed groups fields in proto3 syntax.
+  * Changed repeated primitive fields to use packed serialization by default in
+    proto3 (implemented for C++, Java, Python in this release).  The user can
+    still disable packed serialization by setting packed to false for now.
+  * Added well-known type protos (any.proto, empty.proto, timestamp.proto,
+    duration.proto, etc.). Users can import and use these protos just like
+    regular proto files. Addtional runtime support will be added for them in
+    future releases (in the form of utility helper functions, or having them
+    replaced by language specific types in generated code).
+  * Added a "reserved" keyword in both proto2 and proto3 syntax. User can use
+    this keyword to declare reserved field numbers and names to prevent them
+    from being reused by other fields in the same message.
+
+    To reserve field numbers, add a reserved declaration in your message:
+
+      message TestMessage {
+        reserved 2, 15, 9 to 11, 3;
+      }
+
+    This reserves field numbers 2, 3, 9, 10, 11 and 15. If a user uses any of
+    these as field numbers, the protocol buffer compiler will report an error.
+
+    Field names can also be reserved:
+
+      message TestMessage {
+        reserved "foo", "bar";
+      }
+
+  * Various bug fixes since 3.0.0-alpha-2
+
+  Objective-C
+    Objective-C includes a code generator and a native objective-c runtime
+    library.  By adding “--objc_out” to protoc, the code generator will generate
+    a header(*.pbobjc.h) and an implementation file(*.pbobjc.m) for each proto
+    file.
+
+    In this first release, the generated interface provides: enums, messages,
+    field support(single, repeated, map, oneof), proto2 and proto3 syntax
+    support, parsing and serialization. It’s  compatible with ARC and non-ARC
+    usage. Besides, user can also access it via the swift bridging header.
+
+    See objectivec/README.md for details.
+
+  C#
+    * C# protobufs are based on project
+      https://github.com/jskeet/protobuf-csharp-port. The original project was
+      frozen and all the new development will happen here.
+    * Codegen plugin for C# was completely rewritten to C++ and is now an
+      intergral part of protoc.
+    * Some refactorings and cleanup has been applied to the C# runtime library.
+    * Only proto2 is supported in C# at the moment, proto3 support is in
+      progress and will likely bring significant breaking changes to the API.
+
+    See csharp/README.md for details.
+
+  C++
+    * Added runtime support for Any type. To use Any in your proto file, first
+      import the definition of Any:
+
+        // foo.proto
+        import "google/protobuf/any.proto";
+        message Foo {
+          google.protobuf.Any any_field = 1;
+        }
+        message Bar {
+          int32 value = 1;
+        }
+
+      Then in C++ you can access the Any field using PackFrom()/UnpackTo()
+      methods:
+
+        Foo foo;
+        Bar bar = ...;
+        foo.mutable_any_field()->PackFrom(bar);
+        ...
+        if (foo.any_field().IsType<Bar>()) {
+          foo.any_field().UnpackTo(&bar);
+          ...
+        }
+    * In text format, entries of a map field will be sorted by key.
+
+  Java
+    * Continued optimizations on the lite runtime to improve performance for
+      Android.
+
+  Python
+    * Added map support.
+      - maps now have a dict-like interface (msg.map_field[key] = value)
+      - existing code that modifies maps via the repeated field interface
+        will need to be updated.
+
+  Ruby
+    * Improvements to RepeatedField's emulation of the Ruby Array API.
+    * Various speedups and internal cleanups.
+
 2015-02-26 version 3.0.0-alpha-2 (Python/Ruby/JavaNano):
   General
   * Introduced three new language implementations (Ruby, JavaNano, and
