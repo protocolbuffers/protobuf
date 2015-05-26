@@ -708,7 +708,7 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/generated_code.rb                                               \
   ruby/tests/generated_code_test.rb
 
-all_EXTRA_DIST=$(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST)
+all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST)
 
 EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)                                       \
   autogen.sh                                                                 \
