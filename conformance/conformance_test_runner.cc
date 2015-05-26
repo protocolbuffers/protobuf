@@ -143,8 +143,9 @@ class ForkPipeRunner : public google::protobuf::ConformanceTestRunner {
       CHECK_SYSCALL(close(toproc_pipe_fd[1]));
       CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
 
-      scoped_array<char> executable(new char[executable_.size()]);
+      scoped_array<char> executable(new char[executable_.size() + 1]);
       memcpy(executable.get(), executable_.c_str(), executable_.size());
+      executable[executable_.size()] = '\0';
 
       char *const argv[] = {executable.get(), NULL};
       CHECK_SYSCALL(execv(executable.get(), argv));  // Never returns.
