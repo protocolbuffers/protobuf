@@ -30,8 +30,6 @@
 
 #include <google/protobuf/arena.h>
 
-#include <stdint.h>
-
 #include <algorithm>
 #include <cstring>
 #include <memory>

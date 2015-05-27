@@ -33,6 +33,7 @@
 
 #include <iterator>
 #include <google/protobuf/stubs/hash.h>
+#include <limits>  // To support Visual Studio 2008
 
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_enum_util.h>
@@ -199,6 +200,11 @@ class Map {
     bool operator!=(const MapAllocator<X>& other) const {
       return arena_ != other.arena_;
     }
+
+	// To support Visual Studio 2008
+	size_type max_size() const {
+		return std::numeric_limits<size_type>::max();
+	}
 
    private:
     Arena* arena_;

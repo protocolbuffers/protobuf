@@ -256,7 +256,7 @@ void FieldGenerator::GenerateFieldDescription(
   // "  .typeSpecific.value* = [something],"
   GenerateFieldDescriptionTypeSpecific(printer);
 
-  const string& field_options(variables_.at("fieldoptions"));
+  const string& field_options(variables_.find("fieldoptions")->second);
   if (field_options.empty()) {
     printer->Print("  .fieldOptions = NULL,\n");
   } else {
@@ -379,7 +379,7 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   printer->Print(
       variables_,
       "@property(nonatomic, readwrite, $property_storage_attribute$) $property_type$ *$name$$storage_attribute$;\n");
-  if (IsInitName(variables_.at("name"))) {
+  if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
     printer->Print(variables_,
@@ -426,7 +426,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
       "$comments$"
       "$array_comment$"
       "@property(nonatomic, readwrite, strong) $array_storage_type$ *$name$$storage_attribute$;\n");
-  if (IsInitName(variables_.at("name"))) {
+  if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
     printer->Print(variables_,

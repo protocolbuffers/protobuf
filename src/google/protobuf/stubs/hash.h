@@ -112,7 +112,7 @@ class hash_set : public std::set<Key, HashFcn> {
 #elif defined(_MSC_VER) && !defined(_STLPORT_VERSION)
 
 template <typename Key>
-struct hash : public GOOGLE_PROTOBUF_HASH_NAMESPACE::hash_compare<Key> {
+struct hash : public GOOGLE_PROTOBUF_HASH_COMPARE<Key> {
 };
 
 // MSVC's hash_compare<const char*> hashes based on the string contents but
@@ -126,8 +126,7 @@ class CstringLess {
 
 template <>
 struct hash<const char*>
-    : public GOOGLE_PROTOBUF_HASH_NAMESPACE::hash_compare<
-        const char*, CstringLess> {};
+    : public GOOGLE_PROTOBUF_HASH_COMPARE<const char*, CstringLess> {};
 
 template <typename Key, typename Data,
           typename HashFcn = hash<Key>,

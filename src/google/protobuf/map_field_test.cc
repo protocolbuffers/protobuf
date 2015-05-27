@@ -145,7 +145,7 @@ TEST_F(MapFieldBasePrimitiveTest, Arena) {
   // Allocate a large initial block to avoid mallocs during hooked test.
   std::vector<char> arena_block(128 * 1024);
   ArenaOptions options;
-  options.initial_block = arena_block.data();
+  options.initial_block = &arena_block[0];
   options.initial_block_size = arena_block.size();
   Arena arena(options);
 
