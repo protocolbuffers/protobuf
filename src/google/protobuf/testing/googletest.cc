@@ -108,6 +108,10 @@ string GetTemporaryDirectoryName() {
   if (HasPrefixString(result, "\\")) {
     result.erase(0, 1);
   }
+  // The Win32 API accepts forward slashes as a path delimiter even though
+  // backslashes are standard.  Let's avoid confusion and use only forward
+  // slashes.
+  result = StringReplace(result, "\\", "/", true);
 #endif  // _WIN32
   return result;
 }
