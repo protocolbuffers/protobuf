@@ -47,6 +47,20 @@ function handler_types(base)
   return ret
 end
 
+function octchar(num)
+  assert(num < 8)
+  local idx = num + 1  -- 1-based index
+  return string.sub("01234567", idx, idx)
+end
+
+function c_escape(num)
+  assert(num < 256)
+  return string.format("\\%s%s%s",
+                       octchar(math.floor(num / 64)),
+                       octchar(math.floor(num / 8) % 8),
+                       octchar(num % 8));
+end
+
 -- const(f, label) -> UPB_LABEL_REPEATED, where f:label() == upb.LABEL_REPEATED
 function const(obj, name, base)
   local val = obj[name]
@@ -218,7 +232,13 @@ function Dumper:tabkey(key)
   if type(key) == "nil" then
     return "UPB_TABKEY_NONE"
   elseif type(key) == "string" then
-    return string.format('UPB_TABKEY_STR("%s")', key)
+    local len = #key
+    local len1 = c_escape(len % 256)
+    local len2 = c_escape(math.floor(len / 256) % 256)
+    local len3 = c_escape(math.floor(len / (256 * 256)) % 256)
+    local len4 = c_escape(math.floor(len / (256 * 256 * 256)) % 256)
+    return string.format('UPB_TABKEY_STR("%s", "%s", "%s", "%s", "%s")',
+                         len1, len2, len3, len4, key)
   else
     return string.format("UPB_TABKEY_NUM(%d)", key)
   end

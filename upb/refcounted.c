@@ -726,6 +726,18 @@ static void freeobj(upb_refcounted *o) {
 bool upb_refcounted_init(upb_refcounted *r,
                          const struct upb_refcounted_vtbl *vtbl,
                          const void *owner) {
+#ifndef NDEBUG
+  // Endianness check.  This is unrelated to upb_refcounted, it's just a
+  // convenient place to put the check that we can be assured will run for
+  // basically every program using upb.
+  const int x = 1;
+#ifdef UPB_BIG_ENDIAN
+  assert(*(char*)&x != 1);
+#else
+  assert(*(char*)&x == 1);
+#endif
+#endif
+
   r->next = r;
   r->vtbl = vtbl;
   r->individual_count = 0;
