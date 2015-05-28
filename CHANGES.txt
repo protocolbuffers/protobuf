@@ -1,8 +1,9 @@
 2015-05-25 version 3.0.0-alpha-3 (Objective-C/C#):
   General
   * Introduced two new language implementations (Objective-C, C#) to proto3.
-  * Disallowed "optional" keyword in proto3 syntax.
-  * Removed groups fields in proto3 syntax.
+  * Explicit "optional" keyword are disallowed in proto3 syntax, as fields are
+    optional by default.
+  * Group fields are no longer supported in proto3 syntax.
   * Changed repeated primitive fields to use packed serialization by default in
     proto3 (implemented for C++, Java, Python in this release).  The user can
     still disable packed serialization by setting packed to false for now.
