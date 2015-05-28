@@ -50,10 +50,15 @@ Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter)
 }
 
 Printer::~Printer() {
+  Shrink();
+}
+
+void Printer::Shrink() {
   // Only BackUp() if we have called Next() at least once and never failed.
   if (buffer_size_ > 0 && !failed_) {
     output_->BackUp(buffer_size_);
   }
+  buffer_size_ = 0;
 }
 
 void Printer::Print(const map<string, string>& variables, const char* text) {
