@@ -148,6 +148,9 @@ class LIBPROTOBUF_EXPORT Printer {
   // error.)
   bool failed() const { return failed_; }
 
+  // Back up the underlying ZeroCopyOutputStream to its minimal possible size.
+  void Shrink();
+
  private:
   const char variable_delimiter_;
 
