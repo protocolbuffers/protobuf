@@ -1,8 +1,8 @@
 
 # Unleaded - small, fast parsers for the 21st century
 
-[![Build Status](https://travis-ci.org/haberman/upb.svg?branch=master)](https://travis-ci.org/haberman/upb)
-[![Coverage Status](https://img.shields.io/coveralls/haberman/upb.svg)](https://coveralls.io/r/haberman/upb?branch=master)
+[![Build Status](https://travis-ci.org/google/upb.svg?branch=master)](https://travis-ci.org/google/upb)
+[![Coverage Status](https://img.shields.io/coveralls/google/upb.svg)](https://coveralls.io/r/google/upb?branch=master)
 
 Unleaded is a library of fast parsers and serializers.  These
 parsers/serializers are written in C and use every available
@@ -77,7 +77,7 @@ this.
 
 For a more detailed description of the scheme we use to
 provide both C and C++ APIs, see:
-[CAndCPlusPlusAPI](https://github.com/haberman/upb/wiki/CAndCPlusPlusAPI).
+[CAndCPlusPlusAPI](https://github.com/google/upb/wiki/CAndCPlusPlusAPI).
 
 All of the code that is under `upb/` but *not* under
 `upb/bindings/` forms the namespace of upb's cross-language
