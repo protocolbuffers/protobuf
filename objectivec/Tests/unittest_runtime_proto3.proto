@@ -76,7 +76,6 @@ message Message3 {
   // No 'group' in proto3.
   repeated Message3 repeated_message  = 48;
   repeated     Enum repeated_enum     = 49;
-  repeated     Enum repeated_packed_enum = 50 [packed=true];
 
   oneof o {
        int32 oneof_int32    = 51;

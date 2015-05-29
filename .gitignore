@@ -87,6 +87,19 @@ vsprojects/Release
 
 # Directories created by opening the Objective C Xcode projects.
 objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcuserdata/
+objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_OSX.xccheckout
 objectivec/ProtocolBuffers_OSX.xcodeproj/xcuserdata/
 objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcuserdata/
+objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_iOS.xccheckout
 objectivec/ProtocolBuffers_iOS.xcodeproj/xcuserdata/
+# OS X's Finder creates these for state about opened windows/etc.
+**/.DS_Store
+
+# Comformance test output
+conformance/.libs/
+conformance/com/
+conformance/conformance-cpp
+conformance/conformance-test-runner
+conformance/conformance.pb.cc
+conformance/conformance.pb.h
+conformance/protoc_middleman

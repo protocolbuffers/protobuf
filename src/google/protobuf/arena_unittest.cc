@@ -30,8 +30,6 @@
 
 #include <google/protobuf/arena.h>
 
-#include <stdint.h>
-
 #include <algorithm>
 #include <cstring>
 #include <memory>
@@ -1232,8 +1230,11 @@ TEST(ArenaTest, ArenaHooksSanity) {
     EXPECT_EQ(1, ArenaHooksTestUtil::num_init);
     EXPECT_EQ(0, ArenaHooksTestUtil::num_allocations);
     ::google::protobuf::Arena::Create<uint64>(&arena);
-    EXPECT_EQ(1, ArenaHooksTestUtil::num_allocations);
-
+    if (::google::protobuf::internal::has_trivial_destructor<uint64>::value) {
+      EXPECT_EQ(1, ArenaHooksTestUtil::num_allocations);
+    } else {
+      EXPECT_EQ(2, ArenaHooksTestUtil::num_allocations);
+    }
     arena.Reset();
     arena.Reset();
     EXPECT_EQ(2, ArenaHooksTestUtil::num_reset);

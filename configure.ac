@@ -12,7 +12,7 @@ AC_PREREQ(2.59)
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[3.0.0-alpha-3-pre],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[3.0.0-alpha-3],[protobuf@googlegroups.com],[protobuf])
 
 AM_MAINTAINER_MODE([enable])
 
@@ -23,7 +23,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_ARG_VAR(DIST_LANG, [language to include in the distribution package (i.e., make dist)])
 case "$DIST_LANG" in
   "") DIST_LANG=all ;;
-  all | cpp | java | python | javanano | objectivec | ruby) ;;
+  all | cpp | csharp | java | python | javanano | objectivec | ruby) ;;
   *) AC_MSG_FAILURE([unknown language: $DIST_LANG]) ;;
 esac
 AC_SUBST(DIST_LANG)

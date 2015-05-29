@@ -111,6 +111,23 @@ GPBEnumDescriptor *GPBFieldOptions_CType_EnumDescriptor(void);
 
 BOOL GPBFieldOptions_CType_IsValidValue(int32_t value);
 
+#pragma mark - Enum GPBFieldOptions_JSType
+
+typedef GPB_ENUM(GPBFieldOptions_JSType) {
+  // Use the default type.
+  GPBFieldOptions_JSType_JsNormal = 0,
+
+  // Use JavaScript strings.
+  GPBFieldOptions_JSType_JsString = 1,
+
+  // Use JavaScript numbers.
+  GPBFieldOptions_JSType_JsNumber = 2,
+};
+
+GPBEnumDescriptor *GPBFieldOptions_JSType_EnumDescriptor(void);
+
+BOOL GPBFieldOptions_JSType_IsValidValue(int32_t value);
+
 
 #pragma mark - GPBDescriptorRoot
 
@@ -218,6 +235,8 @@ typedef GPB_ENUM(GPBDescriptorProto_FieldNumber) {
   GPBDescriptorProto_FieldNumber_ExtensionArray = 6,
   GPBDescriptorProto_FieldNumber_Options = 7,
   GPBDescriptorProto_FieldNumber_OneofDeclArray = 8,
+  GPBDescriptorProto_FieldNumber_ReservedRangeArray = 9,
+  GPBDescriptorProto_FieldNumber_ReservedNameArray = 10,
 };
 
 // Describes a message type.
@@ -247,6 +266,14 @@ typedef GPB_ENUM(GPBDescriptorProto_FieldNumber) {
 @property(nonatomic, readwrite) BOOL hasOptions;
 @property(nonatomic, readwrite, strong) GPBMessageOptions *options;
 
+// |reservedRangeArray| contains |GPBDescriptorProto_ReservedRange|
+@property(nonatomic, readwrite, strong) NSMutableArray *reservedRangeArray;
+
+// Reserved field names, which may not be used by fields in the same message.
+// A given name may only be reserved once.
+// |reservedNameArray| contains |NSString|
+@property(nonatomic, readwrite, strong) NSMutableArray *reservedNameArray;
+
 @end
 
 #pragma mark - GPBDescriptorProto_ExtensionRange
@@ -261,6 +288,28 @@ typedef GPB_ENUM(GPBDescriptorProto_ExtensionRange_FieldNumber) {
 @property(nonatomic, readwrite) BOOL hasStart;
 @property(nonatomic, readwrite) int32_t start;
 
+@property(nonatomic, readwrite) BOOL hasEnd;
+@property(nonatomic, readwrite) int32_t end;
+
+@end
+
+#pragma mark - GPBDescriptorProto_ReservedRange
+
+typedef GPB_ENUM(GPBDescriptorProto_ReservedRange_FieldNumber) {
+  GPBDescriptorProto_ReservedRange_FieldNumber_Start = 1,
+  GPBDescriptorProto_ReservedRange_FieldNumber_End = 2,
+};
+
+// Range of reserved tag numbers. Reserved tag numbers may not be used by
+// fields or extension ranges in the same message. Reserved ranges may
+// not overlap.
+@interface GPBDescriptorProto_ReservedRange : GPBMessage
+
+// Inclusive.
+@property(nonatomic, readwrite) BOOL hasStart;
+@property(nonatomic, readwrite) int32_t start;
+
+// Exclusive.
 @property(nonatomic, readwrite) BOOL hasEnd;
 @property(nonatomic, readwrite) int32_t end;
 
@@ -654,6 +703,7 @@ typedef GPB_ENUM(GPBFieldOptions_FieldNumber) {
   GPBFieldOptions_FieldNumber_Packed = 2,
   GPBFieldOptions_FieldNumber_Deprecated = 3,
   GPBFieldOptions_FieldNumber_Lazy = 5,
+  GPBFieldOptions_FieldNumber_Jstype = 6,
   GPBFieldOptions_FieldNumber_Weak = 10,
   GPBFieldOptions_FieldNumber_UninterpretedOptionArray = 999,
 };
@@ -670,9 +720,22 @@ typedef GPB_ENUM(GPBFieldOptions_FieldNumber) {
 // The packed option can be enabled for repeated primitive fields to enable
 // a more efficient representation on the wire. Rather than repeatedly
 // writing the tag and type for each element, the entire array is encoded as
-// a single length-delimited blob.
+// a single length-delimited blob. In proto3, only explicit setting it to
+// false will avoid using packed encoding.
 @property(nonatomic, readwrite) BOOL hasPacked;
 @property(nonatomic, readwrite) BOOL packed;
+
+// The jstype option determines the JavaScript type used for values of the
+// field.  The option is permitted only for 64 bit integral and fixed types
+// (int64, uint64, sint64, fixed64, sfixed64).  By default these types are
+// represented as JavaScript strings.  This avoids loss of precision that can
+// happen when a large value is converted to a floating point JavaScript
+// numbers.  Specifying JS_NUMBER for the jstype causes the generated
+// JavaScript code to use the JavaScript "number" type instead of strings.
+// This option is an enum to permit additional types to be added,
+// e.g. goog.math.Integer.
+@property(nonatomic, readwrite) BOOL hasJstype;
+@property(nonatomic, readwrite) GPBFieldOptions_JSType jstype;
 
 // Should this field be parsed lazily?  Lazy applies only to message-type
 // fields.  It means that when the outer message is initially parsed, the

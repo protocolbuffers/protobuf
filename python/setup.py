@@ -58,10 +58,13 @@ def GetVersion():
     return __version__
 
 
-def generate_proto(source):
+def generate_proto(source, require = True):
   """Invokes the Protocol Compiler to generate a _pb2.py from the given
   .proto file.  Does nothing if the output already exists and is newer than
   the input."""
+
+  if not require and not os.path.exists(source):
+    return
 
   output = source.replace(".proto", "_pb2.py").replace("../src/", "")
 
@@ -87,30 +90,26 @@ def generate_proto(source):
 
 
 def GenerateUnittestProtos():
-  # Unittest protos are only needed for development.
-  if not os.path.exists("../.git"):
-    return
-
-  generate_proto("../src/google/protobuf/map_unittest.proto")
-  generate_proto("../src/google/protobuf/unittest.proto")
-  generate_proto("../src/google/protobuf/unittest_custom_options.proto")
-  generate_proto("../src/google/protobuf/unittest_import.proto")
-  generate_proto("../src/google/protobuf/unittest_import_public.proto")
-  generate_proto("../src/google/protobuf/unittest_mset.proto")
-  generate_proto("../src/google/protobuf/unittest_no_generic_services.proto")
-  generate_proto("../src/google/protobuf/unittest_proto3_arena.proto")
-  generate_proto("google/protobuf/internal/descriptor_pool_test1.proto")
-  generate_proto("google/protobuf/internal/descriptor_pool_test2.proto")
-  generate_proto("google/protobuf/internal/factory_test1.proto")
-  generate_proto("google/protobuf/internal/factory_test2.proto")
-  generate_proto("google/protobuf/internal/import_test_package/inner.proto")
-  generate_proto("google/protobuf/internal/import_test_package/outer.proto")
-  generate_proto("google/protobuf/internal/missing_enum_values.proto")
-  generate_proto("google/protobuf/internal/more_extensions.proto")
-  generate_proto("google/protobuf/internal/more_extensions_dynamic.proto")
-  generate_proto("google/protobuf/internal/more_messages.proto")
-  generate_proto("google/protobuf/internal/test_bad_identifiers.proto")
-  generate_proto("google/protobuf/pyext/python.proto")
+  generate_proto("../src/google/protobuf/map_unittest.proto", False)
+  generate_proto("../src/google/protobuf/unittest.proto", False)
+  generate_proto("../src/google/protobuf/unittest_custom_options.proto", False)
+  generate_proto("../src/google/protobuf/unittest_import.proto", False)
+  generate_proto("../src/google/protobuf/unittest_import_public.proto", False)
+  generate_proto("../src/google/protobuf/unittest_mset.proto", False)
+  generate_proto("../src/google/protobuf/unittest_no_generic_services.proto", False)
+  generate_proto("../src/google/protobuf/unittest_proto3_arena.proto", False)
+  generate_proto("google/protobuf/internal/descriptor_pool_test1.proto", False)
+  generate_proto("google/protobuf/internal/descriptor_pool_test2.proto", False)
+  generate_proto("google/protobuf/internal/factory_test1.proto", False)
+  generate_proto("google/protobuf/internal/factory_test2.proto", False)
+  generate_proto("google/protobuf/internal/import_test_package/inner.proto", False)
+  generate_proto("google/protobuf/internal/import_test_package/outer.proto", False)
+  generate_proto("google/protobuf/internal/missing_enum_values.proto", False)
+  generate_proto("google/protobuf/internal/more_extensions.proto", False)
+  generate_proto("google/protobuf/internal/more_extensions_dynamic.proto", False)
+  generate_proto("google/protobuf/internal/more_messages.proto", False)
+  generate_proto("google/protobuf/internal/test_bad_identifiers.proto", False)
+  generate_proto("google/protobuf/pyext/python.proto", False)
 
 
 class clean(_clean):

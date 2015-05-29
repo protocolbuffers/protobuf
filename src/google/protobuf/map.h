@@ -33,6 +33,7 @@
 
 #include <iterator>
 #include <google/protobuf/stubs/hash.h>
+#include <limits>  // To support Visual Studio 2008
 
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_enum_util.h>
@@ -167,11 +168,23 @@ class Map {
       }
     }
 
+#if __cplusplus >= 201103L && !defined(GOOGLE_PROTOBUF_OS_APPLE)
+    template<class NodeType, class... Args>
+    void construct(NodeType* p, Args&&... args) {
+      new (p) NodeType(std::forward<Args>(args)...);
+    }
+
+    template<class NodeType>
+    void destroy(NodeType* p) {
+      if (arena_ == NULL) p->~NodeType();
+    }
+#else
     void construct(pointer p, const_reference t) { new (p) value_type(t); }
 
     void destroy(pointer p) {
       if (arena_ == NULL) p->~value_type();
     }
+#endif
 
     template <typename X>
     struct rebind {
@@ -188,6 +201,11 @@ class Map {
       return arena_ != other.arena_;
     }
 
+	// To support Visual Studio 2008
+	size_type max_size() const {
+		return std::numeric_limits<size_type>::max();
+	}
+
    private:
     Arena* arena_;
 
@@ -199,7 +217,7 @@ class Map {
   typedef MapAllocator<std::pair<const Key, MapPair<Key, T>*> > Allocator;
 
   // Iterators
-  class LIBPROTOBUF_EXPORT const_iterator
+  class const_iterator
       : public std::iterator<std::forward_iterator_tag, value_type, ptrdiff_t,
                              const value_type*, const value_type&> {
     typedef typename hash_map<Key, value_type*, hash<Key>, equal_to<Key>,
@@ -229,7 +247,7 @@ class Map {
     InnerIt it_;
   };
 
-  class LIBPROTOBUF_EXPORT iterator : public std::iterator<std::forward_iterator_tag, value_type> {
+  class iterator : public std::iterator<std::forward_iterator_tag, value_type> {
     typedef typename hash_map<Key, value_type*, hasher, equal_to<Key>,
                               Allocator>::iterator InnerIt;
 
@@ -428,7 +446,7 @@ class Map {
             internal::WireFormatLite::FieldType key_wire_type,
             internal::WireFormatLite::FieldType value_wire_type,
             int default_enum_value>
-  friend class LIBPROTOBUF_EXPORT internal::MapFieldLite;
+  friend class internal::MapFieldLite;
 };
 
 }  // namespace protobuf

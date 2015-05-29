@@ -146,9 +146,6 @@ static NSData *DataFromCStr(const char *str) {
   orig.repeatedEnumArray =
       [GPBEnumArray arrayWithValidationFunction:Message3_Enum_IsValidValue
                                        rawValue:Message3_Enum_Extra3];
-  orig.repeatedPackedEnumArray =
-      [GPBEnumArray arrayWithValidationFunction:Message3_Enum_IsValidValue
-                                       rawValue:Message3_Enum_Extra3];
   orig.oneofEnum = Message3_Enum_Extra3;
 
   Message2 *msg = [[Message2 alloc] initWithData:[orig data] error:NULL];
@@ -157,19 +154,16 @@ static NSData *DataFromCStr(const char *str) {
 
   XCTAssertFalse(msg.hasOptionalEnum);
   XCTAssertEqual(msg.repeatedEnumArray.count, 0U);
-  XCTAssertEqual(msg.repeatedPackedEnumArray.count, 0U);
   XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
 
   // All the values should be in unknown fields.
 
   GPBUnknownFieldSet *unknownFields = msg.unknownFields;
 
-  XCTAssertEqual([unknownFields countOfFields], 4U);
+  XCTAssertEqual([unknownFields countOfFields], 3U);
   XCTAssertTrue([unknownFields hasField:Message2_FieldNumber_OptionalEnum]);
   XCTAssertTrue(
       [unknownFields hasField:Message2_FieldNumber_RepeatedEnumArray]);
-  XCTAssertTrue(
-      [unknownFields hasField:Message2_FieldNumber_RepeatedPackedEnumArray]);
   XCTAssertTrue([unknownFields hasField:Message2_FieldNumber_OneofEnum]);
 
   GPBField *field = [unknownFields getField:Message2_FieldNumber_OptionalEnum];
@@ -177,15 +171,12 @@ static NSData *DataFromCStr(const char *str) {
   XCTAssertEqual([field.varintList valueAtIndex:0],
                  (uint64_t)Message3_Enum_Extra3);
 
+  // Repeated in proto3 default to packed, so this will be length delimited
+  // unknown field, and the value (Message3_Enum_Extra3) encodes into one byte.
   field = [unknownFields getField:Message2_FieldNumber_RepeatedEnumArray];
-  XCTAssertEqual(field.varintList.count, 1U);
-  XCTAssertEqual([field.varintList valueAtIndex:0],
-                 (uint64_t)Message3_Enum_Extra3);
-
-  field = [unknownFields getField:Message2_FieldNumber_RepeatedPackedEnumArray];
-  XCTAssertEqual(field.varintList.count, 1U);
-  XCTAssertEqual([field.varintList valueAtIndex:0],
-                 (uint64_t)Message3_Enum_Extra3);
+  XCTAssertEqual(field.lengthDelimitedList.count, 1U);
+  NSData *expected = DataFromCStr("\x1E");
+  XCTAssertEqualObjects([field.lengthDelimitedList objectAtIndex:0], expected);
 
   field = [unknownFields getField:Message2_FieldNumber_OneofEnum];
   XCTAssertEqual(field.varintList.count, 1U);

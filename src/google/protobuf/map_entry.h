@@ -97,7 +97,7 @@ template <typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType,
           int default_enum_value>
-class LIBPROTOBUF_EXPORT MapEntry : public MapEntryBase {
+class MapEntry : public MapEntryBase {
   // Handlers for key/value wire type. Provide utilities to parse/serialize
   // key/value.
   typedef MapWireFieldTypeHandler<kKeyFieldType> KeyWireHandler;
@@ -274,8 +274,8 @@ class LIBPROTOBUF_EXPORT MapEntry : public MapEntryBase {
   typedef void DestructorSkippable_;
   template <typename K, typename V, WireFormatLite::FieldType k_wire_type,
             WireFormatLite::FieldType, int default_enum>
-  friend class LIBPROTOBUF_EXPORT internal::MapField;
-  friend class LIBPROTOBUF_EXPORT internal::GeneratedMessageReflection;
+  friend class internal::MapField;
+  friend class internal::GeneratedMessageReflection;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntry);
 };
