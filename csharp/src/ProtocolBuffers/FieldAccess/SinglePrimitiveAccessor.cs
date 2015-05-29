@@ -47,6 +47,7 @@ namespace Google.ProtocolBuffers.FieldAccess
         private readonly Action<TBuilder, object> setValueDelegate;
         private readonly Func<TMessage, bool> hasDelegate;
         private readonly Func<TBuilder, IBuilder> clearDelegate;
+        private readonly Func<TMessage, object> caseDelegate;
 
         /// <summary>
         /// The CLR type of the field (int, the enum type, ByteString, the message etc).
@@ -57,7 +58,8 @@ namespace Google.ProtocolBuffers.FieldAccess
             get { return clrType; }
         }
 
-        internal SinglePrimitiveAccessor(FieldDescriptor fieldDescriptor, string name, bool supportFieldPresence)
+        internal SinglePrimitiveAccessor(
+            FieldDescriptor fieldDescriptor, string name, string containingOneofName, bool supportFieldPresence)
         {
             PropertyInfo messageProperty = typeof(TMessage).GetProperty(name, null, ReflectionUtil.EmptyTypes);
             PropertyInfo builderProperty = typeof(TBuilder).GetProperty(name, null, ReflectionUtil.EmptyTypes);
@@ -77,13 +79,27 @@ namespace Google.ProtocolBuffers.FieldAccess
                 hasDelegate = ReflectionUtil.CreateDelegateFunc<TMessage, bool>(hasProperty.GetGetMethod());
             } else
             {
-                hasDelegate = message => !GetValue(message).Equals(fieldDescriptor.DefaultValue);
+                if (fieldDescriptor.ContainingOneof != null)
+                {
+                    PropertyInfo caseProperty = typeof(TMessage).GetProperty(containingOneofName + "Case");
+                    caseDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(caseProperty.GetGetMethod());
+                    hasDelegate = message => OneofFieldNumber(message).Equals(fieldDescriptor.FieldNumber);
+                }
+                else
+                {
+                    hasDelegate = message => !GetValue(message).Equals(fieldDescriptor.DefaultValue);
+                }
             }
 
             clrType = messageProperty.PropertyType;
             clearDelegate = ReflectionUtil.CreateDelegateFunc<TBuilder, IBuilder>(clearMethod);
             getValueDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(messageProperty.GetGetMethod());
             setValueDelegate = ReflectionUtil.CreateDowncastDelegate<TBuilder>(builderProperty.GetSetMethod());
+        }
+
+        private int OneofFieldNumber(TMessage message)
+        {
+            return (int) caseDelegate(message);
         }
 
         public bool Has(TMessage message)

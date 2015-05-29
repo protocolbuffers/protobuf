@@ -47,6 +47,7 @@ namespace Google.ProtocolBuffers.Descriptors
         private EnumDescriptor enumType;
         private MessageDescriptor messageType;
         private MessageDescriptor containingType;
+        private OneofDescriptor containingOneof;
         private object defaultValue;
         private FieldType fieldType;
         private MappedType mappedType;
@@ -94,6 +95,16 @@ namespace Google.ProtocolBuffers.Descriptors
                                                             "FieldDescriptorProto.Extendee set for non-extension field.");
                 }
                 containingType = parent;
+                if (proto.HasOneofIndex)
+                {
+                    if (proto.OneofIndex < 0 || proto.OneofIndex >= parent.Proto.OneofDeclCount)
+                    {
+                        throw new DescriptorValidationException(this,
+                            "FieldDescriptorProto.oneof_index is out of range for type " + parent.Name);
+                    }
+                    containingOneof = parent.Oneofs[proto.OneofIndex];
+                    containingOneof.fieldCount ++;
+                }
                 extensionScope = null;
             }
 
@@ -253,7 +264,12 @@ namespace Google.ProtocolBuffers.Descriptors
         {
             get { return containingType; }
         }
-        
+
+        public OneofDescriptor ContainingOneof
+        {
+            get { return containingOneof; }
+        }
+
         /// <summary>
         /// For extensions defined nested within message types, gets
         /// the outer type. Not valid for non-extension fields.

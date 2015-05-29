@@ -346,19 +346,31 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
       if (descriptor->is_repeated()) {
         return new RepeatedMessageFieldGenerator(descriptor, fieldOrdinal);
       } else {
-        return new MessageFieldGenerator(descriptor, fieldOrdinal);
+	if (descriptor->containing_oneof()) {
+	  return new MessageOneofFieldGenerator(descriptor, fieldOrdinal);
+	} else {
+	  return new MessageFieldGenerator(descriptor, fieldOrdinal);
+	}
       }
     case FieldDescriptor::TYPE_ENUM:
       if (descriptor->is_repeated()) {
         return new RepeatedEnumFieldGenerator(descriptor, fieldOrdinal);
       } else {
-        return new EnumFieldGenerator(descriptor, fieldOrdinal);
+	if (descriptor->containing_oneof()) {
+	  return new EnumOneofFieldGenerator(descriptor, fieldOrdinal);
+	} else {
+	  return new EnumFieldGenerator(descriptor, fieldOrdinal);
+	}
       }
     default:
       if (descriptor->is_repeated()) {
         return new RepeatedPrimitiveFieldGenerator(descriptor, fieldOrdinal);
       } else {
-        return new PrimitiveFieldGenerator(descriptor, fieldOrdinal);
+	if (descriptor->containing_oneof()) {
+	  return new PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal);
+	} else {
+	  return new PrimitiveFieldGenerator(descriptor, fieldOrdinal);
+	}
       }
   }
 }

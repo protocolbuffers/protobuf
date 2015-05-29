@@ -54,7 +54,7 @@ namespace Google.ProtocolBuffers.TestProtos {
         internal__static_protobuf_unittest_TestOptimizedForSize__Descriptor = Descriptor.MessageTypes[0];
         internal__static_protobuf_unittest_TestOptimizedForSize__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize, global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Builder>(internal__static_protobuf_unittest_TestOptimizedForSize__Descriptor,
-                new string[] { "I", "Msg", "IntegerField", "StringField", });
+                new string[] { "I", "Msg", "IntegerField", "StringField", "Foo", });
         global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.TestExtension = pb::GeneratedSingleExtension<int>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Descriptor.Extensions[0]);
         global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.TestExtension2 = pb::GeneratedSingleExtension<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize>.CreateInstance(global::Google.ProtocolBuffers.TestProtos.TestOptimizedForSize.Descriptor.Extensions[1]);
         internal__static_protobuf_unittest_TestRequiredOptimizedForSize__Descriptor = Descriptor.MessageTypes[1];
@@ -107,6 +107,17 @@ namespace Google.ProtocolBuffers.TestProtos {
     public static pb::GeneratedExtensionBase<int> TestExtension;
     public const int TestExtension2FieldNumber = 1235;
     public static pb::GeneratedExtensionBase<global::Google.ProtocolBuffers.TestProtos.TestRequiredOptimizedForSize> TestExtension2;
+    private object foo_;
+    public enum FooOneofCase {
+      IntegerField = 2,
+      StringField = 3,
+      None = 0,
+    }
+    private FooOneofCase fooCase_ = FooOneofCase.None;
+    public FooOneofCase FooCase {
+      get { return fooCase_; }
+    }
+
     public const int IFieldNumber = 1;
     private bool hasI;
     private int i_;
@@ -128,23 +139,19 @@ namespace Google.ProtocolBuffers.TestProtos {
     }
 
     public const int IntegerFieldFieldNumber = 2;
-    private bool hasIntegerField;
-    private int integerField_;
     public bool HasIntegerField {
-      get { return hasIntegerField; }
+      get { return fooCase_ == FooOneofCase.IntegerField; }
     }
     public int IntegerField {
-      get { return integerField_; }
+      get { return fooCase_ == FooOneofCase.IntegerField ? (int) foo_ : 0; }
     }
 
     public const int StringFieldFieldNumber = 3;
-    private bool hasStringField;
-    private string stringField_ = "";
     public bool HasStringField {
-      get { return hasStringField; }
+      get { return fooCase_ == FooOneofCase.StringField; }
     }
     public string StringField {
-      get { return stringField_; }
+      get { return fooCase_ == FooOneofCase.StringField ? (string) foo_ : ""; }
     }
 
     public static TestOptimizedForSize ParseFrom(pb::ByteString data) {
@@ -315,43 +322,55 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasIntegerField {
-        get { return result.hasIntegerField; }
+        get { return result.fooCase_ == FooOneofCase.IntegerField; }
       }
       public int IntegerField {
-        get { return result.IntegerField; }
+        get { return result.fooCase_ == FooOneofCase.IntegerField ? (int) result.foo_ : 0; }
         set { SetIntegerField(value); }
       }
       public Builder SetIntegerField(int value) {
         PrepareBuilder();
-        result.hasIntegerField = true;
-        result.integerField_ = value;
+        result.foo_ = value;
+        result.fooCase_ = FooOneofCase.IntegerField;
         return this;
       }
       public Builder ClearIntegerField() {
         PrepareBuilder();
-        result.hasIntegerField = false;
-        result.integerField_ = 0;
+        if (result.fooCase_ == FooOneofCase.IntegerField) {
+          result.fooCase_ = FooOneofCase.None;
+        }
         return this;
       }
 
       public bool HasStringField {
-        get { return result.hasStringField; }
+        get { return result.fooCase_ == FooOneofCase.StringField; }
       }
       public string StringField {
-        get { return result.StringField; }
+        get { return result.fooCase_ == FooOneofCase.StringField ? (string) result.foo_ : ""; }
         set { SetStringField(value); }
       }
       public Builder SetStringField(string value) {
         pb::ThrowHelper.ThrowIfNull(value, "value");
         PrepareBuilder();
-        result.hasStringField = true;
-        result.stringField_ = value;
+        result.foo_ = value;
+        result.fooCase_ = FooOneofCase.StringField;
         return this;
       }
       public Builder ClearStringField() {
         PrepareBuilder();
-        result.hasStringField = false;
-        result.stringField_ = "";
+        if (result.fooCase_ == FooOneofCase.StringField) {
+          result.fooCase_ = FooOneofCase.None;
+        }
+        return this;
+      }
+
+      public FooOneofCase FooCase {
+        get { return result.fooCase_; }
+      }
+      public Builder ClearFoo() {
+        PrepareBuilder();
+        result.foo_ = null;
+        result.fooCase_ = FooOneofCase.None;
         return this;
       }
     }

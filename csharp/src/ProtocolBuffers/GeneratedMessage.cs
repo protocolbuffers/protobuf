@@ -142,6 +142,16 @@ namespace Google.ProtocolBuffers
             get { return Dictionaries.AsReadOnly(GetMutableFieldMap()); }
         }
 
+        public override bool HasOneof(OneofDescriptor oneof)
+        {
+            return InternalFieldAccessors.Oneof(oneof).Has(ThisMessage);
+        }
+
+        public override FieldDescriptor OneofFieldDescriptor(OneofDescriptor oneof)
+        {
+            return InternalFieldAccessors.Oneof(oneof).GetOneofFieldDescriptor(ThisMessage);
+        }
+
         public override bool HasField(FieldDescriptor field)
         {
             return InternalFieldAccessors[field].Has(ThisMessage);

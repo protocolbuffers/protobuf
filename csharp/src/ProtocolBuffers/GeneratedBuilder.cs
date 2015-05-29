@@ -105,6 +105,16 @@ namespace Google.ProtocolBuffers
             set { InternalFieldAccessors[field].SetRepeated(ThisBuilder, index, value); }
         }
 
+        public override bool HasOneof(OneofDescriptor oneof)
+        {
+            return MessageBeingBuilt.HasOneof(oneof);
+        }
+
+        public override FieldDescriptor OneofFieldDescriptor(OneofDescriptor oneof)
+        {
+            return MessageBeingBuilt.OneofFieldDescriptor(oneof);
+        }
+
         public override bool HasField(FieldDescriptor field)
         {
             return MessageBeingBuilt.HasField(field);
@@ -118,6 +128,12 @@ namespace Google.ProtocolBuffers
         public override TBuilder ClearField(FieldDescriptor field)
         {
             InternalFieldAccessors[field].Clear(ThisBuilder);
+            return ThisBuilder;
+        }
+
+        public override TBuilder ClearOneof(OneofDescriptor oneof)
+        {
+            InternalFieldAccessors.Oneof(oneof).Clear(ThisBuilder);
             return ThisBuilder;
         }
 

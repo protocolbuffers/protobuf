@@ -60,8 +60,26 @@ class MessageFieldGenerator : public FieldGeneratorBase {
   virtual void WriteEquals(Writer* writer);
   virtual void WriteToString(Writer* writer);
 
+ protected:
+  string has_property_check;
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageFieldGenerator);
+};
+
+class MessageOneofFieldGenerator : public MessageFieldGenerator {
+ public:
+  MessageOneofFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+  ~MessageOneofFieldGenerator();
+
+  virtual void GenerateMembers(Writer* writer);
+  virtual void GenerateBuilderMembers(Writer* writer);
+  virtual void WriteEquals(Writer* writer);
+  virtual void WriteToString(Writer* writer);
+  virtual void GenerateParsingCode(Writer* writer);
+
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageOneofFieldGenerator);
 };
 
 }  // namespace csharp

@@ -59,16 +59,25 @@ namespace Google.ProtocolBuffers
             CheckHasMethodRemoved(proto2Type, proto3Type, "OptionalBytes");
             CheckHasMethodRemoved(proto2Type, proto3Type, "OptionalNestedEnum");
             
-            proto2Type = typeof(Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder);
-            proto3Type = typeof(TestAllTypes.Builder);
-            CheckHasMethodRemoved(proto2Type, proto3Type, "OptionalInt32");
-            CheckHasMethodRemoved(proto2Type, proto3Type, "OptionalString");
-            CheckHasMethodRemoved(proto2Type, proto3Type, "OptionalBytes");
-            CheckHasMethodRemoved(proto2Type, proto3Type, "OptionalNestedEnum");
+            Type proto2BuilderType = typeof(Google.ProtocolBuffers.TestProtos.TestAllTypes.Builder);
+            Type proto3BuilderType = typeof(TestAllTypes.Builder);
+            CheckHasMethodRemoved(proto2BuilderType, proto3BuilderType, "OptionalInt32");
+            CheckHasMethodRemoved(proto2BuilderType, proto3BuilderType, "OptionalString");
+            CheckHasMethodRemoved(proto2BuilderType, proto3BuilderType, "OptionalBytes");
+            CheckHasMethodRemoved(proto2BuilderType, proto3BuilderType, "OptionalNestedEnum");
 
             // message fields still have the HasFoo method generated
             Assert.IsFalse(TestAllTypes.CreateBuilder().Build().HasOptionalNestedMessage);
             Assert.IsFalse(TestAllTypes.CreateBuilder().HasOptionalNestedMessage);
+
+            // oneof fields don't have the HasFoo method (even for message types)
+            CheckHasMethodRemoved(proto2Type, proto3Type, "OneofUint32");
+            CheckHasMethodRemoved(proto2Type, proto3Type, "OneofString");
+            CheckHasMethodRemoved(proto2Type, proto3Type, "OneofNestedMessage");
+
+            CheckHasMethodRemoved(proto2BuilderType, proto3BuilderType, "OneofUint32");
+            CheckHasMethodRemoved(proto2BuilderType, proto3BuilderType, "OneofString");
+            CheckHasMethodRemoved(proto2BuilderType, proto3BuilderType, "OneofNestedMessage");
         }
 
         [Test]
@@ -114,6 +123,7 @@ namespace Google.ProtocolBuffers
             FieldDescriptor optionalStringField = descriptor.FindFieldByName("optional_string");
             FieldDescriptor optionalBytesField = descriptor.FindFieldByName("optional_bytes");
             FieldDescriptor optionalNestedEnumField = descriptor.FindFieldByName("optional_nested_enum");
+            FieldDescriptor oneofUint32Field = descriptor.FindFieldByName("oneof_uint32");
 
             TestAllTypes message = TestAllTypes.CreateBuilder().Build();
             Assert.IsFalse(message.HasField(optionalInt32Field));
@@ -121,20 +131,23 @@ namespace Google.ProtocolBuffers
             Assert.IsFalse(message.HasField(optionalBytesField));
             Assert.IsFalse(message.HasField(optionalNestedEnumField));
 
-            // Set to default value is seen as not present
+            // Set to default value is seen as not present for optional fields.
+            // Set to default value is seen as present for oneof fields.
             message = TestAllTypes.CreateBuilder()
                 .SetOptionalInt32(0)
                 .SetOptionalString("")
                 .SetOptionalBytes(ByteString.Empty)
                 .SetOptionalNestedEnum(TestAllTypes.Types.NestedEnum.FOO)
+                .SetOneofUint32(0U)
                 .Build();
             Assert.IsFalse(message.HasField(optionalInt32Field));
             Assert.IsFalse(message.HasField(optionalStringField));
             Assert.IsFalse(message.HasField(optionalBytesField));
             Assert.IsFalse(message.HasField(optionalNestedEnumField));
-            Assert.AreEqual(0, message.AllFields.Count);
+            Assert.IsTrue(message.HasField(oneofUint32Field));
+            Assert.AreEqual(1, message.AllFields.Count);
             
-            // Set t0 non-defalut value is seen as present
+            // Set to non-defalut value is seen as present
             message = TestAllTypes.CreateBuilder()
                 .SetOptionalInt32(1)
                 .SetOptionalString("x")
@@ -169,6 +182,7 @@ namespace Google.ProtocolBuffers
             builder.SetOptionalInt32(1234);
             builder.SetOptionalString("hello");
             builder.SetOptionalNestedMessage(TestAllTypes.Types.NestedMessage.DefaultInstance);
+            builder.SetOneofUint32(0U);
             ByteString data = builder.Build().ToByteString();
 
             TestAllTypes message = TestAllTypes.ParseFrom(data);
@@ -178,6 +192,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(TestAllTypes.Types.NestedEnum.FOO, message.OptionalNestedEnum);
             Assert.IsTrue(message.HasOptionalNestedMessage);
             Assert.AreEqual(0, message.OptionalNestedMessage.Bb);
+            Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofUint32, message.OneofFieldCase);
         }
     }
 }

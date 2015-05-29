@@ -67,6 +67,10 @@ namespace Google.ProtocolBuffers
         /// </summary>
         IDictionary<FieldDescriptor, object> AllFields { get; }
 
+        bool HasOneof(OneofDescriptor oneof);
+
+        FieldDescriptor OneofFieldDescriptor(OneofDescriptor oneof);
+
         /// <summary>
         /// Returns true if the given field is set. This is exactly equivalent
         /// to calling the generated "Has" property corresponding to the field.

@@ -45,6 +45,7 @@ namespace Google.ProtocolBuffers.FieldAccess
         where TBuilder : IBuilder<TMessage, TBuilder>
     {
         private readonly IFieldAccessor<TMessage, TBuilder>[] accessors;
+        private readonly OneofAccessor<TMessage, TBuilder>[] oneofs;
 
         private readonly MessageDescriptor descriptor;
 
@@ -68,17 +69,28 @@ namespace Google.ProtocolBuffers.FieldAccess
         {
             this.descriptor = descriptor;
             accessors = new IFieldAccessor<TMessage, TBuilder>[descriptor.Fields.Count];
+            oneofs = new OneofAccessor<TMessage, TBuilder>[descriptor.Oneofs.Count];
             bool supportFieldPresence = descriptor.File.Syntax == FileDescriptor.ProtoSyntax.Proto2;
-            for (int i = 0; i < accessors.Length; i++)
+            int fieldSize = accessors.Length;
+            for (int i = 0; i < fieldSize; i++)
             {
-                accessors[i] = CreateAccessor(descriptor.Fields[i], propertyNames[i], supportFieldPresence);
+                FieldDescriptor field = descriptor.Fields[i];
+                string containingOneofName = (field.ContainingOneof != null) ? 
+                    propertyNames[fieldSize +field.ContainingOneof.Index] : null;
+                accessors[i] = CreateAccessor(
+                    field, propertyNames[i], containingOneofName, supportFieldPresence);
+            }
+            for (int i = 0; i < oneofs.Length; i++)
+            {
+                oneofs[i] = new OneofAccessor<TMessage, TBuilder>(descriptor, propertyNames[i + accessors.Length]);
             }
         }
 
         /// <summary>
         /// Creates an accessor for a single field
         /// </summary>   
-        private static IFieldAccessor<TMessage, TBuilder> CreateAccessor(FieldDescriptor field, string name, bool supportFieldPresence)
+        private static IFieldAccessor<TMessage, TBuilder> CreateAccessor(
+            FieldDescriptor field, string name, string containingOneofName, bool supportFieldPresence)
         {
             if (field.IsRepeated)
             {
@@ -97,11 +109,24 @@ namespace Google.ProtocolBuffers.FieldAccess
                 switch (field.MappedType)
                 {
                     case MappedType.Message:
-                        return new SingleMessageAccessor<TMessage, TBuilder>(name);
+                        {
+                            if (field.ContainingOneof != null)
+                            {
+                                return new SingleMessageAccessor<TMessage, TBuilder>(
+                                    field, name, containingOneofName, supportFieldPresence);
+                            }
+                            else
+                            {
+                                return new SingleMessageAccessor<TMessage, TBuilder>(
+                                    field, name, containingOneofName, true);
+                            }
+                        }
                     case MappedType.Enum:
-                        return new SingleEnumAccessor<TMessage, TBuilder>(field, name, supportFieldPresence);
+                        return new SingleEnumAccessor<TMessage, TBuilder>(
+                            field, name, containingOneofName, supportFieldPresence);
                     default:
-                        return new SinglePrimitiveAccessor<TMessage, TBuilder>(field, name, supportFieldPresence);
+                        return new SinglePrimitiveAccessor<TMessage, TBuilder>(
+                            field, name, containingOneofName, supportFieldPresence);
                 }
             }
         }
@@ -122,6 +147,15 @@ namespace Google.ProtocolBuffers.FieldAccess
                 }
                 return accessors[field.Index];
             }
+        }
+
+        internal OneofAccessor<TMessage, TBuilder> Oneof(OneofDescriptor oneof)
+        {
+            if (oneof.ContainingType != descriptor)
+            {
+                throw new ArgumentException("OneofDescriptor does not match message type");
+            }
+            return oneofs[oneof.Index];
         }
     }
 }

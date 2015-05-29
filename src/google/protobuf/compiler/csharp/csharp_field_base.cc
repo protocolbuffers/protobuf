@@ -81,6 +81,14 @@ void FieldGeneratorBase::AddPublicMemberAttributes(Writer* writer) {
   AddDeprecatedFlag(writer);
 }
 
+std::string FieldGeneratorBase::oneof_property_name() {
+  return UnderscoresToCamelCase(descriptor_->containing_oneof()->name(), true);
+}
+
+std::string FieldGeneratorBase::oneof_name() {
+  return UnderscoresToCamelCase(descriptor_->containing_oneof()->name(), false);
+}
+
 std::string FieldGeneratorBase::property_name() {
   return GetPropertyName(descriptor_);
 }

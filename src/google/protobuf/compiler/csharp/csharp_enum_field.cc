@@ -49,6 +49,11 @@ namespace csharp {
 EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor,
                                        int fieldOrdinal)
     : FieldGeneratorBase(descriptor, fieldOrdinal) {
+  if (SupportFieldPresence(descriptor_->file())) {
+    has_property_check = "has" + property_name();
+  } else {
+    has_property_check = property_name() + " != " + default_value();
+  }
 }
 
 EnumFieldGenerator::~EnumFieldGenerator() {
@@ -122,8 +127,7 @@ void EnumFieldGenerator::GenerateBuildingCode(Writer* writer) {
 
 void EnumFieldGenerator::GenerateParsingCode(Writer* writer) {
   writer->WriteLine("object unknown;");
-  writer->WriteLine("if(input.ReadEnum(ref result.$0$_, out unknown)) {",
-                    name());
+  writer->WriteLine("if(input.ReadEnum(ref result.$0$_, out unknown)) {", name());
   if (SupportFieldPresence(descriptor_->file())) {
     writer->WriteLine("  result.has$0$ = true;", property_name());
   }
@@ -141,11 +145,7 @@ void EnumFieldGenerator::GenerateParsingCode(Writer* writer) {
 }
 
 void EnumFieldGenerator::GenerateSerializationCode(Writer* writer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    writer->WriteLine("if (has$0$) {", property_name());
-  } else {
-    writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
-  }
+  writer->WriteLine("if ($0$) {", has_property_check);
   writer->WriteLine(
       "  output.WriteEnum($0$, field_names[$2$], (int) $1$, $1$);", number(),
       property_name(), field_ordinal());
@@ -153,11 +153,7 @@ void EnumFieldGenerator::GenerateSerializationCode(Writer* writer) {
 }
 
 void EnumFieldGenerator::GenerateSerializedSizeCode(Writer* writer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    writer->WriteLine("if (has$0$) {", property_name());
-  } else {
-    writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
-  }
+  writer->WriteLine("if ($0$) {", has_property_check);
   writer->WriteLine(
       "  size += pb::CodedOutputStream.ComputeEnumSize($0$, (int) $1$);",
       number(), property_name());
@@ -165,11 +161,7 @@ void EnumFieldGenerator::GenerateSerializedSizeCode(Writer* writer) {
 }
 
 void EnumFieldGenerator::WriteHash(Writer* writer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    writer->WriteLine("if (has$0$) {", property_name());
-  } else {
-    writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
-  }
+  writer->WriteLine("if ($0$) {", has_property_check);
   writer->WriteLine("  hash ^= $0$_.GetHashCode();", name());
   writer->WriteLine("}");
 }
@@ -184,13 +176,94 @@ void EnumFieldGenerator::WriteEquals(Writer* writer) {
   }
 }
 void EnumFieldGenerator::WriteToString(Writer* writer) {
+  writer->WriteLine("PrintField(\"$0$\", $1$, $2$_, writer);",
+                    descriptor_->name(), has_property_check, name());
+}
+
+EnumOneofFieldGenerator::EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
+						 int fieldOrdinal)
+  : EnumFieldGenerator(descriptor, fieldOrdinal) {
+  has_property_check = oneof_name() + "Case_ == " + oneof_property_name() +
+    "OneofCase." + property_name();
+}
+
+EnumOneofFieldGenerator::~EnumOneofFieldGenerator() {
+}
+
+void EnumOneofFieldGenerator::GenerateMembers(Writer* writer) {
+  AddDeprecatedFlag(writer);
   if (SupportFieldPresence(descriptor_->file())) {
-    writer->WriteLine("PrintField(\"$0$\", has$1$, $2$_, writer);",
-                      descriptor_->name(), property_name(), name());
-  } else {
-    writer->WriteLine("PrintField(\"$0$\", $1$_, writer);",
-                      descriptor_->name(), name());
+    writer->WriteLine("public bool Has$0$ {", property_name());
+    writer->WriteLine("  get { return $0$; }", has_property_check);
+    writer->WriteLine("}");
   }
+  AddPublicMemberAttributes(writer);
+  writer->WriteLine("public $0$ $1$ {", type_name(), property_name());
+  writer->WriteLine("  get { return $0$ ? ($1$) $2$_ : $3$; }",
+		    has_property_check, type_name(), oneof_name(), default_value());
+  writer->WriteLine("}");
+}
+
+void EnumOneofFieldGenerator::GenerateBuilderMembers(Writer* writer) {
+  AddDeprecatedFlag(writer);
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("public bool Has$0$ {", property_name());
+    writer->WriteLine(" get { return result.$0$; }", has_property_check);
+    writer->WriteLine("}");
+  }
+  AddPublicMemberAttributes(writer);
+  writer->WriteLine("public $0$ $1$ {", type_name(), property_name());
+  writer->WriteLine("  get { return result.$0$ ? ($1$) result.$2$_ : $3$; }",
+		    has_property_check, type_name(), oneof_name(), default_value());
+  writer->WriteLine("  set { Set$0$(value); }", property_name());
+  writer->WriteLine("}");
+  AddPublicMemberAttributes(writer);
+  writer->WriteLine("public Builder Set$0$($1$ value) {", property_name(),
+                    type_name());
+  writer->WriteLine("  PrepareBuilder();");
+  writer->WriteLine("  result.$0$_ = value;", oneof_name());
+  writer->WriteLine("  result.$0$Case_ = $1$OneofCase.$2$;",
+                    oneof_name(), oneof_property_name(), property_name());
+  writer->WriteLine("  return this;");
+  writer->WriteLine("}");
+  AddDeprecatedFlag(writer);
+  writer->WriteLine("public Builder Clear$0$() {", property_name());
+  writer->WriteLine("  PrepareBuilder();");
+  writer->WriteLine("  if (result.$0$) {", has_property_check);
+  writer->WriteLine("    result.$0$Case_ = $1$OneofCase.None;",
+                    oneof_name(), oneof_property_name());
+  writer->WriteLine("  }");
+  writer->WriteLine("  return this;");
+  writer->WriteLine("}");
+}
+
+void EnumOneofFieldGenerator::WriteEquals(Writer* writer) {
+  writer->WriteLine("if (!$0$.Equals(other.$0$)) return false;", property_name());
+}
+void EnumOneofFieldGenerator::WriteToString(Writer* writer) {
+  writer->WriteLine("PrintField(\"$0$\", $1$, $2$_, writer);",
+                    descriptor_->name(), has_property_check, oneof_name());
+}
+
+void EnumOneofFieldGenerator::GenerateParsingCode(Writer* writer) {
+  writer->WriteLine("object unknown;");
+  writer->WriteLine("$0$ enumValue = $1$;", type_name(), default_value());
+  writer->WriteLine("if(input.ReadEnum(ref enumValue, out unknown)) {",
+                    name());
+  writer->WriteLine("  result.$0$_ = enumValue;", oneof_name());
+  writer->WriteLine("  result.$0$Case_ = $1$OneofCase.$2$;",
+		    oneof_name(), oneof_property_name(), property_name());
+  writer->WriteLine("} else if(unknown is int) {");
+  if (!use_lite_runtime()) {
+    writer->WriteLine("  if (unknownFields == null) {");  // First unknown field - create builder now
+    writer->WriteLine(
+        "    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
+    writer->WriteLine("  }");
+    writer->WriteLine(
+        "  unknownFields.MergeVarintField($0$, (ulong)(int)unknown);",
+        number());
+  }
+  writer->WriteLine("}");
 }
 
 }  // namespace csharp
