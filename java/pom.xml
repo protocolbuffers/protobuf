@@ -10,7 +10,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
-  <version>3.0.0-alpha-3</version>
+  <version>3.0.0-alpha-4-pre</version>
   <packaging>bundle</packaging>
   <name>Protocol Buffer Java API</name>
   <description>
