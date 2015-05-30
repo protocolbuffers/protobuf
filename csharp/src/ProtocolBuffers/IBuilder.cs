@@ -103,6 +103,11 @@ namespace Google.ProtocolBuffers
         /// </summary>
         object this[FieldDescriptor field, int index] { get; set; }
 
+
+        bool HasOneof(OneofDescriptor oneof);
+
+        FieldDescriptor OneofFieldDescriptor(OneofDescriptor oneof);
+        
         /// <summary>
         /// <see cref="IMessage{TMessage, TBuilder}.HasField"/>
         /// </summary>
@@ -125,6 +130,7 @@ namespace Google.ProtocolBuffers
         IBuilder WeakAddRepeatedField(FieldDescriptor field, object value);
         new IBuilder WeakClear();
         IBuilder WeakClearField(FieldDescriptor field);
+        IBuilder WeakClearOneof(OneofDescriptor oneof);
         IBuilder WeakMergeFrom(IMessage message);
         new IBuilder WeakMergeFrom(ByteString data);
         new IBuilder WeakMergeFrom(ByteString data, ExtensionRegistry registry);
@@ -226,6 +232,14 @@ namespace Google.ProtocolBuffers
         /// <param name="field"></param>
         /// <returns></returns>
         TBuilder ClearField(FieldDescriptor field);
+
+        /// <summary>
+        /// Clears the oneof. This is exactly equivalent to calling the generated
+        /// Clear method corresponding to the oneof.
+        /// </summary>
+        /// <param name="oneof"></param>
+        /// <returns></returns>
+        TBuilder ClearOneof(OneofDescriptor oneof);
 
         /// <summary>
         /// Appends the given value as a new element for the specified repeated field.

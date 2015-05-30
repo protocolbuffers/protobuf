@@ -48,6 +48,7 @@ namespace Google.ProtocolBuffers
     {
         private readonly MessageDescriptor type;
         private readonly FieldSet fields;
+        private readonly FieldDescriptor[] oneofCase;
         private readonly UnknownFieldSet unknownFields;
         private int memoizedSize = -1;
 
@@ -57,10 +58,12 @@ namespace Google.ProtocolBuffers
         /// <param name="type"></param>
         /// <param name="fields"></param>
         /// <param name="unknownFields"></param>
-        private DynamicMessage(MessageDescriptor type, FieldSet fields, UnknownFieldSet unknownFields)
+        private DynamicMessage(MessageDescriptor type, FieldSet fields,
+            FieldDescriptor[] oneofCase, UnknownFieldSet unknownFields)
         {
             this.type = type;
             this.fields = fields;
+            this.oneofCase = oneofCase;
             this.unknownFields = unknownFields;
         }
 
@@ -71,7 +74,9 @@ namespace Google.ProtocolBuffers
         /// <returns></returns>
         public static DynamicMessage GetDefaultInstance(MessageDescriptor type)
         {
-            return new DynamicMessage(type, FieldSet.DefaultInstance, UnknownFieldSet.DefaultInstance);
+            int oneofDescriptorCount = type.Proto.OneofDeclCount;
+            FieldDescriptor[] oneofCase = new FieldDescriptor[oneofDescriptorCount];
+            return new DynamicMessage(type, FieldSet.DefaultInstance, oneofCase, UnknownFieldSet.DefaultInstance);
         }
 
         /// <summary>
@@ -201,6 +206,23 @@ namespace Google.ProtocolBuffers
             get { return fields.AllFieldDescriptors; }
         }
 
+        public override bool HasOneof(OneofDescriptor oneof)
+        {
+            VerifyContainingOneofType(oneof);
+            FieldDescriptor field = oneofCase[oneof.Index];
+            if (field == null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public override FieldDescriptor OneofFieldDescriptor(OneofDescriptor oneof)
+        {
+            VerifyContainingOneofType(oneof);
+            return oneofCase[oneof.Index];
+        }
+
         public override bool HasField(FieldDescriptor field)
         {
             VerifyContainingType(field);
@@ -306,12 +328,24 @@ namespace Google.ProtocolBuffers
         }
 
         /// <summary>
+        /// Verifies that the oneof is an oneof of this message.
+        /// </summary>
+        private void VerifyContainingOneofType(OneofDescriptor oneof)
+        {
+            if (oneof.ContainingType != type)
+            {
+                throw new ArgumentException("OneofDescritpor does not match message type");
+            }
+        }
+
+        /// <summary>
         /// Builder for dynamic messages. Instances are created with DynamicMessage.CreateBuilder.
         /// </summary>
         public sealed partial class Builder : AbstractBuilder<DynamicMessage, Builder>
         {
             private readonly MessageDescriptor type;
             private FieldSet fields;
+            private FieldDescriptor[] oneofCase;
             private UnknownFieldSet unknownFields;
 
             internal Builder(MessageDescriptor type)
@@ -319,6 +353,7 @@ namespace Google.ProtocolBuffers
                 this.type = type;
                 this.fields = FieldSet.CreateInstance();
                 this.unknownFields = UnknownFieldSet.DefaultInstance;
+                this.oneofCase = new FieldDescriptor[type.Proto.OneofDeclCount];
             }
 
             protected override Builder ThisBuilder
@@ -340,6 +375,23 @@ namespace Google.ProtocolBuffers
                 }
                 fields.MergeFrom(other);
                 MergeUnknownFields(other.UnknownFields);
+                for (int i = 0; i < oneofCase.Length; i++)
+                {
+                    if (other.HasOneof(type.Oneofs[i]))
+                    {
+                        if (oneofCase[i] == null)
+                        {
+                            oneofCase[i] = other.OneofFieldDescriptor(type.Oneofs[i]);
+                        } else
+                        {
+                            if (oneofCase[i] != other.OneofFieldDescriptor(type.Oneofs[i]))
+                            {
+                                fields.ClearField(oneofCase[i]);
+                                oneofCase[i] = other.OneofFieldDescriptor(type.Oneofs[i]);
+                            }
+                        }
+                    }
+                }
                 return this;
             }
 
@@ -353,7 +405,7 @@ namespace Google.ProtocolBuffers
             {
                 if (fields != null && !IsInitialized)
                 {
-                    throw new UninitializedMessageException(new DynamicMessage(type, fields, unknownFields));
+                    throw new UninitializedMessageException(new DynamicMessage(type, fields, oneofCase, unknownFields));
                 }
                 return BuildPartial();
             }
@@ -367,7 +419,7 @@ namespace Google.ProtocolBuffers
             {
                 if (!IsInitialized)
                 {
-                    throw new UninitializedMessageException(new DynamicMessage(type, fields, unknownFields)).
+                    throw new UninitializedMessageException(new DynamicMessage(type, fields, oneofCase, unknownFields)).
                         AsInvalidProtocolBufferException();
                 }
                 return BuildPartial();
@@ -380,7 +432,7 @@ namespace Google.ProtocolBuffers
                     throw new InvalidOperationException("Build() has already been called on this Builder.");
                 }
                 fields.MakeImmutable();
-                DynamicMessage result = new DynamicMessage(type, fields, unknownFields);
+                DynamicMessage result = new DynamicMessage(type, fields, oneofCase, unknownFields);
                 fields = null;
                 unknownFields = null;
                 return result;
@@ -390,6 +442,7 @@ namespace Google.ProtocolBuffers
             {
                 Builder result = new Builder(type);
                 result.fields.MergeFrom(fields);
+                result.oneofCase = oneofCase;
                 return result;
             }
 
@@ -431,6 +484,23 @@ namespace Google.ProtocolBuffers
                 return new Builder(field.MessageType);
             }
 
+            public override bool HasOneof(OneofDescriptor oneof)
+            {
+                VerifyContainingOneofType(oneof);
+                FieldDescriptor field = oneofCase[oneof.Index];
+                if (field == null)
+                {
+                    return false;
+                }
+                return true;
+            }
+
+            public override FieldDescriptor OneofFieldDescriptor(OneofDescriptor oneof)
+            {
+                VerifyContainingOneofType(oneof);
+                return oneofCase[oneof.Index];
+            }
+
             public override bool HasField(FieldDescriptor field)
             {
                 VerifyContainingType(field);
@@ -466,6 +536,17 @@ namespace Google.ProtocolBuffers
                 set
                 {
                     VerifyContainingType(field);
+                    OneofDescriptor oneof = field.ContainingOneof;
+                    if (oneof != null)
+                    {
+                        int index = oneof.Index;
+                        FieldDescriptor oldField = oneofCase[index];
+                        if ((oldField != null) && (oldField != field))
+                        {
+                            fields.ClearField(oldField);
+                        }
+                        oneofCase[index] = field;
+                    }
                     fields[field] = value;
                 }
             }
@@ -473,7 +554,27 @@ namespace Google.ProtocolBuffers
             public override Builder ClearField(FieldDescriptor field)
             {
                 VerifyContainingType(field);
+                OneofDescriptor oneof = field.ContainingOneof;
+                if (oneof != null)
+                {
+                    int index = oneof.Index;
+                    if (oneofCase[index] == field)
+                    {
+                        oneofCase[index] = null;
+                    }
+                }
                 fields.ClearField(field);
+                return this;
+            }
+
+            public override Builder ClearOneof(OneofDescriptor oneof)
+            {
+                VerifyContainingOneofType(oneof);
+                FieldDescriptor field = oneofCase[oneof.Index];
+                if (field != null)
+                {
+                    ClearField(field);
+                }
                 return this;
             }
 
@@ -505,6 +606,17 @@ namespace Google.ProtocolBuffers
                 if (field.ContainingType != type)
                 {
                     throw new ArgumentException("FieldDescriptor does not match message type.");
+                }
+            }
+
+            /// <summary>
+            /// Verifies that the oneof is an oneof of this message.
+            /// </summary>
+            private void VerifyContainingOneofType(OneofDescriptor oneof)
+            {
+                if (oneof.ContainingType != type)
+                {
+                    throw new ArgumentException("OneofDescriptor does not match message type");
                 }
             }
         }

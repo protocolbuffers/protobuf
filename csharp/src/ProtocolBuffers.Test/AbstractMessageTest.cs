@@ -374,6 +374,16 @@ namespace Google.ProtocolBuffers
                 return wrappedMessage.HasField(field);
             }
 
+            public override bool HasOneof(OneofDescriptor oneof)
+            {
+                return wrappedMessage.HasOneof(oneof);
+            }
+
+            public override FieldDescriptor OneofFieldDescriptor(OneofDescriptor oneof)
+            {
+                return wrappedMessage.OneofFieldDescriptor(oneof);
+            }
+
             public override object this[FieldDescriptor field]
             {
                 get { return wrappedMessage[field]; }
@@ -461,6 +471,16 @@ namespace Google.ProtocolBuffers
                     return wrappedBuilder.HasField(field);
                 }
 
+                public override bool HasOneof(OneofDescriptor oneof)
+                {
+                    return wrappedBuilder.HasOneof(oneof);
+                }
+
+                public override FieldDescriptor OneofFieldDescriptor(OneofDescriptor oneof)
+                {
+                    return wrappedBuilder.OneofFieldDescriptor(oneof);
+                }
+
                 public override UnknownFieldSet UnknownFields
                 {
                     get { return wrappedBuilder.UnknownFields; }
@@ -490,6 +510,12 @@ namespace Google.ProtocolBuffers
                 public override Builder ClearField(FieldDescriptor field)
                 {
                     wrappedBuilder.WeakClearField(field);
+                    return this;
+                }
+
+                public override Builder ClearOneof(OneofDescriptor oneof)
+                {
+                    wrappedBuilder.WeakClearOneof(oneof);
                     return this;
                 }
 

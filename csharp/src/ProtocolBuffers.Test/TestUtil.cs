@@ -182,6 +182,11 @@ namespace Google.ProtocolBuffers
             registry.Add(Unittest.PackedDoubleExtension);
             registry.Add(Unittest.PackedBoolExtension);
             registry.Add(Unittest.PackedEnumExtension);
+
+            registry.Add(Unittest.OneofUint32Extension);
+            registry.Add(Unittest.OneofNestedMessageExtension);
+            registry.Add(Unittest.OneofStringExtension);
+            registry.Add(Unittest.OneofBytesExtension);
         }
 
         /// <summary>
@@ -316,6 +321,13 @@ namespace Google.ProtocolBuffers
 
             message.SetDefaultStringPiece("424");
             message.SetDefaultCord("425");
+
+            message.SetOneofUint32(601);
+            message.SetOneofNestedMessage(
+                TestAllTypes.Types.NestedMessage.CreateBuilder().SetBb(602).Build());
+            message.SetOneofString("603");
+            message.SetOneofBytes(ToBytes("604"));
+
         }
 
         /// <summary>
@@ -517,6 +529,13 @@ namespace Google.ProtocolBuffers
 
             Assert.AreEqual("424", message.DefaultStringPiece);
             Assert.AreEqual("425", message.DefaultCord);
+
+            Assert.IsFalse(message.HasOneofUint32);
+            Assert.IsFalse(message.HasOneofNestedMessage);
+            Assert.IsFalse(message.HasOneofString);
+            Assert.IsTrue(message.HasOneofBytes);
+
+            Assert.AreEqual(ToBytes("604"), message.OneofBytes);
         }
 
         internal static void AssertClear(TestAllTypes message)
@@ -661,6 +680,11 @@ namespace Google.ProtocolBuffers
 
             Assert.AreEqual("abc", message.DefaultStringPiece);
             Assert.AreEqual("123", message.DefaultCord);
+
+            Assert.IsFalse(message.HasOneofUint32);
+            Assert.IsFalse(message.HasOneofNestedMessage);
+            Assert.IsFalse(message.HasOneofString);
+            Assert.IsFalse(message.HasOneofBytes);
         }
 
         /// <summary>
@@ -817,6 +841,12 @@ namespace Google.ProtocolBuffers
 
             message.SetExtension(Unittest.DefaultStringPieceExtension, "424");
             message.SetExtension(Unittest.DefaultCordExtension, "425");
+
+            message.SetExtension(Unittest.OneofUint32Extension, 601U);
+            message.SetExtension(Unittest.OneofNestedMessageExtension,
+                TestAllTypes.Types.NestedMessage.CreateBuilder().SetBb(602).Build());
+            message.SetExtension(Unittest.OneofStringExtension, "603");
+            message.SetExtension(Unittest.OneofBytesExtension, ToBytes("604"));
         }
 
         internal static void ModifyRepeatedFields(TestAllTypes.Builder message)
@@ -1165,6 +1195,9 @@ namespace Google.ProtocolBuffers
 
             Assert.AreEqual("424", message.GetExtension(Unittest.DefaultStringPieceExtension));
             Assert.AreEqual("425", message.GetExtension(Unittest.DefaultCordExtension));
+
+            Assert.IsTrue(message.HasExtension(Unittest.OneofBytesExtension));
+            Assert.AreEqual(ToBytes("604"), message.GetExtension(Unittest.OneofBytesExtension));
         }
 
         /// <summary>
@@ -1451,6 +1484,11 @@ namespace Google.ProtocolBuffers
 
             Assert.AreEqual("abc", message.GetExtension(Unittest.DefaultStringPieceExtension));
             Assert.AreEqual("123", message.GetExtension(Unittest.DefaultCordExtension));
+
+            Assert.IsFalse(message.HasExtension(Unittest.OneofUint32Extension));
+            Assert.IsFalse(message.HasExtension(Unittest.OneofNestedMessageExtension));
+            Assert.IsFalse(message.HasExtension(Unittest.OneofStringExtension));
+            Assert.IsFalse(message.HasExtension(Unittest.OneofBytesExtension));
         }
 
         /// <summary>
@@ -1712,6 +1750,75 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(712D, message.GetExtension(Unittest.UnpackedDoubleExtension, 1));
             Assert.AreEqual(false, message.GetExtension(Unittest.UnpackedBoolExtension, 1));
             Assert.AreEqual(ForeignEnum.FOREIGN_BAZ, message.GetExtension(Unittest.UnpackedEnumExtension, 1));
+        }
+
+        public static void AssertAtMostOneFieldSetOneof(TestOneof2 message)
+        {
+            int count = 0;
+            if (message.HasFooInt) { ++count; }
+            if (message.HasFooString) { ++count; }
+            if (message.HasFooCord) { ++count; }
+            if (message.HasFooStringPiece) { ++count; }
+            if (message.HasFooBytes) { ++count; }
+            if (message.HasFooEnum) { ++count; }
+            if (message.HasFooMessage) { ++count; }
+            if (message.HasFooGroup) { ++count; }
+            if (message.HasFooLazyMessage) { ++count; }
+            Assert.True(count <= 1);
+
+            count = 0;
+            if (message.HasBarInt) { ++count; }
+            if (message.HasBarString) { ++count; }
+            if (message.HasBarCord) { ++count; }
+            if (message.HasBarStringPiece) { ++count; }
+            if (message.HasBarBytes) { ++count; }
+            if (message.HasBarEnum) { ++count; }
+            Assert.True(count <= 1);
+
+            switch (message.FooCase)
+            {
+                case TestOneof2.FooOneofCase.FooInt:
+                    {
+                        Assert.True(message.HasFooInt);
+                        break;
+                    }
+                case TestOneof2.FooOneofCase.FooString:
+                    {
+                        Assert.True(message.HasFooString);
+                        break;
+                    }
+                case TestOneof2.FooOneofCase.FooCord:
+                    {
+                        Assert.True(message.HasFooCord);
+                        break;
+                    }
+                case TestOneof2.FooOneofCase.FooBytes:
+                    {
+                        Assert.True(message.HasFooBytes);
+                        break;
+                    }
+                case TestOneof2.FooOneofCase.FooEnum:
+                    {
+                        Assert.True(message.HasFooEnum);
+                        break;
+                    }
+                case TestOneof2.FooOneofCase.FooMessage:
+                    {
+                        Assert.True(message.HasFooMessage);
+                        break;
+                    }
+                case TestOneof2.FooOneofCase.FooGroup:
+                    {
+                        Assert.True(message.HasFooGroup);
+                        break;
+                    }
+                case TestOneof2.FooOneofCase.FooLazyMessage:
+                    {
+                        Assert.True(message.HasFooLazyMessage);
+                        break;
+                    }
+                case TestOneof2.FooOneofCase.None: { break; }
+            }
         }
 
         private static readonly string[] TestCultures = {"en-US", "en-GB", "fr-FR", "de-DE"};

@@ -16,7 +16,7 @@ Q80CAICbQ9ECAAAAAACAakDRAgAAAAAAgHNA2AIB2AIA4gIDMjE14gIDMzE16gIDMjE26gIDMzE2
 8wL4AtkB9ALzAvgCvQL0AoIDAwjaAYIDAwi+AooDAwjbAYoDAwi/ApIDAwjcAZIDAwjAApgDApgD
 A6ADBaADBqgDCKgDCbIDAzIyNLIDAzMyNLoDAzIyNboDAzMyNegDkQPwA5ID+AOTA4AElAOIBKoG
 kASsBp0ElwEAAKEEmAEAAAAAAACtBJkBAACxBJoBAAAAAAAAvQQAgM1DwQQAAAAAAMB5QMgEANIE
-AzQxNdoEAzQxNogFAZAFBJgFB6IFAzQyNKoFAzQyNQ==
+AzQxNdoEAzQxNogFAZAFBJgFB6IFAzQyNKoFAzQyNZIHAzYwNA==
 ");
             }
         }
@@ -158,6 +158,7 @@ default_foreign_enum: FOREIGN_FOO
 default_import_enum: IMPORT_FOO
 default_string_piece: ""424""
 default_cord: ""425""
+oneof_bytes: ""604""
 
 ";
             }
@@ -286,6 +287,12 @@ default_cord: ""425""
 [protobuf_unittest.default_import_enum_extension]: IMPORT_FOO
 [protobuf_unittest.default_string_piece_extension]: ""424""
 [protobuf_unittest.default_cord_extension]: ""425""
+[protobuf_unittest.oneof_uint32_extension]: 601
+[protobuf_unittest.oneof_nested_message_extension] {
+  bb: 602
+}
+[protobuf_unittest.oneof_string_extension]: ""603""
+[protobuf_unittest.oneof_bytes_extension]: ""604""
 ";
             }
         }

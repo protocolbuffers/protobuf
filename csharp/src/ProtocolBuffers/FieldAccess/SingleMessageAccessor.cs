@@ -31,6 +31,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Reflection;
+using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.FieldAccess
 {
@@ -48,7 +49,8 @@ namespace Google.ProtocolBuffers.FieldAccess
         /// </summary>
         private readonly Func<IBuilder> createBuilderDelegate;
 
-        internal SingleMessageAccessor(string name) : base(null, name, true)
+        internal SingleMessageAccessor(FieldDescriptor field, string name, string containingOneofName, bool supportFieldPresence)
+            : base(field, name, containingOneofName, supportFieldPresence)
         {
             MethodInfo createBuilderMethod = ClrType.GetMethod("CreateBuilder", ReflectionUtil.EmptyTypes);
             if (createBuilderMethod == null)

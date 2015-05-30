@@ -81,6 +81,7 @@
     <Compile Include="Descriptors\FieldMappingAttribute.cs" />
     <Compile Include="Descriptors\FieldType.cs" />
     <Compile Include="Descriptors\FileDescriptor.cs" />
+    <Compile Include="Descriptors\OneofDescriptor.cs" />
     <Compile Include="Descriptors\IDescriptor.cs" />
     <Compile Include="Descriptors\IndexedDescriptorBase.cs" />
     <Compile Include="Descriptors\MappedType.cs" />
@@ -106,6 +107,7 @@
     <Compile Include="FieldAccess\IFieldAccessor.cs" />
     <Compile Include="FieldAccess\FieldAccessorTable.cs" />
     <Compile Include="FieldAccess\RepeatedMessageAccessor.cs" />
+    <Compile Include="FieldAccess\OneofAccessor.cs" />
     <Compile Include="FieldSet.cs" />
     <Compile Include="FrameworkPortability.cs" />
     <Compile Include="GeneratedBuilder.cs" />

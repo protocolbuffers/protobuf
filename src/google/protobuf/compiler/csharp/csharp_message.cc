@@ -156,6 +156,10 @@ void MessageGenerator::GenerateStaticVariableInitializers(Writer* writer) {
     for (int i = 0; i < descriptor_->field_count(); i++) {
       writer->Write("\"$0$\", ", GetPropertyName(descriptor_->field(i)));
     }
+    for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+      writer->Write("\"$0$\", ",
+		    UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true));
+    }
     writer->WriteLine("});");
   }
 
@@ -260,6 +264,31 @@ void MessageGenerator::Generate(Writer* writer) {
     writer->WriteLine();
   }
 
+  // oneof
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    string name = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false);
+    string property_name = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true);
+    writer->WriteLine("private object $0$_;", name);
+    writer->WriteLine("public enum $0$OneofCase {", property_name);
+    writer->Indent();
+    for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
+      const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
+      writer->WriteLine("$0$ = $1$,",
+			GetPropertyName(field),
+			SimpleItoa(field->number()));
+    }
+    writer->WriteLine("None = 0,");
+    writer->Outdent();
+    writer->WriteLine("}");
+    writer->WriteLine("private $0$OneofCase $1$Case_ = $0$OneofCase.None;",
+		      property_name, name);
+    writer->WriteLine("public $0$OneofCase $0$Case {", property_name);
+    writer->WriteLine("  get { return $0$Case_; }", name);
+    writer->WriteLine("}");
+    writer->WriteLine();
+  }
+
+  // Fields
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
 
@@ -310,9 +339,19 @@ void MessageGenerator::GenerateLiteRuntimeMethods(Writer* writer) {
   writer->Indent();
   writer->WriteLine("int hash = GetType().GetHashCode();");
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    scoped_ptr<FieldGeneratorBase> generator(
-        CreateFieldGeneratorInternal(descriptor_->field(i)));
-    generator->WriteHash(writer);
+    const FieldDescriptor* field = descriptor_->field(i);
+    if (field->containing_oneof() == NULL) {
+      scoped_ptr<FieldGeneratorBase> generator(
+          CreateFieldGeneratorInternal(field));
+      generator->WriteHash(writer);
+    }
+  }
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    string name = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false);
+    string property_name = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true);
+    writer->WriteLine("if ($0$Case_ != $1$OneofCase.None) {", name, property_name);
+    writer->WriteLine("  hash ^= $0$_.GetHashCode();", name);
+    writer->WriteLine("}");
   }
   if (callbase) {
     writer->WriteLine("hash ^= base.GetHashCode();");
@@ -577,6 +616,23 @@ void MessageGenerator::GenerateBuilder(Writer* writer) {
     // No field comment :(
     generator->GenerateBuilderMembers(writer);
   }
+
+  // oneof
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    writer->WriteLine();
+    string name = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false);
+    string property_name = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true);
+    writer->WriteLine("public $0$OneofCase $0$Case {", property_name);
+    writer->WriteLine("  get { return result.$0$Case_; }", name);
+    writer->WriteLine("}");
+    writer->WriteLine("public Builder Clear$0$() {", property_name);
+    writer->WriteLine("  PrepareBuilder();");
+    writer->WriteLine("  result.$0$_ = null;", name);
+    writer->WriteLine("  result.$0$Case_ = $1$OneofCase.None;", name, property_name);
+    writer->WriteLine("  return this;");
+    writer->WriteLine("}");
+  }
+
   writer->Outdent();
   writer->WriteLine("}");
 }
@@ -675,10 +731,37 @@ void MessageGenerator::GenerateCommonBuilderMethods(Writer* writer) {
                       full_class_name());
     writer->WriteLine("PrepareBuilder();");
     for (int i = 0; i < descriptor_->field_count(); i++) {
-      scoped_ptr<FieldGeneratorBase> generator(
-          CreateFieldGeneratorInternal(descriptor_->field(i)));
-      generator->GenerateMergingCode(writer);
+      if (!descriptor_->field(i)->containing_oneof()) {
+	scoped_ptr<FieldGeneratorBase> generator(
+	  CreateFieldGeneratorInternal(descriptor_->field(i)));
+	generator->GenerateMergingCode(writer);
+      }
+     }
+
+    // Merge oneof fields
+    for (int i = 0; i < descriptor_->oneof_decl_count(); ++i) {
+      string name = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false);
+      string property_name = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true);
+      writer->WriteLine("switch (other.$0$Case) {", property_name);
+      writer->Indent();
+      for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
+        const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
+	writer->WriteLine("case $0$OneofCase.$1$: {",
+          property_name, GetPropertyName(field));
+	if (field->type() == FieldDescriptor::TYPE_GROUP ||
+	    field->type() == FieldDescriptor::TYPE_MESSAGE) {
+	  writer->WriteLine("  Merge$0$(other.$0$);", GetPropertyName(field));
+	} else {
+	  writer->WriteLine("  Set$0$(other.$0$);", GetPropertyName(field));
+	}
+        writer->WriteLine("  break;");
+	writer->WriteLine("}");
+      }
+      writer->WriteLine("case $0$OneofCase.None: { break; }", property_name);
+      writer->Outdent();
+      writer->WriteLine("}");
     }
+
     // if message type has extensions
     if (descriptor_->extension_range_count() > 0) {
       writer->WriteLine("  this.MergeExtensionFields(other);");

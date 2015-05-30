@@ -36,6 +36,7 @@
 
 using System;
 using System.Collections.Generic;
+using Google.ProtocolBuffers.Descriptors;
 using Google.ProtocolBuffers.TestProtos;
 using NUnit.Framework;
 
@@ -200,6 +201,21 @@ namespace Google.ProtocolBuffers
 
             DynamicMessage copy = DynamicMessage.CreateBuilder(message).Build();
             reflectionTester.AssertAllFieldsSetViaReflection(copy);
+
+            // Oneof
+            FieldDescriptor bytesField =
+                TestAllTypes.Descriptor.FindFieldByName("oneof_bytes");
+            FieldDescriptor uint32Field =
+                TestAllTypes.Descriptor.FindFieldByName("oneof_uint32");
+            Assert.True(copy.HasField(bytesField));
+            Assert.False(copy.HasField(uint32Field));
+
+            DynamicMessage.Builder dynamicBuilder = DynamicMessage.CreateBuilder(message);
+            dynamicBuilder[uint32Field] = 123U;
+            DynamicMessage copy2 = dynamicBuilder.Build();
+            Assert.IsFalse(copy2.HasField(bytesField));
+            Assert.IsTrue(copy2.HasField(uint32Field));
+            Assert.AreEqual(123U, copy2[uint32Field]);
         }
 
         [Test]
@@ -222,6 +238,39 @@ namespace Google.ProtocolBuffers
             IList<ulong> values = derived.UnknownFields.FieldDictionary[unknownFieldNum].VarintList;
             Assert.AreEqual(1, values.Count);
             Assert.AreEqual(unknownFieldVal, values[0]);
+        }
+
+        [Test]
+        public void DynamicOneofMessage()
+        {
+            DynamicMessage.Builder builder =
+                DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
+            OneofDescriptor oneof = TestAllTypes.Descriptor.Oneofs[0];
+            Assert.False(builder.HasOneof(oneof));
+            Assert.AreSame(null, builder.OneofFieldDescriptor(oneof));
+
+            reflectionTester.SetAllFieldsViaReflection(builder);
+            Assert.True(builder.HasOneof(oneof));
+            FieldDescriptor field = oneof.Field(3);
+            Assert.AreSame(field, builder.OneofFieldDescriptor(oneof));
+            Assert.AreEqual(TestUtil.ToBytes("604"), builder[field]);
+
+            DynamicMessage message = builder.BuildPartial();
+            Assert.IsTrue(message.HasOneof(oneof));
+            
+            DynamicMessage.Builder mergedBuilder =
+                DynamicMessage.CreateBuilder(TestAllTypes.Descriptor);
+            FieldDescriptor mergedField = oneof.Field(0);
+            mergedBuilder[mergedField] = 123U;
+            Assert.IsTrue(mergedBuilder.HasField(mergedField));
+            mergedBuilder.MergeFrom(message);
+            Assert.IsTrue(mergedBuilder.HasField(field));
+            Assert.IsFalse(mergedBuilder.HasField(mergedField));
+
+            mergedBuilder.ClearOneof(oneof);
+            Assert.AreSame(null, mergedBuilder.OneofFieldDescriptor(oneof));
+            message = mergedBuilder.Build();
+            Assert.AreSame(null, message.OneofFieldDescriptor(oneof));
         }
     }
 }

@@ -58,8 +58,11 @@ namespace Google.ProtocolBuffers
         public abstract int GetRepeatedFieldCount(FieldDescriptor field);
         public abstract object this[FieldDescriptor field, int index] { get; set; }
         public abstract bool HasField(FieldDescriptor field);
+        public abstract bool HasOneof(OneofDescriptor oneof);
+        public abstract FieldDescriptor OneofFieldDescriptor(OneofDescriptor oneof);
         public abstract IBuilder CreateBuilderForField(FieldDescriptor field);
         public abstract TBuilder ClearField(FieldDescriptor field);
+        public abstract TBuilder ClearOneof(OneofDescriptor oneof);
         public abstract TBuilder AddRepeatedField(FieldDescriptor field, object value);
 
         #endregion
@@ -246,6 +249,11 @@ namespace Google.ProtocolBuffers
         IBuilder IBuilder.WeakClearField(FieldDescriptor field)
         {
             return ClearField(field);
+        }
+
+        IBuilder IBuilder.WeakClearOneof(OneofDescriptor oneof)
+        {
+            return ClearOneof(oneof);
         }
 
         #endregion

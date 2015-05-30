@@ -50,6 +50,11 @@ namespace csharp {
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, int fieldOrdinal)
     : FieldGeneratorBase(descriptor, fieldOrdinal) {
+  if (SupportFieldPresence(descriptor_->file())) {
+    has_property_check = "has" + property_name();
+  } else {
+    has_property_check = property_name() + " != " + default_value();
+  }
 }
 
 PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {
@@ -133,11 +138,7 @@ void PrimitiveFieldGenerator::GenerateParsingCode(Writer* writer) {
 }
 
 void PrimitiveFieldGenerator::GenerateSerializationCode(Writer* writer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    writer->WriteLine("if (has$0$) {", property_name());
-  } else {
-    writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
-  }
+  writer->WriteLine("if ($0$) {", has_property_check);
   writer->WriteLine("  output.Write$0$($1$, field_names[$3$], $2$);",
                     capitalized_type_name(), number(), property_name(),
                     field_ordinal());
@@ -145,22 +146,14 @@ void PrimitiveFieldGenerator::GenerateSerializationCode(Writer* writer) {
 }
 
 void PrimitiveFieldGenerator::GenerateSerializedSizeCode(Writer* writer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    writer->WriteLine("if (has$0$) {", property_name());
-  } else {
-    writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
-  }
+  writer->WriteLine("if ($0$) {", has_property_check);
   writer->WriteLine("  size += pb::CodedOutputStream.Compute$0$Size($1$, $2$);",
                     capitalized_type_name(), number(), property_name());
   writer->WriteLine("}");
 }
 
 void PrimitiveFieldGenerator::WriteHash(Writer* writer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    writer->WriteLine("if (has$0$) {", property_name());
-  } else {
-    writer->WriteLine("if ($0$ != $1$) {", property_name(), default_value());
-  }
+  writer->WriteLine("if ($0$) {", has_property_check);
   writer->WriteLine("  hash ^= $0$_.GetHashCode();", name());
   writer->WriteLine("}");
 }
@@ -175,13 +168,84 @@ void PrimitiveFieldGenerator::WriteEquals(Writer* writer) {
   }
 }
 void PrimitiveFieldGenerator::WriteToString(Writer* writer) {
+  writer->WriteLine("PrintField(\"$0$\", $1$, $2$_, writer);",
+                    descriptor_->name(), has_property_check, name());
+}
+
+PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
+    const FieldDescriptor* descriptor, int fieldOrdinal)
+    : PrimitiveFieldGenerator(descriptor, fieldOrdinal) {
+  has_property_check = oneof_name() + "Case_ == " + oneof_property_name() +
+    "OneofCase." + property_name();
+}
+
+PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {
+}
+
+void PrimitiveOneofFieldGenerator::GenerateMembers(Writer* writer) {
+  AddDeprecatedFlag(writer);
   if (SupportFieldPresence(descriptor_->file())) {
-    writer->WriteLine("PrintField(\"$0$\", has$1$, $2$_, writer);",
-                      descriptor_->name(), property_name(), name());
-  } else {
-    writer->WriteLine("PrintField(\"$0$\", $1$_, writer);",
-                      descriptor_->name(), name());
+    writer->WriteLine("public bool Has$0$ {", property_name());
+    writer->WriteLine("  get { return $0$; }", has_property_check);
+    writer->WriteLine("}");
   }
+  AddPublicMemberAttributes(writer);
+  writer->WriteLine("public $0$ $1$ {", type_name(), property_name());
+  writer->WriteLine("  get { return $0$ ? ($1$) $2$_ : $3$; }",
+		    has_property_check, type_name(), oneof_name(), default_value());
+  writer->WriteLine("}");
+}
+
+void PrimitiveOneofFieldGenerator::GenerateBuilderMembers(Writer* writer) {
+  AddDeprecatedFlag(writer);
+  if (SupportFieldPresence(descriptor_->file())) {
+    writer->WriteLine("public bool Has$0$ {", property_name());
+    writer->WriteLine("  get { return result.$0$; }", has_property_check);
+    writer->WriteLine("}");
+  }
+  AddPublicMemberAttributes(writer);
+  writer->WriteLine("public $0$ $1$ {", type_name(), property_name());
+  writer->WriteLine("  get { return result.$0$ ? ($1$) result.$2$_ : $3$; }",
+		    has_property_check, type_name(), oneof_name(), default_value());
+  writer->WriteLine("  set { Set$0$(value); }", property_name());
+  writer->WriteLine("}");
+  AddPublicMemberAttributes(writer);
+  writer->WriteLine("public Builder Set$0$($1$ value) {", property_name(),
+                    type_name());
+  AddNullCheck(writer);
+  writer->WriteLine("  PrepareBuilder();");
+  writer->WriteLine("  result.$0$_ = value;", oneof_name());
+  writer->WriteLine("  result.$0$Case_ = $1$OneofCase.$2$;",
+                    oneof_name(), oneof_property_name(), property_name());
+  writer->WriteLine("  return this;");
+  writer->WriteLine("}");
+  AddDeprecatedFlag(writer);
+  writer->WriteLine("public Builder Clear$0$() {", property_name());
+  writer->WriteLine("  PrepareBuilder();");
+  writer->WriteLine("  if (result.$0$) {", has_property_check);
+  writer->WriteLine("    result.$0$Case_ = $1$OneofCase.None;",
+                    oneof_name(), oneof_property_name());
+  writer->WriteLine("  }");
+  writer->WriteLine("  return this;");
+  writer->WriteLine("}");
+}
+
+void PrimitiveOneofFieldGenerator::WriteEquals(Writer* writer) {
+  writer->WriteLine("if (!$0$.Equals(other.$0$)) return false;", property_name());
+}
+void PrimitiveOneofFieldGenerator::WriteToString(Writer* writer) {
+  writer->WriteLine("PrintField(\"$0$\", $1$, $2$_, writer);",
+                    descriptor_->name(), has_property_check, oneof_name());
+}
+
+void PrimitiveOneofFieldGenerator::GenerateParsingCode(Writer* writer) {
+  writer->WriteLine("$0$ value = $1$;", type_name(), default_value());
+  writer->WriteLine("if (input.Read$0$(ref value)) {",
+		    capitalized_type_name());
+  writer->WriteLine("  result.$0$_ = value;", oneof_name());
+  writer->WriteLine("  result.$0$Case_ = $1$OneofCase.$2$;",
+		    oneof_name(), oneof_property_name(), property_name());
+  writer->WriteLine("}");
 }
 
 }  // namespace csharp

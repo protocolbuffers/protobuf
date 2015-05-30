@@ -1,8 +1,6 @@
-// Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-// http://github.com/jskeet/dotnet-protobufs/
-// Original C++/Java/Python code:
-// http://code.google.com/p/protobuf/
+﻿// Protocol Buffers - Google's data interchange format
+// Copyright 2015 Google Inc.  All rights reserved.
+// Author: jieluo@google.com (Jie Luo)
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -29,47 +27,65 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+using System;
+using System.Reflection;
 using Google.ProtocolBuffers.Descriptors;
 
 namespace Google.ProtocolBuffers.FieldAccess
 {
     /// <summary>
-    /// Accessor for fields representing a non-repeated enum value.
+    /// Access for an oneof
     /// </summary>
-    internal sealed class SingleEnumAccessor<TMessage, TBuilder> : SinglePrimitiveAccessor<TMessage, TBuilder>
+    internal class OneofAccessor<TMessage, TBuilder>
         where TMessage : IMessage<TMessage, TBuilder>
         where TBuilder : IBuilder<TMessage, TBuilder>
     {
-        private readonly EnumDescriptor enumDescriptor;
+        private readonly Func<TMessage, object> caseDelegate;
+        private readonly Func<TBuilder, IBuilder> clearDelegate;
+        private MessageDescriptor descriptor;
 
-        internal SingleEnumAccessor(FieldDescriptor field, string name, string containingOneofName, bool supportFieldPresence)
-            : base(field, name, containingOneofName, supportFieldPresence)
+        internal OneofAccessor(MessageDescriptor descriptor, string name) 
         {
-            enumDescriptor = field.EnumType;
+            this.descriptor = descriptor;
+            MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name);
+            PropertyInfo caseProperty = typeof(TMessage).GetProperty(name + "Case");
+            if (clearMethod == null || caseProperty == null)
+            {
+                throw new ArgumentException("Not all required properties/methods available for oneof");
+            }
+            
+
+            clearDelegate = ReflectionUtil.CreateDelegateFunc<TBuilder, IBuilder>(clearMethod);
+            caseDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(caseProperty.GetGetMethod());
         }
 
         /// <summary>
-        /// Returns an EnumValueDescriptor representing the value in the builder.
-        /// Note that if an enum has multiple values for the same number, the descriptor
-        /// for the first value with that number will be returned.
+        /// Indicates whether the specified message has set any field in the oneof.
         /// </summary>
-        public override object GetValue(TMessage message)
+        public bool Has(TMessage message)
         {
-            // Note: This relies on the fact that the CLR allows unboxing from an enum to
-            // its underlying value
-            int rawValue = (int) base.GetValue(message);
-            return enumDescriptor.FindValueByNumber(rawValue);
+            return ((int) caseDelegate(message) != 0);
         }
 
         /// <summary>
-        /// Sets the value as an enum (via an int) in the builder,
-        /// from an EnumValueDescriptor parameter.
+        /// Clears the oneof in the specified builder.
         /// </summary>
-        public override void SetValue(TBuilder builder, object value)
+        public void Clear(TBuilder builder)
         {
-            ThrowHelper.ThrowIfNull(value, "value");
-            EnumValueDescriptor valueDescriptor = (EnumValueDescriptor) value;
-            base.SetValue(builder, valueDescriptor.Number);
+            clearDelegate(builder);
+        }
+
+        /// <summary>
+        /// Indicates which field in the oneof is set for specified message
+        /// </summary>
+        public virtual FieldDescriptor GetOneofFieldDescriptor(TMessage message)
+        {
+            int fieldNumber = (int) caseDelegate(message);
+            if (fieldNumber > 0)
+            {
+                return descriptor.FindFieldByNumber(fieldNumber);
+            }
+            return null;
         }
     }
 }

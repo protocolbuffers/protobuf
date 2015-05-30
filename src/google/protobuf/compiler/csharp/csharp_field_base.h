@@ -71,6 +71,8 @@ class FieldGeneratorBase : public SourceGeneratorBase {
 
   void AddPublicMemberAttributes(Writer* writer);
 
+  std::string oneof_property_name();
+  std::string oneof_name();
   std::string property_name();
   std::string name();
   std::string type_name();
