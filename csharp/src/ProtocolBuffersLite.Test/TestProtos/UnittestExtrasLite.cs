@@ -524,7 +524,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasEn {
-       get { return result.hasEn; }
+        get { return result.hasEn; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ExtraEnum En {
         get { return result.En; }
@@ -873,7 +873,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
 
           public bool HasType {
-           get { return result.hasType; }
+            get { return result.hasType; }
           }
           public global::Google.ProtocolBuffers.TestProtos.TestInteropPersonLite.Types.PhoneType Type {
             get { return result.Type; }

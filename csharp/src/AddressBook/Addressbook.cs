@@ -407,7 +407,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           }
 
           public bool HasType {
-           get { return result.hasType; }
+            get { return result.hasType; }
           }
           public global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType Type {
             get { return result.Type; }
