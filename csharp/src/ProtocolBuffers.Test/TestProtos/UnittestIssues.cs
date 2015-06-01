@@ -1062,7 +1062,7 @@ namespace UnitTest.Issues.TestProtos {
 
 
       public bool HasValue {
-       get { return result.hasValue; }
+        get { return result.hasValue; }
       }
       public global::UnitTest.Issues.TestProtos.NegativeEnum Value {
         get { return result.Value; }
@@ -1965,7 +1965,7 @@ namespace UnitTest.Issues.TestProtos {
 
       [global::System.ObsoleteAttribute()]
       public bool HasEnumValue {
-       get { return result.hasEnumValue; }
+        get { return result.hasEnumValue; }
       }
       [global::System.ObsoleteAttribute()]
       public global::UnitTest.Issues.TestProtos.DeprecatedEnum EnumValue {

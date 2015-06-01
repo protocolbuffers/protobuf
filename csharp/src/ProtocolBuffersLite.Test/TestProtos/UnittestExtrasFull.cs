@@ -326,7 +326,7 @@ namespace Google.ProtocolBuffers.TestProtos {
           }
 
           public bool HasType {
-           get { return result.hasType; }
+            get { return result.hasType; }
           }
           public global::Google.ProtocolBuffers.TestProtos.TestInteropPerson.Types.PhoneType Type {
             get { return result.Type; }

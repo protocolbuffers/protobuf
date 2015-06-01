@@ -34,7 +34,7 @@
 #include <string>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/csharp/csharp_field_base.h>
+#include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
 
 namespace google {
 namespace protobuf {
@@ -43,40 +43,27 @@ namespace csharp {
 
 class Writer;
 
-class EnumFieldGenerator : public FieldGeneratorBase {
+class EnumFieldGenerator : public PrimitiveFieldGenerator {
  public:
   EnumFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~EnumFieldGenerator();
 
-  virtual void GenerateMembers(Writer* writer);
-  virtual void GenerateBuilderMembers(Writer* writer);
-  virtual void GenerateMergingCode(Writer* writer);
-  virtual void GenerateBuildingCode(Writer* writer);
   virtual void GenerateParsingCode(Writer* writer);
   virtual void GenerateSerializationCode(Writer* writer);
   virtual void GenerateSerializedSizeCode(Writer* writer);
-
-  virtual void WriteHash(Writer* writer);
-  virtual void WriteEquals(Writer* writer);
-  virtual void WriteToString(Writer* writer);
-
- protected:
-  string has_property_check;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumFieldGenerator);
 };
 
-class EnumOneofFieldGenerator : public EnumFieldGenerator {
+class EnumOneofFieldGenerator : public PrimitiveOneofFieldGenerator {
  public:
   EnumOneofFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~EnumOneofFieldGenerator();
 
-  virtual void GenerateMembers(Writer* writer);
-  virtual void GenerateBuilderMembers(Writer* writer);
-  virtual void WriteEquals(Writer* writer);
-  virtual void WriteToString(Writer* writer);
   virtual void GenerateParsingCode(Writer* writer);
+  virtual void GenerateSerializationCode(Writer* writer);
+  virtual void GenerateSerializedSizeCode(Writer* writer);
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumOneofFieldGenerator);

@@ -5005,7 +5005,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasOptionalNestedEnum {
-       get { return result.hasOptionalNestedEnum; }
+        get { return result.hasOptionalNestedEnum; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum OptionalNestedEnum {
         get { return result.OptionalNestedEnum; }
@@ -5025,7 +5025,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasOptionalForeignEnum {
-       get { return result.hasOptionalForeignEnum; }
+        get { return result.hasOptionalForeignEnum; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite OptionalForeignEnum {
         get { return result.OptionalForeignEnum; }
@@ -5045,7 +5045,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasOptionalImportEnum {
-       get { return result.hasOptionalImportEnum; }
+        get { return result.hasOptionalImportEnum; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ImportEnumLite OptionalImportEnum {
         get { return result.OptionalImportEnum; }
@@ -6317,7 +6317,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasDefaultNestedEnum {
-       get { return result.hasDefaultNestedEnum; }
+        get { return result.hasDefaultNestedEnum; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedEnum DefaultNestedEnum {
         get { return result.DefaultNestedEnum; }
@@ -6337,7 +6337,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasDefaultForeignEnum {
-       get { return result.hasDefaultForeignEnum; }
+        get { return result.hasDefaultForeignEnum; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ForeignEnumLite DefaultForeignEnum {
         get { return result.DefaultForeignEnum; }
@@ -6357,7 +6357,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasDefaultImportEnum {
-       get { return result.hasDefaultImportEnum; }
+        get { return result.hasDefaultImportEnum; }
       }
       public global::Google.ProtocolBuffers.TestProtos.ImportEnumLite DefaultImportEnum {
         get { return result.DefaultImportEnum; }

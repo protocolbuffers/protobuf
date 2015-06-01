@@ -378,7 +378,7 @@ namespace Google.ProtocolBuffers.TestProtos {
 
 
       public bool HasValue {
-       get { return result.hasValue; }
+        get { return result.hasValue; }
       }
       public global::Google.ProtocolBuffers.TestProtos.DownRevision.Types.Enum Value {
         get { return result.Value; }
@@ -748,7 +748,7 @@ namespace Google.ProtocolBuffers.TestProtos {
 
 
       public bool HasValue {
-       get { return result.hasValue; }
+        get { return result.hasValue; }
       }
       public global::Google.ProtocolBuffers.TestProtos.UpRevision.Types.Enum Value {
         get { return result.Value; }
