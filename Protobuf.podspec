@@ -6,7 +6,7 @@ Pod::Spec.new do |s|
   s.license  = 'New BSD'
   s.authors  = { 'The Protocol Buffers contributors' => 'protobuf@googlegroups.com' }
 
-  s.source_files = 'objectivec/*.{h,m}', 'objectivec/google/protobuf/*.pbobjc.h', 'objectivec/google/protobuf/Descriptor.pbobjc.m'
+  s.source_files = 'objectivec/*.{h,m}', 'objectivec/google/protobuf/*.pbobjc.h', 'objectivec/google/protobuf/Any.pbobjc.m', 'objectivec/google/protobuf/Api.pbobjc.m', 'objectivec/google/protobuf/Descriptor.pbobjc.m', 'objectivec/google/protobuf/Empty.pbobjc.m', 'objectivec/google/protobuf/FieldMask.pbobjc.m', 'objectivec/google/protobuf/SourceContext.pbobjc.m', 'objectivec/google/protobuf/Struct.pbobjc.m' 'objectivec/google/protobuf/Type.pbobjc.m', 'objectivec/google/protobuf/Wrappers.pbobjc.m'
   # The following is a .m umbrella file, and would cause duplicate symbol
   # definitions:
   s.exclude_files = 'objectivec/GPBProtocolBuffers.m'
