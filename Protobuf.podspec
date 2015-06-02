@@ -1,3 +1,8 @@
+# This file describes to Cocoapods how to integrate the Objective-C runtime into a dependent
+# project.
+# Despite this file being specific to Objective-C, it needs to be on the root of the repository.
+# Otherwise, Cocoapods gives trouble like not picking up the license file correctly, or not letting
+# dependent projects use the :git notation to refer to the library.
 Pod::Spec.new do |s|
   s.name     = 'Protobuf'
   s.version  = '3.0.0'
