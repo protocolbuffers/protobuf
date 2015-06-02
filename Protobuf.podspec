@@ -13,12 +13,12 @@ Pod::Spec.new do |s|
                    'objectivec/google/protobuf/Empty.pbobjc.{h,m}', \
                    'objectivec/google/protobuf/FieldMask.pbobjc.{h,m}', \
                    'objectivec/google/protobuf/SourceContext.pbobjc.{h,m}', \
-                   'objectivec/google/protobuf/Struct.pbobjc.{h,m}', \
                    'objectivec/google/protobuf/Timestamp.pbobjc.h', \
                    'objectivec/google/protobuf/Wrappers.pbobjc.{h,m}'
   # The following would cause duplicate symbol definitions
   s.exclude_files = 'objectivec/GPBProtocolBuffers.m', \
                     'objectivec/google/protobuf/Api.pbobjc.{h,m}', \
+                    'objectivec/google/protobuf/Struct.pbobjc.{h,m}', \
                     'objectivec/google/protobuf/Type.pbobjc.{h,m}'
   # The .m's of the proto Well-Known-Types under google/protobuf are #imported
   # by GPBWellKnownTypes.m. So we can't compile them (duplicate symbols), but we
