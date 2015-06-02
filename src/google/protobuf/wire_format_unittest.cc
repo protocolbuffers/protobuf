@@ -768,7 +768,7 @@ TEST(WireFormatTest, RepeatedScalarsDifferentTagSizes) {
 }
 
 TEST(WireFormatTest, CompatibleTypes) {
-  const int64 data = 0x100000000;
+  const int64 data = 0x100000000LL;
   unittest::Int64Message msg1;
   msg1.set_data(data);
   string serialized;
