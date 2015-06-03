@@ -1,0 +1,21 @@
+# This is the list of conformance tests that are known to fail for the C++
+# implementation right now.  These should be fixed.
+#
+# By listing them here we can keep tabs on which ones are failing and be sure
+# that we don't introduce regressions in other tests.
+#
+# TODO(haberman): insert links to corresponding bugs tracking the issue.
+# Should we use GitHub issues or the Google-internal bug tracker.
+
+PrematureEofBeforeKnownRepeatedValue.MESSAGE
+PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE
+PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE
+PrematureEofInPackedField.BOOL
+PrematureEofInPackedField.ENUM
+PrematureEofInPackedField.INT32
+PrematureEofInPackedField.INT64
+PrematureEofInPackedField.SINT32
+PrematureEofInPackedField.SINT64
+PrematureEofInPackedField.UINT32
+PrematureEofInPackedField.UINT64
+PrematureEofInsideKnownRepeatedValue.MESSAGE
