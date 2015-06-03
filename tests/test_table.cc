@@ -275,7 +275,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
   if (x == INT_MAX) abort();
   printf("%ld/s (%0.1f%% of upb)\n\n", (long)(i/total), i / upb_rand_i);
   upb_inttable_uninit(&table);
-  delete rand_order;
+  delete[] rand_order;
 }
 
 int32_t *get_contiguous_keys(int32_t num) {

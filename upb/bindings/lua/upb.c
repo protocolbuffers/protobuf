@@ -1358,6 +1358,18 @@ static size_t align_up(size_t val, size_t align) {
 
 // If we always read/write as a consistent type to each value, this shouldn't
 // violate aliasing.
+//
+// Note that the slightly prettier option of:
+//
+//   *(type*)(&msg->data[ofs])
+//
+// ...is potentially more questionable wrt the C standard and aliasing.
+// Does the expression &msg->data[ofs] "access the stored value"?  If so,
+// this would violate aliasing.  So instead we use the expression:
+//
+//   (char*)msg + sizeof(lupb_msg) + ofs
+//
+// ...which unambigiously is doing nothing but calculating a pointer address.
 #define DEREF(msg, ofs, type) *(type*)((char*)msg + sizeof(lupb_msg) + ofs)
 
 lupb_msg *lupb_msg_check(lua_State *L, int narg) {
