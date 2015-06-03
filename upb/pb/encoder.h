@@ -22,35 +22,35 @@
 namespace upb {
 namespace pb {
 class Encoder;
-}  // namespace pb
-}  // namespace upb
+}  /* namespace pb */
+}  /* namespace upb */
 #endif
 
-UPB_DECLARE_TYPE(upb::pb::Encoder, upb_pb_encoder);
+UPB_DECLARE_TYPE(upb::pb::Encoder, upb_pb_encoder)
 
 #define UPB_PBENCODER_MAX_NESTING 100
 
 /* upb::pb::Encoder ***********************************************************/
 
-// Preallocation hint: decoder won't allocate more bytes than this when first
-// constructed.  This hint may be an overestimate for some build configurations.
-// But if the decoder library is upgraded without recompiling the application,
-// it may be an underestimate.
+/* Preallocation hint: decoder won't allocate more bytes than this when first
+ * constructed.  This hint may be an overestimate for some build configurations.
+ * But if the decoder library is upgraded without recompiling the application,
+ * it may be an underestimate. */
 #define UPB_PB_ENCODER_SIZE 768
 
 #ifdef __cplusplus
 
 class upb::pb::Encoder {
  public:
-  // Creates a new encoder in the given environment.  The Handlers must have
-  // come from NewHandlers() below.
+  /* Creates a new encoder in the given environment.  The Handlers must have
+   * come from NewHandlers() below. */
   static Encoder* Create(Environment* env, const Handlers* handlers,
                          BytesSink* output);
 
-  // The input to the encoder.
+  /* The input to the encoder. */
   Sink* input();
 
-  // Creates a new set of handlers for this MessageDef.
+  /* Creates a new set of handlers for this MessageDef. */
   static reffed_ptr<const Handlers> NewHandlers(const MessageDef* msg);
 
   static const size_t kSize = UPB_PB_ENCODER_SIZE;
@@ -87,8 +87,8 @@ inline reffed_ptr<const Handlers> Encoder::NewHandlers(
   const Handlers* h = upb_pb_encoder_newhandlers(md, &h);
   return reffed_ptr<const Handlers>(h, &h);
 }
-}  // namespace pb
-}  // namespace upb
+}  /* namespace pb */
+}  /* namespace upb */
 
 #endif
 

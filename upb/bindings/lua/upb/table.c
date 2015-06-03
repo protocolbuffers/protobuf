@@ -25,7 +25,9 @@
 #include "lauxlib.h"
 #include "upb/bindings/lua/upb.h"
 #include "upb/def.h"
+#include "upb/structdefs.int.h"
 #include "upb/symtab.h"
+#include "upb/table.int.h"
 
 static void lupbtable_setnum(lua_State *L, int tab, const char *key,
                              lua_Number val) {
@@ -33,30 +35,30 @@ static void lupbtable_setnum(lua_State *L, int tab, const char *key,
   lua_setfield(L, tab - 1, key);
 }
 
-static void lupbtable_pushval(lua_State *L, _upb_value val, upb_ctype_t ctype) {
+static void lupbtable_pushval(lua_State *L, upb_tabval val, upb_ctype_t ctype) {
   switch (ctype) {
     case UPB_CTYPE_INT32:
-      lua_pushnumber(L, val.int32);
+      lua_pushnumber(L, val.val);
       break;
     case UPB_CTYPE_PTR:
-      lupb_def_pushwrapper(L, val.ptr, NULL);
+      lupb_def_pushwrapper(L, (void*)val.val, NULL);
       break;
     case UPB_CTYPE_CSTR:
-      lua_pushstring(L, val.cstr);
+      lua_pushstring(L, (const char*)val.val);
       break;
     default:
       luaL_error(L, "Unexpected type: %d", ctype);
   }
 }
 
-// Sets a few fields common to both hash table entries and arrays.
+/* Sets a few fields common to both hash table entries and arrays. */
 static void lupbtable_setmetafields(lua_State *L, int ctype, const void *ptr) {
-  // We tack this onto every entry so we know it even if the entries
-  // don't stay with the table.
+  /* We tack this onto every entry so we know it even if the entries
+   * don't stay with the table. */
   lua_pushnumber(L, ctype);
   lua_setfield(L, -2, "valtype");
 
-  // Set this to facilitate linking.
+  /* Set this to facilitate linking. */
   lua_pushlightuserdata(L, (void*)ptr);
   lua_setfield(L, -2, "ptr");
 }
@@ -66,9 +68,11 @@ static void lupbtable_pushent(lua_State *L, const upb_tabent *e,
   lua_newtable(L);
   if (!upb_tabent_isempty(e)) {
     if (inttab) {
-      lua_pushnumber(L, e->key.num);
+      lua_pushnumber(L, e->key);
     } else {
-      lua_pushlstring(L, e->key.s.str, e->key.s.length);
+      uint32_t len;
+      const char *str = upb_tabstr(e->key, &len);
+      lua_pushlstring(L, str, len);
     }
     lua_setfield(L, -2, "key");
     lupbtable_pushval(L, e->val, ctype);
@@ -79,8 +83,10 @@ static void lupbtable_pushent(lua_State *L, const upb_tabent *e,
   lupbtable_setmetafields(L, ctype, e);
 }
 
-// Dumps the shared part of upb_table into a Lua table.
+/* Dumps the shared part of upb_table into a Lua table. */
 static void lupbtable_pushtable(lua_State *L, const upb_table *t, bool inttab) {
+  size_t i;
+
   lua_newtable(L);
   lupbtable_setnum(L, -1, "count", t->count);
   lupbtable_setnum(L, -1, "mask",  t->mask);
@@ -88,21 +94,23 @@ static void lupbtable_pushtable(lua_State *L, const upb_table *t, bool inttab) {
   lupbtable_setnum(L, -1, "size_lg2",  t->size_lg2);
 
   lua_newtable(L);
-  for (int i = 0; i < upb_table_size(t); i++) {
+  for (i = 0; i < upb_table_size(t); i++) {
     lupbtable_pushent(L, &t->entries[i], inttab, t->ctype);
     lua_rawseti(L, -2, i + 1);
   }
   lua_setfield(L, -2, "entries");
 }
 
-// Dumps a upb_inttable to a Lua table.
+/* Dumps a upb_inttable to a Lua table. */
 static void lupbtable_pushinttable(lua_State *L, const upb_inttable *t) {
+  size_t i;
+
   lupbtable_pushtable(L, &t->t, true);
   lupbtable_setnum(L, -1, "array_size", t->array_size);
   lupbtable_setnum(L, -1, "array_count", t->array_count);
 
   lua_newtable(L);
-  for (int i = 0; i < t->array_size; i++) {
+  for (i = 0; i < t->array_size; i++) {
     lua_newtable(L);
     if (upb_arrhas(t->array[i])) {
       lupbtable_pushval(L, t->array[i], t->t.ctype);
@@ -153,22 +161,50 @@ static void lupbtable_setfieldi(lua_State *L, const char *field, int i) {
   lua_setfield(L, -2, field);
 }
 
+/* These aren't from the table, but they access other internal-only
+ * definitions. */
+static int lupb_fielddef_selectorbase(lua_State *L) {
+  const upb_fielddef *f = lupb_fielddef_check(L, 1);
+  if (!upb_fielddef_isfrozen(f))
+    luaL_error(L, "_selectorbase is only defined for frozen fielddefs");
+  lua_pushinteger(L, f->selector_base);
+  return 1;
+}
+
+static int lupb_msgdef_selectorcount(lua_State *L) {
+  const upb_msgdef *m = lupb_msgdef_check(L, 1);
+  lua_pushinteger(L, m->selector_count);
+  return 1;
+}
+
+static int lupb_msgdef_submsgfieldcount(lua_State *L) {
+  const upb_msgdef *m = lupb_msgdef_check(L, 1);
+  lua_pushinteger(L, m->submsg_field_count);
+  return 1;
+}
+
 static const struct luaL_Reg lupbtable_toplevel_m[] = {
   {"msgdef_itof", lupbtable_msgdef_itof},
   {"msgdef_ntof", lupbtable_msgdef_ntof},
   {"enumdef_iton", lupbtable_enumdef_iton},
   {"enumdef_ntoi", lupbtable_enumdef_ntoi},
   {"symtab_symtab", lupbtable_symtab_symtab},
+
+  {"msgdef_selector_count", lupb_msgdef_selectorcount},
+  {"msgdef_submsg_field_count", lupb_msgdef_submsgfieldcount},
+
+  {"fielddef_selector_base", lupb_fielddef_selectorbase},
+
   {NULL, NULL}
 };
 
-int luaopen_upbtable(lua_State *L) {
+int luaopen_upb_table_c(lua_State *L) {
   static char module_key;
   if (lupb_openlib(L, &module_key, "upb.table", lupbtable_toplevel_m)) {
     return 1;
   }
 
-  // We define these here because they are not public.
+  /* We define these here because they are not public. */
   lupbtable_setfieldi(L, "CTYPE_PTR",   UPB_CTYPE_PTR);
   lupbtable_setfieldi(L, "CTYPE_CSTR",  UPB_CTYPE_CSTR);
   lupbtable_setfieldi(L, "CTYPE_INT32", UPB_CTYPE_INT32);
@@ -176,5 +212,5 @@ int luaopen_upbtable(lua_State *L) {
   lua_pushlightuserdata(L, NULL);
   lua_setfield(L, -2, "NULL");
 
-  return 1;  // Return a single Lua value, the package table created above.
+  return 1;  /* Return a single Lua value, the package table created above. */
 }

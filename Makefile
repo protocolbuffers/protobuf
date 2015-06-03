@@ -33,36 +33,50 @@ all: lib tests tools/upbc lua python
 testall: test pythontest
 
 # Set this to have user-specific flags (especially things like -O0 and -g).
-USER_CPPFLAGS=
+USER_CPPFLAGS?=
 
 # Build with "make WITH_JIT=yes" (or anything besides "no") to enable the JIT.
 WITH_JIT=no
 
-# Build with "make WITH_MAX_WARNINGS=yes" (or anything besides "no") to enable
-# with strict warnings and treat warnings as errors.
-WITH_MAX_WARNINGS=no
+# Build with "make UPB_FAIL_WARNINGS=yes" (or anything besides "no") to turn
+# warnings into errors.
+UPB_FAIL_WARNINGS?=no
 
 # Basic compiler/flag setup.
-CC=cc
-CXX=c++
-CFLAGS=-std=c99
-CXXFLAGS=-Wno-unused-private-field
+# We are C89/C++98, with the one exception that we need stdint and "long long."
+CC?=cc
+CXX?=c++
+CFLAGS=
+CXXFLAGS=
 INCLUDE=-I.
-WARNFLAGS=-Wall -Wextra -Wno-sign-compare 
+CSTD=-std=c89 -pedantic -Wno-long-long
+CXXSTD=-std=c++98 -pedantic -Wno-long-long
+WARNFLAGS=-Wall -Wextra -Wpointer-arith
+WARNFLAGS_CXX=$(WARNFLAGS) -Wno-unused-private-field
 CPPFLAGS=$(INCLUDE) -DNDEBUG $(USER_CPPFLAGS)
 LUA=lua  # 5.1 and 5.2 should both be supported
 
 ifneq ($(WITH_JIT), no)
   USE_JIT=true
   CPPFLAGS += -DUPB_USE_JIT_X64
+  EXTRA_LIBS += -ldl
 endif
 
-ifneq ($(WITH_MAX_WARNINGS), no)
-  WARNFLAGS=-Wall -Wextra -Wpointer-arith -Werror
+ifeq ($(CC), clang)
+  WARNFLAGS += -Wconditional-uninitialized
+endif
+
+ifeq ($(CXX), clang++)
+  WARNFLAGS_CXX += -Wconditional-uninitialized
+endif
+
+ifneq ($(UPB_FAIL_WARNINGS), no)
+  WARNFLAGS += -Werror
+  WARNFLAGS_CXX += -Werror
 endif
 
 # Build with "make Q=" to see all commands that are being executed.
-Q=@
+Q?=@
 
 # Function to expand a wildcard pattern recursively.
 rwildcard=$(strip $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)$(filter $(subst *,%,$2),$d)))
@@ -95,16 +109,19 @@ clean_leave_profile:
 	@rm -rf obj lib
 	@rm -f tests/google_message?.h
 	@rm -f $(TESTS) tests/testmain.o tests/t.*
-	@rm -f upb/descriptor.pb
+	@rm -f upb/descriptor/descriptor.pb
 	@rm -rf tools/upbc deps
 	@rm -rf upb/bindings/python/build
 	@rm -f upb/bindings/ruby/Makefile
 	@rm -f upb/bindings/ruby/upb.o
 	@rm -f upb/bindings/ruby/upb.so
 	@rm -f upb/bindings/ruby/mkmf.log
+	@rm -f tests/google_messages.pb.*
+	@rm -f tests/google_messages.proto.pb
+	@rm -f upb.c upb.h
 	@find . | grep dSYM | xargs rm -rf
 
-clean: clean_leave_profile
+clean: clean_leave_profile clean_lua
 	@rm -rf $(call rwildcard,,*.gcno) $(call rwildcard,,*.gcda)
 
 # A little bit of Make voodoo: you can call this from the deps of a patterned
@@ -155,19 +172,36 @@ upb_pb_SRCS = \
 # If Lua is present we can use DynASM to regenerate the .h file.
 ifdef USE_JIT
 upb_pb_SRCS += upb/pb/compile_decoder_x64.c
-obj/upb/pb/compile_decoder_x64.o obj/upb/pb/compile_decoder_x64.lo: upb/pb/compile_decoder_x64.h
+
+# The JIT can't compile with -Wpedantic, since it does some inherently
+# platform-specific things like casting between data pointers and function
+# pointers.  Also DynASM emits some GNU extensions.
+obj/upb/pb/compile_decoder_x64.o : CSTD = -std=gnu89
+obj/upb/pb/compile_decoder_x64.lo : CSTD = -std=gnu89
 
 upb/pb/compile_decoder_x64.h: upb/pb/compile_decoder_x64.dasc
 	$(E) DYNASM $<
-	$(Q) $(LUA) dynasm/dynasm.lua upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
+	$(Q) $(LUA) dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
 endif
 
 upb_json_SRCS = \
   upb/json/parser.c \
   upb/json/printer.c \
 
-upb/json/parser.c: upb/json/parser.rl
-	$(E) RAGEL $<
+# Ideally we could keep this uncommented, but Git apparently sometimes skews
+# timestamps slightly at "clone" time, which makes "Make" think that it needs
+# to rebuild upb/json/parser.c when it actually doesn't.  This would be harmless
+# except that the user might not have Ragel installed.
+#
+# So instead we require an excplicit "make ragel" to rebuild this (for now).
+# More pain for people developing upb/json/parser.rl, but less pain for everyone
+# else.
+#
+# upb/json/parser.c: upb/json/parser.rl
+# 	$(E) RAGEL $<
+# 	$(Q) ragel -C -o upb/json/parser.c upb/json/parser.rl
+ragel:
+	$(E) RAGEL upb/json/parser.rl
 	$(Q) ragel -C -o upb/json/parser.c upb/json/parser.rl
 
 # If the user doesn't specify an -O setting, we use -O3 for critical-path
@@ -196,19 +230,19 @@ $(UPB_LIBS): lib/lib%.a: $(call make_objs,o)
 
 obj/upb/%.o: upb/%.c | $$(@D)/.
 	$(E) CC $<
-	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
 
 obj/upb/%.o: upb/%.cc | $$(@D)/.
 	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(Q) $(CXX) $(OPT) $(CXXSTD) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 obj/upb/%.lo: upb/%.c | $$(@D)/.
 	$(E) 'CC -fPIC' $<
-	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $< -fPIC
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $< -fPIC
 
 obj/upb/%.lo: upb/%.cc | $$(@D)/.
-	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< -fPIC
+	$(E) CXX -fPIC $<
+	$(Q) $(CXX) $(OPT) $(CXXSTD) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< -fPIC
 
 # Note: mkdir -p is technically susceptible to races when used with make -j.
 %/.:
@@ -219,13 +253,24 @@ upb/descriptor/descriptor.pb: upb/descriptor/descriptor.proto
 	@# TODO: replace with upbc
 	protoc upb/descriptor/descriptor.proto -oupb/descriptor/descriptor.pb
 
-descriptorgen: upb/descriptor/descriptor.pb tools/upbc
-	@# Regenerate descriptor_const.h
-	./tools/upbc -o upb/descriptor/descriptor upb/descriptor/descriptor.pb
+genfiles: upb/descriptor/descriptor.pb tools/upbc
+	./tools/upbc upb/descriptor/descriptor.pb upb/descriptor/descriptor google_protobuf_descriptor
+	$(LUA) dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
 
-tools/upbc: tools/upbc.c $(LIBUPB)
-	$(E) CC $<
-	$(Q) $(CC) $(CFLAGS) $(CPPFLAGS) -o $@ $< $(LIBUPB)
+# upbc depends on these Lua extensions.
+UPBC_LUA_EXTS = \
+  upb/bindings/lua/upb_c.so \
+  upb/bindings/lua/upb/pb_c.so \
+  upb/bindings/lua/upb/table_c.so \
+
+tools/upbc: $(UPBC_LUA_EXTS) Makefile
+	$(E) ECHO tools/upbc
+	$(Q) echo "#!/bin/sh" > tools/upbc
+	$(Q) echo 'BASE=`dirname "$$0"`' >> tools/upbc
+	$(Q) echo 'export LUA_CPATH="$$BASE/../upb/bindings/lua/?.so"' >> tools/upbc
+	$(Q) echo 'export LUA_PATH="$$BASE/?.lua;$$BASE/../upb/bindings/lua/?.lua"' >> tools/upbc
+	$(Q) echo 'lua $$BASE/upbc.lua "$$@"' >> tools/upbc
+	$(Q) chmod a+x tools/upbc
 
 examples/msg: examples/msg.c $(LIBUPB)
 	$(E) CC $<
@@ -252,28 +297,28 @@ tests: $(TESTS)
 
 tests/testmain.o: tests/testmain.cc
 	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(Q) $(CXX) $(OPT) $(CXXSTD) $(WARNFLAGS_CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 $(C_TESTS): % : %.c tests/testmain.o $$(LIBS)
 	$(E) CC $<
-	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -o $@ tests/testmain.o $< $(LIBS)
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -o $@ tests/testmain.o $< $(LIBS)
 
 $(CC_TESTS): % : %.cc tests/testmain.o $$(LIBS)
 	$(E) CXX $<
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -Wno-deprecated -o $@ tests/testmain.o $< $(LIBS)
+	$(Q) $(CXX) $(OPT) $(CXXSTD) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -Wno-deprecated -o $@ tests/testmain.o $< $(LIBS)
 
 # Several of these tests don't actually test these libs, but use them
 # incidentally to load a descriptor
 LOAD_DESCRIPTOR_LIBS = lib/libupb.pb.a lib/libupb.descriptor.a
 
 # Specify which libs each test depends on.
-tests/pb/test_varint: LIBS = lib/libupb.pb.a lib/libupb.a
-tests/test_def: LIBS = $(LOAD_DESCRIPTOR_LIBS) lib/libupb.a
-tests/test_handlers: LIBS = lib/libupb.descriptor.a lib/libupb.a
-tests/pb/test_decoder: LIBS = lib/libupb.pb.a lib/libupb.a
-tests/test_cpp: LIBS = $(LOAD_DESCRIPTOR_LIBS) lib/libupb.a
-tests/test_table: LIBS = lib/libupb.a
-tests/json/test_json: LIBS = lib/libupb.a lib/libupb.json.a
+tests/pb/test_varint: LIBS = lib/libupb.pb.a lib/libupb.a $(EXTRA_LIBS)
+tests/test_def: LIBS = $(LOAD_DESCRIPTOR_LIBS) lib/libupb.a $(EXTRA_LIBS)
+tests/test_handlers: LIBS = lib/libupb.descriptor.a lib/libupb.a $(EXTRA_LIBS)
+tests/pb/test_decoder: LIBS = lib/libupb.pb.a lib/libupb.a $(EXTRA_LIBS)
+tests/test_cpp: LIBS = $(LOAD_DESCRIPTOR_LIBS) lib/libupb.a $(EXTRA_LIBS)
+tests/test_table: LIBS = lib/libupb.a $(EXTRA_LIBS)
+tests/json/test_json: LIBS = lib/libupb.a lib/libupb.json.a $(EXTRA_LIBS)
 
 tests/test_def: tests/test.proto.pb
 
@@ -346,7 +391,8 @@ GOOGLEPB_TEST_LIBS = \
   lib/libupb.bindings.googlepb.a \
   lib/libupb.pb.a \
   lib/libupb.descriptor.a \
-  lib/libupb.a
+  lib/libupb.a \
+  $(EXTRA_LIBS)
 
 GOOGLEPB_TEST_DEPS = \
   tests/bindings/googlepb/test_vs_proto2.cc \
@@ -359,7 +405,7 @@ tests/bindings/googlepb/test_vs_proto2.googlemessage1: $(GOOGLEPB_TEST_DEPS) \
     tests/google_message1.h \
     tests/google_message2.h
 	$(E) CXX $< '(benchmarks::SpeedMessage1)'
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage1" \
 	  -DMESSAGE_DATA_IDENT=message1_data \
 	  tests/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
@@ -369,7 +415,7 @@ tests/bindings/googlepb/test_vs_proto2.googlemessage2: $(GOOGLEPB_TEST_DEPS) \
     tests/google_message1.h \
     tests/google_message2.h
 	$(E) CXX $< '(benchmarks::SpeedMessage2)'
-	$(Q) $(CXX) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
+	$(Q) $(CXX) $(OPT) $(WARNFLAGS_CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $< \
 	  -DMESSAGE_CIDENT="benchmarks::SpeedMessage2" \
 	  -DMESSAGE_DATA_IDENT=message2_data \
 	  tests/google_messages.pb.cc tests/testmain.o -lprotobuf -lpthread \
@@ -379,14 +425,14 @@ tests/bindings/googlepb/test_vs_proto2.googlemessage2: $(GOOGLEPB_TEST_DEPS) \
 # Lua extension ##################################################################
 
 ifeq ($(shell uname), Darwin)
-  LUA_LDFLAGS = -undefined dynamic_lookup
+  LUA_LDFLAGS = -undefined dynamic_lookup -flat_namespace
 else
   LUA_LDFLAGS =
 endif
 
 LUAEXTS = \
-  upb/bindings/lua/upb.so \
-  upb/bindings/lua/upb/pb.so \
+  upb/bindings/lua/upb_c.so \
+  upb/bindings/lua/upb/pb_c.so \
 
 LUATESTS = \
   tests/bindings/lua/test_upb.lua \
@@ -398,22 +444,18 @@ testlua: lua
 	@set -e  # Abort on error.
 	@for test in $(LUATESTS) ; do \
 	  echo LUA $$test; \
-	  LUA_PATH="tests/bindings/lua/lunit/?.lua" \
+	  LUA_PATH="tests/bindings/lua/lunit/?.lua;upb/bindings/lua/?.lua" \
 	    LUA_CPATH=upb/bindings/lua/?.so \
 	    lua $$test; \
 	done
 
 clean: clean_lua
 clean_lua:
-	@rm -f upb/bindings/lua/upb.lua.h
-	@rm -f upb/bindings/lua/upb.so
-	@rm -f upb/bindings/lua/upb/pb.so
+	@rm -f upb/bindings/lua/upb_c.so
+	@rm -f upb/bindings/lua/upb/pb_c.so
+	@rm -f upb/bindings/lua/upb/table_c.so
 
 lua: $(LUAEXTS)
-
-upb/bindings/lua/upb.lua.h:
-	$(E) XXD upb/bindings/lua/upb.lua
-	$(Q) xxd -i < upb/bindings/lua/upb.lua > upb/bindings/lua/upb.lua.h
 
 # Right now the core upb module depends on all of these.
 # It's a TODO to factor this more cleanly in the code.
@@ -422,22 +464,17 @@ LUA_LIB_DEPS = \
   lib/libupb.descriptor_pic.a \
   lib/libupb_pic.a \
 
-upb/bindings/lua/upb.so: upb/bindings/lua/upb.c upb/bindings/lua/upb.lua.h $(LUA_LIB_DEPS)
+upb/bindings/lua/upb_c.so: upb/bindings/lua/upb.c $(LUA_LIB_DEPS)
 	$(E) CC upb/bindings/lua/upb.c
-	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS) $(LUA_LIB_DEPS)
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS) $(LUA_LIB_DEPS)
 
-# TODO: the dependency between upb/pb.so and upb.so is expressed at the
-# .so level, which means that the OS will try to load upb.so when upb/pb.so
-# is loaded.  This is what we want, but getting the paths right is tricky.
-# Basically the dynamic linker needs to be able to find upb.so at:
-#   $(LD_LIBRARY_PATH)/upb/bindings/lua/upb.so
-# So the user has to set both LD_LIBRARY_PATH and LUA_CPATH correctly.
-# Another option would be to require the Lua program to always require
-# "upb" before requiring eg. "upb.pb", and then the dependency would not
-# be expressed at the .so level.
-upb/bindings/lua/upb/pb.so: upb/bindings/lua/upb/pb.c upb/bindings/lua/upb.so
-	$(E) CC upb/bindings/lua/upb.pb.c
-	$(Q) $(CC) $(OPT) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< upb/bindings/lua/upb.so $(LUA_LDFLAGS)
+upb/bindings/lua/upb/table_c.so: upb/bindings/lua/upb/table.c lib/libupb_pic.a
+	$(E) CC upb/bindings/lua/upb/table.c
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS)
+
+upb/bindings/lua/upb/pb_c.so: upb/bindings/lua/upb/pb.c $(LUA_LIB_DEPS)
+	$(E) CC upb/bindings/lua/upb/pb.c
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS)
 
 
 # Python extension #############################################################

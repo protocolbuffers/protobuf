@@ -111,7 +111,7 @@ using std::string;
 
 void vappendf(string* str, const char *format, va_list args) {
   va_list copy;
-  va_copy(copy, args);
+  __va_copy(copy, args);
 
   int count = vsnprintf(NULL, 0, format, args);
   if (count >= 0)
@@ -577,7 +577,7 @@ void run_decoder(const string& proto, const string* expected_output) {
           fprintf(stderr, "RUNNING TEST CASE, hash=%x\n", testhash);
           fprintf(stderr, "JIT on: %s\n",
                   global_method->is_native() ? "true" : "false");
-          fprintf(stderr, "Input (len=%zu): ", proto.size());
+          fprintf(stderr, "Input (len=%u): ", (unsigned)proto.size());
           PrintBinary(proto);
           fprintf(stderr, "\n");
           if (expected_output) {

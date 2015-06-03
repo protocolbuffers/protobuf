@@ -15,18 +15,18 @@
 namespace upb {
 namespace pb {
 class TextPrinter;
-}  // namespace pb
-}  // namespace upb
+}  /* namespace pb */
+}  /* namespace upb */
 #endif
 
-UPB_DECLARE_TYPE(upb::pb::TextPrinter, upb_textprinter);
+UPB_DECLARE_TYPE(upb::pb::TextPrinter, upb_textprinter)
 
 #ifdef __cplusplus
 
 class upb::pb::TextPrinter {
  public:
-  // The given handlers must have come from NewHandlers().  It must outlive the
-  // TextPrinter.
+  /* The given handlers must have come from NewHandlers().  It must outlive the
+   * TextPrinter. */
   static TextPrinter *Create(Environment *env, const upb::Handlers *handlers,
                              BytesSink *output);
 
@@ -34,8 +34,8 @@ class upb::pb::TextPrinter {
 
   Sink* input();
 
-  // If handler caching becomes a requirement we can add a code cache as in
-  // decoder.h
+  /* If handler caching becomes a requirement we can add a code cache as in
+   * decoder.h */
   static reffed_ptr<const Handlers> NewHandlers(const MessageDef* md);
 };
 
@@ -43,7 +43,7 @@ class upb::pb::TextPrinter {
 
 UPB_BEGIN_EXTERN_C
 
-// C API.
+/* C API. */
 upb_textprinter *upb_textprinter_create(upb_env *env, const upb_handlers *h,
                                         upb_bytessink *output);
 void upb_textprinter_setsingleline(upb_textprinter *p, bool single_line);
@@ -74,8 +74,8 @@ inline reffed_ptr<const Handlers> TextPrinter::NewHandlers(
   const Handlers* h = upb_textprinter_newhandlers(md, &h);
   return reffed_ptr<const Handlers>(h, &h);
 }
-}  // namespace pb
-}  // namespace upb
+}  /* namespace pb */
+}  /* namespace upb */
 
 #endif
 

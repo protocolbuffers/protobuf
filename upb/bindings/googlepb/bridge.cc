@@ -99,7 +99,7 @@ const MessageDef* DefBuilder::GetMaybeUnfrozenMessageDef(
     fields.push_back(d->field(i));
   }
 
-  for (int i = 0; i < fields.size(); i++) {
+  for (size_t i = 0; i < fields.size(); i++) {
     const goog::FieldDescriptor* proto2_f = fields[i];
     assert(proto2_f);
     md->AddField(NewFieldDef(proto2_f, m), &status);

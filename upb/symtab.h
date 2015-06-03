@@ -23,7 +23,8 @@
 namespace upb { class SymbolTable; }
 #endif
 
-UPB_DECLARE_TYPE(upb::SymbolTable, upb_symtab);
+UPB_DECLARE_DERIVED_TYPE(upb::SymbolTable, upb::RefCounted,
+                         upb_symtab, upb_refcounted)
 
 typedef struct {
  UPB_PRIVATE_FOR_CPP
@@ -31,87 +32,85 @@ typedef struct {
   upb_deftype_t type;
 } upb_symtab_iter;
 
-// Non-const methods in upb::SymbolTable are NOT thread-safe.
-UPB_DEFINE_CLASS1(upb::SymbolTable, upb::RefCounted,
+#ifdef __cplusplus
+
+/* Non-const methods in upb::SymbolTable are NOT thread-safe. */
+class upb::SymbolTable {
  public:
-  // Returns a new symbol table with a single ref owned by "owner."
-  // Returns NULL if memory allocation failed.
+  /* Returns a new symbol table with a single ref owned by "owner."
+   * Returns NULL if memory allocation failed. */
   static reffed_ptr<SymbolTable> New();
 
-  // Functionality from upb::RefCounted.
-  bool IsFrozen() const;
-  void Ref(const void* owner) const;
-  void Unref(const void* owner) const;
-  void DonateRef(const void *from, const void *to) const;
-  void CheckRef(const void *owner) const;
+  /* Include RefCounted base methods. */
+  UPB_REFCOUNTED_CPPMETHODS
 
-  // For all lookup functions, the returned pointer is not owned by the
-  // caller; it may be invalidated by any non-const call or unref of the
-  // SymbolTable!  To protect against this, take a ref if desired.
+  /* For all lookup functions, the returned pointer is not owned by the
+   * caller; it may be invalidated by any non-const call or unref of the
+   * SymbolTable!  To protect against this, take a ref if desired. */
 
-  // Freezes the symbol table: prevents further modification of it.
-  // After the Freeze() operation is successful, the SymbolTable must only be
-  // accessed via a const pointer.
-  //
-  // Unlike with upb::MessageDef/upb::EnumDef/etc, freezing a SymbolTable is not
-  // a necessary step in using a SymbolTable.  If you have no need for it to be
-  // immutable, there is no need to freeze it ever.  However sometimes it is
-  // useful, and SymbolTables that are statically compiled into the binary are
-  // always frozen by nature.
+  /* Freezes the symbol table: prevents further modification of it.
+   * After the Freeze() operation is successful, the SymbolTable must only be
+   * accessed via a const pointer.
+   *
+   * Unlike with upb::MessageDef/upb::EnumDef/etc, freezing a SymbolTable is not
+   * a necessary step in using a SymbolTable.  If you have no need for it to be
+   * immutable, there is no need to freeze it ever.  However sometimes it is
+   * useful, and SymbolTables that are statically compiled into the binary are
+   * always frozen by nature. */
   void Freeze();
 
-  // Resolves the given symbol using the rules described in descriptor.proto,
-  // namely:
-  //
-  //    If the name starts with a '.', it is fully-qualified.  Otherwise,
-  //    C++-like scoping rules are used to find the type (i.e. first the nested
-  //    types within this message are searched, then within the parent, on up
-  //    to the root namespace).
-  //
-  // If not found, returns NULL.
+  /* Resolves the given symbol using the rules described in descriptor.proto,
+   * namely:
+   *
+   *    If the name starts with a '.', it is fully-qualified.  Otherwise,
+   *    C++-like scoping rules are used to find the type (i.e. first the nested
+   *    types within this message are searched, then within the parent, on up
+   *    to the root namespace).
+   *
+   * If not found, returns NULL. */
   const Def* Resolve(const char* base, const char* sym) const;
 
-  // Finds an entry in the symbol table with this exact name.  If not found,
-  // returns NULL.
+  /* Finds an entry in the symbol table with this exact name.  If not found,
+   * returns NULL. */
   const Def* Lookup(const char *sym) const;
   const MessageDef* LookupMessage(const char *sym) const;
   const EnumDef* LookupEnum(const char *sym) const;
 
-  // TODO: introduce a C++ iterator, but make it nice and templated so that if
-  // you ask for an iterator of MessageDef the iterated elements are strongly
-  // typed as MessageDef*.
+  /* TODO: introduce a C++ iterator, but make it nice and templated so that if
+   * you ask for an iterator of MessageDef the iterated elements are strongly
+   * typed as MessageDef*. */
 
-  // Adds the given mutable defs to the symtab, resolving all symbols
-  // (including enum default values) and finalizing the defs.  Only one def per
-  // name may be in the list, but defs can replace existing defs in the symtab.
-  // All defs must have a name -- anonymous defs are not allowed.  Anonymous
-  // defs can still be frozen by calling upb_def_freeze() directly.
-  //
-  // Any existing defs that can reach defs that are being replaced will
-  // themselves be replaced also, so that the resulting set of defs is fully
-  // consistent.
-  //
-  // This logic implemented in this method is a convenience; ultimately it
-  // calls some combination of upb_fielddef_setsubdef(), upb_def_dup(), and
-  // upb_freeze(), any of which the client could call themself.  However, since
-  // the logic for doing so is nontrivial, we provide it here.
-  //
-  // The entire operation either succeeds or fails.  If the operation fails,
-  // the symtab is unchanged, false is returned, and status indicates the
-  // error.  The caller passes a ref on all defs to the symtab (even if the
-  // operation fails).
-  //
-  // TODO(haberman): currently failure will leave the symtab unchanged, but may
-  // leave the defs themselves partially resolved.  Does this matter?  If so we
-  // could do a prepass that ensures that all symbols are resolvable and bail
-  // if not, so we don't mutate anything until we know the operation will
-  // succeed.
-  //
-  // TODO(haberman): since the defs must be mutable, refining a frozen def
-  // requires making mutable copies of the entire tree.  This is wasteful if
-  // only a few messages are changing.  We may want to add a way of adding a
-  // tree of frozen defs to the symtab (perhaps an alternate constructor where
-  // you pass the root of the tree?)
+  /* Adds the given mutable defs to the symtab, resolving all symbols
+   * (including enum default values) and finalizing the defs.  Only one def per
+   * name may be in the list, but defs can replace existing defs in the symtab.
+   * All defs must have a name -- anonymous defs are not allowed.  Anonymous
+   * defs can still be frozen by calling upb_def_freeze() directly.
+   *
+   * Any existing defs that can reach defs that are being replaced will
+   * themselves be replaced also, so that the resulting set of defs is fully
+   * consistent.
+   *
+   * This logic implemented in this method is a convenience; ultimately it
+   * calls some combination of upb_fielddef_setsubdef(), upb_def_dup(), and
+   * upb_freeze(), any of which the client could call themself.  However, since
+   * the logic for doing so is nontrivial, we provide it here.
+   *
+   * The entire operation either succeeds or fails.  If the operation fails,
+   * the symtab is unchanged, false is returned, and status indicates the
+   * error.  The caller passes a ref on all defs to the symtab (even if the
+   * operation fails).
+   *
+   * TODO(haberman): currently failure will leave the symtab unchanged, but may
+   * leave the defs themselves partially resolved.  Does this matter?  If so we
+   * could do a prepass that ensures that all symbols are resolvable and bail
+   * if not, so we don't mutate anything until we know the operation will
+   * succeed.
+   *
+   * TODO(haberman): since the defs must be mutable, refining a frozen def
+   * requires making mutable copies of the entire tree.  This is wasteful if
+   * only a few messages are changing.  We may want to add a way of adding a
+   * tree of frozen defs to the symtab (perhaps an alternate constructor where
+   * you pass the root of the tree?) */
   bool Add(Def*const* defs, int n, void* ref_donor, upb_status* status);
 
   bool Add(const std::vector<Def*>& defs, void *owner, Status* status) {
@@ -119,25 +118,17 @@ UPB_DEFINE_CLASS1(upb::SymbolTable, upb::RefCounted,
   }
 
  private:
-  UPB_DISALLOW_POD_OPS(SymbolTable, upb::SymbolTable);
-,
-UPB_DEFINE_STRUCT(upb_symtab, upb_refcounted,
-  upb_strtable symtab;
-));
+  UPB_DISALLOW_POD_OPS(SymbolTable, upb::SymbolTable)
+};
 
-#define UPB_SYMTAB_INIT(symtab, refs, ref2s) \
-  { UPB_REFCOUNT_INIT(refs, ref2s), symtab }
+#endif  /* __cplusplus */
 
-UPB_BEGIN_EXTERN_C  // {
+UPB_BEGIN_EXTERN_C
 
-// Native C API.
-// From upb_refcounted.
-bool upb_symtab_isfrozen(const upb_symtab *s);
-void upb_symtab_ref(const upb_symtab *s, const void *owner);
-void upb_symtab_unref(const upb_symtab *s, const void *owner);
-void upb_symtab_donateref(
-    const upb_symtab *s, const void *from, const void *to);
-void upb_symtab_checkref(const upb_symtab *s, const void *owner);
+/* Native C API. */
+
+/* Include refcounted methods like upb_symtab_ref(). */
+UPB_REFCOUNTED_CMETHODS(upb_symtab, upb_symtab_upcast)
 
 upb_symtab *upb_symtab_new(const void *owner);
 void upb_symtab_freeze(upb_symtab *s);
@@ -149,46 +140,30 @@ const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
 bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
                     upb_status *status);
 
-// upb_symtab_iter i;
-// for(upb_symtab_begin(&i, s, type); !upb_symtab_done(&i);
-//     upb_symtab_next(&i)) {
-//   const upb_def *def = upb_symtab_iter_def(&i);
-//   // ...
-// }
-//
-// For C we don't have separate iterators for const and non-const.
-// It is the caller's responsibility to cast the upb_fielddef* to
-// const if the upb_msgdef* is const.
+/* upb_symtab_iter i;
+ * for(upb_symtab_begin(&i, s, type); !upb_symtab_done(&i);
+ *     upb_symtab_next(&i)) {
+ *   const upb_def *def = upb_symtab_iter_def(&i);
+ *    // ...
+ * }
+ *
+ * For C we don't have separate iterators for const and non-const.
+ * It is the caller's responsibility to cast the upb_fielddef* to
+ * const if the upb_msgdef* is const. */
 void upb_symtab_begin(upb_symtab_iter *iter, const upb_symtab *s,
                       upb_deftype_t type);
 void upb_symtab_next(upb_symtab_iter *iter);
 bool upb_symtab_done(const upb_symtab_iter *iter);
 const upb_def *upb_symtab_iter_def(const upb_symtab_iter *iter);
 
-UPB_END_EXTERN_C  // }
+UPB_END_EXTERN_C
 
 #ifdef __cplusplus
-// C++ inline wrappers.
+/* C++ inline wrappers. */
 namespace upb {
 inline reffed_ptr<SymbolTable> SymbolTable::New() {
   upb_symtab *s = upb_symtab_new(&s);
   return reffed_ptr<SymbolTable>(s, &s);
-}
-
-inline bool SymbolTable::IsFrozen() const {
-  return upb_symtab_isfrozen(this);
-}
-inline void SymbolTable::Ref(const void *owner) const {
-  upb_symtab_ref(this, owner);
-}
-inline void SymbolTable::Unref(const void *owner) const {
-  upb_symtab_unref(this, owner);
-}
-inline void SymbolTable::DonateRef(const void *from, const void *to) const {
-  upb_symtab_donateref(this, from, to);
-}
-inline void SymbolTable::CheckRef(const void *owner) const {
-  upb_symtab_checkref(this, owner);
 }
 
 inline void SymbolTable::Freeze() {
@@ -208,7 +183,7 @@ inline bool SymbolTable::Add(
     Def*const* defs, int n, void* ref_donor, upb_status* status) {
   return upb_symtab_add(this, (upb_def*const*)defs, n, ref_donor, status);
 }
-}  // namespace upb
+}  /* namespace upb */
 #endif
 
 #endif  /* UPB_SYMTAB_H_ */

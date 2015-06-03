@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 
-// Fallback implementation if the shim is not specialized by the JIT.
+/* Fallback implementation if the shim is not specialized by the JIT. */
 #define SHIM_WRITER(type, ctype)                                              \
   bool upb_shim_set ## type (void *c, const void *hd, ctype val) {            \
     uint8_t *m = c;                                                           \
@@ -31,12 +31,14 @@ SHIM_WRITER(bool,   bool)
 
 bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
                   int32_t hasbit) {
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  bool ok;
+
   upb_shim_data *d = malloc(sizeof(*d));
   if (!d) return false;
   d->offset = offset;
   d->hasbit = hasbit;
 
-  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
   upb_handlerattr_sethandlerdata(&attr, d);
   upb_handlerattr_setalwaysok(&attr, true);
   upb_handlers_addcleanup(h, d, free);
@@ -45,7 +47,7 @@ bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
   case UPB_TYPE_##u: \
     ok = upb_handlers_set##l(h, f, upb_shim_set##l, &attr); break;
 
-  bool ok = false;
+  ok = false;
 
   switch (upb_fielddef_type(f)) {
     TYPE(INT64,  int64);

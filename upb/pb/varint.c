@@ -7,32 +7,33 @@
 
 #include "upb/pb/varint.int.h"
 
-// Index is descriptor type.
+/* Index is descriptor type. */
 const uint8_t upb_pb_native_wire_types[] = {
-  UPB_WIRE_TYPE_END_GROUP,     // ENDGROUP
-  UPB_WIRE_TYPE_64BIT,         // DOUBLE
-  UPB_WIRE_TYPE_32BIT,         // FLOAT
-  UPB_WIRE_TYPE_VARINT,        // INT64
-  UPB_WIRE_TYPE_VARINT,        // UINT64
-  UPB_WIRE_TYPE_VARINT,        // INT32
-  UPB_WIRE_TYPE_64BIT,         // FIXED64
-  UPB_WIRE_TYPE_32BIT,         // FIXED32
-  UPB_WIRE_TYPE_VARINT,        // BOOL
-  UPB_WIRE_TYPE_DELIMITED,     // STRING
-  UPB_WIRE_TYPE_START_GROUP,   // GROUP
-  UPB_WIRE_TYPE_DELIMITED,     // MESSAGE
-  UPB_WIRE_TYPE_DELIMITED,     // BYTES
-  UPB_WIRE_TYPE_VARINT,        // UINT32
-  UPB_WIRE_TYPE_VARINT,        // ENUM
-  UPB_WIRE_TYPE_32BIT,         // SFIXED32
-  UPB_WIRE_TYPE_64BIT,         // SFIXED64
-  UPB_WIRE_TYPE_VARINT,        // SINT32
-  UPB_WIRE_TYPE_VARINT,        // SINT64
+  UPB_WIRE_TYPE_END_GROUP,     /* ENDGROUP */
+  UPB_WIRE_TYPE_64BIT,         /* DOUBLE */
+  UPB_WIRE_TYPE_32BIT,         /* FLOAT */
+  UPB_WIRE_TYPE_VARINT,        /* INT64 */
+  UPB_WIRE_TYPE_VARINT,        /* UINT64 */
+  UPB_WIRE_TYPE_VARINT,        /* INT32 */
+  UPB_WIRE_TYPE_64BIT,         /* FIXED64 */
+  UPB_WIRE_TYPE_32BIT,         /* FIXED32 */
+  UPB_WIRE_TYPE_VARINT,        /* BOOL */
+  UPB_WIRE_TYPE_DELIMITED,     /* STRING */
+  UPB_WIRE_TYPE_START_GROUP,   /* GROUP */
+  UPB_WIRE_TYPE_DELIMITED,     /* MESSAGE */
+  UPB_WIRE_TYPE_DELIMITED,     /* BYTES */
+  UPB_WIRE_TYPE_VARINT,        /* UINT32 */
+  UPB_WIRE_TYPE_VARINT,        /* ENUM */
+  UPB_WIRE_TYPE_32BIT,         /* SFIXED32 */
+  UPB_WIRE_TYPE_64BIT,         /* SFIXED64 */
+  UPB_WIRE_TYPE_VARINT,        /* SINT32 */
+  UPB_WIRE_TYPE_VARINT,        /* SINT64 */
 };
 
-// A basic branch-based decoder, uses 32-bit values to get good performance
-// on 32-bit architectures (but performs well on 64-bits also).
-// This scheme comes from the original Google Protobuf implementation (proto2).
+/* A basic branch-based decoder, uses 32-bit values to get good performance
+ * on 32-bit architectures (but performs well on 64-bits also).
+ * This scheme comes from the original Google Protobuf implementation
+ * (proto2). */
 upb_decoderet upb_vdecode_max8_branch32(upb_decoderet r) {
   upb_decoderet err = {NULL, 0};
   const char *p = r.p;
@@ -56,7 +57,7 @@ done:
   return r;
 }
 
-// Like the previous, but uses 64-bit values.
+/* Like the previous, but uses 64-bit values. */
 upb_decoderet upb_vdecode_max8_branch64(upb_decoderet r) {
   const char *p = r.p;
   uint64_t val = r.val;
@@ -78,49 +79,53 @@ done:
   return r;
 }
 
-// Given an encoded varint v, returns an integer with a single bit set that
-// indicates the end of the varint.  Subtracting one from this value will
-// yield a mask that leaves only bits that are part of the varint.  Returns
-// 0 if the varint is unterminated.
+/* Given an encoded varint v, returns an integer with a single bit set that
+ * indicates the end of the varint.  Subtracting one from this value will
+ * yield a mask that leaves only bits that are part of the varint.  Returns
+ * 0 if the varint is unterminated. */
 static uint64_t upb_get_vstopbit(uint64_t v) {
   uint64_t cbits = v | 0x7f7f7f7f7f7f7f7fULL;
   return ~cbits & (cbits+1);
 }
 
-// A branchless decoder.  Credit to Pascal Massimino for the bit-twiddling.
+/* A branchless decoder.  Credit to Pascal Massimino for the bit-twiddling. */
 upb_decoderet upb_vdecode_max8_massimino(upb_decoderet r) {
   uint64_t b;
+  uint64_t stop_bit;
+  upb_decoderet my_r;
   memcpy(&b, r.p, sizeof(b));
-  uint64_t stop_bit = upb_get_vstopbit(b);
+  stop_bit = upb_get_vstopbit(b);
   b =  (b & 0x7f7f7f7f7f7f7f7fULL) & (stop_bit - 1);
   b +=       b & 0x007f007f007f007fULL;
   b +=  3 * (b & 0x0000ffff0000ffffULL);
   b += 15 * (b & 0x00000000ffffffffULL);
   if (stop_bit == 0) {
-    // Error: unterminated varint.
+    /* Error: unterminated varint. */
     upb_decoderet err_r = {(void*)0, 0};
     return err_r;
   }
-  upb_decoderet my_r = {r.p + ((__builtin_ctzll(stop_bit) + 1) / 8),
-                        r.val | (b << 7)};
+  my_r = upb_decoderet_make(r.p + ((__builtin_ctzll(stop_bit) + 1) / 8),
+                            r.val | (b << 7));
   return my_r;
 }
 
-// A branchless decoder.  Credit to Daniel Wright for the bit-twiddling.
+/* A branchless decoder.  Credit to Daniel Wright for the bit-twiddling. */
 upb_decoderet upb_vdecode_max8_wright(upb_decoderet r) {
   uint64_t b;
+  uint64_t stop_bit;
+  upb_decoderet my_r;
   memcpy(&b, r.p, sizeof(b));
-  uint64_t stop_bit = upb_get_vstopbit(b);
+  stop_bit = upb_get_vstopbit(b);
   b &= (stop_bit - 1);
   b = ((b & 0x7f007f007f007f00ULL) >> 1) | (b & 0x007f007f007f007fULL);
   b = ((b & 0xffff0000ffff0000ULL) >> 2) | (b & 0x0000ffff0000ffffULL);
   b = ((b & 0xffffffff00000000ULL) >> 4) | (b & 0x00000000ffffffffULL);
   if (stop_bit == 0) {
-    // Error: unterminated varint.
+    /* Error: unterminated varint. */
     upb_decoderet err_r = {(void*)0, 0};
     return err_r;
   }
-  upb_decoderet my_r = {r.p + ((__builtin_ctzll(stop_bit) + 1) / 8),
-                        r.val | (b << 14)};
+  my_r = upb_decoderet_make(r.p + ((__builtin_ctzll(stop_bit) + 1) / 8),
+                            r.val | (b << 14));
   return my_r;
 }

@@ -62,6 +62,7 @@ void test_strtable(const vector<std::string>& keys, uint32_t num_to_insert) {
       upb_strtable_next(&iter)) {
     const char *key = upb_strtable_iter_key(&iter);
     std::string tmp(key, strlen(key));
+    ASSERT(strlen(key) == upb_strtable_iter_keylength(&iter));
     std::set<std::string>::iterator i = all.find(tmp);
     ASSERT(i != all.end());
     all.erase(i);

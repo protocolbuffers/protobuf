@@ -33,23 +33,23 @@
 extern "C" {
 #endif
 
-// Loads all defs from the given protobuf binary descriptor, setting default
-// accessors and a default layout on all messages.  The caller owns the
-// returned array of defs, which will be of length *n.  On error NULL is
-// returned and status is set (if non-NULL).
+/* Loads all defs from the given protobuf binary descriptor, setting default
+ * accessors and a default layout on all messages.  The caller owns the
+ * returned array of defs, which will be of length *n.  On error NULL is
+ * returned and status is set (if non-NULL). */
 upb_def **upb_load_defs_from_descriptor(const char *str, size_t len, int *n,
                                         void *owner, upb_status *status);
 
-// Like the previous but also adds the loaded defs to the given symtab.
+/* Like the previous but also adds the loaded defs to the given symtab. */
 bool upb_load_descriptor_into_symtab(upb_symtab *symtab, const char *str,
                                      size_t len, upb_status *status);
 
-// Like the previous but also reads the descriptor from the given filename.
+/* Like the previous but also reads the descriptor from the given filename. */
 bool upb_load_descriptor_file_into_symtab(upb_symtab *symtab, const char *fname,
                                           upb_status *status);
 
-// Reads the given filename into a character string, returning NULL if there
-// was an error.
+/* Reads the given filename into a character string, returning NULL if there
+ * was an error. */
 char *upb_readfile(const char *filename, size_t *len);
 
 #ifdef __cplusplus
@@ -57,8 +57,8 @@ char *upb_readfile(const char *filename, size_t *len);
 
 namespace upb {
 
-// All routines that load descriptors expect the descriptor to be a
-// FileDescriptorSet.
+/* All routines that load descriptors expect the descriptor to be a
+ * FileDescriptorSet. */
 inline bool LoadDescriptorFileIntoSymtab(SymbolTable* s, const char *fname,
                                          Status* status) {
   return upb_load_descriptor_file_into_symtab(s, fname, status);
@@ -69,14 +69,14 @@ inline bool LoadDescriptorIntoSymtab(SymbolTable* s, const char* str,
   return upb_load_descriptor_into_symtab(s, str, len, status);
 }
 
-// Templated so it can accept both string and std::string.
+/* Templated so it can accept both string and std::string. */
 template <typename T>
 bool LoadDescriptorIntoSymtab(SymbolTable* s, const T& desc, Status* status) {
   return upb_load_descriptor_into_symtab(s, desc.c_str(), desc.size(), status);
 }
 
-}  // namespace upb
+}  /* namespace upb */
 
 #endif
 
-#endif
+#endif  /* UPB_GLUE_H */

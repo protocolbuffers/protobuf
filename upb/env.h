@@ -27,32 +27,34 @@ class SeededAllocator;
 }
 #endif
 
-UPB_DECLARE_TYPE(upb::Environment, upb_env);
-UPB_DECLARE_TYPE(upb::SeededAllocator, upb_seededalloc);
+UPB_DECLARE_TYPE(upb::Environment, upb_env)
+UPB_DECLARE_TYPE(upb::SeededAllocator, upb_seededalloc)
 
 typedef void *upb_alloc_func(void *ud, void *ptr, size_t oldsize, size_t size);
 typedef void upb_cleanup_func(void *ud);
 typedef bool upb_error_func(void *ud, const upb_status *status);
 
-// An environment is *not* thread-safe.
-UPB_DEFINE_CLASS0(upb::Environment,
+#ifdef __cplusplus
+
+/* An environment is *not* thread-safe. */
+class upb::Environment {
  public:
   Environment();
   ~Environment();
 
-  // Set a custom memory allocation function for the environment.  May ONLY
-  // be called before any calls to Malloc()/Realloc()/AddCleanup() below.
-  // If this is not called, the system realloc() function will be used.
-  // The given user pointer "ud" will be passed to the allocation function.
-  //
-  // The allocation function will not receive corresponding "free" calls.  it
-  // must ensure that the memory is valid for the lifetime of the Environment,
-  // but it may be reclaimed any time thereafter.  The likely usage is that
-  // "ud" points to a stateful allocator, and that the allocator frees all
-  // memory, arena-style, when it is destroyed.  In this case the allocator must
-  // outlive the Environment.  Another possibility is that the allocation
-  // function returns GC-able memory that is guaranteed to be GC-rooted for the
-  // life of the Environment.
+  /* Set a custom memory allocation function for the environment.  May ONLY
+   * be called before any calls to Malloc()/Realloc()/AddCleanup() below.
+   * If this is not called, the system realloc() function will be used.
+   * The given user pointer "ud" will be passed to the allocation function.
+   *
+   * The allocation function will not receive corresponding "free" calls.  it
+   * must ensure that the memory is valid for the lifetime of the Environment,
+   * but it may be reclaimed any time thereafter.  The likely usage is that
+   * "ud" points to a stateful allocator, and that the allocator frees all
+   * memory, arena-style, when it is destroyed.  In this case the allocator must
+   * outlive the Environment.  Another possibility is that the allocation
+   * function returns GC-able memory that is guaranteed to be GC-rooted for the
+   * life of the Environment. */
   void SetAllocationFunction(upb_alloc_func* alloc, void* ud);
 
   template<class T>
@@ -60,74 +62,76 @@ UPB_DEFINE_CLASS0(upb::Environment,
     SetAllocationFunction(allocator->GetAllocationFunction(), allocator);
   }
 
-  // Set a custom error reporting function.
+  /* Set a custom error reporting function. */
   void SetErrorFunction(upb_error_func* func, void* ud);
 
-  // Set the error reporting function to simply copy the status to the given
-  // status and abort.
+  /* Set the error reporting function to simply copy the status to the given
+   * status and abort. */
   void ReportErrorsTo(Status* status);
 
-  // Returns true if all allocations and AddCleanup() calls have succeeded,
-  // and no errors were reported with ReportError() (except ones that recovered
-  // successfully).
+  /* Returns true if all allocations and AddCleanup() calls have succeeded,
+   * and no errors were reported with ReportError() (except ones that recovered
+   * successfully). */
   bool ok() const;
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Functions for use by encoders/decoders.
+  /* Functions for use by encoders/decoders. **********************************/
 
-  // Reports an error to this environment's callback, returning true if
-  // the caller should try to recover.
+  /* Reports an error to this environment's callback, returning true if
+   * the caller should try to recover. */
   bool ReportError(const Status* status);
 
-  // Allocate memory.  Uses the environment's allocation function.
-  //
-  // There is no need to free(). All memory will be freed automatically, but is
-  // guaranteed to outlive the Environment.
+  /* Allocate memory.  Uses the environment's allocation function.
+   *
+   * There is no need to free(). All memory will be freed automatically, but is
+   * guaranteed to outlive the Environment. */
   void* Malloc(size_t size);
 
-  // Reallocate memory.  Preserves "oldsize" bytes from the existing buffer
-  // Requires: oldsize <= existing_size.
-  //
-  // TODO(haberman): should we also enforce that oldsize <= size?
+  /* Reallocate memory.  Preserves "oldsize" bytes from the existing buffer
+   * Requires: oldsize <= existing_size.
+   *
+   * TODO(haberman): should we also enforce that oldsize <= size? */
   void* Realloc(void* ptr, size_t oldsize, size_t size);
 
-  // Add a cleanup function to run when the environment is destroyed.
-  // Returns false on out-of-memory.
-  //
-  // The first call to AddCleanup() after SetAllocationFunction() is guaranteed
-  // to return true -- this makes it possible to robustly set a cleanup handler
-  // for a custom allocation function.
+  /* Add a cleanup function to run when the environment is destroyed.
+   * Returns false on out-of-memory.
+   *
+   * The first call to AddCleanup() after SetAllocationFunction() is guaranteed
+   * to return true -- this makes it possible to robustly set a cleanup handler
+   * for a custom allocation function. */
   bool AddCleanup(upb_cleanup_func* func, void* ud);
 
-  // Total number of bytes that have been allocated.  It is undefined what
-  // Realloc() does to this counter.
+  /* Total number of bytes that have been allocated.  It is undefined what
+   * Realloc() does to this counter. */
   size_t BytesAllocated() const;
 
  private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(Environment);
-,
-UPB_DEFINE_STRUCT0(upb_env,
+  UPB_DISALLOW_COPY_AND_ASSIGN(Environment)
+
+#else
+struct upb_env {
+#endif  /* __cplusplus */
+
   bool ok_;
   size_t bytes_allocated;
 
-  // Alloc function.
+  /* Alloc function. */
   upb_alloc_func *alloc;
   void *alloc_ud;
 
-  // Error-reporting function.
+  /* Error-reporting function. */
   upb_error_func *err;
   void *err_ud;
 
-  // Userdata for default alloc func.
+  /* Userdata for default alloc func. */
   void *default_alloc_ud;
 
-  // Cleanup entries.  Pointer to a cleanup_ent, defined in env.c
+  /* Cleanup entries.  Pointer to a cleanup_ent, defined in env.c */
   void *cleanup_head;
 
-  // For future expansion, since the size of this struct is exposed to users.
+  /* For future expansion, since the size of this struct is exposed to users. */
   void *future1;
   void *future2;
-));
+};
 
 UPB_BEGIN_EXTERN_C
 
@@ -145,46 +149,51 @@ size_t upb_env_bytesallocated(const upb_env *e);
 
 UPB_END_EXTERN_C
 
-// An allocator that allocates from an initial memory region (likely the stack)
-// before falling back to another allocator.
-UPB_DEFINE_CLASS0(upb::SeededAllocator,
+#ifdef __cplusplus
+
+/* An allocator that allocates from an initial memory region (likely the stack)
+ * before falling back to another allocator. */
+class upb::SeededAllocator {
  public:
   SeededAllocator(void *mem, size_t len);
   ~SeededAllocator();
 
-  // Set a custom fallback memory allocation function for the allocator, to use
-  // once the initial region runs out.
-  //
-  // May ONLY be called before GetAllocationFunction().  If this is not
-  // called, the system realloc() will be the fallback allocator.
+  /* Set a custom fallback memory allocation function for the allocator, to use
+   * once the initial region runs out.
+   *
+   * May ONLY be called before GetAllocationFunction().  If this is not
+   * called, the system realloc() will be the fallback allocator. */
   void SetFallbackAllocator(upb_alloc_func *alloc, void *ud);
 
-  // Gets the allocation function for this allocator.
+  /* Gets the allocation function for this allocator. */
   upb_alloc_func* GetAllocationFunction();
 
  private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(SeededAllocator);
-,
-UPB_DEFINE_STRUCT0(upb_seededalloc,
-  // Fallback alloc function.
+  UPB_DISALLOW_COPY_AND_ASSIGN(SeededAllocator)
+
+#else
+struct upb_seededalloc {
+#endif  /* __cplusplus */
+
+  /* Fallback alloc function.  */
   upb_alloc_func *alloc;
   upb_cleanup_func *alloc_cleanup;
   void *alloc_ud;
   bool need_cleanup;
   bool returned_allocfunc;
 
-  // Userdata for default alloc func.
+  /* Userdata for default alloc func. */
   void *default_alloc_ud;
 
-  // Pointers for the initial memory region.
+  /* Pointers for the initial memory region. */
   char *mem_base;
   char *mem_ptr;
   char *mem_limit;
 
-  // For future expansion, since the size of this struct is exposed to users.
+  /* For future expansion, since the size of this struct is exposed to users. */
   void *future1;
   void *future2;
-));
+};
 
 UPB_BEGIN_EXTERN_C
 
@@ -249,8 +258,8 @@ inline upb_alloc_func *SeededAllocator::GetAllocationFunction() {
   return upb_seededalloc_getallocfunc(this);
 }
 
-}  // namespace upb
+}  /* namespace upb */
 
-#endif  // __cplusplus
+#endif  /* __cplusplus */
 
-#endif  // UPB_ENV_H_
+#endif  /* UPB_ENV_H_ */
