@@ -495,6 +495,20 @@ class LIBPROTOBUF_EXPORT Arena {
     static const type value;
   };
 
+  template<typename T>
+  struct is_destructor_skippable {
+    template<typename U>
+    static char DestructorSkippable(
+        const typename U::DestructorSkippable_*);
+    template<typename U>
+    static double DestructorSkippable(...);
+
+    typedef google::protobuf::internal::integral_constant<bool,
+              sizeof(DestructorSkippable<const T>(static_cast<const T*>(0))) ==
+              sizeof(char) || internal::has_trivial_destructor<T>::value> type;
+    static const bool value = type::value;
+  };
+
  private:
   // Blocks are variable length malloc-ed objects.  The following structure
   // describes the common header for all blocks.

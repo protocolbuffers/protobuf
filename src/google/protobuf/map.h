@@ -82,7 +82,13 @@ class MapPair {
   T second;
 
  private:
-  typedef void DestructorSkippable_;
+  // A class is only DestructorSkippable if all its base classes and embeded
+  // data members are DestructorSkippable.
+  //
+  // typedef typename internal::enable_if<
+  //   Arena::is_destructor_skippable<Key>::value &&
+  //   Arena::is_destructor_skippable<T>::value>::type DestructorSkippable_;
+
   friend class ::google::protobuf::Arena;
   friend class Map<Key, T>;
 };
@@ -439,7 +445,15 @@ class Map {
 
   friend class ::google::protobuf::Arena;
   typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  // A class is only DestructorSkippable if all of its base classes and
+  // embeded data members are DestructorSkippable.
+  //
+  // typedef typename internal::enable_if<
+  //     Arena::is_destructor_skippable<
+  //         hash_map<Key, value_type*, hash<Key>,
+  //                  equal_to<Key>, Allocator> >::value
+  // >::type DestructorSkippable_;
+
   template <typename K, typename V,
             internal::WireFormatLite::FieldType key_wire_type,
             internal::WireFormatLite::FieldType value_wire_type,

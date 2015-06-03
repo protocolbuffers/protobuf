@@ -83,6 +83,7 @@ class MapFieldLite {
   virtual Map<Key, T>* MutableInternalMap();
 
  private:
+  typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
 
   Arena* arena_;
@@ -119,7 +120,7 @@ template <typename Key, typename T,
           int default_enum_value>
 MapFieldLite<Key, T, key_wire_type, value_wire_type,
              default_enum_value>::~MapFieldLite() {
-  delete map_;
+  if (arena_ == NULL) delete map_;
 }
 
 template <typename Key, typename T,

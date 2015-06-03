@@ -61,8 +61,30 @@ void RegisterMapEntryDefaultInstance(MessageLite* default_instance) {
   map_entry_default_instances_->push_back(default_instance);
 }
 
+
+MapFieldBase::MapFieldBase()
+    : arena_(NULL),
+      repeated_field_(NULL),
+      entry_descriptor_(NULL),
+      assign_descriptor_callback_(NULL),
+      state_(STATE_MODIFIED_MAP) {
+  lazy_mutex_ = new LazyMutex();
+}
+
+MapFieldBase::MapFieldBase(Arena* arena)
+    : arena_(arena),
+      repeated_field_(NULL),
+      entry_descriptor_(NULL),
+      assign_descriptor_callback_(NULL),
+      state_(STATE_MODIFIED_MAP) {
+  lazy_mutex_ = Arena::Create<LazyMutex>(arena);
+}
+
 MapFieldBase::~MapFieldBase() {
-  if (repeated_field_ != NULL && arena_ == NULL) delete repeated_field_;
+  if (arena_ == NULL) {
+    delete repeated_field_;
+    delete lazy_mutex_;
+  }
 }
 
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
@@ -77,10 +99,8 @@ RepeatedPtrFieldBase* MapFieldBase::MutableRepeatedField() {
 }
 
 int MapFieldBase::SpaceUsedExcludingSelf() const {
-  mutex_.Lock();
-  int size = SpaceUsedExcludingSelfNoLock();
-  mutex_.Unlock();
-  return size;
+  MutexLock lock(lazy_mutex_->GetMutex());
+  return SpaceUsedExcludingSelfNoLock();
 }
 
 int MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
@@ -108,7 +128,7 @@ void MapFieldBase::SyncRepeatedFieldWithMap() const {
   // executed before state_ is checked.
   Atomic32 state = google::protobuf::internal::Acquire_Load(&state_);
   if (state == STATE_MODIFIED_MAP) {
-    mutex_.Lock();
+    MutexLock lock(lazy_mutex_->GetMutex());
     // Double check state, because another thread may have seen the same state
     // and done the synchronization before the current thread.
     if (state_ == STATE_MODIFIED_MAP) {
@@ -117,7 +137,6 @@ void MapFieldBase::SyncRepeatedFieldWithMap() const {
       // SyncRepeatedFieldWithMapNoLock is finished.
       google::protobuf::internal::Release_Store(&state_, CLEAN);
     }
-    mutex_.Unlock();
   }
 }
 
@@ -132,7 +151,7 @@ void MapFieldBase::SyncMapWithRepeatedField() const {
   // executed before state_ is checked.
   Atomic32 state = google::protobuf::internal::Acquire_Load(&state_);
   if (state == STATE_MODIFIED_REPEATED) {
-    mutex_.Lock();
+    MutexLock lock(lazy_mutex_->GetMutex());
     // Double check state, because another thread may have seen the same state
     // and done the synchronization before the current thread.
     if (state_ == STATE_MODIFIED_REPEATED) {
@@ -141,8 +160,16 @@ void MapFieldBase::SyncMapWithRepeatedField() const {
       // SyncRepeatedFieldWithMapNoLock is finished.
       google::protobuf::internal::Release_Store(&state_, CLEAN);
     }
-    mutex_.Unlock();
   }
+}
+
+static void InitMutex(Mutex** mutex) {
+  *mutex = new Mutex();
+}
+
+Mutex* MapFieldBase::LazyMutex::GetMutex() {
+  mutex_once_.Init(&InitMutex, &mutex_);
+  return mutex_;
 }
 
 }  // namespace internal

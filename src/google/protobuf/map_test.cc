@@ -2281,7 +2281,7 @@ TEST(TextFormatMapTest, Sorted) {
 
 
 // arena support =================================================
-TEST(ArenaTest, ParsingAndSerializingNoHeapAllocation) {
+TEST(MapArenaTest, ParsingAndSerializingNoHeapAllocation) {
   // Allocate a large initial block to avoid mallocs during hooked test.
   std::vector<char> arena_block(128 * 1024);
   ArenaOptions options;
@@ -2307,7 +2307,7 @@ TEST(ArenaTest, ParsingAndSerializingNoHeapAllocation) {
 }
 
 // Use text format parsing and serializing to test reflection api.
-TEST(ArenaTest, RelfectionInTextFormat) {
+TEST(MapArenaTest, RelfectionInTextFormat) {
   Arena arena;
   string data;
 

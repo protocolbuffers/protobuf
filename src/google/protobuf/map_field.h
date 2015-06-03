@@ -57,22 +57,8 @@ class MapFieldAccessor;
 // reflection implentation only. Users should never use this directly.
 class LIBPROTOBUF_EXPORT MapFieldBase {
  public:
-  MapFieldBase()
-      : arena_(NULL),
-        repeated_field_(NULL),
-        entry_descriptor_(NULL),
-        assign_descriptor_callback_(NULL),
-        state_(STATE_MODIFIED_MAP) {}
-  explicit MapFieldBase(Arena* arena)
-      : arena_(arena),
-        repeated_field_(NULL),
-        entry_descriptor_(NULL),
-        assign_descriptor_callback_(NULL),
-        state_(STATE_MODIFIED_MAP) {
-    // Mutex's destructor needs to be called explicitly to release resources
-    // acquired in its constructor.
-    arena->OwnDestructor(&mutex_);
-  }
+  MapFieldBase();
+  explicit MapFieldBase(Arena* arena);
   virtual ~MapFieldBase();
 
   // Returns reference to internal repeated field. Data written using
@@ -131,13 +117,28 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
   const Descriptor** entry_descriptor_;
   void (*assign_descriptor_callback_)();
 
-  mutable Mutex mutex_;  // The thread to synchronize map and repeated field
-                         // needs to get lock first;
   mutable volatile Atomic32 state_;  // 0: STATE_MODIFIED_MAP
                                      // 1: STATE_MODIFIED_REPEATED
                                      // 2: CLEAN
 
  private:
+  typedef void DestructorSkippable_;
+
+  // Only create the mutex when it's actually used.
+  class LazyMutex {
+   public:
+    LazyMutex() : mutex_(NULL) {}
+    ~LazyMutex() { delete mutex_; }
+    Mutex* GetMutex();
+   private:
+    GoogleOnceDynamic mutex_once_;
+    Mutex* mutex_;
+
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LazyMutex);
+  };
+
+  mutable LazyMutex* lazy_mutex_;
+
   friend class ContendedMapCleanTest;
   friend class GeneratedMessageReflection;
   friend class MapFieldAccessor;
@@ -213,7 +214,12 @@ class MapField : public MapFieldBase,
 
  private:
   typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
+  typedef typename internal::enable_if<
+      Arena::is_destructor_skippable<MapFieldBase>::value &&
+      Arena::is_destructor_skippable<
+          MapFieldLite<Key, T, kKeyFieldType, kValueFieldType,
+                       default_enum_value> >::value
+  >::type DestructorSkippable_;
 
   // MapField needs MapEntry's default instance to create new MapEntry.
   void InitDefaultEntryOnce() const;
