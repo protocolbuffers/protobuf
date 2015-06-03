@@ -31,8 +31,27 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena_test_util.h>
 
-
 #define EXPECT_EQ GOOGLE_CHECK_EQ
+
+static bool hook_;
+static int alloc_count_;
+static int free_count_;
+
+void* operator new(size_t size) {
+  if (hook_) {
+    assert(!"should not be called.");
+    ++alloc_count_;
+  }
+  return malloc(size);
+}
+
+void operator delete(void* p) {
+  if (hook_) {
+    assert(!"should not be called.");
+    ++free_count_;
+  }
+  free(p);
+}
 
 namespace google {
 namespace protobuf {
@@ -42,6 +61,24 @@ NoHeapChecker::~NoHeapChecker() {
   capture_alloc.Unhook();
   EXPECT_EQ(0, capture_alloc.alloc_count());
   EXPECT_EQ(0, capture_alloc.free_count());
+}
+
+void NoHeapChecker::NewDeleteCapture::Hook() {
+  hook_ = true;
+  alloc_count_ = 0;
+  free_count_ = 0;
+}
+
+void NoHeapChecker::NewDeleteCapture::Unhook() {
+  hook_ = false;
+}
+
+int NoHeapChecker::NewDeleteCapture::alloc_count() {
+  return alloc_count_;
+}
+
+int NoHeapChecker::NewDeleteCapture::free_count() {
+  return free_count_;
 }
 
 }  // namespace internal
