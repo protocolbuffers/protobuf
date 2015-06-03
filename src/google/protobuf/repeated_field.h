@@ -1125,7 +1125,9 @@ template <typename Element>
 inline typename RepeatedField<Element>::iterator RepeatedField<Element>::erase(
     const_iterator first, const_iterator last) {
   size_type first_offset = first - cbegin();
-  Truncate(std::copy(last, cend(), begin() + first_offset) - cbegin());
+  if (first != last) {
+    Truncate(std::copy(last, cend(), begin() + first_offset) - cbegin());
+  }
   return begin() + first_offset;
 }
 

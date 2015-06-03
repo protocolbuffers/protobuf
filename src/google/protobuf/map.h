@@ -176,14 +176,12 @@ class Map {
 
     template<class NodeType>
     void destroy(NodeType* p) {
-      if (arena_ == NULL) p->~NodeType();
+      p->~NodeType();
     }
 #else
     void construct(pointer p, const_reference t) { new (p) value_type(t); }
 
-    void destroy(pointer p) {
-      if (arena_ == NULL) p->~value_type();
-    }
+    void destroy(pointer p) { p->~value_type(); }
 #endif
 
     template <typename X>
@@ -201,10 +199,10 @@ class Map {
       return arena_ != other.arena_;
     }
 
-	// To support Visual Studio 2008
-	size_type max_size() const {
-		return std::numeric_limits<size_type>::max();
-	}
+    // To support Visual Studio 2008
+    size_type max_size() const {
+      return std::numeric_limits<size_type>::max();
+    }
 
    private:
     Arena* arena_;
