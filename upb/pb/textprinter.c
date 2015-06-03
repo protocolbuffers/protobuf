@@ -13,6 +13,7 @@
 #include <ctype.h>
 #include <float.h>
 #include <inttypes.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,22 +51,24 @@ static int endfield(upb_textprinter *p) {
 
 static int putescaped(upb_textprinter *p, const char *buf, size_t len,
                       bool preserve_utf8) {
-  // Based on CEscapeInternal() from Google's protobuf release.
+  /* Based on CEscapeInternal() from Google's protobuf release. */
   char dstbuf[4096], *dst = dstbuf, *dstend = dstbuf + sizeof(dstbuf);
   const char *end = buf + len;
 
-  // I think hex is prettier and more useful, but proto2 uses octal; should
-  // investigate whether it can parse hex also.
+  /* I think hex is prettier and more useful, but proto2 uses octal; should
+   * investigate whether it can parse hex also. */
   const bool use_hex = false;
-  bool last_hex_escape = false; // true if last output char was \xNN
+  bool last_hex_escape = false; /* true if last output char was \xNN */
 
   for (; buf < end; buf++) {
+    bool is_hex_escape;
+
     if (dstend - dst < 4) {
       upb_bytessink_putbuf(p->output_, p->subc, dstbuf, dst - dstbuf, NULL);
       dst = dstbuf;
     }
 
-    bool is_hex_escape = false;
+    is_hex_escape = false;
     switch (*buf) {
       case '\n': *(dst++) = '\\'; *(dst++) = 'n';  break;
       case '\r': *(dst++) = '\\'; *(dst++) = 'r';  break;
@@ -74,9 +77,9 @@ static int putescaped(upb_textprinter *p, const char *buf, size_t len,
       case '\'': *(dst++) = '\\'; *(dst++) = '\''; break;
       case '\\': *(dst++) = '\\'; *(dst++) = '\\'; break;
       default:
-        // Note that if we emit \xNN and the buf character after that is a hex
-        // digit then that digit must be escaped too to prevent it being
-        // interpreted as part of the character code by C.
+        /* Note that if we emit \xNN and the buf character after that is a hex
+         * digit then that digit must be escaped too to prevent it being
+         * interpreted as part of the character code by C. */
         if ((!preserve_utf8 || (uint8_t)*buf < 0x80) &&
             (!isprint(*buf) || (last_hex_escape && isxdigit(*buf)))) {
           sprintf(dst, (use_hex ? "\\x%02x" : "\\%03o"), (uint8_t)*buf);
@@ -88,29 +91,38 @@ static int putescaped(upb_textprinter *p, const char *buf, size_t len,
     }
     last_hex_escape = is_hex_escape;
   }
-  // Flush remaining data.
+  /* Flush remaining data. */
   upb_bytessink_putbuf(p->output_, p->subc, dstbuf, dst - dstbuf, NULL);
   return 0;
 }
 
+#ifdef __GNUC__
+#define va_copy(a, b) __va_copy(a, b)
+#endif
+
 bool putf(upb_textprinter *p, const char *fmt, ...) {
   va_list args;
+  va_list args_copy;
+  char *str;
+  int written;
+  int len;
+  bool ok;
+
   va_start(args, fmt);
 
-  // Run once to get the length of the string.
-  va_list args_copy;
+  /* Run once to get the length of the string. */
   va_copy(args_copy, args);
-  int len = vsnprintf(NULL, 0, fmt, args_copy);
+  len = vsprintf(NULL, fmt, args_copy);
   va_end(args_copy);
 
-  // + 1 for NULL terminator (vsnprintf() requires it even if we don't).
-  char *str = malloc(len + 1);
+  /* + 1 for NULL terminator (vsprintf() requires it even if we don't). */
+  str = malloc(len + 1);
   if (!str) return false;
-  int written = vsnprintf(str, len + 1, fmt, args);
+  written = vsprintf(str, fmt, args);
   va_end(args);
   UPB_ASSERT_VAR(written, written == len);
 
-  bool ok = upb_bytessink_putbuf(p->output_, p->subc, str, len, NULL);
+  ok = upb_bytessink_putbuf(p->output_, p->subc, str, len, NULL);
   free(str);
   return ok;
 }
@@ -119,8 +131,8 @@ bool putf(upb_textprinter *p, const char *fmt, ...) {
 /* handlers *******************************************************************/
 
 static bool textprinter_startmsg(void *c, const void *hd) {
-  UPB_UNUSED(hd);
   upb_textprinter *p = c;
+  UPB_UNUSED(hd);
   if (p->indent_depth_ == 0) {
     upb_bytessink_start(p->output_, 0, &p->subc);
   }
@@ -128,9 +140,9 @@ static bool textprinter_startmsg(void *c, const void *hd) {
 }
 
 static bool textprinter_endmsg(void *c, const void *hd, upb_status *s) {
+  upb_textprinter *p = c;
   UPB_UNUSED(hd);
   UPB_UNUSED(s);
-  upb_textprinter *p = c;
   if (p->indent_depth_ == 0) {
     upb_bytessink_end(p->output_);
   }
@@ -167,14 +179,14 @@ err:
 
 TYPE(int32,  int32_t,  "%" PRId32)
 TYPE(int64,  int64_t,  "%" PRId64)
-TYPE(uint32, uint32_t, "%" PRIu32);
+TYPE(uint32, uint32_t, "%" PRIu32)
 TYPE(uint64, uint64_t, "%" PRIu64)
 TYPE(float,  float,    "%." STRINGIFY_MACROVAL(FLT_DIG) "g")
 TYPE(double, double,   "%." STRINGIFY_MACROVAL(DBL_DIG) "g")
 
 #undef TYPE
 
-// Output a symbolic value from the enum if found, else just print as int32.
+/* Output a symbolic value from the enum if found, else just print as int32. */
 static bool textprinter_putenum(void *closure, const void *handler_data,
                                 int32_t val) {
   upb_textprinter *p = closure;
@@ -194,17 +206,17 @@ static bool textprinter_putenum(void *closure, const void *handler_data,
 
 static void *textprinter_startstr(void *closure, const void *handler_data,
                       size_t size_hint) {
+  upb_textprinter *p = closure;
   const upb_fielddef *f = handler_data;
   UPB_UNUSED(size_hint);
-  upb_textprinter *p = closure;
   indent(p);
   putf(p, "%s: \"", upb_fielddef_name(f));
   return p;
 }
 
 static bool textprinter_endstr(void *closure, const void *handler_data) {
-  UPB_UNUSED(handler_data);
   upb_textprinter *p = closure;
+  UPB_UNUSED(handler_data);
   putf(p, "\"");
   endfield(p);
   return true;
@@ -212,9 +224,9 @@ static bool textprinter_endstr(void *closure, const void *handler_data) {
 
 static size_t textprinter_putstr(void *closure, const void *hd, const char *buf,
                                  size_t len, const upb_bufhandle *handle) {
-  UPB_UNUSED(handle);
   upb_textprinter *p = closure;
   const upb_fielddef *f = hd;
+  UPB_UNUSED(handle);
   CHECK(putescaped(p, buf, len, upb_fielddef_type(f) == UPB_TYPE_STRING));
   return len;
 err:
@@ -233,8 +245,8 @@ err:
 }
 
 static bool textprinter_endsubmsg(void *closure, const void *handler_data) {
-  UPB_UNUSED(handler_data);
   upb_textprinter *p = closure;
+  UPB_UNUSED(handler_data);
   p->indent_depth_--;
   CHECK(indent(p));
   upb_bytessink_putbuf(p->output_, p->subc, "}", 1, NULL);
@@ -245,13 +257,13 @@ err:
 }
 
 static void onmreg(const void *c, upb_handlers *h) {
-  UPB_UNUSED(c);
   const upb_msgdef *m = upb_handlers_msgdef(h);
+  upb_msg_field_iter i;
+  UPB_UNUSED(c);
 
   upb_handlers_setstartmsg(h, textprinter_startmsg, NULL);
   upb_handlers_setendmsg(h, textprinter_endmsg, NULL);
 
-  upb_msg_field_iter i;
   for(upb_msg_field_begin(&i, m);
       !upb_msg_field_done(&i);
       upb_msg_field_next(&i)) {

@@ -18,23 +18,24 @@
 namespace upb {
 namespace json {
 class Parser;
-}  // namespace json
-}  // namespace upb
+}  /* namespace json */
+}  /* namespace upb */
 #endif
 
-UPB_DECLARE_TYPE(upb::json::Parser, upb_json_parser);
+UPB_DECLARE_TYPE(upb::json::Parser, upb_json_parser)
 
 /* upb::json::Parser **********************************************************/
 
-// Preallocation hint: parser won't allocate more bytes than this when first
-// constructed.  This hint may be an overestimate for some build configurations.
-// But if the parser library is upgraded without recompiling the application,
-// it may be an underestimate.
+/* Preallocation hint: parser won't allocate more bytes than this when first
+ * constructed.  This hint may be an overestimate for some build configurations.
+ * But if the parser library is upgraded without recompiling the application,
+ * it may be an underestimate. */
 #define UPB_JSON_PARSER_SIZE 3568
 
 #ifdef __cplusplus
 
-// Parses an incoming BytesStream, pushing the results to the destination sink.
+/* Parses an incoming BytesStream, pushing the results to the destination
+ * sink. */
 class upb::json::Parser {
  public:
   static Parser* Create(Environment* env, Sink* output);
@@ -42,7 +43,7 @@ class upb::json::Parser {
   BytesSink* input();
 
  private:
-  UPB_DISALLOW_POD_OPS(Parser, upb::json::Parser);
+  UPB_DISALLOW_POD_OPS(Parser, upb::json::Parser)
 };
 
 #endif
@@ -64,10 +65,10 @@ inline Parser* Parser::Create(Environment* env, Sink* output) {
 inline BytesSink* Parser::input() {
   return upb_json_parser_input(this);
 }
-}  // namespace json
-}  // namespace upb
+}  /* namespace json */
+}  /* namespace upb */
 
 #endif
 
 
-#endif  // UPB_JSON_PARSER_H_
+#endif  /* UPB_JSON_PARSER_H_ */

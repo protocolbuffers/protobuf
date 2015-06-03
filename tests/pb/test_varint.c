@@ -8,25 +8,30 @@
 #include "upb/pb/varint.int.h"
 #include "tests/upb_test.h"
 
-// Test that we can round-trip from int->varint->int.
+/* Test that we can round-trip from int->varint->int. */
 static void test_varint_for_num(upb_decoderet (*decoder)(const char*),
                                 uint64_t num) {
   char buf[16];
+  size_t bytes;
+  upb_decoderet r;
+
   memset(buf, 0xff, sizeof(buf));
-  size_t bytes = upb_vencode64(num, buf);
+  bytes = upb_vencode64(num, buf);
 
   if (num <= UINT32_MAX) {
-    char buf2[16];
-    memset(buf2, 0, sizeof(buf2));
     uint64_t encoded = upb_vencode32(num);
+    char buf2[16];
+    upb_decoderet r;
+
+    memset(buf2, 0, sizeof(buf2));
     memcpy(&buf2, &encoded, 8);
-    upb_decoderet r = decoder(buf2);
+    r = decoder(buf2);
     ASSERT(r.val == num);
     ASSERT(r.p == buf2 + upb_value_size(encoded));
     ASSERT(upb_zzenc_32(upb_zzdec_32(num)) == num);
   }
 
-  upb_decoderet r = decoder(buf);
+  r = decoder(buf);
   ASSERT(r.val == num);
   ASSERT(r.p == buf + bytes);
   ASSERT(upb_zzenc_64(upb_zzdec_64(num)) == num);
@@ -36,12 +41,22 @@ static void test_varint_decoder(upb_decoderet (*decoder)(const char*)) {
 #define TEST(bytes, expected_val) {\
     size_t n = sizeof(bytes) - 1;  /* for NULL */ \
     char buf[UPB_PB_VARINT_MAX_LEN]; \
+    upb_decoderet r; \
     memset(buf, 0xff, sizeof(buf)); \
     memcpy(buf, bytes, n); \
-    upb_decoderet r = decoder(buf); \
+    r = decoder(buf); \
     ASSERT(r.val == expected_val); \
     ASSERT(r.p == buf + n); \
   }
+
+  uint64_t num;
+
+  char twelvebyte[16] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1};
+  const char *twelvebyte_buf = twelvebyte;
+  /* A varint that terminates before hitting the end of the provided buffer,
+   * but in too many bytes (11 instead of 10). */
+  upb_decoderet r = decoder(twelvebyte_buf);
+  ASSERT(r.p == NULL);
 
   TEST("\x00",                                                      0ULL);
   TEST("\x01",                                                      1ULL);
@@ -57,16 +72,7 @@ static void test_varint_decoder(upb_decoderet (*decoder)(const char*)) {
   TEST("\x81\x83\x87\x8f\x9f\xbf\xff\x81\x83\x07", 0x8303fdf9f1e1c181ULL);
 #undef TEST
 
-  char twelvebyte[16] = {0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80,
-                         0x80, 0x01, 0x01};
-  const char *twelvebyte_buf = twelvebyte;
-  // A varint that terminates before hitting the end of the provided buffer,
-  // but in too many bytes (11 instead of 10).
-  upb_decoderet r = decoder(twelvebyte_buf);
-  ASSERT(r.p == NULL);
-
-
-  for (uint64_t num = 5; num * 1.5 < UINT64_MAX; num *= 1.5) {
+  for (num = 5; num * 1.5 < UINT64_MAX; num *= 1.5) {
     test_varint_for_num(decoder, num);
   }
   test_varint_for_num(decoder, 0);
@@ -80,16 +86,13 @@ static void test_varint_decoder(upb_decoderet (*decoder)(const char*)) {
     return upb_vdecode_ ## decoder(p); \
   } \
   void test_ ## decoder() { \
-    printf("Testing varint decoder: " #decoder "..."); \
-    fflush(stdout); \
     test_varint_decoder(&_upb_vdecode_ ## decoder); \
-    printf("ok.\n"); \
   } \
 
-TEST_VARINT_DECODER(check2_branch32);
-TEST_VARINT_DECODER(check2_branch64);
-TEST_VARINT_DECODER(check2_wright);
-TEST_VARINT_DECODER(check2_massimino);
+TEST_VARINT_DECODER(check2_branch32)
+TEST_VARINT_DECODER(check2_branch64)
+TEST_VARINT_DECODER(check2_wright)
+TEST_VARINT_DECODER(check2_massimino)
 
 int run_tests(int argc, char *argv[]) {
   UPB_UNUSED(argc);

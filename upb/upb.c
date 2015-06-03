@@ -20,10 +20,10 @@ bool upb_dumptostderr(void *closure, const upb_status* status) {
   return false;
 }
 
-// Guarantee null-termination and provide ellipsis truncation.
-// It may be tempting to "optimize" this by initializing these final
-// four bytes up-front and then being careful never to overwrite them,
-// this is safer and simpler.
+/* Guarantee null-termination and provide ellipsis truncation.
+ * It may be tempting to "optimize" this by initializing these final
+ * four bytes up-front and then being careful never to overwrite them,
+ * this is safer and simpler. */
 static void nullz(upb_status *status) {
   const char *ellipsis = "...";
   size_t len = strlen(ellipsis);
@@ -65,7 +65,7 @@ void upb_status_seterrf(upb_status *status, const char *fmt, ...) {
 void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args) {
   if (!status) return;
   status->ok_ = false;
-  vsnprintf(status->msg, sizeof(status->msg), fmt, args);
+  _upb_vsnprintf(status->msg, sizeof(status->msg), fmt, args);
   nullz(status);
 }
 

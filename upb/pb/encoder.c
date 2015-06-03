@@ -62,73 +62,74 @@
 
 #include <stdlib.h>
 
-// The output buffer is divided into segments; a segment is a string of data
-// that is "ready to go" -- it does not need any varint lengths inserted into
-// the middle.  The seams between segments are where varints will be inserted
-// once they are known.
-//
-// We also use the concept of a "run", which is a range of encoded bytes that
-// occur at a single submessage level.  Every segment contains one or more runs.
-//
-// A segment can span messages.  Consider:
-//
-//                  .--Submessage lengths---------.
-//                  |       |                     |
-//                  |       V                     V
-//                  V      | |---------------    | |-----------------
-// Submessages:    | |-----------------------------------------------
-// Top-level msg: ------------------------------------------------------------
-//
-// Segments:          -----   -------------------   -----------------
-// Runs:              *----   *--------------*---   *----------------
-// (* marks the start)
-//
-// Note that the top-level menssage is not in any segment because it does not
-// have any length preceding it.
-//
-// A segment is only interrupted when another length needs to be inserted.  So
-// observe how the second segment spans both the inner submessage and part of
-// the next enclosing message.
+/* The output buffer is divided into segments; a segment is a string of data
+ * that is "ready to go" -- it does not need any varint lengths inserted into
+ * the middle.  The seams between segments are where varints will be inserted
+ * once they are known.
+ *
+ * We also use the concept of a "run", which is a range of encoded bytes that
+ * occur at a single submessage level.  Every segment contains one or more runs.
+ *
+ * A segment can span messages.  Consider:
+ *
+ *                  .--Submessage lengths---------.
+ *                  |       |                     |
+ *                  |       V                     V
+ *                  V      | |---------------    | |-----------------
+ * Submessages:    | |-----------------------------------------------
+ * Top-level msg: ------------------------------------------------------------
+ *
+ * Segments:          -----   -------------------   -----------------
+ * Runs:              *----   *--------------*---   *----------------
+ * (* marks the start)
+ *
+ * Note that the top-level menssage is not in any segment because it does not
+ * have any length preceding it.
+ *
+ * A segment is only interrupted when another length needs to be inserted.  So
+ * observe how the second segment spans both the inner submessage and part of
+ * the next enclosing message. */
 typedef struct {
-  uint32_t msglen;  // The length to varint-encode before this segment.
-  uint32_t seglen;  // Length of the segment.
+  uint32_t msglen;  /* The length to varint-encode before this segment. */
+  uint32_t seglen;  /* Length of the segment. */
 } upb_pb_encoder_segment;
 
 struct upb_pb_encoder {
   upb_env *env;
 
-  // Our input and output.
+  /* Our input and output. */
   upb_sink input_;
   upb_bytessink *output_;
 
-  // The "subclosure" -- used as the inner closure as part of the bytessink
-  // protocol.
+  /* The "subclosure" -- used as the inner closure as part of the bytessink
+   * protocol. */
   void *subc;
 
-  // The output buffer and limit, and our current write position.  "buf"
-  // initially points to "initbuf", but is dynamically allocated if we need to
-  // grow beyond the initial size.
+  /* The output buffer and limit, and our current write position.  "buf"
+   * initially points to "initbuf", but is dynamically allocated if we need to
+   * grow beyond the initial size. */
   char *buf, *ptr, *limit;
 
-  // The beginning of the current run, or undefined if we are at the top level.
+  /* The beginning of the current run, or undefined if we are at the top
+   * level. */
   char *runbegin;
 
-  // The list of segments we are accumulating.
+  /* The list of segments we are accumulating. */
   upb_pb_encoder_segment *segbuf, *segptr, *seglimit;
 
-  // The stack of enclosing submessages.  Each entry in the stack points to the
-  // segment where this submessage's length is being accumulated.
+  /* The stack of enclosing submessages.  Each entry in the stack points to the
+   * segment where this submessage's length is being accumulated. */
   int *stack, *top, *stacklimit;
 
-  // Depth of startmsg/endmsg calls.
+  /* Depth of startmsg/endmsg calls. */
   int depth;
 };
 
 /* low-level buffering ********************************************************/
 
-// Low-level functions for interacting with the output buffer.
+/* Low-level functions for interacting with the output buffer. */
 
-// TODO(haberman): handle pushback
+/* TODO(haberman): handle pushback */
 static void putbuf(upb_pb_encoder *e, const char *buf, size_t len) {
   size_t n = upb_bytessink_putbuf(e->output_, e->subc, buf, len, NULL);
   UPB_ASSERT_VAR(n, n == len);
@@ -138,11 +139,12 @@ static upb_pb_encoder_segment *top(upb_pb_encoder *e) {
   return &e->segbuf[*e->top];
 }
 
-// Call to ensure that at least "bytes" bytes are available for writing at
-// e->ptr.  Returns false if the bytes could not be allocated.
+/* Call to ensure that at least "bytes" bytes are available for writing at
+ * e->ptr.  Returns false if the bytes could not be allocated. */
 static bool reserve(upb_pb_encoder *e, size_t bytes) {
   if ((size_t)(e->limit - e->ptr) < bytes) {
-    // Grow buffer.
+    /* Grow buffer. */
+    char *new_buf;
     size_t needed = bytes + (e->ptr - e->buf);
     size_t old_size = e->limit - e->buf;
 
@@ -152,7 +154,7 @@ static bool reserve(upb_pb_encoder *e, size_t bytes) {
       new_size *= 2;
     }
 
-    char *new_buf = upb_env_realloc(e->env, e->buf, old_size, new_size);
+    new_buf = upb_env_realloc(e->env, e->buf, old_size, new_size);
 
     if (new_buf == NULL) {
       return false;
@@ -167,22 +169,22 @@ static bool reserve(upb_pb_encoder *e, size_t bytes) {
   return true;
 }
 
-// Call when "bytes" bytes have been writte at e->ptr.  The caller *must* have
-// previously called reserve() with at least this many bytes.
+/* Call when "bytes" bytes have been writte at e->ptr.  The caller *must* have
+ * previously called reserve() with at least this many bytes. */
 static void encoder_advance(upb_pb_encoder *e, size_t bytes) {
   assert((size_t)(e->limit - e->ptr) >= bytes);
   e->ptr += bytes;
 }
 
-// Call when all of the bytes for a handler have been written.  Flushes the
-// bytes if possible and necessary, returning false if this failed.
+/* Call when all of the bytes for a handler have been written.  Flushes the
+ * bytes if possible and necessary, returning false if this failed. */
 static bool commit(upb_pb_encoder *e) {
   if (!e->top) {
-    // We aren't inside a delimited region.  Flush our accumulated bytes to
-    // the output.
-    //
-    // TODO(haberman): in the future we may want to delay flushing for
-    // efficiency reasons.
+    /* We aren't inside a delimited region.  Flush our accumulated bytes to
+     * the output.
+     *
+     * TODO(haberman): in the future we may want to delay flushing for
+     * efficiency reasons. */
     putbuf(e, e->buf, e->ptr - e->buf);
     e->ptr = e->buf;
   }
@@ -190,7 +192,7 @@ static bool commit(upb_pb_encoder *e) {
   return true;
 }
 
-// Writes the given bytes to the buffer, handling reserve/advance.
+/* Writes the given bytes to the buffer, handling reserve/advance. */
 static bool encode_bytes(upb_pb_encoder *e, const void *data, size_t len) {
   if (!reserve(e, len)) {
     return false;
@@ -201,32 +203,33 @@ static bool encode_bytes(upb_pb_encoder *e, const void *data, size_t len) {
   return true;
 }
 
-// Finish the current run by adding the run totals to the segment and message
-// length.
+/* Finish the current run by adding the run totals to the segment and message
+ * length. */
 static void accumulate(upb_pb_encoder *e) {
+  size_t run_len;
   assert(e->ptr >= e->runbegin);
-  size_t run_len = e->ptr - e->runbegin;
+  run_len = e->ptr - e->runbegin;
   e->segptr->seglen += run_len;
   top(e)->msglen += run_len;
   e->runbegin = e->ptr;
 }
 
-// Call to indicate the start of delimited region for which the full length is
-// not yet known.  All data will be buffered until the length is known.
-// Delimited regions may be nested; their lengths will all be tracked properly.
+/* Call to indicate the start of delimited region for which the full length is
+ * not yet known.  All data will be buffered until the length is known.
+ * Delimited regions may be nested; their lengths will all be tracked properly. */
 static bool start_delim(upb_pb_encoder *e) {
   if (e->top) {
-    // We are already buffering, advance to the next segment and push it on the
-    // stack.
+    /* We are already buffering, advance to the next segment and push it on the
+     * stack. */
     accumulate(e);
 
     if (++e->top == e->stacklimit) {
-      // TODO(haberman): grow stack?
+      /* TODO(haberman): grow stack? */
       return false;
     }
 
     if (++e->segptr == e->seglimit) {
-      // Grow segment buffer.
+      /* Grow segment buffer. */
       size_t old_size =
           (e->seglimit - e->segbuf) * sizeof(upb_pb_encoder_segment);
       size_t new_size = old_size * 2;
@@ -242,7 +245,7 @@ static bool start_delim(upb_pb_encoder *e) {
       e->segbuf = new_buf;
     }
   } else {
-    // We were previously at the top level, start buffering.
+    /* We were previously at the top level, start buffering. */
     e->segptr = e->segbuf;
     e->top = e->stack;
     e->runbegin = e->ptr;
@@ -255,15 +258,16 @@ static bool start_delim(upb_pb_encoder *e) {
   return true;
 }
 
-// Call to indicate the end of a delimited region.  We now know the length of
-// the delimited region.  If we are not nested inside any other delimited
-// regions, we can now emit all of the buffered data we accumulated.
+/* Call to indicate the end of a delimited region.  We now know the length of
+ * the delimited region.  If we are not nested inside any other delimited
+ * regions, we can now emit all of the buffered data we accumulated. */
 static bool end_delim(upb_pb_encoder *e) {
+  size_t msglen;
   accumulate(e);
-  size_t msglen = top(e)->msglen;
+  msglen = top(e)->msglen;
 
   if (e->top == e->stack) {
-    // All lengths are now available, emit all buffered data.
+    /* All lengths are now available, emit all buffered data. */
     char buf[UPB_PB_VARINT_MAX_LEN];
     upb_pb_encoder_segment *s;
     const char *ptr = e->buf;
@@ -277,7 +281,8 @@ static bool end_delim(upb_pb_encoder *e) {
     e->ptr = e->buf;
     e->top = NULL;
   } else {
-    // Need to keep buffering; propagate length info into enclosing submessages.
+    /* Need to keep buffering; propagate length info into enclosing
+     * submessages. */
     --e->top;
     top(e)->msglen += msglen + upb_varint_size(msglen);
   }
@@ -288,14 +293,14 @@ static bool end_delim(upb_pb_encoder *e) {
 
 /* tag_t **********************************************************************/
 
-// A precomputed (pre-encoded) tag and length.
+/* A precomputed (pre-encoded) tag and length. */
 
 typedef struct {
   uint8_t bytes;
   char tag[7];
 } tag_t;
 
-// Allocates a new tag for this field, and sets it in these handlerattr.
+/* Allocates a new tag for this field, and sets it in these handlerattr. */
 static void new_tag(upb_handlers *h, const upb_fielddef *f, upb_wiretype_t wt,
                     upb_handlerattr *attr) {
   uint32_t n = upb_fielddef_number(f);
@@ -316,12 +321,12 @@ static bool encode_tag(upb_pb_encoder *e, const tag_t *tag) {
 /* encoding of wire types *****************************************************/
 
 static bool encode_fixed64(upb_pb_encoder *e, uint64_t val) {
-  // TODO(haberman): byte-swap for big endian.
+  /* TODO(haberman): byte-swap for big endian. */
   return encode_bytes(e, &val, sizeof(uint64_t));
 }
 
 static bool encode_fixed32(upb_pb_encoder *e, uint32_t val) {
-  // TODO(haberman): byte-swap for big endian.
+  /* TODO(haberman): byte-swap for big endian. */
   return encode_bytes(e, &val, sizeof(uint32_t));
 }
 
@@ -408,19 +413,19 @@ static size_t encode_strbuf(void *c, const void *hd, const char *buf,
   }
 
 T(double,   double,   dbl2uint64,   encode_fixed64)
-T(float,    float,    flt2uint32,   encode_fixed32);
-T(int64,    int64_t,  uint64_t,     encode_varint);
-T(int32,    int32_t,  uint32_t,     encode_varint);
-T(fixed64,  uint64_t, uint64_t,     encode_fixed64);
-T(fixed32,  uint32_t, uint32_t,     encode_fixed32);
-T(bool,     bool,     bool,         encode_varint);
-T(uint32,   uint32_t, uint32_t,     encode_varint);
-T(uint64,   uint64_t, uint64_t,     encode_varint);
-T(enum,     int32_t,  uint32_t,     encode_varint);
-T(sfixed32, int32_t,  uint32_t,     encode_fixed32);
-T(sfixed64, int64_t,  uint64_t,     encode_fixed64);
-T(sint32,   int32_t,  upb_zzenc_32, encode_varint);
-T(sint64,   int64_t,  upb_zzenc_64, encode_varint);
+T(float,    float,    flt2uint32,   encode_fixed32)
+T(int64,    int64_t,  uint64_t,     encode_varint)
+T(int32,    int32_t,  uint32_t,     encode_varint)
+T(fixed64,  uint64_t, uint64_t,     encode_fixed64)
+T(fixed32,  uint32_t, uint32_t,     encode_fixed32)
+T(bool,     bool,     bool,         encode_varint)
+T(uint32,   uint32_t, uint32_t,     encode_varint)
+T(uint64,   uint64_t, uint64_t,     encode_varint)
+T(enum,     int32_t,  uint32_t,     encode_varint)
+T(sfixed32, int32_t,  uint32_t,     encode_fixed32)
+T(sfixed64, int64_t,  uint64_t,     encode_fixed64)
+T(sint32,   int32_t,  upb_zzenc_32, encode_varint)
+T(sint64,   int64_t,  upb_zzenc_64, encode_varint)
 
 #undef T
 
@@ -428,13 +433,15 @@ T(sint64,   int64_t,  upb_zzenc_64, encode_varint);
 /* code to build the handlers *************************************************/
 
 static void newhandlers_callback(const void *closure, upb_handlers *h) {
+  const upb_msgdef *m;
+  upb_msg_field_iter i;
+
   UPB_UNUSED(closure);
 
   upb_handlers_setstartmsg(h, startmsg, NULL);
   upb_handlers_setendmsg(h, endmsg, NULL);
 
-  const upb_msgdef *m = upb_handlers_msgdef(h);
-  upb_msg_field_iter i;
+  m = upb_handlers_msgdef(h);
   for(upb_msg_field_begin(&i, m);
       !upb_msg_field_done(&i);
       upb_msg_field_next(&i)) {
@@ -446,7 +453,7 @@ static void newhandlers_callback(const void *closure, upb_handlers *h) {
         packed ? UPB_WIRE_TYPE_DELIMITED
                : upb_pb_native_wire_types[upb_fielddef_descriptortype(f)];
 
-    // Pre-encode the tag for this field.
+    /* Pre-encode the tag for this field. */
     new_tag(h, f, wt, &attr);
 
     if (packed) {
@@ -489,7 +496,7 @@ static void newhandlers_callback(const void *closure, upb_handlers *h) {
         upb_handlers_setendsubmsg(h, f, encode_enddelimfield, &attr);
         break;
       case UPB_DESCRIPTOR_TYPE_GROUP: {
-        // Endgroup takes a different tag (wire_type = END_GROUP).
+        /* Endgroup takes a different tag (wire_type = END_GROUP). */
         upb_handlerattr attr2;
         new_tag(h, f, UPB_WIRE_TYPE_END_GROUP, &attr2);
 
@@ -525,7 +532,7 @@ upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
                                       upb_bytessink *output) {
   const size_t initial_bufsize = 256;
   const size_t initial_segbufsize = 16;
-  // TODO(haberman): make this configurable.
+  /* TODO(haberman): make this configurable. */
   const size_t stack_size = 64;
 #ifndef NDEBUG
   const size_t size_before = upb_env_bytesallocated(env);
@@ -554,7 +561,7 @@ upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
   e->subc = output->closure;
   e->ptr = e->buf;
 
-  // If this fails, increase the value in encoder.h.
+  /* If this fails, increase the value in encoder.h. */
   assert(upb_env_bytesallocated(env) - size_before <= UPB_PB_ENCODER_SIZE);
   return e;
 }

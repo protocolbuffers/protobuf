@@ -17,26 +17,26 @@
 
 struct upb_json_printer {
   upb_sink input_;
-  // BytesSink closure.
+  /* BytesSink closure. */
   void *subc_;
   upb_bytessink *output_;
 
-  // We track the depth so that we know when to emit startstr/endstr on the
-  // output.
+  /* We track the depth so that we know when to emit startstr/endstr on the
+   * output. */
   int depth_;
 
-  // Have we emitted the first element? This state is necessary to emit commas
-  // without leaving a trailing comma in arrays/maps. We keep this state per
-  // frame depth.
-  //
-  // Why max_depth * 2? UPB_MAX_HANDLER_DEPTH counts depth as nested messages.
-  // We count frames (contexts in which we separate elements by commas) as both
-  // repeated fields and messages (maps), and the worst case is a
-  // message->repeated field->submessage->repeated field->... nesting.
+  /* Have we emitted the first element? This state is necessary to emit commas
+   * without leaving a trailing comma in arrays/maps. We keep this state per
+   * frame depth.
+   *
+   * Why max_depth * 2? UPB_MAX_HANDLER_DEPTH counts depth as nested messages.
+   * We count frames (contexts in which we separate elements by commas) as both
+   * repeated fields and messages (maps), and the worst case is a
+   * message->repeated field->submessage->repeated field->... nesting. */
   bool first_elem_[UPB_MAX_HANDLER_DEPTH * 2];
 };
 
-// StringPiece; a pointer plus a length.
+/* StringPiece; a pointer plus a length. */
 typedef struct {
   const char *ptr;
   size_t len;
@@ -50,11 +50,11 @@ strpc *newstrpc(upb_handlers *h, const upb_fielddef *f) {
   return ret;
 }
 
-// ------------ JSON string printing: values, maps, arrays --------------------
+/* ------------ JSON string printing: values, maps, arrays ------------------ */
 
 static void print_data(
     upb_json_printer *p, const char *buf, unsigned int len) {
-  // TODO: Will need to change if we support pushback from the sink.
+  /* TODO: Will need to change if we support pushback from the sink. */
   size_t n = upb_bytessink_putbuf(p->output_, p->subc_, buf, len, NULL);
   UPB_ASSERT_VAR(n, n == len);
 }
@@ -66,18 +66,18 @@ static void print_comma(upb_json_printer *p) {
   p->first_elem_[p->depth_] = false;
 }
 
-// Helpers that print properly formatted elements to the JSON output stream.
+/* Helpers that print properly formatted elements to the JSON output stream. */
 
-// Used for escaping control chars in strings.
+/* Used for escaping control chars in strings. */
 static const char kControlCharLimit = 0x20;
 
-static inline bool is_json_escaped(char c) {
-  // See RFC 4627.
+UPB_INLINE bool is_json_escaped(char c) {
+  /* See RFC 4627. */
   unsigned char uc = (unsigned char)c;
   return uc < kControlCharLimit || uc == '"' || uc == '\\';
 }
 
-static inline char* json_nice_escape(char c) {
+UPB_INLINE char* json_nice_escape(char c) {
   switch (c) {
     case '"':  return "\\\"";
     case '\\': return "\\\\";
@@ -90,46 +90,47 @@ static inline char* json_nice_escape(char c) {
   }
 }
 
-// Write a properly escaped string chunk. The surrounding quotes are *not*
-// printed; this is so that the caller has the option of emitting the string
-// content in chunks.
+/* Write a properly escaped string chunk. The surrounding quotes are *not*
+ * printed; this is so that the caller has the option of emitting the string
+ * content in chunks. */
 static void putstring(upb_json_printer *p, const char *buf, unsigned int len) {
   const char* unescaped_run = NULL;
-  for (unsigned int i = 0; i < len; i++) {
+  unsigned int i;
+  for (i = 0; i < len; i++) {
     char c = buf[i];
-    // Handle escaping.
+    /* Handle escaping. */
     if (is_json_escaped(c)) {
-      // Use a "nice" escape, like \n, if one exists for this character.
+      /* Use a "nice" escape, like \n, if one exists for this character. */
       const char* escape = json_nice_escape(c);
-      // If we don't have a specific 'nice' escape code, use a \uXXXX-style
-      // escape.
+      /* If we don't have a specific 'nice' escape code, use a \uXXXX-style
+       * escape. */
       char escape_buf[8];
       if (!escape) {
         unsigned char byte = (unsigned char)c;
-        snprintf(escape_buf, sizeof(escape_buf), "\\u%04x", (int)byte);
+        _upb_snprintf(escape_buf, sizeof(escape_buf), "\\u%04x", (int)byte);
         escape = escape_buf;
       }
 
-      // N.B. that we assume that the input encoding is equal to the output
-      // encoding (both UTF-8 for  now), so for chars >= 0x20 and != \, ", we
-      // can simply pass the bytes through.
+      /* N.B. that we assume that the input encoding is equal to the output
+       * encoding (both UTF-8 for  now), so for chars >= 0x20 and != \, ", we
+       * can simply pass the bytes through. */
 
-      // If there's a current run of unescaped chars, print that run first.
+      /* If there's a current run of unescaped chars, print that run first. */
       if (unescaped_run) {
         print_data(p, unescaped_run, &buf[i] - unescaped_run);
         unescaped_run = NULL;
       }
-      // Then print the escape code.
+      /* Then print the escape code. */
       print_data(p, escape, strlen(escape));
     } else {
-      // Add to the current unescaped run of characters.
+      /* Add to the current unescaped run of characters. */
       if (unescaped_run == NULL) {
         unescaped_run = &buf[i];
       }
     }
   }
 
-  // If the string ended in a run of unescaped characters, print that last run.
+  /* If the string ended in a run of unescaped characters, print that last run. */
   if (unescaped_run) {
     print_data(p, unescaped_run, &buf[len] - unescaped_run);
   }
@@ -137,42 +138,42 @@ static void putstring(upb_json_printer *p, const char *buf, unsigned int len) {
 
 #define CHKLENGTH(x) if (!(x)) return -1;
 
-// Helpers that format floating point values according to our custom formats.
-// Right now we use %.8g and %.17g for float/double, respectively, to match
-// proto2::util::JsonFormat's defaults.  May want to change this later.
+/* Helpers that format floating point values according to our custom formats.
+ * Right now we use %.8g and %.17g for float/double, respectively, to match
+ * proto2::util::JsonFormat's defaults.  May want to change this later. */
 
 static size_t fmt_double(double val, char* buf, size_t length) {
-  size_t n = snprintf(buf, length, "%.17g", val);
+  size_t n = _upb_snprintf(buf, length, "%.17g", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
 static size_t fmt_float(float val, char* buf, size_t length) {
-  size_t n = snprintf(buf, length, "%.8g", val);
+  size_t n = _upb_snprintf(buf, length, "%.8g", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
 static size_t fmt_bool(bool val, char* buf, size_t length) {
-  size_t n = snprintf(buf, length, "%s", (val ? "true" : "false"));
+  size_t n = _upb_snprintf(buf, length, "%s", (val ? "true" : "false"));
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
 static size_t fmt_int64(long val, char* buf, size_t length) {
-  size_t n = snprintf(buf, length, "%ld", val);
+  size_t n = _upb_snprintf(buf, length, "%ld", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
 static size_t fmt_uint64(unsigned long long val, char* buf, size_t length) {
-  size_t n = snprintf(buf, length, "%llu", val);
+  size_t n = _upb_snprintf(buf, length, "%llu", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
-// Print a map key given a field name. Called by scalar field handlers and by
-// startseq for repeated fields.
+/* Print a map key given a field name. Called by scalar field handlers and by
+ * startseq for repeated fields. */
 static bool putkey(void *closure, const void *handler_data) {
   upb_json_printer *p = closure;
   const strpc *key = handler_data;
@@ -189,9 +190,9 @@ static bool putkey(void *closure, const void *handler_data) {
 #define TYPE_HANDLERS(type, fmt_func)                                        \
   static bool put##type(void *closure, const void *handler_data, type val) { \
     upb_json_printer *p = closure;                                           \
-    UPB_UNUSED(handler_data);                                                \
     char data[64];                                                           \
     size_t length = fmt_func(val, data, sizeof(data));                       \
+    UPB_UNUSED(handler_data);                                                \
     CHKFMT(length);                                                          \
     print_data(p, data, length);                                             \
     return true;                                                             \
@@ -220,20 +221,20 @@ static bool putkey(void *closure, const void *handler_data) {
     return true;                                                             \
   }
 
-TYPE_HANDLERS(double,   fmt_double);
-TYPE_HANDLERS(float,    fmt_float);
-TYPE_HANDLERS(bool,     fmt_bool);
-TYPE_HANDLERS(int32_t,  fmt_int64);
-TYPE_HANDLERS(uint32_t, fmt_int64);
-TYPE_HANDLERS(int64_t,  fmt_int64);
-TYPE_HANDLERS(uint64_t, fmt_uint64);
+TYPE_HANDLERS(double,   fmt_double)
+TYPE_HANDLERS(float,    fmt_float)
+TYPE_HANDLERS(bool,     fmt_bool)
+TYPE_HANDLERS(int32_t,  fmt_int64)
+TYPE_HANDLERS(uint32_t, fmt_int64)
+TYPE_HANDLERS(int64_t,  fmt_int64)
+TYPE_HANDLERS(uint64_t, fmt_uint64)
 
-// double and float are not allowed to be map keys.
-TYPE_HANDLERS_MAPKEY(bool,     fmt_bool);
-TYPE_HANDLERS_MAPKEY(int32_t,  fmt_int64);
-TYPE_HANDLERS_MAPKEY(uint32_t, fmt_int64);
-TYPE_HANDLERS_MAPKEY(int64_t,  fmt_int64);
-TYPE_HANDLERS_MAPKEY(uint64_t, fmt_uint64);
+/* double and float are not allowed to be map keys. */
+TYPE_HANDLERS_MAPKEY(bool,     fmt_bool)
+TYPE_HANDLERS_MAPKEY(int32_t,  fmt_int64)
+TYPE_HANDLERS_MAPKEY(uint32_t, fmt_int64)
+TYPE_HANDLERS_MAPKEY(int64_t,  fmt_int64)
+TYPE_HANDLERS_MAPKEY(uint64_t, fmt_uint64)
 
 #undef TYPE_HANDLERS
 #undef TYPE_HANDLERS_MAPKEY
@@ -247,9 +248,11 @@ static bool scalar_enum(void *closure, const void *handler_data,
                         int32_t val) {
   const EnumHandlerData *hd = handler_data;
   upb_json_printer *p = closure;
+  const char *symbolic_name;
+
   CHK(putkey(closure, hd->keyname));
 
-  const char *symbolic_name = upb_enumdef_iton(hd->enumdef, val);
+  symbolic_name = upb_enumdef_iton(hd->enumdef, val);
   if (symbolic_name) {
     print_data(p, "\"", 1);
     putstring(p, symbolic_name, strlen(symbolic_name));
@@ -300,8 +303,8 @@ static void *scalar_startsubmsg(void *closure, const void *handler_data) {
 }
 
 static void *repeated_startsubmsg(void *closure, const void *handler_data) {
-  UPB_UNUSED(handler_data);
   upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
   print_comma(p);
   return closure;
 }
@@ -318,8 +321,8 @@ static void end_frame(upb_json_printer *p) {
 }
 
 static bool printer_startmsg(void *closure, const void *handler_data) {
-  UPB_UNUSED(handler_data);
   upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
   if (p->depth_ == 0) {
     upb_bytessink_start(p->output_, 0, &p->subc_);
   }
@@ -328,9 +331,9 @@ static bool printer_startmsg(void *closure, const void *handler_data) {
 }
 
 static bool printer_endmsg(void *closure, const void *handler_data, upb_status *s) {
+  upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
   UPB_UNUSED(s);
-  upb_json_printer *p = closure;
   end_frame(p);
   if (p->depth_ == 0) {
     upb_bytessink_end(p->output_);
@@ -348,8 +351,8 @@ static void *startseq(void *closure, const void *handler_data) {
 }
 
 static bool endseq(void *closure, const void *handler_data) {
-  UPB_UNUSED(handler_data);
   upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
   print_data(p, "]", 1);
   p->depth_--;
   return true;
@@ -365,8 +368,8 @@ static void *startmap(void *closure, const void *handler_data) {
 }
 
 static bool endmap(void *closure, const void *handler_data) {
-  UPB_UNUSED(handler_data);
   upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
   print_data(p, "}", 1);
   p->depth_--;
   return true;
@@ -374,32 +377,35 @@ static bool endmap(void *closure, const void *handler_data) {
 
 static size_t putstr(void *closure, const void *handler_data, const char *str,
                      size_t len, const upb_bufhandle *handle) {
+  upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
   UPB_UNUSED(handle);
-  upb_json_printer *p = closure;
   putstring(p, str, len);
   return len;
 }
 
-// This has to Base64 encode the bytes, because JSON has no "bytes" type.
+/* This has to Base64 encode the bytes, because JSON has no "bytes" type. */
 static size_t putbytes(void *closure, const void *handler_data, const char *str,
                        size_t len, const upb_bufhandle *handle) {
-  UPB_UNUSED(handler_data);
-  UPB_UNUSED(handle);
   upb_json_printer *p = closure;
 
-  // This is the regular base64, not the "web-safe" version.
+  /* This is the regular base64, not the "web-safe" version. */
   static const char base64[] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-  // Base64-encode.
+  /* Base64-encode. */
   char data[16000];
   const char *limit = data + sizeof(data);
   const unsigned char *from = (const unsigned char*)str;
   char *to = data;
   size_t remaining = len;
+  size_t bytes;
+
+  UPB_UNUSED(handler_data);
+  UPB_UNUSED(handle);
+
   while (remaining > 2) {
-    // TODO(haberman): handle encoded lengths > sizeof(data)
+    /* TODO(haberman): handle encoded lengths > sizeof(data) */
     UPB_ASSERT_VAR(limit, (limit - to) >= 4);
 
     to[0] = base64[from[0] >> 2];
@@ -431,7 +437,7 @@ static size_t putbytes(void *closure, const void *handler_data, const char *str,
       break;
   }
 
-  size_t bytes = to - data;
+  bytes = to - data;
   print_data(p, "\"", 1);
   putstring(p, data, bytes);
   print_data(p, "\"", 1);
@@ -440,9 +446,9 @@ static size_t putbytes(void *closure, const void *handler_data, const char *str,
 
 static void *scalar_startstr(void *closure, const void *handler_data,
                              size_t size_hint) {
+  upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
   UPB_UNUSED(size_hint);
-  upb_json_printer *p = closure;
   CHK(putkey(closure, handler_data));
   print_data(p, "\"", 1);
   return p;
@@ -456,17 +462,17 @@ static size_t scalar_str(void *closure, const void *handler_data,
 }
 
 static bool scalar_endstr(void *closure, const void *handler_data) {
-  UPB_UNUSED(handler_data);
   upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
   print_data(p, "\"", 1);
   return true;
 }
 
 static void *repeated_startstr(void *closure, const void *handler_data,
                                size_t size_hint) {
+  upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
   UPB_UNUSED(size_hint);
-  upb_json_printer *p = closure;
   print_comma(p);
   print_data(p, "\"", 1);
   return p;
@@ -480,17 +486,17 @@ static size_t repeated_str(void *closure, const void *handler_data,
 }
 
 static bool repeated_endstr(void *closure, const void *handler_data) {
-  UPB_UNUSED(handler_data);
   upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
   print_data(p, "\"", 1);
   return true;
 }
 
 static void *mapkeyval_startstr(void *closure, const void *handler_data,
                                 size_t size_hint) {
+  upb_json_printer *p = closure;
   UPB_UNUSED(handler_data);
   UPB_UNUSED(size_hint);
-  upb_json_printer *p = closure;
   print_data(p, "\"", 1);
   return p;
 }
@@ -503,15 +509,15 @@ static size_t mapkey_str(void *closure, const void *handler_data,
 }
 
 static bool mapkey_endstr(void *closure, const void *handler_data) {
-  UPB_UNUSED(handler_data);
   upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
   print_data(p, "\":", 2);
   return true;
 }
 
 static bool mapvalue_endstr(void *closure, const void *handler_data) {
-  UPB_UNUSED(handler_data);
   upb_json_printer *p = closure;
+  UPB_UNUSED(handler_data);
   print_data(p, "\"", 1);
   return true;
 }
@@ -552,29 +558,30 @@ static void set_enum_hd(upb_handlers *h,
   upb_handlerattr_sethandlerdata(attr, hd);
 }
 
-// Set up handlers for a mapentry submessage (i.e., an individual key/value pair
-// in a map).
-//
-// TODO: Handle missing key, missing value, out-of-order key/value, or repeated
-// key or value cases properly. The right way to do this is to allocate a
-// temporary structure at the start of a mapentry submessage, store key and
-// value data in it as key and value handlers are called, and then print the
-// key/value pair once at the end of the submessage. If we don't do this, we
-// should at least detect the case and throw an error. However, so far all of
-// our sources that emit mapentry messages do so canonically (with one key
-// field, and then one value field), so this is not a pressing concern at the
-// moment.
+/* Set up handlers for a mapentry submessage (i.e., an individual key/value pair
+ * in a map).
+ *
+ * TODO: Handle missing key, missing value, out-of-order key/value, or repeated
+ * key or value cases properly. The right way to do this is to allocate a
+ * temporary structure at the start of a mapentry submessage, store key and
+ * value data in it as key and value handlers are called, and then print the
+ * key/value pair once at the end of the submessage. If we don't do this, we
+ * should at least detect the case and throw an error. However, so far all of
+ * our sources that emit mapentry messages do so canonically (with one key
+ * field, and then one value field), so this is not a pressing concern at the
+ * moment. */
 void printer_sethandlers_mapentry(const void *closure, upb_handlers *h) {
-  UPB_UNUSED(closure);
   const upb_msgdef *md = upb_handlers_msgdef(h);
 
-  // A mapentry message is printed simply as '"key": value'. Rather than
-  // special-case key and value for every type below, we just handle both
-  // fields explicitly here.
+  /* A mapentry message is printed simply as '"key": value'. Rather than
+   * special-case key and value for every type below, we just handle both
+   * fields explicitly here. */
   const upb_fielddef* key_field = upb_msgdef_itof(md, UPB_MAPENTRY_KEY);
   const upb_fielddef* value_field = upb_msgdef_itof(md, UPB_MAPENTRY_VALUE);
 
   upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+
+  UPB_UNUSED(closure);
 
   switch (upb_fielddef_type(key_field)) {
     case UPB_TYPE_INT32:
@@ -643,8 +650,8 @@ void printer_sethandlers_mapentry(const void *closure, upb_handlers *h) {
       break;
     }
     case UPB_TYPE_MESSAGE:
-      // No handler necessary -- the submsg handlers will print the message
-      // as appropriate.
+      /* No handler necessary -- the submsg handlers will print the message
+       * as appropriate. */
       break;
   }
 
@@ -652,14 +659,16 @@ void printer_sethandlers_mapentry(const void *closure, upb_handlers *h) {
 }
 
 void printer_sethandlers(const void *closure, upb_handlers *h) {
-  UPB_UNUSED(closure);
   const upb_msgdef *md = upb_handlers_msgdef(h);
   bool is_mapentry = upb_msgdef_mapentry(md);
   upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_msg_field_iter i;
+
+  UPB_UNUSED(closure);
 
   if (is_mapentry) {
-    // mapentry messages are sufficiently different that we handle them
-    // separately.
+    /* mapentry messages are sufficiently different that we handle them
+     * separately. */
     printer_sethandlers_mapentry(closure, h);
     return;
   }
@@ -676,7 +685,6 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
     }                                                                         \
     break;
 
-  upb_msg_field_iter i;
   upb_msg_field_begin(&i, md);
   for(; !upb_msg_field_done(&i); upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
@@ -701,9 +709,9 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
       TYPE(UPB_TYPE_INT64,  int64,  int64_t);
       TYPE(UPB_TYPE_UINT64, uint64, uint64_t);
       case UPB_TYPE_ENUM: {
-        // For now, we always emit symbolic names for enums. We may want an
-        // option later to control this behavior, but we will wait for a real
-        // need first.
+        /* For now, we always emit symbolic names for enums. We may want an
+         * option later to control this behavior, but we will wait for a real
+         * need first. */
         upb_handlerattr enum_attr = UPB_HANDLERATTR_INITIALIZER;
         set_enum_hd(h, f, &enum_attr);
 
@@ -728,8 +736,8 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
         }
         break;
       case UPB_TYPE_BYTES:
-        // XXX: this doesn't support strings that span buffers yet. The base64
-        // encoder will need to be made resumable for this to work properly.
+        /* XXX: this doesn't support strings that span buffers yet. The base64
+         * encoder will need to be made resumable for this to work properly. */
         if (upb_fielddef_isseq(f)) {
           upb_handlers_setstring(h, f, repeated_bytes, &empty_attr);
         } else {
@@ -772,7 +780,7 @@ upb_json_printer *upb_json_printer_create(upb_env *e, const upb_handlers *h,
   json_printer_reset(p);
   upb_sink_reset(&p->input_, h, p);
 
-  // If this fails, increase the value in printer.h.
+  /* If this fails, increase the value in printer.h. */
   assert(upb_env_bytesallocated(e) - size_before <= UPB_JSON_PRINTER_SIZE);
   return p;
 }

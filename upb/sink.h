@@ -30,88 +30,90 @@ class Sink;
 }
 #endif
 
-UPB_DECLARE_TYPE(upb::BufferSource, upb_bufsrc);
-UPB_DECLARE_TYPE(upb::BytesSink, upb_bytessink);
-UPB_DECLARE_TYPE(upb::Sink, upb_sink);
+UPB_DECLARE_TYPE(upb::BufferSource, upb_bufsrc)
+UPB_DECLARE_TYPE(upb::BytesSink, upb_bytessink)
+UPB_DECLARE_TYPE(upb::Sink, upb_sink)
 
-// A upb::Sink is an object that binds a upb::Handlers object to some runtime
-// state.  It represents an endpoint to which data can be sent.
-//
-// TODO(haberman): right now all of these functions take selectors.  Should they
-// take selectorbase instead?
-//
-// ie. instead of calling:
-//   sink->StartString(FOO_FIELD_START_STRING, ...)
-// a selector base would let you say:
-//   sink->StartString(FOO_FIELD, ...)
-//
-// This would make call sites a little nicer and require emitting fewer selector
-// definitions in .h files.
-//
-// But the current scheme has the benefit that you can retrieve a function
-// pointer for any handler with handlers->GetHandler(selector), without having
-// to have a separate GetHandler() function for each handler type.  The JIT
-// compiler uses this.  To accommodate we'd have to expose a separate
-// GetHandler() for every handler type.
-//
-// Also to ponder: selectors right now are independent of a specific Handlers
-// instance.  In other words, they allocate a number to every possible handler
-// that *could* be registered, without knowing anything about what handlers
-// *are* registered.  That means that using selectors as table offsets prohibits
-// us from compacting the handler table at Freeze() time.  If the table is very
-// sparse, this could be wasteful.
-//
-// Having another selector-like thing that is specific to a Handlers instance
-// would allow this compacting, but then it would be impossible to write code
-// ahead-of-time that can be bound to any Handlers instance at runtime.  For
-// example, a .proto file parser written as straight C will not know what
-// Handlers it will be bound to, so when it calls sink->StartString() what
-// selector will it pass?  It needs a selector like we have today, that is
-// independent of any particular upb::Handlers.
-//
-// Is there a way then to allow Handlers table compaction?
-UPB_DEFINE_CLASS0(upb::Sink,
+#ifdef __cplusplus
+
+/* A upb::Sink is an object that binds a upb::Handlers object to some runtime
+ * state.  It represents an endpoint to which data can be sent.
+ *
+ * TODO(haberman): right now all of these functions take selectors.  Should they
+ * take selectorbase instead?
+ *
+ * ie. instead of calling:
+ *   sink->StartString(FOO_FIELD_START_STRING, ...)
+ * a selector base would let you say:
+ *   sink->StartString(FOO_FIELD, ...)
+ *
+ * This would make call sites a little nicer and require emitting fewer selector
+ * definitions in .h files.
+ *
+ * But the current scheme has the benefit that you can retrieve a function
+ * pointer for any handler with handlers->GetHandler(selector), without having
+ * to have a separate GetHandler() function for each handler type.  The JIT
+ * compiler uses this.  To accommodate we'd have to expose a separate
+ * GetHandler() for every handler type.
+ *
+ * Also to ponder: selectors right now are independent of a specific Handlers
+ * instance.  In other words, they allocate a number to every possible handler
+ * that *could* be registered, without knowing anything about what handlers
+ * *are* registered.  That means that using selectors as table offsets prohibits
+ * us from compacting the handler table at Freeze() time.  If the table is very
+ * sparse, this could be wasteful.
+ *
+ * Having another selector-like thing that is specific to a Handlers instance
+ * would allow this compacting, but then it would be impossible to write code
+ * ahead-of-time that can be bound to any Handlers instance at runtime.  For
+ * example, a .proto file parser written as straight C will not know what
+ * Handlers it will be bound to, so when it calls sink->StartString() what
+ * selector will it pass?  It needs a selector like we have today, that is
+ * independent of any particular upb::Handlers.
+ *
+ * Is there a way then to allow Handlers table compaction? */
+class upb::Sink {
  public:
-  // Constructor with no initialization; must be Reset() before use.
+  /* Constructor with no initialization; must be Reset() before use. */
   Sink() {}
 
-  // Constructs a new sink for the given frozen handlers and closure.
-  //
-  // TODO: once the Handlers know the expected closure type, verify that T
-  // matches it.
+  /* Constructs a new sink for the given frozen handlers and closure.
+   *
+   * TODO: once the Handlers know the expected closure type, verify that T
+   * matches it. */
   template <class T> Sink(const Handlers* handlers, T* closure);
 
-  // Resets the value of the sink.
+  /* Resets the value of the sink. */
   template <class T> void Reset(const Handlers* handlers, T* closure);
 
-  // Returns the top-level object that is bound to this sink.
-  //
-  // TODO: once the Handlers know the expected closure type, verify that T
-  // matches it.
+  /* Returns the top-level object that is bound to this sink.
+   *
+   * TODO: once the Handlers know the expected closure type, verify that T
+   * matches it. */
   template <class T> T* GetObject() const;
 
-  // Functions for pushing data into the sink.
-  //
-  // These return false if processing should stop (either due to error or just
-  // to suspend).
-  //
-  // These may not be called from within one of the same sink's handlers (in
-  // other words, handlers are not re-entrant).
+  /* Functions for pushing data into the sink.
+   *
+   * These return false if processing should stop (either due to error or just
+   * to suspend).
+   *
+   * These may not be called from within one of the same sink's handlers (in
+   * other words, handlers are not re-entrant). */
 
-  // Should be called at the start and end of every message; both the top-level
-  // message and submessages.  This means that submessages should use the
-  // following sequence:
-  //   sink->StartSubMessage(startsubmsg_selector);
-  //   sink->StartMessage();
-  //   // ...
-  //   sink->EndMessage(&status);
-  //   sink->EndSubMessage(endsubmsg_selector);
+  /* Should be called at the start and end of every message; both the top-level
+   * message and submessages.  This means that submessages should use the
+   * following sequence:
+   *   sink->StartSubMessage(startsubmsg_selector);
+   *   sink->StartMessage();
+   *   // ...
+   *   sink->EndMessage(&status);
+   *   sink->EndSubMessage(endsubmsg_selector); */
   bool StartMessage();
   bool EndMessage(Status* status);
 
-  // Putting of individual values.  These work for both repeated and
-  // non-repeated fields, but for repeated fields you must wrap them in
-  // calls to StartSequence()/EndSequence().
+  /* Putting of individual values.  These work for both repeated and
+   * non-repeated fields, but for repeated fields you must wrap them in
+   * calls to StartSequence()/EndSequence(). */
   bool PutInt32(Handlers::Selector s, int32_t val);
   bool PutInt64(Handlers::Selector s, int64_t val);
   bool PutUInt32(Handlers::Selector s, uint32_t val);
@@ -120,92 +122,101 @@ UPB_DEFINE_CLASS0(upb::Sink,
   bool PutDouble(Handlers::Selector s, double val);
   bool PutBool(Handlers::Selector s, bool val);
 
-  // Putting of string/bytes values.  Each string can consist of zero or more
-  // non-contiguous buffers of data.
-  //
-  // For StartString(), the function will write a sink for the string to "sub."
-  // The sub-sink must be used for any/all PutStringBuffer() calls.
+  /* Putting of string/bytes values.  Each string can consist of zero or more
+   * non-contiguous buffers of data.
+   *
+   * For StartString(), the function will write a sink for the string to "sub."
+   * The sub-sink must be used for any/all PutStringBuffer() calls. */
   bool StartString(Handlers::Selector s, size_t size_hint, Sink* sub);
   size_t PutStringBuffer(Handlers::Selector s, const char *buf, size_t len,
                          const BufferHandle *handle);
   bool EndString(Handlers::Selector s);
 
-  // For submessage fields.
-  //
-  // For StartSubMessage(), the function will write a sink for the string to
-  // "sub." The sub-sink must be used for any/all handlers called within the
-  // submessage.
+  /* For submessage fields.
+   *
+   * For StartSubMessage(), the function will write a sink for the string to
+   * "sub." The sub-sink must be used for any/all handlers called within the
+   * submessage. */
   bool StartSubMessage(Handlers::Selector s, Sink* sub);
   bool EndSubMessage(Handlers::Selector s);
 
-  // For repeated fields of any type, the sequence of values must be wrapped in
-  // these calls.
-  //
-  // For StartSequence(), the function will write a sink for the string to
-  // "sub." The sub-sink must be used for any/all handlers called within the
-  // sequence.
+  /* For repeated fields of any type, the sequence of values must be wrapped in
+   * these calls.
+   *
+   * For StartSequence(), the function will write a sink for the string to
+   * "sub." The sub-sink must be used for any/all handlers called within the
+   * sequence. */
   bool StartSequence(Handlers::Selector s, Sink* sub);
   bool EndSequence(Handlers::Selector s);
 
-  // Copy and assign specifically allowed.
-  // We don't even bother making these members private because so many
-  // functions need them and this is mainly just a dumb data container anyway.
-,
-UPB_DEFINE_STRUCT0(upb_sink,
+  /* Copy and assign specifically allowed.
+   * We don't even bother making these members private because so many
+   * functions need them and this is mainly just a dumb data container anyway.
+   */
+#else
+struct upb_sink {
+#endif
   const upb_handlers *handlers;
   void *closure;
-));
+};
 
-UPB_DEFINE_CLASS0(upb::BytesSink,
+#ifdef __cplusplus
+class upb::BytesSink {
  public:
   BytesSink() {}
 
-  // Constructs a new sink for the given frozen handlers and closure.
-  //
-  // TODO(haberman): once the Handlers know the expected closure type, verify
-  // that T matches it.
+  /* Constructs a new sink for the given frozen handlers and closure.
+   *
+   * TODO(haberman): once the Handlers know the expected closure type, verify
+   * that T matches it. */
   template <class T> BytesSink(const BytesHandler* handler, T* closure);
 
-  // Resets the value of the sink.
+  /* Resets the value of the sink. */
   template <class T> void Reset(const BytesHandler* handler, T* closure);
 
   bool Start(size_t size_hint, void **subc);
   size_t PutBuffer(void *subc, const char *buf, size_t len,
                    const BufferHandle *handle);
   bool End();
-,
-UPB_DEFINE_STRUCT0(upb_bytessink,
+#else
+struct upb_bytessink {
+#endif
   const upb_byteshandler *handler;
   void *closure;
-));
+};
 
-// A class for pushing a flat buffer of data to a BytesSink.
-// You can construct an instance of this to get a resumable source,
-// or just call the static PutBuffer() to do a non-resumable push all in one go.
-UPB_DEFINE_CLASS0(upb::BufferSource,
+#ifdef __cplusplus
+
+/* A class for pushing a flat buffer of data to a BytesSink.
+ * You can construct an instance of this to get a resumable source,
+ * or just call the static PutBuffer() to do a non-resumable push all in one
+ * go. */
+class upb::BufferSource {
  public:
   BufferSource();
   BufferSource(const char* buf, size_t len, BytesSink* sink);
 
-  // Returns true if the entire buffer was pushed successfully.  Otherwise the
-  // next call to PutNext() will resume where the previous one left off.
-  // TODO(haberman): implement this.
+  /* Returns true if the entire buffer was pushed successfully.  Otherwise the
+   * next call to PutNext() will resume where the previous one left off.
+   * TODO(haberman): implement this. */
   bool PutNext();
 
-  // A static version; with this version is it not possible to resume in the
-  // case of failure or a partially-consumed buffer.
+  /* A static version; with this version is it not possible to resume in the
+   * case of failure or a partially-consumed buffer. */
   static bool PutBuffer(const char* buf, size_t len, BytesSink* sink);
 
   template <class T> static bool PutBuffer(const T& str, BytesSink* sink) {
     return PutBuffer(str.c_str(), str.size(), sink);
   }
-,
-UPB_DEFINE_STRUCT0(upb_bufsrc,
-));
+#else
+struct upb_bufsrc {
+  char dummy;
+#endif
+};
 
-UPB_BEGIN_EXTERN_C  // {
+UPB_BEGIN_EXTERN_C
 
-// Inline definitions.
+/* Inline definitions. */
 
 UPB_INLINE void upb_bytessink_reset(upb_bytessink *s, const upb_byteshandler *h,
                                     void *closure) {
@@ -215,10 +226,11 @@ UPB_INLINE void upb_bytessink_reset(upb_bytessink *s, const upb_byteshandler *h,
 
 UPB_INLINE bool upb_bytessink_start(upb_bytessink *s, size_t size_hint,
                                     void **subc) {
+  typedef upb_startstr_handlerfunc func;
+  func *start;
   *subc = s->closure;
   if (!s->handler) return true;
-  upb_startstr_handlerfunc *start =
-      (upb_startstr_handlerfunc *)s->handler->table[UPB_STARTSTR_SELECTOR].func;
+  start = (func *)s->handler->table[UPB_STARTSTR_SELECTOR].func;
 
   if (!start) return true;
   *subc = start(s->closure, upb_handlerattr_handlerdata(
@@ -230,9 +242,10 @@ UPB_INLINE bool upb_bytessink_start(upb_bytessink *s, size_t size_hint,
 UPB_INLINE size_t upb_bytessink_putbuf(upb_bytessink *s, void *subc,
                                        const char *buf, size_t size,
                                        const upb_bufhandle* handle) {
+  typedef upb_string_handlerfunc func;
+  func *putbuf;
   if (!s->handler) return true;
-  upb_string_handlerfunc *putbuf =
-      (upb_string_handlerfunc *)s->handler->table[UPB_STRING_SELECTOR].func;
+  putbuf = (func *)s->handler->table[UPB_STRING_SELECTOR].func;
 
   if (!putbuf) return true;
   return putbuf(subc, upb_handlerattr_handlerdata(
@@ -241,9 +254,10 @@ UPB_INLINE size_t upb_bytessink_putbuf(upb_bytessink *s, void *subc,
 }
 
 UPB_INLINE bool upb_bytessink_end(upb_bytessink *s) {
+  typedef upb_endfield_handlerfunc func;
+  func *end;
   if (!s->handler) return true;
-  upb_endfield_handlerfunc *end =
-      (upb_endfield_handlerfunc *)s->handler->table[UPB_ENDSTR_SELECTOR].func;
+  end = (func *)s->handler->table[UPB_ENDSTR_SELECTOR].func;
 
   if (!end) return true;
   return end(s->closure,
@@ -254,10 +268,11 @@ UPB_INLINE bool upb_bytessink_end(upb_bytessink *s) {
 UPB_INLINE bool upb_bufsrc_putbuf(const char *buf, size_t len,
                                   upb_bytessink *sink) {
   void *subc;
+  bool ret;
   upb_bufhandle handle;
   upb_bufhandle_init(&handle);
   upb_bufhandle_setbuf(&handle, buf, 0);
-  bool ret = upb_bytessink_start(sink, len, &subc);
+  ret = upb_bytessink_start(sink, len, &subc);
   if (ret && len != 0) {
     ret = (upb_bytessink_putbuf(sink, subc, buf, len, &handle) == len);
   }
@@ -271,21 +286,23 @@ UPB_INLINE bool upb_bufsrc_putbuf(const char *buf, size_t len,
 #define PUTVAL(type, ctype)                                                    \
   UPB_INLINE bool upb_sink_put##type(upb_sink *s, upb_selector_t sel,          \
                                      ctype val) {                              \
+    typedef upb_##type##_handlerfunc functype;                                 \
+    functype *func;                                                            \
+    const void *hd;                                                            \
     if (!s->handlers) return true;                                             \
-    upb_##type##_handlerfunc *func =                                           \
-        (upb_##type##_handlerfunc *)upb_handlers_gethandler(s->handlers, sel); \
+    func = (functype *)upb_handlers_gethandler(s->handlers, sel);              \
     if (!func) return true;                                                    \
-    const void *hd = upb_handlers_gethandlerdata(s->handlers, sel);            \
+    hd = upb_handlers_gethandlerdata(s->handlers, sel);                        \
     return func(s->closure, hd, val);                                          \
   }
 
-PUTVAL(int32,  int32_t);
-PUTVAL(int64,  int64_t);
-PUTVAL(uint32, uint32_t);
-PUTVAL(uint64, uint64_t);
-PUTVAL(float,  float);
-PUTVAL(double, double);
-PUTVAL(bool,   bool);
+PUTVAL(int32,  int32_t)
+PUTVAL(int64,  int64_t)
+PUTVAL(uint32, uint32_t)
+PUTVAL(uint64, uint64_t)
+PUTVAL(float,  float)
+PUTVAL(double, double)
+PUTVAL(bool,   bool)
 #undef PUTVAL
 
 UPB_INLINE void upb_sink_reset(upb_sink *s, const upb_handlers *h, void *c) {
@@ -296,114 +313,129 @@ UPB_INLINE void upb_sink_reset(upb_sink *s, const upb_handlers *h, void *c) {
 UPB_INLINE size_t upb_sink_putstring(upb_sink *s, upb_selector_t sel,
                                      const char *buf, size_t n,
                                      const upb_bufhandle *handle) {
+  typedef upb_string_handlerfunc func;
+  func *handler;
+  const void *hd;
   if (!s->handlers) return n;
-  upb_string_handlerfunc *handler =
-      (upb_string_handlerfunc *)upb_handlers_gethandler(s->handlers, sel);
+  handler = (func *)upb_handlers_gethandler(s->handlers, sel);
 
   if (!handler) return n;
-  const void *hd = upb_handlers_gethandlerdata(s->handlers, sel);
+  hd = upb_handlers_gethandlerdata(s->handlers, sel);
   return handler(s->closure, hd, buf, n, handle);
 }
 
 UPB_INLINE bool upb_sink_startmsg(upb_sink *s) {
+  typedef upb_startmsg_handlerfunc func;
+  func *startmsg;
+  const void *hd;
   if (!s->handlers) return true;
-  upb_startmsg_handlerfunc *startmsg =
-      (upb_startmsg_handlerfunc *)upb_handlers_gethandler(s->handlers,
-                                                      UPB_STARTMSG_SELECTOR);
+  startmsg = (func*)upb_handlers_gethandler(s->handlers, UPB_STARTMSG_SELECTOR);
+
   if (!startmsg) return true;
-  const void *hd =
-      upb_handlers_gethandlerdata(s->handlers, UPB_STARTMSG_SELECTOR);
+  hd = upb_handlers_gethandlerdata(s->handlers, UPB_STARTMSG_SELECTOR);
   return startmsg(s->closure, hd);
 }
 
 UPB_INLINE bool upb_sink_endmsg(upb_sink *s, upb_status *status) {
+  typedef upb_endmsg_handlerfunc func;
+  func *endmsg;
+  const void *hd;
   if (!s->handlers) return true;
-  upb_endmsg_handlerfunc *endmsg =
-      (upb_endmsg_handlerfunc *)upb_handlers_gethandler(s->handlers,
-                                                        UPB_ENDMSG_SELECTOR);
+  endmsg = (func *)upb_handlers_gethandler(s->handlers, UPB_ENDMSG_SELECTOR);
 
   if (!endmsg) return true;
-  const void *hd =
-      upb_handlers_gethandlerdata(s->handlers, UPB_ENDMSG_SELECTOR);
+  hd = upb_handlers_gethandlerdata(s->handlers, UPB_ENDMSG_SELECTOR);
   return endmsg(s->closure, hd, status);
 }
 
 UPB_INLINE bool upb_sink_startseq(upb_sink *s, upb_selector_t sel,
                                   upb_sink *sub) {
+  typedef upb_startfield_handlerfunc func;
+  func *startseq;
+  const void *hd;
   sub->closure = s->closure;
   sub->handlers = s->handlers;
   if (!s->handlers) return true;
-  upb_startfield_handlerfunc *startseq =
-      (upb_startfield_handlerfunc*)upb_handlers_gethandler(s->handlers, sel);
+  startseq = (func*)upb_handlers_gethandler(s->handlers, sel);
 
   if (!startseq) return true;
-  const void *hd = upb_handlers_gethandlerdata(s->handlers, sel);
+  hd = upb_handlers_gethandlerdata(s->handlers, sel);
   sub->closure = startseq(s->closure, hd);
   return sub->closure ? true : false;
 }
 
 UPB_INLINE bool upb_sink_endseq(upb_sink *s, upb_selector_t sel) {
+  typedef upb_endfield_handlerfunc func;
+  func *endseq;
+  const void *hd;
   if (!s->handlers) return true;
-  upb_endfield_handlerfunc *endseq =
-      (upb_endfield_handlerfunc*)upb_handlers_gethandler(s->handlers, sel);
+  endseq = (func*)upb_handlers_gethandler(s->handlers, sel);
 
   if (!endseq) return true;
-  const void *hd = upb_handlers_gethandlerdata(s->handlers, sel);
+  hd = upb_handlers_gethandlerdata(s->handlers, sel);
   return endseq(s->closure, hd);
 }
 
 UPB_INLINE bool upb_sink_startstr(upb_sink *s, upb_selector_t sel,
                                   size_t size_hint, upb_sink *sub) {
+  typedef upb_startstr_handlerfunc func;
+  func *startstr;
+  const void *hd;
   sub->closure = s->closure;
   sub->handlers = s->handlers;
   if (!s->handlers) return true;
-  upb_startstr_handlerfunc *startstr =
-      (upb_startstr_handlerfunc*)upb_handlers_gethandler(s->handlers, sel);
+  startstr = (func*)upb_handlers_gethandler(s->handlers, sel);
 
   if (!startstr) return true;
-  const void *hd = upb_handlers_gethandlerdata(s->handlers, sel);
+  hd = upb_handlers_gethandlerdata(s->handlers, sel);
   sub->closure = startstr(s->closure, hd, size_hint);
   return sub->closure ? true : false;
 }
 
 UPB_INLINE bool upb_sink_endstr(upb_sink *s, upb_selector_t sel) {
+  typedef upb_endfield_handlerfunc func;
+  func *endstr;
+  const void *hd;
   if (!s->handlers) return true;
-  upb_endfield_handlerfunc *endstr =
-      (upb_endfield_handlerfunc*)upb_handlers_gethandler(s->handlers, sel);
+  endstr = (func*)upb_handlers_gethandler(s->handlers, sel);
 
   if (!endstr) return true;
-  const void *hd = upb_handlers_gethandlerdata(s->handlers, sel);
+  hd = upb_handlers_gethandlerdata(s->handlers, sel);
   return endstr(s->closure, hd);
 }
 
 UPB_INLINE bool upb_sink_startsubmsg(upb_sink *s, upb_selector_t sel,
                                      upb_sink *sub) {
+  typedef upb_startfield_handlerfunc func;
+  func *startsubmsg;
+  const void *hd;
   sub->closure = s->closure;
   if (!s->handlers) {
     sub->handlers = NULL;
     return true;
   }
   sub->handlers = upb_handlers_getsubhandlers_sel(s->handlers, sel);
-  upb_startfield_handlerfunc *startsubmsg =
-      (upb_startfield_handlerfunc*)upb_handlers_gethandler(s->handlers, sel);
+  startsubmsg = (func*)upb_handlers_gethandler(s->handlers, sel);
 
   if (!startsubmsg) return true;
-  const void *hd = upb_handlers_gethandlerdata(s->handlers, sel);
+  hd = upb_handlers_gethandlerdata(s->handlers, sel);
   sub->closure = startsubmsg(s->closure, hd);
   return sub->closure ? true : false;
 }
 
 UPB_INLINE bool upb_sink_endsubmsg(upb_sink *s, upb_selector_t sel) {
+  typedef upb_endfield_handlerfunc func;
+  func *endsubmsg;
+  const void *hd;
   if (!s->handlers) return true;
-  upb_endfield_handlerfunc *endsubmsg =
-      (upb_endfield_handlerfunc*)upb_handlers_gethandler(s->handlers, sel);
+  endsubmsg = (func*)upb_handlers_gethandler(s->handlers, sel);
 
   if (!endsubmsg) return s->closure;
-  const void *hd = upb_handlers_gethandlerdata(s->handlers, sel);
+  hd = upb_handlers_gethandlerdata(s->handlers, sel);
   return endsubmsg(s->closure, hd);
 }
 
-UPB_END_EXTERN_C  // }
+UPB_END_EXTERN_C
 
 #ifdef __cplusplus
 
@@ -492,7 +524,7 @@ inline bool BufferSource::PutBuffer(const char *buf, size_t len,
   return upb_bufsrc_putbuf(buf, len, sink);
 }
 
-}  // namespace upb
+}  /* namespace upb */
 #endif
 
 #endif

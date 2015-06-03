@@ -449,12 +449,13 @@ case goog::FieldDescriptor::cpptype:                                           \
     enum OneofType {
       ONEOF_TYPE_NONE,
       ONEOF_TYPE_STRING,
-      ONEOF_TYPE_MESSAGE,
+      ONEOF_TYPE_MESSAGE
 #ifdef UPB_GOOGLE3
+      ,
       ONEOF_TYPE_GLOBALSTRING,
       ONEOF_TYPE_CORD,
       ONEOF_TYPE_STRINGPIECE,
-      ONEOF_TYPE_LAZYFIELD,
+      ONEOF_TYPE_LAZYFIELD
 #endif
     };
 
