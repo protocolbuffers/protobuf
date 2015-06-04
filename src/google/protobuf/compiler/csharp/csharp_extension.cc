@@ -39,7 +39,6 @@
 
 #include <google/protobuf/compiler/csharp/csharp_extension.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
-#include <google/protobuf/compiler/csharp/csharp_writer.h>
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
 
 using google::protobuf::internal::scoped_ptr;
@@ -52,20 +51,34 @@ namespace csharp {
 ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor)
     : FieldGeneratorBase(descriptor, 0) {
   if (descriptor_->extension_scope()) {
-    scope_ = GetClassName(descriptor_->extension_scope());
+    variables_["scope"] = GetClassName(descriptor_->extension_scope());
   } else {
-    scope_ = GetFullUmbrellaClassName(descriptor_->file());
+    variables_["scope"] = GetFullUmbrellaClassName(descriptor_->file());
   }
-  extends_ = GetClassName(descriptor_->containing_type());
+  variables_["extends"] = GetClassName(descriptor_->containing_type());
+  variables_["capitalized_type_name"] = capitalized_type_name();
+  variables_["full_name"] = descriptor_->full_name();
+  variables_["access_level"] = class_access_level();
+  variables_["index"] = SimpleItoa(descriptor_->index());
+  variables_["property_name"] = property_name();
+  variables_["type_name"] = type_name();
+  if (use_lite_runtime()) {
+    variables_["generated_extension"] = descriptor_->is_repeated() ?
+      "GeneratedRepeatExtensionLite" : "GeneratedExtensionLite";
+  } else {
+    variables_["generated_extension"] = descriptor_->is_repeated() ?
+      "GeneratedRepeatExtension" : "GeneratedExtension";
+  }
 }
 
 ExtensionGenerator::~ExtensionGenerator() {
 }
 
-void ExtensionGenerator::Generate(Writer* writer) {
-  writer->WriteLine("public const int $0$ = $1$;",
-                    GetFieldConstantName(descriptor_),
-                    SimpleItoa(descriptor_->number()));
+void ExtensionGenerator::Generate(io::Printer* printer) {
+  printer->Print(
+    "public const int $constant_name$ = $number$;\n",
+    "constant_name", GetFieldConstantName(descriptor_),
+    "number", SimpleItoa(descriptor_->number()));
 
   if (use_lite_runtime()) {
     // TODO(jtattermusch): include the following check
@@ -75,36 +88,34 @@ void ExtensionGenerator::Generate(Writer* writer) {
     //        "option message_set_wire_format = true; is not supported in Lite runtime extensions.");
     //}
 
-    writer->Write("$0$ ", class_access_level());
-    writer->WriteLine(
-        "static pb::$3$<$0$, $1$> $2$;",
-        extends_,
-        type_name(),
-        property_name(),
-        descriptor_->is_repeated() ?
-            "GeneratedRepeatExtensionLite" : "GeneratedExtensionLite");
+    printer->Print(
+      variables_,
+      "$access_level$ static pb::$generated_extension$<$extends$, $type_name$> $property_name$;\n");
   } else if (descriptor_->is_repeated()) {
-    writer->WriteLine(
-        "$0$ static pb::GeneratedExtensionBase<scg::IList<$1$>> $2$;",
-        class_access_level(), type_name(), property_name());
+    printer->Print(
+      variables_,
+      "$access_level$ static pb::GeneratedExtensionBase<scg::IList<$type_name$>> $property_name$;\n");
   } else {
-    writer->WriteLine("$0$ static pb::GeneratedExtensionBase<$1$> $2$;",
-                      class_access_level(), type_name(), property_name());
+    printer->Print(
+      variables_,
+      "$access_level$ static pb::GeneratedExtensionBase<$type_name$> $property_name$;\n");
   }
 }
 
-void ExtensionGenerator::GenerateStaticVariableInitializers(Writer* writer) {
+void ExtensionGenerator::GenerateStaticVariableInitializers(io::Printer* printer) {
   if (use_lite_runtime()) {
-    writer->WriteLine("$0$.$1$ = ", scope_, property_name());
-    writer->Indent();
-    writer->WriteLine(
-        "new pb::$0$<$1$, $2$>(",
-        descriptor_->is_repeated() ?
-            "GeneratedRepeatExtensionLite" : "GeneratedExtensionLite",
-        extends_, type_name());
-    writer->Indent();
-    writer->WriteLine("\"$0$\",", descriptor_->full_name());
-    writer->WriteLine("$0$.DefaultInstance,", extends_);
+    printer->Print(
+      variables_,
+      "$scope$.$property_name$ = \n");
+    printer->Indent();
+    printer->Print(
+      variables_,
+      "new pb::$generated_extension$<$extends$, $type_name$>(\n");
+    printer->Indent();
+    printer->Print(
+      variables_,
+      "\"$full_name$\",\n"
+      "$extends$.DefaultInstance,\n");
     if (!descriptor_->is_repeated()) {
       std::string default_val;
       if (descriptor_->has_default_value()) {
@@ -112,52 +123,59 @@ void ExtensionGenerator::GenerateStaticVariableInitializers(Writer* writer) {
       } else {
         default_val = is_nullable_type() ? "null" : ("default(" + type_name() + ")");
       }
-      writer->WriteLine("$0$,", default_val);
+      printer->Print("$default_val$,\n", "default_val", default_val);
     }
-    writer->WriteLine(
-        "$0$,",
-        (GetCSharpType(descriptor_->type()) == CSHARPTYPE_MESSAGE) ?
-            type_name() + ".DefaultInstance" : "null");
-    writer->WriteLine(
-        "$0$,",
-        (GetCSharpType(descriptor_->type()) == CSHARPTYPE_ENUM) ?
-            "new EnumLiteMap<" + type_name() + ">()" : "null");
-    writer->WriteLine("$0$.$1$FieldNumber,", scope_,
-                      GetPropertyName(descriptor_));
-    writer->Write("pbd::FieldType.$0$", capitalized_type_name());
+    printer->Print(
+      "$message_val$,\n",
+      "message_val",
+      (GetCSharpType(descriptor_->type()) == CSHARPTYPE_MESSAGE) ?
+	  type_name() + ".DefaultInstance" : "null");
+    printer->Print(
+      "$enum_val$,\n",
+      "enum_val",
+      (GetCSharpType(descriptor_->type()) == CSHARPTYPE_ENUM) ?
+	  "new EnumLiteMap<" + type_name() + ">()" : "null");
+    printer->Print(
+      variables_,
+      "$scope$.$property_name$FieldNumber,\n"
+      "pbd::FieldType.$capitalized_type_name$");
     if (descriptor_->is_repeated()) {
-      writer->WriteLine(",");
-      writer->Write(descriptor_->is_packed() ? "true" : "false");
+      printer->Print(
+        ",\n"
+        "$is_packed$",
+        "is_packed", descriptor_->is_packed() ? "true" : "false");
     }
-    writer->Outdent();
-    writer->WriteLine(");");
-    writer->Outdent();
+    printer->Outdent();
+    printer->Print(");\n");
+    printer->Outdent();
   }
   else if (descriptor_->is_repeated())
   {
-     writer->WriteLine(
-         "$0$.$1$ = pb::GeneratedRepeatExtension<$2$>.CreateInstance($0$.Descriptor.Extensions[$3$]);",
-         scope_, property_name(), type_name(), SimpleItoa(descriptor_->index()));
+    printer->Print(
+      variables_,
+      "$scope$.$property_name$ = pb::GeneratedRepeatExtension<$type_name$>.CreateInstance($scope$.Descriptor.Extensions[$index$]);\n");
   }
   else
   {
-     writer->WriteLine(
-         "$0$.$1$ = pb::GeneratedSingleExtension<$2$>.CreateInstance($0$.Descriptor.Extensions[$3$]);",
-         scope_, property_name(), type_name(), SimpleItoa(descriptor_->index()));
+    printer->Print(
+      variables_,
+      "$scope$.$property_name$ = pb::GeneratedSingleExtension<$type_name$>.CreateInstance($scope$.Descriptor.Extensions[$index$]);\n");
   }
 }
 
-void ExtensionGenerator::GenerateExtensionRegistrationCode(Writer* writer) {
-  writer->WriteLine("registry.Add($0$.$1$);", scope_, property_name());
+void ExtensionGenerator::GenerateExtensionRegistrationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "registry.Add($scope$.$property_name$);\n");
 }
 
-void ExtensionGenerator::WriteHash(Writer* writer) {
+void ExtensionGenerator::WriteHash(io::Printer* printer) {
 }
 
-void ExtensionGenerator::WriteEquals(Writer* writer) {
+void ExtensionGenerator::WriteEquals(io::Printer* printer) {
 }
 
-void ExtensionGenerator::WriteToString(Writer* writer) {
+void ExtensionGenerator::WriteToString(io::Printer* printer) {
 }
 
 }  // namespace csharp

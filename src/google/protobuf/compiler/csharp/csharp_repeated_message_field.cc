@@ -39,7 +39,6 @@
 
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_message_field.h>
-#include <google/protobuf/compiler/csharp/csharp_writer.h>
 
 namespace google {
 namespace protobuf {
@@ -49,150 +48,177 @@ namespace csharp {
 RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
     const FieldDescriptor* descriptor, int fieldOrdinal)
     : FieldGeneratorBase(descriptor, fieldOrdinal) {
+  variables_["message_or_group"] = message_or_group();
 }
 
 RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {
 
 }
 
-void RepeatedMessageFieldGenerator::GenerateMembers(Writer* writer) {
-  writer->WriteLine(
-      "private pbc::PopsicleList<$0$> $1$_ = new pbc::PopsicleList<$0$>();",
-      type_name(), name());
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public scg::IList<$0$> $1$List {", type_name(),
-                    property_name());
-  writer->WriteLine("  get { return $0$_; }", name());
-  writer->WriteLine("}");
+void RepeatedMessageFieldGenerator::GenerateMembers(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "private pbc::PopsicleList<$type_name$> $name$_ = new pbc::PopsicleList<$type_name$>();\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public scg::IList<$type_name$> $property_name$List {\n"
+    "  get { return $name$_; }\n"
+    "}\n");
 
   // TODO(jonskeet): Redundant API calls? Possibly - include for portability though. Maybe create an option.
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public int $0$Count {", property_name());
-  writer->WriteLine("  get { return $0$_.Count; }", name());
-  writer->WriteLine("}");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public int $property_name$Count {\n"
+    "  get { return $name$_.Count; }\n"
+    "}\n");
 
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public $0$ Get$1$(int index) {", type_name(),
-                    property_name());
-  writer->WriteLine("  return $0$_[index];", name());
-  writer->WriteLine("}");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public $type_name$ Get$property_name$(int index) {\n"
+    "  return $name$_[index];\n"
+    "}\n");
 }
 
-void RepeatedMessageFieldGenerator::GenerateBuilderMembers(Writer* writer) {
+void RepeatedMessageFieldGenerator::GenerateBuilderMembers(io::Printer* printer) {
   // Note:  We can return the original list here, because we make it unmodifiable when we build
   // We return it via IPopsicleList so that collection initializers work more pleasantly.
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public pbc::IPopsicleList<$0$> $1$List {", type_name(),
-                    property_name());
-  writer->WriteLine("  get { return PrepareBuilder().$0$_; }", name());
-  writer->WriteLine("}");
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public int $0$Count {", property_name());
-  writer->WriteLine("  get { return result.$0$Count; }", property_name());
-  writer->WriteLine("}");
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public $0$ Get$1$(int index) {", type_name(),
-                    property_name());
-  writer->WriteLine("  return result.Get$0$(index);", property_name());
-  writer->WriteLine("}");
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public Builder Set$0$(int index, $1$ value) {",
-                    property_name(), type_name());
-  AddNullCheck(writer);
-  writer->WriteLine("  PrepareBuilder();");
-  writer->WriteLine("  result.$0$_[index] = value;", name());
-  writer->WriteLine("  return this;");
-  writer->WriteLine("}");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public pbc::IPopsicleList<$type_name$> $property_name$List {\n"
+    "  get { return PrepareBuilder().$name$_; }\n"
+    "}\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public int $property_name$Count {\n"
+    "  get { return result.$property_name$Count; }\n"
+    "}\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public $type_name$ Get$property_name$(int index) {\n"
+    "  return result.Get$property_name$(index);\n"
+    "}\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public Builder Set$property_name$(int index, $type_name$ value) {\n");
+  AddNullCheck(printer);
+  printer->Print(
+    variables_,
+    "  PrepareBuilder();\n"
+    "  result.$name$_[index] = value;\n"
+    "  return this;\n"
+    "}\n");
   // Extra overload for builder (just on messages)
-  AddDeprecatedFlag(writer);
-  writer->WriteLine(
-      "public Builder Set$0$(int index, $1$.Builder builderForValue) {",
-      property_name(), type_name());
-  AddNullCheck(writer, "builderForValue");
-  writer->WriteLine("  PrepareBuilder();");
-  writer->WriteLine("  result.$0$_[index] = builderForValue.Build();", name());
-  writer->WriteLine("  return this;");
-  writer->WriteLine("}");
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public Builder Add$0$($1$ value) {", property_name(),
-                    type_name());
-  AddNullCheck(writer);
-  writer->WriteLine("  PrepareBuilder();");
-  writer->WriteLine("  result.$0$_.Add(value);", name(), type_name());
-  writer->WriteLine("  return this;");
-  writer->WriteLine("}");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public Builder Set$property_name$(int index, $type_name$.Builder builderForValue) {\n");
+  AddNullCheck(printer, "builderForValue");
+  printer->Print(
+    variables_,
+    "  PrepareBuilder();\n"
+    "  result.$name$_[index] = builderForValue.Build();\n"
+    "  return this;\n"
+    "}\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public Builder Add$property_name$($type_name$ value) {\n");
+  AddNullCheck(printer);
+  printer->Print(
+    variables_,
+    "  PrepareBuilder();\n"
+    "  result.$name$_.Add(value);\n"
+    "  return this;\n"
+    "}\n");
   // Extra overload for builder (just on messages)
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public Builder Add$0$($1$.Builder builderForValue) {",
-                    property_name(), type_name());
-  AddNullCheck(writer, "builderForValue");
-  writer->WriteLine("  PrepareBuilder();");
-  writer->WriteLine("  result.$0$_.Add(builderForValue.Build());", name());
-  writer->WriteLine("  return this;");
-  writer->WriteLine("}");
-  AddDeprecatedFlag(writer);
-  writer->WriteLine(
-      "public Builder AddRange$0$(scg::IEnumerable<$1$> values) {",
-      property_name(), type_name());
-  writer->WriteLine("  PrepareBuilder();");
-  writer->WriteLine("  result.$0$_.Add(values);", name());
-  writer->WriteLine("  return this;");
-  writer->WriteLine("}");
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public Builder Clear$0$() {", property_name());
-  writer->WriteLine("  PrepareBuilder();");
-  writer->WriteLine("  result.$0$_.Clear();", name());
-  writer->WriteLine("  return this;");
-  writer->WriteLine("}");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public Builder Add$property_name$($type_name$.Builder builderForValue) {\n");
+  AddNullCheck(printer, "builderForValue");
+  printer->Print(
+    variables_,
+    "  PrepareBuilder();\n"
+    "  result.$name$_.Add(builderForValue.Build());\n"
+    "  return this;\n"
+    "}\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public Builder AddRange$property_name$(scg::IEnumerable<$type_name$> values) {\n"
+    "  PrepareBuilder();\n"
+    "  result.$name$_.Add(values);\n"
+    "  return this;\n"
+    "}\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public Builder Clear$property_name$() {\n"
+    "  PrepareBuilder();\n"
+    "  result.$name$_.Clear();\n"
+    "  return this;\n"
+    "}\n");
 }
 
-void RepeatedMessageFieldGenerator::GenerateMergingCode(Writer* writer) {
-  writer->WriteLine("if (other.$0$_.Count != 0) {", name());
-  writer->WriteLine("  result.$0$_.Add(other.$0$_);", name());
-  writer->WriteLine("}");
+void RepeatedMessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if (other.$name$_.Count != 0) {\n"
+    "  result.$name$_.Add(other.$name$_);\n"
+    "}\n");
 }
 
-void RepeatedMessageFieldGenerator::GenerateBuildingCode(Writer* writer) {
-  writer->WriteLine("$0$_.MakeReadOnly();", name());
+void RepeatedMessageFieldGenerator::GenerateBuildingCode(io::Printer* printer) {
+  printer->Print(variables_, "$name$_.MakeReadOnly();\n");
 }
 
-void RepeatedMessageFieldGenerator::GenerateParsingCode(Writer* writer) {
-  writer->WriteLine(
-      "input.Read$0$Array(tag, field_name, result.$1$_, $2$.DefaultInstance, extensionRegistry);",
-      message_or_group(), name(), type_name());
+void RepeatedMessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "input.Read$message_or_group$Array(tag, field_name, result.$name$_, $type_name$.DefaultInstance, extensionRegistry);\n");
 }
 
-void RepeatedMessageFieldGenerator::GenerateSerializationCode(Writer* writer) {
-  writer->WriteLine("if ($0$_.Count > 0) {", name());
-  writer->Indent();
-  writer->WriteLine("output.Write$0$Array($1$, field_names[$3$], $2$_);",
-                    message_or_group(), number(), name(), field_ordinal());
-  writer->Outdent();
-  writer->WriteLine("}");
+void RepeatedMessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if ($name$_.Count > 0) {\n"
+    "  output.Write$message_or_group$Array($number$, field_names[$field_ordinal$], $name$_);\n"
+    "}\n");
 }
 
-void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(Writer* writer) {
-  writer->WriteLine("foreach ($0$ element in $1$List) {", type_name(),
-                    property_name());
-  writer->WriteLine(
-      "  size += pb::CodedOutputStream.Compute$0$Size($1$, element);",
-      message_or_group(), number());
-  writer->WriteLine("}");
+void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "foreach ($type_name$ element in $property_name$List) {\n"
+    "  size += pb::CodedOutputStream.Compute$message_or_group$Size($number$, element);\n"
+    "}\n");
 }
 
-void RepeatedMessageFieldGenerator::WriteHash(Writer* writer) {
-  writer->WriteLine("foreach($0$ i in $1$_)", type_name(), name());
-  writer->WriteLine("  hash ^= i.GetHashCode();");
+void RepeatedMessageFieldGenerator::WriteHash(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "foreach($type_name$ i in $name$_)\n"
+    "  hash ^= i.GetHashCode();\n");
 }
-void RepeatedMessageFieldGenerator::WriteEquals(Writer* writer) {
-  writer->WriteLine("if($0$_.Count != other.$0$_.Count) return false;", name());
-  writer->WriteLine("for(int ix=0; ix < $0$_.Count; ix++)", name());
-  writer->WriteLine("  if(!$0$_[ix].Equals(other.$0$_[ix])) return false;",
-                    name());
+void RepeatedMessageFieldGenerator::WriteEquals(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if($name$_.Count != other.$name$_.Count) return false;\n"
+    "for(int ix=0; ix < $name$_.Count; ix++)\n"
+    "  if(!$name$_[ix].Equals(other.$name$_[ix])) return false;\n");
 }
-void RepeatedMessageFieldGenerator::WriteToString(Writer* writer) {
-  writer->WriteLine("PrintField(\"$0$\", $1$_, writer);",
-                    GetFieldName(descriptor_), name());
+void RepeatedMessageFieldGenerator::WriteToString(io::Printer* printer) {
+  variables_["field_name"] = GetFieldName(descriptor_);
+  printer->Print(
+    variables_,
+    "PrintField(\"$field_name$\", $name$_, writer);\n");
 }
 
 }  // namespace csharp

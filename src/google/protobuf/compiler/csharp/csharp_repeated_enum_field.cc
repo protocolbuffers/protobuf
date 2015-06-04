@@ -40,7 +40,6 @@
 
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_enum_field.h>
-#include <google/protobuf/compiler/csharp/csharp_writer.h>
 
 namespace google {
 namespace protobuf {
@@ -56,168 +55,193 @@ RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {
 
 }
 
-void RepeatedEnumFieldGenerator::GenerateMembers(Writer* writer) {
+void RepeatedEnumFieldGenerator::GenerateMembers(io::Printer* printer) {
   if (descriptor_->is_packed() && optimize_speed()) {
-    writer->WriteLine("private int $0$MemoizedSerializedSize;", name());
+    printer->Print(variables_, "private int $name$MemoizedSerializedSize;\n");
   }
-  writer->WriteLine(
-      "private pbc::PopsicleList<$0$> $1$_ = new pbc::PopsicleList<$0$>();",
-      type_name(), name());
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public scg::IList<$0$> $1$List {", type_name(),
-                    property_name());
-  writer->WriteLine("  get { return pbc::Lists.AsReadOnly($0$_); }", name());
-  writer->WriteLine("}");
+  printer->Print(variables_,
+    "private pbc::PopsicleList<$type_name$> $name$_ = new pbc::PopsicleList<$type_name$>();\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public scg::IList<$type_name$> $property_name$List {\n"
+    "  get { return pbc::Lists.AsReadOnly($name$_); }\n"
+    "}\n");
 
   // TODO(jonskeet): Redundant API calls? Possibly - include for portability though. Maybe create an option.
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public int $0$Count {", property_name());
-  writer->WriteLine("  get { return $0$_.Count; }", name());
-  writer->WriteLine("}");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public int $property_name$Count {\n"
+    "  get { return $name$_.Count; }\n"
+    "}\n");
 
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public $0$ Get$1$(int index) {", type_name(),
-                    property_name());
-  writer->WriteLine("  return $0$_[index];", name());
-  writer->WriteLine("}");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public $type_name$ Get$property_name$(int index) {\n"
+    "  return $name$_[index];\n"
+    "}\n");
 }
 
-void RepeatedEnumFieldGenerator::GenerateBuilderMembers(Writer* writer) {
+void RepeatedEnumFieldGenerator::GenerateBuilderMembers(io::Printer* printer) {
   // Note:  We can return the original list here, because we make it unmodifiable when we build
   // We return it via IPopsicleList so that collection initializers work more pleasantly.
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public pbc::IPopsicleList<$0$> $1$List {", type_name(),
-                    property_name());
-  writer->WriteLine("  get { return PrepareBuilder().$0$_; }", name());
-  writer->WriteLine("}");
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public int $0$Count {", property_name());
-  writer->WriteLine("  get { return result.$0$Count; }", property_name());
-  writer->WriteLine("}");
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public $0$ Get$1$(int index) {", type_name(),
-                    property_name());
-  writer->WriteLine("  return result.Get$0$(index);", property_name());
-  writer->WriteLine("}");
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public Builder Set$0$(int index, $1$ value) {",
-                    property_name(), type_name());
-  writer->WriteLine("  PrepareBuilder();");
-  writer->WriteLine("  result.$0$_[index] = value;", name());
-  writer->WriteLine("  return this;");
-  writer->WriteLine("}");
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public Builder Add$0$($1$ value) {", property_name(),
-                    type_name());
-  writer->WriteLine("  PrepareBuilder();");
-  writer->WriteLine("  result.$0$_.Add(value);", name(), type_name());
-  writer->WriteLine("  return this;");
-  writer->WriteLine("}");
-  AddDeprecatedFlag(writer);
-  writer->WriteLine(
-      "public Builder AddRange$0$(scg::IEnumerable<$1$> values) {",
-      property_name(), type_name());
-  writer->WriteLine("  PrepareBuilder();");
-  writer->WriteLine("  result.$0$_.Add(values);", name());
-  writer->WriteLine("  return this;");
-  writer->WriteLine("}");
-  AddDeprecatedFlag(writer);
-  writer->WriteLine("public Builder Clear$0$() {", property_name());
-  writer->WriteLine("  PrepareBuilder();");
-  writer->WriteLine("  result.$0$_.Clear();", name());
-  writer->WriteLine("  return this;");
-  writer->WriteLine("}");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public pbc::IPopsicleList<$type_name$> $property_name$List {\n"
+    "  get { return PrepareBuilder().$name$_; }\n"
+    "}\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public int $property_name$Count {\n"
+    "  get { return result.$property_name$Count; }\n"
+    "}\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public $type_name$ Get$property_name$(int index) {\n"
+    "  return result.Get$property_name$(index);\n"
+    "}\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public Builder Set$property_name$(int index, $type_name$ value) {\n");
+  printer->Print(
+    variables_,
+    "  PrepareBuilder();\n"
+    "  result.$name$_[index] = value;\n"
+    "  return this;\n"
+    "}\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(variables_,
+    "public Builder Add$property_name$($type_name$ value) {\n");
+  printer->Print(
+    variables_,
+    "  PrepareBuilder();\n"
+    "  result.$name$_.Add(value);\n"
+    "  return this;\n"
+    "}\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public Builder AddRange$property_name$(scg::IEnumerable<$type_name$> values) {\n"
+    "  PrepareBuilder();\n"
+    "  result.$name$_.Add(values);\n"
+    "  return this;\n"
+    "}\n");
+  AddDeprecatedFlag(printer);
+  printer->Print(
+    variables_,
+    "public Builder Clear$property_name$() {\n"
+    "  PrepareBuilder();\n"
+    "  result.$name$_.Clear();\n"
+    "  return this;\n"
+    "}\n");
 }
 
-void RepeatedEnumFieldGenerator::GenerateMergingCode(Writer* writer) {
-  writer->WriteLine("if (other.$0$_.Count != 0) {", name());
-  writer->WriteLine("  result.$0$_.Add(other.$0$_);", name());
-  writer->WriteLine("}");
+void RepeatedEnumFieldGenerator::GenerateMergingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if (other.$name$_.Count != 0) {\n"
+    "  result.$name$_.Add(other.$name$_);\n"
+    "}\n");
 }
 
-void RepeatedEnumFieldGenerator::GenerateBuildingCode(Writer* writer) {
-  writer->WriteLine("$0$_.MakeReadOnly();", name());
+void RepeatedEnumFieldGenerator::GenerateBuildingCode(io::Printer* printer) {
+  printer->Print(variables_, "$name$_.MakeReadOnly();\n");
 }
 
-void RepeatedEnumFieldGenerator::GenerateParsingCode(Writer* writer) {
-  writer->WriteLine("scg::ICollection<object> unknownItems;");
-  writer->WriteLine(
-      "input.ReadEnumArray<$0$>(tag, field_name, result.$1$_, out unknownItems);",
-      type_name(), name());
+void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "scg::ICollection<object> unknownItems;\n"
+    "input.ReadEnumArray<$type_name$>(tag, field_name, result.$name$_, out unknownItems);\n");
   if (!use_lite_runtime()) {
-    writer->WriteLine("if (unknownItems != null) {");
-    writer->WriteLine("  if (unknownFields == null) {");
-    writer->WriteLine(
-        "    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
-    writer->WriteLine("  }");
-    writer->WriteLine("  foreach (object rawValue in unknownItems)");
-    writer->WriteLine("    if (rawValue is int)");
-    writer->WriteLine(
-        "      unknownFields.MergeVarintField($0$, (ulong)(int)rawValue);",
-        number());
-    writer->WriteLine("}");
+    printer->Print(
+      variables_,
+      "if (unknownItems != null) {\n"
+      "  if (unknownFields == null) {\n"
+      "    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);\n"
+      "  }\n"
+      "  foreach (object rawValue in unknownItems)\n"
+      "    if (rawValue is int)\n"
+      "      unknownFields.MergeVarintField($number$, (ulong)(int)rawValue);\n"
+      "}\n");
   }
 }
 
-void RepeatedEnumFieldGenerator::GenerateSerializationCode(Writer* writer) {
-  writer->WriteLine("if ($0$_.Count > 0) {", name());
-  writer->Indent();
+void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
+  printer->Print(variables_, "if ($name$_.Count > 0) {\n");
+  printer->Indent();
   if (descriptor_->is_packed()) {
-    writer->WriteLine(
-        "output.WritePackedEnumArray($0$, field_names[$2$], $1$MemoizedSerializedSize, $1$_);",
-        number(), name(), field_ordinal());
+    printer->Print(
+      variables_,
+      "output.WritePackedEnumArray($number$, field_names[$field_ordinal$], $name$MemoizedSerializedSize, $name$_);\n");
   } else {
-    writer->WriteLine("output.WriteEnumArray($0$, field_names[$2$], $1$_);",
-                      number(), name(), field_ordinal());
+    printer->Print(variables_,
+      "output.WriteEnumArray($number$, field_names[$field_ordinal$], $name$_);\n");
   }
-  writer->Outdent();
-  writer->WriteLine("}");
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
-void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(Writer* writer) {
-  writer->WriteLine("{");
-  writer->Indent();
-  writer->WriteLine("int dataSize = 0;");
-  writer->WriteLine("if ($0$_.Count > 0) {", name());
-  writer->Indent();
-  writer->WriteLine("foreach ($0$ element in $1$_) {", type_name(), name());
-  writer->WriteLine(
-      "  dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);");
-  writer->WriteLine("}");
-  writer->WriteLine("size += dataSize;");
+void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
+  printer->Print("{\n");
+  printer->Indent();
+  printer->Print(
+    variables_,
+    "int dataSize = 0;\n"
+    "if ($name$_.Count > 0) {\n");
+  printer->Indent();
+  printer->Print(
+    variables_,
+    "foreach ($type_name$ element in $name$_) {\n"
+    "  dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);\n"
+    "}\n"
+    "size += dataSize;\n");
   int tagSize = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
   if (descriptor_->is_packed()) {
-    writer->WriteLine("size += $0$;", SimpleItoa(tagSize));
-    writer->WriteLine(
-        "size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);");
+    printer->Print(
+      "size += $tag_size$;\n"
+      "size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);\n",
+      "tag_size", SimpleItoa(tagSize));
   } else {
-    writer->WriteLine("size += $0$ * $1$_.Count;", SimpleItoa(tagSize), name());
+    printer->Print(
+      "size += $tag_size$ * $name$_.Count;\n",
+      "tag_size", SimpleItoa(tagSize), "name", name());
   }
-  writer->Outdent();
-  writer->WriteLine("}");
+  printer->Outdent();
+  printer->Print("}\n");
   // cache the data size for packed fields.
   if (descriptor_->is_packed()) {
-    writer->WriteLine("$0$MemoizedSerializedSize = dataSize;", name());
+    printer->Print(variables_,
+      "$name$MemoizedSerializedSize = dataSize;\n");
   }
-  writer->Outdent();
-  writer->WriteLine("}");
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
-void RepeatedEnumFieldGenerator::WriteHash(Writer* writer) {
-  writer->WriteLine("foreach($0$ i in $1$_)", type_name(), name());
-  writer->WriteLine("  hash ^= i.GetHashCode();");
+void RepeatedEnumFieldGenerator::WriteHash(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "foreach($type_name$ i in $name$_)\n"
+    "  hash ^= i.GetHashCode();\n");
 }
 
-void RepeatedEnumFieldGenerator::WriteEquals(Writer* writer) {
-  writer->WriteLine("if($0$_.Count != other.$0$_.Count) return false;", name());
-  writer->WriteLine("for(int ix=0; ix < $0$_.Count; ix++)", name());
-  writer->WriteLine("  if(!$0$_[ix].Equals(other.$0$_[ix])) return false;",
-                    name());
+void RepeatedEnumFieldGenerator::WriteEquals(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if($name$_.Count != other.$name$_.Count) return false;\n"
+    "for(int ix=0; ix < $name$_.Count; ix++)\n"
+    "  if(!$name$_[ix].Equals(other.$name$_[ix])) return false;\n");
 }
 
-void RepeatedEnumFieldGenerator::WriteToString(Writer* writer) {
-  writer->WriteLine("PrintField(\"$0$\", $1$_, writer);", descriptor_->name(),
-                    name());
+void RepeatedEnumFieldGenerator::WriteToString(io::Printer* printer) {
+  printer->Print(variables_,
+    "PrintField(\"$descriptor_name$\", $name$_, writer);\n");
 }
 
 }  // namespace csharp

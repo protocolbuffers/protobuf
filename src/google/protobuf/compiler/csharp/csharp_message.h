@@ -51,27 +51,27 @@ class MessageGenerator : public SourceGeneratorBase {
   MessageGenerator(const Descriptor* descriptor);
   ~MessageGenerator();
 
-  void GenerateStaticVariables(Writer* printer);
-  void GenerateStaticVariableInitializers(Writer* printer);
-  void GenerateExtensionRegistrationCode(Writer* printer);
-  void Generate(Writer* printer);
+  void GenerateStaticVariables(io::Printer* printer);
+  void GenerateStaticVariableInitializers(io::Printer* printer);
+  void GenerateExtensionRegistrationCode(io::Printer* printer);
+  void Generate(io::Printer* printer);
 
  private:
   const Descriptor* descriptor_;
   std::vector<std::string> field_names_;
   std::vector<const FieldDescriptor*> fields_by_number_;
 
-  void GenerateLiteRuntimeMethods(Writer* writer);
-  void GenerateMessageSerializationMethods(Writer* writer);
-  void GenerateSerializeOneField(Writer* writer,
+  void GenerateLiteRuntimeMethods(io::Printer* printer);
+  void GenerateMessageSerializationMethods(io::Printer* printer);
+  void GenerateSerializeOneField(io::Printer* printer,
                                  const FieldDescriptor* fieldDescriptor);
   void GenerateSerializeOneExtensionRange(
-      Writer* writer, const Descriptor::ExtensionRange* extendsionRange);
-  void GenerateParseFromMethods(Writer* writer);
-  void GenerateBuilder(Writer* writer);
-  void GenerateCommonBuilderMethods(Writer* writer);
-  void GenerateBuilderParsingMethods(Writer* writer);
-  void GenerateIsInitialized(Writer* writer);
+      io::Printer* printer, const Descriptor::ExtensionRange* extendsionRange);
+  void GenerateParseFromMethods(io::Printer* printer);
+  void GenerateBuilder(io::Printer* printer);
+  void GenerateCommonBuilderMethods(io::Printer* printer);
+  void GenerateBuilderParsingMethods(io::Printer* printer);
+  void GenerateIsInitialized(io::Printer* printer);
 
   int GetFieldOrdinal(const FieldDescriptor* descriptor);
   FieldGeneratorBase* CreateFieldGeneratorInternal(

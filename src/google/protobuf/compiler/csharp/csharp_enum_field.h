@@ -41,16 +41,14 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-class Writer;
-
 class EnumFieldGenerator : public PrimitiveFieldGenerator {
  public:
   EnumFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~EnumFieldGenerator();
 
-  virtual void GenerateParsingCode(Writer* writer);
-  virtual void GenerateSerializationCode(Writer* writer);
-  virtual void GenerateSerializedSizeCode(Writer* writer);
+  virtual void GenerateParsingCode(io::Printer* printer);
+  virtual void GenerateSerializationCode(io::Printer* printer);
+  virtual void GenerateSerializedSizeCode(io::Printer* printer);
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumFieldGenerator);
@@ -61,9 +59,9 @@ class EnumOneofFieldGenerator : public PrimitiveOneofFieldGenerator {
   EnumOneofFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~EnumOneofFieldGenerator();
 
-  virtual void GenerateParsingCode(Writer* writer);
-  virtual void GenerateSerializationCode(Writer* writer);
-  virtual void GenerateSerializedSizeCode(Writer* writer);
+  virtual void GenerateParsingCode(io::Printer* printer);
+  virtual void GenerateSerializationCode(io::Printer* printer);
+  virtual void GenerateSerializedSizeCode(io::Printer* printer);
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumOneofFieldGenerator);

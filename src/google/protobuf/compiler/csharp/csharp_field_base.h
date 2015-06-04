@@ -49,27 +49,29 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   FieldGeneratorBase(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~FieldGeneratorBase();
 
-  virtual void GenerateMembers(Writer* writer) = 0;
-  virtual void GenerateBuilderMembers(Writer* writer) = 0;
-  virtual void GenerateMergingCode(Writer* writer) = 0;
-  virtual void GenerateBuildingCode(Writer* writer) = 0;
-  virtual void GenerateParsingCode(Writer* writer) = 0;
-  virtual void GenerateSerializationCode(Writer* writer) = 0;
-  virtual void GenerateSerializedSizeCode(Writer* writer) = 0;
+  virtual void GenerateMembers(io::Printer* printer) = 0;
+  virtual void GenerateBuilderMembers(io::Printer* printer) = 0;
+  virtual void GenerateMergingCode(io::Printer* printer) = 0;
+  virtual void GenerateBuildingCode(io::Printer* printer) = 0;
+  virtual void GenerateParsingCode(io::Printer* printer) = 0;
+  virtual void GenerateSerializationCode(io::Printer* printer) = 0;
+  virtual void GenerateSerializedSizeCode(io::Printer* printer) = 0;
 
-  virtual void WriteHash(Writer* writer) = 0;
-  virtual void WriteEquals(Writer* writer) = 0;
-  virtual void WriteToString(Writer* writer) = 0;
+  virtual void WriteHash(io::Printer* printer) = 0;
+  virtual void WriteEquals(io::Printer* printer) = 0;
+  virtual void WriteToString(io::Printer* printer) = 0;
 
  protected:
   const FieldDescriptor* descriptor_;
   const int fieldOrdinal_;
+  map<string, string> variables_;
 
-  void AddDeprecatedFlag(Writer* writer);
-  void AddNullCheck(Writer* writer);
-  void AddNullCheck(Writer* writer, const std::string& name);
+  void AddDeprecatedFlag(io::Printer* printer);
+  void AddNullCheck(io::Printer* printer);
+  void AddNullCheck(io::Printer* printer, const std::string& name);
 
-  void AddPublicMemberAttributes(Writer* writer);
+  void AddPublicMemberAttributes(io::Printer* printer);
+  void SetCommonOneofFieldVariables(map<string, string>* variables);
 
   std::string oneof_property_name();
   std::string oneof_name();
@@ -85,6 +87,7 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   std::string field_ordinal();
 
  private:
+  void SetCommonFieldVariables(map<string, string>* variables);
   std::string GetStringDefaultValueInternal();
   std::string GetBytesDefaultValueInternal();
 
