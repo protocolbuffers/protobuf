@@ -14,7 +14,10 @@
 -- This has to happen *before* the require call, because if the module
 -- is loaded RTLD_LOCAL first, a subsequent load as RTLD_GLOBAL won't
 -- have the proper effect, at least on some platforms.
-package.loadlib(package.searchpath("upb_c", package.cpath), "*")
+local so = package.searchpath and package.searchpath("upb_c", package.cpath)
+if so then
+  package.loadlib(so, "*")
+end
 
 local upb = require("upb_c")
 

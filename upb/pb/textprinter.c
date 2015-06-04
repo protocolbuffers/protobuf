@@ -112,7 +112,7 @@ bool putf(upb_textprinter *p, const char *fmt, ...) {
 
   /* Run once to get the length of the string. */
   va_copy(args_copy, args);
-  len = vsprintf(NULL, fmt, args_copy);
+  len = _upb_vsnprintf(NULL, 0, fmt, args_copy);
   va_end(args_copy);
 
   /* + 1 for NULL terminator (vsprintf() requires it even if we don't). */

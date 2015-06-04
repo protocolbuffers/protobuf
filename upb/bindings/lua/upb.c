@@ -53,7 +53,7 @@ static size_t lupb_msgdef_sizeof();
  * compatibility code can help hide the difference.  Not too many people still
  * use Lua 5.1 but LuaJIT uses the Lua 5.1 API in some ways. */
 
-#if lua_version_num == 501
+#if LUA_VERSION_NUM == 501
 
 /* taken from lua 5.2's source. */
 void *luaL_testudata(lua_State *L, int ud, const char *tname) {

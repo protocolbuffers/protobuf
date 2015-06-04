@@ -439,14 +439,16 @@ size_t upb_inttable_count(const upb_inttable *t) {
 static void check(upb_inttable *t) {
   UPB_UNUSED(t);
 #if defined(UPB_DEBUG_TABLE) && !defined(NDEBUG)
-  /* This check is very expensive (makes inserts/deletes O(N)). */
-  size_t count = 0;
-  upb_inttable_iter i;
-  upb_inttable_begin(&i, t);
-  for(; !upb_inttable_done(&i); upb_inttable_next(&i), count++) {
-    assert(upb_inttable_lookup(t, upb_inttable_iter_key(&i), NULL));
+  {
+    /* This check is very expensive (makes inserts/deletes O(N)). */
+    size_t count = 0;
+    upb_inttable_iter i;
+    upb_inttable_begin(&i, t);
+    for(; !upb_inttable_done(&i); upb_inttable_next(&i), count++) {
+      assert(upb_inttable_lookup(t, upb_inttable_iter_key(&i), NULL));
+    }
+    assert(count == upb_inttable_count(t));
   }
-  assert(count == upb_inttable_count(t));
 #endif
 }
 
