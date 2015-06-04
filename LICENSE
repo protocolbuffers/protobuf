@@ -8,8 +8,6 @@ This license applies to all parts of Protocol Buffers except the following:
     src/google/protobuf/stubs/atomicops_internals_aix.h.
     This file is copyrighted by Bloomberg Finance LP.
 
-  - Andorid.mk, which is copyrighted by The Android Open Source Project.
-
 Copyright 2014, Google Inc.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
