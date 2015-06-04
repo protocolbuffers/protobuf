@@ -5,37 +5,41 @@ on your computer before proceeding.
 Compiling and Installing
 ========================
 
-0) Check whether a gtest directory exists in the upper level directory. If
+1. Check whether a gtest directory exists in the upper level directory. If
    you checkout the code from github via "git clone", this gtest directory
    won't exist and you won't be able to build the tests described below. To
    avoid this problem consider downloading one of the release tar balls which
    contains gtest already and copying the gest directory from there to your
    protobuf directory:
-       https://github.com/google/protobuf/releases
-1) Use cmake to generate MSVC project files. Running the following commands
+
+        https://github.com/google/protobuf/releases
+
+2. Use cmake to generate MSVC project files. Running the following commands
    in a command shell will generate project files for Visual Studio 2008 in
    a sub-directory named "build".
-     > cd path/to/protobuf/cmake
-     > mkdir build
-     > cd build
-     > cmake -G "Visual Studio 9 2008" ..
-2) Open the generated protobuf.sln file in Microsoft Visual Studio.
-3) Choose "Debug" or "Release" configuration as desired.
-4) From the Build menu, choose "Build Solution".  Wait for compiling to finish.
-5) From a command shell, run tests.exe and lite-test.exe and check that all
+
+        $ cd path/to/protobuf/cmake
+        $ mkdir build
+        $ cd build
+        $ cmake -G "Visual Studio 9 2008" ..
+
+3. Open the generated protobuf.sln file in Microsoft Visual Studio.
+4. Choose "Debug" or "Release" configuration as desired.
+5. From the Build menu, choose "Build Solution".  Wait for compiling to finish.
+6. From a command shell, run tests.exe and lite-test.exe and check that all
    tests pass. Make sure you have changed the working directory to the output
    directory because tests.exe will try to find and run test_plugin.exe
    in the working directory.
-5) Run extract_includes.bat to copy all the public headers into a separate
+7. Run extract_includes.bat to copy all the public headers into a separate
    "include" directory (under the top-level package directory).
-6) Copy the contents of the include directory to wherever you want to put
+8. Copy the contents of the include directory to wherever you want to put
    headers.
-7) Copy protoc.exe wherever you put build tools (probably somewhere in your
+9. Copy protoc.exe wherever you put build tools (probably somewhere in your
    PATH).
-8) Copy libprotobuf.lib, libprotobuf-lite.lib, and libprotoc.lib wherever you
+10. Copy libprotobuf.lib, libprotobuf-lite.lib, and libprotoc.lib wherever you
    put libraries.
 
-* To avoid conflicts between the MSVC debug and release runtime libraries, when
+  To avoid conflicts between the MSVC debug and release runtime libraries, when
   compiling a debug build of your application, you may need to link against a
   debug build of libprotobuf.lib.  Similarly, release builds should link against
   release libs.
@@ -50,10 +54,12 @@ recommended that you use static linkage only.  However, it is possible to
 build libprotobuf and libprotoc as DLLs if you really want.  To do this,
 do the following:
 
-  1) Add an additional flag "-DBUILD_SHARED_LIBS=ON" when invoking cmake:
-       > cmake -G "Visual Studio 9 2008" -DBUILD_SHARED_LIBS=ON ..
-  2) Follow the same steps as described in the above section.
-  3) When compiling your project, make sure to #define PROTOBUF_USE_DLLS.
+  1. Add an additional flag "-DBUILD_SHARED_LIBS=ON" when invoking cmake:
+
+        $ cmake -G "Visual Studio 9 2008" -DBUILD_SHARED_LIBS=ON ..
+
+  2. Follow the same steps as described in the above section.
+  3. When compiling your project, make sure to #define PROTOBUF_USE_DLLS.
 
 When distributing your software to end users, we strongly recommend that you
 do NOT install libprotobuf.dll or libprotoc.dll to any shared location.
@@ -74,14 +80,16 @@ If you want to include GzipInputStream and GzipOutputStream
 (google/protobuf/io/gzip_stream.h) in libprotobuf, you will need to do a few
 additional steps:
 
-1) Obtain a copy of the zlib library.  The pre-compiled DLL at zlib.net works.
-2) Make sure zlib's two headers are in your include path and that the .lib file
+1. Obtain a copy of the zlib library.  The pre-compiled DLL at zlib.net works.
+2. Make sure zlib's two headers are in your include path and that the .lib file
    is in your library path.  You could place all three files directly into this
    cmake directory to compile libprotobuf, but they need to be visible to
    your own project as well, so you should probably just put them into the
    VC shared icnlude and library directories.
-3) Add flag "-DZLIB=ON" when invoking cmake:
-     > cmake -G "Visual Studio 9 2008" -DZLIB=ON ..
+3. Add flag "-DZLIB=ON" when invoking cmake:
+
+        $ cmake -G "Visual Studio 9 2008" -DZLIB=ON ..
+
    If it reports NOTFOUND for zlib_include or zlib_lib, you might haven't put
    the headers or the .lib file in the right directory.
 4) Open the generated protobuf.sln file and build as usual.
@@ -93,16 +101,16 @@ The following warnings have been disabled while building the protobuf libraries
 and compiler.  You may have to disable some of them in your own project as
 well, or live with them.
 
-C4018 - 'expression' : signed/unsigned mismatch
-C4146 - unary minus operator applied to unsigned type, result still unsigned
-C4244 - Conversion from 'type1' to 'type2', possible loss of data.
-C4251 - 'identifier' : class 'type' needs to have dll-interface to be used by
-        clients of class 'type2'
-C4267 - Conversion from 'size_t' to 'type', possible loss of data.
-C4305 - 'identifier' : truncation from 'type1' to 'type2'
-C4355 - 'this' : used in base member initializer list
-C4800 - 'type' : forcing value to bool 'true' or 'false' (performance warning)
-C4996 - 'function': was declared deprecated
+* C4018 - 'expression' : signed/unsigned mismatch
+* C4146 - unary minus operator applied to unsigned type, result still unsigned
+* C4244 - Conversion from 'type1' to 'type2', possible loss of data.
+* C4251 - 'identifier' : class 'type' needs to have dll-interface to be used by
+  clients of class 'type2'
+* C4267 - Conversion from 'size_t' to 'type', possible loss of data.
+* C4305 - 'identifier' : truncation from 'type1' to 'type2'
+* C4355 - 'this' : used in base member initializer list
+* C4800 - 'type' : forcing value to bool 'true' or 'false' (performance warning)
+* C4996 - 'function': was declared deprecated
 
 C4251 is of particular note, if you are compiling the Protocol Buffer library
 as a DLL (see previous section).  The protocol buffer library uses templates in
@@ -116,3 +124,4 @@ unique, so there should be no problem with this, but MSVC prints warning
 nevertheless.  So, we disable it.  Unfortunately, this warning will also be
 produced when compiling code which merely uses protocol buffers, meaning you
 may have to disable it in your code too.
+
