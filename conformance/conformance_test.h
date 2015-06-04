@@ -99,7 +99,8 @@ class ConformanceTestSuite {
  private:
   void ReportSuccess(const std::string& test_name);
   void ReportFailure(const std::string& test_name, const char* fmt, ...);
-  void RunTest(const conformance::ConformanceRequest& request,
+  void RunTest(const std::string& test_name,
+               const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
   void ExpectParseFailureForProto(const std::string& proto,
                                   const std::string& test_name);

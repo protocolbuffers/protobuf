@@ -5,7 +5,7 @@
 # that we don't introduce regressions in other tests.
 #
 # TODO(haberman): insert links to corresponding bugs tracking the issue.
-# Should we use GitHub issues or the Google-internal bug tracker.
+# Should we use GitHub issues or the Google-internal bug tracker?
 
 PrematureEofBeforeKnownRepeatedValue.MESSAGE
 PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE

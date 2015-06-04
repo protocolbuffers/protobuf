@@ -164,9 +164,9 @@ void ConformanceTestSuite::ReportSuccess(const string& test_name) {
 void ConformanceTestSuite::ReportFailure(const string& test_name,
                                          const char* fmt, ...) {
   if (expected_to_fail_.erase(test_name) == 1) {
-    StringAppendF(&output_, "FAILED AS EXPECTED: ");
+    StringAppendF(&output_, "FAILED AS EXPECTED, test=%s: ", test_name.c_str());
   } else {
-    StringAppendF(&output_, "ERROR: ");
+    StringAppendF(&output_, "ERROR, test=%s: ", test_name.c_str());
     unexpected_failing_tests_.insert(test_name);
   }
   va_list args;
@@ -176,10 +176,11 @@ void ConformanceTestSuite::ReportFailure(const string& test_name,
   failures_++;
 }
 
-void ConformanceTestSuite::RunTest(const ConformanceRequest& request,
+void ConformanceTestSuite::RunTest(const string& test_name,
+                                   const ConformanceRequest& request,
                                    ConformanceResponse* response) {
-  if (test_names_.insert(request.test_name()).second == false) {
-    GOOGLE_LOG(FATAL) << "Duplicated test name: " << request.test_name();
+  if (test_names_.insert(test_name).second == false) {
+    GOOGLE_LOG(FATAL) << "Duplicated test name: " << test_name;
   }
 
   string serialized_request;
@@ -194,7 +195,8 @@ void ConformanceTestSuite::RunTest(const ConformanceRequest& request,
   }
 
   if (verbose_) {
-    StringAppendF(&output_, "conformance test: request=%s, response=%s\n",
+    StringAppendF(&output_, "conformance test: name=%s, request=%s, response=%s\n",
+                  test_name.c_str(),
                   request.ShortDebugString().c_str(),
                   response->ShortDebugString().c_str());
   }
@@ -205,14 +207,13 @@ void ConformanceTestSuite::ExpectParseFailureForProto(
     const string& proto, const string& test_name) {
   ConformanceRequest request;
   ConformanceResponse response;
-  request.set_test_name(test_name);
   request.set_protobuf_payload(proto);
 
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
   request.set_requested_output(ConformanceRequest::PROTOBUF);
 
-  RunTest(request, &response);
+  RunTest(test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kParseError) {
     ReportSuccess(test_name);
   } else {
