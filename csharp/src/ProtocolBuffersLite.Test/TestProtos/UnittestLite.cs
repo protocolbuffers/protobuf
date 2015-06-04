@@ -6440,7 +6440,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasOneofNestedMessage {
-       get { return result.oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage; }
+        get { return result.oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage OneofNestedMessage {
         get { return result.oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage) result.oneofField_ : global::Google.ProtocolBuffers.TestProtos.TestAllTypesLite.Types.NestedMessage.DefaultInstance; }

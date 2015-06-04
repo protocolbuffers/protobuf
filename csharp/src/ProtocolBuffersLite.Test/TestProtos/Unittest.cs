@@ -6432,7 +6432,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasOneofNestedMessage {
-       get { return result.oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage; }
+        get { return result.oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage OneofNestedMessage {
         get { return result.oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage) result.oneofField_ : global::Google.ProtocolBuffers.TestProtos.TestAllTypes.Types.NestedMessage.DefaultInstance; }
@@ -22008,7 +22008,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasFooMessage {
-       get { return result.fooCase_ == FooOneofCase.FooMessage; }
+        get { return result.fooCase_ == FooOneofCase.FooMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestAllTypes FooMessage {
         get { return result.fooCase_ == FooOneofCase.FooMessage ? (global::Google.ProtocolBuffers.TestProtos.TestAllTypes) result.foo_ : global::Google.ProtocolBuffers.TestProtos.TestAllTypes.DefaultInstance; }
@@ -22050,7 +22050,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasFooGroup {
-       get { return result.fooCase_ == FooOneofCase.FooGroup; }
+        get { return result.fooCase_ == FooOneofCase.FooGroup; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestOneof.Types.FooGroup FooGroup {
         get { return result.fooCase_ == FooOneofCase.FooGroup ? (global::Google.ProtocolBuffers.TestProtos.TestOneof.Types.FooGroup) result.foo_ : global::Google.ProtocolBuffers.TestProtos.TestOneof.Types.FooGroup.DefaultInstance; }
@@ -24405,7 +24405,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasFooMessage {
-       get { return result.fooCase_ == FooOneofCase.FooMessage; }
+        get { return result.fooCase_ == FooOneofCase.FooMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestOneof2.Types.NestedMessage FooMessage {
         get { return result.fooCase_ == FooOneofCase.FooMessage ? (global::Google.ProtocolBuffers.TestProtos.TestOneof2.Types.NestedMessage) result.foo_ : global::Google.ProtocolBuffers.TestProtos.TestOneof2.Types.NestedMessage.DefaultInstance; }
@@ -24447,7 +24447,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasFooGroup {
-       get { return result.fooCase_ == FooOneofCase.FooGroup; }
+        get { return result.fooCase_ == FooOneofCase.FooGroup; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestOneof2.Types.FooGroup FooGroup {
         get { return result.fooCase_ == FooOneofCase.FooGroup ? (global::Google.ProtocolBuffers.TestProtos.TestOneof2.Types.FooGroup) result.foo_ : global::Google.ProtocolBuffers.TestProtos.TestOneof2.Types.FooGroup.DefaultInstance; }
@@ -24489,7 +24489,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasFooLazyMessage {
-       get { return result.fooCase_ == FooOneofCase.FooLazyMessage; }
+        get { return result.fooCase_ == FooOneofCase.FooLazyMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestOneof2.Types.NestedMessage FooLazyMessage {
         get { return result.fooCase_ == FooOneofCase.FooLazyMessage ? (global::Google.ProtocolBuffers.TestProtos.TestOneof2.Types.NestedMessage) result.foo_ : global::Google.ProtocolBuffers.TestProtos.TestOneof2.Types.NestedMessage.DefaultInstance; }
@@ -25377,7 +25377,7 @@ namespace Google.ProtocolBuffers.TestProtos {
       }
 
       public bool HasFooMessage {
-       get { return result.fooCase_ == FooOneofCase.FooMessage; }
+        get { return result.fooCase_ == FooOneofCase.FooMessage; }
       }
       public global::Google.ProtocolBuffers.TestProtos.TestRequiredOneof.Types.NestedMessage FooMessage {
         get { return result.fooCase_ == FooOneofCase.FooMessage ? (global::Google.ProtocolBuffers.TestProtos.TestRequiredOneof.Types.NestedMessage) result.foo_ : global::Google.ProtocolBuffers.TestProtos.TestRequiredOneof.Types.NestedMessage.DefaultInstance; }

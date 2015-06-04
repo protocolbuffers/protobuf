@@ -39,7 +39,6 @@
 
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_enum_field.h>
-#include <google/protobuf/compiler/csharp/csharp_writer.h>
 
 namespace google {
 namespace protobuf {
@@ -54,39 +53,38 @@ EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor,
 EnumFieldGenerator::~EnumFieldGenerator() {
 }
 
-void EnumFieldGenerator::GenerateParsingCode(Writer* writer) {
-  writer->WriteLine("object unknown;");
-  writer->WriteLine("if(input.ReadEnum(ref result.$0$_, out unknown)) {", name());
+void EnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
+  printer->Print(variables_,
+                 "object unknown;\n"
+                 "if(input.ReadEnum(ref result.$name$_, out unknown)) {\n");
   if (SupportFieldPresence(descriptor_->file())) {
-    writer->WriteLine("  result.has$0$ = true;", property_name());
+    printer->Print(variables_,
+                   "  result.has$property_name$ = true;\n");
   }
-  writer->WriteLine("} else if(unknown is int) {");
+  printer->Print("} else if(unknown is int) {\n");
   if (!use_lite_runtime()) {
-    writer->WriteLine("  if (unknownFields == null) {");  // First unknown field - create builder now
-    writer->WriteLine(
-        "    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
-    writer->WriteLine("  }");
-    writer->WriteLine(
-        "  unknownFields.MergeVarintField($0$, (ulong)(int)unknown);",
-        number());
+    printer->Print(variables_,
+                   "  if (unknownFields == null) {\n"  // First unknown field - create builder now
+                   "    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);\n"
+                   "  }\n"
+                   "  unknownFields.MergeVarintField($number$, (ulong)(int)unknown);\n");
   }
-  writer->WriteLine("}");
+  printer->Print("}\n");
 }
 
-void EnumFieldGenerator::GenerateSerializationCode(Writer* writer) {
-  writer->WriteLine("if ($0$) {", has_property_check);
-  writer->WriteLine(
-      "  output.WriteEnum($0$, field_names[$2$], (int) $1$, $1$);", number(),
-      property_name(), field_ordinal());
-  writer->WriteLine("}");
+void EnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
+  printer->Print(variables_,
+                 "if ($has_property_check$) {\n"
+                 "  output.WriteEnum($number$, field_names[$field_ordinal$], (int) $property_name$, $property_name$);\n"
+                 "}\n");
 }
 
-void EnumFieldGenerator::GenerateSerializedSizeCode(Writer* writer) {
-  writer->WriteLine("if ($0$) {", has_property_check);
-  writer->WriteLine(
-      "  size += pb::CodedOutputStream.ComputeEnumSize($0$, (int) $1$);",
-      number(), property_name());
-  writer->WriteLine("}");
+void EnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
+  printer->Print(
+      variables_,
+      "if ($has_property_check$) {\n"
+      "  size += pb::CodedOutputStream.ComputeEnumSize($number$, (int) $property_name$);\n"
+      "}\n");
 }
 
 EnumOneofFieldGenerator::EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
@@ -97,41 +95,40 @@ EnumOneofFieldGenerator::EnumOneofFieldGenerator(const FieldDescriptor* descript
 EnumOneofFieldGenerator::~EnumOneofFieldGenerator() {
 }
 
-void EnumOneofFieldGenerator::GenerateParsingCode(Writer* writer) {
-  writer->WriteLine("object unknown;");
-  writer->WriteLine("$0$ enumValue = $1$;", type_name(), default_value());
-  writer->WriteLine("if(input.ReadEnum(ref enumValue, out unknown)) {",
-                    name());
-  writer->WriteLine("  result.$0$_ = enumValue;", oneof_name());
-  writer->WriteLine("  result.$0$Case_ = $1$OneofCase.$2$;",
-		    oneof_name(), oneof_property_name(), property_name());
-  writer->WriteLine("} else if(unknown is int) {");
+void EnumOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "object unknown;\n"
+    "$type_name$ enumValue = $default_value$;\n"
+    "if(input.ReadEnum(ref enumValue, out unknown)) {\n"
+    "  result.$oneof_name$_ = enumValue;\n"
+    "  result.$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
+    "} else if(unknown is int) {\n");
   if (!use_lite_runtime()) {
-    writer->WriteLine("  if (unknownFields == null) {");  // First unknown field - create builder now
-    writer->WriteLine(
-        "    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);");
-    writer->WriteLine("  }");
-    writer->WriteLine(
-        "  unknownFields.MergeVarintField($0$, (ulong)(int)unknown);",
-        number());
+    printer->Print(
+      variables_,
+      "  if (unknownFields == null) {\n"  // First unknown field - create builder now
+      "    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);\n"
+      "  }\n"
+      "  unknownFields.MergeVarintField($number$, (ulong)(int)unknown);\n");
   }
-  writer->WriteLine("}");
+  printer->Print("}\n");
 }
 
-void EnumOneofFieldGenerator::GenerateSerializationCode(Writer* writer) {
-  writer->WriteLine("if ($0$) {", has_property_check);
-  writer->WriteLine(
-      "  output.WriteEnum($0$, field_names[$2$], (int) $1$, $1$);", number(),
-      property_name(), field_ordinal());
-  writer->WriteLine("}");
+void EnumOneofFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if ($has_property_check$) {\n"
+    "  output.WriteEnum($number$, field_names[$field_ordinal$], (int) $property_name$, $property_name$);\n"
+    "}\n");
 }
 
-void EnumOneofFieldGenerator::GenerateSerializedSizeCode(Writer* writer) {
-  writer->WriteLine("if ($0$) {", has_property_check);
-  writer->WriteLine(
-      "  size += pb::CodedOutputStream.ComputeEnumSize($0$, (int) $1$);",
-      number(), property_name());
-  writer->WriteLine("}");
+void EnumOneofFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if ($has_property_check$) {\n"
+    "  size += pb::CodedOutputStream.ComputeEnumSize($number$, (int) $property_name$);\n"
+    "}\n");
 }
 
 }  // namespace csharp

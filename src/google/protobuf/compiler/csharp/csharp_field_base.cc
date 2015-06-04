@@ -41,7 +41,6 @@
 
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
-#include <google/protobuf/compiler/csharp/csharp_writer.h>
 
 using google::protobuf::internal::scoped_ptr;
 
@@ -50,35 +49,72 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
+void FieldGeneratorBase::SetCommonFieldVariables(
+    map<string, string>* variables) {
+  (*variables)["property_name"] = property_name();
+  (*variables)["type_name"] = type_name();
+  (*variables)["name"] = name();
+  (*variables)["descriptor_name"] = descriptor_->name();
+  (*variables)["default_value"] = default_value();
+  if (has_default_value()) {
+    (*variables)["name_def_message"] =
+      (*variables)["name"] + "_ = " + (*variables)["default_value"];
+  } else {
+    (*variables)["name_def_message"] = (*variables)["name"] + "_";
+  }
+  (*variables)["capitalized_type_name"] = capitalized_type_name();
+  (*variables)["number"] = number();
+  (*variables)["field_ordinal"] = field_ordinal();
+  if (SupportFieldPresence(descriptor_->file())) {
+    (*variables)["has_property_check"] = "has" + (*variables)["property_name"];
+    (*variables)["other_has_property_check"] = "other.Has" + (*variables)["property_name"];
+  } else {
+    (*variables)["has_property_check"] =
+      (*variables)["property_name"] + " != " + (*variables)["default_value"];
+    (*variables)["other_has_property_check"] = "other." +
+      (*variables)["property_name"] + " != " + (*variables)["default_value"];
+  }
+}
+
+void FieldGeneratorBase::SetCommonOneofFieldVariables(
+    map<string, string>* variables) {
+  (*variables)["oneof_name"] = oneof_name();
+  (*variables)["has_property_check"] = oneof_name() + "Case_ == " + oneof_property_name() +
+    "OneofCase." + property_name();
+  (*variables)["oneof_property_name"] = oneof_property_name();
+}
+
 FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
                                        int fieldOrdinal)
     : SourceGeneratorBase(descriptor->file()),
       descriptor_(descriptor),
       fieldOrdinal_(fieldOrdinal) {
+  SetCommonFieldVariables(&variables_);
 }
 
 FieldGeneratorBase::~FieldGeneratorBase() {
 }
 
-void FieldGeneratorBase::AddDeprecatedFlag(Writer* writer) {
+void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
   if (descriptor_->options().deprecated())
   {
-    writer->WriteLine("[global::System.ObsoleteAttribute()]");
+    printer->Print("[global::System.ObsoleteAttribute()]\n");
   }
 }
 
-void FieldGeneratorBase::AddNullCheck(Writer* writer) {
-  AddNullCheck(writer, "value");
+void FieldGeneratorBase::AddNullCheck(io::Printer* printer) {
+  AddNullCheck(printer, "value");
 }
 
-void FieldGeneratorBase::AddNullCheck(Writer* writer, const std::string& name) {
+void FieldGeneratorBase::AddNullCheck(io::Printer* printer, const std::string& name) {
   if (is_nullable_type()) {
-    writer->WriteLine("  pb::ThrowHelper.ThrowIfNull($0$, \"$0$\");", name);
+    printer->Print("  pb::ThrowHelper.ThrowIfNull($name$, \"$name$\");\n",
+                   "name", name);
   }
 }
 
-void FieldGeneratorBase::AddPublicMemberAttributes(Writer* writer) {
-  AddDeprecatedFlag(writer);
+void FieldGeneratorBase::AddPublicMemberAttributes(io::Printer* printer) {
+  AddDeprecatedFlag(printer);
 }
 
 std::string FieldGeneratorBase::oneof_property_name() {
