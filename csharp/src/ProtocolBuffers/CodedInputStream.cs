@@ -1813,7 +1813,8 @@ namespace Google.ProtocolBuffers
                 byte[] skipBuffer = new byte[1024];
                 while (amountToSkip > 0)
                 {
-                    int bytesRead = input.Read(skipBuffer, 0, skipBuffer.Length);
+                    int bytesRead = input.Read(
+                        skipBuffer, 0, Math.Min(skipBuffer.Length, amountToSkip));
                     if (bytesRead <= 0)
                     {
                         throw InvalidProtocolBufferException.TruncatedMessage();
