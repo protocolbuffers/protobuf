@@ -49,82 +49,37 @@ namespace csharp {
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, int fieldOrdinal)
     : FieldGeneratorBase(descriptor, fieldOrdinal) {
+  // TODO(jonskeet): Make this cleaner...
+  is_value_type = descriptor->type() != FieldDescriptor::TYPE_STRING
+      && descriptor->type() != FieldDescriptor::TYPE_BYTES;
 }
 
 PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {
-
 }
 
 void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    printer->Print(variables_, "private bool has$property_name$;\n");
-  }
+  // TODO(jonskeet): Work out whether we want to prevent the fields from ever being
+  // null, or whether we just handle it, in the cases of bytes and string.
+  // (Basically, should null-handling code be in the getter or the setter?)
   printer->Print(
     variables_,
     "private $type_name$ $name_def_message$;\n");
   AddDeprecatedFlag(printer);
-  if (SupportFieldPresence(descriptor_->file())) {
-    printer->Print(
-      variables_,
-      "public bool Has$property_name$ {\n"
-      "  get { return has$property_name$; }\n"
-      "}\n");
-  }
-  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "public $type_name$ $property_name$ {\n"
-    "  get { return $name$_; }\n"
-    "}\n");
-}
+    "  get { return $name$_; }\n");
+  if (is_value_type) {
+    printer->Print(
+      variables_,
+      "  set { $name$_ = value; }\n");
 
-void PrimitiveFieldGenerator::GenerateBuilderMembers(io::Printer* printer) {
-  AddDeprecatedFlag(printer);
-  if (SupportFieldPresence(descriptor_->file())) {
+  } else {
     printer->Print(
       variables_,
-      "public bool Has$property_name$ {\n"
-      "  get { return result.has$property_name$; }\n"
-      "}\n");
+      "  set { $name$_ = value ?? $default_value$; }\n");
   }
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "public $type_name$ $property_name$ {\n"
-    "  get { return result.$property_name$; }\n"
-    "  set { Set$property_name$(value); }\n"
-    "}\n");
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "public Builder Set$property_name$($type_name$ value) {\n");
-  AddNullCheck(printer);
-  printer->Print("  PrepareBuilder();\n");
-  if (SupportFieldPresence(descriptor_->file())) {
-    printer->Print(
-      variables_,
-      "  result.has$property_name$ = true;\n");
-  }
-  printer->Print(
-    variables_,
-    "  result.$name$_ = value;\n"
-    "  return this;\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Clear$property_name$() {\n"
-    "  PrepareBuilder();\n");
-  if (SupportFieldPresence(descriptor_->file())) {
-    printer->Print(
-      variables_,
-      "  result.has$property_name$ = false;\n");
-  }
-  printer->Print(
-    variables_,
-    "  result.$name$_ = $default_value$;\n"
-    "  return this;\n"
-    "}\n");
+  printer->Print("}\n\n");
 }
 
 void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) {
@@ -135,27 +90,17 @@ void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) {
     "}\n");
 }
 
-void PrimitiveFieldGenerator::GenerateBuildingCode(io::Printer* printer) {
-  // Nothing to do here for primitive types
-}
-
 void PrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    printer->Print(
-      variables_,
-      "result.has$property_name$ = input.Read$capitalized_type_name$(ref result.$name$_);\n");
-  } else {
-    printer->Print(
-      variables_,
-      "input.Read$capitalized_type_name$(ref result.$name$_);\n");
-  }
+  printer->Print(
+    variables_,
+    "input.Read$capitalized_type_name$(ref result.$name$_);\n");
 }
 
 void PrimitiveFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  output.Write$capitalized_type_name$($number$, field_names[$field_ordinal$], $property_name$);\n"
+    "  output.Write$capitalized_type_name$($number$, fieldNames[$field_ordinal$], $property_name$);\n"
     "}\n");
 }
 
@@ -171,24 +116,18 @@ void PrimitiveFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  hash ^= $name$_.GetHashCode();\n"
+    "  hash ^= $property_name$.GetHashCode();\n"
     "}\n");
 }
 void PrimitiveFieldGenerator::WriteEquals(io::Printer* printer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    printer->Print(
-      variables_,
-      "if (has$property_name$ != other.has$property_name$ || (has$property_name$ && !$name$_.Equals(other.$name$_))) return false;\n");
-  } else {
-    printer->Print(
-      variables_,
-      "if (!$name$_.Equals(other.$name$_)) return false;\n");
-  }
+  printer->Print(
+    variables_,
+    "if ($property_name$ != other.$property_name$) return false;\n");
 }
 void PrimitiveFieldGenerator::WriteToString(io::Printer* printer) {
   printer->Print(
     variables_,
-    "PrintField(\"$descriptor_name$\", $has_property_check$, $name$_, writer);\n");
+    "PrintField(\"$descriptor_name$\", $has_property_check$, $property_name$, writer);\n");
 }
 
 PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
@@ -201,79 +140,43 @@ PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {
 }
 
 void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
+  // TODO(jonskeet): What should foo.OneofIntField = 0; do? Clear the oneof?
+  // Currently foo.OneOfStringField = null will clear the oneof, but foo.OneOfStringField = "" won't. Ick.
   AddDeprecatedFlag(printer);
-  if (SupportFieldPresence(descriptor_->file())) {
-    printer->Print(
-      variables_,
-      "public bool Has$property_name$ {\n"
-      "  get { return $has_property_check$; }\n"
-      "}\n");
-  }
-  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "public $type_name$ $property_name$ {\n"
     "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : $default_value$; }\n"
-    "}\n");
-}
-
-void PrimitiveOneofFieldGenerator::GenerateBuilderMembers(io::Printer* printer) {
-  AddDeprecatedFlag(printer);
-  if (SupportFieldPresence(descriptor_->file())) {
+    "  set {");
+    if (is_value_type) {
+      printer->Print(
+        variables_,
+        "  $oneof_name$_ = value;\n"
+        "  $oneof_name$Case_ = $oneof_property_name$Case.$property_name$;\n");
+    } else {
+      printer->Print(
+        variables_,
+        "  $oneof_name$_ = value ?? $default_value$;\n"
+        "  $oneof_name$Case_ = value == null ? $oneof_property_name$Case.None : $oneof_property_name$Case.$property_name$;\n");
+    }
     printer->Print(
-      variables_,
-      "public bool Has$property_name$ {\n"
-      "  get { return result.$has_property_check$; }\n"
+      "  }\n"
       "}\n");
-  }
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "public $type_name$ $property_name$ {\n"
-    "  get { return result.$has_property_check$ ? ($type_name$) result.$oneof_name$_ : $default_value$; }\n"
-    "  set { Set$property_name$(value); }\n"
-    "}\n");
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "public Builder Set$property_name$($type_name$ value) {\n");
-  AddNullCheck(printer);
-  printer->Print(
-    variables_,
-    "  PrepareBuilder();\n"
-    "  result.$oneof_name$_ = value;\n"
-    "  result.$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
-    "  return this;\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Clear$property_name$() {\n"
-    "  PrepareBuilder();\n"
-    "  if (result.$has_property_check$) {\n"
-    "    result.$oneof_name$Case_ = $oneof_property_name$OneofCase.None;\n"
-    "  }\n"
-    "  return this;\n"
-    "}\n");
 }
 
-void PrimitiveOneofFieldGenerator::WriteEquals(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if (!$property_name$.Equals(other.$property_name$)) return false;\n");
-}
 void PrimitiveOneofFieldGenerator::WriteToString(io::Printer* printer) {
   printer->Print(variables_,
     "PrintField(\"$descriptor_name$\", $has_property_check$, $oneof_name$_, writer);\n");
 }
 
 void PrimitiveOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
+  // TODO(jonskeet): What if the value we read is the default value for the type?
   printer->Print(
     variables_,
     "$type_name$ value = $default_value$;\n"
     "if (input.Read$capitalized_type_name$(ref value)) {\n"
-    "  result.$oneof_name$_ = value;\n"
-    "  result.$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
+    "  $oneof_name$_ = value;\n"
+    "  $oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
     "}\n");
 }
 

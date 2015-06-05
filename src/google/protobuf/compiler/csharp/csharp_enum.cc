@@ -58,7 +58,7 @@ EnumGenerator::~EnumGenerator() {
 
 void EnumGenerator::Generate(io::Printer* printer) {
   WriteGeneratedCodeAttributes(printer);
-  printer->Print("$access_level$ enum $name$ {\n",
+  printer->Print("$access_level$ enum $name$ : long {\n",
                  "access_level", class_access_level(),
                  "name", descriptor_->name());
   printer->Indent();

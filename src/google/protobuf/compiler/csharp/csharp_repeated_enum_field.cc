@@ -56,141 +56,46 @@ RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {
 }
 
 void RepeatedEnumFieldGenerator::GenerateMembers(io::Printer* printer) {
-  if (descriptor_->is_packed() && optimize_speed()) {
-    printer->Print(variables_, "private int $name$MemoizedSerializedSize;\n");
-  }
   printer->Print(variables_,
-    "private pbc::PopsicleList<$type_name$> $name$_ = new pbc::PopsicleList<$type_name$>();\n");
+    "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
-    "public scg::IList<$type_name$> $property_name$List {\n"
-    "  get { return pbc::Lists.AsReadOnly($name$_); }\n"
-    "}\n");
-
-  // TODO(jonskeet): Redundant API calls? Possibly - include for portability though. Maybe create an option.
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public int $property_name$Count {\n"
-    "  get { return $name$_.Count; }\n"
-    "}\n");
-
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public $type_name$ Get$property_name$(int index) {\n"
-    "  return $name$_[index];\n"
-    "}\n");
-}
-
-void RepeatedEnumFieldGenerator::GenerateBuilderMembers(io::Printer* printer) {
-  // Note:  We can return the original list here, because we make it unmodifiable when we build
-  // We return it via IPopsicleList so that collection initializers work more pleasantly.
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public pbc::IPopsicleList<$type_name$> $property_name$List {\n"
-    "  get { return PrepareBuilder().$name$_; }\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public int $property_name$Count {\n"
-    "  get { return result.$property_name$Count; }\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public $type_name$ Get$property_name$(int index) {\n"
-    "  return result.Get$property_name$(index);\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Set$property_name$(int index, $type_name$ value) {\n");
-  printer->Print(
-    variables_,
-    "  PrepareBuilder();\n"
-    "  result.$name$_[index] = value;\n"
-    "  return this;\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(variables_,
-    "public Builder Add$property_name$($type_name$ value) {\n");
-  printer->Print(
-    variables_,
-    "  PrepareBuilder();\n"
-    "  result.$name$_.Add(value);\n"
-    "  return this;\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder AddRange$property_name$(scg::IEnumerable<$type_name$> values) {\n"
-    "  PrepareBuilder();\n"
-    "  result.$name$_.Add(values);\n"
-    "  return this;\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Clear$property_name$() {\n"
-    "  PrepareBuilder();\n"
-    "  result.$name$_.Clear();\n"
-    "  return this;\n"
+    "public pbc::RepeatedField<$type_name$> $property_name$ {\n"
+    "  get { return $name$_; }\n"
     "}\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateMergingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if (other.$name$_.Count != 0) {\n"
-    "  result.$name$_.Add(other.$name$_);\n"
-    "}\n");
-}
-
-void RepeatedEnumFieldGenerator::GenerateBuildingCode(io::Printer* printer) {
-  printer->Print(variables_, "$name$_.MakeReadOnly();\n");
+    "$name$_.Add(other.$name$_);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "scg::ICollection<object> unknownItems;\n"
-    "input.ReadEnumArray<$type_name$>(tag, field_name, result.$name$_, out unknownItems);\n");
-  if (!use_lite_runtime()) {
-    printer->Print(
-      variables_,
-      "if (unknownItems != null) {\n"
-      "  if (unknownFields == null) {\n"
-      "    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);\n"
-      "  }\n"
-      "  foreach (object rawValue in unknownItems)\n"
-      "    if (rawValue is int)\n"
-      "      unknownFields.MergeVarintField($number$, (ulong)(int)rawValue);\n"
-      "}\n");
-  }
+    "input.ReadEnumArray<$type_name$>(tag, fieldName, result.$name$_);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
-  printer->Print(variables_, "if ($name$_.Count > 0) {\n");
-  printer->Indent();
+  // TODO(jonskeet): Originally, this checked for Count > 0 first.
+  // The Write* call should make that cheap though - no need to generate it every time.
   if (descriptor_->is_packed()) {
     printer->Print(
       variables_,
-      "output.WritePackedEnumArray($number$, field_names[$field_ordinal$], $name$MemoizedSerializedSize, $name$_);\n");
+      "output.WritePackedEnumArray($number$, fieldNames[$field_ordinal$], $name$_);\n");
   } else {
     printer->Print(variables_,
-      "output.WriteEnumArray($number$, field_names[$field_ordinal$], $name$_);\n");
+      "output.WriteEnumArray($number$, fieldNames[$field_ordinal$], $name$_);\n");
   }
-  printer->Outdent();
   printer->Print("}\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   printer->Print("{\n");
   printer->Indent();
+  // TODO(jonskeet): Move all this code into CodedOutputStream? It's a lot to repeat everywhere...
   printer->Print(
     variables_,
     "int dataSize = 0;\n"
@@ -199,7 +104,7 @@ void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer
   printer->Print(
     variables_,
     "foreach ($type_name$ element in $name$_) {\n"
-    "  dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);\n"
+    "  dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((long) element);\n"
     "}\n"
     "size += dataSize;\n");
   int tagSize = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
@@ -215,11 +120,6 @@ void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer
   }
   printer->Outdent();
   printer->Print("}\n");
-  // cache the data size for packed fields.
-  if (descriptor_->is_packed()) {
-    printer->Print(variables_,
-      "$name$MemoizedSerializedSize = dataSize;\n");
-  }
   printer->Outdent();
   printer->Print("}\n");
 }
@@ -227,16 +127,15 @@ void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer
 void RepeatedEnumFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "foreach($type_name$ i in $name$_)\n"
-    "  hash ^= i.GetHashCode();\n");
+    "foreach($type_name$ i in $name$_) {\n"
+    "  hash ^= i.GetHashCode();\n"
+    "}\n");
 }
 
 void RepeatedEnumFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if($name$_.Count != other.$name$_.Count) return false;\n"
-    "for(int ix=0; ix < $name$_.Count; ix++)\n"
-    "  if(!$name$_[ix].Equals(other.$name$_[ix])) return false;\n");
+    "if(!$name$_.Equals(other.$name$)) return false;\n");
 }
 
 void RepeatedEnumFieldGenerator::WriteToString(io::Printer* printer) {

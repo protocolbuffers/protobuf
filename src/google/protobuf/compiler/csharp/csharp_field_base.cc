@@ -263,37 +263,13 @@ bool AllPrintableAscii(const std::string& text) {
 }
 
 std::string FieldGeneratorBase::GetStringDefaultValueInternal() {
-  if (!descriptor_->has_default_value()) {
-    return "\"\"";
-  }
-  if (AllPrintableAscii(descriptor_->default_value_string())) {
-    // All chars are ASCII and printable.  In this case we only
-    // need to escape quotes and backslashes.
-    std::string temp = descriptor_->default_value_string();
-    temp = StringReplace(temp, "\\", "\\\\", true);
-    temp = StringReplace(temp, "'", "\\'", true);
-    temp = StringReplace(temp, "\"", "\\\"", true);
-    return "\"" + temp + "\"";
-  }
-  if (use_lite_runtime()) {
-    return "pb::ByteString.FromBase64(\""
-        + StringToBase64(descriptor_->default_value_string())
-        + "\").ToStringUtf8()";
-  }
-  return "(string) " + GetClassName(descriptor_->containing_type())
-      + ".Descriptor.Fields[" + SimpleItoa(descriptor_->index())
-      + "].DefaultValue";
+  // No other default values needed for proto3...
+  return "\"\"";
 }
 
 std::string FieldGeneratorBase::GetBytesDefaultValueInternal() {
-  if (!descriptor_->has_default_value()) {
-    return "pb::ByteString.Empty";
-  }
-  if (use_lite_runtime()) {
-    return "pb::ByteString.FromBase64(\"" + StringToBase64(descriptor_->default_value_string()) + "\")";
-  }
-  return "(pb::ByteString) "+ GetClassName(descriptor_->containing_type()) +
-      ".Descriptor.Fields[" + SimpleItoa(descriptor_->index()) + "].DefaultValue";
+  // No other default values needed for proto3...
+  return "pb::ByteString.Empty";
 }
 
 std::string FieldGeneratorBase::default_value() {
@@ -363,11 +339,6 @@ std::string FieldGeneratorBase::default_value() {
 
 std::string FieldGeneratorBase::number() {
   return SimpleItoa(descriptor_->number());
-}
-
-std::string FieldGeneratorBase::message_or_group() {
-  return
-      (descriptor_->type() == FieldDescriptor::TYPE_GROUP) ? "Group" : "Message";
 }
 
 std::string FieldGeneratorBase::capitalized_type_name() {

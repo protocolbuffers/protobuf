@@ -56,129 +56,43 @@ RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
-  if (descriptor_->is_packed() && optimize_speed()) {
-    printer->Print(variables_, "private int $name$MemoizedSerializedSize;\n");
-  }
   printer->Print(variables_,
-    "private pbc::PopsicleList<$type_name$> $name$_ = new pbc::PopsicleList<$type_name$>();\n");
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "public scg::IList<$type_name$> $property_name$List {\n"
-    "  get { return pbc::Lists.AsReadOnly($name$_); }\n"
-    "}\n");
-
-  // TODO(jonskeet): Redundant API calls? Possibly - include for portability though. Maybe create an option.
+    "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
-    "public int $property_name$Count {\n"
-    "  get { return $name$_.Count; }\n"
-    "}\n");
-
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "public $type_name$ Get$property_name$(int index) {\n"
-    "  return $name$_[index];\n"
-    "}\n");
-}
-
-void RepeatedPrimitiveFieldGenerator::GenerateBuilderMembers(io::Printer* printer) {
-  // Note:  We can return the original list here, because we make it unmodifiable when we build
-  // We return it via IPopsicleList so that collection initializers work more pleasantly.
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "public pbc::IPopsicleList<$type_name$> $property_name$List {\n"
-    "  get { return PrepareBuilder().$name$_; }\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public int $property_name$Count {\n"
-    "  get { return result.$property_name$Count; }\n"
-    "}\n");
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "public $type_name$ Get$property_name$(int index) {\n"
-    "  return result.Get$property_name$(index);\n"
-    "}\n");
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "public Builder Set$property_name$(int index, $type_name$ value) {\n");
-  AddNullCheck(printer);
-  printer->Print(
-    variables_,
-    "  PrepareBuilder();\n"
-    "  result.$name$_[index] = value;\n"
-    "  return this;\n"
-    "}\n");
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "public Builder Add$property_name$($type_name$ value) {\n");
-  AddNullCheck(printer);
-  printer->Print(
-    variables_,
-    "  PrepareBuilder();\n"
-    "  result.$name$_.Add(value);\n"
-    "  return this;\n"
-    "}\n");
-  AddPublicMemberAttributes(printer);
-  printer->Print(
-    variables_,
-    "public Builder AddRange$property_name$(scg::IEnumerable<$type_name$> values) {\n"
-    "  PrepareBuilder();\n"
-    "  result.$name$_.Add(values);\n"
-    "  return this;\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Clear$property_name$() {\n"
-    "  PrepareBuilder();\n"
-    "  result.$name$_.Clear();\n"
-    "  return this;\n"
+    "public pbc::RepeatedField<$type_name$> $property_name$ {\n"
+    "  get { return $name$_; }\n"
     "}\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if (other.$name$_.Count != 0) {\n"
-    "  result.$name$_.Add(other.$name$_);\n"
-    "}\n");
-}
-
-void RepeatedPrimitiveFieldGenerator::GenerateBuildingCode(io::Printer* printer) {
-  printer->Print(variables_, "$name$_.MakeReadOnly();\n");
+    "$name$_.Add(other.$name$_);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(variables_,
-    "input.Read$capitalized_type_name$Array(tag, field_name, result.$name$_);\n");
+    "input.Read$capitalized_type_name$Array(tag, fieldName, $name$_);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) {
-  printer->Print(variables_, "if ($name$_.Count > 0) {\n");
-  printer->Indent();
+  // TODO(jonskeet): Originally, this checked for Count > 0 first.
+  // The Write* call should make that cheap though - no need to generate it every time.
   if (descriptor_->is_packed()) {
     printer->Print(variables_,
-      "output.WritePacked$capitalized_type_name$Array($number$, field_names[$field_ordinal$], $name$MemoizedSerializedSize, $name$_);\n");
+      "output.WritePacked$capitalized_type_name$Array($number$, fieldNames[$field_ordinal$], $name$_);\n");
   } else {
     printer->Print(variables_,
-      "output.Write$capitalized_type_name$Array($number$, field_names[$field_ordinal$], $name$_);\n");
+      "output.Write$capitalized_type_name$Array($number$, fieldNames[$field_ordinal$], $name$_);\n");
   }
-  printer->Outdent();
-  printer->Print("}\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) {
+  // TODO(jonskeet): Get rid of most of this - move it into the runtime.
   printer->Print("{\n");
   printer->Indent();
   printer->Print("int dataSize = 0;\n");
@@ -207,10 +121,6 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(
       "size += $tag_size$ * $name$_.Count;\n",
       "tag_size", SimpleItoa(tagSize), "name", name());
   }
-  // cache the data size for packed fields.
-  if (descriptor_->is_packed()) {
-    printer->Print(variables_, "$name$MemoizedSerializedSize = dataSize;\n");
-  }
   printer->Outdent();
   printer->Print("}\n");
 }
@@ -218,15 +128,14 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(
 void RepeatedPrimitiveFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "foreach($type_name$ i in $name$_)\n"
-    "  hash ^= i.GetHashCode();\n");
+    "foreach($type_name$ i in $name$_)\n {"
+    "  hash ^= i.GetHashCode();\n"
+    "}\n");
 }
 void RepeatedPrimitiveFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if($name$_.Count != other.$name$_.Count) return false;\n"
-    "for(int ix=0; ix < $name$_.Count; ix++)\n"
-    "  if(!$name$_[ix].Equals(other.$name$_[ix])) return false;\n");
+    "if(!$name$_.Equals(other.$name$)) return false;\n");
 }
 void RepeatedPrimitiveFieldGenerator::WriteToString(io::Printer* printer) {
   printer->Print(variables_,

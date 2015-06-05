@@ -41,17 +41,13 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-class Writer;
-
 class RepeatedPrimitiveFieldGenerator : public FieldGeneratorBase {
  public:
   RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~RepeatedPrimitiveFieldGenerator();
 
   virtual void GenerateMembers(io::Printer* printer);
-  virtual void GenerateBuilderMembers(io::Printer* printer);
   virtual void GenerateMergingCode(io::Printer* printer);
-  virtual void GenerateBuildingCode(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
   virtual void GenerateSerializationCode(io::Printer* printer);
   virtual void GenerateSerializedSizeCode(io::Printer* printer);
