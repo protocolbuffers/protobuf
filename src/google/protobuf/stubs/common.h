@@ -258,7 +258,7 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #ifndef GOOGLE_PREDICT_FALSE
 #ifdef __GNUC__
 // Provided at least since GCC 3.0.
-#define GOOGLE_PREDICT_FALSE(x) (__builtin_expect(!!(x), 1))
+#define GOOGLE_PREDICT_FALSE(x) (__builtin_expect(x, 0))
 #else
 #define GOOGLE_PREDICT_FALSE
 #endif
