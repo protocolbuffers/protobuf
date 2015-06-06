@@ -47,6 +47,11 @@ include(find_hash_map.cmake)
 
 configure_file(config.h.in config.h)
 configure_file(pbconfig.h.in google/protobuf/stubs/pbconfig.h)
+if (MSVC)
+  string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
+  string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
+  configure_file(extract_includes.bat.in extract_includes.bat)
+endif (MSVC)
 
 get_filename_component(protobuf_source_dir ${protobuf_SOURCE_DIR} PATH)
 
