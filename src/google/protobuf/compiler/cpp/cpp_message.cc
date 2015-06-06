@@ -3510,7 +3510,7 @@ GenerateByteSize(io::Printer* printer) {
         } else {
           if (HasFieldPresence(descriptor_->file())) {
             printer->Print(
-              "if (_has_bits_[$index$ / 32] & $mask$) {\n",
+              "if (_has_bits_[$index$ / 32] & $mask$u) {\n",
               "index", SimpleItoa(i),
               "mask", SimpleItoa(mask));
             printer->Indent();
