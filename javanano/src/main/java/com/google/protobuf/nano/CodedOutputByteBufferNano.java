@@ -33,6 +33,7 @@ package com.google.protobuf.nano;
 import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.ReadOnlyBufferException;
 
 /**
@@ -61,6 +62,7 @@ public final class CodedOutputByteBufferNano {
 
   private CodedOutputByteBufferNano(final ByteBuffer buffer) {
     this.buffer = buffer;
+    this.buffer.order(ByteOrder.LITTLE_ENDIAN);
   }
 
   /**
@@ -1038,24 +1040,20 @@ public final class CodedOutputByteBufferNano {
 
   /** Write a little-endian 32-bit integer. */
   public void writeRawLittleEndian32(final int value) throws IOException {
-    writeRawByte((value      ) & 0xFF);
-    writeRawByte((value >>  8) & 0xFF);
-    writeRawByte((value >> 16) & 0xFF);
-    writeRawByte((value >> 24) & 0xFF);
+    if (buffer.remaining() < 4) {
+      throw new OutOfSpaceException(buffer.position(), buffer.limit());
+    }
+    buffer.putInt(value);
   }
 
   public static final int LITTLE_ENDIAN_32_SIZE = 4;
 
   /** Write a little-endian 64-bit integer. */
   public void writeRawLittleEndian64(final long value) throws IOException {
-    writeRawByte((int)(value      ) & 0xFF);
-    writeRawByte((int)(value >>  8) & 0xFF);
-    writeRawByte((int)(value >> 16) & 0xFF);
-    writeRawByte((int)(value >> 24) & 0xFF);
-    writeRawByte((int)(value >> 32) & 0xFF);
-    writeRawByte((int)(value >> 40) & 0xFF);
-    writeRawByte((int)(value >> 48) & 0xFF);
-    writeRawByte((int)(value >> 56) & 0xFF);
+    if (buffer.remaining() < 8) {
+      throw new OutOfSpaceException(buffer.position(), buffer.limit());
+    }
+    buffer.putLong(value);
   }
 
   public static final int LITTLE_ENDIAN_64_SIZE = 8;
