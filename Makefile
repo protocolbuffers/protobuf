@@ -46,6 +46,7 @@ UPB_FAIL_WARNINGS?=no
 # We are C89/C++98, with the one exception that we need stdint and "long long."
 CC?=cc
 CXX?=c++
+AR?=ar
 CFLAGS=
 CXXFLAGS=
 INCLUDE=-I.
@@ -221,11 +222,11 @@ endif
 
 $(UPB_PICLIBS): lib/lib%_pic.a: $(call make_objs,lo)
 	$(E) AR $@
-	$(Q) mkdir -p lib && ar rcs $@ $^
+	$(Q) mkdir -p lib && $(AR) rcs $@ $^
 
 $(UPB_LIBS): lib/lib%.a: $(call make_objs,o)
 	$(E) AR $@
-	$(Q) mkdir -p lib && ar rcs $@ $^
+	$(Q) mkdir -p lib && $(AR) rcs $@ $^
 
 
 obj/upb/%.o: upb/%.c | $$(@D)/.
@@ -370,7 +371,7 @@ googlepbtests: googlepb $(GOOGLEPB_TESTS)
 
 lib/libupb.bindings.googlepb.a: $(upb_bindings_googlepb_SRCS:upb/%.cc=obj/upb/%.o)
 	$(E) AR $@
-	$(Q) mkdir -p lib && ar rcs $@ $^
+	$(Q) mkdir -p lib && $(AR) rcs $@ $^
 
 # Generate C++ with Google's protobuf compiler, to test and benchmark against.
 tests/google_messages.proto.pb: tests/google_messages.proto
