@@ -52,12 +52,14 @@
 #ifdef __GNUC__
 #define _upb_snprintf __builtin_snprintf
 #define _upb_vsnprintf __builtin_vsnprintf
+#define _upb_va_copy(a, b) __va_copy(a, b)
 #elif __STDC_VERSION__ >= 199901L
 /* C99 versions. */
 #define _upb_snprintf snprintf
 #define _upb_vsnprintf vsnprintf
+#define _upb_va_copy(a, b) va_copy(a, b)
 #else
-#error Need implementations of [v]snprintf
+#error Need implementations of [v]snprintf and va_copy
 #endif
 
 

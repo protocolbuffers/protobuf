@@ -96,10 +96,6 @@ static int putescaped(upb_textprinter *p, const char *buf, size_t len,
   return 0;
 }
 
-#ifdef __GNUC__
-#define va_copy(a, b) __va_copy(a, b)
-#endif
-
 bool putf(upb_textprinter *p, const char *fmt, ...) {
   va_list args;
   va_list args_copy;
@@ -111,7 +107,7 @@ bool putf(upb_textprinter *p, const char *fmt, ...) {
   va_start(args, fmt);
 
   /* Run once to get the length of the string. */
-  va_copy(args_copy, args);
+  _upb_va_copy(args_copy, args);
   len = _upb_vsnprintf(NULL, 0, fmt, args_copy);
   va_end(args_copy);
 
