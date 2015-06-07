@@ -412,6 +412,7 @@ protoc_inputs =                                                \
   google/protobuf/unittest_drop_unknown_fields.proto           \
   google/protobuf/unittest_embed_optimize_for.proto            \
   google/protobuf/unittest_empty.proto                         \
+  google/protobuf/unittest_enormous_descriptor.proto           \
   google/protobuf/unittest_import_lite.proto                   \
   google/protobuf/unittest_import.proto                        \
   google/protobuf/unittest_import_public_lite.proto            \
@@ -453,8 +454,7 @@ EXTRA_DIST =                                                   \
   google/protobuf/compiler/ruby/ruby_generated_code.proto      \
   google/protobuf/compiler/ruby/ruby_generated_code.rb         \
   google/protobuf/compiler/package_info.h                      \
-  google/protobuf/compiler/zip_output_unittest.sh              \
-  google/protobuf/unittest_enormous_descriptor.proto
+  google/protobuf/compiler/zip_output_unittest.sh
 
 protoc_lite_outputs =                                          \
   google/protobuf/map_lite_unittest.pb.cc                      \
@@ -486,6 +486,8 @@ protoc_outputs =                                               \
   google/protobuf/unittest_embed_optimize_for.pb.h             \
   google/protobuf/unittest_empty.pb.cc                         \
   google/protobuf/unittest_empty.pb.h                          \
+  google/protobuf/unittest_enormous_descriptor.pb.cc           \
+  google/protobuf/unittest_enormous_descriptor.pb.h            \
   google/protobuf/unittest_import.pb.cc                        \
   google/protobuf/unittest_import.pb.h                         \
   google/protobuf/unittest_import_public.pb.cc                 \
