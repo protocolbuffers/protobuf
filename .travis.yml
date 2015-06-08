@@ -22,5 +22,13 @@ env:
   - CONFIG=ruby21
   - CONFIG=ruby22
   - CONFIG=jruby
+matrix:
+  allow_failures:
+    - os: osx
+      env: CONFIG=csharp
+    - os: osx
+      env: CONFIG=ruby22
+    - os: osx
+      env: CONFIG=jruby
 notifications:
   email: false
