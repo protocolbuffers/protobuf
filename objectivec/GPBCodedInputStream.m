@@ -38,7 +38,7 @@
 
 static const NSUInteger kDefaultRecursionLimit = 64;
 
-static inline void CheckSize(GPBCodedInputStreamState *state, size_t size) {
+static void CheckSize(GPBCodedInputStreamState *state, size_t size) {
   size_t newSize = state->bufferPos + size;
   if (newSize > state->bufferSize) {
     [NSException raise:NSParseErrorException format:@""];
@@ -50,26 +50,26 @@ static inline void CheckSize(GPBCodedInputStreamState *state, size_t size) {
   }
 }
 
-static inline int8_t ReadRawByte(GPBCodedInputStreamState *state) {
+static int8_t ReadRawByte(GPBCodedInputStreamState *state) {
   CheckSize(state, sizeof(int8_t));
   return ((int8_t *)state->bytes)[state->bufferPos++];
 }
 
-static inline int32_t ReadRawLittleEndian32(GPBCodedInputStreamState *state) {
+static int32_t ReadRawLittleEndian32(GPBCodedInputStreamState *state) {
   CheckSize(state, sizeof(int32_t));
   int32_t value = OSReadLittleInt32(state->bytes, state->bufferPos);
   state->bufferPos += sizeof(int32_t);
   return value;
 }
 
-static inline int64_t ReadRawLittleEndian64(GPBCodedInputStreamState *state) {
+static int64_t ReadRawLittleEndian64(GPBCodedInputStreamState *state) {
   CheckSize(state, sizeof(int64_t));
   int64_t value = OSReadLittleInt64(state->bytes, state->bufferPos);
   state->bufferPos += sizeof(int64_t);
   return value;
 }
 
-static inline int32_t ReadRawVarint32(GPBCodedInputStreamState *state) {
+static int32_t ReadRawVarint32(GPBCodedInputStreamState *state) {
   int8_t tmp = ReadRawByte(state);
   if (tmp >= 0) {
     return tmp;
@@ -104,7 +104,7 @@ static inline int32_t ReadRawVarint32(GPBCodedInputStreamState *state) {
   return result;
 }
 
-static inline int64_t ReadRawVarint64(GPBCodedInputStreamState *state) {
+static int64_t ReadRawVarint64(GPBCodedInputStreamState *state) {
   int32_t shift = 0;
   int64_t result = 0;
   while (shift < 64) {
@@ -119,7 +119,7 @@ static inline int64_t ReadRawVarint64(GPBCodedInputStreamState *state) {
   return 0;
 }
 
-static inline void SkipRawData(GPBCodedInputStreamState *state, size_t size) {
+static void SkipRawData(GPBCodedInputStreamState *state, size_t size) {
   CheckSize(state, size);
   state->bufferPos += size;
 }
@@ -222,7 +222,7 @@ NSString *GPBCodedInputStreamReadRetainedString(
   return result;
 }
 
-NSData *GPBCodedInputStreamReadRetainedData(GPBCodedInputStreamState *state) {
+NSData *GPBCodedInputStreamReadRetainedBytes(GPBCodedInputStreamState *state) {
   int32_t size = ReadRawVarint32(state);
   if (size < 0) return nil;
   CheckSize(state, size);
@@ -232,7 +232,7 @@ NSData *GPBCodedInputStreamReadRetainedData(GPBCodedInputStreamState *state) {
   return result;
 }
 
-NSData *GPBCodedInputStreamReadRetainedDataNoCopy(
+NSData *GPBCodedInputStreamReadRetainedBytesNoCopy(
     GPBCodedInputStreamState *state) {
   int32_t size = ReadRawVarint32(state);
   if (size < 0) return nil;
@@ -453,8 +453,8 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
   GPBCodedInputStreamPopLimit(&state_, oldLimit);
 }
 
-- (NSData *)readData {
-  return [GPBCodedInputStreamReadRetainedData(&state_) autorelease];
+- (NSData *)readBytes {
+  return [GPBCodedInputStreamReadRetainedBytes(&state_) autorelease];
 }
 
 - (uint32_t)readUInt32 {
@@ -499,7 +499,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 
 // Returns true if the passed in bytes are 7 bit ascii.
 // This routine needs to be fast.
-static inline bool AreBytesIn7BitASCII(const uint8_t *bytes, NSUInteger len) {
+static bool AreBytesIn7BitASCII(const uint8_t *bytes, NSUInteger len) {
 // In the loops below, it's more efficient to collect rather than do
 // conditional at every step.
 #if __LP64__
@@ -587,7 +587,7 @@ static inline bool AreBytesIn7BitASCII(const uint8_t *bytes, NSUInteger len) {
   return true;
 }
 
-static inline void GPBStringInitStringValue(GPBString *string) {
+static void GPBStringInitStringValue(GPBString *string) {
   OSSpinLockLock(&string->lock_);
   GPBStringInitStringValueAlreadyLocked(string);
   OSSpinLockUnlock(&string->lock_);

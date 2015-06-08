@@ -138,15 +138,12 @@ inline ObjectiveCType GetObjectiveCType(const FieldDescriptor* field) {
 bool IsPrimitiveType(const FieldDescriptor* field);
 bool IsReferenceType(const FieldDescriptor* field);
 
-string GPBValueFieldName(const FieldDescriptor* field);
+string GPBGenericValueFieldName(const FieldDescriptor* field);
 string DefaultValue(const FieldDescriptor* field);
 
 string BuildFlagsString(const vector<string>& strings);
 
 string BuildCommentsString(const SourceLocation& location);
-
-bool InitializeClassWhitelist(string* error);
-bool FilterClass(const string& name);
 
 // Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform
 // the input into the the expected output.

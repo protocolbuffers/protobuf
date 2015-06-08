@@ -1,5 +1,6 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2013 Google Inc.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -27,45 +28,23 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-syntax = "proto2";
+#import <Foundation/Foundation.h>
 
-package protobuf_unittest;
+#import "GPBDescriptor.h"
 
+@class GPBCodedInputStream;
+@class GPBCodedOutputStream;
+@class GPBExtensionRegistry;
 
-message Keep {
-}
+void GPBExtensionMergeFromInputStream(GPBExtensionDescriptor *extension,
+                                      BOOL isPackedOnStream,
+                                      GPBCodedInputStream *input,
+                                      GPBExtensionRegistry *extensionRegistry,
+                                      GPBMessage *message);
 
-message Remove {
-}
+size_t GPBComputeExtensionSerializedSizeIncludingTag(
+    GPBExtensionDescriptor *extension, id value);
 
-message RemoveJustKidding {
-}
-
-message Other {
-  optional Keep a = 1;
-  optional Remove b = 2;
-}
-
-enum RemoveEnum {
-  RemoveValue = 1;
-}
-
-enum KeepEnum {
-  KeepValue = 1;
-}
-
-message RemoveEnumMessage {
-  enum KeepEnumInside {
-    KeepValue = 1;
-  }
-
-  enum RemoveEnumInside {
-    RemoveValue = 1;
-  }
-
-  message KeepNestedInside {
-  }
-
-  message RemoveNestedInside {
-  }
-}
+void GPBWriteExtensionValueToOutputStream(GPBExtensionDescriptor *extension,
+                                          id value,
+                                          GPBCodedOutputStream *output);

@@ -32,7 +32,7 @@
 
 #import "GPBCodedInputStream.h"
 #import "GPBMessage_PackagePrivate.h"
-#import "GPBField_PackagePrivate.h"
+#import "GPBUnknownField_PackagePrivate.h"
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestMset.pbobjc.h"
 
@@ -143,8 +143,8 @@ const int kUnknownTypeId = 1550055;
       setI:123];
   [[message_set getExtension:[TestMessageSetExtension2 messageSetExtension]]
       setStr:@"foo"];
-  GPBField* unknownField =
-      [[[GPBField alloc] initWithNumber:kUnknownTypeId] autorelease];
+  GPBUnknownField* unknownField =
+      [[[GPBUnknownField alloc] initWithNumber:kUnknownTypeId] autorelease];
   [unknownField addLengthDelimited:[NSData dataWithBytes:"bar" length:3]];
   GPBUnknownFieldSet* unknownFieldSet =
       [[[GPBUnknownFieldSet alloc] init] autorelease];
@@ -159,9 +159,9 @@ const int kUnknownTypeId = 1550055;
   XCTAssertEqual([raw.unknownFields countOfFields], (NSUInteger)0);
 
   XCTAssertEqual(raw.itemArray.count, (NSUInteger)3);
-  XCTAssertEqual([raw.itemArray[0] typeId],
+  XCTAssertEqual((uint32_t)[raw.itemArray[0] typeId],
                  [TestMessageSetExtension1 messageSetExtension].fieldNumber);
-  XCTAssertEqual([raw.itemArray[1] typeId],
+  XCTAssertEqual((uint32_t)[raw.itemArray[1] typeId],
                  [TestMessageSetExtension2 messageSetExtension].fieldNumber);
   XCTAssertEqual([raw.itemArray[2] typeId], kUnknownTypeId);
 
@@ -227,7 +227,7 @@ const int kUnknownTypeId = 1550055;
       @"foo");
 
   XCTAssertEqual([messageSet.unknownFields countOfFields], (NSUInteger)1);
-  GPBField* unknownField = [messageSet.unknownFields getField:kUnknownTypeId];
+  GPBUnknownField* unknownField = [messageSet.unknownFields getField:kUnknownTypeId];
   XCTAssertNotNil(unknownField);
   XCTAssertEqual(unknownField.lengthDelimitedList.count, (NSUInteger)1);
   XCTAssertEqualObjects(unknownField.lengthDelimitedList[0],

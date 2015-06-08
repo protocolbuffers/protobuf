@@ -30,7 +30,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GPBTypes.h"
+#import "GPBRuntimeTypes.h"
 
 // These classes are used for repeated fields of basic data types. They are used because
 // they perform better than boxing into NSNumbers in NSArrays.

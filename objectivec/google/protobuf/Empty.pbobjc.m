@@ -11,11 +11,14 @@
 
 @end
 
+#pragma mark - GPBEmptyRoot_FileDescriptor
+
 static GPBFileDescriptor *GPBEmptyRoot_FileDescriptor(void) {
   // This is called by +initialize so there is no need to worry
   // about thread safety of the singleton.
   static GPBFileDescriptor *descriptor = NULL;
   if (!descriptor) {
+    GPBDebugCheckRuntimeVersion();
     descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
                                                      syntax:GPBFileSyntaxProto3];
   }
@@ -27,30 +30,31 @@ static GPBFileDescriptor *GPBEmptyRoot_FileDescriptor(void) {
 @implementation GPBEmpty
 
 
-typedef struct GPBEmpty_Storage {
+typedef struct GPBEmpty__storage_ {
   uint32_t _has_storage_[0];
-} GPBEmpty_Storage;
+} GPBEmpty__storage_;
 
 // This method is threadsafe because it is initially called
 // in +initialize for each subclass.
 + (GPBDescriptor *)descriptor {
-  static GPBDescriptor *descriptor = NULL;
+  static GPBDescriptor *descriptor = nil;
   if (!descriptor) {
-    static GPBMessageFieldDescription fields[] = {
-    };
-    descriptor = [GPBDescriptor allocDescriptorForClass:[GPBEmpty class]
-                                              rootClass:[GPBEmptyRoot class]
-                                                   file:GPBEmptyRoot_FileDescriptor()
-                                                 fields:fields
-                                             fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
-                                                 oneofs:NULL
-                                             oneofCount:0
-                                                  enums:NULL
-                                              enumCount:0
-                                                 ranges:NULL
-                                             rangeCount:0
-                                            storageSize:sizeof(GPBEmpty_Storage)
-                                             wireFormat:NO];
+    GPBDescriptor *localDescriptor =
+        [GPBDescriptor allocDescriptorForClass:[GPBEmpty class]
+                                     rootClass:[GPBEmptyRoot class]
+                                          file:GPBEmptyRoot_FileDescriptor()
+                                        fields:NULL
+                                    fieldCount:0
+                                        oneofs:NULL
+                                    oneofCount:0
+                                         enums:NULL
+                                     enumCount:0
+                                        ranges:NULL
+                                    rangeCount:0
+                                   storageSize:sizeof(GPBEmpty__storage_)
+                                    wireFormat:NO];
+    NSAssert(descriptor == nil, @"Startup recursed!");
+    descriptor = localDescriptor;
   }
   return descriptor;
 }

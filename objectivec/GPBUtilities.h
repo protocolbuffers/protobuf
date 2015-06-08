@@ -30,119 +30,13 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GPBArray.h"
 #import "GPBMessage.h"
-#import "GPBTypes.h"
+#import "GPBRuntimeTypes.h"
 
 CF_EXTERN_C_BEGIN
 
-BOOL GPBMessageHasFieldNumberSet(GPBMessage *self, uint32_t fieldNumber);
-BOOL GPBMessageHasFieldSet(GPBMessage *self, GPBFieldDescriptor *field);
-
-void GPBClearMessageField(GPBMessage *self, GPBFieldDescriptor *field);
-
-// Returns an empty NSData to assign to byte fields when you wish
-// to assign them to empty. Prevents allocating a lot of little [NSData data]
-// objects.
-NSData *GPBEmptyNSData(void) __attribute__((pure));
-
-//%PDDM-EXPAND GPB_IVAR_ACCESSORS()
-// This block of code is generated, do not edit it directly.
-
-// Getters and Setters for ivars named |name| from instance self.
-
-NSData* GPBGetDataIvarWithField(GPBMessage *self,
-                                GPBFieldDescriptor *field);
-void GPBSetDataIvarWithField(GPBMessage *self,
-                             GPBFieldDescriptor *field,
-                             NSData* value);
-NSString* GPBGetStringIvarWithField(GPBMessage *self,
-                                    GPBFieldDescriptor *field);
-void GPBSetStringIvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               NSString* value);
-GPBMessage* GPBGetMessageIvarWithField(GPBMessage *self,
-                                       GPBFieldDescriptor *field);
-void GPBSetMessageIvarWithField(GPBMessage *self,
-                                GPBFieldDescriptor *field,
-                                GPBMessage* value);
-GPBMessage* GPBGetGroupIvarWithField(GPBMessage *self,
-                                     GPBFieldDescriptor *field);
-void GPBSetGroupIvarWithField(GPBMessage *self,
-                              GPBFieldDescriptor *field,
-                              GPBMessage* value);
-BOOL GPBGetBoolIvarWithField(GPBMessage *self,
-                             GPBFieldDescriptor *field);
-void GPBSetBoolIvarWithField(GPBMessage *self,
-                             GPBFieldDescriptor *field,
-                             BOOL value);
-int32_t GPBGetInt32IvarWithField(GPBMessage *self,
-                                 GPBFieldDescriptor *field);
-void GPBSetInt32IvarWithField(GPBMessage *self,
-                              GPBFieldDescriptor *field,
-                              int32_t value);
-int32_t GPBGetSFixed32IvarWithField(GPBMessage *self,
-                                    GPBFieldDescriptor *field);
-void GPBSetSFixed32IvarWithField(GPBMessage *self,
-                                 GPBFieldDescriptor *field,
-                                 int32_t value);
-int32_t GPBGetSInt32IvarWithField(GPBMessage *self,
-                                  GPBFieldDescriptor *field);
-void GPBSetSInt32IvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               int32_t value);
-int32_t GPBGetEnumIvarWithField(GPBMessage *self,
-                                GPBFieldDescriptor *field);
-void GPBSetEnumIvarWithField(GPBMessage *self,
-                             GPBFieldDescriptor *field,
-                             int32_t value);
-uint32_t GPBGetUInt32IvarWithField(GPBMessage *self,
-                                   GPBFieldDescriptor *field);
-void GPBSetUInt32IvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               uint32_t value);
-uint32_t GPBGetFixed32IvarWithField(GPBMessage *self,
-                                    GPBFieldDescriptor *field);
-void GPBSetFixed32IvarWithField(GPBMessage *self,
-                                GPBFieldDescriptor *field,
-                                uint32_t value);
-int64_t GPBGetInt64IvarWithField(GPBMessage *self,
-                                 GPBFieldDescriptor *field);
-void GPBSetInt64IvarWithField(GPBMessage *self,
-                              GPBFieldDescriptor *field,
-                              int64_t value);
-int64_t GPBGetSInt64IvarWithField(GPBMessage *self,
-                                  GPBFieldDescriptor *field);
-void GPBSetSInt64IvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               int64_t value);
-int64_t GPBGetSFixed64IvarWithField(GPBMessage *self,
-                                    GPBFieldDescriptor *field);
-void GPBSetSFixed64IvarWithField(GPBMessage *self,
-                                 GPBFieldDescriptor *field,
-                                 int64_t value);
-uint64_t GPBGetUInt64IvarWithField(GPBMessage *self,
-                                   GPBFieldDescriptor *field);
-void GPBSetUInt64IvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               uint64_t value);
-uint64_t GPBGetFixed64IvarWithField(GPBMessage *self,
-                                    GPBFieldDescriptor *field);
-void GPBSetFixed64IvarWithField(GPBMessage *self,
-                                GPBFieldDescriptor *field,
-                                uint64_t value);
-float GPBGetFloatIvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field);
-void GPBSetFloatIvarWithField(GPBMessage *self,
-                              GPBFieldDescriptor *field,
-                              float value);
-double GPBGetDoubleIvarWithField(GPBMessage *self,
-                                 GPBFieldDescriptor *field);
-void GPBSetDoubleIvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               double value);
-//%PDDM-EXPAND-END GPB_IVAR_ACCESSORS()
-
-// Generates a sting that should be a valid "Text Format" for the C++ version
+// Generates a string that should be a valid "Text Format" for the C++ version
 // of Protocol Buffers. lineIndent can be nil if no additional line indent is
 // needed. The comments provide the names according to the ObjC library, they
 // most likely won't exactly match the original .proto file.
@@ -150,32 +44,139 @@ NSString *GPBTextFormatForMessage(GPBMessage *message, NSString *lineIndent);
 NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *unknownSet,
                                           NSString *lineIndent);
 
+//
+// Test if the given field is set on a message.
+//
+BOOL GPBMessageHasFieldNumberSet(GPBMessage *self, uint32_t fieldNumber);
+BOOL GPBMessageHasFieldSet(GPBMessage *self, GPBFieldDescriptor *field);
+
+//
+// Clear the given field of a message.
+//
+void GPBClearMessageField(GPBMessage *self, GPBFieldDescriptor *field);
+
+//%PDDM-EXPAND GPB_ACCESSORS()
+// This block of code is generated, do not edit it directly.
+
+
+//
+// Get/Set the given field of a message.
+//
+
+// Single Fields
+
+NSData *GPBGetMessageBytesField(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageBytesField(GPBMessage *self, GPBFieldDescriptor *field, NSData *value);
+
+NSString *GPBGetMessageStringField(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageStringField(GPBMessage *self, GPBFieldDescriptor *field, NSString *value);
+
+GPBMessage *GPBGetMessageMessageField(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageMessageField(GPBMessage *self, GPBFieldDescriptor *field, GPBMessage *value);
+
+GPBMessage *GPBGetMessageGroupField(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageGroupField(GPBMessage *self, GPBFieldDescriptor *field, GPBMessage *value);
+
+BOOL GPBGetMessageBoolField(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageBoolField(GPBMessage *self, GPBFieldDescriptor *field, BOOL value);
+
+int32_t GPBGetMessageInt32Field(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageInt32Field(GPBMessage *self, GPBFieldDescriptor *field, int32_t value);
+
+uint32_t GPBGetMessageUInt32Field(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageUInt32Field(GPBMessage *self, GPBFieldDescriptor *field, uint32_t value);
+
+int64_t GPBGetMessageInt64Field(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageInt64Field(GPBMessage *self, GPBFieldDescriptor *field, int64_t value);
+
+uint64_t GPBGetMessageUInt64Field(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageUInt64Field(GPBMessage *self, GPBFieldDescriptor *field, uint64_t value);
+
+float GPBGetMessageFloatField(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageFloatField(GPBMessage *self, GPBFieldDescriptor *field, float value);
+
+double GPBGetMessageDoubleField(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageDoubleField(GPBMessage *self, GPBFieldDescriptor *field, double value);
+
+// Get/Set the given enum field of a message.  You can only Set values that are
+// members of the enum.  For proto3, when doing a Get, if the value isn't a
+// memeber of the enum, kGPBUnrecognizedEnumeratorValue will be returned. The
+// the functions with "Raw" in the will bypass all checks.
+int32_t GPBGetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field, int32_t value);
+int32_t GPBGetMessageRawEnumField(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageRawEnumField(GPBMessage *self, GPBFieldDescriptor *field, int32_t value);
+
+// Repeated Fields
+
+// The object will/should be GPB*Array or NSMutableArray based on the field's
+// type.
+id GPBGetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field, id array);
+
+// Map Fields
+
+// The object will/should be GPB*Dictionary or NSMutableDictionary based on the
+// field's type.
+id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field);
+void GPBSetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field, id dictionary);
+
+//%PDDM-EXPAND-END GPB_ACCESSORS()
+
+// Returns an empty NSData to assign to byte fields when you wish
+// to assign them to empty. Prevents allocating a lot of little [NSData data]
+// objects.
+NSData *GPBEmptyNSData(void) __attribute__((pure));
+
 CF_EXTERN_C_END
 
-//%PDDM-DEFINE GPB_IVAR_ACCESSORS()
-//%// Getters and Setters for ivars named |name| from instance self.
+
+//%PDDM-DEFINE GPB_ACCESSORS()
 //%
-//%GPB_IVAR_ACCESSORS_DECL(Data, NSData*)
-//%GPB_IVAR_ACCESSORS_DECL(String, NSString*)
-//%GPB_IVAR_ACCESSORS_DECL(Message, GPBMessage*)
-//%GPB_IVAR_ACCESSORS_DECL(Group, GPBMessage*)
-//%GPB_IVAR_ACCESSORS_DECL(Bool, BOOL)
-//%GPB_IVAR_ACCESSORS_DECL(Int32, int32_t)
-//%GPB_IVAR_ACCESSORS_DECL(SFixed32, int32_t)
-//%GPB_IVAR_ACCESSORS_DECL(SInt32, int32_t)
-//%GPB_IVAR_ACCESSORS_DECL(Enum, int32_t)
-//%GPB_IVAR_ACCESSORS_DECL(UInt32, uint32_t)
-//%GPB_IVAR_ACCESSORS_DECL(Fixed32, uint32_t)
-//%GPB_IVAR_ACCESSORS_DECL(Int64, int64_t)
-//%GPB_IVAR_ACCESSORS_DECL(SInt64, int64_t)
-//%GPB_IVAR_ACCESSORS_DECL(SFixed64, int64_t)
-//%GPB_IVAR_ACCESSORS_DECL(UInt64, uint64_t)
-//%GPB_IVAR_ACCESSORS_DECL(Fixed64, uint64_t)
-//%GPB_IVAR_ACCESSORS_DECL(Float, float)
-//%GPB_IVAR_ACCESSORS_DECL(Double, double)
-//%PDDM-DEFINE GPB_IVAR_ACCESSORS_DECL(NAME, TYPE)
-//%TYPE GPBGet##NAME##IvarWithField(GPBMessage *self,
-//% TYPE$S     NAME$S               GPBFieldDescriptor *field);
-//%void GPBSet##NAME##IvarWithField(GPBMessage *self,
-//%            NAME$S             GPBFieldDescriptor *field,
-//%            NAME$S             TYPE value);
+//%//
+//%// Get/Set the given field of a message.
+//%//
+//%
+//%// Single Fields
+//%
+//%GPB_ACCESSOR_SINGLE_FULL(Bytes, NSData, *)
+//%GPB_ACCESSOR_SINGLE_FULL(String, NSString, *)
+//%GPB_ACCESSOR_SINGLE_FULL(Message, GPBMessage, *)
+//%GPB_ACCESSOR_SINGLE_FULL(Group, GPBMessage, *)
+//%GPB_ACCESSOR_SINGLE(Bool, BOOL)
+//%GPB_ACCESSOR_SINGLE(Int32, int32_t)
+//%GPB_ACCESSOR_SINGLE(UInt32, uint32_t)
+//%GPB_ACCESSOR_SINGLE(Int64, int64_t)
+//%GPB_ACCESSOR_SINGLE(UInt64, uint64_t)
+//%GPB_ACCESSOR_SINGLE(Float, float)
+//%GPB_ACCESSOR_SINGLE(Double, double)
+//%// Get/Set the given enum field of a message.  You can only Set values that are
+//%// members of the enum.  For proto3, when doing a Get, if the value isn't a
+//%// memeber of the enum, kGPBUnrecognizedEnumeratorValue will be returned. The
+//%// the functions with "Raw" in the will bypass all checks.
+//%int32_t GPBGetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field);
+//%void GPBSetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field, int32_t value);
+//%int32_t GPBGetMessageRawEnumField(GPBMessage *self, GPBFieldDescriptor *field);
+//%void GPBSetMessageRawEnumField(GPBMessage *self, GPBFieldDescriptor *field, int32_t value);
+//%
+//%// Repeated Fields
+//%
+//%// The object will/should be GPB*Array or NSMutableArray based on the field's
+//%// type.
+//%id GPBGetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field);
+//%void GPBSetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field, id array);
+//%
+//%// Map Fields
+//%
+//%// The object will/should be GPB*Dictionary or NSMutableDictionary based on the
+//%// field's type.
+//%id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field);
+//%void GPBSetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field, id dictionary);
+//%
+
+//%PDDM-DEFINE GPB_ACCESSOR_SINGLE(NAME, TYPE)
+//%GPB_ACCESSOR_SINGLE_FULL(NAME, TYPE, )
+//%PDDM-DEFINE GPB_ACCESSOR_SINGLE_FULL(NAME, TYPE, TisP)
+//%TYPE TisP##GPBGetMessage##NAME##Field(GPBMessage *self, GPBFieldDescriptor *field);
+//%void GPBSetMessage##NAME##Field(GPBMessage *self, GPBFieldDescriptor *field, TYPE TisP##value);
+//%

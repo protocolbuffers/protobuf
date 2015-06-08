@@ -28,12 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#import "GPBField_PackagePrivate.h"
+#import "GPBUnknownField_PackagePrivate.h"
 
 #import "GPBArray.h"
 #import "GPBCodedOutputStream.h"
 
-@interface GPBField () {
+@implementation GPBUnknownField {
  @protected
   int32_t number_;
   GPBUInt64Array *mutableVarintList_;
@@ -42,9 +42,6 @@
   NSMutableArray *mutableLengthDelimitedList_;
   NSMutableArray *mutableGroupList_;
 }
-@end
-
-@implementation GPBField
 
 @synthesize number = number_;
 @synthesize varintList = mutableVarintList_;
@@ -71,7 +68,8 @@
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-  GPBField *result = [[GPBField allocWithZone:zone] initWithNumber:number_];
+  GPBUnknownField *result =
+      [[GPBUnknownField allocWithZone:zone] initWithNumber:number_];
   result->mutableFixed32List_ = [mutableFixed32List_ copyWithZone:zone];
   result->mutableFixed64List_ = [mutableFixed64List_ copyWithZone:zone];
   result->mutableLengthDelimitedList_ =
@@ -91,8 +89,8 @@
 
 - (BOOL)isEqual:(id)object {
   if (self == object) return YES;
-  if (![object isKindOfClass:[GPBField class]]) return NO;
-  GPBField *field = (GPBField *)object;
+  if (![object isKindOfClass:[GPBUnknownField class]]) return NO;
+  GPBUnknownField *field = (GPBUnknownField *)object;
   BOOL equalVarint =
       (mutableVarintList_.count == 0 && field->mutableVarintList_.count == 0) ||
       [mutableVarintList_ isEqual:field->mutableVarintList_];
@@ -131,23 +129,23 @@
 - (void)writeToOutput:(GPBCodedOutputStream *)output {
   NSUInteger count = mutableVarintList_.count;
   if (count > 0) {
-    [output writeUInt64s:number_ values:mutableVarintList_ tag:0];
+    [output writeUInt64Array:number_ values:mutableVarintList_ tag:0];
   }
   count = mutableFixed32List_.count;
   if (count > 0) {
-    [output writeFixed32s:number_ values:mutableFixed32List_ tag:0];
+    [output writeFixed32Array:number_ values:mutableFixed32List_ tag:0];
   }
   count = mutableFixed64List_.count;
   if (count > 0) {
-    [output writeFixed64s:number_ values:mutableFixed64List_ tag:0];
+    [output writeFixed64Array:number_ values:mutableFixed64List_ tag:0];
   }
   count = mutableLengthDelimitedList_.count;
   if (count > 0) {
-    [output writeDatas:number_ values:mutableLengthDelimitedList_];
+    [output writeBytesArray:number_ values:mutableLengthDelimitedList_];
   }
   count = mutableGroupList_.count;
   if (count > 0) {
-    [output writeUnknownGroups:number_ values:mutableGroupList_];
+    [output writeUnknownGroupArray:number_ values:mutableGroupList_];
   }
 }
 
@@ -173,7 +171,7 @@
       }];
 
   for (NSData *data in mutableLengthDelimitedList_) {
-    result += GPBComputeDataSize(number, data);
+    result += GPBComputeBytesSize(number, data);
   }
 
   for (GPBUnknownFieldSet *set in mutableGroupList_) {
@@ -229,7 +227,7 @@
   return description;
 }
 
-- (void)mergeFromField:(GPBField *)other {
+- (void)mergeFromField:(GPBUnknownField *)other {
   GPBUInt64Array *otherVarintList = other.varintList;
   if (otherVarintList.count > 0) {
     if (mutableVarintList_ == nil) {

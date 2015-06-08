@@ -30,22 +30,27 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GPBExtensionField.h"
+@class GPBCodedOutputStream;
+@class GPBUInt32Array;
+@class GPBUInt64Array;
+@class GPBUnknownFieldSet;
 
-struct GPBExtensionDescription;
+@interface GPBUnknownField : NSObject<NSCopying>
 
-@interface GPBExtensionField ()
+@property(nonatomic, readonly, assign) int32_t number;
 
-- (void)mergeFromCodedInputStream:(GPBCodedInputStream *)input
-                extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
-                          message:(GPBMessage *)message;
+// Only one of these will be set.
+@property(nonatomic, readonly, strong) GPBUInt64Array *varintList;
+@property(nonatomic, readonly, strong) GPBUInt32Array *fixed32List;
+@property(nonatomic, readonly, strong) GPBUInt64Array *fixed64List;
+@property(nonatomic, readonly, strong) NSArray *lengthDelimitedList;  // NSData
+@property(nonatomic, readonly, strong) NSArray *groupList;  // GPBUnknownFieldSet
 
-- (instancetype)initWithDescription:(struct GPBExtensionDescription *)description;
-
-- (size_t)computeSerializedSizeIncludingTag:(id)value;
-- (void)writeValue:(id)value
-    includingTagToCodedOutputStream:(GPBCodedOutputStream *)output;
-
-- (NSComparisonResult)compareByFieldNumber:(GPBExtensionField *)other;
+// Only one of these should be used per Field.
+- (void)addVarint:(uint64_t)value;
+- (void)addFixed32:(uint32_t)value;
+- (void)addFixed64:(uint64_t)value;
+- (void)addLengthDelimited:(NSData *)value;
+- (void)addGroup:(GPBUnknownFieldSet *)value;
 
 @end

@@ -32,7 +32,7 @@
 
 #import "GPBCodedInputStream_PackagePrivate.h"
 #import "GPBCodedOutputStream.h"
-#import "GPBField_PackagePrivate.h"
+#import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUtilities.h"
 #import "GPBWireFormat.h"
 
@@ -85,10 +85,10 @@ static void checkNumber(int32_t number) {
 
 static void CopyWorker(const void *key, const void *value, void *context) {
 #pragma unused(key)
-  GPBField *field = value;
+  GPBUnknownField *field = value;
   GPBUnknownFieldSet *result = context;
 
-  GPBField *copied = [field copy];
+  GPBUnknownField *copied = [field copy];
   [result addField:copied];
   [copied release];
 }
@@ -136,9 +136,10 @@ static void CopyWorker(const void *key, const void *value, void *context) {
   return fields_ ? (CFDictionaryGetValue(fields_, (void *)key) != nil) : NO;
 }
 
-- (GPBField *)getField:(int32_t)number {
+- (GPBUnknownField *)getField:(int32_t)number {
   ssize_t key = number;
-  GPBField *result = fields_ ? CFDictionaryGetValue(fields_, (void *)key) : nil;
+  GPBUnknownField *result =
+      fields_ ? CFDictionaryGetValue(fields_, (void *)key) : nil;
   return result;
 }
 
@@ -150,12 +151,12 @@ static void CopyWorker(const void *key, const void *value, void *context) {
   if (!fields_) return nil;
   size_t count = CFDictionaryGetCount(fields_);
   ssize_t keys[count];
-  GPBField *values[count];
+  GPBUnknownField *values[count];
   CFDictionaryGetKeysAndValues(fields_, (const void **)keys,
                                (const void **)values);
   struct GPBFieldPair {
     ssize_t key;
-    GPBField *value;
+    GPBUnknownField *value;
   } pairs[count];
   for (size_t i = 0; i < count; ++i) {
     pairs[i].key = keys[i];
@@ -179,13 +180,13 @@ static void CopyWorker(const void *key, const void *value, void *context) {
   if (!fields_) return;
   size_t count = CFDictionaryGetCount(fields_);
   ssize_t keys[count];
-  GPBField *values[count];
+  GPBUnknownField *values[count];
   CFDictionaryGetKeysAndValues(fields_, (const void **)keys,
                                (const void **)values);
   if (count > 1) {
     struct GPBFieldPair {
       ssize_t key;
-      GPBField *value;
+      GPBUnknownField *value;
     } pairs[count];
 
     for (size_t i = 0; i < count; ++i) {
@@ -199,7 +200,7 @@ static void CopyWorker(const void *key, const void *value, void *context) {
               return (a->key > b->key) ? 1 : ((a->key == b->key) ? 0 : -1);
             });
     for (size_t i = 0; i < count; ++i) {
-      GPBField *value = pairs[i].value;
+      GPBUnknownField *value = pairs[i].value;
       [value writeToOutput:output];
     }
   } else {
@@ -219,7 +220,7 @@ static void CopyWorker(const void *key, const void *value, void *context) {
 static void GPBUnknownFieldSetSerializedSize(const void *key, const void *value,
                                              void *context) {
 #pragma unused(key)
-  GPBField *field = value;
+  GPBUnknownField *field = value;
   size_t *result = context;
   *result += [field serializedSize];
 }
@@ -237,7 +238,7 @@ static void GPBUnknownFieldSetWriteAsMessageSetTo(const void *key,
                                                   const void *value,
                                                   void *context) {
 #pragma unused(key)
-  GPBField *field = value;
+  GPBUnknownField *field = value;
   GPBCodedOutputStream *output = context;
   [field writeAsMessageSetExtensionToOutput:output];
 }
@@ -253,7 +254,7 @@ static void GPBUnknownFieldSetSerializedSizeAsMessageSet(const void *key,
                                                          const void *value,
                                                          void *context) {
 #pragma unused(key)
-  GPBField *field = value;
+  GPBUnknownField *field = value;
   size_t *result = context;
   *result += [field serializedSizeAsMessageSetExtension];
 }
@@ -280,7 +281,7 @@ static void GPBUnknownFieldSetSerializedSizeAsMessageSet(const void *key,
   return GPBWireFormatGetTagWireType(tag) != GPBWireFormatEndGroup;
 }
 
-- (void)addField:(GPBField *)field {
+- (void)addField:(GPBUnknownField *)field {
   int32_t number = [field number];
   checkNumber(number);
   if (!fields_) {
@@ -297,12 +298,12 @@ static void GPBUnknownFieldSetSerializedSizeAsMessageSet(const void *key,
   CFDictionarySetValue(fields_, (const void *)key, field);
 }
 
-- (GPBField *)mutableFieldForNumber:(int32_t)number create:(BOOL)create {
+- (GPBUnknownField *)mutableFieldForNumber:(int32_t)number create:(BOOL)create {
   ssize_t key = number;
-  GPBField *existing =
+  GPBUnknownField *existing =
       fields_ ? CFDictionaryGetValue(fields_, (const void *)key) : nil;
   if (!existing && create) {
-    existing = [[GPBField alloc] initWithNumber:number];
+    existing = [[GPBUnknownField alloc] initWithNumber:number];
     // This retains existing.
     [self addField:existing];
     [existing release];
@@ -314,19 +315,19 @@ static void GPBUnknownFieldSetMergeUnknownFields(const void *key,
                                                  const void *value,
                                                  void *context) {
 #pragma unused(key)
-  GPBField *field = value;
+  GPBUnknownField *field = value;
   GPBUnknownFieldSet *self = context;
 
   int32_t number = [field number];
   checkNumber(number);
-  GPBField *oldField = [self mutableFieldForNumber:number create:NO];
+  GPBUnknownField *oldField = [self mutableFieldForNumber:number create:NO];
   if (oldField) {
     [oldField mergeFromField:field];
   } else {
     // Merge only comes from GPBMessage's mergeFrom:, so it means we are on
     // mutable message and are an mutable instance, so make sure we need
     // mutable fields.
-    GPBField *fieldCopy = [field copy];
+    GPBUnknownField *fieldCopy = [field copy];
     [self addField:fieldCopy];
     [fieldCopy release];
   }
@@ -356,18 +357,18 @@ static void GPBUnknownFieldSetMergeUnknownFields(const void *key,
   GPBCodedInputStreamState *state = &input->state_;
   switch (GPBWireFormatGetTagWireType(tag)) {
     case GPBWireFormatVarint: {
-      GPBField *field = [self mutableFieldForNumber:number create:YES];
+      GPBUnknownField *field = [self mutableFieldForNumber:number create:YES];
       [field addVarint:GPBCodedInputStreamReadInt64(state)];
       return YES;
     }
     case GPBWireFormatFixed64: {
-      GPBField *field = [self mutableFieldForNumber:number create:YES];
+      GPBUnknownField *field = [self mutableFieldForNumber:number create:YES];
       [field addFixed64:GPBCodedInputStreamReadFixed64(state)];
       return YES;
     }
     case GPBWireFormatLengthDelimited: {
-      NSData *data = GPBCodedInputStreamReadRetainedData(state);
-      GPBField *field = [self mutableFieldForNumber:number create:YES];
+      NSData *data = GPBCodedInputStreamReadRetainedBytes(state);
+      GPBUnknownField *field = [self mutableFieldForNumber:number create:YES];
       [field addLengthDelimited:data];
       [data release];
       return YES;
@@ -375,7 +376,7 @@ static void GPBUnknownFieldSetMergeUnknownFields(const void *key,
     case GPBWireFormatStartGroup: {
       GPBUnknownFieldSet *unknownFieldSet = [[GPBUnknownFieldSet alloc] init];
       [input readUnknownGroup:number message:unknownFieldSet];
-      GPBField *field = [self mutableFieldForNumber:number create:YES];
+      GPBUnknownField *field = [self mutableFieldForNumber:number create:YES];
       [field addGroup:unknownFieldSet];
       [unknownFieldSet release];
       return YES;
@@ -383,7 +384,7 @@ static void GPBUnknownFieldSetMergeUnknownFields(const void *key,
     case GPBWireFormatEndGroup:
       return NO;
     case GPBWireFormatFixed32: {
-      GPBField *field = [self mutableFieldForNumber:number create:YES];
+      GPBUnknownField *field = [self mutableFieldForNumber:number create:YES];
       [field addFixed32:GPBCodedInputStreamReadFixed32(state)];
       return YES;
     }
@@ -396,7 +397,7 @@ static void GPBUnknownFieldSetMergeUnknownFields(const void *key,
 }
 
 - (void)addUnknownMapEntry:(int32_t)fieldNum value:(NSData *)data {
-  GPBField *field = [self mutableFieldForNumber:fieldNum create:YES];
+  GPBUnknownField *field = [self mutableFieldForNumber:fieldNum create:YES];
   [field addLengthDelimited:data];
 }
 

@@ -36,7 +36,6 @@
 #import <CoreFoundation/CoreFoundation.h>
 
 #import "GPBDescriptor.h"
-#import "GPBExtensionField.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 @interface GPBExtensionDescriptor (GPBRootObject)
@@ -130,14 +129,14 @@ static CFMutableDictionaryRef gExtensionSingletonDictionary = NULL;
   return nil;
 }
 
-+ (void)globallyRegisterExtension:(GPBExtensionField *)field {
-  const char *key = [field.descriptor singletonNameC];
++ (void)globallyRegisterExtension:(GPBExtensionDescriptor *)field {
+  const char *key = [field singletonNameC];
   OSSpinLockLock(&gExtensionSingletonDictionaryLock_);
   CFDictionarySetValue(gExtensionSingletonDictionary, key, field);
   OSSpinLockUnlock(&gExtensionSingletonDictionaryLock_);
 }
 
-GPB_INLINE id ExtensionForName(id self, SEL _cmd) {
+static id ExtensionForName(id self, SEL _cmd) {
   // Really fast way of doing "classname_selName".
   // This came up as a hotspot (creation of NSString *) when accessing a
   // lot of extensions.

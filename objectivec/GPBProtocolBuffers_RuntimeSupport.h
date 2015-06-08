@@ -34,8 +34,7 @@
 #import "GPBProtocolBuffers.h"
 
 #import "GPBDescriptor_PackagePrivate.h"
-#import "GPBExtensionField_PackagePrivate.h"
-#import "GPBExtensionRegistry.h"
+#import "GPBExtensionInternals.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBRootObject_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
