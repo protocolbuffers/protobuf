@@ -546,11 +546,9 @@ upb_fieldtype_t ruby_to_fieldtype(VALUE type) {
     rb_raise(rb_eArgError, "Expected symbol for field type.");
   }
 
-  upb_fieldtype_t upb_type = -1;
-
 #define CONVERT(upb, ruby)                                           \
   if (SYM2ID(type) == rb_intern( # ruby )) {                         \
-    upb_type = UPB_TYPE_ ## upb;                                     \
+    return UPB_TYPE_ ## upb;                                          \
   }
 
   CONVERT(FLOAT, float);
@@ -567,11 +565,8 @@ upb_fieldtype_t ruby_to_fieldtype(VALUE type) {
 
 #undef CONVERT
 
-  if (upb_type == -1) {
-    rb_raise(rb_eArgError, "Unknown field type.");
-  }
-
-  return upb_type;
+  rb_raise(rb_eArgError, "Unknown field type.");
+  return 0;
 }
 
 VALUE fieldtype_to_ruby(upb_fieldtype_t type) {
@@ -666,10 +661,12 @@ VALUE FieldDescriptor_label_set(VALUE _self, VALUE label) {
   }
 
   upb_label_t upb_label = -1;
+  bool converted = false;
 
 #define CONVERT(upb, ruby)                                           \
   if (SYM2ID(label) == rb_intern( # ruby )) {                        \
     upb_label = UPB_LABEL_ ## upb;                                   \
+    converted = true;                                                \
   }
 
   CONVERT(OPTIONAL, optional);
@@ -678,7 +675,7 @@ VALUE FieldDescriptor_label_set(VALUE _self, VALUE label) {
 
 #undef CONVERT
 
-  if (upb_label == -1) {
+  if (!converted) {
     rb_raise(rb_eArgError, "Unknown field label.");
   }
 
