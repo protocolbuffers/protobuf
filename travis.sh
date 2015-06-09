@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+# Note: travis currently does not support testing more than one language so the
+# .travis.yml cheats and claims to only be cpp.  If they add multiple language
+# support, this should probably get updated to install steps and/or
+# rvm/gemfile/jdk/etc. entries rather than manually doing the work.
+
+# .travis.yml uses matrix.exclude to block the cases where app-get can't be
+# use to install things.
+
 build_cpp() {
   ./autogen.sh
   ./configure
@@ -28,12 +36,6 @@ build_csharp() {
 }
 
 use_java() {
-  if [ `uname` != "Linux" ]; then
-    # It's nontrivial to programmatically install a new JDK from the command
-    # line on OS X, so we rely on testing on Linux for Java code.
-    echo "Java not tested on OS X."
-    exit 0  # success
-  fi
   version=$1
   case "$version" in
     jdk6)

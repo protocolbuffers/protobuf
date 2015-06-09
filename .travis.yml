@@ -1,4 +1,8 @@
 sudo: required
+# Note: travis currently does not support listing more than one language so
+# this cheats and claims to only be cpp.  If they add multiple language
+# support, this should probably get updated to install steps and/or
+# rvm/gemfile/jdk/etc. entries rather than manually doing the work.
 language: cpp
 os:
   - linux
@@ -23,9 +27,27 @@ env:
   - CONFIG=ruby22
   - CONFIG=jruby
 matrix:
-  allow_failures:
+  exclude:
+    # It's nontrivial to programmatically install a new JDK from the command
+    # line on OS X, so we rely on testing on Linux for Java code.
+    - os: osx
+      env: CONFIG=java_jdk6
+    - os: osx
+      env: CONFIG=java_jdk7
+    - os: osx
+      env: CONFIG=java_oracle7
+    - os: osx
+      env: CONFIG=javanano_jdk6
+    - os: osx
+      env: CONFIG=javanano_jdk7
+    - os: osx
+      env: CONFIG=javanano_oracle7
+    # Requires installing mono, currently travis.sh is doing that with apt-get
+    # which doesn't work on OS X.
     - os: osx
       env: CONFIG=csharp
+  allow_failures:
+    # These currently do not work on OS X but are being worked on by @haberman.
     - os: osx
       env: CONFIG=ruby22
     - os: osx
