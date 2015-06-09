@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace Google.Protobuf
@@ -10,6 +11,8 @@ namespace Google.Protobuf
         // TODO(jonskeet): For snmall enums, use something lighter-weight than a dictionary?
         private static readonly Dictionary<int, T> _byNumber;
         private static readonly Dictionary<string, T> _byName;
+        private static readonly Func<T, long> toRawValue;
+        private static readonly Func<long, T> fromRawValue;
 
         private const long UnknownValueBase = 0x100000000L;
 
@@ -36,6 +39,13 @@ namespace Google.Protobuf
             {
                 _byName[name] = (T) Enum.Parse(typeof(T), name, false);
             }
+
+            ParameterExpression param1 = Expression.Parameter(typeof(T), "x");
+            ParameterExpression param2 = Expression.Parameter(typeof(long), "x");
+            Expression convertedParam1 = Expression.Convert(param1, typeof(long));
+            Expression convertedParam2 = Expression.Convert(param2, typeof(T));
+            toRawValue = Expression.Lambda<Func<T, long>>(convertedParam1, param1).Compile();
+            fromRawValue = Expression.Lambda<Func<long, T>>(convertedParam2, param2).Compile();
         }
 
         /// <summary>
@@ -71,14 +81,12 @@ namespace Google.Protobuf
 
         private static long GetRawValue(T value)
         {
-            // TODO(jonskeet): Try using expression trees to get rid of the boxing here.
-            return (long)(object)value;
+            return toRawValue(value);
         }
 
         private static T FromRawValue(long value)
         {
-            // TODO(jonskeet): Try using expression trees to get rid of the boxing here.
-            return (T)(object)value;
+            return fromRawValue(value);
         }
 
     }
