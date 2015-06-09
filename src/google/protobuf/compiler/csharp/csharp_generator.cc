@@ -48,9 +48,21 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
+static std::string ReplaceCharacter(std::string in, char from, char to) {
+  size_t pos = 0;
+  while (true) {
+    pos = in.find(from, pos);
+    if (pos == std::string::npos) {
+      return in;
+    }
+    in[pos] = to;
+  }
+}
+
 std::string GetOutputFile(const google::protobuf::FileDescriptor* file, const std::string file_extension)
 {
-  return GetFileUmbrellaClassname(file) + file_extension;
+  std::string directory = ReplaceCharacter(file->package(), '.', '/');
+  return directory + "/" + GetFileUmbrellaClassname(file) + file_extension;
 }
 
 void GenerateFile(const google::protobuf::FileDescriptor* file,
