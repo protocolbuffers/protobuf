@@ -31,8 +31,6 @@
 #ifndef GOOGLE_PROTOBUF_PLATFORM_MACROS_H_
 #define GOOGLE_PROTOBUF_PLATFORM_MACROS_H_
 
-#include <google/protobuf/stubs/common.h>
-
 #define GOOGLE_PROTOBUF_PLATFORM_ERROR \
 #error "Host platform was not detected as supported by protobuf"
 
@@ -110,5 +108,13 @@ GOOGLE_PROTOBUF_PLATFORM_ERROR
 #endif
 
 #undef GOOGLE_PROTOBUF_PLATFORM_ERROR
+
+#if defined(GOOGLE_PROTOBUF_OS_ANDROID) || defined(GOOGLE_PROTOBUF_OS_IPHONE)
+// Android ndk does not support the __thread keyword very well yet. Here
+// we use pthread_key_create()/pthread_getspecific()/... methods for
+// TLS support on android.
+// iOS also does not support the __thread keyword.
+#define GOOGLE_PROTOBUF_NO_THREADLOCAL
+#endif
 
 #endif  // GOOGLE_PROTOBUF_PLATFORM_MACROS_H_

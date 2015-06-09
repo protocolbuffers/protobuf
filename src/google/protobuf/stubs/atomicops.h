@@ -56,6 +56,7 @@
 // Don't include this file for people not concerned about thread safety.
 #ifndef GOOGLE_PROTOBUF_NO_THREAD_SAFETY
 
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/platform_macros.h>
 
 namespace google {

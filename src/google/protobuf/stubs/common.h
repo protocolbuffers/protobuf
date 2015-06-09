@@ -62,6 +62,8 @@
 #include <exception>
 #endif
 
+#include <google/protobuf/stubs/platform_macros.h>
+
 #if defined(__APPLE__)
 #include <TargetConditionals.h>  // for TARGET_OS_IPHONE
 #endif
@@ -1174,11 +1176,7 @@ class LIBPROTOBUF_EXPORT MutexLockMaybe {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MutexLockMaybe);
 };
 
-#if defined(__ANDROID__) || defined(GOOGLE_PROTOBUF_OS_ANDROID) || (defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE) || defined(GOOGLE_PROTOBUF_OS_IPHONE)
-// Android ndk does not support the __thread keyword very well yet. Here
-// we use pthread_key_create()/pthread_getspecific()/... methods for
-// TLS support on android.
-// iOS also does not support the __thread keyword.
+#if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
 template<typename T>
 class ThreadLocalStorage {
  public:
