@@ -36,7 +36,7 @@
 
 using System.IO;
 
-namespace Google.ProtocolBuffers
+namespace Google.Protobuf
 {
     /// <summary>
     /// Thrown when a protocol message being parsed is invalid in some way,

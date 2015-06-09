@@ -36,7 +36,7 @@
 
 using System;
 
-namespace Google.ProtocolBuffers
+namespace Google.Protobuf
 {
     /// <summary>
     /// Provides a utility routine to copy small arrays much more quickly than Buffer.BlockCopy

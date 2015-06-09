@@ -49,6 +49,7 @@ namespace csharp {
 RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
     const FieldDescriptor* descriptor, int fieldOrdinal)
     : FieldGeneratorBase(descriptor, fieldOrdinal) {
+  variables_["packed"] = descriptor->is_packed() ? "Packed" : "";
 }
 
 RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {
@@ -75,27 +76,21 @@ void RepeatedEnumFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "input.ReadEnumArray<$type_name$>(tag, fieldName, result.$name$_);\n");
+    "input.ReadEnumArray<$type_name$>(tag, fieldName, $name$_);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   // TODO(jonskeet): Originally, this checked for Count > 0 first.
   // The Write* call should make that cheap though - no need to generate it every time.
-  if (descriptor_->is_packed()) {
-    printer->Print(
-      variables_,
-      "output.WritePackedEnumArray($number$, fieldNames[$field_ordinal$], $name$_);\n");
-  } else {
-    printer->Print(variables_,
-      "output.WriteEnumArray($number$, fieldNames[$field_ordinal$], $name$_);\n");
-  }
-  printer->Print("}\n");
+  printer->Print(
+    variables_,
+    "output.Write$packed$EnumArray($number$, fieldNames[$field_ordinal$], $name$_);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
+  // TODO(jonskeet): Move all this code into CodedOutputStream? It's a lot to repeat everywhere...
   printer->Print("{\n");
   printer->Indent();
-  // TODO(jonskeet): Move all this code into CodedOutputStream? It's a lot to repeat everywhere...
   printer->Print(
     variables_,
     "int dataSize = 0;\n"
@@ -104,7 +99,7 @@ void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer
   printer->Print(
     variables_,
     "foreach ($type_name$ element in $name$_) {\n"
-    "  dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((long) element);\n"
+    "  dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);\n"
     "}\n"
     "size += dataSize;\n");
   int tagSize = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
@@ -127,15 +122,13 @@ void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer
 void RepeatedEnumFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "foreach($type_name$ i in $name$_) {\n"
-    "  hash ^= i.GetHashCode();\n"
-    "}\n");
+    "hash ^= $name$_.GetHashCode();\n");
 }
 
 void RepeatedEnumFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if(!$name$_.Equals(other.$name$)) return false;\n");
+    "if(!$name$_.Equals(other.$name$_)) return false;\n");
 }
 
 void RepeatedEnumFieldGenerator::WriteToString(io::Printer* printer) {

@@ -32,7 +32,7 @@
 using System;
 using System.Reflection;
 
-namespace Google.ProtocolBuffers.FieldAccess
+namespace Google.Protobuf.FieldAccess
 {
     /// <summary>
     /// The methods in this class are somewhat evil, and should not be tampered with lightly.
@@ -72,7 +72,7 @@ namespace Google.ProtocolBuffers.FieldAccess
             Func<TSource, TResult> getter = ReflectionUtil.CreateDelegateFunc<TSource, TResult>(method);
 
             // Implicit upcast to object (within the delegate)
-            return delegate(TSource source) { return getter(source); };
+            return source => getter(source);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Google.ProtocolBuffers.FieldAccess
             // call Method(x, y)
             Action<TSource, TParam> call = ReflectionUtil.CreateDelegateAction<TSource, TParam>(method);
 
-            return delegate(TSource source, object parameter) { call(source, (TParam) parameter); };
+            return (source, parameter) => call(source, (TParam) parameter);
         }
 
         /// <summary>
@@ -117,73 +117,34 @@ namespace Google.ProtocolBuffers.FieldAccess
             return delegate(TSource source, object parameter) { call(source, (TParam) parameter); };
         }
 
-        /// <summary>
-        /// Creates a delegate which will execute the given static method and cast the result up to IBuilder.
-        /// </summary>
-        public static Func<IBuilder> CreateStaticUpcastDelegate(MethodInfo method)
-        {
-            MethodInfo openImpl = typeof(ReflectionUtil).GetMethod("CreateStaticUpcastDelegateImpl");
-            MethodInfo closedImpl = openImpl.MakeGenericMethod(method.ReturnType);
-            return (Func<IBuilder>) closedImpl.Invoke(null, new object[] {method});
-        }
-
-        public static Func<IBuilder> CreateStaticUpcastDelegateImpl<T>(MethodInfo method)
-        {
-            Func<T> call = ReflectionUtil.CreateDelegateFunc<T>(method);
-            return delegate { return (IBuilder) call(); };
-        }
-
-
         internal static Func<TResult> CreateDelegateFunc<TResult>(MethodInfo method)
         {
-#if !CF20
             object tdelegate = Delegate.CreateDelegate(typeof(Func<TResult>), null, method);
             return (Func<TResult>)tdelegate;
-#else
-            return delegate() { return (TResult)method.Invoke(null, null); };
-#endif
         }
 
         internal static Func<T, TResult> CreateDelegateFunc<T, TResult>(MethodInfo method)
         {
-#if !CF20
             object tdelegate = Delegate.CreateDelegate(typeof(Func<T, TResult>), null, method);
             return (Func<T, TResult>)tdelegate;
-#else
-            if (method.IsStatic)
-            {
-                return delegate(T arg1) { return (TResult) method.Invoke(null, new object[] {arg1}); };
-            }
-            return delegate(T arg1) { return (TResult)method.Invoke(arg1, null); };
-#endif
         }
 
         internal static Func<T1, T2, TResult> CreateDelegateFunc<T1, T2, TResult>(MethodInfo method)
         {
-#if !CF20
             object tdelegate = Delegate.CreateDelegate(typeof(Func<T1, T2, TResult>), null, method);
             return (Func<T1, T2, TResult>)tdelegate;
-#else
-            if (method.IsStatic)
-            {
-                return delegate(T1 arg1, T2 arg2) { return (TResult) method.Invoke(null, new object[] {arg1, arg2}); };
-            }
-            return delegate(T1 arg1, T2 arg2) { return (TResult)method.Invoke(arg1, new object[] { arg2 }); };
-#endif
+        }
+
+        internal static Action<T> CreateDelegateAction<T>(MethodInfo method)
+        {
+            object tdelegate = Delegate.CreateDelegate(typeof(Action<T>), null, method);
+            return (Action<T>)tdelegate;
         }
 
         internal static Action<T1, T2> CreateDelegateAction<T1, T2>(MethodInfo method)
         {
-#if !CF20
             object tdelegate = Delegate.CreateDelegate(typeof(Action<T1, T2>), null, method);
             return (Action<T1, T2>)tdelegate;
-#else
-            if (method.IsStatic)
-            {
-                return delegate(T1 arg1, T2 arg2) { method.Invoke(null, new object[] {arg1, arg2}); };
-            }
-            return delegate(T1 arg1, T2 arg2) { method.Invoke(arg1, new object[] { arg2 }); };
-#endif
         }
     }
 }

@@ -179,10 +179,14 @@ void MessageGenerator::Generate(io::Printer* printer) {
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
     vars,
-    "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$> {\n");
+    "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$>, global::System.IEquatable<$class_name$> {\n");
   printer->Indent();
 
   // All static fields and properties
+  printer->Print(
+      vars,
+      "private static readonly pb::MessageParser<$class_name$> _parser = new pb::MessageParser<$class_name$>(() => new $class_name$());\n"
+      "public static pb::MessageParser<$class_name$> Parser { get { return _parser; } }\n\n");
   printer->Print(
     "private static readonly string[] _fieldNames = "
     "new string[] { $slash$$field_names$$slash$ };\n",
@@ -204,7 +208,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "  get { return $umbrella_class_name$.internal__$identifier$__Descriptor; }\n"
     "}\n"
     "\n"
-    "protected override pb::FieldAccess.FieldAccessorTable<$class_name$> InternalFieldAccessors {\n"
+    "public pb::FieldAccess.FieldAccessorTable<$class_name$> Fields {\n"
     "  get { return $umbrella_class_name$.internal__$identifier$__FieldAccessorTable; }\n"
     "}\n"
     "\n");
@@ -217,7 +221,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Print(
     vars,
     "public $class_name$($class_name$ other) {\n"
-    "  MergeWith(other);\n"
+    "  MergeFrom(other);\n"
     "}\n");  // Merge ctor.
 
   // Fields/properties
@@ -259,15 +263,16 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "public $property_name$OneofCase $property_name$Case {\n"
       "  get { return $name$Case_; }\n"
       "}\n\n"
-      "private Clear$property_name$() {;\n"
-      "  $name$Case_ = $property_name$OneofCase.None;"
-      "  $name$_ = null;"
+      "public void Clear$property_name$() {\n"
+      "  $name$Case_ = $property_name$OneofCase.None;\n"
+      "  $name$_ = null;\n"
       "}\n\n");
   }
 
   // TODO(jonskeet): Map properties
 
   // Standard methods
+  GenerateFrameworkMethods(printer);
   GenerateMessageSerializationMethods(printer);
   GenerateMergingMethods(printer);
 
@@ -298,6 +303,51 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
 }
 
+void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
+    map<string, string> vars;
+    vars["class_name"] = class_name();
+
+    // Equality
+    printer->Print(
+        vars,
+        "public override bool Equals(object other) {\n"
+        "  return Equals(other as $class_name$);\n"
+        "}\n\n"
+        "public bool Equals($class_name$ other) {\n"
+        "  if (ReferenceEquals(other, null)) {\n"
+        "    return false;\n"
+        "  }\n"
+        "  if (ReferenceEquals(other, this)) {\n"
+        "    return true;\n"
+        "  }\n");
+    printer->Indent();
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+        scoped_ptr<FieldGeneratorBase> generator(
+            CreateFieldGeneratorInternal(descriptor_->field(i)));
+        generator->WriteEquals(printer);
+    }
+    printer->Outdent();
+    printer->Print(
+        "  return true;\n"
+        "}\n\n");
+
+    // GetHashCode
+    printer->Print(
+        "public override int GetHashCode() {\n"
+        "  int hash = 0;\n");
+    printer->Indent();
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+        scoped_ptr<FieldGeneratorBase> generator(
+            CreateFieldGeneratorInternal(descriptor_->field(i)));
+        generator->WriteHash(printer);
+    }
+    printer->Print("return hash;\n");
+    printer->Outdent();
+    printer->Print("}\n\n");
+
+    // TODO(jonskeet): ToString.
+}
+
 void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer) {
   printer->Print(
       "public void WriteTo(pb::ICodedOutputStream output) {\n");
@@ -316,7 +366,7 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
   printer->Print(
     "}\n"
     "\n"
-    "public int CalculateSerializedSize() {\n");
+    "public int CalculateSize() {\n");
   printer->Indent();
   printer->Print("int size = 0;\n");
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -338,7 +388,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
 
   printer->Print(
     vars,
-    "public void MergeWith($class_name$ other) {\n");
+    "public void MergeFrom($class_name$ other) {\n");
   printer->Indent();
   printer->Print(
     "if (other == null) {\n"
@@ -378,39 +428,38 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Print(
     "uint tag;\n"
     "string fieldName;\n"
-    "while (input.ReadTag(out tag, out fieldName)) {\n"
-    "  if (tag == 0 && fieldName != null) {");
-  printer->Indent();
+    "while (input.ReadTag(out tag, out fieldName)) {\n");
   printer->Indent();
   printer->Print(
-    "int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.String.String.Ordinal);\n"
-    "if (fieldOrdinal >= 0) {\n"
-    "  tag = _fieldTags[fieldOrdinal];\n"
+    "if (tag == 0 && fieldName != null) {\n"
+    "  int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);\n"
+    "  if (fieldOrdinal >= 0) {\n"
+    "    tag = _fieldTags[fieldOrdinal];\n"
+    "  }\n"
     "}\n"
     "switch(tag) {\n");
   printer->Indent();
   printer->Print(
-    "case 0: {\n"  // 0 signals EOF / limit reached
+    "case 0:\n"  // 0 signals EOF / limit reached
     "  throw pb::InvalidProtocolBufferException.InvalidTag();\n"
-    "}\n"
     "default:\n"
     "  if (pb::WireFormat.IsEndGroupTag(tag)) {\n"
     "    return;\n"
     "  }\n"
-    "  break;"); // Note: we're ignoring unknown fields here.
+    "  break;\n"); // Note: we're ignoring unknown fields here.
   for (int i = 0; i < fields_by_number().size(); i++) {
     const FieldDescriptor* field = fields_by_number()[i];
     internal::WireFormatLite::WireType wt =
         internal::WireFormat::WireTypeForFieldType(field->type());
     uint32 tag = internal::WireFormatLite::MakeTag(field->number(), wt);
-    // TODO(jonskeet): Understand what this is trying to do
-    if (field->is_repeated()
-        && (wt == internal::WireFormatLite::WIRETYPE_VARINT
-            || wt == internal::WireFormatLite::WIRETYPE_FIXED32
-            || wt == internal::WireFormatLite::WIRETYPE_FIXED64)) {
+    // Handle both packed and unpacked repeated fields with the same Read*Array call;
+    // the two generated cases are the packed and unpacked tags.
+    // TODO(jonskeet): Check that is_packable is equivalent to is_repeated && wt in { VARINT, FIXED32, FIXED64 }.
+    // It looks like it is...
+    if (field->is_packable()) {
       printer->Print(
-        "case $number$:\n",
-        "number",
+        "case $packed_tag$:\n",
+        "packed_tag",
         SimpleItoa(
             internal::WireFormatLite::MakeTag(
                 field->number(),
@@ -428,8 +477,6 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   }
   printer->Outdent();
   printer->Print("}\n"); // switch
-  printer->Outdent();
-  printer->Print("}\n"); // if
   printer->Outdent();
   printer->Print("}\n"); // while
   printer->Outdent();

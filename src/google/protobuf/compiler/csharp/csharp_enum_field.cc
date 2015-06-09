@@ -61,7 +61,7 @@ void EnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
 void EnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(variables_,
     "if ($has_property_check$) {\n"
-    "  output.WriteEnum($number$, fieldNames[$field_ordinal$], (long) $property_name$, $property_name$);\n"
+    "  output.WriteEnum($number$, fieldNames[$field_ordinal$], $property_name$);\n"
     "}\n");
 }
 
@@ -69,7 +69,7 @@ void EnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  size += pb::CodedOutputStream.ComputeEnumSize($number$, (long) $property_name$);\n"
+    "  size += pb::CodedOutputStream.ComputeEnumSize($number$, $property_name$);\n"
     "}\n");
 }
 
@@ -87,8 +87,8 @@ void EnumOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     variables_,
     "$type_name$ enumValue = $default_value$;\n"
     "if(input.ReadEnum(ref enumValue)) {\n"
-    "  result.$oneof_name$_ = enumValue;\n"
-    "  result.$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
+    "  $oneof_name$_ = enumValue;\n"
+    "  $oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
     "}\n");
 }
 

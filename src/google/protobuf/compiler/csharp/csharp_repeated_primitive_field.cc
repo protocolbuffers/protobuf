@@ -92,7 +92,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializationCode(
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) {
-  // TODO(jonskeet): Get rid of most of this - move it into the runtime.
+  // TODO(jonskeet): Do this in the runtime if possible. It's a pain, but it must be feasible...
   printer->Print("{\n");
   printer->Indent();
   printer->Print("int dataSize = 0;\n");
@@ -100,7 +100,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(
   if (fixedSize == -1) {
     printer->Print(
       variables_,
-      "foreach ($type_name$ element in $property_name$List) {\n"
+      "foreach ($type_name$ element in $name$_) {\n"
       "  dataSize += pb::CodedOutputStream.Compute$capitalized_type_name$SizeNoTag(element);\n"
       "}\n");
   } else {
@@ -128,14 +128,12 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(
 void RepeatedPrimitiveFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "foreach($type_name$ i in $name$_)\n {"
-    "  hash ^= i.GetHashCode();\n"
-    "}\n");
+    "hash ^= $name$_.GetHashCode();\n");
 }
 void RepeatedPrimitiveFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if(!$name$_.Equals(other.$name$)) return false;\n");
+    "if(!$name$_.Equals(other.$name$_)) return false;\n");
 }
 void RepeatedPrimitiveFieldGenerator::WriteToString(io::Printer* printer) {
   printer->Print(variables_,

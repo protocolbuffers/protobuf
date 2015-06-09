@@ -33,7 +33,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Google.ProtocolBuffers.Collections
+namespace Google.Protobuf.Collections
 {
     /// <summary>
     /// Utility class for dictionaries.

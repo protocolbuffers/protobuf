@@ -1,25 +1,21 @@
 ﻿using UnitTest.Issues.TestProtos;
 using NUnit.Framework;
 
-namespace Google.ProtocolBuffers
+namespace Google.Protobuf
 {
     public class TestCornerCases
     {
         [Test]
         public void TestRoundTripNegativeEnums()
         {
-            NegativeEnumMessage msg = NegativeEnumMessage.CreateBuilder()
-                .SetValue(NegativeEnum.MinusOne) //11
-                .AddValues(NegativeEnum.Zero) //2
-                .AddValues(NegativeEnum.MinusOne) //11
-                .AddValues(NegativeEnum.FiveBelow) //11
-                //2
-                .AddPackedValues(NegativeEnum.Zero) //1
-                .AddPackedValues(NegativeEnum.MinusOne) //10
-                .AddPackedValues(NegativeEnum.FiveBelow) //10
-                .Build();
+            NegativeEnumMessage msg = new NegativeEnumMessage
+            {
+                Value = NegativeEnum.MinusOne,
+                Values = { NegativeEnum.NEGATIVE_ENUM_ZERO, NegativeEnum.MinusOne, NegativeEnum.FiveBelow },
+                PackedValues = { NegativeEnum.NEGATIVE_ENUM_ZERO, NegativeEnum.MinusOne, NegativeEnum.FiveBelow }
+            };
 
-            Assert.AreEqual(58, msg.SerializedSize);
+            Assert.AreEqual(58, msg.CalculateSize());
 
             byte[] bytes = new byte[58];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
@@ -27,7 +23,7 @@ namespace Google.ProtocolBuffers
             msg.WriteTo(output);
             Assert.AreEqual(0, output.SpaceLeft);
 
-            NegativeEnumMessage copy = NegativeEnumMessage.ParseFrom(bytes);
+            NegativeEnumMessage copy = NegativeEnumMessage.Parser.ParseFrom(bytes);
             Assert.AreEqual(msg, copy);
         }
     }

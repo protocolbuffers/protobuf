@@ -42,7 +42,7 @@ syntax = "proto2";
 package google.protobuf;
 option java_package = "com.google.protobuf";
 option java_outer_classname = "DescriptorProtos";
-option csharp_namespace = "Google.ProtocolBuffers.DescriptorProtos";
+option csharp_namespace = "Google.Protobuf.DescriptorProtos";
 option objc_class_prefix = "GPB";
 
 // descriptor.proto must be optimized for speed because reflection-based

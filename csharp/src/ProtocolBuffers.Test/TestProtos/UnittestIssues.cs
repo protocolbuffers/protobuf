@@ -3,32 +3,24 @@
 #pragma warning disable 1591, 0612, 3021
 #region Designer generated code
 
-using pb = global::Google.ProtocolBuffers;
-using pbc = global::Google.ProtocolBuffers.Collections;
-using pbd = global::Google.ProtocolBuffers.Descriptors;
+using pb = global::Google.Protobuf;
+using pbc = global::Google.Protobuf.Collections;
+using pbd = global::Google.Protobuf.Descriptors;
 using scg = global::System.Collections.Generic;
 namespace UnitTest.Issues.TestProtos {
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestIssues {
 
-    #region Extension registration
-    public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {
-    }
-    #endregion
     #region Static variables
-    internal static pbd::MessageDescriptor internal__static_unittest_issues_MyMessageAReferenceB__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.MyMessageAReferenceB, global::UnitTest.Issues.TestProtos.MyMessageAReferenceB.Builder> internal__static_unittest_issues_MyMessageAReferenceB__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_unittest_issues_MyMessageBReferenceA__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.MyMessageBReferenceA, global::UnitTest.Issues.TestProtos.MyMessageBReferenceA.Builder> internal__static_unittest_issues_MyMessageBReferenceA__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_unittest_issues_NegativeEnumMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.NegativeEnumMessage, global::UnitTest.Issues.TestProtos.NegativeEnumMessage.Builder> internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.NegativeEnumMessage> internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_unittest_issues_DeprecatedChild__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedChild, global::UnitTest.Issues.TestProtos.DeprecatedChild.Builder> internal__static_unittest_issues_DeprecatedChild__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedChild> internal__static_unittest_issues_DeprecatedChild__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_unittest_issues_DeprecatedFieldsMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage, global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage.Builder> internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage> internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_unittest_issues_ItemField__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.ItemField, global::UnitTest.Issues.TestProtos.ItemField.Builder> internal__static_unittest_issues_ItemField__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.ItemField> internal__static_unittest_issues_ItemField__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -39,55 +31,41 @@ namespace UnitTest.Issues.TestProtos {
     static UnittestIssues() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChV1bml0dGVzdF9pc3N1ZXMucHJvdG8SD3VuaXR0ZXN0X2lzc3VlcyJMChRN", 
-            "eU1lc3NhZ2VBUmVmZXJlbmNlQhI0CgV2YWx1ZRgBIAIoCzIlLnVuaXR0ZXN0", 
-            "X2lzc3Vlcy5NeU1lc3NhZ2VCUmVmZXJlbmNlQSJMChRNeU1lc3NhZ2VCUmVm", 
-            "ZXJlbmNlQRI0CgV2YWx1ZRgBIAIoCzIlLnVuaXR0ZXN0X2lzc3Vlcy5NeU1l", 
-            "c3NhZ2VBUmVmZXJlbmNlQiKsAQoTTmVnYXRpdmVFbnVtTWVzc2FnZRIsCgV2", 
-            "YWx1ZRgBIAEoDjIdLnVuaXR0ZXN0X2lzc3Vlcy5OZWdhdGl2ZUVudW0SLQoG", 
-            "dmFsdWVzGAIgAygOMh0udW5pdHRlc3RfaXNzdWVzLk5lZ2F0aXZlRW51bRI4", 
-            "Cg1wYWNrZWRfdmFsdWVzGAMgAygOMh0udW5pdHRlc3RfaXNzdWVzLk5lZ2F0", 
-            "aXZlRW51bUICEAEiEQoPRGVwcmVjYXRlZENoaWxkIrkCChdEZXByZWNhdGVk", 
-            "RmllbGRzTWVzc2FnZRIaCg5QcmltaXRpdmVWYWx1ZRgBIAEoBUICGAESGgoO", 
-            "UHJpbWl0aXZlQXJyYXkYAiADKAVCAhgBEjoKDE1lc3NhZ2VWYWx1ZRgDIAEo", 
-            "CzIgLnVuaXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkQ2hpbGRCAhgBEjoKDE1l", 
-            "c3NhZ2VBcnJheRgEIAMoCzIgLnVuaXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVk", 
-            "Q2hpbGRCAhgBEjYKCUVudW1WYWx1ZRgFIAEoDjIfLnVuaXR0ZXN0X2lzc3Vl", 
-            "cy5EZXByZWNhdGVkRW51bUICGAESNgoJRW51bUFycmF5GAYgAygOMh8udW5p", 
-            "dHRlc3RfaXNzdWVzLkRlcHJlY2F0ZWRFbnVtQgIYASIZCglJdGVtRmllbGQS", 
-            "DAoEaXRlbRgBIAEoBSpHCgxOZWdhdGl2ZUVudW0SFgoJRml2ZUJlbG93EPv/", 
-            "/////////wESFQoITWludXNPbmUQ////////////ARIICgRaZXJvEAAqGQoO", 
-            "RGVwcmVjYXRlZEVudW0SBwoDb25lEAFCH0gBqgIaVW5pdFRlc3QuSXNzdWVz", 
-          "LlRlc3RQcm90b3M="));
+            "ChV1bml0dGVzdF9pc3N1ZXMucHJvdG8SD3VuaXR0ZXN0X2lzc3VlcyKwAQoT", 
+            "TmVnYXRpdmVFbnVtTWVzc2FnZRIsCgV2YWx1ZRgBIAEoDjIdLnVuaXR0ZXN0", 
+            "X2lzc3Vlcy5OZWdhdGl2ZUVudW0SMQoGdmFsdWVzGAIgAygOMh0udW5pdHRl", 
+            "c3RfaXNzdWVzLk5lZ2F0aXZlRW51bUICEAASOAoNcGFja2VkX3ZhbHVlcxgD", 
+            "IAMoDjIdLnVuaXR0ZXN0X2lzc3Vlcy5OZWdhdGl2ZUVudW1CAhABIhEKD0Rl", 
+            "cHJlY2F0ZWRDaGlsZCK5AgoXRGVwcmVjYXRlZEZpZWxkc01lc3NhZ2USGgoO", 
+            "UHJpbWl0aXZlVmFsdWUYASABKAVCAhgBEhoKDlByaW1pdGl2ZUFycmF5GAIg", 
+            "AygFQgIYARI6CgxNZXNzYWdlVmFsdWUYAyABKAsyIC51bml0dGVzdF9pc3N1", 
+            "ZXMuRGVwcmVjYXRlZENoaWxkQgIYARI6CgxNZXNzYWdlQXJyYXkYBCADKAsy", 
+            "IC51bml0dGVzdF9pc3N1ZXMuRGVwcmVjYXRlZENoaWxkQgIYARI2CglFbnVt", 
+            "VmFsdWUYBSABKA4yHy51bml0dGVzdF9pc3N1ZXMuRGVwcmVjYXRlZEVudW1C", 
+            "AhgBEjYKCUVudW1BcnJheRgGIAMoDjIfLnVuaXR0ZXN0X2lzc3Vlcy5EZXBy", 
+            "ZWNhdGVkRW51bUICGAEiGQoJSXRlbUZpZWxkEgwKBGl0ZW0YASABKAUqVQoM", 
+            "TmVnYXRpdmVFbnVtEhYKEk5FR0FUSVZFX0VOVU1fWkVSTxAAEhYKCUZpdmVC", 
+            "ZWxvdxD7//////////8BEhUKCE1pbnVzT25lEP///////////wEqLgoORGVw", 
+            "cmVjYXRlZEVudW0SEwoPREVQUkVDQVRFRF9aRVJPEAASBwoDb25lEAFCH0gB", 
+          "qgIaVW5pdFRlc3QuSXNzdWVzLlRlc3RQcm90b3NiBnByb3RvMw=="));
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
-        internal__static_unittest_issues_MyMessageAReferenceB__Descriptor = Descriptor.MessageTypes[0];
-        internal__static_unittest_issues_MyMessageAReferenceB__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.MyMessageAReferenceB, global::UnitTest.Issues.TestProtos.MyMessageAReferenceB.Builder>(internal__static_unittest_issues_MyMessageAReferenceB__Descriptor,
-                new string[] { "Value", });
-        internal__static_unittest_issues_MyMessageBReferenceA__Descriptor = Descriptor.MessageTypes[1];
-        internal__static_unittest_issues_MyMessageBReferenceA__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.MyMessageBReferenceA, global::UnitTest.Issues.TestProtos.MyMessageBReferenceA.Builder>(internal__static_unittest_issues_MyMessageBReferenceA__Descriptor,
-                new string[] { "Value", });
-        internal__static_unittest_issues_NegativeEnumMessage__Descriptor = Descriptor.MessageTypes[2];
+        internal__static_unittest_issues_NegativeEnumMessage__Descriptor = Descriptor.MessageTypes[0];
         internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.NegativeEnumMessage, global::UnitTest.Issues.TestProtos.NegativeEnumMessage.Builder>(internal__static_unittest_issues_NegativeEnumMessage__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.NegativeEnumMessage>(internal__static_unittest_issues_NegativeEnumMessage__Descriptor,
                 new string[] { "Value", "Values", "PackedValues", });
-        internal__static_unittest_issues_DeprecatedChild__Descriptor = Descriptor.MessageTypes[3];
+        internal__static_unittest_issues_DeprecatedChild__Descriptor = Descriptor.MessageTypes[1];
         internal__static_unittest_issues_DeprecatedChild__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedChild, global::UnitTest.Issues.TestProtos.DeprecatedChild.Builder>(internal__static_unittest_issues_DeprecatedChild__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedChild>(internal__static_unittest_issues_DeprecatedChild__Descriptor,
                 new string[] { });
-        internal__static_unittest_issues_DeprecatedFieldsMessage__Descriptor = Descriptor.MessageTypes[4];
+        internal__static_unittest_issues_DeprecatedFieldsMessage__Descriptor = Descriptor.MessageTypes[2];
         internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage, global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage.Builder>(internal__static_unittest_issues_DeprecatedFieldsMessage__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage>(internal__static_unittest_issues_DeprecatedFieldsMessage__Descriptor,
                 new string[] { "PrimitiveValue", "PrimitiveArray", "MessageValue", "MessageArray", "EnumValue", "EnumArray", });
-        internal__static_unittest_issues_ItemField__Descriptor = Descriptor.MessageTypes[5];
+        internal__static_unittest_issues_ItemField__Descriptor = Descriptor.MessageTypes[3];
         internal__static_unittest_issues_ItemField__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.ItemField, global::UnitTest.Issues.TestProtos.ItemField.Builder>(internal__static_unittest_issues_ItemField__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.ItemField>(internal__static_unittest_issues_ItemField__Descriptor,
                 new string[] { "Item", });
-        pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
-        RegisterAllExtensions(registry);
-        return registry;
       };
       pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbd::FileDescriptor[] {
@@ -97,13 +75,14 @@ namespace UnitTest.Issues.TestProtos {
 
   }
   #region Enums
-  public enum NegativeEnum {
+  public enum NegativeEnum : long {
+    NEGATIVE_ENUM_ZERO = 0,
     FiveBelow = -5,
     MinusOne = -1,
-    Zero = 0,
   }
 
-  public enum DeprecatedEnum {
+  public enum DeprecatedEnum : long {
+    DEPRECATED_ZERO = 0,
     one = 1,
   }
 
@@ -111,713 +90,88 @@ namespace UnitTest.Issues.TestProtos {
 
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MyMessageAReferenceB : pb::GeneratedMessage<MyMessageAReferenceB, MyMessageAReferenceB.Builder> {
-    private MyMessageAReferenceB() { }
-    private static readonly MyMessageAReferenceB defaultInstance = new MyMessageAReferenceB().MakeReadOnly();
-    private static readonly string[] _myMessageAReferenceBFieldNames = new string[] { "value" };
-    private static readonly uint[] _myMessageAReferenceBFieldTags = new uint[] { 10 };
-    public static MyMessageAReferenceB DefaultInstance {
-      get { return defaultInstance; }
-    }
+  public sealed partial class NegativeEnumMessage : pb::IMessage<NegativeEnumMessage>, global::System.IEquatable<NegativeEnumMessage> {
+    private static readonly pb::MessageParser<NegativeEnumMessage> _parser = new pb::MessageParser<NegativeEnumMessage>(() => new NegativeEnumMessage());
+    public static pb::MessageParser<NegativeEnumMessage> Parser { get { return _parser; } }
 
-    public override MyMessageAReferenceB DefaultInstanceForType {
-      get { return DefaultInstance; }
-    }
-
-    protected override MyMessageAReferenceB ThisMessage {
-      get { return this; }
-    }
-
-    public static pbd::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_MyMessageAReferenceB__Descriptor; }
-    }
-
-    protected override pb::FieldAccess.FieldAccessorTable<MyMessageAReferenceB, MyMessageAReferenceB.Builder> InternalFieldAccessors {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_MyMessageAReferenceB__FieldAccessorTable; }
-    }
-
-    public const int ValueFieldNumber = 1;
-    private bool hasValue;
-    private global::UnitTest.Issues.TestProtos.MyMessageBReferenceA value_;
-    public bool HasValue {
-      get { return hasValue; }
-    }
-    public global::UnitTest.Issues.TestProtos.MyMessageBReferenceA Value {
-      get { return value_ ?? global::UnitTest.Issues.TestProtos.MyMessageBReferenceA.DefaultInstance; }
-    }
-
-    public override bool IsInitialized {
-      get {
-        if (!hasValue) return false;
-        if (!Value.IsInitialized) return false;
-        return true;
-      }
-    }
-
-    public override void WriteTo(pb::ICodedOutputStream output) {
-      CalcSerializedSize();
-      string[] field_names = _myMessageAReferenceBFieldNames;
-      if (hasValue) {
-        output.WriteMessage(1, field_names[0], Value);
-      }
-      UnknownFields.WriteTo(output);
-    }
-
-    private int memoizedSerializedSize = -1;
-    public override int SerializedSize {
-      get {
-        int size = memoizedSerializedSize;
-        if (size != -1) return size;
-        return CalcSerializedSize();
-      }
-    }
-
-    private int CalcSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (hasValue) {
-        size += pb::CodedOutputStream.ComputeMessageSize(1, Value);
-      }
-      size += UnknownFields.SerializedSize;
-      memoizedSerializedSize = size;
-      return size;
-    }
-    public static MyMessageAReferenceB ParseFrom(pb::ByteString data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static MyMessageAReferenceB ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static MyMessageAReferenceB ParseFrom(byte[] data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static MyMessageAReferenceB ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static MyMessageAReferenceB ParseFrom(global::System.IO.Stream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static MyMessageAReferenceB ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    public static MyMessageAReferenceB ParseDelimitedFrom(global::System.IO.Stream input) {
-      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
-    }
-    public static MyMessageAReferenceB ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
-    }
-    public static MyMessageAReferenceB ParseFrom(pb::ICodedInputStream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static MyMessageAReferenceB ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    private MyMessageAReferenceB MakeReadOnly() {
-      return this;
-    }
-
-    public static Builder CreateBuilder() { return new Builder(); }
-    public override Builder ToBuilder() { return CreateBuilder(this); }
-    public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(MyMessageAReferenceB prototype) {
-      return new Builder(prototype);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public sealed partial class Builder : pb::GeneratedBuilder<MyMessageAReferenceB, Builder> {
-      protected override Builder ThisBuilder {
-        get { return this; }
-      }
-      public Builder() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-      }
-      internal Builder(MyMessageAReferenceB cloneFrom) {
-        result = cloneFrom;
-        resultIsReadOnly = true;
-      }
-
-      private bool resultIsReadOnly;
-      private MyMessageAReferenceB result;
-
-      private MyMessageAReferenceB PrepareBuilder() {
-        if (resultIsReadOnly) {
-          MyMessageAReferenceB original = result;
-          result = new MyMessageAReferenceB();
-          resultIsReadOnly = false;
-          MergeFrom(original);
-        }
-        return result;
-      }
-
-      public override bool IsInitialized {
-        get { return result.IsInitialized; }
-      }
-
-      protected override MyMessageAReferenceB MessageBeingBuilt {
-        get { return PrepareBuilder(); }
-      }
-
-      public override Builder Clear() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-        return this;
-      }
-
-      public override Builder Clone() {
-        if (resultIsReadOnly) {
-          return new Builder(result);
-        } else {
-          return new Builder().MergeFrom(result);
-        }
-      }
-
-      public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::UnitTest.Issues.TestProtos.MyMessageAReferenceB.Descriptor; }
-      }
-
-      public override MyMessageAReferenceB DefaultInstanceForType {
-        get { return global::UnitTest.Issues.TestProtos.MyMessageAReferenceB.DefaultInstance; }
-      }
-
-      public override MyMessageAReferenceB BuildPartial() {
-        if (resultIsReadOnly) {
-          return result;
-        }
-        resultIsReadOnly = true;
-        return result.MakeReadOnly();
-      }
-
-      public override Builder MergeFrom(pb::IMessage other) {
-        if (other is MyMessageAReferenceB) {
-          return MergeFrom((MyMessageAReferenceB) other);
-        } else {
-          base.MergeFrom(other);
-          return this;
-        }
-      }
-
-      public override Builder MergeFrom(MyMessageAReferenceB other) {
-        if (other == global::UnitTest.Issues.TestProtos.MyMessageAReferenceB.DefaultInstance) return this;
-        PrepareBuilder();
-        if (other.HasValue) {
-          MergeValue(other.Value);
-        }
-        this.MergeUnknownFields(other.UnknownFields);
-        return this;
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input) {
-        return MergeFrom(input, pb::ExtensionRegistry.Empty);
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        PrepareBuilder();
-        pb::UnknownFieldSet.Builder unknownFields = null;
-        uint tag;
-        string field_name;
-        while (input.ReadTag(out tag, out field_name)) {
-          if(tag == 0 && field_name != null) {
-            int field_ordinal = global::System.Array.BinarySearch(_myMessageAReferenceBFieldNames, field_name, global::System.StringComparer.Ordinal);
-            if(field_ordinal >= 0)
-              tag = _myMessageAReferenceBFieldTags[field_ordinal];
-            else {
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              continue;
-            }
-          }
-          switch (tag) {
-            case 0: {
-              throw pb::InvalidProtocolBufferException.InvalidTag();
-            }
-            default: {
-              if (pb::WireFormat.IsEndGroupTag(tag)) {
-                if (unknownFields != null) {
-                  this.UnknownFields = unknownFields.Build();
-                }
-                return this;
-              }
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              break;
-            }
-            case 10: {
-              global::UnitTest.Issues.TestProtos.MyMessageBReferenceA.Builder subBuilder = global::UnitTest.Issues.TestProtos.MyMessageBReferenceA.CreateBuilder();
-              if (result.hasValue) {
-                subBuilder.MergeFrom(Value);
-              }
-              input.ReadMessage(subBuilder, extensionRegistry);
-              Value = subBuilder.BuildPartial();
-              break;
-            }
-          }
-        }
-
-        if (unknownFields != null) {
-          this.UnknownFields = unknownFields.Build();
-        }
-        return this;
-      }
-
-
-      public bool HasValue {
-       get { return result.hasValue; }
-      }
-      public global::UnitTest.Issues.TestProtos.MyMessageBReferenceA Value {
-        get { return result.Value; }
-        set { SetValue(value); }
-      }
-      public Builder SetValue(global::UnitTest.Issues.TestProtos.MyMessageBReferenceA value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        result.hasValue = true;
-        result.value_ = value;
-        return this;
-      }
-      public Builder SetValue(global::UnitTest.Issues.TestProtos.MyMessageBReferenceA.Builder builderForValue) {
-        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
-        PrepareBuilder();
-        result.hasValue = true;
-        result.value_ = builderForValue.Build();
-        return this;
-      }
-      public Builder MergeValue(global::UnitTest.Issues.TestProtos.MyMessageBReferenceA value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        if (result.hasValue &&
-            result.value_ != global::UnitTest.Issues.TestProtos.MyMessageBReferenceA.DefaultInstance) {
-            result.value_ = global::UnitTest.Issues.TestProtos.MyMessageBReferenceA.CreateBuilder(result.value_).MergeFrom(value).BuildPartial();
-        } else {
-          result.value_ = value;
-        }
-        result.hasValue = true;
-        return this;
-      }
-      public Builder ClearValue() {
-        PrepareBuilder();
-        result.hasValue = false;
-        result.value_ = null;
-        return this;
-      }
-    }
-    static MyMessageAReferenceB() {
-      object.ReferenceEquals(global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor, null);
-    }
-  }
-
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MyMessageBReferenceA : pb::GeneratedMessage<MyMessageBReferenceA, MyMessageBReferenceA.Builder> {
-    private MyMessageBReferenceA() { }
-    private static readonly MyMessageBReferenceA defaultInstance = new MyMessageBReferenceA().MakeReadOnly();
-    private static readonly string[] _myMessageBReferenceAFieldNames = new string[] { "value" };
-    private static readonly uint[] _myMessageBReferenceAFieldTags = new uint[] { 10 };
-    public static MyMessageBReferenceA DefaultInstance {
-      get { return defaultInstance; }
-    }
-
-    public override MyMessageBReferenceA DefaultInstanceForType {
-      get { return DefaultInstance; }
-    }
-
-    protected override MyMessageBReferenceA ThisMessage {
-      get { return this; }
-    }
-
-    public static pbd::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_MyMessageBReferenceA__Descriptor; }
-    }
-
-    protected override pb::FieldAccess.FieldAccessorTable<MyMessageBReferenceA, MyMessageBReferenceA.Builder> InternalFieldAccessors {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_MyMessageBReferenceA__FieldAccessorTable; }
-    }
-
-    public const int ValueFieldNumber = 1;
-    private bool hasValue;
-    private global::UnitTest.Issues.TestProtos.MyMessageAReferenceB value_;
-    public bool HasValue {
-      get { return hasValue; }
-    }
-    public global::UnitTest.Issues.TestProtos.MyMessageAReferenceB Value {
-      get { return value_ ?? global::UnitTest.Issues.TestProtos.MyMessageAReferenceB.DefaultInstance; }
-    }
-
-    public override bool IsInitialized {
-      get {
-        if (!hasValue) return false;
-        if (!Value.IsInitialized) return false;
-        return true;
-      }
-    }
-
-    public override void WriteTo(pb::ICodedOutputStream output) {
-      CalcSerializedSize();
-      string[] field_names = _myMessageBReferenceAFieldNames;
-      if (hasValue) {
-        output.WriteMessage(1, field_names[0], Value);
-      }
-      UnknownFields.WriteTo(output);
-    }
-
-    private int memoizedSerializedSize = -1;
-    public override int SerializedSize {
-      get {
-        int size = memoizedSerializedSize;
-        if (size != -1) return size;
-        return CalcSerializedSize();
-      }
-    }
-
-    private int CalcSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (hasValue) {
-        size += pb::CodedOutputStream.ComputeMessageSize(1, Value);
-      }
-      size += UnknownFields.SerializedSize;
-      memoizedSerializedSize = size;
-      return size;
-    }
-    public static MyMessageBReferenceA ParseFrom(pb::ByteString data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static MyMessageBReferenceA ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static MyMessageBReferenceA ParseFrom(byte[] data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static MyMessageBReferenceA ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static MyMessageBReferenceA ParseFrom(global::System.IO.Stream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static MyMessageBReferenceA ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    public static MyMessageBReferenceA ParseDelimitedFrom(global::System.IO.Stream input) {
-      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
-    }
-    public static MyMessageBReferenceA ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
-    }
-    public static MyMessageBReferenceA ParseFrom(pb::ICodedInputStream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static MyMessageBReferenceA ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    private MyMessageBReferenceA MakeReadOnly() {
-      return this;
-    }
-
-    public static Builder CreateBuilder() { return new Builder(); }
-    public override Builder ToBuilder() { return CreateBuilder(this); }
-    public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(MyMessageBReferenceA prototype) {
-      return new Builder(prototype);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public sealed partial class Builder : pb::GeneratedBuilder<MyMessageBReferenceA, Builder> {
-      protected override Builder ThisBuilder {
-        get { return this; }
-      }
-      public Builder() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-      }
-      internal Builder(MyMessageBReferenceA cloneFrom) {
-        result = cloneFrom;
-        resultIsReadOnly = true;
-      }
-
-      private bool resultIsReadOnly;
-      private MyMessageBReferenceA result;
-
-      private MyMessageBReferenceA PrepareBuilder() {
-        if (resultIsReadOnly) {
-          MyMessageBReferenceA original = result;
-          result = new MyMessageBReferenceA();
-          resultIsReadOnly = false;
-          MergeFrom(original);
-        }
-        return result;
-      }
-
-      public override bool IsInitialized {
-        get { return result.IsInitialized; }
-      }
-
-      protected override MyMessageBReferenceA MessageBeingBuilt {
-        get { return PrepareBuilder(); }
-      }
-
-      public override Builder Clear() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-        return this;
-      }
-
-      public override Builder Clone() {
-        if (resultIsReadOnly) {
-          return new Builder(result);
-        } else {
-          return new Builder().MergeFrom(result);
-        }
-      }
-
-      public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::UnitTest.Issues.TestProtos.MyMessageBReferenceA.Descriptor; }
-      }
-
-      public override MyMessageBReferenceA DefaultInstanceForType {
-        get { return global::UnitTest.Issues.TestProtos.MyMessageBReferenceA.DefaultInstance; }
-      }
-
-      public override MyMessageBReferenceA BuildPartial() {
-        if (resultIsReadOnly) {
-          return result;
-        }
-        resultIsReadOnly = true;
-        return result.MakeReadOnly();
-      }
-
-      public override Builder MergeFrom(pb::IMessage other) {
-        if (other is MyMessageBReferenceA) {
-          return MergeFrom((MyMessageBReferenceA) other);
-        } else {
-          base.MergeFrom(other);
-          return this;
-        }
-      }
-
-      public override Builder MergeFrom(MyMessageBReferenceA other) {
-        if (other == global::UnitTest.Issues.TestProtos.MyMessageBReferenceA.DefaultInstance) return this;
-        PrepareBuilder();
-        if (other.HasValue) {
-          MergeValue(other.Value);
-        }
-        this.MergeUnknownFields(other.UnknownFields);
-        return this;
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input) {
-        return MergeFrom(input, pb::ExtensionRegistry.Empty);
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        PrepareBuilder();
-        pb::UnknownFieldSet.Builder unknownFields = null;
-        uint tag;
-        string field_name;
-        while (input.ReadTag(out tag, out field_name)) {
-          if(tag == 0 && field_name != null) {
-            int field_ordinal = global::System.Array.BinarySearch(_myMessageBReferenceAFieldNames, field_name, global::System.StringComparer.Ordinal);
-            if(field_ordinal >= 0)
-              tag = _myMessageBReferenceAFieldTags[field_ordinal];
-            else {
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              continue;
-            }
-          }
-          switch (tag) {
-            case 0: {
-              throw pb::InvalidProtocolBufferException.InvalidTag();
-            }
-            default: {
-              if (pb::WireFormat.IsEndGroupTag(tag)) {
-                if (unknownFields != null) {
-                  this.UnknownFields = unknownFields.Build();
-                }
-                return this;
-              }
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              break;
-            }
-            case 10: {
-              global::UnitTest.Issues.TestProtos.MyMessageAReferenceB.Builder subBuilder = global::UnitTest.Issues.TestProtos.MyMessageAReferenceB.CreateBuilder();
-              if (result.hasValue) {
-                subBuilder.MergeFrom(Value);
-              }
-              input.ReadMessage(subBuilder, extensionRegistry);
-              Value = subBuilder.BuildPartial();
-              break;
-            }
-          }
-        }
-
-        if (unknownFields != null) {
-          this.UnknownFields = unknownFields.Build();
-        }
-        return this;
-      }
-
-
-      public bool HasValue {
-       get { return result.hasValue; }
-      }
-      public global::UnitTest.Issues.TestProtos.MyMessageAReferenceB Value {
-        get { return result.Value; }
-        set { SetValue(value); }
-      }
-      public Builder SetValue(global::UnitTest.Issues.TestProtos.MyMessageAReferenceB value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        result.hasValue = true;
-        result.value_ = value;
-        return this;
-      }
-      public Builder SetValue(global::UnitTest.Issues.TestProtos.MyMessageAReferenceB.Builder builderForValue) {
-        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
-        PrepareBuilder();
-        result.hasValue = true;
-        result.value_ = builderForValue.Build();
-        return this;
-      }
-      public Builder MergeValue(global::UnitTest.Issues.TestProtos.MyMessageAReferenceB value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        if (result.hasValue &&
-            result.value_ != global::UnitTest.Issues.TestProtos.MyMessageAReferenceB.DefaultInstance) {
-            result.value_ = global::UnitTest.Issues.TestProtos.MyMessageAReferenceB.CreateBuilder(result.value_).MergeFrom(value).BuildPartial();
-        } else {
-          result.value_ = value;
-        }
-        result.hasValue = true;
-        return this;
-      }
-      public Builder ClearValue() {
-        PrepareBuilder();
-        result.hasValue = false;
-        result.value_ = null;
-        return this;
-      }
-    }
-    static MyMessageBReferenceA() {
-      object.ReferenceEquals(global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor, null);
-    }
-  }
-
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class NegativeEnumMessage : pb::GeneratedMessage<NegativeEnumMessage, NegativeEnumMessage.Builder> {
-    private NegativeEnumMessage() { }
-    private static readonly NegativeEnumMessage defaultInstance = new NegativeEnumMessage().MakeReadOnly();
-    private static readonly string[] _negativeEnumMessageFieldNames = new string[] { "packed_values", "value", "values" };
-    private static readonly uint[] _negativeEnumMessageFieldTags = new uint[] { 26, 8, 16 };
-    public static NegativeEnumMessage DefaultInstance {
-      get { return defaultInstance; }
-    }
-
-    public override NegativeEnumMessage DefaultInstanceForType {
-      get { return DefaultInstance; }
-    }
-
-    protected override NegativeEnumMessage ThisMessage {
-      get { return this; }
-    }
-
+    private static readonly string[] _fieldNames = new string[] { "packed_values", "value", "values" };
+    private static readonly uint[] _fieldTags = new uint[] { 26, 8, 16 };
     public static pbd::MessageDescriptor Descriptor {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_NegativeEnumMessage__Descriptor; }
     }
 
-    protected override pb::FieldAccess.FieldAccessorTable<NegativeEnumMessage, NegativeEnumMessage.Builder> InternalFieldAccessors {
+    public pb::FieldAccess.FieldAccessorTable<NegativeEnumMessage> Fields {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable; }
     }
 
-    public const int ValueFieldNumber = 1;
-    private bool hasValue;
-    private global::UnitTest.Issues.TestProtos.NegativeEnum value_ = global::UnitTest.Issues.TestProtos.NegativeEnum.FiveBelow;
-    public bool HasValue {
-      get { return hasValue; }
+    public NegativeEnumMessage() { }
+    public NegativeEnumMessage(NegativeEnumMessage other) {
+      MergeFrom(other);
     }
+    public const int ValueFieldNumber = 1;
+    private global::UnitTest.Issues.TestProtos.NegativeEnum value_ = global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO;
     public global::UnitTest.Issues.TestProtos.NegativeEnum Value {
       get { return value_; }
+      set { value_ = value; }
     }
 
+
     public const int ValuesFieldNumber = 2;
-    private pbc::PopsicleList<global::UnitTest.Issues.TestProtos.NegativeEnum> values_ = new pbc::PopsicleList<global::UnitTest.Issues.TestProtos.NegativeEnum>();
-    public scg::IList<global::UnitTest.Issues.TestProtos.NegativeEnum> ValuesList {
-      get { return pbc::Lists.AsReadOnly(values_); }
-    }
-    public int ValuesCount {
-      get { return values_.Count; }
-    }
-    public global::UnitTest.Issues.TestProtos.NegativeEnum GetValues(int index) {
-      return values_[index];
+    private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> values_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
+    public pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> Values {
+      get { return values_; }
     }
 
     public const int PackedValuesFieldNumber = 3;
-    private int packedValuesMemoizedSerializedSize;
-    private pbc::PopsicleList<global::UnitTest.Issues.TestProtos.NegativeEnum> packedValues_ = new pbc::PopsicleList<global::UnitTest.Issues.TestProtos.NegativeEnum>();
-    public scg::IList<global::UnitTest.Issues.TestProtos.NegativeEnum> PackedValuesList {
-      get { return pbc::Lists.AsReadOnly(packedValues_); }
-    }
-    public int PackedValuesCount {
-      get { return packedValues_.Count; }
-    }
-    public global::UnitTest.Issues.TestProtos.NegativeEnum GetPackedValues(int index) {
-      return packedValues_[index];
+    private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> packedValues_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
+    public pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> PackedValues {
+      get { return packedValues_; }
     }
 
-    public override bool IsInitialized {
-      get {
+    public override bool Equals(object other) {
+      return Equals(other as NegativeEnumMessage);
+    }
+
+    public bool Equals(NegativeEnumMessage other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (Value != other.Value) return false;
+      if(!values_.Equals(other.values_)) return false;
+      if(!packedValues_.Equals(other.packedValues_)) return false;
+      return true;
     }
 
-    public override void WriteTo(pb::ICodedOutputStream output) {
-      CalcSerializedSize();
-      string[] field_names = _negativeEnumMessageFieldNames;
-      if (hasValue) {
-        output.WriteEnum(1, field_names[1], (int) Value, Value);
-      }
-      if (values_.Count > 0) {
-        output.WriteEnumArray(2, field_names[2], values_);
-      }
-      if (packedValues_.Count > 0) {
-        output.WritePackedEnumArray(3, field_names[0], packedValuesMemoizedSerializedSize, packedValues_);
-      }
-      UnknownFields.WriteTo(output);
+    public override int GetHashCode() {
+      int hash = 0;
+      if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) hash ^= Value.GetHashCode();
+      hash ^= values_.GetHashCode();
+      hash ^= packedValues_.GetHashCode();
+      return hash;
     }
 
-    private int memoizedSerializedSize = -1;
-    public override int SerializedSize {
-      get {
-        int size = memoizedSerializedSize;
-        if (size != -1) return size;
-        return CalcSerializedSize();
+    public void WriteTo(pb::ICodedOutputStream output) {
+      string[] fieldNames = _fieldNames;
+      if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
+        output.WriteEnum(1, fieldNames[1], Value);
       }
+      output.WriteEnumArray(2, fieldNames[2], values_);
+      output.WritePackedEnumArray(3, fieldNames[0], packedValues_);
     }
 
-    private int CalcSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (hasValue) {
-        size += pb::CodedOutputStream.ComputeEnumSize(1, (int) Value);
+    public int CalculateSize() {
+      int size = 0;
+      if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
+        size += pb::CodedOutputStream.ComputeEnumSize(1, Value);
       }
       {
         int dataSize = 0;
         if (values_.Count > 0) {
           foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in values_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);
           }
           size += dataSize;
           size += 1 * values_.Count;
@@ -827,1481 +181,460 @@ namespace UnitTest.Issues.TestProtos {
         int dataSize = 0;
         if (packedValues_.Count > 0) {
           foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in packedValues_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);
           }
           size += dataSize;
           size += 1;
           size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
         }
-        packedValuesMemoizedSerializedSize = dataSize;
       }
-      size += UnknownFields.SerializedSize;
-      memoizedSerializedSize = size;
       return size;
     }
-    public static NegativeEnumMessage ParseFrom(pb::ByteString data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static NegativeEnumMessage ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static NegativeEnumMessage ParseFrom(byte[] data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static NegativeEnumMessage ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static NegativeEnumMessage ParseFrom(global::System.IO.Stream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static NegativeEnumMessage ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    public static NegativeEnumMessage ParseDelimitedFrom(global::System.IO.Stream input) {
-      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
-    }
-    public static NegativeEnumMessage ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
-    }
-    public static NegativeEnumMessage ParseFrom(pb::ICodedInputStream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static NegativeEnumMessage ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    private NegativeEnumMessage MakeReadOnly() {
-      values_.MakeReadOnly();
-      packedValues_.MakeReadOnly();
-      return this;
+    public void MergeFrom(NegativeEnumMessage other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
+        Value = other.Value;
+      }
+      values_.Add(other.values_);
+      packedValues_.Add(other.packedValues_);
     }
 
-    public static Builder CreateBuilder() { return new Builder(); }
-    public override Builder ToBuilder() { return CreateBuilder(this); }
-    public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(NegativeEnumMessage prototype) {
-      return new Builder(prototype);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public sealed partial class Builder : pb::GeneratedBuilder<NegativeEnumMessage, Builder> {
-      protected override Builder ThisBuilder {
-        get { return this; }
-      }
-      public Builder() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-      }
-      internal Builder(NegativeEnumMessage cloneFrom) {
-        result = cloneFrom;
-        resultIsReadOnly = true;
-      }
-
-      private bool resultIsReadOnly;
-      private NegativeEnumMessage result;
-
-      private NegativeEnumMessage PrepareBuilder() {
-        if (resultIsReadOnly) {
-          NegativeEnumMessage original = result;
-          result = new NegativeEnumMessage();
-          resultIsReadOnly = false;
-          MergeFrom(original);
-        }
-        return result;
-      }
-
-      public override bool IsInitialized {
-        get { return result.IsInitialized; }
-      }
-
-      protected override NegativeEnumMessage MessageBeingBuilt {
-        get { return PrepareBuilder(); }
-      }
-
-      public override Builder Clear() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-        return this;
-      }
-
-      public override Builder Clone() {
-        if (resultIsReadOnly) {
-          return new Builder(result);
-        } else {
-          return new Builder().MergeFrom(result);
-        }
-      }
-
-      public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::UnitTest.Issues.TestProtos.NegativeEnumMessage.Descriptor; }
-      }
-
-      public override NegativeEnumMessage DefaultInstanceForType {
-        get { return global::UnitTest.Issues.TestProtos.NegativeEnumMessage.DefaultInstance; }
-      }
-
-      public override NegativeEnumMessage BuildPartial() {
-        if (resultIsReadOnly) {
-          return result;
-        }
-        resultIsReadOnly = true;
-        return result.MakeReadOnly();
-      }
-
-      public override Builder MergeFrom(pb::IMessage other) {
-        if (other is NegativeEnumMessage) {
-          return MergeFrom((NegativeEnumMessage) other);
-        } else {
-          base.MergeFrom(other);
-          return this;
-        }
-      }
-
-      public override Builder MergeFrom(NegativeEnumMessage other) {
-        if (other == global::UnitTest.Issues.TestProtos.NegativeEnumMessage.DefaultInstance) return this;
-        PrepareBuilder();
-        if (other.HasValue) {
-          Value = other.Value;
-        }
-        if (other.values_.Count != 0) {
-          result.values_.Add(other.values_);
-        }
-        if (other.packedValues_.Count != 0) {
-          result.packedValues_.Add(other.packedValues_);
-        }
-        this.MergeUnknownFields(other.UnknownFields);
-        return this;
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input) {
-        return MergeFrom(input, pb::ExtensionRegistry.Empty);
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        PrepareBuilder();
-        pb::UnknownFieldSet.Builder unknownFields = null;
-        uint tag;
-        string field_name;
-        while (input.ReadTag(out tag, out field_name)) {
-          if(tag == 0 && field_name != null) {
-            int field_ordinal = global::System.Array.BinarySearch(_negativeEnumMessageFieldNames, field_name, global::System.StringComparer.Ordinal);
-            if(field_ordinal >= 0)
-              tag = _negativeEnumMessageFieldTags[field_ordinal];
-            else {
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              continue;
-            }
-          }
-          switch (tag) {
-            case 0: {
-              throw pb::InvalidProtocolBufferException.InvalidTag();
-            }
-            default: {
-              if (pb::WireFormat.IsEndGroupTag(tag)) {
-                if (unknownFields != null) {
-                  this.UnknownFields = unknownFields.Build();
-                }
-                return this;
-              }
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              break;
-            }
-            case 8: {
-              object unknown;
-              if(input.ReadEnum(ref result.value_, out unknown)) {
-                result.hasValue = true;
-              } else if(unknown is int) {
-                if (unknownFields == null) {
-                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-                }
-                unknownFields.MergeVarintField(1, (ulong)(int)unknown);
-              }
-              break;
-            }
-            case 18:
-            case 16: {
-              scg::ICollection<object> unknownItems;
-              input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(tag, field_name, result.values_, out unknownItems);
-              if (unknownItems != null) {
-                if (unknownFields == null) {
-                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-                }
-                foreach (object rawValue in unknownItems)
-                  if (rawValue is int)
-                    unknownFields.MergeVarintField(2, (ulong)(int)rawValue);
-              }
-              break;
-            }
-            case 26:
-            case 24: {
-              scg::ICollection<object> unknownItems;
-              input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(tag, field_name, result.packedValues_, out unknownItems);
-              if (unknownItems != null) {
-                if (unknownFields == null) {
-                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-                }
-                foreach (object rawValue in unknownItems)
-                  if (rawValue is int)
-                    unknownFields.MergeVarintField(3, (ulong)(int)rawValue);
-              }
-              break;
-            }
+    public void MergeFrom(pb::ICodedInputStream input) {
+      uint tag;
+      string fieldName;
+      while (input.ReadTag(out tag, out fieldName)) {
+        if (tag == 0 && fieldName != null) {
+          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
+          if (fieldOrdinal >= 0) {
+            tag = _fieldTags[fieldOrdinal];
           }
         }
-
-        if (unknownFields != null) {
-          this.UnknownFields = unknownFields.Build();
+        switch(tag) {
+          case 0:
+            throw pb::InvalidProtocolBufferException.InvalidTag();
+          default:
+            if (pb::WireFormat.IsEndGroupTag(tag)) {
+              return;
+            }
+            break;
+          case 8: {
+            input.ReadEnum(ref value_);
+            break;
+          }
+          case 18:
+          case 16: {
+            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(tag, fieldName, values_);
+            break;
+          }
+          case 26:
+          case 24: {
+            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(tag, fieldName, packedValues_);
+            break;
+          }
         }
-        return this;
-      }
-
-
-      public bool HasValue {
-        get { return result.hasValue; }
-      }
-      public global::UnitTest.Issues.TestProtos.NegativeEnum Value {
-        get { return result.Value; }
-        set { SetValue(value); }
-      }
-      public Builder SetValue(global::UnitTest.Issues.TestProtos.NegativeEnum value) {
-        PrepareBuilder();
-        result.hasValue = true;
-        result.value_ = value;
-        return this;
-      }
-      public Builder ClearValue() {
-        PrepareBuilder();
-        result.hasValue = false;
-        result.value_ = global::UnitTest.Issues.TestProtos.NegativeEnum.FiveBelow;
-        return this;
-      }
-
-      public pbc::IPopsicleList<global::UnitTest.Issues.TestProtos.NegativeEnum> ValuesList {
-        get { return PrepareBuilder().values_; }
-      }
-      public int ValuesCount {
-        get { return result.ValuesCount; }
-      }
-      public global::UnitTest.Issues.TestProtos.NegativeEnum GetValues(int index) {
-        return result.GetValues(index);
-      }
-      public Builder SetValues(int index, global::UnitTest.Issues.TestProtos.NegativeEnum value) {
-        PrepareBuilder();
-        result.values_[index] = value;
-        return this;
-      }
-      public Builder AddValues(global::UnitTest.Issues.TestProtos.NegativeEnum value) {
-        PrepareBuilder();
-        result.values_.Add(value);
-        return this;
-      }
-      public Builder AddRangeValues(scg::IEnumerable<global::UnitTest.Issues.TestProtos.NegativeEnum> values) {
-        PrepareBuilder();
-        result.values_.Add(values);
-        return this;
-      }
-      public Builder ClearValues() {
-        PrepareBuilder();
-        result.values_.Clear();
-        return this;
-      }
-
-      public pbc::IPopsicleList<global::UnitTest.Issues.TestProtos.NegativeEnum> PackedValuesList {
-        get { return PrepareBuilder().packedValues_; }
-      }
-      public int PackedValuesCount {
-        get { return result.PackedValuesCount; }
-      }
-      public global::UnitTest.Issues.TestProtos.NegativeEnum GetPackedValues(int index) {
-        return result.GetPackedValues(index);
-      }
-      public Builder SetPackedValues(int index, global::UnitTest.Issues.TestProtos.NegativeEnum value) {
-        PrepareBuilder();
-        result.packedValues_[index] = value;
-        return this;
-      }
-      public Builder AddPackedValues(global::UnitTest.Issues.TestProtos.NegativeEnum value) {
-        PrepareBuilder();
-        result.packedValues_.Add(value);
-        return this;
-      }
-      public Builder AddRangePackedValues(scg::IEnumerable<global::UnitTest.Issues.TestProtos.NegativeEnum> values) {
-        PrepareBuilder();
-        result.packedValues_.Add(values);
-        return this;
-      }
-      public Builder ClearPackedValues() {
-        PrepareBuilder();
-        result.packedValues_.Clear();
-        return this;
       }
     }
-    static NegativeEnumMessage() {
-      object.ReferenceEquals(global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor, null);
-    }
+
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class DeprecatedChild : pb::GeneratedMessage<DeprecatedChild, DeprecatedChild.Builder> {
-    private DeprecatedChild() { }
-    private static readonly DeprecatedChild defaultInstance = new DeprecatedChild().MakeReadOnly();
-    private static readonly string[] _deprecatedChildFieldNames = new string[] {  };
-    private static readonly uint[] _deprecatedChildFieldTags = new uint[] {  };
-    public static DeprecatedChild DefaultInstance {
-      get { return defaultInstance; }
-    }
+  public sealed partial class DeprecatedChild : pb::IMessage<DeprecatedChild>, global::System.IEquatable<DeprecatedChild> {
+    private static readonly pb::MessageParser<DeprecatedChild> _parser = new pb::MessageParser<DeprecatedChild>(() => new DeprecatedChild());
+    public static pb::MessageParser<DeprecatedChild> Parser { get { return _parser; } }
 
-    public override DeprecatedChild DefaultInstanceForType {
-      get { return DefaultInstance; }
-    }
-
-    protected override DeprecatedChild ThisMessage {
-      get { return this; }
-    }
-
+    private static readonly string[] _fieldNames = new string[] {  };
+    private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbd::MessageDescriptor Descriptor {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_DeprecatedChild__Descriptor; }
     }
 
-    protected override pb::FieldAccess.FieldAccessorTable<DeprecatedChild, DeprecatedChild.Builder> InternalFieldAccessors {
+    public pb::FieldAccess.FieldAccessorTable<DeprecatedChild> Fields {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_DeprecatedChild__FieldAccessorTable; }
     }
 
-    public override bool IsInitialized {
-      get {
+    public DeprecatedChild() { }
+    public DeprecatedChild(DeprecatedChild other) {
+      MergeFrom(other);
+    }
+    public override bool Equals(object other) {
+      return Equals(other as DeprecatedChild);
+    }
+
+    public bool Equals(DeprecatedChild other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
         return true;
       }
+      return true;
     }
 
-    public override void WriteTo(pb::ICodedOutputStream output) {
-      CalcSerializedSize();
-      string[] field_names = _deprecatedChildFieldNames;
-      UnknownFields.WriteTo(output);
+    public override int GetHashCode() {
+      int hash = 0;
+      return hash;
     }
 
-    private int memoizedSerializedSize = -1;
-    public override int SerializedSize {
-      get {
-        int size = memoizedSerializedSize;
-        if (size != -1) return size;
-        return CalcSerializedSize();
-      }
+    public void WriteTo(pb::ICodedOutputStream output) {
+      string[] fieldNames = _fieldNames;
     }
 
-    private int CalcSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      size += UnknownFields.SerializedSize;
-      memoizedSerializedSize = size;
+    public int CalculateSize() {
+      int size = 0;
       return size;
     }
-    public static DeprecatedChild ParseFrom(pb::ByteString data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static DeprecatedChild ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static DeprecatedChild ParseFrom(byte[] data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static DeprecatedChild ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static DeprecatedChild ParseFrom(global::System.IO.Stream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static DeprecatedChild ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    public static DeprecatedChild ParseDelimitedFrom(global::System.IO.Stream input) {
-      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
-    }
-    public static DeprecatedChild ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
-    }
-    public static DeprecatedChild ParseFrom(pb::ICodedInputStream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static DeprecatedChild ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    private DeprecatedChild MakeReadOnly() {
-      return this;
+    public void MergeFrom(DeprecatedChild other) {
+      if (other == null) {
+        return;
+      }
     }
 
-    public static Builder CreateBuilder() { return new Builder(); }
-    public override Builder ToBuilder() { return CreateBuilder(this); }
-    public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(DeprecatedChild prototype) {
-      return new Builder(prototype);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public sealed partial class Builder : pb::GeneratedBuilder<DeprecatedChild, Builder> {
-      protected override Builder ThisBuilder {
-        get { return this; }
-      }
-      public Builder() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-      }
-      internal Builder(DeprecatedChild cloneFrom) {
-        result = cloneFrom;
-        resultIsReadOnly = true;
-      }
-
-      private bool resultIsReadOnly;
-      private DeprecatedChild result;
-
-      private DeprecatedChild PrepareBuilder() {
-        if (resultIsReadOnly) {
-          DeprecatedChild original = result;
-          result = new DeprecatedChild();
-          resultIsReadOnly = false;
-          MergeFrom(original);
-        }
-        return result;
-      }
-
-      public override bool IsInitialized {
-        get { return result.IsInitialized; }
-      }
-
-      protected override DeprecatedChild MessageBeingBuilt {
-        get { return PrepareBuilder(); }
-      }
-
-      public override Builder Clear() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-        return this;
-      }
-
-      public override Builder Clone() {
-        if (resultIsReadOnly) {
-          return new Builder(result);
-        } else {
-          return new Builder().MergeFrom(result);
-        }
-      }
-
-      public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::UnitTest.Issues.TestProtos.DeprecatedChild.Descriptor; }
-      }
-
-      public override DeprecatedChild DefaultInstanceForType {
-        get { return global::UnitTest.Issues.TestProtos.DeprecatedChild.DefaultInstance; }
-      }
-
-      public override DeprecatedChild BuildPartial() {
-        if (resultIsReadOnly) {
-          return result;
-        }
-        resultIsReadOnly = true;
-        return result.MakeReadOnly();
-      }
-
-      public override Builder MergeFrom(pb::IMessage other) {
-        if (other is DeprecatedChild) {
-          return MergeFrom((DeprecatedChild) other);
-        } else {
-          base.MergeFrom(other);
-          return this;
-        }
-      }
-
-      public override Builder MergeFrom(DeprecatedChild other) {
-        if (other == global::UnitTest.Issues.TestProtos.DeprecatedChild.DefaultInstance) return this;
-        PrepareBuilder();
-        this.MergeUnknownFields(other.UnknownFields);
-        return this;
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input) {
-        return MergeFrom(input, pb::ExtensionRegistry.Empty);
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        PrepareBuilder();
-        pb::UnknownFieldSet.Builder unknownFields = null;
-        uint tag;
-        string field_name;
-        while (input.ReadTag(out tag, out field_name)) {
-          if(tag == 0 && field_name != null) {
-            int field_ordinal = global::System.Array.BinarySearch(_deprecatedChildFieldNames, field_name, global::System.StringComparer.Ordinal);
-            if(field_ordinal >= 0)
-              tag = _deprecatedChildFieldTags[field_ordinal];
-            else {
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              continue;
-            }
-          }
-          switch (tag) {
-            case 0: {
-              throw pb::InvalidProtocolBufferException.InvalidTag();
-            }
-            default: {
-              if (pb::WireFormat.IsEndGroupTag(tag)) {
-                if (unknownFields != null) {
-                  this.UnknownFields = unknownFields.Build();
-                }
-                return this;
-              }
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              break;
-            }
+    public void MergeFrom(pb::ICodedInputStream input) {
+      uint tag;
+      string fieldName;
+      while (input.ReadTag(out tag, out fieldName)) {
+        if (tag == 0 && fieldName != null) {
+          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
+          if (fieldOrdinal >= 0) {
+            tag = _fieldTags[fieldOrdinal];
           }
         }
-
-        if (unknownFields != null) {
-          this.UnknownFields = unknownFields.Build();
+        switch(tag) {
+          case 0:
+            throw pb::InvalidProtocolBufferException.InvalidTag();
+          default:
+            if (pb::WireFormat.IsEndGroupTag(tag)) {
+              return;
+            }
+            break;
         }
-        return this;
       }
+    }
 
-    }
-    static DeprecatedChild() {
-      object.ReferenceEquals(global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor, null);
-    }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class DeprecatedFieldsMessage : pb::GeneratedMessage<DeprecatedFieldsMessage, DeprecatedFieldsMessage.Builder> {
-    private DeprecatedFieldsMessage() { }
-    private static readonly DeprecatedFieldsMessage defaultInstance = new DeprecatedFieldsMessage().MakeReadOnly();
-    private static readonly string[] _deprecatedFieldsMessageFieldNames = new string[] { "EnumArray", "EnumValue", "MessageArray", "MessageValue", "PrimitiveArray", "PrimitiveValue" };
-    private static readonly uint[] _deprecatedFieldsMessageFieldTags = new uint[] { 48, 40, 34, 26, 16, 8 };
-    public static DeprecatedFieldsMessage DefaultInstance {
-      get { return defaultInstance; }
-    }
+  public sealed partial class DeprecatedFieldsMessage : pb::IMessage<DeprecatedFieldsMessage>, global::System.IEquatable<DeprecatedFieldsMessage> {
+    private static readonly pb::MessageParser<DeprecatedFieldsMessage> _parser = new pb::MessageParser<DeprecatedFieldsMessage>(() => new DeprecatedFieldsMessage());
+    public static pb::MessageParser<DeprecatedFieldsMessage> Parser { get { return _parser; } }
 
-    public override DeprecatedFieldsMessage DefaultInstanceForType {
-      get { return DefaultInstance; }
-    }
-
-    protected override DeprecatedFieldsMessage ThisMessage {
-      get { return this; }
-    }
-
+    private static readonly string[] _fieldNames = new string[] { "EnumArray", "EnumValue", "MessageArray", "MessageValue", "PrimitiveArray", "PrimitiveValue" };
+    private static readonly uint[] _fieldTags = new uint[] { 48, 40, 34, 26, 16, 8 };
     public static pbd::MessageDescriptor Descriptor {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_DeprecatedFieldsMessage__Descriptor; }
     }
 
-    protected override pb::FieldAccess.FieldAccessorTable<DeprecatedFieldsMessage, DeprecatedFieldsMessage.Builder> InternalFieldAccessors {
+    public pb::FieldAccess.FieldAccessorTable<DeprecatedFieldsMessage> Fields {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable; }
     }
 
-    public const int PrimitiveValueFieldNumber = 1;
-    private bool hasPrimitiveValue;
-    private int primitiveValue_;
-    [global::System.ObsoleteAttribute()]
-    public bool HasPrimitiveValue {
-      get { return hasPrimitiveValue; }
+    public DeprecatedFieldsMessage() { }
+    public DeprecatedFieldsMessage(DeprecatedFieldsMessage other) {
+      MergeFrom(other);
     }
+    public const int PrimitiveValueFieldNumber = 1;
+    private int primitiveValue_;
     [global::System.ObsoleteAttribute()]
     public int PrimitiveValue {
       get { return primitiveValue_; }
+      set { primitiveValue_ = value; }
     }
 
+
     public const int PrimitiveArrayFieldNumber = 2;
-    private pbc::PopsicleList<int> primitiveArray_ = new pbc::PopsicleList<int>();
+    private readonly pbc::RepeatedField<int> primitiveArray_ = new pbc::RepeatedField<int>();
     [global::System.ObsoleteAttribute()]
-    public scg::IList<int> PrimitiveArrayList {
-      get { return pbc::Lists.AsReadOnly(primitiveArray_); }
-    }
-    [global::System.ObsoleteAttribute()]
-    public int PrimitiveArrayCount {
-      get { return primitiveArray_.Count; }
-    }
-    [global::System.ObsoleteAttribute()]
-    public int GetPrimitiveArray(int index) {
-      return primitiveArray_[index];
+    public pbc::RepeatedField<int> PrimitiveArray {
+      get { return primitiveArray_; }
     }
 
     public const int MessageValueFieldNumber = 3;
-    private bool hasMessageValue;
     private global::UnitTest.Issues.TestProtos.DeprecatedChild messageValue_;
     [global::System.ObsoleteAttribute()]
-    public bool HasMessageValue {
-      get { return hasMessageValue; }
-    }
-    [global::System.ObsoleteAttribute()]
     public global::UnitTest.Issues.TestProtos.DeprecatedChild MessageValue {
-      get { return messageValue_ ?? global::UnitTest.Issues.TestProtos.DeprecatedChild.DefaultInstance; }
+      get { return messageValue_; }
+      set { messageValue_ = value; }
     }
 
     public const int MessageArrayFieldNumber = 4;
-    private pbc::PopsicleList<global::UnitTest.Issues.TestProtos.DeprecatedChild> messageArray_ = new pbc::PopsicleList<global::UnitTest.Issues.TestProtos.DeprecatedChild>();
+    private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedChild> messageArray_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedChild>();
     [global::System.ObsoleteAttribute()]
-    public scg::IList<global::UnitTest.Issues.TestProtos.DeprecatedChild> MessageArrayList {
+    public pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedChild> MessageArray {
       get { return messageArray_; }
-    }
-    [global::System.ObsoleteAttribute()]
-    public int MessageArrayCount {
-      get { return messageArray_.Count; }
-    }
-    [global::System.ObsoleteAttribute()]
-    public global::UnitTest.Issues.TestProtos.DeprecatedChild GetMessageArray(int index) {
-      return messageArray_[index];
     }
 
     public const int EnumValueFieldNumber = 5;
-    private bool hasEnumValue;
-    private global::UnitTest.Issues.TestProtos.DeprecatedEnum enumValue_ = global::UnitTest.Issues.TestProtos.DeprecatedEnum.one;
-    [global::System.ObsoleteAttribute()]
-    public bool HasEnumValue {
-      get { return hasEnumValue; }
-    }
+    private global::UnitTest.Issues.TestProtos.DeprecatedEnum enumValue_ = global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO;
     [global::System.ObsoleteAttribute()]
     public global::UnitTest.Issues.TestProtos.DeprecatedEnum EnumValue {
       get { return enumValue_; }
+      set { enumValue_ = value; }
     }
+
 
     public const int EnumArrayFieldNumber = 6;
-    private pbc::PopsicleList<global::UnitTest.Issues.TestProtos.DeprecatedEnum> enumArray_ = new pbc::PopsicleList<global::UnitTest.Issues.TestProtos.DeprecatedEnum>();
+    private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum> enumArray_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum>();
     [global::System.ObsoleteAttribute()]
-    public scg::IList<global::UnitTest.Issues.TestProtos.DeprecatedEnum> EnumArrayList {
-      get { return pbc::Lists.AsReadOnly(enumArray_); }
-    }
-    [global::System.ObsoleteAttribute()]
-    public int EnumArrayCount {
-      get { return enumArray_.Count; }
-    }
-    [global::System.ObsoleteAttribute()]
-    public global::UnitTest.Issues.TestProtos.DeprecatedEnum GetEnumArray(int index) {
-      return enumArray_[index];
+    public pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum> EnumArray {
+      get { return enumArray_; }
     }
 
-    public override bool IsInitialized {
-      get {
+    public override bool Equals(object other) {
+      return Equals(other as DeprecatedFieldsMessage);
+    }
+
+    public bool Equals(DeprecatedFieldsMessage other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (PrimitiveValue != other.PrimitiveValue) return false;
+      if(!primitiveArray_.Equals(other.primitiveArray_)) return false;
+      if (!object.Equals(MessageValue, other.MessageValue)) return false;if(!messageArray_.Equals(other.messageArray_)) return false;
+      if (EnumValue != other.EnumValue) return false;
+      if(!enumArray_.Equals(other.enumArray_)) return false;
+      return true;
     }
 
-    public override void WriteTo(pb::ICodedOutputStream output) {
-      CalcSerializedSize();
-      string[] field_names = _deprecatedFieldsMessageFieldNames;
-      if (hasPrimitiveValue) {
-        output.WriteInt32(1, field_names[5], PrimitiveValue);
-      }
-      if (primitiveArray_.Count > 0) {
-        output.WriteInt32Array(2, field_names[4], primitiveArray_);
-      }
-      if (hasMessageValue) {
-        output.WriteMessage(3, field_names[3], MessageValue);
-      }
-      if (messageArray_.Count > 0) {
-        output.WriteMessageArray(4, field_names[2], messageArray_);
-      }
-      if (hasEnumValue) {
-        output.WriteEnum(5, field_names[1], (int) EnumValue, EnumValue);
-      }
-      if (enumArray_.Count > 0) {
-        output.WriteEnumArray(6, field_names[0], enumArray_);
-      }
-      UnknownFields.WriteTo(output);
+    public override int GetHashCode() {
+      int hash = 0;
+      if (PrimitiveValue != 0) hash ^= PrimitiveValue.GetHashCode();
+      hash ^= primitiveArray_.GetHashCode();
+      if (messageValue_ != null) hash ^= MessageValue.GetHashCode();
+      hash ^= messageArray_.GetHashCode();
+      if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) hash ^= EnumValue.GetHashCode();
+      hash ^= enumArray_.GetHashCode();
+      return hash;
     }
 
-    private int memoizedSerializedSize = -1;
-    public override int SerializedSize {
-      get {
-        int size = memoizedSerializedSize;
-        if (size != -1) return size;
-        return CalcSerializedSize();
+    public void WriteTo(pb::ICodedOutputStream output) {
+      string[] fieldNames = _fieldNames;
+      if (PrimitiveValue != 0) {
+        output.WriteInt32(1, fieldNames[5], PrimitiveValue);
       }
+      output.WritePackedInt32Array(2, fieldNames[4], primitiveArray_);
+      if (messageValue_ != null) {
+        output.WriteMessage(3, fieldNames[3], MessageValue);
+      }
+      output.WriteMessageArray(4, fieldNames[2], messageArray_);
+      if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
+        output.WriteEnum(5, fieldNames[1], EnumValue);
+      }
+      output.WritePackedEnumArray(6, fieldNames[0], enumArray_);
     }
 
-    private int CalcSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (hasPrimitiveValue) {
+    public int CalculateSize() {
+      int size = 0;
+      if (PrimitiveValue != 0) {
         size += pb::CodedOutputStream.ComputeInt32Size(1, PrimitiveValue);
       }
       {
         int dataSize = 0;
-        foreach (int element in PrimitiveArrayList) {
+        foreach (int element in primitiveArray_) {
           dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
         }
         size += dataSize;
-        size += 1 * primitiveArray_.Count;
+        if (primitiveArray_.Count != 0) {
+          size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        }
       }
-      if (hasMessageValue) {
+      if (messageValue_ != null) {
         size += pb::CodedOutputStream.ComputeMessageSize(3, MessageValue);
       }
-      foreach (global::UnitTest.Issues.TestProtos.DeprecatedChild element in MessageArrayList) {
+      foreach (global::UnitTest.Issues.TestProtos.DeprecatedChild element in messageArray_) {
         size += pb::CodedOutputStream.ComputeMessageSize(4, element);
       }
-      if (hasEnumValue) {
-        size += pb::CodedOutputStream.ComputeEnumSize(5, (int) EnumValue);
+      if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
+        size += pb::CodedOutputStream.ComputeEnumSize(5, EnumValue);
       }
       {
         int dataSize = 0;
         if (enumArray_.Count > 0) {
           foreach (global::UnitTest.Issues.TestProtos.DeprecatedEnum element in enumArray_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);
           }
           size += dataSize;
-          size += 1 * enumArray_.Count;
+          size += 1;
+          size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
         }
       }
-      size += UnknownFields.SerializedSize;
-      memoizedSerializedSize = size;
       return size;
     }
-    public static DeprecatedFieldsMessage ParseFrom(pb::ByteString data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static DeprecatedFieldsMessage ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static DeprecatedFieldsMessage ParseFrom(byte[] data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static DeprecatedFieldsMessage ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static DeprecatedFieldsMessage ParseFrom(global::System.IO.Stream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static DeprecatedFieldsMessage ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    public static DeprecatedFieldsMessage ParseDelimitedFrom(global::System.IO.Stream input) {
-      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
-    }
-    public static DeprecatedFieldsMessage ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
-    }
-    public static DeprecatedFieldsMessage ParseFrom(pb::ICodedInputStream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static DeprecatedFieldsMessage ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    private DeprecatedFieldsMessage MakeReadOnly() {
-      primitiveArray_.MakeReadOnly();
-      messageArray_.MakeReadOnly();
-      enumArray_.MakeReadOnly();
-      return this;
-    }
-
-    public static Builder CreateBuilder() { return new Builder(); }
-    public override Builder ToBuilder() { return CreateBuilder(this); }
-    public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(DeprecatedFieldsMessage prototype) {
-      return new Builder(prototype);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public sealed partial class Builder : pb::GeneratedBuilder<DeprecatedFieldsMessage, Builder> {
-      protected override Builder ThisBuilder {
-        get { return this; }
+    public void MergeFrom(DeprecatedFieldsMessage other) {
+      if (other == null) {
+        return;
       }
-      public Builder() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
+      if (other.PrimitiveValue != 0) {
+        PrimitiveValue = other.PrimitiveValue;
       }
-      internal Builder(DeprecatedFieldsMessage cloneFrom) {
-        result = cloneFrom;
-        resultIsReadOnly = true;
-      }
-
-      private bool resultIsReadOnly;
-      private DeprecatedFieldsMessage result;
-
-      private DeprecatedFieldsMessage PrepareBuilder() {
-        if (resultIsReadOnly) {
-          DeprecatedFieldsMessage original = result;
-          result = new DeprecatedFieldsMessage();
-          resultIsReadOnly = false;
-          MergeFrom(original);
+      primitiveArray_.Add(other.primitiveArray_);
+      if (other.messageValue_ != null) {
+        if (messageValue_ == null) {
+          messageValue_ = new global::UnitTest.Issues.TestProtos.DeprecatedChild();
         }
-        return result;
+        MessageValue.MergeFrom(other.MessageValue);
       }
-
-      public override bool IsInitialized {
-        get { return result.IsInitialized; }
+      messageArray_.Add(other.messageArray_);
+      if (other.EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
+        EnumValue = other.EnumValue;
       }
+      enumArray_.Add(other.enumArray_);
+    }
 
-      protected override DeprecatedFieldsMessage MessageBeingBuilt {
-        get { return PrepareBuilder(); }
-      }
-
-      public override Builder Clear() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-        return this;
-      }
-
-      public override Builder Clone() {
-        if (resultIsReadOnly) {
-          return new Builder(result);
-        } else {
-          return new Builder().MergeFrom(result);
-        }
-      }
-
-      public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage.Descriptor; }
-      }
-
-      public override DeprecatedFieldsMessage DefaultInstanceForType {
-        get { return global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage.DefaultInstance; }
-      }
-
-      public override DeprecatedFieldsMessage BuildPartial() {
-        if (resultIsReadOnly) {
-          return result;
-        }
-        resultIsReadOnly = true;
-        return result.MakeReadOnly();
-      }
-
-      public override Builder MergeFrom(pb::IMessage other) {
-        if (other is DeprecatedFieldsMessage) {
-          return MergeFrom((DeprecatedFieldsMessage) other);
-        } else {
-          base.MergeFrom(other);
-          return this;
-        }
-      }
-
-      public override Builder MergeFrom(DeprecatedFieldsMessage other) {
-        if (other == global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage.DefaultInstance) return this;
-        PrepareBuilder();
-        if (other.HasPrimitiveValue) {
-          PrimitiveValue = other.PrimitiveValue;
-        }
-        if (other.primitiveArray_.Count != 0) {
-          result.primitiveArray_.Add(other.primitiveArray_);
-        }
-        if (other.HasMessageValue) {
-          MergeMessageValue(other.MessageValue);
-        }
-        if (other.messageArray_.Count != 0) {
-          result.messageArray_.Add(other.messageArray_);
-        }
-        if (other.HasEnumValue) {
-          EnumValue = other.EnumValue;
-        }
-        if (other.enumArray_.Count != 0) {
-          result.enumArray_.Add(other.enumArray_);
-        }
-        this.MergeUnknownFields(other.UnknownFields);
-        return this;
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input) {
-        return MergeFrom(input, pb::ExtensionRegistry.Empty);
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        PrepareBuilder();
-        pb::UnknownFieldSet.Builder unknownFields = null;
-        uint tag;
-        string field_name;
-        while (input.ReadTag(out tag, out field_name)) {
-          if(tag == 0 && field_name != null) {
-            int field_ordinal = global::System.Array.BinarySearch(_deprecatedFieldsMessageFieldNames, field_name, global::System.StringComparer.Ordinal);
-            if(field_ordinal >= 0)
-              tag = _deprecatedFieldsMessageFieldTags[field_ordinal];
-            else {
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              continue;
-            }
-          }
-          switch (tag) {
-            case 0: {
-              throw pb::InvalidProtocolBufferException.InvalidTag();
-            }
-            default: {
-              if (pb::WireFormat.IsEndGroupTag(tag)) {
-                if (unknownFields != null) {
-                  this.UnknownFields = unknownFields.Build();
-                }
-                return this;
-              }
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              break;
-            }
-            case 8: {
-              result.hasPrimitiveValue = input.ReadInt32(ref result.primitiveValue_);
-              break;
-            }
-            case 18:
-            case 16: {
-              input.ReadInt32Array(tag, field_name, result.primitiveArray_);
-              break;
-            }
-            case 26: {
-              global::UnitTest.Issues.TestProtos.DeprecatedChild.Builder subBuilder = global::UnitTest.Issues.TestProtos.DeprecatedChild.CreateBuilder();
-              if (result.hasMessageValue) {
-                subBuilder.MergeFrom(MessageValue);
-              }
-              input.ReadMessage(subBuilder, extensionRegistry);
-              MessageValue = subBuilder.BuildPartial();
-              break;
-            }
-            case 34: {
-              input.ReadMessageArray(tag, field_name, result.messageArray_, global::UnitTest.Issues.TestProtos.DeprecatedChild.DefaultInstance, extensionRegistry);
-              break;
-            }
-            case 40: {
-              object unknown;
-              if(input.ReadEnum(ref result.enumValue_, out unknown)) {
-                result.hasEnumValue = true;
-              } else if(unknown is int) {
-                if (unknownFields == null) {
-                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-                }
-                unknownFields.MergeVarintField(5, (ulong)(int)unknown);
-              }
-              break;
-            }
-            case 50:
-            case 48: {
-              scg::ICollection<object> unknownItems;
-              input.ReadEnumArray<global::UnitTest.Issues.TestProtos.DeprecatedEnum>(tag, field_name, result.enumArray_, out unknownItems);
-              if (unknownItems != null) {
-                if (unknownFields == null) {
-                  unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-                }
-                foreach (object rawValue in unknownItems)
-                  if (rawValue is int)
-                    unknownFields.MergeVarintField(6, (ulong)(int)rawValue);
-              }
-              break;
-            }
+    public void MergeFrom(pb::ICodedInputStream input) {
+      uint tag;
+      string fieldName;
+      while (input.ReadTag(out tag, out fieldName)) {
+        if (tag == 0 && fieldName != null) {
+          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
+          if (fieldOrdinal >= 0) {
+            tag = _fieldTags[fieldOrdinal];
           }
         }
-
-        if (unknownFields != null) {
-          this.UnknownFields = unknownFields.Build();
+        switch(tag) {
+          case 0:
+            throw pb::InvalidProtocolBufferException.InvalidTag();
+          default:
+            if (pb::WireFormat.IsEndGroupTag(tag)) {
+              return;
+            }
+            break;
+          case 8: {
+            input.ReadInt32(ref primitiveValue_);
+            break;
+          }
+          case 18:
+          case 16: {
+            input.ReadInt32Array(tag, fieldName, primitiveArray_);
+            break;
+          }
+          case 26: {
+            if (messageValue_ == null) {
+              messageValue_ = new global::UnitTest.Issues.TestProtos.DeprecatedChild();
+            }
+            input.ReadMessage(messageValue_);
+            break;
+          }
+          case 34: {
+            input.ReadMessageArray(tag, fieldName, messageArray_, global::UnitTest.Issues.TestProtos.DeprecatedChild.Parser);
+            break;
+          }
+          case 40: {
+            input.ReadEnum(ref enumValue_);
+            break;
+          }
+          case 50:
+          case 48: {
+            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.DeprecatedEnum>(tag, fieldName, enumArray_);
+            break;
+          }
         }
-        return this;
-      }
-
-
-      [global::System.ObsoleteAttribute()]
-      public bool HasPrimitiveValue {
-        get { return result.hasPrimitiveValue; }
-      }
-      [global::System.ObsoleteAttribute()]
-      public int PrimitiveValue {
-        get { return result.PrimitiveValue; }
-        set { SetPrimitiveValue(value); }
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder SetPrimitiveValue(int value) {
-        PrepareBuilder();
-        result.hasPrimitiveValue = true;
-        result.primitiveValue_ = value;
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder ClearPrimitiveValue() {
-        PrepareBuilder();
-        result.hasPrimitiveValue = false;
-        result.primitiveValue_ = 0;
-        return this;
-      }
-
-      [global::System.ObsoleteAttribute()]
-      public pbc::IPopsicleList<int> PrimitiveArrayList {
-        get { return PrepareBuilder().primitiveArray_; }
-      }
-      [global::System.ObsoleteAttribute()]
-      public int PrimitiveArrayCount {
-        get { return result.PrimitiveArrayCount; }
-      }
-      [global::System.ObsoleteAttribute()]
-      public int GetPrimitiveArray(int index) {
-        return result.GetPrimitiveArray(index);
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder SetPrimitiveArray(int index, int value) {
-        PrepareBuilder();
-        result.primitiveArray_[index] = value;
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder AddPrimitiveArray(int value) {
-        PrepareBuilder();
-        result.primitiveArray_.Add(value);
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder AddRangePrimitiveArray(scg::IEnumerable<int> values) {
-        PrepareBuilder();
-        result.primitiveArray_.Add(values);
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder ClearPrimitiveArray() {
-        PrepareBuilder();
-        result.primitiveArray_.Clear();
-        return this;
-      }
-
-      [global::System.ObsoleteAttribute()]
-      public bool HasMessageValue {
-       get { return result.hasMessageValue; }
-      }
-      [global::System.ObsoleteAttribute()]
-      public global::UnitTest.Issues.TestProtos.DeprecatedChild MessageValue {
-        get { return result.MessageValue; }
-        set { SetMessageValue(value); }
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder SetMessageValue(global::UnitTest.Issues.TestProtos.DeprecatedChild value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        result.hasMessageValue = true;
-        result.messageValue_ = value;
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder SetMessageValue(global::UnitTest.Issues.TestProtos.DeprecatedChild.Builder builderForValue) {
-        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
-        PrepareBuilder();
-        result.hasMessageValue = true;
-        result.messageValue_ = builderForValue.Build();
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder MergeMessageValue(global::UnitTest.Issues.TestProtos.DeprecatedChild value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        if (result.hasMessageValue &&
-            result.messageValue_ != global::UnitTest.Issues.TestProtos.DeprecatedChild.DefaultInstance) {
-            result.messageValue_ = global::UnitTest.Issues.TestProtos.DeprecatedChild.CreateBuilder(result.messageValue_).MergeFrom(value).BuildPartial();
-        } else {
-          result.messageValue_ = value;
-        }
-        result.hasMessageValue = true;
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder ClearMessageValue() {
-        PrepareBuilder();
-        result.hasMessageValue = false;
-        result.messageValue_ = null;
-        return this;
-      }
-
-      [global::System.ObsoleteAttribute()]
-      public pbc::IPopsicleList<global::UnitTest.Issues.TestProtos.DeprecatedChild> MessageArrayList {
-        get { return PrepareBuilder().messageArray_; }
-      }
-      [global::System.ObsoleteAttribute()]
-      public int MessageArrayCount {
-        get { return result.MessageArrayCount; }
-      }
-      [global::System.ObsoleteAttribute()]
-      public global::UnitTest.Issues.TestProtos.DeprecatedChild GetMessageArray(int index) {
-        return result.GetMessageArray(index);
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder SetMessageArray(int index, global::UnitTest.Issues.TestProtos.DeprecatedChild value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        result.messageArray_[index] = value;
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder SetMessageArray(int index, global::UnitTest.Issues.TestProtos.DeprecatedChild.Builder builderForValue) {
-        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
-        PrepareBuilder();
-        result.messageArray_[index] = builderForValue.Build();
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder AddMessageArray(global::UnitTest.Issues.TestProtos.DeprecatedChild value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        result.messageArray_.Add(value);
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder AddMessageArray(global::UnitTest.Issues.TestProtos.DeprecatedChild.Builder builderForValue) {
-        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
-        PrepareBuilder();
-        result.messageArray_.Add(builderForValue.Build());
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder AddRangeMessageArray(scg::IEnumerable<global::UnitTest.Issues.TestProtos.DeprecatedChild> values) {
-        PrepareBuilder();
-        result.messageArray_.Add(values);
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder ClearMessageArray() {
-        PrepareBuilder();
-        result.messageArray_.Clear();
-        return this;
-      }
-
-      [global::System.ObsoleteAttribute()]
-      public bool HasEnumValue {
-        get { return result.hasEnumValue; }
-      }
-      [global::System.ObsoleteAttribute()]
-      public global::UnitTest.Issues.TestProtos.DeprecatedEnum EnumValue {
-        get { return result.EnumValue; }
-        set { SetEnumValue(value); }
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder SetEnumValue(global::UnitTest.Issues.TestProtos.DeprecatedEnum value) {
-        PrepareBuilder();
-        result.hasEnumValue = true;
-        result.enumValue_ = value;
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder ClearEnumValue() {
-        PrepareBuilder();
-        result.hasEnumValue = false;
-        result.enumValue_ = global::UnitTest.Issues.TestProtos.DeprecatedEnum.one;
-        return this;
-      }
-
-      [global::System.ObsoleteAttribute()]
-      public pbc::IPopsicleList<global::UnitTest.Issues.TestProtos.DeprecatedEnum> EnumArrayList {
-        get { return PrepareBuilder().enumArray_; }
-      }
-      [global::System.ObsoleteAttribute()]
-      public int EnumArrayCount {
-        get { return result.EnumArrayCount; }
-      }
-      [global::System.ObsoleteAttribute()]
-      public global::UnitTest.Issues.TestProtos.DeprecatedEnum GetEnumArray(int index) {
-        return result.GetEnumArray(index);
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder SetEnumArray(int index, global::UnitTest.Issues.TestProtos.DeprecatedEnum value) {
-        PrepareBuilder();
-        result.enumArray_[index] = value;
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder AddEnumArray(global::UnitTest.Issues.TestProtos.DeprecatedEnum value) {
-        PrepareBuilder();
-        result.enumArray_.Add(value);
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder AddRangeEnumArray(scg::IEnumerable<global::UnitTest.Issues.TestProtos.DeprecatedEnum> values) {
-        PrepareBuilder();
-        result.enumArray_.Add(values);
-        return this;
-      }
-      [global::System.ObsoleteAttribute()]
-      public Builder ClearEnumArray() {
-        PrepareBuilder();
-        result.enumArray_.Clear();
-        return this;
       }
     }
-    static DeprecatedFieldsMessage() {
-      object.ReferenceEquals(global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor, null);
-    }
+
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class ItemField : pb::GeneratedMessage<ItemField, ItemField.Builder> {
-    private ItemField() { }
-    private static readonly ItemField defaultInstance = new ItemField().MakeReadOnly();
-    private static readonly string[] _itemFieldFieldNames = new string[] { "item" };
-    private static readonly uint[] _itemFieldFieldTags = new uint[] { 8 };
-    public static ItemField DefaultInstance {
-      get { return defaultInstance; }
-    }
+  public sealed partial class ItemField : pb::IMessage<ItemField>, global::System.IEquatable<ItemField> {
+    private static readonly pb::MessageParser<ItemField> _parser = new pb::MessageParser<ItemField>(() => new ItemField());
+    public static pb::MessageParser<ItemField> Parser { get { return _parser; } }
 
-    public override ItemField DefaultInstanceForType {
-      get { return DefaultInstance; }
-    }
-
-    protected override ItemField ThisMessage {
-      get { return this; }
-    }
-
+    private static readonly string[] _fieldNames = new string[] { "item" };
+    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbd::MessageDescriptor Descriptor {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_ItemField__Descriptor; }
     }
 
-    protected override pb::FieldAccess.FieldAccessorTable<ItemField, ItemField.Builder> InternalFieldAccessors {
+    public pb::FieldAccess.FieldAccessorTable<ItemField> Fields {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_ItemField__FieldAccessorTable; }
     }
 
-    public const int ItemFieldNumber = 1;
-    private bool hasItem;
-    private int item_;
-    public bool HasItem {
-      get { return hasItem; }
+    public ItemField() { }
+    public ItemField(ItemField other) {
+      MergeFrom(other);
     }
+    public const int ItemFieldNumber = 1;
+    private int item_;
     public int Item {
       get { return item_; }
+      set { item_ = value; }
     }
 
-    public override bool IsInitialized {
-      get {
+
+    public override bool Equals(object other) {
+      return Equals(other as ItemField);
+    }
+
+    public bool Equals(ItemField other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
         return true;
       }
+      if (Item != other.Item) return false;
+      return true;
     }
 
-    public override void WriteTo(pb::ICodedOutputStream output) {
-      CalcSerializedSize();
-      string[] field_names = _itemFieldFieldNames;
-      if (hasItem) {
-        output.WriteInt32(1, field_names[0], Item);
-      }
-      UnknownFields.WriteTo(output);
+    public override int GetHashCode() {
+      int hash = 0;
+      if (Item != 0) hash ^= Item.GetHashCode();
+      return hash;
     }
 
-    private int memoizedSerializedSize = -1;
-    public override int SerializedSize {
-      get {
-        int size = memoizedSerializedSize;
-        if (size != -1) return size;
-        return CalcSerializedSize();
+    public void WriteTo(pb::ICodedOutputStream output) {
+      string[] fieldNames = _fieldNames;
+      if (Item != 0) {
+        output.WriteInt32(1, fieldNames[0], Item);
       }
     }
 
-    private int CalcSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (hasItem) {
+    public int CalculateSize() {
+      int size = 0;
+      if (Item != 0) {
         size += pb::CodedOutputStream.ComputeInt32Size(1, Item);
       }
-      size += UnknownFields.SerializedSize;
-      memoizedSerializedSize = size;
       return size;
     }
-    public static ItemField ParseFrom(pb::ByteString data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static ItemField ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static ItemField ParseFrom(byte[] data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static ItemField ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static ItemField ParseFrom(global::System.IO.Stream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static ItemField ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    public static ItemField ParseDelimitedFrom(global::System.IO.Stream input) {
-      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
-    }
-    public static ItemField ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
-    }
-    public static ItemField ParseFrom(pb::ICodedInputStream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static ItemField ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    private ItemField MakeReadOnly() {
-      return this;
+    public void MergeFrom(ItemField other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Item != 0) {
+        Item = other.Item;
+      }
     }
 
-    public static Builder CreateBuilder() { return new Builder(); }
-    public override Builder ToBuilder() { return CreateBuilder(this); }
-    public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(ItemField prototype) {
-      return new Builder(prototype);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public sealed partial class Builder : pb::GeneratedBuilder<ItemField, Builder> {
-      protected override Builder ThisBuilder {
-        get { return this; }
-      }
-      public Builder() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-      }
-      internal Builder(ItemField cloneFrom) {
-        result = cloneFrom;
-        resultIsReadOnly = true;
-      }
-
-      private bool resultIsReadOnly;
-      private ItemField result;
-
-      private ItemField PrepareBuilder() {
-        if (resultIsReadOnly) {
-          ItemField original = result;
-          result = new ItemField();
-          resultIsReadOnly = false;
-          MergeFrom(original);
-        }
-        return result;
-      }
-
-      public override bool IsInitialized {
-        get { return result.IsInitialized; }
-      }
-
-      protected override ItemField MessageBeingBuilt {
-        get { return PrepareBuilder(); }
-      }
-
-      public override Builder Clear() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-        return this;
-      }
-
-      public override Builder Clone() {
-        if (resultIsReadOnly) {
-          return new Builder(result);
-        } else {
-          return new Builder().MergeFrom(result);
-        }
-      }
-
-      public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::UnitTest.Issues.TestProtos.ItemField.Descriptor; }
-      }
-
-      public override ItemField DefaultInstanceForType {
-        get { return global::UnitTest.Issues.TestProtos.ItemField.DefaultInstance; }
-      }
-
-      public override ItemField BuildPartial() {
-        if (resultIsReadOnly) {
-          return result;
-        }
-        resultIsReadOnly = true;
-        return result.MakeReadOnly();
-      }
-
-      public override Builder MergeFrom(pb::IMessage other) {
-        if (other is ItemField) {
-          return MergeFrom((ItemField) other);
-        } else {
-          base.MergeFrom(other);
-          return this;
-        }
-      }
-
-      public override Builder MergeFrom(ItemField other) {
-        if (other == global::UnitTest.Issues.TestProtos.ItemField.DefaultInstance) return this;
-        PrepareBuilder();
-        if (other.HasItem) {
-          Item = other.Item;
-        }
-        this.MergeUnknownFields(other.UnknownFields);
-        return this;
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input) {
-        return MergeFrom(input, pb::ExtensionRegistry.Empty);
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        PrepareBuilder();
-        pb::UnknownFieldSet.Builder unknownFields = null;
-        uint tag;
-        string field_name;
-        while (input.ReadTag(out tag, out field_name)) {
-          if(tag == 0 && field_name != null) {
-            int field_ordinal = global::System.Array.BinarySearch(_itemFieldFieldNames, field_name, global::System.StringComparer.Ordinal);
-            if(field_ordinal >= 0)
-              tag = _itemFieldFieldTags[field_ordinal];
-            else {
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              continue;
-            }
-          }
-          switch (tag) {
-            case 0: {
-              throw pb::InvalidProtocolBufferException.InvalidTag();
-            }
-            default: {
-              if (pb::WireFormat.IsEndGroupTag(tag)) {
-                if (unknownFields != null) {
-                  this.UnknownFields = unknownFields.Build();
-                }
-                return this;
-              }
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              break;
-            }
-            case 8: {
-              result.hasItem = input.ReadInt32(ref result.item_);
-              break;
-            }
+    public void MergeFrom(pb::ICodedInputStream input) {
+      uint tag;
+      string fieldName;
+      while (input.ReadTag(out tag, out fieldName)) {
+        if (tag == 0 && fieldName != null) {
+          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
+          if (fieldOrdinal >= 0) {
+            tag = _fieldTags[fieldOrdinal];
           }
         }
-
-        if (unknownFields != null) {
-          this.UnknownFields = unknownFields.Build();
+        switch(tag) {
+          case 0:
+            throw pb::InvalidProtocolBufferException.InvalidTag();
+          default:
+            if (pb::WireFormat.IsEndGroupTag(tag)) {
+              return;
+            }
+            break;
+          case 8: {
+            input.ReadInt32(ref item_);
+            break;
+          }
         }
-        return this;
-      }
-
-
-      public bool HasItem {
-        get { return result.hasItem; }
-      }
-      public int Item {
-        get { return result.Item; }
-        set { SetItem(value); }
-      }
-      public Builder SetItem(int value) {
-        PrepareBuilder();
-        result.hasItem = true;
-        result.item_ = value;
-        return this;
-      }
-      public Builder ClearItem() {
-        PrepareBuilder();
-        result.hasItem = false;
-        result.item_ = 0;
-        return this;
       }
     }
-    static ItemField() {
-      object.ReferenceEquals(global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor, null);
-    }
+
   }
 
   #endregion

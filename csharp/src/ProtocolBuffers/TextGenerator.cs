@@ -38,7 +38,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace Google.ProtocolBuffers
+namespace Google.Protobuf
 {
     /// <summary>
     /// Helper class to control indentation. Used for TextFormat and by ProtoGen.

@@ -38,6 +38,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/wire_format.h>
 
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
@@ -51,6 +52,11 @@ namespace csharp {
 
 void FieldGeneratorBase::SetCommonFieldVariables(
     map<string, string>* variables) {
+  // Note: this will be valid even though the tag emitted for packed and unpacked versions of
+  // repeated fields varies by wire format. The wire format is encoded in the bottom 3 bits, which
+  // never effects the tag size.
+  int tagSize = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
+  (*variables)["tag_size"] = SimpleItoa(tagSize);
   (*variables)["property_name"] = property_name();
   (*variables)["type_name"] = type_name();
   (*variables)["name"] = name();
@@ -65,15 +71,10 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   (*variables)["capitalized_type_name"] = capitalized_type_name();
   (*variables)["number"] = number();
   (*variables)["field_ordinal"] = field_ordinal();
-  if (SupportFieldPresence(descriptor_->file())) {
-    (*variables)["has_property_check"] = "has" + (*variables)["property_name"];
-    (*variables)["other_has_property_check"] = "other.Has" + (*variables)["property_name"];
-  } else {
-    (*variables)["has_property_check"] =
-      (*variables)["property_name"] + " != " + (*variables)["default_value"];
-    (*variables)["other_has_property_check"] = "other." +
-      (*variables)["property_name"] + " != " + (*variables)["default_value"];
-  }
+  (*variables)["has_property_check"] =
+    (*variables)["property_name"] + " != " + (*variables)["default_value"];
+  (*variables)["other_has_property_check"] = "other." +
+    (*variables)["property_name"] + " != " + (*variables)["default_value"];
 }
 
 void FieldGeneratorBase::SetCommonOneofFieldVariables(

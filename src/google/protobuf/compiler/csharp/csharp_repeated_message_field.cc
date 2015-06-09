@@ -64,21 +64,6 @@ void RepeatedMessageFieldGenerator::GenerateMembers(io::Printer* printer) {
     "public pbc::RepeatedField<$type_name$> $property_name$ {\n"
     "  get { return $name$_; }\n"
     "}\n");
-
-  // TODO(jonskeet): Redundant API calls? Possibly - include for portability though. Maybe create an option.
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public int $property_name$Count {\n"
-    "  get { return $name$_.Count; }\n"
-    "}\n");
-
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public $type_name$ Get$property_name$(int index) {\n"
-    "  return $name$_[index];\n"
-    "}\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
@@ -90,7 +75,7 @@ void RepeatedMessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 void RepeatedMessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "input.ReadMessageArray(tag, fieldName, $name$_);\n");
+    "input.ReadMessageArray(tag, fieldName, $name$_, $type_name$.Parser);\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
@@ -105,7 +90,7 @@ void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* prin
   // TODO(jonskeet): Put this into CodedOutputStream.
   printer->Print(
     variables_,
-    "foreach ($type_name$ element in $property_name$) {\n"
+    "foreach ($type_name$ element in $name$_) {\n"
     "  size += pb::CodedOutputStream.ComputeMessageSize($number$, element);\n"
     "}\n");
 }
@@ -113,15 +98,15 @@ void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* prin
 void RepeatedMessageFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "foreach($type_name$ i in $name$_) {\n"
-    "  hash ^= i.GetHashCode();\n"
-    "}\n");
+    "hash ^= $name$_.GetHashCode();\n");
 }
+
 void RepeatedMessageFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if(!$name$_.Equals(other.$name$)) return false;\n");
+    "if(!$name$_.Equals(other.$name$_)) return false;\n");
 }
+
 void RepeatedMessageFieldGenerator::WriteToString(io::Printer* printer) {
   variables_["field_name"] = GetFieldName(descriptor_);
   printer->Print(

@@ -37,11 +37,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Google.ProtocolBuffers.Descriptors;
-using Google.ProtocolBuffers.TestProtos;
+using Google.Protobuf.Collections;
+using Google.Protobuf.Descriptors;
+using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
-namespace Google.ProtocolBuffers
+namespace Google.Protobuf
 {
     public class CodedInputStreamTest
     {
@@ -231,7 +232,7 @@ namespace Google.ProtocolBuffers
             Assert.AreEqual(0x7FFFFFFFFFFFFFFFL, CodedInputStream.DecodeZigZag64(0xFFFFFFFFFFFFFFFEL));
             Assert.AreEqual(unchecked((long) 0x8000000000000000L), CodedInputStream.DecodeZigZag64(0xFFFFFFFFFFFFFFFFL));
         }
-
+        /*
         [Test]
         public void ReadWholeMessage()
         {
@@ -273,7 +274,7 @@ namespace Google.ProtocolBuffers
                 unknownFields.MergeFieldFrom(tag, input1);
                 input2.SkipField();
             }
-        }
+        }*/
 
         /// <summary>
         /// Test that a bug in SkipRawBytes has been fixed: if the skip
@@ -290,7 +291,7 @@ namespace Google.ProtocolBuffers
             input.PopLimit(limit);
             Assert.AreEqual(2, input.ReadRawByte());
         }
-
+        /*
         public void ReadHugeBlob()
         {
             // Allocate and initialize a 1MB blob.
@@ -318,7 +319,7 @@ namespace Google.ProtocolBuffers
                 .SetOptionalBytes(TestUtil.GetAllSet().OptionalBytes)
                 .Build();
             TestUtil.AssertAllFieldsSet(message3);
-        }
+        }*/
 
         [Test]
         public void ReadMaliciouslyLargeBlob()
@@ -348,12 +349,11 @@ namespace Google.ProtocolBuffers
         {
             if (depth == 0)
             {
-                return TestRecursiveMessage.CreateBuilder().SetI(5).Build();
+                return new TestRecursiveMessage { I = 5 };
             }
             else
             {
-                return TestRecursiveMessage.CreateBuilder()
-                    .SetA(MakeRecursiveMessage(depth - 1)).Build();
+                return new TestRecursiveMessage { A = MakeRecursiveMessage(depth - 1) };
             }
         }
 
@@ -361,12 +361,12 @@ namespace Google.ProtocolBuffers
         {
             if (depth == 0)
             {
-                Assert.IsFalse(message.HasA);
+                Assert.IsNull(message.A);
                 Assert.AreEqual(5, message.I);
             }
             else
             {
-                Assert.IsTrue(message.HasA);
+                Assert.IsNotNull(message.A);
                 AssertMessageDepth(message.A, depth - 1);
             }
         }
@@ -377,15 +377,16 @@ namespace Google.ProtocolBuffers
             ByteString data64 = MakeRecursiveMessage(64).ToByteString();
             ByteString data65 = MakeRecursiveMessage(65).ToByteString();
 
-            AssertMessageDepth(TestRecursiveMessage.ParseFrom(data64), 64);
+            AssertMessageDepth(TestRecursiveMessage.Parser.ParseFrom(data64), 64);
 
-            Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.ParseFrom(data65));
+            Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(data65));
 
             CodedInputStream input = data64.CreateCodedInput();
             input.SetRecursionLimit(8);
-            Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.ParseFrom(input));
+            Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(input));
         }
 
+        /*
         [Test]
         public void SizeLimit()
         {
@@ -396,7 +397,7 @@ namespace Google.ProtocolBuffers
             input.SetSizeLimit(16);
 
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.ParseFrom(input));
-        }
+        }*/
 
         [Test]
         public void ResetSizeCounter()
@@ -465,17 +466,16 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        enum TestNegEnum { None = 0, Value = -2 }
+        enum TestNegEnum : long { None = 0, Value = -2 }
 
         [Test]
         public void TestNegativeEnum()
         {
             byte[] bytes = new byte[10] { 0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 };
             CodedInputStream input = CodedInputStream.CreateInstance(bytes);
-            object unk;
             TestNegEnum val = TestNegEnum.None;
 
-            Assert.IsTrue(input.ReadEnum(ref val, out unk));
+            Assert.IsTrue(input.ReadEnum(ref val));
             Assert.IsTrue(input.IsAtEnd);
             Assert.AreEqual(TestNegEnum.Value, val);
         }
@@ -487,7 +487,7 @@ namespace Google.ProtocolBuffers
             int msgSize = 1 + 1 + arraySize;
             byte[] bytes = new byte[msgSize];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WritePackedInt32Array(8, "", arraySize, new int[] { 0, -1, -2, -3, -4, -5 });
+            output.WritePackedInt32Array(8, "", new RepeatedField<int> { 0, -1, -2, -3, -4, -5 });
 
             Assert.AreEqual(0, output.SpaceLeft);
 
@@ -497,15 +497,12 @@ namespace Google.ProtocolBuffers
             Assert.IsTrue(input.ReadTag(out tag, out name));
 
             List<TestNegEnum> values = new List<TestNegEnum>();
-            ICollection<object> unk;
-            input.ReadEnumArray(tag, name, values, out unk);
+            input.ReadEnumArray(tag, name, values);
 
-            Assert.AreEqual(2, values.Count);
+            Assert.AreEqual(6, values.Count);
             Assert.AreEqual(TestNegEnum.None, values[0]);
-            Assert.AreEqual(TestNegEnum.Value, values[1]);
-
-            Assert.NotNull(unk);
-            Assert.AreEqual(4, unk.Count);
+            Assert.AreEqual(TestNegEnum.Value, values[2]);
+            // TODO(jonskeet): Test unknown value preservation
         }
 
         [Test]
@@ -515,7 +512,7 @@ namespace Google.ProtocolBuffers
             int msgSize = arraySize;
             byte[] bytes = new byte[msgSize];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteInt32Array(8, "", new int[] { 0, -1, -2, -3, -4, -5 });
+            output.WriteInt32Array(8, "", new RepeatedField<int> { 0, -1, -2, -3, -4, -5 });
 
             Assert.AreEqual(0, output.SpaceLeft);
 
@@ -525,15 +522,12 @@ namespace Google.ProtocolBuffers
             Assert.IsTrue(input.ReadTag(out tag, out name));
 
             List<TestNegEnum> values = new List<TestNegEnum>();
-            ICollection<object> unk;
-            input.ReadEnumArray(tag, name, values, out unk);
+            input.ReadEnumArray(tag, name, values);
 
-            Assert.AreEqual(2, values.Count);
+            Assert.AreEqual(6, values.Count);
             Assert.AreEqual(TestNegEnum.None, values[0]);
-            Assert.AreEqual(TestNegEnum.Value, values[1]);
-
-            Assert.NotNull(unk);
-            Assert.AreEqual(4, unk.Count);
+            Assert.AreEqual(TestNegEnum.Value, values[2]);
+            // TODO(jonskeet): Test unknown value preservation
         }
 
         //Issue 71:	CodedInputStream.ReadBytes go to slow path unnecessarily

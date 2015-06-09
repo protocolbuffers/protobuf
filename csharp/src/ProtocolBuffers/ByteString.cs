@@ -40,7 +40,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace Google.ProtocolBuffers
+namespace Google.Protobuf
 {
     /// <summary>
     /// Immutable array of bytes.
@@ -206,6 +206,24 @@ namespace Google.ProtocolBuffers
         {
             // We trust CodedInputStream not to reveal the provided byte array or modify it
             return CodedInputStream.CreateInstance(bytes);
+        }
+
+        public static bool operator ==(ByteString lhs, ByteString rhs)
+        {
+            if (ReferenceEquals(lhs, rhs))
+            {
+                return true;
+            }
+            if (ReferenceEquals(lhs, null))
+            {
+                return false;
+            }
+            return lhs.Equals(rhs);
+        }
+
+        public static bool operator !=(ByteString lhs, ByteString rhs)
+        {
+            return !(lhs == rhs);
         }
 
         // TODO(jonskeet): CopyTo if it turns out to be required

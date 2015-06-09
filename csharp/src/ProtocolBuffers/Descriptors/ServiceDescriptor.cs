@@ -31,9 +31,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Collections.Generic;
-using Google.ProtocolBuffers.DescriptorProtos;
+using Google.Protobuf.DescriptorProtos;
 
-namespace Google.ProtocolBuffers.Descriptors
+namespace Google.Protobuf.Descriptors
 {
     /// <summary>
     /// Describes a service type.
@@ -45,7 +45,7 @@ namespace Google.ProtocolBuffers.Descriptors
         public ServiceDescriptor(ServiceDescriptorProto proto, FileDescriptor file, int index)
             : base(proto, file, ComputeFullName(file, null, proto.Name), index)
         {
-            methods = DescriptorUtil.ConvertAndMakeReadOnly(proto.MethodList,
+            methods = DescriptorUtil.ConvertAndMakeReadOnly(proto.Method,
                                                             (method, i) => new MethodDescriptor(method, file, this, i));
 
             file.DescriptorPool.AddSymbol(this);
@@ -82,7 +82,7 @@ namespace Google.ProtocolBuffers.Descriptors
             base.ReplaceProto(newProto);
             for (int i = 0; i < methods.Count; i++)
             {
-                methods[i].ReplaceProto(newProto.GetMethod(i));
+                methods[i].ReplaceProto(newProto.Method[i]);
             }
         }
     }

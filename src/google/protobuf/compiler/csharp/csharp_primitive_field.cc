@@ -93,7 +93,7 @@ void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 void PrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "input.Read$capitalized_type_name$(ref result.$name$_);\n");
+    "input.Read$capitalized_type_name$(ref $name$_);\n");
 }
 
 void PrimitiveFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
@@ -115,9 +115,7 @@ void PrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
 void PrimitiveFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if ($has_property_check$) {\n"
-    "  hash ^= $property_name$.GetHashCode();\n"
-    "}\n");
+    "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
 }
 void PrimitiveFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
@@ -147,17 +145,17 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     "public $type_name$ $property_name$ {\n"
     "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : $default_value$; }\n"
-    "  set {");
+    "  set {\n");
     if (is_value_type) {
       printer->Print(
         variables_,
-        "  $oneof_name$_ = value;\n"
-        "  $oneof_name$Case_ = $oneof_property_name$Case.$property_name$;\n");
+        "    $oneof_name$_ = value;\n"
+        "    $oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n");
     } else {
       printer->Print(
         variables_,
-        "  $oneof_name$_ = value ?? $default_value$;\n"
-        "  $oneof_name$Case_ = value == null ? $oneof_property_name$Case.None : $oneof_property_name$Case.$property_name$;\n");
+        "    $oneof_name$_ = value ?? $default_value$;\n"
+        "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n");
     }
     printer->Print(
       "  }\n"

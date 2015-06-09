@@ -32,23 +32,22 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Google.ProtocolBuffers.Collections;
-using Google.ProtocolBuffers.DescriptorProtos;
+using Google.Protobuf.Collections;
+using Google.Protobuf.DescriptorProtos;
 
-namespace Google.ProtocolBuffers.Descriptors
+namespace Google.Protobuf.Descriptors
 {
     /// <summary>
     /// Descriptor for a field or extension within a message in a .proto file.
     /// </summary>
     public sealed class FieldDescriptor : IndexedDescriptorBase<FieldDescriptorProto, FieldOptions>,
-                                          IComparable<FieldDescriptor>, IFieldDescriptorLite
+                                          IComparable<FieldDescriptor>
     {
         private readonly MessageDescriptor extensionScope;
         private EnumDescriptor enumType;
         private MessageDescriptor messageType;
         private MessageDescriptor containingType;
         private OneofDescriptor containingOneof;
-        private object defaultValue;
         private FieldType fieldType;
         private MappedType mappedType;
 
@@ -58,7 +57,7 @@ namespace Google.ProtocolBuffers.Descriptors
                                  MessageDescriptor parent, int index, bool isExtension)
             : base(proto, file, ComputeFullName(file, parent, proto.Name), index)
         {
-            if (proto.HasType)
+            if (proto.Type != 0)
             {
                 fieldType = GetFieldTypeFromProtoType(proto.Type);
                 mappedType = FieldTypeToMappedTypeMap[fieldType];
@@ -72,7 +71,7 @@ namespace Google.ProtocolBuffers.Descriptors
 
             if (isExtension)
             {
-                if (!proto.HasExtendee)
+                if (proto.Extendee != "")
                 {
                     throw new DescriptorValidationException(this,
                                                             "FieldDescriptorProto.Extendee not set for extension field.");
@@ -89,15 +88,10 @@ namespace Google.ProtocolBuffers.Descriptors
             }
             else
             {
-                if (proto.HasExtendee)
-                {
-                    throw new DescriptorValidationException(this,
-                                                            "FieldDescriptorProto.Extendee set for non-extension field.");
-                }
                 containingType = parent;
-                if (proto.HasOneofIndex)
+                if (proto.OneofIndex != 0)
                 {
-                    if (proto.OneofIndex < 0 || proto.OneofIndex >= parent.Proto.OneofDeclCount)
+                    if (proto.OneofIndex < 0 || proto.OneofIndex >= parent.Proto.OneofDecl.Count)
                     {
                         throw new DescriptorValidationException(this,
                             "FieldDescriptorProto.oneof_index is out of range for type " + parent.Name);
@@ -213,47 +207,14 @@ namespace Google.ProtocolBuffers.Descriptors
             get { return Proto.Options.Packed; }
         }
 
-        /// <valule>
-        /// Indicates whether or not the field had an explicitly-defined default value.
-        /// </value>
-        public bool HasDefaultValue
-        {
-            get { return Proto.HasDefaultValue; }
-        }
-
         /// <value>
-        /// The field's default value. Valid for all types except messages
-        /// and groups. For all other types, the object returned is of the
-        /// same class that would be returned by IMessage[this].
-        /// For repeated fields this will always be an empty immutable list compatible with IList[object].
-        /// For message fields it will always be null. For singular values, it will depend on the descriptor.
+        /// Indicates whether or not this field is an extension. (Only relevant when parsing
+        /// the proto2 descriptor...)
         /// </value>
-        public object DefaultValue
+        internal bool IsExtension
         {
-            get
-            {
-                if (MappedType == MappedType.Message)
-                {
-                    throw new InvalidOperationException(
-                        "FieldDescriptor.DefaultValue called on an embedded message field.");
-                }
-                return defaultValue;
-            }
+            get { return Proto.Extendee != ""; }
         }
-
-        /// <value>
-        /// Indicates whether or not this field is an extension.
-        /// </value>
-        public bool IsExtension
-        {
-            get { return Proto.HasExtendee; }
-        }
-
-        /*
-     * Get the field's containing type. For extensions, this is the type being
-     * extended, not the location where the extension was defined.  See
-     * {@link #getExtensionScope()}.
-     */
 
         /// <summary>
         /// Get the field's containing type. For extensions, this is the type being
@@ -336,27 +297,6 @@ namespace Google.ProtocolBuffers.Descriptors
         }
 
         /// <summary>
-        /// Compares this descriptor with another one, ordering in "canonical" order
-        /// which simply means ascending order by field number. <paramref name="other"/>
-        /// must be a field of the same type, i.e. the <see cref="ContainingType"/> of
-        /// both fields must be the same.
-        /// </summary>
-        public int CompareTo(IFieldDescriptorLite other)
-        {
-            return FieldNumber - other.FieldNumber;
-        }
-
-        IEnumLiteMap IFieldDescriptorLite.EnumType
-        {
-            get { return EnumType; }
-        }
-
-        bool IFieldDescriptorLite.MessageSetWireFormat
-        {
-            get { return ContainingType.Options.MessageSetWireFormat; }
-        }
-
-        /// <summary>
         /// For enum fields, returns the field's type.
         /// </summary>
         public EnumDescriptor EnumType
@@ -410,29 +350,12 @@ namespace Google.ProtocolBuffers.Descriptors
         /// </summary>
         internal void CrossLink()
         {
-            if (Proto.HasExtendee)
-            {
-                IDescriptor extendee = File.DescriptorPool.LookupSymbol(Proto.Extendee, this);
-                if (!(extendee is MessageDescriptor))
-                {
-                    throw new DescriptorValidationException(this, "\"" + Proto.Extendee + "\" is not a message type.");
-                }
-                containingType = (MessageDescriptor) extendee;
-
-                if (!containingType.IsExtensionNumber(FieldNumber))
-                {
-                    throw new DescriptorValidationException(this,
-                                                            "\"" + containingType.FullName + "\" does not declare " +
-                                                            FieldNumber + " as an extension number.");
-                }
-            }
-
-            if (Proto.HasTypeName)
+            if (Proto.TypeName != "")
             {
                 IDescriptor typeDescriptor =
                     File.DescriptorPool.LookupSymbol(Proto.TypeName, this);
 
-                if (!Proto.HasType)
+                if (Proto.Type != 0)
                 {
                     // Choose field type based on symbol.
                     if (typeDescriptor is MessageDescriptor)
@@ -460,7 +383,7 @@ namespace Google.ProtocolBuffers.Descriptors
                     }
                     messageType = (MessageDescriptor) typeDescriptor;
 
-                    if (Proto.HasDefaultValue)
+                    if (Proto.DefaultValue != "")
                     {
                         throw new DescriptorValidationException(this, "Messages can't have default values.");
                     }
@@ -486,126 +409,14 @@ namespace Google.ProtocolBuffers.Descriptors
                 }
             }
 
-            // We don't attempt to parse the default value until here because for
-            // enums we need the enum type's descriptor.
-            if (Proto.HasDefaultValue)
-            {
-                if (IsRepeated)
-                {
-                    throw new DescriptorValidationException(this, "Repeated fields cannot have default values.");
-                }
-
-                try
-                {
-                    switch (FieldType)
-                    {
-                        case FieldType.Int32:
-                        case FieldType.SInt32:
-                        case FieldType.SFixed32:
-                            defaultValue = TextFormat.ParseInt32(Proto.DefaultValue);
-                            break;
-                        case FieldType.UInt32:
-                        case FieldType.Fixed32:
-                            defaultValue = TextFormat.ParseUInt32(Proto.DefaultValue);
-                            break;
-                        case FieldType.Int64:
-                        case FieldType.SInt64:
-                        case FieldType.SFixed64:
-                            defaultValue = TextFormat.ParseInt64(Proto.DefaultValue);
-                            break;
-                        case FieldType.UInt64:
-                        case FieldType.Fixed64:
-                            defaultValue = TextFormat.ParseUInt64(Proto.DefaultValue);
-                            break;
-                        case FieldType.Float:
-                            defaultValue = TextFormat.ParseFloat(Proto.DefaultValue);
-                            break;
-                        case FieldType.Double:
-                            defaultValue = TextFormat.ParseDouble(Proto.DefaultValue);
-                            break;
-                        case FieldType.Bool:
-                            if (Proto.DefaultValue == "true")
-                            {
-                                defaultValue = true;
-                            }
-                            else if (Proto.DefaultValue == "false")
-                            {
-                                defaultValue = false;
-                            }
-                            else
-                            {
-                                throw new FormatException("Boolean values must be \"true\" or \"false\"");
-                            }
-                            break;
-                        case FieldType.String:
-                            defaultValue = Proto.DefaultValue;
-                            break;
-                        case FieldType.Bytes:
-                            try
-                            {
-                                defaultValue = TextFormat.UnescapeBytes(Proto.DefaultValue);
-                            }
-                            catch (FormatException e)
-                            {
-                                throw new DescriptorValidationException(this,
-                                                                        "Couldn't parse default value: " + e.Message);
-                            }
-                            break;
-                        case FieldType.Enum:
-                            defaultValue = enumType.FindValueByName(Proto.DefaultValue);
-                            if (defaultValue == null)
-                            {
-                                throw new DescriptorValidationException(this,
-                                                                        "Unknown enum default value: \"" +
-                                                                        Proto.DefaultValue + "\"");
-                            }
-                            break;
-                        case FieldType.Message:
-                        case FieldType.Group:
-                            throw new DescriptorValidationException(this, "Message type had default value.");
-                    }
-                }
-                catch (FormatException e)
-                {
-                    DescriptorValidationException validationException =
-                        new DescriptorValidationException(this,
-                                                          "Could not parse default value: \"" + Proto.DefaultValue +
-                                                          "\"", e);
-                    throw validationException;
-                }
-            }
-            else
-            {
-                // Determine the default default for this field.
-                if (IsRepeated)
-                {
-                    defaultValue = Lists<object>.Empty;
-                }
-                else
-                {
-                    switch (MappedType)
-                    {
-                        case MappedType.Enum:
-                            // We guarantee elsewhere that an enum type always has at least
-                            // one possible value.
-                            defaultValue = enumType.Values[0];
-                            break;
-                        case MappedType.Message:
-                            defaultValue = null;
-                            break;
-                        default:
-                            defaultValue = GetDefaultValueForMappedType(MappedType);
-                            break;
-                    }
-                }
-            }
+            // Note: no attempt to perform any default value parsing
 
             if (!IsExtension)
             {
                 File.DescriptorPool.AddFieldByNumber(this);
             }
 
-            if (containingType != null && containingType.Options.MessageSetWireFormat)
+            if (containingType != null && containingType.Options != null && containingType.Options.MessageSetWireFormat)
             {
                 if (IsExtension)
                 {
