@@ -49,30 +49,30 @@ uint32_t GPBWireFormatGetTagFieldNumber(uint32_t tag) {
   return GPBLogicalRightShift32(tag, GPBWireFormatTagTypeBits);
 }
 
-GPBWireFormat GPBWireFormatForType(GPBType type, BOOL isPacked) {
+GPBWireFormat GPBWireFormatForType(GPBDataType type, BOOL isPacked) {
   if (isPacked) {
     return GPBWireFormatLengthDelimited;
   }
 
-  static const GPBWireFormat format[GPBTypeCount] = {
-      GPBWireFormatVarint,           // GPBTypeBool
-      GPBWireFormatFixed32,          // GPBTypeFixed32
-      GPBWireFormatFixed32,          // GPBTypeSFixed32
-      GPBWireFormatFixed32,          // GPBTypeFloat
-      GPBWireFormatFixed64,          // GPBTypeFixed64
-      GPBWireFormatFixed64,          // GPBTypeSFixed64
-      GPBWireFormatFixed64,          // GPBTypeDouble
-      GPBWireFormatVarint,           // GPBTypeInt32
-      GPBWireFormatVarint,           // GPBTypeInt64
-      GPBWireFormatVarint,           // GPBTypeSInt32
-      GPBWireFormatVarint,           // GPBTypeSInt64
-      GPBWireFormatVarint,           // GPBTypeUInt32
-      GPBWireFormatVarint,           // GPBTypeUInt64
-      GPBWireFormatLengthDelimited,  // GPBTypeBytes
-      GPBWireFormatLengthDelimited,  // GPBTypeString
-      GPBWireFormatLengthDelimited,  // GPBTypeMessage
-      GPBWireFormatStartGroup,       // GPBTypeGroup
-      GPBWireFormatVarint            // GPBTypeEnum
+  static const GPBWireFormat format[GPBDataType_Count] = {
+      GPBWireFormatVarint,           // GPBDataTypeBool
+      GPBWireFormatFixed32,          // GPBDataTypeFixed32
+      GPBWireFormatFixed32,          // GPBDataTypeSFixed32
+      GPBWireFormatFixed32,          // GPBDataTypeFloat
+      GPBWireFormatFixed64,          // GPBDataTypeFixed64
+      GPBWireFormatFixed64,          // GPBDataTypeSFixed64
+      GPBWireFormatFixed64,          // GPBDataTypeDouble
+      GPBWireFormatVarint,           // GPBDataTypeInt32
+      GPBWireFormatVarint,           // GPBDataTypeInt64
+      GPBWireFormatVarint,           // GPBDataTypeSInt32
+      GPBWireFormatVarint,           // GPBDataTypeSInt64
+      GPBWireFormatVarint,           // GPBDataTypeUInt32
+      GPBWireFormatVarint,           // GPBDataTypeUInt64
+      GPBWireFormatLengthDelimited,  // GPBDataTypeBytes
+      GPBWireFormatLengthDelimited,  // GPBDataTypeString
+      GPBWireFormatLengthDelimited,  // GPBDataTypeMessage
+      GPBWireFormatStartGroup,       // GPBDataTypeGroup
+      GPBWireFormatVarint            // GPBDataTypeEnum
   };
   return format[type];
 }

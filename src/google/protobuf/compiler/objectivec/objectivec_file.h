@@ -64,8 +64,6 @@ class FileGenerator {
   const string& RootClassName() const { return root_class_name_; }
   const string Path() const;
 
-  bool IsFiltered() const { return is_filtered_; }
-  bool AreAllExtensionsFiltered() const { return all_extensions_filtered_; }
   bool IsPublicDependency() const { return is_public_dep_; }
 
  protected:
@@ -84,8 +82,6 @@ class FileGenerator {
   vector<EnumGenerator*> enum_generators_;
   vector<MessageGenerator*> message_generators_;
   vector<ExtensionGenerator*> extension_generators_;
-  bool is_filtered_;
-  bool all_extensions_filtered_;
   bool is_public_dep_;
 
   const vector<FileGenerator*>& DependencyGenerators();

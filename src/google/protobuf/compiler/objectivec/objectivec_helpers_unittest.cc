@@ -242,6 +242,14 @@ TEST(ObjCHelperDeathTest, TextFormatDecodeData_Failures) {
 }
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
+// TODO(thomasvl): Should probably add some unittests for all the special cases
+// of name mangling (class name, field name, enum names).  Rather than doing
+// this with an ObjC test in the objectivec directory, we should be able to
+// use src/google/protobuf/compiler/importer* (like other tests) to support a
+// virtual file system to feed in protos, once we have the Descriptor tree, the
+// tests could use the helper methods for generating names and validate the
+// right things are happening.
+
 }  // namespace
 }  // namespace objectivec
 }  // namespace compiler

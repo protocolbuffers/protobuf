@@ -48,6 +48,15 @@
 
 CF_EXTERN_C_BEGIN
 
+// These two are used to inject a runtime check for version mismatch into the
+// generated sources to make sure they are linked with a supporting runtime.
+void GPBCheckRuntimeVersionInternal(int32_t version);
+GPB_INLINE void GPBDebugCheckRuntimeVersion() {
+#if DEBUG
+  GPBCheckRuntimeVersionInternal(GOOGLE_PROTOBUF_OBJC_GEN_VERSION);
+#endif
+}
+
 // Conversion functions for de/serializing floating point types.
 
 GPB_INLINE int64_t GPBConvertDoubleToInt64(double v) {
@@ -116,40 +125,38 @@ GPB_INLINE uint64_t GPBEncodeZigZag64(int64_t n) {
   return (n << 1) ^ (n >> 63);
 }
 
-GPB_INLINE BOOL GPBTypeIsObject(GPBType type) {
+GPB_INLINE BOOL GPBDataTypeIsObject(GPBDataType type) {
   switch (type) {
-    case GPBTypeData:
-    case GPBTypeString:
-    case GPBTypeMessage:
-    case GPBTypeGroup:
+    case GPBDataTypeBytes:
+    case GPBDataTypeString:
+    case GPBDataTypeMessage:
+    case GPBDataTypeGroup:
       return YES;
     default:
       return NO;
   }
 }
 
-GPB_INLINE BOOL GPBTypeIsMessage(GPBType type) {
+GPB_INLINE BOOL GPBDataTypeIsMessage(GPBDataType type) {
   switch (type) {
-    case GPBTypeMessage:
-    case GPBTypeGroup:
+    case GPBDataTypeMessage:
+    case GPBDataTypeGroup:
       return YES;
     default:
       return NO;
   }
 }
 
-GPB_INLINE BOOL GPBTypeIsEnum(GPBType type) { return type == GPBTypeEnum; }
-
-GPB_INLINE BOOL GPBFieldTypeIsMessage(GPBFieldDescriptor *field) {
-  return GPBTypeIsMessage(field->description_->type);
+GPB_INLINE BOOL GPBFieldDataTypeIsMessage(GPBFieldDescriptor *field) {
+  return GPBDataTypeIsMessage(field->description_->dataType);
 }
 
-GPB_INLINE BOOL GPBFieldTypeIsObject(GPBFieldDescriptor *field) {
-  return GPBTypeIsObject(field->description_->type);
+GPB_INLINE BOOL GPBFieldDataTypeIsObject(GPBFieldDescriptor *field) {
+  return GPBDataTypeIsObject(field->description_->dataType);
 }
 
 GPB_INLINE BOOL GPBExtensionIsMessage(GPBExtensionDescriptor *ext) {
-  return GPBTypeIsMessage(ext->description_->type);
+  return GPBDataTypeIsMessage(ext->description_->dataType);
 }
 
 // The field is an array/map or it has an object value.
@@ -158,7 +165,7 @@ GPB_INLINE BOOL GPBFieldStoresObject(GPBFieldDescriptor *field) {
   if ((desc->flags & (GPBFieldRepeated | GPBFieldMapKeyMask)) != 0) {
     return YES;
   }
-  return GPBTypeIsObject(desc->type);
+  return GPBDataTypeIsObject(desc->dataType);
 }
 
 BOOL GPBGetHasIvar(GPBMessage *self, int32_t index, uint32_t fieldNumber);
@@ -272,109 +279,6 @@ void GPBSetAutocreatedRetainedObjectIvarWithField(
 void GPBClearAutocreatedMessageIvarWithField(GPBMessage *self,
                                              GPBFieldDescriptor *field);
 
-// Utilities for applying various functions based on Objective C types.
-
-// A basic functor that is passed a field and a context. Returns YES
-// if the calling function should continue processing, and NO if the calling
-// function should stop processing.
-typedef BOOL (*GPBApplyFunction)(GPBFieldDescriptor *field, void *context);
-
-// Functions called for various types. See ApplyFunctionsToMessageFields.
-typedef enum {
-  GPBApplyFunctionObject,
-  GPBApplyFunctionBool,
-  GPBApplyFunctionInt32,
-  GPBApplyFunctionUInt32,
-  GPBApplyFunctionInt64,
-  GPBApplyFunctionUInt64,
-  GPBApplyFunctionFloat,
-  GPBApplyFunctionDouble,
-} GPBApplyFunctionOrder;
-
-enum {
-  // A count of the number of types in GPBApplyFunctionOrder. Separated out
-  // from the GPBApplyFunctionOrder enum to avoid warnings regarding not
-  // handling GPBApplyFunctionCount in switch statements.
-  GPBApplyFunctionCount = GPBApplyFunctionDouble + 1
-};
-
-typedef GPBApplyFunction GPBApplyFunctions[GPBApplyFunctionCount];
-
-// Functions called for various types.
-// See ApplyStrictFunctionsToMessageFields.
-// They are in the same order as the GPBTypes enum.
-typedef GPBApplyFunction GPBApplyStrictFunctions[GPBTypeCount];
-
-// A macro for easily initializing a GPBApplyFunctions struct
-// GPBApplyFunctions foo = GPBAPPLY_FUNCTIONS_INIT(Foo);
-#define GPBAPPLY_FUNCTIONS_INIT(PREFIX) \
-  { \
-    PREFIX##Object,  \
-    PREFIX##Bool,    \
-    PREFIX##Int32,   \
-    PREFIX##UInt32,  \
-    PREFIX##Int64,   \
-    PREFIX##UInt64,  \
-    PREFIX##Float,   \
-    PREFIX##Double,  \
-  }
-
-// A macro for easily initializing a GPBApplyStrictFunctions struct
-// GPBApplyStrictFunctions foo = GPBAPPLY_STRICT_FUNCTIONS_INIT(Foo);
-// These need to stay in the same order as
-// the GPBType enum.
-#define GPBAPPLY_STRICT_FUNCTIONS_INIT(PREFIX) \
-  { \
-    PREFIX##Bool,     \
-    PREFIX##Fixed32,  \
-    PREFIX##SFixed32, \
-    PREFIX##Float,    \
-    PREFIX##Fixed64,  \
-    PREFIX##SFixed64, \
-    PREFIX##Double,   \
-    PREFIX##Int32,    \
-    PREFIX##Int64,    \
-    PREFIX##SInt32,   \
-    PREFIX##SInt64,   \
-    PREFIX##UInt32,   \
-    PREFIX##UInt64,   \
-    PREFIX##Data,     \
-    PREFIX##String,   \
-    PREFIX##Message,  \
-    PREFIX##Group,    \
-    PREFIX##Enum,     \
-}
-
-// Iterates over the fields of a proto |msg| and applies the functions in
-// |functions| to them with |context|. If one of the functions in |functions|
-// returns NO, it will return immediately and not process the rest of the
-// ivars. The types in the fields are mapped so:
-// Int32, Enum, SInt32 and SFixed32 will be mapped to the int32Function,
-// UInt32 and Fixed32 will be mapped to the uint32Function,
-// Bytes, String, Message and Group will be mapped to the objectFunction,
-// etc..
-// If you require more specific mappings look at
-// GPBApplyStrictFunctionsToMessageFields.
-void GPBApplyFunctionsToMessageFields(GPBApplyFunctions *functions,
-                                      GPBMessage *msg, void *context);
-
-// Iterates over the fields of a proto |msg| and applies the functions in
-// |functions| to them with |context|. If one of the functions in |functions|
-// returns NO, it will return immediately and not process the rest of the
-// ivars. The types in the fields are mapped directly:
-// Int32 -> functions[GPBTypeInt32],
-// SFixed32 -> functions[GPBTypeSFixed32],
-// etc...
-// If you can use looser mappings look at GPBApplyFunctionsToMessageFields.
-void GPBApplyStrictFunctionsToMessageFields(GPBApplyStrictFunctions *functions,
-                                            GPBMessage *msg, void *context);
-
-// Applies the appropriate function in |functions| based on |field|.
-// Returns the value from function(name, context).
-// Throws an exception if the type is unrecognized.
-BOOL GPBApplyFunctionsBasedOnField(GPBFieldDescriptor *field,
-                                   GPBApplyFunctions *functions, void *context);
-
 // Returns an Objective C encoding for |selector|. |instanceSel| should be
 // YES if it's an instance selector (as opposed to a class selector).
 // |selector| must be a selector from MessageSignatureProtocol.
@@ -410,7 +314,7 @@ GPB_MESSAGE_SIGNATURE_ENTRY(int32_t, SInt32)
 GPB_MESSAGE_SIGNATURE_ENTRY(int64_t, SInt64)
 GPB_MESSAGE_SIGNATURE_ENTRY(uint32_t, UInt32)
 GPB_MESSAGE_SIGNATURE_ENTRY(uint64_t, UInt64)
-GPB_MESSAGE_SIGNATURE_ENTRY(NSData *, Data)
+GPB_MESSAGE_SIGNATURE_ENTRY(NSData *, Bytes)
 GPB_MESSAGE_SIGNATURE_ENTRY(NSString *, String)
 GPB_MESSAGE_SIGNATURE_ENTRY(GPBMessage *, Message)
 GPB_MESSAGE_SIGNATURE_ENTRY(GPBMessage *, Group)
@@ -419,6 +323,7 @@ GPB_MESSAGE_SIGNATURE_ENTRY(int32_t, Enum)
 #undef GPB_MESSAGE_SIGNATURE_ENTRY
 
 - (id)getArray;
+- (NSUInteger)getArrayCount;
 - (void)setArray:(NSArray *)array;
 + (id)getClassValue;
 @end

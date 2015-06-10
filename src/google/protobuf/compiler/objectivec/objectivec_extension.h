@@ -52,16 +52,12 @@ class ExtensionGenerator {
   ~ExtensionGenerator();
 
   void GenerateMembersHeader(io::Printer* printer);
-  void GenerateStaticVariablesInitialization(io::Printer* printer,
-                                             bool* out_generated, bool root);
+  void GenerateStaticVariablesInitialization(io::Printer* printer);
   void GenerateRegistrationSource(io::Printer* printer);
-
-  bool IsFiltered() const { return filter_reason_.length() > 0; }
 
  private:
   string method_name_;
   string root_class_and_method_name_;
-  string filter_reason_;
   const FieldDescriptor* descriptor_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionGenerator);

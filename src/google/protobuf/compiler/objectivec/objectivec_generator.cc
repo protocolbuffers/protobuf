@@ -58,10 +58,6 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
     return false;
   }
 
-  if (!InitializeClassWhitelist(error)) {
-    return false;
-  }
-
   FileGenerator file_generator(file);
 
   string filepath = FilePath(file);

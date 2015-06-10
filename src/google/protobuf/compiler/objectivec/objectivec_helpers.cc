@@ -50,8 +50,6 @@ namespace objectivec {
 
 namespace {
 
-hash_set<string> gClassWhitelist;
-
 // islower()/isupper()/tolower()/toupper() change based on locale.
 //
 // src/google/protobuf/stubs/strutil.h:150 has the same pattern. For the
@@ -580,7 +578,7 @@ string GetCapitalizedType(const FieldDescriptor* field) {
     case FieldDescriptor::TYPE_STRING:
       return "String";
     case FieldDescriptor::TYPE_BYTES:
-      return "Data";
+      return "Bytes";
     case FieldDescriptor::TYPE_ENUM:
       return "Enum";
     case FieldDescriptor::TYPE_GROUP:
@@ -684,8 +682,9 @@ static string HandleExtremeFloatingPoint(string val, bool add_float_suffix) {
   }
 }
 
-string GPBValueFieldName(const FieldDescriptor* field) {
-  // Returns the field within the GPBValue union to use for the given field.
+string GPBGenericValueFieldName(const FieldDescriptor* field) {
+  // Returns the field within the GPBGenericValue union to use for the given
+  // field.
   if (field->is_repeated()) {
       return "valueMessage";
   }
@@ -829,60 +828,6 @@ string BuildCommentsString(const SourceLocation& location) {
         prefix + StringReplace(lines[i], "$", "&#36;", true) + suffix;
   }
   return final_comments;
-}
-
-bool InitializeClassWhitelist(string* error) {
-  const char* env_var_value = getenv("GPB_OBJC_CLASS_WHITELIST_PATHS");
-  if (env_var_value == NULL) {
-    return true;
-  }
-
-  // The values are joined with ';' in case we ever want to make this a
-  // generator parameter also (instead of env var), and generator parameter
-  // parsing already has meaning for ',' and ':'.
-  vector<string> file_paths = Split(env_var_value, ";", true);
-
-  for (vector<string>::const_iterator i = file_paths.begin();
-       i != file_paths.end(); ++i) {
-    const string& file_path = *i;
-
-    ifstream stream(file_path.c_str(), ifstream::in);
-    if (!stream.good()) {
-      if (error != NULL) {
-        stringstream err_stream;
-        err_stream << endl << file_path << ":0:0: error: Unable to open";
-        *error = err_stream.str();
-        return false;
-      }
-    }
-
-    string input_line;
-    while (stream.good()) {
-      getline(stream, input_line);
-      string trimmed_line(TrimString(input_line));
-      if (trimmed_line.length() == 0) {
-        // Skip empty lines
-        continue;
-      }
-      if (trimmed_line[0] == '/' || trimmed_line[0] == '#') {
-        // Skip comments and potential preprocessor symbols
-        continue;
-      }
-      gClassWhitelist.insert(trimmed_line);
-    }
-  }
-  return true;
-}
-
-bool FilterClass(const string& name) {
-  if (gClassWhitelist.count(name) > 0) {
-    // Whitelisted, don't filter.
-    return false;
-  }
-
-  // If there was no list, default to everything in.
-  // If there was a list, default to everything out.
-  return gClassWhitelist.size() > 0;
 }
 
 void TextFormatDecodeData::AddString(int32 key,

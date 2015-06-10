@@ -41,7 +41,8 @@
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;
 - (void)writeToCodedOutputStream:(GPBCodedOutputStream *)outputStream
                          asField:(GPBFieldDescriptor *)field;
-- (void)setGPBValue:(GPBValue *)value forGPBValueKey:(GPBValue *)key;
+- (void)setGPBGenericValue:(GPBGenericValue *)value
+     forGPBGenericValueKey:(GPBGenericValue *)key;
 - (void)enumerateForTextFormat:(void (^)(id keyObj, id valueObj))block;
 @end
 
@@ -75,8 +76,8 @@
 //%
 //%PDDM-DEFINE EXTRA_DICTIONARY_PRIVATE_INTERFACES_Enum()
 //%- (NSData *)serializedDataForUnknownValue:(int32_t)value
-//%                                   forKey:(GPBValue *)key
-//%                                  keyType:(GPBType)keyType;
+//%                                   forKey:(GPBGenericValue *)key
+//%                              keyDataType:(GPBDataType)keyDataType;
 //%
 
 //%PDDM-EXPAND DICTIONARY_PRIV_INTERFACES_FOR_POD_KEY(UInt32)
@@ -129,8 +130,8 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
-                                   forKey:(GPBValue *)key
-                                  keyType:(GPBType)keyType;
+                                   forKey:(GPBGenericValue *)key
+                              keyDataType:(GPBDataType)keyDataType;
 @end
 
 @interface GPBUInt32ObjectDictionary () <GPBDictionaryInternalsProtocol> {
@@ -192,8 +193,8 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
-                                   forKey:(GPBValue *)key
-                                  keyType:(GPBType)keyType;
+                                   forKey:(GPBGenericValue *)key
+                              keyDataType:(GPBDataType)keyDataType;
 @end
 
 @interface GPBInt32ObjectDictionary () <GPBDictionaryInternalsProtocol> {
@@ -255,8 +256,8 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
-                                   forKey:(GPBValue *)key
-                                  keyType:(GPBType)keyType;
+                                   forKey:(GPBGenericValue *)key
+                              keyDataType:(GPBDataType)keyDataType;
 @end
 
 @interface GPBUInt64ObjectDictionary () <GPBDictionaryInternalsProtocol> {
@@ -318,8 +319,8 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
-                                   forKey:(GPBValue *)key
-                                  keyType:(GPBType)keyType;
+                                   forKey:(GPBGenericValue *)key
+                              keyDataType:(GPBDataType)keyDataType;
 @end
 
 @interface GPBInt64ObjectDictionary () <GPBDictionaryInternalsProtocol> {
@@ -381,8 +382,8 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
-                                   forKey:(GPBValue *)key
-                                  keyType:(GPBType)keyType;
+                                   forKey:(GPBGenericValue *)key
+                              keyDataType:(GPBDataType)keyDataType;
 @end
 
 @interface GPBBoolObjectDictionary () <GPBDictionaryInternalsProtocol> {
@@ -444,8 +445,8 @@
   GPB_UNSAFE_UNRETAINED GPBMessage *_autocreator;
 }
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
-                                   forKey:(GPBValue *)key
-                                  keyType:(GPBType)keyType;
+                                   forKey:(GPBGenericValue *)key
+                              keyDataType:(GPBDataType)keyDataType;
 @end
 
 //%PDDM-EXPAND-END (6 expansions)

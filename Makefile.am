@@ -506,14 +506,10 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBDictionary.h                                                 \
   objectivec/GPBDictionary.m                                                 \
   objectivec/GPBDictionary_PackagePrivate.h                                  \
-  objectivec/GPBExtensionField.h                                             \
-  objectivec/GPBExtensionField.m                                             \
-  objectivec/GPBExtensionField_PackagePrivate.h                              \
+  objectivec/GPBExtensionInternals.h                                         \
+  objectivec/GPBExtensionInternals.m                                         \
   objectivec/GPBExtensionRegistry.h                                          \
   objectivec/GPBExtensionRegistry.m                                          \
-  objectivec/GPBField.h                                                      \
-  objectivec/GPBField.m                                                      \
-  objectivec/GPBField_PackagePrivate.h                                       \
   objectivec/GPBMessage.h                                                    \
   objectivec/GPBMessage.m                                                    \
   objectivec/GPBMessage_PackagePrivate.h                                     \
@@ -523,7 +519,10 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBRootObject.h                                                 \
   objectivec/GPBRootObject.m                                                 \
   objectivec/GPBRootObject_PackagePrivate.h                                  \
-  objectivec/GPBTypes.h                                                      \
+  objectivec/GPBRuntimeTypes.h                                               \
+  objectivec/GPBUnknownField.h                                               \
+  objectivec/GPBUnknownField.m                                               \
+  objectivec/GPBUnknownField_PackagePrivate.h                                \
   objectivec/GPBUnknownFieldSet.h                                            \
   objectivec/GPBUnknownFieldSet.m                                            \
   objectivec/GPBUnknownFieldSet_PackagePrivate.h                             \
@@ -547,8 +546,6 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/ProtocolBuffers_OSX.xcodeproj/xcshareddata/xcschemes/PerformanceTests.xcscheme \
   objectivec/ProtocolBuffers_OSX.xcodeproj/xcshareddata/xcschemes/ProtocolBuffers.xcscheme \
   objectivec/README.md                                                       \
-  objectivec/Tests/Filter1.txt                                               \
-  objectivec/Tests/Filter2.txt                                               \
   objectivec/Tests/golden_message                                            \
   objectivec/Tests/golden_packed_fields_message                              \
   objectivec/Tests/GPBARCUnittestProtos.m                                    \
@@ -564,7 +561,6 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/GPBDictionaryTests+UInt32.m                               \
   objectivec/Tests/GPBDictionaryTests+UInt64.m                               \
   objectivec/Tests/GPBDictionaryTests.pddm                                   \
-  objectivec/Tests/GPBFilteredMessageTests.m                                 \
   objectivec/Tests/GPBMessageTests+Merge.m                                   \
   objectivec/Tests/GPBMessageTests+Runtime.m                                 \
   objectivec/Tests/GPBMessageTests+Serialization.m                           \
@@ -596,8 +592,6 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/text_format_map_unittest_data.txt                          \
   objectivec/Tests/text_format_unittest_data.txt                              \
   objectivec/Tests/unittest_cycle.proto                                       \
-  objectivec/Tests/unittest_filter.proto                                      \
-  objectivec/Tests/unittest_name_mangling.proto                               \
   objectivec/Tests/unittest_objc.proto                                        \
   objectivec/Tests/unittest_runtime_proto2.proto                              \
   objectivec/Tests/unittest_runtime_proto3.proto                              \

@@ -33,6 +33,7 @@
 // subject to change at any time without notice.
 
 #import "GPBDescriptor.h"
+#import "GPBWireFormat.h"
 
 // Describes attributes of the field.
 typedef NS_OPTIONS(uint32_t, GPBFieldFlags) {
@@ -66,8 +67,6 @@ typedef NS_OPTIONS(uint32_t, GPBFieldFlags) {
   // set, the name can be derived from the ObjC name.
   GPBFieldTextFormatNameCustom = 1 << 16,
   // Indicates the field has an enum descriptor.
-  // TODO(thomasvl): Output the CPP check to use descFunc or validator based
-  // on final compile.  This will then get added based on that.
   GPBFieldHasEnumDescriptor = 1 << 17,
 };
 
@@ -84,21 +83,21 @@ typedef struct GPBMessageFieldDescription {
   int32_t hasIndex;
   // Field flags. Use accessor functions below.
   GPBFieldFlags flags;
-  // Type of the ivar.
-  GPBType type;
+  // Data type of the ivar.
+  GPBDataType dataType;
   // Offset of the variable into it's structure struct.
   size_t offset;
   // FieldOptions protobuf, serialized as string.
   const char *fieldOptions;
 
-  GPBValue defaultValue;  // Default value for the ivar.
+  GPBGenericValue defaultValue;  // Default value for the ivar.
   union {
     const char *className;  // Name for message class.
     // For enums only: If EnumDescriptors are compiled in, it will be that,
     // otherwise it will be the verifier.
     GPBEnumDescriptorFunc enumDescFunc;
     GPBEnumValidationFunc enumVerifier;
-  } typeSpecific;
+  } dataTypeSpecific;
 } GPBMessageFieldDescription;
 
 // Describes a oneof.
@@ -133,10 +132,10 @@ typedef NS_OPTIONS(uint32_t, GPBExtensionOptions) {
 // An extension
 typedef struct GPBExtensionDescription {
   const char *singletonName;
-  GPBType type;
+  GPBDataType dataType;
   const char *extendedClass;
   int32_t fieldNumber;
-  GPBValue defaultValue;
+  GPBGenericValue defaultValue;
   const char *messageOrGroupClassName;
   GPBExtensionOptions options;
   GPBEnumDescriptorFunc enumDescriptorFunc;
@@ -217,7 +216,7 @@ typedef struct GPBExtensionDescription {
 
   SEL getSel_;
   SEL setSel_;
-  SEL hasSel_;
+  SEL hasOrCountSel_;  // *Count for map<>/repeated fields, has* otherwise.
   SEL setHasSel_;
 }
 
@@ -254,10 +253,18 @@ typedef struct GPBExtensionDescription {
  @package
   GPBExtensionDescription *description_;
 }
+@property(nonatomic, readonly) GPBWireFormat wireType;
+
+// For repeated extensions, alternateWireType is the wireType with the opposite
+// value for the packable property.  i.e. - if the extension was marked packed
+// it would be the wire type for unpacked; if the extension was marked unpacked,
+// it would be the wire type for packed.
+@property(nonatomic, readonly) GPBWireFormat alternateWireType;
 
 // description has to be long lived, it is held as a raw pointer.
 - (instancetype)initWithExtensionDescription:
-        (GPBExtensionDescription *)description;
+    (GPBExtensionDescription *)description;
+- (NSComparisonResult)compareByFieldNumber:(GPBExtensionDescriptor *)other;
 @end
 
 CF_EXTERN_C_BEGIN
@@ -267,8 +274,8 @@ GPB_INLINE BOOL GPBFieldIsMapOrArray(GPBFieldDescriptor *field) {
           (GPBFieldRepeated | GPBFieldMapKeyMask)) != 0;
 }
 
-GPB_INLINE GPBType GPBGetFieldType(GPBFieldDescriptor *field) {
-  return field->description_->type;
+GPB_INLINE GPBDataType GPBGetFieldDataType(GPBFieldDescriptor *field) {
+  return field->description_->dataType;
 }
 
 GPB_INLINE int32_t GPBFieldHasIndex(GPBFieldDescriptor *field) {
@@ -281,6 +288,12 @@ GPB_INLINE uint32_t GPBFieldNumber(GPBFieldDescriptor *field) {
 
 uint32_t GPBFieldTag(GPBFieldDescriptor *self);
 
+// For repeated fields, alternateWireType is the wireType with the opposite
+// value for the packable property.  i.e. - if the field was marked packed it
+// would be the wire type for unpacked; if the field was marked unpacked, it
+// would be the wire type for packed.
+uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self);
+
 GPB_INLINE BOOL GPBPreserveUnknownFields(GPBFileSyntax syntax) {
   return syntax != GPBFileSyntaxProto3;
 }
@@ -288,5 +301,18 @@ GPB_INLINE BOOL GPBPreserveUnknownFields(GPBFileSyntax syntax) {
 GPB_INLINE BOOL GPBHasPreservingUnknownEnumSemantics(GPBFileSyntax syntax) {
   return syntax == GPBFileSyntaxProto3;
 }
+
+GPB_INLINE BOOL GPBExtensionIsRepeated(GPBExtensionDescription *description) {
+  return (description->options & GPBExtensionRepeated) != 0;
+}
+
+GPB_INLINE BOOL GPBExtensionIsPacked(GPBExtensionDescription *description) {
+  return (description->options & GPBExtensionPacked) != 0;
+}
+
+GPB_INLINE BOOL GPBExtensionIsWireFormat(GPBExtensionDescription *description) {
+  return (description->options & GPBExtensionSetWireFormat) != 0;
+}
+
 
 CF_EXTERN_C_END

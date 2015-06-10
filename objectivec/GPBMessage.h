@@ -35,7 +35,7 @@
 @class GPBDescriptor;
 @class GPBCodedInputStream;
 @class GPBCodedOutputStream;
-@class GPBExtensionField;
+@class GPBExtensionDescriptor;
 @class GPBExtensionRegistry;
 @class GPBFieldDescriptor;
 @class GPBUnknownFieldSet;
@@ -148,14 +148,14 @@ CF_EXTERN_C_END
 // Extensions use boxed values (NSNumbers) for PODs, NSMutableArrays for
 // repeated. If the extension is a Message one will be auto created for you
 // and returned similar to fields.
-- (BOOL)hasExtension:(GPBExtensionField *)extension;
-- (id)getExtension:(GPBExtensionField *)extension;
-- (void)setExtension:(GPBExtensionField *)extension value:(id)value;
-- (void)addExtension:(GPBExtensionField *)extension value:(id)value;
-- (void)setExtension:(GPBExtensionField *)extension
+- (BOOL)hasExtension:(GPBExtensionDescriptor *)extension;
+- (id)getExtension:(GPBExtensionDescriptor *)extension;
+- (void)setExtension:(GPBExtensionDescriptor *)extension value:(id)value;
+- (void)addExtension:(GPBExtensionDescriptor *)extension value:(id)value;
+- (void)setExtension:(GPBExtensionDescriptor *)extension
                index:(NSUInteger)index
                value:(id)value;
-- (void)clearExtension:(GPBExtensionField *)extension;
+- (void)clearExtension:(GPBExtensionDescriptor *)extension;
 
 - (void)setUnknownFields:(GPBUnknownFieldSet *)unknownFields;
 

@@ -35,6 +35,8 @@
 @class TestMap;
 @class TestPackedTypes;
 @class TestPackedExtensions;
+@class TestUnpackedTypes;
+@class TestUnpackedExtensions;
 @class GPBExtensionRegistry;
 
 
@@ -55,7 +57,11 @@ extern const uint32_t kGPBDefaultRepeatCount;
            repeatedCount:(uint32_t)count;
 - (void)setPackedFields:(TestPackedTypes *)message
           repeatedCount:(uint32_t)count;
+- (void)setUnpackedFields:(TestUnpackedTypes *)message
+            repeatedCount:(uint32_t)count;
 - (void)setPackedExtensions:(TestPackedExtensions *)message
+              repeatedCount:(uint32_t)count;
+- (void)setUnpackedExtensions:(TestUnpackedExtensions *)message
               repeatedCount:(uint32_t)count;
 - (void)setAllMapFields:(TestMap *)message numEntries:(uint32_t)count;
 

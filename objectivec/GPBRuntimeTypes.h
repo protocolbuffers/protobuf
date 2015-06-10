@@ -63,36 +63,36 @@ typedef union {
   GPB_UNSAFE_UNRETAINED NSString *valueString;
   GPB_UNSAFE_UNRETAINED GPBMessage *valueMessage;
   int32_t valueEnum;
-} GPBValue;
+} GPBGenericValue;
 
 // Do not change the order of this enum (or add things to it) without thinking
 // about it very carefully. There are several things that depend on the order.
 typedef enum {
-  GPBTypeBool = 0,
-  GPBTypeFixed32,
-  GPBTypeSFixed32,
-  GPBTypeFloat,
-  GPBTypeFixed64,
-  GPBTypeSFixed64,
-  GPBTypeDouble,
-  GPBTypeInt32,
-  GPBTypeInt64,
-  GPBTypeSInt32,
-  GPBTypeSInt64,
-  GPBTypeUInt32,
-  GPBTypeUInt64,
-  GPBTypeData,  // Maps to Bytes Protobuf type
-  GPBTypeString,
-  GPBTypeMessage,
-  GPBTypeGroup,
-  GPBTypeEnum,
-} GPBType;
+  GPBDataTypeBool = 0,
+  GPBDataTypeFixed32,
+  GPBDataTypeSFixed32,
+  GPBDataTypeFloat,
+  GPBDataTypeFixed64,
+  GPBDataTypeSFixed64,
+  GPBDataTypeDouble,
+  GPBDataTypeInt32,
+  GPBDataTypeInt64,
+  GPBDataTypeSInt32,
+  GPBDataTypeSInt64,
+  GPBDataTypeUInt32,
+  GPBDataTypeUInt64,
+  GPBDataTypeBytes,
+  GPBDataTypeString,
+  GPBDataTypeMessage,
+  GPBDataTypeGroup,
+  GPBDataTypeEnum,
+} GPBDataType;
 
 enum {
-  // A count of the number of types in GPBType. Separated out from the GPBType
-  // enum to avoid warnings regarding not handling GPBTypeCount in switch
-  // statements.
-  GPBTypeCount = GPBTypeEnum + 1
+  // A count of the number of types in GPBDataType. Separated out from the
+  // GPBDataType enum to avoid warnings regarding not handling
+  // GPBDataType_Count in switch statements.
+  GPBDataType_Count = GPBDataTypeEnum + 1
 };
 
 // An extension range.
