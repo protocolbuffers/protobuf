@@ -112,7 +112,12 @@ build_javanano_oracle7() {
 }
 
 internal_install_python_deps() {
-  sudo pip install tox
+  # Install tox (OS X doesn't have pip).
+  if [ $(uname -s) == "Darwin" ]; then
+    sudo easy_install tox
+  else
+    sudo pip install tox
+  fi
   # Only install Python2.6/3.x on Linux.
   if [ $(uname -s) == "Linux" ]; then
     sudo apt-get install -y python-software-properties # for apt-add-repository
@@ -124,6 +129,19 @@ internal_install_python_deps() {
   fi
 }
 
+build_objectivec_common () {
+  # Reused the build script that takes care of configure and then Xcode
+  # builds/tests.
+  objectivec/DevTools/full_mac_build.sh --core-only "$@"
+}
+
+build_objectivec_ios() {
+  build_objectivec_common --skip-xcode-osx
+}
+
+build_objectivec_osx() {
+  build_objectivec_common --skip-xcode-ios
+}
 
 build_python() {
   internal_build_cpp
@@ -189,6 +207,8 @@ Usage: $0 { cpp |
             javanano_jdk6 |
             javanano_jdk7 |
             javanano_oracle7 |
+            objectivec_ios |
+            objectivec_osx |
             python |
             python_cpp |
             ruby_19 |

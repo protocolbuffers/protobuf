@@ -7,6 +7,8 @@ language: cpp
 os:
   - linux
   - osx
+# The Objective C build needs Xcode 6.4 or later.
+osx_image: xcode7.1
 script:
   - ./travis.sh $CONFIG
 env:
@@ -46,11 +48,22 @@ matrix:
     # which doesn't work on OS X.
     - os: osx
       env: CONFIG=csharp
+  # Add into the matrix OS X tests of Objective C (needs Xcode, so it won't
+  # work on other platforms). These are split so it doesn't take as long to run.
+  include:
+    - os: osx
+      env: CONFIG=objectivec_ios
+    - os: osx
+      env: CONFIG=objectivec_osx
   allow_failures:
     # These currently do not work on OS X but are being worked on by @haberman.
     - os: osx
       env: CONFIG=ruby22
     - os: osx
       env: CONFIG=jruby
+    # Travis seems be flaky in letting the iOS simulator launch, so keep that
+    # flake from failing builds by marking that build as an allowed failure.
+    - os: osx
+      env: CONFIG=objectivec_ios
 notifications:
   email: false
