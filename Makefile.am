@@ -579,13 +579,13 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/iOSTestHarness/en.lproj/InfoPlist.strings                 \
   objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/Contents.json      \
   objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPad6.png          \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPad6@2x.png       \
+  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPad6_2x.png       \
   objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPad7.png          \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPad7@2x.png       \
+  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPad7_2x.png       \
   objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone6.png        \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone6@2x.png     \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone7@2x.png     \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone7@3x.png     \
+  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone6_2x.png     \
+  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone7_2x.png     \
+  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone7_3x.png     \
   objectivec/Tests/iOSTestHarness/Images.xcassets/LaunchImage.launchimage/Contents.json \
   objectivec/Tests/iOSTestHarness/Info.plist                                  \
   objectivec/Tests/iOSTestHarness/LaunchScreen.xib                            \
