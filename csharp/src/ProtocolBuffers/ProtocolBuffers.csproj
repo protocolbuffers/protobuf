@@ -84,7 +84,6 @@
     <Compile Include="Descriptors\MethodDescriptor.cs" />
     <Compile Include="Descriptors\PackageDescriptor.cs" />
     <Compile Include="Descriptors\ServiceDescriptor.cs" />
-    <Compile Include="EnumHelper.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="FieldAccess\FieldAccessorBase.cs" />
     <Compile Include="FieldAccess\ReflectionUtil.cs" />

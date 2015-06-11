@@ -296,27 +296,27 @@ namespace Google.Protobuf
         public void TestNegativeEnumNoTag()
         {
             Assert.AreEqual(10, CodedOutputStream.ComputeInt32SizeNoTag(-2));
-            Assert.AreEqual(10, CodedOutputStream.ComputeEnumSizeNoTag(TestNegEnum.Value));
+            Assert.AreEqual(10, CodedOutputStream.ComputeEnumSizeNoTag((int) TestNegEnum.Value));
 
             byte[] bytes = new byte[10];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteEnumNoTag(TestNegEnum.Value);
+            output.WriteEnumNoTag((int) TestNegEnum.Value);
 
             Assert.AreEqual(0, output.SpaceLeft);
             Assert.AreEqual("FE-FF-FF-FF-FF-FF-FF-FF-FF-01", BitConverter.ToString(bytes));
         }
 
-        enum TestNegEnum : long { None = 0, Value = -2 }
+        enum TestNegEnum { None = 0, Value = -2 }
 
         [Test]
         public void TestNegativeEnumWithTag()
         {
             Assert.AreEqual(11, CodedOutputStream.ComputeInt32Size(8, -2));
-            Assert.AreEqual(11, CodedOutputStream.ComputeEnumSize(8, TestNegEnum.Value));
+            Assert.AreEqual(11, CodedOutputStream.ComputeEnumSize(8, (int) TestNegEnum.Value));
 
             byte[] bytes = new byte[11];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteEnum(8, "", TestNegEnum.Value);
+            output.WriteEnum(8, "", (int) TestNegEnum.Value);
 
             Assert.AreEqual(0, output.SpaceLeft);
             //fyi, 0x40 == 0x08 << 3 + 0, field num + wire format shift

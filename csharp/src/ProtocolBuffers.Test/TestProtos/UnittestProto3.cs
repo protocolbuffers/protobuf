@@ -372,14 +372,14 @@ namespace Google.Protobuf.TestProtos {
 
   }
   #region Enums
-  public enum ForeignEnum : long {
+  public enum ForeignEnum {
     FOREIGN_UNSPECIFIED = 0,
     FOREIGN_FOO = 4,
     FOREIGN_BAR = 5,
     FOREIGN_BAZ = 6,
   }
 
-  public enum TestEnumWithDupValue : long {
+  public enum TestEnumWithDupValue {
     TEST_ENUM_WITH_DUP_VALUE_UNSPECIFIED = 0,
     FOO1 = 1,
     BAR1 = 2,
@@ -388,7 +388,7 @@ namespace Google.Protobuf.TestProtos {
     BAR2 = 2,
   }
 
-  public enum TestSparseEnum : long {
+  public enum TestSparseEnum {
     TEST_SPARSE_ENUM_UNSPECIFIED = 0,
     SPARSE_A = 123,
     SPARSE_B = 62374,
@@ -945,13 +945,13 @@ namespace Google.Protobuf.TestProtos {
         output.WriteMessage(20, fieldNames[35], SingleImportMessage);
       }
       if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED) {
-        output.WriteEnum(21, fieldNames[38], SingleNestedEnum);
+        output.WriteEnum(21, fieldNames[38], (int) SingleNestedEnum);
       }
       if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
-        output.WriteEnum(22, fieldNames[32], SingleForeignEnum);
+        output.WriteEnum(22, fieldNames[32], (int) SingleForeignEnum);
       }
       if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED) {
-        output.WriteEnum(23, fieldNames[34], SingleImportEnum);
+        output.WriteEnum(23, fieldNames[34], (int) SingleImportEnum);
       }
       if (singlePublicImportMessage_ != null) {
         output.WriteMessage(26, fieldNames[40], SinglePublicImportMessage);
@@ -1049,13 +1049,13 @@ namespace Google.Protobuf.TestProtos {
         size += pb::CodedOutputStream.ComputeMessageSize(20, SingleImportMessage);
       }
       if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED) {
-        size += pb::CodedOutputStream.ComputeEnumSize(21, SingleNestedEnum);
+        size += pb::CodedOutputStream.ComputeEnumSize(21, (int) SingleNestedEnum);
       }
       if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
-        size += pb::CodedOutputStream.ComputeEnumSize(22, SingleForeignEnum);
+        size += pb::CodedOutputStream.ComputeEnumSize(22, (int) SingleForeignEnum);
       }
       if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED) {
-        size += pb::CodedOutputStream.ComputeEnumSize(23, SingleImportEnum);
+        size += pb::CodedOutputStream.ComputeEnumSize(23, (int) SingleImportEnum);
       }
       if (singlePublicImportMessage_ != null) {
         size += pb::CodedOutputStream.ComputeMessageSize(26, SinglePublicImportMessage);
@@ -1205,7 +1205,7 @@ namespace Google.Protobuf.TestProtos {
         int dataSize = 0;
         if (repeatedNestedEnum_.Count > 0) {
           foreach (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum element in repeatedNestedEnum_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
           }
           size += dataSize;
           size += 2;
@@ -1216,7 +1216,7 @@ namespace Google.Protobuf.TestProtos {
         int dataSize = 0;
         if (repeatedForeignEnum_.Count > 0) {
           foreach (global::Google.Protobuf.TestProtos.ForeignEnum element in repeatedForeignEnum_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
           }
           size += dataSize;
           size += 2;
@@ -1227,7 +1227,7 @@ namespace Google.Protobuf.TestProtos {
         int dataSize = 0;
         if (repeatedImportEnum_.Count > 0) {
           foreach (global::Google.Protobuf.TestProtos.ImportEnum element in repeatedImportEnum_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
           }
           size += dataSize;
           size += 2;
@@ -1472,16 +1472,19 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 168: {
-            input.ReadEnum(ref singleNestedEnum_);
-            break;
+            int tmp = 0;
+            input.ReadEnum(ref tmp);
+            singleNestedEnum_ = (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) tmp;break;
           }
           case 176: {
-            input.ReadEnum(ref singleForeignEnum_);
-            break;
+            int tmp = 0;
+            input.ReadEnum(ref tmp);
+            singleForeignEnum_ = (global::Google.Protobuf.TestProtos.ForeignEnum) tmp;break;
           }
           case 184: {
-            input.ReadEnum(ref singleImportEnum_);
-            break;
+            int tmp = 0;
+            input.ReadEnum(ref tmp);
+            singleImportEnum_ = (global::Google.Protobuf.TestProtos.ImportEnum) tmp;break;
           }
           case 210: {
             if (singlePublicImportMessage_ == null) {
@@ -1634,7 +1637,7 @@ namespace Google.Protobuf.TestProtos {
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
-      public enum NestedEnum : long {
+      public enum NestedEnum {
         NESTED_ENUM_UNSPECIFIED = 0,
         FOO = 1,
         BAR = 2,
@@ -2865,7 +2868,7 @@ namespace Google.Protobuf.TestProtos {
         output.WriteString(2, fieldNames[7], StringField);
       }
       if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
-        output.WriteEnum(3, fieldNames[0], EnumField);
+        output.WriteEnum(3, fieldNames[0], (int) EnumField);
       }
       if (messageField_ != null) {
         output.WriteMessage(4, fieldNames[1], MessageField);
@@ -2885,7 +2888,7 @@ namespace Google.Protobuf.TestProtos {
         size += pb::CodedOutputStream.ComputeStringSize(2, StringField);
       }
       if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
-        size += pb::CodedOutputStream.ComputeEnumSize(3, EnumField);
+        size += pb::CodedOutputStream.ComputeEnumSize(3, (int) EnumField);
       }
       if (messageField_ != null) {
         size += pb::CodedOutputStream.ComputeMessageSize(4, MessageField);
@@ -2912,7 +2915,7 @@ namespace Google.Protobuf.TestProtos {
         int dataSize = 0;
         if (repeatedEnumField_.Count > 0) {
           foreach (global::Google.Protobuf.TestProtos.ForeignEnum element in repeatedEnumField_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
           }
           size += dataSize;
           size += 1;
@@ -2976,8 +2979,9 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 24: {
-            input.ReadEnum(ref enumField_);
-            break;
+            int tmp = 0;
+            input.ReadEnum(ref tmp);
+            enumField_ = (global::Google.Protobuf.TestProtos.ForeignEnum) tmp;break;
           }
           case 34: {
             if (messageField_ == null) {
@@ -3361,14 +3365,14 @@ namespace Google.Protobuf.TestProtos {
     public void WriteTo(pb::ICodedOutputStream output) {
       string[] fieldNames = _fieldNames;
       if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) {
-        output.WriteEnum(1, fieldNames[0], SparseEnum);
+        output.WriteEnum(1, fieldNames[0], (int) SparseEnum);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) {
-        size += pb::CodedOutputStream.ComputeEnumSize(1, SparseEnum);
+        size += pb::CodedOutputStream.ComputeEnumSize(1, (int) SparseEnum);
       }
       return size;
     }
@@ -3400,8 +3404,9 @@ namespace Google.Protobuf.TestProtos {
             }
             break;
           case 8: {
-            input.ReadEnum(ref sparseEnum_);
-            break;
+            int tmp = 0;
+            input.ReadEnum(ref tmp);
+            sparseEnum_ = (global::Google.Protobuf.TestProtos.TestSparseEnum) tmp;break;
           }
         }
       }
@@ -4769,7 +4774,7 @@ namespace Google.Protobuf.TestProtos {
         int dataSize = 0;
         if (packedEnum_.Count > 0) {
           foreach (global::Google.Protobuf.TestProtos.ForeignEnum element in packedEnum_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
           }
           size += dataSize;
           size += 2;
@@ -5156,7 +5161,7 @@ namespace Google.Protobuf.TestProtos {
         int dataSize = 0;
         if (unpackedEnum_.Count > 0) {
           foreach (global::Google.Protobuf.TestProtos.ForeignEnum element in unpackedEnum_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
           }
           size += dataSize;
           size += 2 * unpackedEnum_.Count;

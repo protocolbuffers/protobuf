@@ -434,11 +434,10 @@ namespace Google.Protobuf
         /// then the ref value is set and it returns true.  Otherwise the unknown output
         /// value is set and this method returns false.
         /// </summary>   
-        public bool ReadEnum<T>(ref T value)
-            where T : struct, IComparable, IFormattable
+        public bool ReadEnum(ref int value)
         {
-            int number = (int) ReadRawVarint32();
-            value = EnumHelper<T>.FromInt32(number);
+            // Currently just a pass-through, but it's nice to separate it logically from WriteInt32.
+            value = (int) ReadRawVarint32();
             return true;
         }
 
@@ -796,7 +795,7 @@ namespace Google.Protobuf
         public void ReadEnumArray<T>(uint fieldTag, string fieldName, ICollection<T> list)
             where T : struct, IComparable, IFormattable
         {
-            T value = default(T);
+            int value = 0;
             WireFormat.WireType wformat = WireFormat.GetTagWireType(fieldTag);
 
             // 2.3 allows packed form even if the field is not declared packed.
@@ -806,8 +805,9 @@ namespace Google.Protobuf
                 int limit = PushLimit(length);
                 while (!ReachedLimit)
                 {
-                    ReadEnum<T>(ref value);
-                    list.Add(value);
+                    ReadEnum(ref value);
+                    // TODO(jonskeet): Avoid this horrible boxing!
+                    list.Add((T)(object)value);
                 }
                 PopLimit(limit);
             }
@@ -816,7 +816,8 @@ namespace Google.Protobuf
                 do
                 {
                     ReadEnum(ref value);
-                    list.Add(value);
+                    // TODO(jonskeet): Avoid this horrible boxing!
+                    list.Add((T)(object) value);
                 } while (ContinueArray(fieldTag));
             }
         }

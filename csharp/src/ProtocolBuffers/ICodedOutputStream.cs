@@ -148,7 +148,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes an enum field value, including tag, to the stream.
         /// </summary>
-        void WriteEnum<T>(int fieldNumber, string fieldName, T value) where T : struct, IComparable, IFormattable;
+        void WriteEnum(int fieldNumber, string fieldName, int value);
 
         /// <summary>
         /// Writes a fixed 32-bit field value, including tag, to the stream.

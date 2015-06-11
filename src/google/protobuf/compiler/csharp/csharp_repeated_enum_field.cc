@@ -99,7 +99,7 @@ void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer
   printer->Print(
     variables_,
     "foreach ($type_name$ element in $name$_) {\n"
-    "  dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);\n"
+    "  dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);\n"
     "}\n"
     "size += dataSize;\n");
   int tagSize = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());

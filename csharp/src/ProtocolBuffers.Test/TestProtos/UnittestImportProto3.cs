@@ -49,7 +49,7 @@ namespace Google.Protobuf.TestProtos {
 
   }
   #region Enums
-  public enum ImportEnum : long {
+  public enum ImportEnum {
     IMPORT_ENUM_UNSPECIFIED = 0,
     IMPORT_FOO = 7,
     IMPORT_BAR = 8,

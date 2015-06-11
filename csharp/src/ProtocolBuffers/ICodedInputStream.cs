@@ -146,14 +146,11 @@ namespace Google.Protobuf
         bool ReadUInt32(ref uint value);
 
         /// <summary>
-        /// Reads an enum field value from the stream. If the enum is valid for type T,
-        /// then the ref value is set and it returns true. Otherwise, if a value is present
-        /// but invalid for the proto enum, it is still set in the field as a "preserved
-        /// but invalid" value, and the method returns true. If no value can be read, the
-        /// method does not affect the parameter and returns false.
+        /// Reads an enum field value from the stream. This performs no checking
+        /// as to whether the enum value is known to the enum type as it was present
+        /// when the code was generated.
         /// </summary>   
-        bool ReadEnum<T>(ref T value)
-            where T : struct, IComparable, IFormattable;
+        bool ReadEnum(ref int value);
 
         /// <summary>
         /// Reads an sfixed32 field value from the stream.

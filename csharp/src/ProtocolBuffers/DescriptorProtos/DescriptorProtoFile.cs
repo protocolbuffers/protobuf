@@ -1360,10 +1360,10 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteInt32(3, fieldNames[4], Number);
       }
       if (Label != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) {
-        output.WriteEnum(4, fieldNames[2], Label);
+        output.WriteEnum(4, fieldNames[2], (int) Label);
       }
       if (Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
-        output.WriteEnum(5, fieldNames[7], Type);
+        output.WriteEnum(5, fieldNames[7], (int) Type);
       }
       if (TypeName != "") {
         output.WriteString(6, fieldNames[8], TypeName);
@@ -1388,10 +1388,10 @@ namespace Google.Protobuf.DescriptorProtos {
         size += pb::CodedOutputStream.ComputeInt32Size(3, Number);
       }
       if (Label != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) {
-        size += pb::CodedOutputStream.ComputeEnumSize(4, Label);
+        size += pb::CodedOutputStream.ComputeEnumSize(4, (int) Label);
       }
       if (Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
-        size += pb::CodedOutputStream.ComputeEnumSize(5, Type);
+        size += pb::CodedOutputStream.ComputeEnumSize(5, (int) Type);
       }
       if (TypeName != "") {
         size += pb::CodedOutputStream.ComputeStringSize(6, TypeName);
@@ -1477,12 +1477,14 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 32: {
-            input.ReadEnum(ref label_);
-            break;
+            int tmp = 0;
+            input.ReadEnum(ref tmp);
+            label_ = (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label) tmp;break;
           }
           case 40: {
-            input.ReadEnum(ref type_);
-            break;
+            int tmp = 0;
+            input.ReadEnum(ref tmp);
+            type_ = (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type) tmp;break;
           }
           case 50: {
             input.ReadString(ref typeName_);
@@ -1510,7 +1512,7 @@ namespace Google.Protobuf.DescriptorProtos {
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
-      public enum Type : long {
+      public enum Type {
         TYPE_DOUBLE = 1,
         TYPE_FLOAT = 2,
         TYPE_INT64 = 3,
@@ -1531,7 +1533,7 @@ namespace Google.Protobuf.DescriptorProtos {
         TYPE_SINT64 = 18,
       }
 
-      public enum Label : long {
+      public enum Label {
         LABEL_OPTIONAL = 1,
         LABEL_REQUIRED = 2,
         LABEL_REPEATED = 3,
@@ -2489,7 +2491,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteString(8, fieldNames[8], JavaOuterClassname);
       }
       if (OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) {
-        output.WriteEnum(9, fieldNames[12], OptimizeFor);
+        output.WriteEnum(9, fieldNames[12], (int) OptimizeFor);
       }
       if (JavaMultipleFiles != false) {
         output.WriteBool(10, fieldNames[7], JavaMultipleFiles);
@@ -2545,7 +2547,7 @@ namespace Google.Protobuf.DescriptorProtos {
         size += pb::CodedOutputStream.ComputeBoolSize(27, JavaStringCheckUtf8);
       }
       if (OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) {
-        size += pb::CodedOutputStream.ComputeEnumSize(9, OptimizeFor);
+        size += pb::CodedOutputStream.ComputeEnumSize(9, (int) OptimizeFor);
       }
       if (GoPackage != "") {
         size += pb::CodedOutputStream.ComputeStringSize(11, GoPackage);
@@ -2652,8 +2654,9 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 72: {
-            input.ReadEnum(ref optimizeFor_);
-            break;
+            int tmp = 0;
+            input.ReadEnum(ref tmp);
+            optimizeFor_ = (global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode) tmp;break;
           }
           case 80: {
             input.ReadBool(ref javaMultipleFiles_);
@@ -2710,7 +2713,7 @@ namespace Google.Protobuf.DescriptorProtos {
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
-      public enum OptimizeMode : long {
+      public enum OptimizeMode {
         SPEED = 1,
         CODE_SIZE = 2,
         LITE_RUNTIME = 3,
@@ -3015,7 +3018,7 @@ namespace Google.Protobuf.DescriptorProtos {
     public void WriteTo(pb::ICodedOutputStream output) {
       string[] fieldNames = _fieldNames;
       if (Ctype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING) {
-        output.WriteEnum(1, fieldNames[0], Ctype);
+        output.WriteEnum(1, fieldNames[0], (int) Ctype);
       }
       if (Packed != false) {
         output.WriteBool(2, fieldNames[4], Packed);
@@ -3027,7 +3030,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteBool(5, fieldNames[3], Lazy);
       }
       if (Jstype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL) {
-        output.WriteEnum(6, fieldNames[2], Jstype);
+        output.WriteEnum(6, fieldNames[2], (int) Jstype);
       }
       if (Weak != false) {
         output.WriteBool(10, fieldNames[6], Weak);
@@ -3038,13 +3041,13 @@ namespace Google.Protobuf.DescriptorProtos {
     public int CalculateSize() {
       int size = 0;
       if (Ctype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING) {
-        size += pb::CodedOutputStream.ComputeEnumSize(1, Ctype);
+        size += pb::CodedOutputStream.ComputeEnumSize(1, (int) Ctype);
       }
       if (Packed != false) {
         size += pb::CodedOutputStream.ComputeBoolSize(2, Packed);
       }
       if (Jstype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL) {
-        size += pb::CodedOutputStream.ComputeEnumSize(6, Jstype);
+        size += pb::CodedOutputStream.ComputeEnumSize(6, (int) Jstype);
       }
       if (Lazy != false) {
         size += pb::CodedOutputStream.ComputeBoolSize(5, Lazy);
@@ -3104,8 +3107,9 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 8: {
-            input.ReadEnum(ref ctype_);
-            break;
+            int tmp = 0;
+            input.ReadEnum(ref tmp);
+            ctype_ = (global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType) tmp;break;
           }
           case 16: {
             input.ReadBool(ref packed_);
@@ -3120,8 +3124,9 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 48: {
-            input.ReadEnum(ref jstype_);
-            break;
+            int tmp = 0;
+            input.ReadEnum(ref tmp);
+            jstype_ = (global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType) tmp;break;
           }
           case 80: {
             input.ReadBool(ref weak_);
@@ -3138,13 +3143,13 @@ namespace Google.Protobuf.DescriptorProtos {
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
-      public enum CType : long {
+      public enum CType {
         STRING = 0,
         CORD = 1,
         STRING_PIECE = 2,
       }
 
-      public enum JSType : long {
+      public enum JSType {
         JS_NORMAL = 0,
         JS_STRING = 1,
         JS_NUMBER = 2,

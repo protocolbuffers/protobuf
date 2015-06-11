@@ -37,6 +37,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Google.Protobuf.Collections;
 using Google.Protobuf.Descriptors;
@@ -350,10 +351,11 @@ namespace Google.Protobuf
             WriteRawVarint32(value);
         }
 
-        public void WriteEnum<T>(int fieldNumber, string fieldName, T value) where T : struct, IComparable, IFormattable
+        public void WriteEnum(int fieldNumber, string fieldName, int value)
         {
+            // Currently just a pass-through, but it's nice to separate it logically from WriteInt32.
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
-            WriteInt32NoTag(EnumHelper<T>.ToInt32(value));
+            WriteInt32NoTag(value);
         }
 
         public void WriteSFixed32(int fieldNumber, string fieldName, int value)
@@ -595,9 +597,9 @@ namespace Google.Protobuf
             WriteRawVarint32(value);
         }
 
-        public void WriteEnumNoTag<T>(T value) where T : struct, IComparable, IFormattable
+        public void WriteEnumNoTag(int value)
         {
-            WriteInt32NoTag(EnumHelper<T>.ToInt32(value));
+            WriteInt32NoTag(value);
         }
 
         public void WriteSFixed32NoTag(int value)
@@ -774,7 +776,12 @@ namespace Google.Protobuf
         public void WriteEnumArray<T>(int fieldNumber, string fieldName, RepeatedField<T> list)
             where T : struct, IComparable, IFormattable
         {
-            foreach (T value in list)
+            if (list.Count == 0)
+            {
+                return;
+            }
+            // TODO(jonskeet): Avoid the Cast call here. Work out a better mass "T to int" conversion.
+            foreach (int value in list.Cast<int>())
             {
                 WriteEnum(fieldNumber, fieldName, value);
             }
@@ -1005,10 +1012,13 @@ namespace Google.Protobuf
             {
                 return;
             }
-            uint size = list.CalculateSize(ComputeEnumSizeNoTag);
+            // Obviously, we'll want to get rid of this hack...
+            var temporaryHack = new RepeatedField<int>();
+            temporaryHack.Add(list.Cast<int>());
+            uint size = temporaryHack.CalculateSize(ComputeEnumSizeNoTag);
             WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
             WriteRawVarint32(size);
-            foreach (T value in list)
+            foreach (int value in temporaryHack)
             {
                 WriteEnumNoTag(value);
             }

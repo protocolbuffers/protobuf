@@ -75,13 +75,13 @@ namespace UnitTest.Issues.TestProtos {
 
   }
   #region Enums
-  public enum NegativeEnum : long {
+  public enum NegativeEnum {
     NEGATIVE_ENUM_ZERO = 0,
     FiveBelow = -5,
     MinusOne = -1,
   }
 
-  public enum DeprecatedEnum : long {
+  public enum DeprecatedEnum {
     DEPRECATED_ZERO = 0,
     one = 1,
   }
@@ -156,7 +156,7 @@ namespace UnitTest.Issues.TestProtos {
     public void WriteTo(pb::ICodedOutputStream output) {
       string[] fieldNames = _fieldNames;
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
-        output.WriteEnum(1, fieldNames[1], Value);
+        output.WriteEnum(1, fieldNames[1], (int) Value);
       }
       output.WriteEnumArray(2, fieldNames[2], values_);
       output.WritePackedEnumArray(3, fieldNames[0], packedValues_);
@@ -165,13 +165,13 @@ namespace UnitTest.Issues.TestProtos {
     public int CalculateSize() {
       int size = 0;
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
-        size += pb::CodedOutputStream.ComputeEnumSize(1, Value);
+        size += pb::CodedOutputStream.ComputeEnumSize(1, (int) Value);
       }
       {
         int dataSize = 0;
         if (values_.Count > 0) {
           foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in values_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
           }
           size += dataSize;
           size += 1 * values_.Count;
@@ -181,7 +181,7 @@ namespace UnitTest.Issues.TestProtos {
         int dataSize = 0;
         if (packedValues_.Count > 0) {
           foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in packedValues_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
           }
           size += dataSize;
           size += 1;
@@ -220,8 +220,9 @@ namespace UnitTest.Issues.TestProtos {
             }
             break;
           case 8: {
-            input.ReadEnum(ref value_);
-            break;
+            int tmp = 0;
+            input.ReadEnum(ref tmp);
+            value_ = (global::UnitTest.Issues.TestProtos.NegativeEnum) tmp;break;
           }
           case 18:
           case 16: {
@@ -422,7 +423,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       output.WriteMessageArray(4, fieldNames[2], messageArray_);
       if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
-        output.WriteEnum(5, fieldNames[1], EnumValue);
+        output.WriteEnum(5, fieldNames[1], (int) EnumValue);
       }
       output.WritePackedEnumArray(6, fieldNames[0], enumArray_);
     }
@@ -449,13 +450,13 @@ namespace UnitTest.Issues.TestProtos {
         size += pb::CodedOutputStream.ComputeMessageSize(4, element);
       }
       if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
-        size += pb::CodedOutputStream.ComputeEnumSize(5, EnumValue);
+        size += pb::CodedOutputStream.ComputeEnumSize(5, (int) EnumValue);
       }
       {
         int dataSize = 0;
         if (enumArray_.Count > 0) {
           foreach (global::UnitTest.Issues.TestProtos.DeprecatedEnum element in enumArray_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag(element);
+            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
           }
           size += dataSize;
           size += 1;
@@ -524,8 +525,9 @@ namespace UnitTest.Issues.TestProtos {
             break;
           }
           case 40: {
-            input.ReadEnum(ref enumValue_);
-            break;
+            int tmp = 0;
+            input.ReadEnum(ref tmp);
+            enumValue_ = (global::UnitTest.Issues.TestProtos.DeprecatedEnum) tmp;break;
           }
           case 50:
           case 48: {

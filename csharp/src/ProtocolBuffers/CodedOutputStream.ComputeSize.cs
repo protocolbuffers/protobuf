@@ -196,7 +196,7 @@ namespace Google.Protobuf
         /// enum field, including the tag. The caller is responsible for
         /// converting the enum value to its numeric value.
         /// </summary>
-        public static int ComputeEnumSize<T>(int fieldNumber, T value) where T : struct, IComparable, IFormattable
+        public static int ComputeEnumSize(int fieldNumber, int value)
         {
             return ComputeTagSize(fieldNumber) + ComputeEnumSizeNoTag(value);
         }
@@ -371,10 +371,10 @@ namespace Google.Protobuf
         /// enum field, including the tag. The caller is responsible for
         /// converting the enum value to its numeric value.
         /// </summary>
-        public static int ComputeEnumSizeNoTag<T>(T value) where T : struct, IComparable, IFormattable
+        public static int ComputeEnumSizeNoTag(int value)
         {
-            int serializedValue = EnumHelper<T>.ToInt32(value);
-            return ComputeInt32SizeNoTag(serializedValue);
+            // Currently just a pass-through, but it's nice to separate it logically.
+            return ComputeInt32SizeNoTag(value);
         }
 
         /// <summary>
@@ -555,7 +555,7 @@ namespace Google.Protobuf
                 case FieldType.SInt64:
                     return ComputeSInt64Size(fieldNumber, (long) value);
                 case FieldType.Enum:
-                    return ComputeEnumSize(fieldNumber, Convert.ToInt64(value));
+                    return ComputeEnumSize(fieldNumber, (int) value);
                 default:
                     throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
             }
@@ -605,7 +605,7 @@ namespace Google.Protobuf
                 case FieldType.SInt64:
                     return ComputeSInt64SizeNoTag((long) value);
                 case FieldType.Enum:
-                    return ComputeEnumSizeNoTag(Convert.ToInt64(value));
+                    return ComputeEnumSizeNoTag((int) value);
                 default:
                     throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
             }

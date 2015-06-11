@@ -466,18 +466,18 @@ namespace Google.Protobuf
             }
         }
 
-        enum TestNegEnum : long { None = 0, Value = -2 }
+        enum TestNegEnum { None = 0, Value = -2 }
 
         [Test]
         public void TestNegativeEnum()
         {
             byte[] bytes = new byte[10] { 0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 };
             CodedInputStream input = CodedInputStream.CreateInstance(bytes);
-            TestNegEnum val = TestNegEnum.None;
+            int val = 0;
 
             Assert.IsTrue(input.ReadEnum(ref val));
             Assert.IsTrue(input.IsAtEnd);
-            Assert.AreEqual(TestNegEnum.Value, val);
+            Assert.AreEqual((int) TestNegEnum.Value, val);
         }
 
         [Test]
