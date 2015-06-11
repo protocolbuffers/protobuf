@@ -135,7 +135,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeStringSize(int fieldNumber, String value)
         {
-            int byteArraySize = Encoding.UTF8.GetByteCount(value);
+            int byteArraySize = UTF8.GetByteCount(value);
             return ComputeTagSize(fieldNumber) +
                    ComputeRawVarint32Size((uint) byteArraySize) +
                    byteArraySize;
@@ -323,7 +323,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeStringSizeNoTag(String value)
         {
-            int byteArraySize = Encoding.UTF8.GetByteCount(value);
+            int byteArraySize = UTF8.GetByteCount(value);
             return ComputeRawVarint32Size((uint) byteArraySize) +
                    byteArraySize;
         }

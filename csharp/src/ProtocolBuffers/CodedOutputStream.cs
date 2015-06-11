@@ -58,6 +58,8 @@ namespace Google.Protobuf
     /// </remarks>
     public sealed partial class CodedOutputStream : ICodedOutputStream
     {
+        private static readonly Encoding UTF8 = Encoding.UTF8;
+
         /// <summary>
         /// The buffer size used by CreateInstance(Stream).
         /// </summary>
@@ -294,16 +296,26 @@ namespace Google.Protobuf
             WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
             // Optimise the case where we have enough space to write
             // the string directly to the buffer, which should be common.
-            int length = Encoding.UTF8.GetByteCount(value);
+            int length = UTF8.GetByteCount(value);
             WriteRawVarint32((uint) length);
             if (limit - position >= length)
             {
-                Encoding.UTF8.GetBytes(value, 0, value.Length, buffer, position);
+                if (length == value.Length) // Must be all ASCII...
+                {
+                                for (int i = 0; i < length; i++)
+                                {
+                        buffer[position + i] = (byte)value[i];
+                    }
+                }
+                else
+                {
+                    UTF8.GetBytes(value, 0, value.Length, buffer, position);
+                }
                 position += length;
             }
             else
             {
-                byte[] bytes = Encoding.UTF8.GetBytes(value);
+                byte[] bytes = UTF8.GetBytes(value);
                 WriteRawBytes(bytes);
             }
         }
