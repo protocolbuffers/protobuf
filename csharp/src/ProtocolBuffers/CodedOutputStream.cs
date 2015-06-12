@@ -543,19 +543,14 @@ namespace Google.Protobuf
         #endregion
 
         #region Write array members
-        public void WriteGroupArray<T>(int fieldNumber, RepeatedField<T> list)
-            where T : IMessage
-        {
-            foreach (IMessage value in list)
-            {
-                WriteGroup(fieldNumber, value);
-            }
-        }
-
         public void WriteMessageArray<T>(int fieldNumber, RepeatedField<T> list)
             where T : IMessage
         {
-            foreach (IMessage value in list)
+            if (list.Count == 0)
+            {
+                return;
+            }
+            foreach (T value in list)
             {
                 WriteMessage(fieldNumber, value);
             }
@@ -563,6 +558,10 @@ namespace Google.Protobuf
 
         public void WriteStringArray(int fieldNumber, RepeatedField<string> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteString(fieldNumber, value);
@@ -571,6 +570,10 @@ namespace Google.Protobuf
 
         public void WriteBytesArray(int fieldNumber, RepeatedField<ByteString> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteBytes(fieldNumber, value);
@@ -579,6 +582,10 @@ namespace Google.Protobuf
 
         public void WriteBoolArray(int fieldNumber, RepeatedField<bool> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteBool(fieldNumber, value);
@@ -587,6 +594,10 @@ namespace Google.Protobuf
 
         public void WriteInt32Array(int fieldNumber, RepeatedField<int> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteInt32(fieldNumber, value);
@@ -595,6 +606,10 @@ namespace Google.Protobuf
 
         public void WriteSInt32Array(int fieldNumber, RepeatedField<int> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteSInt32(fieldNumber, value);
@@ -603,6 +618,10 @@ namespace Google.Protobuf
 
         public void WriteUInt32Array(int fieldNumber, RepeatedField<uint> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteUInt32(fieldNumber, value);
@@ -611,6 +630,10 @@ namespace Google.Protobuf
 
         public void WriteFixed32Array(int fieldNumber, RepeatedField<uint> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteFixed32(fieldNumber, value);
@@ -619,6 +642,10 @@ namespace Google.Protobuf
 
         public void WriteSFixed32Array(int fieldNumber, RepeatedField<int> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteSFixed32(fieldNumber, value);
@@ -627,6 +654,10 @@ namespace Google.Protobuf
 
         public void WriteInt64Array(int fieldNumber, RepeatedField<long> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteInt64(fieldNumber, value);
@@ -635,6 +666,10 @@ namespace Google.Protobuf
 
         public void WriteSInt64Array(int fieldNumber, RepeatedField<long> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteSInt64(fieldNumber, value);
@@ -643,6 +678,10 @@ namespace Google.Protobuf
 
         public void WriteUInt64Array(int fieldNumber, RepeatedField<ulong> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteUInt64(fieldNumber, value);
@@ -651,6 +690,10 @@ namespace Google.Protobuf
 
         public void WriteFixed64Array(int fieldNumber, RepeatedField<ulong> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteFixed64(fieldNumber, value);
@@ -659,6 +702,10 @@ namespace Google.Protobuf
 
         public void WriteSFixed64Array(int fieldNumber, RepeatedField<long> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteSFixed64(fieldNumber, value);
@@ -667,6 +714,10 @@ namespace Google.Protobuf
 
         public void WriteDoubleArray(int fieldNumber, RepeatedField<double> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteDouble(fieldNumber, value);
@@ -675,6 +726,10 @@ namespace Google.Protobuf
 
         public void WriteFloatArray(int fieldNumber, RepeatedField<float> list)
         {
+            if (list.Count == 0)
+            {
+                return;
+            }
             foreach (var value in list)
             {
                 WriteFloat(fieldNumber, value);
