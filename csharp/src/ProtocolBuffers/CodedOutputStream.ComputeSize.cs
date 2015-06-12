@@ -91,15 +91,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeInt32Size(int fieldNumber, int value)
         {
-            if (value >= 0)
-            {
-                return ComputeTagSize(fieldNumber) + ComputeRawVarint32Size((uint) value);
-            }
-            else
-            {
-                // Must sign-extend.
-                return ComputeTagSize(fieldNumber) + 10;
-            }
+            return ComputeTagSize(fieldNumber) + ComputeInt32SizeNoTag(value);
         }
 
         /// <summary>
@@ -418,7 +410,6 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeRawVarint32Size(uint value)
         {
-            // TODO(jonskeet): Look at optimizing this to just hard-coded comparisons.
             if ((value & (0xffffffff << 7)) == 0)
             {
                 return 1;
@@ -443,7 +434,6 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeRawVarint64Size(ulong value)
         {
-            // TODO(jonskeet): Look at optimizing this to just hard-coded comparisons.
             if ((value & (0xffffffffffffffffL << 7)) == 0)
             {
                 return 1;
