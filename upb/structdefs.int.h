@@ -19,7 +19,7 @@
  * flag.
  */
 
-#include <upb/def.h>
+#include "upb/def.h"
 
 #ifndef UPB_STATICINIT_H_
 #define UPB_STATICINIT_H_
