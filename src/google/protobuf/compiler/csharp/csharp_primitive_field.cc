@@ -137,8 +137,6 @@ PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {
 }
 
 void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
-  // TODO(jonskeet): What should foo.OneofIntField = 0; do? Clear the oneof?
-  // Currently foo.OneOfStringField = null will clear the oneof, but foo.OneOfStringField = "" won't. Ick.
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
@@ -148,15 +146,14 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     if (is_value_type) {
       printer->Print(
         variables_,
-        "    $oneof_name$_ = value;\n"
-        "    $oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n");
+        "    $oneof_name$_ = value;\n");
     } else {
       printer->Print(
         variables_,
-        "    $oneof_name$_ = value ?? $default_value$;\n"
-        "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n");
+        "    $oneof_name$_ = value ?? $default_value$;\n");
     }
     printer->Print(
+      "    $oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
       "  }\n"
       "}\n");
 }
@@ -167,11 +164,9 @@ void PrimitiveOneofFieldGenerator::WriteToString(io::Printer* printer) {
 }
 
 void PrimitiveOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
-  // TODO(jonskeet): What if the value we read is the default value for the type?
     printer->Print(
       variables_,
-      "$oneof_name$_ = input.Read$capitalized_type_name$()\n;"
-      "$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n");
+      "$property_name$ = input.Read$capitalized_type_name$()\n;");
 }
 
 }  // namespace csharp
