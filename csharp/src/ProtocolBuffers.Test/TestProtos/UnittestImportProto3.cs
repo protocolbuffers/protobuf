@@ -141,7 +141,7 @@ namespace Google.Protobuf.TestProtos {
             }
             break;
           case 8: {
-            d_ = input.ReadInt32();
+            D = input.ReadInt32();
             break;
           }
         }

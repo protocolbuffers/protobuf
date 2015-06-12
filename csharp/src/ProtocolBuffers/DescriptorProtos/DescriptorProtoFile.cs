@@ -324,13 +324,17 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      output.WriteMessageArray(1, file_);
+      if (file_.Count > 0) {
+        output.WriteMessageArray(1, file_);
+      }
     }
 
     public int CalculateSize() {
       int size = 0;
-      foreach (global::Google.Protobuf.DescriptorProtos.FileDescriptorProto element in file_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(1, element);
+      if (file_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.FileDescriptorProto element in file_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(1, element);
+        }
       }
       return size;
     }
@@ -487,8 +491,8 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public override int GetHashCode() {
       int hash = 0;
-      if (Name != "") hash ^= Name.GetHashCode();
-      if (Package != "") hash ^= Package.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (Package.Length != 0) hash ^= Package.GetHashCode();
       hash ^= dependency_.GetHashCode();
       hash ^= publicDependency_.GetHashCode();
       hash ^= weakDependency_.GetHashCode();
@@ -498,44 +502,58 @@ namespace Google.Protobuf.DescriptorProtos {
       hash ^= extension_.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
       if (sourceCodeInfo_ != null) hash ^= SourceCodeInfo.GetHashCode();
-      if (Syntax != "") hash ^= Syntax.GetHashCode();
+      if (Syntax.Length != 0) hash ^= Syntax.GetHashCode();
       return hash;
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Name != "") {
+      if (Name.Length != 0) {
         output.WriteString(1, Name);
       }
-      if (Package != "") {
+      if (Package.Length != 0) {
         output.WriteString(2, Package);
       }
-      output.WriteStringArray(3, dependency_);
-      output.WriteMessageArray(4, messageType_);
-      output.WriteMessageArray(5, enumType_);
-      output.WriteMessageArray(6, service_);
-      output.WriteMessageArray(7, extension_);
+      if (dependency_.Count > 0) {
+        output.WriteStringArray(3, dependency_);
+      }
+      if (messageType_.Count > 0) {
+        output.WriteMessageArray(4, messageType_);
+      }
+      if (enumType_.Count > 0) {
+        output.WriteMessageArray(5, enumType_);
+      }
+      if (service_.Count > 0) {
+        output.WriteMessageArray(6, service_);
+      }
+      if (extension_.Count > 0) {
+        output.WriteMessageArray(7, extension_);
+      }
       if (options_ != null) {
         output.WriteMessage(8, Options);
       }
       if (sourceCodeInfo_ != null) {
         output.WriteMessage(9, SourceCodeInfo);
       }
-      output.WriteInt32Array(10, publicDependency_);
-      output.WriteInt32Array(11, weakDependency_);
-      if (Syntax != "") {
+      if (publicDependency_.Count > 0) {
+        output.WriteInt32Array(10, publicDependency_);
+      }
+      if (weakDependency_.Count > 0) {
+        output.WriteInt32Array(11, weakDependency_);
+      }
+      if (Syntax.Length != 0) {
         output.WriteString(12, Syntax);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
-      if (Name != "") {
+      if (Name.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(1, Name);
       }
-      if (Package != "") {
+      if (Package.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(2, Package);
       }
-      {
+      if (dependency_.Count > 0) {
         int dataSize = 0;
         foreach (string element in dependency_) {
           dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
@@ -543,7 +561,7 @@ namespace Google.Protobuf.DescriptorProtos {
         size += dataSize;
         size += 1 * dependency_.Count;
       }
-      {
+      if (publicDependency_.Count > 0) {
         int dataSize = 0;
         foreach (int element in publicDependency_) {
           dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
@@ -551,7 +569,7 @@ namespace Google.Protobuf.DescriptorProtos {
         size += dataSize;
         size += 1 * publicDependency_.Count;
       }
-      {
+      if (weakDependency_.Count > 0) {
         int dataSize = 0;
         foreach (int element in weakDependency_) {
           dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
@@ -559,17 +577,25 @@ namespace Google.Protobuf.DescriptorProtos {
         size += dataSize;
         size += 1 * weakDependency_.Count;
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto element in messageType_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+      if (messageType_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto element in messageType_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+        }
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto element in enumType_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(5, element);
+      if (enumType_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto element in enumType_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(5, element);
+        }
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto element in service_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(6, element);
+      if (service_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto element in service_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(6, element);
+        }
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto element in extension_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(7, element);
+      if (extension_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto element in extension_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(7, element);
+        }
       }
       if (options_ != null) {
         size += pb::CodedOutputStream.ComputeMessageSize(8, Options);
@@ -577,7 +603,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (sourceCodeInfo_ != null) {
         size += pb::CodedOutputStream.ComputeMessageSize(9, SourceCodeInfo);
       }
-      if (Syntax != "") {
+      if (Syntax.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(12, Syntax);
       }
       return size;
@@ -586,10 +612,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other == null) {
         return;
       }
-      if (other.Name != "") {
+      if (other.Name.Length != 0) {
         Name = other.Name;
       }
-      if (other.Package != "") {
+      if (other.Package.Length != 0) {
         Package = other.Package;
       }
       dependency_.Add(other.dependency_);
@@ -611,7 +637,7 @@ namespace Google.Protobuf.DescriptorProtos {
         }
         SourceCodeInfo.MergeFrom(other.SourceCodeInfo);
       }
-      if (other.Syntax != "") {
+      if (other.Syntax.Length != 0) {
         Syntax = other.Syntax;
       }
     }
@@ -628,11 +654,11 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            name_ = input.ReadString();
+            Name = input.ReadString();
             break;
           }
           case 18: {
-            package_ = input.ReadString();
+            Package = input.ReadString();
             break;
           }
           case 26: {
@@ -680,7 +706,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 98: {
-            syntax_ = input.ReadString();
+            Syntax = input.ReadString();
             break;
           }
         }
@@ -796,7 +822,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public override int GetHashCode() {
       int hash = 0;
-      if (Name != "") hash ^= Name.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
       hash ^= field_.GetHashCode();
       hash ^= extension_.GetHashCode();
       hash ^= nestedType_.GetHashCode();
@@ -810,52 +836,82 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Name != "") {
+      if (Name.Length != 0) {
         output.WriteString(1, Name);
       }
-      output.WriteMessageArray(2, field_);
-      output.WriteMessageArray(3, nestedType_);
-      output.WriteMessageArray(4, enumType_);
-      output.WriteMessageArray(5, extensionRange_);
-      output.WriteMessageArray(6, extension_);
+      if (field_.Count > 0) {
+        output.WriteMessageArray(2, field_);
+      }
+      if (nestedType_.Count > 0) {
+        output.WriteMessageArray(3, nestedType_);
+      }
+      if (enumType_.Count > 0) {
+        output.WriteMessageArray(4, enumType_);
+      }
+      if (extensionRange_.Count > 0) {
+        output.WriteMessageArray(5, extensionRange_);
+      }
+      if (extension_.Count > 0) {
+        output.WriteMessageArray(6, extension_);
+      }
       if (options_ != null) {
         output.WriteMessage(7, Options);
       }
-      output.WriteMessageArray(8, oneofDecl_);
-      output.WriteMessageArray(9, reservedRange_);
-      output.WriteStringArray(10, reservedName_);
+      if (oneofDecl_.Count > 0) {
+        output.WriteMessageArray(8, oneofDecl_);
+      }
+      if (reservedRange_.Count > 0) {
+        output.WriteMessageArray(9, reservedRange_);
+      }
+      if (reservedName_.Count > 0) {
+        output.WriteStringArray(10, reservedName_);
+      }
     }
 
     public int CalculateSize() {
       int size = 0;
-      if (Name != "") {
+      if (Name.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(1, Name);
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto element in field_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+      if (field_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto element in field_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+        }
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto element in extension_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(6, element);
+      if (extension_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto element in extension_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(6, element);
+        }
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto element in nestedType_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(3, element);
+      if (nestedType_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto element in nestedType_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(3, element);
+        }
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto element in enumType_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+      if (enumType_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto element in enumType_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+        }
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange element in extensionRange_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(5, element);
+      if (extensionRange_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange element in extensionRange_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(5, element);
+        }
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto element in oneofDecl_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(8, element);
+      if (oneofDecl_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto element in oneofDecl_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(8, element);
+        }
       }
       if (options_ != null) {
         size += pb::CodedOutputStream.ComputeMessageSize(7, Options);
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange element in reservedRange_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(9, element);
+      if (reservedRange_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange element in reservedRange_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(9, element);
+        }
       }
-      {
+      if (reservedName_.Count > 0) {
         int dataSize = 0;
         foreach (string element in reservedName_) {
           dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
@@ -869,7 +925,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other == null) {
         return;
       }
-      if (other.Name != "") {
+      if (other.Name.Length != 0) {
         Name = other.Name;
       }
       field_.Add(other.field_);
@@ -900,7 +956,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            name_ = input.ReadString();
+            Name = input.ReadString();
             break;
           }
           case 18: {
@@ -1050,11 +1106,11 @@ namespace Google.Protobuf.DescriptorProtos {
                 }
                 break;
               case 8: {
-                start_ = input.ReadInt32();
+                Start = input.ReadInt32();
                 break;
               }
               case 16: {
-                end_ = input.ReadInt32();
+                End = input.ReadInt32();
                 break;
               }
             }
@@ -1164,11 +1220,11 @@ namespace Google.Protobuf.DescriptorProtos {
                 }
                 break;
               case 8: {
-                start_ = input.ReadInt32();
+                Start = input.ReadInt32();
                 break;
               }
               case 16: {
-                end_ = input.ReadInt32();
+                End = input.ReadInt32();
                 break;
               }
             }
@@ -1296,23 +1352,23 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public override int GetHashCode() {
       int hash = 0;
-      if (Name != "") hash ^= Name.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Number != 0) hash ^= Number.GetHashCode();
       if (Label != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) hash ^= Label.GetHashCode();
       if (Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) hash ^= Type.GetHashCode();
-      if (TypeName != "") hash ^= TypeName.GetHashCode();
-      if (Extendee != "") hash ^= Extendee.GetHashCode();
-      if (DefaultValue != "") hash ^= DefaultValue.GetHashCode();
+      if (TypeName.Length != 0) hash ^= TypeName.GetHashCode();
+      if (Extendee.Length != 0) hash ^= Extendee.GetHashCode();
+      if (DefaultValue.Length != 0) hash ^= DefaultValue.GetHashCode();
       if (OneofIndex != 0) hash ^= OneofIndex.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
       return hash;
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Name != "") {
+      if (Name.Length != 0) {
         output.WriteString(1, Name);
       }
-      if (Extendee != "") {
+      if (Extendee.Length != 0) {
         output.WriteString(2, Extendee);
       }
       if (Number != 0) {
@@ -1324,10 +1380,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
         output.WriteEnum(5, (int) Type);
       }
-      if (TypeName != "") {
+      if (TypeName.Length != 0) {
         output.WriteString(6, TypeName);
       }
-      if (DefaultValue != "") {
+      if (DefaultValue.Length != 0) {
         output.WriteString(7, DefaultValue);
       }
       if (options_ != null) {
@@ -1340,7 +1396,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public int CalculateSize() {
       int size = 0;
-      if (Name != "") {
+      if (Name.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(1, Name);
       }
       if (Number != 0) {
@@ -1352,13 +1408,13 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
         size += pb::CodedOutputStream.ComputeEnumSize(5, (int) Type);
       }
-      if (TypeName != "") {
+      if (TypeName.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(6, TypeName);
       }
-      if (Extendee != "") {
+      if (Extendee.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(2, Extendee);
       }
-      if (DefaultValue != "") {
+      if (DefaultValue.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(7, DefaultValue);
       }
       if (OneofIndex != 0) {
@@ -1373,7 +1429,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other == null) {
         return;
       }
-      if (other.Name != "") {
+      if (other.Name.Length != 0) {
         Name = other.Name;
       }
       if (other.Number != 0) {
@@ -1385,13 +1441,13 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other.Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
         Type = other.Type;
       }
-      if (other.TypeName != "") {
+      if (other.TypeName.Length != 0) {
         TypeName = other.TypeName;
       }
-      if (other.Extendee != "") {
+      if (other.Extendee.Length != 0) {
         Extendee = other.Extendee;
       }
-      if (other.DefaultValue != "") {
+      if (other.DefaultValue.Length != 0) {
         DefaultValue = other.DefaultValue;
       }
       if (other.OneofIndex != 0) {
@@ -1417,15 +1473,15 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            name_ = input.ReadString();
+            Name = input.ReadString();
             break;
           }
           case 18: {
-            extendee_ = input.ReadString();
+            Extendee = input.ReadString();
             break;
           }
           case 24: {
-            number_ = input.ReadInt32();
+            Number = input.ReadInt32();
             break;
           }
           case 32: {
@@ -1437,11 +1493,11 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 50: {
-            typeName_ = input.ReadString();
+            TypeName = input.ReadString();
             break;
           }
           case 58: {
-            defaultValue_ = input.ReadString();
+            DefaultValue = input.ReadString();
             break;
           }
           case 66: {
@@ -1452,7 +1508,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 72: {
-            oneofIndex_ = input.ReadInt32();
+            OneofIndex = input.ReadInt32();
             break;
           }
         }
@@ -1538,19 +1594,19 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public override int GetHashCode() {
       int hash = 0;
-      if (Name != "") hash ^= Name.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
       return hash;
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Name != "") {
+      if (Name.Length != 0) {
         output.WriteString(1, Name);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
-      if (Name != "") {
+      if (Name.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(1, Name);
       }
       return size;
@@ -1559,7 +1615,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other == null) {
         return;
       }
-      if (other.Name != "") {
+      if (other.Name.Length != 0) {
         Name = other.Name;
       }
     }
@@ -1576,7 +1632,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            name_ = input.ReadString();
+            Name = input.ReadString();
             break;
           }
         }
@@ -1643,17 +1699,19 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public override int GetHashCode() {
       int hash = 0;
-      if (Name != "") hash ^= Name.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
       hash ^= value_.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
       return hash;
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Name != "") {
+      if (Name.Length != 0) {
         output.WriteString(1, Name);
       }
-      output.WriteMessageArray(2, value_);
+      if (value_.Count > 0) {
+        output.WriteMessageArray(2, value_);
+      }
       if (options_ != null) {
         output.WriteMessage(3, Options);
       }
@@ -1661,11 +1719,13 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public int CalculateSize() {
       int size = 0;
-      if (Name != "") {
+      if (Name.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(1, Name);
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto element in value_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+      if (value_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto element in value_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+        }
       }
       if (options_ != null) {
         size += pb::CodedOutputStream.ComputeMessageSize(3, Options);
@@ -1676,7 +1736,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other == null) {
         return;
       }
-      if (other.Name != "") {
+      if (other.Name.Length != 0) {
         Name = other.Name;
       }
       value_.Add(other.value_);
@@ -1700,7 +1760,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            name_ = input.ReadString();
+            Name = input.ReadString();
             break;
           }
           case 18: {
@@ -1780,14 +1840,14 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public override int GetHashCode() {
       int hash = 0;
-      if (Name != "") hash ^= Name.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Number != 0) hash ^= Number.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
       return hash;
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Name != "") {
+      if (Name.Length != 0) {
         output.WriteString(1, Name);
       }
       if (Number != 0) {
@@ -1800,7 +1860,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public int CalculateSize() {
       int size = 0;
-      if (Name != "") {
+      if (Name.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(1, Name);
       }
       if (Number != 0) {
@@ -1815,7 +1875,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other == null) {
         return;
       }
-      if (other.Name != "") {
+      if (other.Name.Length != 0) {
         Name = other.Name;
       }
       if (other.Number != 0) {
@@ -1841,11 +1901,11 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            name_ = input.ReadString();
+            Name = input.ReadString();
             break;
           }
           case 16: {
-            number_ = input.ReadInt32();
+            Number = input.ReadInt32();
             break;
           }
           case 26: {
@@ -1919,17 +1979,19 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public override int GetHashCode() {
       int hash = 0;
-      if (Name != "") hash ^= Name.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
       hash ^= method_.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
       return hash;
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Name != "") {
+      if (Name.Length != 0) {
         output.WriteString(1, Name);
       }
-      output.WriteMessageArray(2, method_);
+      if (method_.Count > 0) {
+        output.WriteMessageArray(2, method_);
+      }
       if (options_ != null) {
         output.WriteMessage(3, Options);
       }
@@ -1937,11 +1999,13 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public int CalculateSize() {
       int size = 0;
-      if (Name != "") {
+      if (Name.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(1, Name);
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto element in method_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+      if (method_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto element in method_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+        }
       }
       if (options_ != null) {
         size += pb::CodedOutputStream.ComputeMessageSize(3, Options);
@@ -1952,7 +2016,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other == null) {
         return;
       }
-      if (other.Name != "") {
+      if (other.Name.Length != 0) {
         Name = other.Name;
       }
       method_.Add(other.method_);
@@ -1976,7 +2040,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            name_ = input.ReadString();
+            Name = input.ReadString();
             break;
           }
           case 18: {
@@ -2083,9 +2147,9 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public override int GetHashCode() {
       int hash = 0;
-      if (Name != "") hash ^= Name.GetHashCode();
-      if (InputType != "") hash ^= InputType.GetHashCode();
-      if (OutputType != "") hash ^= OutputType.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (InputType.Length != 0) hash ^= InputType.GetHashCode();
+      if (OutputType.Length != 0) hash ^= OutputType.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
       if (ClientStreaming != false) hash ^= ClientStreaming.GetHashCode();
       if (ServerStreaming != false) hash ^= ServerStreaming.GetHashCode();
@@ -2093,13 +2157,13 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Name != "") {
+      if (Name.Length != 0) {
         output.WriteString(1, Name);
       }
-      if (InputType != "") {
+      if (InputType.Length != 0) {
         output.WriteString(2, InputType);
       }
-      if (OutputType != "") {
+      if (OutputType.Length != 0) {
         output.WriteString(3, OutputType);
       }
       if (options_ != null) {
@@ -2115,13 +2179,13 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public int CalculateSize() {
       int size = 0;
-      if (Name != "") {
+      if (Name.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(1, Name);
       }
-      if (InputType != "") {
+      if (InputType.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(2, InputType);
       }
-      if (OutputType != "") {
+      if (OutputType.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(3, OutputType);
       }
       if (options_ != null) {
@@ -2139,13 +2203,13 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other == null) {
         return;
       }
-      if (other.Name != "") {
+      if (other.Name.Length != 0) {
         Name = other.Name;
       }
-      if (other.InputType != "") {
+      if (other.InputType.Length != 0) {
         InputType = other.InputType;
       }
-      if (other.OutputType != "") {
+      if (other.OutputType.Length != 0) {
         OutputType = other.OutputType;
       }
       if (other.options_ != null) {
@@ -2174,15 +2238,15 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            name_ = input.ReadString();
+            Name = input.ReadString();
             break;
           }
           case 18: {
-            inputType_ = input.ReadString();
+            InputType = input.ReadString();
             break;
           }
           case 26: {
-            outputType_ = input.ReadString();
+            OutputType = input.ReadString();
             break;
           }
           case 34: {
@@ -2193,11 +2257,11 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 40: {
-            clientStreaming_ = input.ReadBool();
+            ClientStreaming = input.ReadBool();
             break;
           }
           case 48: {
-            serverStreaming_ = input.ReadBool();
+            ServerStreaming = input.ReadBool();
             break;
           }
         }
@@ -2374,29 +2438,29 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public override int GetHashCode() {
       int hash = 0;
-      if (JavaPackage != "") hash ^= JavaPackage.GetHashCode();
-      if (JavaOuterClassname != "") hash ^= JavaOuterClassname.GetHashCode();
+      if (JavaPackage.Length != 0) hash ^= JavaPackage.GetHashCode();
+      if (JavaOuterClassname.Length != 0) hash ^= JavaOuterClassname.GetHashCode();
       if (JavaMultipleFiles != false) hash ^= JavaMultipleFiles.GetHashCode();
       if (JavaGenerateEqualsAndHash != false) hash ^= JavaGenerateEqualsAndHash.GetHashCode();
       if (JavaStringCheckUtf8 != false) hash ^= JavaStringCheckUtf8.GetHashCode();
       if (OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) hash ^= OptimizeFor.GetHashCode();
-      if (GoPackage != "") hash ^= GoPackage.GetHashCode();
+      if (GoPackage.Length != 0) hash ^= GoPackage.GetHashCode();
       if (CcGenericServices != false) hash ^= CcGenericServices.GetHashCode();
       if (JavaGenericServices != false) hash ^= JavaGenericServices.GetHashCode();
       if (PyGenericServices != false) hash ^= PyGenericServices.GetHashCode();
       if (Deprecated != false) hash ^= Deprecated.GetHashCode();
       if (CcEnableArenas != false) hash ^= CcEnableArenas.GetHashCode();
-      if (ObjcClassPrefix != "") hash ^= ObjcClassPrefix.GetHashCode();
-      if (CsharpNamespace != "") hash ^= CsharpNamespace.GetHashCode();
+      if (ObjcClassPrefix.Length != 0) hash ^= ObjcClassPrefix.GetHashCode();
+      if (CsharpNamespace.Length != 0) hash ^= CsharpNamespace.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
       return hash;
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (JavaPackage != "") {
+      if (JavaPackage.Length != 0) {
         output.WriteString(1, JavaPackage);
       }
-      if (JavaOuterClassname != "") {
+      if (JavaOuterClassname.Length != 0) {
         output.WriteString(8, JavaOuterClassname);
       }
       if (OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) {
@@ -2405,7 +2469,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (JavaMultipleFiles != false) {
         output.WriteBool(10, JavaMultipleFiles);
       }
-      if (GoPackage != "") {
+      if (GoPackage.Length != 0) {
         output.WriteString(11, GoPackage);
       }
       if (CcGenericServices != false) {
@@ -2429,21 +2493,23 @@ namespace Google.Protobuf.DescriptorProtos {
       if (CcEnableArenas != false) {
         output.WriteBool(31, CcEnableArenas);
       }
-      if (ObjcClassPrefix != "") {
+      if (ObjcClassPrefix.Length != 0) {
         output.WriteString(36, ObjcClassPrefix);
       }
-      if (CsharpNamespace != "") {
+      if (CsharpNamespace.Length != 0) {
         output.WriteString(37, CsharpNamespace);
       }
-      output.WriteMessageArray(999, uninterpretedOption_);
+      if (uninterpretedOption_.Count > 0) {
+        output.WriteMessageArray(999, uninterpretedOption_);
+      }
     }
 
     public int CalculateSize() {
       int size = 0;
-      if (JavaPackage != "") {
+      if (JavaPackage.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(1, JavaPackage);
       }
-      if (JavaOuterClassname != "") {
+      if (JavaOuterClassname.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(8, JavaOuterClassname);
       }
       if (JavaMultipleFiles != false) {
@@ -2458,7 +2524,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) {
         size += pb::CodedOutputStream.ComputeEnumSize(9, (int) OptimizeFor);
       }
-      if (GoPackage != "") {
+      if (GoPackage.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(11, GoPackage);
       }
       if (CcGenericServices != false) {
@@ -2476,14 +2542,16 @@ namespace Google.Protobuf.DescriptorProtos {
       if (CcEnableArenas != false) {
         size += pb::CodedOutputStream.ComputeBoolSize(31, CcEnableArenas);
       }
-      if (ObjcClassPrefix != "") {
+      if (ObjcClassPrefix.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(36, ObjcClassPrefix);
       }
-      if (CsharpNamespace != "") {
+      if (CsharpNamespace.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(37, CsharpNamespace);
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      if (uninterpretedOption_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+        }
       }
       return size;
     }
@@ -2491,10 +2559,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other == null) {
         return;
       }
-      if (other.JavaPackage != "") {
+      if (other.JavaPackage.Length != 0) {
         JavaPackage = other.JavaPackage;
       }
-      if (other.JavaOuterClassname != "") {
+      if (other.JavaOuterClassname.Length != 0) {
         JavaOuterClassname = other.JavaOuterClassname;
       }
       if (other.JavaMultipleFiles != false) {
@@ -2509,7 +2577,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other.OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) {
         OptimizeFor = other.OptimizeFor;
       }
-      if (other.GoPackage != "") {
+      if (other.GoPackage.Length != 0) {
         GoPackage = other.GoPackage;
       }
       if (other.CcGenericServices != false) {
@@ -2527,10 +2595,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other.CcEnableArenas != false) {
         CcEnableArenas = other.CcEnableArenas;
       }
-      if (other.ObjcClassPrefix != "") {
+      if (other.ObjcClassPrefix.Length != 0) {
         ObjcClassPrefix = other.ObjcClassPrefix;
       }
-      if (other.CsharpNamespace != "") {
+      if (other.CsharpNamespace.Length != 0) {
         CsharpNamespace = other.CsharpNamespace;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
@@ -2548,11 +2616,11 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            javaPackage_ = input.ReadString();
+            JavaPackage = input.ReadString();
             break;
           }
           case 66: {
-            javaOuterClassname_ = input.ReadString();
+            JavaOuterClassname = input.ReadString();
             break;
           }
           case 72: {
@@ -2560,47 +2628,47 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 80: {
-            javaMultipleFiles_ = input.ReadBool();
+            JavaMultipleFiles = input.ReadBool();
             break;
           }
           case 90: {
-            goPackage_ = input.ReadString();
+            GoPackage = input.ReadString();
             break;
           }
           case 128: {
-            ccGenericServices_ = input.ReadBool();
+            CcGenericServices = input.ReadBool();
             break;
           }
           case 136: {
-            javaGenericServices_ = input.ReadBool();
+            JavaGenericServices = input.ReadBool();
             break;
           }
           case 144: {
-            pyGenericServices_ = input.ReadBool();
+            PyGenericServices = input.ReadBool();
             break;
           }
           case 160: {
-            javaGenerateEqualsAndHash_ = input.ReadBool();
+            JavaGenerateEqualsAndHash = input.ReadBool();
             break;
           }
           case 184: {
-            deprecated_ = input.ReadBool();
+            Deprecated = input.ReadBool();
             break;
           }
           case 216: {
-            javaStringCheckUtf8_ = input.ReadBool();
+            JavaStringCheckUtf8 = input.ReadBool();
             break;
           }
           case 248: {
-            ccEnableArenas_ = input.ReadBool();
+            CcEnableArenas = input.ReadBool();
             break;
           }
           case 290: {
-            objcClassPrefix_ = input.ReadString();
+            ObjcClassPrefix = input.ReadString();
             break;
           }
           case 298: {
-            csharpNamespace_ = input.ReadString();
+            CsharpNamespace = input.ReadString();
             break;
           }
           case 7994: {
@@ -2724,7 +2792,9 @@ namespace Google.Protobuf.DescriptorProtos {
       if (MapEntry != false) {
         output.WriteBool(7, MapEntry);
       }
-      output.WriteMessageArray(999, uninterpretedOption_);
+      if (uninterpretedOption_.Count > 0) {
+        output.WriteMessageArray(999, uninterpretedOption_);
+      }
     }
 
     public int CalculateSize() {
@@ -2741,8 +2811,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (MapEntry != false) {
         size += pb::CodedOutputStream.ComputeBoolSize(7, MapEntry);
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      if (uninterpretedOption_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+        }
       }
       return size;
     }
@@ -2777,19 +2849,19 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 8: {
-            messageSetWireFormat_ = input.ReadBool();
+            MessageSetWireFormat = input.ReadBool();
             break;
           }
           case 16: {
-            noStandardDescriptorAccessor_ = input.ReadBool();
+            NoStandardDescriptorAccessor = input.ReadBool();
             break;
           }
           case 24: {
-            deprecated_ = input.ReadBool();
+            Deprecated = input.ReadBool();
             break;
           }
           case 56: {
-            mapEntry_ = input.ReadBool();
+            MapEntry = input.ReadBool();
             break;
           }
           case 7994: {
@@ -2927,7 +2999,9 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Weak != false) {
         output.WriteBool(10, Weak);
       }
-      output.WriteMessageArray(999, uninterpretedOption_);
+      if (uninterpretedOption_.Count > 0) {
+        output.WriteMessageArray(999, uninterpretedOption_);
+      }
     }
 
     public int CalculateSize() {
@@ -2950,8 +3024,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Weak != false) {
         size += pb::CodedOutputStream.ComputeBoolSize(10, Weak);
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      if (uninterpretedOption_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+        }
       }
       return size;
     }
@@ -2996,15 +3072,15 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 16: {
-            packed_ = input.ReadBool();
+            Packed = input.ReadBool();
             break;
           }
           case 24: {
-            deprecated_ = input.ReadBool();
+            Deprecated = input.ReadBool();
             break;
           }
           case 40: {
-            lazy_ = input.ReadBool();
+            Lazy = input.ReadBool();
             break;
           }
           case 48: {
@@ -3012,7 +3088,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 80: {
-            weak_ = input.ReadBool();
+            Weak = input.ReadBool();
             break;
           }
           case 7994: {
@@ -3116,7 +3192,9 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) {
         output.WriteBool(3, Deprecated);
       }
-      output.WriteMessageArray(999, uninterpretedOption_);
+      if (uninterpretedOption_.Count > 0) {
+        output.WriteMessageArray(999, uninterpretedOption_);
+      }
     }
 
     public int CalculateSize() {
@@ -3127,8 +3205,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) {
         size += pb::CodedOutputStream.ComputeBoolSize(3, Deprecated);
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      if (uninterpretedOption_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+        }
       }
       return size;
     }
@@ -3157,11 +3237,11 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 16: {
-            allowAlias_ = input.ReadBool();
+            AllowAlias = input.ReadBool();
             break;
           }
           case 24: {
-            deprecated_ = input.ReadBool();
+            Deprecated = input.ReadBool();
             break;
           }
           case 7994: {
@@ -3234,7 +3314,9 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) {
         output.WriteBool(1, Deprecated);
       }
-      output.WriteMessageArray(999, uninterpretedOption_);
+      if (uninterpretedOption_.Count > 0) {
+        output.WriteMessageArray(999, uninterpretedOption_);
+      }
     }
 
     public int CalculateSize() {
@@ -3242,8 +3324,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) {
         size += pb::CodedOutputStream.ComputeBoolSize(1, Deprecated);
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      if (uninterpretedOption_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+        }
       }
       return size;
     }
@@ -3269,7 +3353,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 8: {
-            deprecated_ = input.ReadBool();
+            Deprecated = input.ReadBool();
             break;
           }
           case 7994: {
@@ -3342,7 +3426,9 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) {
         output.WriteBool(33, Deprecated);
       }
-      output.WriteMessageArray(999, uninterpretedOption_);
+      if (uninterpretedOption_.Count > 0) {
+        output.WriteMessageArray(999, uninterpretedOption_);
+      }
     }
 
     public int CalculateSize() {
@@ -3350,8 +3436,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) {
         size += pb::CodedOutputStream.ComputeBoolSize(33, Deprecated);
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      if (uninterpretedOption_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+        }
       }
       return size;
     }
@@ -3377,7 +3465,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 264: {
-            deprecated_ = input.ReadBool();
+            Deprecated = input.ReadBool();
             break;
           }
           case 7994: {
@@ -3450,7 +3538,9 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) {
         output.WriteBool(33, Deprecated);
       }
-      output.WriteMessageArray(999, uninterpretedOption_);
+      if (uninterpretedOption_.Count > 0) {
+        output.WriteMessageArray(999, uninterpretedOption_);
+      }
     }
 
     public int CalculateSize() {
@@ -3458,8 +3548,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) {
         size += pb::CodedOutputStream.ComputeBoolSize(33, Deprecated);
       }
-      foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+      if (uninterpretedOption_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+        }
       }
       return size;
     }
@@ -3485,7 +3577,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 264: {
-            deprecated_ = input.ReadBool();
+            Deprecated = input.ReadBool();
             break;
           }
           case 7994: {
@@ -3595,18 +3687,20 @@ namespace Google.Protobuf.DescriptorProtos {
     public override int GetHashCode() {
       int hash = 0;
       hash ^= name_.GetHashCode();
-      if (IdentifierValue != "") hash ^= IdentifierValue.GetHashCode();
+      if (IdentifierValue.Length != 0) hash ^= IdentifierValue.GetHashCode();
       if (PositiveIntValue != 0UL) hash ^= PositiveIntValue.GetHashCode();
       if (NegativeIntValue != 0L) hash ^= NegativeIntValue.GetHashCode();
       if (DoubleValue != 0D) hash ^= DoubleValue.GetHashCode();
-      if (StringValue != pb::ByteString.Empty) hash ^= StringValue.GetHashCode();
-      if (AggregateValue != "") hash ^= AggregateValue.GetHashCode();
+      if (StringValue.Length != 0) hash ^= StringValue.GetHashCode();
+      if (AggregateValue.Length != 0) hash ^= AggregateValue.GetHashCode();
       return hash;
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      output.WriteMessageArray(2, name_);
-      if (IdentifierValue != "") {
+      if (name_.Count > 0) {
+        output.WriteMessageArray(2, name_);
+      }
+      if (IdentifierValue.Length != 0) {
         output.WriteString(3, IdentifierValue);
       }
       if (PositiveIntValue != 0UL) {
@@ -3618,20 +3712,22 @@ namespace Google.Protobuf.DescriptorProtos {
       if (DoubleValue != 0D) {
         output.WriteDouble(6, DoubleValue);
       }
-      if (StringValue != pb::ByteString.Empty) {
+      if (StringValue.Length != 0) {
         output.WriteBytes(7, StringValue);
       }
-      if (AggregateValue != "") {
+      if (AggregateValue.Length != 0) {
         output.WriteString(8, AggregateValue);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
-      foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart element in name_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+      if (name_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart element in name_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+        }
       }
-      if (IdentifierValue != "") {
+      if (IdentifierValue.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(3, IdentifierValue);
       }
       if (PositiveIntValue != 0UL) {
@@ -3643,10 +3739,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (DoubleValue != 0D) {
         size += pb::CodedOutputStream.ComputeDoubleSize(6, DoubleValue);
       }
-      if (StringValue != pb::ByteString.Empty) {
+      if (StringValue.Length != 0) {
         size += pb::CodedOutputStream.ComputeBytesSize(7, StringValue);
       }
-      if (AggregateValue != "") {
+      if (AggregateValue.Length != 0) {
         size += pb::CodedOutputStream.ComputeStringSize(8, AggregateValue);
       }
       return size;
@@ -3656,7 +3752,7 @@ namespace Google.Protobuf.DescriptorProtos {
         return;
       }
       name_.Add(other.name_);
-      if (other.IdentifierValue != "") {
+      if (other.IdentifierValue.Length != 0) {
         IdentifierValue = other.IdentifierValue;
       }
       if (other.PositiveIntValue != 0UL) {
@@ -3668,10 +3764,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other.DoubleValue != 0D) {
         DoubleValue = other.DoubleValue;
       }
-      if (other.StringValue != pb::ByteString.Empty) {
+      if (other.StringValue.Length != 0) {
         StringValue = other.StringValue;
       }
-      if (other.AggregateValue != "") {
+      if (other.AggregateValue.Length != 0) {
         AggregateValue = other.AggregateValue;
       }
     }
@@ -3692,27 +3788,27 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 26: {
-            identifierValue_ = input.ReadString();
+            IdentifierValue = input.ReadString();
             break;
           }
           case 32: {
-            positiveIntValue_ = input.ReadUInt64();
+            PositiveIntValue = input.ReadUInt64();
             break;
           }
           case 40: {
-            negativeIntValue_ = input.ReadInt64();
+            NegativeIntValue = input.ReadInt64();
             break;
           }
           case 49: {
-            doubleValue_ = input.ReadDouble();
+            DoubleValue = input.ReadDouble();
             break;
           }
           case 58: {
-            stringValue_ = input.ReadBytes();
+            StringValue = input.ReadBytes();
             break;
           }
           case 66: {
-            aggregateValue_ = input.ReadString();
+            AggregateValue = input.ReadString();
             break;
           }
         }
@@ -3775,13 +3871,13 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public override int GetHashCode() {
           int hash = 0;
-          if (NamePart_ != "") hash ^= NamePart_.GetHashCode();
+          if (NamePart_.Length != 0) hash ^= NamePart_.GetHashCode();
           if (IsExtension != false) hash ^= IsExtension.GetHashCode();
           return hash;
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
-          if (NamePart_ != "") {
+          if (NamePart_.Length != 0) {
             output.WriteString(1, NamePart_);
           }
           if (IsExtension != false) {
@@ -3791,7 +3887,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public int CalculateSize() {
           int size = 0;
-          if (NamePart_ != "") {
+          if (NamePart_.Length != 0) {
             size += pb::CodedOutputStream.ComputeStringSize(1, NamePart_);
           }
           if (IsExtension != false) {
@@ -3803,7 +3899,7 @@ namespace Google.Protobuf.DescriptorProtos {
           if (other == null) {
             return;
           }
-          if (other.NamePart_ != "") {
+          if (other.NamePart_.Length != 0) {
             NamePart_ = other.NamePart_;
           }
           if (other.IsExtension != false) {
@@ -3823,11 +3919,11 @@ namespace Google.Protobuf.DescriptorProtos {
                 }
                 break;
               case 10: {
-                namePart_ = input.ReadString();
+                NamePart_ = input.ReadString();
                 break;
               }
               case 16: {
-                isExtension_ = input.ReadBool();
+                IsExtension = input.ReadBool();
                 break;
               }
             }
@@ -3888,13 +3984,17 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      output.WriteMessageArray(1, location_);
+      if (location_.Count > 0) {
+        output.WriteMessageArray(1, location_);
+      }
     }
 
     public int CalculateSize() {
       int size = 0;
-      foreach (global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location element in location_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(1, element);
+      if (location_.Count > 0) {
+        foreach (global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location element in location_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(1, element);
+        }
       }
       return size;
     }
@@ -4003,53 +4103,55 @@ namespace Google.Protobuf.DescriptorProtos {
           int hash = 0;
           hash ^= path_.GetHashCode();
           hash ^= span_.GetHashCode();
-          if (LeadingComments != "") hash ^= LeadingComments.GetHashCode();
-          if (TrailingComments != "") hash ^= TrailingComments.GetHashCode();
+          if (LeadingComments.Length != 0) hash ^= LeadingComments.GetHashCode();
+          if (TrailingComments.Length != 0) hash ^= TrailingComments.GetHashCode();
           hash ^= leadingDetachedComments_.GetHashCode();
           return hash;
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
-          output.WritePackedInt32Array(1, path_);
-          output.WritePackedInt32Array(2, span_);
-          if (LeadingComments != "") {
+          if (path_.Count > 0) {
+            output.WritePackedInt32Array(1, path_);
+          }
+          if (span_.Count > 0) {
+            output.WritePackedInt32Array(2, span_);
+          }
+          if (LeadingComments.Length != 0) {
             output.WriteString(3, LeadingComments);
           }
-          if (TrailingComments != "") {
+          if (TrailingComments.Length != 0) {
             output.WriteString(4, TrailingComments);
           }
-          output.WriteStringArray(6, leadingDetachedComments_);
+          if (leadingDetachedComments_.Count > 0) {
+            output.WriteStringArray(6, leadingDetachedComments_);
+          }
         }
 
         public int CalculateSize() {
           int size = 0;
-          {
+          if (path_.Count > 0) {
             int dataSize = 0;
             foreach (int element in path_) {
               dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
             }
             size += dataSize;
-            if (path_.Count != 0) {
-              size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-            }
+            size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
           }
-          {
+          if (span_.Count > 0) {
             int dataSize = 0;
             foreach (int element in span_) {
               dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
             }
             size += dataSize;
-            if (span_.Count != 0) {
-              size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-            }
+            size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
           }
-          if (LeadingComments != "") {
+          if (LeadingComments.Length != 0) {
             size += pb::CodedOutputStream.ComputeStringSize(3, LeadingComments);
           }
-          if (TrailingComments != "") {
+          if (TrailingComments.Length != 0) {
             size += pb::CodedOutputStream.ComputeStringSize(4, TrailingComments);
           }
-          {
+          if (leadingDetachedComments_.Count > 0) {
             int dataSize = 0;
             foreach (string element in leadingDetachedComments_) {
               dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
@@ -4065,10 +4167,10 @@ namespace Google.Protobuf.DescriptorProtos {
           }
           path_.Add(other.path_);
           span_.Add(other.span_);
-          if (other.LeadingComments != "") {
+          if (other.LeadingComments.Length != 0) {
             LeadingComments = other.LeadingComments;
           }
-          if (other.TrailingComments != "") {
+          if (other.TrailingComments.Length != 0) {
             TrailingComments = other.TrailingComments;
           }
           leadingDetachedComments_.Add(other.leadingDetachedComments_);
@@ -4096,11 +4198,11 @@ namespace Google.Protobuf.DescriptorProtos {
                 break;
               }
               case 26: {
-                leadingComments_ = input.ReadString();
+                LeadingComments = input.ReadString();
                 break;
               }
               case 34: {
-                trailingComments_ = input.ReadString();
+                TrailingComments = input.ReadString();
                 break;
               }
               case 50: {

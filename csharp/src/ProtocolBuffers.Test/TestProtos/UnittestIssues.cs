@@ -157,8 +157,12 @@ namespace UnitTest.Issues.TestProtos {
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
         output.WriteEnum(1, (int) Value);
       }
-      output.WriteEnumArray(2, values_);
-      output.WritePackedEnumArray(3, packedValues_);
+      if (values_.Count > 0) {
+        output.WriteEnumArray(2, values_);
+      }
+      if (packedValues_.Count > 0) {
+        output.WritePackedEnumArray(3, packedValues_);
+      }
     }
 
     public int CalculateSize() {
@@ -166,26 +170,22 @@ namespace UnitTest.Issues.TestProtos {
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
         size += pb::CodedOutputStream.ComputeEnumSize(1, (int) Value);
       }
-      {
+      if (values_.Count > 0) {
         int dataSize = 0;
-        if (values_.Count > 0) {
-          foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in values_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
-          }
-          size += dataSize;
-          size += 1 * values_.Count;
+        foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in values_) {
+          dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
         }
+        size += dataSize;
+        size += 1 * values_.Count;
       }
-      {
+      if (packedValues_.Count > 0) {
         int dataSize = 0;
-        if (packedValues_.Count > 0) {
-          foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in packedValues_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
-          }
-          size += dataSize;
-          size += 1;
-          size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+        foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in packedValues_) {
+          dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
         }
+        size += dataSize;
+        size += 1;
+        size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
       }
       return size;
     }
@@ -399,15 +399,21 @@ namespace UnitTest.Issues.TestProtos {
       if (PrimitiveValue != 0) {
         output.WriteInt32(1, PrimitiveValue);
       }
-      output.WritePackedInt32Array(2, primitiveArray_);
+      if (primitiveArray_.Count > 0) {
+        output.WritePackedInt32Array(2, primitiveArray_);
+      }
       if (messageValue_ != null) {
         output.WriteMessage(3, MessageValue);
       }
-      output.WriteMessageArray(4, messageArray_);
+      if (messageArray_.Count > 0) {
+        output.WriteMessageArray(4, messageArray_);
+      }
       if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
         output.WriteEnum(5, (int) EnumValue);
       }
-      output.WritePackedEnumArray(6, enumArray_);
+      if (enumArray_.Count > 0) {
+        output.WritePackedEnumArray(6, enumArray_);
+      }
     }
 
     public int CalculateSize() {
@@ -415,35 +421,33 @@ namespace UnitTest.Issues.TestProtos {
       if (PrimitiveValue != 0) {
         size += pb::CodedOutputStream.ComputeInt32Size(1, PrimitiveValue);
       }
-      {
+      if (primitiveArray_.Count > 0) {
         int dataSize = 0;
         foreach (int element in primitiveArray_) {
           dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
         }
         size += dataSize;
-        if (primitiveArray_.Count != 0) {
-          size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
-        }
+        size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
       }
       if (messageValue_ != null) {
         size += pb::CodedOutputStream.ComputeMessageSize(3, MessageValue);
       }
-      foreach (global::UnitTest.Issues.TestProtos.DeprecatedChild element in messageArray_) {
-        size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+      if (messageArray_.Count > 0) {
+        foreach (global::UnitTest.Issues.TestProtos.DeprecatedChild element in messageArray_) {
+          size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+        }
       }
       if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
         size += pb::CodedOutputStream.ComputeEnumSize(5, (int) EnumValue);
       }
-      {
+      if (enumArray_.Count > 0) {
         int dataSize = 0;
-        if (enumArray_.Count > 0) {
-          foreach (global::UnitTest.Issues.TestProtos.DeprecatedEnum element in enumArray_) {
-            dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
-          }
-          size += dataSize;
-          size += 1;
-          size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+        foreach (global::UnitTest.Issues.TestProtos.DeprecatedEnum element in enumArray_) {
+          dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
         }
+        size += dataSize;
+        size += 1;
+        size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
       }
       return size;
     }
@@ -480,7 +484,7 @@ namespace UnitTest.Issues.TestProtos {
             }
             break;
           case 8: {
-            primitiveValue_ = input.ReadInt32();
+            PrimitiveValue = input.ReadInt32();
             break;
           }
           case 18:
@@ -596,7 +600,7 @@ namespace UnitTest.Issues.TestProtos {
             }
             break;
           case 8: {
-            item_ = input.ReadInt32();
+            Item = input.ReadInt32();
             break;
           }
         }
