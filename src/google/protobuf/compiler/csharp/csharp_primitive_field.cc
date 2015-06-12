@@ -52,6 +52,10 @@ PrimitiveFieldGenerator::PrimitiveFieldGenerator(
   // TODO(jonskeet): Make this cleaner...
   is_value_type = descriptor->type() != FieldDescriptor::TYPE_STRING
       && descriptor->type() != FieldDescriptor::TYPE_BYTES;
+  if (!is_value_type) {
+    variables_["has_property_check"] = variables_["property_name"] + ".Length != 0";
+    variables_["other_has_property_check"] = "other." + variables_["property_name"] + ".Length != 0";
+  }
 }
 
 PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {
@@ -90,9 +94,11 @@ void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 }
 
 void PrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) {
+  // Note: invoke the property setter rather than writing straight to the field,
+  // so that we can normalize "null to empty" for strings and bytes.
   printer->Print(
     variables_,
-    "$name$_ = input.Read$capitalized_type_name$();\n");
+    "$property_name$ = input.Read$capitalized_type_name$();\n");
 }
 
 void PrimitiveFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
