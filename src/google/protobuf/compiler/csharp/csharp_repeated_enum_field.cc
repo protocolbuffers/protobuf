@@ -89,13 +89,11 @@ void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer)
 
 void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   // TODO(jonskeet): Move all this code into CodedOutputStream? It's a lot to repeat everywhere...
-  printer->Print("{\n");
-  printer->Indent();
   printer->Print(
     variables_,
-    "int dataSize = 0;\n"
     "if ($name$_.Count > 0) {\n");
   printer->Indent();
+  printer->Print("int dataSize = 0;\n");
   printer->Print(
     variables_,
     "foreach ($type_name$ element in $name$_) {\n"
@@ -113,8 +111,6 @@ void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer
       "size += $tag_size$ * $name$_.Count;\n",
       "tag_size", SimpleItoa(tagSize), "name", name());
   }
-  printer->Outdent();
-  printer->Print("}\n");
   printer->Outdent();
   printer->Print("}\n");
 }

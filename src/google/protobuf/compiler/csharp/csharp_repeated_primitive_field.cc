@@ -93,7 +93,9 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializationCode(
 void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) {
   // TODO(jonskeet): Do this in the runtime if possible. It's a pain, but it must be feasible...
-  printer->Print("{\n");
+  printer->Print(
+    "if ($name$_.Count > 0) {\n",
+    "name", name());
   printer->Indent();
   printer->Print("int dataSize = 0;\n");
   int fixedSize = GetFixedSize(descriptor_->type());
@@ -112,10 +114,8 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(
   int tagSize = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
   if (descriptor_->is_packed()) {
     printer->Print(
-      "if ($name$_.Count != 0) {\n"
-      "  size += $tag_size$ + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);\n"
-      "}\n",
-      "name", name(), "tag_size", SimpleItoa(tagSize));
+      "size += $tag_size$ + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);\n",
+      "tag_size", SimpleItoa(tagSize));
   } else {
     printer->Print(
       "size += $tag_size$ * $name$_.Count;\n",

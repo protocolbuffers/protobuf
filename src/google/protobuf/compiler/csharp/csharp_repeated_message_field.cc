@@ -90,8 +90,10 @@ void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* prin
   // TODO(jonskeet): Put this into CodedOutputStream.
   printer->Print(
     variables_,
-    "foreach ($type_name$ element in $name$_) {\n"
-    "  size += pb::CodedOutputStream.ComputeMessageSize($number$, element);\n"
+    "if ($name$_.Count > 0) {\n"
+    "  foreach ($type_name$ element in $name$_) {\n"
+    "    size += pb::CodedOutputStream.ComputeMessageSize($number$, element);\n"
+    "  }\n"
     "}\n");
 }
 
