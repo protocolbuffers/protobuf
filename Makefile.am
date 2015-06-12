@@ -744,12 +744,9 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST) \
   CONTRIBUTORS.txt                     \
   CHANGES.txt                          \
   cmake/CMakeLists.txt                 \
-  cmake/config.h.in                    \
-  cmake/find_hash_map.cmake            \
   cmake/libprotobuf.cmake              \
   cmake/libprotobuf-lite.cmake         \
   cmake/libprotoc.cmake                \
-  cmake/pbconfig.h.in                  \
   cmake/protoc.cmake                   \
   cmake/README.md                      \
   cmake/tests.cmake                    \

@@ -8,11 +8,11 @@ if (MSVC)
   option(ZLIB "Build with zlib support" OFF)
 endif (MSVC)
 
+add_definitions(-DGOOGLE_PROTOBUF_CMAKE_BUILD)
+
 find_package(Threads REQUIRED)
 if (CMAKE_USE_PTHREADS_INIT)
-  set(HAVE_PTHREAD 1)
-else (CMAKE_USE_PTHREADS_INIT)
-  set(HAVE_PTHREAD 0)
+  add_definitions(-DHAVE_PTHREAD)
 endif (CMAKE_USE_PTHREADS_INIT)
 
 if (MSVC)
@@ -36,6 +36,10 @@ else (MSVC)
   endif (ZLIB_FOUND)
 endif (MSVC)
 
+if (HAVE_ZLIB)
+  add_definitions(-DHAVE_ZLIB)
+endif (HAVE_ZLIB)
+
 if (MSVC)
   if (BUILD_SHARED_LIBS)
     add_definitions(-DPROTOBUF_USE_DLLS)
@@ -43,10 +47,6 @@ if (MSVC)
   add_definitions(/wd4244 /wd4267 /wd4018 /wd4355 /wd4800 /wd4251 /wd4996 /wd4146 /wd4305)
 endif (MSVC)
 
-include(find_hash_map.cmake)
-
-configure_file(config.h.in config.h)
-configure_file(pbconfig.h.in google/protobuf/stubs/pbconfig.h)
 if (MSVC)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
