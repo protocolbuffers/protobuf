@@ -743,10 +743,11 @@ namespace Google.Protobuf
             {
                 return;
             }
-            // TODO(jonskeet): Avoid the Cast call here. Work out a better mass "T to int" conversion.
-            foreach (int value in list.Cast<int>())
+            // Bit of a hack, to access the values as ints
+            var iterator = list.GetInt32Enumerator();
+            while (iterator.MoveNext())
             {
-                WriteEnum(fieldNumber, value);
+                WriteEnum(fieldNumber, iterator.Current);
             }
         }
 
@@ -956,15 +957,19 @@ namespace Google.Protobuf
             {
                 return;
             }
-            // Obviously, we'll want to get rid of this hack...
-            var temporaryHack = new RepeatedField<int>();
-            temporaryHack.Add(list.Cast<int>());
-            uint size = temporaryHack.CalculateSize(ComputeEnumSizeNoTag);
+            // Bit of a hack, to access the values as ints
+            var iterator = list.GetInt32Enumerator();
+            uint size = 0;
+            while (iterator.MoveNext())
+            {
+                size += (uint) ComputeEnumSizeNoTag(iterator.Current);
+            }
+            iterator.Reset();
             WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
             WriteRawVarint32(size);
-            foreach (int value in temporaryHack)
+            while (iterator.MoveNext())
             {
-                WriteEnumNoTag(value);
+                WriteEnumNoTag(iterator.Current);
             }
         }
 

@@ -38,6 +38,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using Google.Protobuf.Collections;
 using Google.Protobuf.Descriptors;
 
 namespace Google.Protobuf
@@ -700,7 +701,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadEnumArray<T>(uint fieldTag, ICollection<T> list)
+        public void ReadEnumArray<T>(uint fieldTag, RepeatedField<T> list)
             where T : struct, IComparable, IFormattable
         {
             WireFormat.WireType wformat = WireFormat.GetTagWireType(fieldTag);
@@ -712,8 +713,8 @@ namespace Google.Protobuf
                 int limit = PushLimit(length);
                 while (!ReachedLimit)
                 {
-                    // TODO(jonskeet): Avoid this horrible boxing!
-                    list.Add((T)(object) ReadEnum());
+                    // Ghastly hack, but it works...
+                    list.AddInt32(ReadEnum());
                 }
                 PopLimit(limit);
             }

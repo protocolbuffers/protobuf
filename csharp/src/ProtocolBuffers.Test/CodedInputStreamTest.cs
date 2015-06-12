@@ -487,7 +487,7 @@ namespace Google.Protobuf
             uint tag;
             Assert.IsTrue(input.ReadTag(out tag));
 
-            List<TestNegEnum> values = new List<TestNegEnum>();
+            RepeatedField<TestNegEnum> values = new RepeatedField<TestNegEnum>();
             input.ReadEnumArray(tag, values);
 
             Assert.AreEqual(6, values.Count);
@@ -511,7 +511,7 @@ namespace Google.Protobuf
             uint tag;
             Assert.IsTrue(input.ReadTag(out tag));
 
-            List<TestNegEnum> values = new List<TestNegEnum>();
+            RepeatedField<TestNegEnum> values = new RepeatedField<TestNegEnum>();
             input.ReadEnumArray(tag, values);
 
             Assert.AreEqual(6, values.Count);

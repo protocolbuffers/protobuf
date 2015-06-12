@@ -40,11 +40,12 @@ namespace Google.Protobuf
         [Test]
         public void Add_RepeatedField()
         {
-            var list = new RepeatedField<string>();
+            var list = new RepeatedField<string> { "original" };
             list.Add(new RepeatedField<string> { "foo", "bar" });
-            Assert.AreEqual(2, list.Count);
-            Assert.AreEqual("foo", list[0]);
-            Assert.AreEqual("bar", list[1]);
+            Assert.AreEqual(3, list.Count);
+            Assert.AreEqual("original", list[0]);
+            Assert.AreEqual("foo", list[1]);
+            Assert.AreEqual("bar", list[2]);
         }
     }
 }
