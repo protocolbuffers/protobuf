@@ -3,26 +3,22 @@
 #pragma warning disable 1591, 0612, 3021
 #region Designer generated code
 
-using pb = global::Google.ProtocolBuffers;
-using pbc = global::Google.ProtocolBuffers.Collections;
-using pbd = global::Google.ProtocolBuffers.Descriptors;
+using pb = global::Google.Protobuf;
+using pbc = global::Google.Protobuf.Collections;
+using pbd = global::Google.Protobuf.Descriptors;
 using scg = global::System.Collections.Generic;
 namespace Google.ProtocolBuffers.Examples.AddressBook {
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class Addressbook {
 
-    #region Extension registration
-    public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {
-    }
-    #endregion
     #region Static variables
     internal static pbd::MessageDescriptor internal__static_tutorial_Person__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Builder> internal__static_tutorial_Person__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person> internal__static_tutorial_Person__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_tutorial_Person_PhoneNumber__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Builder> internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_tutorial_AddressBook__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook, global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.Builder> internal__static_tutorial_AddressBook__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook> internal__static_tutorial_AddressBook__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -46,19 +42,16 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         descriptor = root;
         internal__static_tutorial_Person__Descriptor = Descriptor.MessageTypes[0];
         internal__static_tutorial_Person__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Builder>(internal__static_tutorial_Person__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person>(internal__static_tutorial_Person__Descriptor,
                 new string[] { "Name", "Id", "Email", "Phone", });
         internal__static_tutorial_Person_PhoneNumber__Descriptor = internal__static_tutorial_Person__Descriptor.NestedTypes[0];
         internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Builder>(internal__static_tutorial_Person_PhoneNumber__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber>(internal__static_tutorial_Person_PhoneNumber__Descriptor,
                 new string[] { "Number", "Type", });
         internal__static_tutorial_AddressBook__Descriptor = Descriptor.MessageTypes[1];
         internal__static_tutorial_AddressBook__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook, global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.Builder>(internal__static_tutorial_AddressBook__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook>(internal__static_tutorial_AddressBook__Descriptor,
                 new string[] { "Person", });
-        pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();
-        RegisterAllExtensions(registry);
-        return registry;
       };
       pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbd::FileDescriptor[] {
@@ -69,29 +62,155 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   }
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class Person : pb::GeneratedMessage<Person, Person.Builder> {
-    private Person() { }
-    private static readonly Person defaultInstance = new Person().MakeReadOnly();
-    private static readonly string[] _personFieldNames = new string[] { "email", "id", "name", "phone" };
-    private static readonly uint[] _personFieldTags = new uint[] { 26, 16, 10, 34 };
-    public static Person DefaultInstance {
-      get { return defaultInstance; }
-    }
+  public sealed partial class Person : pb::IMessage<Person>, global::System.IEquatable<Person> {
+    private static readonly pb::MessageParser<Person> _parser = new pb::MessageParser<Person>(() => new Person());
+    public static pb::MessageParser<Person> Parser { get { return _parser; } }
 
-    public override Person DefaultInstanceForType {
-      get { return DefaultInstance; }
-    }
-
-    protected override Person ThisMessage {
-      get { return this; }
-    }
-
+    private static readonly string[] _fieldNames = new string[] { "email", "id", "name", "phone" };
+    private static readonly uint[] _fieldTags = new uint[] { 26, 16, 10, 34 };
     public static pbd::MessageDescriptor Descriptor {
       get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_Person__Descriptor; }
     }
 
-    protected override pb::FieldAccess.FieldAccessorTable<Person, Person.Builder> InternalFieldAccessors {
+    public pb::FieldAccess.FieldAccessorTable<Person> Fields {
       get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_Person__FieldAccessorTable; }
+    }
+
+    public Person() { }
+    public Person(Person other) {
+      MergeFrom(other);
+    }
+    public const int NameFieldNumber = 1;
+    private string name_ = "";
+    public string Name {
+      get { return name_; }
+      set { name_ = value ?? ""; }
+    }
+
+
+    public const int IdFieldNumber = 2;
+    private int id_;
+    public int Id {
+      get { return id_; }
+      set { id_ = value; }
+    }
+
+
+    public const int EmailFieldNumber = 3;
+    private string email_ = "";
+    public string Email {
+      get { return email_; }
+      set { email_ = value ?? ""; }
+    }
+
+
+    public const int PhoneFieldNumber = 4;
+    private readonly pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> phone_ = new pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber>();
+    public pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> Phone {
+      get { return phone_; }
+    }
+
+    public override bool Equals(object other) {
+      return Equals(other as Person);
+    }
+
+    public bool Equals(Person other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Name != other.Name) return false;
+      if (Id != other.Id) return false;
+      if (Email != other.Email) return false;
+      if(!phone_.Equals(other.phone_)) return false;
+      return true;
+    }
+
+    public override int GetHashCode() {
+      int hash = 0;
+      if (Name != "") hash ^= Name.GetHashCode();
+      if (Id != 0) hash ^= Id.GetHashCode();
+      if (Email != "") hash ^= Email.GetHashCode();
+      hash ^= phone_.GetHashCode();
+      return hash;
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Name != "") {
+        output.WriteString(1, Name);
+      }
+      if (Id != 0) {
+        output.WriteInt32(2, Id);
+      }
+      if (Email != "") {
+        output.WriteString(3, Email);
+      }
+      output.WriteMessageArray(4, phone_);
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (Name != "") {
+        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+      }
+      if (Id != 0) {
+        size += pb::CodedOutputStream.ComputeInt32Size(2, Id);
+      }
+      if (Email != "") {
+        size += pb::CodedOutputStream.ComputeStringSize(3, Email);
+      }
+      foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber element in phone_) {
+        size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+      }
+      return size;
+    }
+    public void MergeFrom(Person other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Name != "") {
+        Name = other.Name;
+      }
+      if (other.Id != 0) {
+        Id = other.Id;
+      }
+      if (other.Email != "") {
+        Email = other.Email;
+      }
+      phone_.Add(other.phone_);
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while (input.ReadTag(out tag)) {
+        switch(tag) {
+          case 0:
+            throw pb::InvalidProtocolBufferException.InvalidTag();
+          default:
+            if (pb::WireFormat.IsEndGroupTag(tag)) {
+              return;
+            }
+            break;
+          case 10: {
+            name_ = input.ReadString();
+            break;
+          }
+          case 16: {
+            id_ = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            email_ = input.ReadString();
+            break;
+          }
+          case 34: {
+            input.ReadMessageArray(tag, phone_, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Parser);
+            break;
+          }
+        }
+      }
     }
 
     #region Nested types
@@ -104,1051 +223,207 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class PhoneNumber : pb::GeneratedMessage<PhoneNumber, PhoneNumber.Builder> {
-        private PhoneNumber() { }
-        private static readonly PhoneNumber defaultInstance = new PhoneNumber().MakeReadOnly();
-        private static readonly string[] _phoneNumberFieldNames = new string[] { "number", "type" };
-        private static readonly uint[] _phoneNumberFieldTags = new uint[] { 10, 16 };
-        public static PhoneNumber DefaultInstance {
-          get { return defaultInstance; }
-        }
+      public sealed partial class PhoneNumber : pb::IMessage<PhoneNumber>, global::System.IEquatable<PhoneNumber> {
+        private static readonly pb::MessageParser<PhoneNumber> _parser = new pb::MessageParser<PhoneNumber>(() => new PhoneNumber());
+        public static pb::MessageParser<PhoneNumber> Parser { get { return _parser; } }
 
-        public override PhoneNumber DefaultInstanceForType {
-          get { return DefaultInstance; }
-        }
-
-        protected override PhoneNumber ThisMessage {
-          get { return this; }
-        }
-
+        private static readonly string[] _fieldNames = new string[] { "number", "type" };
+        private static readonly uint[] _fieldTags = new uint[] { 10, 16 };
         public static pbd::MessageDescriptor Descriptor {
           get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_Person_PhoneNumber__Descriptor; }
         }
 
-        protected override pb::FieldAccess.FieldAccessorTable<PhoneNumber, PhoneNumber.Builder> InternalFieldAccessors {
+        public pb::FieldAccess.FieldAccessorTable<PhoneNumber> Fields {
           get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable; }
         }
 
-        public const int NumberFieldNumber = 1;
-        private bool hasNumber;
-        private string number_ = "";
-        public bool HasNumber {
-          get { return hasNumber; }
+        public PhoneNumber() { }
+        public PhoneNumber(PhoneNumber other) {
+          MergeFrom(other);
         }
+        public const int NumberFieldNumber = 1;
+        private string number_ = "";
         public string Number {
           get { return number_; }
+          set { number_ = value ?? ""; }
         }
+
 
         public const int TypeFieldNumber = 2;
-        private bool hasType;
         private global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType type_ = global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME;
-        public bool HasType {
-          get { return hasType; }
-        }
         public global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType Type {
           get { return type_; }
+          set { type_ = value; }
         }
 
-        public override bool IsInitialized {
-          get {
-            if (!hasNumber) return false;
+
+        public override bool Equals(object other) {
+          return Equals(other as PhoneNumber);
+        }
+
+        public bool Equals(PhoneNumber other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
             return true;
           }
+          if (Number != other.Number) return false;
+          if (Type != other.Type) return false;
+          return true;
         }
 
-        public override void WriteTo(pb::ICodedOutputStream output) {
-          CalcSerializedSize();
-          string[] field_names = _phoneNumberFieldNames;
-          if (hasNumber) {
-            output.WriteString(1, field_names[0], Number);
-          }
-          if (hasType) {
-            output.WriteEnum(2, field_names[1], (int) Type, Type);
-          }
-          UnknownFields.WriteTo(output);
+        public override int GetHashCode() {
+          int hash = 0;
+          if (Number != "") hash ^= Number.GetHashCode();
+          if (Type != global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME) hash ^= Type.GetHashCode();
+          return hash;
         }
 
-        private int memoizedSerializedSize = -1;
-        public override int SerializedSize {
-          get {
-            int size = memoizedSerializedSize;
-            if (size != -1) return size;
-            return CalcSerializedSize();
+        public void WriteTo(pb::CodedOutputStream output) {
+          if (Number != "") {
+            output.WriteString(1, Number);
+          }
+          if (Type != global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME) {
+            output.WriteEnum(2, (int) Type);
           }
         }
 
-        private int CalcSerializedSize() {
-          int size = memoizedSerializedSize;
-          if (size != -1) return size;
-
-          size = 0;
-          if (hasNumber) {
+        public int CalculateSize() {
+          int size = 0;
+          if (Number != "") {
             size += pb::CodedOutputStream.ComputeStringSize(1, Number);
           }
-          if (hasType) {
+          if (Type != global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME) {
             size += pb::CodedOutputStream.ComputeEnumSize(2, (int) Type);
           }
-          size += UnknownFields.SerializedSize;
-          memoizedSerializedSize = size;
           return size;
         }
-        public static PhoneNumber ParseFrom(pb::ByteString data) {
-          return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-        }
-        public static PhoneNumber ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
-          return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-        }
-        public static PhoneNumber ParseFrom(byte[] data) {
-          return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-        }
-        public static PhoneNumber ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
-          return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-        }
-        public static PhoneNumber ParseFrom(global::System.IO.Stream input) {
-          return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-        }
-        public static PhoneNumber ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-          return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-        }
-        public static PhoneNumber ParseDelimitedFrom(global::System.IO.Stream input) {
-          return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
-        }
-        public static PhoneNumber ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-          return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
-        }
-        public static PhoneNumber ParseFrom(pb::ICodedInputStream input) {
-          return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-        }
-        public static PhoneNumber ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-          return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-        }
-        private PhoneNumber MakeReadOnly() {
-          return this;
+        public void MergeFrom(PhoneNumber other) {
+          if (other == null) {
+            return;
+          }
+          if (other.Number != "") {
+            Number = other.Number;
+          }
+          if (other.Type != global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME) {
+            Type = other.Type;
+          }
         }
 
-        public static Builder CreateBuilder() { return new Builder(); }
-        public override Builder ToBuilder() { return CreateBuilder(this); }
-        public override Builder CreateBuilderForType() { return new Builder(); }
-        public static Builder CreateBuilder(PhoneNumber prototype) {
-          return new Builder(prototype);
-        }
-
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public sealed partial class Builder : pb::GeneratedBuilder<PhoneNumber, Builder> {
-          protected override Builder ThisBuilder {
-            get { return this; }
-          }
-          public Builder() {
-            result = DefaultInstance;
-            resultIsReadOnly = true;
-          }
-          internal Builder(PhoneNumber cloneFrom) {
-            result = cloneFrom;
-            resultIsReadOnly = true;
-          }
-
-          private bool resultIsReadOnly;
-          private PhoneNumber result;
-
-          private PhoneNumber PrepareBuilder() {
-            if (resultIsReadOnly) {
-              PhoneNumber original = result;
-              result = new PhoneNumber();
-              resultIsReadOnly = false;
-              MergeFrom(original);
-            }
-            return result;
-          }
-
-          public override bool IsInitialized {
-            get { return result.IsInitialized; }
-          }
-
-          protected override PhoneNumber MessageBeingBuilt {
-            get { return PrepareBuilder(); }
-          }
-
-          public override Builder Clear() {
-            result = DefaultInstance;
-            resultIsReadOnly = true;
-            return this;
-          }
-
-          public override Builder Clone() {
-            if (resultIsReadOnly) {
-              return new Builder(result);
-            } else {
-              return new Builder().MergeFrom(result);
-            }
-          }
-
-          public override pbd::MessageDescriptor DescriptorForType {
-            get { return global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Descriptor; }
-          }
-
-          public override PhoneNumber DefaultInstanceForType {
-            get { return global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.DefaultInstance; }
-          }
-
-          public override PhoneNumber BuildPartial() {
-            if (resultIsReadOnly) {
-              return result;
-            }
-            resultIsReadOnly = true;
-            return result.MakeReadOnly();
-          }
-
-          public override Builder MergeFrom(pb::IMessage other) {
-            if (other is PhoneNumber) {
-              return MergeFrom((PhoneNumber) other);
-            } else {
-              base.MergeFrom(other);
-              return this;
-            }
-          }
-
-          public override Builder MergeFrom(PhoneNumber other) {
-            if (other == global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.DefaultInstance) return this;
-            PrepareBuilder();
-            if (other.HasNumber) {
-              Number = other.Number;
-            }
-            if (other.HasType) {
-              Type = other.Type;
-            }
-            this.MergeUnknownFields(other.UnknownFields);
-            return this;
-          }
-
-          public override Builder MergeFrom(pb::ICodedInputStream input) {
-            return MergeFrom(input, pb::ExtensionRegistry.Empty);
-          }
-
-          public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-            PrepareBuilder();
-            pb::UnknownFieldSet.Builder unknownFields = null;
-            uint tag;
-            string field_name;
-            while (input.ReadTag(out tag, out field_name)) {
-              if(tag == 0 && field_name != null) {
-                int field_ordinal = global::System.Array.BinarySearch(_phoneNumberFieldNames, field_name, global::System.StringComparer.Ordinal);
-                if(field_ordinal >= 0)
-                  tag = _phoneNumberFieldTags[field_ordinal];
-                else {
-                  if (unknownFields == null) {
-                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-                  }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-                  continue;
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while (input.ReadTag(out tag)) {
+            switch(tag) {
+              case 0:
+                throw pb::InvalidProtocolBufferException.InvalidTag();
+              default:
+                if (pb::WireFormat.IsEndGroupTag(tag)) {
+                  return;
                 }
+                break;
+              case 10: {
+                number_ = input.ReadString();
+                break;
               }
-              switch (tag) {
-                case 0: {
-                  throw pb::InvalidProtocolBufferException.InvalidTag();
-                }
-                default: {
-                  if (pb::WireFormat.IsEndGroupTag(tag)) {
-                    if (unknownFields != null) {
-                      this.UnknownFields = unknownFields.Build();
-                    }
-                    return this;
-                  }
-                  if (unknownFields == null) {
-                    unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-                  }
-                  ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-                  break;
-                }
-                case 10: {
-                  result.hasNumber = input.ReadString(ref result.number_);
-                  break;
-                }
-                case 16: {
-                  object unknown;
-                  if(input.ReadEnum(ref result.type_, out unknown)) {
-                    result.hasType = true;
-                  } else if(unknown is int) {
-                    if (unknownFields == null) {
-                      unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-                    }
-                    unknownFields.MergeVarintField(2, (ulong)(int)unknown);
-                  }
-                  break;
-                }
+              case 16: {
+                type_ = (global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType) input.ReadEnum();
+                break;
               }
             }
-
-            if (unknownFields != null) {
-              this.UnknownFields = unknownFields.Build();
-            }
-            return this;
-          }
-
-
-          public bool HasNumber {
-            get { return result.hasNumber; }
-          }
-          public string Number {
-            get { return result.Number; }
-            set { SetNumber(value); }
-          }
-          public Builder SetNumber(string value) {
-            pb::ThrowHelper.ThrowIfNull(value, "value");
-            PrepareBuilder();
-            result.hasNumber = true;
-            result.number_ = value;
-            return this;
-          }
-          public Builder ClearNumber() {
-            PrepareBuilder();
-            result.hasNumber = false;
-            result.number_ = "";
-            return this;
-          }
-
-          public bool HasType {
-            get { return result.hasType; }
-          }
-          public global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType Type {
-            get { return result.Type; }
-            set { SetType(value); }
-          }
-          public Builder SetType(global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType value) {
-            PrepareBuilder();
-            result.hasType = true;
-            result.type_ = value;
-            return this;
-          }
-          public Builder ClearType() {
-            PrepareBuilder();
-            result.hasType = false;
-            result.type_ = global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME;
-            return this;
           }
         }
-        static PhoneNumber() {
-          object.ReferenceEquals(global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.Descriptor, null);
-        }
+
       }
 
     }
     #endregion
 
-    public const int NameFieldNumber = 1;
-    private bool hasName;
-    private string name_ = "";
-    public bool HasName {
-      get { return hasName; }
-    }
-    public string Name {
-      get { return name_; }
-    }
-
-    public const int IdFieldNumber = 2;
-    private bool hasId;
-    private int id_;
-    public bool HasId {
-      get { return hasId; }
-    }
-    public int Id {
-      get { return id_; }
-    }
-
-    public const int EmailFieldNumber = 3;
-    private bool hasEmail;
-    private string email_ = "";
-    public bool HasEmail {
-      get { return hasEmail; }
-    }
-    public string Email {
-      get { return email_; }
-    }
-
-    public const int PhoneFieldNumber = 4;
-    private pbc::PopsicleList<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> phone_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber>();
-    public scg::IList<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> PhoneList {
-      get { return phone_; }
-    }
-    public int PhoneCount {
-      get { return phone_.Count; }
-    }
-    public global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber GetPhone(int index) {
-      return phone_[index];
-    }
-
-    public override bool IsInitialized {
-      get {
-        if (!hasName) return false;
-        if (!hasId) return false;
-        foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber element in PhoneList) {
-          if (!element.IsInitialized) return false;
-        }
-        return true;
-      }
-    }
-
-    public override void WriteTo(pb::ICodedOutputStream output) {
-      CalcSerializedSize();
-      string[] field_names = _personFieldNames;
-      if (hasName) {
-        output.WriteString(1, field_names[2], Name);
-      }
-      if (hasId) {
-        output.WriteInt32(2, field_names[1], Id);
-      }
-      if (hasEmail) {
-        output.WriteString(3, field_names[0], Email);
-      }
-      if (phone_.Count > 0) {
-        output.WriteMessageArray(4, field_names[3], phone_);
-      }
-      UnknownFields.WriteTo(output);
-    }
-
-    private int memoizedSerializedSize = -1;
-    public override int SerializedSize {
-      get {
-        int size = memoizedSerializedSize;
-        if (size != -1) return size;
-        return CalcSerializedSize();
-      }
-    }
-
-    private int CalcSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      if (hasName) {
-        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
-      }
-      if (hasId) {
-        size += pb::CodedOutputStream.ComputeInt32Size(2, Id);
-      }
-      if (hasEmail) {
-        size += pb::CodedOutputStream.ComputeStringSize(3, Email);
-      }
-      foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber element in PhoneList) {
-        size += pb::CodedOutputStream.ComputeMessageSize(4, element);
-      }
-      size += UnknownFields.SerializedSize;
-      memoizedSerializedSize = size;
-      return size;
-    }
-    public static Person ParseFrom(pb::ByteString data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static Person ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static Person ParseFrom(byte[] data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static Person ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static Person ParseFrom(global::System.IO.Stream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static Person ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    public static Person ParseDelimitedFrom(global::System.IO.Stream input) {
-      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
-    }
-    public static Person ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
-    }
-    public static Person ParseFrom(pb::ICodedInputStream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static Person ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    private Person MakeReadOnly() {
-      phone_.MakeReadOnly();
-      return this;
-    }
-
-    public static Builder CreateBuilder() { return new Builder(); }
-    public override Builder ToBuilder() { return CreateBuilder(this); }
-    public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(Person prototype) {
-      return new Builder(prototype);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public sealed partial class Builder : pb::GeneratedBuilder<Person, Builder> {
-      protected override Builder ThisBuilder {
-        get { return this; }
-      }
-      public Builder() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-      }
-      internal Builder(Person cloneFrom) {
-        result = cloneFrom;
-        resultIsReadOnly = true;
-      }
-
-      private bool resultIsReadOnly;
-      private Person result;
-
-      private Person PrepareBuilder() {
-        if (resultIsReadOnly) {
-          Person original = result;
-          result = new Person();
-          resultIsReadOnly = false;
-          MergeFrom(original);
-        }
-        return result;
-      }
-
-      public override bool IsInitialized {
-        get { return result.IsInitialized; }
-      }
-
-      protected override Person MessageBeingBuilt {
-        get { return PrepareBuilder(); }
-      }
-
-      public override Builder Clear() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-        return this;
-      }
-
-      public override Builder Clone() {
-        if (resultIsReadOnly) {
-          return new Builder(result);
-        } else {
-          return new Builder().MergeFrom(result);
-        }
-      }
-
-      public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::Google.ProtocolBuffers.Examples.AddressBook.Person.Descriptor; }
-      }
-
-      public override Person DefaultInstanceForType {
-        get { return global::Google.ProtocolBuffers.Examples.AddressBook.Person.DefaultInstance; }
-      }
-
-      public override Person BuildPartial() {
-        if (resultIsReadOnly) {
-          return result;
-        }
-        resultIsReadOnly = true;
-        return result.MakeReadOnly();
-      }
-
-      public override Builder MergeFrom(pb::IMessage other) {
-        if (other is Person) {
-          return MergeFrom((Person) other);
-        } else {
-          base.MergeFrom(other);
-          return this;
-        }
-      }
-
-      public override Builder MergeFrom(Person other) {
-        if (other == global::Google.ProtocolBuffers.Examples.AddressBook.Person.DefaultInstance) return this;
-        PrepareBuilder();
-        if (other.HasName) {
-          Name = other.Name;
-        }
-        if (other.HasId) {
-          Id = other.Id;
-        }
-        if (other.HasEmail) {
-          Email = other.Email;
-        }
-        if (other.phone_.Count != 0) {
-          result.phone_.Add(other.phone_);
-        }
-        this.MergeUnknownFields(other.UnknownFields);
-        return this;
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input) {
-        return MergeFrom(input, pb::ExtensionRegistry.Empty);
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        PrepareBuilder();
-        pb::UnknownFieldSet.Builder unknownFields = null;
-        uint tag;
-        string field_name;
-        while (input.ReadTag(out tag, out field_name)) {
-          if(tag == 0 && field_name != null) {
-            int field_ordinal = global::System.Array.BinarySearch(_personFieldNames, field_name, global::System.StringComparer.Ordinal);
-            if(field_ordinal >= 0)
-              tag = _personFieldTags[field_ordinal];
-            else {
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              continue;
-            }
-          }
-          switch (tag) {
-            case 0: {
-              throw pb::InvalidProtocolBufferException.InvalidTag();
-            }
-            default: {
-              if (pb::WireFormat.IsEndGroupTag(tag)) {
-                if (unknownFields != null) {
-                  this.UnknownFields = unknownFields.Build();
-                }
-                return this;
-              }
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              break;
-            }
-            case 10: {
-              result.hasName = input.ReadString(ref result.name_);
-              break;
-            }
-            case 16: {
-              result.hasId = input.ReadInt32(ref result.id_);
-              break;
-            }
-            case 26: {
-              result.hasEmail = input.ReadString(ref result.email_);
-              break;
-            }
-            case 34: {
-              input.ReadMessageArray(tag, field_name, result.phone_, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.DefaultInstance, extensionRegistry);
-              break;
-            }
-          }
-        }
-
-        if (unknownFields != null) {
-          this.UnknownFields = unknownFields.Build();
-        }
-        return this;
-      }
-
-
-      public bool HasName {
-        get { return result.hasName; }
-      }
-      public string Name {
-        get { return result.Name; }
-        set { SetName(value); }
-      }
-      public Builder SetName(string value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        result.hasName = true;
-        result.name_ = value;
-        return this;
-      }
-      public Builder ClearName() {
-        PrepareBuilder();
-        result.hasName = false;
-        result.name_ = "";
-        return this;
-      }
-
-      public bool HasId {
-        get { return result.hasId; }
-      }
-      public int Id {
-        get { return result.Id; }
-        set { SetId(value); }
-      }
-      public Builder SetId(int value) {
-        PrepareBuilder();
-        result.hasId = true;
-        result.id_ = value;
-        return this;
-      }
-      public Builder ClearId() {
-        PrepareBuilder();
-        result.hasId = false;
-        result.id_ = 0;
-        return this;
-      }
-
-      public bool HasEmail {
-        get { return result.hasEmail; }
-      }
-      public string Email {
-        get { return result.Email; }
-        set { SetEmail(value); }
-      }
-      public Builder SetEmail(string value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        result.hasEmail = true;
-        result.email_ = value;
-        return this;
-      }
-      public Builder ClearEmail() {
-        PrepareBuilder();
-        result.hasEmail = false;
-        result.email_ = "";
-        return this;
-      }
-
-      public pbc::IPopsicleList<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> PhoneList {
-        get { return PrepareBuilder().phone_; }
-      }
-      public int PhoneCount {
-        get { return result.PhoneCount; }
-      }
-      public global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber GetPhone(int index) {
-        return result.GetPhone(index);
-      }
-      public Builder SetPhone(int index, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        result.phone_[index] = value;
-        return this;
-      }
-      public Builder SetPhone(int index, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Builder builderForValue) {
-        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
-        PrepareBuilder();
-        result.phone_[index] = builderForValue.Build();
-        return this;
-      }
-      public Builder AddPhone(global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        result.phone_.Add(value);
-        return this;
-      }
-      public Builder AddPhone(global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Builder builderForValue) {
-        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
-        PrepareBuilder();
-        result.phone_.Add(builderForValue.Build());
-        return this;
-      }
-      public Builder AddRangePhone(scg::IEnumerable<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> values) {
-        PrepareBuilder();
-        result.phone_.Add(values);
-        return this;
-      }
-      public Builder ClearPhone() {
-        PrepareBuilder();
-        result.phone_.Clear();
-        return this;
-      }
-    }
-    static Person() {
-      object.ReferenceEquals(global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.Descriptor, null);
-    }
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class AddressBook : pb::GeneratedMessage<AddressBook, AddressBook.Builder> {
-    private AddressBook() { }
-    private static readonly AddressBook defaultInstance = new AddressBook().MakeReadOnly();
-    private static readonly string[] _addressBookFieldNames = new string[] { "person" };
-    private static readonly uint[] _addressBookFieldTags = new uint[] { 10 };
-    public static AddressBook DefaultInstance {
-      get { return defaultInstance; }
-    }
+  public sealed partial class AddressBook : pb::IMessage<AddressBook>, global::System.IEquatable<AddressBook> {
+    private static readonly pb::MessageParser<AddressBook> _parser = new pb::MessageParser<AddressBook>(() => new AddressBook());
+    public static pb::MessageParser<AddressBook> Parser { get { return _parser; } }
 
-    public override AddressBook DefaultInstanceForType {
-      get { return DefaultInstance; }
-    }
-
-    protected override AddressBook ThisMessage {
-      get { return this; }
-    }
-
+    private static readonly string[] _fieldNames = new string[] { "person" };
+    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
       get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_AddressBook__Descriptor; }
     }
 
-    protected override pb::FieldAccess.FieldAccessorTable<AddressBook, AddressBook.Builder> InternalFieldAccessors {
+    public pb::FieldAccess.FieldAccessorTable<AddressBook> Fields {
       get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_AddressBook__FieldAccessorTable; }
     }
 
+    public AddressBook() { }
+    public AddressBook(AddressBook other) {
+      MergeFrom(other);
+    }
     public const int PersonFieldNumber = 1;
-    private pbc::PopsicleList<global::Google.ProtocolBuffers.Examples.AddressBook.Person> person_ = new pbc::PopsicleList<global::Google.ProtocolBuffers.Examples.AddressBook.Person>();
-    public scg::IList<global::Google.ProtocolBuffers.Examples.AddressBook.Person> PersonList {
+    private readonly pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person> person_ = new pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person>();
+    public pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person> Person {
       get { return person_; }
     }
-    public int PersonCount {
-      get { return person_.Count; }
-    }
-    public global::Google.ProtocolBuffers.Examples.AddressBook.Person GetPerson(int index) {
-      return person_[index];
+
+    public override bool Equals(object other) {
+      return Equals(other as AddressBook);
     }
 
-    public override bool IsInitialized {
-      get {
-        foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person element in PersonList) {
-          if (!element.IsInitialized) return false;
-        }
+    public bool Equals(AddressBook other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
         return true;
       }
+      if(!person_.Equals(other.person_)) return false;
+      return true;
     }
 
-    public override void WriteTo(pb::ICodedOutputStream output) {
-      CalcSerializedSize();
-      string[] field_names = _addressBookFieldNames;
-      if (person_.Count > 0) {
-        output.WriteMessageArray(1, field_names[0], person_);
-      }
-      UnknownFields.WriteTo(output);
+    public override int GetHashCode() {
+      int hash = 0;
+      hash ^= person_.GetHashCode();
+      return hash;
     }
 
-    private int memoizedSerializedSize = -1;
-    public override int SerializedSize {
-      get {
-        int size = memoizedSerializedSize;
-        if (size != -1) return size;
-        return CalcSerializedSize();
-      }
+    public void WriteTo(pb::CodedOutputStream output) {
+      output.WriteMessageArray(1, person_);
     }
 
-    private int CalcSerializedSize() {
-      int size = memoizedSerializedSize;
-      if (size != -1) return size;
-
-      size = 0;
-      foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person element in PersonList) {
+    public int CalculateSize() {
+      int size = 0;
+      foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person element in person_) {
         size += pb::CodedOutputStream.ComputeMessageSize(1, element);
       }
-      size += UnknownFields.SerializedSize;
-      memoizedSerializedSize = size;
       return size;
     }
-    public static AddressBook ParseFrom(pb::ByteString data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static AddressBook ParseFrom(pb::ByteString data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static AddressBook ParseFrom(byte[] data) {
-      return ((Builder) CreateBuilder().MergeFrom(data)).BuildParsed();
-    }
-    public static AddressBook ParseFrom(byte[] data, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(data, extensionRegistry)).BuildParsed();
-    }
-    public static AddressBook ParseFrom(global::System.IO.Stream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static AddressBook ParseFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    public static AddressBook ParseDelimitedFrom(global::System.IO.Stream input) {
-      return CreateBuilder().MergeDelimitedFrom(input).BuildParsed();
-    }
-    public static AddressBook ParseDelimitedFrom(global::System.IO.Stream input, pb::ExtensionRegistry extensionRegistry) {
-      return CreateBuilder().MergeDelimitedFrom(input, extensionRegistry).BuildParsed();
-    }
-    public static AddressBook ParseFrom(pb::ICodedInputStream input) {
-      return ((Builder) CreateBuilder().MergeFrom(input)).BuildParsed();
-    }
-    public static AddressBook ParseFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-      return ((Builder) CreateBuilder().MergeFrom(input, extensionRegistry)).BuildParsed();
-    }
-    private AddressBook MakeReadOnly() {
-      person_.MakeReadOnly();
-      return this;
+    public void MergeFrom(AddressBook other) {
+      if (other == null) {
+        return;
+      }
+      person_.Add(other.person_);
     }
 
-    public static Builder CreateBuilder() { return new Builder(); }
-    public override Builder ToBuilder() { return CreateBuilder(this); }
-    public override Builder CreateBuilderForType() { return new Builder(); }
-    public static Builder CreateBuilder(AddressBook prototype) {
-      return new Builder(prototype);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public sealed partial class Builder : pb::GeneratedBuilder<AddressBook, Builder> {
-      protected override Builder ThisBuilder {
-        get { return this; }
-      }
-      public Builder() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-      }
-      internal Builder(AddressBook cloneFrom) {
-        result = cloneFrom;
-        resultIsReadOnly = true;
-      }
-
-      private bool resultIsReadOnly;
-      private AddressBook result;
-
-      private AddressBook PrepareBuilder() {
-        if (resultIsReadOnly) {
-          AddressBook original = result;
-          result = new AddressBook();
-          resultIsReadOnly = false;
-          MergeFrom(original);
-        }
-        return result;
-      }
-
-      public override bool IsInitialized {
-        get { return result.IsInitialized; }
-      }
-
-      protected override AddressBook MessageBeingBuilt {
-        get { return PrepareBuilder(); }
-      }
-
-      public override Builder Clear() {
-        result = DefaultInstance;
-        resultIsReadOnly = true;
-        return this;
-      }
-
-      public override Builder Clone() {
-        if (resultIsReadOnly) {
-          return new Builder(result);
-        } else {
-          return new Builder().MergeFrom(result);
-        }
-      }
-
-      public override pbd::MessageDescriptor DescriptorForType {
-        get { return global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.Descriptor; }
-      }
-
-      public override AddressBook DefaultInstanceForType {
-        get { return global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.DefaultInstance; }
-      }
-
-      public override AddressBook BuildPartial() {
-        if (resultIsReadOnly) {
-          return result;
-        }
-        resultIsReadOnly = true;
-        return result.MakeReadOnly();
-      }
-
-      public override Builder MergeFrom(pb::IMessage other) {
-        if (other is AddressBook) {
-          return MergeFrom((AddressBook) other);
-        } else {
-          base.MergeFrom(other);
-          return this;
-        }
-      }
-
-      public override Builder MergeFrom(AddressBook other) {
-        if (other == global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook.DefaultInstance) return this;
-        PrepareBuilder();
-        if (other.person_.Count != 0) {
-          result.person_.Add(other.person_);
-        }
-        this.MergeUnknownFields(other.UnknownFields);
-        return this;
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input) {
-        return MergeFrom(input, pb::ExtensionRegistry.Empty);
-      }
-
-      public override Builder MergeFrom(pb::ICodedInputStream input, pb::ExtensionRegistry extensionRegistry) {
-        PrepareBuilder();
-        pb::UnknownFieldSet.Builder unknownFields = null;
-        uint tag;
-        string field_name;
-        while (input.ReadTag(out tag, out field_name)) {
-          if(tag == 0 && field_name != null) {
-            int field_ordinal = global::System.Array.BinarySearch(_addressBookFieldNames, field_name, global::System.StringComparer.Ordinal);
-            if(field_ordinal >= 0)
-              tag = _addressBookFieldTags[field_ordinal];
-            else {
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              continue;
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while (input.ReadTag(out tag)) {
+        switch(tag) {
+          case 0:
+            throw pb::InvalidProtocolBufferException.InvalidTag();
+          default:
+            if (pb::WireFormat.IsEndGroupTag(tag)) {
+              return;
             }
-          }
-          switch (tag) {
-            case 0: {
-              throw pb::InvalidProtocolBufferException.InvalidTag();
-            }
-            default: {
-              if (pb::WireFormat.IsEndGroupTag(tag)) {
-                if (unknownFields != null) {
-                  this.UnknownFields = unknownFields.Build();
-                }
-                return this;
-              }
-              if (unknownFields == null) {
-                unknownFields = pb::UnknownFieldSet.CreateBuilder(this.UnknownFields);
-              }
-              ParseUnknownField(input, unknownFields, extensionRegistry, tag, field_name);
-              break;
-            }
-            case 10: {
-              input.ReadMessageArray(tag, field_name, result.person_, global::Google.ProtocolBuffers.Examples.AddressBook.Person.DefaultInstance, extensionRegistry);
-              break;
-            }
+            break;
+          case 10: {
+            input.ReadMessageArray(tag, person_, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Parser);
+            break;
           }
         }
-
-        if (unknownFields != null) {
-          this.UnknownFields = unknownFields.Build();
-        }
-        return this;
-      }
-
-
-      public pbc::IPopsicleList<global::Google.ProtocolBuffers.Examples.AddressBook.Person> PersonList {
-        get { return PrepareBuilder().person_; }
-      }
-      public int PersonCount {
-        get { return result.PersonCount; }
-      }
-      public global::Google.ProtocolBuffers.Examples.AddressBook.Person GetPerson(int index) {
-        return result.GetPerson(index);
-      }
-      public Builder SetPerson(int index, global::Google.ProtocolBuffers.Examples.AddressBook.Person value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        result.person_[index] = value;
-        return this;
-      }
-      public Builder SetPerson(int index, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Builder builderForValue) {
-        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
-        PrepareBuilder();
-        result.person_[index] = builderForValue.Build();
-        return this;
-      }
-      public Builder AddPerson(global::Google.ProtocolBuffers.Examples.AddressBook.Person value) {
-        pb::ThrowHelper.ThrowIfNull(value, "value");
-        PrepareBuilder();
-        result.person_.Add(value);
-        return this;
-      }
-      public Builder AddPerson(global::Google.ProtocolBuffers.Examples.AddressBook.Person.Builder builderForValue) {
-        pb::ThrowHelper.ThrowIfNull(builderForValue, "builderForValue");
-        PrepareBuilder();
-        result.person_.Add(builderForValue.Build());
-        return this;
-      }
-      public Builder AddRangePerson(scg::IEnumerable<global::Google.ProtocolBuffers.Examples.AddressBook.Person> values) {
-        PrepareBuilder();
-        result.person_.Add(values);
-        return this;
-      }
-      public Builder ClearPerson() {
-        PrepareBuilder();
-        result.person_.Clear();
-        return this;
       }
     }
-    static AddressBook() {
-      object.ReferenceEquals(global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.Descriptor, null);
-    }
+
   }
 
   #endregion

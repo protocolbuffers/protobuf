@@ -42,51 +42,13 @@ $PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers/DescriptorProtos \
     src/google/protobuf/descriptor_proto_file.proto
 rm src/google/protobuf/descriptor_proto_file.proto
 
-
-# ProtocolBuffers.Test protos
 $PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
-    src/google/protobuf/unittest.proto \
-    src/google/protobuf/unittest_custom_options.proto \
-    src/google/protobuf/unittest_drop_unknown_fields.proto \
-    src/google/protobuf/unittest_enormous_descriptor.proto \
-    src/google/protobuf/unittest_import.proto \
-    src/google/protobuf/unittest_import_public.proto \
-    src/google/protobuf/unittest_mset.proto \
-    src/google/protobuf/unittest_optimize_for.proto \
-    src/google/protobuf/unittest_no_field_presence.proto \
-    src/google/protobuf/unknown_enum_test.proto
+    src/google/protobuf/unittest_proto3.proto \
+    src/google/protobuf/unittest_import_proto3.proto \
+    src/google/protobuf/unittest_import_public_proto3.proto
 
 $PROTOC -Icsharp/protos/extest --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
-    csharp/protos/extest/unittest_extras_xmltest.proto \
     csharp/protos/extest/unittest_issues.proto
-
-$PROTOC -Ibenchmarks --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
-    benchmarks/google_size.proto \
-    benchmarks/google_speed.proto
-
-# ProtocolBuffersLite.Test protos
-$PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffersLite.Test/TestProtos \
-    src/google/protobuf/unittest.proto \
-    src/google/protobuf/unittest_import.proto \
-    src/google/protobuf/unittest_import_lite.proto \
-    src/google/protobuf/unittest_import_public.proto \
-    src/google/protobuf/unittest_import_public_lite.proto \
-    src/google/protobuf/unittest_lite.proto \
-    src/google/protobuf/unittest_lite_imports_nonlite.proto
-
-$PROTOC -Icsharp/protos/extest --csharp_out=csharp/src/ProtocolBuffersLite.Test/TestProtos \
-    csharp/protos/extest/unittest_extras_full.proto \
-    csharp/protos/extest/unittest_extras_lite.proto
-
-# TODO(jonskeet): Remove fixup; see issue #307
-sed -i -e 's/RepeatedFieldsGenerator\.Group/RepeatedFieldsGenerator.Types.Group/g' \
-    csharp/src/ProtocolBuffers.Test/TestProtos/Unittest.cs \
-    csharp/src/ProtocolBuffersLite.Test/TestProtos/Unittest.cs \
-    csharp/src/ProtocolBuffersLite.Test/TestProtos/UnittestLite.cs
-
-# TODO(jonskeet): Remove fixup
-sed -i -e 's/DescriptorProtos\.Descriptor\./DescriptorProtos.DescriptorProtoFile./g' \
-    csharp/src/ProtocolBuffers.Test/TestProtos/UnittestCustomOptions.cs
 
 # AddressBook sample protos
 $PROTOC -Iexamples --csharp_out=csharp/src/AddressBook \
