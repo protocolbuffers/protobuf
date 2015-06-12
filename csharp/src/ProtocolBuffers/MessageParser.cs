@@ -47,7 +47,7 @@ namespace Google.Protobuf
             return message;
         }
 
-        public T ParseFrom(ICodedInputStream input)
+        public T ParseFrom(CodedInputStream input)
         {
             T message = factory();
             message.MergeFrom(input);

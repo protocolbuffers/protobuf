@@ -350,9 +350,8 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
 
 void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer) {
   printer->Print(
-      "public void WriteTo(pb::ICodedOutputStream output) {\n");
+      "public void WriteTo(pb::CodedOutputStream output) {\n");
   printer->Indent();
-  printer->Print("string[] fieldNames = _fieldNames;\n");
 
   // Serialize all the fields
   for (int i = 0; i < fields_by_number().size(); i++) {
@@ -423,21 +422,13 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   }
   printer->Outdent();
   printer->Print("}\n\n");
-  printer->Print("public void MergeFrom(pb::ICodedInputStream input) {\n");
+  printer->Print("public void MergeFrom(pb::CodedInputStream input) {\n");
   printer->Indent();
   printer->Print(
     "uint tag;\n"
-    "string fieldName;\n"
-    "while (input.ReadTag(out tag, out fieldName)) {\n");
+    "while (input.ReadTag(out tag)) {\n"
+    "  switch(tag) {\n");
   printer->Indent();
-  printer->Print(
-    "if (tag == 0 && fieldName != null) {\n"
-    "  int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);\n"
-    "  if (fieldOrdinal >= 0) {\n"
-    "    tag = _fieldTags[fieldOrdinal];\n"
-    "  }\n"
-    "}\n"
-    "switch(tag) {\n");
   printer->Indent();
   printer->Print(
     "case 0:\n"  // 0 signals EOF / limit reached

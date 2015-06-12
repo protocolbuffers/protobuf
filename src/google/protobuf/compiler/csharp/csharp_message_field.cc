@@ -87,6 +87,7 @@ void MessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "if ($has_not_property_check$) {\n"
     "  $name$_ = new $type_name$();\n"
     "}\n"
+    // TODO(jonskeet): Do we really need merging behaviour like this?
     "input.ReadMessage($name$_);\n"); // No need to support TYPE_GROUP...
 }
 
@@ -95,7 +96,7 @@ void MessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  output.WriteMessage($number$, fieldNames[$field_ordinal$], $property_name$);\n"
+    "  output.WriteMessage($number$, $property_name$);\n"
     "}\n");
 }
 

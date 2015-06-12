@@ -153,13 +153,12 @@ namespace UnitTest.Issues.TestProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
-        output.WriteEnum(1, fieldNames[1], (int) Value);
+        output.WriteEnum(1, (int) Value);
       }
-      output.WriteEnumArray(2, fieldNames[2], values_);
-      output.WritePackedEnumArray(3, fieldNames[0], packedValues_);
+      output.WriteEnumArray(2, values_);
+      output.WritePackedEnumArray(3, packedValues_);
     }
 
     public int CalculateSize() {
@@ -201,16 +200,9 @@ namespace UnitTest.Issues.TestProtos {
       packedValues_.Add(other.packedValues_);
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -220,18 +212,17 @@ namespace UnitTest.Issues.TestProtos {
             }
             break;
           case 8: {
-            int tmp = 0;
-            input.ReadEnum(ref tmp);
-            value_ = (global::UnitTest.Issues.TestProtos.NegativeEnum) tmp;break;
+            value_ = (global::UnitTest.Issues.TestProtos.NegativeEnum) input.ReadEnum();
+            break;
           }
           case 18:
           case 16: {
-            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(tag, fieldName, values_);
+            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(tag, values_);
             break;
           }
           case 26:
           case 24: {
-            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(tag, fieldName, packedValues_);
+            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(tag, packedValues_);
             break;
           }
         }
@@ -278,8 +269,7 @@ namespace UnitTest.Issues.TestProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
     }
 
     public int CalculateSize() {
@@ -292,16 +282,9 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -412,20 +395,19 @@ namespace UnitTest.Issues.TestProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (PrimitiveValue != 0) {
-        output.WriteInt32(1, fieldNames[5], PrimitiveValue);
+        output.WriteInt32(1, PrimitiveValue);
       }
-      output.WritePackedInt32Array(2, fieldNames[4], primitiveArray_);
+      output.WritePackedInt32Array(2, primitiveArray_);
       if (messageValue_ != null) {
-        output.WriteMessage(3, fieldNames[3], MessageValue);
+        output.WriteMessage(3, MessageValue);
       }
-      output.WriteMessageArray(4, fieldNames[2], messageArray_);
+      output.WriteMessageArray(4, messageArray_);
       if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
-        output.WriteEnum(5, fieldNames[1], (int) EnumValue);
+        output.WriteEnum(5, (int) EnumValue);
       }
-      output.WritePackedEnumArray(6, fieldNames[0], enumArray_);
+      output.WritePackedEnumArray(6, enumArray_);
     }
 
     public int CalculateSize() {
@@ -486,16 +468,9 @@ namespace UnitTest.Issues.TestProtos {
       enumArray_.Add(other.enumArray_);
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -505,12 +480,12 @@ namespace UnitTest.Issues.TestProtos {
             }
             break;
           case 8: {
-            input.ReadInt32(ref primitiveValue_);
+            primitiveValue_ = input.ReadInt32();
             break;
           }
           case 18:
           case 16: {
-            input.ReadInt32Array(tag, fieldName, primitiveArray_);
+            input.ReadInt32Array(tag, primitiveArray_);
             break;
           }
           case 26: {
@@ -521,17 +496,16 @@ namespace UnitTest.Issues.TestProtos {
             break;
           }
           case 34: {
-            input.ReadMessageArray(tag, fieldName, messageArray_, global::UnitTest.Issues.TestProtos.DeprecatedChild.Parser);
+            input.ReadMessageArray(tag, messageArray_, global::UnitTest.Issues.TestProtos.DeprecatedChild.Parser);
             break;
           }
           case 40: {
-            int tmp = 0;
-            input.ReadEnum(ref tmp);
-            enumValue_ = (global::UnitTest.Issues.TestProtos.DeprecatedEnum) tmp;break;
+            enumValue_ = (global::UnitTest.Issues.TestProtos.DeprecatedEnum) input.ReadEnum();
+            break;
           }
           case 50:
           case 48: {
-            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.DeprecatedEnum>(tag, fieldName, enumArray_);
+            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.DeprecatedEnum>(tag, enumArray_);
             break;
           }
         }
@@ -588,10 +562,9 @@ namespace UnitTest.Issues.TestProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Item != 0) {
-        output.WriteInt32(1, fieldNames[0], Item);
+        output.WriteInt32(1, Item);
       }
     }
 
@@ -611,16 +584,9 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -630,7 +596,7 @@ namespace UnitTest.Issues.TestProtos {
             }
             break;
           case 8: {
-            input.ReadInt32(ref item_);
+            item_ = input.ReadInt32();
             break;
           }
         }

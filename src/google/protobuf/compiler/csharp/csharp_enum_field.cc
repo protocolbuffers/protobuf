@@ -54,17 +54,14 @@ EnumFieldGenerator::~EnumFieldGenerator() {
 }
 
 void EnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
-  // TODO(jonskeet): Get rid of the temporary variable when we sanitize CodedInputStream not to use ref.
   printer->Print(variables_,
-    "int tmp = 0;\n"
-    "input.ReadEnum(ref tmp);\n"
-    "$name$_ = ($type_name$) tmp;");
+    "$name$_ = ($type_name$) input.ReadEnum();\n");
 }
 
 void EnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(variables_,
     "if ($has_property_check$) {\n"
-    "  output.WriteEnum($number$, fieldNames[$field_ordinal$], (int) $property_name$);\n"
+    "  output.WriteEnum($number$, (int) $property_name$);\n"
     "}\n");
 }
 
@@ -88,18 +85,15 @@ void EnumOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   // TODO(jonskeet): What about if we read the default value?
   printer->Print(
     variables_,
-    "int enumValue = 0;\n"
-    "if(input.ReadEnum(ref enumValue)) {\n"
-    "  $oneof_name$_ = enumValue;\n"
-    "  $oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
-    "}\n");
+    "$oneof_name$_ = input.ReadEnum();\n"
+    "$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n");
 }
 
 void EnumOneofFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  output.WriteEnum($number$, fieldNames[$field_ordinal$], (int) $property_name$);\n"
+    "  output.WriteEnum($number$, (int) $property_name$);\n"
     "}\n");
 }
 

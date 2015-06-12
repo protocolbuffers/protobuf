@@ -73,7 +73,6 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
     printer->Print(
       variables_,
       "  set { $name$_ = value; }\n");
-
   } else {
     printer->Print(
       variables_,
@@ -93,14 +92,14 @@ void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 void PrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "input.Read$capitalized_type_name$(ref $name$_);\n");
+    "$name$_ = input.Read$capitalized_type_name$();\n");
 }
 
 void PrimitiveFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  output.Write$capitalized_type_name$($number$, fieldNames[$field_ordinal$], $property_name$);\n"
+    "  output.Write$capitalized_type_name$($number$, $property_name$);\n"
     "}\n");
 }
 
@@ -169,13 +168,10 @@ void PrimitiveOneofFieldGenerator::WriteToString(io::Printer* printer) {
 
 void PrimitiveOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   // TODO(jonskeet): What if the value we read is the default value for the type?
-  printer->Print(
-    variables_,
-    "$type_name$ value = $default_value$;\n"
-    "if (input.Read$capitalized_type_name$(ref value)) {\n"
-    "  $oneof_name$_ = value;\n"
-    "  $oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
-    "}\n");
+    printer->Print(
+      variables_,
+      "$oneof_name$_ = input.Read$capitalized_type_name$()\n;"
+      "$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n");
 }
 
 }  // namespace csharp

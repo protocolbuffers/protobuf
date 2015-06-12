@@ -92,10 +92,9 @@ namespace Google.Protobuf.TestProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (E != 0) {
-        output.WriteInt32(1, fieldNames[0], E);
+        output.WriteInt32(1, E);
       }
     }
 
@@ -115,16 +114,9 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -134,7 +126,7 @@ namespace Google.Protobuf.TestProtos {
             }
             break;
           case 8: {
-            input.ReadInt32(ref e_);
+            e_ = input.ReadInt32();
             break;
           }
         }

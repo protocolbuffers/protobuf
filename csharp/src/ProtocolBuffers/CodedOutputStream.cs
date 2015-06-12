@@ -57,7 +57,7 @@ namespace Google.Protobuf
     /// methods are taken from the protocol buffer type names, not .NET types.
     /// (Hence WriteFloat instead of WriteSingle, and WriteBool instead of WriteBoolean.)
     /// </remarks>
-    public sealed partial class CodedOutputStream : ICodedOutputStream
+    public sealed partial class CodedOutputStream
     {
         private static readonly Encoding UTF8 = Encoding.UTF8;
 
@@ -143,76 +143,11 @@ namespace Google.Protobuf
             }
         }
 
-        void ICodedOutputStream.WriteMessageStart() { }
-        void ICodedOutputStream.WriteMessageEnd() { Flush(); }
-
         #region Writing of tags and fields
-
-        // TODO(jonskeet): Do we need this?
-        public void WriteField(FieldType fieldType, int fieldNumber, string fieldName, object value)
-        {
-            switch (fieldType)
-            {
-                case FieldType.String:
-                    WriteString(fieldNumber, fieldName, (string) value);
-                    break;
-                case FieldType.Message:
-                    WriteMessage(fieldNumber, fieldName, (IMessage) value);
-                    break;
-                case FieldType.Group:
-                    WriteGroup(fieldNumber, fieldName, (IMessage) value);
-                    break;
-                case FieldType.Bytes:
-                    WriteBytes(fieldNumber, fieldName, (ByteString) value);
-                    break;
-                case FieldType.Bool:
-                    WriteBool(fieldNumber, fieldName, (bool) value);
-                    break;
-                case FieldType.Enum:
-                    throw new NotImplementedException();
-                case FieldType.Int32:
-                    WriteInt32(fieldNumber, fieldName, (int) value);
-                    break;
-                case FieldType.Int64:
-                    WriteInt64(fieldNumber, fieldName, (long) value);
-                    break;
-                case FieldType.UInt32:
-                    WriteUInt32(fieldNumber, fieldName, (uint) value);
-                    break;
-                case FieldType.UInt64:
-                    WriteUInt64(fieldNumber, fieldName, (ulong) value);
-                    break;
-                case FieldType.SInt32:
-                    WriteSInt32(fieldNumber, fieldName, (int) value);
-                    break;
-                case FieldType.SInt64:
-                    WriteSInt64(fieldNumber, fieldName, (long) value);
-                    break;
-                case FieldType.Fixed32:
-                    WriteFixed32(fieldNumber, fieldName, (uint) value);
-                    break;
-                case FieldType.Fixed64:
-                    WriteFixed64(fieldNumber, fieldName, (ulong) value);
-                    break;
-                case FieldType.SFixed32:
-                    WriteSFixed32(fieldNumber, fieldName, (int) value);
-                    break;
-                case FieldType.SFixed64:
-                    WriteSFixed64(fieldNumber, fieldName, (long) value);
-                    break;
-                case FieldType.Double:
-                    WriteDouble(fieldNumber, fieldName, (double) value);
-                    break;
-                case FieldType.Float:
-                    WriteFloat(fieldNumber, fieldName, (float) value);
-                    break;
-            }
-        }
-
         /// <summary>
         /// Writes a double field value, including tag, to the stream.
         /// </summary>
-        public void WriteDouble(int fieldNumber, string fieldName, double value)
+        public void WriteDouble(int fieldNumber, double value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
             WriteDoubleNoTag(value);
@@ -221,7 +156,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes a float field value, including tag, to the stream.
         /// </summary>
-        public void WriteFloat(int fieldNumber, string fieldName, float value)
+        public void WriteFloat(int fieldNumber, float value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
             WriteFloatNoTag(value);
@@ -230,7 +165,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes a uint64 field value, including tag, to the stream.
         /// </summary>
-        public void WriteUInt64(int fieldNumber, string fieldName, ulong value)
+        public void WriteUInt64(int fieldNumber, ulong value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
             WriteRawVarint64(value);
@@ -239,7 +174,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes an int64 field value, including tag, to the stream.
         /// </summary>
-        public void WriteInt64(int fieldNumber, string fieldName, long value)
+        public void WriteInt64(int fieldNumber, long value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
             WriteRawVarint64((ulong) value);
@@ -248,7 +183,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes an int32 field value, including tag, to the stream.
         /// </summary>
-        public void WriteInt32(int fieldNumber, string fieldName, int value)
+        public void WriteInt32(int fieldNumber, int value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
             if (value >= 0)
@@ -265,7 +200,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes a fixed64 field value, including tag, to the stream.
         /// </summary>
-        public void WriteFixed64(int fieldNumber, string fieldName, ulong value)
+        public void WriteFixed64(int fieldNumber, ulong value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
             WriteRawLittleEndian64(value);
@@ -274,7 +209,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes a fixed32 field value, including tag, to the stream.
         /// </summary>
-        public void WriteFixed32(int fieldNumber, string fieldName, uint value)
+        public void WriteFixed32(int fieldNumber, uint value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
             WriteRawLittleEndian32(value);
@@ -283,7 +218,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes a bool field value, including tag, to the stream.
         /// </summary>
-        public void WriteBool(int fieldNumber, string fieldName, bool value)
+        public void WriteBool(int fieldNumber, bool value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
             WriteRawByte(value ? (byte) 1 : (byte) 0);
@@ -292,7 +227,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes a string field value, including tag, to the stream.
         /// </summary>
-        public void WriteString(int fieldNumber, string fieldName, string value)
+        public void WriteString(int fieldNumber, string value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
             // Optimise the case where we have enough space to write
@@ -324,80 +259,63 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes a group field value, including tag, to the stream.
         /// </summary>
-        public void WriteGroup(int fieldNumber, string fieldName, IMessage value)
+        public void WriteGroup(int fieldNumber, IMessage value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
             value.WriteTo(this);
             WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
         }
 
-        public void WriteMessage(int fieldNumber, string fieldName, IMessage value)
+        public void WriteMessage(int fieldNumber, IMessage value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
             WriteRawVarint32((uint) value.CalculateSize());
             value.WriteTo(this);
         }
 
-        public void WriteBytes(int fieldNumber, string fieldName, ByteString value)
+        public void WriteBytes(int fieldNumber, ByteString value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
             WriteRawVarint32((uint) value.Length);
             value.WriteRawBytesTo(this);
         }
 
-        public void WriteUInt32(int fieldNumber, string fieldName, uint value)
+        public void WriteUInt32(int fieldNumber, uint value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
             WriteRawVarint32(value);
         }
 
-        public void WriteEnum(int fieldNumber, string fieldName, int value)
+        public void WriteEnum(int fieldNumber, int value)
         {
             // Currently just a pass-through, but it's nice to separate it logically from WriteInt32.
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
             WriteInt32NoTag(value);
         }
 
-        public void WriteSFixed32(int fieldNumber, string fieldName, int value)
+        public void WriteSFixed32(int fieldNumber, int value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
             WriteRawLittleEndian32((uint) value);
         }
 
-        public void WriteSFixed64(int fieldNumber, string fieldName, long value)
+        public void WriteSFixed64(int fieldNumber, long value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
             WriteRawLittleEndian64((ulong) value);
         }
 
-        public void WriteSInt32(int fieldNumber, string fieldName, int value)
+        public void WriteSInt32(int fieldNumber, int value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
             WriteRawVarint32(EncodeZigZag32(value));
         }
 
-        public void WriteSInt64(int fieldNumber, string fieldName, long value)
+        public void WriteSInt64(int fieldNumber, long value)
         {
             WriteTag(fieldNumber, WireFormat.WireType.Varint);
             WriteRawVarint64(EncodeZigZag64(value));
         }
-
-        public void WriteMessageSetExtension(int fieldNumber, string fieldName, IMessage value)
-        {
-            WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.StartGroup);
-            WriteUInt32(WireFormat.MessageSetField.TypeID, "type_id", (uint) fieldNumber);
-            WriteMessage(WireFormat.MessageSetField.Message, "message", value);
-            WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.EndGroup);
-        }
-
-        public void WriteMessageSetExtension(int fieldNumber, string fieldName, ByteString value)
-        {
-            WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.StartGroup);
-            WriteUInt32(WireFormat.MessageSetField.TypeID, "type_id", (uint) fieldNumber);
-            WriteBytes(WireFormat.MessageSetField.Message, "message", value);
-            WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.EndGroup);
-        }
-
         #endregion
 
         #region Writing of values without tags
@@ -625,155 +543,145 @@ namespace Google.Protobuf
         #endregion
 
         #region Write array members
-
-        // TODO(jonskeet): Remove?
-        public void WriteArray(FieldType fieldType, int fieldNumber, string fieldName, IEnumerable list)
-        {
-            foreach (object element in list)
-            {
-                WriteField(fieldType, fieldNumber, fieldName, element);
-            }
-        }
-
-        public void WriteGroupArray<T>(int fieldNumber, string fieldName, RepeatedField<T> list)
+        public void WriteGroupArray<T>(int fieldNumber, RepeatedField<T> list)
             where T : IMessage
         {
             foreach (IMessage value in list)
             {
-                WriteGroup(fieldNumber, fieldName, value);
+                WriteGroup(fieldNumber, value);
             }
         }
 
-        public void WriteMessageArray<T>(int fieldNumber, string fieldName, RepeatedField<T> list)
+        public void WriteMessageArray<T>(int fieldNumber, RepeatedField<T> list)
             where T : IMessage
         {
             foreach (IMessage value in list)
             {
-                WriteMessage(fieldNumber, fieldName, value);
+                WriteMessage(fieldNumber, value);
             }
         }
 
-        public void WriteStringArray(int fieldNumber, string fieldName, RepeatedField<string> list)
+        public void WriteStringArray(int fieldNumber, RepeatedField<string> list)
         {
             foreach (var value in list)
             {
-                WriteString(fieldNumber, fieldName, value);
+                WriteString(fieldNumber, value);
             }
         }
 
-        public void WriteBytesArray(int fieldNumber, string fieldName, RepeatedField<ByteString> list)
+        public void WriteBytesArray(int fieldNumber, RepeatedField<ByteString> list)
         {
             foreach (var value in list)
             {
-                WriteBytes(fieldNumber, fieldName, value);
+                WriteBytes(fieldNumber, value);
             }
         }
 
-        public void WriteBoolArray(int fieldNumber, string fieldName, RepeatedField<bool> list)
+        public void WriteBoolArray(int fieldNumber, RepeatedField<bool> list)
         {
             foreach (var value in list)
             {
-                WriteBool(fieldNumber, fieldName, value);
+                WriteBool(fieldNumber, value);
             }
         }
 
-        public void WriteInt32Array(int fieldNumber, string fieldName, RepeatedField<int> list)
+        public void WriteInt32Array(int fieldNumber, RepeatedField<int> list)
         {
             foreach (var value in list)
             {
-                WriteInt32(fieldNumber, fieldName, value);
+                WriteInt32(fieldNumber, value);
             }
         }
 
-        public void WriteSInt32Array(int fieldNumber, string fieldName, RepeatedField<int> list)
+        public void WriteSInt32Array(int fieldNumber, RepeatedField<int> list)
         {
             foreach (var value in list)
             {
-                WriteSInt32(fieldNumber, fieldName, value);
+                WriteSInt32(fieldNumber, value);
             }
         }
 
-        public void WriteUInt32Array(int fieldNumber, string fieldName, RepeatedField<uint> list)
+        public void WriteUInt32Array(int fieldNumber, RepeatedField<uint> list)
         {
             foreach (var value in list)
             {
-                WriteUInt32(fieldNumber, fieldName, value);
+                WriteUInt32(fieldNumber, value);
             }
         }
 
-        public void WriteFixed32Array(int fieldNumber, string fieldName, RepeatedField<uint> list)
+        public void WriteFixed32Array(int fieldNumber, RepeatedField<uint> list)
         {
             foreach (var value in list)
             {
-                WriteFixed32(fieldNumber, fieldName, value);
+                WriteFixed32(fieldNumber, value);
             }
         }
 
-        public void WriteSFixed32Array(int fieldNumber, string fieldName, RepeatedField<int> list)
+        public void WriteSFixed32Array(int fieldNumber, RepeatedField<int> list)
         {
             foreach (var value in list)
             {
-                WriteSFixed32(fieldNumber, fieldName, value);
+                WriteSFixed32(fieldNumber, value);
             }
         }
 
-        public void WriteInt64Array(int fieldNumber, string fieldName, RepeatedField<long> list)
+        public void WriteInt64Array(int fieldNumber, RepeatedField<long> list)
         {
             foreach (var value in list)
             {
-                WriteInt64(fieldNumber, fieldName, value);
+                WriteInt64(fieldNumber, value);
             }
         }
 
-        public void WriteSInt64Array(int fieldNumber, string fieldName, RepeatedField<long> list)
+        public void WriteSInt64Array(int fieldNumber, RepeatedField<long> list)
         {
             foreach (var value in list)
             {
-                WriteSInt64(fieldNumber, fieldName, value);
+                WriteSInt64(fieldNumber, value);
             }
         }
 
-        public void WriteUInt64Array(int fieldNumber, string fieldName, RepeatedField<ulong> list)
+        public void WriteUInt64Array(int fieldNumber, RepeatedField<ulong> list)
         {
             foreach (var value in list)
             {
-                WriteUInt64(fieldNumber, fieldName, value);
+                WriteUInt64(fieldNumber, value);
             }
         }
 
-        public void WriteFixed64Array(int fieldNumber, string fieldName, RepeatedField<ulong> list)
+        public void WriteFixed64Array(int fieldNumber, RepeatedField<ulong> list)
         {
             foreach (var value in list)
             {
-                WriteFixed64(fieldNumber, fieldName, value);
+                WriteFixed64(fieldNumber, value);
             }
         }
 
-        public void WriteSFixed64Array(int fieldNumber, string fieldName, RepeatedField<long> list)
+        public void WriteSFixed64Array(int fieldNumber, RepeatedField<long> list)
         {
             foreach (var value in list)
             {
-                WriteSFixed64(fieldNumber, fieldName, value);
+                WriteSFixed64(fieldNumber, value);
             }
         }
 
-        public void WriteDoubleArray(int fieldNumber, string fieldName, RepeatedField<double> list)
+        public void WriteDoubleArray(int fieldNumber, RepeatedField<double> list)
         {
             foreach (var value in list)
             {
-                WriteDouble(fieldNumber, fieldName, value);
+                WriteDouble(fieldNumber, value);
             }
         }
 
-        public void WriteFloatArray(int fieldNumber, string fieldName, RepeatedField<float> list)
+        public void WriteFloatArray(int fieldNumber, RepeatedField<float> list)
         {
             foreach (var value in list)
             {
-                WriteFloat(fieldNumber, fieldName, value);
+                WriteFloat(fieldNumber, value);
             }
         }
 
-        public void WriteEnumArray<T>(int fieldNumber, string fieldName, RepeatedField<T> list)
+        public void WriteEnumArray<T>(int fieldNumber, RepeatedField<T> list)
             where T : struct, IComparable, IFormattable
         {
             if (list.Count == 0)
@@ -783,34 +691,15 @@ namespace Google.Protobuf
             // TODO(jonskeet): Avoid the Cast call here. Work out a better mass "T to int" conversion.
             foreach (int value in list.Cast<int>())
             {
-                WriteEnum(fieldNumber, fieldName, value);
+                WriteEnum(fieldNumber, value);
             }
         }
 
         #endregion
 
         #region Write packed array members
-
-        // TODO(jonskeet): Remove?
-        public void WritePackedArray(FieldType fieldType, int fieldNumber, string fieldName, IEnumerable list)
-        {
-            int calculatedSize = 0;
-            foreach (object element in list)
-            {
-                calculatedSize += ComputeFieldSizeNoTag(fieldType, element);
-            }
-
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-
-            foreach (object element in list)
-            {
-                WriteFieldNoTag(fieldType, element);
-            }
-        }
-
         // TODO(jonskeet): A lot of these are really inefficient, due to method group conversions. Fix!
-        public void WritePackedBoolArray(int fieldNumber, string fieldName, RepeatedField<bool> list)
+        public void WritePackedBoolArray(int fieldNumber, RepeatedField<bool> list)
         {
             if (list.Count == 0)
             {
@@ -825,7 +714,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedInt32Array(int fieldNumber, string fieldName, RepeatedField<int> list)
+        public void WritePackedInt32Array(int fieldNumber, RepeatedField<int> list)
         {
             if (list.Count == 0)
             {
@@ -840,7 +729,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedSInt32Array(int fieldNumber, string fieldName, RepeatedField<int> list)
+        public void WritePackedSInt32Array(int fieldNumber, RepeatedField<int> list)
         {
             if (list.Count == 0)
             {
@@ -855,7 +744,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedUInt32Array(int fieldNumber, string fieldName, RepeatedField<uint> list)
+        public void WritePackedUInt32Array(int fieldNumber, RepeatedField<uint> list)
         {
             if (list.Count == 0)
             {
@@ -870,7 +759,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedFixed32Array(int fieldNumber, string fieldName, RepeatedField<uint> list)
+        public void WritePackedFixed32Array(int fieldNumber, RepeatedField<uint> list)
         {
             if (list.Count == 0)
             {
@@ -885,7 +774,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedSFixed32Array(int fieldNumber, string fieldName, RepeatedField<int> list)
+        public void WritePackedSFixed32Array(int fieldNumber, RepeatedField<int> list)
         {
             if (list.Count == 0)
             {
@@ -900,7 +789,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedInt64Array(int fieldNumber, string fieldName, RepeatedField<long> list)
+        public void WritePackedInt64Array(int fieldNumber, RepeatedField<long> list)
         {
             if (list.Count == 0)
             {
@@ -915,7 +804,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedSInt64Array(int fieldNumber, string fieldName, RepeatedField<long> list)
+        public void WritePackedSInt64Array(int fieldNumber, RepeatedField<long> list)
         {
             if (list.Count == 0)
             {
@@ -930,7 +819,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedUInt64Array(int fieldNumber, string fieldName, RepeatedField<ulong> list)
+        public void WritePackedUInt64Array(int fieldNumber, RepeatedField<ulong> list)
         {
             if (list.Count == 0)
             {
@@ -945,7 +834,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedFixed64Array(int fieldNumber, string fieldName, RepeatedField<ulong> list)
+        public void WritePackedFixed64Array(int fieldNumber, RepeatedField<ulong> list)
         {
             if (list.Count == 0)
             {
@@ -960,7 +849,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedSFixed64Array(int fieldNumber, string fieldName, RepeatedField<long> list)
+        public void WritePackedSFixed64Array(int fieldNumber, RepeatedField<long> list)
         {
             if (list.Count == 0)
             {
@@ -975,7 +864,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedDoubleArray(int fieldNumber, string fieldName, RepeatedField<double> list)
+        public void WritePackedDoubleArray(int fieldNumber, RepeatedField<double> list)
         {
             if (list.Count == 0)
             {
@@ -990,7 +879,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedFloatArray(int fieldNumber, string fieldName, RepeatedField<float> list)
+        public void WritePackedFloatArray(int fieldNumber, RepeatedField<float> list)
         {
             if (list.Count == 0)
             {
@@ -1005,7 +894,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WritePackedEnumArray<T>(int fieldNumber, string fieldName, RepeatedField<T> list)
+        public void WritePackedEnumArray<T>(int fieldNumber, RepeatedField<T> list)
             where T : struct, IComparable, IFormattable
         {
             if (list.Count == 0)

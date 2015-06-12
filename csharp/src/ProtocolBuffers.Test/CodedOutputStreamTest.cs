@@ -316,7 +316,7 @@ namespace Google.Protobuf
 
             byte[] bytes = new byte[11];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteEnum(8, "", (int) TestNegEnum.Value);
+            output.WriteEnum(8, (int) TestNegEnum.Value);
 
             Assert.AreEqual(0, output.SpaceLeft);
             //fyi, 0x40 == 0x08 << 3 + 0, field num + wire format shift
@@ -330,18 +330,17 @@ namespace Google.Protobuf
             int msgSize = 1 + 1 + arraySize;
             byte[] bytes = new byte[msgSize];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WritePackedEnumArray(8, "", new RepeatedField<TestNegEnum> {
+            output.WritePackedEnumArray(8, new RepeatedField<TestNegEnum> {
                 0, (TestNegEnum) (-1), TestNegEnum.Value, (TestNegEnum) (-3), (TestNegEnum) (-4), (TestNegEnum) (-5) });
 
             Assert.AreEqual(0, output.SpaceLeft);
 
             CodedInputStream input = CodedInputStream.CreateInstance(bytes);
             uint tag;
-            string name;
-            Assert.IsTrue(input.ReadTag(out tag, out name));
+            Assert.IsTrue(input.ReadTag(out tag));
 
             List<int> values = new List<int>();
-            input.ReadInt32Array(tag, name, values);
+            input.ReadInt32Array(tag, values);
 
             Assert.AreEqual(6, values.Count);
             for (int i = 0; i > -6; i--)
@@ -355,17 +354,16 @@ namespace Google.Protobuf
             int msgSize = arraySize;
             byte[] bytes = new byte[msgSize];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteEnumArray(8, "", new RepeatedField<TestNegEnum> {
+            output.WriteEnumArray(8, new RepeatedField<TestNegEnum> {
                 0, (TestNegEnum) (-1), TestNegEnum.Value, (TestNegEnum) (-3), (TestNegEnum) (-4), (TestNegEnum) (-5) });
             Assert.AreEqual(0, output.SpaceLeft);
 
             CodedInputStream input = CodedInputStream.CreateInstance(bytes);
             uint tag;
-            string name;
-            Assert.IsTrue(input.ReadTag(out tag, out name));
+            Assert.IsTrue(input.ReadTag(out tag));
 
             List<int> values = new List<int>();
-            input.ReadInt32Array(tag, name, values);
+            input.ReadInt32Array(tag, values);
 
             Assert.AreEqual(6, values.Count);
             for (int i = 0; i > -6; i--)
@@ -425,16 +423,14 @@ namespace Google.Protobuf
             {
                 CodedInputStream cin = CodedInputStream.CreateInstance(new MemoryStream(bytes), new byte[50]);
                 uint tag;
-                int intValue = 0;
-                string ignore;
                 Assert.AreEqual(0, cin.Position);
                 // Field 1:
-                Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 1);
+                Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 1);
                 Assert.AreEqual(1, cin.Position);
-                Assert.IsTrue(cin.ReadInt32(ref intValue) && intValue == 500);
+                Assert.AreEqual(500, cin.ReadInt32());
                 Assert.AreEqual(3, cin.Position);
                 //Field 2:
-                Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 2);
+                Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 2);
                 Assert.AreEqual(4, cin.Position);
                 uint childlen = cin.ReadRawVarint32();
                 Assert.AreEqual(120u, childlen);
@@ -444,30 +440,31 @@ namespace Google.Protobuf
                 // Now we are reading child message
                 {
                     // Field 11: numeric value: 500
-                    Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 11);
+                    Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 11);
                     Assert.AreEqual(6, cin.Position);
-                    Assert.IsTrue(cin.ReadInt32(ref intValue) && intValue == 500);
+                    Assert.AreEqual(500, cin.ReadInt32());
                     Assert.AreEqual(8, cin.Position);
                     //Field 12: length delimited 120 bytes
-                    Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 12);
+                    Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 12);
                     Assert.AreEqual(9, cin.Position);
-                    ByteString bstr = null;
-                    Assert.IsTrue(cin.ReadBytes(ref bstr) && bstr.Length == 110 && bstr.ToByteArray()[109] == 109);
+                    ByteString bstr = cin.ReadBytes();
+                    Assert.AreEqual(110, bstr.Length);
+                    Assert.AreEqual((byte) 109, bstr[109]);
                     Assert.AreEqual(120, cin.Position);
                     // Field 13: fixed numeric value: 501
-                    Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 13);
+                    Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 13);
                     // ROK - Previously broken here, this returned 126 failing to account for bufferSizeAfterLimit
                     Assert.AreEqual(121, cin.Position);
-                    Assert.IsTrue(cin.ReadSFixed32(ref intValue) && intValue == 501);
+                    Assert.AreEqual(501, cin.ReadSFixed32());
                     Assert.AreEqual(125, cin.Position);
                     Assert.IsTrue(cin.IsAtEnd);
                 }
                 cin.PopLimit(oldlimit);
                 Assert.AreEqual(125, cin.Position);
                 // Field 3: fixed numeric value: 501
-                Assert.IsTrue(cin.ReadTag(out tag, out ignore) && tag >> 3 == 3);
+                Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 3);
                 Assert.AreEqual(126, cin.Position);
-                Assert.IsTrue(cin.ReadSFixed32(ref intValue) && intValue == 501);
+                Assert.AreEqual(501, cin.ReadSFixed32());
                 Assert.AreEqual(130, cin.Position);
                 Assert.IsTrue(cin.IsAtEnd);
             }

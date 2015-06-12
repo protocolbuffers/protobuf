@@ -76,7 +76,7 @@ void RepeatedEnumFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "input.ReadEnumArray<$type_name$>(tag, fieldName, $name$_);\n");
+    "input.ReadEnumArray<$type_name$>(tag, $name$_);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
@@ -84,7 +84,7 @@ void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer)
   // The Write* call should make that cheap though - no need to generate it every time.
   printer->Print(
     variables_,
-    "output.Write$packed$EnumArray($number$, fieldNames[$field_ordinal$], $name$_);\n");
+    "output.Write$packed$EnumArray($number$, $name$_);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

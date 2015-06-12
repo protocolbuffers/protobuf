@@ -93,8 +93,6 @@
     <Compile Include="FieldAccess\FieldAccessorTable.cs" />
     <Compile Include="FieldAccess\OneofAccessor.cs" />
     <Compile Include="FrameworkPortability.cs" />
-    <Compile Include="ICodedInputStream.cs" />
-    <Compile Include="ICodedOutputStream.cs" />
     <Compile Include="IMessage.cs" />
     <Compile Include="InvalidProtocolBufferException.cs" />
     <Compile Include="LimitedInputStream.cs" />

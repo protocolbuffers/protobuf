@@ -323,9 +323,8 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
-      output.WriteMessageArray(1, fieldNames[0], file_);
+    public void WriteTo(pb::CodedOutputStream output) {
+      output.WriteMessageArray(1, file_);
     }
 
     public int CalculateSize() {
@@ -342,16 +341,9 @@ namespace Google.Protobuf.DescriptorProtos {
       file_.Add(other.file_);
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -361,7 +353,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadMessageArray(tag, fieldName, file_, global::Google.Protobuf.DescriptorProtos.FileDescriptorProto.Parser);
+            input.ReadMessageArray(tag, file_, global::Google.Protobuf.DescriptorProtos.FileDescriptorProto.Parser);
             break;
           }
         }
@@ -510,29 +502,28 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Name != "") {
-        output.WriteString(1, fieldNames[4], Name);
+        output.WriteString(1, Name);
       }
       if (Package != "") {
-        output.WriteString(2, fieldNames[6], Package);
+        output.WriteString(2, Package);
       }
-      output.WriteStringArray(3, fieldNames[0], dependency_);
-      output.WriteMessageArray(4, fieldNames[3], messageType_);
-      output.WriteMessageArray(5, fieldNames[1], enumType_);
-      output.WriteMessageArray(6, fieldNames[8], service_);
-      output.WriteMessageArray(7, fieldNames[2], extension_);
+      output.WriteStringArray(3, dependency_);
+      output.WriteMessageArray(4, messageType_);
+      output.WriteMessageArray(5, enumType_);
+      output.WriteMessageArray(6, service_);
+      output.WriteMessageArray(7, extension_);
       if (options_ != null) {
-        output.WriteMessage(8, fieldNames[5], Options);
+        output.WriteMessage(8, Options);
       }
       if (sourceCodeInfo_ != null) {
-        output.WriteMessage(9, fieldNames[9], SourceCodeInfo);
+        output.WriteMessage(9, SourceCodeInfo);
       }
-      output.WriteInt32Array(10, fieldNames[7], publicDependency_);
-      output.WriteInt32Array(11, fieldNames[11], weakDependency_);
+      output.WriteInt32Array(10, publicDependency_);
+      output.WriteInt32Array(11, weakDependency_);
       if (Syntax != "") {
-        output.WriteString(12, fieldNames[10], Syntax);
+        output.WriteString(12, Syntax);
       }
     }
 
@@ -625,16 +616,9 @@ namespace Google.Protobuf.DescriptorProtos {
       }
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -644,31 +628,31 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadString(ref name_);
+            name_ = input.ReadString();
             break;
           }
           case 18: {
-            input.ReadString(ref package_);
+            package_ = input.ReadString();
             break;
           }
           case 26: {
-            input.ReadStringArray(tag, fieldName, dependency_);
+            input.ReadStringArray(tag, dependency_);
             break;
           }
           case 34: {
-            input.ReadMessageArray(tag, fieldName, messageType_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
+            input.ReadMessageArray(tag, messageType_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
             break;
           }
           case 42: {
-            input.ReadMessageArray(tag, fieldName, enumType_, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
+            input.ReadMessageArray(tag, enumType_, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
             break;
           }
           case 50: {
-            input.ReadMessageArray(tag, fieldName, service_, global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto.Parser);
+            input.ReadMessageArray(tag, service_, global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto.Parser);
             break;
           }
           case 58: {
-            input.ReadMessageArray(tag, fieldName, extension_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
+            input.ReadMessageArray(tag, extension_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
             break;
           }
           case 66: {
@@ -687,16 +671,16 @@ namespace Google.Protobuf.DescriptorProtos {
           }
           case 82:
           case 80: {
-            input.ReadInt32Array(tag, fieldName, publicDependency_);
+            input.ReadInt32Array(tag, publicDependency_);
             break;
           }
           case 90:
           case 88: {
-            input.ReadInt32Array(tag, fieldName, weakDependency_);
+            input.ReadInt32Array(tag, weakDependency_);
             break;
           }
           case 98: {
-            input.ReadString(ref syntax_);
+            syntax_ = input.ReadString();
             break;
           }
         }
@@ -825,22 +809,21 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Name != "") {
-        output.WriteString(1, fieldNames[4], Name);
+        output.WriteString(1, Name);
       }
-      output.WriteMessageArray(2, fieldNames[3], field_);
-      output.WriteMessageArray(3, fieldNames[5], nestedType_);
-      output.WriteMessageArray(4, fieldNames[0], enumType_);
-      output.WriteMessageArray(5, fieldNames[2], extensionRange_);
-      output.WriteMessageArray(6, fieldNames[1], extension_);
+      output.WriteMessageArray(2, field_);
+      output.WriteMessageArray(3, nestedType_);
+      output.WriteMessageArray(4, enumType_);
+      output.WriteMessageArray(5, extensionRange_);
+      output.WriteMessageArray(6, extension_);
       if (options_ != null) {
-        output.WriteMessage(7, fieldNames[7], Options);
+        output.WriteMessage(7, Options);
       }
-      output.WriteMessageArray(8, fieldNames[6], oneofDecl_);
-      output.WriteMessageArray(9, fieldNames[9], reservedRange_);
-      output.WriteStringArray(10, fieldNames[8], reservedName_);
+      output.WriteMessageArray(8, oneofDecl_);
+      output.WriteMessageArray(9, reservedRange_);
+      output.WriteStringArray(10, reservedName_);
     }
 
     public int CalculateSize() {
@@ -905,16 +888,9 @@ namespace Google.Protobuf.DescriptorProtos {
       reservedName_.Add(other.reservedName_);
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -924,27 +900,27 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadString(ref name_);
+            name_ = input.ReadString();
             break;
           }
           case 18: {
-            input.ReadMessageArray(tag, fieldName, field_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
+            input.ReadMessageArray(tag, field_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
             break;
           }
           case 26: {
-            input.ReadMessageArray(tag, fieldName, nestedType_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
+            input.ReadMessageArray(tag, nestedType_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
             break;
           }
           case 34: {
-            input.ReadMessageArray(tag, fieldName, enumType_, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
+            input.ReadMessageArray(tag, enumType_, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
             break;
           }
           case 42: {
-            input.ReadMessageArray(tag, fieldName, extensionRange_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Parser);
+            input.ReadMessageArray(tag, extensionRange_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Parser);
             break;
           }
           case 50: {
-            input.ReadMessageArray(tag, fieldName, extension_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
+            input.ReadMessageArray(tag, extension_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
             break;
           }
           case 58: {
@@ -955,15 +931,15 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 66: {
-            input.ReadMessageArray(tag, fieldName, oneofDecl_, global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto.Parser);
+            input.ReadMessageArray(tag, oneofDecl_, global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto.Parser);
             break;
           }
           case 74: {
-            input.ReadMessageArray(tag, fieldName, reservedRange_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange.Parser);
+            input.ReadMessageArray(tag, reservedRange_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange.Parser);
             break;
           }
           case 82: {
-            input.ReadStringArray(tag, fieldName, reservedName_);
+            input.ReadStringArray(tag, reservedName_);
             break;
           }
         }
@@ -1031,13 +1007,12 @@ namespace Google.Protobuf.DescriptorProtos {
           return hash;
         }
 
-        public void WriteTo(pb::ICodedOutputStream output) {
-          string[] fieldNames = _fieldNames;
+        public void WriteTo(pb::CodedOutputStream output) {
           if (Start != 0) {
-            output.WriteInt32(1, fieldNames[1], Start);
+            output.WriteInt32(1, Start);
           }
           if (End != 0) {
-            output.WriteInt32(2, fieldNames[0], End);
+            output.WriteInt32(2, End);
           }
         }
 
@@ -1063,16 +1038,9 @@ namespace Google.Protobuf.DescriptorProtos {
           }
         }
 
-        public void MergeFrom(pb::ICodedInputStream input) {
+        public void MergeFrom(pb::CodedInputStream input) {
           uint tag;
-          string fieldName;
-          while (input.ReadTag(out tag, out fieldName)) {
-            if (tag == 0 && fieldName != null) {
-              int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-              if (fieldOrdinal >= 0) {
-                tag = _fieldTags[fieldOrdinal];
-              }
-            }
+          while (input.ReadTag(out tag)) {
             switch(tag) {
               case 0:
                 throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1082,11 +1050,11 @@ namespace Google.Protobuf.DescriptorProtos {
                 }
                 break;
               case 8: {
-                input.ReadInt32(ref start_);
+                start_ = input.ReadInt32();
                 break;
               }
               case 16: {
-                input.ReadInt32(ref end_);
+                end_ = input.ReadInt32();
                 break;
               }
             }
@@ -1153,13 +1121,12 @@ namespace Google.Protobuf.DescriptorProtos {
           return hash;
         }
 
-        public void WriteTo(pb::ICodedOutputStream output) {
-          string[] fieldNames = _fieldNames;
+        public void WriteTo(pb::CodedOutputStream output) {
           if (Start != 0) {
-            output.WriteInt32(1, fieldNames[1], Start);
+            output.WriteInt32(1, Start);
           }
           if (End != 0) {
-            output.WriteInt32(2, fieldNames[0], End);
+            output.WriteInt32(2, End);
           }
         }
 
@@ -1185,16 +1152,9 @@ namespace Google.Protobuf.DescriptorProtos {
           }
         }
 
-        public void MergeFrom(pb::ICodedInputStream input) {
+        public void MergeFrom(pb::CodedInputStream input) {
           uint tag;
-          string fieldName;
-          while (input.ReadTag(out tag, out fieldName)) {
-            if (tag == 0 && fieldName != null) {
-              int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-              if (fieldOrdinal >= 0) {
-                tag = _fieldTags[fieldOrdinal];
-              }
-            }
+          while (input.ReadTag(out tag)) {
             switch(tag) {
               case 0:
                 throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1204,11 +1164,11 @@ namespace Google.Protobuf.DescriptorProtos {
                 }
                 break;
               case 8: {
-                input.ReadInt32(ref start_);
+                start_ = input.ReadInt32();
                 break;
               }
               case 16: {
-                input.ReadInt32(ref end_);
+                end_ = input.ReadInt32();
                 break;
               }
             }
@@ -1348,34 +1308,33 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Name != "") {
-        output.WriteString(1, fieldNames[3], Name);
+        output.WriteString(1, Name);
       }
       if (Extendee != "") {
-        output.WriteString(2, fieldNames[1], Extendee);
+        output.WriteString(2, Extendee);
       }
       if (Number != 0) {
-        output.WriteInt32(3, fieldNames[4], Number);
+        output.WriteInt32(3, Number);
       }
       if (Label != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) {
-        output.WriteEnum(4, fieldNames[2], (int) Label);
+        output.WriteEnum(4, (int) Label);
       }
       if (Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
-        output.WriteEnum(5, fieldNames[7], (int) Type);
+        output.WriteEnum(5, (int) Type);
       }
       if (TypeName != "") {
-        output.WriteString(6, fieldNames[8], TypeName);
+        output.WriteString(6, TypeName);
       }
       if (DefaultValue != "") {
-        output.WriteString(7, fieldNames[0], DefaultValue);
+        output.WriteString(7, DefaultValue);
       }
       if (options_ != null) {
-        output.WriteMessage(8, fieldNames[6], Options);
+        output.WriteMessage(8, Options);
       }
       if (OneofIndex != 0) {
-        output.WriteInt32(9, fieldNames[5], OneofIndex);
+        output.WriteInt32(9, OneofIndex);
       }
     }
 
@@ -1446,16 +1405,9 @@ namespace Google.Protobuf.DescriptorProtos {
       }
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1465,33 +1417,31 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadString(ref name_);
+            name_ = input.ReadString();
             break;
           }
           case 18: {
-            input.ReadString(ref extendee_);
+            extendee_ = input.ReadString();
             break;
           }
           case 24: {
-            input.ReadInt32(ref number_);
+            number_ = input.ReadInt32();
             break;
           }
           case 32: {
-            int tmp = 0;
-            input.ReadEnum(ref tmp);
-            label_ = (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label) tmp;break;
+            label_ = (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label) input.ReadEnum();
+            break;
           }
           case 40: {
-            int tmp = 0;
-            input.ReadEnum(ref tmp);
-            type_ = (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type) tmp;break;
+            type_ = (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type) input.ReadEnum();
+            break;
           }
           case 50: {
-            input.ReadString(ref typeName_);
+            typeName_ = input.ReadString();
             break;
           }
           case 58: {
-            input.ReadString(ref defaultValue_);
+            defaultValue_ = input.ReadString();
             break;
           }
           case 66: {
@@ -1502,7 +1452,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 72: {
-            input.ReadInt32(ref oneofIndex_);
+            oneofIndex_ = input.ReadInt32();
             break;
           }
         }
@@ -1592,10 +1542,9 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Name != "") {
-        output.WriteString(1, fieldNames[0], Name);
+        output.WriteString(1, Name);
       }
     }
 
@@ -1615,16 +1564,9 @@ namespace Google.Protobuf.DescriptorProtos {
       }
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1634,7 +1576,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadString(ref name_);
+            name_ = input.ReadString();
             break;
           }
         }
@@ -1707,14 +1649,13 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Name != "") {
-        output.WriteString(1, fieldNames[0], Name);
+        output.WriteString(1, Name);
       }
-      output.WriteMessageArray(2, fieldNames[2], value_);
+      output.WriteMessageArray(2, value_);
       if (options_ != null) {
-        output.WriteMessage(3, fieldNames[1], Options);
+        output.WriteMessage(3, Options);
       }
     }
 
@@ -1747,16 +1688,9 @@ namespace Google.Protobuf.DescriptorProtos {
       }
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1766,11 +1700,11 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadString(ref name_);
+            name_ = input.ReadString();
             break;
           }
           case 18: {
-            input.ReadMessageArray(tag, fieldName, value_, global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto.Parser);
+            input.ReadMessageArray(tag, value_, global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto.Parser);
             break;
           }
           case 26: {
@@ -1852,16 +1786,15 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Name != "") {
-        output.WriteString(1, fieldNames[0], Name);
+        output.WriteString(1, Name);
       }
       if (Number != 0) {
-        output.WriteInt32(2, fieldNames[1], Number);
+        output.WriteInt32(2, Number);
       }
       if (options_ != null) {
-        output.WriteMessage(3, fieldNames[2], Options);
+        output.WriteMessage(3, Options);
       }
     }
 
@@ -1896,16 +1829,9 @@ namespace Google.Protobuf.DescriptorProtos {
       }
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -1915,11 +1841,11 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadString(ref name_);
+            name_ = input.ReadString();
             break;
           }
           case 16: {
-            input.ReadInt32(ref number_);
+            number_ = input.ReadInt32();
             break;
           }
           case 26: {
@@ -1999,14 +1925,13 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Name != "") {
-        output.WriteString(1, fieldNames[1], Name);
+        output.WriteString(1, Name);
       }
-      output.WriteMessageArray(2, fieldNames[0], method_);
+      output.WriteMessageArray(2, method_);
       if (options_ != null) {
-        output.WriteMessage(3, fieldNames[2], Options);
+        output.WriteMessage(3, Options);
       }
     }
 
@@ -2039,16 +1964,9 @@ namespace Google.Protobuf.DescriptorProtos {
       }
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -2058,11 +1976,11 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadString(ref name_);
+            name_ = input.ReadString();
             break;
           }
           case 18: {
-            input.ReadMessageArray(tag, fieldName, method_, global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto.Parser);
+            input.ReadMessageArray(tag, method_, global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto.Parser);
             break;
           }
           case 26: {
@@ -2174,25 +2092,24 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Name != "") {
-        output.WriteString(1, fieldNames[2], Name);
+        output.WriteString(1, Name);
       }
       if (InputType != "") {
-        output.WriteString(2, fieldNames[1], InputType);
+        output.WriteString(2, InputType);
       }
       if (OutputType != "") {
-        output.WriteString(3, fieldNames[4], OutputType);
+        output.WriteString(3, OutputType);
       }
       if (options_ != null) {
-        output.WriteMessage(4, fieldNames[3], Options);
+        output.WriteMessage(4, Options);
       }
       if (ClientStreaming != false) {
-        output.WriteBool(5, fieldNames[0], ClientStreaming);
+        output.WriteBool(5, ClientStreaming);
       }
       if (ServerStreaming != false) {
-        output.WriteBool(6, fieldNames[5], ServerStreaming);
+        output.WriteBool(6, ServerStreaming);
       }
     }
 
@@ -2245,16 +2162,9 @@ namespace Google.Protobuf.DescriptorProtos {
       }
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -2264,15 +2174,15 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadString(ref name_);
+            name_ = input.ReadString();
             break;
           }
           case 18: {
-            input.ReadString(ref inputType_);
+            inputType_ = input.ReadString();
             break;
           }
           case 26: {
-            input.ReadString(ref outputType_);
+            outputType_ = input.ReadString();
             break;
           }
           case 34: {
@@ -2283,11 +2193,11 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 40: {
-            input.ReadBool(ref clientStreaming_);
+            clientStreaming_ = input.ReadBool();
             break;
           }
           case 48: {
-            input.ReadBool(ref serverStreaming_);
+            serverStreaming_ = input.ReadBool();
             break;
           }
         }
@@ -2482,51 +2392,50 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (JavaPackage != "") {
-        output.WriteString(1, fieldNames[9], JavaPackage);
+        output.WriteString(1, JavaPackage);
       }
       if (JavaOuterClassname != "") {
-        output.WriteString(8, fieldNames[8], JavaOuterClassname);
+        output.WriteString(8, JavaOuterClassname);
       }
       if (OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) {
-        output.WriteEnum(9, fieldNames[12], (int) OptimizeFor);
+        output.WriteEnum(9, (int) OptimizeFor);
       }
       if (JavaMultipleFiles != false) {
-        output.WriteBool(10, fieldNames[7], JavaMultipleFiles);
+        output.WriteBool(10, JavaMultipleFiles);
       }
       if (GoPackage != "") {
-        output.WriteString(11, fieldNames[4], GoPackage);
+        output.WriteString(11, GoPackage);
       }
       if (CcGenericServices != false) {
-        output.WriteBool(16, fieldNames[1], CcGenericServices);
+        output.WriteBool(16, CcGenericServices);
       }
       if (JavaGenericServices != false) {
-        output.WriteBool(17, fieldNames[6], JavaGenericServices);
+        output.WriteBool(17, JavaGenericServices);
       }
       if (PyGenericServices != false) {
-        output.WriteBool(18, fieldNames[13], PyGenericServices);
+        output.WriteBool(18, PyGenericServices);
       }
       if (JavaGenerateEqualsAndHash != false) {
-        output.WriteBool(20, fieldNames[5], JavaGenerateEqualsAndHash);
+        output.WriteBool(20, JavaGenerateEqualsAndHash);
       }
       if (Deprecated != false) {
-        output.WriteBool(23, fieldNames[3], Deprecated);
+        output.WriteBool(23, Deprecated);
       }
       if (JavaStringCheckUtf8 != false) {
-        output.WriteBool(27, fieldNames[10], JavaStringCheckUtf8);
+        output.WriteBool(27, JavaStringCheckUtf8);
       }
       if (CcEnableArenas != false) {
-        output.WriteBool(31, fieldNames[0], CcEnableArenas);
+        output.WriteBool(31, CcEnableArenas);
       }
       if (ObjcClassPrefix != "") {
-        output.WriteString(36, fieldNames[11], ObjcClassPrefix);
+        output.WriteString(36, ObjcClassPrefix);
       }
       if (CsharpNamespace != "") {
-        output.WriteString(37, fieldNames[2], CsharpNamespace);
+        output.WriteString(37, CsharpNamespace);
       }
-      output.WriteMessageArray(999, fieldNames[14], uninterpretedOption_);
+      output.WriteMessageArray(999, uninterpretedOption_);
     }
 
     public int CalculateSize() {
@@ -2627,16 +2536,9 @@ namespace Google.Protobuf.DescriptorProtos {
       uninterpretedOption_.Add(other.uninterpretedOption_);
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -2646,64 +2548,63 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadString(ref javaPackage_);
+            javaPackage_ = input.ReadString();
             break;
           }
           case 66: {
-            input.ReadString(ref javaOuterClassname_);
+            javaOuterClassname_ = input.ReadString();
             break;
           }
           case 72: {
-            int tmp = 0;
-            input.ReadEnum(ref tmp);
-            optimizeFor_ = (global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode) tmp;break;
+            optimizeFor_ = (global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode) input.ReadEnum();
+            break;
           }
           case 80: {
-            input.ReadBool(ref javaMultipleFiles_);
+            javaMultipleFiles_ = input.ReadBool();
             break;
           }
           case 90: {
-            input.ReadString(ref goPackage_);
+            goPackage_ = input.ReadString();
             break;
           }
           case 128: {
-            input.ReadBool(ref ccGenericServices_);
+            ccGenericServices_ = input.ReadBool();
             break;
           }
           case 136: {
-            input.ReadBool(ref javaGenericServices_);
+            javaGenericServices_ = input.ReadBool();
             break;
           }
           case 144: {
-            input.ReadBool(ref pyGenericServices_);
+            pyGenericServices_ = input.ReadBool();
             break;
           }
           case 160: {
-            input.ReadBool(ref javaGenerateEqualsAndHash_);
+            javaGenerateEqualsAndHash_ = input.ReadBool();
             break;
           }
           case 184: {
-            input.ReadBool(ref deprecated_);
+            deprecated_ = input.ReadBool();
             break;
           }
           case 216: {
-            input.ReadBool(ref javaStringCheckUtf8_);
+            javaStringCheckUtf8_ = input.ReadBool();
             break;
           }
           case 248: {
-            input.ReadBool(ref ccEnableArenas_);
+            ccEnableArenas_ = input.ReadBool();
             break;
           }
           case 290: {
-            input.ReadString(ref objcClassPrefix_);
+            objcClassPrefix_ = input.ReadString();
             break;
           }
           case 298: {
-            input.ReadString(ref csharpNamespace_);
+            csharpNamespace_ = input.ReadString();
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, fieldName, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -2810,21 +2711,20 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (MessageSetWireFormat != false) {
-        output.WriteBool(1, fieldNames[2], MessageSetWireFormat);
+        output.WriteBool(1, MessageSetWireFormat);
       }
       if (NoStandardDescriptorAccessor != false) {
-        output.WriteBool(2, fieldNames[3], NoStandardDescriptorAccessor);
+        output.WriteBool(2, NoStandardDescriptorAccessor);
       }
       if (Deprecated != false) {
-        output.WriteBool(3, fieldNames[0], Deprecated);
+        output.WriteBool(3, Deprecated);
       }
       if (MapEntry != false) {
-        output.WriteBool(7, fieldNames[1], MapEntry);
+        output.WriteBool(7, MapEntry);
       }
-      output.WriteMessageArray(999, fieldNames[4], uninterpretedOption_);
+      output.WriteMessageArray(999, uninterpretedOption_);
     }
 
     public int CalculateSize() {
@@ -2865,16 +2765,9 @@ namespace Google.Protobuf.DescriptorProtos {
       uninterpretedOption_.Add(other.uninterpretedOption_);
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -2884,23 +2777,23 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 8: {
-            input.ReadBool(ref messageSetWireFormat_);
+            messageSetWireFormat_ = input.ReadBool();
             break;
           }
           case 16: {
-            input.ReadBool(ref noStandardDescriptorAccessor_);
+            noStandardDescriptorAccessor_ = input.ReadBool();
             break;
           }
           case 24: {
-            input.ReadBool(ref deprecated_);
+            deprecated_ = input.ReadBool();
             break;
           }
           case 56: {
-            input.ReadBool(ref mapEntry_);
+            mapEntry_ = input.ReadBool();
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, fieldName, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -3015,27 +2908,26 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Ctype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING) {
-        output.WriteEnum(1, fieldNames[0], (int) Ctype);
+        output.WriteEnum(1, (int) Ctype);
       }
       if (Packed != false) {
-        output.WriteBool(2, fieldNames[4], Packed);
+        output.WriteBool(2, Packed);
       }
       if (Deprecated != false) {
-        output.WriteBool(3, fieldNames[1], Deprecated);
+        output.WriteBool(3, Deprecated);
       }
       if (Lazy != false) {
-        output.WriteBool(5, fieldNames[3], Lazy);
+        output.WriteBool(5, Lazy);
       }
       if (Jstype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL) {
-        output.WriteEnum(6, fieldNames[2], (int) Jstype);
+        output.WriteEnum(6, (int) Jstype);
       }
       if (Weak != false) {
-        output.WriteBool(10, fieldNames[6], Weak);
+        output.WriteBool(10, Weak);
       }
-      output.WriteMessageArray(999, fieldNames[5], uninterpretedOption_);
+      output.WriteMessageArray(999, uninterpretedOption_);
     }
 
     public int CalculateSize() {
@@ -3088,16 +2980,9 @@ namespace Google.Protobuf.DescriptorProtos {
       uninterpretedOption_.Add(other.uninterpretedOption_);
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -3107,33 +2992,31 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 8: {
-            int tmp = 0;
-            input.ReadEnum(ref tmp);
-            ctype_ = (global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType) tmp;break;
+            ctype_ = (global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType) input.ReadEnum();
+            break;
           }
           case 16: {
-            input.ReadBool(ref packed_);
+            packed_ = input.ReadBool();
             break;
           }
           case 24: {
-            input.ReadBool(ref deprecated_);
+            deprecated_ = input.ReadBool();
             break;
           }
           case 40: {
-            input.ReadBool(ref lazy_);
+            lazy_ = input.ReadBool();
             break;
           }
           case 48: {
-            int tmp = 0;
-            input.ReadEnum(ref tmp);
-            jstype_ = (global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType) tmp;break;
+            jstype_ = (global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType) input.ReadEnum();
+            break;
           }
           case 80: {
-            input.ReadBool(ref weak_);
+            weak_ = input.ReadBool();
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, fieldName, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -3226,15 +3109,14 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (AllowAlias != false) {
-        output.WriteBool(2, fieldNames[0], AllowAlias);
+        output.WriteBool(2, AllowAlias);
       }
       if (Deprecated != false) {
-        output.WriteBool(3, fieldNames[1], Deprecated);
+        output.WriteBool(3, Deprecated);
       }
-      output.WriteMessageArray(999, fieldNames[2], uninterpretedOption_);
+      output.WriteMessageArray(999, uninterpretedOption_);
     }
 
     public int CalculateSize() {
@@ -3263,16 +3145,9 @@ namespace Google.Protobuf.DescriptorProtos {
       uninterpretedOption_.Add(other.uninterpretedOption_);
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -3282,15 +3157,15 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 16: {
-            input.ReadBool(ref allowAlias_);
+            allowAlias_ = input.ReadBool();
             break;
           }
           case 24: {
-            input.ReadBool(ref deprecated_);
+            deprecated_ = input.ReadBool();
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, fieldName, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -3355,12 +3230,11 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Deprecated != false) {
-        output.WriteBool(1, fieldNames[0], Deprecated);
+        output.WriteBool(1, Deprecated);
       }
-      output.WriteMessageArray(999, fieldNames[1], uninterpretedOption_);
+      output.WriteMessageArray(999, uninterpretedOption_);
     }
 
     public int CalculateSize() {
@@ -3383,16 +3257,9 @@ namespace Google.Protobuf.DescriptorProtos {
       uninterpretedOption_.Add(other.uninterpretedOption_);
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -3402,11 +3269,11 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 8: {
-            input.ReadBool(ref deprecated_);
+            deprecated_ = input.ReadBool();
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, fieldName, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -3471,12 +3338,11 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Deprecated != false) {
-        output.WriteBool(33, fieldNames[0], Deprecated);
+        output.WriteBool(33, Deprecated);
       }
-      output.WriteMessageArray(999, fieldNames[1], uninterpretedOption_);
+      output.WriteMessageArray(999, uninterpretedOption_);
     }
 
     public int CalculateSize() {
@@ -3499,16 +3365,9 @@ namespace Google.Protobuf.DescriptorProtos {
       uninterpretedOption_.Add(other.uninterpretedOption_);
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -3518,11 +3377,11 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 264: {
-            input.ReadBool(ref deprecated_);
+            deprecated_ = input.ReadBool();
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, fieldName, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -3587,12 +3446,11 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
+    public void WriteTo(pb::CodedOutputStream output) {
       if (Deprecated != false) {
-        output.WriteBool(33, fieldNames[0], Deprecated);
+        output.WriteBool(33, Deprecated);
       }
-      output.WriteMessageArray(999, fieldNames[1], uninterpretedOption_);
+      output.WriteMessageArray(999, uninterpretedOption_);
     }
 
     public int CalculateSize() {
@@ -3615,16 +3473,9 @@ namespace Google.Protobuf.DescriptorProtos {
       uninterpretedOption_.Add(other.uninterpretedOption_);
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -3634,11 +3485,11 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 264: {
-            input.ReadBool(ref deprecated_);
+            deprecated_ = input.ReadBool();
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, fieldName, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -3753,26 +3604,25 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
-      output.WriteMessageArray(2, fieldNames[3], name_);
+    public void WriteTo(pb::CodedOutputStream output) {
+      output.WriteMessageArray(2, name_);
       if (IdentifierValue != "") {
-        output.WriteString(3, fieldNames[2], IdentifierValue);
+        output.WriteString(3, IdentifierValue);
       }
       if (PositiveIntValue != 0UL) {
-        output.WriteUInt64(4, fieldNames[5], PositiveIntValue);
+        output.WriteUInt64(4, PositiveIntValue);
       }
       if (NegativeIntValue != 0L) {
-        output.WriteInt64(5, fieldNames[4], NegativeIntValue);
+        output.WriteInt64(5, NegativeIntValue);
       }
       if (DoubleValue != 0D) {
-        output.WriteDouble(6, fieldNames[1], DoubleValue);
+        output.WriteDouble(6, DoubleValue);
       }
       if (StringValue != pb::ByteString.Empty) {
-        output.WriteBytes(7, fieldNames[6], StringValue);
+        output.WriteBytes(7, StringValue);
       }
       if (AggregateValue != "") {
-        output.WriteString(8, fieldNames[0], AggregateValue);
+        output.WriteString(8, AggregateValue);
       }
     }
 
@@ -3826,16 +3676,9 @@ namespace Google.Protobuf.DescriptorProtos {
       }
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -3845,31 +3688,31 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 18: {
-            input.ReadMessageArray(tag, fieldName, name_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart.Parser);
+            input.ReadMessageArray(tag, name_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart.Parser);
             break;
           }
           case 26: {
-            input.ReadString(ref identifierValue_);
+            identifierValue_ = input.ReadString();
             break;
           }
           case 32: {
-            input.ReadUInt64(ref positiveIntValue_);
+            positiveIntValue_ = input.ReadUInt64();
             break;
           }
           case 40: {
-            input.ReadInt64(ref negativeIntValue_);
+            negativeIntValue_ = input.ReadInt64();
             break;
           }
           case 49: {
-            input.ReadDouble(ref doubleValue_);
+            doubleValue_ = input.ReadDouble();
             break;
           }
           case 58: {
-            input.ReadBytes(ref stringValue_);
+            stringValue_ = input.ReadBytes();
             break;
           }
           case 66: {
-            input.ReadString(ref aggregateValue_);
+            aggregateValue_ = input.ReadString();
             break;
           }
         }
@@ -3937,13 +3780,12 @@ namespace Google.Protobuf.DescriptorProtos {
           return hash;
         }
 
-        public void WriteTo(pb::ICodedOutputStream output) {
-          string[] fieldNames = _fieldNames;
+        public void WriteTo(pb::CodedOutputStream output) {
           if (NamePart_ != "") {
-            output.WriteString(1, fieldNames[1], NamePart_);
+            output.WriteString(1, NamePart_);
           }
           if (IsExtension != false) {
-            output.WriteBool(2, fieldNames[0], IsExtension);
+            output.WriteBool(2, IsExtension);
           }
         }
 
@@ -3969,16 +3811,9 @@ namespace Google.Protobuf.DescriptorProtos {
           }
         }
 
-        public void MergeFrom(pb::ICodedInputStream input) {
+        public void MergeFrom(pb::CodedInputStream input) {
           uint tag;
-          string fieldName;
-          while (input.ReadTag(out tag, out fieldName)) {
-            if (tag == 0 && fieldName != null) {
-              int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-              if (fieldOrdinal >= 0) {
-                tag = _fieldTags[fieldOrdinal];
-              }
-            }
+          while (input.ReadTag(out tag)) {
             switch(tag) {
               case 0:
                 throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -3988,11 +3823,11 @@ namespace Google.Protobuf.DescriptorProtos {
                 }
                 break;
               case 10: {
-                input.ReadString(ref namePart_);
+                namePart_ = input.ReadString();
                 break;
               }
               case 16: {
-                input.ReadBool(ref isExtension_);
+                isExtension_ = input.ReadBool();
                 break;
               }
             }
@@ -4052,9 +3887,8 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
-    public void WriteTo(pb::ICodedOutputStream output) {
-      string[] fieldNames = _fieldNames;
-      output.WriteMessageArray(1, fieldNames[0], location_);
+    public void WriteTo(pb::CodedOutputStream output) {
+      output.WriteMessageArray(1, location_);
     }
 
     public int CalculateSize() {
@@ -4071,16 +3905,9 @@ namespace Google.Protobuf.DescriptorProtos {
       location_.Add(other.location_);
     }
 
-    public void MergeFrom(pb::ICodedInputStream input) {
+    public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      string fieldName;
-      while (input.ReadTag(out tag, out fieldName)) {
-        if (tag == 0 && fieldName != null) {
-          int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-          if (fieldOrdinal >= 0) {
-            tag = _fieldTags[fieldOrdinal];
-          }
-        }
+      while (input.ReadTag(out tag)) {
         switch(tag) {
           case 0:
             throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -4090,7 +3917,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadMessageArray(tag, fieldName, location_, global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location.Parser);
+            input.ReadMessageArray(tag, location_, global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location.Parser);
             break;
           }
         }
@@ -4182,17 +4009,16 @@ namespace Google.Protobuf.DescriptorProtos {
           return hash;
         }
 
-        public void WriteTo(pb::ICodedOutputStream output) {
-          string[] fieldNames = _fieldNames;
-          output.WritePackedInt32Array(1, fieldNames[2], path_);
-          output.WritePackedInt32Array(2, fieldNames[3], span_);
+        public void WriteTo(pb::CodedOutputStream output) {
+          output.WritePackedInt32Array(1, path_);
+          output.WritePackedInt32Array(2, span_);
           if (LeadingComments != "") {
-            output.WriteString(3, fieldNames[0], LeadingComments);
+            output.WriteString(3, LeadingComments);
           }
           if (TrailingComments != "") {
-            output.WriteString(4, fieldNames[4], TrailingComments);
+            output.WriteString(4, TrailingComments);
           }
-          output.WriteStringArray(6, fieldNames[1], leadingDetachedComments_);
+          output.WriteStringArray(6, leadingDetachedComments_);
         }
 
         public int CalculateSize() {
@@ -4248,16 +4074,9 @@ namespace Google.Protobuf.DescriptorProtos {
           leadingDetachedComments_.Add(other.leadingDetachedComments_);
         }
 
-        public void MergeFrom(pb::ICodedInputStream input) {
+        public void MergeFrom(pb::CodedInputStream input) {
           uint tag;
-          string fieldName;
-          while (input.ReadTag(out tag, out fieldName)) {
-            if (tag == 0 && fieldName != null) {
-              int fieldOrdinal = global::System.Array.BinarySearch(_fieldNames, fieldName, global::System.StringComparer.Ordinal);
-              if (fieldOrdinal >= 0) {
-                tag = _fieldTags[fieldOrdinal];
-              }
-            }
+          while (input.ReadTag(out tag)) {
             switch(tag) {
               case 0:
                 throw pb::InvalidProtocolBufferException.InvalidTag();
@@ -4268,24 +4087,24 @@ namespace Google.Protobuf.DescriptorProtos {
                 break;
               case 10:
               case 8: {
-                input.ReadInt32Array(tag, fieldName, path_);
+                input.ReadInt32Array(tag, path_);
                 break;
               }
               case 18:
               case 16: {
-                input.ReadInt32Array(tag, fieldName, span_);
+                input.ReadInt32Array(tag, span_);
                 break;
               }
               case 26: {
-                input.ReadString(ref leadingComments_);
+                leadingComments_ = input.ReadString();
                 break;
               }
               case 34: {
-                input.ReadString(ref trailingComments_);
+                trailingComments_ = input.ReadString();
                 break;
               }
               case 50: {
-                input.ReadStringArray(tag, fieldName, leadingDetachedComments_);
+                input.ReadStringArray(tag, leadingDetachedComments_);
                 break;
               }
             }

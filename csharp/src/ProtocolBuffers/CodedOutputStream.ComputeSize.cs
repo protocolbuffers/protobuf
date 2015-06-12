@@ -413,41 +413,12 @@ namespace Google.Protobuf
             return ComputeRawVarint64Size(EncodeZigZag64(value));
         }
 
-        /*
-     * Compute the number of bytes that would be needed to encode a
-     * MessageSet extension to the stream.  For historical reasons,
-     * the wire format differs from normal fields.
-     */
-
-        /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
-        /// MessageSet extension to the stream. For historical reasons,
-        /// the wire format differs from normal fields.
-        /// </summary>
-        public static int ComputeMessageSetExtensionSize(int fieldNumber, IMessage value)
-        {
-            return ComputeTagSize(WireFormat.MessageSetField.Item)*2 +
-                   ComputeUInt32Size(WireFormat.MessageSetField.TypeID, (uint) fieldNumber) +
-                   ComputeMessageSize(WireFormat.MessageSetField.Message, value);
-        }
-
-        /// <summary>
-        /// Compute the number of bytes that would be needed to encode an
-        /// unparsed MessageSet extension field to the stream. For
-        /// historical reasons, the wire format differs from normal fields.
-        /// </summary>
-        public static int ComputeRawMessageSetExtensionSize(int fieldNumber, ByteString value)
-        {
-            return ComputeTagSize(WireFormat.MessageSetField.Item)*2 +
-                   ComputeUInt32Size(WireFormat.MessageSetField.TypeID, (uint) fieldNumber) +
-                   ComputeBytesSize(WireFormat.MessageSetField.Message, value);
-        }
-
         /// <summary>
         /// Compute the number of bytes that would be needed to encode a varint.
         /// </summary>
         public static int ComputeRawVarint32Size(uint value)
         {
+            // TODO(jonskeet): Look at optimizing this to just hard-coded comparisons.
             if ((value & (0xffffffff << 7)) == 0)
             {
                 return 1;
@@ -472,6 +443,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeRawVarint64Size(ulong value)
         {
+            // TODO(jonskeet): Look at optimizing this to just hard-coded comparisons.
             if ((value & (0xffffffffffffffffL << 7)) == 0)
             {
                 return 1;
@@ -509,106 +481,6 @@ namespace Google.Protobuf
                 return 9;
             }
             return 10;
-        }
-
-        /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
-        /// field of arbitrary type, including the tag, to the stream.
-        /// </summary>
-        // TODO(jonskeet): Why do we need this?
-        public static int ComputeFieldSize(FieldType fieldType, int fieldNumber, Object value)
-        {
-            switch (fieldType)
-            {
-                case FieldType.Double:
-                    return ComputeDoubleSize(fieldNumber, (double) value);
-                case FieldType.Float:
-                    return ComputeFloatSize(fieldNumber, (float) value);
-                case FieldType.Int64:
-                    return ComputeInt64Size(fieldNumber, (long) value);
-                case FieldType.UInt64:
-                    return ComputeUInt64Size(fieldNumber, (ulong) value);
-                case FieldType.Int32:
-                    return ComputeInt32Size(fieldNumber, (int) value);
-                case FieldType.Fixed64:
-                    return ComputeFixed64Size(fieldNumber, (ulong) value);
-                case FieldType.Fixed32:
-                    return ComputeFixed32Size(fieldNumber, (uint) value);
-                case FieldType.Bool:
-                    return ComputeBoolSize(fieldNumber, (bool) value);
-                case FieldType.String:
-                    return ComputeStringSize(fieldNumber, (string) value);
-                case FieldType.Group:
-                    return ComputeGroupSize(fieldNumber, (IMessage) value);
-                case FieldType.Message:
-                    return ComputeMessageSize(fieldNumber, (IMessage) value);
-                case FieldType.Bytes:
-                    return ComputeBytesSize(fieldNumber, (ByteString) value);
-                case FieldType.UInt32:
-                    return ComputeUInt32Size(fieldNumber, (uint) value);
-                case FieldType.SFixed32:
-                    return ComputeSFixed32Size(fieldNumber, (int) value);
-                case FieldType.SFixed64:
-                    return ComputeSFixed64Size(fieldNumber, (long) value);
-                case FieldType.SInt32:
-                    return ComputeSInt32Size(fieldNumber, (int) value);
-                case FieldType.SInt64:
-                    return ComputeSInt64Size(fieldNumber, (long) value);
-                case FieldType.Enum:
-                    return ComputeEnumSize(fieldNumber, (int) value);
-                default:
-                    throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
-            }
-        }
-
-        /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
-        /// field of arbitrary type, excluding the tag, to the stream.
-        /// </summary>
-        // TODO(jonskeet): Why do we need this?
-        public static int ComputeFieldSizeNoTag(FieldType fieldType, Object value)
-        {
-            switch (fieldType)
-            {
-                case FieldType.Double:
-                    return ComputeDoubleSizeNoTag((double) value);
-                case FieldType.Float:
-                    return ComputeFloatSizeNoTag((float) value);
-                case FieldType.Int64:
-                    return ComputeInt64SizeNoTag((long) value);
-                case FieldType.UInt64:
-                    return ComputeUInt64SizeNoTag((ulong) value);
-                case FieldType.Int32:
-                    return ComputeInt32SizeNoTag((int) value);
-                case FieldType.Fixed64:
-                    return ComputeFixed64SizeNoTag((ulong) value);
-                case FieldType.Fixed32:
-                    return ComputeFixed32SizeNoTag((uint) value);
-                case FieldType.Bool:
-                    return ComputeBoolSizeNoTag((bool) value);
-                case FieldType.String:
-                    return ComputeStringSizeNoTag((string) value);
-                case FieldType.Group:
-                    return ComputeGroupSizeNoTag((IMessage) value);
-                case FieldType.Message:
-                    return ComputeMessageSizeNoTag((IMessage) value);
-                case FieldType.Bytes:
-                    return ComputeBytesSizeNoTag((ByteString) value);
-                case FieldType.UInt32:
-                    return ComputeUInt32SizeNoTag((uint) value);
-                case FieldType.SFixed32:
-                    return ComputeSFixed32SizeNoTag((int) value);
-                case FieldType.SFixed64:
-                    return ComputeSFixed64SizeNoTag((long) value);
-                case FieldType.SInt32:
-                    return ComputeSInt32SizeNoTag((int) value);
-                case FieldType.SInt64:
-                    return ComputeSInt64SizeNoTag((long) value);
-                case FieldType.Enum:
-                    return ComputeEnumSizeNoTag((int) value);
-                default:
-                    throw new ArgumentOutOfRangeException("Invalid field type " + fieldType);
-            }
         }
 
         /// <summary>

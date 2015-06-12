@@ -336,13 +336,11 @@ namespace Google.Protobuf
 
             CodedInputStream input = CodedInputStream.CreateInstance(ms);
             uint testtag;
-            string ignore;
-            Assert.IsTrue(input.ReadTag(out testtag, out ignore));
+            Assert.IsTrue(input.ReadTag(out testtag));
             Assert.AreEqual(tag, testtag);
 
-            ByteString bytes = null;
             // TODO(jonskeet): Should this be ArgumentNullException instead?
-            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadBytes(ref bytes));
+            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadBytes());
         }
 
         private static TestRecursiveMessage MakeRecursiveMessage(int depth)
@@ -435,13 +433,10 @@ namespace Google.Protobuf
 
             CodedInputStream input = CodedInputStream.CreateInstance(ms);
 
-            uint testtag;
-            string ignored;
-
-            Assert.IsTrue(input.ReadTag(out testtag, out ignored));
-            Assert.AreEqual(tag, testtag);
-            string text = null;
-            input.ReadString(ref text);
+            uint actualTag;
+            Assert.IsTrue(input.ReadTag(out actualTag));
+            Assert.AreEqual(tag, actualTag);
+            string text = input.ReadString();
             Assert.AreEqual('\ufffd', text[0]);
         }
 
@@ -473,11 +468,8 @@ namespace Google.Protobuf
         {
             byte[] bytes = new byte[10] { 0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 };
             CodedInputStream input = CodedInputStream.CreateInstance(bytes);
-            int val = 0;
-
-            Assert.IsTrue(input.ReadEnum(ref val));
+            Assert.AreEqual((int)TestNegEnum.Value, input.ReadEnum());
             Assert.IsTrue(input.IsAtEnd);
-            Assert.AreEqual((int) TestNegEnum.Value, val);
         }
 
         [Test]
@@ -487,17 +479,16 @@ namespace Google.Protobuf
             int msgSize = 1 + 1 + arraySize;
             byte[] bytes = new byte[msgSize];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WritePackedInt32Array(8, "", new RepeatedField<int> { 0, -1, -2, -3, -4, -5 });
+            output.WritePackedInt32Array(8, new RepeatedField<int> { 0, -1, -2, -3, -4, -5 });
 
             Assert.AreEqual(0, output.SpaceLeft);
 
             CodedInputStream input = CodedInputStream.CreateInstance(bytes);
             uint tag;
-            string name;
-            Assert.IsTrue(input.ReadTag(out tag, out name));
+            Assert.IsTrue(input.ReadTag(out tag));
 
             List<TestNegEnum> values = new List<TestNegEnum>();
-            input.ReadEnumArray(tag, name, values);
+            input.ReadEnumArray(tag, values);
 
             Assert.AreEqual(6, values.Count);
             Assert.AreEqual(TestNegEnum.None, values[0]);
@@ -512,17 +503,16 @@ namespace Google.Protobuf
             int msgSize = arraySize;
             byte[] bytes = new byte[msgSize];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteInt32Array(8, "", new RepeatedField<int> { 0, -1, -2, -3, -4, -5 });
+            output.WriteInt32Array(8, new RepeatedField<int> { 0, -1, -2, -3, -4, -5 });
 
             Assert.AreEqual(0, output.SpaceLeft);
 
             CodedInputStream input = CodedInputStream.CreateInstance(bytes);
             uint tag;
-            string name;
-            Assert.IsTrue(input.ReadTag(out tag, out name));
+            Assert.IsTrue(input.ReadTag(out tag));
 
             List<TestNegEnum> values = new List<TestNegEnum>();
-            input.ReadEnumArray(tag, name, values);
+            input.ReadEnumArray(tag, values);
 
             Assert.AreEqual(6, values.Count);
             Assert.AreEqual(TestNegEnum.None, values[0]);
@@ -537,26 +527,21 @@ namespace Google.Protobuf
             using (var ms = new MemoryStream())
             {
                 CodedOutputStream output = CodedOutputStream.CreateInstance(ms);
-                output.WriteField(FieldType.Bytes, 1, "bytes", ByteString.CopyFrom(new byte[100]));
-                output.WriteField(FieldType.Bytes, 2, "bytes", ByteString.CopyFrom(new byte[100]));
+                output.WriteBytes(1, ByteString.CopyFrom(new byte[100]));
+                output.WriteBytes(2, ByteString.CopyFrom(new byte[100]));
                 output.Flush();
 
                 ms.Position = 0;
                 CodedInputStream input = CodedInputStream.CreateInstance(ms, new byte[ms.Length / 2]);
 
                 uint tag;
-                string ignore;
-                ByteString value;
-
-                Assert.IsTrue(input.ReadTag(out tag, out ignore));
+                Assert.IsTrue(input.ReadTag(out tag));
                 Assert.AreEqual(1, WireFormat.GetTagFieldNumber(tag));
-                value = ByteString.Empty;
-                Assert.IsTrue(input.ReadBytes(ref value) && value.Length == 100);
+                Assert.AreEqual(100, input.ReadBytes().Length);
 
-                Assert.IsTrue(input.ReadTag(out tag, out ignore));
+                Assert.IsTrue(input.ReadTag(out tag));
                 Assert.AreEqual(2, WireFormat.GetTagFieldNumber(tag));
-                value = ByteString.Empty;
-                Assert.IsTrue(input.ReadBytes(ref value) && value.Length == 100);
+                Assert.AreEqual(100, input.ReadBytes().Length);
             }
         }
     }

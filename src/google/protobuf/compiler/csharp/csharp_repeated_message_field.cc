@@ -75,7 +75,7 @@ void RepeatedMessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 void RepeatedMessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "input.ReadMessageArray(tag, fieldName, $name$_, $type_name$.Parser);\n");
+    "input.ReadMessageArray(tag, $name$_, $type_name$.Parser);\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
@@ -83,7 +83,7 @@ void RepeatedMessageFieldGenerator::GenerateSerializationCode(io::Printer* print
   // The Write* call should make that cheap though - no need to generate it every time.
   printer->Print(
     variables_,
-    "output.WriteMessageArray($number$, fieldNames[$field_ordinal$], $name$_);\n");
+    "output.WriteMessageArray($number$, $name$_);\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

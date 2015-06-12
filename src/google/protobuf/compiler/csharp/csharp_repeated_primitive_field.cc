@@ -74,7 +74,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) 
 
 void RepeatedPrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(variables_,
-    "input.Read$capitalized_type_name$Array(tag, fieldName, $name$_);\n");
+    "input.Read$capitalized_type_name$Array(tag, $name$_);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializationCode(
@@ -83,10 +83,10 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializationCode(
   // The Write* call should make that cheap though - no need to generate it every time.
   if (descriptor_->is_packed()) {
     printer->Print(variables_,
-      "output.WritePacked$capitalized_type_name$Array($number$, fieldNames[$field_ordinal$], $name$_);\n");
+      "output.WritePacked$capitalized_type_name$Array($number$, $name$_);\n");
   } else {
     printer->Print(variables_,
-      "output.Write$capitalized_type_name$Array($number$, fieldNames[$field_ordinal$], $name$_);\n");
+      "output.Write$capitalized_type_name$Array($number$, $name$_);\n");
   }
 }
 

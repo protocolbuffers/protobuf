@@ -49,7 +49,7 @@ namespace Google.Protobuf
             codedOutput.Flush();
         }
 
-        public static void WriteTo(this IMessage message, ICodedOutputStream output)
+        public static void WriteTo(this IMessage message, CodedOutputStream output)
         {
             message.WriteTo(output);
         }
