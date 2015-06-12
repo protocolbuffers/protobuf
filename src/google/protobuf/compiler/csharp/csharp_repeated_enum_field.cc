@@ -80,11 +80,11 @@ void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
-  // TODO(jonskeet): Originally, this checked for Count > 0 first.
-  // The Write* call should make that cheap though - no need to generate it every time.
   printer->Print(
     variables_,
-    "output.Write$packed$EnumArray($number$, $name$_);\n");
+    "if ($name$_.Count > 0) {\n"
+    "  output.Write$packed$EnumArray($number$, $name$_);\n"
+    "}\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

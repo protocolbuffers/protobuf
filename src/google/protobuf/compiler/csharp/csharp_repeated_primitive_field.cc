@@ -49,6 +49,7 @@ namespace csharp {
 RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, int fieldOrdinal)
     : FieldGeneratorBase(descriptor, fieldOrdinal) {
+  variables_["packed"] = descriptor->is_packed() ? "Packed" : "";
 }
 
 RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {
@@ -79,15 +80,11 @@ void RepeatedPrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) 
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) {
-  // TODO(jonskeet): Originally, this checked for Count > 0 first.
-  // The Write* call should make that cheap though - no need to generate it every time.
-  if (descriptor_->is_packed()) {
-    printer->Print(variables_,
-      "output.WritePacked$capitalized_type_name$Array($number$, $name$_);\n");
-  } else {
-    printer->Print(variables_,
-      "output.Write$capitalized_type_name$Array($number$, $name$_);\n");
-  }
+  printer->Print(
+    variables_,
+    "if ($name$_.Count > 0) {\n"
+    "  output.Write$packed$$capitalized_type_name$Array($number$, $name$_);\n"
+    "}\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(

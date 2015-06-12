@@ -83,7 +83,9 @@ void RepeatedMessageFieldGenerator::GenerateSerializationCode(io::Printer* print
   // The Write* call should make that cheap though - no need to generate it every time.
   printer->Print(
     variables_,
-    "output.WriteMessageArray($number$, $name$_);\n");
+    "if ($name$_.Count > 0) {\n"
+    "  output.WriteMessageArray($number$, $name$_);\n"
+    "}\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
