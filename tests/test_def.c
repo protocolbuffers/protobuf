@@ -246,6 +246,18 @@ static void test_replacement() {
   upb_symtab_unref(s, &s);
 }
 
+static void test_cycles_in_replacement() {
+  upb_symtab *s = upb_symtab_new(&s);
+  upb_msgdef *m = upb_msgdef_newnamed("M", &s);
+  upb_status status = UPB_STATUS_INIT;
+
+  upb_msgdef_addfield(m, newfield("m", 1, UPB_TYPE_MESSAGE,
+                                  UPB_LABEL_OPTIONAL, ".M", &s),
+                      &s, NULL);
+  ASSERT_STATUS(upb_symtab_add(s, (upb_def**)&m, 1, &s, &status), &status);
+  ASSERT_STATUS(upb_symtab_add(s, NULL, 0, &s, &status), &status);
+}
+
 static void test_freeze_free() {
   bool ok;
 
@@ -459,6 +471,7 @@ int run_tests(int argc, char *argv[]) {
   test_fielddef();
   test_fielddef_unref();
   test_replacement();
+  test_cycles_in_replacement();
   test_freeze_free();
   test_partial_freeze();
   test_noreftracking();

@@ -91,14 +91,33 @@ const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
   return ret;
 }
 
-/* Searches def and its children to find defs that have the same name as any
- * def in "addtab."  Returns true if any where found, and as a side-effect adds
- * duplicates of these defs into addtab.
+/* Starts a depth-first traversal at def, recursing into any subdefs
+ * (ie. submessage types).  Adds duplicates of existing defs to addtab
+ * wherever necessary, so that the resulting symtab will be consistent once
+ * addtab is added.
  *
- * We use a modified depth-first traversal that traverses each SCC (which we
- * already computed) as if it were a single node.  This allows us to traverse
- * the possibly-cyclic graph as if it were a DAG and to dup the correct set of
- * nodes with O(n) time. */
+ * More specifically, if any defs D is found in the DFS that:
+ *
+ *   1. can reach a def that is being replaced (because it has the same full
+ *      name as a def in addtab, AND
+ *
+ *   2. is not itself being replaced already (ie. no def with this name exists
+ *      in addtab).
+ *
+ * ...then a duplicate (new copy) of D will be added to addtab.
+ *
+ * Returns true if "def" can reach any def that is being replaced.
+ *
+ * It is slightly tricky to do this correctly in the place of cycles.  If we
+ * detect that our DFS has hit a cycle, we don't yet know if this SCC can reach
+ * a def in addtab or not.  Once we figure this out, that answer needs to apply
+ * to *all* defs in the SCC, even if we visited them already.
+ *
+ * To work around this problem, we traverse each SCC (which we already
+ * computed, since these defs are frozen) as a single node.  We first compute
+ * whether the SCC as a whole can reach a def in addtab, then we dup (or not)
+ * the entire SCC.  This requires breaking the encapsulation of upb_refcounted,
+ * since that is where we get the data about what SCC we are in. */
 static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
                             const void *new_owner, upb_inttable *seen,
                             upb_status *s) {
@@ -124,7 +143,8 @@ static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
       need_dup = true;
     }
 
-    /* For messages, continue the recursion by visiting all subdefs. */
+    /* For messages, continue the recursion by visiting all subdefs, but only
+     * ones in different SCCs. */
     m = upb_dyncast_msgdef(def);
     if (m) {
       upb_msg_field_iter i;
@@ -132,17 +152,23 @@ static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
           !upb_msg_field_done(&i);
           upb_msg_field_next(&i)) {
         upb_fielddef *f = upb_msg_iter_field(&i);
+        const upb_def *subdef;
+
         if (!upb_fielddef_hassubdef(f)) continue;
+        subdef = upb_fielddef_subdef(f);
+
+        /* Skip subdefs in this SCC. */
+        if (def->base.group == subdef->base.group) continue;
+
         /* |= to avoid short-circuit; we need its side-effects. */
-        need_dup |= upb_resolve_dfs(
-            upb_fielddef_subdef(f), addtab, new_owner, seen, s);
+        need_dup |= upb_resolve_dfs(subdef, addtab, new_owner, seen, s);
         if (!upb_ok(s)) return false;
       }
     }
   } while ((def = (upb_def*)def->base.next) != base);
 
   if (need_dup) {
-    /* Dup any defs that don't already have entries in addtab. */
+    /* Dup all defs in this SCC that don't already have entries in addtab. */
     def = base;
     do {
       const char *name;
