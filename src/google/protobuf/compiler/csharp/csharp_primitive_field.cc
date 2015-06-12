@@ -159,6 +159,7 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
         "    $oneof_name$_ = value ?? $default_value$;\n");
     }
     printer->Print(
+      variables_,
       "    $oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
       "  }\n"
       "}\n");
