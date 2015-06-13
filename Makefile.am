@@ -743,7 +743,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST) \
   LICENSE                              \
   CONTRIBUTORS.txt                     \
   CHANGES.txt                          \
-  config.h.include                     \
   cmake/CMakeLists.txt                 \
   cmake/config.h.in                    \
   cmake/find_hash_map.cmake            \
