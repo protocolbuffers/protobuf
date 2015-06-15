@@ -795,9 +795,73 @@ TEST(WireFormatTest, CompatibleTypes) {
   ASSERT_EQ(static_cast<uint32>(data), msg5.data());
 }
 
-class Proto3PrimitiveRepeatedWireFormatTest
-    : public ::testing::TestWithParam<bool> {
+class Proto3PrimitiveRepeatedWireFormatTest : public ::testing::Test {
  protected:
+  Proto3PrimitiveRepeatedWireFormatTest()
+      : packedTestAllTypes_(
+            "\xFA\x01\x01\x01"
+            "\x82\x02\x01\x01"
+            "\x8A\x02\x01\x01"
+            "\x92\x02\x01\x01"
+            "\x9A\x02\x01\x02"
+            "\xA2\x02\x01\x02"
+            "\xAA\x02\x04\x01\x00\x00\x00"
+            "\xB2\x02\x08\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\xBA\x02\x04\x01\x00\x00\x00"
+            "\xC2\x02\x08\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\xCA\x02\x04\x00\x00\x80\x3f"
+            "\xD2\x02\x08\x00\x00\x00\x00\x00\x00\xf0\x3f"
+            "\xDA\x02\x01\x01"
+            "\x9A\x03\x01\x01",
+            86),
+        packedTestUnpackedTypes_(
+            "\x0A\x01\x01"
+            "\x12\x01\x01"
+            "\x1A\x01\x01"
+            "\x22\x01\x01"
+            "\x2A\x01\x02"
+            "\x32\x01\x02"
+            "\x3A\x04\x01\x00\x00\x00"
+            "\x42\x08\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\x4A\x04\x01\x00\x00\x00"
+            "\x52\x08\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\x5A\x04\x00\x00\x80\x3f"
+            "\x62\x08\x00\x00\x00\x00\x00\x00\xf0\x3f"
+            "\x6A\x01\x01"
+            "\x72\x01\x01",
+            72),
+        unpackedTestAllTypes_(
+            "\xF8\x01\x01"
+            "\x80\x02\x01"
+            "\x88\x02\x01"
+            "\x90\x02\x01"
+            "\x98\x02\x02"
+            "\xA0\x02\x02"
+            "\xAD\x02\x01\x00\x00\x00"
+            "\xB1\x02\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\xBD\x02\x01\x00\x00\x00"
+            "\xC1\x02\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\xCD\x02\x00\x00\x80\x3f"
+            "\xD1\x02\x00\x00\x00\x00\x00\x00\xf0\x3f"
+            "\xD8\x02\x01"
+            "\x98\x03\x01",
+            72),
+        unpackedTestUnpackedTypes_(
+            "\x08\x01"
+            "\x10\x01"
+            "\x18\x01"
+            "\x20\x01"
+            "\x28\x02"
+            "\x30\x02"
+            "\x3D\x01\x00\x00\x00"
+            "\x41\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\x4D\x01\x00\x00\x00"
+            "\x51\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\x5D\x00\x00\x80\x3f"
+            "\x61\x00\x00\x00\x00\x00\x00\xf0\x3f"
+            "\x68\x01"
+            "\x70\x01",
+            58) {}
   template <class Proto>
   void SetProto3PrimitiveRepeatedFields(Proto* message) {
     message->add_repeated_int32(1);
@@ -837,8 +901,7 @@ class Proto3PrimitiveRepeatedWireFormatTest
   }
 
   template <class Proto>
-  void TestProto3PrimitiveRepeatedFields(Proto* message,
-                                         const string& expected) {
+  void TestSerialization(Proto* message, const string& expected) {
     SetProto3PrimitiveRepeatedFields(message);
 
     int size = message->ByteSize();
@@ -851,12 +914,7 @@ class Proto3PrimitiveRepeatedWireFormatTest
       message->SerializeWithCachedSizes(&output);
       ASSERT_FALSE(output.HadError());
     }
-
     EXPECT_TRUE(expected == generated_data);
-
-    message->Clear();
-    message->ParseFromString(generated_data);
-    ExpectProto3PrimitiveRepeatedFieldsSet(*message);
 
     // Serialize using the dynamic code.
     string dynamic_data;
@@ -866,64 +924,38 @@ class Proto3PrimitiveRepeatedWireFormatTest
       WireFormat::SerializeWithCachedSizes(*message, size, &output);
       ASSERT_FALSE(output.HadError());
     }
-
     EXPECT_TRUE(expected == dynamic_data);
+  }
+
+  template <class Proto>
+  void TestParsing(Proto* message, const string& compatible_data) {
+    message->Clear();
+    message->ParseFromString(compatible_data);
+    ExpectProto3PrimitiveRepeatedFieldsSet(*message);
 
     message->Clear();
     io::CodedInputStream input(
-        reinterpret_cast<const uint8*>(dynamic_data.data()),
-        dynamic_data.size());
+        reinterpret_cast<const uint8*>(compatible_data.data()),
+        compatible_data.size());
     WireFormat::ParseAndMergePartial(&input, message);
     ExpectProto3PrimitiveRepeatedFieldsSet(*message);
   }
-};
-INSTANTIATE_TEST_CASE_P(SetPacked,
-                        Proto3PrimitiveRepeatedWireFormatTest,
-                        ::testing::Values(false, true));
 
-TEST_P(Proto3PrimitiveRepeatedWireFormatTest, Proto3PrimitiveRepeated) {
+  const string packedTestAllTypes_;
+  const string packedTestUnpackedTypes_;
+  const string unpackedTestAllTypes_;
+  const string unpackedTestUnpackedTypes_;
+};
+
+TEST_F(Proto3PrimitiveRepeatedWireFormatTest, Proto3PrimitiveRepeated) {
   proto3_arena_unittest::TestAllTypes packed_message;
   proto3_arena_unittest::TestUnpackedTypes unpacked_message;
-
-  const string packedExpected(
-      "\xFA\x01\x01\x01"
-      "\x82\x02\x01\x01"
-      "\x8A\x02\x01\x01"
-      "\x92\x02\x01\x01"
-      "\x9A\x02\x01\x02"
-      "\xA2\x02\x01\x02"
-      "\xAA\x02\x04\x01\x00\x00\x00"
-      "\xB2\x02\x08\x01\x00\x00\x00\x00\x00\x00\x00"
-      "\xBA\x02\x04\x01\x00\x00\x00"
-      "\xC2\x02\x08\x01\x00\x00\x00\x00\x00\x00\x00"
-      "\xCA\x02\x04\x00\x00\x80\x3f"
-      "\xD2\x02\x08\x00\x00\x00\x00\x00\x00\xf0\x3f"
-      "\xDA\x02\x01\x01"
-      "\x9A\x03\x01\x01",
-      86);
-
-  const string unpackedExpected(
-      "\x08\x01"
-      "\x10\x01"
-      "\x18\x01"
-      "\x20\x01"
-      "\x28\x02"
-      "\x30\x02"
-      "\x3D\x01\x00\x00\x00"
-      "\x41\x01\x00\x00\x00\x00\x00\x00\x00"
-      "\x4D\x01\x00\x00\x00"
-      "\x51\x01\x00\x00\x00\x00\x00\x00\x00"
-      "\x5D\x00\x00\x80\x3f"
-      "\x61\x00\x00\x00\x00\x00\x00\xf0\x3f"
-      "\x68\x01"
-      "\x70\x01",
-      58);
-
-  if (GetParam()) {
-    TestProto3PrimitiveRepeatedFields(&packed_message, packedExpected);
-  } else {
-    TestProto3PrimitiveRepeatedFields(&unpacked_message, unpackedExpected);
-  }
+  TestSerialization(&packed_message, packedTestAllTypes_);
+  TestParsing(&packed_message, packedTestAllTypes_);
+  TestParsing(&packed_message, unpackedTestAllTypes_);
+  TestSerialization(&unpacked_message, unpackedTestUnpackedTypes_);
+  TestParsing(&unpacked_message, packedTestUnpackedTypes_);
+  TestParsing(&unpacked_message, unpackedTestUnpackedTypes_);
 }
 
 class WireFormatInvalidInputTest : public testing::Test {
