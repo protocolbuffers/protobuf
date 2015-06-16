@@ -5,17 +5,17 @@ on your computer before proceeding.
 Compiling and Installing
 ========================
 
-1. Check whether a gtest directory exists in the upper level directory. If you
-   checkout the code from github via "git clone", this gtest directory won't
+1. Check whether a gmock directory exists in the upper level directory. If you
+   checkout the code from github via "git clone", this gmock directory won't
    exist and you won't be able to build protobuf unit-tests. Consider using one
    of the release tar balls instead:
 
         https://github.com/google/protobuf/releases
 
    These release tar balls are more stable versions of protobuf and already
-   have the gtest directory included.
+   have the gmock directory included.
 
-   You can also download gtest by yourself and put it in the right place.
+   You can also download gmock by yourself and put it in the right place.
 
    If you absolutely don't want to build and run protobuf unit-tests, skip
    this step and use protobuf at your own risk.
@@ -29,7 +29,7 @@ Compiling and Installing
         $ cd build
         $ cmake -G "Visual Studio 9 2008" ..
 
-   If you don't have gtest, skip the build of tests by turning off the
+   If you don't have gmock, skip the build of tests by turning off the
    BUILD_TESTING option:
 
         $ cmake -G "Visutal Studio 9 2008" -DBUILD_TESTING=OFF ..

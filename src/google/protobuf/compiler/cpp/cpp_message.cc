@@ -621,7 +621,7 @@ GenerateSingularFieldHasBits(const FieldDescriptor* field,
     // has_$name$() methods.
     vars["has_array_index"] = SimpleItoa(field->index() / 32);
     vars["has_mask"] = StrCat(strings::Hex(1u << (field->index() % 32),
-                                           strings::Hex::ZERO_PAD_8));
+                                           strings::ZERO_PAD_8));
     printer->Print(vars,
       "$inline$"
       "bool $classname$::has_$name$() const {\n"
@@ -3364,7 +3364,7 @@ static string ConditionalToCheckBitmasks(const vector<uint32>& masks) {
   vector<string> parts;
   for (int i = 0; i < masks.size(); i++) {
     if (masks[i] == 0) continue;
-    string m = StrCat("0x", strings::Hex(masks[i], strings::Hex::ZERO_PAD_8));
+    string m = StrCat("0x", strings::Hex(masks[i], strings::ZERO_PAD_8));
     // Each xor evaluates to 0 if the expected bits are present.
     parts.push_back(StrCat("((_has_bits_[", i, "] & ", m, ") ^ ", m, ")"));
   }
@@ -3659,7 +3659,7 @@ GenerateIsInitialized(io::Printer* printer) {
         printer->Print(
           "if ((_has_bits_[$i$] & 0x$mask$) != 0x$mask$) return false;\n",
           "i", SimpleItoa(i),
-          "mask", StrCat(strings::Hex(mask, strings::Hex::ZERO_PAD_8)));
+          "mask", StrCat(strings::Hex(mask, strings::ZERO_PAD_8)));
       }
     }
   }

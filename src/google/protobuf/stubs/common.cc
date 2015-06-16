@@ -32,6 +32,8 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
+#include <google/protobuf/stubs/status.h>
+#include <google/protobuf/stubs/stringpiece.h>
 #include <stdio.h>
 #include <errno.h>
 #include <vector>
@@ -145,6 +147,17 @@ LogMessage& LogMessage::operator<<(const string& value) {
 
 LogMessage& LogMessage::operator<<(const char* value) {
   message_ += value;
+  return *this;
+}
+
+LogMessage& LogMessage::operator<<(const StringPiece& value) {
+  message_ += value.ToString();
+  return *this;
+}
+
+LogMessage& LogMessage::operator<<(
+    const ::google::protobuf::util::Status& status) {
+  message_ += status.ToString();
   return *this;
 }
 
