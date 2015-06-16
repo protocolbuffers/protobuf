@@ -91,43 +91,48 @@ const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
   return ret;
 }
 
-/* Starts a depth-first traversal at def, recursing into any subdefs
+/* Starts a depth-first traversal at "def", recursing into any subdefs
  * (ie. submessage types).  Adds duplicates of existing defs to addtab
  * wherever necessary, so that the resulting symtab will be consistent once
  * addtab is added.
  *
- * More specifically, if any defs D is found in the DFS that:
+ * More specifically, if any def D is found in the DFS that:
  *
- *   1. can reach a def that is being replaced (because it has the same full
- *      name as a def in addtab, AND
+ *   1. can reach a def that is being replaced by something in addtab, AND
  *
- *   2. is not itself being replaced already (ie. no def with this name exists
- *      in addtab).
+ *   2. is not itself being replaced already (ie. this name doesn't already
+ *      exist in addtab)
  *
  * ...then a duplicate (new copy) of D will be added to addtab.
  *
- * Returns true if "def" can reach any def that is being replaced.
+ * Returns true if this happened for any def reachable from "def."
  *
- * It is slightly tricky to do this correctly in the place of cycles.  If we
- * detect that our DFS has hit a cycle, we don't yet know if this SCC can reach
- * a def in addtab or not.  Once we figure this out, that answer needs to apply
- * to *all* defs in the SCC, even if we visited them already.
+ * It is slightly tricky to do this correctly in the presence of cycles.  If we
+ * detect that our DFS has hit a cycle, we might not yet know if any SCCs on
+ * our stack can reach a def in addtab or not.  Once we figure this out, that
+ * answer needs to apply to *all* defs in these SCCs, even if we visited them
+ * already.  So a straight up one-pass cycle-detecting DFS won't work.
  *
  * To work around this problem, we traverse each SCC (which we already
  * computed, since these defs are frozen) as a single node.  We first compute
- * whether the SCC as a whole can reach a def in addtab, then we dup (or not)
+ * whether the SCC as a whole can reach any def in addtab, then we dup (or not)
  * the entire SCC.  This requires breaking the encapsulation of upb_refcounted,
  * since that is where we get the data about what SCC we are in. */
 static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
                             const void *new_owner, upb_inttable *seen,
                             upb_status *s) {
-  /* Memoize results of this function for efficiency (since we're traversing a
-   * DAG this is not needed to limit the depth of the search). */
   upb_value v;
   bool need_dup;
   const upb_def *base;
+  const void* memoize_key;
 
-  if (upb_inttable_lookup(seen, (uintptr_t)def, &v))
+  /* Memoize results of this function for efficiency (since we're traversing a
+   * DAG this is not needed to limit the depth of the search).
+   *
+   * We memoize by SCC instead of by individual def. */
+  memoize_key = def->base.group;
+
+  if (upb_inttable_lookupptr(seen, memoize_key, &v))
     return upb_value_getbool(v);
 
   /* Visit submessages for all messages in the SCC. */
@@ -185,7 +190,7 @@ static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
     } while ((def = (upb_def*)def->base.next) != base);
   }
 
-  upb_inttable_insert(seen, (uintptr_t)def, upb_value_bool(need_dup));
+  upb_inttable_insertptr(seen, memoize_key, upb_value_bool(need_dup));
   return need_dup;
 
 oom:
