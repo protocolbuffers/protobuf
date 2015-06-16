@@ -37,6 +37,8 @@
 
 // Note: These are not meant to be subclassed.
 
+NS_ASSUME_NONNULL_BEGIN
+
 //%PDDM-EXPAND DECLARE_DICTIONARIES()
 // This block of code is generated, do not edit it directly.
 
@@ -61,7 +63,7 @@
 - (instancetype)initWithDictionary:(GPBUInt32UInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(uint32_t *)value;
+- (BOOL)valueForKey:(uint32_t)key value:(nullable uint32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint32_t key, uint32_t value, BOOL *stop))block;
@@ -96,7 +98,7 @@
 - (instancetype)initWithDictionary:(GPBUInt32Int32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(int32_t *)value;
+- (BOOL)valueForKey:(uint32_t)key value:(nullable int32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint32_t key, int32_t value, BOOL *stop))block;
@@ -131,7 +133,7 @@
 - (instancetype)initWithDictionary:(GPBUInt32UInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(uint64_t *)value;
+- (BOOL)valueForKey:(uint32_t)key value:(nullable uint64_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint32_t key, uint64_t value, BOOL *stop))block;
@@ -166,7 +168,7 @@
 - (instancetype)initWithDictionary:(GPBUInt32Int64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(int64_t *)value;
+- (BOOL)valueForKey:(uint32_t)key value:(nullable int64_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint32_t key, int64_t value, BOOL *stop))block;
@@ -201,7 +203,7 @@
 - (instancetype)initWithDictionary:(GPBUInt32BoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(BOOL *)value;
+- (BOOL)valueForKey:(uint32_t)key value:(nullable BOOL *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint32_t key, BOOL value, BOOL *stop))block;
@@ -236,7 +238,7 @@
 - (instancetype)initWithDictionary:(GPBUInt32FloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(float *)value;
+- (BOOL)valueForKey:(uint32_t)key value:(nullable float *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint32_t key, float value, BOOL *stop))block;
@@ -271,7 +273,7 @@
 - (instancetype)initWithDictionary:(GPBUInt32DoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(double *)value;
+- (BOOL)valueForKey:(uint32_t)key value:(nullable double *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint32_t key, double value, BOOL *stop))block;
@@ -293,32 +295,32 @@
 @property(nonatomic, readonly) GPBEnumValidationFunc validationFunc;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         rawValue:(int32_t)rawValue
                                           forKey:(uint32_t)key;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                        rawValues:(const int32_t [])values
                                          forKeys:(const uint32_t [])keys
                                            count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt32EnumDictionary *)dictionary;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         capacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                  rawValues:(const int32_t [])values
                                    forKeys:(const uint32_t [])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt32EnumDictionary *)dictionary;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                   capacity:(NSUInteger)numItems;
 
 // These will return kGPBUnrecognizedEnumeratorValue if the value for the key
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-- (BOOL)valueForKey:(uint32_t)key value:(int32_t *)value;
+- (BOOL)valueForKey:(uint32_t)key value:(nullable int32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint32_t key, int32_t value, BOOL *stop))block;
@@ -326,7 +328,7 @@
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-- (BOOL)valueForKey:(uint32_t)key rawValue:(int32_t *)rawValue;
+- (BOOL)valueForKey:(uint32_t)key rawValue:(nullable int32_t *)rawValue;
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(uint32_t key, int32_t rawValue, BOOL *stop))block;
@@ -407,7 +409,7 @@
 - (instancetype)initWithDictionary:(GPBInt32UInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(uint32_t *)value;
+- (BOOL)valueForKey:(int32_t)key value:(nullable uint32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int32_t key, uint32_t value, BOOL *stop))block;
@@ -442,7 +444,7 @@
 - (instancetype)initWithDictionary:(GPBInt32Int32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(int32_t *)value;
+- (BOOL)valueForKey:(int32_t)key value:(nullable int32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int32_t key, int32_t value, BOOL *stop))block;
@@ -477,7 +479,7 @@
 - (instancetype)initWithDictionary:(GPBInt32UInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(uint64_t *)value;
+- (BOOL)valueForKey:(int32_t)key value:(nullable uint64_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int32_t key, uint64_t value, BOOL *stop))block;
@@ -512,7 +514,7 @@
 - (instancetype)initWithDictionary:(GPBInt32Int64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(int64_t *)value;
+- (BOOL)valueForKey:(int32_t)key value:(nullable int64_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int32_t key, int64_t value, BOOL *stop))block;
@@ -547,7 +549,7 @@
 - (instancetype)initWithDictionary:(GPBInt32BoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(BOOL *)value;
+- (BOOL)valueForKey:(int32_t)key value:(nullable BOOL *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int32_t key, BOOL value, BOOL *stop))block;
@@ -582,7 +584,7 @@
 - (instancetype)initWithDictionary:(GPBInt32FloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(float *)value;
+- (BOOL)valueForKey:(int32_t)key value:(nullable float *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int32_t key, float value, BOOL *stop))block;
@@ -617,7 +619,7 @@
 - (instancetype)initWithDictionary:(GPBInt32DoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(double *)value;
+- (BOOL)valueForKey:(int32_t)key value:(nullable double *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int32_t key, double value, BOOL *stop))block;
@@ -639,32 +641,32 @@
 @property(nonatomic, readonly) GPBEnumValidationFunc validationFunc;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         rawValue:(int32_t)rawValue
                                           forKey:(int32_t)key;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                        rawValues:(const int32_t [])values
                                          forKeys:(const int32_t [])keys
                                            count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt32EnumDictionary *)dictionary;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         capacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                  rawValues:(const int32_t [])values
                                    forKeys:(const int32_t [])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt32EnumDictionary *)dictionary;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                   capacity:(NSUInteger)numItems;
 
 // These will return kGPBUnrecognizedEnumeratorValue if the value for the key
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-- (BOOL)valueForKey:(int32_t)key value:(int32_t *)value;
+- (BOOL)valueForKey:(int32_t)key value:(nullable int32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int32_t key, int32_t value, BOOL *stop))block;
@@ -672,7 +674,7 @@
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-- (BOOL)valueForKey:(int32_t)key rawValue:(int32_t *)rawValue;
+- (BOOL)valueForKey:(int32_t)key rawValue:(nullable int32_t *)rawValue;
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(int32_t key, int32_t rawValue, BOOL *stop))block;
@@ -753,7 +755,7 @@
 - (instancetype)initWithDictionary:(GPBUInt64UInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(uint32_t *)value;
+- (BOOL)valueForKey:(uint64_t)key value:(nullable uint32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint64_t key, uint32_t value, BOOL *stop))block;
@@ -788,7 +790,7 @@
 - (instancetype)initWithDictionary:(GPBUInt64Int32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(int32_t *)value;
+- (BOOL)valueForKey:(uint64_t)key value:(nullable int32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint64_t key, int32_t value, BOOL *stop))block;
@@ -823,7 +825,7 @@
 - (instancetype)initWithDictionary:(GPBUInt64UInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(uint64_t *)value;
+- (BOOL)valueForKey:(uint64_t)key value:(nullable uint64_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint64_t key, uint64_t value, BOOL *stop))block;
@@ -858,7 +860,7 @@
 - (instancetype)initWithDictionary:(GPBUInt64Int64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(int64_t *)value;
+- (BOOL)valueForKey:(uint64_t)key value:(nullable int64_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint64_t key, int64_t value, BOOL *stop))block;
@@ -893,7 +895,7 @@
 - (instancetype)initWithDictionary:(GPBUInt64BoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(BOOL *)value;
+- (BOOL)valueForKey:(uint64_t)key value:(nullable BOOL *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint64_t key, BOOL value, BOOL *stop))block;
@@ -928,7 +930,7 @@
 - (instancetype)initWithDictionary:(GPBUInt64FloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(float *)value;
+- (BOOL)valueForKey:(uint64_t)key value:(nullable float *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint64_t key, float value, BOOL *stop))block;
@@ -963,7 +965,7 @@
 - (instancetype)initWithDictionary:(GPBUInt64DoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(double *)value;
+- (BOOL)valueForKey:(uint64_t)key value:(nullable double *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint64_t key, double value, BOOL *stop))block;
@@ -985,32 +987,32 @@
 @property(nonatomic, readonly) GPBEnumValidationFunc validationFunc;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         rawValue:(int32_t)rawValue
                                           forKey:(uint64_t)key;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                        rawValues:(const int32_t [])values
                                          forKeys:(const uint64_t [])keys
                                            count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt64EnumDictionary *)dictionary;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         capacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                  rawValues:(const int32_t [])values
                                    forKeys:(const uint64_t [])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt64EnumDictionary *)dictionary;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                   capacity:(NSUInteger)numItems;
 
 // These will return kGPBUnrecognizedEnumeratorValue if the value for the key
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-- (BOOL)valueForKey:(uint64_t)key value:(int32_t *)value;
+- (BOOL)valueForKey:(uint64_t)key value:(nullable int32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(uint64_t key, int32_t value, BOOL *stop))block;
@@ -1018,7 +1020,7 @@
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-- (BOOL)valueForKey:(uint64_t)key rawValue:(int32_t *)rawValue;
+- (BOOL)valueForKey:(uint64_t)key rawValue:(nullable int32_t *)rawValue;
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(uint64_t key, int32_t rawValue, BOOL *stop))block;
@@ -1099,7 +1101,7 @@
 - (instancetype)initWithDictionary:(GPBInt64UInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(uint32_t *)value;
+- (BOOL)valueForKey:(int64_t)key value:(nullable uint32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int64_t key, uint32_t value, BOOL *stop))block;
@@ -1134,7 +1136,7 @@
 - (instancetype)initWithDictionary:(GPBInt64Int32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(int32_t *)value;
+- (BOOL)valueForKey:(int64_t)key value:(nullable int32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int64_t key, int32_t value, BOOL *stop))block;
@@ -1169,7 +1171,7 @@
 - (instancetype)initWithDictionary:(GPBInt64UInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(uint64_t *)value;
+- (BOOL)valueForKey:(int64_t)key value:(nullable uint64_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int64_t key, uint64_t value, BOOL *stop))block;
@@ -1204,7 +1206,7 @@
 - (instancetype)initWithDictionary:(GPBInt64Int64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(int64_t *)value;
+- (BOOL)valueForKey:(int64_t)key value:(nullable int64_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int64_t key, int64_t value, BOOL *stop))block;
@@ -1239,7 +1241,7 @@
 - (instancetype)initWithDictionary:(GPBInt64BoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(BOOL *)value;
+- (BOOL)valueForKey:(int64_t)key value:(nullable BOOL *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int64_t key, BOOL value, BOOL *stop))block;
@@ -1274,7 +1276,7 @@
 - (instancetype)initWithDictionary:(GPBInt64FloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(float *)value;
+- (BOOL)valueForKey:(int64_t)key value:(nullable float *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int64_t key, float value, BOOL *stop))block;
@@ -1309,7 +1311,7 @@
 - (instancetype)initWithDictionary:(GPBInt64DoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(double *)value;
+- (BOOL)valueForKey:(int64_t)key value:(nullable double *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int64_t key, double value, BOOL *stop))block;
@@ -1331,32 +1333,32 @@
 @property(nonatomic, readonly) GPBEnumValidationFunc validationFunc;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         rawValue:(int32_t)rawValue
                                           forKey:(int64_t)key;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                        rawValues:(const int32_t [])values
                                          forKeys:(const int64_t [])keys
                                            count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt64EnumDictionary *)dictionary;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         capacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                  rawValues:(const int32_t [])values
                                    forKeys:(const int64_t [])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt64EnumDictionary *)dictionary;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                   capacity:(NSUInteger)numItems;
 
 // These will return kGPBUnrecognizedEnumeratorValue if the value for the key
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-- (BOOL)valueForKey:(int64_t)key value:(int32_t *)value;
+- (BOOL)valueForKey:(int64_t)key value:(nullable int32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(int64_t key, int32_t value, BOOL *stop))block;
@@ -1364,7 +1366,7 @@
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-- (BOOL)valueForKey:(int64_t)key rawValue:(int32_t *)rawValue;
+- (BOOL)valueForKey:(int64_t)key rawValue:(nullable int32_t *)rawValue;
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(int64_t key, int32_t rawValue, BOOL *stop))block;
@@ -1445,7 +1447,7 @@
 - (instancetype)initWithDictionary:(GPBBoolUInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(uint32_t *)value;
+- (BOOL)valueForKey:(BOOL)key value:(nullable uint32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(BOOL key, uint32_t value, BOOL *stop))block;
@@ -1480,7 +1482,7 @@
 - (instancetype)initWithDictionary:(GPBBoolInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(int32_t *)value;
+- (BOOL)valueForKey:(BOOL)key value:(nullable int32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(BOOL key, int32_t value, BOOL *stop))block;
@@ -1515,7 +1517,7 @@
 - (instancetype)initWithDictionary:(GPBBoolUInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(uint64_t *)value;
+- (BOOL)valueForKey:(BOOL)key value:(nullable uint64_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(BOOL key, uint64_t value, BOOL *stop))block;
@@ -1550,7 +1552,7 @@
 - (instancetype)initWithDictionary:(GPBBoolInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(int64_t *)value;
+- (BOOL)valueForKey:(BOOL)key value:(nullable int64_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(BOOL key, int64_t value, BOOL *stop))block;
@@ -1585,7 +1587,7 @@
 - (instancetype)initWithDictionary:(GPBBoolBoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(BOOL *)value;
+- (BOOL)valueForKey:(BOOL)key value:(nullable BOOL *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(BOOL key, BOOL value, BOOL *stop))block;
@@ -1620,7 +1622,7 @@
 - (instancetype)initWithDictionary:(GPBBoolFloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(float *)value;
+- (BOOL)valueForKey:(BOOL)key value:(nullable float *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(BOOL key, float value, BOOL *stop))block;
@@ -1655,7 +1657,7 @@
 - (instancetype)initWithDictionary:(GPBBoolDoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(double *)value;
+- (BOOL)valueForKey:(BOOL)key value:(nullable double *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(BOOL key, double value, BOOL *stop))block;
@@ -1677,32 +1679,32 @@
 @property(nonatomic, readonly) GPBEnumValidationFunc validationFunc;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         rawValue:(int32_t)rawValue
                                           forKey:(BOOL)key;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                        rawValues:(const int32_t [])values
                                          forKeys:(const BOOL [])keys
                                            count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBBoolEnumDictionary *)dictionary;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         capacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                  rawValues:(const int32_t [])values
                                    forKeys:(const BOOL [])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBBoolEnumDictionary *)dictionary;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                   capacity:(NSUInteger)numItems;
 
 // These will return kGPBUnrecognizedEnumeratorValue if the value for the key
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-- (BOOL)valueForKey:(BOOL)key value:(int32_t *)value;
+- (BOOL)valueForKey:(BOOL)key value:(nullable int32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(BOOL key, int32_t value, BOOL *stop))block;
@@ -1710,7 +1712,7 @@
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-- (BOOL)valueForKey:(BOOL)key rawValue:(int32_t *)rawValue;
+- (BOOL)valueForKey:(BOOL)key rawValue:(nullable int32_t *)rawValue;
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(BOOL key, int32_t rawValue, BOOL *stop))block;
@@ -1791,7 +1793,7 @@
 - (instancetype)initWithDictionary:(GPBStringUInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(uint32_t *)value;
+- (BOOL)valueForKey:(NSString *)key value:(nullable uint32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(NSString *key, uint32_t value, BOOL *stop))block;
@@ -1826,7 +1828,7 @@
 - (instancetype)initWithDictionary:(GPBStringInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(int32_t *)value;
+- (BOOL)valueForKey:(NSString *)key value:(nullable int32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(NSString *key, int32_t value, BOOL *stop))block;
@@ -1861,7 +1863,7 @@
 - (instancetype)initWithDictionary:(GPBStringUInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(uint64_t *)value;
+- (BOOL)valueForKey:(NSString *)key value:(nullable uint64_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(NSString *key, uint64_t value, BOOL *stop))block;
@@ -1896,7 +1898,7 @@
 - (instancetype)initWithDictionary:(GPBStringInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(int64_t *)value;
+- (BOOL)valueForKey:(NSString *)key value:(nullable int64_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(NSString *key, int64_t value, BOOL *stop))block;
@@ -1931,7 +1933,7 @@
 - (instancetype)initWithDictionary:(GPBStringBoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(BOOL *)value;
+- (BOOL)valueForKey:(NSString *)key value:(nullable BOOL *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(NSString *key, BOOL value, BOOL *stop))block;
@@ -1966,7 +1968,7 @@
 - (instancetype)initWithDictionary:(GPBStringFloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(float *)value;
+- (BOOL)valueForKey:(NSString *)key value:(nullable float *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(NSString *key, float value, BOOL *stop))block;
@@ -2001,7 +2003,7 @@
 - (instancetype)initWithDictionary:(GPBStringDoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(double *)value;
+- (BOOL)valueForKey:(NSString *)key value:(nullable double *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(NSString *key, double value, BOOL *stop))block;
@@ -2023,32 +2025,32 @@
 @property(nonatomic, readonly) GPBEnumValidationFunc validationFunc;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         rawValue:(int32_t)rawValue
                                           forKey:(NSString *)key;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                        rawValues:(const int32_t [])values
                                          forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                            count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBStringEnumDictionary *)dictionary;
-+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         capacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                  rawValues:(const int32_t [])values
                                    forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBStringEnumDictionary *)dictionary;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                   capacity:(NSUInteger)numItems;
 
 // These will return kGPBUnrecognizedEnumeratorValue if the value for the key
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-- (BOOL)valueForKey:(NSString *)key value:(int32_t *)value;
+- (BOOL)valueForKey:(NSString *)key value:(nullable int32_t *)value;
 
 - (void)enumerateKeysAndValuesUsingBlock:
     (void (^)(NSString *key, int32_t value, BOOL *stop))block;
@@ -2056,7 +2058,7 @@
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-- (BOOL)valueForKey:(NSString *)key rawValue:(int32_t *)rawValue;
+- (BOOL)valueForKey:(NSString *)key rawValue:(nullable int32_t *)rawValue;
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(NSString *key, int32_t rawValue, BOOL *stop))block;
@@ -2083,6 +2085,8 @@
 
 //%PDDM-EXPAND-END DECLARE_DICTIONARIES()
 
+NS_ASSUME_NONNULL_END
+
 //%PDDM-DEFINE DECLARE_DICTIONARIES()
 //%DICTIONARY_INTERFACES_FOR_POD_KEY(UInt32, uint32_t)
 //%DICTIONARY_INTERFACES_FOR_POD_KEY(Int32, int32_t)
@@ -2107,7 +2111,7 @@
 //%PDDM-DEFINE DICTIONARY_POD_KEY_TO_OBJECT_INTERFACE(KEY_NAME, KEY_TYPE, VALUE_NAME, VALUE_TYPE)
 //%DICTIONARY_COMMON_INTERFACE(KEY_NAME, KEY_TYPE, , POD, VALUE_NAME, VALUE_TYPE, OBJECT)
 //%PDDM-DEFINE VALUE_FOR_KEY_POD(KEY_TYPE, VALUE_TYPE)
-//%- (BOOL)valueForKey:(KEY_TYPE)key value:(VALUE_TYPE *)value;
+//%- (BOOL)valueForKey:(KEY_TYPE)key value:(nullable VALUE_TYPE *)value;
 //%PDDM-DEFINE VALUE_FOR_KEY_OBJECT(KEY_TYPE, VALUE_TYPE)
 //%- (VALUE_TYPE)valueForKey:(KEY_TYPE)key;
 //%PDDM-DEFINE VALUE_FOR_KEY_Enum(KEY_TYPE, VALUE_TYPE)
@@ -2160,25 +2164,25 @@
 //%@property(nonatomic, readonly) GPBEnumValidationFunc validationFunc;
 //%
 //%+ (instancetype)dictionary;
-//%+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func;
-//%+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
+//%+ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+//%+ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                        rawValue:(VALUE_TYPE)rawValue
 //%                                          forKey:(KEY_TYPE##KisP$S##KisP)key;
-//%+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
+//%+ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                       rawValues:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])values
 //%                                         forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[])keys
 //%                                           count:(NSUInteger)count;
 //%+ (instancetype)dictionaryWithDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)dictionary;
-//%+ (instancetype)dictionaryWithValidationFunction:(GPBEnumValidationFunc)func
+//%+ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                        capacity:(NSUInteger)numItems;
 //%
-//%- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func;
-//%- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+//%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+//%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                 rawValues:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])values
 //%                                   forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[])keys
 //%                                     count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 //%- (instancetype)initWithDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)dictionary;
-//%- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+//%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                  capacity:(NSUInteger)numItems;
 //%
 //%// These will return kGPBUnrecognizedEnumeratorValue if the value for the key
@@ -2190,7 +2194,7 @@
 //%// These methods bypass the validationFunc to provide access to values that were not
 //%// known at the time the binary was compiled.
 //%
-//%- (BOOL)valueForKey:(KEY_TYPE##KisP$S##KisP)key rawValue:(VALUE_TYPE *)rawValue;
+//%- (BOOL)valueForKey:(KEY_TYPE##KisP$S##KisP)key rawValue:(nullable VALUE_TYPE *)rawValue;
 //%
 //%- (void)enumerateKeysAndRawValuesUsingBlock:
 //%    (void (^)(KEY_TYPE KisP##key, VALUE_TYPE rawValue, BOOL *stop))block;
