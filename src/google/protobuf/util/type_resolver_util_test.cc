@@ -81,7 +81,7 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
   }
 
   bool HasField(const Type& type, Field::Cardinality cardinality,
-                Field::Field::Kind kind, const string& name, int number) {
+                Field::Kind kind, const string& name, int number) {
     const Field* field = FindField(type, name);
     if (field == NULL) {
       return false;

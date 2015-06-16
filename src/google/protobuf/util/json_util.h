@@ -44,7 +44,7 @@ class ZeroCopyOutputStream;
 }  // namespace io
 namespace util {
 
-struct JsonOptions {
+struct LIBPROTOBUF_EXPORT JsonOptions {
   // Whether to add spaces, line breaks and indentation to make the JSON output
   // easy to read.
   bool add_whitespace;
@@ -65,11 +65,12 @@ struct JsonOptions {
 //   2. input is not valid protobuf wire format, or conflicts with the type
 //      information returned by TypeResolver.
 // Note that unknown fields will be discarded silently.
-util::Status BinaryToJsonStream(TypeResolver* resolver,
-                                  const string& type_url,
-                                  io::ZeroCopyInputStream* binary_input,
-                                  io::ZeroCopyOutputStream* json_output,
-                                  const JsonOptions& options);
+LIBPROTOBUF_EXPORT util::Status BinaryToJsonStream(
+    TypeResolver* resolver,
+    const string& type_url,
+    io::ZeroCopyInputStream* binary_input,
+    io::ZeroCopyOutputStream* json_output,
+    const JsonOptions& options);
 
 inline util::Status BinaryToJsonStream(
     TypeResolver* resolver, const string& type_url,
@@ -79,11 +80,12 @@ inline util::Status BinaryToJsonStream(
                             JsonOptions());
 }
 
-util::Status BinaryToJsonString(TypeResolver* resolver,
-                                  const string& type_url,
-                                  const string& binary_input,
-                                  string* json_output,
-                                  const JsonOptions& options);
+LIBPROTOBUF_EXPORT util::Status BinaryToJsonString(
+    TypeResolver* resolver,
+    const string& type_url,
+    const string& binary_input,
+    string* json_output,
+    const JsonOptions& options);
 
 inline util::Status BinaryToJsonString(TypeResolver* resolver,
                                          const string& type_url,
@@ -99,15 +101,17 @@ inline util::Status BinaryToJsonString(TypeResolver* resolver,
 //   2. input is not valid JSON format, or conflicts with the type
 //      information returned by TypeResolver.
 //   3. input has unknown fields.
-util::Status JsonToBinaryStream(TypeResolver* resolver,
-                                  const string& type_url,
-                                  io::ZeroCopyInputStream* json_input,
-                                  io::ZeroCopyOutputStream* binary_output);
+LIBPROTOBUF_EXPORT util::Status JsonToBinaryStream(
+    TypeResolver* resolver,
+    const string& type_url,
+    io::ZeroCopyInputStream* json_input,
+    io::ZeroCopyOutputStream* binary_output);
 
-util::Status JsonToBinaryString(TypeResolver* resolver,
-                                  const string& type_url,
-                                  const string& json_input,
-                                  string* binary_output);
+LIBPROTOBUF_EXPORT util::Status JsonToBinaryString(
+    TypeResolver* resolver,
+    const string& type_url,
+    const string& json_input,
+    string* binary_output);
 
 namespace internal {
 // Internal helper class. Put in the header so we can write unit-tests for it.

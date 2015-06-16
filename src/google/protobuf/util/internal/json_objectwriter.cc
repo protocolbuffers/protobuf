@@ -80,22 +80,22 @@ JsonObjectWriter* JsonObjectWriter::EndList() {
 }
 
 JsonObjectWriter* JsonObjectWriter::RenderBool(StringPiece name,
-                                               const bool value) {
+                                               bool value) {
   return RenderSimple(name, value ? "true" : "false");
 }
 
 JsonObjectWriter* JsonObjectWriter::RenderInt32(StringPiece name,
-                                                const int32 value) {
+                                                int32 value) {
   return RenderSimple(name, SimpleItoa(value));
 }
 
 JsonObjectWriter* JsonObjectWriter::RenderUint32(StringPiece name,
-                                                 const uint32 value) {
+                                                 uint32 value) {
   return RenderSimple(name, SimpleItoa(value));
 }
 
 JsonObjectWriter* JsonObjectWriter::RenderInt64(StringPiece name,
-                                                const int64 value) {
+                                                int64 value) {
   WritePrefix(name);
   WriteChar('"');
   stream_->WriteString(SimpleItoa(value));
@@ -104,7 +104,7 @@ JsonObjectWriter* JsonObjectWriter::RenderInt64(StringPiece name,
 }
 
 JsonObjectWriter* JsonObjectWriter::RenderUint64(StringPiece name,
-                                                 const uint64 value) {
+                                                 uint64 value) {
   WritePrefix(name);
   WriteChar('"');
   stream_->WriteString(SimpleItoa(value));
@@ -113,7 +113,7 @@ JsonObjectWriter* JsonObjectWriter::RenderUint64(StringPiece name,
 }
 
 JsonObjectWriter* JsonObjectWriter::RenderDouble(StringPiece name,
-                                                 const double value) {
+                                                 double value) {
   if (isfinite(value)) return RenderSimple(name, SimpleDtoa(value));
 
   // Render quoted with NaN/Infinity-aware DoubleAsString.
@@ -121,7 +121,7 @@ JsonObjectWriter* JsonObjectWriter::RenderDouble(StringPiece name,
 }
 
 JsonObjectWriter* JsonObjectWriter::RenderFloat(StringPiece name,
-                                                const float value) {
+                                                float value) {
   if (isfinite(value)) return RenderSimple(name, SimpleFtoa(value));
 
   // Render quoted with NaN/Infinity-aware FloatAsString.

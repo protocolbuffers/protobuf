@@ -74,13 +74,13 @@ class MockObjectWriter : public ObjectWriter {
   MOCK_METHOD0(EndObject, ObjectWriter*());
   MOCK_METHOD1(StartList, ObjectWriter*(StringPiece));
   MOCK_METHOD0(EndList, ObjectWriter*());
-  MOCK_METHOD2(RenderBool, ObjectWriter*(StringPiece, const bool));
-  MOCK_METHOD2(RenderInt32, ObjectWriter*(StringPiece, const int32));
-  MOCK_METHOD2(RenderUint32, ObjectWriter*(StringPiece, const uint32));
-  MOCK_METHOD2(RenderInt64, ObjectWriter*(StringPiece, const int64));
-  MOCK_METHOD2(RenderUint64, ObjectWriter*(StringPiece, const uint64));
-  MOCK_METHOD2(RenderDouble, ObjectWriter*(StringPiece, const double));
-  MOCK_METHOD2(RenderFloat, ObjectWriter*(StringPiece, const float));
+  MOCK_METHOD2(RenderBool, ObjectWriter*(StringPiece, bool));
+  MOCK_METHOD2(RenderInt32, ObjectWriter*(StringPiece, int32));
+  MOCK_METHOD2(RenderUint32, ObjectWriter*(StringPiece, uint32));
+  MOCK_METHOD2(RenderInt64, ObjectWriter*(StringPiece, int64));
+  MOCK_METHOD2(RenderUint64, ObjectWriter*(StringPiece, uint64));
+  MOCK_METHOD2(RenderDouble, ObjectWriter*(StringPiece, double));
+  MOCK_METHOD2(RenderFloat, ObjectWriter*(StringPiece, float));
   MOCK_METHOD2(RenderString, ObjectWriter*(StringPiece, StringPiece));
   MOCK_METHOD2(RenderBytes, ObjectWriter*(StringPiece, StringPiece));
   MOCK_METHOD1(RenderNull, ObjectWriter*(StringPiece));
@@ -122,7 +122,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderBool(StringPiece name, const bool value) {
+  virtual ObjectWriter* RenderBool(StringPiece name, bool value) {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderBool(IsEmpty(), TypedEq<bool>(value)))
          : EXPECT_CALL(*mock_, RenderBool(StrEq(name.ToString()),
@@ -132,7 +132,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderInt32(StringPiece name, const int32 value) {
+  virtual ObjectWriter* RenderInt32(StringPiece name, int32 value) {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderInt32(IsEmpty(), TypedEq<int32>(value)))
          : EXPECT_CALL(*mock_, RenderInt32(StrEq(name.ToString()),
@@ -142,7 +142,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderUint32(StringPiece name, const uint32 value) {
+  virtual ObjectWriter* RenderUint32(StringPiece name, uint32 value) {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderUint32(IsEmpty(), TypedEq<uint32>(value)))
          : EXPECT_CALL(*mock_, RenderUint32(StrEq(name.ToString()),
@@ -152,7 +152,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderInt64(StringPiece name, const int64 value) {
+  virtual ObjectWriter* RenderInt64(StringPiece name, int64 value) {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderInt64(IsEmpty(), TypedEq<int64>(value)))
          : EXPECT_CALL(*mock_, RenderInt64(StrEq(name.ToString()),
@@ -162,7 +162,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderUint64(StringPiece name, const uint64 value) {
+  virtual ObjectWriter* RenderUint64(StringPiece name, uint64 value) {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderUint64(IsEmpty(), TypedEq<uint64>(value)))
          : EXPECT_CALL(*mock_, RenderUint64(StrEq(name.ToString()),
@@ -172,7 +172,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderDouble(StringPiece name, const double value) {
+  virtual ObjectWriter* RenderDouble(StringPiece name, double value) {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderDouble(IsEmpty(),
                                             NanSensitiveDoubleEq(value)))
@@ -183,7 +183,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderFloat(StringPiece name, const float value) {
+  virtual ObjectWriter* RenderFloat(StringPiece name, float value) {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderFloat(IsEmpty(),
                                            NanSensitiveFloatEq(value)))

@@ -31,6 +31,7 @@
 #include <google/protobuf/util/internal/json_objectwriter.h>
 
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/util/internal/utility.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -152,8 +153,8 @@ TEST_F(JsonObjectWriterTest, RenderPrimitives) {
       ->EndObject();
   EXPECT_EQ(
       "{\"bool\":true,"
-      "\"double\":1.7976931348623157e+308,"
-      "\"float\":3.4028235e+38,"
+      "\"double\":" + ValueAsString<double>(1.7976931348623157e+308) + ","
+      "\"float\":" + ValueAsString<float>(3.4028235e+38) + ","
       "\"int\":-2147483648,"
       "\"long\":\"-9223372036854775808\","
       "\"bytes\":\"YWJyYWNhZGFicmE=\","

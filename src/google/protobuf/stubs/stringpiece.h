@@ -174,7 +174,7 @@ typedef string::difference_type stringpiece_ssize_type;
 #define STRINGPIECE_CHECK_SIZE 0
 #endif
 
-class StringPiece {
+class LIBPROTOBUF_EXPORT StringPiece {
  private:
   const char* ptr_;
   stringpiece_ssize_type length_;
@@ -183,6 +183,9 @@ class StringPiece {
   // sizeof(stringpiece_ssize_type) may be smaller than sizeof(size_t).
   static stringpiece_ssize_type CheckedSsizeTFromSizeT(size_t size) {
 #if STRINGPIECE_CHECK_SIZE > 0
+#ifdef max
+#undef max
+#endif
     if (size > static_cast<size_t>(
         std::numeric_limits<stringpiece_ssize_type>::max())) {
       // Some people grep for this message in logs

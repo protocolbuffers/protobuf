@@ -34,6 +34,7 @@
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/stringpiece.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <stdio.h>
 #include <errno.h>
 #include <vector>
@@ -155,6 +156,16 @@ LogMessage& LogMessage::operator<<(const StringPiece& value) {
   return *this;
 }
 
+LogMessage& LogMessage::operator<<(long long value) {
+  message_ += SimpleItoa(value);
+  return *this;
+}
+
+LogMessage& LogMessage::operator<<(unsigned long long value) {
+  message_ += SimpleItoa(value);
+  return *this;
+}
+
 LogMessage& LogMessage::operator<<(
     const ::google::protobuf::util::Status& status) {
   message_ += status.ToString();
@@ -180,7 +191,7 @@ LogMessage& LogMessage::operator<<(
 
 DECLARE_STREAM_OPERATOR(char         , "%c" )
 DECLARE_STREAM_OPERATOR(int          , "%d" )
-DECLARE_STREAM_OPERATOR(uint         , "%u" )
+DECLARE_STREAM_OPERATOR(unsigned int , "%u" )
 DECLARE_STREAM_OPERATOR(long         , "%ld")
 DECLARE_STREAM_OPERATOR(unsigned long, "%lu")
 DECLARE_STREAM_OPERATOR(double       , "%g" )

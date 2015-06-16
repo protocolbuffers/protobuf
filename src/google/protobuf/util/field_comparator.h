@@ -47,7 +47,7 @@ class FieldDescriptor;
 
 namespace util {
 
-struct FieldContext;
+class FieldContext;
 
 // Base class specifying the interface for comparing protocol buffer fields.
 // Regular users should consider using or subclassing DefaultFieldComparator

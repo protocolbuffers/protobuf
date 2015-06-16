@@ -170,6 +170,8 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/stringpiece.h                          \
   google/protobuf/stubs/stringprintf.cc                        \
   google/protobuf/stubs/stringprintf.h                         \
+  google/protobuf/stubs/strutil.cc                             \
+  google/protobuf/stubs/strutil.h                              \
   google/protobuf/stubs/time.cc                                \
   google/protobuf/stubs/time.h                                 \
   google/protobuf/arena.cc                                     \
@@ -210,8 +212,6 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/source_context.pb.cc                         \
   google/protobuf/struct.pb.cc                                 \
   google/protobuf/stubs/structurally_valid.cc                  \
-  google/protobuf/stubs/strutil.cc                             \
-  google/protobuf/stubs/strutil.h                              \
   google/protobuf/stubs/substitute.cc                          \
   google/protobuf/stubs/substitute.h                           \
   google/protobuf/text_format.cc                               \
@@ -235,6 +235,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/util/internal/default_value_objectwriter.h   \
   google/protobuf/util/internal/error_listener.cc              \
   google/protobuf/util/internal/error_listener.h               \
+  google/protobuf/util/internal/expecting_objectwriter.h       \
   google/protobuf/util/internal/field_mask_utility.cc          \
   google/protobuf/util/internal/field_mask_utility.h           \
   google/protobuf/util/internal/json_escaping.cc               \
@@ -244,16 +245,22 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/util/internal/json_stream_parser.cc          \
   google/protobuf/util/internal/json_stream_parser.h           \
   google/protobuf/util/internal/location_tracker.h             \
+  google/protobuf/util/internal/mock_error_listener.h          \
+  google/protobuf/util/internal/object_location_tracker.h      \
   google/protobuf/util/internal/object_source.h                \
   google/protobuf/util/internal/object_writer.cc               \
-  google/protobuf/util/internal/object_writer.h                \
   google/protobuf/util/internal/object_writer.h                \
   google/protobuf/util/internal/protostream_objectsource.cc    \
   google/protobuf/util/internal/protostream_objectsource.h     \
   google/protobuf/util/internal/protostream_objectwriter.cc    \
   google/protobuf/util/internal/protostream_objectwriter.h     \
+  google/protobuf/util/internal/snake2camel_objectwriter.h     \
+  google/protobuf/util/internal/structured_objectwriter.h      \
+  google/protobuf/util/internal/testdata                       \
   google/protobuf/util/internal/type_info.cc                   \
   google/protobuf/util/internal/type_info.h                    \
+  google/protobuf/util/internal/type_info_test_helper.cc       \
+  google/protobuf/util/internal/type_info_test_helper.h        \
   google/protobuf/util/internal/utility.cc                     \
   google/protobuf/util/internal/utility.h                      \
   google/protobuf/util/json_util.cc                            \
@@ -619,11 +626,11 @@ COMMON_TEST_SOURCES =                                          \
 check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
                  protobuf-lite-test test_plugin $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
-                      $(top_builddir)/gmock/gtest/lib/libgtest.la \
-                      $(top_builddir)/gmock/lib/libgmock.la       \
-                      $(top_builddir)/gmock/lib/libgmock_main.la
-protobuf_test_CPPFLAGS = -I$(top_builddir)/gmock/gtest/include \
-                         -I$(top_builddir)/gmock/include
+                      ../gmock/gtest/lib/libgtest.la              \
+                      ../gmock/lib/libgmock.la                    \
+                      ../gmock/lib/libgmock_main.la
+protobuf_test_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include \
+                         -I$(srcdir)/../gmock/include
 # Disable optimization for tests unless the user explicitly asked for it,
 # since test_util.cc takes forever to compile with optimization (with GCC).
 # See configure.ac for more info.
@@ -699,11 +706,11 @@ nodist_protobuf_test_SOURCES = $(protoc_outputs)
 # Run cpp_unittest again with PROTOBUF_TEST_NO_DESCRIPTORS defined.
 protobuf_lazy_descriptor_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la \
                       libprotoc.la                                   \
-                      $(top_builddir)/gmock/gtest/lib/libgtest.la    \
-                      $(top_builddir)/gmock/lib/libgmock.la          \
-                      $(top_builddir)/gmock/lib/libgmock_main.la
-protobuf_lazy_descriptor_test_CPPFLAGS = -I$(top_builddir)/gmock/include       \
-                                         -I$(top_builddir)/gmock/gtest/include \
+                      ../gmock/gtest/lib/libgtest.la                 \
+                      ../gmock/lib/libgmock.la                       \
+                      ../gmock/lib/libgmock_main.la
+protobuf_lazy_descriptor_test_CPPFLAGS = -I$(srcdir)/../gmock/include       \
+                                         -I$(srcdir)/../gmock/gtest/include \
                                          -DPROTOBUF_TEST_NO_DESCRIPTORS
 protobuf_lazy_descriptor_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lazy_descriptor_test_SOURCES =                        \
@@ -728,8 +735,8 @@ nodist_protobuf_lite_test_SOURCES = $(protoc_lite_outputs)
 
 # Test plugin binary.
 test_plugin_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
-                    $(top_builddir)/gmock/gtest/lib/libgtest.la
-test_plugin_CPPFLAGS = -I$(top_builddir)/gmock/gtest/include
+                    ../gmock/gtest/lib/libgtest.la
+test_plugin_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include
 test_plugin_SOURCES =                                          \
   google/protobuf/compiler/mock_code_generator.cc              \
   google/protobuf/testing/file.cc                              \

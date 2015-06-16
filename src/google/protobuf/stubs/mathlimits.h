@@ -53,6 +53,8 @@
 
 #include <cfloat>
 
+#include <google/protobuf/stubs/common.h>
+
 // ========================================================================= //
 
 // Useful integer and floating point limits and type traits.
@@ -162,7 +164,7 @@ template<typename T> struct MathLimits {
 
 #define DECL_SIGNED_INT_LIMITS(IntType, UnsignedIntType) \
 template<> \
-struct MathLimits<IntType> { \
+struct LIBPROTOBUF_EXPORT MathLimits<IntType> { \
   typedef IntType Type; \
   typedef UnsignedIntType UnsignedType; \
   static const bool kIsSigned = true; \
@@ -182,7 +184,7 @@ struct MathLimits<IntType> { \
 
 #define DECL_UNSIGNED_INT_LIMITS(IntType) \
 template<> \
-struct MathLimits<IntType> { \
+struct LIBPROTOBUF_EXPORT MathLimits<IntType> { \
   typedef IntType Type; \
   typedef IntType UnsignedType; \
   static const bool kIsSigned = false; \
@@ -241,7 +243,7 @@ DECL_UNSIGNED_INT_LIMITS(unsigned long long int)
 // the global objects construction time.
 #define DECL_FP_LIMITS(FP_Type, PREFIX) \
 template<> \
-struct MathLimits<FP_Type> { \
+struct LIBPROTOBUF_EXPORT MathLimits<FP_Type> { \
   typedef FP_Type Type; \
   typedef FP_Type UnsignedType; \
   static const bool kIsSigned = true; \

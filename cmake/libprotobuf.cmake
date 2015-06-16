@@ -26,7 +26,6 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/struct.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/mathlimits.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/structurally_valid.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/strutil.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/substitute.cc
   ${protobuf_source_dir}/src/google/protobuf/text_format.cc
   ${protobuf_source_dir}/src/google/protobuf/timestamp.pb.cc
@@ -44,6 +43,7 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectsource.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectwriter.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/type_info.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/internal/type_info_test_helper.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/utility.cc
   ${protobuf_source_dir}/src/google/protobuf/util/json_util.cc
   ${protobuf_source_dir}/src/google/protobuf/util/message_differencer.cc

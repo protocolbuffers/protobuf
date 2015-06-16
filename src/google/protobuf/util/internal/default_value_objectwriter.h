@@ -57,7 +57,7 @@ namespace converter {
 // ObjectWriter when EndObject() is called on the root object. It also writes
 // out all non-repeated primitive fields that haven't been explicitly rendered
 // with their default values (0 for numbers, "" for strings, etc).
-class DefaultValueObjectWriter : public ObjectWriter {
+class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
  public:
   DefaultValueObjectWriter(TypeResolver* type_resolver,
                            const google::protobuf::Type& type,

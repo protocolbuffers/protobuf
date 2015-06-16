@@ -83,31 +83,31 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter
   virtual ProtoStreamObjectWriter* StartList(StringPiece name);
   virtual ProtoStreamObjectWriter* EndList();
   virtual ProtoStreamObjectWriter* RenderBool(StringPiece name,
-                                              const bool value) {
+                                              bool value) {
     return RenderDataPiece(name, DataPiece(value));
   }
   virtual ProtoStreamObjectWriter* RenderInt32(StringPiece name,
-                                               const int32 value) {
+                                               int32 value) {
     return RenderDataPiece(name, DataPiece(value));
   }
   virtual ProtoStreamObjectWriter* RenderUint32(StringPiece name,
-                                                const uint32 value) {
+                                                uint32 value) {
     return RenderDataPiece(name, DataPiece(value));
   }
   virtual ProtoStreamObjectWriter* RenderInt64(StringPiece name,
-                                               const int64 value) {
+                                               int64 value) {
     return RenderDataPiece(name, DataPiece(value));
   }
   virtual ProtoStreamObjectWriter* RenderUint64(StringPiece name,
-                                                const uint64 value) {
+                                                uint64 value) {
     return RenderDataPiece(name, DataPiece(value));
   }
   virtual ProtoStreamObjectWriter* RenderDouble(StringPiece name,
-                                                const double value) {
+                                                double value) {
     return RenderDataPiece(name, DataPiece(value));
   }
   virtual ProtoStreamObjectWriter* RenderFloat(StringPiece name,
-                                               const float value) {
+                                               float value) {
     return RenderDataPiece(name, DataPiece(value));
   }
   virtual ProtoStreamObjectWriter* RenderString(StringPiece name,

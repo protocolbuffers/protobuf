@@ -42,7 +42,7 @@ class TypeResolver;
 
 // Creates a TypeResolver that serves type information in the given descriptor
 // pool. Caller takes ownership of the returned TypeResolver.
-TypeResolver* NewTypeResolverForDescriptorPool(
+LIBPROTOBUF_EXPORT TypeResolver* NewTypeResolverForDescriptorPool(
     const string& url_prefix, const DescriptorPool* pool);
 
 }  // namespace util

@@ -50,8 +50,8 @@
 
 #undef PROTOBUF_LITTLE_ENDIAN
 #ifdef _MSC_VER
-  #if defined(_M_IX86) && \
-      !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+  // Assuming windows is always little-endian.
+  #if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
     #define PROTOBUF_LITTLE_ENDIAN 1
   #endif
   #if _MSC_VER >= 1300
@@ -703,9 +703,11 @@ class LIBPROTOBUF_EXPORT LogMessage {
   LogMessage& operator<<(const char* value);
   LogMessage& operator<<(char value);
   LogMessage& operator<<(int value);
-  LogMessage& operator<<(uint value);
+  LogMessage& operator<<(unsigned int value);
   LogMessage& operator<<(long value);
   LogMessage& operator<<(unsigned long value);
+  LogMessage& operator<<(long long value);
+  LogMessage& operator<<(unsigned long long value);
   LogMessage& operator<<(double value);
   LogMessage& operator<<(void* value);
   LogMessage& operator<<(const StringPiece& value);

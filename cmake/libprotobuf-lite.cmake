@@ -17,6 +17,7 @@ set(libprotobuf_lite_files
   ${protobuf_source_dir}/src/google/protobuf/stubs/statusor.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/stringpiece.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/stringprintf.cc
+  ${protobuf_source_dir}/src/google/protobuf/stubs/strutil.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/time.cc
   ${protobuf_source_dir}/src/google/protobuf/wire_format_lite.cc
 )

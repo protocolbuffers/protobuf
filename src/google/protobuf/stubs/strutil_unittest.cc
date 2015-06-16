@@ -38,6 +38,10 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
+#ifdef _WIN32
+#define snprintf _snprintf
+#endif
+
 namespace google {
 namespace protobuf {
 namespace {
@@ -461,7 +465,7 @@ TEST(Base64, EscapeAndUnescape) {
               encode_length);
 
     //    Is it the expected encoded value?
-    EXPECT_STREQ(encode_buffer, base64_tests[i].cyphertext);
+    ASSERT_STREQ(encode_buffer, base64_tests[i].cyphertext);
 
     // If we encode it into a buffer of exactly the right length...
     memset(encode_buffer, 0, sizeof(encode_buffer));
@@ -774,7 +778,6 @@ TEST(Base64, EscapeAndUnescape) {
   // Now try the long strings, this tests the streaming
   for (int i = 0; i < sizeof(base64_strings) / sizeof(base64_strings[0]);
        ++i) {
-
     const unsigned char* unsigned_plaintext =
       reinterpret_cast<const unsigned char*>(base64_strings[i].plaintext);
     int plain_length = strlen(base64_strings[i].plaintext);

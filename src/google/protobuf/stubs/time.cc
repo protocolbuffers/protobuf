@@ -1,5 +1,7 @@
 #include <google/protobuf/stubs/time.h>
 
+#include <ctime>
+
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
 

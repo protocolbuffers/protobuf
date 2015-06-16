@@ -337,14 +337,19 @@ TEST_F(JsonStreamParserTest, ObjectValues) {
   }
 }
 
+#ifndef _MSC_VER
 // - unicode handling in strings
 TEST_F(JsonStreamParserTest, UnicodeEscaping) {
   StringPiece str = "[\"\\u0639\\u0631\\u0628\\u0649\"]";
   for (int i = 0; i <= str.length(); ++i) {
+    // TODO(xiaofeng): Figure out what default encoding to use for JSON strings.
+    // In protobuf we use UTF-8 for strings, but for JSON we probably should allow
+    // different encodings?
     ow_.StartList("")->RenderString("", "\u0639\u0631\u0628\u0649")->EndList();
     DoTest(str, i);
   }
 }
+#endif
 
 // - ascii escaping (\b, \f, \n, \r, \t, \v)
 TEST_F(JsonStreamParserTest, AsciiEscaping) {

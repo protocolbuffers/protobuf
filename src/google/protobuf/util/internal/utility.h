@@ -66,25 +66,25 @@ namespace converter {
 // Finds the tech option identified by option_name. Parses the boolean value and
 // returns it.
 // When the option with the given name is not found, default_value is returned.
-bool GetBoolOptionOrDefault(
+LIBPROTOBUF_EXPORT bool GetBoolOptionOrDefault(
     const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, bool default_value);
 
 // Returns int64 option value. If the option isn't found, returns the
 // default_value.
-int64 GetInt64OptionOrDefault(
+LIBPROTOBUF_EXPORT int64 GetInt64OptionOrDefault(
     const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, int64 default_value);
 
 // Returns double option value. If the option isn't found, returns the
 // default_value.
-double GetDoubleOptionOrDefault(
+LIBPROTOBUF_EXPORT double GetDoubleOptionOrDefault(
     const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, double default_value);
 
 // Returns string option value. If the option isn't found, returns the
 // default_value.
-string GetStringOptionOrDefault(
+LIBPROTOBUF_EXPORT string GetStringOptionOrDefault(
     const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, const string& default_value);
 
@@ -92,20 +92,20 @@ string GetStringOptionOrDefault(
 // TODO(skarvaje): Make these utilities dealing with Any types more generic,
 // add more error checking and move to a more public/sharable location so others
 // can use.
-bool GetBoolFromAny(const google::protobuf::Any& any);
+LIBPROTOBUF_EXPORT bool GetBoolFromAny(const google::protobuf::Any& any);
 
 // Returns int64 value contained in Any type.
-int64 GetInt64FromAny(const google::protobuf::Any& any);
+LIBPROTOBUF_EXPORT int64 GetInt64FromAny(const google::protobuf::Any& any);
 
 // Returns double value contained in Any type.
-double GetDoubleFromAny(const google::protobuf::Any& any);
+LIBPROTOBUF_EXPORT double GetDoubleFromAny(const google::protobuf::Any& any);
 
 // Returns string value contained in Any type.
-string GetStringFromAny(const google::protobuf::Any& any);
+LIBPROTOBUF_EXPORT string GetStringFromAny(const google::protobuf::Any& any);
 
 // Returns the type string without the url prefix. e.g.: If the passed type is
 // 'type.googleapis.com/tech.type.Bool', the returned value is 'tech.type.Bool'.
-const StringPiece GetTypeWithoutUrl(StringPiece type_url);
+LIBPROTOBUF_EXPORT const StringPiece GetTypeWithoutUrl(StringPiece type_url);
 
 // Returns the simple_type with the base type url (kTypeServiceBaseUrl)
 // prefixed.
@@ -113,52 +113,52 @@ const StringPiece GetTypeWithoutUrl(StringPiece type_url);
 // E.g:
 // GetFullTypeWithUrl("google.protobuf.Timestamp") returns the string
 // "type.googleapis.com/google.protobuf.Timestamp".
-const string GetFullTypeWithUrl(StringPiece simple_type);
+LIBPROTOBUF_EXPORT const string GetFullTypeWithUrl(StringPiece simple_type);
 
 // Finds and returns option identified by name and option_name within the
 // provided map. Returns NULL if none found.
-const google::protobuf::Option* FindOptionOrNull(
+LIBPROTOBUF_EXPORT const google::protobuf::Option* FindOptionOrNull(
     const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name);
 
 // Finds and returns the field identified by field_name in the passed tech Type
 // object. Returns NULL if none found.
-const google::protobuf::Field* FindFieldInTypeOrNull(
+LIBPROTOBUF_EXPORT const google::protobuf::Field* FindFieldInTypeOrNull(
     const google::protobuf::Type* type, StringPiece field_name);
 
 // Finds and returns the EnumValue identified by enum_name in the passed tech
 // Enum object. Returns NULL if none found.
-const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
+LIBPROTOBUF_EXPORT const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
     const google::protobuf::Enum* enum_type, StringPiece enum_name);
 
 // Finds and returns the EnumValue identified by value in the passed tech
 // Enum object. Returns NULL if none found.
-const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
+LIBPROTOBUF_EXPORT const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
     const google::protobuf::Enum* enum_type, int32 value);
 
 // Converts input to camel-case and returns it.
 // Tests are in wrappers/translator/snake2camel_objectwriter_test.cc
 // TODO(skarvaje): Isolate tests for this function and put them in
 // utility_test.cc
-string ToCamelCase(const StringPiece input);
+LIBPROTOBUF_EXPORT string ToCamelCase(const StringPiece input);
 
 // Converts input to snake_case and returns it.
-string ToSnakeCase(StringPiece input);
+LIBPROTOBUF_EXPORT string ToSnakeCase(StringPiece input);
 
 // Returns true if type_name represents a well-known type.
-bool IsWellKnownType(const string& type_name);
+LIBPROTOBUF_EXPORT bool IsWellKnownType(const string& type_name);
 
 // Returns true if 'bool_string' represents a valid boolean value. Only "true",
 // "false", "0" and "1" are allowed.
-bool IsValidBoolString(const string& bool_string);
+LIBPROTOBUF_EXPORT bool IsValidBoolString(const string& bool_string);
 
 // Returns true if "field" is a protobuf map field based on its type.
 bool IsMap(const google::protobuf::Field& field,
            const google::protobuf::Type& type);
 
 // Infinity/NaN-aware conversion to string.
-string DoubleAsString(double value);
-string FloatAsString(float value);
+LIBPROTOBUF_EXPORT string DoubleAsString(double value);
+LIBPROTOBUF_EXPORT string FloatAsString(float value);
 
 // Convert from int32, int64, uint32, uint64, double or float to string.
 template <typename T>
@@ -178,7 +178,7 @@ inline string ValueAsString(double value) {
 
 // Converts a string to float. Unlike safe_strtof, conversion will fail if the
 // value fits into double but not float (e.g., DBL_MAX).
-bool SafeStrToFloat(StringPiece str, float* value);
+LIBPROTOBUF_EXPORT bool SafeStrToFloat(StringPiece str, float* value);
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
