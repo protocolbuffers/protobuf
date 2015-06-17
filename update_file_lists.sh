@@ -61,9 +61,9 @@ sort_files() {
   done | LC_ALL=C sort | uniq
 }
 
-MAKEFILE=../src/Makefile.am
-CMAKE_DIR=.
-EXTRACT_INCLUDES_BAT=extract_includes.bat.in
+MAKEFILE=src/Makefile.am
+CMAKE_DIR=cmake
+EXTRACT_INCLUDES_BAT=cmake/extract_includes.bat.in
 
 [ -f "$MAKEFILE" ] || {
   echo "Cannot find: $MAKEFILE"
@@ -117,5 +117,3 @@ for HEADER in $PUBLIC_HEADERS; do
   WINPATH=$(echo $HEADER | sed 's;/;\\;g')
   echo "copy \${PROTOBUF_SOURCE_WIN32_PATH}\\..\\src\\$WINPATH include\\$WINPATH" >> $EXTRACT_INCLUDES_BAT
 done
-# Add pbconfig.h.
-echo "copy \${PROTOBUF_BINARY_WIN32_PATH}\\google\\protobuf\\stubs\\pbconfig.h include\\google\\protobuf\\stubs\\pbconfig.h" >> $EXTRACT_INCLUDES_BAT
