@@ -4,17 +4,25 @@ if HAVE_ZLIB
 GZCHECKPROGRAMS = zcgzip zcgunzip
 GZHEADERS = google/protobuf/io/gzip_stream.h
 GZTESTS = google/protobuf/io/gzip_stream_unittest.sh
+ZLIB_DEF = -DHAVE_ZLIB=1
 else
 GZCHECKPROGRAMS =
 GZHEADERS =
 GZTESTS =
+ZLIB_DEF =
+endif
+
+if HAVE_PTHREAD
+PTHREAD_DEF = -DHAVE_PTHREAD=1
+else
+PTHREAD_DEF =
 endif
 
 if GCC
 # These are good warnings to turn on by default
-NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
+NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
 else
-NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS)
+NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF)
 endif
 
 AM_CXXFLAGS = $(NO_OPT_CXXFLAGS) $(PROTOBUF_OPT_FLAG)
