@@ -59,7 +59,8 @@ namespace Google.Protobuf
     /// </remarks>
     public sealed partial class CodedOutputStream
     {
-        private static readonly Encoding UTF8 = Encoding.UTF8;
+        // "Local" copy of Encoding.UTF8, for efficiency. (Yes, it makes a difference.)
+        internal static readonly Encoding Utf8Encoding = Encoding.UTF8;
 
         /// <summary>
         /// The buffer size used by CreateInstance(Stream).
@@ -240,7 +241,7 @@ namespace Google.Protobuf
         {
             // Optimise the case where we have enough space to write
             // the string directly to the buffer, which should be common.
-            int length = UTF8.GetByteCount(value);
+            int length = Utf8Encoding.GetByteCount(value);
             WriteRawVarint32((uint)length);
             if (limit - position >= length)
             {
@@ -253,13 +254,13 @@ namespace Google.Protobuf
                 }
                 else
                 {
-                    UTF8.GetBytes(value, 0, value.Length, buffer, position);
+                    Utf8Encoding.GetBytes(value, 0, value.Length, buffer, position);
                 }
                 position += length;
             }
             else
             {
-                byte[] bytes = UTF8.GetBytes(value);
+                byte[] bytes = Utf8Encoding.GetBytes(value);
                 WriteRawBytes(bytes);
             }
         }

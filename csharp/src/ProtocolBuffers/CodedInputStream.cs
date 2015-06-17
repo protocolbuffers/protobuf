@@ -339,12 +339,12 @@ namespace Google.Protobuf
             {
                 // Fast path:  We already have the bytes in a contiguous buffer, so
                 //   just copy directly from it.
-                String result = Encoding.UTF8.GetString(buffer, bufferPos, size);
+                String result = CodedOutputStream.Utf8Encoding.GetString(buffer, bufferPos, size);
                 bufferPos += size;
                 return result;
             }
             // Slow path: Build a byte array first then copy it.
-            return Encoding.UTF8.GetString(ReadRawBytes(size), 0, size);
+            return CodedOutputStream.Utf8Encoding.GetString(ReadRawBytes(size), 0, size);
         }
 
         /// <summary>
