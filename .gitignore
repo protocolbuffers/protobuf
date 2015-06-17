@@ -77,8 +77,7 @@ java/target
 javanano/target
 
 # Windows native output.
-vsprojects/Debug
-vsprojects/Release
+cmake/build
 
 # NuGet packages: we want the repository configuration, but not the
 # packages themselves.

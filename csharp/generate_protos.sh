@@ -23,10 +23,10 @@ cd $(dirname $0)/..
 # Windows and Unix.
 if [ -z "$PROTOC" ]; then
   # TODO(jonskeet): Use an array and a for loop instead?
-  if [ -x vsprojects/Debug/protoc.exe ]; then
-    PROTOC=vsprojects/Debug/protoc.exe
-  elif [ -x vsprojects/Release/protoc.exe ]; then
-    PROTOC=vsprojects/Release/protoc.exe
+  if [ -x cmake/build/Debug/protoc.exe ]; then
+    PROTOC=cmake/build/Debug/protoc.exe
+  elif [ -x cmake/build/Release/protoc.exe ]; then
+    PROTOC=cmake/build/Release/protoc.exe
   elif [ -x src/protoc ]; then
     PROTOC=src/protoc
   else
