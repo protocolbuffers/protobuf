@@ -175,9 +175,9 @@ namespace Google.Protobuf.DescriptorProtos {
             "LkxvY2F0aW9uGoYBCghMb2NhdGlvbhIQCgRwYXRoGAEgAygFQgIQARIQCgRz", 
             "cGFuGAIgAygFQgIQARIYChBsZWFkaW5nX2NvbW1lbnRzGAMgASgJEhkKEXRy", 
             "YWlsaW5nX2NvbW1lbnRzGAQgASgJEiEKGWxlYWRpbmdfZGV0YWNoZWRfY29t", 
-            "bWVudHMYBiADKAlCUgoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRv", 
-            "clByb3Rvc0gBogIDR1BCqgIgR29vZ2xlLlByb3RvYnVmLkRlc2NyaXB0b3JQ", 
-          "cm90b3M="));
+            "bWVudHMYBiADKAlCXgoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRv", 
+            "clByb3Rvc0gBWgpkZXNjcmlwdG9yogIDR1BCqgIgR29vZ2xlLlByb3RvYnVm", 
+          "LkRlc2NyaXB0b3JQcm90b3M="));
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_google_protobuf_FileDescriptorSet__Descriptor = Descriptor.MessageTypes[0];
