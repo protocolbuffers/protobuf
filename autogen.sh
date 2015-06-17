@@ -15,26 +15,17 @@ __EOF__
   exit 1
 fi
 
-# Check that gtest is present.  Usually it is already there since the
+# Check that gmock is present.  Usually it is already there since the
 # directory is set up as an SVN external.
-if test ! -e gtest; then
-  echo "Google Test not present.  Fetching gtest-1.7.0 from the web..."
-  curl -O https://googletest.googlecode.com/files/gtest-1.7.0.zip
-  unzip -q gtest-1.7.0.zip
-  rm gtest-1.7.0.zip
-  mv gtest-1.7.0 gtest
+if test ! -e gmock; then
+  echo "Google Mock not present.  Fetching gmock-1.7.0 from the web..."
+  curl -O https://googlemock.googlecode.com/files/gmock-1.7.0.zip
+  unzip -q gmock-1.7.0.zip
+  rm gmock-1.7.0.zip
+  mv gmock-1.7.0 gmock
 fi
 
 set -ex
-
-# Temporary hack:  Must change C runtime library to "multi-threaded DLL",
-#   otherwise it will be set to "multi-threaded static" when MSVC upgrades
-#   the project file to MSVC 2005/2008.  vladl of Google Test says gtest will
-#   probably change their default to match, then this will be unnecessary.
-#   One of these mappings converts the debug configuration and the other
-#   converts the release configuration.  I don't know which is which.
-sed -i -e 's/RuntimeLibrary="5"/RuntimeLibrary="3"/g;
-           s/RuntimeLibrary="4"/RuntimeLibrary="2"/g;' gtest/msvc/*.vcproj
 
 # TODO(kenton):  Remove the ",no-obsolete" part and fix the resulting warnings.
 autoreconf -f -i -Wall,no-obsolete

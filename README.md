@@ -15,12 +15,12 @@ first:
 
     $ ./autogen.sh
 
-This will download gtest source (which is used for C++ Protocol Buffer
+This will download gmock source (which is used for C++ Protocol Buffer
 unit-tests) to the current directory and run automake, autoconf, etc.
 to generate the configure script and various template makefiles.
 
 You can skip this step if you are using a release package (which already
-contains gtest and the configure script).
+contains gmock and the configure script).
 
 To build and install the C++ Protocol Buffer runtime and the Protocol
 Buffer compiler (protoc) execute the following:

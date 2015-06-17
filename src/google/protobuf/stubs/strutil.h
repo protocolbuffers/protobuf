@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/stringpiece.h>
 
 namespace google {
 namespace protobuf {
@@ -72,7 +73,33 @@ inline bool ascii_isdigit(char c) {
 }
 
 inline bool ascii_isspace(char c) {
-  return c == ' ';
+  return c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' ||
+      c == '\r';
+}
+
+inline bool ascii_isupper(char c) {
+  return c >= 'A' && c <= 'Z';
+}
+
+inline bool ascii_islower(char c) {
+  return c >= 'a' && c <= 'z';
+}
+
+inline char ascii_toupper(char c) {
+  return ascii_islower(c) ? c - ('a' - 'A') : c;
+}
+
+inline char ascii_tolower(char c) {
+  return ascii_isupper(c) ? c + ('a' - 'A') : c;
+}
+
+inline int hex_digit_to_int(char c) {
+  /* Assume ASCII. */
+  int x = static_cast<unsigned char>(c);
+  if (x > '9') {
+    x += 9;
+  }
+  return x & 0xf;
 }
 
 // ----------------------------------------------------------------------
@@ -360,12 +387,59 @@ inline uint64 strtou64(const char *nptr, char **endptr, int base) {
 }
 
 // ----------------------------------------------------------------------
+// safe_strtob()
 // safe_strto32()
+// safe_strtou32()
+// safe_strto64()
+// safe_strtou64()
+// safe_strtof()
+// safe_strtod()
 // ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT bool safe_int(string text, int32* value_p);
+LIBPROTOBUF_EXPORT bool safe_strtob(StringPiece str, bool* value);
 
-inline bool safe_strto32(string text, int32* value) {
-  return safe_int(text, value);
+LIBPROTOBUF_EXPORT bool safe_strto32(const string& str, int32* value);
+LIBPROTOBUF_EXPORT bool safe_strtou32(const string& str, uint32* value);
+inline bool safe_strto32(const char* str, int32* value) {
+  return safe_strto32(string(str), value);
+}
+inline bool safe_strto32(StringPiece str, int32* value) {
+  return safe_strto32(str.ToString(), value);
+}
+inline bool safe_strtou32(const char* str, uint32* value) {
+  return safe_strtou32(string(str), value);
+}
+inline bool safe_strtou32(StringPiece str, uint32* value) {
+  return safe_strtou32(str.ToString(), value);
+}
+
+LIBPROTOBUF_EXPORT bool safe_strto64(const string& str, int64* value);
+LIBPROTOBUF_EXPORT bool safe_strtou64(const string& str, uint64* value);
+inline bool safe_strto64(const char* str, int64* value) {
+  return safe_strto64(string(str), value);
+}
+inline bool safe_strto64(StringPiece str, int64* value) {
+  return safe_strto64(str.ToString(), value);
+}
+inline bool safe_strtou64(const char* str, uint64* value) {
+  return safe_strtou64(string(str), value);
+}
+inline bool safe_strtou64(StringPiece str, uint64* value) {
+  return safe_strtou64(str.ToString(), value);
+}
+
+LIBPROTOBUF_EXPORT bool safe_strtof(const char* str, float* value);
+LIBPROTOBUF_EXPORT bool safe_strtod(const char* str, double* value);
+inline bool safe_strtof(const string& str, float* value) {
+  return safe_strtof(str.c_str(), value);
+}
+inline bool safe_strtod(const string& str, double* value) {
+  return safe_strtod(str.c_str(), value);
+}
+inline bool safe_strtof(StringPiece str, float* value) {
+  return safe_strtof(str.ToString(), value);
+}
+inline bool safe_strtod(StringPiece str, double* value) {
+  return safe_strtod(str.ToString(), value);
 }
 
 // ----------------------------------------------------------------------
@@ -451,6 +525,10 @@ inline char* FastUInt64ToBuffer(uint64 i, char* buffer) {
   return buffer;
 }
 
+inline string SimpleBtoa(bool value) {
+  return value ? "true" : "false";
+}
+
 // ----------------------------------------------------------------------
 // SimpleItoa()
 //    Description: converts an integer to a string.
@@ -497,28 +575,30 @@ static const int kFloatToBufferSize = 24;
 
 namespace strings {
 
+enum PadSpec {
+  NO_PAD = 1,
+  ZERO_PAD_2,
+  ZERO_PAD_3,
+  ZERO_PAD_4,
+  ZERO_PAD_5,
+  ZERO_PAD_6,
+  ZERO_PAD_7,
+  ZERO_PAD_8,
+  ZERO_PAD_9,
+  ZERO_PAD_10,
+  ZERO_PAD_11,
+  ZERO_PAD_12,
+  ZERO_PAD_13,
+  ZERO_PAD_14,
+  ZERO_PAD_15,
+  ZERO_PAD_16,
+};
+
 struct Hex {
   uint64 value;
-  enum PadSpec {
-    NONE = 1,
-    ZERO_PAD_2,
-    ZERO_PAD_3,
-    ZERO_PAD_4,
-    ZERO_PAD_5,
-    ZERO_PAD_6,
-    ZERO_PAD_7,
-    ZERO_PAD_8,
-    ZERO_PAD_9,
-    ZERO_PAD_10,
-    ZERO_PAD_11,
-    ZERO_PAD_12,
-    ZERO_PAD_13,
-    ZERO_PAD_14,
-    ZERO_PAD_15,
-    ZERO_PAD_16,
-  } spec;
+  enum PadSpec spec;
   template <class Int>
-  explicit Hex(Int v, PadSpec s = NONE)
+  explicit Hex(Int v, PadSpec s = NO_PAD)
       : spec(s) {
     // Prevent sign-extension by casting integers to
     // their unsigned counterparts.
@@ -569,6 +649,9 @@ struct LIBPROTOBUF_EXPORT AlphaNum {
   // AlphaNum(const StringPiece &pc) : piece(pc) {}
 
   AlphaNum(const string& str)
+      : piece_data_(str.data()), piece_size_(str.size()) {}
+
+  AlphaNum(StringPiece str)
       : piece_data_(str.data()), piece_size_(str.size()) {}
 
   size_t size() const { return piece_size_; }
@@ -692,6 +775,12 @@ string Join(const Range& components,
 }
 
 // ----------------------------------------------------------------------
+// ToHex()
+//    Return a lower-case hex string representation of the given integer.
+// ----------------------------------------------------------------------
+LIBPROTOBUF_EXPORT string ToHex(uint64 num);
+
+// ----------------------------------------------------------------------
 // GlobalReplaceSubstring()
 //    Replaces all instances of a substring in a string.  Does nothing
 //    if 'substring' is empty.  Returns the number of replacements.
@@ -701,6 +790,83 @@ string Join(const Range& components,
 LIBPROTOBUF_EXPORT int GlobalReplaceSubstring(const string& substring,
                                               const string& replacement,
                                               string* s);
+
+// ----------------------------------------------------------------------
+// Base64Unescape()
+//    Converts "src" which is encoded in Base64 to its binary equivalent and
+//    writes it to "dest". If src contains invalid characters, dest is cleared
+//    and the function returns false. Returns true on success.
+// ----------------------------------------------------------------------
+LIBPROTOBUF_EXPORT bool Base64Unescape(StringPiece src, string* dest);
+
+// ----------------------------------------------------------------------
+// WebSafeBase64Unescape()
+//    This is a variation of Base64Unescape which uses '-' instead of '+', and
+//    '_' instead of '/'. src is not null terminated, instead specify len. I
+//    recommend that slen<szdest, but we honor szdest anyway.
+//    RETURNS the length of dest, or -1 if src contains invalid chars.
+
+//    The variation that stores into a string clears the string first, and
+//    returns false (with dest empty) if src contains invalid chars; for
+//    this version src and dest must be different strings.
+// ----------------------------------------------------------------------
+LIBPROTOBUF_EXPORT int WebSafeBase64Unescape(const char* src, int slen,
+                                             char* dest, int szdest);
+LIBPROTOBUF_EXPORT bool WebSafeBase64Unescape(StringPiece src, string* dest);
+
+// Return the length to use for the output buffer given to the base64 escape
+// routines. Make sure to use the same value for do_padding in both.
+// This function may return incorrect results if given input_len values that
+// are extremely high, which should happen rarely.
+LIBPROTOBUF_EXPORT int CalculateBase64EscapedLen(int input_len,
+                                                 bool do_padding);
+// Use this version when calling Base64Escape without a do_padding arg.
+LIBPROTOBUF_EXPORT int CalculateBase64EscapedLen(int input_len);
+
+// ----------------------------------------------------------------------
+// Base64Escape()
+// WebSafeBase64Escape()
+//    Encode "src" to "dest" using base64 encoding.
+//    src is not null terminated, instead specify len.
+//    'dest' should have at least CalculateBase64EscapedLen() length.
+//    RETURNS the length of dest.
+//    The WebSafe variation use '-' instead of '+' and '_' instead of '/'
+//    so that we can place the out in the URL or cookies without having
+//    to escape them.  It also has an extra parameter "do_padding",
+//    which when set to false will prevent padding with "=".
+// ----------------------------------------------------------------------
+LIBPROTOBUF_EXPORT int Base64Escape(const unsigned char* src, int slen,
+                                    char* dest, int szdest);
+LIBPROTOBUF_EXPORT int WebSafeBase64Escape(
+    const unsigned char* src, int slen, char* dest,
+    int szdest, bool do_padding);
+// Encode src into dest with padding.
+LIBPROTOBUF_EXPORT void Base64Escape(StringPiece src, string* dest);
+// Encode src into dest web-safely without padding.
+LIBPROTOBUF_EXPORT void WebSafeBase64Escape(StringPiece src, string* dest);
+// Encode src into dest web-safely with padding.
+LIBPROTOBUF_EXPORT void WebSafeBase64EscapeWithPadding(StringPiece src,
+                                                       string* dest);
+
+LIBPROTOBUF_EXPORT void Base64Escape(const unsigned char* src, int szsrc,
+                                     string* dest, bool do_padding);
+LIBPROTOBUF_EXPORT void WebSafeBase64Escape(const unsigned char* src, int szsrc,
+                                            string* dest, bool do_padding);
+
+static const int UTFmax = 4;
+// ----------------------------------------------------------------------
+// EncodeAsUTF8Char()
+//  Helper to append a Unicode code point to a string as UTF8, without bringing
+//  in any external dependencies. The output buffer must be as least 4 bytes
+//  large.
+// ----------------------------------------------------------------------
+LIBPROTOBUF_EXPORT int EncodeAsUTF8Char(uint32 code_point, char* output);
+
+// ----------------------------------------------------------------------
+// UTF8FirstLetterNumBytes()
+//   Length of the first UTF-8 character.
+// ----------------------------------------------------------------------
+LIBPROTOBUF_EXPORT int UTF8FirstLetterNumBytes(const char* src, int len);
 
 }  // namespace protobuf
 }  // namespace google

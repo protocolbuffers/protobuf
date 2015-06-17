@@ -8,28 +8,29 @@ AUTOMAKE_OPTIONS = foreign
 # the right time.
 SUBDIRS = . src
 
-# Always include gtest in distributions.
+# Always include gmock in distributions.
 DIST_SUBDIRS = $(subdirs) src conformance
 
-# Build gtest before we build protobuf tests.  We don't add gtest to SUBDIRS
-# because then "make check" would also build and run all of gtest's own tests,
+# Build gmock before we build protobuf tests.  We don't add gmock to SUBDIRS
+# because then "make check" would also build and run all of gmock's own tests,
 # which takes a lot of time and is generally not useful to us.  Also, we don't
-# want "make install" to recurse into gtest since we don't want to overwrite
-# the installed version of gtest if there is one.
+# want "make install" to recurse into gmock since we don't want to overwrite
+# the installed version of gmock if there is one.
 check-local:
-	@echo "Making lib/libgtest.a lib/libgtest_main.a in gtest"
-	@cd gtest && $(MAKE) $(AM_MAKEFLAGS) lib/libgtest.la lib/libgtest_main.la
+	@echo "Making lib/libgmock.a lib/libgmock_main.a in gmock"
+	@cd gmock && $(MAKE) $(AM_MAKEFLAGS) lib/libgmock.la lib/libgmock_main.la
+	@cd gmock/gtest && $(MAKE) $(AM_MAKEFLAGS) lib/libgtest.la lib/libgtest_main.la
 
-# We would like to clean gtest when "make clean" is invoked.  But we have to
+# We would like to clean gmock when "make clean" is invoked.  But we have to
 # be careful because clean-local is also invoked during "make distclean", but
-# "make distclean" already recurses into gtest because it's listed among the
-# DIST_SUBDIRS.  distclean will delete gtest/Makefile, so if we then try to
+# "make distclean" already recurses into gmock because it's listed among the
+# DIST_SUBDIRS.  distclean will delete gmock/Makefile, so if we then try to
 # cd to the directory again and "make clean" it will fail.  So, check that the
 # Makefile exists before recursing.
 clean-local:
-	@if test -e gtest/Makefile; then \
-	  echo "Making clean in gtest"; \
-	  cd gtest && $(MAKE) $(AM_MAKEFLAGS) clean; \
+	@if test -e gmock/Makefile; then \
+	  echo "Making clean in gmock"; \
+	  cd gmock && $(MAKE) $(AM_MAKEFLAGS) clean; \
 	fi; \
 	if test -e conformance/Makefile; then \
 	  echo "Making clean in conformance"; \
