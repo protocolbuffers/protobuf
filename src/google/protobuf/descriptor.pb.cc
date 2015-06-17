@@ -753,9 +753,10 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     "ion\032\206\001\n\010Location\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004sp"
     "an\030\002 \003(\005B\002\020\001\022\030\n\020leading_comments\030\003 \001(\t\022\031"
     "\n\021trailing_comments\030\004 \001(\t\022!\n\031leading_det"
-    "ached_comments\030\006 \003(\tBY\n\023com.google.proto"
-    "bufB\020DescriptorProtosH\001\242\002\003GPB\252\002\'Google.P"
-    "rotocolBuffers.DescriptorProtos", 4951);
+    "ached_comments\030\006 \003(\tBe\n\023com.google.proto"
+    "bufB\020DescriptorProtosH\001Z\ndescriptor\242\002\003GP"
+    "B\252\002\'Google.ProtocolBuffers.DescriptorPro"
+    "tos", 4963);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/descriptor.proto", &protobuf_RegisterTypes);
   FileDescriptorSet::default_instance_ = new FileDescriptorSet();
@@ -1648,7 +1649,7 @@ void FileDescriptorProto::SerializeWithCachedSizes(
 int FileDescriptorProto::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 3) {
+  if (_has_bits_[0 / 32] & 3u) {
     // optional string name = 1;
     if (has_name()) {
       total_size += 1 +
@@ -1664,7 +1665,7 @@ int FileDescriptorProto::ByteSize() const {
     }
 
   }
-  if (_has_bits_[9 / 32] & 3584) {
+  if (_has_bits_[9 / 32] & 3584u) {
     // optional .google.protobuf.FileOptions options = 8;
     if (has_options()) {
       total_size += 1 +
@@ -2534,7 +2535,7 @@ void DescriptorProto_ExtensionRange::SerializeWithCachedSizes(
 int DescriptorProto_ExtensionRange::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 3) {
+  if (_has_bits_[0 / 32] & 3u) {
     // optional int32 start = 1;
     if (has_start()) {
       total_size += 1 +
@@ -2817,7 +2818,7 @@ void DescriptorProto_ReservedRange::SerializeWithCachedSizes(
 int DescriptorProto_ReservedRange::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 3) {
+  if (_has_bits_[0 / 32] & 3u) {
     // optional int32 start = 1;
     if (has_start()) {
       total_size += 1 +
@@ -3373,7 +3374,7 @@ void DescriptorProto::SerializeWithCachedSizes(
 int DescriptorProto::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 129) {
+  if (_has_bits_[0 / 32] & 129u) {
     // optional string name = 1;
     if (has_name()) {
       total_size += 1 +
@@ -4558,7 +4559,7 @@ void FieldDescriptorProto::SerializeWithCachedSizes(
 int FieldDescriptorProto::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 255) {
+  if (_has_bits_[0 / 32] & 255u) {
     // optional string name = 1;
     if (has_name()) {
       total_size += 1 +
@@ -5633,7 +5634,7 @@ void EnumDescriptorProto::SerializeWithCachedSizes(
 int EnumDescriptorProto::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 5) {
+  if (_has_bits_[0 / 32] & 5u) {
     // optional string name = 1;
     if (has_name()) {
       total_size += 1 +
@@ -6102,7 +6103,7 @@ void EnumValueDescriptorProto::SerializeWithCachedSizes(
 int EnumValueDescriptorProto::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 7) {
+  if (_has_bits_[0 / 32] & 7u) {
     // optional string name = 1;
     if (has_name()) {
       total_size += 1 +
@@ -6569,7 +6570,7 @@ void ServiceDescriptorProto::SerializeWithCachedSizes(
 int ServiceDescriptorProto::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 5) {
+  if (_has_bits_[0 / 32] & 5u) {
     // optional string name = 1;
     if (has_name()) {
       total_size += 1 +
@@ -7165,7 +7166,7 @@ void MethodDescriptorProto::SerializeWithCachedSizes(
 int MethodDescriptorProto::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 63) {
+  if (_has_bits_[0 / 32] & 63u) {
     // optional string name = 1;
     if (has_name()) {
       total_size += 1 +
@@ -8240,7 +8241,7 @@ void FileOptions::SerializeWithCachedSizes(
 int FileOptions::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 255) {
+  if (_has_bits_[0 / 32] & 255u) {
     // optional string java_package = 1;
     if (has_java_package()) {
       total_size += 1 +
@@ -8289,7 +8290,7 @@ int FileOptions::ByteSize() const {
     }
 
   }
-  if (_has_bits_[8 / 32] & 16128) {
+  if (_has_bits_[8 / 32] & 16128u) {
     // optional bool java_generic_services = 17 [default = false];
     if (has_java_generic_services()) {
       total_size += 2 + 1;
@@ -9279,7 +9280,7 @@ void MessageOptions::SerializeWithCachedSizes(
 int MessageOptions::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 15) {
+  if (_has_bits_[0 / 32] & 15u) {
     // optional bool message_set_wire_format = 1 [default = false];
     if (has_message_set_wire_format()) {
       total_size += 1 + 1;
@@ -9939,7 +9940,7 @@ void FieldOptions::SerializeWithCachedSizes(
 int FieldOptions::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 63) {
+  if (_has_bits_[0 / 32] & 63u) {
     // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
     if (has_ctype()) {
       total_size += 1 +
@@ -10498,7 +10499,7 @@ void EnumOptions::SerializeWithCachedSizes(
 int EnumOptions::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[0 / 32] & 3) {
+  if (_has_bits_[0 / 32] & 3u) {
     // optional bool allow_alias = 2;
     if (has_allow_alias()) {
       total_size += 1 + 1;
@@ -12410,7 +12411,7 @@ void UninterpretedOption::SerializeWithCachedSizes(
 int UninterpretedOption::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[1 / 32] & 126) {
+  if (_has_bits_[1 / 32] & 126u) {
     // optional string identifier_value = 3;
     if (has_identifier_value()) {
       total_size += 1 +
@@ -13248,7 +13249,7 @@ void SourceCodeInfo_Location::SerializeWithCachedSizes(
 int SourceCodeInfo_Location::ByteSize() const {
   int total_size = 0;
 
-  if (_has_bits_[2 / 32] & 12) {
+  if (_has_bits_[2 / 32] & 12u) {
     // optional string leading_comments = 3;
     if (has_leading_comments()) {
       total_size += 1 +

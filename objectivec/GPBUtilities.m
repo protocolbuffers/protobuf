@@ -35,9 +35,8 @@
 #import "GPBArray_PackagePrivate.h"
 #import "GPBDescriptor_PackagePrivate.h"
 #import "GPBDictionary_PackagePrivate.h"
-#import "GPBExtensionField.h"
-#import "GPBField.h"
 #import "GPBMessage_PackagePrivate.h"
+#import "GPBUnknownField.h"
 #import "GPBUnknownFieldSet.h"
 
 static void AppendTextFormatForMessage(GPBMessage *message,
@@ -51,6 +50,15 @@ NSData *GPBEmptyNSData(void) {
     defaultNSData = [[NSData alloc] init];
   });
   return defaultNSData;
+}
+
+void GPBCheckRuntimeVersionInternal(int32_t version) {
+  if (version != GOOGLE_PROTOBUF_OBJC_GEN_VERSION) {
+    [NSException raise:NSInternalInconsistencyException
+                format:@"Linked to ProtocolBuffer runtime version %d,"
+                       @" but code compiled with version %d!",
+                       GOOGLE_PROTOBUF_OBJC_GEN_VERSION, version];
+  }
 }
 
 BOOL GPBMessageHasFieldNumberSet(GPBMessage *self, uint32_t fieldNumber) {
@@ -166,8 +174,8 @@ void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
 #pragma mark - IVar accessors
 
 //%PDDM-DEFINE IVAR_POD_ACCESSORS_DEFN(NAME, TYPE)
-//%TYPE GPBGet##NAME##IvarWithField(GPBMessage *self,
-//% TYPE$S     NAME$S               GPBFieldDescriptor *field) {
+//%TYPE GPBGetMessage##NAME##Field(GPBMessage *self,
+//% TYPE$S            NAME$S       GPBFieldDescriptor *field) {
 //%  if (GPBGetHasIvarField(self, field)) {
 //%    uint8_t *storage = (uint8_t *)self->messageStorage_;
 //%    TYPE *typePtr = (TYPE *)&storage[field->description_->offset];
@@ -178,9 +186,9 @@ void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
 //%}
 //%
 //%// Only exists for public api, no core code should use this.
-//%void GPBSet##NAME##IvarWithField(GPBMessage *self,
-//%            NAME$S             GPBFieldDescriptor *field,
-//%            NAME$S             TYPE value) {
+//%void GPBSetMessage##NAME##Field(GPBMessage *self,
+//%                   NAME$S     GPBFieldDescriptor *field,
+//%                   NAME$S     TYPE value) {
 //%  if (self == nil || field == nil) return;
 //%  GPBFileSyntax syntax = [self descriptor].file.syntax;
 //%  GPBSet##NAME##IvarWithFieldInternal(self, field, value, syntax);
@@ -211,18 +219,18 @@ void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
 //%  GPBBecomeVisibleToAutocreator(self);
 //%}
 //%
-//%PDDM-DEFINE IVAR_ALIAS_DEFN(NAME, ALIAS_NAME, TYPE, ALIAS_TYPE)
+//%PDDM-DEFINE IVAR_ALIAS_DEFN_OBJECT(NAME, TYPE)
 //%// Only exists for public api, no core code should use this.
-//%TYPE GPBGet##NAME##IvarWithField(GPBMessage *self,
-//% TYPE$S     NAME$S               GPBFieldDescriptor *field) {
-//%  return (TYPE)GPBGet##ALIAS_NAME##IvarWithField(self, field);
+//%TYPE *GPBGetMessage##NAME##Field(GPBMessage *self,
+//% TYPE$S             NAME$S       GPBFieldDescriptor *field) {
+//%  return (TYPE *)GPBGetObjectIvarWithField(self, field);
 //%}
 //%
 //%// Only exists for public api, no core code should use this.
-//%void GPBSet##NAME##IvarWithField(GPBMessage *self,
-//%            NAME$S             GPBFieldDescriptor *field,
-//%            NAME$S             TYPE value) {
-//%  GPBSet##ALIAS_NAME##IvarWithField(self, field, (ALIAS_TYPE)value);
+//%void GPBSetMessage##NAME##Field(GPBMessage *self,
+//%                   NAME$S     GPBFieldDescriptor *field,
+//%                   NAME$S     TYPE *value) {
+//%  GPBSetObjectIvarWithField(self, field, (id)value);
 //%}
 //%
 
@@ -252,8 +260,8 @@ void GPBClearAutocreatedMessageIvarWithField(GPBMessage *self,
 }
 
 // This exists only for briging some aliased types, nothing else should use it.
-GPB_INLINE void GPBSetObjectIvarWithField(GPBMessage *self,
-                                          GPBFieldDescriptor *field, id value) {
+static void GPBSetObjectIvarWithField(GPBMessage *self,
+                                      GPBFieldDescriptor *field, id value) {
   if (self == nil || field == nil) return;
   GPBFileSyntax syntax = [self descriptor].file.syntax;
   GPBSetRetainedObjectIvarWithFieldInternal(self, field, [value retain],
@@ -276,9 +284,9 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
 #if defined(__clang_analyzer__)
   if (self->messageStorage_ == NULL) return;
 #endif
-  GPBType fieldType = GPBGetFieldType(field);
+  GPBDataType fieldType = GPBGetFieldDataType(field);
   BOOL isMapOrArray = GPBFieldIsMapOrArray(field);
-  BOOL fieldIsMessage = GPBTypeIsMessage(fieldType);
+  BOOL fieldIsMessage = GPBDataTypeIsMessage(fieldType);
 #ifdef DEBUG
   if (value == nil && !isMapOrArray && !fieldIsMessage &&
       field.hasDefaultValue) {
@@ -294,7 +302,7 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
     // field, and fall back on the default value. The warning below will only
     // appear in debug, but the could should be changed so the intention is
     // clear.
-    NSString *hasSel = NSStringFromSelector(field->hasSel_);
+    NSString *hasSel = NSStringFromSelector(field->hasOrCountSel_);
     NSString *propName = field.name;
     NSString *className = self.descriptor.name;
     NSLog(@"warning: '%@.%@ = nil;' is not clearly defined for fields with "
@@ -302,7 +310,7 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
           @"empty, or call '%@.%@ = NO' to reset it to it's default value of "
           @"'%@'. Defaulting to resetting default value.",
           className, propName, className, propName,
-          (fieldType == GPBTypeString) ? @"@\"\"" : @"GPBEmptyNSData()",
+          (fieldType == GPBDataTypeString) ? @"@\"\"" : @"GPBEmptyNSData()",
           className, hasSel, field.defaultValue.valueString);
     // Note: valueString, depending on the type, it could easily be
     // valueData/valueMessage.
@@ -317,9 +325,9 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
     }
     // Clear "has" if they are being set to nil.
     BOOL setHasValue = (value != nil);
-    // Under proto3, Data & String fields get cleared by resetting them to their
-    // default (empty) values, so if they are set to something of length zero,
-    // they are being cleared.
+    // Under proto3, Bytes & String fields get cleared by resetting them to
+    // their default (empty) values, so if they are set to something of length
+    // zero, they are being cleared.
     if ((syntax == GPBFileSyntaxProto3) && !fieldIsMessage &&
         ([value length] == 0)) {
       setHasValue = NO;
@@ -338,7 +346,7 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
     if (isMapOrArray) {
       if (field.fieldType == GPBFieldTypeRepeated) {
         // If the old array was autocreated by us, then clear it.
-        if (GPBTypeIsObject(fieldType)) {
+        if (GPBDataTypeIsObject(fieldType)) {
           GPBAutocreatedArray *autoArray = oldValue;
           if (autoArray->_autocreator == self) {
             autoArray->_autocreator = nil;
@@ -352,8 +360,8 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
         }
       } else { // GPBFieldTypeMap
         // If the old map was autocreated by us, then clear it.
-        if ((field.mapKeyType == GPBTypeString) &&
-            GPBTypeIsObject(fieldType)) {
+        if ((field.mapKeyDataType == GPBDataTypeString) &&
+            GPBDataTypeIsObject(fieldType)) {
           GPBAutocreatedDictionary *autoDict = oldValue;
           if (autoDict->_autocreator == self) {
             autoDict->_autocreator = nil;
@@ -399,7 +407,7 @@ id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
   // Not set...
 
   // Non messages (string/data), get their default.
-  if (!GPBFieldTypeIsMessage(field)) {
+  if (!GPBFieldDataTypeIsMessage(field)) {
     return field.defaultValue.valueMessage;
   }
 
@@ -417,7 +425,7 @@ id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
 }
 
 // Only exists for public api, no core code should use this.
-int32_t GPBGetEnumIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
+int32_t GPBGetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field) {
   GPBFileSyntax syntax = [self descriptor].file.syntax;
   return GPBGetEnumIvarWithFieldInternal(self, field, syntax);
 }
@@ -425,9 +433,9 @@ int32_t GPBGetEnumIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
 int32_t GPBGetEnumIvarWithFieldInternal(GPBMessage *self,
                                         GPBFieldDescriptor *field,
                                         GPBFileSyntax syntax) {
-  int32_t result = GPBGetInt32IvarWithField(self, field);
-  // If this is presevering unknown enums, make sure the value is
-  // valid before returning it.
+  int32_t result = GPBGetMessageInt32Field(self, field);
+  // If this is presevering unknown enums, make sure the value is valid before
+  // returning it.
   if (GPBHasPreservingUnknownEnumSemantics(syntax) &&
       ![field isValidEnumValue:result]) {
     result = kGPBUnrecognizedEnumeratorValue;
@@ -436,8 +444,8 @@ int32_t GPBGetEnumIvarWithFieldInternal(GPBMessage *self,
 }
 
 // Only exists for public api, no core code should use this.
-void GPBSetEnumIvarWithField(GPBMessage *self, GPBFieldDescriptor *field,
-                             int32_t value) {
+void GPBSetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field,
+                            int32_t value) {
   GPBFileSyntax syntax = [self descriptor].file.syntax;
   GPBSetInt32IvarWithFieldInternal(self, field, value, syntax);
 }
@@ -454,11 +462,25 @@ void GPBSetEnumIvarWithFieldInternal(GPBMessage *self,
   GPBSetInt32IvarWithFieldInternal(self, field, value, syntax);
 }
 
+// Only exists for public api, no core code should use this.
+int32_t GPBGetMessageRawEnumField(GPBMessage *self,
+                                  GPBFieldDescriptor *field) {
+  int32_t result = GPBGetMessageInt32Field(self, field);
+  return result;
+}
+
+// Only exists for public api, no core code should use this.
+void GPBSetMessageRawEnumField(GPBMessage *self, GPBFieldDescriptor *field,
+                               int32_t value) {
+  GPBFileSyntax syntax = [self descriptor].file.syntax;
+  GPBSetInt32IvarWithFieldInternal(self, field, value, syntax);
+}
+
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Bool, BOOL)
 // This block of code is generated, do not edit it directly.
 
-BOOL GPBGetBoolIvarWithField(GPBMessage *self,
-                             GPBFieldDescriptor *field) {
+BOOL GPBGetMessageBoolField(GPBMessage *self,
+                            GPBFieldDescriptor *field) {
   if (GPBGetHasIvarField(self, field)) {
     uint8_t *storage = (uint8_t *)self->messageStorage_;
     BOOL *typePtr = (BOOL *)&storage[field->description_->offset];
@@ -469,9 +491,9 @@ BOOL GPBGetBoolIvarWithField(GPBMessage *self,
 }
 
 // Only exists for public api, no core code should use this.
-void GPBSetBoolIvarWithField(GPBMessage *self,
-                             GPBFieldDescriptor *field,
-                             BOOL value) {
+void GPBSetMessageBoolField(GPBMessage *self,
+                            GPBFieldDescriptor *field,
+                            BOOL value) {
   if (self == nil || field == nil) return;
   GPBFileSyntax syntax = [self descriptor].file.syntax;
   GPBSetBoolIvarWithFieldInternal(self, field, value, syntax);
@@ -505,8 +527,8 @@ void GPBSetBoolIvarWithFieldInternal(GPBMessage *self,
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Int32, int32_t)
 // This block of code is generated, do not edit it directly.
 
-int32_t GPBGetInt32IvarWithField(GPBMessage *self,
-                                 GPBFieldDescriptor *field) {
+int32_t GPBGetMessageInt32Field(GPBMessage *self,
+                                GPBFieldDescriptor *field) {
   if (GPBGetHasIvarField(self, field)) {
     uint8_t *storage = (uint8_t *)self->messageStorage_;
     int32_t *typePtr = (int32_t *)&storage[field->description_->offset];
@@ -517,9 +539,9 @@ int32_t GPBGetInt32IvarWithField(GPBMessage *self,
 }
 
 // Only exists for public api, no core code should use this.
-void GPBSetInt32IvarWithField(GPBMessage *self,
-                              GPBFieldDescriptor *field,
-                              int32_t value) {
+void GPBSetMessageInt32Field(GPBMessage *self,
+                             GPBFieldDescriptor *field,
+                             int32_t value) {
   if (self == nil || field == nil) return;
   GPBFileSyntax syntax = [self descriptor].file.syntax;
   GPBSetInt32IvarWithFieldInternal(self, field, value, syntax);
@@ -553,8 +575,8 @@ void GPBSetInt32IvarWithFieldInternal(GPBMessage *self,
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(UInt32, uint32_t)
 // This block of code is generated, do not edit it directly.
 
-uint32_t GPBGetUInt32IvarWithField(GPBMessage *self,
-                                   GPBFieldDescriptor *field) {
+uint32_t GPBGetMessageUInt32Field(GPBMessage *self,
+                                  GPBFieldDescriptor *field) {
   if (GPBGetHasIvarField(self, field)) {
     uint8_t *storage = (uint8_t *)self->messageStorage_;
     uint32_t *typePtr = (uint32_t *)&storage[field->description_->offset];
@@ -565,9 +587,9 @@ uint32_t GPBGetUInt32IvarWithField(GPBMessage *self,
 }
 
 // Only exists for public api, no core code should use this.
-void GPBSetUInt32IvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               uint32_t value) {
+void GPBSetMessageUInt32Field(GPBMessage *self,
+                              GPBFieldDescriptor *field,
+                              uint32_t value) {
   if (self == nil || field == nil) return;
   GPBFileSyntax syntax = [self descriptor].file.syntax;
   GPBSetUInt32IvarWithFieldInternal(self, field, value, syntax);
@@ -601,8 +623,8 @@ void GPBSetUInt32IvarWithFieldInternal(GPBMessage *self,
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Int64, int64_t)
 // This block of code is generated, do not edit it directly.
 
-int64_t GPBGetInt64IvarWithField(GPBMessage *self,
-                                 GPBFieldDescriptor *field) {
+int64_t GPBGetMessageInt64Field(GPBMessage *self,
+                                GPBFieldDescriptor *field) {
   if (GPBGetHasIvarField(self, field)) {
     uint8_t *storage = (uint8_t *)self->messageStorage_;
     int64_t *typePtr = (int64_t *)&storage[field->description_->offset];
@@ -613,9 +635,9 @@ int64_t GPBGetInt64IvarWithField(GPBMessage *self,
 }
 
 // Only exists for public api, no core code should use this.
-void GPBSetInt64IvarWithField(GPBMessage *self,
-                              GPBFieldDescriptor *field,
-                              int64_t value) {
+void GPBSetMessageInt64Field(GPBMessage *self,
+                             GPBFieldDescriptor *field,
+                             int64_t value) {
   if (self == nil || field == nil) return;
   GPBFileSyntax syntax = [self descriptor].file.syntax;
   GPBSetInt64IvarWithFieldInternal(self, field, value, syntax);
@@ -649,8 +671,8 @@ void GPBSetInt64IvarWithFieldInternal(GPBMessage *self,
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(UInt64, uint64_t)
 // This block of code is generated, do not edit it directly.
 
-uint64_t GPBGetUInt64IvarWithField(GPBMessage *self,
-                                   GPBFieldDescriptor *field) {
+uint64_t GPBGetMessageUInt64Field(GPBMessage *self,
+                                  GPBFieldDescriptor *field) {
   if (GPBGetHasIvarField(self, field)) {
     uint8_t *storage = (uint8_t *)self->messageStorage_;
     uint64_t *typePtr = (uint64_t *)&storage[field->description_->offset];
@@ -661,9 +683,9 @@ uint64_t GPBGetUInt64IvarWithField(GPBMessage *self,
 }
 
 // Only exists for public api, no core code should use this.
-void GPBSetUInt64IvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               uint64_t value) {
+void GPBSetMessageUInt64Field(GPBMessage *self,
+                              GPBFieldDescriptor *field,
+                              uint64_t value) {
   if (self == nil || field == nil) return;
   GPBFileSyntax syntax = [self descriptor].file.syntax;
   GPBSetUInt64IvarWithFieldInternal(self, field, value, syntax);
@@ -697,8 +719,8 @@ void GPBSetUInt64IvarWithFieldInternal(GPBMessage *self,
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Float, float)
 // This block of code is generated, do not edit it directly.
 
-float GPBGetFloatIvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field) {
+float GPBGetMessageFloatField(GPBMessage *self,
+                              GPBFieldDescriptor *field) {
   if (GPBGetHasIvarField(self, field)) {
     uint8_t *storage = (uint8_t *)self->messageStorage_;
     float *typePtr = (float *)&storage[field->description_->offset];
@@ -709,9 +731,9 @@ float GPBGetFloatIvarWithField(GPBMessage *self,
 }
 
 // Only exists for public api, no core code should use this.
-void GPBSetFloatIvarWithField(GPBMessage *self,
-                              GPBFieldDescriptor *field,
-                              float value) {
+void GPBSetMessageFloatField(GPBMessage *self,
+                             GPBFieldDescriptor *field,
+                             float value) {
   if (self == nil || field == nil) return;
   GPBFileSyntax syntax = [self descriptor].file.syntax;
   GPBSetFloatIvarWithFieldInternal(self, field, value, syntax);
@@ -745,8 +767,8 @@ void GPBSetFloatIvarWithFieldInternal(GPBMessage *self,
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Double, double)
 // This block of code is generated, do not edit it directly.
 
-double GPBGetDoubleIvarWithField(GPBMessage *self,
-                                 GPBFieldDescriptor *field) {
+double GPBGetMessageDoubleField(GPBMessage *self,
+                                GPBFieldDescriptor *field) {
   if (GPBGetHasIvarField(self, field)) {
     uint8_t *storage = (uint8_t *)self->messageStorage_;
     double *typePtr = (double *)&storage[field->description_->offset];
@@ -757,9 +779,9 @@ double GPBGetDoubleIvarWithField(GPBMessage *self,
 }
 
 // Only exists for public api, no core code should use this.
-void GPBSetDoubleIvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               double value) {
+void GPBSetMessageDoubleField(GPBMessage *self,
+                              GPBFieldDescriptor *field,
+                              double value) {
   if (self == nil || field == nil) return;
   GPBFileSyntax syntax = [self descriptor].file.syntax;
   GPBSetDoubleIvarWithFieldInternal(self, field, value, syntax);
@@ -794,223 +816,225 @@ void GPBSetDoubleIvarWithFieldInternal(GPBMessage *self,
 
 // Aliases are function calls that are virtually the same.
 
-//%PDDM-EXPAND IVAR_ALIAS_DEFN(SInt32, Int32, int32_t, int32_t)
+//%PDDM-EXPAND IVAR_ALIAS_DEFN_OBJECT(String, NSString)
 // This block of code is generated, do not edit it directly.
 
 // Only exists for public api, no core code should use this.
-int32_t GPBGetSInt32IvarWithField(GPBMessage *self,
-                                  GPBFieldDescriptor *field) {
-  return (int32_t)GPBGetInt32IvarWithField(self, field);
+NSString *GPBGetMessageStringField(GPBMessage *self,
+                                   GPBFieldDescriptor *field) {
+  return (NSString *)GPBGetObjectIvarWithField(self, field);
 }
 
 // Only exists for public api, no core code should use this.
-void GPBSetSInt32IvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               int32_t value) {
-  GPBSetInt32IvarWithField(self, field, (int32_t)value);
-}
-
-//%PDDM-EXPAND IVAR_ALIAS_DEFN(SFixed32, Int32, int32_t, int32_t)
-// This block of code is generated, do not edit it directly.
-
-// Only exists for public api, no core code should use this.
-int32_t GPBGetSFixed32IvarWithField(GPBMessage *self,
-                                    GPBFieldDescriptor *field) {
-  return (int32_t)GPBGetInt32IvarWithField(self, field);
-}
-
-// Only exists for public api, no core code should use this.
-void GPBSetSFixed32IvarWithField(GPBMessage *self,
-                                 GPBFieldDescriptor *field,
-                                 int32_t value) {
-  GPBSetInt32IvarWithField(self, field, (int32_t)value);
-}
-
-//%PDDM-EXPAND IVAR_ALIAS_DEFN(Fixed32, UInt32, uint32_t, uint32_t)
-// This block of code is generated, do not edit it directly.
-
-// Only exists for public api, no core code should use this.
-uint32_t GPBGetFixed32IvarWithField(GPBMessage *self,
-                                    GPBFieldDescriptor *field) {
-  return (uint32_t)GPBGetUInt32IvarWithField(self, field);
-}
-
-// Only exists for public api, no core code should use this.
-void GPBSetFixed32IvarWithField(GPBMessage *self,
-                                GPBFieldDescriptor *field,
-                                uint32_t value) {
-  GPBSetUInt32IvarWithField(self, field, (uint32_t)value);
-}
-
-//%PDDM-EXPAND IVAR_ALIAS_DEFN(SInt64, Int64, int64_t, int64_t)
-// This block of code is generated, do not edit it directly.
-
-// Only exists for public api, no core code should use this.
-int64_t GPBGetSInt64IvarWithField(GPBMessage *self,
-                                  GPBFieldDescriptor *field) {
-  return (int64_t)GPBGetInt64IvarWithField(self, field);
-}
-
-// Only exists for public api, no core code should use this.
-void GPBSetSInt64IvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               int64_t value) {
-  GPBSetInt64IvarWithField(self, field, (int64_t)value);
-}
-
-//%PDDM-EXPAND IVAR_ALIAS_DEFN(SFixed64, Int64, int64_t, int64_t)
-// This block of code is generated, do not edit it directly.
-
-// Only exists for public api, no core code should use this.
-int64_t GPBGetSFixed64IvarWithField(GPBMessage *self,
-                                    GPBFieldDescriptor *field) {
-  return (int64_t)GPBGetInt64IvarWithField(self, field);
-}
-
-// Only exists for public api, no core code should use this.
-void GPBSetSFixed64IvarWithField(GPBMessage *self,
-                                 GPBFieldDescriptor *field,
-                                 int64_t value) {
-  GPBSetInt64IvarWithField(self, field, (int64_t)value);
-}
-
-//%PDDM-EXPAND IVAR_ALIAS_DEFN(Fixed64, UInt64, uint64_t, uint64_t)
-// This block of code is generated, do not edit it directly.
-
-// Only exists for public api, no core code should use this.
-uint64_t GPBGetFixed64IvarWithField(GPBMessage *self,
-                                    GPBFieldDescriptor *field) {
-  return (uint64_t)GPBGetUInt64IvarWithField(self, field);
-}
-
-// Only exists for public api, no core code should use this.
-void GPBSetFixed64IvarWithField(GPBMessage *self,
-                                GPBFieldDescriptor *field,
-                                uint64_t value) {
-  GPBSetUInt64IvarWithField(self, field, (uint64_t)value);
-}
-
-//%PDDM-EXPAND IVAR_ALIAS_DEFN(String, Object, NSString*, id)
-// This block of code is generated, do not edit it directly.
-
-// Only exists for public api, no core code should use this.
-NSString* GPBGetStringIvarWithField(GPBMessage *self,
-                                    GPBFieldDescriptor *field) {
-  return (NSString*)GPBGetObjectIvarWithField(self, field);
-}
-
-// Only exists for public api, no core code should use this.
-void GPBSetStringIvarWithField(GPBMessage *self,
-                               GPBFieldDescriptor *field,
-                               NSString* value) {
-  GPBSetObjectIvarWithField(self, field, (id)value);
-}
-
-//%PDDM-EXPAND IVAR_ALIAS_DEFN(Data, Object, NSData*, id)
-// This block of code is generated, do not edit it directly.
-
-// Only exists for public api, no core code should use this.
-NSData* GPBGetDataIvarWithField(GPBMessage *self,
-                                GPBFieldDescriptor *field) {
-  return (NSData*)GPBGetObjectIvarWithField(self, field);
-}
-
-// Only exists for public api, no core code should use this.
-void GPBSetDataIvarWithField(GPBMessage *self,
-                             GPBFieldDescriptor *field,
-                             NSData* value) {
-  GPBSetObjectIvarWithField(self, field, (id)value);
-}
-
-//%PDDM-EXPAND IVAR_ALIAS_DEFN(Message, Object, GPBMessage*, id)
-// This block of code is generated, do not edit it directly.
-
-// Only exists for public api, no core code should use this.
-GPBMessage* GPBGetMessageIvarWithField(GPBMessage *self,
-                                       GPBFieldDescriptor *field) {
-  return (GPBMessage*)GPBGetObjectIvarWithField(self, field);
-}
-
-// Only exists for public api, no core code should use this.
-void GPBSetMessageIvarWithField(GPBMessage *self,
-                                GPBFieldDescriptor *field,
-                                GPBMessage* value) {
-  GPBSetObjectIvarWithField(self, field, (id)value);
-}
-
-//%PDDM-EXPAND IVAR_ALIAS_DEFN(Group, Object, GPBMessage*, id)
-// This block of code is generated, do not edit it directly.
-
-// Only exists for public api, no core code should use this.
-GPBMessage* GPBGetGroupIvarWithField(GPBMessage *self,
-                                     GPBFieldDescriptor *field) {
-  return (GPBMessage*)GPBGetObjectIvarWithField(self, field);
-}
-
-// Only exists for public api, no core code should use this.
-void GPBSetGroupIvarWithField(GPBMessage *self,
+void GPBSetMessageStringField(GPBMessage *self,
                               GPBFieldDescriptor *field,
-                              GPBMessage* value) {
+                              NSString *value) {
   GPBSetObjectIvarWithField(self, field, (id)value);
 }
 
-//%PDDM-EXPAND-END (10 expansions)
+//%PDDM-EXPAND IVAR_ALIAS_DEFN_OBJECT(Bytes, NSData)
+// This block of code is generated, do not edit it directly.
+
+// Only exists for public api, no core code should use this.
+NSData *GPBGetMessageBytesField(GPBMessage *self,
+                                GPBFieldDescriptor *field) {
+  return (NSData *)GPBGetObjectIvarWithField(self, field);
+}
+
+// Only exists for public api, no core code should use this.
+void GPBSetMessageBytesField(GPBMessage *self,
+                             GPBFieldDescriptor *field,
+                             NSData *value) {
+  GPBSetObjectIvarWithField(self, field, (id)value);
+}
+
+//%PDDM-EXPAND IVAR_ALIAS_DEFN_OBJECT(Message, GPBMessage)
+// This block of code is generated, do not edit it directly.
+
+// Only exists for public api, no core code should use this.
+GPBMessage *GPBGetMessageMessageField(GPBMessage *self,
+                                      GPBFieldDescriptor *field) {
+  return (GPBMessage *)GPBGetObjectIvarWithField(self, field);
+}
+
+// Only exists for public api, no core code should use this.
+void GPBSetMessageMessageField(GPBMessage *self,
+                               GPBFieldDescriptor *field,
+                               GPBMessage *value) {
+  GPBSetObjectIvarWithField(self, field, (id)value);
+}
+
+//%PDDM-EXPAND IVAR_ALIAS_DEFN_OBJECT(Group, GPBMessage)
+// This block of code is generated, do not edit it directly.
+
+// Only exists for public api, no core code should use this.
+GPBMessage *GPBGetMessageGroupField(GPBMessage *self,
+                                    GPBFieldDescriptor *field) {
+  return (GPBMessage *)GPBGetObjectIvarWithField(self, field);
+}
+
+// Only exists for public api, no core code should use this.
+void GPBSetMessageGroupField(GPBMessage *self,
+                             GPBFieldDescriptor *field,
+                             GPBMessage *value) {
+  GPBSetObjectIvarWithField(self, field, (id)value);
+}
+
+//%PDDM-EXPAND-END (4 expansions)
+
+// Only exists for public api, no core code should use this.
+id GPBGetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field) {
+#if DEBUG
+  if (field.fieldType != GPBFieldTypeRepeated) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@.%@ is not a repeated field.",
+                       [self class], field.name];
+  }
+#endif
+  return GPBGetObjectIvarWithField(self, field);
+}
+
+// Only exists for public api, no core code should use this.
+void GPBSetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field, id array) {
+#if DEBUG
+  if (field.fieldType != GPBFieldTypeRepeated) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@.%@ is not a repeated field.",
+                       [self class], field.name];
+  }
+  Class expectedClass = Nil;
+  switch (GPBGetFieldDataType(field)) {
+    case GPBDataTypeBool:
+      expectedClass = [GPBBoolArray class];
+      break;
+    case GPBDataTypeSFixed32:
+    case GPBDataTypeInt32:
+    case GPBDataTypeSInt32:
+      expectedClass = [GPBInt32Array class];
+      break;
+    case GPBDataTypeFixed32:
+    case GPBDataTypeUInt32:
+      expectedClass = [GPBUInt32Array class];
+      break;
+    case GPBDataTypeSFixed64:
+    case GPBDataTypeInt64:
+    case GPBDataTypeSInt64:
+      expectedClass = [GPBInt64Array class];
+      break;
+    case GPBDataTypeFixed64:
+    case GPBDataTypeUInt64:
+      expectedClass = [GPBUInt64Array class];
+      break;
+    case GPBDataTypeFloat:
+      expectedClass = [GPBFloatArray class];
+      break;
+    case GPBDataTypeDouble:
+      expectedClass = [GPBDoubleArray class];
+      break;
+    case GPBDataTypeBytes:
+    case GPBDataTypeString:
+    case GPBDataTypeMessage:
+    case GPBDataTypeGroup:
+      expectedClass = [NSMutableDictionary class];
+      break;
+    case GPBDataTypeEnum:
+      expectedClass = [GPBBoolArray class];
+      break;
+  }
+  if (array && ![array isKindOfClass:expectedClass]) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@.%@: Expected %@ object, got %@.",
+                       [self class], field.name, expectedClass, [array class]];
+  }
+#endif
+  GPBSetObjectIvarWithField(self, field, array);
+}
+
+#if DEBUG
+static NSString *TypeToStr(GPBDataType dataType) {
+  switch (dataType) {
+    case GPBDataTypeBool:
+      return @"Bool";
+    case GPBDataTypeSFixed32:
+    case GPBDataTypeInt32:
+    case GPBDataTypeSInt32:
+      return @"Int32";
+    case GPBDataTypeFixed32:
+    case GPBDataTypeUInt32:
+      return @"UInt32";
+    case GPBDataTypeSFixed64:
+    case GPBDataTypeInt64:
+    case GPBDataTypeSInt64:
+      return @"Int64";
+    case GPBDataTypeFixed64:
+    case GPBDataTypeUInt64:
+      return @"UInt64";
+    case GPBDataTypeFloat:
+      return @"Float";
+    case GPBDataTypeDouble:
+      return @"Double";
+    case GPBDataTypeBytes:
+    case GPBDataTypeString:
+    case GPBDataTypeMessage:
+    case GPBDataTypeGroup:
+      return @"Object";
+    case GPBDataTypeEnum:
+      return @"Bool";
+  }
+}
+#endif
+
+// Only exists for public api, no core code should use this.
+id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field) {
+#if DEBUG
+  if (field.fieldType != GPBFieldTypeMap) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@.%@ is not a map<> field.",
+                       [self class], field.name];
+  }
+#endif
+  return GPBGetObjectIvarWithField(self, field);
+}
+
+// Only exists for public api, no core code should use this.
+void GPBSetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field,
+                           id dictionary) {
+#if DEBUG
+  if (field.fieldType != GPBFieldTypeMap) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@.%@ is not a map<> field.",
+                       [self class], field.name];
+  }
+  if (dictionary) {
+    GPBDataType keyDataType = field.mapKeyDataType;
+    GPBDataType valueDataType = GPBGetFieldDataType(field);
+    NSString *keyStr = TypeToStr(keyDataType);
+    NSString *valueStr = TypeToStr(valueDataType);
+    if (keyDataType == GPBDataTypeString) {
+      keyStr = @"String";
+    }
+    Class expectedClass = Nil;
+    if ((keyDataType == GPBDataTypeString) &&
+        GPBDataTypeIsObject(valueDataType)) {
+      expectedClass = [NSMutableDictionary class];
+    } else {
+      NSString *className =
+          [NSString stringWithFormat:@"GPB%@%@Dictionary", keyStr, valueStr];
+      expectedClass = NSClassFromString(className);
+      NSCAssert(expectedClass, @"Missing a class (%@)?", expectedClass);
+    }
+    if (![dictionary isKindOfClass:expectedClass]) {
+      [NSException raise:NSInvalidArgumentException
+                  format:@"%@.%@: Expected %@ object, got %@.",
+                         [self class], field.name, expectedClass,
+                         [dictionary class]];
+    }
+  }
+#endif
+  GPBSetObjectIvarWithField(self, field, dictionary);
+}
 
 #pragma mark - Misc Dynamic Runtime Utils
-
-void GPBApplyFunctionsToMessageFields(GPBApplyFunctions *functions,
-                                      GPBMessage *msg, void *context) {
-  GPBDescriptor *descriptor = [[msg class] descriptor];
-  for (GPBFieldDescriptor *field in descriptor->fields_) {
-    BOOL wasGood;
-    if (GPBFieldIsMapOrArray(field)) {
-      wasGood = (*functions)[GPBApplyFunctionObject](field, context);
-    } else {
-      wasGood = GPBApplyFunctionsBasedOnField(field, functions, context);
-    }
-    if (!wasGood) {
-      break;
-    }
-  }
-}
-
-BOOL GPBApplyFunctionsBasedOnField(GPBFieldDescriptor *field,
-                                   GPBApplyFunctions *functions,
-                                   void *context) {
-  static const GPBApplyFunctionOrder typeMap[GPBTypeCount] = {
-    GPBApplyFunctionBool,
-    GPBApplyFunctionUInt32,
-    GPBApplyFunctionInt32,
-    GPBApplyFunctionFloat,
-    GPBApplyFunctionUInt64,
-    GPBApplyFunctionInt64,
-    GPBApplyFunctionDouble,
-    GPBApplyFunctionInt32,
-    GPBApplyFunctionInt64,
-    GPBApplyFunctionInt32,
-    GPBApplyFunctionInt64,
-    GPBApplyFunctionUInt32,
-    GPBApplyFunctionUInt64,
-    GPBApplyFunctionObject,
-    GPBApplyFunctionObject,
-    GPBApplyFunctionObject,
-    GPBApplyFunctionObject,
-    GPBApplyFunctionInt32
-  };
-  return (*functions)[typeMap[GPBGetFieldType(field)]](field, context);
-}
-
-void GPBApplyStrictFunctionsToMessageFields(GPBApplyStrictFunctions *functions,
-                                            GPBMessage *msg, void *context) {
-  GPBDescriptor *descriptor = [[msg class] descriptor];
-  for (GPBFieldDescriptor *fieldDescriptor in descriptor->fields_) {
-    GPBApplyFunction function = (*functions)[GPBGetFieldType(fieldDescriptor)];
-    BOOL wasGood = function(fieldDescriptor, context);
-    if (!wasGood) {
-      break;
-    }
-  }
-}
 
 const char *GPBMessageEncodingForSelector(SEL selector, BOOL instanceSel) {
   Protocol *protocol =
@@ -1072,9 +1096,9 @@ static void AppendBufferAsString(NSData *buffer, NSMutableString *destStr) {
 static void AppendTextFormatForMapMessageField(
     id map, GPBFieldDescriptor *field, NSMutableString *toStr,
     NSString *lineIndent, NSString *fieldName, NSString *lineEnding) {
-  GPBType keyType = field.mapKeyType;
-  GPBType valueType = GPBGetFieldType(field);
-  BOOL isMessageValue = GPBTypeIsMessage(valueType);
+  GPBDataType keyDataType = field.mapKeyDataType;
+  GPBDataType valueDataType = GPBGetFieldDataType(field);
+  BOOL isMessageValue = GPBDataTypeIsMessage(valueDataType);
 
   NSString *msgStartFirst =
       [NSString stringWithFormat:@"%@%@ {%@\n", lineIndent, fieldName, lineEnding];
@@ -1088,7 +1112,8 @@ static void AppendTextFormatForMapMessageField(
 
   __block BOOL isFirst = YES;
 
-  if ((keyType == GPBTypeString) && GPBTypeIsObject(valueType)) {
+  if ((keyDataType == GPBDataTypeString) &&
+      GPBDataTypeIsObject(valueDataType)) {
     // map is an NSDictionary.
     NSDictionary *dict = map;
     [dict enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
@@ -1101,16 +1126,16 @@ static void AppendTextFormatForMapMessageField(
       [toStr appendString:@"\n"];
 
       [toStr appendString:valueLine];
-      switch (valueType) {
-        case GPBTypeString:
+      switch (valueDataType) {
+        case GPBDataTypeString:
           AppendStringEscaped(value, toStr);
           break;
 
-        case GPBTypeData:
+        case GPBDataTypeBytes:
           AppendBufferAsString(value, toStr);
           break;
 
-        case GPBTypeMessage:
+        case GPBDataTypeMessage:
           [toStr appendString:@"{\n"];
           NSString *subIndent = [lineIndent stringByAppendingString:@"    "];
           AppendTextFormatForMessage(value, toStr, subIndent);
@@ -1133,7 +1158,7 @@ static void AppendTextFormatForMapMessageField(
       isFirst = NO;
 
       // Key always is a NSString.
-      if (keyType == GPBTypeString) {
+      if (keyDataType == GPBDataTypeString) {
         [toStr appendString:keyLine];
         AppendStringEscaped(keyObj, toStr);
         [toStr appendString:@"\n"];
@@ -1142,23 +1167,23 @@ static void AppendTextFormatForMapMessageField(
       }
 
       [toStr appendString:valueLine];
-      switch (valueType) {
-        case GPBTypeString:
+      switch (valueDataType) {
+        case GPBDataTypeString:
           AppendStringEscaped(valueObj, toStr);
           break;
 
-        case GPBTypeData:
+        case GPBDataTypeBytes:
           AppendBufferAsString(valueObj, toStr);
           break;
 
-        case GPBTypeMessage:
+        case GPBDataTypeMessage:
           [toStr appendString:@"{\n"];
           NSString *subIndent = [lineIndent stringByAppendingString:@"    "];
           AppendTextFormatForMessage(valueObj, toStr, subIndent);
           [toStr appendFormat:@"%@  }", lineIndent];
           break;
 
-        case GPBTypeEnum: {
+        case GPBDataTypeEnum: {
           int32_t enumValue = [valueObj intValue];
           NSString *valueStr = nil;
           GPBEnumDescriptor *descriptor = field.enumDescriptor;
@@ -1174,7 +1199,7 @@ static void AppendTextFormatForMapMessageField(
         }
 
         default:
-          NSCAssert(valueType != GPBTypeGroup, @"Can't happen");
+          NSCAssert(valueDataType != GPBDataTypeGroup, @"Can't happen");
           // Everything else is a NSString.
           [toStr appendString:valueObj];
           break;
@@ -1245,8 +1270,8 @@ static void AppendTextFormatForMessageField(GPBMessage *message,
   id array = arrayOrMap;
   const BOOL isRepeated = (array != nil);
 
-  GPBType fieldDataType = GPBGetFieldType(field);
-  BOOL isMessageField = GPBTypeIsMessage(fieldDataType);
+  GPBDataType fieldDataType = GPBGetFieldDataType(field);
+  BOOL isMessageField = GPBDataTypeIsMessage(fieldDataType);
   for (NSUInteger j = 0; j < count; ++j) {
     // Start the line.
     [toStr appendFormat:@"%@%@%s ", lineIndent, fieldName,
@@ -1254,12 +1279,12 @@ static void AppendTextFormatForMessageField(GPBMessage *message,
 
     // The value.
     switch (fieldDataType) {
-#define FIELD_CASE(GPBTYPE, CTYPE, ARRAY_TYPE, ...)                          \
-  case GPBType##GPBTYPE: {                                                   \
-    CTYPE v = (isRepeated ? [(GPB##ARRAY_TYPE##Array *)array valueAtIndex:j] \
-                          : GPBGet##GPBTYPE##IvarWithField(message, field)); \
-    [toStr appendFormat:__VA_ARGS__, v];                                     \
-    break;                                                                   \
+#define FIELD_CASE(GPBDATATYPE, CTYPE, REAL_TYPE, ...)                        \
+  case GPBDataType##GPBDATATYPE: {                                            \
+    CTYPE v = (isRepeated ? [(GPB##REAL_TYPE##Array *)array valueAtIndex:j]   \
+                          : GPBGetMessage##REAL_TYPE##Field(message, field)); \
+    [toStr appendFormat:__VA_ARGS__, v];                                      \
+    break;                                                                    \
   }
 
       FIELD_CASE(Int32, int32_t, Int32, @"%d")
@@ -1277,9 +1302,9 @@ static void AppendTextFormatForMessageField(GPBMessage *message,
 
 #undef FIELD_CASE
 
-      case GPBTypeEnum: {
+      case GPBDataTypeEnum: {
         int32_t v = (isRepeated ? [(GPBEnumArray *)array rawValueAtIndex:j]
-                                : GPBGetInt32IvarWithField(message, field));
+                                : GPBGetMessageInt32Field(message, field));
         NSString *valueStr = nil;
         GPBEnumDescriptor *descriptor = field.enumDescriptor;
         if (descriptor) {
@@ -1293,29 +1318,29 @@ static void AppendTextFormatForMessageField(GPBMessage *message,
         break;
       }
 
-      case GPBTypeBool: {
+      case GPBDataTypeBool: {
         BOOL v = (isRepeated ? [(GPBBoolArray *)array valueAtIndex:j]
-                             : GPBGetBoolIvarWithField(message, field));
+                             : GPBGetMessageBoolField(message, field));
         [toStr appendString:(v ? @"true" : @"false")];
         break;
       }
 
-      case GPBTypeString: {
+      case GPBDataTypeString: {
         NSString *v = (isRepeated ? [(NSArray *)array objectAtIndex:j]
-                                  : GPBGetStringIvarWithField(message, field));
+                                  : GPBGetMessageStringField(message, field));
         AppendStringEscaped(v, toStr);
         break;
       }
 
-      case GPBTypeData: {
+      case GPBDataTypeBytes: {
         NSData *v = (isRepeated ? [(NSArray *)array objectAtIndex:j]
-                                : GPBGetDataIvarWithField(message, field));
+                                : GPBGetMessageBytesField(message, field));
         AppendBufferAsString(v, toStr);
         break;
       }
 
-      case GPBTypeGroup:
-      case GPBTypeMessage: {
+      case GPBDataTypeGroup:
+      case GPBDataTypeMessage: {
         GPBMessage *v =
             (isRepeated ? [(NSArray *)array objectAtIndex:j]
                         : GPBGetObjectIvarWithField(message, field));
@@ -1342,7 +1367,7 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message,
                                                      NSString *lineIndent) {
   uint32_t start = range.start;
   uint32_t end = range.end;
-  for (GPBExtensionField *extension in activeExtensions) {
+  for (GPBExtensionDescriptor *extension in activeExtensions) {
     uint32_t fieldNumber = extension.fieldNumber;
     if (fieldNumber < start) {
       // Not there yet.
@@ -1354,8 +1379,7 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message,
     }
 
     id rawExtValue = [message getExtension:extension];
-    GPBExtensionDescriptor *extDescriptor = [extension descriptor];
-    BOOL isRepeated = extDescriptor.isRepeated;
+    BOOL isRepeated = extension.isRepeated;
 
     NSUInteger numValues = 1;
     NSString *lineEnding = @"";
@@ -1363,28 +1387,28 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message,
       numValues = [(NSArray *)rawExtValue count];
     }
 
-    NSString *singletonName = extension.descriptor.singletonName;
+    NSString *singletonName = extension.singletonName;
     if (numValues == 1) {
       lineEnding = [NSString stringWithFormat:@"  # [%@]", singletonName];
     } else {
       [toStr appendFormat:@"%@# [%@]\n", lineIndent, singletonName];
     }
 
-    GPBType extType = extDescriptor.type;
+    GPBDataType extDataType = extension.dataType;
     for (NSUInteger j = 0; j < numValues; ++j) {
       id curValue = (isRepeated ? [rawExtValue objectAtIndex:j] : rawExtValue);
 
       // Start the line.
       [toStr appendFormat:@"%@%u%s ", lineIndent, fieldNumber,
-                          (GPBTypeIsMessage(extType) ? "" : ":")];
+                          (GPBDataTypeIsMessage(extDataType) ? "" : ":")];
 
       // The value.
-      switch (extType) {
-#define FIELD_CASE(GPBTYPE, CTYPE, NUMSELECTOR, ...) \
-  case GPBType##GPBTYPE: {                           \
-    CTYPE v = [(NSNumber *)curValue NUMSELECTOR];    \
-    [toStr appendFormat:__VA_ARGS__, v];             \
-    break;                                           \
+      switch (extDataType) {
+#define FIELD_CASE(GPBDATATYPE, CTYPE, NUMSELECTOR, ...) \
+  case GPBDataType##GPBDATATYPE: {                       \
+    CTYPE v = [(NSNumber *)curValue NUMSELECTOR];        \
+    [toStr appendFormat:__VA_ARGS__, v];                 \
+    break;                                               \
   }
 
         FIELD_CASE(Int32, int32_t, intValue, @"%d")
@@ -1408,21 +1432,21 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message,
 
 #undef FIELD_CASE
 
-        case GPBTypeBool:
+        case GPBDataTypeBool:
           [toStr appendString:([(NSNumber *)curValue boolValue] ? @"true"
                                                                 : @"false")];
           break;
 
-        case GPBTypeString:
+        case GPBDataTypeString:
           AppendStringEscaped(curValue, toStr);
           break;
 
-        case GPBTypeData:
+        case GPBDataTypeBytes:
           AppendBufferAsString((NSData *)curValue, toStr);
           break;
 
-        case GPBTypeGroup:
-        case GPBTypeMessage: {
+        case GPBDataTypeGroup:
+        case GPBDataTypeMessage: {
           [toStr appendFormat:@"{%@\n", lineEnding];
           NSString *subIndent = [lineIndent stringByAppendingString:@"  "];
           AppendTextFormatForMessage(curValue, toStr, subIndent);
@@ -1431,7 +1455,7 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message,
           break;
         }
 
-      }  // switch(extType)
+      }  // switch(extDataType)
 
     }  //  for(numValues)
 
@@ -1487,7 +1511,7 @@ NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *unknownSet,
   if (lineIndent == nil) lineIndent = @"";
 
   NSMutableString *result = [NSMutableString string];
-  for (GPBField *field in [unknownSet sortedFields]) {
+  for (GPBUnknownField *field in [unknownSet sortedFields]) {
     int32_t fieldNumber = [field number];
 
 #define PRINT_LOOP(PROPNAME, CTYPE, FORMAT)                                   \
@@ -1527,13 +1551,13 @@ NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *unknownSet,
 // Helpers to decode a varint. Not using GPBCodedInputStream version because
 // that needs a state object, and we don't want to create an input stream out
 // of the data.
-static inline int8_t ReadRawByteFromData(const uint8_t **data) {
+GPB_INLINE int8_t ReadRawByteFromData(const uint8_t **data) {
   int8_t result = *((int8_t *)(*data));
   ++(*data);
   return result;
 }
 
-static inline int32_t ReadRawVarint32FromData(const uint8_t **data) {
+static int32_t ReadRawVarint32FromData(const uint8_t **data) {
   int8_t tmp = ReadRawByteFromData(data);
   if (tmp >= 0) {
     return tmp;

@@ -1,0 +1,33 @@
+# Only test one combination: "Visual Studio 12 + Win64 + Debug + DLL". We can
+# test more combinations but AppVeyor just takes too long to finish (each
+# combination takes ~15mins).
+platform:
+  - Win64
+
+configuration:
+  - Debug
+
+environment:
+  matrix:
+    - BUILD_DLL: ON
+
+install:
+  - ps: Start-FileDownload https://googletest.googlecode.com/files/gtest-1.7.0.zip
+  - 7z x gtest-1.7.0.zip
+  - rename gtest-1.7.0 gtest
+
+before_build:
+  - if %platform%==Win32 set generator=Visual Studio 12
+  - if %platform%==Win64 set generator=Visual Studio 12 Win64
+  - if %platform%==Win32 set vcplatform=Win32
+  - if %platform%==Win64 set vcplatform=x64
+
+build_script:
+  - mkdir build
+  - cd build
+  - cmake -G "%generator%" -DBUILD_SHARED_LIBS=%BUILD_DLL% ../cmake
+  - msbuild protobuf.sln /p:Platform=%vcplatform% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cd %configuration%
+  - tests.exe
+
+

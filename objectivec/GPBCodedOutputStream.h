@@ -30,7 +30,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "GPBTypes.h"
+#import "GPBRuntimeTypes.h"
 #import "GPBWireFormat.h"
 
 @class GPBBoolArray;
@@ -84,110 +84,110 @@
 // This block of code is generated, do not edit it directly.
 
 - (void)writeDouble:(int32_t)fieldNumber value:(double)value;
-- (void)writeDoubles:(int32_t)fieldNumber
-              values:(GPBDoubleArray *)values
-                 tag:(uint32_t)tag;
+- (void)writeDoubleArray:(int32_t)fieldNumber
+                  values:(GPBDoubleArray *)values
+                     tag:(uint32_t)tag;
 - (void)writeDoubleNoTag:(double)value;
 
 - (void)writeFloat:(int32_t)fieldNumber value:(float)value;
-- (void)writeFloats:(int32_t)fieldNumber
-             values:(GPBFloatArray *)values
-                tag:(uint32_t)tag;
+- (void)writeFloatArray:(int32_t)fieldNumber
+                 values:(GPBFloatArray *)values
+                    tag:(uint32_t)tag;
 - (void)writeFloatNoTag:(float)value;
 
 - (void)writeUInt64:(int32_t)fieldNumber value:(uint64_t)value;
-- (void)writeUInt64s:(int32_t)fieldNumber
-              values:(GPBUInt64Array *)values
-                 tag:(uint32_t)tag;
+- (void)writeUInt64Array:(int32_t)fieldNumber
+                  values:(GPBUInt64Array *)values
+                     tag:(uint32_t)tag;
 - (void)writeUInt64NoTag:(uint64_t)value;
 
 - (void)writeInt64:(int32_t)fieldNumber value:(int64_t)value;
-- (void)writeInt64s:(int32_t)fieldNumber
-             values:(GPBInt64Array *)values
-                tag:(uint32_t)tag;
+- (void)writeInt64Array:(int32_t)fieldNumber
+                 values:(GPBInt64Array *)values
+                    tag:(uint32_t)tag;
 - (void)writeInt64NoTag:(int64_t)value;
 
 - (void)writeInt32:(int32_t)fieldNumber value:(int32_t)value;
-- (void)writeInt32s:(int32_t)fieldNumber
-             values:(GPBInt32Array *)values
-                tag:(uint32_t)tag;
+- (void)writeInt32Array:(int32_t)fieldNumber
+                 values:(GPBInt32Array *)values
+                    tag:(uint32_t)tag;
 - (void)writeInt32NoTag:(int32_t)value;
 
 - (void)writeUInt32:(int32_t)fieldNumber value:(uint32_t)value;
-- (void)writeUInt32s:(int32_t)fieldNumber
-              values:(GPBUInt32Array *)values
-                 tag:(uint32_t)tag;
+- (void)writeUInt32Array:(int32_t)fieldNumber
+                  values:(GPBUInt32Array *)values
+                     tag:(uint32_t)tag;
 - (void)writeUInt32NoTag:(uint32_t)value;
 
 - (void)writeFixed64:(int32_t)fieldNumber value:(uint64_t)value;
-- (void)writeFixed64s:(int32_t)fieldNumber
-               values:(GPBUInt64Array *)values
-                  tag:(uint32_t)tag;
+- (void)writeFixed64Array:(int32_t)fieldNumber
+                   values:(GPBUInt64Array *)values
+                      tag:(uint32_t)tag;
 - (void)writeFixed64NoTag:(uint64_t)value;
 
 - (void)writeFixed32:(int32_t)fieldNumber value:(uint32_t)value;
-- (void)writeFixed32s:(int32_t)fieldNumber
-               values:(GPBUInt32Array *)values
-                  tag:(uint32_t)tag;
+- (void)writeFixed32Array:(int32_t)fieldNumber
+                   values:(GPBUInt32Array *)values
+                      tag:(uint32_t)tag;
 - (void)writeFixed32NoTag:(uint32_t)value;
 
 - (void)writeSInt32:(int32_t)fieldNumber value:(int32_t)value;
-- (void)writeSInt32s:(int32_t)fieldNumber
-              values:(GPBInt32Array *)values
-                 tag:(uint32_t)tag;
+- (void)writeSInt32Array:(int32_t)fieldNumber
+                  values:(GPBInt32Array *)values
+                     tag:(uint32_t)tag;
 - (void)writeSInt32NoTag:(int32_t)value;
 
 - (void)writeSInt64:(int32_t)fieldNumber value:(int64_t)value;
-- (void)writeSInt64s:(int32_t)fieldNumber
-              values:(GPBInt64Array *)values
-                 tag:(uint32_t)tag;
+- (void)writeSInt64Array:(int32_t)fieldNumber
+                  values:(GPBInt64Array *)values
+                     tag:(uint32_t)tag;
 - (void)writeSInt64NoTag:(int64_t)value;
 
 - (void)writeSFixed64:(int32_t)fieldNumber value:(int64_t)value;
-- (void)writeSFixed64s:(int32_t)fieldNumber
-                values:(GPBInt64Array *)values
-                   tag:(uint32_t)tag;
+- (void)writeSFixed64Array:(int32_t)fieldNumber
+                    values:(GPBInt64Array *)values
+                       tag:(uint32_t)tag;
 - (void)writeSFixed64NoTag:(int64_t)value;
 
 - (void)writeSFixed32:(int32_t)fieldNumber value:(int32_t)value;
-- (void)writeSFixed32s:(int32_t)fieldNumber
-                values:(GPBInt32Array *)values
-                   tag:(uint32_t)tag;
+- (void)writeSFixed32Array:(int32_t)fieldNumber
+                    values:(GPBInt32Array *)values
+                       tag:(uint32_t)tag;
 - (void)writeSFixed32NoTag:(int32_t)value;
 
 - (void)writeBool:(int32_t)fieldNumber value:(BOOL)value;
-- (void)writeBools:(int32_t)fieldNumber
-            values:(GPBBoolArray *)values
-               tag:(uint32_t)tag;
+- (void)writeBoolArray:(int32_t)fieldNumber
+                values:(GPBBoolArray *)values
+                   tag:(uint32_t)tag;
 - (void)writeBoolNoTag:(BOOL)value;
 
 - (void)writeEnum:(int32_t)fieldNumber value:(int32_t)value;
-- (void)writeEnums:(int32_t)fieldNumber
-            values:(GPBEnumArray *)values
-               tag:(uint32_t)tag;
+- (void)writeEnumArray:(int32_t)fieldNumber
+                values:(GPBEnumArray *)values
+                   tag:(uint32_t)tag;
 - (void)writeEnumNoTag:(int32_t)value;
 
 - (void)writeString:(int32_t)fieldNumber value:(NSString *)value;
-- (void)writeStrings:(int32_t)fieldNumber values:(NSArray *)values;
+- (void)writeStringArray:(int32_t)fieldNumber values:(NSArray *)values;
 - (void)writeStringNoTag:(NSString *)value;
 
 - (void)writeMessage:(int32_t)fieldNumber value:(GPBMessage *)value;
-- (void)writeMessages:(int32_t)fieldNumber values:(NSArray *)values;
+- (void)writeMessageArray:(int32_t)fieldNumber values:(NSArray *)values;
 - (void)writeMessageNoTag:(GPBMessage *)value;
 
-- (void)writeData:(int32_t)fieldNumber value:(NSData *)value;
-- (void)writeDatas:(int32_t)fieldNumber values:(NSArray *)values;
-- (void)writeDataNoTag:(NSData *)value;
+- (void)writeBytes:(int32_t)fieldNumber value:(NSData *)value;
+- (void)writeBytesArray:(int32_t)fieldNumber values:(NSArray *)values;
+- (void)writeBytesNoTag:(NSData *)value;
 
 - (void)writeGroup:(int32_t)fieldNumber
              value:(GPBMessage *)value;
-- (void)writeGroups:(int32_t)fieldNumber values:(NSArray *)values;
+- (void)writeGroupArray:(int32_t)fieldNumber values:(NSArray *)values;
 - (void)writeGroupNoTag:(int32_t)fieldNumber
                   value:(GPBMessage *)value;
 
 - (void)writeUnknownGroup:(int32_t)fieldNumber
                     value:(GPBUnknownFieldSet *)value;
-- (void)writeUnknownGroups:(int32_t)fieldNumber values:(NSArray *)values;
+- (void)writeUnknownGroupArray:(int32_t)fieldNumber values:(NSArray *)values;
 - (void)writeUnknownGroupNoTag:(int32_t)fieldNumber
                          value:(GPBUnknownFieldSet *)value;
 
@@ -230,7 +230,7 @@ size_t GPBComputeUnknownGroupSize(int32_t fieldNumber,
     __attribute__((const));
 size_t GPBComputeMessageSize(int32_t fieldNumber, GPBMessage *value)
     __attribute__((const));
-size_t GPBComputeDataSize(int32_t fieldNumber, NSData *value)
+size_t GPBComputeBytesSize(int32_t fieldNumber, NSData *value)
     __attribute__((const));
 size_t GPBComputeUInt32Size(int32_t fieldNumber, uint32_t value)
     __attribute__((const));
@@ -243,7 +243,7 @@ size_t GPBComputeSInt32Size(int32_t fieldNumber, int32_t value)
 size_t GPBComputeSInt64Size(int32_t fieldNumber, int64_t value)
     __attribute__((const));
 size_t GPBComputeTagSize(int32_t fieldNumber) __attribute__((const));
-size_t GPBComputeWireFormatTagSize(int field_number, GPBType type)
+size_t GPBComputeWireFormatTagSize(int field_number, GPBDataType dataType)
     __attribute__((const));
 
 size_t GPBComputeDoubleSizeNoTag(double value) __attribute__((const));
@@ -259,7 +259,7 @@ size_t GPBComputeGroupSizeNoTag(GPBMessage *value) __attribute__((const));
 size_t GPBComputeUnknownGroupSizeNoTag(GPBUnknownFieldSet *value)
     __attribute__((const));
 size_t GPBComputeMessageSizeNoTag(GPBMessage *value) __attribute__((const));
-size_t GPBComputeDataSizeNoTag(NSData *value) __attribute__((const));
+size_t GPBComputeBytesSizeNoTag(NSData *value) __attribute__((const));
 size_t GPBComputeUInt32SizeNoTag(int32_t value) __attribute__((const));
 size_t GPBComputeEnumSizeNoTag(int32_t value) __attribute__((const));
 size_t GPBComputeSFixed32SizeNoTag(int32_t value) __attribute__((const));
@@ -297,22 +297,22 @@ CF_EXTERN_C_END
 // Write methods for types that can be in packed arrays.
 //%PDDM-DEFINE _WRITE_PACKABLE_DECLS(NAME, ARRAY_TYPE, TYPE)
 //%- (void)write##NAME:(int32_t)fieldNumber value:(TYPE)value;
-//%- (void)write##NAME##s:(int32_t)fieldNumber
-//%       NAME$S values:(GPB##ARRAY_TYPE##Array *)values
-//%       NAME$S    tag:(uint32_t)tag;
+//%- (void)write##NAME##Array:(int32_t)fieldNumber
+//%       NAME$S     values:(GPB##ARRAY_TYPE##Array *)values
+//%       NAME$S        tag:(uint32_t)tag;
 //%- (void)write##NAME##NoTag:(TYPE)value;
 //%
 // Write methods for types that aren't in packed arrays.
 //%PDDM-DEFINE _WRITE_UNPACKABLE_DECLS(NAME, TYPE)
 //%- (void)write##NAME:(int32_t)fieldNumber value:(TYPE)value;
-//%- (void)write##NAME##s:(int32_t)fieldNumber values:(NSArray *)values;
+//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray *)values;
 //%- (void)write##NAME##NoTag:(TYPE)value;
 //%
 // Special write methods for Groups.
 //%PDDM-DEFINE _WRITE_GROUP_DECLS(NAME, TYPE)
 //%- (void)write##NAME:(int32_t)fieldNumber
 //%       NAME$S value:(TYPE)value;
-//%- (void)write##NAME##s:(int32_t)fieldNumber values:(NSArray *)values;
+//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray *)values;
 //%- (void)write##NAME##NoTag:(int32_t)fieldNumber
 //%            NAME$S value:(TYPE)value;
 //%
@@ -335,6 +335,6 @@ CF_EXTERN_C_END
 //%_WRITE_PACKABLE_DECLS(Enum, Enum, int32_t)
 //%_WRITE_UNPACKABLE_DECLS(String, NSString *)
 //%_WRITE_UNPACKABLE_DECLS(Message, GPBMessage *)
-//%_WRITE_UNPACKABLE_DECLS(Data, NSData *)
+//%_WRITE_UNPACKABLE_DECLS(Bytes, NSData *)
 //%_WRITE_GROUP_DECLS(Group, GPBMessage *)
 //%_WRITE_GROUP_DECLS(UnknownGroup, GPBUnknownFieldSet *)

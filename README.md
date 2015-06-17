@@ -1,7 +1,7 @@
 Protocol Buffers - Google's data interchange format
 ===================================================
 
-[![Build Status](https://travis-ci.org/google/protobuf.svg?branch=master)](https://travis-ci.org/google/protobuf)
+[![Build Status](https://travis-ci.org/google/protobuf.svg?branch=master)](https://travis-ci.org/google/protobuf) [![Build status](https://ci.appveyor.com/api/projects/status/73ctee6ua4w2ruin?svg=true)](https://ci.appveyor.com/project/protobuf/protobuf)
 
 Copyright 2008 Google Inc.
 
@@ -156,7 +156,7 @@ For advanced usage information on configure and make, see INSTALL.txt.
 C++ Installation - Windows
 --------------------------
 
-If you are using Microsoft Visual C++, see vsprojects/readme.txt.
+If you are using Microsoft Visual C++, see cmake/README.md.
 
 If you are using Cygwin or MinGW, follow the Unix installation
 instructions, above.

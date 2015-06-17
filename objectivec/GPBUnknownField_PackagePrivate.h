@@ -30,27 +30,20 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GPBUnknownField.h"
+
 @class GPBCodedOutputStream;
-@class GPBUInt32Array;
-@class GPBUInt64Array;
-@class GPBUnknownFieldSet;
 
-@interface GPBField : NSObject<NSCopying>
+@interface GPBUnknownField ()
 
-@property(nonatomic, readonly, assign) int32_t number;
+- (instancetype)initWithNumber:(int32_t)number;
 
-// Only one of these will be set.
-@property(nonatomic, readonly, strong) GPBUInt64Array *varintList;
-@property(nonatomic, readonly, strong) GPBUInt32Array *fixed32List;
-@property(nonatomic, readonly, strong) GPBUInt64Array *fixed64List;
-@property(nonatomic, readonly, strong) NSArray *lengthDelimitedList;
-@property(nonatomic, readonly, strong) NSArray *groupList;
+- (void)writeToOutput:(GPBCodedOutputStream *)output;
+- (size_t)serializedSize;
 
-// Only one of these should be used per Field.
-- (void)addVarint:(uint64_t)value;
-- (void)addFixed32:(uint32_t)value;
-- (void)addFixed64:(uint64_t)value;
-- (void)addLengthDelimited:(NSData *)value;
-- (void)addGroup:(GPBUnknownFieldSet *)value;
+- (void)writeAsMessageSetExtensionToOutput:(GPBCodedOutputStream *)output;
+- (size_t)serializedSizeAsMessageSetExtension;
+
+- (void)mergeFromField:(GPBUnknownField *)other;
 
 @end

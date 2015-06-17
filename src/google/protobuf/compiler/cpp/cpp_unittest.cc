@@ -55,6 +55,7 @@
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_optimize_for.pb.h>
 #include <google/protobuf/unittest_embed_optimize_for.pb.h>
+#include <google/protobuf/unittest_enormous_descriptor.pb.h>
 #include <google/protobuf/unittest_no_generic_services.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
@@ -128,6 +129,17 @@ TEST(GeneratedDescriptorTest, IdenticalDescriptors) {
 
   EXPECT_EQ(parsed_descriptor_proto.DebugString(),
             generated_decsriptor_proto.DebugString());
+}
+
+// Test that generated code has proper descriptors:
+// Touch a descriptor generated from an enormous message to validate special
+// handling for descriptors exceeding the C++ standard's recommended minimum
+// limit for string literal size
+TEST(GeneratedDescriptorTest, EnormousDescriptor) {
+  const Descriptor* generated_descriptor =
+    TestEnormousDescriptor::descriptor();
+
+  EXPECT_TRUE(generated_descriptor != NULL);
 }
 
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS

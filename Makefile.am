@@ -506,14 +506,10 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBDictionary.h                                                 \
   objectivec/GPBDictionary.m                                                 \
   objectivec/GPBDictionary_PackagePrivate.h                                  \
-  objectivec/GPBExtensionField.h                                             \
-  objectivec/GPBExtensionField.m                                             \
-  objectivec/GPBExtensionField_PackagePrivate.h                              \
+  objectivec/GPBExtensionInternals.h                                         \
+  objectivec/GPBExtensionInternals.m                                         \
   objectivec/GPBExtensionRegistry.h                                          \
   objectivec/GPBExtensionRegistry.m                                          \
-  objectivec/GPBField.h                                                      \
-  objectivec/GPBField.m                                                      \
-  objectivec/GPBField_PackagePrivate.h                                       \
   objectivec/GPBMessage.h                                                    \
   objectivec/GPBMessage.m                                                    \
   objectivec/GPBMessage_PackagePrivate.h                                     \
@@ -523,7 +519,10 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBRootObject.h                                                 \
   objectivec/GPBRootObject.m                                                 \
   objectivec/GPBRootObject_PackagePrivate.h                                  \
-  objectivec/GPBTypes.h                                                      \
+  objectivec/GPBRuntimeTypes.h                                               \
+  objectivec/GPBUnknownField.h                                               \
+  objectivec/GPBUnknownField.m                                               \
+  objectivec/GPBUnknownField_PackagePrivate.h                                \
   objectivec/GPBUnknownFieldSet.h                                            \
   objectivec/GPBUnknownFieldSet.m                                            \
   objectivec/GPBUnknownFieldSet_PackagePrivate.h                             \
@@ -547,8 +546,6 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/ProtocolBuffers_OSX.xcodeproj/xcshareddata/xcschemes/PerformanceTests.xcscheme \
   objectivec/ProtocolBuffers_OSX.xcodeproj/xcshareddata/xcschemes/ProtocolBuffers.xcscheme \
   objectivec/README.md                                                       \
-  objectivec/Tests/Filter1.txt                                               \
-  objectivec/Tests/Filter2.txt                                               \
   objectivec/Tests/golden_message                                            \
   objectivec/Tests/golden_packed_fields_message                              \
   objectivec/Tests/GPBARCUnittestProtos.m                                    \
@@ -564,7 +561,6 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/GPBDictionaryTests+UInt32.m                               \
   objectivec/Tests/GPBDictionaryTests+UInt64.m                               \
   objectivec/Tests/GPBDictionaryTests.pddm                                   \
-  objectivec/Tests/GPBFilteredMessageTests.m                                 \
   objectivec/Tests/GPBMessageTests+Merge.m                                   \
   objectivec/Tests/GPBMessageTests+Runtime.m                                 \
   objectivec/Tests/GPBMessageTests+Serialization.m                           \
@@ -583,21 +579,19 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/iOSTestHarness/en.lproj/InfoPlist.strings                 \
   objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/Contents.json      \
   objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPad6.png          \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPad6@2x.png       \
+  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPad6_2x.png       \
   objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPad7.png          \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPad7@2x.png       \
+  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPad7_2x.png       \
   objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone6.png        \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone6@2x.png     \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone7@2x.png     \
-  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone7@3x.png     \
+  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone6_2x.png     \
+  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone7_2x.png     \
+  objectivec/Tests/iOSTestHarness/Images.xcassets/AppIcon.appiconset/iPhone7_3x.png     \
   objectivec/Tests/iOSTestHarness/Images.xcassets/LaunchImage.launchimage/Contents.json \
   objectivec/Tests/iOSTestHarness/Info.plist                                  \
   objectivec/Tests/iOSTestHarness/LaunchScreen.xib                            \
   objectivec/Tests/text_format_map_unittest_data.txt                          \
   objectivec/Tests/text_format_unittest_data.txt                              \
   objectivec/Tests/unittest_cycle.proto                                       \
-  objectivec/Tests/unittest_filter.proto                                      \
-  objectivec/Tests/unittest_name_mangling.proto                               \
   objectivec/Tests/unittest_objc.proto                                        \
   objectivec/Tests/unittest_runtime_proto2.proto                              \
   objectivec/Tests/unittest_runtime_proto3.proto                              \
@@ -741,39 +735,33 @@ ruby_EXTRA_DIST=                                                             \
 
 all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST)
 
-EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)                                       \
-  autogen.sh                                                                 \
-  generate_descriptor_proto.sh                                               \
-  README.md                                                                  \
-  INSTALL.txt                                                                \
-  LICENSE                                                                    \
-  CONTRIBUTORS.txt                                                           \
-  CHANGES.txt                                                                \
-  config.h.include                                                           \
-  editors/README.txt                                                         \
-  editors/proto.vim                                                          \
-  editors/protobuf-mode.el                                                   \
-  vsprojects/config.h                                                        \
-  vsprojects/google/protobuf/stubs/pbconfig.h                                \
-  vsprojects/extract_includes.bat                                            \
-  vsprojects/libprotobuf.vcproj                                              \
-  vsprojects/libprotobuf-lite.vcproj                                         \
-  vsprojects/libprotoc.vcproj                                                \
-  vsprojects/protobuf.sln                                                    \
-  vsprojects/protoc.vcproj                                                   \
-  vsprojects/readme.txt                                                      \
-  vsprojects/test_plugin.vcproj                                              \
-  vsprojects/tests.vcproj                                                    \
-  vsprojects/lite-test.vcproj                                                \
-  vsprojects/convert2008to2005.sh                                            \
-  examples/README.txt                                                        \
-  examples/Makefile                                                          \
-  examples/addressbook.proto                                                 \
-  examples/add_person.cc                                                     \
-  examples/list_people.cc                                                    \
-  examples/AddPerson.java                                                    \
-  examples/ListPeople.java                                                   \
-  examples/add_person.py                                                     \
+EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST) \
+  autogen.sh                           \
+  generate_descriptor_proto.sh         \
+  README.md                            \
+  INSTALL.txt                          \
+  LICENSE                              \
+  CONTRIBUTORS.txt                     \
+  CHANGES.txt                          \
+  cmake/CMakeLists.txt                 \
+  cmake/libprotobuf.cmake              \
+  cmake/libprotobuf-lite.cmake         \
+  cmake/libprotoc.cmake                \
+  cmake/protoc.cmake                   \
+  cmake/README.md                      \
+  cmake/tests.cmake                    \
+  cmake/update_file_lists.sh           \
+  editors/README.txt                   \
+  editors/proto.vim                    \
+  editors/protobuf-mode.el             \
+  examples/README.txt                  \
+  examples/Makefile                    \
+  examples/addressbook.proto           \
+  examples/add_person.cc               \
+  examples/list_people.cc              \
+  examples/AddPerson.java              \
+  examples/ListPeople.java             \
+  examples/add_person.py               \
   examples/list_people.py
 
 # Deletes all the files generated by autogen.sh.

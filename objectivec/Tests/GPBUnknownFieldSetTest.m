@@ -30,7 +30,7 @@
 
 #import "GPBTestUtilities.h"
 
-#import "GPBField_PackagePrivate.h"
+#import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "google/protobuf/Unittest.pbobjc.h"
 
@@ -60,7 +60,7 @@
   unknownFields_ = emptyMessage_.unknownFields;
 }
 
-- (GPBField*)getField:(int32_t)number {
+- (GPBUnknownField *)getField:(int32_t)number {
   return [unknownFields_ getField:number];
 }
 
@@ -75,17 +75,17 @@
   [unknownFields_ getTags:tags];
   for (NSUInteger i = 0; i < count; ++i) {
     int32_t tag = tags[i];
-    GPBField* field = [unknownFields_ getField:tag];
+    GPBUnknownField* field = [unknownFields_ getField:tag];
     if (field.varintList.count == 0) {
       // Original field is not a varint, so use a varint.
-      GPBField* varintField =
-          [[[GPBField alloc] initWithNumber:tag] autorelease];
+      GPBUnknownField* varintField =
+          [[[GPBUnknownField alloc] initWithNumber:tag] autorelease];
       [varintField addVarint:1];
       [bizarroFields addField:varintField];
     } else {
       // Original field *is* a varint, so use something else.
-      GPBField* fixed32Field =
-          [[[GPBField alloc] initWithNumber:tag] autorelease];
+      GPBUnknownField* fixed32Field =
+          [[[GPBUnknownField alloc] initWithNumber:tag] autorelease];
       [fixed32Field addFixed32:1];
       [bizarroFields addField:fixed32Field];
     }
@@ -110,34 +110,34 @@
 
 - (void)testMergeFrom {
   GPBUnknownFieldSet* set1 = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  GPBField* field = [[[GPBField alloc] initWithNumber:2] autorelease];
+  GPBUnknownField* field = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
   [field addVarint:2];
   [set1 addField:field];
-  field = [[[GPBField alloc] initWithNumber:3] autorelease];
+  field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:4];
   [set1 addField:field];
 
   GPBUnknownFieldSet* set2 = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  field = [[[GPBField alloc] initWithNumber:1] autorelease];
+  field = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
   [field addVarint:1];
   [set2 addField:field];
-  field = [[[GPBField alloc] initWithNumber:3] autorelease];
+  field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:3];
   [set2 addField:field];
 
   GPBUnknownFieldSet* set3 = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  field = [[[GPBField alloc] initWithNumber:1] autorelease];
+  field = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
   [field addVarint:1];
   [set3 addField:field];
-  field = [[[GPBField alloc] initWithNumber:3] autorelease];
+  field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:4];
   [set3 addField:field];
 
   GPBUnknownFieldSet* set4 = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  field = [[[GPBField alloc] initWithNumber:2] autorelease];
+  field = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
   [field addVarint:2];
   [set4 addField:field];
-  field = [[[GPBField alloc] initWithNumber:3] autorelease];
+  field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:3];
   [set4 addField:field];
 
@@ -162,7 +162,7 @@
 }
 
 - (void)testClearMessage {
-  TestEmptyMessage* message = [TestEmptyMessage message];
+  TestEmptyMessage *message = [TestEmptyMessage message];
   [message mergeFrom:emptyMessage_];
   [message clear];
   XCTAssertEqual(message.serializedSize, (size_t)0);
@@ -170,8 +170,9 @@
 
 - (void)testParseKnownAndUnknown {
   // Test mixing known and unknown fields when parsing.
-  GPBUnknownFieldSet* fields = [[unknownFields_ copy] autorelease];
-  GPBField* field = [[[GPBField alloc] initWithNumber:123456] autorelease];
+  GPBUnknownFieldSet *fields = [[unknownFields_ copy] autorelease];
+  GPBUnknownField *field =
+    [[[GPBUnknownField alloc] initWithNumber:123456] autorelease];
   [field addVarint:654321];
   [fields addField:field];
 
@@ -181,7 +182,7 @@
   [self assertAllFieldsSet:destination repeatedCount:kGPBDefaultRepeatCount];
   XCTAssertEqual(destination.unknownFields.countOfFields, (NSUInteger)1);
 
-  GPBField* field2 = [destination.unknownFields getField:123456];
+  GPBUnknownField* field2 = [destination.unknownFields getField:123456];
   XCTAssertEqual(field2.varintList.count, (NSUInteger)1);
   XCTAssertEqual(654321ULL, [field2.varintList valueAtIndex:0]);
 }
@@ -230,7 +231,7 @@
 
 - (void)testLargeVarint {
   GPBUnknownFieldSet* fields = [[unknownFields_ copy] autorelease];
-  GPBField* field = [[[GPBField alloc] initWithNumber:1] autorelease];
+  GPBUnknownField* field = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
   [field addVarint:0x7FFFFFFFFFFFFFFFL];
   [fields addField:field];
 
@@ -238,19 +239,19 @@
 
   GPBUnknownFieldSet* parsed = [[[GPBUnknownFieldSet alloc] init] autorelease];
   [parsed mergeFromData:data];
-  GPBField* field2 = [parsed getField:1];
+  GPBUnknownField* field2 = [parsed getField:1];
   XCTAssertEqual(field2.varintList.count, (NSUInteger)1);
   XCTAssertEqual(0x7FFFFFFFFFFFFFFFULL, [field2.varintList valueAtIndex:0]);
 }
 
 - (void)testMergingFields {
-  GPBField* field1 = [[[GPBField alloc] initWithNumber:1] autorelease];
+  GPBUnknownField* field1 = [[[GPBUnknownField alloc] initWithNumber:1] autorelease];
   [field1 addVarint:1];
   [field1 addFixed32:2];
   [field1 addFixed64:3];
   [field1 addLengthDelimited:[NSData dataWithBytes:"hello" length:5]];
   [field1 addGroup:[[unknownFields_ copy] autorelease]];
-  GPBField* field2 = [[[GPBField alloc] initWithNumber:2] autorelease];
+  GPBUnknownField* field2 = [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
   [field2 mergeFromField:field1];
   XCTAssertEqualObjects(field1, field2);
 }

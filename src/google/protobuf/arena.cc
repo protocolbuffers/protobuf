@@ -43,7 +43,7 @@ Arena::ThreadCache& Arena::thread_cache() {
   static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_ = { -1, NULL };
   return thread_cache_;
 }
-#elif defined(GOOGLE_PROTOBUF_OS_ANDROID) || defined(GOOGLE_PROTOBUF_OS_IPHONE)
+#elif defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
 Arena::ThreadCache& Arena::thread_cache() {
   static internal::ThreadLocalStorage<ThreadCache>* thread_cache_ =
       new internal::ThreadLocalStorage<ThreadCache>();

@@ -120,7 +120,7 @@ static VALUE table_key_to_ruby(Map* self, const char* buf, size_t length) {
 }
 
 static void* value_memory(upb_value* v) {
-  return (void*)(&v->val.uint64);
+  return (void*)(&v->val);
 }
 
 // -----------------------------------------------------------------------------

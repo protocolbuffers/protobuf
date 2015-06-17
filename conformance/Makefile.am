@@ -57,7 +57,7 @@ conformance-java: javac_middleman
 
 # Targets for actually running tests.
 test_cpp: protoc_middleman conformance-test-runner conformance-cpp
-	./conformance-test-runner ./conformance-cpp
+	./conformance-test-runner --failure_list failure_list_cpp.txt ./conformance-cpp
 
 test_java: protoc_middleman conformance-test-runner conformance-java
 	./conformance-test-runner ./conformance-java

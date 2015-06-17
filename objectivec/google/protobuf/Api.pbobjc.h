@@ -45,10 +45,12 @@ typedef GPB_ENUM(GPBApi_FieldNumber) {
 // The methods of this api, in unspecified order.
 // |methodsArray| contains |GPBMethod|
 @property(nonatomic, readwrite, strong) NSMutableArray *methodsArray;
+@property(nonatomic, readonly) NSUInteger methodsArray_Count;
 
 // Any metadata attached to the API.
 // |optionsArray| contains |GPBOption|
 @property(nonatomic, readwrite, strong) NSMutableArray *optionsArray;
+@property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 // A version string for this api. If specified, must have the form
 // `major-version.minor-version`, as in `1.10`. If the minor version
@@ -113,6 +115,7 @@ typedef GPB_ENUM(GPBMethod_FieldNumber) {
 // Any metadata attached to the method.
 // |optionsArray| contains |GPBOption|
 @property(nonatomic, readwrite, strong) NSMutableArray *optionsArray;
+@property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 @end
 

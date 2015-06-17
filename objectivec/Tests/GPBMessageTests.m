@@ -35,12 +35,11 @@
 #import "GPBArray_PackagePrivate.h"
 #import "GPBDescriptor.h"
 #import "GPBDictionary_PackagePrivate.h"
-#import "GPBField_PackagePrivate.h"
 #import "GPBMessage_PackagePrivate.h"
+#import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestObjc.pbobjc.h"
-#import "google/protobuf/UnittestNameMangling.pbobjc.h"
 
 @interface MessageTests : GPBTestCase
 @end
@@ -420,10 +419,11 @@
 
   GPBUnknownFieldSet *unknownFields =
       [[[GPBUnknownFieldSet alloc] init] autorelease];
-  GPBField *field = [[[GPBField alloc] initWithNumber:2] autorelease];
+  GPBUnknownField *field =
+      [[[GPBUnknownField alloc] initWithNumber:2] autorelease];
   [field addVarint:2];
   [unknownFields addField:field];
-  field = [[[GPBField alloc] initWithNumber:3] autorelease];
+  field = [[[GPBUnknownField alloc] initWithNumber:3] autorelease];
   [field addVarint:4];
   [unknownFields addField:field];
 
@@ -451,7 +451,7 @@
   GPBFieldDescriptor *fieldDescriptor =
       [descriptor fieldWithName:@"defaultInt32"];
   XCTAssertNotNil(fieldDescriptor);
-  GPBValue defaultValue = [fieldDescriptor defaultValue];
+  GPBGenericValue defaultValue = [fieldDescriptor defaultValue];
   [message setDefaultInt32:defaultValue.valueInt32];
   XCTAssertTrue(message.hasDefaultInt32);
   XCTAssertEqual(message.defaultInt32, defaultValue.valueInt32);
@@ -1554,7 +1554,7 @@
   // The other should not.
   TestAllExtensions *message = [TestAllExtensions message];
   TestAllExtensions *message2 = [TestAllExtensions message];
-  GPBExtensionField *extension = [UnittestRoot optionalGroupExtension];
+  GPBExtensionDescriptor *extension = [UnittestRoot optionalGroupExtension];
   [message setExtension:extension value:[message2 getExtension:extension]];
   XCTAssertEqual([message getExtension:extension],
                  [message2 getExtension:extension]);
@@ -1571,9 +1571,9 @@
 - (void)testCopyWithAutocreatedExtension {
   // Mutable copy shouldn't copy autocreated extensions.
   TestAllExtensions *message = [TestAllExtensions message];
-  GPBExtensionField *optionalGroupExtension =
+  GPBExtensionDescriptor *optionalGroupExtension =
       [UnittestRoot optionalGroupExtension];
-  GPBExtensionField *optionalNestedMessageExtesion =
+  GPBExtensionDescriptor *optionalNestedMessageExtesion =
       [UnittestRoot optionalNestedMessageExtension];
   TestAllTypes_OptionalGroup *optionalGroup =
       [message getExtension:optionalGroupExtension];
@@ -1603,7 +1603,7 @@
 - (void)testClearMessageAutocreatedExtension {
   // Call clear should cause it to recreate its autocreated extensions.
   TestAllExtensions *message = [TestAllExtensions message];
-  GPBExtensionField *optionalGroupExtension =
+  GPBExtensionDescriptor *optionalGroupExtension =
       [UnittestRoot optionalGroupExtension];
   TestAllTypes_OptionalGroup *optionalGroup =
       [[message getExtension:optionalGroupExtension] retain];
@@ -1620,7 +1620,7 @@
   // Should be able to retain autocreated extension while the creator is
   // dealloced.
   TestAllExtensions *message = [TestAllExtensions message];
-  GPBExtensionField *optionalGroupExtension =
+  GPBExtensionDescriptor *optionalGroupExtension =
       [UnittestRoot optionalGroupExtension];
 
   @autoreleasepool {
@@ -1638,7 +1638,7 @@
 - (void)testClearAutocreatedExtension {
   // Clearing autocreated extension should NOT cause it to lose its creator.
   TestAllExtensions *message = [TestAllExtensions message];
-  GPBExtensionField *optionalGroupExtension =
+  GPBExtensionDescriptor *optionalGroupExtension =
       [UnittestRoot optionalGroupExtension];
   TestAllTypes_OptionalGroup *optionalGroup =
       [[message getExtension:optionalGroupExtension] retain];
@@ -1651,7 +1651,8 @@
 
   // Clearing autocreated extension should not cause its creator to become
   // visible
-  GPBExtensionField *recursiveExtension = [UnittestObjcRoot recursiveExtension];
+  GPBExtensionDescriptor *recursiveExtension =
+      [UnittestObjcRoot recursiveExtension];
   TestAllExtensions *message_lvl2 = [message getExtension:recursiveExtension];
   TestAllExtensions *message_lvl3 =
       [message_lvl2 getExtension:recursiveExtension];
@@ -1663,7 +1664,8 @@
   // Setting an extension should cause the extension to appear to its creator.
   // Test this several levels deep.
   TestAllExtensions *message = [TestAllExtensions message];
-  GPBExtensionField *recursiveExtension = [UnittestObjcRoot recursiveExtension];
+  GPBExtensionDescriptor *recursiveExtension =
+      [UnittestObjcRoot recursiveExtension];
   TestAllExtensions *message_lvl2 = [message getExtension:recursiveExtension];
   TestAllExtensions *message_lvl3 =
       [message_lvl2 getExtension:recursiveExtension];
@@ -1686,7 +1688,7 @@
 - (void)testSetAutocreatedExtensionToSelf {
   // Setting extension to itself should cause it to become visible.
   TestAllExtensions *message = [TestAllExtensions message];
-  GPBExtensionField *optionalGroupExtension =
+  GPBExtensionDescriptor *optionalGroupExtension =
       [UnittestRoot optionalGroupExtension];
   XCTAssertNotNil([message getExtension:optionalGroupExtension]);
   XCTAssertFalse([message hasExtension:optionalGroupExtension]);
@@ -1696,7 +1698,8 @@
 }
 
 - (void)testAutocreatedExtensionMemoryLeaks {
-  GPBExtensionField *recursiveExtension = [UnittestObjcRoot recursiveExtension];
+  GPBExtensionDescriptor *recursiveExtension =
+      [UnittestObjcRoot recursiveExtension];
 
   // Test for memory leaks with autocreated extensions.
   TestAllExtensions *message;
@@ -1729,7 +1732,8 @@
 }
 
 - (void)testSetExtensionWithAutocreatedValue {
-  GPBExtensionField *recursiveExtension = [UnittestObjcRoot recursiveExtension];
+  GPBExtensionDescriptor *recursiveExtension =
+      [UnittestObjcRoot recursiveExtension];
 
   TestAllExtensions *message;
   @autoreleasepool {
@@ -1814,9 +1818,9 @@
 }
 
 - (void)testEnumDescriptorFromExtensionDescriptor {
-  GPBExtensionField *extField = [UnittestRoot optionalForeignEnumExtension];
-  GPBExtensionDescriptor *extDescriptor = extField.descriptor;
-  XCTAssertEqual(extDescriptor.type, GPBTypeEnum);
+  GPBExtensionDescriptor *extDescriptor =
+      [UnittestRoot optionalForeignEnumExtension];
+  XCTAssertEqual(extDescriptor.dataType, GPBDataTypeEnum);
   GPBEnumDescriptor *enumDescriptor = extDescriptor.enumDescriptor;
   GPBEnumDescriptor *expectedDescriptor = ForeignEnum_EnumDescriptor();
   XCTAssertEqualObjects(enumDescriptor, expectedDescriptor);
@@ -1923,13 +1927,6 @@
                  EnumTestMsg_MyEnum_NegOne);
   XCTAssertEqual([msgPrime.mumbleArray valueAtIndex:4],
                  EnumTestMsg_MyEnum_NegTwo);
-}
-
-- (void)testMutableNameManagling {
-  // These basically confirm that all the expected name mangling happened by not
-  // having compile errors.
-
-  // TODO(thomasvl): Write these, see unittest_name_mangling.proto.
 }
 
 @end

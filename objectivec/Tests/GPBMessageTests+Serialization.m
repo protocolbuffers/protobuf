@@ -36,6 +36,7 @@
 
 #import "google/protobuf/MapProto2Unittest.pbobjc.h"
 #import "google/protobuf/MapUnittest.pbobjc.h"
+#import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestDropUnknownFields.pbobjc.h"
 #import "google/protobuf/UnittestPreserveUnknownEnum.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
@@ -166,17 +167,15 @@ static NSData *DataFromCStr(const char *str) {
       [unknownFields hasField:Message2_FieldNumber_RepeatedEnumArray]);
   XCTAssertTrue([unknownFields hasField:Message2_FieldNumber_OneofEnum]);
 
-  GPBField *field = [unknownFields getField:Message2_FieldNumber_OptionalEnum];
+  GPBUnknownField *field =
+      [unknownFields getField:Message2_FieldNumber_OptionalEnum];
   XCTAssertEqual(field.varintList.count, 1U);
   XCTAssertEqual([field.varintList valueAtIndex:0],
                  (uint64_t)Message3_Enum_Extra3);
 
-  // Repeated in proto3 default to packed, so this will be length delimited
-  // unknown field, and the value (Message3_Enum_Extra3) encodes into one byte.
   field = [unknownFields getField:Message2_FieldNumber_RepeatedEnumArray];
-  XCTAssertEqual(field.lengthDelimitedList.count, 1U);
-  NSData *expected = DataFromCStr("\x1E");
-  XCTAssertEqualObjects([field.lengthDelimitedList objectAtIndex:0], expected);
+  XCTAssertEqual(field.varintList.count, 1U);
+  XCTAssertEqual([field.varintList valueAtIndex:0], (uint64_t)Message3_Enum_Extra3);
 
   field = [unknownFields getField:Message2_FieldNumber_OneofEnum];
   XCTAssertEqual(field.varintList.count, 1U);
@@ -677,6 +676,131 @@ static NSData *DataFromCStr(const char *str) {
 }
 
 //%PDDM-EXPAND-END (2 expansions)
+
+- (void)testPackedUnpackedMessageParsing {
+  // packed is optional, a repeated field should parse when packed or unpacked.
+
+  TestPackedTypes *packedOrig = [TestPackedTypes message];
+  TestUnpackedTypes *unpackedOrig = [TestUnpackedTypes message];
+  [self setPackedFields:packedOrig repeatedCount:4];
+  [self setUnpackedFields:unpackedOrig repeatedCount:4];
+
+  NSData *packedData = [packedOrig data];
+  NSData *unpackedData = [unpackedOrig data];
+  XCTAssertNotNil(packedData);
+  XCTAssertNotNil(unpackedData);
+  XCTAssertNotEqualObjects(packedData, unpackedData,
+                           @"Data should differ (packed vs unpacked) use");
+
+  NSError *error = nil;
+  TestPackedTypes *packedParse =
+      [TestPackedTypes parseFromData:unpackedData error:&error];
+  XCTAssertNotNil(packedParse);
+  XCTAssertNil(error);
+  XCTAssertEqualObjects(packedParse, packedOrig);
+
+  error = nil;
+  TestUnpackedTypes *unpackedParsed =
+      [TestUnpackedTypes parseFromData:packedData error:&error];
+  XCTAssertNotNil(unpackedParsed);
+  XCTAssertNil(error);
+  XCTAssertEqualObjects(unpackedParsed, unpackedOrig);
+}
+
+- (void)testPackedUnpackedExtensionParsing {
+  // packed is optional, a repeated extension should parse when packed or
+  // unpacked.
+
+  TestPackedExtensions *packedOrig = [TestPackedExtensions message];
+  TestUnpackedExtensions *unpackedOrig = [TestUnpackedExtensions message];
+  [self setPackedExtensions:packedOrig repeatedCount:kGPBDefaultRepeatCount];
+  [self setUnpackedExtensions:unpackedOrig repeatedCount:kGPBDefaultRepeatCount];
+
+  NSData *packedData = [packedOrig data];
+  NSData *unpackedData = [unpackedOrig data];
+  XCTAssertNotNil(packedData);
+  XCTAssertNotNil(unpackedData);
+  XCTAssertNotEqualObjects(packedData, unpackedData,
+                           @"Data should differ (packed vs unpacked) use");
+
+  NSError *error = nil;
+  TestPackedExtensions *packedParse =
+      [TestPackedExtensions parseFromData:unpackedData
+                        extensionRegistry:[UnittestRoot extensionRegistry]
+                                    error:&error];
+  XCTAssertNotNil(packedParse);
+  XCTAssertNil(error);
+  XCTAssertEqualObjects(packedParse, packedOrig);
+
+  error = nil;
+  TestUnpackedExtensions *unpackedParsed =
+      [TestUnpackedExtensions parseFromData:packedData
+                          extensionRegistry:[UnittestRoot extensionRegistry]
+                                      error:&error];
+  XCTAssertNotNil(unpackedParsed);
+  XCTAssertNil(error);
+  XCTAssertEqualObjects(unpackedParsed, unpackedOrig);
+}
+
+- (void)testPackedExtensionVsFieldParsing {
+  // Extensions and fields end up on the wire the same way, so they can parse
+  // each other.
+
+  TestPackedTypes *fieldsOrig = [TestPackedTypes message];
+  TestPackedExtensions *extsOrig = [TestPackedExtensions message];
+  [self setPackedFields:fieldsOrig repeatedCount:kGPBDefaultRepeatCount];
+  [self setPackedExtensions:extsOrig repeatedCount:kGPBDefaultRepeatCount];
+
+  NSData *fieldsData = [fieldsOrig data];
+  NSData *extsData = [extsOrig data];
+  XCTAssertNotNil(fieldsData);
+  XCTAssertNotNil(extsData);
+  XCTAssertEqualObjects(fieldsData, extsData);
+
+  NSError *error = nil;
+  TestPackedTypes *fieldsParse =
+      [TestPackedTypes parseFromData:extsData error:&error];
+  XCTAssertNotNil(fieldsParse);
+  XCTAssertNil(error);
+  XCTAssertEqualObjects(fieldsParse, fieldsOrig);
+
+  error = nil;
+  TestPackedExtensions *extsParse =
+      [TestPackedExtensions parseFromData:fieldsData
+                        extensionRegistry:[UnittestRoot extensionRegistry]
+                                    error:&error];
+  XCTAssertNotNil(extsParse);
+  XCTAssertNil(error);
+  XCTAssertEqualObjects(extsParse, extsOrig);
+}
+
+- (void)testUnpackedExtensionVsFieldParsing {
+  // Extensions and fields end up on the wire the same way, so they can parse
+  // each other.
+
+  TestUnpackedTypes *fieldsOrig = [TestUnpackedTypes message];
+  TestUnpackedExtensions *extsOrig = [TestUnpackedExtensions message];
+  [self setUnpackedFields:fieldsOrig repeatedCount:3];
+  [self setUnpackedExtensions:extsOrig repeatedCount:3];
+
+  NSData *fieldsData = [fieldsOrig data];
+  NSData *extsData = [extsOrig data];
+  XCTAssertNotNil(fieldsData);
+  XCTAssertNotNil(extsData);
+  XCTAssertEqualObjects(fieldsData, extsData);
+
+  TestUnpackedTypes *fieldsParse =
+      [TestUnpackedTypes parseFromData:extsData error:NULL];
+  XCTAssertNotNil(fieldsParse);
+  XCTAssertEqualObjects(fieldsParse, fieldsOrig);
+
+  TestUnpackedExtensions *extsParse =
+      [TestUnpackedExtensions parseFromData:fieldsData
+                          extensionRegistry:[UnittestRoot extensionRegistry]
+                                      error:NULL];
+  XCTAssertNotNil(extsParse);
+  XCTAssertEqualObjects(extsParse, extsOrig);
+}
 
 #pragma mark - Subset from from map_tests.cc
 

@@ -434,20 +434,52 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
     string file_data;
     file_proto.SerializeToString(&file_data);
 
-    printer->Print(
-      "::google::protobuf::DescriptorPool::InternalAddGeneratedFile(");
+    // Workaround for MSVC: "Error C1091: compiler limit: string exceeds 65535
+    // bytes in length". Declare a static array of characters rather than use a
+    // string literal.
+    if (file_data.size() > 65535) {
+      printer->Print(
+        "static const char descriptor[] = {\n");
+      printer->Indent();
 
-    // Only write 40 bytes per line.
-    static const int kBytesPerLine = 40;
-    for (int i = 0; i < file_data.size(); i += kBytesPerLine) {
-      printer->Print("\n  \"$data$\"",
-                     "data",
-                     EscapeTrigraphs(
-                         CEscape(file_data.substr(i, kBytesPerLine))));
+      // Only write 25 bytes per line.
+      static const int kBytesPerLine = 25;
+      for (int i = 0; i < file_data.size();) {
+          for (int j = 0; j < kBytesPerLine && i < file_data.size(); ++i, ++j) {
+            printer->Print(
+              "$char$, ",
+              "char", SimpleItoa(file_data[i]));
+          }
+          printer->Print(
+            "\n");
+      }
+
+      printer->Outdent();
+      printer->Print(
+        "};\n");
+
+      printer->Print(
+        "::google::protobuf::DescriptorPool::InternalAddGeneratedFile(descriptor, $size$);\n",
+        "size", SimpleItoa(file_data.size()));
+
+    } else {
+
+      printer->Print(
+        "::google::protobuf::DescriptorPool::InternalAddGeneratedFile(");
+  
+      // Only write 40 bytes per line.
+      static const int kBytesPerLine = 40;
+      for (int i = 0; i < file_data.size(); i += kBytesPerLine) {
+        printer->Print("\n  \"$data$\"",
+                       "data",
+                       EscapeTrigraphs(
+                           CEscape(file_data.substr(i, kBytesPerLine))));
+      }
+      printer->Print(
+          ", $size$);\n",
+        "size", SimpleItoa(file_data.size()));
+  
     }
-    printer->Print(
-        ", $size$);\n",
-      "size", SimpleItoa(file_data.size()));
 
     // Call MessageFactory::InternalRegisterGeneratedFile().
     printer->Print(

@@ -11,11 +11,14 @@
 
 @end
 
+#pragma mark - GPBAnyRoot_FileDescriptor
+
 static GPBFileDescriptor *GPBAnyRoot_FileDescriptor(void) {
   // This is called by +initialize so there is no need to worry
   // about thread safety of the singleton.
   static GPBFileDescriptor *descriptor = NULL;
   if (!descriptor) {
+    GPBDebugCheckRuntimeVersion();
     descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
                                                      syntax:GPBFileSyntaxProto3];
   }
@@ -29,16 +32,16 @@ static GPBFileDescriptor *GPBAnyRoot_FileDescriptor(void) {
 @dynamic typeURL;
 @dynamic value;
 
-typedef struct GPBAny_Storage {
+typedef struct GPBAny__storage_ {
   uint32_t _has_storage_[1];
   NSString *typeURL;
   NSData *value;
-} GPBAny_Storage;
+} GPBAny__storage_;
 
 // This method is threadsafe because it is initially called
 // in +initialize for each subclass.
 + (GPBDescriptor *)descriptor {
-  static GPBDescriptor *descriptor = NULL;
+  static GPBDescriptor *descriptor = nil;
   if (!descriptor) {
     static GPBMessageFieldDescription fields[] = {
       {
@@ -46,10 +49,10 @@ typedef struct GPBAny_Storage {
         .number = GPBAny_FieldNumber_TypeURL,
         .hasIndex = 0,
         .flags = GPBFieldOptional | GPBFieldTextFormatNameCustom,
-        .type = GPBTypeString,
-        .offset = offsetof(GPBAny_Storage, typeURL),
+        .dataType = GPBDataTypeString,
+        .offset = offsetof(GPBAny__storage_, typeURL),
         .defaultValue.valueString = nil,
-        .typeSpecific.className = NULL,
+        .dataTypeSpecific.className = NULL,
         .fieldOptions = NULL,
       },
       {
@@ -57,10 +60,10 @@ typedef struct GPBAny_Storage {
         .number = GPBAny_FieldNumber_Value,
         .hasIndex = 1,
         .flags = GPBFieldOptional,
-        .type = GPBTypeData,
-        .offset = offsetof(GPBAny_Storage, value),
+        .dataType = GPBDataTypeBytes,
+        .offset = offsetof(GPBAny__storage_, value),
         .defaultValue.valueData = nil,
-        .typeSpecific.className = NULL,
+        .dataTypeSpecific.className = NULL,
         .fieldOptions = NULL,
       },
     };
@@ -69,20 +72,23 @@ typedef struct GPBAny_Storage {
 #else
     static const char *extraTextFormatInfo = "\001\001\004\241!!\000";
 #endif  // GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
-    descriptor = [GPBDescriptor allocDescriptorForClass:[GPBAny class]
-                                              rootClass:[GPBAnyRoot class]
-                                                   file:GPBAnyRoot_FileDescriptor()
-                                                 fields:fields
-                                             fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
-                                                 oneofs:NULL
-                                             oneofCount:0
-                                                  enums:NULL
-                                              enumCount:0
-                                                 ranges:NULL
-                                             rangeCount:0
-                                            storageSize:sizeof(GPBAny_Storage)
-                                             wireFormat:NO
-                                    extraTextFormatInfo:extraTextFormatInfo];
+    GPBDescriptor *localDescriptor =
+        [GPBDescriptor allocDescriptorForClass:[GPBAny class]
+                                     rootClass:[GPBAnyRoot class]
+                                          file:GPBAnyRoot_FileDescriptor()
+                                        fields:fields
+                                    fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
+                                        oneofs:NULL
+                                    oneofCount:0
+                                         enums:NULL
+                                     enumCount:0
+                                        ranges:NULL
+                                    rangeCount:0
+                                   storageSize:sizeof(GPBAny__storage_)
+                                    wireFormat:NO
+                           extraTextFormatInfo:extraTextFormatInfo];
+    NSAssert(descriptor == nil, @"Startup recursed!");
+    descriptor = localDescriptor;
   }
   return descriptor;
 }

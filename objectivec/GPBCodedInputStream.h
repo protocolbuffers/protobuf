@@ -60,7 +60,7 @@
 - (int64_t)readSInt64;
 - (BOOL)readBool;
 - (NSString *)readString;
-- (NSData *)readData;
+- (NSData *)readBytes;
 
 // Read an embedded message field value from the stream.
 - (void)readMessage:(GPBMessage *)message

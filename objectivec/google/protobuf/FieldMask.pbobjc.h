@@ -152,6 +152,7 @@ typedef GPB_ENUM(GPBFieldMask_FieldNumber) {
 // The set of field mask paths.
 // |pathsArray| contains |NSString|
 @property(nonatomic, readwrite, strong) NSMutableArray *pathsArray;
+@property(nonatomic, readonly) NSUInteger pathsArray_Count;
 
 @end
 

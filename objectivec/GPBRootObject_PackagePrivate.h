@@ -32,12 +32,12 @@
 
 #import "GPBRootObject.h"
 
-@class GPBExtensionField;
+@class GPBExtensionDescriptor;
 
 @interface GPBRootObject ()
 
 // Globally register.
-+ (void)globallyRegisterExtension:(GPBExtensionField *)field;
++ (void)globallyRegisterExtension:(GPBExtensionDescriptor *)field;
 
 @end
 

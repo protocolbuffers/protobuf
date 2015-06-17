@@ -11,11 +11,14 @@
 
 @end
 
+#pragma mark - GPBSourceContextRoot_FileDescriptor
+
 static GPBFileDescriptor *GPBSourceContextRoot_FileDescriptor(void) {
   // This is called by +initialize so there is no need to worry
   // about thread safety of the singleton.
   static GPBFileDescriptor *descriptor = NULL;
   if (!descriptor) {
+    GPBDebugCheckRuntimeVersion();
     descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
                                                      syntax:GPBFileSyntaxProto3];
   }
@@ -28,15 +31,15 @@ static GPBFileDescriptor *GPBSourceContextRoot_FileDescriptor(void) {
 
 @dynamic fileName;
 
-typedef struct GPBSourceContext_Storage {
+typedef struct GPBSourceContext__storage_ {
   uint32_t _has_storage_[1];
   NSString *fileName;
-} GPBSourceContext_Storage;
+} GPBSourceContext__storage_;
 
 // This method is threadsafe because it is initially called
 // in +initialize for each subclass.
 + (GPBDescriptor *)descriptor {
-  static GPBDescriptor *descriptor = NULL;
+  static GPBDescriptor *descriptor = nil;
   if (!descriptor) {
     static GPBMessageFieldDescription fields[] = {
       {
@@ -44,26 +47,29 @@ typedef struct GPBSourceContext_Storage {
         .number = GPBSourceContext_FieldNumber_FileName,
         .hasIndex = 0,
         .flags = GPBFieldOptional,
-        .type = GPBTypeString,
-        .offset = offsetof(GPBSourceContext_Storage, fileName),
+        .dataType = GPBDataTypeString,
+        .offset = offsetof(GPBSourceContext__storage_, fileName),
         .defaultValue.valueString = nil,
-        .typeSpecific.className = NULL,
+        .dataTypeSpecific.className = NULL,
         .fieldOptions = NULL,
       },
     };
-    descriptor = [GPBDescriptor allocDescriptorForClass:[GPBSourceContext class]
-                                              rootClass:[GPBSourceContextRoot class]
-                                                   file:GPBSourceContextRoot_FileDescriptor()
-                                                 fields:fields
-                                             fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
-                                                 oneofs:NULL
-                                             oneofCount:0
-                                                  enums:NULL
-                                              enumCount:0
-                                                 ranges:NULL
-                                             rangeCount:0
-                                            storageSize:sizeof(GPBSourceContext_Storage)
-                                             wireFormat:NO];
+    GPBDescriptor *localDescriptor =
+        [GPBDescriptor allocDescriptorForClass:[GPBSourceContext class]
+                                     rootClass:[GPBSourceContextRoot class]
+                                          file:GPBSourceContextRoot_FileDescriptor()
+                                        fields:fields
+                                    fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
+                                        oneofs:NULL
+                                    oneofCount:0
+                                         enums:NULL
+                                     enumCount:0
+                                        ranges:NULL
+                                    rangeCount:0
+                                   storageSize:sizeof(GPBSourceContext__storage_)
+                                    wireFormat:NO];
+    NSAssert(descriptor == nil, @"Startup recursed!");
+    descriptor = localDescriptor;
   }
   return descriptor;
 }

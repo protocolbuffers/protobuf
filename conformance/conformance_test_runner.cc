@@ -55,6 +55,8 @@
 
 #include <errno.h>
 #include <unistd.h>
+#include <fstream>
+#include <vector>
 
 #include "conformance.pb.h"
 #include "conformance_test.h"
@@ -62,6 +64,8 @@
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using google::protobuf::internal::scoped_array;
+using std::string;
+using std::vector;
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -180,18 +184,67 @@ class ForkPipeRunner : public google::protobuf::ConformanceTestRunner {
   std::string executable_;
 };
 
+void UsageError() {
+  fprintf(stderr,
+          "Usage: conformance-test-runner [options] <test-program>\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "Options:\n");
+  fprintf(stderr,
+          "  --failure_list <filename>   Use to specify list of tests\n");
+  fprintf(stderr,
+          "                              that are expected to fail.  File\n");
+  fprintf(stderr,
+          "                              should contain one test name per\n");
+  fprintf(stderr,
+          "                              line.  Use '#' for comments.\n");
+  exit(1);
+}
+
+void ParseFailureList(const char *filename, vector<string>* failure_list) {
+  std::ifstream infile(filename);
+  for (string line; getline(infile, line);) {
+    // Remove whitespace.
+    line.erase(std::remove_if(line.begin(), line.end(), ::isspace),
+               line.end());
+
+    // Remove comments.
+    line = line.substr(0, line.find("#"));
+
+    if (!line.empty()) {
+      failure_list->push_back(line);
+    }
+  }
+}
 
 int main(int argc, char *argv[]) {
-  if (argc < 2) {
-    fprintf(stderr, "Usage: conformance-test-runner <test-program>\n");
-    exit(1);
+  int arg = 1;
+  char *program;
+  vector<string> failure_list;
+
+  for (int arg = 1; arg < argc; ++arg) {
+    if (strcmp(argv[arg], "--failure_list") == 0) {
+      if (++arg == argc) UsageError();
+      ParseFailureList(argv[arg], &failure_list);
+    } else if (argv[arg][0] == '-') {
+      fprintf(stderr, "Unknown option: %s\n", argv[arg]);
+      UsageError();
+    } else {
+      if (arg != argc - 1) {
+        fprintf(stderr, "Too many arguments.\n");
+        UsageError();
+      }
+      program = argv[arg];
+    }
   }
 
-  ForkPipeRunner runner(argv[1]);
+  ForkPipeRunner runner(program);
   google::protobuf::ConformanceTestSuite suite;
+  suite.SetFailureList(failure_list);
 
   std::string output;
-  suite.RunSuite(&runner, &output);
+  bool ok = suite.RunSuite(&runner, &output);
 
   fwrite(output.c_str(), 1, output.size(), stderr);
+
+  return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }

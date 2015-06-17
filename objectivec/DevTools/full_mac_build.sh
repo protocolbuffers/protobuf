@@ -162,7 +162,7 @@ wrapped_make -j "${NUM_MAKE_JOBS}" all
 wrapped_make -j "${NUM_MAKE_JOBS}" check
 
 header "Ensuring the ObjC descriptors are current."
-# Find the newest input file (protos, compiler, and this script).
+# Find the newest input file (protos, compiler, and the generator script).
 # (these patterns catch some extra stuff, but better to over sample than under)
 readonly NewestInput=$(find \
    src/google/protobuf/*.proto \

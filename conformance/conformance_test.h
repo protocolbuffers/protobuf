@@ -83,24 +83,50 @@ class ConformanceTestSuite {
  public:
   ConformanceTestSuite() : verbose_(false) {}
 
+  // Sets the list of tests that are expected to fail when RunSuite() is called.
+  // RunSuite() will fail unless the set of failing tests is exactly the same
+  // as this list.
+  void SetFailureList(const std::vector<std::string>& failure_list);
+
   // Run all the conformance tests against the given test runner.
   // Test output will be stored in "output".
-  void RunSuite(ConformanceTestRunner* runner, std::string* output);
+  //
+  // Returns true if the set of failing tests was exactly the same as the
+  // failure list.  If SetFailureList() was not called, returns true if all
+  // tests passed.
+  bool RunSuite(ConformanceTestRunner* runner, std::string* output);
 
  private:
-  void ReportSuccess();
-  void ReportFailure(const char* fmt, ...);
-  void RunTest(const conformance::ConformanceRequest& request,
+  void ReportSuccess(const std::string& test_name);
+  void ReportFailure(const std::string& test_name, const char* fmt, ...);
+  void RunTest(const std::string& test_name,
+               const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
-  void DoExpectParseFailureForProto(const std::string& proto, int line);
-  void TestPrematureEOFForType(
-      google::protobuf::internal::WireFormatLite::FieldType type);
-
+  void ExpectParseFailureForProto(const std::string& proto,
+                                  const std::string& test_name);
+  void ExpectHardParseFailureForProto(const std::string& proto,
+                                      const std::string& test_name);
+  void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
+  bool CheckSetEmpty(const set<string>& set_to_check, const char* msg);
   ConformanceTestRunner* runner_;
   int successes_;
   int failures_;
   bool verbose_;
   std::string output_;
+
+  // The set of test names that are expected to fail in this run, but haven't
+  // failed yet.
+  std::set<std::string> expected_to_fail_;
+
+  // The set of test names that have been run.  Used to ensure that there are no
+  // duplicate names in the suite.
+  std::set<std::string> test_names_;
+
+  // The set of tests that failed, but weren't expected to.
+  std::set<std::string> unexpected_failing_tests_;
+
+  // The set of tests that succeeded, but weren't expected to.
+  std::set<std::string> unexpected_succeeding_tests_;
 };
 
 }  // namespace protobuf

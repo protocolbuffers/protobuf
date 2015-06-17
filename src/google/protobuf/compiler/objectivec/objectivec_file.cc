@@ -54,35 +54,24 @@ namespace objectivec {
 FileGenerator::FileGenerator(const FileDescriptor *file)
     : file_(file),
       root_class_name_(FileClassName(file)),
-      is_filtered_(true),
-      all_extensions_filtered_(true),
       is_public_dep_(false) {
-  // Validate the objc prefix, do this even if the file's contents are filtered
-  // to catch a bad prefix as soon as it is found.
+  // Validate the objc prefix.
   ValidateObjCClassPrefix(file_);
 
   for (int i = 0; i < file_->enum_type_count(); i++) {
     EnumGenerator *generator = new EnumGenerator(file_->enum_type(i));
-    // The enums are exposed via C functions, so they will dead strip if
-    // not used.
-    is_filtered_ &= false;
     enum_generators_.push_back(generator);
   }
   for (int i = 0; i < file_->message_type_count(); i++) {
     MessageGenerator *generator =
         new MessageGenerator(root_class_name_, file_->message_type(i));
-    is_filtered_ &= generator->IsFiltered();
-    is_filtered_ &= generator->IsSubContentFiltered();
     message_generators_.push_back(generator);
   }
   for (int i = 0; i < file_->extension_count(); i++) {
     ExtensionGenerator *generator =
         new ExtensionGenerator(root_class_name_, file_->extension(i));
-    is_filtered_ &= generator->IsFiltered();
-    all_extensions_filtered_ &= generator->IsFiltered();
     extension_generators_.push_back(generator);
   }
-  // If there is nothing in the file we filter it.
 }
 
 FileGenerator::~FileGenerator() {
@@ -116,8 +105,7 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
       "protoc_gen_objc_version",
       SimpleItoa(GOOGLE_PROTOBUF_OBJC_GEN_VERSION));
 
-  const vector<FileGenerator *> &dependency_generators =
-      DependencyGenerators();
+  const vector<FileGenerator *> &dependency_generators = DependencyGenerators();
   for (vector<FileGenerator *>::const_iterator iter =
            dependency_generators.begin();
        iter != dependency_generators.end(); ++iter) {
@@ -133,19 +121,17 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
 
   printer->Print("CF_EXTERN_C_BEGIN\n\n");
 
-  if (!IsFiltered()) {
-    set<string> fwd_decls;
-    for (vector<MessageGenerator *>::iterator iter = message_generators_.begin();
-         iter != message_generators_.end(); ++iter) {
-      (*iter)->DetermineForwardDeclarations(&fwd_decls);
-    }
-    for (set<string>::const_iterator i(fwd_decls.begin());
-         i != fwd_decls.end(); ++i) {
-      printer->Print("$value$;\n", "value", *i);
-    }
-    if (fwd_decls.begin() != fwd_decls.end()) {
-      printer->Print("\n");
-    }
+  set<string> fwd_decls;
+  for (vector<MessageGenerator *>::iterator iter = message_generators_.begin();
+       iter != message_generators_.end(); ++iter) {
+    (*iter)->DetermineForwardDeclarations(&fwd_decls);
+  }
+  for (set<string>::const_iterator i(fwd_decls.begin());
+       i != fwd_decls.end(); ++i) {
+    printer->Print("$value$;\n", "value", *i);
+  }
+  if (fwd_decls.begin() != fwd_decls.end()) {
+    printer->Print("\n");
   }
 
   // need to write out all enums first
@@ -160,36 +146,27 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
   }
 
   // For extensions to chain together, the Root gets created even if there
-  // are no extensions. So if the entire file isn't filtered away, output it.
-  if (!IsFiltered()) {
-    printer->Print(
-        "\n"
-        "#pragma mark - $root_class_name$\n"
-        "\n"
-        "@interface $root_class_name$ : GPBRootObject\n"
-        "\n"
-        "// The base class provides:\n"
-        "//   + (GPBExtensionRegistry *)extensionRegistry;\n"
-        "// which is an GPBExtensionRegistry that includes all the extensions defined by\n"
-        "// this file and all files that it depends on.\n"
-        "\n"
-        "@end\n"
-        "\n",
-        "root_class_name", root_class_name_);
-  }
+  // are no extensions.
+  printer->Print(
+      "\n"
+      "#pragma mark - $root_class_name$\n"
+      "\n"
+      "@interface $root_class_name$ : GPBRootObject\n"
+      "\n"
+      "// The base class provides:\n"
+      "//   + (GPBExtensionRegistry *)extensionRegistry;\n"
+      "// which is an GPBExtensionRegistry that includes all the extensions defined by\n"
+      "// this file and all files that it depends on.\n"
+      "\n"
+      "@end\n"
+      "\n",
+      "root_class_name", root_class_name_);
 
   if (extension_generators_.size() > 0) {
-    // The dynamic methods block is only needed if there are extensions. If
-    // they are all filtered, output the @interface as a comment so there is
-    // something left in the header for anyone that looks.
-    const char *root_line_prefix = "";
-    if (AreAllExtensionsFiltered()) {
-      root_line_prefix = "// ";
-    }
+    // The dynamic methods block is only needed if there are extensions.
     printer->Print(
-        "$root_line_prefix$@interface $root_class_name$ (DynamicMethods)\n",
-        "root_class_name", root_class_name_,
-        "root_line_prefix", root_line_prefix);
+        "@interface $root_class_name$ (DynamicMethods)\n",
+        "root_class_name", root_class_name_);
 
     for (vector<ExtensionGenerator *>::iterator iter =
              extension_generators_.begin();
@@ -197,8 +174,7 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
       (*iter)->GenerateMembersHeader(printer);
     }
 
-    printer->Print("$root_line_prefix$@end\n\n",
-                   "root_line_prefix", root_line_prefix);
+    printer->Print("@end\n\n");
   }  // extension_generators_.size() > 0
 
   for (vector<MessageGenerator *>::iterator iter = message_generators_.begin();
@@ -239,136 +215,119 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
       "// @@protoc_insertion_point(imports)\n"
       "\n");
 
-  if (IsFiltered()) {
-    printer->Print(
-        "// File empty because all messages, extensions and enum have been filtered.\n"
-        "\n"
-        "\n"
-        "// Dummy symbol that will be stripped but will avoid linker warnings about\n"
-        "// no symbols in the .o form compiling this file.\n"
-        "static int $root_class_name$_dummy __attribute__((unused,used)) = 0;\n"
-        "\n"
-        "// @@protoc_insertion_point(global_scope)\n",
-        "root_class_name", root_class_name_);
-    return;
-  }
-
   printer->Print(
       "#pragma mark - $root_class_name$\n"
       "\n"
       "@implementation $root_class_name$\n\n",
       "root_class_name", root_class_name_);
 
-  bool generated_extensions = false;
-  if (file_->extension_count() + file_->message_type_count() +
-          file_->dependency_count() >
-      0) {
-    ostringstream extensions_stringstream;
+  // Generate the extension initialization structures for the top level and
+  // any nested messages.
+  ostringstream extensions_stringstream;
+  if (file_->extension_count() + file_->message_type_count() > 0) {
+    io::OstreamOutputStream extensions_outputstream(&extensions_stringstream);
+    io::Printer extensions_printer(&extensions_outputstream, '$');
+    for (vector<ExtensionGenerator *>::iterator iter =
+             extension_generators_.begin();
+         iter != extension_generators_.end(); ++iter) {
+      (*iter)->GenerateStaticVariablesInitialization(&extensions_printer);
+    }
+    for (vector<MessageGenerator *>::iterator iter =
+             message_generators_.begin();
+         iter != message_generators_.end(); ++iter) {
+      (*iter)->GenerateStaticVariablesInitialization(&extensions_printer);
+    }
+    extensions_stringstream.flush();
+  }
 
-    if (file_->extension_count() + file_->message_type_count() > 0) {
-      io::OstreamOutputStream extensions_outputstream(&extensions_stringstream);
-      io::Printer extensions_printer(&extensions_outputstream, '$');
-      extensions_printer.Print(
+  // If there were any extensions or this file has any dependencies, output
+  // a registry to override to create the file specific registry.
+  const string& extensions_str = extensions_stringstream.str();
+  if (extensions_str.length() > 0 || file_->dependency_count() > 0) {
+    printer->Print(
+        "+ (GPBExtensionRegistry*)extensionRegistry {\n"
+        "  // This is called by +initialize so there is no need to worry\n"
+        "  // about thread safety and initialization of registry.\n"
+        "  static GPBExtensionRegistry* registry = nil;\n"
+        "  if (!registry) {\n"
+        "    GPBDebugCheckRuntimeVersion();\n"
+        "    registry = [[GPBExtensionRegistry alloc] init];\n");
+
+    printer->Indent();
+    printer->Indent();
+
+    if (extensions_str.length() > 0) {
+      printer->Print(
           "static GPBExtensionDescription descriptions[] = {\n");
-      extensions_printer.Indent();
-      for (vector<ExtensionGenerator *>::iterator iter =
-               extension_generators_.begin();
-           iter != extension_generators_.end(); ++iter) {
-        (*iter)->GenerateStaticVariablesInitialization(
-            &extensions_printer, &generated_extensions, true);
-      }
-      for (vector<MessageGenerator *>::iterator iter =
-               message_generators_.begin();
-           iter != message_generators_.end(); ++iter) {
-        (*iter)->GenerateStaticVariablesInitialization(&extensions_printer,
-                                                       &generated_extensions);
-      }
-      extensions_printer.Outdent();
-      extensions_printer.Print("};\n");
-      if (generated_extensions) {
-        extensions_printer.Print(
-            "for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {\n"
-            "  GPBExtensionField *extension = [[GPBExtensionField alloc] initWithDescription:&descriptions[i]];\n"
-            "  [registry addExtension:extension];\n"
-            "  [self globallyRegisterExtension:extension];\n"
-            "  [extension release];\n"
-            "}\n");
-      } else {
-        extensions_printer.Print("#pragma unused (descriptions)\n");
-      }
-      const vector<FileGenerator *> &dependency_generators =
-          DependencyGenerators();
-      if (dependency_generators.size()) {
-        for (vector<FileGenerator *>::const_iterator iter =
-                 dependency_generators.begin();
-             iter != dependency_generators.end(); ++iter) {
-          if (!(*iter)->IsFiltered()) {
-            extensions_printer.Print(
-                "[registry addExtensions:[$dependency$ extensionRegistry]];\n",
-                "dependency", (*iter)->RootClassName());
-            generated_extensions = true;
-          }
-        }
-      } else if (!generated_extensions) {
-        extensions_printer.Print("#pragma unused (registry)\n");
-      }
+      printer->Indent();
+      printer->Print(extensions_str.c_str());
+      printer->Outdent();
+      printer->Print(
+          "};\n"
+          "for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {\n"
+          "  GPBExtensionDescriptor *extension =\n"
+          "      [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&descriptions[i]];\n"
+          "  [registry addExtension:extension];\n"
+          "  [self globallyRegisterExtension:extension];\n"
+          "  [extension release];\n"
+          "}\n");
     }
 
-    if (generated_extensions) {
+    const vector<FileGenerator *> &dependency_generators =
+        DependencyGenerators();
+    for (vector<FileGenerator *>::const_iterator iter =
+             dependency_generators.begin();
+         iter != dependency_generators.end(); ++iter) {
       printer->Print(
-          "+ (GPBExtensionRegistry*)extensionRegistry {\n"
-          "  // This is called by +initialize so there is no need to worry\n"
-          "  // about thread safety and initialization of registry.\n"
-          "  static GPBExtensionRegistry* registry = nil;\n"
-          "  if (!registry) {\n"
-          "    registry = [[GPBExtensionRegistry alloc] init];\n");
-
-      printer->Indent();
-      printer->Indent();
-
-      extensions_stringstream.flush();
-      printer->Print(extensions_stringstream.str().c_str());
-      printer->Outdent();
-      printer->Outdent();
-
-      printer->Print(
-          "  }\n"
-          "  return registry;\n"
-          "}\n"
-          "\n");
+          "[registry addExtensions:[$dependency$ extensionRegistry]];\n",
+          "dependency", (*iter)->RootClassName());
     }
+
+    printer->Outdent();
+    printer->Outdent();
+
+    printer->Print(
+        "  }\n"
+        "  return registry;\n"
+        "}\n"
+        "\n");
   }
 
   printer->Print("@end\n\n");
 
-
-  string syntax;
-  switch (file_->syntax()) {
-    case FileDescriptor::SYNTAX_UNKNOWN:
-      syntax = "GPBFileSyntaxUnknown";
-      break;
-    case FileDescriptor::SYNTAX_PROTO2:
-      syntax = "GPBFileSyntaxProto2";
-      break;
-    case FileDescriptor::SYNTAX_PROTO3:
-      syntax = "GPBFileSyntaxProto3";
-      break;
+  // File descriptor only needed if there are messages to use it.
+  if (message_generators_.size() > 0) {
+    string syntax;
+    switch (file_->syntax()) {
+      case FileDescriptor::SYNTAX_UNKNOWN:
+        syntax = "GPBFileSyntaxUnknown";
+        break;
+      case FileDescriptor::SYNTAX_PROTO2:
+        syntax = "GPBFileSyntaxProto2";
+        break;
+      case FileDescriptor::SYNTAX_PROTO3:
+        syntax = "GPBFileSyntaxProto3";
+        break;
+    }
+    printer->Print(
+        "#pragma mark - $root_class_name$_FileDescriptor\n"
+        "\n"
+        "static GPBFileDescriptor *$root_class_name$_FileDescriptor(void) {\n"
+        "  // This is called by +initialize so there is no need to worry\n"
+        "  // about thread safety of the singleton.\n"
+        "  static GPBFileDescriptor *descriptor = NULL;\n"
+        "  if (!descriptor) {\n"
+        "    GPBDebugCheckRuntimeVersion();\n"
+        "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
+        "                                                     syntax:$syntax$];\n"
+        "  }\n"
+        "  return descriptor;\n"
+        "}\n"
+        "\n",
+        "root_class_name", root_class_name_,
+        "package", file_->package(),
+        "syntax", syntax);
   }
-  printer->Print(
-      "static GPBFileDescriptor *$root_class_name$_FileDescriptor(void) {\n"
-      "  // This is called by +initialize so there is no need to worry\n"
-      "  // about thread safety of the singleton.\n"
-      "  static GPBFileDescriptor *descriptor = NULL;\n"
-      "  if (!descriptor) {\n"
-      "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
-      "                                                     syntax:$syntax$];\n"
-      "  }\n"
-      "  return descriptor;\n"
-      "}\n"
-      "\n",
-      "root_class_name", root_class_name_,
-      "package", file_->package(),
-      "syntax", syntax);
 
   for (vector<EnumGenerator *>::iterator iter = enum_generators_.begin();
        iter != enum_generators_.end(); ++iter) {
