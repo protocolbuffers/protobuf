@@ -79,8 +79,8 @@ void RepeatedMessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
 }
 
 void RepeatedMessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
-  // TODO(jonskeet): Originally, this checked for Count > 0 first.
-  // The Write* call should make that cheap though - no need to generate it every time.
+  // TODO(jonskeet): Bake the foreach loop into the generated code? We lose the
+  // advantage of knowing the tag bytes this way :(
   printer->Print(
     variables_,
     "if ($name$_.Count > 0) {\n"
@@ -89,13 +89,13 @@ void RepeatedMessageFieldGenerator::GenerateSerializationCode(io::Printer* print
 }
 
 void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
-  // TODO(jonskeet): Put this into CodedOutputStream.
   printer->Print(
     variables_,
     "if ($name$_.Count > 0) {\n"
     "  foreach ($type_name$ element in $name$_) {\n"
-    "    size += pb::CodedOutputStream.ComputeMessageSize($number$, element);\n"
+    "    size += pb::CodedOutputStream.ComputeMessageSize(element);\n"
     "  }\n"
+    "  size += $tag_size$ * $name$_.Count;\n"
     "}\n");
 }
 

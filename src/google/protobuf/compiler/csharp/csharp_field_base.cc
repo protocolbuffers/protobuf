@@ -35,6 +35,7 @@
 #include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -55,8 +56,18 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   // Note: this will be valid even though the tag emitted for packed and unpacked versions of
   // repeated fields varies by wire format. The wire format is encoded in the bottom 3 bits, which
   // never effects the tag size.
-  int tagSize = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
-  (*variables)["tag_size"] = SimpleItoa(tagSize);
+  int tag_size = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
+  uint tag = internal::WireFormat::MakeTag(descriptor_);
+  uint8 tag_array[5];
+  io::CodedOutputStream::WriteTagToArray(tag, tag_array);
+  string tag_bytes = SimpleItoa(tag_array[0]);
+  for (int i = 1; i < tag_size; i++) {
+    tag_bytes += ", " + SimpleItoa(tag_array[i]);
+  }
+
+  (*variables)["tag_size"] = SimpleItoa(tag_size);
+  (*variables)["tag_bytes"] = tag_bytes;
+
   (*variables)["property_name"] = property_name();
   (*variables)["type_name"] = type_name();
   (*variables)["name"] = name();

@@ -333,8 +333,9 @@ namespace Google.Protobuf.DescriptorProtos {
       int size = 0;
       if (file_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.FileDescriptorProto element in file_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(1, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * file_.Count;
       }
       return size;
     }
@@ -508,10 +509,12 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
-        output.WriteString(1, Name);
+        output.WriteRawTag(10);
+        output.WriteString(Name);
       }
       if (Package.Length != 0) {
-        output.WriteString(2, Package);
+        output.WriteRawTag(18);
+        output.WriteString(Package);
       }
       if (dependency_.Count > 0) {
         output.WriteStringArray(3, dependency_);
@@ -529,10 +532,12 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteMessageArray(7, extension_);
       }
       if (options_ != null) {
-        output.WriteMessage(8, Options);
+        output.WriteRawTag(66);
+        output.WriteMessage(Options);
       }
       if (sourceCodeInfo_ != null) {
-        output.WriteMessage(9, SourceCodeInfo);
+        output.WriteRawTag(74);
+        output.WriteMessage(SourceCodeInfo);
       }
       if (publicDependency_.Count > 0) {
         output.WriteInt32Array(10, publicDependency_);
@@ -541,22 +546,23 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteInt32Array(11, weakDependency_);
       }
       if (Syntax.Length != 0) {
-        output.WriteString(12, Syntax);
+        output.WriteRawTag(98);
+        output.WriteString(Syntax);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Name.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
       if (Package.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(2, Package);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Package);
       }
       if (dependency_.Count > 0) {
         int dataSize = 0;
         foreach (string element in dependency_) {
-          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeStringSize(element);
         }
         size += dataSize;
         size += 1 * dependency_.Count;
@@ -564,7 +570,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (publicDependency_.Count > 0) {
         int dataSize = 0;
         foreach (int element in publicDependency_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
         }
         size += dataSize;
         size += 1 * publicDependency_.Count;
@@ -572,39 +578,43 @@ namespace Google.Protobuf.DescriptorProtos {
       if (weakDependency_.Count > 0) {
         int dataSize = 0;
         foreach (int element in weakDependency_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
         }
         size += dataSize;
         size += 1 * weakDependency_.Count;
       }
       if (messageType_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto element in messageType_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * messageType_.Count;
       }
       if (enumType_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto element in enumType_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(5, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * enumType_.Count;
       }
       if (service_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto element in service_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(6, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * service_.Count;
       }
       if (extension_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto element in extension_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(7, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * extension_.Count;
       }
       if (options_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(8, Options);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       if (sourceCodeInfo_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(9, SourceCodeInfo);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(SourceCodeInfo);
       }
       if (Syntax.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(12, Syntax);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Syntax);
       }
       return size;
     }
@@ -837,7 +847,8 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
-        output.WriteString(1, Name);
+        output.WriteRawTag(10);
+        output.WriteString(Name);
       }
       if (field_.Count > 0) {
         output.WriteMessageArray(2, field_);
@@ -855,7 +866,8 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteMessageArray(6, extension_);
       }
       if (options_ != null) {
-        output.WriteMessage(7, Options);
+        output.WriteRawTag(58);
+        output.WriteMessage(Options);
       }
       if (oneofDecl_.Count > 0) {
         output.WriteMessageArray(8, oneofDecl_);
@@ -871,50 +883,57 @@ namespace Google.Protobuf.DescriptorProtos {
     public int CalculateSize() {
       int size = 0;
       if (Name.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
       if (field_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto element in field_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * field_.Count;
       }
       if (extension_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto element in extension_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(6, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * extension_.Count;
       }
       if (nestedType_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto element in nestedType_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(3, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * nestedType_.Count;
       }
       if (enumType_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto element in enumType_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * enumType_.Count;
       }
       if (extensionRange_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange element in extensionRange_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(5, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * extensionRange_.Count;
       }
       if (oneofDecl_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto element in oneofDecl_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(8, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * oneofDecl_.Count;
       }
       if (options_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(7, Options);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       if (reservedRange_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange element in reservedRange_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(9, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * reservedRange_.Count;
       }
       if (reservedName_.Count > 0) {
         int dataSize = 0;
         foreach (string element in reservedName_) {
-          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeStringSize(element);
         }
         size += dataSize;
         size += 1 * reservedName_.Count;
@@ -1065,20 +1084,22 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public void WriteTo(pb::CodedOutputStream output) {
           if (Start != 0) {
-            output.WriteInt32(1, Start);
+            output.WriteRawTag(8);
+            output.WriteInt32(Start);
           }
           if (End != 0) {
-            output.WriteInt32(2, End);
+            output.WriteRawTag(16);
+            output.WriteInt32(End);
           }
         }
 
         public int CalculateSize() {
           int size = 0;
           if (Start != 0) {
-            size += pb::CodedOutputStream.ComputeInt32Size(1, Start);
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(Start);
           }
           if (End != 0) {
-            size += pb::CodedOutputStream.ComputeInt32Size(2, End);
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(End);
           }
           return size;
         }
@@ -1179,20 +1200,22 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public void WriteTo(pb::CodedOutputStream output) {
           if (Start != 0) {
-            output.WriteInt32(1, Start);
+            output.WriteRawTag(8);
+            output.WriteInt32(Start);
           }
           if (End != 0) {
-            output.WriteInt32(2, End);
+            output.WriteRawTag(16);
+            output.WriteInt32(End);
           }
         }
 
         public int CalculateSize() {
           int size = 0;
           if (Start != 0) {
-            size += pb::CodedOutputStream.ComputeInt32Size(1, Start);
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(Start);
           }
           if (End != 0) {
-            size += pb::CodedOutputStream.ComputeInt32Size(2, End);
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(End);
           }
           return size;
         }
@@ -1366,62 +1389,71 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
-        output.WriteString(1, Name);
+        output.WriteRawTag(10);
+        output.WriteString(Name);
       }
       if (Extendee.Length != 0) {
-        output.WriteString(2, Extendee);
+        output.WriteRawTag(18);
+        output.WriteString(Extendee);
       }
       if (Number != 0) {
-        output.WriteInt32(3, Number);
+        output.WriteRawTag(24);
+        output.WriteInt32(Number);
       }
       if (Label != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) {
-        output.WriteEnum(4, (int) Label);
+        output.WriteRawTag(32);
+        output.WriteEnum((int) Label);
       }
       if (Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
-        output.WriteEnum(5, (int) Type);
+        output.WriteRawTag(40);
+        output.WriteEnum((int) Type);
       }
       if (TypeName.Length != 0) {
-        output.WriteString(6, TypeName);
+        output.WriteRawTag(50);
+        output.WriteString(TypeName);
       }
       if (DefaultValue.Length != 0) {
-        output.WriteString(7, DefaultValue);
+        output.WriteRawTag(58);
+        output.WriteString(DefaultValue);
       }
       if (options_ != null) {
-        output.WriteMessage(8, Options);
+        output.WriteRawTag(66);
+        output.WriteMessage(Options);
       }
       if (OneofIndex != 0) {
-        output.WriteInt32(9, OneofIndex);
+        output.WriteRawTag(72);
+        output.WriteInt32(OneofIndex);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Name.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
       if (Number != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(3, Number);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Number);
       }
       if (Label != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) {
-        size += pb::CodedOutputStream.ComputeEnumSize(4, (int) Label);
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Label);
       }
       if (Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
-        size += pb::CodedOutputStream.ComputeEnumSize(5, (int) Type);
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
       }
       if (TypeName.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(6, TypeName);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(TypeName);
       }
       if (Extendee.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(2, Extendee);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Extendee);
       }
       if (DefaultValue.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(7, DefaultValue);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(DefaultValue);
       }
       if (OneofIndex != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(9, OneofIndex);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(OneofIndex);
       }
       if (options_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(8, Options);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       return size;
     }
@@ -1600,14 +1632,15 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
-        output.WriteString(1, Name);
+        output.WriteRawTag(10);
+        output.WriteString(Name);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Name.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
       return size;
     }
@@ -1707,28 +1740,31 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
-        output.WriteString(1, Name);
+        output.WriteRawTag(10);
+        output.WriteString(Name);
       }
       if (value_.Count > 0) {
         output.WriteMessageArray(2, value_);
       }
       if (options_ != null) {
-        output.WriteMessage(3, Options);
+        output.WriteRawTag(26);
+        output.WriteMessage(Options);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Name.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
       if (value_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto element in value_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * value_.Count;
       }
       if (options_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(3, Options);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       return size;
     }
@@ -1848,26 +1884,29 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
-        output.WriteString(1, Name);
+        output.WriteRawTag(10);
+        output.WriteString(Name);
       }
       if (Number != 0) {
-        output.WriteInt32(2, Number);
+        output.WriteRawTag(16);
+        output.WriteInt32(Number);
       }
       if (options_ != null) {
-        output.WriteMessage(3, Options);
+        output.WriteRawTag(26);
+        output.WriteMessage(Options);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Name.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
       if (Number != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(2, Number);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Number);
       }
       if (options_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(3, Options);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       return size;
     }
@@ -1987,28 +2026,31 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
-        output.WriteString(1, Name);
+        output.WriteRawTag(10);
+        output.WriteString(Name);
       }
       if (method_.Count > 0) {
         output.WriteMessageArray(2, method_);
       }
       if (options_ != null) {
-        output.WriteMessage(3, Options);
+        output.WriteRawTag(26);
+        output.WriteMessage(Options);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Name.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
       if (method_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto element in method_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * method_.Count;
       }
       if (options_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(3, Options);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       return size;
     }
@@ -2158,44 +2200,50 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
-        output.WriteString(1, Name);
+        output.WriteRawTag(10);
+        output.WriteString(Name);
       }
       if (InputType.Length != 0) {
-        output.WriteString(2, InputType);
+        output.WriteRawTag(18);
+        output.WriteString(InputType);
       }
       if (OutputType.Length != 0) {
-        output.WriteString(3, OutputType);
+        output.WriteRawTag(26);
+        output.WriteString(OutputType);
       }
       if (options_ != null) {
-        output.WriteMessage(4, Options);
+        output.WriteRawTag(34);
+        output.WriteMessage(Options);
       }
       if (ClientStreaming != false) {
-        output.WriteBool(5, ClientStreaming);
+        output.WriteRawTag(40);
+        output.WriteBool(ClientStreaming);
       }
       if (ServerStreaming != false) {
-        output.WriteBool(6, ServerStreaming);
+        output.WriteRawTag(48);
+        output.WriteBool(ServerStreaming);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Name.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(1, Name);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
       if (InputType.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(2, InputType);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(InputType);
       }
       if (OutputType.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(3, OutputType);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(OutputType);
       }
       if (options_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(4, Options);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       if (ClientStreaming != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(5, ClientStreaming);
+        size += 1 + 1;
       }
       if (ServerStreaming != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(6, ServerStreaming);
+        size += 1 + 1;
       }
       return size;
     }
@@ -2458,46 +2506,60 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (JavaPackage.Length != 0) {
-        output.WriteString(1, JavaPackage);
+        output.WriteRawTag(10);
+        output.WriteString(JavaPackage);
       }
       if (JavaOuterClassname.Length != 0) {
-        output.WriteString(8, JavaOuterClassname);
+        output.WriteRawTag(66);
+        output.WriteString(JavaOuterClassname);
       }
       if (OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) {
-        output.WriteEnum(9, (int) OptimizeFor);
+        output.WriteRawTag(72);
+        output.WriteEnum((int) OptimizeFor);
       }
       if (JavaMultipleFiles != false) {
-        output.WriteBool(10, JavaMultipleFiles);
+        output.WriteRawTag(80);
+        output.WriteBool(JavaMultipleFiles);
       }
       if (GoPackage.Length != 0) {
-        output.WriteString(11, GoPackage);
+        output.WriteRawTag(90);
+        output.WriteString(GoPackage);
       }
       if (CcGenericServices != false) {
-        output.WriteBool(16, CcGenericServices);
+        output.WriteRawTag(128, 1);
+        output.WriteBool(CcGenericServices);
       }
       if (JavaGenericServices != false) {
-        output.WriteBool(17, JavaGenericServices);
+        output.WriteRawTag(136, 1);
+        output.WriteBool(JavaGenericServices);
       }
       if (PyGenericServices != false) {
-        output.WriteBool(18, PyGenericServices);
+        output.WriteRawTag(144, 1);
+        output.WriteBool(PyGenericServices);
       }
       if (JavaGenerateEqualsAndHash != false) {
-        output.WriteBool(20, JavaGenerateEqualsAndHash);
+        output.WriteRawTag(160, 1);
+        output.WriteBool(JavaGenerateEqualsAndHash);
       }
       if (Deprecated != false) {
-        output.WriteBool(23, Deprecated);
+        output.WriteRawTag(184, 1);
+        output.WriteBool(Deprecated);
       }
       if (JavaStringCheckUtf8 != false) {
-        output.WriteBool(27, JavaStringCheckUtf8);
+        output.WriteRawTag(216, 1);
+        output.WriteBool(JavaStringCheckUtf8);
       }
       if (CcEnableArenas != false) {
-        output.WriteBool(31, CcEnableArenas);
+        output.WriteRawTag(248, 1);
+        output.WriteBool(CcEnableArenas);
       }
       if (ObjcClassPrefix.Length != 0) {
-        output.WriteString(36, ObjcClassPrefix);
+        output.WriteRawTag(162, 2);
+        output.WriteString(ObjcClassPrefix);
       }
       if (CsharpNamespace.Length != 0) {
-        output.WriteString(37, CsharpNamespace);
+        output.WriteRawTag(170, 2);
+        output.WriteString(CsharpNamespace);
       }
       if (uninterpretedOption_.Count > 0) {
         output.WriteMessageArray(999, uninterpretedOption_);
@@ -2507,51 +2569,52 @@ namespace Google.Protobuf.DescriptorProtos {
     public int CalculateSize() {
       int size = 0;
       if (JavaPackage.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(1, JavaPackage);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(JavaPackage);
       }
       if (JavaOuterClassname.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(8, JavaOuterClassname);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(JavaOuterClassname);
       }
       if (JavaMultipleFiles != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(10, JavaMultipleFiles);
+        size += 1 + 1;
       }
       if (JavaGenerateEqualsAndHash != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(20, JavaGenerateEqualsAndHash);
+        size += 2 + 1;
       }
       if (JavaStringCheckUtf8 != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(27, JavaStringCheckUtf8);
+        size += 2 + 1;
       }
       if (OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) {
-        size += pb::CodedOutputStream.ComputeEnumSize(9, (int) OptimizeFor);
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) OptimizeFor);
       }
       if (GoPackage.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(11, GoPackage);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(GoPackage);
       }
       if (CcGenericServices != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(16, CcGenericServices);
+        size += 2 + 1;
       }
       if (JavaGenericServices != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(17, JavaGenericServices);
+        size += 2 + 1;
       }
       if (PyGenericServices != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(18, PyGenericServices);
+        size += 2 + 1;
       }
       if (Deprecated != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(23, Deprecated);
+        size += 2 + 1;
       }
       if (CcEnableArenas != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(31, CcEnableArenas);
+        size += 2 + 1;
       }
       if (ObjcClassPrefix.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(36, ObjcClassPrefix);
+        size += 2 + pb::CodedOutputStream.ComputeStringSize(ObjcClassPrefix);
       }
       if (CsharpNamespace.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(37, CsharpNamespace);
+        size += 2 + pb::CodedOutputStream.ComputeStringSize(CsharpNamespace);
       }
       if (uninterpretedOption_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 2 * uninterpretedOption_.Count;
       }
       return size;
     }
@@ -2781,16 +2844,20 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (MessageSetWireFormat != false) {
-        output.WriteBool(1, MessageSetWireFormat);
+        output.WriteRawTag(8);
+        output.WriteBool(MessageSetWireFormat);
       }
       if (NoStandardDescriptorAccessor != false) {
-        output.WriteBool(2, NoStandardDescriptorAccessor);
+        output.WriteRawTag(16);
+        output.WriteBool(NoStandardDescriptorAccessor);
       }
       if (Deprecated != false) {
-        output.WriteBool(3, Deprecated);
+        output.WriteRawTag(24);
+        output.WriteBool(Deprecated);
       }
       if (MapEntry != false) {
-        output.WriteBool(7, MapEntry);
+        output.WriteRawTag(56);
+        output.WriteBool(MapEntry);
       }
       if (uninterpretedOption_.Count > 0) {
         output.WriteMessageArray(999, uninterpretedOption_);
@@ -2800,21 +2867,22 @@ namespace Google.Protobuf.DescriptorProtos {
     public int CalculateSize() {
       int size = 0;
       if (MessageSetWireFormat != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(1, MessageSetWireFormat);
+        size += 1 + 1;
       }
       if (NoStandardDescriptorAccessor != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(2, NoStandardDescriptorAccessor);
+        size += 1 + 1;
       }
       if (Deprecated != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(3, Deprecated);
+        size += 1 + 1;
       }
       if (MapEntry != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(7, MapEntry);
+        size += 1 + 1;
       }
       if (uninterpretedOption_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 2 * uninterpretedOption_.Count;
       }
       return size;
     }
@@ -2982,22 +3050,28 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Ctype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING) {
-        output.WriteEnum(1, (int) Ctype);
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Ctype);
       }
       if (Packed != false) {
-        output.WriteBool(2, Packed);
+        output.WriteRawTag(16);
+        output.WriteBool(Packed);
       }
       if (Deprecated != false) {
-        output.WriteBool(3, Deprecated);
+        output.WriteRawTag(24);
+        output.WriteBool(Deprecated);
       }
       if (Lazy != false) {
-        output.WriteBool(5, Lazy);
+        output.WriteRawTag(40);
+        output.WriteBool(Lazy);
       }
       if (Jstype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL) {
-        output.WriteEnum(6, (int) Jstype);
+        output.WriteRawTag(48);
+        output.WriteEnum((int) Jstype);
       }
       if (Weak != false) {
-        output.WriteBool(10, Weak);
+        output.WriteRawTag(80);
+        output.WriteBool(Weak);
       }
       if (uninterpretedOption_.Count > 0) {
         output.WriteMessageArray(999, uninterpretedOption_);
@@ -3007,27 +3081,28 @@ namespace Google.Protobuf.DescriptorProtos {
     public int CalculateSize() {
       int size = 0;
       if (Ctype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING) {
-        size += pb::CodedOutputStream.ComputeEnumSize(1, (int) Ctype);
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Ctype);
       }
       if (Packed != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(2, Packed);
+        size += 1 + 1;
       }
       if (Jstype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL) {
-        size += pb::CodedOutputStream.ComputeEnumSize(6, (int) Jstype);
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Jstype);
       }
       if (Lazy != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(5, Lazy);
+        size += 1 + 1;
       }
       if (Deprecated != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(3, Deprecated);
+        size += 1 + 1;
       }
       if (Weak != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(10, Weak);
+        size += 1 + 1;
       }
       if (uninterpretedOption_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 2 * uninterpretedOption_.Count;
       }
       return size;
     }
@@ -3187,10 +3262,12 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (AllowAlias != false) {
-        output.WriteBool(2, AllowAlias);
+        output.WriteRawTag(16);
+        output.WriteBool(AllowAlias);
       }
       if (Deprecated != false) {
-        output.WriteBool(3, Deprecated);
+        output.WriteRawTag(24);
+        output.WriteBool(Deprecated);
       }
       if (uninterpretedOption_.Count > 0) {
         output.WriteMessageArray(999, uninterpretedOption_);
@@ -3200,15 +3277,16 @@ namespace Google.Protobuf.DescriptorProtos {
     public int CalculateSize() {
       int size = 0;
       if (AllowAlias != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(2, AllowAlias);
+        size += 1 + 1;
       }
       if (Deprecated != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(3, Deprecated);
+        size += 1 + 1;
       }
       if (uninterpretedOption_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 2 * uninterpretedOption_.Count;
       }
       return size;
     }
@@ -3312,7 +3390,8 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Deprecated != false) {
-        output.WriteBool(1, Deprecated);
+        output.WriteRawTag(8);
+        output.WriteBool(Deprecated);
       }
       if (uninterpretedOption_.Count > 0) {
         output.WriteMessageArray(999, uninterpretedOption_);
@@ -3322,12 +3401,13 @@ namespace Google.Protobuf.DescriptorProtos {
     public int CalculateSize() {
       int size = 0;
       if (Deprecated != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(1, Deprecated);
+        size += 1 + 1;
       }
       if (uninterpretedOption_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 2 * uninterpretedOption_.Count;
       }
       return size;
     }
@@ -3424,7 +3504,8 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Deprecated != false) {
-        output.WriteBool(33, Deprecated);
+        output.WriteRawTag(136, 2);
+        output.WriteBool(Deprecated);
       }
       if (uninterpretedOption_.Count > 0) {
         output.WriteMessageArray(999, uninterpretedOption_);
@@ -3434,12 +3515,13 @@ namespace Google.Protobuf.DescriptorProtos {
     public int CalculateSize() {
       int size = 0;
       if (Deprecated != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(33, Deprecated);
+        size += 2 + 1;
       }
       if (uninterpretedOption_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 2 * uninterpretedOption_.Count;
       }
       return size;
     }
@@ -3536,7 +3618,8 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Deprecated != false) {
-        output.WriteBool(33, Deprecated);
+        output.WriteRawTag(136, 2);
+        output.WriteBool(Deprecated);
       }
       if (uninterpretedOption_.Count > 0) {
         output.WriteMessageArray(999, uninterpretedOption_);
@@ -3546,12 +3629,13 @@ namespace Google.Protobuf.DescriptorProtos {
     public int CalculateSize() {
       int size = 0;
       if (Deprecated != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(33, Deprecated);
+        size += 2 + 1;
       }
       if (uninterpretedOption_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(999, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 2 * uninterpretedOption_.Count;
       }
       return size;
     }
@@ -3701,22 +3785,28 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteMessageArray(2, name_);
       }
       if (IdentifierValue.Length != 0) {
-        output.WriteString(3, IdentifierValue);
+        output.WriteRawTag(26);
+        output.WriteString(IdentifierValue);
       }
       if (PositiveIntValue != 0UL) {
-        output.WriteUInt64(4, PositiveIntValue);
+        output.WriteRawTag(32);
+        output.WriteUInt64(PositiveIntValue);
       }
       if (NegativeIntValue != 0L) {
-        output.WriteInt64(5, NegativeIntValue);
+        output.WriteRawTag(40);
+        output.WriteInt64(NegativeIntValue);
       }
       if (DoubleValue != 0D) {
-        output.WriteDouble(6, DoubleValue);
+        output.WriteRawTag(49);
+        output.WriteDouble(DoubleValue);
       }
       if (StringValue.Length != 0) {
-        output.WriteBytes(7, StringValue);
+        output.WriteRawTag(58);
+        output.WriteBytes(StringValue);
       }
       if (AggregateValue.Length != 0) {
-        output.WriteString(8, AggregateValue);
+        output.WriteRawTag(66);
+        output.WriteString(AggregateValue);
       }
     }
 
@@ -3724,26 +3814,27 @@ namespace Google.Protobuf.DescriptorProtos {
       int size = 0;
       if (name_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart element in name_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(2, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * name_.Count;
       }
       if (IdentifierValue.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(3, IdentifierValue);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(IdentifierValue);
       }
       if (PositiveIntValue != 0UL) {
-        size += pb::CodedOutputStream.ComputeUInt64Size(4, PositiveIntValue);
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(PositiveIntValue);
       }
       if (NegativeIntValue != 0L) {
-        size += pb::CodedOutputStream.ComputeInt64Size(5, NegativeIntValue);
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(NegativeIntValue);
       }
       if (DoubleValue != 0D) {
-        size += pb::CodedOutputStream.ComputeDoubleSize(6, DoubleValue);
+        size += 1 + 8;
       }
       if (StringValue.Length != 0) {
-        size += pb::CodedOutputStream.ComputeBytesSize(7, StringValue);
+        size += 1 + pb::CodedOutputStream.ComputeBytesSize(StringValue);
       }
       if (AggregateValue.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(8, AggregateValue);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(AggregateValue);
       }
       return size;
     }
@@ -3878,20 +3969,22 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public void WriteTo(pb::CodedOutputStream output) {
           if (NamePart_.Length != 0) {
-            output.WriteString(1, NamePart_);
+            output.WriteRawTag(10);
+            output.WriteString(NamePart_);
           }
           if (IsExtension != false) {
-            output.WriteBool(2, IsExtension);
+            output.WriteRawTag(16);
+            output.WriteBool(IsExtension);
           }
         }
 
         public int CalculateSize() {
           int size = 0;
           if (NamePart_.Length != 0) {
-            size += pb::CodedOutputStream.ComputeStringSize(1, NamePart_);
+            size += 1 + pb::CodedOutputStream.ComputeStringSize(NamePart_);
           }
           if (IsExtension != false) {
-            size += pb::CodedOutputStream.ComputeBoolSize(2, IsExtension);
+            size += 1 + 1;
           }
           return size;
         }
@@ -3993,8 +4086,9 @@ namespace Google.Protobuf.DescriptorProtos {
       int size = 0;
       if (location_.Count > 0) {
         foreach (global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location element in location_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(1, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * location_.Count;
       }
       return size;
     }
@@ -4111,16 +4205,20 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public void WriteTo(pb::CodedOutputStream output) {
           if (path_.Count > 0) {
-            output.WritePackedInt32Array(1, path_);
+            output.WriteRawTag(10);
+            output.WritePackedInt32Array(path_);
           }
           if (span_.Count > 0) {
-            output.WritePackedInt32Array(2, span_);
+            output.WriteRawTag(18);
+            output.WritePackedInt32Array(span_);
           }
           if (LeadingComments.Length != 0) {
-            output.WriteString(3, LeadingComments);
+            output.WriteRawTag(26);
+            output.WriteString(LeadingComments);
           }
           if (TrailingComments.Length != 0) {
-            output.WriteString(4, TrailingComments);
+            output.WriteRawTag(34);
+            output.WriteString(TrailingComments);
           }
           if (leadingDetachedComments_.Count > 0) {
             output.WriteStringArray(6, leadingDetachedComments_);
@@ -4132,29 +4230,29 @@ namespace Google.Protobuf.DescriptorProtos {
           if (path_.Count > 0) {
             int dataSize = 0;
             foreach (int element in path_) {
-              dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+              dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
             }
             size += dataSize;
-            size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
           }
           if (span_.Count > 0) {
             int dataSize = 0;
             foreach (int element in span_) {
-              dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+              dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
             }
             size += dataSize;
-            size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
           }
           if (LeadingComments.Length != 0) {
-            size += pb::CodedOutputStream.ComputeStringSize(3, LeadingComments);
+            size += 1 + pb::CodedOutputStream.ComputeStringSize(LeadingComments);
           }
           if (TrailingComments.Length != 0) {
-            size += pb::CodedOutputStream.ComputeStringSize(4, TrailingComments);
+            size += 1 + pb::CodedOutputStream.ComputeStringSize(TrailingComments);
           }
           if (leadingDetachedComments_.Count > 0) {
             int dataSize = 0;
             foreach (string element in leadingDetachedComments_) {
-              dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+              dataSize += pb::CodedOutputStream.ComputeStringSize(element);
             }
             size += dataSize;
             size += 1 * leadingDetachedComments_.Count;

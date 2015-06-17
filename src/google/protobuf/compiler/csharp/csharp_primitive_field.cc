@@ -105,16 +105,29 @@ void PrimitiveFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  output.Write$capitalized_type_name$($number$, $property_name$);\n"
+    "  output.WriteRawTag($tag_bytes$);\n"
+    "  output.Write$capitalized_type_name$($property_name$);\n"
     "}\n");
 }
 
 void PrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if ($has_property_check$) {\n"
-    "  size += pb::CodedOutputStream.Compute$capitalized_type_name$Size($number$, $property_name$);\n"
-    "}\n");
+    "if ($has_property_check$) {\n");
+  printer->Indent();
+  int fixedSize = GetFixedSize(descriptor_->type());
+  if (fixedSize == -1) {
+    printer->Print(
+      variables_,
+      "size += $tag_size$ + pb::CodedOutputStream.Compute$capitalized_type_name$Size($property_name$);\n");
+  } else {
+    printer->Print(
+      "size += $tag_size$ + $fixed_size$;\n",
+      "fixed_size", SimpleItoa(fixedSize),
+      "tag_size", variables_["tag_size"]);
+  }    
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
 void PrimitiveFieldGenerator::WriteHash(io::Printer* printer) {
@@ -173,7 +186,7 @@ void PrimitiveOneofFieldGenerator::WriteToString(io::Printer* printer) {
 void PrimitiveOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     printer->Print(
       variables_,
-      "$property_name$ = input.Read$capitalized_type_name$()\n;");
+      "$property_name$ = input.Read$capitalized_type_name$();\n");
 }
 
 }  // namespace csharp

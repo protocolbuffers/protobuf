@@ -407,7 +407,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestAllTypes> Parser { get { return _parser; } }
 
     private static readonly string[] _fieldNames = new string[] { "oneof_bytes", "oneof_nested_message", "oneof_string", "oneof_uint32", "repeated_bool", "repeated_bytes", "repeated_double", "repeated_fixed32", "repeated_fixed64", "repeated_float", "repeated_foreign_enum", "repeated_foreign_message", "repeated_import_enum", "repeated_import_message", "repeated_int32", "repeated_int64", "repeated_nested_enum", "repeated_nested_message", "repeated_public_import_message", "repeated_sfixed32", "repeated_sfixed64", "repeated_sint32", "repeated_sint64", "repeated_string", "repeated_uint32", "repeated_uint64", "single_bool", "single_bytes", "single_double", "single_fixed32", "single_fixed64", "single_float", "single_foreign_enum", "single_foreign_message", "single_import_enum", "single_import_message", "single_int32", "single_int64", "single_nested_enum", "single_nested_message", "single_public_import_message", "single_sfixed32", "single_sfixed64", "single_sint32", "single_sint64", "single_string", "single_uint32", "single_uint64" };
-    private static readonly uint[] _fieldTags = new uint[] { 914, 898, 906, 888, 344, 362, 337, 301, 305, 333, 416, 394, 424, 402, 248, 256, 408, 386, 434, 317, 321, 280, 288, 354, 264, 272, 104, 122, 97, 61, 65, 93, 176, 154, 184, 162, 8, 16, 168, 146, 210, 77, 81, 40, 48, 114, 24, 32 };
+    private static readonly uint[] _fieldTags = new uint[] { 914, 898, 906, 888, 346, 362, 338, 298, 306, 330, 418, 394, 426, 402, 250, 258, 410, 386, 434, 314, 322, 282, 290, 354, 266, 274, 104, 122, 97, 61, 65, 93, 176, 154, 184, 162, 8, 16, 168, 146, 210, 77, 81, 40, 48, 114, 24, 32 };
     public static pbd::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestAllTypes__Descriptor; }
     }
@@ -890,109 +890,144 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (SingleInt32 != 0) {
-        output.WriteInt32(1, SingleInt32);
+        output.WriteRawTag(8);
+        output.WriteInt32(SingleInt32);
       }
       if (SingleInt64 != 0L) {
-        output.WriteInt64(2, SingleInt64);
+        output.WriteRawTag(16);
+        output.WriteInt64(SingleInt64);
       }
       if (SingleUint32 != 0) {
-        output.WriteUInt32(3, SingleUint32);
+        output.WriteRawTag(24);
+        output.WriteUInt32(SingleUint32);
       }
       if (SingleUint64 != 0UL) {
-        output.WriteUInt64(4, SingleUint64);
+        output.WriteRawTag(32);
+        output.WriteUInt64(SingleUint64);
       }
       if (SingleSint32 != 0) {
-        output.WriteSInt32(5, SingleSint32);
+        output.WriteRawTag(40);
+        output.WriteSInt32(SingleSint32);
       }
       if (SingleSint64 != 0L) {
-        output.WriteSInt64(6, SingleSint64);
+        output.WriteRawTag(48);
+        output.WriteSInt64(SingleSint64);
       }
       if (SingleFixed32 != 0) {
-        output.WriteFixed32(7, SingleFixed32);
+        output.WriteRawTag(61);
+        output.WriteFixed32(SingleFixed32);
       }
       if (SingleFixed64 != 0UL) {
-        output.WriteFixed64(8, SingleFixed64);
+        output.WriteRawTag(65);
+        output.WriteFixed64(SingleFixed64);
       }
       if (SingleSfixed32 != 0) {
-        output.WriteSFixed32(9, SingleSfixed32);
+        output.WriteRawTag(77);
+        output.WriteSFixed32(SingleSfixed32);
       }
       if (SingleSfixed64 != 0L) {
-        output.WriteSFixed64(10, SingleSfixed64);
+        output.WriteRawTag(81);
+        output.WriteSFixed64(SingleSfixed64);
       }
       if (SingleFloat != 0F) {
-        output.WriteFloat(11, SingleFloat);
+        output.WriteRawTag(93);
+        output.WriteFloat(SingleFloat);
       }
       if (SingleDouble != 0D) {
-        output.WriteDouble(12, SingleDouble);
+        output.WriteRawTag(97);
+        output.WriteDouble(SingleDouble);
       }
       if (SingleBool != false) {
-        output.WriteBool(13, SingleBool);
+        output.WriteRawTag(104);
+        output.WriteBool(SingleBool);
       }
       if (SingleString.Length != 0) {
-        output.WriteString(14, SingleString);
+        output.WriteRawTag(114);
+        output.WriteString(SingleString);
       }
       if (SingleBytes.Length != 0) {
-        output.WriteBytes(15, SingleBytes);
+        output.WriteRawTag(122);
+        output.WriteBytes(SingleBytes);
       }
       if (singleNestedMessage_ != null) {
-        output.WriteMessage(18, SingleNestedMessage);
+        output.WriteRawTag(146, 1);
+        output.WriteMessage(SingleNestedMessage);
       }
       if (singleForeignMessage_ != null) {
-        output.WriteMessage(19, SingleForeignMessage);
+        output.WriteRawTag(154, 1);
+        output.WriteMessage(SingleForeignMessage);
       }
       if (singleImportMessage_ != null) {
-        output.WriteMessage(20, SingleImportMessage);
+        output.WriteRawTag(162, 1);
+        output.WriteMessage(SingleImportMessage);
       }
       if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED) {
-        output.WriteEnum(21, (int) SingleNestedEnum);
+        output.WriteRawTag(168, 1);
+        output.WriteEnum((int) SingleNestedEnum);
       }
       if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
-        output.WriteEnum(22, (int) SingleForeignEnum);
+        output.WriteRawTag(176, 1);
+        output.WriteEnum((int) SingleForeignEnum);
       }
       if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED) {
-        output.WriteEnum(23, (int) SingleImportEnum);
+        output.WriteRawTag(184, 1);
+        output.WriteEnum((int) SingleImportEnum);
       }
       if (singlePublicImportMessage_ != null) {
-        output.WriteMessage(26, SinglePublicImportMessage);
+        output.WriteRawTag(210, 1);
+        output.WriteMessage(SinglePublicImportMessage);
       }
       if (repeatedInt32_.Count > 0) {
-        output.WritePackedInt32Array(31, repeatedInt32_);
+        output.WriteRawTag(250, 1);
+        output.WritePackedInt32Array(repeatedInt32_);
       }
       if (repeatedInt64_.Count > 0) {
-        output.WritePackedInt64Array(32, repeatedInt64_);
+        output.WriteRawTag(130, 2);
+        output.WritePackedInt64Array(repeatedInt64_);
       }
       if (repeatedUint32_.Count > 0) {
-        output.WritePackedUInt32Array(33, repeatedUint32_);
+        output.WriteRawTag(138, 2);
+        output.WritePackedUInt32Array(repeatedUint32_);
       }
       if (repeatedUint64_.Count > 0) {
-        output.WritePackedUInt64Array(34, repeatedUint64_);
+        output.WriteRawTag(146, 2);
+        output.WritePackedUInt64Array(repeatedUint64_);
       }
       if (repeatedSint32_.Count > 0) {
-        output.WritePackedSInt32Array(35, repeatedSint32_);
+        output.WriteRawTag(154, 2);
+        output.WritePackedSInt32Array(repeatedSint32_);
       }
       if (repeatedSint64_.Count > 0) {
-        output.WritePackedSInt64Array(36, repeatedSint64_);
+        output.WriteRawTag(162, 2);
+        output.WritePackedSInt64Array(repeatedSint64_);
       }
       if (repeatedFixed32_.Count > 0) {
-        output.WritePackedFixed32Array(37, repeatedFixed32_);
+        output.WriteRawTag(170, 2);
+        output.WritePackedFixed32Array(repeatedFixed32_);
       }
       if (repeatedFixed64_.Count > 0) {
-        output.WritePackedFixed64Array(38, repeatedFixed64_);
+        output.WriteRawTag(178, 2);
+        output.WritePackedFixed64Array(repeatedFixed64_);
       }
       if (repeatedSfixed32_.Count > 0) {
-        output.WritePackedSFixed32Array(39, repeatedSfixed32_);
+        output.WriteRawTag(186, 2);
+        output.WritePackedSFixed32Array(repeatedSfixed32_);
       }
       if (repeatedSfixed64_.Count > 0) {
-        output.WritePackedSFixed64Array(40, repeatedSfixed64_);
+        output.WriteRawTag(194, 2);
+        output.WritePackedSFixed64Array(repeatedSfixed64_);
       }
       if (repeatedFloat_.Count > 0) {
-        output.WritePackedFloatArray(41, repeatedFloat_);
+        output.WriteRawTag(202, 2);
+        output.WritePackedFloatArray(repeatedFloat_);
       }
       if (repeatedDouble_.Count > 0) {
-        output.WritePackedDoubleArray(42, repeatedDouble_);
+        output.WriteRawTag(210, 2);
+        output.WritePackedDoubleArray(repeatedDouble_);
       }
       if (repeatedBool_.Count > 0) {
-        output.WritePackedBoolArray(43, repeatedBool_);
+        output.WriteRawTag(218, 2);
+        output.WritePackedBoolArray(repeatedBool_);
       }
       if (repeatedString_.Count > 0) {
         output.WriteStringArray(44, repeatedString_);
@@ -1010,193 +1045,200 @@ namespace Google.Protobuf.TestProtos {
         output.WriteMessageArray(50, repeatedImportMessage_);
       }
       if (repeatedNestedEnum_.Count > 0) {
-        output.WritePackedEnumArray(51, repeatedNestedEnum_);
+        output.WriteRawTag(154, 3);
+        output.WritePackedEnumArray(repeatedNestedEnum_);
       }
       if (repeatedForeignEnum_.Count > 0) {
-        output.WritePackedEnumArray(52, repeatedForeignEnum_);
+        output.WriteRawTag(162, 3);
+        output.WritePackedEnumArray(repeatedForeignEnum_);
       }
       if (repeatedImportEnum_.Count > 0) {
-        output.WritePackedEnumArray(53, repeatedImportEnum_);
+        output.WriteRawTag(170, 3);
+        output.WritePackedEnumArray(repeatedImportEnum_);
       }
       if (repeatedPublicImportMessage_.Count > 0) {
         output.WriteMessageArray(54, repeatedPublicImportMessage_);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
-        output.WriteUInt32(111, OneofUint32);
+        output.WriteRawTag(248, 6);
+        output.WriteUInt32(OneofUint32);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
-        output.WriteMessage(112, OneofNestedMessage);
+        output.WriteRawTag(130, 7);
+        output.WriteMessage(OneofNestedMessage);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) {
-        output.WriteString(113, OneofString);
+        output.WriteRawTag(138, 7);
+        output.WriteString(OneofString);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) {
-        output.WriteBytes(114, OneofBytes);
+        output.WriteRawTag(146, 7);
+        output.WriteBytes(OneofBytes);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (SingleInt32 != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(1, SingleInt32);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(SingleInt32);
       }
       if (SingleInt64 != 0L) {
-        size += pb::CodedOutputStream.ComputeInt64Size(2, SingleInt64);
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(SingleInt64);
       }
       if (SingleUint32 != 0) {
-        size += pb::CodedOutputStream.ComputeUInt32Size(3, SingleUint32);
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(SingleUint32);
       }
       if (SingleUint64 != 0UL) {
-        size += pb::CodedOutputStream.ComputeUInt64Size(4, SingleUint64);
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(SingleUint64);
       }
       if (SingleSint32 != 0) {
-        size += pb::CodedOutputStream.ComputeSInt32Size(5, SingleSint32);
+        size += 1 + pb::CodedOutputStream.ComputeSInt32Size(SingleSint32);
       }
       if (SingleSint64 != 0L) {
-        size += pb::CodedOutputStream.ComputeSInt64Size(6, SingleSint64);
+        size += 1 + pb::CodedOutputStream.ComputeSInt64Size(SingleSint64);
       }
       if (SingleFixed32 != 0) {
-        size += pb::CodedOutputStream.ComputeFixed32Size(7, SingleFixed32);
+        size += 1 + 4;
       }
       if (SingleFixed64 != 0UL) {
-        size += pb::CodedOutputStream.ComputeFixed64Size(8, SingleFixed64);
+        size += 1 + 8;
       }
       if (SingleSfixed32 != 0) {
-        size += pb::CodedOutputStream.ComputeSFixed32Size(9, SingleSfixed32);
+        size += 1 + 4;
       }
       if (SingleSfixed64 != 0L) {
-        size += pb::CodedOutputStream.ComputeSFixed64Size(10, SingleSfixed64);
+        size += 1 + 8;
       }
       if (SingleFloat != 0F) {
-        size += pb::CodedOutputStream.ComputeFloatSize(11, SingleFloat);
+        size += 1 + 4;
       }
       if (SingleDouble != 0D) {
-        size += pb::CodedOutputStream.ComputeDoubleSize(12, SingleDouble);
+        size += 1 + 8;
       }
       if (SingleBool != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(13, SingleBool);
+        size += 1 + 1;
       }
       if (SingleString.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(14, SingleString);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(SingleString);
       }
       if (SingleBytes.Length != 0) {
-        size += pb::CodedOutputStream.ComputeBytesSize(15, SingleBytes);
+        size += 1 + pb::CodedOutputStream.ComputeBytesSize(SingleBytes);
       }
       if (singleNestedMessage_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(18, SingleNestedMessage);
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(SingleNestedMessage);
       }
       if (singleForeignMessage_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(19, SingleForeignMessage);
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(SingleForeignMessage);
       }
       if (singleImportMessage_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(20, SingleImportMessage);
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(SingleImportMessage);
       }
       if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED) {
-        size += pb::CodedOutputStream.ComputeEnumSize(21, (int) SingleNestedEnum);
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SingleNestedEnum);
       }
       if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
-        size += pb::CodedOutputStream.ComputeEnumSize(22, (int) SingleForeignEnum);
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SingleForeignEnum);
       }
       if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED) {
-        size += pb::CodedOutputStream.ComputeEnumSize(23, (int) SingleImportEnum);
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SingleImportEnum);
       }
       if (singlePublicImportMessage_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(26, SinglePublicImportMessage);
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(SinglePublicImportMessage);
       }
       if (repeatedInt32_.Count > 0) {
         int dataSize = 0;
         foreach (int element in repeatedInt32_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedInt64_.Count > 0) {
         int dataSize = 0;
         foreach (long element in repeatedInt64_) {
-          dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeInt64Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedUint32_.Count > 0) {
         int dataSize = 0;
         foreach (uint element in repeatedUint32_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeUInt32Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedUint64_.Count > 0) {
         int dataSize = 0;
         foreach (ulong element in repeatedUint64_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeUInt64Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedSint32_.Count > 0) {
         int dataSize = 0;
         foreach (int element in repeatedSint32_) {
-          dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeSInt32Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedSint64_.Count > 0) {
         int dataSize = 0;
         foreach (long element in repeatedSint64_) {
-          dataSize += pb::CodedOutputStream.ComputeSInt64SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeSInt64Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedFixed32_.Count > 0) {
         int dataSize = 0;
         dataSize = 4 * repeatedFixed32_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedFixed64_.Count > 0) {
         int dataSize = 0;
         dataSize = 8 * repeatedFixed64_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedSfixed32_.Count > 0) {
         int dataSize = 0;
         dataSize = 4 * repeatedSfixed32_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedSfixed64_.Count > 0) {
         int dataSize = 0;
         dataSize = 8 * repeatedSfixed64_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedFloat_.Count > 0) {
         int dataSize = 0;
         dataSize = 4 * repeatedFloat_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedDouble_.Count > 0) {
         int dataSize = 0;
         dataSize = 8 * repeatedDouble_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedBool_.Count > 0) {
         int dataSize = 0;
         dataSize = 1 * repeatedBool_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedString_.Count > 0) {
         int dataSize = 0;
         foreach (string element in repeatedString_) {
-          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeStringSize(element);
         }
         size += dataSize;
         size += 2 * repeatedString_.Count;
@@ -1204,69 +1246,70 @@ namespace Google.Protobuf.TestProtos {
       if (repeatedBytes_.Count > 0) {
         int dataSize = 0;
         foreach (pb::ByteString element in repeatedBytes_) {
-          dataSize += pb::CodedOutputStream.ComputeBytesSizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeBytesSize(element);
         }
         size += dataSize;
         size += 2 * repeatedBytes_.Count;
       }
       if (repeatedNestedMessage_.Count > 0) {
         foreach (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage element in repeatedNestedMessage_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(48, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 2 * repeatedNestedMessage_.Count;
       }
       if (repeatedForeignMessage_.Count > 0) {
         foreach (global::Google.Protobuf.TestProtos.ForeignMessage element in repeatedForeignMessage_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(49, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 2 * repeatedForeignMessage_.Count;
       }
       if (repeatedImportMessage_.Count > 0) {
         foreach (global::Google.Protobuf.TestProtos.ImportMessage element in repeatedImportMessage_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(50, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 2 * repeatedImportMessage_.Count;
       }
       if (repeatedNestedEnum_.Count > 0) {
         int dataSize = 0;
         foreach (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum element in repeatedNestedEnum_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
         }
         size += dataSize;
-        size += 2;
-        size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
       }
       if (repeatedForeignEnum_.Count > 0) {
         int dataSize = 0;
         foreach (global::Google.Protobuf.TestProtos.ForeignEnum element in repeatedForeignEnum_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
         }
         size += dataSize;
-        size += 2;
-        size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
       }
       if (repeatedImportEnum_.Count > 0) {
         int dataSize = 0;
         foreach (global::Google.Protobuf.TestProtos.ImportEnum element in repeatedImportEnum_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
         }
         size += dataSize;
-        size += 2;
-        size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
       }
       if (repeatedPublicImportMessage_.Count > 0) {
         foreach (global::Google.Protobuf.TestProtos.PublicImportMessage element in repeatedPublicImportMessage_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(54, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 2 * repeatedPublicImportMessage_.Count;
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
-        size += pb::CodedOutputStream.ComputeUInt32Size(111, OneofUint32);
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(OneofUint32);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
-        size += pb::CodedOutputStream.ComputeMessageSize(112, OneofNestedMessage);
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(OneofNestedMessage);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) {
-        size += pb::CodedOutputStream.ComputeStringSize(113, OneofString);
+        size += 2 + pb::CodedOutputStream.ComputeStringSize(OneofString);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) {
-        size += pb::CodedOutputStream.ComputeBytesSize(114, OneofBytes);
+        size += 2 + pb::CodedOutputStream.ComputeBytesSize(OneofBytes);
       }
       return size;
     }
@@ -1607,8 +1650,8 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 888: {
-            OneofUint32 = input.ReadUInt32()
-            ;break;
+            OneofUint32 = input.ReadUInt32();
+            break;
           }
           case 898: {
             global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
@@ -1620,12 +1663,12 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 906: {
-            OneofString = input.ReadString()
-            ;break;
+            OneofString = input.ReadString();
+            break;
           }
           case 914: {
-            OneofBytes = input.ReadBytes()
-            ;break;
+            OneofBytes = input.ReadBytes();
+            break;
           }
         }
       }
@@ -1692,14 +1735,15 @@ namespace Google.Protobuf.TestProtos {
 
         public void WriteTo(pb::CodedOutputStream output) {
           if (Bb != 0) {
-            output.WriteInt32(1, Bb);
+            output.WriteRawTag(8);
+            output.WriteInt32(Bb);
           }
         }
 
         public int CalculateSize() {
           int size = 0;
           if (Bb != 0) {
-            size += pb::CodedOutputStream.ComputeInt32Size(1, Bb);
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(Bb);
           }
           return size;
         }
@@ -1802,10 +1846,12 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (child_ != null) {
-        output.WriteMessage(1, Child);
+        output.WriteRawTag(10);
+        output.WriteMessage(Child);
       }
       if (payload_ != null) {
-        output.WriteMessage(2, Payload);
+        output.WriteRawTag(18);
+        output.WriteMessage(Payload);
       }
       if (repeatedChild_.Count > 0) {
         output.WriteMessageArray(3, repeatedChild_);
@@ -1815,15 +1861,16 @@ namespace Google.Protobuf.TestProtos {
     public int CalculateSize() {
       int size = 0;
       if (child_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(1, Child);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Child);
       }
       if (payload_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(2, Payload);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Payload);
       }
       if (repeatedChild_.Count > 0) {
         foreach (global::Google.Protobuf.TestProtos.NestedTestAllTypes element in repeatedChild_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(3, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * repeatedChild_.Count;
       }
       return size;
     }
@@ -1932,14 +1979,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (DeprecatedInt32 != 0) {
-        output.WriteInt32(1, DeprecatedInt32);
+        output.WriteRawTag(8);
+        output.WriteInt32(DeprecatedInt32);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (DeprecatedInt32 != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(1, DeprecatedInt32);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(DeprecatedInt32);
       }
       return size;
     }
@@ -2023,14 +2071,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (C != 0) {
-        output.WriteInt32(1, C);
+        output.WriteRawTag(8);
+        output.WriteInt32(C);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (C != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(1, C);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(C);
       }
       return size;
     }
@@ -2180,14 +2229,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (foreignNested_ != null) {
-        output.WriteMessage(1, ForeignNested);
+        output.WriteRawTag(10);
+        output.WriteMessage(ForeignNested);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (foreignNested_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(1, ForeignNested);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(ForeignNested);
       }
       return size;
     }
@@ -2287,20 +2337,22 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (A != 0) {
-        output.WriteInt32(1, A);
+        output.WriteRawTag(8);
+        output.WriteInt32(A);
       }
       if (Bb != 0) {
-        output.WriteInt32(268435455, Bb);
+        output.WriteRawTag(248, 255, 255, 255, 7);
+        output.WriteInt32(Bb);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (A != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(1, A);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(A);
       }
       if (Bb != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(268435455, Bb);
+        size += 5 + pb::CodedOutputStream.ComputeInt32Size(Bb);
       }
       return size;
     }
@@ -2399,20 +2451,22 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (a_ != null) {
-        output.WriteMessage(1, A);
+        output.WriteRawTag(10);
+        output.WriteMessage(A);
       }
       if (I != 0) {
-        output.WriteInt32(2, I);
+        output.WriteRawTag(16);
+        output.WriteInt32(I);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (a_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(1, A);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(A);
       }
       if (I != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(2, I);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(I);
       }
       return size;
     }
@@ -2507,14 +2561,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (bb_ != null) {
-        output.WriteMessage(1, Bb);
+        output.WriteRawTag(10);
+        output.WriteMessage(Bb);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (bb_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(1, Bb);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Bb);
       }
       return size;
     }
@@ -2612,20 +2667,22 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (a_ != null) {
-        output.WriteMessage(1, A);
+        output.WriteRawTag(10);
+        output.WriteMessage(A);
       }
       if (OptionalInt32 != 0) {
-        output.WriteInt32(2, OptionalInt32);
+        output.WriteRawTag(16);
+        output.WriteInt32(OptionalInt32);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (a_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(1, A);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(A);
       }
       if (OptionalInt32 != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(2, OptionalInt32);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(OptionalInt32);
       }
       return size;
     }
@@ -2678,7 +2735,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestCamelCaseFieldNames> Parser { get { return _parser; } }
 
     private static readonly string[] _fieldNames = new string[] { "EnumField", "MessageField", "PrimitiveField", "RepeatedEnumField", "RepeatedMessageField", "RepeatedPrimitiveField", "RepeatedStringField", "StringField" };
-    private static readonly uint[] _fieldTags = new uint[] { 24, 34, 8, 72, 82, 56, 66, 18 };
+    private static readonly uint[] _fieldTags = new uint[] { 24, 34, 8, 74, 82, 58, 66, 18 };
     public static pbd::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor; }
     }
@@ -2782,25 +2839,31 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (PrimitiveField != 0) {
-        output.WriteInt32(1, PrimitiveField);
+        output.WriteRawTag(8);
+        output.WriteInt32(PrimitiveField);
       }
       if (StringField.Length != 0) {
-        output.WriteString(2, StringField);
+        output.WriteRawTag(18);
+        output.WriteString(StringField);
       }
       if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
-        output.WriteEnum(3, (int) EnumField);
+        output.WriteRawTag(24);
+        output.WriteEnum((int) EnumField);
       }
       if (messageField_ != null) {
-        output.WriteMessage(4, MessageField);
+        output.WriteRawTag(34);
+        output.WriteMessage(MessageField);
       }
       if (repeatedPrimitiveField_.Count > 0) {
-        output.WritePackedInt32Array(7, repeatedPrimitiveField_);
+        output.WriteRawTag(58);
+        output.WritePackedInt32Array(repeatedPrimitiveField_);
       }
       if (repeatedStringField_.Count > 0) {
         output.WriteStringArray(8, repeatedStringField_);
       }
       if (repeatedEnumField_.Count > 0) {
-        output.WritePackedEnumArray(9, repeatedEnumField_);
+        output.WriteRawTag(74);
+        output.WritePackedEnumArray(repeatedEnumField_);
       }
       if (repeatedMessageField_.Count > 0) {
         output.WriteMessageArray(10, repeatedMessageField_);
@@ -2810,29 +2873,29 @@ namespace Google.Protobuf.TestProtos {
     public int CalculateSize() {
       int size = 0;
       if (PrimitiveField != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(1, PrimitiveField);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(PrimitiveField);
       }
       if (StringField.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(2, StringField);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(StringField);
       }
       if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
-        size += pb::CodedOutputStream.ComputeEnumSize(3, (int) EnumField);
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EnumField);
       }
       if (messageField_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(4, MessageField);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(MessageField);
       }
       if (repeatedPrimitiveField_.Count > 0) {
         int dataSize = 0;
         foreach (int element in repeatedPrimitiveField_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
         }
         size += dataSize;
-        size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedStringField_.Count > 0) {
         int dataSize = 0;
         foreach (string element in repeatedStringField_) {
-          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeStringSize(element);
         }
         size += dataSize;
         size += 1 * repeatedStringField_.Count;
@@ -2840,16 +2903,16 @@ namespace Google.Protobuf.TestProtos {
       if (repeatedEnumField_.Count > 0) {
         int dataSize = 0;
         foreach (global::Google.Protobuf.TestProtos.ForeignEnum element in repeatedEnumField_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
         }
         size += dataSize;
-        size += 1;
-        size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+        size += 1 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
       }
       if (repeatedMessageField_.Count > 0) {
         foreach (global::Google.Protobuf.TestProtos.ForeignMessage element in repeatedMessageField_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(10, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * repeatedMessageField_.Count;
       }
       return size;
     }
@@ -3010,32 +3073,36 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (MyInt != 0L) {
-        output.WriteInt64(1, MyInt);
+        output.WriteRawTag(8);
+        output.WriteInt64(MyInt);
       }
       if (MyString.Length != 0) {
-        output.WriteString(11, MyString);
+        output.WriteRawTag(90);
+        output.WriteString(MyString);
       }
       if (MyFloat != 0F) {
-        output.WriteFloat(101, MyFloat);
+        output.WriteRawTag(173, 6);
+        output.WriteFloat(MyFloat);
       }
       if (singleNestedMessage_ != null) {
-        output.WriteMessage(200, SingleNestedMessage);
+        output.WriteRawTag(194, 12);
+        output.WriteMessage(SingleNestedMessage);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (MyString.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(11, MyString);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(MyString);
       }
       if (MyInt != 0L) {
-        size += pb::CodedOutputStream.ComputeInt64Size(1, MyInt);
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(MyInt);
       }
       if (MyFloat != 0F) {
-        size += pb::CodedOutputStream.ComputeFloatSize(101, MyFloat);
+        size += 2 + 4;
       }
       if (singleNestedMessage_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(200, SingleNestedMessage);
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(SingleNestedMessage);
       }
       return size;
     }
@@ -3157,20 +3224,22 @@ namespace Google.Protobuf.TestProtos {
 
         public void WriteTo(pb::CodedOutputStream output) {
           if (Bb != 0) {
-            output.WriteInt32(1, Bb);
+            output.WriteRawTag(8);
+            output.WriteInt32(Bb);
           }
           if (Oo != 0L) {
-            output.WriteInt64(2, Oo);
+            output.WriteRawTag(16);
+            output.WriteInt64(Oo);
           }
         }
 
         public int CalculateSize() {
           int size = 0;
           if (Oo != 0L) {
-            size += pb::CodedOutputStream.ComputeInt64Size(2, Oo);
+            size += 1 + pb::CodedOutputStream.ComputeInt64Size(Oo);
           }
           if (Bb != 0) {
-            size += pb::CodedOutputStream.ComputeInt32Size(1, Bb);
+            size += 1 + pb::CodedOutputStream.ComputeInt32Size(Bb);
           }
           return size;
         }
@@ -3266,14 +3335,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) {
-        output.WriteEnum(1, (int) SparseEnum);
+        output.WriteRawTag(8);
+        output.WriteEnum((int) SparseEnum);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) {
-        size += pb::CodedOutputStream.ComputeEnumSize(1, (int) SparseEnum);
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) SparseEnum);
       }
       return size;
     }
@@ -3357,14 +3427,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Data.Length != 0) {
-        output.WriteString(1, Data);
+        output.WriteRawTag(10);
+        output.WriteString(Data);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Data.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(1, Data);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Data);
       }
       return size;
     }
@@ -3455,7 +3526,7 @@ namespace Google.Protobuf.TestProtos {
       if (data_.Count > 0) {
         int dataSize = 0;
         foreach (string element in data_) {
-          dataSize += pb::CodedOutputStream.ComputeStringSizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeStringSize(element);
         }
         size += dataSize;
         size += 1 * data_.Count;
@@ -3540,14 +3611,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Data.Length != 0) {
-        output.WriteBytes(1, Data);
+        output.WriteRawTag(10);
+        output.WriteBytes(Data);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Data.Length != 0) {
-        size += pb::CodedOutputStream.ComputeBytesSize(1, Data);
+        size += 1 + pb::CodedOutputStream.ComputeBytesSize(Data);
       }
       return size;
     }
@@ -3631,14 +3703,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Data.Length != 0) {
-        output.WriteBytes(1, Data);
+        output.WriteRawTag(10);
+        output.WriteBytes(Data);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Data.Length != 0) {
-        size += pb::CodedOutputStream.ComputeBytesSize(1, Data);
+        size += 1 + pb::CodedOutputStream.ComputeBytesSize(Data);
       }
       return size;
     }
@@ -3722,14 +3795,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Data != 0) {
-        output.WriteInt32(1, Data);
+        output.WriteRawTag(8);
+        output.WriteInt32(Data);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Data != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(1, Data);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Data);
       }
       return size;
     }
@@ -3813,14 +3887,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Data != 0) {
-        output.WriteUInt32(1, Data);
+        output.WriteRawTag(8);
+        output.WriteUInt32(Data);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Data != 0) {
-        size += pb::CodedOutputStream.ComputeUInt32Size(1, Data);
+        size += 1 + pb::CodedOutputStream.ComputeUInt32Size(Data);
       }
       return size;
     }
@@ -3904,14 +3979,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Data != 0L) {
-        output.WriteInt64(1, Data);
+        output.WriteRawTag(8);
+        output.WriteInt64(Data);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Data != 0L) {
-        size += pb::CodedOutputStream.ComputeInt64Size(1, Data);
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(Data);
       }
       return size;
     }
@@ -3995,14 +4071,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Data != 0UL) {
-        output.WriteUInt64(1, Data);
+        output.WriteRawTag(8);
+        output.WriteUInt64(Data);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Data != 0UL) {
-        size += pb::CodedOutputStream.ComputeUInt64Size(1, Data);
+        size += 1 + pb::CodedOutputStream.ComputeUInt64Size(Data);
       }
       return size;
     }
@@ -4086,14 +4163,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Data != false) {
-        output.WriteBool(1, Data);
+        output.WriteRawTag(8);
+        output.WriteBool(Data);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Data != false) {
-        size += pb::CodedOutputStream.ComputeBoolSize(1, Data);
+        size += 1 + 1;
       }
       return size;
     }
@@ -4216,26 +4294,29 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (fooCase_ == FooOneofCase.FooInt) {
-        output.WriteInt32(1, FooInt);
+        output.WriteRawTag(8);
+        output.WriteInt32(FooInt);
       }
       if (fooCase_ == FooOneofCase.FooString) {
-        output.WriteString(2, FooString);
+        output.WriteRawTag(18);
+        output.WriteString(FooString);
       }
       if (fooCase_ == FooOneofCase.FooMessage) {
-        output.WriteMessage(3, FooMessage);
+        output.WriteRawTag(26);
+        output.WriteMessage(FooMessage);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (fooCase_ == FooOneofCase.FooInt) {
-        size += pb::CodedOutputStream.ComputeInt32Size(1, FooInt);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(FooInt);
       }
       if (fooCase_ == FooOneofCase.FooString) {
-        size += pb::CodedOutputStream.ComputeStringSize(2, FooString);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(FooString);
       }
       if (fooCase_ == FooOneofCase.FooMessage) {
-        size += pb::CodedOutputStream.ComputeMessageSize(3, FooMessage);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(FooMessage);
       }
       return size;
     }
@@ -4269,12 +4350,12 @@ namespace Google.Protobuf.TestProtos {
             }
             break;
           case 8: {
-            FooInt = input.ReadInt32()
-            ;break;
+            FooInt = input.ReadInt32();
+            break;
           }
           case 18: {
-            FooString = input.ReadString()
-            ;break;
+            FooString = input.ReadString();
+            break;
           }
           case 26: {
             global::Google.Protobuf.TestProtos.TestAllTypes subBuilder = new global::Google.Protobuf.TestProtos.TestAllTypes();
@@ -4443,46 +4524,60 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (packedInt32_.Count > 0) {
-        output.WritePackedInt32Array(90, packedInt32_);
+        output.WriteRawTag(210, 5);
+        output.WritePackedInt32Array(packedInt32_);
       }
       if (packedInt64_.Count > 0) {
-        output.WritePackedInt64Array(91, packedInt64_);
+        output.WriteRawTag(218, 5);
+        output.WritePackedInt64Array(packedInt64_);
       }
       if (packedUint32_.Count > 0) {
-        output.WritePackedUInt32Array(92, packedUint32_);
+        output.WriteRawTag(226, 5);
+        output.WritePackedUInt32Array(packedUint32_);
       }
       if (packedUint64_.Count > 0) {
-        output.WritePackedUInt64Array(93, packedUint64_);
+        output.WriteRawTag(234, 5);
+        output.WritePackedUInt64Array(packedUint64_);
       }
       if (packedSint32_.Count > 0) {
-        output.WritePackedSInt32Array(94, packedSint32_);
+        output.WriteRawTag(242, 5);
+        output.WritePackedSInt32Array(packedSint32_);
       }
       if (packedSint64_.Count > 0) {
-        output.WritePackedSInt64Array(95, packedSint64_);
+        output.WriteRawTag(250, 5);
+        output.WritePackedSInt64Array(packedSint64_);
       }
       if (packedFixed32_.Count > 0) {
-        output.WritePackedFixed32Array(96, packedFixed32_);
+        output.WriteRawTag(130, 6);
+        output.WritePackedFixed32Array(packedFixed32_);
       }
       if (packedFixed64_.Count > 0) {
-        output.WritePackedFixed64Array(97, packedFixed64_);
+        output.WriteRawTag(138, 6);
+        output.WritePackedFixed64Array(packedFixed64_);
       }
       if (packedSfixed32_.Count > 0) {
-        output.WritePackedSFixed32Array(98, packedSfixed32_);
+        output.WriteRawTag(146, 6);
+        output.WritePackedSFixed32Array(packedSfixed32_);
       }
       if (packedSfixed64_.Count > 0) {
-        output.WritePackedSFixed64Array(99, packedSfixed64_);
+        output.WriteRawTag(154, 6);
+        output.WritePackedSFixed64Array(packedSfixed64_);
       }
       if (packedFloat_.Count > 0) {
-        output.WritePackedFloatArray(100, packedFloat_);
+        output.WriteRawTag(162, 6);
+        output.WritePackedFloatArray(packedFloat_);
       }
       if (packedDouble_.Count > 0) {
-        output.WritePackedDoubleArray(101, packedDouble_);
+        output.WriteRawTag(170, 6);
+        output.WritePackedDoubleArray(packedDouble_);
       }
       if (packedBool_.Count > 0) {
-        output.WritePackedBoolArray(102, packedBool_);
+        output.WriteRawTag(178, 6);
+        output.WritePackedBoolArray(packedBool_);
       }
       if (packedEnum_.Count > 0) {
-        output.WritePackedEnumArray(103, packedEnum_);
+        output.WriteRawTag(186, 6);
+        output.WritePackedEnumArray(packedEnum_);
       }
     }
 
@@ -4491,101 +4586,100 @@ namespace Google.Protobuf.TestProtos {
       if (packedInt32_.Count > 0) {
         int dataSize = 0;
         foreach (int element in packedInt32_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedInt64_.Count > 0) {
         int dataSize = 0;
         foreach (long element in packedInt64_) {
-          dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeInt64Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedUint32_.Count > 0) {
         int dataSize = 0;
         foreach (uint element in packedUint32_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeUInt32Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedUint64_.Count > 0) {
         int dataSize = 0;
         foreach (ulong element in packedUint64_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeUInt64Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedSint32_.Count > 0) {
         int dataSize = 0;
         foreach (int element in packedSint32_) {
-          dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeSInt32Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedSint64_.Count > 0) {
         int dataSize = 0;
         foreach (long element in packedSint64_) {
-          dataSize += pb::CodedOutputStream.ComputeSInt64SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeSInt64Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedFixed32_.Count > 0) {
         int dataSize = 0;
         dataSize = 4 * packedFixed32_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedFixed64_.Count > 0) {
         int dataSize = 0;
         dataSize = 8 * packedFixed64_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedSfixed32_.Count > 0) {
         int dataSize = 0;
         dataSize = 4 * packedSfixed32_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedSfixed64_.Count > 0) {
         int dataSize = 0;
         dataSize = 8 * packedSfixed64_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedFloat_.Count > 0) {
         int dataSize = 0;
         dataSize = 4 * packedFloat_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedDouble_.Count > 0) {
         int dataSize = 0;
         dataSize = 8 * packedDouble_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedBool_.Count > 0) {
         int dataSize = 0;
         dataSize = 1 * packedBool_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (packedEnum_.Count > 0) {
         int dataSize = 0;
         foreach (global::Google.Protobuf.TestProtos.ForeignEnum element in packedEnum_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
         }
         size += dataSize;
-        size += 2;
-        size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
       }
       return size;
     }
@@ -4896,7 +4990,7 @@ namespace Google.Protobuf.TestProtos {
       if (unpackedInt32_.Count > 0) {
         int dataSize = 0;
         foreach (int element in unpackedInt32_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
         }
         size += dataSize;
         size += 2 * unpackedInt32_.Count;
@@ -4904,7 +4998,7 @@ namespace Google.Protobuf.TestProtos {
       if (unpackedInt64_.Count > 0) {
         int dataSize = 0;
         foreach (long element in unpackedInt64_) {
-          dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeInt64Size(element);
         }
         size += dataSize;
         size += 2 * unpackedInt64_.Count;
@@ -4912,7 +5006,7 @@ namespace Google.Protobuf.TestProtos {
       if (unpackedUint32_.Count > 0) {
         int dataSize = 0;
         foreach (uint element in unpackedUint32_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeUInt32Size(element);
         }
         size += dataSize;
         size += 2 * unpackedUint32_.Count;
@@ -4920,7 +5014,7 @@ namespace Google.Protobuf.TestProtos {
       if (unpackedUint64_.Count > 0) {
         int dataSize = 0;
         foreach (ulong element in unpackedUint64_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeUInt64Size(element);
         }
         size += dataSize;
         size += 2 * unpackedUint64_.Count;
@@ -4928,7 +5022,7 @@ namespace Google.Protobuf.TestProtos {
       if (unpackedSint32_.Count > 0) {
         int dataSize = 0;
         foreach (int element in unpackedSint32_) {
-          dataSize += pb::CodedOutputStream.ComputeSInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeSInt32Size(element);
         }
         size += dataSize;
         size += 2 * unpackedSint32_.Count;
@@ -4936,7 +5030,7 @@ namespace Google.Protobuf.TestProtos {
       if (unpackedSint64_.Count > 0) {
         int dataSize = 0;
         foreach (long element in unpackedSint64_) {
-          dataSize += pb::CodedOutputStream.ComputeSInt64SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeSInt64Size(element);
         }
         size += dataSize;
         size += 2 * unpackedSint64_.Count;
@@ -4986,7 +5080,7 @@ namespace Google.Protobuf.TestProtos {
       if (unpackedEnum_.Count > 0) {
         int dataSize = 0;
         foreach (global::Google.Protobuf.TestProtos.ForeignEnum element in unpackedEnum_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
         }
         size += dataSize;
         size += 2 * unpackedEnum_.Count;
@@ -5106,7 +5200,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestRepeatedScalarDifferentTagSizes> Parser { get { return _parser; } }
 
     private static readonly string[] _fieldNames = new string[] { "repeated_fixed32", "repeated_fixed64", "repeated_float", "repeated_int32", "repeated_int64", "repeated_uint64" };
-    private static readonly uint[] _fieldTags = new uint[] { 101, 16369, 2097141, 104, 16376, 2097144 };
+    private static readonly uint[] _fieldTags = new uint[] { 98, 16370, 2097138, 106, 16378, 2097146 };
     public static pbd::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__Descriptor; }
     }
@@ -5188,22 +5282,28 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (repeatedFixed32_.Count > 0) {
-        output.WritePackedFixed32Array(12, repeatedFixed32_);
+        output.WriteRawTag(98);
+        output.WritePackedFixed32Array(repeatedFixed32_);
       }
       if (repeatedInt32_.Count > 0) {
-        output.WritePackedInt32Array(13, repeatedInt32_);
+        output.WriteRawTag(106);
+        output.WritePackedInt32Array(repeatedInt32_);
       }
       if (repeatedFixed64_.Count > 0) {
-        output.WritePackedFixed64Array(2046, repeatedFixed64_);
+        output.WriteRawTag(242, 127);
+        output.WritePackedFixed64Array(repeatedFixed64_);
       }
       if (repeatedInt64_.Count > 0) {
-        output.WritePackedInt64Array(2047, repeatedInt64_);
+        output.WriteRawTag(250, 127);
+        output.WritePackedInt64Array(repeatedInt64_);
       }
       if (repeatedFloat_.Count > 0) {
-        output.WritePackedFloatArray(262142, repeatedFloat_);
+        output.WriteRawTag(242, 255, 127);
+        output.WritePackedFloatArray(repeatedFloat_);
       }
       if (repeatedUint64_.Count > 0) {
-        output.WritePackedUInt64Array(262143, repeatedUint64_);
+        output.WriteRawTag(250, 255, 127);
+        output.WritePackedUInt64Array(repeatedUint64_);
       }
     }
 
@@ -5213,43 +5313,43 @@ namespace Google.Protobuf.TestProtos {
         int dataSize = 0;
         dataSize = 4 * repeatedFixed32_.Count;
         size += dataSize;
-        size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedInt32_.Count > 0) {
         int dataSize = 0;
         foreach (int element in repeatedInt32_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
         }
         size += dataSize;
-        size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedFixed64_.Count > 0) {
         int dataSize = 0;
         dataSize = 8 * repeatedFixed64_.Count;
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedInt64_.Count > 0) {
         int dataSize = 0;
         foreach (long element in repeatedInt64_) {
-          dataSize += pb::CodedOutputStream.ComputeInt64SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeInt64Size(element);
         }
         size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedFloat_.Count > 0) {
         int dataSize = 0;
         dataSize = 4 * repeatedFloat_.Count;
         size += dataSize;
-        size += 3 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 3 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (repeatedUint64_.Count > 0) {
         int dataSize = 0;
         foreach (ulong element in repeatedUint64_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt64SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeUInt64Size(element);
         }
         size += dataSize;
-        size += 3 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 3 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       return size;
     }
@@ -5362,14 +5462,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (A.Length != 0) {
-        output.WriteString(1, A);
+        output.WriteRawTag(10);
+        output.WriteString(A);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (A.Length != 0) {
-        size += pb::CodedOutputStream.ComputeStringSize(1, A);
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(A);
       }
       return size;
     }

@@ -82,9 +82,20 @@ void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
 void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if ($name$_.Count > 0) {\n"
-    "  output.Write$packed$EnumArray($number$, $name$_);\n"
-    "}\n");
+    "if ($name$_.Count > 0) {\n");
+  printer->Indent();
+  if (descriptor_->is_packed()) {
+    printer->Print(
+      variables_,
+      "output.WriteRawTag($tag_bytes$);\n"
+      "output.WritePackedEnumArray($name$_);\n");
+  } else {
+    printer->Print(
+      variables_,
+      "output.Write$capitalized_type_name$Array($number$, $name$_);\n");
+  }
+  printer->Outdent();
+  printer->Print("}\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
@@ -97,14 +108,13 @@ void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer
   printer->Print(
     variables_,
     "foreach ($type_name$ element in $name$_) {\n"
-    "  dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);\n"
+    "  dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);\n"
     "}\n"
     "size += dataSize;\n");
   int tagSize = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
   if (descriptor_->is_packed()) {
     printer->Print(
-      "size += $tag_size$;\n"
-      "size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);\n",
+      "size += $tag_size$ + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);\n",
       "tag_size", SimpleItoa(tagSize));
   } else {
     printer->Print(

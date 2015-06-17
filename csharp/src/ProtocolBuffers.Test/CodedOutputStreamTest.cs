@@ -295,12 +295,12 @@ namespace Google.Protobuf
         [Test]
         public void TestNegativeEnumNoTag()
         {
-            Assert.AreEqual(10, CodedOutputStream.ComputeInt32SizeNoTag(-2));
-            Assert.AreEqual(10, CodedOutputStream.ComputeEnumSizeNoTag((int) TestNegEnum.Value));
+            Assert.AreEqual(10, CodedOutputStream.ComputeInt32Size(-2));
+            Assert.AreEqual(10, CodedOutputStream.ComputeEnumSize((int) TestNegEnum.Value));
 
             byte[] bytes = new byte[10];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteEnumNoTag((int) TestNegEnum.Value);
+            output.WriteEnum((int) TestNegEnum.Value);
 
             Assert.AreEqual(0, output.SpaceLeft);
             Assert.AreEqual("FE-FF-FF-FF-FF-FF-FF-FF-FF-01", BitConverter.ToString(bytes));
@@ -309,28 +309,14 @@ namespace Google.Protobuf
         enum TestNegEnum { None = 0, Value = -2 }
 
         [Test]
-        public void TestNegativeEnumWithTag()
-        {
-            Assert.AreEqual(11, CodedOutputStream.ComputeInt32Size(8, -2));
-            Assert.AreEqual(11, CodedOutputStream.ComputeEnumSize(8, (int) TestNegEnum.Value));
-
-            byte[] bytes = new byte[11];
-            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteEnum(8, (int) TestNegEnum.Value);
-
-            Assert.AreEqual(0, output.SpaceLeft);
-            //fyi, 0x40 == 0x08 << 3 + 0, field num + wire format shift
-            Assert.AreEqual("40-FE-FF-FF-FF-FF-FF-FF-FF-FF-01", BitConverter.ToString(bytes));
-        }
-
-        [Test]
         public void TestNegativeEnumArrayPacked()
         {
             int arraySize = 1 + (10 * 5);
             int msgSize = 1 + 1 + arraySize;
             byte[] bytes = new byte[msgSize];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WritePackedEnumArray(8, new RepeatedField<TestNegEnum> {
+            output.WriteTag(8, WireFormat.WireType.LengthDelimited);
+            output.WritePackedEnumArray(new RepeatedField<TestNegEnum> {
                 0, (TestNegEnum) (-1), TestNegEnum.Value, (TestNegEnum) (-3), (TestNegEnum) (-4), (TestNegEnum) (-5) });
 
             Assert.AreEqual(0, output.SpaceLeft);
@@ -384,17 +370,17 @@ namespace Google.Protobuf
                 // Field 11: numeric value: 500
                 cout.WriteTag(11, WireFormat.WireType.Varint);
                 Assert.AreEqual(1, cout.Position);
-                cout.WriteInt32NoTag(500);
+                cout.WriteInt32(500);
                 Assert.AreEqual(3, cout.Position);
                 //Field 12: length delimited 120 bytes
                 cout.WriteTag(12, WireFormat.WireType.LengthDelimited);
                 Assert.AreEqual(4, cout.Position);
-                cout.WriteBytesNoTag(ByteString.CopyFrom(content));
+                cout.WriteBytes(ByteString.CopyFrom(content));
                 Assert.AreEqual(115, cout.Position);
                 // Field 13: fixed numeric value: 501
                 cout.WriteTag(13, WireFormat.WireType.Fixed32);
                 Assert.AreEqual(116, cout.Position);
-                cout.WriteSFixed32NoTag(501);
+                cout.WriteSFixed32(501);
                 Assert.AreEqual(120, cout.Position);
                 cout.Flush();
             }
@@ -405,17 +391,17 @@ namespace Google.Protobuf
                 // Field 1: numeric value: 500
                 cout.WriteTag(1, WireFormat.WireType.Varint);
                 Assert.AreEqual(1, cout.Position);
-                cout.WriteInt32NoTag(500);
+                cout.WriteInt32(500);
                 Assert.AreEqual(3, cout.Position);
                 //Field 2: length delimited 120 bytes
                 cout.WriteTag(2, WireFormat.WireType.LengthDelimited);
                 Assert.AreEqual(4, cout.Position);
-                cout.WriteBytesNoTag(ByteString.CopyFrom(child));
+                cout.WriteBytes(ByteString.CopyFrom(child));
                 Assert.AreEqual(125, cout.Position);
                 // Field 3: fixed numeric value: 500
                 cout.WriteTag(3, WireFormat.WireType.Fixed32);
                 Assert.AreEqual(126, cout.Position);
-                cout.WriteSFixed32NoTag(501);
+                cout.WriteSFixed32(501);
                 Assert.AreEqual(130, cout.Position);
                 cout.Flush();
             }

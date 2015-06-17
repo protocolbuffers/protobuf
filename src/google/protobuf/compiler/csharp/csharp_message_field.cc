@@ -92,11 +92,11 @@ void MessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
 }
 
 void MessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
-  // TODO(jonskeet): Why are we using array access instead of a literal here?
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  output.WriteMessage($number$, $property_name$);\n"
+    "  output.WriteRawTag($tag_bytes$);\n"
+    "  output.WriteMessage($property_name$);\n"
     "}\n");
 }
 
@@ -104,7 +104,7 @@ void MessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  size += pb::CodedOutputStream.ComputeMessageSize($number$, $property_name$);\n"
+    "  size += $tag_size$ + pb::CodedOutputStream.ComputeMessageSize($property_name$);\n"
     "}\n");
 }
 

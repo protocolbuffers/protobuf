@@ -479,7 +479,8 @@ namespace Google.Protobuf
             int msgSize = 1 + 1 + arraySize;
             byte[] bytes = new byte[msgSize];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WritePackedInt32Array(8, new RepeatedField<int> { 0, -1, -2, -3, -4, -5 });
+            output.WriteTag(8, WireFormat.WireType.LengthDelimited);
+            output.WritePackedInt32Array(new RepeatedField<int> { 0, -1, -2, -3, -4, -5 });
 
             Assert.AreEqual(0, output.SpaceLeft);
 
@@ -527,8 +528,10 @@ namespace Google.Protobuf
             using (var ms = new MemoryStream())
             {
                 CodedOutputStream output = CodedOutputStream.CreateInstance(ms);
-                output.WriteBytes(1, ByteString.CopyFrom(new byte[100]));
-                output.WriteBytes(2, ByteString.CopyFrom(new byte[100]));
+                output.WriteTag(1, WireFormat.WireType.LengthDelimited);
+                output.WriteBytes(ByteString.CopyFrom(new byte[100]));
+                output.WriteTag(2, WireFormat.WireType.LengthDelimited);
+                output.WriteBytes(ByteString.CopyFrom(new byte[100]));
                 output.Flush();
 
                 ms.Position = 0;

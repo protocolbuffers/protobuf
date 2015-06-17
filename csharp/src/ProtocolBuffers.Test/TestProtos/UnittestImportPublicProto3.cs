@@ -94,14 +94,15 @@ namespace Google.Protobuf.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (E != 0) {
-        output.WriteInt32(1, E);
+        output.WriteRawTag(8);
+        output.WriteInt32(E);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (E != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(1, E);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(E);
       }
       return size;
     }

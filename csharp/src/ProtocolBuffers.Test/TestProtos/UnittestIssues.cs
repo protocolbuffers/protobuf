@@ -155,25 +155,27 @@ namespace UnitTest.Issues.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
-        output.WriteEnum(1, (int) Value);
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Value);
       }
       if (values_.Count > 0) {
         output.WriteEnumArray(2, values_);
       }
       if (packedValues_.Count > 0) {
-        output.WritePackedEnumArray(3, packedValues_);
+        output.WriteRawTag(26);
+        output.WritePackedEnumArray(packedValues_);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
-        size += pb::CodedOutputStream.ComputeEnumSize(1, (int) Value);
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Value);
       }
       if (values_.Count > 0) {
         int dataSize = 0;
         foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in values_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
         }
         size += dataSize;
         size += 1 * values_.Count;
@@ -181,11 +183,10 @@ namespace UnitTest.Issues.TestProtos {
       if (packedValues_.Count > 0) {
         int dataSize = 0;
         foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in packedValues_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
         }
         size += dataSize;
-        size += 1;
-        size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+        size += 1 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
       }
       return size;
     }
@@ -305,7 +306,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<DeprecatedFieldsMessage> Parser { get { return _parser; } }
 
     private static readonly string[] _fieldNames = new string[] { "EnumArray", "EnumValue", "MessageArray", "MessageValue", "PrimitiveArray", "PrimitiveValue" };
-    private static readonly uint[] _fieldTags = new uint[] { 48, 40, 34, 26, 16, 8 };
+    private static readonly uint[] _fieldTags = new uint[] { 50, 40, 34, 26, 18, 8 };
     public static pbd::MessageDescriptor Descriptor {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_DeprecatedFieldsMessage__Descriptor; }
     }
@@ -397,57 +398,62 @@ namespace UnitTest.Issues.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (PrimitiveValue != 0) {
-        output.WriteInt32(1, PrimitiveValue);
+        output.WriteRawTag(8);
+        output.WriteInt32(PrimitiveValue);
       }
       if (primitiveArray_.Count > 0) {
-        output.WritePackedInt32Array(2, primitiveArray_);
+        output.WriteRawTag(18);
+        output.WritePackedInt32Array(primitiveArray_);
       }
       if (messageValue_ != null) {
-        output.WriteMessage(3, MessageValue);
+        output.WriteRawTag(26);
+        output.WriteMessage(MessageValue);
       }
       if (messageArray_.Count > 0) {
         output.WriteMessageArray(4, messageArray_);
       }
       if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
-        output.WriteEnum(5, (int) EnumValue);
+        output.WriteRawTag(40);
+        output.WriteEnum((int) EnumValue);
       }
       if (enumArray_.Count > 0) {
-        output.WritePackedEnumArray(6, enumArray_);
+        output.WriteRawTag(50);
+        output.WritePackedEnumArray(enumArray_);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (PrimitiveValue != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(1, PrimitiveValue);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(PrimitiveValue);
       }
       if (primitiveArray_.Count > 0) {
         int dataSize = 0;
         foreach (int element in primitiveArray_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32SizeNoTag(element);
+          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
         }
         size += dataSize;
-        size += 1 + pb::CodedOutputStream.ComputeInt32SizeNoTag(dataSize);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
       }
       if (messageValue_ != null) {
-        size += pb::CodedOutputStream.ComputeMessageSize(3, MessageValue);
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(MessageValue);
       }
       if (messageArray_.Count > 0) {
         foreach (global::UnitTest.Issues.TestProtos.DeprecatedChild element in messageArray_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(4, element);
+          size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
+        size += 1 * messageArray_.Count;
       }
       if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
-        size += pb::CodedOutputStream.ComputeEnumSize(5, (int) EnumValue);
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EnumValue);
       }
       if (enumArray_.Count > 0) {
         int dataSize = 0;
         foreach (global::UnitTest.Issues.TestProtos.DeprecatedEnum element in enumArray_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSizeNoTag((int) element);
+          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
         }
         size += dataSize;
-        size += 1;
-        size += pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
+        size += 1 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
       }
       return size;
     }
@@ -568,14 +574,15 @@ namespace UnitTest.Issues.TestProtos {
 
     public void WriteTo(pb::CodedOutputStream output) {
       if (Item != 0) {
-        output.WriteInt32(1, Item);
+        output.WriteRawTag(8);
+        output.WriteInt32(Item);
       }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (Item != 0) {
-        size += pb::CodedOutputStream.ComputeInt32Size(1, Item);
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Item);
       }
       return size;
     }
