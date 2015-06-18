@@ -302,7 +302,7 @@ bool IsMap(const google::protobuf::Field& field,
 string DoubleAsString(double value) {
   if (value == std::numeric_limits<double>::infinity()) return "Infinity";
   if (value == -std::numeric_limits<double>::infinity()) return "-Infinity";
-  if (isnan(value)) return "NaN";
+  if (::isnan(value)) return "NaN";
 
   return SimpleDtoa(value);
 }
