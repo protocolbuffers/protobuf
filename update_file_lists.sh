@@ -31,10 +31,6 @@ get_proto_files() {
   get_variable_value $@ | grep "pb.cc$" | sed "s/pb.cc/proto/"
 }
 
-get_proto_outs() {
-  get_variable_value $@ | grep '\.pb\.'
-}
-
 sort_files() {
   for FILE in $@; do
     echo $FILE
@@ -56,9 +52,7 @@ LIBPROTOBUF_LITE_SOURCES=$(get_source_files $MAKEFILE libprotobuf_lite_la_SOURCE
 LIBPROTOBUF_SOURCES=$(get_source_files $MAKEFILE libprotobuf_la_SOURCES)
 LIBPROTOC_SOURCES=$(get_source_files $MAKEFILE libprotoc_la_SOURCES)
 LITE_PROTOS=$(get_proto_files $MAKEFILE protoc_lite_outputs)
-LITE_PROTOS_OUTS=$(get_proto_outs $MAKEFILE protoc_lite_outputs)
 PROTOS=$(get_proto_files $MAKEFILE protoc_outputs)
-PROTOS_OUTS=$(get_proto_outs $MAKEFILE protoc_outputs)
 WKT_PROTOS=$(get_variable_value $MAKEFILE nobase_dist_proto_DATA)
 COMMON_TEST_SOURCES=$(get_source_files $MAKEFILE COMMON_TEST_SOURCES)
 TEST_SOURCES=$(get_source_files $MAKEFILE protobuf_test_SOURCES)
@@ -179,9 +173,7 @@ set_bazel_value $BAZEL_BUILD protobuf_lite_srcs $BAZEL_PREFIX $LIBPROTOBUF_LITE_
 set_bazel_value $BAZEL_BUILD protobuf_srcs $BAZEL_PREFIX $LIBPROTOBUF_SOURCES
 set_bazel_value $BAZEL_BUILD protoc_lib_srcs $BAZEL_PREFIX $LIBPROTOC_SOURCES
 set_bazel_value $BAZEL_BUILD lite_test_protos "" $LITE_PROTOS
-set_bazel_value $BAZEL_BUILD lite_test_protos_outs $BAZEL_PREFIX $LITE_PROTOS_OUTS
 set_bazel_value $BAZEL_BUILD well_known_protos "" $WKT_PROTOS
 set_bazel_value $BAZEL_BUILD test_protos "" $PROTOS
-set_bazel_value $BAZEL_BUILD test_protos_outs $BAZEL_PREFIX $PROTOS_OUTS
 set_bazel_value $BAZEL_BUILD common_test_srcs $BAZEL_PREFIX $COMMON_TEST_SOURCES
 set_bazel_value $BAZEL_BUILD test_srcs $BAZEL_PREFIX $TEST_SOURCES
