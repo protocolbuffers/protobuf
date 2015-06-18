@@ -57,6 +57,7 @@ WKT_PROTOS=$(get_variable_value $MAKEFILE nobase_dist_proto_DATA)
 COMMON_TEST_SOURCES=$(get_source_files $MAKEFILE COMMON_TEST_SOURCES)
 TEST_SOURCES=$(get_source_files $MAKEFILE protobuf_test_SOURCES)
 LITE_TEST_SOURCES=$(get_source_files $MAKEFILE protobuf_lite_test_SOURCES)
+TEST_PLUGIN_SOURCES=$(get_source_files $MAKEFILE test_plugin_SOURCES)
 
 ################################################################################
 # Update cmake files.
@@ -177,3 +178,5 @@ set_bazel_value $BAZEL_BUILD well_known_protos "" $WKT_PROTOS
 set_bazel_value $BAZEL_BUILD test_protos "" $PROTOS
 set_bazel_value $BAZEL_BUILD common_test_srcs $BAZEL_PREFIX $COMMON_TEST_SOURCES
 set_bazel_value $BAZEL_BUILD test_srcs $BAZEL_PREFIX $TEST_SOURCES
+set_bazel_value $BAZEL_BUILD test_plugin_srcs $BAZEL_PREFIX $TEST_PLUGIN_SOURCES
+
