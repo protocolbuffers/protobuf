@@ -244,18 +244,6 @@ LITE_TEST_PROTOS = [
     "google/protobuf/unittest_lite.proto",
 ]
 
-LITE_TEST_PROTOS_OUTS = [
-    # AUTOGEN(lite_test_protos_outs)
-    "src/google/protobuf/map_lite_unittest.pb.cc",
-    "src/google/protobuf/map_lite_unittest.pb.h",
-    "src/google/protobuf/unittest_import_lite.pb.cc",
-    "src/google/protobuf/unittest_import_lite.pb.h",
-    "src/google/protobuf/unittest_import_public_lite.pb.cc",
-    "src/google/protobuf/unittest_import_public_lite.pb.h",
-    "src/google/protobuf/unittest_lite.pb.cc",
-    "src/google/protobuf/unittest_lite.pb.h",
-]
-
 TEST_PROTOS = [
     # AUTOGEN(test_protos)
     "google/protobuf/any_test.proto",
@@ -294,88 +282,15 @@ TEST_PROTOS = [
     "google/protobuf/util/json_format_proto3.proto",
 ]
 
-TEST_PROTOS_OUTS = [
-    # AUTOGEN(test_protos_outs)
-    "src/google/protobuf/any_test.pb.cc",
-    "src/google/protobuf/any_test.pb.h",
-    "src/google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.cc",
-    "src/google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h",
-    "src/google/protobuf/compiler/cpp/cpp_test_large_enum_value.pb.cc",
-    "src/google/protobuf/compiler/cpp/cpp_test_large_enum_value.pb.h",
-    "src/google/protobuf/map_proto2_unittest.pb.cc",
-    "src/google/protobuf/map_proto2_unittest.pb.h",
-    "src/google/protobuf/map_unittest.pb.cc",
-    "src/google/protobuf/map_unittest.pb.h",
-    "src/google/protobuf/unittest.pb.cc",
-    "src/google/protobuf/unittest.pb.h",
-    "src/google/protobuf/unittest_arena.pb.cc",
-    "src/google/protobuf/unittest_arena.pb.h",
-    "src/google/protobuf/unittest_custom_options.pb.cc",
-    "src/google/protobuf/unittest_custom_options.pb.h",
-    "src/google/protobuf/unittest_drop_unknown_fields.pb.cc",
-    "src/google/protobuf/unittest_drop_unknown_fields.pb.h",
-    "src/google/protobuf/unittest_embed_optimize_for.pb.cc",
-    "src/google/protobuf/unittest_embed_optimize_for.pb.h",
-    "src/google/protobuf/unittest_empty.pb.cc",
-    "src/google/protobuf/unittest_empty.pb.h",
-    "src/google/protobuf/unittest_enormous_descriptor.pb.cc",
-    "src/google/protobuf/unittest_enormous_descriptor.pb.h",
-    "src/google/protobuf/unittest_import.pb.cc",
-    "src/google/protobuf/unittest_import.pb.h",
-    "src/google/protobuf/unittest_import_public.pb.cc",
-    "src/google/protobuf/unittest_import_public.pb.h",
-    "src/google/protobuf/unittest_lite_imports_nonlite.pb.cc",
-    "src/google/protobuf/unittest_lite_imports_nonlite.pb.h",
-    "src/google/protobuf/unittest_mset.pb.cc",
-    "src/google/protobuf/unittest_mset.pb.h",
-    "src/google/protobuf/unittest_no_arena.pb.cc",
-    "src/google/protobuf/unittest_no_arena.pb.h",
-    "src/google/protobuf/unittest_no_arena_import.pb.cc",
-    "src/google/protobuf/unittest_no_arena_import.pb.h",
-    "src/google/protobuf/unittest_no_field_presence.pb.cc",
-    "src/google/protobuf/unittest_no_field_presence.pb.h",
-    "src/google/protobuf/unittest_no_generic_services.pb.cc",
-    "src/google/protobuf/unittest_no_generic_services.pb.h",
-    "src/google/protobuf/unittest_optimize_for.pb.cc",
-    "src/google/protobuf/unittest_optimize_for.pb.h",
-    "src/google/protobuf/unittest_preserve_unknown_enum.pb.cc",
-    "src/google/protobuf/unittest_preserve_unknown_enum.pb.h",
-    "src/google/protobuf/unittest_preserve_unknown_enum2.pb.cc",
-    "src/google/protobuf/unittest_preserve_unknown_enum2.pb.h",
-    "src/google/protobuf/unittest_proto3_arena.pb.cc",
-    "src/google/protobuf/unittest_proto3_arena.pb.h",
-    "src/google/protobuf/unittest_well_known_types.pb.cc",
-    "src/google/protobuf/unittest_well_known_types.pb.h",
-    "src/google/protobuf/util/internal/testdata/anys.pb.cc",
-    "src/google/protobuf/util/internal/testdata/anys.pb.h",
-    "src/google/protobuf/util/internal/testdata/books.pb.cc",
-    "src/google/protobuf/util/internal/testdata/books.pb.h",
-    "src/google/protobuf/util/internal/testdata/default_value.pb.cc",
-    "src/google/protobuf/util/internal/testdata/default_value.pb.h",
-    "src/google/protobuf/util/internal/testdata/default_value_test.pb.cc",
-    "src/google/protobuf/util/internal/testdata/default_value_test.pb.h",
-    "src/google/protobuf/util/internal/testdata/field_mask.pb.cc",
-    "src/google/protobuf/util/internal/testdata/field_mask.pb.h",
-    "src/google/protobuf/util/internal/testdata/maps.pb.cc",
-    "src/google/protobuf/util/internal/testdata/maps.pb.h",
-    "src/google/protobuf/util/internal/testdata/struct.pb.cc",
-    "src/google/protobuf/util/internal/testdata/struct.pb.h",
-    "src/google/protobuf/util/internal/testdata/timestamp_duration.pb.cc",
-    "src/google/protobuf/util/internal/testdata/timestamp_duration.pb.h",
-    "src/google/protobuf/util/json_format_proto3.pb.cc",
-    "src/google/protobuf/util/json_format_proto3.pb.h",
-]
-
 PROTOS = LITE_TEST_PROTOS + TEST_PROTOS
 
 INPUTS = PROTOS + WELL_KNOWN_PROTOS
 
-OUTPUTS = LITE_TEST_PROTOS_OUTS + TEST_PROTOS_OUTS
-
 genrule(
     name = "gen_test_protos",
     srcs = ["src/" + x for x in INPUTS],
-    outs = OUTPUTS,
+    outs = ["src/" + x[:-5] + "pb.h" for x in PROTOS] +
+           ["src/" + x[:-5] + "pb.cc" for x in PROTOS],
     cmd =
         "$(location :protoc) --cpp_out=$(@D)/src" +
         "".join([" -I" + x + "=$(location src/" + x + ")" for x in INPUTS]) +
