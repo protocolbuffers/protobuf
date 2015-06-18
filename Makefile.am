@@ -744,6 +744,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST) \
   LICENSE                              \
   CONTRIBUTORS.txt                     \
   CHANGES.txt                          \
+  update_file_lists.sh                 \
   cmake/CMakeLists.txt                 \
   cmake/libprotobuf.cmake              \
   cmake/libprotobuf-lite.cmake         \
@@ -751,7 +752,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST) \
   cmake/protoc.cmake                   \
   cmake/README.md                      \
   cmake/tests.cmake                    \
-  cmake/update_file_lists.sh           \
   editors/README.txt                   \
   editors/proto.vim                    \
   editors/protobuf-mode.el             \
