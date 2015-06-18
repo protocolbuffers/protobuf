@@ -188,7 +188,6 @@ cc_library(
 cc_binary(
     name = "protoc",
     srcs = ["src/google/protobuf/compiler/main.cc"],
-    includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
     deps = [":protoc_lib"],
