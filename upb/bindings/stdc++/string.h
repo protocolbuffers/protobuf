@@ -23,6 +23,9 @@ class FillStringHandler {
   // TODO(haberman): add UpbBind/UpbMakeHandler support to BytesHandler so these
   // can be prettier callbacks.
   static void* StartString(void *c, const void *hd, size_t size) {
+    UPB_UNUSED(hd);
+    UPB_UNUSED(size);
+
     T* str = static_cast<T*>(c);
     str->clear();
     return c;
@@ -30,6 +33,9 @@ class FillStringHandler {
 
   static size_t StringBuf(void* c, const void* hd, const char* buf, size_t n,
                           const BufferHandle* h) {
+    UPB_UNUSED(hd);
+    UPB_UNUSED(h);
+
     T* str = static_cast<T*>(c);
     try {
       str->append(buf, n);

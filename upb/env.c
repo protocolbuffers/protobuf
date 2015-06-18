@@ -68,6 +68,7 @@ static void *default_alloc(void *_ud, void *ptr, size_t oldsize, size_t size) {
        * updated to its new location. */
       if (block->next) block->next->prev = block;
       if (block->prev) block->prev->next = block;
+      if (ud->head == from) ud->head = block;
     }
   } else {
     /* Insert at head of linked list. */
@@ -96,7 +97,7 @@ static void default_alloc_cleanup(void *_ud) {
 
 static bool default_err(void *ud, const upb_status *status) {
   UPB_UNUSED(ud);
-  fprintf(stderr, "upb error: %s\n", upb_status_errmsg(status));
+  UPB_UNUSED(status);
   return false;
 }
 
@@ -217,7 +218,6 @@ static size_t align_up(size_t size) {
 UPB_FORCEINLINE static void *seeded_alloc(void *ud, void *ptr, size_t oldsize,
                                           size_t size) {
   upb_seededalloc *a = ud;
-  UPB_UNUSED(ptr);
 
   size = align_up(size);
 
@@ -235,7 +235,11 @@ UPB_FORCEINLINE static void *seeded_alloc(void *ud, void *ptr, size_t oldsize,
     /* Is `ptr` part of the user-provided initial block? Don't pass it to the
      * default allocator if so; otherwise, it may try to realloc() the block. */
     if (chptr >= a->mem_base && chptr < a->mem_limit) {
-      return a->alloc(a->alloc_ud, NULL, 0, size);
+      void *ret;
+      assert(chptr + oldsize <= a->mem_limit);
+      ret = a->alloc(a->alloc_ud, NULL, 0, size);
+      if (ret) memcpy(ret, ptr, oldsize);
+      return ret;
     } else {
       return a->alloc(a->alloc_ud, ptr, oldsize, size);
     }

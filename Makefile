@@ -288,6 +288,7 @@ C_TESTS = \
 
 CC_TESTS = \
   tests/pb/test_decoder \
+  tests/pb/test_encoder \
   tests/json/test_json \
   tests/test_cpp \
   tests/test_table \
@@ -316,11 +317,10 @@ tests/pb/test_varint: LIBS = lib/libupb.pb.a lib/libupb.a $(EXTRA_LIBS)
 tests/test_def: LIBS = $(LOAD_DESCRIPTOR_LIBS) lib/libupb.a $(EXTRA_LIBS)
 tests/test_handlers: LIBS = lib/libupb.descriptor.a lib/libupb.a $(EXTRA_LIBS)
 tests/pb/test_decoder: LIBS = lib/libupb.pb.a lib/libupb.a $(EXTRA_LIBS)
+tests/pb/test_encoder: LIBS = lib/libupb.pb.a lib/libupb.descriptor.a lib/libupb.a $(EXTRA_LIBS)
 tests/test_cpp: LIBS = $(LOAD_DESCRIPTOR_LIBS) lib/libupb.a $(EXTRA_LIBS)
 tests/test_table: LIBS = lib/libupb.a $(EXTRA_LIBS)
 tests/json/test_json: LIBS = lib/libupb.a lib/libupb.json.a $(EXTRA_LIBS)
-
-tests/test_def: tests/test.proto.pb
 
 tests/test.proto.pb: tests/test.proto
 	@# TODO: add .proto file parser to upb so this isn't necessary.
