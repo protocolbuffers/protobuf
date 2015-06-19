@@ -218,12 +218,12 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 18:
           case 16: {
-            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(tag, values_);
+            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(values_);
             break;
           }
           case 26:
           case 24: {
-            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(tag, packedValues_);
+            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(packedValues_);
             break;
           }
         }
@@ -495,7 +495,7 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 18:
           case 16: {
-            input.ReadInt32Array(tag, primitiveArray_);
+            input.ReadInt32Array(primitiveArray_);
             break;
           }
           case 26: {
@@ -506,7 +506,7 @@ namespace UnitTest.Issues.TestProtos {
             break;
           }
           case 34: {
-            input.ReadMessageArray(tag, messageArray_, global::UnitTest.Issues.TestProtos.DeprecatedChild.Parser);
+            input.ReadMessageArray(messageArray_, global::UnitTest.Issues.TestProtos.DeprecatedChild.Parser);
             break;
           }
           case 40: {
@@ -515,7 +515,7 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 50:
           case 48: {
-            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.DeprecatedEnum>(tag, enumArray_);
+            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.DeprecatedEnum>(enumArray_);
             break;
           }
         }

@@ -75,7 +75,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) 
 
 void RepeatedPrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(variables_,
-    "input.Read$capitalized_type_name$Array(tag, $name$_);\n");
+    "input.Read$capitalized_type_name$Array($name$_);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializationCode(

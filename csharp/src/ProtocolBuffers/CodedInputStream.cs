@@ -37,9 +37,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Google.Protobuf.Collections;
-using Google.Protobuf.Descriptors;
 
 namespace Google.Protobuf
 {
@@ -183,7 +181,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <exception cref="InvalidProtocolBufferException">The last
         /// tag read was not the one specified</exception>
-        public void CheckLastTagWas(uint value)
+        internal void CheckLastTagWas(uint value)
         {
             if (lastTag != value)
             {
@@ -251,7 +249,7 @@ namespace Google.Protobuf
         /// </summary>
         public double ReadDouble()
         {
-            return FrameworkPortability.Int64ToDouble((long) ReadRawLittleEndian64());
+            return BitConverter.Int64BitsToDouble((long) ReadRawLittleEndian64());
         }
 
         /// <summary>
@@ -345,21 +343,6 @@ namespace Google.Protobuf
             }
             // Slow path: Build a byte array first then copy it.
             return CodedOutputStream.Utf8Encoding.GetString(ReadRawBytes(size), 0, size);
-        }
-
-        /// <summary>
-        /// Reads a group field value from the stream.
-        /// </summary>    
-        public void ReadGroup(int fieldNumber, IMessage message)
-        {
-            if (recursionDepth >= recursionLimit)
-            {
-                throw InvalidProtocolBufferException.RecursionLimitExceeded();
-            }
-            ++recursionDepth;
-            message.MergeFrom(this);
-            CheckLastTagWas(WireFormat.MakeTag(fieldNumber, WireFormat.WireType.EndGroup));
-            --recursionDepth;
         }
 
         /// <summary>
@@ -516,24 +499,34 @@ namespace Google.Protobuf
             return false;
         }
 
-        public void ReadStringArray(uint fieldTag, ICollection<string> list)
+        /// <summary>
+        /// Reads a string array.
+        /// </summary>
+        /// <remarks>The stream is assumed to be positioned after a tag indicating the field
+        /// repeated string value. A string is read, and then if the next tag is the same,
+        /// the process is repeated, until the next tag is a different one.</remarks>
+        /// <param name="list"></param>
+        public void ReadStringArray(ICollection<string> list)
         {
+            uint fieldTag = lastTag;
             do
             {
                 list.Add(ReadString());
             } while (ContinueArray(fieldTag));
         }
 
-        public void ReadBytesArray(uint fieldTag, ICollection<ByteString> list)
+        public void ReadBytesArray(ICollection<ByteString> list)
         {
+            uint fieldTag = lastTag;
             do
             {
                 list.Add(ReadBytes());
             } while (ContinueArray(fieldTag));
         }
 
-        public void ReadBoolArray(uint fieldTag, ICollection<bool> list)
+        public void ReadBoolArray(ICollection<bool> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -545,8 +538,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadInt32Array(uint fieldTag, ICollection<int> list)
+        public void ReadInt32Array(ICollection<int> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -558,8 +552,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadSInt32Array(uint fieldTag, ICollection<int> list)
+        public void ReadSInt32Array(ICollection<int> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -571,8 +566,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadUInt32Array(uint fieldTag, ICollection<uint> list)
+        public void ReadUInt32Array(ICollection<uint> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -584,8 +580,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadFixed32Array(uint fieldTag, ICollection<uint> list)
+        public void ReadFixed32Array(ICollection<uint> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -597,8 +594,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadSFixed32Array(uint fieldTag, ICollection<int> list)
+        public void ReadSFixed32Array(ICollection<int> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -610,8 +608,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadInt64Array(uint fieldTag, ICollection<long> list)
+        public void ReadInt64Array(ICollection<long> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -623,8 +622,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadSInt64Array(uint fieldTag, ICollection<long> list)
+        public void ReadSInt64Array(ICollection<long> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -636,8 +636,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadUInt64Array(uint fieldTag, ICollection<ulong> list)
+        public void ReadUInt64Array(ICollection<ulong> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -649,8 +650,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadFixed64Array(uint fieldTag, ICollection<ulong> list)
+        public void ReadFixed64Array(ICollection<ulong> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -662,8 +664,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadSFixed64Array(uint fieldTag, ICollection<long> list)
+        public void ReadSFixed64Array(ICollection<long> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -675,8 +678,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadDoubleArray(uint fieldTag, ICollection<double> list)
+        public void ReadDoubleArray(ICollection<double> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -688,8 +692,9 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadFloatArray(uint fieldTag, ICollection<float> list)
+        public void ReadFloatArray(ICollection<float> list)
         {
+            uint fieldTag = lastTag;
             bool isPacked;
             int holdLimit;
             if (BeginArray(fieldTag, out isPacked, out holdLimit))
@@ -701,9 +706,10 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadEnumArray<T>(uint fieldTag, RepeatedField<T> list)
+        public void ReadEnumArray<T>(RepeatedField<T> list)
             where T : struct, IComparable, IFormattable
         {
+            uint fieldTag = lastTag;
             WireFormat.WireType wformat = WireFormat.GetTagWireType(fieldTag);
 
             // 2.3 allows packed form even if the field is not declared packed.
@@ -727,24 +733,14 @@ namespace Google.Protobuf
             }
         }
 
-        public void ReadMessageArray<T>(uint fieldTag, ICollection<T> list, MessageParser<T> messageParser)
+        public void ReadMessageArray<T>(ICollection<T> list, MessageParser<T> messageParser)
             where T : IMessage<T>
         {
+            uint fieldTag = lastTag;
             do
             {
                 T message = messageParser.CreateTemplate();
                 ReadMessage(message);
-                list.Add(message);
-            } while (ContinueArray(fieldTag));
-        }
-
-        public void ReadGroupArray<T>(uint fieldTag, ICollection<T> list, MessageParser<T> messageParser)
-            where T : IMessage<T>
-        {
-            do
-            {
-                T message = messageParser.CreateTemplate();
-                ReadGroup(WireFormat.GetTagFieldNumber(fieldTag), message);
                 list.Add(message);
             } while (ContinueArray(fieldTag));
         }

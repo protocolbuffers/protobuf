@@ -358,7 +358,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadMessageArray(tag, file_, global::Google.Protobuf.DescriptorProtos.FileDescriptorProto.Parser);
+            input.ReadMessageArray(file_, global::Google.Protobuf.DescriptorProtos.FileDescriptorProto.Parser);
             break;
           }
         }
@@ -672,23 +672,23 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 26: {
-            input.ReadStringArray(tag, dependency_);
+            input.ReadStringArray(dependency_);
             break;
           }
           case 34: {
-            input.ReadMessageArray(tag, messageType_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
+            input.ReadMessageArray(messageType_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
             break;
           }
           case 42: {
-            input.ReadMessageArray(tag, enumType_, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
+            input.ReadMessageArray(enumType_, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
             break;
           }
           case 50: {
-            input.ReadMessageArray(tag, service_, global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto.Parser);
+            input.ReadMessageArray(service_, global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto.Parser);
             break;
           }
           case 58: {
-            input.ReadMessageArray(tag, extension_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
+            input.ReadMessageArray(extension_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
             break;
           }
           case 66: {
@@ -707,12 +707,12 @@ namespace Google.Protobuf.DescriptorProtos {
           }
           case 82:
           case 80: {
-            input.ReadInt32Array(tag, publicDependency_);
+            input.ReadInt32Array(publicDependency_);
             break;
           }
           case 90:
           case 88: {
-            input.ReadInt32Array(tag, weakDependency_);
+            input.ReadInt32Array(weakDependency_);
             break;
           }
           case 98: {
@@ -979,23 +979,23 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 18: {
-            input.ReadMessageArray(tag, field_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
+            input.ReadMessageArray(field_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
             break;
           }
           case 26: {
-            input.ReadMessageArray(tag, nestedType_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
+            input.ReadMessageArray(nestedType_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
             break;
           }
           case 34: {
-            input.ReadMessageArray(tag, enumType_, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
+            input.ReadMessageArray(enumType_, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
             break;
           }
           case 42: {
-            input.ReadMessageArray(tag, extensionRange_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Parser);
+            input.ReadMessageArray(extensionRange_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Parser);
             break;
           }
           case 50: {
-            input.ReadMessageArray(tag, extension_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
+            input.ReadMessageArray(extension_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
             break;
           }
           case 58: {
@@ -1006,15 +1006,15 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 66: {
-            input.ReadMessageArray(tag, oneofDecl_, global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto.Parser);
+            input.ReadMessageArray(oneofDecl_, global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto.Parser);
             break;
           }
           case 74: {
-            input.ReadMessageArray(tag, reservedRange_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange.Parser);
+            input.ReadMessageArray(reservedRange_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange.Parser);
             break;
           }
           case 82: {
-            input.ReadStringArray(tag, reservedName_);
+            input.ReadStringArray(reservedName_);
             break;
           }
         }
@@ -1800,7 +1800,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 18: {
-            input.ReadMessageArray(tag, value_, global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto.Parser);
+            input.ReadMessageArray(value_, global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto.Parser);
             break;
           }
           case 26: {
@@ -2086,7 +2086,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 18: {
-            input.ReadMessageArray(tag, method_, global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto.Parser);
+            input.ReadMessageArray(method_, global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto.Parser);
             break;
           }
           case 26: {
@@ -2735,7 +2735,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -2933,7 +2933,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -3167,7 +3167,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -3323,7 +3323,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -3437,7 +3437,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -3551,7 +3551,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -3665,7 +3665,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(tag, uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
             break;
           }
         }
@@ -3875,7 +3875,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 18: {
-            input.ReadMessageArray(tag, name_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart.Parser);
+            input.ReadMessageArray(name_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart.Parser);
             break;
           }
           case 26: {
@@ -4111,7 +4111,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadMessageArray(tag, location_, global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location.Parser);
+            input.ReadMessageArray(location_, global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location.Parser);
             break;
           }
         }
@@ -4287,12 +4287,12 @@ namespace Google.Protobuf.DescriptorProtos {
                 break;
               case 10:
               case 8: {
-                input.ReadInt32Array(tag, path_);
+                input.ReadInt32Array(path_);
                 break;
               }
               case 18:
               case 16: {
-                input.ReadInt32Array(tag, span_);
+                input.ReadInt32Array(span_);
                 break;
               }
               case 26: {
@@ -4304,7 +4304,7 @@ namespace Google.Protobuf.DescriptorProtos {
                 break;
               }
               case 50: {
-                input.ReadStringArray(tag, leadingDetachedComments_);
+                input.ReadStringArray(leadingDetachedComments_);
                 break;
               }
             }

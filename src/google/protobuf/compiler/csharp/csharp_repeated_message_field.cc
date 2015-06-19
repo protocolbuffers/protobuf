@@ -75,7 +75,7 @@ void RepeatedMessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 void RepeatedMessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "input.ReadMessageArray(tag, $name$_, $type_name$.Parser);\n");
+    "input.ReadMessageArray($name$_, $type_name$.Parser);\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {

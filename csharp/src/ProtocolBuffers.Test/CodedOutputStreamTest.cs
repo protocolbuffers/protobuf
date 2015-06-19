@@ -326,7 +326,7 @@ namespace Google.Protobuf
             Assert.IsTrue(input.ReadTag(out tag));
 
             List<int> values = new List<int>();
-            input.ReadInt32Array(tag, values);
+            input.ReadInt32Array(values);
 
             Assert.AreEqual(6, values.Count);
             for (int i = 0; i > -6; i--)
@@ -349,7 +349,7 @@ namespace Google.Protobuf
             Assert.IsTrue(input.ReadTag(out tag));
 
             List<int> values = new List<int>();
-            input.ReadInt32Array(tag, values);
+            input.ReadInt32Array(values);
 
             Assert.AreEqual(6, values.Count);
             for (int i = 0; i > -6; i--)

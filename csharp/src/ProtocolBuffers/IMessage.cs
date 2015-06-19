@@ -34,30 +34,63 @@
 
 #endregion
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Google.Protobuf.Descriptors;
 using Google.Protobuf.FieldAccess;
 
 namespace Google.Protobuf
 {
 
-    // TODO(jonskeet): Do we want a "weak" version of IReflectedMessage?
+    // TODO(jonskeet): Do we want a "weak" (non-generic) version of IReflectedMessage?
+
+    /// <summary>
+    /// Reflection support for a specific message type. message
+    /// </summary>
+    /// <typeparam name="T">The message type being reflected.</typeparam>
     public interface IReflectedMessage<T> where T : IMessage<T>
     {
         FieldAccessorTable<T> Fields { get; }
+        // TODO(jonskeet): Descriptor? Or a single property which has "all you need for reflection"?
     }
 
+    /// <summary>
+    /// Interface for a Protocol Buffers message, supporting
+    /// basic operations required for serialization.
+    /// </summary>
     public interface IMessage
     {
+        /// <summary>
+        /// Merges the data from the specified coded input stream with the current message.
+        /// </summary>
+        /// <remarks>See the user guide for precise merge semantics.</remarks>
+        /// <param name="input"></param>
         void MergeFrom(CodedInputStream input);
+
+        /// <summary>
+        /// Writes the data to the given coded output stream.
+        /// </summary>
+        /// <param name="output">Coded output stream to write the data to. Must not be null.</param>
         void WriteTo(CodedOutputStream output);
+
+        /// <summary>
+        /// Calculates the size of this message in Protocol Buffer wire format, in bytes.
+        /// </summary>
+        /// <returns>The number of bytes required to write this message
+        /// to a coded output stream.</returns>
         int CalculateSize();
     }
 
+    /// <summary>
+    /// Generic interface for a Protocol Buffers message,
+    /// where the type parameter is expected to be the same type as
+    /// the implementation class.
+    /// </summary>
+    /// <typeparam name="T">The message type.</typeparam>
     public interface IMessage<T> : IMessage where T : IMessage<T>
     {
+        /// <summary>
+        /// Merges the given message into this one.
+        /// </summary>
+        /// <remarks>See the user guide for precise merge semantics.</remarks>
+        /// <param name="message">The message to merge with this one. Must not be null.</param>
         void MergeFrom(T message);
     }
 }

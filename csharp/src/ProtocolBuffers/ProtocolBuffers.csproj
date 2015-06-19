@@ -84,7 +84,8 @@
     <Compile Include="Descriptors\MethodDescriptor.cs" />
     <Compile Include="Descriptors\PackageDescriptor.cs" />
     <Compile Include="Descriptors\ServiceDescriptor.cs" />
-    <Compile Include="Extensions.cs" />
+    <Compile Include="FrameworkPortability.cs" />
+    <Compile Include="MessageExtensions.cs" />
     <Compile Include="FieldAccess\FieldAccessorBase.cs" />
     <Compile Include="FieldAccess\ReflectionUtil.cs" />
     <Compile Include="FieldAccess\RepeatedFieldAccessor.cs" />
@@ -92,7 +93,6 @@
     <Compile Include="FieldAccess\IFieldAccessor.cs" />
     <Compile Include="FieldAccess\FieldAccessorTable.cs" />
     <Compile Include="FieldAccess\OneofAccessor.cs" />
-    <Compile Include="FrameworkPortability.cs" />
     <Compile Include="IMessage.cs" />
     <Compile Include="InvalidProtocolBufferException.cs" />
     <Compile Include="LimitedInputStream.cs" />

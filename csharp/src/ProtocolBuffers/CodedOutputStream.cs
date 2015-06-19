@@ -35,12 +35,9 @@
 #endregion
 
 using System;
-using System.Collections;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Google.Protobuf.Collections;
-using Google.Protobuf.Descriptors;
 
 namespace Google.Protobuf
 {
@@ -151,7 +148,7 @@ namespace Google.Protobuf
         /// </summary>
         public void WriteDouble(double value)
         {
-            WriteRawLittleEndian64((ulong)FrameworkPortability.DoubleToInt64(value));
+            WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
         }
 
         /// <summary>

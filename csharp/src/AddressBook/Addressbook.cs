@@ -214,7 +214,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
             break;
           }
           case 34: {
-            input.ReadMessageArray(tag, phone_, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Parser);
+            input.ReadMessageArray(phone_, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Parser);
             break;
           }
         }
@@ -432,7 +432,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
             }
             break;
           case 10: {
-            input.ReadMessageArray(tag, person_, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Parser);
+            input.ReadMessageArray(person_, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Parser);
             break;
           }
         }

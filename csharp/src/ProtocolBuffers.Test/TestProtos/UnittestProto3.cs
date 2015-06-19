@@ -1547,106 +1547,106 @@ namespace Google.Protobuf.TestProtos {
           }
           case 250:
           case 248: {
-            input.ReadInt32Array(tag, repeatedInt32_);
+            input.ReadInt32Array(repeatedInt32_);
             break;
           }
           case 258:
           case 256: {
-            input.ReadInt64Array(tag, repeatedInt64_);
+            input.ReadInt64Array(repeatedInt64_);
             break;
           }
           case 266:
           case 264: {
-            input.ReadUInt32Array(tag, repeatedUint32_);
+            input.ReadUInt32Array(repeatedUint32_);
             break;
           }
           case 274:
           case 272: {
-            input.ReadUInt64Array(tag, repeatedUint64_);
+            input.ReadUInt64Array(repeatedUint64_);
             break;
           }
           case 282:
           case 280: {
-            input.ReadSInt32Array(tag, repeatedSint32_);
+            input.ReadSInt32Array(repeatedSint32_);
             break;
           }
           case 290:
           case 288: {
-            input.ReadSInt64Array(tag, repeatedSint64_);
+            input.ReadSInt64Array(repeatedSint64_);
             break;
           }
           case 298:
           case 301: {
-            input.ReadFixed32Array(tag, repeatedFixed32_);
+            input.ReadFixed32Array(repeatedFixed32_);
             break;
           }
           case 306:
           case 305: {
-            input.ReadFixed64Array(tag, repeatedFixed64_);
+            input.ReadFixed64Array(repeatedFixed64_);
             break;
           }
           case 314:
           case 317: {
-            input.ReadSFixed32Array(tag, repeatedSfixed32_);
+            input.ReadSFixed32Array(repeatedSfixed32_);
             break;
           }
           case 322:
           case 321: {
-            input.ReadSFixed64Array(tag, repeatedSfixed64_);
+            input.ReadSFixed64Array(repeatedSfixed64_);
             break;
           }
           case 330:
           case 333: {
-            input.ReadFloatArray(tag, repeatedFloat_);
+            input.ReadFloatArray(repeatedFloat_);
             break;
           }
           case 338:
           case 337: {
-            input.ReadDoubleArray(tag, repeatedDouble_);
+            input.ReadDoubleArray(repeatedDouble_);
             break;
           }
           case 346:
           case 344: {
-            input.ReadBoolArray(tag, repeatedBool_);
+            input.ReadBoolArray(repeatedBool_);
             break;
           }
           case 354: {
-            input.ReadStringArray(tag, repeatedString_);
+            input.ReadStringArray(repeatedString_);
             break;
           }
           case 362: {
-            input.ReadBytesArray(tag, repeatedBytes_);
+            input.ReadBytesArray(repeatedBytes_);
             break;
           }
           case 386: {
-            input.ReadMessageArray(tag, repeatedNestedMessage_, global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage.Parser);
+            input.ReadMessageArray(repeatedNestedMessage_, global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage.Parser);
             break;
           }
           case 394: {
-            input.ReadMessageArray(tag, repeatedForeignMessage_, global::Google.Protobuf.TestProtos.ForeignMessage.Parser);
+            input.ReadMessageArray(repeatedForeignMessage_, global::Google.Protobuf.TestProtos.ForeignMessage.Parser);
             break;
           }
           case 402: {
-            input.ReadMessageArray(tag, repeatedImportMessage_, global::Google.Protobuf.TestProtos.ImportMessage.Parser);
+            input.ReadMessageArray(repeatedImportMessage_, global::Google.Protobuf.TestProtos.ImportMessage.Parser);
             break;
           }
           case 410:
           case 408: {
-            input.ReadEnumArray<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum>(tag, repeatedNestedEnum_);
+            input.ReadEnumArray<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum>(repeatedNestedEnum_);
             break;
           }
           case 418:
           case 416: {
-            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ForeignEnum>(tag, repeatedForeignEnum_);
+            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ForeignEnum>(repeatedForeignEnum_);
             break;
           }
           case 426:
           case 424: {
-            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ImportEnum>(tag, repeatedImportEnum_);
+            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ImportEnum>(repeatedImportEnum_);
             break;
           }
           case 434: {
-            input.ReadMessageArray(tag, repeatedPublicImportMessage_, global::Google.Protobuf.TestProtos.PublicImportMessage.Parser);
+            input.ReadMessageArray(repeatedPublicImportMessage_, global::Google.Protobuf.TestProtos.PublicImportMessage.Parser);
             break;
           }
           case 888: {
@@ -1919,7 +1919,7 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 26: {
-            input.ReadMessageArray(tag, repeatedChild_, global::Google.Protobuf.TestProtos.NestedTestAllTypes.Parser);
+            input.ReadMessageArray(repeatedChild_, global::Google.Protobuf.TestProtos.NestedTestAllTypes.Parser);
             break;
           }
         }
@@ -2973,20 +2973,20 @@ namespace Google.Protobuf.TestProtos {
           }
           case 58:
           case 56: {
-            input.ReadInt32Array(tag, repeatedPrimitiveField_);
+            input.ReadInt32Array(repeatedPrimitiveField_);
             break;
           }
           case 66: {
-            input.ReadStringArray(tag, repeatedStringField_);
+            input.ReadStringArray(repeatedStringField_);
             break;
           }
           case 74:
           case 72: {
-            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ForeignEnum>(tag, repeatedEnumField_);
+            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ForeignEnum>(repeatedEnumField_);
             break;
           }
           case 82: {
-            input.ReadMessageArray(tag, repeatedMessageField_, global::Google.Protobuf.TestProtos.ForeignMessage.Parser);
+            input.ReadMessageArray(repeatedMessageField_, global::Google.Protobuf.TestProtos.ForeignMessage.Parser);
             break;
           }
         }
@@ -3552,7 +3552,7 @@ namespace Google.Protobuf.TestProtos {
             }
             break;
           case 10: {
-            input.ReadStringArray(tag, data_);
+            input.ReadStringArray(data_);
             break;
           }
         }
@@ -4716,72 +4716,72 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 722:
           case 720: {
-            input.ReadInt32Array(tag, packedInt32_);
+            input.ReadInt32Array(packedInt32_);
             break;
           }
           case 730:
           case 728: {
-            input.ReadInt64Array(tag, packedInt64_);
+            input.ReadInt64Array(packedInt64_);
             break;
           }
           case 738:
           case 736: {
-            input.ReadUInt32Array(tag, packedUint32_);
+            input.ReadUInt32Array(packedUint32_);
             break;
           }
           case 746:
           case 744: {
-            input.ReadUInt64Array(tag, packedUint64_);
+            input.ReadUInt64Array(packedUint64_);
             break;
           }
           case 754:
           case 752: {
-            input.ReadSInt32Array(tag, packedSint32_);
+            input.ReadSInt32Array(packedSint32_);
             break;
           }
           case 762:
           case 760: {
-            input.ReadSInt64Array(tag, packedSint64_);
+            input.ReadSInt64Array(packedSint64_);
             break;
           }
           case 770:
           case 773: {
-            input.ReadFixed32Array(tag, packedFixed32_);
+            input.ReadFixed32Array(packedFixed32_);
             break;
           }
           case 778:
           case 777: {
-            input.ReadFixed64Array(tag, packedFixed64_);
+            input.ReadFixed64Array(packedFixed64_);
             break;
           }
           case 786:
           case 789: {
-            input.ReadSFixed32Array(tag, packedSfixed32_);
+            input.ReadSFixed32Array(packedSfixed32_);
             break;
           }
           case 794:
           case 793: {
-            input.ReadSFixed64Array(tag, packedSfixed64_);
+            input.ReadSFixed64Array(packedSfixed64_);
             break;
           }
           case 802:
           case 805: {
-            input.ReadFloatArray(tag, packedFloat_);
+            input.ReadFloatArray(packedFloat_);
             break;
           }
           case 810:
           case 809: {
-            input.ReadDoubleArray(tag, packedDouble_);
+            input.ReadDoubleArray(packedDouble_);
             break;
           }
           case 818:
           case 816: {
-            input.ReadBoolArray(tag, packedBool_);
+            input.ReadBoolArray(packedBool_);
             break;
           }
           case 826:
           case 824: {
-            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ForeignEnum>(tag, packedEnum_);
+            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ForeignEnum>(packedEnum_);
             break;
           }
         }
@@ -5120,72 +5120,72 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 722:
           case 720: {
-            input.ReadInt32Array(tag, unpackedInt32_);
+            input.ReadInt32Array(unpackedInt32_);
             break;
           }
           case 730:
           case 728: {
-            input.ReadInt64Array(tag, unpackedInt64_);
+            input.ReadInt64Array(unpackedInt64_);
             break;
           }
           case 738:
           case 736: {
-            input.ReadUInt32Array(tag, unpackedUint32_);
+            input.ReadUInt32Array(unpackedUint32_);
             break;
           }
           case 746:
           case 744: {
-            input.ReadUInt64Array(tag, unpackedUint64_);
+            input.ReadUInt64Array(unpackedUint64_);
             break;
           }
           case 754:
           case 752: {
-            input.ReadSInt32Array(tag, unpackedSint32_);
+            input.ReadSInt32Array(unpackedSint32_);
             break;
           }
           case 762:
           case 760: {
-            input.ReadSInt64Array(tag, unpackedSint64_);
+            input.ReadSInt64Array(unpackedSint64_);
             break;
           }
           case 770:
           case 773: {
-            input.ReadFixed32Array(tag, unpackedFixed32_);
+            input.ReadFixed32Array(unpackedFixed32_);
             break;
           }
           case 778:
           case 777: {
-            input.ReadFixed64Array(tag, unpackedFixed64_);
+            input.ReadFixed64Array(unpackedFixed64_);
             break;
           }
           case 786:
           case 789: {
-            input.ReadSFixed32Array(tag, unpackedSfixed32_);
+            input.ReadSFixed32Array(unpackedSfixed32_);
             break;
           }
           case 794:
           case 793: {
-            input.ReadSFixed64Array(tag, unpackedSfixed64_);
+            input.ReadSFixed64Array(unpackedSfixed64_);
             break;
           }
           case 802:
           case 805: {
-            input.ReadFloatArray(tag, unpackedFloat_);
+            input.ReadFloatArray(unpackedFloat_);
             break;
           }
           case 810:
           case 809: {
-            input.ReadDoubleArray(tag, unpackedDouble_);
+            input.ReadDoubleArray(unpackedDouble_);
             break;
           }
           case 818:
           case 816: {
-            input.ReadBoolArray(tag, unpackedBool_);
+            input.ReadBoolArray(unpackedBool_);
             break;
           }
           case 826:
           case 824: {
-            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ForeignEnum>(tag, unpackedEnum_);
+            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ForeignEnum>(unpackedEnum_);
             break;
           }
         }
@@ -5378,32 +5378,32 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 98:
           case 101: {
-            input.ReadFixed32Array(tag, repeatedFixed32_);
+            input.ReadFixed32Array(repeatedFixed32_);
             break;
           }
           case 106:
           case 104: {
-            input.ReadInt32Array(tag, repeatedInt32_);
+            input.ReadInt32Array(repeatedInt32_);
             break;
           }
           case 16370:
           case 16369: {
-            input.ReadFixed64Array(tag, repeatedFixed64_);
+            input.ReadFixed64Array(repeatedFixed64_);
             break;
           }
           case 16378:
           case 16376: {
-            input.ReadInt64Array(tag, repeatedInt64_);
+            input.ReadInt64Array(repeatedInt64_);
             break;
           }
           case 2097138:
           case 2097141: {
-            input.ReadFloatArray(tag, repeatedFloat_);
+            input.ReadFloatArray(repeatedFloat_);
             break;
           }
           case 2097146:
           case 2097144: {
-            input.ReadUInt64Array(tag, repeatedUint64_);
+            input.ReadUInt64Array(repeatedUint64_);
             break;
           }
         }
