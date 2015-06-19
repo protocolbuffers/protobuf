@@ -1497,7 +1497,7 @@ static void AppendTextFormatForMessage(GPBMessage *message,
 }
 
 NSString *GPBTextFormatForMessage(GPBMessage *message, NSString *lineIndent) {
-  if (message == nil) return nil;
+  if (message == nil) return @"";
   if (lineIndent == nil) lineIndent = @"";
 
   NSMutableString *buildString = [NSMutableString string];
@@ -1507,7 +1507,7 @@ NSString *GPBTextFormatForMessage(GPBMessage *message, NSString *lineIndent) {
 
 NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *unknownSet,
                                           NSString *lineIndent) {
-  if (unknownSet == nil) return nil;
+  if (unknownSet == nil) return @"";
   if (lineIndent == nil) lineIndent = @"";
 
   NSMutableString *result = [NSMutableString string];

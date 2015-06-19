@@ -13,6 +13,7 @@ CF_EXTERN_C_BEGIN
 
 @class GPBSourceContext;
 
+NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - GPBApiRoot
 
@@ -40,16 +41,16 @@ typedef GPB_ENUM(GPBApi_FieldNumber) {
 
 // The fully qualified name of this api, including package name
 // followed by the api's simple name.
-@property(nonatomic, readwrite, copy) NSString *name;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
 // The methods of this api, in unspecified order.
 // |methodsArray| contains |GPBMethod|
-@property(nonatomic, readwrite, strong) NSMutableArray *methodsArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *methodsArray;
 @property(nonatomic, readonly) NSUInteger methodsArray_Count;
 
 // Any metadata attached to the API.
 // |optionsArray| contains |GPBOption|
-@property(nonatomic, readwrite, strong) NSMutableArray *optionsArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *optionsArray;
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 // A version string for this api. If specified, must have the form
@@ -74,12 +75,12 @@ typedef GPB_ENUM(GPBApi_FieldNumber) {
 // experimental, none-GA apis.
 //
 // See also: [design doc](http://go/api-versioning).
-@property(nonatomic, readwrite, copy) NSString *version;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *version;
 
 // Source context for the protocol buffer service represented by this
 // message.
 @property(nonatomic, readwrite) BOOL hasSourceContext;
-@property(nonatomic, readwrite, strong) GPBSourceContext *sourceContext;
+@property(nonatomic, readwrite, strong, null_resettable) GPBSourceContext *sourceContext;
 
 @end
 
@@ -98,26 +99,28 @@ typedef GPB_ENUM(GPBMethod_FieldNumber) {
 @interface GPBMethod : GPBMessage
 
 // The simple name of this method.
-@property(nonatomic, readwrite, copy) NSString *name;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
 // A URL of the input message type.
-@property(nonatomic, readwrite, copy) NSString *requestTypeURL;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *requestTypeURL;
 
 // If true, the request is streamed.
 @property(nonatomic, readwrite) BOOL requestStreaming;
 
 // The URL of the output message type.
-@property(nonatomic, readwrite, copy) NSString *responseTypeURL;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *responseTypeURL;
 
 // If true, the response is streamed.
 @property(nonatomic, readwrite) BOOL responseStreaming;
 
 // Any metadata attached to the method.
 // |optionsArray| contains |GPBOption|
-@property(nonatomic, readwrite, strong) NSMutableArray *optionsArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *optionsArray;
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END
 

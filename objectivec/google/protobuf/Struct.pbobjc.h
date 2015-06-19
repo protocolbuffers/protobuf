@@ -14,6 +14,8 @@ CF_EXTERN_C_BEGIN
 @class GPBListValue;
 @class GPBStruct;
 
+NS_ASSUME_NONNULL_BEGIN
+
 #pragma mark - Enum GPBNullValue
 
 // `NullValue` is a singleton enumeration to represent the null
@@ -27,7 +29,6 @@ typedef GPB_ENUM(GPBNullValue) {
 GPBEnumDescriptor *GPBNullValue_EnumDescriptor(void);
 
 BOOL GPBNullValue_IsValidValue(int32_t value);
-
 
 #pragma mark - GPBStructRoot
 
@@ -56,7 +57,7 @@ typedef GPB_ENUM(GPBStruct_FieldNumber) {
 
 // Map of dynamically typed values.
 // |fields| values are |GPBValue|
-@property(nonatomic, readwrite, strong) NSMutableDictionary *fields;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableDictionary *fields;
 @property(nonatomic, readonly) NSUInteger fields_Count;
 
 @end
@@ -97,16 +98,16 @@ typedef GPB_ENUM(GPBValue_Kind_OneOfCase) {
 @property(nonatomic, readwrite) double numberValue;
 
 // Represents a string value.
-@property(nonatomic, readwrite, copy) NSString *stringValue;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *stringValue;
 
 // Represents a boolean value.
 @property(nonatomic, readwrite) BOOL boolValue;
 
 // Represents a structured value.
-@property(nonatomic, readwrite, strong) GPBStruct *structValue;
+@property(nonatomic, readwrite, strong, null_resettable) GPBStruct *structValue;
 
 // Represents a repeated `Value`.
-@property(nonatomic, readwrite, strong) GPBListValue *listValue;
+@property(nonatomic, readwrite, strong, null_resettable) GPBListValue *listValue;
 
 @end
 
@@ -126,10 +127,12 @@ typedef GPB_ENUM(GPBListValue_FieldNumber) {
 
 // Repeated field of dynamically typed values.
 // |valuesArray| contains |GPBValue|
-@property(nonatomic, readwrite, strong) NSMutableArray *valuesArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *valuesArray;
 @property(nonatomic, readonly) NSUInteger valuesArray_Count;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END
 

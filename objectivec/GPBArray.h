@@ -37,6 +37,8 @@
 
 // Note: These are not meant to be subclassed.
 
+NS_ASSUME_NONNULL_BEGIN
+
 //%PDDM-EXPAND DECLARE_ARRAYS()
 // This block of code is generated, do not edit it directly.
 
@@ -321,21 +323,21 @@
 @property(nonatomic, readonly) GPBEnumValidationFunc validationFunc;
 
 + (instancetype)array;
-+ (instancetype)arrayWithValidationFunction:(GPBEnumValidationFunc)func;
-+ (instancetype)arrayWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func;
++ (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                    rawValue:(int32_t)value;
 + (instancetype)arrayWithValueArray:(GPBEnumArray *)array;
-+ (instancetype)arrayWithValidationFunction:(GPBEnumValidationFunc)func
++ (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                    capacity:(NSUInteger)count;
 
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func;
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
 
 // Initializes the array, copying the values.
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                  rawValues:(const int32_t [])values
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithValueArray:(GPBEnumArray *)array;
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                   capacity:(NSUInteger)count;
 
 // These will return kGPBUnrecognizedEnumeratorValue if the value at index is not a
@@ -392,6 +394,8 @@
 
 //%PDDM-EXPAND-END DECLARE_ARRAYS()
 
+NS_ASSUME_NONNULL_END
+
 //%PDDM-DEFINE DECLARE_ARRAYS()
 //%ARRAY_INTERFACE_SIMPLE(Int32, int32_t)
 //%ARRAY_INTERFACE_SIMPLE(UInt32, uint32_t)
@@ -444,21 +448,21 @@
 //%@property(nonatomic, readonly) GPBEnumValidationFunc validationFunc;
 //%
 //%+ (instancetype)array;
-//%+ (instancetype)arrayWithValidationFunction:(GPBEnumValidationFunc)func;
-//%+ (instancetype)arrayWithValidationFunction:(GPBEnumValidationFunc)func
+//%+ (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+//%+ (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                   rawValue:(TYPE)value;
 //%+ (instancetype)arrayWithValueArray:(GPB##NAME##Array *)array;
-//%+ (instancetype)arrayWithValidationFunction:(GPBEnumValidationFunc)func
+//%+ (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                   capacity:(NSUInteger)count;
 //%
-//%- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func;
+//%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
 //%
 //%// Initializes the array, copying the values.
-//%- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+//%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                 rawValues:(const TYPE [])values
 //%                                     count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 //%- (instancetype)initWithValueArray:(GPB##NAME##Array *)array;
-//%- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
+//%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                  capacity:(NSUInteger)count;
 //%
 //%// These will return kGPBUnrecognizedEnumeratorValue if the value at index is not a
