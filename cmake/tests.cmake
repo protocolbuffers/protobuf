@@ -1,10 +1,20 @@
-include_directories(
-  ${protobuf_source_dir}/gtest/include
-  ${protobuf_source_dir}/gtest)
+if (NOT EXISTS "${PROJECT_SOURCE_DIR}/../gmock/CMakeLists.txt")
+  message(FATAL_ERROR "Cannot find gmock directory.")
+endif()
 
-add_library(gtest STATIC ${protobuf_source_dir}/gtest/src/gtest-all.cc)
-add_library(gtest_main STATIC ${protobuf_source_dir}/gtest/src/gtest_main.cc)
-target_link_libraries(gtest_main gtest)
+include_directories(
+  ${protobuf_source_dir}/gmock
+  ${protobuf_source_dir}/gmock/gtest
+  ${protobuf_source_dir}/gmock/gtest/include
+  ${protobuf_source_dir}/gmock/include
+)
+
+add_library(gmock STATIC
+  ${protobuf_source_dir}/gmock/src/gmock-all.cc
+  ${protobuf_source_dir}/gmock/gtest/src/gtest-all.cc
+)
+add_library(gmock_main STATIC ${protobuf_source_dir}/gmock/src/gmock_main.cc)
+target_link_libraries(gmock_main gmock)
 
 set(lite_test_protos
   google/protobuf/map_lite_unittest.proto
@@ -39,6 +49,15 @@ set(tests_protos
   google/protobuf/unittest_preserve_unknown_enum2.proto
   google/protobuf/unittest_proto3_arena.proto
   google/protobuf/unittest_well_known_types.proto
+  google/protobuf/util/internal/testdata/anys.proto
+  google/protobuf/util/internal/testdata/books.proto
+  google/protobuf/util/internal/testdata/default_value.proto
+  google/protobuf/util/internal/testdata/default_value_test.proto
+  google/protobuf/util/internal/testdata/field_mask.proto
+  google/protobuf/util/internal/testdata/maps.proto
+  google/protobuf/util/internal/testdata/struct.proto
+  google/protobuf/util/internal/testdata/timestamp_duration.proto
+  google/protobuf/util/json_format_proto3.proto
 )
 
 macro(compile_proto_file filename)
@@ -46,10 +65,10 @@ macro(compile_proto_file filename)
   get_filename_component(basename ${filename} NAME_WE)
   add_custom_command(
     OUTPUT ${protobuf_source_dir}/src/${dirname}/${basename}.pb.cc
+    DEPENDS protoc ${protobuf_source_dir}/src/${dirname}/${basename}.proto
     COMMAND protoc ${protobuf_source_dir}/src/${dirname}/${basename}.proto
         --proto_path=${protobuf_source_dir}/src
         --cpp_out=${protobuf_source_dir}/src
-    DEPENDS protoc
   )
 endmacro(compile_proto_file)
 
@@ -113,21 +132,35 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/reflection_ops_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/repeated_field_reflection_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/repeated_field_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/common_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/once_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/stubs/status_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/stubs/statusor_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/stubs/stringpiece_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/stringprintf_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/structurally_valid_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/strutil_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/template_util_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/stubs/time_test.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/type_traits_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/text_format_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/unknown_field_set_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/field_comparator_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/internal/default_value_objectwriter_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/internal/json_objectwriter_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/internal/json_stream_parser_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectsource_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectwriter_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/internal/type_info_test_helper.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/json_util_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/type_resolver_util_test.cc
   ${protobuf_source_dir}/src/google/protobuf/well_known_types_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/wire_format_unittest.cc
 )
 
 add_executable(tests ${tests_files} ${common_test_files} ${tests_proto_files} ${lite_test_proto_files})
-target_link_libraries(tests libprotoc libprotobuf gtest_main)
+target_link_libraries(tests libprotoc libprotobuf gmock_main)
 
 set(test_plugin_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/mock_code_generator.cc
@@ -137,7 +170,7 @@ set(test_plugin_files
 )
 
 add_executable(test_plugin ${test_plugin_files})
-target_link_libraries(test_plugin libprotoc libprotobuf gtest)
+target_link_libraries(test_plugin libprotoc libprotobuf gmock)
 
 set(lite_test_files
   ${protobuf_source_dir}/src/google/protobuf/arena_test_util.cc

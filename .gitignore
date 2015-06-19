@@ -19,7 +19,7 @@ m4/lt~obsolete.m4
 autom4te.cache
 
 # downloaded files
-gtest
+gmock
 
 # in-tree configure-generated files
 Makefile
@@ -47,6 +47,8 @@ any_test.pb.*
 map*unittest.pb.*
 unittest*.pb.*
 cpp_test*.pb.*
+src/google/protobuf/util/**/*.pb.cc
+src/google/protobuf/util/**/*.pb.h
 
 *.pyc
 *.egg-info

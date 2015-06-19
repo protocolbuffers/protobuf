@@ -11,6 +11,7 @@ mkdir include\google\protobuf\compiler\python
 mkdir include\google\protobuf\compiler\ruby
 mkdir include\google\protobuf\io
 mkdir include\google\protobuf\stubs
+mkdir include\google\protobuf\util
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\any.h include\google\protobuf\any.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\any.pb.h include\google\protobuf\any.pb.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\api.pb.h include\google\protobuf\api.pb.h
@@ -88,6 +89,7 @@ copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\common.h include
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\fastmem.h include\google\protobuf\stubs\fastmem.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\hash.h include\google\protobuf\stubs\hash.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\once.h include\google\protobuf\stubs\once.h
+copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\pbconfig.h include\google\protobuf\stubs\pbconfig.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\platform_macros.h include\google\protobuf\stubs\platform_macros.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\shared_ptr.h include\google\protobuf\stubs\shared_ptr.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\singleton.h include\google\protobuf\stubs\singleton.h
@@ -98,8 +100,12 @@ copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\text_format.h include\
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\timestamp.pb.h include\google\protobuf\timestamp.pb.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\type.pb.h include\google\protobuf\type.pb.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\unknown_field_set.h include\google\protobuf\unknown_field_set.h
+copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\util\field_comparator.h include\google\protobuf\util\field_comparator.h
+copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\util\json_util.h include\google\protobuf\util\json_util.h
+copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\util\message_differencer.h include\google\protobuf\util\message_differencer.h
+copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\util\type_resolver.h include\google\protobuf\util\type_resolver.h
+copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\util\type_resolver_util.h include\google\protobuf\util\type_resolver_util.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wire_format.h include\google\protobuf\wire_format.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wire_format_lite.h include\google\protobuf\wire_format_lite.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wire_format_lite_inl.h include\google\protobuf\wire_format_lite_inl.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\wrappers.pb.h include\google\protobuf\wrappers.pb.h
-copy ${PROTOBUF_BINARY_WIN32_PATH}\google\protobuf\stubs\pbconfig.h include\google\protobuf\stubs\pbconfig.h

@@ -1880,7 +1880,7 @@ void TextFormat::Printer::PrintUnknownFields(
         generator.Print(field_number);
         generator.Print(": 0x");
         generator.Print(
-            StrCat(strings::Hex(field.fixed32(), strings::Hex::ZERO_PAD_8)));
+            StrCat(strings::Hex(field.fixed32(), strings::ZERO_PAD_8)));
         if (single_line_mode_) {
           generator.Print(" ");
         } else {
@@ -1892,7 +1892,7 @@ void TextFormat::Printer::PrintUnknownFields(
         generator.Print(field_number);
         generator.Print(": 0x");
         generator.Print(
-            StrCat(strings::Hex(field.fixed64(), strings::Hex::ZERO_PAD_16)));
+            StrCat(strings::Hex(field.fixed64(), strings::ZERO_PAD_16)));
         if (single_line_mode_) {
           generator.Print(" ");
         } else {
