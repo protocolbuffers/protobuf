@@ -30,7 +30,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace Google.ProtocolBuffers.Descriptors
+namespace Google.Protobuf.Descriptors
 {
     /// <summary>
     /// Type as it's mapped onto a .NET type.

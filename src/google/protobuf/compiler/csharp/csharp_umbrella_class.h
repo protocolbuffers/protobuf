@@ -41,8 +41,6 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-class Writer;
-
 class UmbrellaClassGenerator : public SourceGeneratorBase {
  public:
   UmbrellaClassGenerator(const FileDescriptor* file);
@@ -58,11 +56,7 @@ class UmbrellaClassGenerator : public SourceGeneratorBase {
   std::string umbrellaNamespace_;
 
   void WriteIntroduction(io::Printer* printer);
-  void WriteExtensionRegistration(io::Printer* printer);
   void WriteDescriptor(io::Printer* printer);
-  void WriteLiteExtensions(io::Printer* printer);
-
-  bool uses_extensions();
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(UmbrellaClassGenerator);
 };
@@ -73,4 +67,3 @@ class UmbrellaClassGenerator : public SourceGeneratorBase {
 }  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_UMBRELLA_CLASS_H__
-

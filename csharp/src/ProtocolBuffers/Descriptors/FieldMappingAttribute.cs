@@ -32,9 +32,9 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Google.ProtocolBuffers.Collections;
+using Google.Protobuf.Collections;
 
-namespace Google.ProtocolBuffers.Descriptors
+namespace Google.Protobuf.Descriptors
 {
     /// <summary>
     /// Defined specifically for the <see cref="FieldType" /> enumeration,

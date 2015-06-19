@@ -41,17 +41,13 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-class Writer;
-
 class PrimitiveFieldGenerator : public FieldGeneratorBase {
  public:
   PrimitiveFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~PrimitiveFieldGenerator();
 
   virtual void GenerateMembers(io::Printer* printer);
-  virtual void GenerateBuilderMembers(io::Printer* printer);
   virtual void GenerateMergingCode(io::Printer* printer);
-  virtual void GenerateBuildingCode(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
   virtual void GenerateSerializationCode(io::Printer* printer);
   virtual void GenerateSerializedSizeCode(io::Printer* printer);
@@ -59,6 +55,9 @@ class PrimitiveFieldGenerator : public FieldGeneratorBase {
   virtual void WriteHash(io::Printer* printer);
   virtual void WriteEquals(io::Printer* printer);
   virtual void WriteToString(io::Printer* printer);
+
+ protected:
+  bool is_value_type;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveFieldGenerator);
@@ -70,8 +69,6 @@ class PrimitiveOneofFieldGenerator : public PrimitiveFieldGenerator {
   ~PrimitiveOneofFieldGenerator();
 
   virtual void GenerateMembers(io::Printer* printer);
-  virtual void GenerateBuilderMembers(io::Printer* printer);
-  virtual void WriteEquals(io::Printer* printer);
   virtual void WriteToString(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
 

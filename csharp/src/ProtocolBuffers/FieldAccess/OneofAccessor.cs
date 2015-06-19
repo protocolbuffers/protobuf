@@ -29,17 +29,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Reflection;
-using Google.ProtocolBuffers.Descriptors;
+using Google.Protobuf.Descriptors;
 
-namespace Google.ProtocolBuffers.FieldAccess
+namespace Google.Protobuf.FieldAccess
 {
+    // TODO(jonskeet): Add "new" oneof API support
+
     /// <summary>
     /// Access for an oneof
     /// </summary>
-    internal class OneofAccessor<TMessage, TBuilder>
-        where TMessage : IMessage<TMessage, TBuilder>
-        where TBuilder : IBuilder<TMessage, TBuilder>
+    internal class OneofAccessor<TMessage> where TMessage : IMessage<TMessage>
     {
+        /*
         private readonly Func<TMessage, object> caseDelegate;
         private readonly Func<TBuilder, IBuilder> clearDelegate;
         private MessageDescriptor descriptor;
@@ -86,6 +87,6 @@ namespace Google.ProtocolBuffers.FieldAccess
                 return descriptor.FindFieldByNumber(fieldNumber);
             }
             return null;
-        }
+        }*/
     }
 }

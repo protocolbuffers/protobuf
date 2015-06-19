@@ -30,108 +30,51 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
-using Google.ProtocolBuffers.Descriptors;
+using Google.Protobuf.Descriptors;
 
-namespace Google.ProtocolBuffers.FieldAccess
+namespace Google.Protobuf.FieldAccess
 {
     /// <summary>
     /// Provides access to fields in generated messages via reflection.
-    /// This type is public to allow it to be used by generated messages, which
-    /// create appropriate instances in the .proto file description class.
-    /// TODO(jonskeet): See if we can hide it somewhere...
     /// </summary>
-    public sealed class FieldAccessorTable<TMessage, TBuilder>
-        where TMessage : IMessage<TMessage, TBuilder>
-        where TBuilder : IBuilder<TMessage, TBuilder>
+    public sealed class FieldAccessorTable<T> where T : IMessage<T>
     {
-        private readonly IFieldAccessor<TMessage, TBuilder>[] accessors;
-        private readonly OneofAccessor<TMessage, TBuilder>[] oneofs;
-
+        private readonly IFieldAccessor<T>[] accessors;
         private readonly MessageDescriptor descriptor;
-
-        public MessageDescriptor Descriptor
-        {
-            get { return descriptor; }
-        }
 
         /// <summary>
         /// Constructs a FieldAccessorTable for a particular message class.
         /// Only one FieldAccessorTable should be constructed per class.
-        /// The property names should all actually correspond with the field descriptor's
-        /// CSharpOptions.PropertyName property, but bootstrapping issues currently
-        /// prevent us from using that. This may be addressed at a future time, in which case
-        /// we can keep this constructor for backwards compatibility, just ignoring the parameter.
-        /// TODO(jonskeet): Make it so.
         /// </summary>
         /// <param name="descriptor">The type's descriptor</param>
         /// <param name="propertyNames">The Pascal-case names of all the field-based properties in the message.</param>
-        public FieldAccessorTable(MessageDescriptor descriptor, String[] propertyNames)
+        public FieldAccessorTable(MessageDescriptor descriptor, string[] propertyNames)
         {
             this.descriptor = descriptor;
-            accessors = new IFieldAccessor<TMessage, TBuilder>[descriptor.Fields.Count];
-            oneofs = new OneofAccessor<TMessage, TBuilder>[descriptor.Oneofs.Count];
+            accessors = new IFieldAccessor<T>[descriptor.Fields.Count];
             bool supportFieldPresence = descriptor.File.Syntax == FileDescriptor.ProtoSyntax.Proto2;
-            int fieldSize = accessors.Length;
-            for (int i = 0; i < fieldSize; i++)
+            for (int i = 0; i < accessors.Length; i++)
             {
-                FieldDescriptor field = descriptor.Fields[i];
-                string containingOneofName = (field.ContainingOneof != null) ? 
-                    propertyNames[fieldSize +field.ContainingOneof.Index] : null;
-                accessors[i] = CreateAccessor(
-                    field, propertyNames[i], containingOneofName, supportFieldPresence);
+                var field = descriptor.Fields[i];
+                var name = propertyNames[i];
+                accessors[i] = field.IsRepeated
+                    ? (IFieldAccessor<T>) new RepeatedFieldAccessor<T>(propertyNames[i])
+                    : new SingleFieldAccessor<T>(field, name, supportFieldPresence);
             }
-            for (int i = 0; i < oneofs.Length; i++)
-            {
-                oneofs[i] = new OneofAccessor<TMessage, TBuilder>(descriptor, propertyNames[i + accessors.Length]);
-            }
+            // TODO(jonskeet): Oneof support
         }
 
-        /// <summary>
-        /// Creates an accessor for a single field
-        /// </summary>   
-        private static IFieldAccessor<TMessage, TBuilder> CreateAccessor(
-            FieldDescriptor field, string name, string containingOneofName, bool supportFieldPresence)
+        internal IFieldAccessor<T> this[int fieldNumber]
         {
-            if (field.IsRepeated)
+            get
             {
-                switch (field.MappedType)
-                {
-                    case MappedType.Message:
-                        return new RepeatedMessageAccessor<TMessage, TBuilder>(name);
-                    case MappedType.Enum:
-                        return new RepeatedEnumAccessor<TMessage, TBuilder>(field, name);
-                    default:
-                        return new RepeatedPrimitiveAccessor<TMessage, TBuilder>(name);
-                }
-            }
-            else
-            {
-                switch (field.MappedType)
-                {
-                    case MappedType.Message:
-                        {
-                            if (field.ContainingOneof != null)
-                            {
-                                return new SingleMessageAccessor<TMessage, TBuilder>(
-                                    field, name, containingOneofName, supportFieldPresence);
-                            }
-                            else
-                            {
-                                return new SingleMessageAccessor<TMessage, TBuilder>(
-                                    field, name, containingOneofName, true);
-                            }
-                        }
-                    case MappedType.Enum:
-                        return new SingleEnumAccessor<TMessage, TBuilder>(
-                            field, name, containingOneofName, supportFieldPresence);
-                    default:
-                        return new SinglePrimitiveAccessor<TMessage, TBuilder>(
-                            field, name, containingOneofName, supportFieldPresence);
-                }
+                FieldDescriptor field = descriptor.FindFieldByNumber(fieldNumber);
+                // TODO: Handle extensions.
+                return accessors[field.Index];
             }
         }
 
-        internal IFieldAccessor<TMessage, TBuilder> this[FieldDescriptor field]
+        internal IFieldAccessor<T> this[FieldDescriptor field]
         {
             get
             {
@@ -147,15 +90,6 @@ namespace Google.ProtocolBuffers.FieldAccess
                 }
                 return accessors[field.Index];
             }
-        }
-
-        internal OneofAccessor<TMessage, TBuilder> Oneof(OneofDescriptor oneof)
-        {
-            if (oneof.ContainingType != descriptor)
-            {
-                throw new ArgumentException("OneofDescriptor does not match message type");
-            }
-            return oneofs[oneof.Index];
         }
     }
 }

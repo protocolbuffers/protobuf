@@ -42,17 +42,13 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-class Writer;
-
 class FieldGeneratorBase : public SourceGeneratorBase {
  public:
   FieldGeneratorBase(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~FieldGeneratorBase();
 
   virtual void GenerateMembers(io::Printer* printer) = 0;
-  virtual void GenerateBuilderMembers(io::Printer* printer) = 0;
   virtual void GenerateMergingCode(io::Printer* printer) = 0;
-  virtual void GenerateBuildingCode(io::Printer* printer) = 0;
   virtual void GenerateParsingCode(io::Printer* printer) = 0;
   virtual void GenerateSerializationCode(io::Printer* printer) = 0;
   virtual void GenerateSerializedSizeCode(io::Printer* printer) = 0;
@@ -82,7 +78,6 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   bool is_nullable_type();
   std::string default_value();
   std::string number();
-  std::string message_or_group();
   std::string capitalized_type_name();
   std::string field_ordinal();
 

@@ -32,7 +32,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Google.ProtocolBuffers.Collections
+namespace Google.Protobuf.Collections
 {
     /// <summary>
     /// Utility non-generic class for calling into Lists{T} using type inference.

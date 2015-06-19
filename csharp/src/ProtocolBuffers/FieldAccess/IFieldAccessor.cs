@@ -30,66 +30,39 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace Google.ProtocolBuffers.FieldAccess
+namespace Google.Protobuf.FieldAccess
 {
     /// <summary>
     /// Allows fields to be reflectively accessed in a smart manner.
     /// The property descriptors for each field are created once and then cached.
     /// In addition, this interface holds knowledge of repeated fields, builders etc.
     /// </summary>
-    internal interface IFieldAccessor<TMessage, TBuilder>
-        where TMessage : IMessage<TMessage, TBuilder>
-        where TBuilder : IBuilder<TMessage, TBuilder>
+    internal interface IFieldAccessor<T> where T : IMessage<T>
     {
         /// <summary>
-        /// Indicates whether the specified message contains the field.
+        /// Indicates whether the specified message contains the field. For primitive fields
+        /// declared in proto3-syntax messages, this simply checks whether the value is the default one.
         /// </summary>
-        bool Has(TMessage message);
+        /// <exception cref="InvalidOperationException">The field is a repeated field, or a single primitive field.</exception>
+        bool HasValue(T message);
 
         /// <summary>
-        /// Gets the count of the repeated field in the specified message.
+        /// Clears the field in the specified message. (For repeated fields,
+        /// this clears the list.)
         /// </summary>
-        int GetRepeatedCount(TMessage message);
+        void Clear(T message);
 
         /// <summary>
-        /// Clears the field in the specified builder.
+        /// Fetches the field value. For repeated values, this will be an
+        /// <see cref="IList"/> implementation.
         /// </summary>
-        /// <param name="builder"></param>
-        void Clear(TBuilder builder);
+        object GetValue(T message);
 
         /// <summary>
-        /// Creates a builder for the type of this field (which must be a message field).
+        /// Mutator for single fields only. (Repeated fields must be mutated
+        /// by fetching the list, then mutating that.)
         /// </summary>
-        IBuilder CreateBuilder();
-
-        /// <summary>
-        /// Accessor for single fields
-        /// </summary>
-        object GetValue(TMessage message);
-
-        /// <summary>
-        /// Mutator for single fields
-        /// </summary>
-        void SetValue(TBuilder builder, object value);
-
-        /// <summary>
-        /// Accessor for repeated fields
-        /// </summary>
-        object GetRepeatedValue(TMessage message, int index);
-
-        /// <summary>
-        /// Mutator for repeated fields
-        /// </summary>
-        void SetRepeated(TBuilder builder, int index, object value);
-
-        /// <summary>
-        /// Adds the specified value to the field in the given builder.
-        /// </summary>
-        void AddRepeated(TBuilder builder, object value);
-
-        /// <summary>
-        /// Returns a read-only wrapper around the value of a repeated field.
-        /// </summary>
-        object GetRepeatedWrapper(TBuilder builder);
+        /// <exception cref="InvalidOperationException">The field is a repeated field.</exception>
+        void SetValue(T message, object value);
     }
 }

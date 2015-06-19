@@ -31,9 +31,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Google.ProtocolBuffers.DescriptorProtos;
+using Google.Protobuf.DescriptorProtos;
 
-namespace Google.ProtocolBuffers.Descriptors
+namespace Google.Protobuf.Descriptors
 {
     public sealed class OneofDescriptor
     {

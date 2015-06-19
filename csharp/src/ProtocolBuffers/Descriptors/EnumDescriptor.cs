@@ -30,15 +30,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System.Collections.Generic;
-using Google.ProtocolBuffers.DescriptorProtos;
+using Google.Protobuf.DescriptorProtos;
 
-namespace Google.ProtocolBuffers.Descriptors
+namespace Google.Protobuf.Descriptors
 {
     /// <summary>
     /// Descriptor for an enum type in a .proto file.
     /// </summary>
-    public sealed class EnumDescriptor : IndexedDescriptorBase<EnumDescriptorProto, EnumOptions>,
-                                         IEnumLiteMap<EnumValueDescriptor>
+    public sealed class EnumDescriptor : IndexedDescriptorBase<EnumDescriptorProto, EnumOptions>
     {
         private readonly MessageDescriptor containingType;
         private readonly IList<EnumValueDescriptor> values;
@@ -48,14 +47,14 @@ namespace Google.ProtocolBuffers.Descriptors
         {
             containingType = parent;
 
-            if (proto.ValueCount == 0)
+            if (proto.Value.Count == 0)
             {
                 // We cannot allow enums with no values because this would mean there
                 // would be no valid default value for fields of this type.
                 throw new DescriptorValidationException(this, "Enums must contain at least one value.");
             }
 
-            values = DescriptorUtil.ConvertAndMakeReadOnly(proto.ValueList,
+            values = DescriptorUtil.ConvertAndMakeReadOnly(proto.Value,
                                                            (value, i) => new EnumValueDescriptor(value, file, this, i));
 
             File.DescriptorPool.AddSymbol(this);
@@ -78,30 +77,12 @@ namespace Google.ProtocolBuffers.Descriptors
         }
 
         /// <summary>
-        /// Logic moved from FieldSet to continue current behavior
-        /// </summary>
-        public bool IsValidValue(IEnumLite value)
-        {
-            return value is EnumValueDescriptor && ((EnumValueDescriptor) value).EnumDescriptor == this;
-        }
-
-        /// <summary>
         /// Finds an enum value by number. If multiple enum values have the
         /// same number, this returns the first defined value with that number.
         /// </summary>
         public EnumValueDescriptor FindValueByNumber(int number)
         {
             return File.DescriptorPool.FindEnumValueByNumber(this, number);
-        }
-
-        IEnumLite IEnumLiteMap.FindValueByNumber(int number)
-        {
-            return FindValueByNumber(number);
-        }
-
-        IEnumLite IEnumLiteMap.FindValueByName(string name)
-        {
-            return FindValueByName(name);
         }
 
         /// <summary>
@@ -119,7 +100,7 @@ namespace Google.ProtocolBuffers.Descriptors
             base.ReplaceProto(newProto);
             for (int i = 0; i < values.Count; i++)
             {
-                values[i].ReplaceProto(newProto.GetValue(i));
+                values[i].ReplaceProto(newProto.Value[i]);
             }
         }
     }

@@ -49,8 +49,8 @@ namespace csharp {
 MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
                                              int fieldOrdinal)
     : FieldGeneratorBase(descriptor, fieldOrdinal) {
-  variables_["has_property_check"] = "has" + property_name();
-  variables_["message_or_group"] = message_or_group();
+  variables_["has_property_check"] = name() + "_ != null";
+  variables_["has_not_property_check"] = name() + "_ == null";
 }
 
 MessageFieldGenerator::~MessageFieldGenerator() {
@@ -60,125 +60,43 @@ MessageFieldGenerator::~MessageFieldGenerator() {
 void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
     variables_,
-    "private bool has$property_name$;\n"
     "private $type_name$ $name$_;\n");
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
-    "public bool Has$property_name$ {\n"
-    "  get { return has$property_name$; }\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
     "public $type_name$ $property_name$ {\n"
-    "  get { return $name$_ ?? $default_value$; }\n"
-    "}\n");
-}
-
-void MessageFieldGenerator::GenerateBuilderMembers(io::Printer* printer) {
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public bool Has$property_name$ {\n"
-    " get { return result.has$property_name$; }\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public $type_name$ $property_name$ {\n"
-    "  get { return result.$property_name$; }\n"
-    "  set { Set$property_name$(value); }\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Set$property_name$($type_name$ value) {\n");
-  AddNullCheck(printer);
-  printer->Print(
-    variables_,
-    "  PrepareBuilder();\n"
-    "  result.has$property_name$ = true;\n"
-    "  result.$name$_ = value;\n"
-    "  return this;\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Set$property_name$($type_name$.Builder builderForValue) {\n");
-  AddNullCheck(printer, "builderForValue");
-  printer->Print(
-    variables_,
-    "  PrepareBuilder();\n"
-    "  result.has$property_name$ = true;\n"
-    "  result.$name$_ = builderForValue.Build();\n"
-    "  return this;\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Merge$property_name$($type_name$ value) {\n");
-  AddNullCheck(printer);
-  printer->Print(
-    variables_,
-    "  PrepareBuilder();\n"
-    "  if (result.has$property_name$ &&\n"
-    "      result.$name$_ != $default_value$) {\n"
-    "      result.$name$_ = $type_name$.CreateBuilder(result.$name$_).MergeFrom(value).BuildPartial();\n"
-    "  } else {\n"
-    "    result.$name$_ = value;\n"
-    "  }\n"
-    "  result.has$property_name$ = true;\n"
-    "  return this;\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Clear$property_name$() {\n"
-    "  PrepareBuilder();\n"
-    "  result.has$property_name$ = false;\n"
-    "  result.$name$_ = null;\n"
-    "  return this;\n"
+    "  get { return $name$_; }\n"
+    "  set { $name$_ = value; }\n"
     "}\n");
 }
 
 void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if (other.Has$property_name$) {\n"
-    "  Merge$property_name$(other.$property_name$);\n"
+    "if (other.$has_property_check$) {\n"
+    "  if ($has_not_property_check$) {\n"
+    "    $name$_ = new $type_name$();\n"
+    "  }\n"
+    "  $property_name$.MergeFrom(other.$property_name$);\n"
     "}\n");
-}
-
-void MessageFieldGenerator::GenerateBuildingCode(io::Printer* printer) {
-  // Nothing to do for singular fields
 }
 
 void MessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "$type_name$.Builder subBuilder = $type_name$.CreateBuilder();\n"
-    "if (result.has$property_name$) {\n"
-    "  subBuilder.MergeFrom($property_name$);\n"
-    "}\n");
-
-  if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
-    printer->Print(
-      variables_,
-      "input.ReadGroup($number$, subBuilder, extensionRegistry);\n");
-  } else {
-    printer->Print("input.ReadMessage(subBuilder, extensionRegistry);\n");
-  }
-  printer->Print(
-    variables_,
-    "$property_name$ = subBuilder.BuildPartial();\n");
+    "if ($has_not_property_check$) {\n"
+    "  $name$_ = new $type_name$();\n"
+    "}\n"
+    // TODO(jonskeet): Do we really need merging behaviour like this?
+    "input.ReadMessage($name$_);\n"); // No need to support TYPE_GROUP...
 }
 
 void MessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  output.Write$message_or_group$($number$, field_names[$field_ordinal$], $property_name$);\n"
+    "  output.WriteRawTag($tag_bytes$);\n"
+    "  output.WriteMessage($property_name$);\n"
     "}\n");
 }
 
@@ -186,19 +104,19 @@ void MessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
-    "  size += pb::CodedOutputStream.Compute$message_or_group$Size($number$, $property_name$);\n"
+    "  size += $tag_size$ + pb::CodedOutputStream.ComputeMessageSize($property_name$);\n"
     "}\n");
 }
 
 void MessageFieldGenerator::WriteHash(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if (has$property_name$) hash ^= $name$_.GetHashCode();\n");
+    "if ($has_property_check$) hash ^= $property_name$.GetHashCode();\n");
 }
 void MessageFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if (has$property_name$ != other.has$property_name$ || (has$property_name$ && !$name$_.Equals(other.$name$_))) return false;\n");
+    "if (!object.Equals($property_name$, other.$property_name$)) return false;");
 }
 void MessageFieldGenerator::WriteToString(io::Printer* printer) {
   variables_["field_name"] = GetFieldName(descriptor_);
@@ -218,118 +136,30 @@ MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {
 }
 
 void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    AddDeprecatedFlag(printer);
-    printer->Print(
-      variables_,
-      "public bool Has$property_name$ {\n"
-      "  get { return $has_property_check$; }\n"
-      "}\n");
-  }
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
     "public $type_name$ $property_name$ {\n"
-    "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : $default_value$; }\n"
-    "}\n");
-}
-
-void MessageOneofFieldGenerator::GenerateBuilderMembers(io::Printer* printer) {
-  if (SupportFieldPresence(descriptor_->file())) {
-    AddDeprecatedFlag(printer);
-    printer->Print(
-      variables_,
-      "public bool Has$property_name$ {\n"
-      "  get { return result.$has_property_check$; }\n"
-      "}\n");
-  }
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public $type_name$ $property_name$ {\n"
-    "  get { return result.$has_property_check$ ? ($type_name$) result.$oneof_name$_ : $default_value$; }\n"
-    "  set { Set$property_name$(value); }\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Set$property_name$($type_name$ value) {\n");
-  AddNullCheck(printer);
-  printer->Print(
-    variables_,
-    "  PrepareBuilder();\n"
-    "  result.$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
-    "  result.$oneof_name$_ = value;\n"
-    "  return this;\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Set$property_name$($type_name$.Builder builderForValue) {\n");
-  AddNullCheck(printer, "builderForValue");
-  printer->Print(
-    variables_,
-    "  PrepareBuilder();\n"
-    "  result.$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
-    "  result.$oneof_name$_ = builderForValue.Build();\n"
-    "  return this;\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Merge$property_name$($type_name$ value) {\n");
-  AddNullCheck(printer);
-  printer->Print(
-    variables_,
-    "  PrepareBuilder();\n"
-    "  if (result.$has_property_check$ &&\n"
-    "      result.$property_name$ != $default_value$) {\n"
-    "    result.$oneof_name$_ = $type_name$.CreateBuilder(result.$property_name$).MergeFrom(value).BuildPartial();\n"
-    "  } else {\n"
-    "    result.$oneof_name$_ = value;\n"
+    "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : null; }\n"
+    "  set {\n"
+    "    $oneof_name$_ = value;\n"
+    "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n"
     "  }\n"
-    "  result.$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
-    "  return this;\n"
-    "}\n");
-  AddDeprecatedFlag(printer);
-  printer->Print(
-    variables_,
-    "public Builder Clear$property_name$() {\n"
-    "  if (result.$has_property_check$) {\n"
-    "    PrepareBuilder();\n"
-    "    result.$oneof_name$Case_ = $oneof_property_name$OneofCase.None;\n"
-    "    result.$oneof_name$_ = null;\n"
-    "  }\n"
-    "  return this;\n"
     "}\n");
 }
 
 void MessageOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
+  // TODO(jonskeet): We may be able to do better than this
   printer->Print(
     variables_,
-    "$type_name$.Builder subBuilder = $type_name$.CreateBuilder();\n"
-    "if (result.$has_property_check$) {\n"
+    "$type_name$ subBuilder = new $type_name$();\n"
+    "if ($has_property_check$) {\n"
     "  subBuilder.MergeFrom($property_name$);\n"
-    "}\n");
-
-  if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
-    printer->Print(
-      variables_,
-      "input.ReadGroup($number$, subBuilder, extensionRegistry);\n");
-  } else {
-    printer->Print("input.ReadMessage(subBuilder, extensionRegistry);\n");
-  }
-  printer->Print(
-    variables_,
-    "result.$oneof_name$_ = subBuilder.BuildPartial();\n"
-    "result.$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n");
+    "}\n"
+    "input.ReadMessage(subBuilder);\n" // No support of TYPE_GROUP
+    "$property_name$ = subBuilder;\n");
 }
 
-void MessageOneofFieldGenerator::WriteEquals(io::Printer* printer) {
-  printer->Print(
-    variables_,
-    "if (!$property_name$.Equals(other.$property_name$)) return false;\n");
-}
 void MessageOneofFieldGenerator::WriteToString(io::Printer* printer) {
   printer->Print(
     variables_,

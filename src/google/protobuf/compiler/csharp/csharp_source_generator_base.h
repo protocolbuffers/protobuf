@@ -47,27 +47,10 @@ class SourceGeneratorBase {
 
   std::string class_access_level();
 
-  bool optimize_size() {
-    return optimizeSize_;
-  }
-  bool optimize_speed() {
-    return optimizeSpeed_;
-  }
-  bool use_lite_runtime() {
-    return useLiteRuntime_;
-  }
-  std::string runtime_suffix() {
-    return runtimeSuffix_;
-  }
-
   void WriteGeneratedCodeAttributes(io::Printer* printer);
 
  private:
   const FileDescriptor* descriptor_;
-  bool optimizeSize_;
-  bool optimizeSpeed_;
-  bool useLiteRuntime_;
-  std::string runtimeSuffix_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SourceGeneratorBase);
 };

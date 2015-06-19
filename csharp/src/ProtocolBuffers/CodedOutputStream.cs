@@ -35,14 +35,11 @@
 #endregion
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Google.ProtocolBuffers.Collections;
-using Google.ProtocolBuffers.Descriptors;
+using Google.Protobuf.Collections;
 
-namespace Google.ProtocolBuffers
+namespace Google.Protobuf
 {
     /// <summary>
     /// Encodes and writes protocol message fields.
@@ -57,8 +54,11 @@ namespace Google.ProtocolBuffers
     /// methods are taken from the protocol buffer type names, not .NET types.
     /// (Hence WriteFloat instead of WriteSingle, and WriteBool instead of WriteBoolean.)
     /// </remarks>
-    public sealed partial class CodedOutputStream : ICodedOutputStream
+    public sealed partial class CodedOutputStream
     {
+        // "Local" copy of Encoding.UTF8, for efficiency. (Yes, it makes a difference.)
+        internal static readonly Encoding Utf8Encoding = Encoding.UTF8;
+
         /// <summary>
         /// The buffer size used by CreateInstance(Stream).
         /// </summary>
@@ -141,378 +141,20 @@ namespace Google.ProtocolBuffers
             }
         }
 
-        void ICodedOutputStream.WriteMessageStart() { }
-        void ICodedOutputStream.WriteMessageEnd() { Flush(); }
-
-        #region Writing of unknown fields
-
-        [Obsolete]
-        public void WriteUnknownGroup(int fieldNumber, IMessageLite value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
-            value.WriteTo(this);
-            WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
-        }
-
-        public void WriteUnknownBytes(int fieldNumber, ByteString value)
-        {
-            WriteBytes(fieldNumber, null /*not used*/, value);
-        }
-
-        public void WriteUnknownField(int fieldNumber, WireFormat.WireType wireType, ulong value)
-        {
-            if (wireType == WireFormat.WireType.Varint)
-            {
-                WriteUInt64(fieldNumber, null /*not used*/, value);
-            }
-            else if (wireType == WireFormat.WireType.Fixed32)
-            {
-                WriteFixed32(fieldNumber, null /*not used*/, (uint) value);
-            }
-            else if (wireType == WireFormat.WireType.Fixed64)
-            {
-                WriteFixed64(fieldNumber, null /*not used*/, value);
-            }
-            else
-            {
-                throw InvalidProtocolBufferException.InvalidWireType();
-            }
-        }
-
-        #endregion
-
-        #region Writing of tags and fields
-
-        public void WriteField(FieldType fieldType, int fieldNumber, string fieldName, object value)
-        {
-            switch (fieldType)
-            {
-                case FieldType.String:
-                    WriteString(fieldNumber, fieldName, (string) value);
-                    break;
-                case FieldType.Message:
-                    WriteMessage(fieldNumber, fieldName, (IMessageLite) value);
-                    break;
-                case FieldType.Group:
-                    WriteGroup(fieldNumber, fieldName, (IMessageLite) value);
-                    break;
-                case FieldType.Bytes:
-                    WriteBytes(fieldNumber, fieldName, (ByteString) value);
-                    break;
-                case FieldType.Bool:
-                    WriteBool(fieldNumber, fieldName, (bool) value);
-                    break;
-                case FieldType.Enum:
-                    if (value is Enum)
-                    {
-                        WriteEnum(fieldNumber, fieldName, (int) value, null /*not used*/);
-                    }
-                    else
-                    {
-                        WriteEnum(fieldNumber, fieldName, ((IEnumLite) value).Number, null /*not used*/);
-                    }
-                    break;
-                case FieldType.Int32:
-                    WriteInt32(fieldNumber, fieldName, (int) value);
-                    break;
-                case FieldType.Int64:
-                    WriteInt64(fieldNumber, fieldName, (long) value);
-                    break;
-                case FieldType.UInt32:
-                    WriteUInt32(fieldNumber, fieldName, (uint) value);
-                    break;
-                case FieldType.UInt64:
-                    WriteUInt64(fieldNumber, fieldName, (ulong) value);
-                    break;
-                case FieldType.SInt32:
-                    WriteSInt32(fieldNumber, fieldName, (int) value);
-                    break;
-                case FieldType.SInt64:
-                    WriteSInt64(fieldNumber, fieldName, (long) value);
-                    break;
-                case FieldType.Fixed32:
-                    WriteFixed32(fieldNumber, fieldName, (uint) value);
-                    break;
-                case FieldType.Fixed64:
-                    WriteFixed64(fieldNumber, fieldName, (ulong) value);
-                    break;
-                case FieldType.SFixed32:
-                    WriteSFixed32(fieldNumber, fieldName, (int) value);
-                    break;
-                case FieldType.SFixed64:
-                    WriteSFixed64(fieldNumber, fieldName, (long) value);
-                    break;
-                case FieldType.Double:
-                    WriteDouble(fieldNumber, fieldName, (double) value);
-                    break;
-                case FieldType.Float:
-                    WriteFloat(fieldNumber, fieldName, (float) value);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Writes a double field value, including tag, to the stream.
-        /// </summary>
-        public void WriteDouble(int fieldNumber, string fieldName, double value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
-            WriteDoubleNoTag(value);
-        }
-
-        /// <summary>
-        /// Writes a float field value, including tag, to the stream.
-        /// </summary>
-        public void WriteFloat(int fieldNumber, string fieldName, float value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
-            WriteFloatNoTag(value);
-        }
-
-        /// <summary>
-        /// Writes a uint64 field value, including tag, to the stream.
-        /// </summary>
-        public void WriteUInt64(int fieldNumber, string fieldName, ulong value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Varint);
-            WriteRawVarint64(value);
-        }
-
-        /// <summary>
-        /// Writes an int64 field value, including tag, to the stream.
-        /// </summary>
-        public void WriteInt64(int fieldNumber, string fieldName, long value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Varint);
-            WriteRawVarint64((ulong) value);
-        }
-
-        /// <summary>
-        /// Writes an int32 field value, including tag, to the stream.
-        /// </summary>
-        public void WriteInt32(int fieldNumber, string fieldName, int value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Varint);
-            if (value >= 0)
-            {
-                WriteRawVarint32((uint) value);
-            }
-            else
-            {
-                // Must sign-extend.
-                WriteRawVarint64((ulong) value);
-            }
-        }
-
-        /// <summary>
-        /// Writes a fixed64 field value, including tag, to the stream.
-        /// </summary>
-        public void WriteFixed64(int fieldNumber, string fieldName, ulong value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
-            WriteRawLittleEndian64(value);
-        }
-
-        /// <summary>
-        /// Writes a fixed32 field value, including tag, to the stream.
-        /// </summary>
-        public void WriteFixed32(int fieldNumber, string fieldName, uint value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
-            WriteRawLittleEndian32(value);
-        }
-
-        /// <summary>
-        /// Writes a bool field value, including tag, to the stream.
-        /// </summary>
-        public void WriteBool(int fieldNumber, string fieldName, bool value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Varint);
-            WriteRawByte(value ? (byte) 1 : (byte) 0);
-        }
-
-        /// <summary>
-        /// Writes a string field value, including tag, to the stream.
-        /// </summary>
-        public void WriteString(int fieldNumber, string fieldName, string value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            // Optimise the case where we have enough space to write
-            // the string directly to the buffer, which should be common.
-            int length = Encoding.UTF8.GetByteCount(value);
-            WriteRawVarint32((uint) length);
-            if (limit - position >= length)
-            {
-                Encoding.UTF8.GetBytes(value, 0, value.Length, buffer, position);
-                position += length;
-            }
-            else
-            {
-                byte[] bytes = Encoding.UTF8.GetBytes(value);
-                WriteRawBytes(bytes);
-            }
-        }
-
-        /// <summary>
-        /// Writes a group field value, including tag, to the stream.
-        /// </summary>
-        public void WriteGroup(int fieldNumber, string fieldName, IMessageLite value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
-            value.WriteTo(this);
-            WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
-        }
-
-        public void WriteMessage(int fieldNumber, string fieldName, IMessageLite value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) value.SerializedSize);
-            value.WriteTo(this);
-        }
-
-        public void WriteBytes(int fieldNumber, string fieldName, ByteString value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) value.Length);
-            value.WriteRawBytesTo(this);
-        }
-
-        public void WriteUInt32(int fieldNumber, string fieldName, uint value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Varint);
-            WriteRawVarint32(value);
-        }
-
-        public void WriteEnum(int fieldNumber, string fieldName, int value, object rawValue)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Varint);
-            WriteInt32NoTag(value);
-        }
-
-        public void WriteSFixed32(int fieldNumber, string fieldName, int value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
-            WriteRawLittleEndian32((uint) value);
-        }
-
-        public void WriteSFixed64(int fieldNumber, string fieldName, long value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
-            WriteRawLittleEndian64((ulong) value);
-        }
-
-        public void WriteSInt32(int fieldNumber, string fieldName, int value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Varint);
-            WriteRawVarint32(EncodeZigZag32(value));
-        }
-
-        public void WriteSInt64(int fieldNumber, string fieldName, long value)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.Varint);
-            WriteRawVarint64(EncodeZigZag64(value));
-        }
-
-        public void WriteMessageSetExtension(int fieldNumber, string fieldName, IMessageLite value)
-        {
-            WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.StartGroup);
-            WriteUInt32(WireFormat.MessageSetField.TypeID, "type_id", (uint) fieldNumber);
-            WriteMessage(WireFormat.MessageSetField.Message, "message", value);
-            WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.EndGroup);
-        }
-
-        public void WriteMessageSetExtension(int fieldNumber, string fieldName, ByteString value)
-        {
-            WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.StartGroup);
-            WriteUInt32(WireFormat.MessageSetField.TypeID, "type_id", (uint) fieldNumber);
-            WriteBytes(WireFormat.MessageSetField.Message, "message", value);
-            WriteTag(WireFormat.MessageSetField.Item, WireFormat.WireType.EndGroup);
-        }
-
-        #endregion
-
         #region Writing of values without tags
 
-        public void WriteFieldNoTag(FieldType fieldType, object value)
-        {
-            switch (fieldType)
-            {
-                case FieldType.String:
-                    WriteStringNoTag((string) value);
-                    break;
-                case FieldType.Message:
-                    WriteMessageNoTag((IMessageLite) value);
-                    break;
-                case FieldType.Group:
-                    WriteGroupNoTag((IMessageLite) value);
-                    break;
-                case FieldType.Bytes:
-                    WriteBytesNoTag((ByteString) value);
-                    break;
-                case FieldType.Bool:
-                    WriteBoolNoTag((bool) value);
-                    break;
-                case FieldType.Enum:
-                    if (value is Enum)
-                    {
-                        WriteEnumNoTag((int) value);
-                    }
-                    else
-                    {
-                        WriteEnumNoTag(((IEnumLite) value).Number);
-                    }
-                    break;
-                case FieldType.Int32:
-                    WriteInt32NoTag((int) value);
-                    break;
-                case FieldType.Int64:
-                    WriteInt64NoTag((long) value);
-                    break;
-                case FieldType.UInt32:
-                    WriteUInt32NoTag((uint) value);
-                    break;
-                case FieldType.UInt64:
-                    WriteUInt64NoTag((ulong) value);
-                    break;
-                case FieldType.SInt32:
-                    WriteSInt32NoTag((int) value);
-                    break;
-                case FieldType.SInt64:
-                    WriteSInt64NoTag((long) value);
-                    break;
-                case FieldType.Fixed32:
-                    WriteFixed32NoTag((uint) value);
-                    break;
-                case FieldType.Fixed64:
-                    WriteFixed64NoTag((ulong) value);
-                    break;
-                case FieldType.SFixed32:
-                    WriteSFixed32NoTag((int) value);
-                    break;
-                case FieldType.SFixed64:
-                    WriteSFixed64NoTag((long) value);
-                    break;
-                case FieldType.Double:
-                    WriteDoubleNoTag((double) value);
-                    break;
-                case FieldType.Float:
-                    WriteFloatNoTag((float) value);
-                    break;
-            }
-        }
-
         /// <summary>
         /// Writes a double field value, including tag, to the stream.
         /// </summary>
-        public void WriteDoubleNoTag(double value)
+        public void WriteDouble(double value)
         {
-            WriteRawLittleEndian64((ulong)FrameworkPortability.DoubleToInt64(value));
+            WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
         }
 
         /// <summary>
         /// Writes a float field value, without a tag, to the stream.
         /// </summary>
-        public void WriteFloatNoTag(float value)
+        public void WriteFloat(float value)
         {
             byte[] rawBytes = BitConverter.GetBytes(value);
             if (!BitConverter.IsLittleEndian)
@@ -536,7 +178,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a uint64 field value, without a tag, to the stream.
         /// </summary>
-        public void WriteUInt64NoTag(ulong value)
+        public void WriteUInt64(ulong value)
         {
             WriteRawVarint64(value);
         }
@@ -544,7 +186,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes an int64 field value, without a tag, to the stream.
         /// </summary>
-        public void WriteInt64NoTag(long value)
+        public void WriteInt64(long value)
         {
             WriteRawVarint64((ulong) value);
         }
@@ -552,7 +194,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes an int32 field value, without a tag, to the stream.
         /// </summary>
-        public void WriteInt32NoTag(int value)
+        public void WriteInt32(int value)
         {
             if (value >= 0)
             {
@@ -568,7 +210,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a fixed64 field value, without a tag, to the stream.
         /// </summary>
-        public void WriteFixed64NoTag(ulong value)
+        public void WriteFixed64(ulong value)
         {
             WriteRawLittleEndian64(value);
         }
@@ -576,7 +218,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a fixed32 field value, without a tag, to the stream.
         /// </summary>
-        public void WriteFixed32NoTag(uint value)
+        public void WriteFixed32(uint value)
         {
             WriteRawLittleEndian32(value);
         }
@@ -584,7 +226,7 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a bool field value, without a tag, to the stream.
         /// </summary>
-        public void WriteBoolNoTag(bool value)
+        public void WriteBool(bool value)
         {
             WriteRawByte(value ? (byte) 1 : (byte) 0);
         }
@@ -592,470 +234,239 @@ namespace Google.ProtocolBuffers
         /// <summary>
         /// Writes a string field value, without a tag, to the stream.
         /// </summary>
-        public void WriteStringNoTag(string value)
+        public void WriteString(string value)
         {
             // Optimise the case where we have enough space to write
             // the string directly to the buffer, which should be common.
-            int length = Encoding.UTF8.GetByteCount(value);
-            WriteRawVarint32((uint) length);
+            int length = Utf8Encoding.GetByteCount(value);
+            WriteRawVarint32((uint)length);
             if (limit - position >= length)
             {
-                Encoding.UTF8.GetBytes(value, 0, value.Length, buffer, position);
+                if (length == value.Length) // Must be all ASCII...
+                {
+                    for (int i = 0; i < length; i++)
+                    {
+                        buffer[position + i] = (byte)value[i];
+                    }
+                }
+                else
+                {
+                    Utf8Encoding.GetBytes(value, 0, value.Length, buffer, position);
+                }
                 position += length;
             }
             else
             {
-                byte[] bytes = Encoding.UTF8.GetBytes(value);
+                byte[] bytes = Utf8Encoding.GetBytes(value);
                 WriteRawBytes(bytes);
             }
         }
 
-        /// <summary>
-        /// Writes a group field value, without a tag, to the stream.
-        /// </summary>
-        public void WriteGroupNoTag(IMessageLite value)
+        public void WriteMessage(IMessage value)
         {
+            WriteRawVarint32((uint) value.CalculateSize());
             value.WriteTo(this);
         }
 
-        public void WriteMessageNoTag(IMessageLite value)
-        {
-            WriteRawVarint32((uint) value.SerializedSize);
-            value.WriteTo(this);
-        }
-
-        public void WriteBytesNoTag(ByteString value)
+        public void WriteBytes(ByteString value)
         {
             WriteRawVarint32((uint) value.Length);
             value.WriteRawBytesTo(this);
         }
 
-        public void WriteUInt32NoTag(uint value)
+        public void WriteUInt32(uint value)
         {
             WriteRawVarint32(value);
         }
 
-        public void WriteEnumNoTag(int value)
+        public void WriteEnum(int value)
         {
-            WriteInt32NoTag(value);
+            WriteInt32(value);
         }
 
-        public void WriteSFixed32NoTag(int value)
+        public void WriteSFixed32(int value)
         {
             WriteRawLittleEndian32((uint) value);
         }
 
-        public void WriteSFixed64NoTag(long value)
+        public void WriteSFixed64(long value)
         {
             WriteRawLittleEndian64((ulong) value);
         }
 
-        public void WriteSInt32NoTag(int value)
+        public void WriteSInt32(int value)
         {
             WriteRawVarint32(EncodeZigZag32(value));
         }
 
-        public void WriteSInt64NoTag(long value)
+        public void WriteSInt64(long value)
         {
             WriteRawVarint64(EncodeZigZag64(value));
         }
 
         #endregion
 
-        #region Write array members
-
-        public void WriteArray(FieldType fieldType, int fieldNumber, string fieldName, IEnumerable list)
+        #region Write array members, with fields.
+        public void WriteMessageArray<T>(int fieldNumber, RepeatedField<T> list)
+            where T : IMessage
         {
-            foreach (object element in list)
+            foreach (T value in list)
             {
-                WriteField(fieldType, fieldNumber, fieldName, element);
+                WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
+                WriteMessage(value);
             }
         }
 
-        public void WriteGroupArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
-            where T : IMessageLite
-        {
-            foreach (IMessageLite value in list)
-            {
-                WriteGroup(fieldNumber, fieldName, value);
-            }
-        }
-
-        public void WriteMessageArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
-            where T : IMessageLite
-        {
-            foreach (IMessageLite value in list)
-            {
-                WriteMessage(fieldNumber, fieldName, value);
-            }
-        }
-
-        public void WriteStringArray(int fieldNumber, string fieldName, IEnumerable<string> list)
+        public void WriteStringArray(int fieldNumber, RepeatedField<string> list)
         {
             foreach (var value in list)
             {
-                WriteString(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
+                WriteString(value);
             }
         }
 
-        public void WriteBytesArray(int fieldNumber, string fieldName, IEnumerable<ByteString> list)
+        public void WriteBytesArray(int fieldNumber, RepeatedField<ByteString> list)
         {
             foreach (var value in list)
             {
-                WriteBytes(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
+                WriteBytes(value);
             }
         }
 
-        public void WriteBoolArray(int fieldNumber, string fieldName, IEnumerable<bool> list)
+        public void WriteBoolArray(int fieldNumber, RepeatedField<bool> list)
         {
             foreach (var value in list)
             {
-                WriteBool(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Varint);
+                WriteBool(value);
             }
         }
 
-        public void WriteInt32Array(int fieldNumber, string fieldName, IEnumerable<int> list)
+        public void WriteInt32Array(int fieldNumber, RepeatedField<int> list)
         {
             foreach (var value in list)
             {
-                WriteInt32(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Varint);
+                WriteInt32(value);
             }
         }
 
-        public void WriteSInt32Array(int fieldNumber, string fieldName, IEnumerable<int> list)
+        public void WriteSInt32Array(int fieldNumber, RepeatedField<int> list)
         {
             foreach (var value in list)
             {
-                WriteSInt32(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Varint);
+                WriteSInt32(value);
             }
         }
 
-        public void WriteUInt32Array(int fieldNumber, string fieldName, IEnumerable<uint> list)
+        public void WriteUInt32Array(int fieldNumber, RepeatedField<uint> list)
         {
             foreach (var value in list)
             {
-                WriteUInt32(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Varint);
+                WriteUInt32(value);
             }
         }
 
-        public void WriteFixed32Array(int fieldNumber, string fieldName, IEnumerable<uint> list)
+        public void WriteFixed32Array(int fieldNumber, RepeatedField<uint> list)
         {
             foreach (var value in list)
             {
-                WriteFixed32(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
+                WriteFixed32(value);
             }
         }
 
-        public void WriteSFixed32Array(int fieldNumber, string fieldName, IEnumerable<int> list)
+        public void WriteSFixed32Array(int fieldNumber, RepeatedField<int> list)
         {
             foreach (var value in list)
             {
-                WriteSFixed32(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
+                WriteSFixed32(value);
             }
         }
 
-        public void WriteInt64Array(int fieldNumber, string fieldName, IEnumerable<long> list)
+        public void WriteInt64Array(int fieldNumber, RepeatedField<long> list)
         {
             foreach (var value in list)
             {
-                WriteInt64(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
+                WriteInt64(value);
             }
         }
 
-        public void WriteSInt64Array(int fieldNumber, string fieldName, IEnumerable<long> list)
+        public void WriteSInt64Array(int fieldNumber, RepeatedField<long> list)
         {
             foreach (var value in list)
             {
-                WriteSInt64(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Varint);
+                WriteSInt64(value);
             }
         }
 
-        public void WriteUInt64Array(int fieldNumber, string fieldName, IEnumerable<ulong> list)
+        public void WriteUInt64Array(int fieldNumber, RepeatedField<ulong> list)
         {
             foreach (var value in list)
             {
-                WriteUInt64(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Varint);
+                WriteUInt64(value);
             }
         }
 
-        public void WriteFixed64Array(int fieldNumber, string fieldName, IEnumerable<ulong> list)
+        public void WriteFixed64Array(int fieldNumber, RepeatedField<ulong> list)
         {
             foreach (var value in list)
             {
-                WriteFixed64(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
+                WriteFixed64(value);
             }
         }
 
-        public void WriteSFixed64Array(int fieldNumber, string fieldName, IEnumerable<long> list)
+        public void WriteSFixed64Array(int fieldNumber, RepeatedField<long> list)
         {
             foreach (var value in list)
             {
-                WriteSFixed64(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
+                WriteSFixed64(value);
             }
         }
 
-        public void WriteDoubleArray(int fieldNumber, string fieldName, IEnumerable<double> list)
+        public void WriteDoubleArray(int fieldNumber, RepeatedField<double> list)
         {
             foreach (var value in list)
             {
-                WriteDouble(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
+                WriteDouble(value);
             }
         }
 
-        public void WriteFloatArray(int fieldNumber, string fieldName, IEnumerable<float> list)
+        public void WriteFloatArray(int fieldNumber, RepeatedField<float> list)
         {
             foreach (var value in list)
             {
-                WriteFloat(fieldNumber, fieldName, value);
+                WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
+                WriteFloat(value);
             }
         }
 
-        public void WriteEnumArray<T>(int fieldNumber, string fieldName, IEnumerable<T> list)
+        public void WriteEnumArray<T>(int fieldNumber, RepeatedField<T> list)
             where T : struct, IComparable, IFormattable
         {
-            if (list is ICastArray)
+            // Bit of a hack, to access the values as ints
+            var iterator = list.GetInt32Enumerator();
+            while (iterator.MoveNext())
             {
-                foreach (int value in ((ICastArray) list).CastArray<int>())
-                {
-                    WriteEnum(fieldNumber, fieldName, value, null /*unused*/);
-                }
-            }
-            else
-            {
-                foreach (object value in list)
-                {
-                    WriteEnum(fieldNumber, fieldName, (int) value, null /*unused*/);
-                }
+                WriteTag(fieldNumber, WireFormat.WireType.Varint);
+                WriteEnum(iterator.Current);
             }
         }
 
         #endregion
 
-        #region Write packed array members
-
-        public void WritePackedArray(FieldType fieldType, int fieldNumber, string fieldName, IEnumerable list)
-        {
-            int calculatedSize = 0;
-            foreach (object element in list)
-            {
-                calculatedSize += ComputeFieldSizeNoTag(fieldType, element);
-            }
-
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-
-            foreach (object element in list)
-            {
-                WriteFieldNoTag(fieldType, element);
-            }
-        }
-
-        public void WritePackedGroupArray<T>(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<T> list)
-            where T : IMessageLite
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (IMessageLite value in list)
-            {
-                WriteGroupNoTag(value);
-            }
-        }
-
-        public void WritePackedMessageArray<T>(int fieldNumber, string fieldName, int calculatedSize,
-                                               IEnumerable<T> list)
-            where T : IMessageLite
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (IMessageLite value in list)
-            {
-                WriteMessageNoTag(value);
-            }
-        }
-
-        public void WritePackedStringArray(int fieldNumber, string fieldName, int calculatedSize,
-                                           IEnumerable<string> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteStringNoTag(value);
-            }
-        }
-
-        public void WritePackedBytesArray(int fieldNumber, string fieldName, int calculatedSize,
-                                          IEnumerable<ByteString> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteBytesNoTag(value);
-            }
-        }
-
-        public void WritePackedBoolArray(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<bool> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteBoolNoTag(value);
-            }
-        }
-
-        public void WritePackedInt32Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<int> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteInt32NoTag(value);
-            }
-        }
-
-        public void WritePackedSInt32Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<int> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteSInt32NoTag(value);
-            }
-        }
-
-        public void WritePackedUInt32Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<uint> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteUInt32NoTag(value);
-            }
-        }
-
-        public void WritePackedFixed32Array(int fieldNumber, string fieldName, int calculatedSize,
-                                            IEnumerable<uint> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteFixed32NoTag(value);
-            }
-        }
-
-        public void WritePackedSFixed32Array(int fieldNumber, string fieldName, int calculatedSize,
-                                             IEnumerable<int> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteSFixed32NoTag(value);
-            }
-        }
-
-        public void WritePackedInt64Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<long> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteInt64NoTag(value);
-            }
-        }
-
-        public void WritePackedSInt64Array(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<long> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteSInt64NoTag(value);
-            }
-        }
-
-        public void WritePackedUInt64Array(int fieldNumber, string fieldName, int calculatedSize,
-                                           IEnumerable<ulong> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteUInt64NoTag(value);
-            }
-        }
-
-        public void WritePackedFixed64Array(int fieldNumber, string fieldName, int calculatedSize,
-                                            IEnumerable<ulong> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteFixed64NoTag(value);
-            }
-        }
-
-        public void WritePackedSFixed64Array(int fieldNumber, string fieldName, int calculatedSize,
-                                             IEnumerable<long> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteSFixed64NoTag(value);
-            }
-        }
-
-        public void WritePackedDoubleArray(int fieldNumber, string fieldName, int calculatedSize,
-                                           IEnumerable<double> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteDoubleNoTag(value);
-            }
-        }
-
-        public void WritePackedFloatArray(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<float> list)
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            foreach (var value in list)
-            {
-                WriteFloatNoTag(value);
-            }
-        }
-
-        public void WritePackedEnumArray<T>(int fieldNumber, string fieldName, int calculatedSize, IEnumerable<T> list)
-            where T : struct, IComparable, IFormattable
-        {
-            WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-            WriteRawVarint32((uint) calculatedSize);
-            if (list is ICastArray)
-            {
-                foreach (int value in ((ICastArray) list).CastArray<int>())
-                {
-                    WriteEnumNoTag(value);
-                }
-            }
-            else
-            {
-                foreach (object value in list)
-                {
-                    WriteEnumNoTag((int) value);
-                }
-            }
-        }
-
-        #endregion
-
-        #region Underlying writing primitives
-
+        #region Raw tag writing
         /// <summary>
         /// Encodes and writes a tag.
         /// </summary>
@@ -1065,12 +476,236 @@ namespace Google.ProtocolBuffers
         }
 
         /// <summary>
+        /// Writes the given single-byte tag directly to the stream.
+        /// </summary>
+        public void WriteRawTag(byte b1)
+        {
+            WriteRawByte(b1);
+        }
+
+        /// <summary>
+        /// Writes the given two-byte tag directly to the stream.
+        /// </summary>
+        public void WriteRawTag(byte b1, byte b2)
+        {
+            WriteRawByte(b1);
+            WriteRawByte(b2);
+        }
+
+        /// <summary>
+        /// Writes the given three-byte tag directly to the stream.
+        /// </summary>
+        public void WriteRawTag(byte b1, byte b2, byte b3)
+        {
+            WriteRawByte(b1);
+            WriteRawByte(b2);
+            WriteRawByte(b3);
+        }
+
+        /// <summary>
+        /// Writes the given four-byte tag directly to the stream.
+        /// </summary>
+        public void WriteRawTag(byte b1, byte b2, byte b3, byte b4)
+        {
+            WriteRawByte(b1);
+            WriteRawByte(b2);
+            WriteRawByte(b3);
+            WriteRawByte(b4);
+        }
+
+        /// <summary>
+        /// Writes the given five-byte tag directly to the stream.
+        /// </summary>
+        public void WriteRawTag(byte b1, byte b2, byte b3, byte b4, byte b5)
+        {
+            WriteRawByte(b1);
+            WriteRawByte(b2);
+            WriteRawByte(b3);
+            WriteRawByte(b4);
+            WriteRawByte(b5);
+        }
+        #endregion
+
+        #region Write packed array members
+        // TODO(jonskeet): A lot of these are really inefficient, due to method group conversions. Fix!
+        // (Alternatively, add extension methods to RepeatedField, accepting the Write* methods via delegates too.)
+        public void WritePackedBoolArray(RepeatedField<bool> list)
+        {
+            uint size = (uint)list.Count;
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteBool(value);
+            }
+        }
+
+        public void WritePackedInt32Array(RepeatedField<int> list)
+        {
+            uint size = list.CalculateSize(ComputeInt32Size);
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteInt32(value);
+            }
+        }
+
+        public void WritePackedSInt32Array(RepeatedField<int> list)
+        {
+            uint size = list.CalculateSize(ComputeSInt32Size);
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteSInt32(value);
+            }
+        }
+
+        public void WritePackedUInt32Array(RepeatedField<uint> list)
+        {
+            uint size = list.CalculateSize(ComputeUInt32Size);
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteUInt32(value);
+            }
+        }
+
+        public void WritePackedFixed32Array(RepeatedField<uint> list)
+        {
+            uint size = (uint) list.Count * 4;
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteFixed32(value);
+            }
+        }
+
+        public void WritePackedSFixed32Array(RepeatedField<int> list)
+        {
+            uint size = (uint) list.Count * 4;
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteSFixed32(value);
+            }
+        }
+
+        public void WritePackedInt64Array(RepeatedField<long> list)
+        {
+            uint size = list.CalculateSize(ComputeInt64Size);
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteInt64(value);
+            }
+        }
+
+        public void WritePackedSInt64Array(RepeatedField<long> list)
+        {
+            uint size = list.CalculateSize(ComputeSInt64Size);
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteSInt64(value);
+            }
+        }
+
+        public void WritePackedUInt64Array(RepeatedField<ulong> list)
+        {
+            if (list.Count == 0)
+            {
+                return;
+            }
+            uint size = list.CalculateSize(ComputeUInt64Size);
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteUInt64(value);
+            }
+        }
+
+        public void WritePackedFixed64Array(RepeatedField<ulong> list)
+        {
+            uint size = (uint) list.Count * 8;
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteFixed64(value);
+            }
+        }
+
+        public void WritePackedSFixed64Array(RepeatedField<long> list)
+        {
+            uint size = (uint) list.Count * 8;
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteSFixed64(value);
+            }
+        }
+
+        public void WritePackedDoubleArray(RepeatedField<double> list)
+        {
+            uint size = (uint) list.Count * 8;
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteDouble(value);
+            }
+        }
+
+        public void WritePackedFloatArray(RepeatedField<float> list)
+        {
+            if (list.Count == 0)
+            {
+                return;
+            }
+            uint size = (uint) list.Count * 4;
+            WriteRawVarint32(size);
+            foreach (var value in list)
+            {
+                WriteFloat(value);
+            }
+        }
+
+        public void WritePackedEnumArray<T>(RepeatedField<T> list)
+            where T : struct, IComparable, IFormattable
+        {
+            if (list.Count == 0)
+            {
+                return;
+            }
+            // Bit of a hack, to access the values as ints
+            var iterator = list.GetInt32Enumerator();
+            uint size = 0;
+            while (iterator.MoveNext())
+            {
+                size += (uint) ComputeEnumSize(iterator.Current);
+            }
+            iterator.Reset();
+            WriteRawVarint32(size);
+            while (iterator.MoveNext())
+            {
+                WriteEnum(iterator.Current);
+            }
+        }
+
+        #endregion
+
+        #region Underlying writing primitives
+        /// <summary>
         /// Writes a 32 bit value as a varint. The fast route is taken when
         /// there's enough buffer space left to whizz through without checking
         /// for each byte; otherwise, we resort to calling WriteRawByte each time.
         /// </summary>
         public void WriteRawVarint32(uint value)
         {
+            // Optimize for the common case of a single byte value
+            if (value < 128 && position < limit)
+            {
+                buffer[position++] = (byte)value;
+                return;
+            }
+
             while (value > 127 && position < limit)
             {
                 buffer[position++] = (byte) ((value & 0x7F) | 0x80);
