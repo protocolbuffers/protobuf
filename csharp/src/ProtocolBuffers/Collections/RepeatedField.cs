@@ -6,25 +6,21 @@ namespace Google.Protobuf.Collections
 {
     public sealed class RepeatedField<T> : IList<T>, IEquatable<RepeatedField<T>>
     {
+        private static readonly T[] EmptyArray = new T[0];
+
         private const int MinArraySize = 8;
-        private T[] array = null;
+        private T[] array = EmptyArray;
         private int count = 0;
 
         private void EnsureSize(int size)
         {
-            if (array == null)
+            size = Math.Max(size, MinArraySize);
+            if (array.Length < size)
             {
-                array = new T[Math.Max(size, MinArraySize)];
-            }
-            else
-            {
-                if (array.Length < size)
-                {
-                    int newSize = Math.Max(array.Length * 2, size);
-                    var tmp = new T[newSize];
-                    Array.Copy(array, 0, tmp, 0, array.Length);
-                    array = tmp;
-                }
+                int newSize = Math.Max(array.Length * 2, size);
+                var tmp = new T[newSize];
+                Array.Copy(array, 0, tmp, 0, array.Length);
+                array = tmp;
             }
         }
 
@@ -51,7 +47,7 @@ namespace Google.Protobuf.Collections
 
         public void Clear()
         {
-            array = null;
+            array = EmptyArray;
             count = 0;
         }
 
@@ -62,10 +58,6 @@ namespace Google.Protobuf.Collections
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            if (this.array == null)
-            {
-                return;
-            }
             Array.Copy(this.array, 0, array, arrayIndex, count);
         }
 
@@ -182,10 +174,6 @@ namespace Google.Protobuf.Collections
             if (item == null)
             {
                 throw new ArgumentNullException("item");
-            }
-            if (array == null)
-            {
-                return -1;
             }
             // TODO(jonskeet): Does this box for enums?
             EqualityComparer<T> comparer = EqualityComparer<T>.Default;
