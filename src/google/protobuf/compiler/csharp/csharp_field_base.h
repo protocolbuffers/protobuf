@@ -47,6 +47,7 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   FieldGeneratorBase(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~FieldGeneratorBase();
 
+  virtual void GenerateCloningCode(io::Printer* printer) = 0;
   virtual void GenerateMembers(io::Printer* printer) = 0;
   virtual void GenerateMergingCode(io::Printer* printer) = 0;
   virtual void GenerateParsingCode(io::Printer* printer) = 0;

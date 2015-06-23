@@ -12,6 +12,36 @@ namespace Google.Protobuf.Collections
         private T[] array = EmptyArray;
         private int count = 0;
 
+        /// <summary>
+        /// Creates a deep clone of this repeated field.
+        /// </summary>
+        /// <remarks>
+        /// If the field type is
+        /// a message type, each element is also cloned; otherwise, it is
+        /// assumed that the field type is primitive (including string and
+        /// bytes, both of which are immutable) and so a simple copy is
+        /// equivalent to a deep clone.
+        /// </remarks>
+        /// <returns>A deep clone of this repeated field.</returns>
+        public RepeatedField<T> Clone()
+        {
+            RepeatedField<T> clone = new RepeatedField<T>();
+            if (array != EmptyArray)
+            {
+                clone.array = (T[])array.Clone();
+                IDeepCloneable<T>[] cloneableArray = clone.array as IDeepCloneable<T>[];
+                if (cloneableArray != null)
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        clone.array[i] = cloneableArray[i].Clone();
+                    }
+                }
+            }
+            clone.count = count;
+            return clone;
+        }
+
         private void EnsureSize(int size)
         {
             size = Math.Max(size, MinArraySize);

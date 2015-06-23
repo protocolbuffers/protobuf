@@ -118,6 +118,11 @@ void RepeatedMessageFieldGenerator::WriteToString(io::Printer* printer) {
     "PrintField(\"$field_name$\", $name$_, writer);\n");
 }
 
+void RepeatedMessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "$name$_ = other.$name$_.Clone();\n");
+}
+
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf

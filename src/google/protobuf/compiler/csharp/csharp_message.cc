@@ -179,7 +179,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
     vars,
-    "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$>, global::System.IEquatable<$class_name$> {\n");
+    "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$> {\n");
   printer->Indent();
 
   // All static fields and properties
@@ -213,16 +213,12 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "}\n"
     "\n");
 
-  // Constructors
+  // Parameterless constructor
   printer->Print(
     vars,
-    "public $class_name$() { }\n");  // Public parameterless ctor.
+    "public $class_name$() { }\n\n");
 
-  printer->Print(
-    vars,
-    "public $class_name$($class_name$ other) {\n"
-    "  MergeFrom(other);\n"
-    "}\n");  // Merge ctor.
+  GenerateCloningCode(printer);
 
   // Fields/properties
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -301,6 +297,53 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Print("}\n");
   printer->Print("\n");
 
+}
+
+void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
+  map<string, string> vars;
+  vars["class_name"] = class_name();
+    printer->Print(
+    vars,
+    "public $class_name$($class_name$ other) {\n");
+  printer->Indent();
+  // Clone non-oneof fields first
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    if (!descriptor_->field(i)->containing_oneof()) {
+      scoped_ptr<FieldGeneratorBase> generator(
+        CreateFieldGeneratorInternal(descriptor_->field(i)));
+      generator->GenerateCloningCode(printer);
+    }
+  }
+  // Clone just the right field for each oneof
+  for (int i = 0; i < descriptor_->oneof_decl_count(); ++i) {
+    vars["name"] = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false);
+    vars["property_name"] = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true);
+    printer->Print(vars, "switch (other.$property_name$Case) {\n");
+    printer->Indent();
+    for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
+      const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
+      scoped_ptr<FieldGeneratorBase> generator(CreateFieldGeneratorInternal(field));
+      vars["field_property_name"] = GetPropertyName(field);
+      printer->Print(
+          vars,
+          "case $property_name$OneofCase.$field_property_name$:\n");
+      printer->Indent();
+      generator->GenerateCloningCode(printer);
+      printer->Print("break;\n");
+      printer->Outdent();
+    }
+    printer->Outdent();
+    printer->Print("}\n\n");
+  }
+
+  printer->Outdent();
+  printer->Print("}\n\n");
+
+  printer->Print(
+    vars,
+    "public $class_name$ Clone() {\n"
+    "  return new $class_name$(this);\n"
+    "}\n\n");
 }
 
 void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {

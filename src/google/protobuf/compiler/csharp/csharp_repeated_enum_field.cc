@@ -142,6 +142,11 @@ void RepeatedEnumFieldGenerator::WriteToString(io::Printer* printer) {
     "PrintField(\"$descriptor_name$\", $name$_, writer);\n");
 }
 
+void RepeatedEnumFieldGenerator::GenerateCloningCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "$name$_ = other.$name$_.Clone();\n");
+}
+
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf

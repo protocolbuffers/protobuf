@@ -402,7 +402,7 @@ namespace Google.Protobuf.TestProtos {
 
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes>, global::System.IEquatable<TestAllTypes> {
+  public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes> {
     private static readonly pb::MessageParser<TestAllTypes> _parser = new pb::MessageParser<TestAllTypes>(() => new TestAllTypes());
     public static pb::MessageParser<TestAllTypes> Parser { get { return _parser; } }
 
@@ -417,9 +417,73 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestAllTypes() { }
+
     public TestAllTypes(TestAllTypes other) {
-      MergeFrom(other);
+      singleInt32_ = other.singleInt32_;
+      singleInt64_ = other.singleInt64_;
+      singleUint32_ = other.singleUint32_;
+      singleUint64_ = other.singleUint64_;
+      singleSint32_ = other.singleSint32_;
+      singleSint64_ = other.singleSint64_;
+      singleFixed32_ = other.singleFixed32_;
+      singleFixed64_ = other.singleFixed64_;
+      singleSfixed32_ = other.singleSfixed32_;
+      singleSfixed64_ = other.singleSfixed64_;
+      singleFloat_ = other.singleFloat_;
+      singleDouble_ = other.singleDouble_;
+      singleBool_ = other.singleBool_;
+      singleString_ = other.singleString_;
+      singleBytes_ = other.singleBytes_;
+      SingleNestedMessage = other.singleNestedMessage_ != null ? other.SingleNestedMessage.Clone() : null;
+      SingleForeignMessage = other.singleForeignMessage_ != null ? other.SingleForeignMessage.Clone() : null;
+      SingleImportMessage = other.singleImportMessage_ != null ? other.SingleImportMessage.Clone() : null;
+      singleNestedEnum_ = other.singleNestedEnum_;
+      singleForeignEnum_ = other.singleForeignEnum_;
+      singleImportEnum_ = other.singleImportEnum_;
+      SinglePublicImportMessage = other.singlePublicImportMessage_ != null ? other.SinglePublicImportMessage.Clone() : null;
+      repeatedInt32_ = other.repeatedInt32_.Clone();
+      repeatedInt64_ = other.repeatedInt64_.Clone();
+      repeatedUint32_ = other.repeatedUint32_.Clone();
+      repeatedUint64_ = other.repeatedUint64_.Clone();
+      repeatedSint32_ = other.repeatedSint32_.Clone();
+      repeatedSint64_ = other.repeatedSint64_.Clone();
+      repeatedFixed32_ = other.repeatedFixed32_.Clone();
+      repeatedFixed64_ = other.repeatedFixed64_.Clone();
+      repeatedSfixed32_ = other.repeatedSfixed32_.Clone();
+      repeatedSfixed64_ = other.repeatedSfixed64_.Clone();
+      repeatedFloat_ = other.repeatedFloat_.Clone();
+      repeatedDouble_ = other.repeatedDouble_.Clone();
+      repeatedBool_ = other.repeatedBool_.Clone();
+      repeatedString_ = other.repeatedString_.Clone();
+      repeatedBytes_ = other.repeatedBytes_.Clone();
+      repeatedNestedMessage_ = other.repeatedNestedMessage_.Clone();
+      repeatedForeignMessage_ = other.repeatedForeignMessage_.Clone();
+      repeatedImportMessage_ = other.repeatedImportMessage_.Clone();
+      repeatedNestedEnum_ = other.repeatedNestedEnum_.Clone();
+      repeatedForeignEnum_ = other.repeatedForeignEnum_.Clone();
+      repeatedImportEnum_ = other.repeatedImportEnum_.Clone();
+      repeatedPublicImportMessage_ = other.repeatedPublicImportMessage_.Clone();
+      switch (other.OneofFieldCase) {
+        case OneofFieldOneofCase.OneofUint32:
+          OneofUint32 = other.OneofUint32;
+          break;
+        case OneofFieldOneofCase.OneofNestedMessage:
+          OneofNestedMessage = other.OneofNestedMessage.Clone();
+          break;
+        case OneofFieldOneofCase.OneofString:
+          OneofString = other.OneofString;
+          break;
+        case OneofFieldOneofCase.OneofBytes:
+          OneofBytes = other.OneofBytes;
+          break;
+      }
+
     }
+
+    public TestAllTypes Clone() {
+      return new TestAllTypes(this);
+    }
+
     public const int SingleInt32FieldNumber = 1;
     private int singleInt32_;
     public int SingleInt32 {
@@ -1686,7 +1750,7 @@ namespace Google.Protobuf.TestProtos {
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>, global::System.IEquatable<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
 
@@ -1701,9 +1765,15 @@ namespace Google.Protobuf.TestProtos {
         }
 
         public NestedMessage() { }
+
         public NestedMessage(NestedMessage other) {
-          MergeFrom(other);
+          bb_ = other.bb_;
         }
+
+        public NestedMessage Clone() {
+          return new NestedMessage(this);
+        }
+
         public const int BbFieldNumber = 1;
         private int bb_;
         public int Bb {
@@ -1783,7 +1853,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class NestedTestAllTypes : pb::IMessage<NestedTestAllTypes>, global::System.IEquatable<NestedTestAllTypes> {
+  public sealed partial class NestedTestAllTypes : pb::IMessage<NestedTestAllTypes> {
     private static readonly pb::MessageParser<NestedTestAllTypes> _parser = new pb::MessageParser<NestedTestAllTypes>(() => new NestedTestAllTypes());
     public static pb::MessageParser<NestedTestAllTypes> Parser { get { return _parser; } }
 
@@ -1798,9 +1868,17 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public NestedTestAllTypes() { }
+
     public NestedTestAllTypes(NestedTestAllTypes other) {
-      MergeFrom(other);
+      Child = other.child_ != null ? other.Child.Clone() : null;
+      Payload = other.payload_ != null ? other.Payload.Clone() : null;
+      repeatedChild_ = other.repeatedChild_.Clone();
     }
+
+    public NestedTestAllTypes Clone() {
+      return new NestedTestAllTypes(this);
+    }
+
     public const int ChildFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.NestedTestAllTypes child_;
     public global::Google.Protobuf.TestProtos.NestedTestAllTypes Child {
@@ -1929,7 +2007,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestDeprecatedFields : pb::IMessage<TestDeprecatedFields>, global::System.IEquatable<TestDeprecatedFields> {
+  public sealed partial class TestDeprecatedFields : pb::IMessage<TestDeprecatedFields> {
     private static readonly pb::MessageParser<TestDeprecatedFields> _parser = new pb::MessageParser<TestDeprecatedFields>(() => new TestDeprecatedFields());
     public static pb::MessageParser<TestDeprecatedFields> Parser { get { return _parser; } }
 
@@ -1944,9 +2022,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestDeprecatedFields() { }
+
     public TestDeprecatedFields(TestDeprecatedFields other) {
-      MergeFrom(other);
+      deprecatedInt32_ = other.deprecatedInt32_;
     }
+
+    public TestDeprecatedFields Clone() {
+      return new TestDeprecatedFields(this);
+    }
+
     public const int DeprecatedInt32FieldNumber = 1;
     private int deprecatedInt32_;
     [global::System.ObsoleteAttribute()]
@@ -2022,7 +2106,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage>, global::System.IEquatable<ForeignMessage> {
+  public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage> {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
     public static pb::MessageParser<ForeignMessage> Parser { get { return _parser; } }
 
@@ -2037,9 +2121,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public ForeignMessage() { }
+
     public ForeignMessage(ForeignMessage other) {
-      MergeFrom(other);
+      c_ = other.c_;
     }
+
+    public ForeignMessage Clone() {
+      return new ForeignMessage(this);
+    }
+
     public const int CFieldNumber = 1;
     private int c_;
     public int C {
@@ -2114,7 +2204,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestReservedFields : pb::IMessage<TestReservedFields>, global::System.IEquatable<TestReservedFields> {
+  public sealed partial class TestReservedFields : pb::IMessage<TestReservedFields> {
     private static readonly pb::MessageParser<TestReservedFields> _parser = new pb::MessageParser<TestReservedFields>(() => new TestReservedFields());
     public static pb::MessageParser<TestReservedFields> Parser { get { return _parser; } }
 
@@ -2129,9 +2219,14 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestReservedFields() { }
+
     public TestReservedFields(TestReservedFields other) {
-      MergeFrom(other);
     }
+
+    public TestReservedFields Clone() {
+      return new TestReservedFields(this);
+    }
+
     public override bool Equals(object other) {
       return Equals(other as TestReservedFields);
     }
@@ -2182,7 +2277,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestForeignNested : pb::IMessage<TestForeignNested>, global::System.IEquatable<TestForeignNested> {
+  public sealed partial class TestForeignNested : pb::IMessage<TestForeignNested> {
     private static readonly pb::MessageParser<TestForeignNested> _parser = new pb::MessageParser<TestForeignNested>(() => new TestForeignNested());
     public static pb::MessageParser<TestForeignNested> Parser { get { return _parser; } }
 
@@ -2197,9 +2292,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestForeignNested() { }
+
     public TestForeignNested(TestForeignNested other) {
-      MergeFrom(other);
+      ForeignNested = other.foreignNested_ != null ? other.ForeignNested.Clone() : null;
     }
+
+    public TestForeignNested Clone() {
+      return new TestForeignNested(this);
+    }
+
     public const int ForeignNestedFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage foreignNested_;
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage ForeignNested {
@@ -2278,7 +2379,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestReallyLargeTagNumber : pb::IMessage<TestReallyLargeTagNumber>, global::System.IEquatable<TestReallyLargeTagNumber> {
+  public sealed partial class TestReallyLargeTagNumber : pb::IMessage<TestReallyLargeTagNumber> {
     private static readonly pb::MessageParser<TestReallyLargeTagNumber> _parser = new pb::MessageParser<TestReallyLargeTagNumber>(() => new TestReallyLargeTagNumber());
     public static pb::MessageParser<TestReallyLargeTagNumber> Parser { get { return _parser; } }
 
@@ -2293,9 +2394,16 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestReallyLargeTagNumber() { }
+
     public TestReallyLargeTagNumber(TestReallyLargeTagNumber other) {
-      MergeFrom(other);
+      a_ = other.a_;
+      bb_ = other.bb_;
     }
+
+    public TestReallyLargeTagNumber Clone() {
+      return new TestReallyLargeTagNumber(this);
+    }
+
     public const int AFieldNumber = 1;
     private int a_;
     public int A {
@@ -2394,7 +2502,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestRecursiveMessage : pb::IMessage<TestRecursiveMessage>, global::System.IEquatable<TestRecursiveMessage> {
+  public sealed partial class TestRecursiveMessage : pb::IMessage<TestRecursiveMessage> {
     private static readonly pb::MessageParser<TestRecursiveMessage> _parser = new pb::MessageParser<TestRecursiveMessage>(() => new TestRecursiveMessage());
     public static pb::MessageParser<TestRecursiveMessage> Parser { get { return _parser; } }
 
@@ -2409,9 +2517,16 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestRecursiveMessage() { }
+
     public TestRecursiveMessage(TestRecursiveMessage other) {
-      MergeFrom(other);
+      A = other.a_ != null ? other.A.Clone() : null;
+      i_ = other.i_;
     }
+
+    public TestRecursiveMessage Clone() {
+      return new TestRecursiveMessage(this);
+    }
+
     public const int AFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestRecursiveMessage a_;
     public global::Google.Protobuf.TestProtos.TestRecursiveMessage A {
@@ -2514,7 +2629,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestMutualRecursionA : pb::IMessage<TestMutualRecursionA>, global::System.IEquatable<TestMutualRecursionA> {
+  public sealed partial class TestMutualRecursionA : pb::IMessage<TestMutualRecursionA> {
     private static readonly pb::MessageParser<TestMutualRecursionA> _parser = new pb::MessageParser<TestMutualRecursionA>(() => new TestMutualRecursionA());
     public static pb::MessageParser<TestMutualRecursionA> Parser { get { return _parser; } }
 
@@ -2529,9 +2644,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestMutualRecursionA() { }
+
     public TestMutualRecursionA(TestMutualRecursionA other) {
-      MergeFrom(other);
+      Bb = other.bb_ != null ? other.Bb.Clone() : null;
     }
+
+    public TestMutualRecursionA Clone() {
+      return new TestMutualRecursionA(this);
+    }
+
     public const int BbFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestMutualRecursionB bb_;
     public global::Google.Protobuf.TestProtos.TestMutualRecursionB Bb {
@@ -2610,7 +2731,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestMutualRecursionB : pb::IMessage<TestMutualRecursionB>, global::System.IEquatable<TestMutualRecursionB> {
+  public sealed partial class TestMutualRecursionB : pb::IMessage<TestMutualRecursionB> {
     private static readonly pb::MessageParser<TestMutualRecursionB> _parser = new pb::MessageParser<TestMutualRecursionB>(() => new TestMutualRecursionB());
     public static pb::MessageParser<TestMutualRecursionB> Parser { get { return _parser; } }
 
@@ -2625,9 +2746,16 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestMutualRecursionB() { }
+
     public TestMutualRecursionB(TestMutualRecursionB other) {
-      MergeFrom(other);
+      A = other.a_ != null ? other.A.Clone() : null;
+      optionalInt32_ = other.optionalInt32_;
     }
+
+    public TestMutualRecursionB Clone() {
+      return new TestMutualRecursionB(this);
+    }
+
     public const int AFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestMutualRecursionA a_;
     public global::Google.Protobuf.TestProtos.TestMutualRecursionA A {
@@ -2730,7 +2858,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestCamelCaseFieldNames : pb::IMessage<TestCamelCaseFieldNames>, global::System.IEquatable<TestCamelCaseFieldNames> {
+  public sealed partial class TestCamelCaseFieldNames : pb::IMessage<TestCamelCaseFieldNames> {
     private static readonly pb::MessageParser<TestCamelCaseFieldNames> _parser = new pb::MessageParser<TestCamelCaseFieldNames>(() => new TestCamelCaseFieldNames());
     public static pb::MessageParser<TestCamelCaseFieldNames> Parser { get { return _parser; } }
 
@@ -2745,9 +2873,22 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestCamelCaseFieldNames() { }
+
     public TestCamelCaseFieldNames(TestCamelCaseFieldNames other) {
-      MergeFrom(other);
+      primitiveField_ = other.primitiveField_;
+      stringField_ = other.stringField_;
+      enumField_ = other.enumField_;
+      MessageField = other.messageField_ != null ? other.MessageField.Clone() : null;
+      repeatedPrimitiveField_ = other.repeatedPrimitiveField_.Clone();
+      repeatedStringField_ = other.repeatedStringField_.Clone();
+      repeatedEnumField_ = other.repeatedEnumField_.Clone();
+      repeatedMessageField_ = other.repeatedMessageField_.Clone();
     }
+
+    public TestCamelCaseFieldNames Clone() {
+      return new TestCamelCaseFieldNames(this);
+    }
+
     public const int PrimitiveFieldFieldNumber = 1;
     private int primitiveField_;
     public int PrimitiveField {
@@ -2996,7 +3137,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestFieldOrderings : pb::IMessage<TestFieldOrderings>, global::System.IEquatable<TestFieldOrderings> {
+  public sealed partial class TestFieldOrderings : pb::IMessage<TestFieldOrderings> {
     private static readonly pb::MessageParser<TestFieldOrderings> _parser = new pb::MessageParser<TestFieldOrderings>(() => new TestFieldOrderings());
     public static pb::MessageParser<TestFieldOrderings> Parser { get { return _parser; } }
 
@@ -3011,9 +3152,18 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestFieldOrderings() { }
+
     public TestFieldOrderings(TestFieldOrderings other) {
-      MergeFrom(other);
+      myString_ = other.myString_;
+      myInt_ = other.myInt_;
+      myFloat_ = other.myFloat_;
+      SingleNestedMessage = other.singleNestedMessage_ != null ? other.SingleNestedMessage.Clone() : null;
     }
+
+    public TestFieldOrderings Clone() {
+      return new TestFieldOrderings(this);
+    }
+
     public const int MyStringFieldNumber = 11;
     private string myString_ = "";
     public string MyString {
@@ -3165,7 +3315,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>, global::System.IEquatable<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
 
@@ -3180,9 +3330,16 @@ namespace Google.Protobuf.TestProtos {
         }
 
         public NestedMessage() { }
+
         public NestedMessage(NestedMessage other) {
-          MergeFrom(other);
+          oo_ = other.oo_;
+          bb_ = other.bb_;
         }
+
+        public NestedMessage Clone() {
+          return new NestedMessage(this);
+        }
+
         public const int OoFieldNumber = 2;
         private long oo_;
         public long Oo {
@@ -3286,7 +3443,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class SparseEnumMessage : pb::IMessage<SparseEnumMessage>, global::System.IEquatable<SparseEnumMessage> {
+  public sealed partial class SparseEnumMessage : pb::IMessage<SparseEnumMessage> {
     private static readonly pb::MessageParser<SparseEnumMessage> _parser = new pb::MessageParser<SparseEnumMessage>(() => new SparseEnumMessage());
     public static pb::MessageParser<SparseEnumMessage> Parser { get { return _parser; } }
 
@@ -3301,9 +3458,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public SparseEnumMessage() { }
+
     public SparseEnumMessage(SparseEnumMessage other) {
-      MergeFrom(other);
+      sparseEnum_ = other.sparseEnum_;
     }
+
+    public SparseEnumMessage Clone() {
+      return new SparseEnumMessage(this);
+    }
+
     public const int SparseEnumFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestSparseEnum sparseEnum_ = global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED;
     public global::Google.Protobuf.TestProtos.TestSparseEnum SparseEnum {
@@ -3378,7 +3541,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class OneString : pb::IMessage<OneString>, global::System.IEquatable<OneString> {
+  public sealed partial class OneString : pb::IMessage<OneString> {
     private static readonly pb::MessageParser<OneString> _parser = new pb::MessageParser<OneString>(() => new OneString());
     public static pb::MessageParser<OneString> Parser { get { return _parser; } }
 
@@ -3393,9 +3556,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public OneString() { }
+
     public OneString(OneString other) {
-      MergeFrom(other);
+      data_ = other.data_;
     }
+
+    public OneString Clone() {
+      return new OneString(this);
+    }
+
     public const int DataFieldNumber = 1;
     private string data_ = "";
     public string Data {
@@ -3470,7 +3639,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MoreString : pb::IMessage<MoreString>, global::System.IEquatable<MoreString> {
+  public sealed partial class MoreString : pb::IMessage<MoreString> {
     private static readonly pb::MessageParser<MoreString> _parser = new pb::MessageParser<MoreString>(() => new MoreString());
     public static pb::MessageParser<MoreString> Parser { get { return _parser; } }
 
@@ -3485,9 +3654,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public MoreString() { }
+
     public MoreString(MoreString other) {
-      MergeFrom(other);
+      data_ = other.data_.Clone();
     }
+
+    public MoreString Clone() {
+      return new MoreString(this);
+    }
+
     public const int DataFieldNumber = 1;
     private readonly pbc::RepeatedField<string> data_ = new pbc::RepeatedField<string>();
     public pbc::RepeatedField<string> Data {
@@ -3562,7 +3737,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class OneBytes : pb::IMessage<OneBytes>, global::System.IEquatable<OneBytes> {
+  public sealed partial class OneBytes : pb::IMessage<OneBytes> {
     private static readonly pb::MessageParser<OneBytes> _parser = new pb::MessageParser<OneBytes>(() => new OneBytes());
     public static pb::MessageParser<OneBytes> Parser { get { return _parser; } }
 
@@ -3577,9 +3752,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public OneBytes() { }
+
     public OneBytes(OneBytes other) {
-      MergeFrom(other);
+      data_ = other.data_;
     }
+
+    public OneBytes Clone() {
+      return new OneBytes(this);
+    }
+
     public const int DataFieldNumber = 1;
     private pb::ByteString data_ = pb::ByteString.Empty;
     public pb::ByteString Data {
@@ -3654,7 +3835,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MoreBytes : pb::IMessage<MoreBytes>, global::System.IEquatable<MoreBytes> {
+  public sealed partial class MoreBytes : pb::IMessage<MoreBytes> {
     private static readonly pb::MessageParser<MoreBytes> _parser = new pb::MessageParser<MoreBytes>(() => new MoreBytes());
     public static pb::MessageParser<MoreBytes> Parser { get { return _parser; } }
 
@@ -3669,9 +3850,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public MoreBytes() { }
+
     public MoreBytes(MoreBytes other) {
-      MergeFrom(other);
+      data_ = other.data_;
     }
+
+    public MoreBytes Clone() {
+      return new MoreBytes(this);
+    }
+
     public const int DataFieldNumber = 1;
     private pb::ByteString data_ = pb::ByteString.Empty;
     public pb::ByteString Data {
@@ -3746,7 +3933,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class Int32Message : pb::IMessage<Int32Message>, global::System.IEquatable<Int32Message> {
+  public sealed partial class Int32Message : pb::IMessage<Int32Message> {
     private static readonly pb::MessageParser<Int32Message> _parser = new pb::MessageParser<Int32Message>(() => new Int32Message());
     public static pb::MessageParser<Int32Message> Parser { get { return _parser; } }
 
@@ -3761,9 +3948,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public Int32Message() { }
+
     public Int32Message(Int32Message other) {
-      MergeFrom(other);
+      data_ = other.data_;
     }
+
+    public Int32Message Clone() {
+      return new Int32Message(this);
+    }
+
     public const int DataFieldNumber = 1;
     private int data_;
     public int Data {
@@ -3838,7 +4031,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class Uint32Message : pb::IMessage<Uint32Message>, global::System.IEquatable<Uint32Message> {
+  public sealed partial class Uint32Message : pb::IMessage<Uint32Message> {
     private static readonly pb::MessageParser<Uint32Message> _parser = new pb::MessageParser<Uint32Message>(() => new Uint32Message());
     public static pb::MessageParser<Uint32Message> Parser { get { return _parser; } }
 
@@ -3853,9 +4046,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public Uint32Message() { }
+
     public Uint32Message(Uint32Message other) {
-      MergeFrom(other);
+      data_ = other.data_;
     }
+
+    public Uint32Message Clone() {
+      return new Uint32Message(this);
+    }
+
     public const int DataFieldNumber = 1;
     private uint data_;
     public uint Data {
@@ -3930,7 +4129,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class Int64Message : pb::IMessage<Int64Message>, global::System.IEquatable<Int64Message> {
+  public sealed partial class Int64Message : pb::IMessage<Int64Message> {
     private static readonly pb::MessageParser<Int64Message> _parser = new pb::MessageParser<Int64Message>(() => new Int64Message());
     public static pb::MessageParser<Int64Message> Parser { get { return _parser; } }
 
@@ -3945,9 +4144,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public Int64Message() { }
+
     public Int64Message(Int64Message other) {
-      MergeFrom(other);
+      data_ = other.data_;
     }
+
+    public Int64Message Clone() {
+      return new Int64Message(this);
+    }
+
     public const int DataFieldNumber = 1;
     private long data_;
     public long Data {
@@ -4022,7 +4227,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class Uint64Message : pb::IMessage<Uint64Message>, global::System.IEquatable<Uint64Message> {
+  public sealed partial class Uint64Message : pb::IMessage<Uint64Message> {
     private static readonly pb::MessageParser<Uint64Message> _parser = new pb::MessageParser<Uint64Message>(() => new Uint64Message());
     public static pb::MessageParser<Uint64Message> Parser { get { return _parser; } }
 
@@ -4037,9 +4242,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public Uint64Message() { }
+
     public Uint64Message(Uint64Message other) {
-      MergeFrom(other);
+      data_ = other.data_;
     }
+
+    public Uint64Message Clone() {
+      return new Uint64Message(this);
+    }
+
     public const int DataFieldNumber = 1;
     private ulong data_;
     public ulong Data {
@@ -4114,7 +4325,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class BoolMessage : pb::IMessage<BoolMessage>, global::System.IEquatable<BoolMessage> {
+  public sealed partial class BoolMessage : pb::IMessage<BoolMessage> {
     private static readonly pb::MessageParser<BoolMessage> _parser = new pb::MessageParser<BoolMessage>(() => new BoolMessage());
     public static pb::MessageParser<BoolMessage> Parser { get { return _parser; } }
 
@@ -4129,9 +4340,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public BoolMessage() { }
+
     public BoolMessage(BoolMessage other) {
-      MergeFrom(other);
+      data_ = other.data_;
     }
+
+    public BoolMessage Clone() {
+      return new BoolMessage(this);
+    }
+
     public const int DataFieldNumber = 1;
     private bool data_;
     public bool Data {
@@ -4206,7 +4423,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestOneof : pb::IMessage<TestOneof>, global::System.IEquatable<TestOneof> {
+  public sealed partial class TestOneof : pb::IMessage<TestOneof> {
     private static readonly pb::MessageParser<TestOneof> _parser = new pb::MessageParser<TestOneof>(() => new TestOneof());
     public static pb::MessageParser<TestOneof> Parser { get { return _parser; } }
 
@@ -4221,9 +4438,26 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestOneof() { }
+
     public TestOneof(TestOneof other) {
-      MergeFrom(other);
+      switch (other.FooCase) {
+        case FooOneofCase.FooInt:
+          FooInt = other.FooInt;
+          break;
+        case FooOneofCase.FooString:
+          FooString = other.FooString;
+          break;
+        case FooOneofCase.FooMessage:
+          FooMessage = other.FooMessage.Clone();
+          break;
+      }
+
     }
+
+    public TestOneof Clone() {
+      return new TestOneof(this);
+    }
+
     public const int FooIntFieldNumber = 1;
     public int FooInt {
       get { return fooCase_ == FooOneofCase.FooInt ? (int) foo_ : 0; }
@@ -4373,7 +4607,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestPackedTypes : pb::IMessage<TestPackedTypes>, global::System.IEquatable<TestPackedTypes> {
+  public sealed partial class TestPackedTypes : pb::IMessage<TestPackedTypes> {
     private static readonly pb::MessageParser<TestPackedTypes> _parser = new pb::MessageParser<TestPackedTypes>(() => new TestPackedTypes());
     public static pb::MessageParser<TestPackedTypes> Parser { get { return _parser; } }
 
@@ -4388,9 +4622,28 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestPackedTypes() { }
+
     public TestPackedTypes(TestPackedTypes other) {
-      MergeFrom(other);
+      packedInt32_ = other.packedInt32_.Clone();
+      packedInt64_ = other.packedInt64_.Clone();
+      packedUint32_ = other.packedUint32_.Clone();
+      packedUint64_ = other.packedUint64_.Clone();
+      packedSint32_ = other.packedSint32_.Clone();
+      packedSint64_ = other.packedSint64_.Clone();
+      packedFixed32_ = other.packedFixed32_.Clone();
+      packedFixed64_ = other.packedFixed64_.Clone();
+      packedSfixed32_ = other.packedSfixed32_.Clone();
+      packedSfixed64_ = other.packedSfixed64_.Clone();
+      packedFloat_ = other.packedFloat_.Clone();
+      packedDouble_ = other.packedDouble_.Clone();
+      packedBool_ = other.packedBool_.Clone();
+      packedEnum_ = other.packedEnum_.Clone();
     }
+
+    public TestPackedTypes Clone() {
+      return new TestPackedTypes(this);
+    }
+
     public const int PackedInt32FieldNumber = 90;
     private readonly pbc::RepeatedField<int> packedInt32_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> PackedInt32 {
@@ -4791,7 +5044,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestUnpackedTypes : pb::IMessage<TestUnpackedTypes>, global::System.IEquatable<TestUnpackedTypes> {
+  public sealed partial class TestUnpackedTypes : pb::IMessage<TestUnpackedTypes> {
     private static readonly pb::MessageParser<TestUnpackedTypes> _parser = new pb::MessageParser<TestUnpackedTypes>(() => new TestUnpackedTypes());
     public static pb::MessageParser<TestUnpackedTypes> Parser { get { return _parser; } }
 
@@ -4806,9 +5059,28 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestUnpackedTypes() { }
+
     public TestUnpackedTypes(TestUnpackedTypes other) {
-      MergeFrom(other);
+      unpackedInt32_ = other.unpackedInt32_.Clone();
+      unpackedInt64_ = other.unpackedInt64_.Clone();
+      unpackedUint32_ = other.unpackedUint32_.Clone();
+      unpackedUint64_ = other.unpackedUint64_.Clone();
+      unpackedSint32_ = other.unpackedSint32_.Clone();
+      unpackedSint64_ = other.unpackedSint64_.Clone();
+      unpackedFixed32_ = other.unpackedFixed32_.Clone();
+      unpackedFixed64_ = other.unpackedFixed64_.Clone();
+      unpackedSfixed32_ = other.unpackedSfixed32_.Clone();
+      unpackedSfixed64_ = other.unpackedSfixed64_.Clone();
+      unpackedFloat_ = other.unpackedFloat_.Clone();
+      unpackedDouble_ = other.unpackedDouble_.Clone();
+      unpackedBool_ = other.unpackedBool_.Clone();
+      unpackedEnum_ = other.unpackedEnum_.Clone();
     }
+
+    public TestUnpackedTypes Clone() {
+      return new TestUnpackedTypes(this);
+    }
+
     public const int UnpackedInt32FieldNumber = 90;
     private readonly pbc::RepeatedField<int> unpackedInt32_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> UnpackedInt32 {
@@ -5195,7 +5467,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestRepeatedScalarDifferentTagSizes : pb::IMessage<TestRepeatedScalarDifferentTagSizes>, global::System.IEquatable<TestRepeatedScalarDifferentTagSizes> {
+  public sealed partial class TestRepeatedScalarDifferentTagSizes : pb::IMessage<TestRepeatedScalarDifferentTagSizes> {
     private static readonly pb::MessageParser<TestRepeatedScalarDifferentTagSizes> _parser = new pb::MessageParser<TestRepeatedScalarDifferentTagSizes>(() => new TestRepeatedScalarDifferentTagSizes());
     public static pb::MessageParser<TestRepeatedScalarDifferentTagSizes> Parser { get { return _parser; } }
 
@@ -5210,9 +5482,20 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestRepeatedScalarDifferentTagSizes() { }
+
     public TestRepeatedScalarDifferentTagSizes(TestRepeatedScalarDifferentTagSizes other) {
-      MergeFrom(other);
+      repeatedFixed32_ = other.repeatedFixed32_.Clone();
+      repeatedInt32_ = other.repeatedInt32_.Clone();
+      repeatedFixed64_ = other.repeatedFixed64_.Clone();
+      repeatedInt64_ = other.repeatedInt64_.Clone();
+      repeatedFloat_ = other.repeatedFloat_.Clone();
+      repeatedUint64_ = other.repeatedUint64_.Clone();
     }
+
+    public TestRepeatedScalarDifferentTagSizes Clone() {
+      return new TestRepeatedScalarDifferentTagSizes(this);
+    }
+
     public const int RepeatedFixed32FieldNumber = 12;
     private readonly pbc::RepeatedField<uint> repeatedFixed32_ = new pbc::RepeatedField<uint>();
     public pbc::RepeatedField<uint> RepeatedFixed32 {
@@ -5413,7 +5696,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestCommentInjectionMessage : pb::IMessage<TestCommentInjectionMessage>, global::System.IEquatable<TestCommentInjectionMessage> {
+  public sealed partial class TestCommentInjectionMessage : pb::IMessage<TestCommentInjectionMessage> {
     private static readonly pb::MessageParser<TestCommentInjectionMessage> _parser = new pb::MessageParser<TestCommentInjectionMessage>(() => new TestCommentInjectionMessage());
     public static pb::MessageParser<TestCommentInjectionMessage> Parser { get { return _parser; } }
 
@@ -5428,9 +5711,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public TestCommentInjectionMessage() { }
+
     public TestCommentInjectionMessage(TestCommentInjectionMessage other) {
-      MergeFrom(other);
+      a_ = other.a_;
     }
+
+    public TestCommentInjectionMessage Clone() {
+      return new TestCommentInjectionMessage(this);
+    }
+
     public const int AFieldNumber = 1;
     private string a_ = "";
     public string A {
@@ -5505,7 +5794,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FooRequest : pb::IMessage<FooRequest>, global::System.IEquatable<FooRequest> {
+  public sealed partial class FooRequest : pb::IMessage<FooRequest> {
     private static readonly pb::MessageParser<FooRequest> _parser = new pb::MessageParser<FooRequest>(() => new FooRequest());
     public static pb::MessageParser<FooRequest> Parser { get { return _parser; } }
 
@@ -5520,9 +5809,14 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public FooRequest() { }
+
     public FooRequest(FooRequest other) {
-      MergeFrom(other);
     }
+
+    public FooRequest Clone() {
+      return new FooRequest(this);
+    }
+
     public override bool Equals(object other) {
       return Equals(other as FooRequest);
     }
@@ -5573,7 +5867,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FooResponse : pb::IMessage<FooResponse>, global::System.IEquatable<FooResponse> {
+  public sealed partial class FooResponse : pb::IMessage<FooResponse> {
     private static readonly pb::MessageParser<FooResponse> _parser = new pb::MessageParser<FooResponse>(() => new FooResponse());
     public static pb::MessageParser<FooResponse> Parser { get { return _parser; } }
 
@@ -5588,9 +5882,14 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public FooResponse() { }
+
     public FooResponse(FooResponse other) {
-      MergeFrom(other);
     }
+
+    public FooResponse Clone() {
+      return new FooResponse(this);
+    }
+
     public override bool Equals(object other) {
       return Equals(other as FooResponse);
     }
@@ -5641,7 +5940,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FooClientMessage : pb::IMessage<FooClientMessage>, global::System.IEquatable<FooClientMessage> {
+  public sealed partial class FooClientMessage : pb::IMessage<FooClientMessage> {
     private static readonly pb::MessageParser<FooClientMessage> _parser = new pb::MessageParser<FooClientMessage>(() => new FooClientMessage());
     public static pb::MessageParser<FooClientMessage> Parser { get { return _parser; } }
 
@@ -5656,9 +5955,14 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public FooClientMessage() { }
+
     public FooClientMessage(FooClientMessage other) {
-      MergeFrom(other);
     }
+
+    public FooClientMessage Clone() {
+      return new FooClientMessage(this);
+    }
+
     public override bool Equals(object other) {
       return Equals(other as FooClientMessage);
     }
@@ -5709,7 +6013,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FooServerMessage : pb::IMessage<FooServerMessage>, global::System.IEquatable<FooServerMessage> {
+  public sealed partial class FooServerMessage : pb::IMessage<FooServerMessage> {
     private static readonly pb::MessageParser<FooServerMessage> _parser = new pb::MessageParser<FooServerMessage>(() => new FooServerMessage());
     public static pb::MessageParser<FooServerMessage> Parser { get { return _parser; } }
 
@@ -5724,9 +6028,14 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public FooServerMessage() { }
+
     public FooServerMessage(FooServerMessage other) {
-      MergeFrom(other);
     }
+
+    public FooServerMessage Clone() {
+      return new FooServerMessage(this);
+    }
+
     public override bool Equals(object other) {
       return Equals(other as FooServerMessage);
     }
@@ -5777,7 +6086,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class BarRequest : pb::IMessage<BarRequest>, global::System.IEquatable<BarRequest> {
+  public sealed partial class BarRequest : pb::IMessage<BarRequest> {
     private static readonly pb::MessageParser<BarRequest> _parser = new pb::MessageParser<BarRequest>(() => new BarRequest());
     public static pb::MessageParser<BarRequest> Parser { get { return _parser; } }
 
@@ -5792,9 +6101,14 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public BarRequest() { }
+
     public BarRequest(BarRequest other) {
-      MergeFrom(other);
     }
+
+    public BarRequest Clone() {
+      return new BarRequest(this);
+    }
+
     public override bool Equals(object other) {
       return Equals(other as BarRequest);
     }
@@ -5845,7 +6159,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class BarResponse : pb::IMessage<BarResponse>, global::System.IEquatable<BarResponse> {
+  public sealed partial class BarResponse : pb::IMessage<BarResponse> {
     private static readonly pb::MessageParser<BarResponse> _parser = new pb::MessageParser<BarResponse>(() => new BarResponse());
     public static pb::MessageParser<BarResponse> Parser { get { return _parser; } }
 
@@ -5860,9 +6174,14 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public BarResponse() { }
+
     public BarResponse(BarResponse other) {
-      MergeFrom(other);
     }
+
+    public BarResponse Clone() {
+      return new BarResponse(this);
+    }
+
     public override bool Equals(object other) {
       return Equals(other as BarResponse);
     }

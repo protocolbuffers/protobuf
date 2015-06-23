@@ -278,7 +278,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet>, global::System.IEquatable<FileDescriptorSet> {
+  public sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet> {
     private static readonly pb::MessageParser<FileDescriptorSet> _parser = new pb::MessageParser<FileDescriptorSet>(() => new FileDescriptorSet());
     public static pb::MessageParser<FileDescriptorSet> Parser { get { return _parser; } }
 
@@ -293,9 +293,15 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public FileDescriptorSet() { }
+
     public FileDescriptorSet(FileDescriptorSet other) {
-      MergeFrom(other);
+      file_ = other.file_.Clone();
     }
+
+    public FileDescriptorSet Clone() {
+      return new FileDescriptorSet(this);
+    }
+
     public const int FileFieldNumber = 1;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto> file_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto> File {
@@ -368,7 +374,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto>, global::System.IEquatable<FileDescriptorProto> {
+  public sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto> {
     private static readonly pb::MessageParser<FileDescriptorProto> _parser = new pb::MessageParser<FileDescriptorProto>(() => new FileDescriptorProto());
     public static pb::MessageParser<FileDescriptorProto> Parser { get { return _parser; } }
 
@@ -383,9 +389,26 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public FileDescriptorProto() { }
+
     public FileDescriptorProto(FileDescriptorProto other) {
-      MergeFrom(other);
+      name_ = other.name_;
+      package_ = other.package_;
+      dependency_ = other.dependency_.Clone();
+      publicDependency_ = other.publicDependency_.Clone();
+      weakDependency_ = other.weakDependency_.Clone();
+      messageType_ = other.messageType_.Clone();
+      enumType_ = other.enumType_.Clone();
+      service_ = other.service_.Clone();
+      extension_ = other.extension_.Clone();
+      Options = other.options_ != null ? other.Options.Clone() : null;
+      SourceCodeInfo = other.sourceCodeInfo_ != null ? other.SourceCodeInfo.Clone() : null;
+      syntax_ = other.syntax_;
     }
+
+    public FileDescriptorProto Clone() {
+      return new FileDescriptorProto(this);
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
@@ -726,7 +749,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class DescriptorProto : pb::IMessage<DescriptorProto>, global::System.IEquatable<DescriptorProto> {
+  public sealed partial class DescriptorProto : pb::IMessage<DescriptorProto> {
     private static readonly pb::MessageParser<DescriptorProto> _parser = new pb::MessageParser<DescriptorProto>(() => new DescriptorProto());
     public static pb::MessageParser<DescriptorProto> Parser { get { return _parser; } }
 
@@ -741,9 +764,24 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public DescriptorProto() { }
+
     public DescriptorProto(DescriptorProto other) {
-      MergeFrom(other);
+      name_ = other.name_;
+      field_ = other.field_.Clone();
+      extension_ = other.extension_.Clone();
+      nestedType_ = other.nestedType_.Clone();
+      enumType_ = other.enumType_.Clone();
+      extensionRange_ = other.extensionRange_.Clone();
+      oneofDecl_ = other.oneofDecl_.Clone();
+      Options = other.options_ != null ? other.Options.Clone() : null;
+      reservedRange_ = other.reservedRange_.Clone();
+      reservedName_ = other.reservedName_.Clone();
     }
+
+    public DescriptorProto Clone() {
+      return new DescriptorProto(this);
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
@@ -1025,7 +1063,7 @@ namespace Google.Protobuf.DescriptorProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class ExtensionRange : pb::IMessage<ExtensionRange>, global::System.IEquatable<ExtensionRange> {
+      public sealed partial class ExtensionRange : pb::IMessage<ExtensionRange> {
         private static readonly pb::MessageParser<ExtensionRange> _parser = new pb::MessageParser<ExtensionRange>(() => new ExtensionRange());
         public static pb::MessageParser<ExtensionRange> Parser { get { return _parser; } }
 
@@ -1040,9 +1078,16 @@ namespace Google.Protobuf.DescriptorProtos {
         }
 
         public ExtensionRange() { }
+
         public ExtensionRange(ExtensionRange other) {
-          MergeFrom(other);
+          start_ = other.start_;
+          end_ = other.end_;
         }
+
+        public ExtensionRange Clone() {
+          return new ExtensionRange(this);
+        }
+
         public const int StartFieldNumber = 1;
         private int start_;
         public int Start {
@@ -1141,7 +1186,7 @@ namespace Google.Protobuf.DescriptorProtos {
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class ReservedRange : pb::IMessage<ReservedRange>, global::System.IEquatable<ReservedRange> {
+      public sealed partial class ReservedRange : pb::IMessage<ReservedRange> {
         private static readonly pb::MessageParser<ReservedRange> _parser = new pb::MessageParser<ReservedRange>(() => new ReservedRange());
         public static pb::MessageParser<ReservedRange> Parser { get { return _parser; } }
 
@@ -1156,9 +1201,16 @@ namespace Google.Protobuf.DescriptorProtos {
         }
 
         public ReservedRange() { }
+
         public ReservedRange(ReservedRange other) {
-          MergeFrom(other);
+          start_ = other.start_;
+          end_ = other.end_;
         }
+
+        public ReservedRange Clone() {
+          return new ReservedRange(this);
+        }
+
         public const int StartFieldNumber = 1;
         private int start_;
         public int Start {
@@ -1262,7 +1314,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto>, global::System.IEquatable<FieldDescriptorProto> {
+  public sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto> {
     private static readonly pb::MessageParser<FieldDescriptorProto> _parser = new pb::MessageParser<FieldDescriptorProto>(() => new FieldDescriptorProto());
     public static pb::MessageParser<FieldDescriptorProto> Parser { get { return _parser; } }
 
@@ -1277,9 +1329,23 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public FieldDescriptorProto() { }
+
     public FieldDescriptorProto(FieldDescriptorProto other) {
-      MergeFrom(other);
+      name_ = other.name_;
+      number_ = other.number_;
+      label_ = other.label_;
+      type_ = other.type_;
+      typeName_ = other.typeName_;
+      extendee_ = other.extendee_;
+      defaultValue_ = other.defaultValue_;
+      oneofIndex_ = other.oneofIndex_;
+      Options = other.options_ != null ? other.Options.Clone() : null;
     }
+
+    public FieldDescriptorProto Clone() {
+      return new FieldDescriptorProto(this);
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
@@ -1583,7 +1649,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto>, global::System.IEquatable<OneofDescriptorProto> {
+  public sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto> {
     private static readonly pb::MessageParser<OneofDescriptorProto> _parser = new pb::MessageParser<OneofDescriptorProto>(() => new OneofDescriptorProto());
     public static pb::MessageParser<OneofDescriptorProto> Parser { get { return _parser; } }
 
@@ -1598,9 +1664,15 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public OneofDescriptorProto() { }
+
     public OneofDescriptorProto(OneofDescriptorProto other) {
-      MergeFrom(other);
+      name_ = other.name_;
     }
+
+    public OneofDescriptorProto Clone() {
+      return new OneofDescriptorProto(this);
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
@@ -1675,7 +1747,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto>, global::System.IEquatable<EnumDescriptorProto> {
+  public sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto> {
     private static readonly pb::MessageParser<EnumDescriptorProto> _parser = new pb::MessageParser<EnumDescriptorProto>(() => new EnumDescriptorProto());
     public static pb::MessageParser<EnumDescriptorProto> Parser { get { return _parser; } }
 
@@ -1690,9 +1762,17 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public EnumDescriptorProto() { }
+
     public EnumDescriptorProto(EnumDescriptorProto other) {
-      MergeFrom(other);
+      name_ = other.name_;
+      value_ = other.value_.Clone();
+      Options = other.options_ != null ? other.Options.Clone() : null;
     }
+
+    public EnumDescriptorProto Clone() {
+      return new EnumDescriptorProto(this);
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
@@ -1817,7 +1897,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto>, global::System.IEquatable<EnumValueDescriptorProto> {
+  public sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto> {
     private static readonly pb::MessageParser<EnumValueDescriptorProto> _parser = new pb::MessageParser<EnumValueDescriptorProto>(() => new EnumValueDescriptorProto());
     public static pb::MessageParser<EnumValueDescriptorProto> Parser { get { return _parser; } }
 
@@ -1832,9 +1912,17 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public EnumValueDescriptorProto() { }
+
     public EnumValueDescriptorProto(EnumValueDescriptorProto other) {
-      MergeFrom(other);
+      name_ = other.name_;
+      number_ = other.number_;
+      Options = other.options_ != null ? other.Options.Clone() : null;
     }
+
+    public EnumValueDescriptorProto Clone() {
+      return new EnumValueDescriptorProto(this);
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
@@ -1961,7 +2049,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto>, global::System.IEquatable<ServiceDescriptorProto> {
+  public sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto> {
     private static readonly pb::MessageParser<ServiceDescriptorProto> _parser = new pb::MessageParser<ServiceDescriptorProto>(() => new ServiceDescriptorProto());
     public static pb::MessageParser<ServiceDescriptorProto> Parser { get { return _parser; } }
 
@@ -1976,9 +2064,17 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public ServiceDescriptorProto() { }
+
     public ServiceDescriptorProto(ServiceDescriptorProto other) {
-      MergeFrom(other);
+      name_ = other.name_;
+      method_ = other.method_.Clone();
+      Options = other.options_ != null ? other.Options.Clone() : null;
     }
+
+    public ServiceDescriptorProto Clone() {
+      return new ServiceDescriptorProto(this);
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
@@ -2103,7 +2199,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto>, global::System.IEquatable<MethodDescriptorProto> {
+  public sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto> {
     private static readonly pb::MessageParser<MethodDescriptorProto> _parser = new pb::MessageParser<MethodDescriptorProto>(() => new MethodDescriptorProto());
     public static pb::MessageParser<MethodDescriptorProto> Parser { get { return _parser; } }
 
@@ -2118,9 +2214,20 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public MethodDescriptorProto() { }
+
     public MethodDescriptorProto(MethodDescriptorProto other) {
-      MergeFrom(other);
+      name_ = other.name_;
+      inputType_ = other.inputType_;
+      outputType_ = other.outputType_;
+      Options = other.options_ != null ? other.Options.Clone() : null;
+      clientStreaming_ = other.clientStreaming_;
+      serverStreaming_ = other.serverStreaming_;
     }
+
+    public MethodDescriptorProto Clone() {
+      return new MethodDescriptorProto(this);
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
@@ -2319,7 +2426,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FileOptions : pb::IMessage<FileOptions>, global::System.IEquatable<FileOptions> {
+  public sealed partial class FileOptions : pb::IMessage<FileOptions> {
     private static readonly pb::MessageParser<FileOptions> _parser = new pb::MessageParser<FileOptions>(() => new FileOptions());
     public static pb::MessageParser<FileOptions> Parser { get { return _parser; } }
 
@@ -2334,9 +2441,29 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public FileOptions() { }
+
     public FileOptions(FileOptions other) {
-      MergeFrom(other);
+      javaPackage_ = other.javaPackage_;
+      javaOuterClassname_ = other.javaOuterClassname_;
+      javaMultipleFiles_ = other.javaMultipleFiles_;
+      javaGenerateEqualsAndHash_ = other.javaGenerateEqualsAndHash_;
+      javaStringCheckUtf8_ = other.javaStringCheckUtf8_;
+      optimizeFor_ = other.optimizeFor_;
+      goPackage_ = other.goPackage_;
+      ccGenericServices_ = other.ccGenericServices_;
+      javaGenericServices_ = other.javaGenericServices_;
+      pyGenericServices_ = other.pyGenericServices_;
+      deprecated_ = other.deprecated_;
+      ccEnableArenas_ = other.ccEnableArenas_;
+      objcClassPrefix_ = other.objcClassPrefix_;
+      csharpNamespace_ = other.csharpNamespace_;
+      uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
+
+    public FileOptions Clone() {
+      return new FileOptions(this);
+    }
+
     public const int JavaPackageFieldNumber = 1;
     private string javaPackage_ = "";
     public string JavaPackage {
@@ -2757,7 +2884,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MessageOptions : pb::IMessage<MessageOptions>, global::System.IEquatable<MessageOptions> {
+  public sealed partial class MessageOptions : pb::IMessage<MessageOptions> {
     private static readonly pb::MessageParser<MessageOptions> _parser = new pb::MessageParser<MessageOptions>(() => new MessageOptions());
     public static pb::MessageParser<MessageOptions> Parser { get { return _parser; } }
 
@@ -2772,9 +2899,19 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public MessageOptions() { }
+
     public MessageOptions(MessageOptions other) {
-      MergeFrom(other);
+      messageSetWireFormat_ = other.messageSetWireFormat_;
+      noStandardDescriptorAccessor_ = other.noStandardDescriptorAccessor_;
+      deprecated_ = other.deprecated_;
+      mapEntry_ = other.mapEntry_;
+      uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
+
+    public MessageOptions Clone() {
+      return new MessageOptions(this);
+    }
+
     public const int MessageSetWireFormatFieldNumber = 1;
     private bool messageSetWireFormat_;
     public bool MessageSetWireFormat {
@@ -2943,7 +3080,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FieldOptions : pb::IMessage<FieldOptions>, global::System.IEquatable<FieldOptions> {
+  public sealed partial class FieldOptions : pb::IMessage<FieldOptions> {
     private static readonly pb::MessageParser<FieldOptions> _parser = new pb::MessageParser<FieldOptions>(() => new FieldOptions());
     public static pb::MessageParser<FieldOptions> Parser { get { return _parser; } }
 
@@ -2958,9 +3095,21 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public FieldOptions() { }
+
     public FieldOptions(FieldOptions other) {
-      MergeFrom(other);
+      ctype_ = other.ctype_;
+      packed_ = other.packed_;
+      jstype_ = other.jstype_;
+      lazy_ = other.lazy_;
+      deprecated_ = other.deprecated_;
+      weak_ = other.weak_;
+      uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
+
+    public FieldOptions Clone() {
+      return new FieldOptions(this);
+    }
+
     public const int CtypeFieldNumber = 1;
     private global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType ctype_ = global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING;
     public global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType Ctype {
@@ -3195,7 +3344,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class EnumOptions : pb::IMessage<EnumOptions>, global::System.IEquatable<EnumOptions> {
+  public sealed partial class EnumOptions : pb::IMessage<EnumOptions> {
     private static readonly pb::MessageParser<EnumOptions> _parser = new pb::MessageParser<EnumOptions>(() => new EnumOptions());
     public static pb::MessageParser<EnumOptions> Parser { get { return _parser; } }
 
@@ -3210,9 +3359,17 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public EnumOptions() { }
+
     public EnumOptions(EnumOptions other) {
-      MergeFrom(other);
+      allowAlias_ = other.allowAlias_;
+      deprecated_ = other.deprecated_;
+      uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
+
+    public EnumOptions Clone() {
+      return new EnumOptions(this);
+    }
+
     public const int AllowAliasFieldNumber = 2;
     private bool allowAlias_;
     public bool AllowAlias {
@@ -3333,7 +3490,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class EnumValueOptions : pb::IMessage<EnumValueOptions>, global::System.IEquatable<EnumValueOptions> {
+  public sealed partial class EnumValueOptions : pb::IMessage<EnumValueOptions> {
     private static readonly pb::MessageParser<EnumValueOptions> _parser = new pb::MessageParser<EnumValueOptions>(() => new EnumValueOptions());
     public static pb::MessageParser<EnumValueOptions> Parser { get { return _parser; } }
 
@@ -3348,9 +3505,16 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public EnumValueOptions() { }
+
     public EnumValueOptions(EnumValueOptions other) {
-      MergeFrom(other);
+      deprecated_ = other.deprecated_;
+      uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
+
+    public EnumValueOptions Clone() {
+      return new EnumValueOptions(this);
+    }
+
     public const int DeprecatedFieldNumber = 1;
     private bool deprecated_;
     public bool Deprecated {
@@ -3447,7 +3611,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class ServiceOptions : pb::IMessage<ServiceOptions>, global::System.IEquatable<ServiceOptions> {
+  public sealed partial class ServiceOptions : pb::IMessage<ServiceOptions> {
     private static readonly pb::MessageParser<ServiceOptions> _parser = new pb::MessageParser<ServiceOptions>(() => new ServiceOptions());
     public static pb::MessageParser<ServiceOptions> Parser { get { return _parser; } }
 
@@ -3462,9 +3626,16 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public ServiceOptions() { }
+
     public ServiceOptions(ServiceOptions other) {
-      MergeFrom(other);
+      deprecated_ = other.deprecated_;
+      uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
+
+    public ServiceOptions Clone() {
+      return new ServiceOptions(this);
+    }
+
     public const int DeprecatedFieldNumber = 33;
     private bool deprecated_;
     public bool Deprecated {
@@ -3561,7 +3732,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MethodOptions : pb::IMessage<MethodOptions>, global::System.IEquatable<MethodOptions> {
+  public sealed partial class MethodOptions : pb::IMessage<MethodOptions> {
     private static readonly pb::MessageParser<MethodOptions> _parser = new pb::MessageParser<MethodOptions>(() => new MethodOptions());
     public static pb::MessageParser<MethodOptions> Parser { get { return _parser; } }
 
@@ -3576,9 +3747,16 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public MethodOptions() { }
+
     public MethodOptions(MethodOptions other) {
-      MergeFrom(other);
+      deprecated_ = other.deprecated_;
+      uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
+
+    public MethodOptions Clone() {
+      return new MethodOptions(this);
+    }
+
     public const int DeprecatedFieldNumber = 33;
     private bool deprecated_;
     public bool Deprecated {
@@ -3675,7 +3853,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption>, global::System.IEquatable<UninterpretedOption> {
+  public sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption> {
     private static readonly pb::MessageParser<UninterpretedOption> _parser = new pb::MessageParser<UninterpretedOption>(() => new UninterpretedOption());
     public static pb::MessageParser<UninterpretedOption> Parser { get { return _parser; } }
 
@@ -3690,9 +3868,21 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public UninterpretedOption() { }
+
     public UninterpretedOption(UninterpretedOption other) {
-      MergeFrom(other);
+      name_ = other.name_.Clone();
+      identifierValue_ = other.identifierValue_;
+      positiveIntValue_ = other.positiveIntValue_;
+      negativeIntValue_ = other.negativeIntValue_;
+      doubleValue_ = other.doubleValue_;
+      stringValue_ = other.stringValue_;
+      aggregateValue_ = other.aggregateValue_;
     }
+
+    public UninterpretedOption Clone() {
+      return new UninterpretedOption(this);
+    }
+
     public const int NameFieldNumber = 2;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> name_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> Name {
@@ -3910,7 +4100,7 @@ namespace Google.Protobuf.DescriptorProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class NamePart : pb::IMessage<NamePart>, global::System.IEquatable<NamePart> {
+      public sealed partial class NamePart : pb::IMessage<NamePart> {
         private static readonly pb::MessageParser<NamePart> _parser = new pb::MessageParser<NamePart>(() => new NamePart());
         public static pb::MessageParser<NamePart> Parser { get { return _parser; } }
 
@@ -3925,9 +4115,16 @@ namespace Google.Protobuf.DescriptorProtos {
         }
 
         public NamePart() { }
+
         public NamePart(NamePart other) {
-          MergeFrom(other);
+          namePart_ = other.namePart_;
+          isExtension_ = other.isExtension_;
         }
+
+        public NamePart Clone() {
+          return new NamePart(this);
+        }
+
         public const int NamePart_FieldNumber = 1;
         private string namePart_ = "";
         public string NamePart_ {
@@ -4031,7 +4228,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo>, global::System.IEquatable<SourceCodeInfo> {
+  public sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo> {
     private static readonly pb::MessageParser<SourceCodeInfo> _parser = new pb::MessageParser<SourceCodeInfo>(() => new SourceCodeInfo());
     public static pb::MessageParser<SourceCodeInfo> Parser { get { return _parser; } }
 
@@ -4046,9 +4243,15 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public SourceCodeInfo() { }
+
     public SourceCodeInfo(SourceCodeInfo other) {
-      MergeFrom(other);
+      location_ = other.location_.Clone();
     }
+
+    public SourceCodeInfo Clone() {
+      return new SourceCodeInfo(this);
+    }
+
     public const int LocationFieldNumber = 1;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location> location_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location> Location {
@@ -4122,7 +4325,7 @@ namespace Google.Protobuf.DescriptorProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class Location : pb::IMessage<Location>, global::System.IEquatable<Location> {
+      public sealed partial class Location : pb::IMessage<Location> {
         private static readonly pb::MessageParser<Location> _parser = new pb::MessageParser<Location>(() => new Location());
         public static pb::MessageParser<Location> Parser { get { return _parser; } }
 
@@ -4137,9 +4340,19 @@ namespace Google.Protobuf.DescriptorProtos {
         }
 
         public Location() { }
+
         public Location(Location other) {
-          MergeFrom(other);
+          path_ = other.path_.Clone();
+          span_ = other.span_.Clone();
+          leadingComments_ = other.leadingComments_;
+          trailingComments_ = other.trailingComments_;
+          leadingDetachedComments_ = other.leadingDetachedComments_.Clone();
         }
+
+        public Location Clone() {
+          return new Location(this);
+        }
+
         public const int PathFieldNumber = 1;
         private readonly pbc::RepeatedField<int> path_ = new pbc::RepeatedField<int>();
         public pbc::RepeatedField<int> Path {

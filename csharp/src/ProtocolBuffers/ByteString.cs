@@ -139,7 +139,7 @@ namespace Google.Protobuf
         /// are copied, so further modifications to the array will not
         /// be reflected in the returned ByteString.
         /// </summary>
-        public static ByteString CopyFrom(byte[] bytes)
+        public static ByteString CopyFrom(params byte[] bytes)
         {
             return new ByteString((byte[]) bytes.Clone());
         }

@@ -50,6 +50,7 @@ class MessageGenerator : public SourceGeneratorBase {
   MessageGenerator(const Descriptor* descriptor);
   ~MessageGenerator();
 
+  void GenerateCloningCode(io::Printer* printer);
   void GenerateFrameworkMethods(io::Printer* printer);
   void GenerateStaticVariables(io::Printer* printer);
   void GenerateStaticVariableInitializers(io::Printer* printer);

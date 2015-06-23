@@ -125,6 +125,11 @@ void MessageFieldGenerator::WriteToString(io::Printer* printer) {
     "PrintField(\"$field_name$\", has$property_name$, $name$_, writer);\n");
 }
 
+void MessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "$property_name$ = other.$has_property_check$ ? other.$property_name$.Clone() : null;\n");
+}
+
 MessageOneofFieldGenerator::MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
 						       int fieldOrdinal)
     : MessageFieldGenerator(descriptor, fieldOrdinal) {
@@ -164,6 +169,11 @@ void MessageOneofFieldGenerator::WriteToString(io::Printer* printer) {
   printer->Print(
     variables_,
     "PrintField(\"$descriptor_name$\", $has_property_check$, $oneof_name$_, writer);\n");
+}
+
+void MessageOneofFieldGenerator::GenerateCloningCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "$property_name$ = other.$property_name$.Clone();\n");
 }
 
 }  // namespace csharp

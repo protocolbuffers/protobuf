@@ -148,6 +148,11 @@ void RepeatedPrimitiveFieldGenerator::WriteToString(io::Printer* printer) {
     "PrintField(\"$descriptor_name$\", $name$_, writer);\n");
 }
 
+void RepeatedPrimitiveFieldGenerator::GenerateCloningCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "$name$_ = other.$name$_.Clone();\n");
+}
+
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf

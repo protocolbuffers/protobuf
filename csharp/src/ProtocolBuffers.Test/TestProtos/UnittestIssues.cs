@@ -90,7 +90,7 @@ namespace UnitTest.Issues.TestProtos {
 
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class NegativeEnumMessage : pb::IMessage<NegativeEnumMessage>, global::System.IEquatable<NegativeEnumMessage> {
+  public sealed partial class NegativeEnumMessage : pb::IMessage<NegativeEnumMessage> {
     private static readonly pb::MessageParser<NegativeEnumMessage> _parser = new pb::MessageParser<NegativeEnumMessage>(() => new NegativeEnumMessage());
     public static pb::MessageParser<NegativeEnumMessage> Parser { get { return _parser; } }
 
@@ -105,9 +105,17 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public NegativeEnumMessage() { }
+
     public NegativeEnumMessage(NegativeEnumMessage other) {
-      MergeFrom(other);
+      value_ = other.value_;
+      values_ = other.values_.Clone();
+      packedValues_ = other.packedValues_.Clone();
     }
+
+    public NegativeEnumMessage Clone() {
+      return new NegativeEnumMessage(this);
+    }
+
     public const int ValueFieldNumber = 1;
     private global::UnitTest.Issues.TestProtos.NegativeEnum value_ = global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO;
     public global::UnitTest.Issues.TestProtos.NegativeEnum Value {
@@ -233,7 +241,7 @@ namespace UnitTest.Issues.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class DeprecatedChild : pb::IMessage<DeprecatedChild>, global::System.IEquatable<DeprecatedChild> {
+  public sealed partial class DeprecatedChild : pb::IMessage<DeprecatedChild> {
     private static readonly pb::MessageParser<DeprecatedChild> _parser = new pb::MessageParser<DeprecatedChild>(() => new DeprecatedChild());
     public static pb::MessageParser<DeprecatedChild> Parser { get { return _parser; } }
 
@@ -248,9 +256,14 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public DeprecatedChild() { }
+
     public DeprecatedChild(DeprecatedChild other) {
-      MergeFrom(other);
     }
+
+    public DeprecatedChild Clone() {
+      return new DeprecatedChild(this);
+    }
+
     public override bool Equals(object other) {
       return Equals(other as DeprecatedChild);
     }
@@ -301,7 +314,7 @@ namespace UnitTest.Issues.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class DeprecatedFieldsMessage : pb::IMessage<DeprecatedFieldsMessage>, global::System.IEquatable<DeprecatedFieldsMessage> {
+  public sealed partial class DeprecatedFieldsMessage : pb::IMessage<DeprecatedFieldsMessage> {
     private static readonly pb::MessageParser<DeprecatedFieldsMessage> _parser = new pb::MessageParser<DeprecatedFieldsMessage>(() => new DeprecatedFieldsMessage());
     public static pb::MessageParser<DeprecatedFieldsMessage> Parser { get { return _parser; } }
 
@@ -316,9 +329,20 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public DeprecatedFieldsMessage() { }
+
     public DeprecatedFieldsMessage(DeprecatedFieldsMessage other) {
-      MergeFrom(other);
+      primitiveValue_ = other.primitiveValue_;
+      primitiveArray_ = other.primitiveArray_.Clone();
+      MessageValue = other.messageValue_ != null ? other.MessageValue.Clone() : null;
+      messageArray_ = other.messageArray_.Clone();
+      enumValue_ = other.enumValue_;
+      enumArray_ = other.enumArray_.Clone();
     }
+
+    public DeprecatedFieldsMessage Clone() {
+      return new DeprecatedFieldsMessage(this);
+    }
+
     public const int PrimitiveValueFieldNumber = 1;
     private int primitiveValue_;
     [global::System.ObsoleteAttribute()]
@@ -525,7 +549,7 @@ namespace UnitTest.Issues.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class ItemField : pb::IMessage<ItemField>, global::System.IEquatable<ItemField> {
+  public sealed partial class ItemField : pb::IMessage<ItemField> {
     private static readonly pb::MessageParser<ItemField> _parser = new pb::MessageParser<ItemField>(() => new ItemField());
     public static pb::MessageParser<ItemField> Parser { get { return _parser; } }
 
@@ -540,9 +564,15 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public ItemField() { }
+
     public ItemField(ItemField other) {
-      MergeFrom(other);
+      item_ = other.item_;
     }
+
+    public ItemField Clone() {
+      return new ItemField(this);
+    }
+
     public const int ItemFieldNumber = 1;
     private int item_;
     public int Item {

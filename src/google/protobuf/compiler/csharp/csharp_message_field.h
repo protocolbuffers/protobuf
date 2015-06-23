@@ -46,6 +46,7 @@ class MessageFieldGenerator : public FieldGeneratorBase {
   MessageFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~MessageFieldGenerator();
 
+  virtual void GenerateCloningCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer);
   virtual void GenerateMergingCode(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
@@ -65,6 +66,7 @@ class MessageOneofFieldGenerator : public MessageFieldGenerator {
   MessageOneofFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~MessageOneofFieldGenerator();
 
+  virtual void GenerateCloningCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer);
   virtual void WriteToString(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);

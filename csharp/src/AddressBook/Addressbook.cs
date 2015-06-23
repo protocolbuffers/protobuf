@@ -62,7 +62,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   }
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class Person : pb::IMessage<Person>, global::System.IEquatable<Person> {
+  public sealed partial class Person : pb::IMessage<Person> {
     private static readonly pb::MessageParser<Person> _parser = new pb::MessageParser<Person>(() => new Person());
     public static pb::MessageParser<Person> Parser { get { return _parser; } }
 
@@ -77,9 +77,18 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
 
     public Person() { }
+
     public Person(Person other) {
-      MergeFrom(other);
+      name_ = other.name_;
+      id_ = other.id_;
+      email_ = other.email_;
+      phone_ = other.phone_.Clone();
     }
+
+    public Person Clone() {
+      return new Person(this);
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
@@ -231,7 +240,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class PhoneNumber : pb::IMessage<PhoneNumber>, global::System.IEquatable<PhoneNumber> {
+      public sealed partial class PhoneNumber : pb::IMessage<PhoneNumber> {
         private static readonly pb::MessageParser<PhoneNumber> _parser = new pb::MessageParser<PhoneNumber>(() => new PhoneNumber());
         public static pb::MessageParser<PhoneNumber> Parser { get { return _parser; } }
 
@@ -246,9 +255,16 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         }
 
         public PhoneNumber() { }
+
         public PhoneNumber(PhoneNumber other) {
-          MergeFrom(other);
+          number_ = other.number_;
+          type_ = other.type_;
         }
+
+        public PhoneNumber Clone() {
+          return new PhoneNumber(this);
+        }
+
         public const int NumberFieldNumber = 1;
         private string number_ = "";
         public string Number {
@@ -352,7 +368,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class AddressBook : pb::IMessage<AddressBook>, global::System.IEquatable<AddressBook> {
+  public sealed partial class AddressBook : pb::IMessage<AddressBook> {
     private static readonly pb::MessageParser<AddressBook> _parser = new pb::MessageParser<AddressBook>(() => new AddressBook());
     public static pb::MessageParser<AddressBook> Parser { get { return _parser; } }
 
@@ -367,9 +383,15 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
 
     public AddressBook() { }
+
     public AddressBook(AddressBook other) {
-      MergeFrom(other);
+      person_ = other.person_.Clone();
     }
+
+    public AddressBook Clone() {
+      return new AddressBook(this);
+    }
+
     public const int PersonFieldNumber = 1;
     private readonly pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person> person_ = new pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person>();
     public pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person> Person {
