@@ -402,7 +402,7 @@ namespace Google.Protobuf.TestProtos {
 
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes>, global::System.IEquatable<TestAllTypes>, pb::IDeepCloneable<TestAllTypes> {
+  public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes> {
     private static readonly pb::MessageParser<TestAllTypes> _parser = new pb::MessageParser<TestAllTypes>(() => new TestAllTypes());
     public static pb::MessageParser<TestAllTypes> Parser { get { return _parser; } }
 
@@ -1750,7 +1750,7 @@ namespace Google.Protobuf.TestProtos {
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>, global::System.IEquatable<NestedMessage>, pb::IDeepCloneable<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
 
@@ -1853,7 +1853,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class NestedTestAllTypes : pb::IMessage<NestedTestAllTypes>, global::System.IEquatable<NestedTestAllTypes>, pb::IDeepCloneable<NestedTestAllTypes> {
+  public sealed partial class NestedTestAllTypes : pb::IMessage<NestedTestAllTypes> {
     private static readonly pb::MessageParser<NestedTestAllTypes> _parser = new pb::MessageParser<NestedTestAllTypes>(() => new NestedTestAllTypes());
     public static pb::MessageParser<NestedTestAllTypes> Parser { get { return _parser; } }
 
@@ -2007,7 +2007,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestDeprecatedFields : pb::IMessage<TestDeprecatedFields>, global::System.IEquatable<TestDeprecatedFields>, pb::IDeepCloneable<TestDeprecatedFields> {
+  public sealed partial class TestDeprecatedFields : pb::IMessage<TestDeprecatedFields> {
     private static readonly pb::MessageParser<TestDeprecatedFields> _parser = new pb::MessageParser<TestDeprecatedFields>(() => new TestDeprecatedFields());
     public static pb::MessageParser<TestDeprecatedFields> Parser { get { return _parser; } }
 
@@ -2106,7 +2106,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage>, global::System.IEquatable<ForeignMessage>, pb::IDeepCloneable<ForeignMessage> {
+  public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage> {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
     public static pb::MessageParser<ForeignMessage> Parser { get { return _parser; } }
 
@@ -2204,7 +2204,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestReservedFields : pb::IMessage<TestReservedFields>, global::System.IEquatable<TestReservedFields>, pb::IDeepCloneable<TestReservedFields> {
+  public sealed partial class TestReservedFields : pb::IMessage<TestReservedFields> {
     private static readonly pb::MessageParser<TestReservedFields> _parser = new pb::MessageParser<TestReservedFields>(() => new TestReservedFields());
     public static pb::MessageParser<TestReservedFields> Parser { get { return _parser; } }
 
@@ -2277,7 +2277,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestForeignNested : pb::IMessage<TestForeignNested>, global::System.IEquatable<TestForeignNested>, pb::IDeepCloneable<TestForeignNested> {
+  public sealed partial class TestForeignNested : pb::IMessage<TestForeignNested> {
     private static readonly pb::MessageParser<TestForeignNested> _parser = new pb::MessageParser<TestForeignNested>(() => new TestForeignNested());
     public static pb::MessageParser<TestForeignNested> Parser { get { return _parser; } }
 
@@ -2379,7 +2379,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestReallyLargeTagNumber : pb::IMessage<TestReallyLargeTagNumber>, global::System.IEquatable<TestReallyLargeTagNumber>, pb::IDeepCloneable<TestReallyLargeTagNumber> {
+  public sealed partial class TestReallyLargeTagNumber : pb::IMessage<TestReallyLargeTagNumber> {
     private static readonly pb::MessageParser<TestReallyLargeTagNumber> _parser = new pb::MessageParser<TestReallyLargeTagNumber>(() => new TestReallyLargeTagNumber());
     public static pb::MessageParser<TestReallyLargeTagNumber> Parser { get { return _parser; } }
 
@@ -2502,7 +2502,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestRecursiveMessage : pb::IMessage<TestRecursiveMessage>, global::System.IEquatable<TestRecursiveMessage>, pb::IDeepCloneable<TestRecursiveMessage> {
+  public sealed partial class TestRecursiveMessage : pb::IMessage<TestRecursiveMessage> {
     private static readonly pb::MessageParser<TestRecursiveMessage> _parser = new pb::MessageParser<TestRecursiveMessage>(() => new TestRecursiveMessage());
     public static pb::MessageParser<TestRecursiveMessage> Parser { get { return _parser; } }
 
@@ -2629,7 +2629,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestMutualRecursionA : pb::IMessage<TestMutualRecursionA>, global::System.IEquatable<TestMutualRecursionA>, pb::IDeepCloneable<TestMutualRecursionA> {
+  public sealed partial class TestMutualRecursionA : pb::IMessage<TestMutualRecursionA> {
     private static readonly pb::MessageParser<TestMutualRecursionA> _parser = new pb::MessageParser<TestMutualRecursionA>(() => new TestMutualRecursionA());
     public static pb::MessageParser<TestMutualRecursionA> Parser { get { return _parser; } }
 
@@ -2731,7 +2731,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestMutualRecursionB : pb::IMessage<TestMutualRecursionB>, global::System.IEquatable<TestMutualRecursionB>, pb::IDeepCloneable<TestMutualRecursionB> {
+  public sealed partial class TestMutualRecursionB : pb::IMessage<TestMutualRecursionB> {
     private static readonly pb::MessageParser<TestMutualRecursionB> _parser = new pb::MessageParser<TestMutualRecursionB>(() => new TestMutualRecursionB());
     public static pb::MessageParser<TestMutualRecursionB> Parser { get { return _parser; } }
 
@@ -2858,7 +2858,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestCamelCaseFieldNames : pb::IMessage<TestCamelCaseFieldNames>, global::System.IEquatable<TestCamelCaseFieldNames>, pb::IDeepCloneable<TestCamelCaseFieldNames> {
+  public sealed partial class TestCamelCaseFieldNames : pb::IMessage<TestCamelCaseFieldNames> {
     private static readonly pb::MessageParser<TestCamelCaseFieldNames> _parser = new pb::MessageParser<TestCamelCaseFieldNames>(() => new TestCamelCaseFieldNames());
     public static pb::MessageParser<TestCamelCaseFieldNames> Parser { get { return _parser; } }
 
@@ -3137,7 +3137,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestFieldOrderings : pb::IMessage<TestFieldOrderings>, global::System.IEquatable<TestFieldOrderings>, pb::IDeepCloneable<TestFieldOrderings> {
+  public sealed partial class TestFieldOrderings : pb::IMessage<TestFieldOrderings> {
     private static readonly pb::MessageParser<TestFieldOrderings> _parser = new pb::MessageParser<TestFieldOrderings>(() => new TestFieldOrderings());
     public static pb::MessageParser<TestFieldOrderings> Parser { get { return _parser; } }
 
@@ -3315,7 +3315,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>, global::System.IEquatable<NestedMessage>, pb::IDeepCloneable<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
 
@@ -3443,7 +3443,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class SparseEnumMessage : pb::IMessage<SparseEnumMessage>, global::System.IEquatable<SparseEnumMessage>, pb::IDeepCloneable<SparseEnumMessage> {
+  public sealed partial class SparseEnumMessage : pb::IMessage<SparseEnumMessage> {
     private static readonly pb::MessageParser<SparseEnumMessage> _parser = new pb::MessageParser<SparseEnumMessage>(() => new SparseEnumMessage());
     public static pb::MessageParser<SparseEnumMessage> Parser { get { return _parser; } }
 
@@ -3541,7 +3541,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class OneString : pb::IMessage<OneString>, global::System.IEquatable<OneString>, pb::IDeepCloneable<OneString> {
+  public sealed partial class OneString : pb::IMessage<OneString> {
     private static readonly pb::MessageParser<OneString> _parser = new pb::MessageParser<OneString>(() => new OneString());
     public static pb::MessageParser<OneString> Parser { get { return _parser; } }
 
@@ -3639,7 +3639,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MoreString : pb::IMessage<MoreString>, global::System.IEquatable<MoreString>, pb::IDeepCloneable<MoreString> {
+  public sealed partial class MoreString : pb::IMessage<MoreString> {
     private static readonly pb::MessageParser<MoreString> _parser = new pb::MessageParser<MoreString>(() => new MoreString());
     public static pb::MessageParser<MoreString> Parser { get { return _parser; } }
 
@@ -3737,7 +3737,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class OneBytes : pb::IMessage<OneBytes>, global::System.IEquatable<OneBytes>, pb::IDeepCloneable<OneBytes> {
+  public sealed partial class OneBytes : pb::IMessage<OneBytes> {
     private static readonly pb::MessageParser<OneBytes> _parser = new pb::MessageParser<OneBytes>(() => new OneBytes());
     public static pb::MessageParser<OneBytes> Parser { get { return _parser; } }
 
@@ -3835,7 +3835,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MoreBytes : pb::IMessage<MoreBytes>, global::System.IEquatable<MoreBytes>, pb::IDeepCloneable<MoreBytes> {
+  public sealed partial class MoreBytes : pb::IMessage<MoreBytes> {
     private static readonly pb::MessageParser<MoreBytes> _parser = new pb::MessageParser<MoreBytes>(() => new MoreBytes());
     public static pb::MessageParser<MoreBytes> Parser { get { return _parser; } }
 
@@ -3933,7 +3933,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class Int32Message : pb::IMessage<Int32Message>, global::System.IEquatable<Int32Message>, pb::IDeepCloneable<Int32Message> {
+  public sealed partial class Int32Message : pb::IMessage<Int32Message> {
     private static readonly pb::MessageParser<Int32Message> _parser = new pb::MessageParser<Int32Message>(() => new Int32Message());
     public static pb::MessageParser<Int32Message> Parser { get { return _parser; } }
 
@@ -4031,7 +4031,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class Uint32Message : pb::IMessage<Uint32Message>, global::System.IEquatable<Uint32Message>, pb::IDeepCloneable<Uint32Message> {
+  public sealed partial class Uint32Message : pb::IMessage<Uint32Message> {
     private static readonly pb::MessageParser<Uint32Message> _parser = new pb::MessageParser<Uint32Message>(() => new Uint32Message());
     public static pb::MessageParser<Uint32Message> Parser { get { return _parser; } }
 
@@ -4129,7 +4129,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class Int64Message : pb::IMessage<Int64Message>, global::System.IEquatable<Int64Message>, pb::IDeepCloneable<Int64Message> {
+  public sealed partial class Int64Message : pb::IMessage<Int64Message> {
     private static readonly pb::MessageParser<Int64Message> _parser = new pb::MessageParser<Int64Message>(() => new Int64Message());
     public static pb::MessageParser<Int64Message> Parser { get { return _parser; } }
 
@@ -4227,7 +4227,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class Uint64Message : pb::IMessage<Uint64Message>, global::System.IEquatable<Uint64Message>, pb::IDeepCloneable<Uint64Message> {
+  public sealed partial class Uint64Message : pb::IMessage<Uint64Message> {
     private static readonly pb::MessageParser<Uint64Message> _parser = new pb::MessageParser<Uint64Message>(() => new Uint64Message());
     public static pb::MessageParser<Uint64Message> Parser { get { return _parser; } }
 
@@ -4325,7 +4325,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class BoolMessage : pb::IMessage<BoolMessage>, global::System.IEquatable<BoolMessage>, pb::IDeepCloneable<BoolMessage> {
+  public sealed partial class BoolMessage : pb::IMessage<BoolMessage> {
     private static readonly pb::MessageParser<BoolMessage> _parser = new pb::MessageParser<BoolMessage>(() => new BoolMessage());
     public static pb::MessageParser<BoolMessage> Parser { get { return _parser; } }
 
@@ -4423,7 +4423,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestOneof : pb::IMessage<TestOneof>, global::System.IEquatable<TestOneof>, pb::IDeepCloneable<TestOneof> {
+  public sealed partial class TestOneof : pb::IMessage<TestOneof> {
     private static readonly pb::MessageParser<TestOneof> _parser = new pb::MessageParser<TestOneof>(() => new TestOneof());
     public static pb::MessageParser<TestOneof> Parser { get { return _parser; } }
 
@@ -4607,7 +4607,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestPackedTypes : pb::IMessage<TestPackedTypes>, global::System.IEquatable<TestPackedTypes>, pb::IDeepCloneable<TestPackedTypes> {
+  public sealed partial class TestPackedTypes : pb::IMessage<TestPackedTypes> {
     private static readonly pb::MessageParser<TestPackedTypes> _parser = new pb::MessageParser<TestPackedTypes>(() => new TestPackedTypes());
     public static pb::MessageParser<TestPackedTypes> Parser { get { return _parser; } }
 
@@ -5044,7 +5044,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestUnpackedTypes : pb::IMessage<TestUnpackedTypes>, global::System.IEquatable<TestUnpackedTypes>, pb::IDeepCloneable<TestUnpackedTypes> {
+  public sealed partial class TestUnpackedTypes : pb::IMessage<TestUnpackedTypes> {
     private static readonly pb::MessageParser<TestUnpackedTypes> _parser = new pb::MessageParser<TestUnpackedTypes>(() => new TestUnpackedTypes());
     public static pb::MessageParser<TestUnpackedTypes> Parser { get { return _parser; } }
 
@@ -5467,7 +5467,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestRepeatedScalarDifferentTagSizes : pb::IMessage<TestRepeatedScalarDifferentTagSizes>, global::System.IEquatable<TestRepeatedScalarDifferentTagSizes>, pb::IDeepCloneable<TestRepeatedScalarDifferentTagSizes> {
+  public sealed partial class TestRepeatedScalarDifferentTagSizes : pb::IMessage<TestRepeatedScalarDifferentTagSizes> {
     private static readonly pb::MessageParser<TestRepeatedScalarDifferentTagSizes> _parser = new pb::MessageParser<TestRepeatedScalarDifferentTagSizes>(() => new TestRepeatedScalarDifferentTagSizes());
     public static pb::MessageParser<TestRepeatedScalarDifferentTagSizes> Parser { get { return _parser; } }
 
@@ -5696,7 +5696,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class TestCommentInjectionMessage : pb::IMessage<TestCommentInjectionMessage>, global::System.IEquatable<TestCommentInjectionMessage>, pb::IDeepCloneable<TestCommentInjectionMessage> {
+  public sealed partial class TestCommentInjectionMessage : pb::IMessage<TestCommentInjectionMessage> {
     private static readonly pb::MessageParser<TestCommentInjectionMessage> _parser = new pb::MessageParser<TestCommentInjectionMessage>(() => new TestCommentInjectionMessage());
     public static pb::MessageParser<TestCommentInjectionMessage> Parser { get { return _parser; } }
 
@@ -5794,7 +5794,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FooRequest : pb::IMessage<FooRequest>, global::System.IEquatable<FooRequest>, pb::IDeepCloneable<FooRequest> {
+  public sealed partial class FooRequest : pb::IMessage<FooRequest> {
     private static readonly pb::MessageParser<FooRequest> _parser = new pb::MessageParser<FooRequest>(() => new FooRequest());
     public static pb::MessageParser<FooRequest> Parser { get { return _parser; } }
 
@@ -5867,7 +5867,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FooResponse : pb::IMessage<FooResponse>, global::System.IEquatable<FooResponse>, pb::IDeepCloneable<FooResponse> {
+  public sealed partial class FooResponse : pb::IMessage<FooResponse> {
     private static readonly pb::MessageParser<FooResponse> _parser = new pb::MessageParser<FooResponse>(() => new FooResponse());
     public static pb::MessageParser<FooResponse> Parser { get { return _parser; } }
 
@@ -5940,7 +5940,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FooClientMessage : pb::IMessage<FooClientMessage>, global::System.IEquatable<FooClientMessage>, pb::IDeepCloneable<FooClientMessage> {
+  public sealed partial class FooClientMessage : pb::IMessage<FooClientMessage> {
     private static readonly pb::MessageParser<FooClientMessage> _parser = new pb::MessageParser<FooClientMessage>(() => new FooClientMessage());
     public static pb::MessageParser<FooClientMessage> Parser { get { return _parser; } }
 
@@ -6013,7 +6013,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FooServerMessage : pb::IMessage<FooServerMessage>, global::System.IEquatable<FooServerMessage>, pb::IDeepCloneable<FooServerMessage> {
+  public sealed partial class FooServerMessage : pb::IMessage<FooServerMessage> {
     private static readonly pb::MessageParser<FooServerMessage> _parser = new pb::MessageParser<FooServerMessage>(() => new FooServerMessage());
     public static pb::MessageParser<FooServerMessage> Parser { get { return _parser; } }
 
@@ -6086,7 +6086,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class BarRequest : pb::IMessage<BarRequest>, global::System.IEquatable<BarRequest>, pb::IDeepCloneable<BarRequest> {
+  public sealed partial class BarRequest : pb::IMessage<BarRequest> {
     private static readonly pb::MessageParser<BarRequest> _parser = new pb::MessageParser<BarRequest>(() => new BarRequest());
     public static pb::MessageParser<BarRequest> Parser { get { return _parser; } }
 
@@ -6159,7 +6159,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class BarResponse : pb::IMessage<BarResponse>, global::System.IEquatable<BarResponse>, pb::IDeepCloneable<BarResponse> {
+  public sealed partial class BarResponse : pb::IMessage<BarResponse> {
     private static readonly pb::MessageParser<BarResponse> _parser = new pb::MessageParser<BarResponse>(() => new BarResponse());
     public static pb::MessageParser<BarResponse> Parser { get { return _parser; } }
 

@@ -278,7 +278,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet>, global::System.IEquatable<FileDescriptorSet>, pb::IDeepCloneable<FileDescriptorSet> {
+  public sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet> {
     private static readonly pb::MessageParser<FileDescriptorSet> _parser = new pb::MessageParser<FileDescriptorSet>(() => new FileDescriptorSet());
     public static pb::MessageParser<FileDescriptorSet> Parser { get { return _parser; } }
 
@@ -374,7 +374,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto>, global::System.IEquatable<FileDescriptorProto>, pb::IDeepCloneable<FileDescriptorProto> {
+  public sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto> {
     private static readonly pb::MessageParser<FileDescriptorProto> _parser = new pb::MessageParser<FileDescriptorProto>(() => new FileDescriptorProto());
     public static pb::MessageParser<FileDescriptorProto> Parser { get { return _parser; } }
 
@@ -749,7 +749,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class DescriptorProto : pb::IMessage<DescriptorProto>, global::System.IEquatable<DescriptorProto>, pb::IDeepCloneable<DescriptorProto> {
+  public sealed partial class DescriptorProto : pb::IMessage<DescriptorProto> {
     private static readonly pb::MessageParser<DescriptorProto> _parser = new pb::MessageParser<DescriptorProto>(() => new DescriptorProto());
     public static pb::MessageParser<DescriptorProto> Parser { get { return _parser; } }
 
@@ -1063,7 +1063,7 @@ namespace Google.Protobuf.DescriptorProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class ExtensionRange : pb::IMessage<ExtensionRange>, global::System.IEquatable<ExtensionRange>, pb::IDeepCloneable<ExtensionRange> {
+      public sealed partial class ExtensionRange : pb::IMessage<ExtensionRange> {
         private static readonly pb::MessageParser<ExtensionRange> _parser = new pb::MessageParser<ExtensionRange>(() => new ExtensionRange());
         public static pb::MessageParser<ExtensionRange> Parser { get { return _parser; } }
 
@@ -1186,7 +1186,7 @@ namespace Google.Protobuf.DescriptorProtos {
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class ReservedRange : pb::IMessage<ReservedRange>, global::System.IEquatable<ReservedRange>, pb::IDeepCloneable<ReservedRange> {
+      public sealed partial class ReservedRange : pb::IMessage<ReservedRange> {
         private static readonly pb::MessageParser<ReservedRange> _parser = new pb::MessageParser<ReservedRange>(() => new ReservedRange());
         public static pb::MessageParser<ReservedRange> Parser { get { return _parser; } }
 
@@ -1314,7 +1314,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto>, global::System.IEquatable<FieldDescriptorProto>, pb::IDeepCloneable<FieldDescriptorProto> {
+  public sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto> {
     private static readonly pb::MessageParser<FieldDescriptorProto> _parser = new pb::MessageParser<FieldDescriptorProto>(() => new FieldDescriptorProto());
     public static pb::MessageParser<FieldDescriptorProto> Parser { get { return _parser; } }
 
@@ -1649,7 +1649,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto>, global::System.IEquatable<OneofDescriptorProto>, pb::IDeepCloneable<OneofDescriptorProto> {
+  public sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto> {
     private static readonly pb::MessageParser<OneofDescriptorProto> _parser = new pb::MessageParser<OneofDescriptorProto>(() => new OneofDescriptorProto());
     public static pb::MessageParser<OneofDescriptorProto> Parser { get { return _parser; } }
 
@@ -1747,7 +1747,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto>, global::System.IEquatable<EnumDescriptorProto>, pb::IDeepCloneable<EnumDescriptorProto> {
+  public sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto> {
     private static readonly pb::MessageParser<EnumDescriptorProto> _parser = new pb::MessageParser<EnumDescriptorProto>(() => new EnumDescriptorProto());
     public static pb::MessageParser<EnumDescriptorProto> Parser { get { return _parser; } }
 
@@ -1897,7 +1897,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto>, global::System.IEquatable<EnumValueDescriptorProto>, pb::IDeepCloneable<EnumValueDescriptorProto> {
+  public sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto> {
     private static readonly pb::MessageParser<EnumValueDescriptorProto> _parser = new pb::MessageParser<EnumValueDescriptorProto>(() => new EnumValueDescriptorProto());
     public static pb::MessageParser<EnumValueDescriptorProto> Parser { get { return _parser; } }
 
@@ -2049,7 +2049,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto>, global::System.IEquatable<ServiceDescriptorProto>, pb::IDeepCloneable<ServiceDescriptorProto> {
+  public sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto> {
     private static readonly pb::MessageParser<ServiceDescriptorProto> _parser = new pb::MessageParser<ServiceDescriptorProto>(() => new ServiceDescriptorProto());
     public static pb::MessageParser<ServiceDescriptorProto> Parser { get { return _parser; } }
 
@@ -2199,7 +2199,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto>, global::System.IEquatable<MethodDescriptorProto>, pb::IDeepCloneable<MethodDescriptorProto> {
+  public sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto> {
     private static readonly pb::MessageParser<MethodDescriptorProto> _parser = new pb::MessageParser<MethodDescriptorProto>(() => new MethodDescriptorProto());
     public static pb::MessageParser<MethodDescriptorProto> Parser { get { return _parser; } }
 
@@ -2426,7 +2426,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FileOptions : pb::IMessage<FileOptions>, global::System.IEquatable<FileOptions>, pb::IDeepCloneable<FileOptions> {
+  public sealed partial class FileOptions : pb::IMessage<FileOptions> {
     private static readonly pb::MessageParser<FileOptions> _parser = new pb::MessageParser<FileOptions>(() => new FileOptions());
     public static pb::MessageParser<FileOptions> Parser { get { return _parser; } }
 
@@ -2884,7 +2884,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MessageOptions : pb::IMessage<MessageOptions>, global::System.IEquatable<MessageOptions>, pb::IDeepCloneable<MessageOptions> {
+  public sealed partial class MessageOptions : pb::IMessage<MessageOptions> {
     private static readonly pb::MessageParser<MessageOptions> _parser = new pb::MessageParser<MessageOptions>(() => new MessageOptions());
     public static pb::MessageParser<MessageOptions> Parser { get { return _parser; } }
 
@@ -3080,7 +3080,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FieldOptions : pb::IMessage<FieldOptions>, global::System.IEquatable<FieldOptions>, pb::IDeepCloneable<FieldOptions> {
+  public sealed partial class FieldOptions : pb::IMessage<FieldOptions> {
     private static readonly pb::MessageParser<FieldOptions> _parser = new pb::MessageParser<FieldOptions>(() => new FieldOptions());
     public static pb::MessageParser<FieldOptions> Parser { get { return _parser; } }
 
@@ -3344,7 +3344,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class EnumOptions : pb::IMessage<EnumOptions>, global::System.IEquatable<EnumOptions>, pb::IDeepCloneable<EnumOptions> {
+  public sealed partial class EnumOptions : pb::IMessage<EnumOptions> {
     private static readonly pb::MessageParser<EnumOptions> _parser = new pb::MessageParser<EnumOptions>(() => new EnumOptions());
     public static pb::MessageParser<EnumOptions> Parser { get { return _parser; } }
 
@@ -3490,7 +3490,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class EnumValueOptions : pb::IMessage<EnumValueOptions>, global::System.IEquatable<EnumValueOptions>, pb::IDeepCloneable<EnumValueOptions> {
+  public sealed partial class EnumValueOptions : pb::IMessage<EnumValueOptions> {
     private static readonly pb::MessageParser<EnumValueOptions> _parser = new pb::MessageParser<EnumValueOptions>(() => new EnumValueOptions());
     public static pb::MessageParser<EnumValueOptions> Parser { get { return _parser; } }
 
@@ -3611,7 +3611,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class ServiceOptions : pb::IMessage<ServiceOptions>, global::System.IEquatable<ServiceOptions>, pb::IDeepCloneable<ServiceOptions> {
+  public sealed partial class ServiceOptions : pb::IMessage<ServiceOptions> {
     private static readonly pb::MessageParser<ServiceOptions> _parser = new pb::MessageParser<ServiceOptions>(() => new ServiceOptions());
     public static pb::MessageParser<ServiceOptions> Parser { get { return _parser; } }
 
@@ -3732,7 +3732,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MethodOptions : pb::IMessage<MethodOptions>, global::System.IEquatable<MethodOptions>, pb::IDeepCloneable<MethodOptions> {
+  public sealed partial class MethodOptions : pb::IMessage<MethodOptions> {
     private static readonly pb::MessageParser<MethodOptions> _parser = new pb::MessageParser<MethodOptions>(() => new MethodOptions());
     public static pb::MessageParser<MethodOptions> Parser { get { return _parser; } }
 
@@ -3853,7 +3853,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption>, global::System.IEquatable<UninterpretedOption>, pb::IDeepCloneable<UninterpretedOption> {
+  public sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption> {
     private static readonly pb::MessageParser<UninterpretedOption> _parser = new pb::MessageParser<UninterpretedOption>(() => new UninterpretedOption());
     public static pb::MessageParser<UninterpretedOption> Parser { get { return _parser; } }
 
@@ -4100,7 +4100,7 @@ namespace Google.Protobuf.DescriptorProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class NamePart : pb::IMessage<NamePart>, global::System.IEquatable<NamePart>, pb::IDeepCloneable<NamePart> {
+      public sealed partial class NamePart : pb::IMessage<NamePart> {
         private static readonly pb::MessageParser<NamePart> _parser = new pb::MessageParser<NamePart>(() => new NamePart());
         public static pb::MessageParser<NamePart> Parser { get { return _parser; } }
 
@@ -4228,7 +4228,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo>, global::System.IEquatable<SourceCodeInfo>, pb::IDeepCloneable<SourceCodeInfo> {
+  public sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo> {
     private static readonly pb::MessageParser<SourceCodeInfo> _parser = new pb::MessageParser<SourceCodeInfo>(() => new SourceCodeInfo());
     public static pb::MessageParser<SourceCodeInfo> Parser { get { return _parser; } }
 
@@ -4325,7 +4325,7 @@ namespace Google.Protobuf.DescriptorProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class Location : pb::IMessage<Location>, global::System.IEquatable<Location>, pb::IDeepCloneable<Location> {
+      public sealed partial class Location : pb::IMessage<Location> {
         private static readonly pb::MessageParser<Location> _parser = new pb::MessageParser<Location>(() => new Location());
         public static pb::MessageParser<Location> Parser { get { return _parser; } }
 

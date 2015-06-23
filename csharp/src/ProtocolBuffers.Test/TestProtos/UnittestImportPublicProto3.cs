@@ -45,7 +45,7 @@ namespace Google.Protobuf.TestProtos {
   }
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class PublicImportMessage : pb::IMessage<PublicImportMessage>, global::System.IEquatable<PublicImportMessage>, pb::IDeepCloneable<PublicImportMessage> {
+  public sealed partial class PublicImportMessage : pb::IMessage<PublicImportMessage> {
     private static readonly pb::MessageParser<PublicImportMessage> _parser = new pb::MessageParser<PublicImportMessage>(() => new PublicImportMessage());
     public static pb::MessageParser<PublicImportMessage> Parser { get { return _parser; } }
 

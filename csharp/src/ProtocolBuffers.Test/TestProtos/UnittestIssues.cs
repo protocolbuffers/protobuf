@@ -90,7 +90,7 @@ namespace UnitTest.Issues.TestProtos {
 
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class NegativeEnumMessage : pb::IMessage<NegativeEnumMessage>, global::System.IEquatable<NegativeEnumMessage>, pb::IDeepCloneable<NegativeEnumMessage> {
+  public sealed partial class NegativeEnumMessage : pb::IMessage<NegativeEnumMessage> {
     private static readonly pb::MessageParser<NegativeEnumMessage> _parser = new pb::MessageParser<NegativeEnumMessage>(() => new NegativeEnumMessage());
     public static pb::MessageParser<NegativeEnumMessage> Parser { get { return _parser; } }
 
@@ -241,7 +241,7 @@ namespace UnitTest.Issues.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class DeprecatedChild : pb::IMessage<DeprecatedChild>, global::System.IEquatable<DeprecatedChild>, pb::IDeepCloneable<DeprecatedChild> {
+  public sealed partial class DeprecatedChild : pb::IMessage<DeprecatedChild> {
     private static readonly pb::MessageParser<DeprecatedChild> _parser = new pb::MessageParser<DeprecatedChild>(() => new DeprecatedChild());
     public static pb::MessageParser<DeprecatedChild> Parser { get { return _parser; } }
 
@@ -314,7 +314,7 @@ namespace UnitTest.Issues.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class DeprecatedFieldsMessage : pb::IMessage<DeprecatedFieldsMessage>, global::System.IEquatable<DeprecatedFieldsMessage>, pb::IDeepCloneable<DeprecatedFieldsMessage> {
+  public sealed partial class DeprecatedFieldsMessage : pb::IMessage<DeprecatedFieldsMessage> {
     private static readonly pb::MessageParser<DeprecatedFieldsMessage> _parser = new pb::MessageParser<DeprecatedFieldsMessage>(() => new DeprecatedFieldsMessage());
     public static pb::MessageParser<DeprecatedFieldsMessage> Parser { get { return _parser; } }
 
@@ -549,7 +549,7 @@ namespace UnitTest.Issues.TestProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class ItemField : pb::IMessage<ItemField>, global::System.IEquatable<ItemField>, pb::IDeepCloneable<ItemField> {
+  public sealed partial class ItemField : pb::IMessage<ItemField> {
     private static readonly pb::MessageParser<ItemField> _parser = new pb::MessageParser<ItemField>(() => new ItemField());
     public static pb::MessageParser<ItemField> Parser { get { return _parser; } }
 

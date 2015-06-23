@@ -62,7 +62,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   }
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class Person : pb::IMessage<Person>, global::System.IEquatable<Person>, pb::IDeepCloneable<Person> {
+  public sealed partial class Person : pb::IMessage<Person> {
     private static readonly pb::MessageParser<Person> _parser = new pb::MessageParser<Person>(() => new Person());
     public static pb::MessageParser<Person> Parser { get { return _parser; } }
 
@@ -240,7 +240,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class PhoneNumber : pb::IMessage<PhoneNumber>, global::System.IEquatable<PhoneNumber>, pb::IDeepCloneable<PhoneNumber> {
+      public sealed partial class PhoneNumber : pb::IMessage<PhoneNumber> {
         private static readonly pb::MessageParser<PhoneNumber> _parser = new pb::MessageParser<PhoneNumber>(() => new PhoneNumber());
         public static pb::MessageParser<PhoneNumber> Parser { get { return _parser; } }
 
@@ -368,7 +368,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class AddressBook : pb::IMessage<AddressBook>, global::System.IEquatable<AddressBook>, pb::IDeepCloneable<AddressBook> {
+  public sealed partial class AddressBook : pb::IMessage<AddressBook> {
     private static readonly pb::MessageParser<AddressBook> _parser = new pb::MessageParser<AddressBook>(() => new AddressBook());
     public static pb::MessageParser<AddressBook> Parser { get { return _parser; } }
 
