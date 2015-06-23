@@ -107,6 +107,11 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
 FieldGeneratorBase::~FieldGeneratorBase() {
 }
 
+void FieldGeneratorBase::GenerateFreezingCode(io::Printer* printer) {
+  // No-op: only message fields and repeated fields need
+  // special handling for freezing, so default to not generating any code.
+}
+
 void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
   if (descriptor_->options().deprecated())
   {

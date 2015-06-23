@@ -72,17 +72,21 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
     variables_,
     "public $type_name$ $property_name$ {\n"
-    "  get { return $name$_; }\n");
+    "  get { return $name$_; }\n"
+    "  set {\n"
+    "    pb::Freezable.CheckMutable(this);\n");
   if (is_value_type) {
     printer->Print(
       variables_,
-      "  set { $name$_ = value; }\n");
+      "    $name$_ = value;\n");
   } else {
     printer->Print(
       variables_,
-      "  set { $name$_ = value ?? $default_value$; }\n");
+      "    $name$_ = value ?? $default_value$;\n");
   }
-  printer->Print("}\n\n");
+  printer->Print(
+    "  }\n"
+    "}\n");
 }
 
 void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) {
@@ -166,7 +170,8 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     "public $type_name$ $property_name$ {\n"
     "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : $default_value$; }\n"
-    "  set {\n");
+    "  set {\n"
+    "    pb::Freezable.CheckMutable(this);\n");
     if (is_value_type) {
       printer->Print(
         variables_,

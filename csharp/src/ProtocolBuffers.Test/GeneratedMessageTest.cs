@@ -1,4 +1,5 @@
-﻿using Google.Protobuf.TestProtos;
+﻿using System;
+using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
 namespace Google.Protobuf
@@ -256,6 +257,23 @@ namespace Google.Protobuf
             // We should have cloned the message
             original.OneofNestedMessage.Bb = 30;
             Assert.AreNotEqual(original, clone);
+        }
+
+        [Test]
+        public void Freeze()
+        {
+            var frozen = new TestAllTypes();
+            frozen.Freeze();
+            Assert.IsTrue(frozen.IsFrozen);
+
+            Assert.Throws<InvalidOperationException>(() => frozen.ClearOneofField());
+            Assert.Throws<InvalidOperationException>(() => frozen.SingleInt32 = 0);
+            Assert.Throws<InvalidOperationException>(() => frozen.SingleNestedMessage = null);
+            Assert.Throws<InvalidOperationException>(() => frozen.SingleNestedEnum = 0);
+            Assert.Throws<InvalidOperationException>(() => frozen.OneofString = null);
+            Assert.Throws<InvalidOperationException>(() => frozen.OneofUint32 = 0U);
+            Assert.Throws<InvalidOperationException>(() => frozen.RepeatedDouble.Add(0.0));
+            Assert.Throws<InvalidOperationException>(() => frozen.RepeatedNestedMessage.Add(new TestAllTypes.Types.NestedMessage()));
         }
     }
 }

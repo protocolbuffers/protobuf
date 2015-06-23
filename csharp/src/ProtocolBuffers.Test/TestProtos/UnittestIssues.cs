@@ -104,6 +104,9 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public NegativeEnumMessage() { }
 
     public NegativeEnumMessage(NegativeEnumMessage other) {
@@ -116,13 +119,24 @@ namespace UnitTest.Issues.TestProtos {
       return new NegativeEnumMessage(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      values_.Freeze();
+      packedValues_.Freeze();
+    }
+
     public const int ValueFieldNumber = 1;
     private global::UnitTest.Issues.TestProtos.NegativeEnum value_ = global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO;
     public global::UnitTest.Issues.TestProtos.NegativeEnum Value {
       get { return value_; }
-      set { value_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        value_ = value;
+      }
     }
-
 
     public const int ValuesFieldNumber = 2;
     private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> values_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
@@ -255,6 +269,9 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_DeprecatedChild__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public DeprecatedChild() { }
 
     public DeprecatedChild(DeprecatedChild other) {
@@ -262,6 +279,13 @@ namespace UnitTest.Issues.TestProtos {
 
     public DeprecatedChild Clone() {
       return new DeprecatedChild(this);
+    }
+
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
     }
 
     public override bool Equals(object other) {
@@ -328,6 +352,9 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public DeprecatedFieldsMessage() { }
 
     public DeprecatedFieldsMessage(DeprecatedFieldsMessage other) {
@@ -343,14 +370,27 @@ namespace UnitTest.Issues.TestProtos {
       return new DeprecatedFieldsMessage(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      primitiveArray_.Freeze();
+      if (messageValue_ != null) MessageValue.Freeze();
+      messageArray_.Freeze();
+      enumArray_.Freeze();
+    }
+
     public const int PrimitiveValueFieldNumber = 1;
     private int primitiveValue_;
     [global::System.ObsoleteAttribute()]
     public int PrimitiveValue {
       get { return primitiveValue_; }
-      set { primitiveValue_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        primitiveValue_ = value;
+      }
     }
-
 
     public const int PrimitiveArrayFieldNumber = 2;
     private readonly pbc::RepeatedField<int> primitiveArray_ = new pbc::RepeatedField<int>();
@@ -364,7 +404,10 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.ObsoleteAttribute()]
     public global::UnitTest.Issues.TestProtos.DeprecatedChild MessageValue {
       get { return messageValue_; }
-      set { messageValue_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        messageValue_ = value;
+      }
     }
 
     public const int MessageArrayFieldNumber = 4;
@@ -379,9 +422,11 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.ObsoleteAttribute()]
     public global::UnitTest.Issues.TestProtos.DeprecatedEnum EnumValue {
       get { return enumValue_; }
-      set { enumValue_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        enumValue_ = value;
+      }
     }
-
 
     public const int EnumArrayFieldNumber = 6;
     private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum> enumArray_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum>();
@@ -403,7 +448,8 @@ namespace UnitTest.Issues.TestProtos {
       }
       if (PrimitiveValue != other.PrimitiveValue) return false;
       if(!primitiveArray_.Equals(other.primitiveArray_)) return false;
-      if (!object.Equals(MessageValue, other.MessageValue)) return false;if(!messageArray_.Equals(other.messageArray_)) return false;
+      if (!object.Equals(MessageValue, other.MessageValue)) return false;
+      if(!messageArray_.Equals(other.messageArray_)) return false;
       if (EnumValue != other.EnumValue) return false;
       if(!enumArray_.Equals(other.enumArray_)) return false;
       return true;
@@ -563,6 +609,9 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_ItemField__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public ItemField() { }
 
     public ItemField(ItemField other) {
@@ -573,13 +622,22 @@ namespace UnitTest.Issues.TestProtos {
       return new ItemField(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+    }
+
     public const int ItemFieldNumber = 1;
     private int item_;
     public int Item {
       get { return item_; }
-      set { item_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        item_ = value;
+      }
     }
-
 
     public override bool Equals(object other) {
       return Equals(other as ItemField);

@@ -292,6 +292,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public FileDescriptorSet() { }
 
     public FileDescriptorSet(FileDescriptorSet other) {
@@ -300,6 +303,14 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public FileDescriptorSet Clone() {
       return new FileDescriptorSet(this);
+    }
+
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      file_.Freeze();
     }
 
     public const int FileFieldNumber = 1;
@@ -388,6 +399,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public FileDescriptorProto() { }
 
     public FileDescriptorProto(FileDescriptorProto other) {
@@ -409,21 +423,41 @@ namespace Google.Protobuf.DescriptorProtos {
       return new FileDescriptorProto(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      dependency_.Freeze();
+      publicDependency_.Freeze();
+      weakDependency_.Freeze();
+      messageType_.Freeze();
+      enumType_.Freeze();
+      service_.Freeze();
+      extension_.Freeze();
+      if (options_ != null) Options.Freeze();
+      if (sourceCodeInfo_ != null) SourceCodeInfo.Freeze();
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
-      set { name_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        name_ = value ?? "";
+      }
     }
-
 
     public const int PackageFieldNumber = 2;
     private string package_ = "";
     public string Package {
       get { return package_; }
-      set { package_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        package_ = value ?? "";
+      }
     }
-
 
     public const int DependencyFieldNumber = 3;
     private readonly pbc::RepeatedField<string> dependency_ = new pbc::RepeatedField<string>();
@@ -471,23 +505,31 @@ namespace Google.Protobuf.DescriptorProtos {
     private global::Google.Protobuf.DescriptorProtos.FileOptions options_;
     public global::Google.Protobuf.DescriptorProtos.FileOptions Options {
       get { return options_; }
-      set { options_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        options_ = value;
+      }
     }
 
     public const int SourceCodeInfoFieldNumber = 9;
     private global::Google.Protobuf.DescriptorProtos.SourceCodeInfo sourceCodeInfo_;
     public global::Google.Protobuf.DescriptorProtos.SourceCodeInfo SourceCodeInfo {
       get { return sourceCodeInfo_; }
-      set { sourceCodeInfo_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        sourceCodeInfo_ = value;
+      }
     }
 
     public const int SyntaxFieldNumber = 12;
     private string syntax_ = "";
     public string Syntax {
       get { return syntax_; }
-      set { syntax_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        syntax_ = value ?? "";
+      }
     }
-
 
     public override bool Equals(object other) {
       return Equals(other as FileDescriptorProto);
@@ -509,7 +551,9 @@ namespace Google.Protobuf.DescriptorProtos {
       if(!enumType_.Equals(other.enumType_)) return false;
       if(!service_.Equals(other.service_)) return false;
       if(!extension_.Equals(other.extension_)) return false;
-      if (!object.Equals(Options, other.Options)) return false;if (!object.Equals(SourceCodeInfo, other.SourceCodeInfo)) return false;if (Syntax != other.Syntax) return false;
+      if (!object.Equals(Options, other.Options)) return false;
+      if (!object.Equals(SourceCodeInfo, other.SourceCodeInfo)) return false;
+      if (Syntax != other.Syntax) return false;
       return true;
     }
 
@@ -763,6 +807,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public DescriptorProto() { }
 
     public DescriptorProto(DescriptorProto other) {
@@ -782,13 +829,31 @@ namespace Google.Protobuf.DescriptorProtos {
       return new DescriptorProto(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      field_.Freeze();
+      extension_.Freeze();
+      nestedType_.Freeze();
+      enumType_.Freeze();
+      extensionRange_.Freeze();
+      oneofDecl_.Freeze();
+      if (options_ != null) Options.Freeze();
+      reservedRange_.Freeze();
+      reservedName_.Freeze();
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
-      set { name_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        name_ = value ?? "";
+      }
     }
-
 
     public const int FieldFieldNumber = 2;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> field_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto>();
@@ -830,7 +895,10 @@ namespace Google.Protobuf.DescriptorProtos {
     private global::Google.Protobuf.DescriptorProtos.MessageOptions options_;
     public global::Google.Protobuf.DescriptorProtos.MessageOptions Options {
       get { return options_; }
-      set { options_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        options_ = value;
+      }
     }
 
     public const int ReservedRangeFieldNumber = 9;
@@ -863,7 +931,8 @@ namespace Google.Protobuf.DescriptorProtos {
       if(!enumType_.Equals(other.enumType_)) return false;
       if(!extensionRange_.Equals(other.extensionRange_)) return false;
       if(!oneofDecl_.Equals(other.oneofDecl_)) return false;
-      if (!object.Equals(Options, other.Options)) return false;if(!reservedRange_.Equals(other.reservedRange_)) return false;
+      if (!object.Equals(Options, other.Options)) return false;
+      if(!reservedRange_.Equals(other.reservedRange_)) return false;
       if(!reservedName_.Equals(other.reservedName_)) return false;
       return true;
     }
@@ -1077,6 +1146,9 @@ namespace Google.Protobuf.DescriptorProtos {
           get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable; }
         }
 
+        private bool _frozen = false;
+        public bool IsFrozen { get { return _frozen; } }
+
         public ExtensionRange() { }
 
         public ExtensionRange(ExtensionRange other) {
@@ -1088,21 +1160,32 @@ namespace Google.Protobuf.DescriptorProtos {
           return new ExtensionRange(this);
         }
 
+        public void Freeze() {
+          if (IsFrozen) {
+            return;
+          }
+          _frozen = true;
+        }
+
         public const int StartFieldNumber = 1;
         private int start_;
         public int Start {
           get { return start_; }
-          set { start_ = value; }
+          set {
+            pb::Freezable.CheckMutable(this);
+            start_ = value;
+          }
         }
-
 
         public const int EndFieldNumber = 2;
         private int end_;
         public int End {
           get { return end_; }
-          set { end_ = value; }
+          set {
+            pb::Freezable.CheckMutable(this);
+            end_ = value;
+          }
         }
-
 
         public override bool Equals(object other) {
           return Equals(other as ExtensionRange);
@@ -1200,6 +1283,9 @@ namespace Google.Protobuf.DescriptorProtos {
           get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto_ReservedRange__FieldAccessorTable; }
         }
 
+        private bool _frozen = false;
+        public bool IsFrozen { get { return _frozen; } }
+
         public ReservedRange() { }
 
         public ReservedRange(ReservedRange other) {
@@ -1211,21 +1297,32 @@ namespace Google.Protobuf.DescriptorProtos {
           return new ReservedRange(this);
         }
 
+        public void Freeze() {
+          if (IsFrozen) {
+            return;
+          }
+          _frozen = true;
+        }
+
         public const int StartFieldNumber = 1;
         private int start_;
         public int Start {
           get { return start_; }
-          set { start_ = value; }
+          set {
+            pb::Freezable.CheckMutable(this);
+            start_ = value;
+          }
         }
-
 
         public const int EndFieldNumber = 2;
         private int end_;
         public int End {
           get { return end_; }
-          set { end_ = value; }
+          set {
+            pb::Freezable.CheckMutable(this);
+            end_ = value;
+          }
         }
-
 
         public override bool Equals(object other) {
           return Equals(other as ReservedRange);
@@ -1328,6 +1425,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public FieldDescriptorProto() { }
 
     public FieldDescriptorProto(FieldDescriptorProto other) {
@@ -1346,75 +1446,102 @@ namespace Google.Protobuf.DescriptorProtos {
       return new FieldDescriptorProto(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      if (options_ != null) Options.Freeze();
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
-      set { name_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        name_ = value ?? "";
+      }
     }
-
 
     public const int NumberFieldNumber = 3;
     private int number_;
     public int Number {
       get { return number_; }
-      set { number_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        number_ = value;
+      }
     }
-
 
     public const int LabelFieldNumber = 4;
     private global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label label_ = global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL;
     public global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label Label {
       get { return label_; }
-      set { label_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        label_ = value;
+      }
     }
-
 
     public const int TypeFieldNumber = 5;
     private global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type type_ = global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE;
     public global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type Type {
       get { return type_; }
-      set { type_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        type_ = value;
+      }
     }
-
 
     public const int TypeNameFieldNumber = 6;
     private string typeName_ = "";
     public string TypeName {
       get { return typeName_; }
-      set { typeName_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        typeName_ = value ?? "";
+      }
     }
-
 
     public const int ExtendeeFieldNumber = 2;
     private string extendee_ = "";
     public string Extendee {
       get { return extendee_; }
-      set { extendee_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        extendee_ = value ?? "";
+      }
     }
-
 
     public const int DefaultValueFieldNumber = 7;
     private string defaultValue_ = "";
     public string DefaultValue {
       get { return defaultValue_; }
-      set { defaultValue_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        defaultValue_ = value ?? "";
+      }
     }
-
 
     public const int OneofIndexFieldNumber = 9;
     private int oneofIndex_;
     public int OneofIndex {
       get { return oneofIndex_; }
-      set { oneofIndex_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        oneofIndex_ = value;
+      }
     }
-
 
     public const int OptionsFieldNumber = 8;
     private global::Google.Protobuf.DescriptorProtos.FieldOptions options_;
     public global::Google.Protobuf.DescriptorProtos.FieldOptions Options {
       get { return options_; }
-      set { options_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        options_ = value;
+      }
     }
 
     public override bool Equals(object other) {
@@ -1436,7 +1563,8 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Extendee != other.Extendee) return false;
       if (DefaultValue != other.DefaultValue) return false;
       if (OneofIndex != other.OneofIndex) return false;
-      if (!object.Equals(Options, other.Options)) return false;  return true;
+      if (!object.Equals(Options, other.Options)) return false;
+      return true;
     }
 
     public override int GetHashCode() {
@@ -1663,6 +1791,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_OneofDescriptorProto__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public OneofDescriptorProto() { }
 
     public OneofDescriptorProto(OneofDescriptorProto other) {
@@ -1673,13 +1804,22 @@ namespace Google.Protobuf.DescriptorProtos {
       return new OneofDescriptorProto(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
-      set { name_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        name_ = value ?? "";
+      }
     }
-
 
     public override bool Equals(object other) {
       return Equals(other as OneofDescriptorProto);
@@ -1761,6 +1901,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public EnumDescriptorProto() { }
 
     public EnumDescriptorProto(EnumDescriptorProto other) {
@@ -1773,13 +1916,24 @@ namespace Google.Protobuf.DescriptorProtos {
       return new EnumDescriptorProto(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      value_.Freeze();
+      if (options_ != null) Options.Freeze();
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
-      set { name_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        name_ = value ?? "";
+      }
     }
-
 
     public const int ValueFieldNumber = 2;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto> value_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto>();
@@ -1791,7 +1945,10 @@ namespace Google.Protobuf.DescriptorProtos {
     private global::Google.Protobuf.DescriptorProtos.EnumOptions options_;
     public global::Google.Protobuf.DescriptorProtos.EnumOptions Options {
       get { return options_; }
-      set { options_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        options_ = value;
+      }
     }
 
     public override bool Equals(object other) {
@@ -1807,7 +1964,8 @@ namespace Google.Protobuf.DescriptorProtos {
       }
       if (Name != other.Name) return false;
       if(!value_.Equals(other.value_)) return false;
-      if (!object.Equals(Options, other.Options)) return false;  return true;
+      if (!object.Equals(Options, other.Options)) return false;
+      return true;
     }
 
     public override int GetHashCode() {
@@ -1911,6 +2069,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public EnumValueDescriptorProto() { }
 
     public EnumValueDescriptorProto(EnumValueDescriptorProto other) {
@@ -1923,27 +2084,42 @@ namespace Google.Protobuf.DescriptorProtos {
       return new EnumValueDescriptorProto(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      if (options_ != null) Options.Freeze();
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
-      set { name_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        name_ = value ?? "";
+      }
     }
-
 
     public const int NumberFieldNumber = 2;
     private int number_;
     public int Number {
       get { return number_; }
-      set { number_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        number_ = value;
+      }
     }
-
 
     public const int OptionsFieldNumber = 3;
     private global::Google.Protobuf.DescriptorProtos.EnumValueOptions options_;
     public global::Google.Protobuf.DescriptorProtos.EnumValueOptions Options {
       get { return options_; }
-      set { options_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        options_ = value;
+      }
     }
 
     public override bool Equals(object other) {
@@ -1959,7 +2135,8 @@ namespace Google.Protobuf.DescriptorProtos {
       }
       if (Name != other.Name) return false;
       if (Number != other.Number) return false;
-      if (!object.Equals(Options, other.Options)) return false;  return true;
+      if (!object.Equals(Options, other.Options)) return false;
+      return true;
     }
 
     public override int GetHashCode() {
@@ -2063,6 +2240,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public ServiceDescriptorProto() { }
 
     public ServiceDescriptorProto(ServiceDescriptorProto other) {
@@ -2075,13 +2255,24 @@ namespace Google.Protobuf.DescriptorProtos {
       return new ServiceDescriptorProto(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      method_.Freeze();
+      if (options_ != null) Options.Freeze();
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
-      set { name_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        name_ = value ?? "";
+      }
     }
-
 
     public const int MethodFieldNumber = 2;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto> method_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto>();
@@ -2093,7 +2284,10 @@ namespace Google.Protobuf.DescriptorProtos {
     private global::Google.Protobuf.DescriptorProtos.ServiceOptions options_;
     public global::Google.Protobuf.DescriptorProtos.ServiceOptions Options {
       get { return options_; }
-      set { options_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        options_ = value;
+      }
     }
 
     public override bool Equals(object other) {
@@ -2109,7 +2303,8 @@ namespace Google.Protobuf.DescriptorProtos {
       }
       if (Name != other.Name) return false;
       if(!method_.Equals(other.method_)) return false;
-      if (!object.Equals(Options, other.Options)) return false;  return true;
+      if (!object.Equals(Options, other.Options)) return false;
+      return true;
     }
 
     public override int GetHashCode() {
@@ -2213,6 +2408,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public MethodDescriptorProto() { }
 
     public MethodDescriptorProto(MethodDescriptorProto other) {
@@ -2228,52 +2426,73 @@ namespace Google.Protobuf.DescriptorProtos {
       return new MethodDescriptorProto(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      if (options_ != null) Options.Freeze();
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
-      set { name_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        name_ = value ?? "";
+      }
     }
-
 
     public const int InputTypeFieldNumber = 2;
     private string inputType_ = "";
     public string InputType {
       get { return inputType_; }
-      set { inputType_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        inputType_ = value ?? "";
+      }
     }
-
 
     public const int OutputTypeFieldNumber = 3;
     private string outputType_ = "";
     public string OutputType {
       get { return outputType_; }
-      set { outputType_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        outputType_ = value ?? "";
+      }
     }
-
 
     public const int OptionsFieldNumber = 4;
     private global::Google.Protobuf.DescriptorProtos.MethodOptions options_;
     public global::Google.Protobuf.DescriptorProtos.MethodOptions Options {
       get { return options_; }
-      set { options_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        options_ = value;
+      }
     }
 
     public const int ClientStreamingFieldNumber = 5;
     private bool clientStreaming_;
     public bool ClientStreaming {
       get { return clientStreaming_; }
-      set { clientStreaming_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        clientStreaming_ = value;
+      }
     }
-
 
     public const int ServerStreamingFieldNumber = 6;
     private bool serverStreaming_;
     public bool ServerStreaming {
       get { return serverStreaming_; }
-      set { serverStreaming_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        serverStreaming_ = value;
+      }
     }
-
 
     public override bool Equals(object other) {
       return Equals(other as MethodDescriptorProto);
@@ -2289,7 +2508,8 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Name != other.Name) return false;
       if (InputType != other.InputType) return false;
       if (OutputType != other.OutputType) return false;
-      if (!object.Equals(Options, other.Options)) return false;if (ClientStreaming != other.ClientStreaming) return false;
+      if (!object.Equals(Options, other.Options)) return false;
+      if (ClientStreaming != other.ClientStreaming) return false;
       if (ServerStreaming != other.ServerStreaming) return false;
       return true;
     }
@@ -2440,6 +2660,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FileOptions__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public FileOptions() { }
 
     public FileOptions(FileOptions other) {
@@ -2464,117 +2687,153 @@ namespace Google.Protobuf.DescriptorProtos {
       return new FileOptions(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      uninterpretedOption_.Freeze();
+    }
+
     public const int JavaPackageFieldNumber = 1;
     private string javaPackage_ = "";
     public string JavaPackage {
       get { return javaPackage_; }
-      set { javaPackage_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        javaPackage_ = value ?? "";
+      }
     }
-
 
     public const int JavaOuterClassnameFieldNumber = 8;
     private string javaOuterClassname_ = "";
     public string JavaOuterClassname {
       get { return javaOuterClassname_; }
-      set { javaOuterClassname_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        javaOuterClassname_ = value ?? "";
+      }
     }
-
 
     public const int JavaMultipleFilesFieldNumber = 10;
     private bool javaMultipleFiles_;
     public bool JavaMultipleFiles {
       get { return javaMultipleFiles_; }
-      set { javaMultipleFiles_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        javaMultipleFiles_ = value;
+      }
     }
-
 
     public const int JavaGenerateEqualsAndHashFieldNumber = 20;
     private bool javaGenerateEqualsAndHash_;
     public bool JavaGenerateEqualsAndHash {
       get { return javaGenerateEqualsAndHash_; }
-      set { javaGenerateEqualsAndHash_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        javaGenerateEqualsAndHash_ = value;
+      }
     }
-
 
     public const int JavaStringCheckUtf8FieldNumber = 27;
     private bool javaStringCheckUtf8_;
     public bool JavaStringCheckUtf8 {
       get { return javaStringCheckUtf8_; }
-      set { javaStringCheckUtf8_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        javaStringCheckUtf8_ = value;
+      }
     }
-
 
     public const int OptimizeForFieldNumber = 9;
     private global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode optimizeFor_ = global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED;
     public global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode OptimizeFor {
       get { return optimizeFor_; }
-      set { optimizeFor_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        optimizeFor_ = value;
+      }
     }
-
 
     public const int GoPackageFieldNumber = 11;
     private string goPackage_ = "";
     public string GoPackage {
       get { return goPackage_; }
-      set { goPackage_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        goPackage_ = value ?? "";
+      }
     }
-
 
     public const int CcGenericServicesFieldNumber = 16;
     private bool ccGenericServices_;
     public bool CcGenericServices {
       get { return ccGenericServices_; }
-      set { ccGenericServices_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        ccGenericServices_ = value;
+      }
     }
-
 
     public const int JavaGenericServicesFieldNumber = 17;
     private bool javaGenericServices_;
     public bool JavaGenericServices {
       get { return javaGenericServices_; }
-      set { javaGenericServices_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        javaGenericServices_ = value;
+      }
     }
-
 
     public const int PyGenericServicesFieldNumber = 18;
     private bool pyGenericServices_;
     public bool PyGenericServices {
       get { return pyGenericServices_; }
-      set { pyGenericServices_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        pyGenericServices_ = value;
+      }
     }
-
 
     public const int DeprecatedFieldNumber = 23;
     private bool deprecated_;
     public bool Deprecated {
       get { return deprecated_; }
-      set { deprecated_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        deprecated_ = value;
+      }
     }
-
 
     public const int CcEnableArenasFieldNumber = 31;
     private bool ccEnableArenas_;
     public bool CcEnableArenas {
       get { return ccEnableArenas_; }
-      set { ccEnableArenas_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        ccEnableArenas_ = value;
+      }
     }
-
 
     public const int ObjcClassPrefixFieldNumber = 36;
     private string objcClassPrefix_ = "";
     public string ObjcClassPrefix {
       get { return objcClassPrefix_; }
-      set { objcClassPrefix_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        objcClassPrefix_ = value ?? "";
+      }
     }
-
 
     public const int CsharpNamespaceFieldNumber = 37;
     private string csharpNamespace_ = "";
     public string CsharpNamespace {
       get { return csharpNamespace_; }
-      set { csharpNamespace_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        csharpNamespace_ = value ?? "";
+      }
     }
-
 
     public const int UninterpretedOptionFieldNumber = 999;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
@@ -2898,6 +3157,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_MessageOptions__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public MessageOptions() { }
 
     public MessageOptions(MessageOptions other) {
@@ -2912,37 +3174,53 @@ namespace Google.Protobuf.DescriptorProtos {
       return new MessageOptions(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      uninterpretedOption_.Freeze();
+    }
+
     public const int MessageSetWireFormatFieldNumber = 1;
     private bool messageSetWireFormat_;
     public bool MessageSetWireFormat {
       get { return messageSetWireFormat_; }
-      set { messageSetWireFormat_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        messageSetWireFormat_ = value;
+      }
     }
-
 
     public const int NoStandardDescriptorAccessorFieldNumber = 2;
     private bool noStandardDescriptorAccessor_;
     public bool NoStandardDescriptorAccessor {
       get { return noStandardDescriptorAccessor_; }
-      set { noStandardDescriptorAccessor_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        noStandardDescriptorAccessor_ = value;
+      }
     }
-
 
     public const int DeprecatedFieldNumber = 3;
     private bool deprecated_;
     public bool Deprecated {
       get { return deprecated_; }
-      set { deprecated_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        deprecated_ = value;
+      }
     }
-
 
     public const int MapEntryFieldNumber = 7;
     private bool mapEntry_;
     public bool MapEntry {
       get { return mapEntry_; }
-      set { mapEntry_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        mapEntry_ = value;
+      }
     }
-
 
     public const int UninterpretedOptionFieldNumber = 999;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
@@ -3094,6 +3372,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FieldOptions__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public FieldOptions() { }
 
     public FieldOptions(FieldOptions other) {
@@ -3110,53 +3391,73 @@ namespace Google.Protobuf.DescriptorProtos {
       return new FieldOptions(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      uninterpretedOption_.Freeze();
+    }
+
     public const int CtypeFieldNumber = 1;
     private global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType ctype_ = global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING;
     public global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType Ctype {
       get { return ctype_; }
-      set { ctype_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        ctype_ = value;
+      }
     }
-
 
     public const int PackedFieldNumber = 2;
     private bool packed_;
     public bool Packed {
       get { return packed_; }
-      set { packed_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        packed_ = value;
+      }
     }
-
 
     public const int JstypeFieldNumber = 6;
     private global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType jstype_ = global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL;
     public global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType Jstype {
       get { return jstype_; }
-      set { jstype_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        jstype_ = value;
+      }
     }
-
 
     public const int LazyFieldNumber = 5;
     private bool lazy_;
     public bool Lazy {
       get { return lazy_; }
-      set { lazy_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        lazy_ = value;
+      }
     }
-
 
     public const int DeprecatedFieldNumber = 3;
     private bool deprecated_;
     public bool Deprecated {
       get { return deprecated_; }
-      set { deprecated_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        deprecated_ = value;
+      }
     }
-
 
     public const int WeakFieldNumber = 10;
     private bool weak_;
     public bool Weak {
       get { return weak_; }
-      set { weak_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        weak_ = value;
+      }
     }
-
 
     public const int UninterpretedOptionFieldNumber = 999;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
@@ -3358,6 +3659,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumOptions__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public EnumOptions() { }
 
     public EnumOptions(EnumOptions other) {
@@ -3370,21 +3674,33 @@ namespace Google.Protobuf.DescriptorProtos {
       return new EnumOptions(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      uninterpretedOption_.Freeze();
+    }
+
     public const int AllowAliasFieldNumber = 2;
     private bool allowAlias_;
     public bool AllowAlias {
       get { return allowAlias_; }
-      set { allowAlias_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        allowAlias_ = value;
+      }
     }
-
 
     public const int DeprecatedFieldNumber = 3;
     private bool deprecated_;
     public bool Deprecated {
       get { return deprecated_; }
-      set { deprecated_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        deprecated_ = value;
+      }
     }
-
 
     public const int UninterpretedOptionFieldNumber = 999;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
@@ -3504,6 +3820,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public EnumValueOptions() { }
 
     public EnumValueOptions(EnumValueOptions other) {
@@ -3515,13 +3834,23 @@ namespace Google.Protobuf.DescriptorProtos {
       return new EnumValueOptions(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      uninterpretedOption_.Freeze();
+    }
+
     public const int DeprecatedFieldNumber = 1;
     private bool deprecated_;
     public bool Deprecated {
       get { return deprecated_; }
-      set { deprecated_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        deprecated_ = value;
+      }
     }
-
 
     public const int UninterpretedOptionFieldNumber = 999;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
@@ -3625,6 +3954,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_ServiceOptions__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public ServiceOptions() { }
 
     public ServiceOptions(ServiceOptions other) {
@@ -3636,13 +3968,23 @@ namespace Google.Protobuf.DescriptorProtos {
       return new ServiceOptions(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      uninterpretedOption_.Freeze();
+    }
+
     public const int DeprecatedFieldNumber = 33;
     private bool deprecated_;
     public bool Deprecated {
       get { return deprecated_; }
-      set { deprecated_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        deprecated_ = value;
+      }
     }
-
 
     public const int UninterpretedOptionFieldNumber = 999;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
@@ -3746,6 +4088,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_MethodOptions__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public MethodOptions() { }
 
     public MethodOptions(MethodOptions other) {
@@ -3757,13 +4102,23 @@ namespace Google.Protobuf.DescriptorProtos {
       return new MethodOptions(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      uninterpretedOption_.Freeze();
+    }
+
     public const int DeprecatedFieldNumber = 33;
     private bool deprecated_;
     public bool Deprecated {
       get { return deprecated_; }
-      set { deprecated_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        deprecated_ = value;
+      }
     }
-
 
     public const int UninterpretedOptionFieldNumber = 999;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
@@ -3867,6 +4222,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public UninterpretedOption() { }
 
     public UninterpretedOption(UninterpretedOption other) {
@@ -3883,6 +4241,14 @@ namespace Google.Protobuf.DescriptorProtos {
       return new UninterpretedOption(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      name_.Freeze();
+    }
+
     public const int NameFieldNumber = 2;
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> name_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> Name {
@@ -3893,49 +4259,61 @@ namespace Google.Protobuf.DescriptorProtos {
     private string identifierValue_ = "";
     public string IdentifierValue {
       get { return identifierValue_; }
-      set { identifierValue_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        identifierValue_ = value ?? "";
+      }
     }
-
 
     public const int PositiveIntValueFieldNumber = 4;
     private ulong positiveIntValue_;
     public ulong PositiveIntValue {
       get { return positiveIntValue_; }
-      set { positiveIntValue_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        positiveIntValue_ = value;
+      }
     }
-
 
     public const int NegativeIntValueFieldNumber = 5;
     private long negativeIntValue_;
     public long NegativeIntValue {
       get { return negativeIntValue_; }
-      set { negativeIntValue_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        negativeIntValue_ = value;
+      }
     }
-
 
     public const int DoubleValueFieldNumber = 6;
     private double doubleValue_;
     public double DoubleValue {
       get { return doubleValue_; }
-      set { doubleValue_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        doubleValue_ = value;
+      }
     }
-
 
     public const int StringValueFieldNumber = 7;
     private pb::ByteString stringValue_ = pb::ByteString.Empty;
     public pb::ByteString StringValue {
       get { return stringValue_; }
-      set { stringValue_ = value ?? pb::ByteString.Empty; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        stringValue_ = value ?? pb::ByteString.Empty;
+      }
     }
-
 
     public const int AggregateValueFieldNumber = 8;
     private string aggregateValue_ = "";
     public string AggregateValue {
       get { return aggregateValue_; }
-      set { aggregateValue_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        aggregateValue_ = value ?? "";
+      }
     }
-
 
     public override bool Equals(object other) {
       return Equals(other as UninterpretedOption);
@@ -4114,6 +4492,9 @@ namespace Google.Protobuf.DescriptorProtos {
           get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable; }
         }
 
+        private bool _frozen = false;
+        public bool IsFrozen { get { return _frozen; } }
+
         public NamePart() { }
 
         public NamePart(NamePart other) {
@@ -4125,21 +4506,32 @@ namespace Google.Protobuf.DescriptorProtos {
           return new NamePart(this);
         }
 
+        public void Freeze() {
+          if (IsFrozen) {
+            return;
+          }
+          _frozen = true;
+        }
+
         public const int NamePart_FieldNumber = 1;
         private string namePart_ = "";
         public string NamePart_ {
           get { return namePart_; }
-          set { namePart_ = value ?? ""; }
+          set {
+            pb::Freezable.CheckMutable(this);
+            namePart_ = value ?? "";
+          }
         }
-
 
         public const int IsExtensionFieldNumber = 2;
         private bool isExtension_;
         public bool IsExtension {
           get { return isExtension_; }
-          set { isExtension_ = value; }
+          set {
+            pb::Freezable.CheckMutable(this);
+            isExtension_ = value;
+          }
         }
-
 
         public override bool Equals(object other) {
           return Equals(other as NamePart);
@@ -4242,6 +4634,9 @@ namespace Google.Protobuf.DescriptorProtos {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public SourceCodeInfo() { }
 
     public SourceCodeInfo(SourceCodeInfo other) {
@@ -4250,6 +4645,14 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public SourceCodeInfo Clone() {
       return new SourceCodeInfo(this);
+    }
+
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      location_.Freeze();
     }
 
     public const int LocationFieldNumber = 1;
@@ -4339,6 +4742,9 @@ namespace Google.Protobuf.DescriptorProtos {
           get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable; }
         }
 
+        private bool _frozen = false;
+        public bool IsFrozen { get { return _frozen; } }
+
         public Location() { }
 
         public Location(Location other) {
@@ -4351,6 +4757,16 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public Location Clone() {
           return new Location(this);
+        }
+
+        public void Freeze() {
+          if (IsFrozen) {
+            return;
+          }
+          _frozen = true;
+          path_.Freeze();
+          span_.Freeze();
+          leadingDetachedComments_.Freeze();
         }
 
         public const int PathFieldNumber = 1;
@@ -4369,17 +4785,21 @@ namespace Google.Protobuf.DescriptorProtos {
         private string leadingComments_ = "";
         public string LeadingComments {
           get { return leadingComments_; }
-          set { leadingComments_ = value ?? ""; }
+          set {
+            pb::Freezable.CheckMutable(this);
+            leadingComments_ = value ?? "";
+          }
         }
-
 
         public const int TrailingCommentsFieldNumber = 4;
         private string trailingComments_ = "";
         public string TrailingComments {
           get { return trailingComments_; }
-          set { trailingComments_ = value ?? ""; }
+          set {
+            pb::Freezable.CheckMutable(this);
+            trailingComments_ = value ?? "";
+          }
         }
-
 
         public const int LeadingDetachedCommentsFieldNumber = 6;
         private readonly pbc::RepeatedField<string> leadingDetachedComments_ = new pbc::RepeatedField<string>();

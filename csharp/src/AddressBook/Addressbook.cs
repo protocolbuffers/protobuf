@@ -76,6 +76,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_Person__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public Person() { }
 
     public Person(Person other) {
@@ -89,29 +92,43 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       return new Person(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      phone_.Freeze();
+    }
+
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
-      set { name_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        name_ = value ?? "";
+      }
     }
-
 
     public const int IdFieldNumber = 2;
     private int id_;
     public int Id {
       get { return id_; }
-      set { id_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        id_ = value;
+      }
     }
-
 
     public const int EmailFieldNumber = 3;
     private string email_ = "";
     public string Email {
       get { return email_; }
-      set { email_ = value ?? ""; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        email_ = value ?? "";
+      }
     }
-
 
     public const int PhoneFieldNumber = 4;
     private readonly pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> phone_ = new pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber>();
@@ -254,6 +271,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable; }
         }
 
+        private bool _frozen = false;
+        public bool IsFrozen { get { return _frozen; } }
+
         public PhoneNumber() { }
 
         public PhoneNumber(PhoneNumber other) {
@@ -265,21 +285,32 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           return new PhoneNumber(this);
         }
 
+        public void Freeze() {
+          if (IsFrozen) {
+            return;
+          }
+          _frozen = true;
+        }
+
         public const int NumberFieldNumber = 1;
         private string number_ = "";
         public string Number {
           get { return number_; }
-          set { number_ = value ?? ""; }
+          set {
+            pb::Freezable.CheckMutable(this);
+            number_ = value ?? "";
+          }
         }
-
 
         public const int TypeFieldNumber = 2;
         private global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType type_ = global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME;
         public global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType Type {
           get { return type_; }
-          set { type_ = value; }
+          set {
+            pb::Freezable.CheckMutable(this);
+            type_ = value;
+          }
         }
-
 
         public override bool Equals(object other) {
           return Equals(other as PhoneNumber);
@@ -382,6 +413,9 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_AddressBook__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public AddressBook() { }
 
     public AddressBook(AddressBook other) {
@@ -390,6 +424,14 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
 
     public AddressBook Clone() {
       return new AddressBook(this);
+    }
+
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+      person_.Freeze();
     }
 
     public const int PersonFieldNumber = 1;

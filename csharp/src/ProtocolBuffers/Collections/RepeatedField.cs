@@ -4,10 +4,16 @@ using System.Collections.Generic;
 
 namespace Google.Protobuf.Collections
 {
-    public sealed class RepeatedField<T> : IList<T>, IEquatable<RepeatedField<T>>
+    /// <summary>
+    /// The contents of a repeated field: essentially, a collection with some extra
+    /// restrictions (no null values) and capabilities (deep cloning and freezing).
+    /// </summary>
+    /// <typeparam name="T">The element type of the repeated field.</typeparam>
+    public sealed class RepeatedField<T> : IList<T>, IDeepCloneable<RepeatedField<T>>, IEquatable<RepeatedField<T>>, IFreezable
     {
         private static readonly T[] EmptyArray = new T[0];
 
+        private bool frozen;
         private const int MinArraySize = 8;
         private T[] array = EmptyArray;
         private int count = 0;
@@ -26,6 +32,7 @@ namespace Google.Protobuf.Collections
         public RepeatedField<T> Clone()
         {
             RepeatedField<T> clone = new RepeatedField<T>();
+            // Clone is implicitly *not* frozen, even if this object is.
             if (array != EmptyArray)
             {
                 clone.array = (T[])array.Clone();
@@ -40,6 +47,21 @@ namespace Google.Protobuf.Collections
             }
             clone.count = count;
             return clone;
+        }
+
+        public bool IsFrozen { get { return frozen; } }
+
+        public void Freeze()
+        {
+            frozen = true;
+            IFreezable[] freezableArray = array as IFreezable[];
+            if (freezableArray != null)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    freezableArray[i].Freeze();
+                }
+            }
         }
 
         private void EnsureSize(int size)
@@ -60,6 +82,7 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentNullException("item");
             }
+            this.CheckMutable();
             EnsureSize(count + 1);
             array[count++] = item;
         }
@@ -70,6 +93,7 @@ namespace Google.Protobuf.Collections
         /// <param name="readEnum"></param>
         internal void AddInt32(int item)
         {
+            this.CheckMutable();
             EnsureSize(count + 1);
             int[] castArray = (int[]) (object) array;
             castArray[count++] = item;
@@ -77,6 +101,7 @@ namespace Google.Protobuf.Collections
 
         public void Clear()
         {
+            this.CheckMutable();
             array = EmptyArray;
             count = 0;
         }
@@ -93,6 +118,7 @@ namespace Google.Protobuf.Collections
 
         public bool Remove(T item)
         {
+            this.CheckMutable();
             int index = IndexOf(item);
             if (index == -1)
             {
@@ -107,7 +133,7 @@ namespace Google.Protobuf.Collections
         public int Count { get { return count; } }
 
         // TODO(jonskeet): If we implement freezing, make this reflect it.
-        public bool IsReadOnly { get { return false; } }
+        public bool IsReadOnly { get { return IsFrozen; } }
 
         public void Add(RepeatedField<T> values)
         {
@@ -115,6 +141,7 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentNullException("values");
             }
+            this.CheckMutable();
             EnsureSize(count + values.count);
             // We know that all the values will be valid, because it's a RepeatedField.
             Array.Copy(values.array, 0, array, count, values.count);
@@ -127,6 +154,7 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentNullException("values");
             }
+            this.CheckMutable();
             // TODO: Check for ICollection and get the Count?
             foreach (T item in values)
             {
@@ -227,6 +255,7 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentOutOfRangeException("index");
             }
+            this.CheckMutable();
             EnsureSize(count + 1);
             Array.Copy(array, index, array, index + 1, count - index);
             count++;
@@ -238,6 +267,7 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentOutOfRangeException("index");
             }
+            this.CheckMutable();
             Array.Copy(array, index + 1, array, index, count - index - 1);
             count--;
             array[count] = default(T);
@@ -259,6 +289,7 @@ namespace Google.Protobuf.Collections
                 {
                     throw new ArgumentOutOfRangeException("index");
                 }
+                this.CheckMutable();
                 if (value == null)
                 {
                     throw new ArgumentNullException("value");

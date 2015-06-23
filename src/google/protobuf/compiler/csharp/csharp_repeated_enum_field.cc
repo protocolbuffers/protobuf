@@ -147,6 +147,11 @@ void RepeatedEnumFieldGenerator::GenerateCloningCode(io::Printer* printer) {
     "$name$_ = other.$name$_.Clone();\n");
 }
 
+void RepeatedEnumFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "$name$_.Freeze();\n");
+}
+
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
