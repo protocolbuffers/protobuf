@@ -179,7 +179,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
     vars,
-    "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$>, global::System.IEquatable<$class_name$>, pb::IDeepCloneable<$class_name$> {\n");
+    "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$> {\n");
   printer->Indent();
 
   // All static fields and properties

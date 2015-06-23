@@ -34,6 +34,7 @@
 
 #endregion
 
+using System;
 using Google.Protobuf.FieldAccess;
 
 namespace Google.Protobuf
@@ -84,7 +85,7 @@ namespace Google.Protobuf
     /// the implementation class.
     /// </summary>
     /// <typeparam name="T">The message type.</typeparam>
-    public interface IMessage<T> : IMessage where T : IMessage<T>
+    public interface IMessage<T> : IMessage, IEquatable<T>, IDeepCloneable<T> where T : IMessage<T>
     {
         /// <summary>
         /// Merges the given message into this one.
@@ -98,8 +99,8 @@ namespace Google.Protobuf
     /// Generic interface for a deeply cloneable type.
     /// <summary>
     /// <remarks>
-    /// In practice, all generated messages implement this interface.
-    /// However, due to the type constraint on <c>T</c> in <see cref="IMessage{T}"/>,
+    /// All generated messages implement this interface, but so do some non-message types.
+    /// Additionally, due to the type constraint on <c>T</c> in <see cref="IMessage{T}"/>,
     /// it is simpler to keep this as a separate interface.
     /// </remarks>
     /// <typeparam name="T">The type itself, returned by the <see cref="Clone"/> method.</typeparam>
