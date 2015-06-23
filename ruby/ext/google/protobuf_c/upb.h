@@ -7928,7 +7928,7 @@ class upb::pb::Encoder {
   static const size_t kSize = UPB_PB_ENCODER_SIZE;
 
  private:
-  UPB_DISALLOW_POD_OPS(Encoder, upb::pb::Encoder);
+  UPB_DISALLOW_POD_OPS(Encoder, upb::pb::Encoder)
 };
 
 #endif
