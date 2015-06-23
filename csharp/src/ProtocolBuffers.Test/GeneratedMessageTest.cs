@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Google.Protobuf.TestProtos;
+﻿using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
 namespace Google.Protobuf
@@ -88,7 +83,7 @@ namespace Google.Protobuf
             var message = new TestAllTypes
             {
                 SingleBool = true,
-                SingleBytes = ByteString.CopyFrom(new byte[] { 1, 2, 3, 4 }),
+                SingleBytes = ByteString.CopyFrom(1, 2, 3, 4),
                 SingleDouble = 23.5,
                 SingleFixed32 = 23,
                 SingleFixed64 = 1234567890123,
@@ -122,7 +117,7 @@ namespace Google.Protobuf
             var message = new TestAllTypes
             {
                 RepeatedBool = { true, false },
-                RepeatedBytes = { ByteString.CopyFrom(new byte[] { 1, 2, 3, 4 }), ByteString.CopyFrom(new byte[] { 5, 6 }) },
+                RepeatedBytes = { ByteString.CopyFrom(1, 2, 3, 4), ByteString.CopyFrom(5, 6) },
                 RepeatedDouble = { -12.25, 23.5 },
                 RepeatedFixed32 = { uint.MaxValue, 23 },
                 RepeatedFixed64 = { ulong.MaxValue, 1234567890123 },
@@ -148,6 +143,119 @@ namespace Google.Protobuf
             byte[] bytes = message.ToByteArray();
             TestAllTypes parsed = TestAllTypes.Parser.ParseFrom(bytes);
             Assert.AreEqual(message, parsed);
+        }
+
+        [Test]
+        public void CloneSingleNonMessageValues()
+        {
+            var original = new TestAllTypes
+            {
+                SingleBool = true,
+                SingleBytes = ByteString.CopyFrom(1, 2, 3, 4),
+                SingleDouble = 23.5,
+                SingleFixed32 = 23,
+                SingleFixed64 = 1234567890123,
+                SingleFloat = 12.25f,
+                SingleInt32 = 100,
+                SingleInt64 = 3210987654321,
+                SingleNestedEnum = TestAllTypes.Types.NestedEnum.FOO,
+                SingleSfixed32 = -123,
+                SingleSfixed64 = -12345678901234,
+                SingleSint32 = -456,
+                SingleSint64 = -12345678901235,
+                SingleString = "test",
+                SingleUint32 = uint.MaxValue,
+                SingleUint64 = ulong.MaxValue
+            };
+            var clone = original.Clone();
+            Assert.AreNotSame(original, clone);
+            Assert.AreEqual(original, clone);
+            // Just as a single example
+            clone.SingleInt32 = 150;
+            Assert.AreNotEqual(original, clone);
+        }
+
+        [Test]
+        public void CloneRepeatedNonMessageValues()
+        {
+            var original = new TestAllTypes
+            {
+                RepeatedBool = { true, false },
+                RepeatedBytes = { ByteString.CopyFrom(1, 2, 3, 4), ByteString.CopyFrom(5, 6) },
+                RepeatedDouble = { -12.25, 23.5 },
+                RepeatedFixed32 = { uint.MaxValue, 23 },
+                RepeatedFixed64 = { ulong.MaxValue, 1234567890123 },
+                RepeatedFloat = { 100f, 12.25f },
+                RepeatedInt32 = { 100, 200 },
+                RepeatedInt64 = { 3210987654321, long.MaxValue },
+                RepeatedNestedEnum = { TestAllTypes.Types.NestedEnum.FOO, TestAllTypes.Types.NestedEnum.NEG },
+                RepeatedSfixed32 = { -123, 123 },
+                RepeatedSfixed64 = { -12345678901234, 12345678901234 },
+                RepeatedSint32 = { -456, 100 },
+                RepeatedSint64 = { -12345678901235, 123 },
+                RepeatedString = { "foo", "bar" },
+                RepeatedUint32 = { uint.MaxValue, uint.MinValue },
+                RepeatedUint64 = { ulong.MaxValue, uint.MinValue }
+            };
+
+            var clone = original.Clone();
+            Assert.AreNotSame(original, clone);
+            Assert.AreEqual(original, clone);
+            // Just as a single example
+            clone.RepeatedDouble.Add(25.5);
+            Assert.AreNotEqual(original, clone);
+        }
+
+        [Test]
+        public void CloneSingleMessageField()
+        {
+            var original = new TestAllTypes
+            {
+                SingleNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 20 }
+            };
+
+            var clone = original.Clone();
+            Assert.AreNotSame(original, clone);
+            Assert.AreNotSame(original.SingleNestedMessage, clone.SingleNestedMessage);
+            Assert.AreEqual(original, clone);
+
+            clone.SingleNestedMessage.Bb = 30;
+            Assert.AreNotEqual(original, clone);
+        }
+
+        [Test]
+        public void CloneRepeatedMessageField()
+        {
+            var original = new TestAllTypes
+            {
+                RepeatedNestedMessage = { new TestAllTypes.Types.NestedMessage { Bb = 20 } }
+            };
+
+            var clone = original.Clone();
+            Assert.AreNotSame(original, clone);
+            Assert.AreNotSame(original.RepeatedNestedMessage, clone.RepeatedNestedMessage);
+            Assert.AreNotSame(original.RepeatedNestedMessage[0], clone.RepeatedNestedMessage[0]);
+            Assert.AreEqual(original, clone);
+
+            clone.RepeatedNestedMessage[0].Bb = 30;
+            Assert.AreNotEqual(original, clone);
+        }
+
+        [Test]
+        public void CloneOneofField()
+        {
+            var original = new TestAllTypes
+            {
+                OneofNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 20 }
+            };
+
+            var clone = original.Clone();
+            Assert.AreNotSame(original, clone);
+            Assert.AreEqual(original, clone);
+
+            // We should have cloned the message
+            original.OneofNestedMessage.Bb = 30;
+            Assert.AreNotEqual(original, clone);
         }
     }
 }

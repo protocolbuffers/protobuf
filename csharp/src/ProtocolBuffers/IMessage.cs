@@ -93,4 +93,22 @@ namespace Google.Protobuf
         /// <param name="message">The message to merge with this one. Must not be null.</param>
         void MergeFrom(T message);
     }
+
+    /// <summary>
+    /// Generic interface for a deeply cloneable type.
+    /// <summary>
+    /// <remarks>
+    /// In practice, all generated messages implement this interface.
+    /// However, due to the type constraint on <c>T</c> in <see cref="IMessage{T}"/>,
+    /// it is simpler to keep this as a separate interface.
+    /// </remarks>
+    /// <typeparam name="T">The type itself, returned by the <see cref="Clone"/> method.</typeparam>
+    public interface IDeepCloneable<T>
+    {
+        /// <summary>
+        /// Creates a deep clone of this object.
+        /// </summary>
+        /// <returns>A deep clone of this object.</returns>
+        T Clone();
+    }
 }

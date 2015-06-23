@@ -60,7 +60,7 @@ namespace Google.Protobuf.TestProtos {
 
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class ImportMessage : pb::IMessage<ImportMessage>, global::System.IEquatable<ImportMessage> {
+  public sealed partial class ImportMessage : pb::IMessage<ImportMessage>, global::System.IEquatable<ImportMessage>, pb::IDeepCloneable<ImportMessage> {
     private static readonly pb::MessageParser<ImportMessage> _parser = new pb::MessageParser<ImportMessage>(() => new ImportMessage());
     public static pb::MessageParser<ImportMessage> Parser { get { return _parser; } }
 
@@ -75,9 +75,15 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public ImportMessage() { }
+
     public ImportMessage(ImportMessage other) {
-      MergeFrom(other);
+      d_ = other.d_;
     }
+
+    public ImportMessage Clone() {
+      return new ImportMessage(this);
+    }
+
     public const int DFieldNumber = 1;
     private int d_;
     public int D {

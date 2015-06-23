@@ -146,6 +146,11 @@ void PrimitiveFieldGenerator::WriteToString(io::Printer* printer) {
     "PrintField(\"$descriptor_name$\", $has_property_check$, $property_name$, writer);\n");
 }
 
+void PrimitiveFieldGenerator::GenerateCloningCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "$name$_ = other.$name$_;\n");
+}
+
 PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
     const FieldDescriptor* descriptor, int fieldOrdinal)
     : PrimitiveFieldGenerator(descriptor, fieldOrdinal) {
@@ -187,6 +192,11 @@ void PrimitiveOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     printer->Print(
       variables_,
       "$property_name$ = input.Read$capitalized_type_name$();\n");
+}
+
+void PrimitiveOneofFieldGenerator::GenerateCloningCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "$property_name$ = other.$property_name$;\n");
 }
 
 }  // namespace csharp
