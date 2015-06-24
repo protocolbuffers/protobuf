@@ -46,6 +46,7 @@ class MessageFieldGenerator : public FieldGeneratorBase {
   MessageFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~MessageFieldGenerator();
 
+  virtual void GenerateCodecCode(io::Printer* printer);
   virtual void GenerateCloningCode(io::Printer* printer);
   virtual void GenerateFreezingCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer);

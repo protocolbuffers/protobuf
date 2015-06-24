@@ -60,6 +60,7 @@
     <Compile Include="CodedOutputStream.cs" />
     <Compile Include="Collections\Dictionaries.cs" />
     <Compile Include="Collections\Lists.cs" />
+    <Compile Include="Collections\MapField.cs" />
     <Compile Include="Collections\ReadOnlyDictionary.cs" />
     <Compile Include="Collections\RepeatedField.cs" />
     <Compile Include="Collections\RepeatedFieldExtensions.cs" />
@@ -84,6 +85,7 @@
     <Compile Include="Descriptors\MethodDescriptor.cs" />
     <Compile Include="Descriptors\PackageDescriptor.cs" />
     <Compile Include="Descriptors\ServiceDescriptor.cs" />
+    <Compile Include="FieldCodec.cs" />
     <Compile Include="FrameworkPortability.cs" />
     <Compile Include="Freezable.cs" />
     <Compile Include="MessageExtensions.cs" />

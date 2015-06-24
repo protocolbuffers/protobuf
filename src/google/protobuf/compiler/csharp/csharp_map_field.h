@@ -28,44 +28,38 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_ENUM_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_ENUM_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_MAP_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_MAP_FIELD_H__
 
 #include <string>
 
 #include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
+#include <google/protobuf/compiler/csharp/csharp_field_base.h>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-class EnumFieldGenerator : public PrimitiveFieldGenerator {
+class MapFieldGenerator : public FieldGeneratorBase {
  public:
-  EnumFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
-  ~EnumFieldGenerator();
+  MapFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+  ~MapFieldGenerator();
 
-  virtual void GenerateCodecCode(io::Printer* printer);
+  virtual void GenerateCloningCode(io::Printer* printer);
+  virtual void GenerateFreezingCode(io::Printer* printer);
+  virtual void GenerateMembers(io::Printer* printer);
+  virtual void GenerateMergingCode(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
   virtual void GenerateSerializationCode(io::Printer* printer);
   virtual void GenerateSerializedSizeCode(io::Printer* printer);
 
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumFieldGenerator);
-};
-
-class EnumOneofFieldGenerator : public PrimitiveOneofFieldGenerator {
- public:
-  EnumOneofFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
-  ~EnumOneofFieldGenerator();
-
-  virtual void GenerateParsingCode(io::Printer* printer);
-  virtual void GenerateSerializationCode(io::Printer* printer);
-  virtual void GenerateSerializedSizeCode(io::Printer* printer);
+  virtual void WriteHash(io::Printer* printer);
+  virtual void WriteEquals(io::Printer* printer);
+  virtual void WriteToString(io::Printer* printer);
 
  private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumOneofFieldGenerator);
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldGenerator);
 };
 
 }  // namespace csharp
@@ -73,5 +67,5 @@ class EnumOneofFieldGenerator : public PrimitiveOneofFieldGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_ENUM_FIELD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_MAP_FIELD_H__
 

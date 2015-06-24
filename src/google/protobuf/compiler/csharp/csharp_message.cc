@@ -268,8 +268,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "}\n\n");
   }
 
-  // TODO(jonskeet): Map properties
-
   // Standard methods
   GenerateFrameworkMethods(printer);
   GenerateMessageSerializationMethods(printer);
@@ -299,7 +297,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
   printer->Print("}\n");
   printer->Print("\n");
-
 }
 
 void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
@@ -451,7 +448,7 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
   }
   printer->Print("return size;\n");
   printer->Outdent();
-  printer->Print("}\n");
+  printer->Print("}\n\n");
 }
 
 void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
@@ -469,7 +466,6 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     "if (other == null) {\n"
     "  return;\n"
     "}\n");
-  // TODO(jonskeet): Maps?
   // Merge non-oneof fields
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (!descriptor_->field(i)->containing_oneof()) {      

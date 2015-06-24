@@ -425,6 +425,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_generator.cc          \
   google/protobuf/compiler/csharp/csharp_helpers.cc            \
   google/protobuf/compiler/csharp/csharp_helpers.h             \
+  google/protobuf/compiler/csharp/csharp_map_field.cc          \
+  google/protobuf/compiler/csharp/csharp_map_field.h           \
   google/protobuf/compiler/csharp/csharp_message.cc            \
   google/protobuf/compiler/csharp/csharp_message.h             \
   google/protobuf/compiler/csharp/csharp_message_field.cc      \

@@ -65,6 +65,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
     tag_bytes += ", " + SimpleItoa(tag_array[i]);
   }
 
+  (*variables)["tag"] = SimpleItoa(tag);
   (*variables)["tag_size"] = SimpleItoa(tag_size);
   (*variables)["tag_bytes"] = tag_bytes;
 
@@ -112,6 +113,11 @@ void FieldGeneratorBase::GenerateFreezingCode(io::Printer* printer) {
   // special handling for freezing, so default to not generating any code.
 }
 
+void FieldGeneratorBase::GenerateCodecCode(io::Printer* printer) {
+    // No-op: expect this to be overridden by appropriate types.
+    // Could fail if we get called here though...
+}
+
 void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
   if (descriptor_->options().deprecated())
   {
@@ -151,12 +157,16 @@ std::string FieldGeneratorBase::name() {
 }
 
 std::string FieldGeneratorBase::type_name() {
-  switch (descriptor_->type()) {
+  return type_name(descriptor_);
+}
+
+std::string FieldGeneratorBase::type_name(const FieldDescriptor* descriptor) {
+  switch (descriptor->type()) {
     case FieldDescriptor::TYPE_ENUM:
-      return GetClassName(descriptor_->enum_type());
+      return GetClassName(descriptor->enum_type());
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_GROUP:
-      return GetClassName(descriptor_->message_type());
+      return GetClassName(descriptor->message_type());
     case FieldDescriptor::TYPE_DOUBLE:
       return "double";
     case FieldDescriptor::TYPE_FLOAT:

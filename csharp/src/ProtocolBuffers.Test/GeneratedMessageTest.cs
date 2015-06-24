@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Configuration;
+using System.IO;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
@@ -144,6 +146,65 @@ namespace Google.Protobuf
             byte[] bytes = message.ToByteArray();
             TestAllTypes parsed = TestAllTypes.Parser.ParseFrom(bytes);
             Assert.AreEqual(message, parsed);
+        }
+
+        [Test]
+        public void RoundTrip_Maps()
+        {
+            var message = new TestAllTypes
+            {
+                MapBoolToEnum = {
+                    { false, TestAllTypes.Types.NestedEnum.BAR},
+                    { true, TestAllTypes.Types.NestedEnum.BAZ}
+                },
+                MapInt32ToBytes = {
+                    { 5, ByteString.CopyFrom(6, 7, 8) },
+                    { 25, ByteString.CopyFrom(1, 2, 3, 4, 5) },
+                    { 10, ByteString.Empty }
+                },
+                MapStringToNestedMessage = {
+                    { "", new TestAllTypes.Types.NestedMessage { Bb = 10 } },
+                    { "null value", null },
+                }
+            };
+
+            byte[] bytes = message.ToByteArray();
+            TestAllTypes parsed = TestAllTypes.Parser.ParseFrom(bytes);
+            Assert.AreEqual(message, parsed);
+        }
+
+        [Test]
+        public void MapWithEmptyEntry()
+        {
+            var message = new TestAllTypes
+            {
+                MapInt32ToBytes = { { 0, ByteString.Empty } }
+            };
+
+            byte[] bytes = message.ToByteArray();
+            Assert.AreEqual(3, bytes.Length); // Tag for field entry (2 bytes), length of entry (0; 1 byte)
+
+            var parsed = TestAllTypes.Parser.ParseFrom(bytes);
+            Assert.AreEqual(1, parsed.MapInt32ToBytes.Count);
+            Assert.AreEqual(ByteString.Empty, parsed.MapInt32ToBytes[0]);
+        }
+
+        [Test]
+        public void MapWithOnlyValue()
+        {
+            // Hand-craft the stream to contain a single entry with just a value.
+            var memoryStream = new MemoryStream();
+            var output = CodedOutputStream.CreateInstance(memoryStream);
+            output.WriteTag(TestAllTypes.MapStringToNestedMessageFieldNumber, WireFormat.WireType.LengthDelimited);
+            var nestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 20 };
+            // Size of the entry (tag, size written by WriteMessage, data written by WriteMessage)
+            output.WriteRawVarint32((uint)(nestedMessage.CalculateSize() + 3));
+            output.WriteTag(2, WireFormat.WireType.LengthDelimited);
+            output.WriteMessage(nestedMessage);
+            output.Flush();
+
+            var parsed = TestAllTypes.Parser.ParseFrom(memoryStream.ToArray());
+            Assert.AreEqual(nestedMessage, parsed.MapStringToNestedMessage[""]);
         }
 
         [Test]
