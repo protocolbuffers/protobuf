@@ -11,6 +11,7 @@
 
 CF_EXTERN_C_BEGIN
 
+NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - GPBAnyRoot
 
@@ -88,12 +89,14 @@ typedef GPB_ENUM(GPBAny_FieldNumber) {
 // namespace should use `type.googleapis.com/full.type.name` (without
 // schema and path). A type service will eventually become available which
 // serves those URLs (projected Q2/15).
-@property(nonatomic, readwrite, copy) NSString *typeURL;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *typeURL;
 
 // Must be valid serialized data of the above specified type.
-@property(nonatomic, readwrite, copy) NSData *value;
+@property(nonatomic, readwrite, copy, null_resettable) NSData *value;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END
 

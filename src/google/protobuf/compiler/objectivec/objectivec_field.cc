@@ -331,7 +331,7 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   }
   printer->Print(
       variables_,
-      "@property(nonatomic, readwrite, $property_storage_attribute$) $property_type$ *$name$$storage_attribute$;\n");
+      "@property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$ *$name$$storage_attribute$;\n");
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
@@ -379,7 +379,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
       variables_,
       "$comments$"
       "$array_comment$"
-      "@property(nonatomic, readwrite, strong) $array_storage_type$ *$name$$storage_attribute$;\n"
+      "@property(nonatomic, readwrite, strong, null_resettable) $array_storage_type$ *$name$$storage_attribute$;\n"
       "@property(nonatomic, readonly) NSUInteger $name$_Count;\n");
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.

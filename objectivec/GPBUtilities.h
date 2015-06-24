@@ -36,13 +36,16 @@
 
 CF_EXTERN_C_BEGIN
 
+NS_ASSUME_NONNULL_BEGIN
+
 // Generates a string that should be a valid "Text Format" for the C++ version
 // of Protocol Buffers. lineIndent can be nil if no additional line indent is
 // needed. The comments provide the names according to the ObjC library, they
 // most likely won't exactly match the original .proto file.
-NSString *GPBTextFormatForMessage(GPBMessage *message, NSString *lineIndent);
+NSString *GPBTextFormatForMessage(GPBMessage *message,
+                                  NSString * __nullable lineIndent);
 NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *unknownSet,
-                                          NSString *lineIndent);
+                                          NSString * __nullable lineIndent);
 
 //
 // Test if the given field is set on a message.
@@ -127,6 +130,8 @@ void GPBSetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field, id dicti
 // to assign them to empty. Prevents allocating a lot of little [NSData data]
 // objects.
 NSData *GPBEmptyNSData(void) __attribute__((pure));
+
+NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END
 

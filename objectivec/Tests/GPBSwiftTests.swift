@@ -446,7 +446,7 @@ class GPBBridgeTests: XCTestCase {
 
     let data = msg.data()
 
-    let msg2 = Message2(data: data, error:nil)
+    let msg2 = Message2(data: data!, error:nil)
     XCTAssertTrue(msg2 !== msg)  // New instance
     XCTAssertEqual(msg.optionalInt32, Int32(100))
     XCTAssertEqual(msg.optionalInt64, Int64(101))

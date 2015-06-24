@@ -184,6 +184,9 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   return [self initWithOutputStream:output data:data];
 }
 
+// This initializer isn't exposed, but it is the designated initializer.
+// Setting OutputStream and NSData is to control the buffering behavior/size
+// of the work, but that is more obvious via the bufferSize: version.
 - (instancetype)initWithOutputStream:(NSOutputStream *)output
                                 data:(NSMutableData *)data {
   if ((self = [super init])) {

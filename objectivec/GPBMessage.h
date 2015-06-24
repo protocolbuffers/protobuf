@@ -40,6 +40,8 @@
 @class GPBFieldDescriptor;
 @class GPBUnknownFieldSet;
 
+NS_ASSUME_NONNULL_BEGIN
+
 CF_EXTERN_C_BEGIN
 
 // NSError domain used for errors.
@@ -66,7 +68,7 @@ CF_EXTERN_C_END
 // The main cases are methods that take no arguments, or setFoo:/hasFoo: type
 // methods.
 
-@property(nonatomic, readonly) GPBUnknownFieldSet *unknownFields;
+@property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields;
 
 // Are all required fields in the message and all embedded messages set.
 @property(nonatomic, readonly, getter=isInitialized) BOOL initialized;
@@ -80,18 +82,18 @@ CF_EXTERN_C_END
 // if one is missing, the parse will fail (returning nil, filling in errorPtr).
 + (instancetype)parseFromData:(NSData *)data error:(NSError **)errorPtr;
 + (instancetype)parseFromData:(NSData *)data
-            extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+            extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry
                         error:(NSError **)errorPtr;
 + (instancetype)parseFromCodedInputStream:(GPBCodedInputStream *)input
                         extensionRegistry:
-                            (GPBExtensionRegistry *)extensionRegistry
+                            (nullable GPBExtensionRegistry *)extensionRegistry
                                     error:(NSError **)errorPtr;
 
 // Create a message based on delimited input.  If there is a data parse
 // error, nil is returned and if not NULL, errorPtr is filled in.
 + (instancetype)parseDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
                                  extensionRegistry:
-                                     (GPBExtensionRegistry *)extensionRegistry
+                                     (nullable GPBExtensionRegistry *)extensionRegistry
                                              error:(NSError **)errorPtr;
 
 // If there is a data parse error, nil is returned and if not NULL, errorPtr is
@@ -100,11 +102,11 @@ CF_EXTERN_C_END
 // if one is missing, the parse will fail (returning nil, filling in errorPtr).
 - (instancetype)initWithData:(NSData *)data error:(NSError **)errorPtr;
 - (instancetype)initWithData:(NSData *)data
-           extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+           extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry
                        error:(NSError **)errorPtr;
 - (instancetype)initWithCodedInputStream:(GPBCodedInputStream *)input
                        extensionRegistry:
-                           (GPBExtensionRegistry *)extensionRegistry
+                           (nullable GPBExtensionRegistry *)extensionRegistry
                                    error:(NSError **)errorPtr;
 
 // Serializes the message and writes it to output.
@@ -121,11 +123,11 @@ CF_EXTERN_C_END
 // while generating the data, nil is returned.
 // NOTE: In DEBUG ONLY, the message is also checked for all required field,
 // if one is missing, nil will be returned.
-- (NSData *)data;
+- (nullable NSData *)data;
 
 // Same as -[data], except a delimiter is added to the start of the data
 // indicating the size of the message data that follows.
-- (NSData *)delimitedData;
+- (nullable NSData *)delimitedData;
 
 // Returns the size of the object if it were serialized.
 // This is not a cached value. If you are following a pattern like this:
@@ -149,15 +151,13 @@ CF_EXTERN_C_END
 // repeated. If the extension is a Message one will be auto created for you
 // and returned similar to fields.
 - (BOOL)hasExtension:(GPBExtensionDescriptor *)extension;
-- (id)getExtension:(GPBExtensionDescriptor *)extension;
-- (void)setExtension:(GPBExtensionDescriptor *)extension value:(id)value;
+- (nullable id)getExtension:(GPBExtensionDescriptor *)extension;
+- (void)setExtension:(GPBExtensionDescriptor *)extension value:(nullable id)value;
 - (void)addExtension:(GPBExtensionDescriptor *)extension value:(id)value;
 - (void)setExtension:(GPBExtensionDescriptor *)extension
                index:(NSUInteger)index
                value:(id)value;
 - (void)clearExtension:(GPBExtensionDescriptor *)extension;
-
-- (void)setUnknownFields:(GPBUnknownFieldSet *)unknownFields;
 
 // Resets all fields to their default values.
 - (void)clear;
@@ -166,10 +166,12 @@ CF_EXTERN_C_END
 // message.
 // NOTE: This will throw if there is an error parsing the data.
 - (void)mergeFromData:(NSData *)data
-    extensionRegistry:(GPBExtensionRegistry *)extensionRegistry;
+    extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry;
 
 // Merges the fields from another message (of the same type) into this
 // message.
 - (void)mergeFrom:(GPBMessage *)other;
 
 @end
+
+NS_ASSUME_NONNULL_END

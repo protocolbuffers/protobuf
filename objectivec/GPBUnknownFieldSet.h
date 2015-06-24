@@ -32,10 +32,12 @@
 
 @class GPBUnknownField;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface GPBUnknownFieldSet : NSObject<NSCopying>
 
 - (BOOL)hasField:(int32_t)number;
-- (GPBUnknownField *)getField:(int32_t)number;
+- (nullable GPBUnknownField *)getField:(int32_t)number;
 - (NSUInteger)countOfFields;
 
 - (void)addField:(GPBUnknownField *)field;
@@ -44,3 +46,5 @@
 - (NSArray *)sortedFields;
 
 @end
+
+NS_ASSUME_NONNULL_END
