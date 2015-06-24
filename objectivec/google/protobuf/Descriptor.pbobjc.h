@@ -20,6 +20,8 @@ CF_EXTERN_C_BEGIN
 @class GPBServiceOptions;
 @class GPBSourceCodeInfo;
 
+NS_ASSUME_NONNULL_BEGIN
+
 #pragma mark - Enum GPBFieldDescriptorProto_Type
 
 typedef GPB_ENUM(GPBFieldDescriptorProto_Type) {
@@ -128,7 +130,6 @@ GPBEnumDescriptor *GPBFieldOptions_JSType_EnumDescriptor(void);
 
 BOOL GPBFieldOptions_JSType_IsValidValue(int32_t value);
 
-
 #pragma mark - GPBDescriptorRoot
 
 @interface GPBDescriptorRoot : GPBRootObject
@@ -151,7 +152,7 @@ typedef GPB_ENUM(GPBFileDescriptorSet_FieldNumber) {
 @interface GPBFileDescriptorSet : GPBMessage
 
 // |fileArray| contains |GPBFileDescriptorProto|
-@property(nonatomic, readwrite, strong) NSMutableArray *fileArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *fileArray;
 @property(nonatomic, readonly) NSUInteger fileArray_Count;
 
 @end
@@ -178,57 +179,57 @@ typedef GPB_ENUM(GPBFileDescriptorProto_FieldNumber) {
 
 // file name, relative to root of source tree
 @property(nonatomic, readwrite) BOOL hasName;
-@property(nonatomic, readwrite, copy) NSString *name;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
 // e.g. "foo", "foo.bar", etc.
 @property(nonatomic, readwrite) BOOL hasPackage;
-@property(nonatomic, readwrite, copy) NSString *package;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *package;
 
 // Names of files imported by this file.
 // |dependencyArray| contains |NSString|
-@property(nonatomic, readwrite, strong) NSMutableArray *dependencyArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *dependencyArray;
 @property(nonatomic, readonly) NSUInteger dependencyArray_Count;
 
 // Indexes of the public imported files in the dependency list above.
-@property(nonatomic, readwrite, strong) GPBInt32Array *publicDependencyArray;
+@property(nonatomic, readwrite, strong, null_resettable) GPBInt32Array *publicDependencyArray;
 @property(nonatomic, readonly) NSUInteger publicDependencyArray_Count;
 
 // Indexes of the weak imported files in the dependency list.
 // For Google-internal migration only. Do not use.
-@property(nonatomic, readwrite, strong) GPBInt32Array *weakDependencyArray;
+@property(nonatomic, readwrite, strong, null_resettable) GPBInt32Array *weakDependencyArray;
 @property(nonatomic, readonly) NSUInteger weakDependencyArray_Count;
 
 // All top-level definitions in this file.
 // |messageTypeArray| contains |GPBDescriptorProto|
-@property(nonatomic, readwrite, strong) NSMutableArray *messageTypeArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *messageTypeArray;
 @property(nonatomic, readonly) NSUInteger messageTypeArray_Count;
 
 // |enumTypeArray| contains |GPBEnumDescriptorProto|
-@property(nonatomic, readwrite, strong) NSMutableArray *enumTypeArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *enumTypeArray;
 @property(nonatomic, readonly) NSUInteger enumTypeArray_Count;
 
 // |serviceArray| contains |GPBServiceDescriptorProto|
-@property(nonatomic, readwrite, strong) NSMutableArray *serviceArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *serviceArray;
 @property(nonatomic, readonly) NSUInteger serviceArray_Count;
 
 // |extensionArray| contains |GPBFieldDescriptorProto|
-@property(nonatomic, readwrite, strong) NSMutableArray *extensionArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *extensionArray;
 @property(nonatomic, readonly) NSUInteger extensionArray_Count;
 
 @property(nonatomic, readwrite) BOOL hasOptions;
-@property(nonatomic, readwrite, strong) GPBFileOptions *options;
+@property(nonatomic, readwrite, strong, null_resettable) GPBFileOptions *options;
 
 // This field contains optional information about the original source code.
 // You may safely remove this entire field without harming runtime
 // functionality of the descriptors -- the information is needed only by
 // development tools.
 @property(nonatomic, readwrite) BOOL hasSourceCodeInfo;
-@property(nonatomic, readwrite, strong) GPBSourceCodeInfo *sourceCodeInfo;
+@property(nonatomic, readwrite, strong, null_resettable) GPBSourceCodeInfo *sourceCodeInfo;
 
 // The syntax of the proto file.
 // The supported values are "proto2" and "proto3".
 @property(nonatomic, readwrite) BOOL hasSyntax;
-@property(nonatomic, readwrite, copy) NSString *syntax;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *syntax;
 
 @end
 
@@ -251,43 +252,43 @@ typedef GPB_ENUM(GPBDescriptorProto_FieldNumber) {
 @interface GPBDescriptorProto : GPBMessage
 
 @property(nonatomic, readwrite) BOOL hasName;
-@property(nonatomic, readwrite, copy) NSString *name;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
 // |fieldArray| contains |GPBFieldDescriptorProto|
-@property(nonatomic, readwrite, strong) NSMutableArray *fieldArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *fieldArray;
 @property(nonatomic, readonly) NSUInteger fieldArray_Count;
 
 // |extensionArray| contains |GPBFieldDescriptorProto|
-@property(nonatomic, readwrite, strong) NSMutableArray *extensionArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *extensionArray;
 @property(nonatomic, readonly) NSUInteger extensionArray_Count;
 
 // |nestedTypeArray| contains |GPBDescriptorProto|
-@property(nonatomic, readwrite, strong) NSMutableArray *nestedTypeArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *nestedTypeArray;
 @property(nonatomic, readonly) NSUInteger nestedTypeArray_Count;
 
 // |enumTypeArray| contains |GPBEnumDescriptorProto|
-@property(nonatomic, readwrite, strong) NSMutableArray *enumTypeArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *enumTypeArray;
 @property(nonatomic, readonly) NSUInteger enumTypeArray_Count;
 
 // |extensionRangeArray| contains |GPBDescriptorProto_ExtensionRange|
-@property(nonatomic, readwrite, strong) NSMutableArray *extensionRangeArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *extensionRangeArray;
 @property(nonatomic, readonly) NSUInteger extensionRangeArray_Count;
 
 // |oneofDeclArray| contains |GPBOneofDescriptorProto|
-@property(nonatomic, readwrite, strong) NSMutableArray *oneofDeclArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *oneofDeclArray;
 @property(nonatomic, readonly) NSUInteger oneofDeclArray_Count;
 
 @property(nonatomic, readwrite) BOOL hasOptions;
-@property(nonatomic, readwrite, strong) GPBMessageOptions *options;
+@property(nonatomic, readwrite, strong, null_resettable) GPBMessageOptions *options;
 
 // |reservedRangeArray| contains |GPBDescriptorProto_ReservedRange|
-@property(nonatomic, readwrite, strong) NSMutableArray *reservedRangeArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *reservedRangeArray;
 @property(nonatomic, readonly) NSUInteger reservedRangeArray_Count;
 
 // Reserved field names, which may not be used by fields in the same message.
 // A given name may only be reserved once.
 // |reservedNameArray| contains |NSString|
-@property(nonatomic, readwrite, strong) NSMutableArray *reservedNameArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *reservedNameArray;
 @property(nonatomic, readonly) NSUInteger reservedNameArray_Count;
 
 @end
@@ -349,7 +350,7 @@ typedef GPB_ENUM(GPBFieldDescriptorProto_FieldNumber) {
 @interface GPBFieldDescriptorProto : GPBMessage
 
 @property(nonatomic, readwrite) BOOL hasName;
-@property(nonatomic, readwrite, copy) NSString *name;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
 @property(nonatomic, readwrite) BOOL hasNumber;
 @property(nonatomic, readwrite) int32_t number;
@@ -368,12 +369,12 @@ typedef GPB_ENUM(GPBFieldDescriptorProto_FieldNumber) {
 // message are searched, then within the parent, on up to the root
 // namespace).
 @property(nonatomic, readwrite) BOOL hasTypeName;
-@property(nonatomic, readwrite, copy) NSString *typeName;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *typeName;
 
 // For extensions, this is the name of the type being extended.  It is
 // resolved in the same manner as type_name.
 @property(nonatomic, readwrite) BOOL hasExtendee;
-@property(nonatomic, readwrite, copy) NSString *extendee;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *extendee;
 
 // For numeric types, contains the original text representation of the value.
 // For booleans, "true" or "false".
@@ -381,7 +382,7 @@ typedef GPB_ENUM(GPBFieldDescriptorProto_FieldNumber) {
 // For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
 // TODO(kenton):  Base-64 encode?
 @property(nonatomic, readwrite) BOOL hasDefaultValue;
-@property(nonatomic, readwrite, copy) NSString *defaultValue;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *defaultValue;
 
 // If set, gives the index of a oneof in the containing type's oneof_decl
 // list.  This field is a member of that oneof.
@@ -389,7 +390,7 @@ typedef GPB_ENUM(GPBFieldDescriptorProto_FieldNumber) {
 @property(nonatomic, readwrite) int32_t oneofIndex;
 
 @property(nonatomic, readwrite) BOOL hasOptions;
-@property(nonatomic, readwrite, strong) GPBFieldOptions *options;
+@property(nonatomic, readwrite, strong, null_resettable) GPBFieldOptions *options;
 
 @end
 
@@ -403,7 +404,7 @@ typedef GPB_ENUM(GPBOneofDescriptorProto_FieldNumber) {
 @interface GPBOneofDescriptorProto : GPBMessage
 
 @property(nonatomic, readwrite) BOOL hasName;
-@property(nonatomic, readwrite, copy) NSString *name;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
 @end
 
@@ -419,14 +420,14 @@ typedef GPB_ENUM(GPBEnumDescriptorProto_FieldNumber) {
 @interface GPBEnumDescriptorProto : GPBMessage
 
 @property(nonatomic, readwrite) BOOL hasName;
-@property(nonatomic, readwrite, copy) NSString *name;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
 // |valueArray| contains |GPBEnumValueDescriptorProto|
-@property(nonatomic, readwrite, strong) NSMutableArray *valueArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *valueArray;
 @property(nonatomic, readonly) NSUInteger valueArray_Count;
 
 @property(nonatomic, readwrite) BOOL hasOptions;
-@property(nonatomic, readwrite, strong) GPBEnumOptions *options;
+@property(nonatomic, readwrite, strong, null_resettable) GPBEnumOptions *options;
 
 @end
 
@@ -442,13 +443,13 @@ typedef GPB_ENUM(GPBEnumValueDescriptorProto_FieldNumber) {
 @interface GPBEnumValueDescriptorProto : GPBMessage
 
 @property(nonatomic, readwrite) BOOL hasName;
-@property(nonatomic, readwrite, copy) NSString *name;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
 @property(nonatomic, readwrite) BOOL hasNumber;
 @property(nonatomic, readwrite) int32_t number;
 
 @property(nonatomic, readwrite) BOOL hasOptions;
-@property(nonatomic, readwrite, strong) GPBEnumValueOptions *options;
+@property(nonatomic, readwrite, strong, null_resettable) GPBEnumValueOptions *options;
 
 @end
 
@@ -464,14 +465,14 @@ typedef GPB_ENUM(GPBServiceDescriptorProto_FieldNumber) {
 @interface GPBServiceDescriptorProto : GPBMessage
 
 @property(nonatomic, readwrite) BOOL hasName;
-@property(nonatomic, readwrite, copy) NSString *name;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
 // |methodArray| contains |GPBMethodDescriptorProto|
-@property(nonatomic, readwrite, strong) NSMutableArray *methodArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *methodArray;
 @property(nonatomic, readonly) NSUInteger methodArray_Count;
 
 @property(nonatomic, readwrite) BOOL hasOptions;
-@property(nonatomic, readwrite, strong) GPBServiceOptions *options;
+@property(nonatomic, readwrite, strong, null_resettable) GPBServiceOptions *options;
 
 @end
 
@@ -490,18 +491,18 @@ typedef GPB_ENUM(GPBMethodDescriptorProto_FieldNumber) {
 @interface GPBMethodDescriptorProto : GPBMessage
 
 @property(nonatomic, readwrite) BOOL hasName;
-@property(nonatomic, readwrite, copy) NSString *name;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
 // Input and output type names.  These are resolved in the same way as
 // FieldDescriptorProto.type_name, but must refer to a message type.
 @property(nonatomic, readwrite) BOOL hasInputType;
-@property(nonatomic, readwrite, copy) NSString *inputType;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *inputType;
 
 @property(nonatomic, readwrite) BOOL hasOutputType;
-@property(nonatomic, readwrite, copy) NSString *outputType;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *outputType;
 
 @property(nonatomic, readwrite) BOOL hasOptions;
-@property(nonatomic, readwrite, strong) GPBMethodOptions *options;
+@property(nonatomic, readwrite, strong, null_resettable) GPBMethodOptions *options;
 
 // Identifies if client streams multiple client messages
 @property(nonatomic, readwrite) BOOL hasClientStreaming;
@@ -540,7 +541,7 @@ typedef GPB_ENUM(GPBFileOptions_FieldNumber) {
 // inappropriate because proto packages do not normally start with backwards
 // domain names.
 @property(nonatomic, readwrite) BOOL hasJavaPackage;
-@property(nonatomic, readwrite, copy) NSString *javaPackage;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *javaPackage;
 
 // If set, all the classes from the .proto file are wrapped in a single
 // outer class with the given name.  This applies to both Proto1
@@ -548,7 +549,7 @@ typedef GPB_ENUM(GPBFileOptions_FieldNumber) {
 // a .proto always translates to a single class, but you may want to
 // explicitly choose the class name).
 @property(nonatomic, readwrite) BOOL hasJavaOuterClassname;
-@property(nonatomic, readwrite, copy) NSString *javaOuterClassname;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *javaOuterClassname;
 
 // If set true, then the Java code generator will generate a separate .java
 // file for each top-level message, enum, and service defined in the .proto
@@ -590,7 +591,7 @@ typedef GPB_ENUM(GPBFileOptions_FieldNumber) {
 //   - Otherwise, the package statement in the .proto file, if present.
 //   - Otherwise, the basename of the .proto file, without extension.
 @property(nonatomic, readwrite) BOOL hasGoPackage;
-@property(nonatomic, readwrite, copy) NSString *goPackage;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *goPackage;
 
 // Should generic services be generated in each language?  "Generic" services
 // are not specific to any particular RPC system.  They are generated by the
@@ -626,15 +627,15 @@ typedef GPB_ENUM(GPBFileOptions_FieldNumber) {
 // Sets the objective c class prefix which is prepended to all objective c
 // generated classes from this .proto. There is no default.
 @property(nonatomic, readwrite) BOOL hasObjcClassPrefix;
-@property(nonatomic, readwrite, copy) NSString *objcClassPrefix;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *objcClassPrefix;
 
 // Namespace for generated classes; defaults to the package.
 @property(nonatomic, readwrite) BOOL hasCsharpNamespace;
-@property(nonatomic, readwrite, copy) NSString *csharpNamespace;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *csharpNamespace;
 
 // The parser stores options it doesn't recognize here. See above.
 // |uninterpretedOptionArray| contains |GPBUninterpretedOption|
-@property(nonatomic, readwrite, strong) NSMutableArray *uninterpretedOptionArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *uninterpretedOptionArray;
 @property(nonatomic, readonly) NSUInteger uninterpretedOptionArray_Count;
 
 @end
@@ -711,7 +712,7 @@ typedef GPB_ENUM(GPBMessageOptions_FieldNumber) {
 
 // The parser stores options it doesn't recognize here. See above.
 // |uninterpretedOptionArray| contains |GPBUninterpretedOption|
-@property(nonatomic, readwrite, strong) NSMutableArray *uninterpretedOptionArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *uninterpretedOptionArray;
 @property(nonatomic, readonly) NSUInteger uninterpretedOptionArray_Count;
 
 @end
@@ -801,7 +802,7 @@ typedef GPB_ENUM(GPBFieldOptions_FieldNumber) {
 
 // The parser stores options it doesn't recognize here. See above.
 // |uninterpretedOptionArray| contains |GPBUninterpretedOption|
-@property(nonatomic, readwrite, strong) NSMutableArray *uninterpretedOptionArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *uninterpretedOptionArray;
 @property(nonatomic, readonly) NSUInteger uninterpretedOptionArray_Count;
 
 @end
@@ -830,7 +831,7 @@ typedef GPB_ENUM(GPBEnumOptions_FieldNumber) {
 
 // The parser stores options it doesn't recognize here. See above.
 // |uninterpretedOptionArray| contains |GPBUninterpretedOption|
-@property(nonatomic, readwrite, strong) NSMutableArray *uninterpretedOptionArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *uninterpretedOptionArray;
 @property(nonatomic, readonly) NSUInteger uninterpretedOptionArray_Count;
 
 @end
@@ -853,7 +854,7 @@ typedef GPB_ENUM(GPBEnumValueOptions_FieldNumber) {
 
 // The parser stores options it doesn't recognize here. See above.
 // |uninterpretedOptionArray| contains |GPBUninterpretedOption|
-@property(nonatomic, readwrite, strong) NSMutableArray *uninterpretedOptionArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *uninterpretedOptionArray;
 @property(nonatomic, readonly) NSUInteger uninterpretedOptionArray_Count;
 
 @end
@@ -876,7 +877,7 @@ typedef GPB_ENUM(GPBServiceOptions_FieldNumber) {
 
 // The parser stores options it doesn't recognize here. See above.
 // |uninterpretedOptionArray| contains |GPBUninterpretedOption|
-@property(nonatomic, readwrite, strong) NSMutableArray *uninterpretedOptionArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *uninterpretedOptionArray;
 @property(nonatomic, readonly) NSUInteger uninterpretedOptionArray_Count;
 
 @end
@@ -899,7 +900,7 @@ typedef GPB_ENUM(GPBMethodOptions_FieldNumber) {
 
 // The parser stores options it doesn't recognize here. See above.
 // |uninterpretedOptionArray| contains |GPBUninterpretedOption|
-@property(nonatomic, readwrite, strong) NSMutableArray *uninterpretedOptionArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *uninterpretedOptionArray;
 @property(nonatomic, readonly) NSUInteger uninterpretedOptionArray_Count;
 
 @end
@@ -925,13 +926,13 @@ typedef GPB_ENUM(GPBUninterpretedOption_FieldNumber) {
 @interface GPBUninterpretedOption : GPBMessage
 
 // |nameArray| contains |GPBUninterpretedOption_NamePart|
-@property(nonatomic, readwrite, strong) NSMutableArray *nameArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *nameArray;
 @property(nonatomic, readonly) NSUInteger nameArray_Count;
 
 // The value of the uninterpreted option, in whatever type the tokenizer
 // identified it as during parsing. Exactly one of these should be set.
 @property(nonatomic, readwrite) BOOL hasIdentifierValue;
-@property(nonatomic, readwrite, copy) NSString *identifierValue;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *identifierValue;
 
 @property(nonatomic, readwrite) BOOL hasPositiveIntValue;
 @property(nonatomic, readwrite) uint64_t positiveIntValue;
@@ -943,10 +944,10 @@ typedef GPB_ENUM(GPBUninterpretedOption_FieldNumber) {
 @property(nonatomic, readwrite) double doubleValue;
 
 @property(nonatomic, readwrite) BOOL hasStringValue;
-@property(nonatomic, readwrite, copy) NSData *stringValue;
+@property(nonatomic, readwrite, copy, null_resettable) NSData *stringValue;
 
 @property(nonatomic, readwrite) BOOL hasAggregateValue;
-@property(nonatomic, readwrite, copy) NSString *aggregateValue;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *aggregateValue;
 
 @end
 
@@ -965,7 +966,7 @@ typedef GPB_ENUM(GPBUninterpretedOption_NamePart_FieldNumber) {
 @interface GPBUninterpretedOption_NamePart : GPBMessage
 
 @property(nonatomic, readwrite) BOOL hasNamePart;
-@property(nonatomic, readwrite, copy) NSString *namePart;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *namePart;
 
 @property(nonatomic, readwrite) BOOL hasIsExtension;
 @property(nonatomic, readwrite) BOOL isExtension;
@@ -1026,7 +1027,7 @@ typedef GPB_ENUM(GPBSourceCodeInfo_FieldNumber) {
 //   ignore those that it doesn't understand, as more types of locations could
 //   be recorded in the future.
 // |locationArray| contains |GPBSourceCodeInfo_Location|
-@property(nonatomic, readwrite, strong) NSMutableArray *locationArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *locationArray;
 @property(nonatomic, readonly) NSUInteger locationArray_Count;
 
 @end
@@ -1066,7 +1067,7 @@ typedef GPB_ENUM(GPBSourceCodeInfo_Location_FieldNumber) {
 //   [ 4, 3, 2, 7 ]
 // this path refers to the whole field declaration (from the beginning
 // of the label to the terminating semicolon).
-@property(nonatomic, readwrite, strong) GPBInt32Array *pathArray;
+@property(nonatomic, readwrite, strong, null_resettable) GPBInt32Array *pathArray;
 @property(nonatomic, readonly) NSUInteger pathArray_Count;
 
 // Always has exactly three or four elements: start line, start column,
@@ -1074,7 +1075,7 @@ typedef GPB_ENUM(GPBSourceCodeInfo_Location_FieldNumber) {
 // These are packed into a single field for efficiency.  Note that line
 // and column numbers are zero-based -- typically you will want to add
 // 1 to each before displaying to a user.
-@property(nonatomic, readwrite, strong) GPBInt32Array *spanArray;
+@property(nonatomic, readwrite, strong, null_resettable) GPBInt32Array *spanArray;
 @property(nonatomic, readonly) NSUInteger spanArray_Count;
 
 // If this SourceCodeInfo represents a complete declaration, these are any
@@ -1125,16 +1126,18 @@ typedef GPB_ENUM(GPBSourceCodeInfo_Location_FieldNumber) {
 //
 //   // ignored detached comments.
 @property(nonatomic, readwrite) BOOL hasLeadingComments;
-@property(nonatomic, readwrite, copy) NSString *leadingComments;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *leadingComments;
 
 @property(nonatomic, readwrite) BOOL hasTrailingComments;
-@property(nonatomic, readwrite, copy) NSString *trailingComments;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *trailingComments;
 
 // |leadingDetachedCommentsArray| contains |NSString|
-@property(nonatomic, readwrite, strong) NSMutableArray *leadingDetachedCommentsArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *leadingDetachedCommentsArray;
 @property(nonatomic, readonly) NSUInteger leadingDetachedCommentsArray_Count;
 
 @end
+
+NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END
 

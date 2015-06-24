@@ -23,8 +23,8 @@ before_build:
   - if %platform%==Win64 set vcplatform=x64
 
 build_script:
-  - mkdir build
-  - cd build
+  - mkdir build_msvc
+  - cd build_msvc
   - cmake -G "%generator%" -DBUILD_SHARED_LIBS=%BUILD_DLL% ../cmake
   - msbuild protobuf.sln /p:Platform=%vcplatform% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - cd %configuration%

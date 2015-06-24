@@ -35,6 +35,8 @@
 @class GPBUInt64Array;
 @class GPBUnknownFieldSet;
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface GPBUnknownField : NSObject<NSCopying>
 
 @property(nonatomic, readonly, assign) int32_t number;
@@ -54,3 +56,5 @@
 - (void)addGroup:(GPBUnknownFieldSet *)value;
 
 @end
+
+NS_ASSUME_NONNULL_END

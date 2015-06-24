@@ -36,6 +36,7 @@
 #import <CoreFoundation/CoreFoundation.h>
 
 #import "GPBDescriptor.h"
+#import "GPBExtensionRegistry.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 @interface GPBExtensionDescriptor (GPBRootObject)
@@ -97,6 +98,7 @@ static CFHashCode GPBRootExtensionKeyHash(const void *value) {
 
 static OSSpinLock gExtensionSingletonDictionaryLock_ = OS_SPINLOCK_INIT;
 static CFMutableDictionaryRef gExtensionSingletonDictionary = NULL;
+static GPBExtensionRegistry *gDefaultExtensionRegistry = NULL;
 
 + (void)initialize {
   // Ensure the global is started up.
@@ -113,6 +115,7 @@ static CFMutableDictionaryRef gExtensionSingletonDictionary = NULL;
     gExtensionSingletonDictionary =
         CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &keyCallBacks,
                                   &kCFTypeDictionaryValueCallBacks);
+    gDefaultExtensionRegistry = [[GPBExtensionRegistry alloc] init];
   }
 
   if ([self superclass] == [GPBRootObject class]) {
@@ -126,7 +129,7 @@ static CFMutableDictionaryRef gExtensionSingletonDictionary = NULL;
 + (GPBExtensionRegistry *)extensionRegistry {
   // Is overridden in all the subclasses that provide extensions to provide the
   // per class one.
-  return nil;
+  return gDefaultExtensionRegistry;
 }
 
 + (void)globallyRegisterExtension:(GPBExtensionDescriptor *)field {
