@@ -32,7 +32,7 @@ Compiling and Installing
    If you don't have gmock, skip the build of tests by turning off the
    BUILD_TESTING option:
 
-        $ cmake -G "Visutal Studio 9 2008" -DBUILD_TESTING=OFF ..
+        $ cmake -G "Visual Studio 9 2008" -DBUILD_TESTING=OFF ..
 
 3. Open the generated protobuf.sln file in Microsoft Visual Studio.
 4. Choose "Debug" or "Release" configuration as desired.
