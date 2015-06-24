@@ -194,8 +194,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "slash", field_names().size() > 0 ? "\"" : "");
   std::vector<std::string> tags;
   for (int i = 0; i < field_names().size(); i++) {
-    uint32 tag = internal::WireFormat::MakeTag(
-        descriptor_->FindFieldByName(field_names()[i]));
+    uint32 tag = FixedMakeTag(descriptor_->FindFieldByName(field_names()[i]));
     tags.push_back(SimpleItoa(tag));
   }
   printer->Print(

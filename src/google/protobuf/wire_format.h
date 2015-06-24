@@ -290,7 +290,7 @@ class LIBPROTOBUF_EXPORT UnknownFieldSetFieldSkipper : public FieldSkipper {
 
 inline WireFormatLite::WireType WireFormat::WireTypeForField(
     const FieldDescriptor* field) {
-  if (field->is_packed()) {
+  if (field->options().packed()) {
     return WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
   } else {
     return WireTypeForFieldType(field->type());

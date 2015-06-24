@@ -97,6 +97,8 @@ std::string StringToBase64(const std::string& input);
 
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor);
 
+uint FixedMakeTag(const FieldDescriptor* descriptor);
+
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
 
 bool HasRequiredFields(const Descriptor* descriptor);
