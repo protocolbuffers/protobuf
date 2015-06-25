@@ -13,6 +13,12 @@ namespace UnitTest.Issues.TestProtos {
   public static partial class UnittestIssues {
 
     #region Static variables
+    internal static pbd::MessageDescriptor internal__static_unittest_issues_Issue307__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.Issue307> internal__static_unittest_issues_Issue307__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_unittest_issues_Issue307_NestedOnce__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce> internal__static_unittest_issues_Issue307_NestedOnce__FieldAccessorTable;
+    internal static pbd::MessageDescriptor internal__static_unittest_issues_Issue307_NestedOnce_NestedTwice__Descriptor;
+    internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice> internal__static_unittest_issues_Issue307_NestedOnce_NestedTwice__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_unittest_issues_NegativeEnumMessage__Descriptor;
     internal static pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.NegativeEnumMessage> internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_unittest_issues_DeprecatedChild__Descriptor;
@@ -31,38 +37,51 @@ namespace UnitTest.Issues.TestProtos {
     static UnittestIssues() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChV1bml0dGVzdF9pc3N1ZXMucHJvdG8SD3VuaXR0ZXN0X2lzc3VlcyKwAQoT", 
-            "TmVnYXRpdmVFbnVtTWVzc2FnZRIsCgV2YWx1ZRgBIAEoDjIdLnVuaXR0ZXN0", 
-            "X2lzc3Vlcy5OZWdhdGl2ZUVudW0SMQoGdmFsdWVzGAIgAygOMh0udW5pdHRl", 
-            "c3RfaXNzdWVzLk5lZ2F0aXZlRW51bUICEAASOAoNcGFja2VkX3ZhbHVlcxgD", 
-            "IAMoDjIdLnVuaXR0ZXN0X2lzc3Vlcy5OZWdhdGl2ZUVudW1CAhABIhEKD0Rl", 
-            "cHJlY2F0ZWRDaGlsZCK5AgoXRGVwcmVjYXRlZEZpZWxkc01lc3NhZ2USGgoO", 
-            "UHJpbWl0aXZlVmFsdWUYASABKAVCAhgBEhoKDlByaW1pdGl2ZUFycmF5GAIg", 
-            "AygFQgIYARI6CgxNZXNzYWdlVmFsdWUYAyABKAsyIC51bml0dGVzdF9pc3N1", 
-            "ZXMuRGVwcmVjYXRlZENoaWxkQgIYARI6CgxNZXNzYWdlQXJyYXkYBCADKAsy", 
-            "IC51bml0dGVzdF9pc3N1ZXMuRGVwcmVjYXRlZENoaWxkQgIYARI2CglFbnVt", 
-            "VmFsdWUYBSABKA4yHy51bml0dGVzdF9pc3N1ZXMuRGVwcmVjYXRlZEVudW1C", 
-            "AhgBEjYKCUVudW1BcnJheRgGIAMoDjIfLnVuaXR0ZXN0X2lzc3Vlcy5EZXBy", 
-            "ZWNhdGVkRW51bUICGAEiGQoJSXRlbUZpZWxkEgwKBGl0ZW0YASABKAUqVQoM", 
-            "TmVnYXRpdmVFbnVtEhYKEk5FR0FUSVZFX0VOVU1fWkVSTxAAEhYKCUZpdmVC", 
-            "ZWxvdxD7//////////8BEhUKCE1pbnVzT25lEP///////////wEqLgoORGVw", 
-            "cmVjYXRlZEVudW0SEwoPREVQUkVDQVRFRF9aRVJPEAASBwoDb25lEAFCH0gB", 
-          "qgIaVW5pdFRlc3QuSXNzdWVzLlRlc3RQcm90b3NiBnByb3RvMw=="));
+            "ChV1bml0dGVzdF9pc3N1ZXMucHJvdG8SD3VuaXR0ZXN0X2lzc3VlcyInCghJ", 
+            "c3N1ZTMwNxobCgpOZXN0ZWRPbmNlGg0KC05lc3RlZFR3aWNlIrABChNOZWdh", 
+            "dGl2ZUVudW1NZXNzYWdlEiwKBXZhbHVlGAEgASgOMh0udW5pdHRlc3RfaXNz", 
+            "dWVzLk5lZ2F0aXZlRW51bRIxCgZ2YWx1ZXMYAiADKA4yHS51bml0dGVzdF9p", 
+            "c3N1ZXMuTmVnYXRpdmVFbnVtQgIQABI4Cg1wYWNrZWRfdmFsdWVzGAMgAygO", 
+            "Mh0udW5pdHRlc3RfaXNzdWVzLk5lZ2F0aXZlRW51bUICEAEiEQoPRGVwcmVj", 
+            "YXRlZENoaWxkIrkCChdEZXByZWNhdGVkRmllbGRzTWVzc2FnZRIaCg5Qcmlt", 
+            "aXRpdmVWYWx1ZRgBIAEoBUICGAESGgoOUHJpbWl0aXZlQXJyYXkYAiADKAVC", 
+            "AhgBEjoKDE1lc3NhZ2VWYWx1ZRgDIAEoCzIgLnVuaXR0ZXN0X2lzc3Vlcy5E", 
+            "ZXByZWNhdGVkQ2hpbGRCAhgBEjoKDE1lc3NhZ2VBcnJheRgEIAMoCzIgLnVu", 
+            "aXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkQ2hpbGRCAhgBEjYKCUVudW1WYWx1", 
+            "ZRgFIAEoDjIfLnVuaXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkRW51bUICGAES", 
+            "NgoJRW51bUFycmF5GAYgAygOMh8udW5pdHRlc3RfaXNzdWVzLkRlcHJlY2F0", 
+            "ZWRFbnVtQgIYASIZCglJdGVtRmllbGQSDAoEaXRlbRgBIAEoBSpVCgxOZWdh", 
+            "dGl2ZUVudW0SFgoSTkVHQVRJVkVfRU5VTV9aRVJPEAASFgoJRml2ZUJlbG93", 
+            "EPv//////////wESFQoITWludXNPbmUQ////////////ASouCg5EZXByZWNh", 
+            "dGVkRW51bRITCg9ERVBSRUNBVEVEX1pFUk8QABIHCgNvbmUQAUIfSAGqAhpV", 
+          "bml0VGVzdC5Jc3N1ZXMuVGVzdFByb3Rvc2IGcHJvdG8z"));
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
-        internal__static_unittest_issues_NegativeEnumMessage__Descriptor = Descriptor.MessageTypes[0];
+        internal__static_unittest_issues_Issue307__Descriptor = Descriptor.MessageTypes[0];
+        internal__static_unittest_issues_Issue307__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.Issue307>(internal__static_unittest_issues_Issue307__Descriptor,
+                new string[] { });
+        internal__static_unittest_issues_Issue307_NestedOnce__Descriptor = internal__static_unittest_issues_Issue307__Descriptor.NestedTypes[0];
+        internal__static_unittest_issues_Issue307_NestedOnce__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce>(internal__static_unittest_issues_Issue307_NestedOnce__Descriptor,
+                new string[] { });
+        internal__static_unittest_issues_Issue307_NestedOnce_NestedTwice__Descriptor = internal__static_unittest_issues_Issue307_NestedOnce__Descriptor.NestedTypes[0];
+        internal__static_unittest_issues_Issue307_NestedOnce_NestedTwice__FieldAccessorTable = 
+            new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice>(internal__static_unittest_issues_Issue307_NestedOnce_NestedTwice__Descriptor,
+                new string[] { });
+        internal__static_unittest_issues_NegativeEnumMessage__Descriptor = Descriptor.MessageTypes[1];
         internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.NegativeEnumMessage>(internal__static_unittest_issues_NegativeEnumMessage__Descriptor,
                 new string[] { "Value", "Values", "PackedValues", });
-        internal__static_unittest_issues_DeprecatedChild__Descriptor = Descriptor.MessageTypes[1];
+        internal__static_unittest_issues_DeprecatedChild__Descriptor = Descriptor.MessageTypes[2];
         internal__static_unittest_issues_DeprecatedChild__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedChild>(internal__static_unittest_issues_DeprecatedChild__Descriptor,
                 new string[] { });
-        internal__static_unittest_issues_DeprecatedFieldsMessage__Descriptor = Descriptor.MessageTypes[2];
+        internal__static_unittest_issues_DeprecatedFieldsMessage__Descriptor = Descriptor.MessageTypes[3];
         internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage>(internal__static_unittest_issues_DeprecatedFieldsMessage__Descriptor,
                 new string[] { "PrimitiveValue", "PrimitiveArray", "MessageValue", "MessageArray", "EnumValue", "EnumArray", });
-        internal__static_unittest_issues_ItemField__Descriptor = Descriptor.MessageTypes[3];
+        internal__static_unittest_issues_ItemField__Descriptor = Descriptor.MessageTypes[4];
         internal__static_unittest_issues_ItemField__FieldAccessorTable = 
             new pb::FieldAccess.FieldAccessorTable<global::UnitTest.Issues.TestProtos.ItemField>(internal__static_unittest_issues_ItemField__Descriptor,
                 new string[] { "Item", });
@@ -89,6 +108,270 @@ namespace UnitTest.Issues.TestProtos {
   #endregion
 
   #region Messages
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  public sealed partial class Issue307 : pb::IMessage<Issue307> {
+    private static readonly pb::MessageParser<Issue307> _parser = new pb::MessageParser<Issue307>(() => new Issue307());
+    public static pb::MessageParser<Issue307> Parser { get { return _parser; } }
+
+    private static readonly string[] _fieldNames = new string[] {  };
+    private static readonly uint[] _fieldTags = new uint[] {  };
+    public static pbd::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_Issue307__Descriptor; }
+    }
+
+    public pb::FieldAccess.FieldAccessorTable<Issue307> Fields {
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_Issue307__FieldAccessorTable; }
+    }
+
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
+    public Issue307() { }
+
+    public Issue307(Issue307 other) {
+    }
+
+    public Issue307 Clone() {
+      return new Issue307(this);
+    }
+
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+    }
+
+    public override bool Equals(object other) {
+      return Equals(other as Issue307);
+    }
+
+    public bool Equals(Issue307 other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      return true;
+    }
+
+    public override int GetHashCode() {
+      int hash = 1;
+      return hash;
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      return size;
+    }
+
+    public void MergeFrom(Issue307 other) {
+      if (other == null) {
+        return;
+      }
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while (input.ReadTag(out tag)) {
+        switch(tag) {
+          case 0:
+            throw pb::InvalidProtocolBufferException.InvalidTag();
+          default:
+            if (pb::WireFormat.IsEndGroupTag(tag)) {
+              return;
+            }
+            break;
+        }
+      }
+    }
+
+    #region Nested types
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    public static partial class Types {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+      public sealed partial class NestedOnce : pb::IMessage<NestedOnce> {
+        private static readonly pb::MessageParser<NestedOnce> _parser = new pb::MessageParser<NestedOnce>(() => new NestedOnce());
+        public static pb::MessageParser<NestedOnce> Parser { get { return _parser; } }
+
+        private static readonly string[] _fieldNames = new string[] {  };
+        private static readonly uint[] _fieldTags = new uint[] {  };
+        public static pbd::MessageDescriptor Descriptor {
+          get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_Issue307_NestedOnce__Descriptor; }
+        }
+
+        public pb::FieldAccess.FieldAccessorTable<NestedOnce> Fields {
+          get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_Issue307_NestedOnce__FieldAccessorTable; }
+        }
+
+        private bool _frozen = false;
+        public bool IsFrozen { get { return _frozen; } }
+
+        public NestedOnce() { }
+
+        public NestedOnce(NestedOnce other) {
+        }
+
+        public NestedOnce Clone() {
+          return new NestedOnce(this);
+        }
+
+        public void Freeze() {
+          if (IsFrozen) {
+            return;
+          }
+          _frozen = true;
+        }
+
+        public override bool Equals(object other) {
+          return Equals(other as NestedOnce);
+        }
+
+        public bool Equals(NestedOnce other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          return true;
+        }
+
+        public override int GetHashCode() {
+          int hash = 1;
+          return hash;
+        }
+
+        public void WriteTo(pb::CodedOutputStream output) {
+        }
+
+        public int CalculateSize() {
+          int size = 0;
+          return size;
+        }
+
+        public void MergeFrom(NestedOnce other) {
+          if (other == null) {
+            return;
+          }
+        }
+
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while (input.ReadTag(out tag)) {
+            switch(tag) {
+              case 0:
+                throw pb::InvalidProtocolBufferException.InvalidTag();
+              default:
+                if (pb::WireFormat.IsEndGroupTag(tag)) {
+                  return;
+                }
+                break;
+            }
+          }
+        }
+
+        #region Nested types
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public static partial class Types {
+          [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+          public sealed partial class NestedTwice : pb::IMessage<NestedTwice> {
+            private static readonly pb::MessageParser<NestedTwice> _parser = new pb::MessageParser<NestedTwice>(() => new NestedTwice());
+            public static pb::MessageParser<NestedTwice> Parser { get { return _parser; } }
+
+            private static readonly string[] _fieldNames = new string[] {  };
+            private static readonly uint[] _fieldTags = new uint[] {  };
+            public static pbd::MessageDescriptor Descriptor {
+              get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_Issue307_NestedOnce_NestedTwice__Descriptor; }
+            }
+
+            public pb::FieldAccess.FieldAccessorTable<NestedTwice> Fields {
+              get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_Issue307_NestedOnce_NestedTwice__FieldAccessorTable; }
+            }
+
+            private bool _frozen = false;
+            public bool IsFrozen { get { return _frozen; } }
+
+            public NestedTwice() { }
+
+            public NestedTwice(NestedTwice other) {
+            }
+
+            public NestedTwice Clone() {
+              return new NestedTwice(this);
+            }
+
+            public void Freeze() {
+              if (IsFrozen) {
+                return;
+              }
+              _frozen = true;
+            }
+
+            public override bool Equals(object other) {
+              return Equals(other as NestedTwice);
+            }
+
+            public bool Equals(NestedTwice other) {
+              if (ReferenceEquals(other, null)) {
+                return false;
+              }
+              if (ReferenceEquals(other, this)) {
+                return true;
+              }
+              return true;
+            }
+
+            public override int GetHashCode() {
+              int hash = 1;
+              return hash;
+            }
+
+            public void WriteTo(pb::CodedOutputStream output) {
+            }
+
+            public int CalculateSize() {
+              int size = 0;
+              return size;
+            }
+
+            public void MergeFrom(NestedTwice other) {
+              if (other == null) {
+                return;
+              }
+            }
+
+            public void MergeFrom(pb::CodedInputStream input) {
+              uint tag;
+              while (input.ReadTag(out tag)) {
+                switch(tag) {
+                  case 0:
+                    throw pb::InvalidProtocolBufferException.InvalidTag();
+                  default:
+                    if (pb::WireFormat.IsEndGroupTag(tag)) {
+                      return;
+                    }
+                    break;
+                }
+              }
+            }
+
+          }
+
+        }
+        #endregion
+
+      }
+
+    }
+    #endregion
+
+  }
+
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class NegativeEnumMessage : pb::IMessage<NegativeEnumMessage> {
     private static readonly pb::MessageParser<NegativeEnumMessage> _parser = new pb::MessageParser<NegativeEnumMessage>(() => new NegativeEnumMessage());
