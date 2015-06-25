@@ -53,16 +53,17 @@ import java.nio.ReadOnlyBufferException;
 public final class CodedOutputByteBufferNano {
   /* max bytes per java UTF-16 char in UTF-8 */
   private static final int MAX_UTF8_EXPANSION = 3;
-  private final ByteBuffer buffer;
+  private final byte[] buffer;
+  private final int offset;
+  private final int limit;
+  private int position;
 
   private CodedOutputByteBufferNano(final byte[] buffer, final int offset,
                             final int length) {
-    this(ByteBuffer.wrap(buffer, offset, length));
-  }
-
-  private CodedOutputByteBufferNano(final ByteBuffer buffer) {
     this.buffer = buffer;
-    this.buffer.order(ByteOrder.LITTLE_ENDIAN);
+    this.offset = offset;
+    this.limit = offset + length;
+    this.position = offset;
   }
 
   /**
@@ -301,26 +302,16 @@ public final class CodedOutputByteBufferNano {
       final int minLengthVarIntSize = computeRawVarint32Size(value.length());
       final int maxLengthVarIntSize = computeRawVarint32Size(value.length() * MAX_UTF8_EXPANSION);
       if (minLengthVarIntSize == maxLengthVarIntSize) {
-        int oldPosition = buffer.position();
-        // Buffer.position, when passed a position that is past its limit, throws
-        // IllegalArgumentException, and this class is documented to throw
-        // OutOfSpaceException instead.
-        if (buffer.remaining() < minLengthVarIntSize) {
-          throw new OutOfSpaceException(oldPosition + minLengthVarIntSize, buffer.limit());
-        }
-        buffer.position(oldPosition + minLengthVarIntSize);
-        encode(value, buffer);
-        int newPosition = buffer.position();
-        buffer.position(oldPosition);
-        writeRawVarint32(newPosition - oldPosition - minLengthVarIntSize);
-        buffer.position(newPosition);
+        int startPosition = position + minLengthVarIntSize;
+        int endPosition = encode(value, buffer, startPosition, spaceLeft());
+        writeRawVarint32(endPosition - startPosition);
+        position = endPosition;
       } else {
         writeRawVarint32(encodedLength(value));
-        encode(value, buffer);
+        position = encode(value, buffer, position, spaceLeft());
       }
-    } catch (BufferOverflowException e) {
-      final OutOfSpaceException outOfSpaceException = new OutOfSpaceException(buffer.position(),
-          buffer.limit());
+    } catch (ArrayIndexOutOfBoundsException e) {
+      final OutOfSpaceException outOfSpaceException = new OutOfSpaceException(position, limit);
       outOfSpaceException.initCause(e);
       throw outOfSpaceException;
     }
@@ -389,10 +380,10 @@ public final class CodedOutputByteBufferNano {
   }
 
   /**
-   * Encodes {@code sequence} into UTF-8, in {@code byteBuffer}. For a string, this method is
-   * equivalent to {@code buffer.put(string.getBytes(UTF_8))}, but is more efficient in both time
-   * and space. Bytes are written starting at the current position. This method requires paired
-   * surrogates, and therefore does not support chunking.
+   * Encodes {@code sequence} into UTF-8, in {@code bytes}. For a string, this method is
+   * equivalent to {@code ByteBuffer.wrap(buffer, offset, length).put(string.getBytes(UTF_8))},
+   * but is more efficient in both time and space. Bytes are written starting at the offset.
+   * This method requires paired surrogates, and therefore does not support chunking.
    *
    * <p>To ensure sufficient space in the output buffer, either call {@link #encodedLength} to
    * compute the exact amount needed, or leave room for {@code 3 * sequence.length()}, which is the
@@ -400,59 +391,11 @@ public final class CodedOutputByteBufferNano {
    *
    * @throws IllegalArgumentException if {@code sequence} contains ill-formed UTF-16 (unpaired
    *     surrogates)
-   * @throws BufferOverflowException if {@code sequence} encoded in UTF-8 does not fit in
-   *     {@code byteBuffer}'s remaining space.
-   * @throws ReadOnlyBufferException if {@code byteBuffer} is a read-only buffer.
+   * @throws ArrayIndexOutOfBoundsException if {@code sequence} encoded in UTF-8 does not fit in
+   *     {@code bytes}' remaining space.
+   *
+   * @return buffer end position, i.e., offset + written byte length
    */
-  private static void encode(CharSequence sequence, ByteBuffer byteBuffer) {
-    if (byteBuffer.isReadOnly()) {
-      throw new ReadOnlyBufferException();
-    } else if (byteBuffer.hasArray()) {
-      try {
-        int encoded = encode(sequence,
-                byteBuffer.array(),
-                byteBuffer.arrayOffset() + byteBuffer.position(),
-                byteBuffer.remaining());
-        byteBuffer.position(encoded - byteBuffer.arrayOffset());
-      } catch (ArrayIndexOutOfBoundsException e) {
-        BufferOverflowException boe = new BufferOverflowException();
-        boe.initCause(e);
-        throw boe;
-      }
-    } else {
-      encodeDirect(sequence, byteBuffer);
-    }
-  }
-
-  private static void encodeDirect(CharSequence sequence, ByteBuffer byteBuffer) {
-    int utf16Length = sequence.length();
-    for (int i = 0; i < utf16Length; i++) {
-      final char c = sequence.charAt(i);
-      if (c < 0x80) { // ASCII
-        byteBuffer.put((byte) c);
-      } else if (c < 0x800) { // 11 bits, two UTF-8 bytes
-        byteBuffer.put((byte) ((0xF << 6) | (c >>> 6)));
-        byteBuffer.put((byte) (0x80 | (0x3F & c)));
-      } else if (c < Character.MIN_SURROGATE || Character.MAX_SURROGATE < c) {
-        // Maximium single-char code point is 0xFFFF, 16 bits, three UTF-8 bytes
-        byteBuffer.put((byte) ((0xF << 5) | (c >>> 12)));
-        byteBuffer.put((byte) (0x80 | (0x3F & (c >>> 6))));
-        byteBuffer.put((byte) (0x80 | (0x3F & c)));
-      } else {
-        final char low;
-        if (i + 1 == sequence.length()
-                || !Character.isSurrogatePair(c, (low = sequence.charAt(++i)))) {
-          throw new IllegalArgumentException("Unpaired surrogate at index " + (i - 1));
-        }
-        int codePoint = Character.toCodePoint(c, low);
-        byteBuffer.put((byte) ((0xF << 4) | (codePoint >>> 18)));
-        byteBuffer.put((byte) (0x80 | (0x3F & (codePoint >>> 12))));
-        byteBuffer.put((byte) (0x80 | (0x3F & (codePoint >>> 6))));
-        byteBuffer.put((byte) (0x80 | (0x3F & codePoint)));
-      }
-    }
-  }
-
   private static int encode(CharSequence sequence, byte[] bytes, int offset, int length) {
     int utf16Length = sequence.length();
     int j = offset;
@@ -892,7 +835,7 @@ public final class CodedOutputByteBufferNano {
    * Otherwise, throws {@code UnsupportedOperationException}.
    */
   public int spaceLeft() {
-    return buffer.remaining();
+    return limit - position;
   }
 
   /**
@@ -913,7 +856,10 @@ public final class CodedOutputByteBufferNano {
    * Returns the position within the internal buffer.
    */
   public int position() {
-    return buffer.position();
+    // This used to return ByteBuffer.position(), which is
+    // the number of written bytes, and not the index within
+    // the array.
+    return position - offset;
   }
 
   /**
@@ -923,7 +869,7 @@ public final class CodedOutputByteBufferNano {
    * @see #spaceLeft
    */
   public void reset() {
-    buffer.clear();
+    position = offset;
   }
 
   /**
@@ -942,12 +888,12 @@ public final class CodedOutputByteBufferNano {
 
   /** Write a single byte. */
   public void writeRawByte(final byte value) throws IOException {
-    if (!buffer.hasRemaining()) {
+    if (position >= limit) {
       // We're writing to a single buffer.
-      throw new OutOfSpaceException(buffer.position(), buffer.limit());
+      throw new OutOfSpaceException(position, limit);
     }
 
-    buffer.put(value);
+    buffer[position++] = value;
   }
 
   /** Write a single byte, represented by an integer value. */
@@ -963,11 +909,13 @@ public final class CodedOutputByteBufferNano {
   /** Write part of an array of bytes. */
   public void writeRawBytes(final byte[] value, int offset, int length)
                             throws IOException {
-    if (buffer.remaining() >= length) {
-      buffer.put(value, offset, length);
+    if (spaceLeft() >= length) {
+      // We have room in the current buffer.
+      System.arraycopy(value, offset, buffer, position, length);
+      position += length;
     } else {
       // We're writing to a single buffer.
-      throw new OutOfSpaceException(buffer.position(), buffer.limit());
+      throw new OutOfSpaceException(position, limit);
     }
   }
 
@@ -1040,20 +988,24 @@ public final class CodedOutputByteBufferNano {
 
   /** Write a little-endian 32-bit integer. */
   public void writeRawLittleEndian32(final int value) throws IOException {
-    if (buffer.remaining() < 4) {
-      throw new OutOfSpaceException(buffer.position(), buffer.limit());
-    }
-    buffer.putInt(value);
+    writeRawByte((value      ) & 0xFF);
+    writeRawByte((value >>  8) & 0xFF);
+    writeRawByte((value >> 16) & 0xFF);
+    writeRawByte((value >> 24) & 0xFF);
   }
 
   public static final int LITTLE_ENDIAN_32_SIZE = 4;
 
   /** Write a little-endian 64-bit integer. */
   public void writeRawLittleEndian64(final long value) throws IOException {
-    if (buffer.remaining() < 8) {
-      throw new OutOfSpaceException(buffer.position(), buffer.limit());
-    }
-    buffer.putLong(value);
+    writeRawByte((int)(value      ) & 0xFF);
+    writeRawByte((int)(value >>  8) & 0xFF);
+    writeRawByte((int)(value >> 16) & 0xFF);
+    writeRawByte((int)(value >> 24) & 0xFF);
+    writeRawByte((int)(value >> 32) & 0xFF);
+    writeRawByte((int)(value >> 40) & 0xFF);
+    writeRawByte((int)(value >> 48) & 0xFF);
+    writeRawByte((int)(value >> 56) & 0xFF);
   }
 
   public static final int LITTLE_ENDIAN_64_SIZE = 8;
