@@ -168,7 +168,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 17;
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) hash ^= Value.GetHashCode();
       hash ^= values_.GetHashCode();
       hash ^= packedValues_.GetHashCode();
@@ -212,6 +212,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(NegativeEnumMessage other) {
       if (other == null) {
         return;
@@ -303,7 +304,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 17;
       return hash;
     }
 
@@ -314,6 +315,7 @@ namespace UnitTest.Issues.TestProtos {
       int size = 0;
       return size;
     }
+
     public void MergeFrom(DeprecatedChild other) {
       if (other == null) {
         return;
@@ -456,7 +458,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 17;
       if (PrimitiveValue != 0) hash ^= PrimitiveValue.GetHashCode();
       hash ^= primitiveArray_.GetHashCode();
       if (messageValue_ != null) hash ^= MessageValue.GetHashCode();
@@ -527,6 +529,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(DeprecatedFieldsMessage other) {
       if (other == null) {
         return;
@@ -655,7 +658,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 17;
       if (Item != 0) hash ^= Item.GetHashCode();
       return hash;
     }
@@ -674,6 +677,7 @@ namespace UnitTest.Issues.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(ItemField other) {
       if (other == null) {
         return;

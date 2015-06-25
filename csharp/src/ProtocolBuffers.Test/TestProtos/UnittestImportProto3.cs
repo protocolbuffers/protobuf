@@ -120,7 +120,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 17;
       if (D != 0) hash ^= D.GetHashCode();
       return hash;
     }
@@ -139,6 +139,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(ImportMessage other) {
       if (other == null) {
         return;
