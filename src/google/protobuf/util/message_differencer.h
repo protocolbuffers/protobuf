@@ -289,20 +289,11 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
     MapKeyComparator();
     virtual ~MapKeyComparator();
 
-    // The first IsMatch without parent_fields is only for backward
-    // compatibility. New users should override the second one instead.
-    //
-    // Deprecated.
-    // TODO(ykzhu): remove this function.
-    virtual bool IsMatch(const Message& message1,
-                         const Message& message2) const {
-      GOOGLE_CHECK(false) << "This function shouldn't get called";
-      return false;
-    }
     virtual bool IsMatch(const Message& message1,
                          const Message& message2,
                          const vector<SpecificField>& parent_fields) const {
-      return IsMatch(message1, message2);
+      GOOGLE_CHECK(false) << "IsMatch() is not implemented.";
+      return false;
     }
 
    private:
