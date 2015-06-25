@@ -45,11 +45,10 @@ namespace Google.Protobuf.Descriptors
     /// </summary>
     public sealed class FileDescriptor : IDescriptor<FileDescriptorProto>
     {
-        private FileDescriptorProto proto;
+        private readonly FileDescriptorProto proto;
         private readonly IList<MessageDescriptor> messageTypes;
         private readonly IList<EnumDescriptor> enumTypes;
         private readonly IList<ServiceDescriptor> services;
-        private readonly IList<FieldDescriptor> extensions;
         private readonly IList<FileDescriptor> dependencies;
         private readonly IList<FileDescriptor> publicDependencies;
         private readonly DescriptorPool pool;
@@ -86,10 +85,6 @@ namespace Google.Protobuf.Descriptors
             services = DescriptorUtil.ConvertAndMakeReadOnly(proto.Service,
                                                              (service, index) =>
                                                              new ServiceDescriptor(service, this, index));
-
-            extensions = DescriptorUtil.ConvertAndMakeReadOnly(proto.Extension,
-                                                               (field, index) =>
-                                                               new FieldDescriptor(field, this, null, index, true));
         }
 
         /// <summary>
@@ -128,9 +123,6 @@ namespace Google.Protobuf.Descriptors
             }
             return new ReadOnlyCollection<FileDescriptor>(publicDependencies);
         }
-
-
-        static readonly char[] PathSeperators = new char[] { '/', '\\' };
 
         /// <value>
         /// The descriptor in its protocol message representation.
@@ -187,14 +179,6 @@ namespace Google.Protobuf.Descriptors
         public IList<ServiceDescriptor> Services
         {
             get { return services; }
-        }
-
-        /// <value>
-        /// Unmodifiable list of top-level extensions declared in this file.
-        /// </value>
-        public IList<FieldDescriptor> Extensions
-        {
-            get { return extensions; }
         }
 
         /// <value>
@@ -350,16 +334,6 @@ namespace Google.Protobuf.Descriptors
             {
                 service.CrossLink();
             }
-
-            foreach (FieldDescriptor extension in extensions)
-            {
-                extension.CrossLink();
-            }
-
-            foreach (MessageDescriptor message in messageTypes)
-            {
-                message.CheckRequiredFields();
-            }
         }
 
         /// <summary>
@@ -415,42 +389,7 @@ namespace Google.Protobuf.Descriptors
             descriptorAssigner(result);
             return result;
         }
-
-        /// <summary>
-        /// Replace our FileDescriptorProto with the given one, which is
-        /// identical except that it might contain extensions that weren't present
-        /// in the original. This method is needed for bootstrapping when a file
-        /// defines custom options. The options may be defined in the file itself,
-        /// so we can't actually parse them until we've constructed the descriptors,
-        /// but to construct the decsriptors we have to have parsed the descriptor
-        /// protos. So, we have to parse the descriptor protos a second time after
-        /// constructing the descriptors.
-        /// </summary>
-        private void ReplaceProto(FileDescriptorProto newProto)
-        {
-            proto = newProto;
-
-            for (int i = 0; i < messageTypes.Count; i++)
-            {
-                messageTypes[i].ReplaceProto(proto.MessageType[i]);
-            }
-
-            for (int i = 0; i < enumTypes.Count; i++)
-            {
-                enumTypes[i].ReplaceProto(proto.EnumType[i]);
-            }
-
-            for (int i = 0; i < services.Count; i++)
-            {
-                services[i].ReplaceProto(proto.Service[i]);
-            }
-
-            for (int i = 0; i < extensions.Count; i++)
-            {
-                extensions[i].ReplaceProto(proto.Extension[i]);
-            }
-        }
-
+        
         public override string ToString()
         {
             return "FileDescriptor for " + proto.Name;

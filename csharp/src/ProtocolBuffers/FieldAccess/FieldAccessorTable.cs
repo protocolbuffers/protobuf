@@ -69,7 +69,6 @@ namespace Google.Protobuf.FieldAccess
             get
             {
                 FieldDescriptor field = descriptor.FindFieldByNumber(fieldNumber);
-                // TODO: Handle extensions.
                 return accessors[field.Index];
             }
         }
@@ -81,12 +80,6 @@ namespace Google.Protobuf.FieldAccess
                 if (field.ContainingType != descriptor)
                 {
                     throw new ArgumentException("FieldDescriptor does not match message type.");
-                }
-                else if (field.IsExtension)
-                {
-                    // If this type had extensions, it would subclass ExtendableMessage,
-                    // which overrides the reflection interface to handle extensions.
-                    throw new ArgumentException("This type does not have extensions.");
                 }
                 return accessors[field.Index];
             }

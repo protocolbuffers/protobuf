@@ -265,38 +265,6 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Builder for ByteStrings which allows them to be created without extra
-        /// copying being involved. This has to be a nested type in order to have access
-        /// to the private ByteString constructor.
-        /// </summary>
-        internal sealed class CodedBuilder
-        {
-            private readonly CodedOutputStream output;
-            private readonly byte[] buffer;
-
-            internal CodedBuilder(int size)
-            {
-                buffer = new byte[size];
-                output = CodedOutputStream.CreateInstance(buffer);
-            }
-
-            internal ByteString Build()
-            {
-                output.CheckNoSpaceLeft();
-
-                // We can be confident that the CodedOutputStream will not modify the
-                // underlying bytes anymore because it already wrote all of them.  So,
-                // no need to make a copy.
-                return new ByteString(buffer);
-            }
-
-            internal CodedOutputStream CodedOutput
-            {
-                get { return output; }
-            }
-        }
-
-        /// <summary>
         /// Used internally by CodedOutputStream to avoid creating a copy for the write
         /// </summary>
         internal void WriteRawBytesTo(CodedOutputStream outputStream)

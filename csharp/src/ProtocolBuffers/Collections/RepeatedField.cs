@@ -298,6 +298,16 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        internal uint CalculateSize(Func<T, int> sizeComputer)
+        {
+            int size = 0;
+            for (int i = 0; i < count; i++)
+            {
+                size += sizeComputer(array[i]);
+            }
+            return (uint)size;
+        }
+
         public struct Enumerator : IEnumerator<T>
         {
             private int index;
