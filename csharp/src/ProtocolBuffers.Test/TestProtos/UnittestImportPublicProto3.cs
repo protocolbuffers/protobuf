@@ -59,6 +59,9 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestImportPublicProto3.internal__static_protobuf_unittest_import_PublicImportMessage__FieldAccessorTable; }
     }
 
+    private bool _frozen = false;
+    public bool IsFrozen { get { return _frozen; } }
+
     public PublicImportMessage() { }
 
     public PublicImportMessage(PublicImportMessage other) {
@@ -69,13 +72,22 @@ namespace Google.Protobuf.TestProtos {
       return new PublicImportMessage(this);
     }
 
+    public void Freeze() {
+      if (IsFrozen) {
+        return;
+      }
+      _frozen = true;
+    }
+
     public const int EFieldNumber = 1;
     private int e_;
     public int E {
       get { return e_; }
-      set { e_ = value; }
+      set {
+        pb::Freezable.CheckMutable(this);
+        e_ = value;
+      }
     }
-
 
     public override bool Equals(object other) {
       return Equals(other as PublicImportMessage);

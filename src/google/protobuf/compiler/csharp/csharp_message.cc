@@ -194,8 +194,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "slash", field_names().size() > 0 ? "\"" : "");
   std::vector<std::string> tags;
   for (int i = 0; i < field_names().size(); i++) {
-    uint32 tag = internal::WireFormat::MakeTag(
-        descriptor_->FindFieldByName(field_names()[i]));
+    uint32 tag = FixedMakeTag(descriptor_->FindFieldByName(field_names()[i]));
     tags.push_back(SimpleItoa(tag));
   }
   printer->Print(
@@ -211,7 +210,9 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "public pb::FieldAccess.FieldAccessorTable<$class_name$> Fields {\n"
     "  get { return $umbrella_class_name$.internal__$identifier$__FieldAccessorTable; }\n"
     "}\n"
-    "\n");
+    "\n"
+    "private bool _frozen = false;\n"
+    "public bool IsFrozen { get { return _frozen; } }\n\n");
 
   // Parameterless constructor
   printer->Print(
@@ -219,6 +220,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "public $class_name$() { }\n\n");
 
   GenerateCloningCode(printer);
+  GenerateFreezingCode(printer);
 
   // Fields/properties
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -260,6 +262,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "  get { return $name$Case_; }\n"
       "}\n\n"
       "public void Clear$property_name$() {\n"
+      "  pb::Freezable.CheckMutable(this);\n"
       "  $name$Case_ = $property_name$OneofCase.None;\n"
       "  $name$_ = null;\n"
       "}\n\n");
@@ -344,6 +347,36 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
     "public $class_name$ Clone() {\n"
     "  return new $class_name$(this);\n"
     "}\n\n");
+}
+
+void MessageGenerator::GenerateFreezingCode(io::Printer* printer) {
+    map<string, string> vars;
+    vars["class_name"] = class_name();
+    printer->Print(
+      "public void Freeze() {\n"
+      "  if (IsFrozen) {\n"
+      "    return;\n"
+      "  }\n"
+      "  _frozen = true;\n");
+    printer->Indent();
+    // Freeze non-oneof fields first (only messages and repeated fields will actually generate any code)
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+        if (!descriptor_->field(i)->containing_oneof()) {
+            scoped_ptr<FieldGeneratorBase> generator(
+                CreateFieldGeneratorInternal(descriptor_->field(i)));
+            generator->GenerateFreezingCode(printer);
+        }
+    }
+
+    // For each oneof, if the value is freezable, freeze it. We don't actually need to know which type it was.
+    for (int i = 0; i < descriptor_->oneof_decl_count(); ++i) {
+        vars["name"] = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false);
+        printer->Print(vars,
+            "if ($name$_ is IFreezable) ((IFreezable) $name$_).Freeze();\n");
+    }
+
+    printer->Outdent();
+    printer->Print("}\n\n");
 }
 
 void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {

@@ -66,7 +66,10 @@ void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     "public $type_name$ $property_name$ {\n"
     "  get { return $name$_; }\n"
-    "  set { $name$_ = value; }\n"
+    "  set {\n"
+    "    pb::Freezable.CheckMutable(this);\n"
+    "    $name$_ = value;\n"
+    "  }\n"
     "}\n");
 }
 
@@ -116,7 +119,7 @@ void MessageFieldGenerator::WriteHash(io::Printer* printer) {
 void MessageFieldGenerator::WriteEquals(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if (!object.Equals($property_name$, other.$property_name$)) return false;");
+    "if (!object.Equals($property_name$, other.$property_name$)) return false;\n");
 }
 void MessageFieldGenerator::WriteToString(io::Printer* printer) {
   variables_["field_name"] = GetFieldName(descriptor_);
@@ -128,6 +131,11 @@ void MessageFieldGenerator::WriteToString(io::Printer* printer) {
 void MessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
   printer->Print(variables_,
     "$property_name$ = other.$has_property_check$ ? other.$property_name$.Clone() : null;\n");
+}
+
+void MessageFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "if ($has_property_check$) $property_name$.Freeze();\n");
 }
 
 MessageOneofFieldGenerator::MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
@@ -147,6 +155,7 @@ void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     "public $type_name$ $property_name$ {\n"
     "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : null; }\n"
     "  set {\n"
+    "    pb::Freezable.CheckMutable(this);\n"
     "    $oneof_name$_ = value;\n"
     "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n"
     "  }\n"

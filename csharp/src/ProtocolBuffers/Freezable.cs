@@ -1,6 +1,8 @@
+﻿#region Copyright notice and license
+
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// Copyright 2015 Google Inc.  All rights reserved.
+// http://github.com/google/protobuf
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -28,44 +30,31 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_REPEATED_MESSAGE_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_REPEATED_MESSAGE_FIELD_H__
+#endregion
 
-#include <string>
+using System;
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/csharp/csharp_field_base.h>
-
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace csharp {
-
-class RepeatedMessageFieldGenerator : public FieldGeneratorBase {
- public:
-  RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
-  ~RepeatedMessageFieldGenerator();
-
-  virtual void GenerateCloningCode(io::Printer* printer);
-  virtual void GenerateFreezingCode(io::Printer* printer);
-  virtual void GenerateMembers(io::Printer* printer);
-  virtual void GenerateMergingCode(io::Printer* printer);
-  virtual void GenerateParsingCode(io::Printer* printer);
-  virtual void GenerateSerializationCode(io::Printer* printer);
-  virtual void GenerateSerializedSizeCode(io::Printer* printer);
-
-  virtual void WriteHash(io::Printer* printer);
-  virtual void WriteEquals(io::Printer* printer);
-  virtual void WriteToString(io::Printer* printer);
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedMessageFieldGenerator);
-};
-
-}  // namespace csharp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_REPEATED_MESSAGE_FIELD_H__
-
+namespace Google.Protobuf
+{
+    /// <summary>
+    /// Extension methods for <see cref="IFreezable"/> types.
+    /// </summary>
+    public static class Freezable
+    {
+        /// <summary>
+        /// Throws an <see cref="InvalidOperationException"/> if <paramref name="target"/>
+        /// is frozen.
+        /// </summary>
+        /// <remarks>
+        /// This is a convenience methods that freezable types can call before all
+        /// mutations, to protect frozen objects.
+        /// </remarks>
+        public static void CheckMutable(this IFreezable target)
+        {
+            if (target.IsFrozen)
+            {
+                throw new InvalidOperationException("Attempt to mutate frozen object");
+            }
+        }
+    }
+}

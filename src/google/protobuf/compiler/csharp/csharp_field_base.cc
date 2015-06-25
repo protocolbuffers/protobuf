@@ -57,7 +57,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   // repeated fields varies by wire format. The wire format is encoded in the bottom 3 bits, which
   // never effects the tag size.
   int tag_size = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
-  uint tag = internal::WireFormat::MakeTag(descriptor_);
+  uint tag = FixedMakeTag(descriptor_);
   uint8 tag_array[5];
   io::CodedOutputStream::WriteTagToArray(tag, tag_array);
   string tag_bytes = SimpleItoa(tag_array[0]);
@@ -105,6 +105,11 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
 }
 
 FieldGeneratorBase::~FieldGeneratorBase() {
+}
+
+void FieldGeneratorBase::GenerateFreezingCode(io::Printer* printer) {
+  // No-op: only message fields and repeated fields need
+  // special handling for freezing, so default to not generating any code.
 }
 
 void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {

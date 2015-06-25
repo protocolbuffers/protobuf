@@ -153,6 +153,11 @@ void RepeatedPrimitiveFieldGenerator::GenerateCloningCode(io::Printer* printer) 
     "$name$_ = other.$name$_.Clone();\n");
 }
 
+void RepeatedPrimitiveFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "$name$_.Freeze();\n");
+}
+
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
