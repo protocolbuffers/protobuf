@@ -456,14 +456,16 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Returns true if the next tag is also part of the same unpacked array.
+        /// Peeks at the next tag in the stream. If it matches <paramref name="tag"/>,
+        /// the tag is consumed and the method returns <c>true</c>; otherwise, the
+        /// stream is left in the original position and the method returns <c>false</c>.
         /// </summary>
-        private bool ContinueArray(uint currentTag)
+        public bool MaybeConsumeTag(uint tag)
         {
             uint next;
             if (PeekNextTag(out next))
             {
-                if (next == currentTag)
+                if (next == tag)
                 {
                     hasNextTag = false;
                     return true;
@@ -486,17 +488,7 @@ namespace Google.Protobuf
                 }
                 return true;
             }
-
-            uint next;
-            if (PeekNextTag(out next))
-            {
-                if (next == currentTag)
-                {
-                    hasNextTag = false;
-                    return true;
-                }
-            }
-            return false;
+            return MaybeConsumeTag(currentTag);
         }
 
         /// <summary>
@@ -512,7 +504,7 @@ namespace Google.Protobuf
             do
             {
                 list.Add(ReadString());
-            } while (ContinueArray(fieldTag));
+            } while (MaybeConsumeTag(fieldTag));
         }
 
         public void ReadBytesArray(ICollection<ByteString> list)
@@ -521,7 +513,7 @@ namespace Google.Protobuf
             do
             {
                 list.Add(ReadBytes());
-            } while (ContinueArray(fieldTag));
+            } while (MaybeConsumeTag(fieldTag));
         }
 
         public void ReadBoolArray(ICollection<bool> list)
@@ -729,7 +721,7 @@ namespace Google.Protobuf
                 do
                 {
                     list.Add((T)(object) ReadEnum());
-                } while (ContinueArray(fieldTag));
+                } while (MaybeConsumeTag(fieldTag));
             }
         }
 
@@ -742,7 +734,7 @@ namespace Google.Protobuf
                 T message = messageParser.CreateTemplate();
                 ReadMessage(message);
                 list.Add(message);
-            } while (ContinueArray(fieldTag));
+            } while (MaybeConsumeTag(fieldTag));
         }
         #endregion
 

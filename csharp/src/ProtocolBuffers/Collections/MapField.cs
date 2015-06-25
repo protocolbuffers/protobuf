@@ -77,8 +77,7 @@ namespace Google.Protobuf.Collections
 
         public void Add(TKey key, TValue value)
         {
-            ThrowHelper.ThrowIfNull(key, "key");
-            this.CheckMutable();
+            // Validation of arguments happens in ContainsKey and the indexer
             if (ContainsKey(key))
             {
                 throw new ArgumentException("Key already exists in map", "key");
@@ -88,12 +87,14 @@ namespace Google.Protobuf.Collections
 
         public bool ContainsKey(TKey key)
         {
+            ThrowHelper.ThrowIfNull(key, "key");
             return map.ContainsKey(key);
         }
 
         public bool Remove(TKey key)
         {
             this.CheckMutable();
+            ThrowHelper.ThrowIfNull(key, "key");
             LinkedListNode<KeyValuePair<TKey, TValue>> node;
             if (map.TryGetValue(key, out node))
             {
@@ -126,6 +127,7 @@ namespace Google.Protobuf.Collections
         {
             get
             {
+                ThrowHelper.ThrowIfNull(key, "key");
                 TValue value;
                 if (TryGetValue(key, out value))
                 {
@@ -135,6 +137,11 @@ namespace Google.Protobuf.Collections
             }
             set
             {
+                ThrowHelper.ThrowIfNull(key, "key");
+                if (value == null && (typeof(TValue) == typeof(ByteString) || typeof(TValue) == typeof(string)))
+                {
+                    ThrowHelper.ThrowIfNull(value, "value");
+                }
                 this.CheckMutable();
                 LinkedListNode<KeyValuePair<TKey, TValue>> node;
                 var pair = new KeyValuePair<TKey, TValue>(key, value);
@@ -156,9 +163,10 @@ namespace Google.Protobuf.Collections
 
         public void Add(IDictionary<TKey, TValue> entries)
         {
+            ThrowHelper.ThrowIfNull(entries, "entries");
             foreach (var pair in entries)
             {
-                Add(pair);
+                Add(pair.Key, pair.Value);
             }
         }
 
@@ -172,9 +180,8 @@ namespace Google.Protobuf.Collections
             return GetEnumerator();
         }
 
-        public void Add(KeyValuePair<TKey, TValue> item)
+        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
         {
-            this.CheckMutable();
             Add(item.Key, item.Value);
         }
 
@@ -185,22 +192,37 @@ namespace Google.Protobuf.Collections
             map.Clear();
         }
 
-        public bool Contains(KeyValuePair<TKey, TValue> item)
+        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
             TValue value;
             return TryGetValue(item.Key, out value)
                 && EqualityComparer<TValue>.Default.Equals(item.Value, value);
         }
 
-        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             list.CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(KeyValuePair<TKey, TValue> item)
+        bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
             this.CheckMutable();
-            return Remove(item.Key);
+            if (item.Key == null)
+            {
+                throw new ArgumentException("Key is null", "item");
+            }
+            LinkedListNode<KeyValuePair<TKey, TValue>> node;
+            if (map.TryGetValue(item.Key, out node) &&
+                EqualityComparer<TValue>.Default.Equals(item.Value, node.Value.Value))
+            {
+                map.Remove(item.Key);
+                node.List.Remove(node);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public int Count { get { return list.Count; } }
@@ -239,7 +261,7 @@ namespace Google.Protobuf.Collections
         public override int GetHashCode()
         {
             var valueComparer = EqualityComparer<TValue>.Default;
-            int hash = 0;
+            int hash = 19;
             foreach (var pair in list)
             {
                 hash ^= pair.Key.GetHashCode() * 31 + valueComparer.GetHashCode(pair.Value);
@@ -277,14 +299,26 @@ namespace Google.Protobuf.Collections
             return true;
         }
 
+        /// <summary>
+        /// Adds entries to the map from the given stream.
+        /// </summary>
+        /// <remarks>
+        /// It is assumed that the stream is initially positioned after the tag specified by the codec.
+        /// This method will continue reading entries from the stream until the end is reached, or
+        /// a different tag is encountered.
+        /// </remarks>
+        /// <param name="input">Stream to read from</param>
+        /// <param name="codec">Codec describing how the key/value pairs are encoded</param>
         public void AddEntriesFrom(CodedInputStream input, Codec codec)            
         {
-            // TODO: Peek at the next tag and see if it's the same. If it is, we can reuse the entry object...
             var adapter = new Codec.MessageAdapter(codec);
-            adapter.Reset();
-            input.ReadMessage(adapter);
-            this[adapter.Key] = adapter.Value;
-        }
+            do
+            {
+                adapter.Reset();
+                input.ReadMessage(adapter);
+                this[adapter.Key] = adapter.Value;
+            } while (input.MaybeConsumeTag(codec.MapTag));
+        }        
 
         public void WriteTo(CodedOutputStream output, Codec codec)
         {

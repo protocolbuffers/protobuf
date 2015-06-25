@@ -12,6 +12,15 @@ namespace Google.Protobuf
     public class GeneratedMessageTest
     {
         [Test]
+        public void EmptyMessageFieldDistinctFromMissingMessageField()
+        {
+            // This demonstrates what we're really interested in...
+            var message1 = new TestAllTypes { SingleForeignMessage = new ForeignMessage() };
+            var message2 = new TestAllTypes(); // SingleForeignMessage is null
+            EqualityTester.AssertInequality(message1, message2);
+        }
+
+        [Test]
         public void DefaultValues()
         {
             // Single fields

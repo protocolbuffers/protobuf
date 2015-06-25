@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Google.Protobuf.Collections;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
-namespace Google.Protobuf
+namespace Google.Protobuf.Collections
 {
     public class RepeatedFieldTest
     {
