@@ -177,12 +177,12 @@ namespace Google.Protobuf.Collections
         public void EqualityIsKeySensitive()
         {
             var map1 = new MapField<string, string>();
-            map1.Add("a1", "v1");
-            map1.Add("b1", "v2");
+            map1.Add("first key", "v1");
+            map1.Add("second key", "v2");
 
             var map2 = new MapField<string, string>();
-            map2.Add("a2", "v1");
-            map2.Add("b2", "v2");
+            map2.Add("third key", "v1");
+            map2.Add("fourth key", "v2");
 
             EqualityTester.AssertInequality(map1, map2);
         }
@@ -193,12 +193,12 @@ namespace Google.Protobuf.Collections
             // Note: Without some care, it's a little easier than one might
             // hope to see hash collisions, but only in some environments...
             var map1 = new MapField<string, string>();
-            map1.Add("a", "a1");
-            map1.Add("b", "a2");
+            map1.Add("a", "first value");
+            map1.Add("b", "second value");
 
             var map2 = new MapField<string, string>();
-            map2.Add("a", "b1");
-            map2.Add("b", "b2");
+            map2.Add("a", "third value");
+            map2.Add("b", "fourth value");
 
             EqualityTester.AssertInequality(map1, map2);
         }
