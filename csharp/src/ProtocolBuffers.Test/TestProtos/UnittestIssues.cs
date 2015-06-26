@@ -168,7 +168,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) hash ^= Value.GetHashCode();
       hash ^= values_.GetHashCode();
       hash ^= packedValues_.GetHashCode();
@@ -304,7 +304,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       return hash;
     }
 
@@ -458,7 +458,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (PrimitiveValue != 0) hash ^= PrimitiveValue.GetHashCode();
       hash ^= primitiveArray_.GetHashCode();
       if (messageValue_ != null) hash ^= MessageValue.GetHashCode();
@@ -658,7 +658,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Item != 0) hash ^= Item.GetHashCode();
       return hash;
     }

@@ -335,7 +335,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       hash ^= file_.GetHashCode();
       return hash;
     }
@@ -559,7 +559,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Package.Length != 0) hash ^= Package.GetHashCode();
       hash ^= dependency_.GetHashCode();
@@ -940,7 +940,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       hash ^= field_.GetHashCode();
       hash ^= extension_.GetHashCode();
@@ -1207,7 +1207,7 @@ namespace Google.Protobuf.DescriptorProtos {
         }
 
         public override int GetHashCode() {
-          int hash = 17;
+          int hash = 1;
           if (Start != 0) hash ^= Start.GetHashCode();
           if (End != 0) hash ^= End.GetHashCode();
           return hash;
@@ -1345,7 +1345,7 @@ namespace Google.Protobuf.DescriptorProtos {
         }
 
         public override int GetHashCode() {
-          int hash = 17;
+          int hash = 1;
           if (Start != 0) hash ^= Start.GetHashCode();
           if (End != 0) hash ^= End.GetHashCode();
           return hash;
@@ -1573,7 +1573,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Number != 0) hash ^= Number.GetHashCode();
       if (Label != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) hash ^= Label.GetHashCode();
@@ -1843,7 +1843,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       return hash;
     }
@@ -1976,7 +1976,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       hash ^= value_.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
@@ -2148,7 +2148,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Number != 0) hash ^= Number.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
@@ -2317,7 +2317,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       hash ^= method_.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
@@ -2525,7 +2525,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (InputType.Length != 0) hash ^= InputType.GetHashCode();
       if (OutputType.Length != 0) hash ^= OutputType.GetHashCode();
@@ -2882,7 +2882,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (JavaPackage.Length != 0) hash ^= JavaPackage.GetHashCode();
       if (JavaOuterClassname.Length != 0) hash ^= JavaOuterClassname.GetHashCode();
       if (JavaMultipleFiles != false) hash ^= JavaMultipleFiles.GetHashCode();
@@ -3260,7 +3260,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (MessageSetWireFormat != false) hash ^= MessageSetWireFormat.GetHashCode();
       if (NoStandardDescriptorAccessor != false) hash ^= NoStandardDescriptorAccessor.GetHashCode();
       if (Deprecated != false) hash ^= Deprecated.GetHashCode();
@@ -3500,7 +3500,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Ctype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING) hash ^= Ctype.GetHashCode();
       if (Packed != false) hash ^= Packed.GetHashCode();
       if (Jstype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL) hash ^= Jstype.GetHashCode();
@@ -3740,7 +3740,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (AllowAlias != false) hash ^= AllowAlias.GetHashCode();
       if (Deprecated != false) hash ^= Deprecated.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
@@ -3890,7 +3890,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Deprecated != false) hash ^= Deprecated.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
       return hash;
@@ -4025,7 +4025,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Deprecated != false) hash ^= Deprecated.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
       return hash;
@@ -4160,7 +4160,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (Deprecated != false) hash ^= Deprecated.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
       return hash;
@@ -4355,7 +4355,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       hash ^= name_.GetHashCode();
       if (IdentifierValue.Length != 0) hash ^= IdentifierValue.GetHashCode();
       if (PositiveIntValue != 0UL) hash ^= PositiveIntValue.GetHashCode();
@@ -4569,7 +4569,7 @@ namespace Google.Protobuf.DescriptorProtos {
         }
 
         public override int GetHashCode() {
-          int hash = 17;
+          int hash = 1;
           if (NamePart_.Length != 0) hash ^= NamePart_.GetHashCode();
           if (IsExtension != false) hash ^= IsExtension.GetHashCode();
           return hash;
@@ -4697,7 +4697,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       hash ^= location_.GetHashCode();
       return hash;
     }
@@ -4848,7 +4848,7 @@ namespace Google.Protobuf.DescriptorProtos {
         }
 
         public override int GetHashCode() {
-          int hash = 17;
+          int hash = 1;
           hash ^= path_.GetHashCode();
           hash ^= span_.GetHashCode();
           if (LeadingComments.Length != 0) hash ^= LeadingComments.GetHashCode();

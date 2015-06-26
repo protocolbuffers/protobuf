@@ -120,7 +120,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 17;
+      int hash = 1;
       if (D != 0) hash ^= D.GetHashCode();
       return hash;
     }
