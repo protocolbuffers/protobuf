@@ -49,6 +49,7 @@ class FieldGeneratorBase : public SourceGeneratorBase {
 
   virtual void GenerateCloningCode(io::Printer* printer) = 0;
   virtual void GenerateFreezingCode(io::Printer* printer);
+  virtual void GenerateCodecCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer) = 0;
   virtual void GenerateMergingCode(io::Printer* printer) = 0;
   virtual void GenerateParsingCode(io::Printer* printer) = 0;
@@ -76,6 +77,7 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   std::string property_name();
   std::string name();
   std::string type_name();
+  std::string type_name(const FieldDescriptor* descriptor);
   bool has_default_value();
   bool is_nullable_type();
   std::string default_value();

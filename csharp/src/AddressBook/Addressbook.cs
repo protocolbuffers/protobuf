@@ -155,7 +155,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Id != 0) hash ^= Id.GetHashCode();
       if (Email.Length != 0) hash ^= Email.GetHashCode();
@@ -200,6 +200,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       return size;
     }
+
     public void MergeFrom(Person other) {
       if (other == null) {
         return;
@@ -329,7 +330,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         }
 
         public override int GetHashCode() {
-          int hash = 0;
+          int hash = 1;
           if (Number.Length != 0) hash ^= Number.GetHashCode();
           if (Type != global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME) hash ^= Type.GetHashCode();
           return hash;
@@ -356,6 +357,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           }
           return size;
         }
+
         public void MergeFrom(PhoneNumber other) {
           if (other == null) {
             return;
@@ -456,7 +458,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       hash ^= person_.GetHashCode();
       return hash;
     }
@@ -477,6 +479,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
       }
       return size;
     }
+
     public void MergeFrom(AddressBook other) {
       if (other == null) {
         return;

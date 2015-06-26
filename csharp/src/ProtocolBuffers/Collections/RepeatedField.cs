@@ -193,7 +193,7 @@ namespace Google.Protobuf.Collections
 
         public override int GetHashCode()
         {
-            int hash = 23;
+            int hash = 0;
             for (int i = 0; i < count; i++)
             {
                 hash = hash * 31 + array[i].GetHashCode();

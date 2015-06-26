@@ -995,7 +995,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (SingleInt32 != 0) hash ^= SingleInt32.GetHashCode();
       if (SingleInt64 != 0L) hash ^= SingleInt64.GetHashCode();
       if (SingleUint32 != 0) hash ^= SingleUint32.GetHashCode();
@@ -1472,6 +1472,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestAllTypes other) {
       if (other == null) {
         return;
@@ -1905,7 +1906,7 @@ namespace Google.Protobuf.TestProtos {
         }
 
         public override int GetHashCode() {
-          int hash = 0;
+          int hash = 1;
           if (Bb != 0) hash ^= Bb.GetHashCode();
           return hash;
         }
@@ -1924,6 +1925,7 @@ namespace Google.Protobuf.TestProtos {
           }
           return size;
         }
+
         public void MergeFrom(NestedMessage other) {
           if (other == null) {
             return;
@@ -2043,7 +2045,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (child_ != null) hash ^= Child.GetHashCode();
       if (payload_ != null) hash ^= Payload.GetHashCode();
       hash ^= repeatedChild_.GetHashCode();
@@ -2080,6 +2082,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(NestedTestAllTypes other) {
       if (other == null) {
         return;
@@ -2196,7 +2199,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (DeprecatedInt32 != 0) hash ^= DeprecatedInt32.GetHashCode();
       return hash;
     }
@@ -2215,6 +2218,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestDeprecatedFields other) {
       if (other == null) {
         return;
@@ -2306,7 +2310,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (C != 0) hash ^= C.GetHashCode();
       return hash;
     }
@@ -2325,6 +2329,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(ForeignMessage other) {
       if (other == null) {
         return;
@@ -2404,7 +2409,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       return hash;
     }
 
@@ -2415,6 +2420,7 @@ namespace Google.Protobuf.TestProtos {
       int size = 0;
       return size;
     }
+
     public void MergeFrom(TestReservedFields other) {
       if (other == null) {
         return;
@@ -2500,7 +2506,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (foreignNested_ != null) hash ^= ForeignNested.GetHashCode();
       return hash;
     }
@@ -2519,6 +2525,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestForeignNested other) {
       if (other == null) {
         return;
@@ -2628,7 +2635,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (A != 0) hash ^= A.GetHashCode();
       if (Bb != 0) hash ^= Bb.GetHashCode();
       return hash;
@@ -2655,6 +2662,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestReallyLargeTagNumber other) {
       if (other == null) {
         return;
@@ -2766,7 +2774,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (a_ != null) hash ^= A.GetHashCode();
       if (I != 0) hash ^= I.GetHashCode();
       return hash;
@@ -2793,6 +2801,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestRecursiveMessage other) {
       if (other == null) {
         return;
@@ -2898,7 +2907,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (bb_ != null) hash ^= Bb.GetHashCode();
       return hash;
     }
@@ -2917,6 +2926,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestMutualRecursionA other) {
       if (other == null) {
         return;
@@ -3027,7 +3037,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (a_ != null) hash ^= A.GetHashCode();
       if (OptionalInt32 != 0) hash ^= OptionalInt32.GetHashCode();
       return hash;
@@ -3054,6 +3064,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestMutualRecursionB other) {
       if (other == null) {
         return;
@@ -3231,7 +3242,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (PrimitiveField != 0) hash ^= PrimitiveField.GetHashCode();
       if (StringField.Length != 0) hash ^= StringField.GetHashCode();
       if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) hash ^= EnumField.GetHashCode();
@@ -3322,6 +3333,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestCamelCaseFieldNames other) {
       if (other == null) {
         return;
@@ -3499,7 +3511,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (MyString.Length != 0) hash ^= MyString.GetHashCode();
       if (MyInt != 0L) hash ^= MyInt.GetHashCode();
       if (MyFloat != 0F) hash ^= MyFloat.GetHashCode();
@@ -3542,6 +3554,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestFieldOrderings other) {
       if (other == null) {
         return;
@@ -3673,7 +3686,7 @@ namespace Google.Protobuf.TestProtos {
         }
 
         public override int GetHashCode() {
-          int hash = 0;
+          int hash = 1;
           if (Oo != 0L) hash ^= Oo.GetHashCode();
           if (Bb != 0) hash ^= Bb.GetHashCode();
           return hash;
@@ -3700,6 +3713,7 @@ namespace Google.Protobuf.TestProtos {
           }
           return size;
         }
+
         public void MergeFrom(NestedMessage other) {
           if (other == null) {
             return;
@@ -3803,7 +3817,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) hash ^= SparseEnum.GetHashCode();
       return hash;
     }
@@ -3822,6 +3836,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(SparseEnumMessage other) {
       if (other == null) {
         return;
@@ -3913,7 +3928,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (Data.Length != 0) hash ^= Data.GetHashCode();
       return hash;
     }
@@ -3932,6 +3947,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(OneString other) {
       if (other == null) {
         return;
@@ -4020,7 +4036,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       hash ^= data_.GetHashCode();
       return hash;
     }
@@ -4043,6 +4059,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(MoreString other) {
       if (other == null) {
         return;
@@ -4132,7 +4149,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (Data.Length != 0) hash ^= Data.GetHashCode();
       return hash;
     }
@@ -4151,6 +4168,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(OneBytes other) {
       if (other == null) {
         return;
@@ -4242,7 +4260,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (Data.Length != 0) hash ^= Data.GetHashCode();
       return hash;
     }
@@ -4261,6 +4279,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(MoreBytes other) {
       if (other == null) {
         return;
@@ -4352,7 +4371,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (Data != 0) hash ^= Data.GetHashCode();
       return hash;
     }
@@ -4371,6 +4390,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(Int32Message other) {
       if (other == null) {
         return;
@@ -4462,7 +4482,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (Data != 0) hash ^= Data.GetHashCode();
       return hash;
     }
@@ -4481,6 +4501,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(Uint32Message other) {
       if (other == null) {
         return;
@@ -4572,7 +4593,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (Data != 0L) hash ^= Data.GetHashCode();
       return hash;
     }
@@ -4591,6 +4612,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(Int64Message other) {
       if (other == null) {
         return;
@@ -4682,7 +4704,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (Data != 0UL) hash ^= Data.GetHashCode();
       return hash;
     }
@@ -4701,6 +4723,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(Uint64Message other) {
       if (other == null) {
         return;
@@ -4792,7 +4815,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (Data != false) hash ^= Data.GetHashCode();
       return hash;
     }
@@ -4811,6 +4834,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(BoolMessage other) {
       if (other == null) {
         return;
@@ -4954,7 +4978,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (fooCase_ == FooOneofCase.FooInt) hash ^= FooInt.GetHashCode();
       if (fooCase_ == FooOneofCase.FooString) hash ^= FooString.GetHashCode();
       if (fooCase_ == FooOneofCase.FooMessage) hash ^= FooMessage.GetHashCode();
@@ -4989,6 +5013,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestOneof other) {
       if (other == null) {
         return;
@@ -5216,7 +5241,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       hash ^= packedInt32_.GetHashCode();
       hash ^= packedInt64_.GetHashCode();
       hash ^= packedUint32_.GetHashCode();
@@ -5395,6 +5420,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestPackedTypes other) {
       if (other == null) {
         return;
@@ -5677,7 +5703,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       hash ^= unpackedInt32_.GetHashCode();
       hash ^= unpackedInt64_.GetHashCode();
       hash ^= unpackedUint32_.GetHashCode();
@@ -5842,6 +5868,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestUnpackedTypes other) {
       if (other == null) {
         return;
@@ -6052,7 +6079,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       hash ^= repeatedFixed32_.GetHashCode();
       hash ^= repeatedInt32_.GetHashCode();
       hash ^= repeatedFixed64_.GetHashCode();
@@ -6135,6 +6162,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestRepeatedScalarDifferentTagSizes other) {
       if (other == null) {
         return;
@@ -6255,7 +6283,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       if (A.Length != 0) hash ^= A.GetHashCode();
       return hash;
     }
@@ -6274,6 +6302,7 @@ namespace Google.Protobuf.TestProtos {
       }
       return size;
     }
+
     public void MergeFrom(TestCommentInjectionMessage other) {
       if (other == null) {
         return;
@@ -6353,7 +6382,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       return hash;
     }
 
@@ -6364,6 +6393,7 @@ namespace Google.Protobuf.TestProtos {
       int size = 0;
       return size;
     }
+
     public void MergeFrom(FooRequest other) {
       if (other == null) {
         return;
@@ -6436,7 +6466,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       return hash;
     }
 
@@ -6447,6 +6477,7 @@ namespace Google.Protobuf.TestProtos {
       int size = 0;
       return size;
     }
+
     public void MergeFrom(FooResponse other) {
       if (other == null) {
         return;
@@ -6519,7 +6550,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       return hash;
     }
 
@@ -6530,6 +6561,7 @@ namespace Google.Protobuf.TestProtos {
       int size = 0;
       return size;
     }
+
     public void MergeFrom(FooClientMessage other) {
       if (other == null) {
         return;
@@ -6602,7 +6634,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       return hash;
     }
 
@@ -6613,6 +6645,7 @@ namespace Google.Protobuf.TestProtos {
       int size = 0;
       return size;
     }
+
     public void MergeFrom(FooServerMessage other) {
       if (other == null) {
         return;
@@ -6685,7 +6718,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       return hash;
     }
 
@@ -6696,6 +6729,7 @@ namespace Google.Protobuf.TestProtos {
       int size = 0;
       return size;
     }
+
     public void MergeFrom(BarRequest other) {
       if (other == null) {
         return;
@@ -6768,7 +6802,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override int GetHashCode() {
-      int hash = 0;
+      int hash = 1;
       return hash;
     }
 
@@ -6779,6 +6813,7 @@ namespace Google.Protobuf.TestProtos {
       int size = 0;
       return size;
     }
+
     public void MergeFrom(BarResponse other) {
       if (other == null) {
         return;

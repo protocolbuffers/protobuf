@@ -129,7 +129,7 @@ void PrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
       "size += $tag_size$ + $fixed_size$;\n",
       "fixed_size", SimpleItoa(fixedSize),
       "tag_size", variables_["tag_size"]);
-  }    
+  }
   printer->Outdent();
   printer->Print("}\n");
 }
@@ -153,6 +153,12 @@ void PrimitiveFieldGenerator::WriteToString(io::Printer* printer) {
 void PrimitiveFieldGenerator::GenerateCloningCode(io::Printer* printer) {
   printer->Print(variables_,
     "$name$_ = other.$name$_;\n");
+}
+
+void PrimitiveFieldGenerator::GenerateCodecCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "pb::FieldCodec.For$capitalized_type_name$($tag$)");
 }
 
 PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(

@@ -138,6 +138,12 @@ void MessageFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
     "if ($has_property_check$) $property_name$.Freeze();\n");
 }
 
+void MessageFieldGenerator::GenerateCodecCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "pb::FieldCodec.ForMessage($tag$, $type_name$.Parser)");
+}
+
 MessageOneofFieldGenerator::MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
 						       int fieldOrdinal)
     : MessageFieldGenerator(descriptor, fieldOrdinal) {

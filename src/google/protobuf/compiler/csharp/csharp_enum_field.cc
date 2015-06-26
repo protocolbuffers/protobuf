@@ -74,6 +74,12 @@ void EnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
     "}\n");
 }
 
+void EnumFieldGenerator::GenerateCodecCode(io::Printer* printer) {
+    printer->Print(
+        variables_,
+        "pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x)");
+}
+
 EnumOneofFieldGenerator::EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
 						 int fieldOrdinal)
   : PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal) {

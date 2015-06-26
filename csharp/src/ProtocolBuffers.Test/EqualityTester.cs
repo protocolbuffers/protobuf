@@ -1,5 +1,6 @@
+﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2015 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,51 +28,36 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#endregion
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_ENUM_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_ENUM_FIELD_H__
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using NUnit.Framework;
 
-#include <string>
+namespace Google.Protobuf
+{
+    /// <summary>
+    /// Helper methods when testing equality. NUnit's Assert.AreEqual and
+    /// Assert.AreNotEqual methods try to be clever with collections, which can
+    /// be annoying...
+    /// </summary>
+    internal static class EqualityTester
+    {
+        public static void AssertEquality<T>(T first, T second) where T : IEquatable<T>
+        {
+            Assert.IsTrue(first.Equals(second));
+            Assert.AreEqual(first.GetHashCode(), second.GetHashCode());
+        }
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
-
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace csharp {
-
-class EnumFieldGenerator : public PrimitiveFieldGenerator {
- public:
-  EnumFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
-  ~EnumFieldGenerator();
-
-  virtual void GenerateCodecCode(io::Printer* printer);
-  virtual void GenerateParsingCode(io::Printer* printer);
-  virtual void GenerateSerializationCode(io::Printer* printer);
-  virtual void GenerateSerializedSizeCode(io::Printer* printer);
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumFieldGenerator);
-};
-
-class EnumOneofFieldGenerator : public PrimitiveOneofFieldGenerator {
- public:
-  EnumOneofFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
-  ~EnumOneofFieldGenerator();
-
-  virtual void GenerateParsingCode(io::Printer* printer);
-  virtual void GenerateSerializationCode(io::Printer* printer);
-  virtual void GenerateSerializedSizeCode(io::Printer* printer);
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumOneofFieldGenerator);
-};
-
-}  // namespace csharp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_ENUM_FIELD_H__
-
+        public static void AssertInequality<T>(T first, T second) where T : IEquatable<T>
+        {
+            Assert.IsFalse(first.Equals(second));
+            // While this isn't a requirement, the chances of this test failing due to
+            // coincidence rather than a bug are very small.
+            Assert.AreNotEqual(first.GetHashCode(), second.GetHashCode());
+        }
+    }
+}

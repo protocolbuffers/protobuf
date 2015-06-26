@@ -46,6 +46,7 @@ class PrimitiveFieldGenerator : public FieldGeneratorBase {
   PrimitiveFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~PrimitiveFieldGenerator();
 
+  virtual void GenerateCodecCode(io::Printer* printer);
   virtual void GenerateCloningCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer);
   virtual void GenerateMergingCode(io::Printer* printer);
