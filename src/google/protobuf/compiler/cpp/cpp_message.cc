@@ -1071,8 +1071,8 @@ GenerateClassDefinition(io::Printer* printer) {
   for (int i = 0; i < descriptors.size(); i++) {
     const FieldDescriptor* field = descriptors[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-      switch (field->options().ctype()) {
-        default: uses_string_ = true; break;
+      /*switch (field->options().ctype())*/ {
+      /*default:*/ uses_string_ = true; break;
       }
     }
   }

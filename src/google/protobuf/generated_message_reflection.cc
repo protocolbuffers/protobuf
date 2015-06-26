@@ -1875,8 +1875,8 @@ inline bool GeneratedMessageReflection::HasBit(
       // (which uses HasField()) needs to be consistent with this.
       switch (field->cpp_type()) {
         case FieldDescriptor::CPPTYPE_STRING:
-          switch (field->options().ctype()) {
-            default: {
+          /*switch (field->options().ctype())*/ {
+          /*default:*/ {
               const string* default_ptr =
                   &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
               return GetField<ArenaStringPtr>(message, field).Get(
