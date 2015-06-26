@@ -8,11 +8,11 @@
     <ProjectGuid>{A31F5FB2-4FF3-432A-B35B-5CD203606311}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Google.ProtocolBuffers.Examples.AddressBook</RootNamespace>
+    <RootNamespace>Google.Protobuf.Examples.AddressBook</RootNamespace>
     <AssemblyName>AddressBook</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <StartupObject>Google.ProtocolBuffers.Examples.AddressBook.Program</StartupObject>
+    <StartupObject>Google.Protobuf.Examples.AddressBook.Program</StartupObject>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

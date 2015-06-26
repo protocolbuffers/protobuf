@@ -36,9 +36,8 @@
 
 using System;
 using System.IO;
-using Google.Protobuf;
 
-namespace Google.ProtocolBuffers.Examples.AddressBook
+namespace Google.Protobuf.Examples.AddressBook
 {
     internal class AddPerson
     {

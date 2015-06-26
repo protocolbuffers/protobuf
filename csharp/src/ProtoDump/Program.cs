@@ -36,9 +36,8 @@
 
 using System;
 using System.IO;
-using Google.Protobuf;
 
-namespace Google.ProtocolBuffers.ProtoDump
+namespace Google.Protobuf.ProtoDump
 {
     /// <summary>
     /// Small utility to load a binary message and dump it in text form

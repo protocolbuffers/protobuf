@@ -6,7 +6,7 @@ package tutorial;
 
 option java_package = "com.example.tutorial";
 option java_outer_classname = "AddressBookProtos";
-option csharp_namespace = "Google.ProtocolBuffers.Examples.AddressBook";
+option csharp_namespace = "Google.Protobuf.Examples.AddressBook";
 
 message Person {
   required string name = 1;
