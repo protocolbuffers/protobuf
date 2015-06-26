@@ -31,10 +31,6 @@
 package com.google.protobuf.nano;
 
 import java.io.IOException;
-import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.ReadOnlyBufferException;
 
 /**
  * Encodes and writes protocol message fields.
