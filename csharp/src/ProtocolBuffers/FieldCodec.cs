@@ -80,7 +80,7 @@ namespace Google.Protobuf
 
         public static FieldCodec<double> ForDouble(uint tag)
         {
-            return new FieldCodec<double>(input => input.ReadFloat(), (output, value) => output.WriteDouble(value), CodedOutputStream.ComputeDoubleSize, tag);
+            return new FieldCodec<double>(input => input.ReadDouble(), (output, value) => output.WriteDouble(value), CodedOutputStream.ComputeDoubleSize, tag);
         }
 
         // Enums are tricky. We can probably use expression trees to build these delegates automatically,

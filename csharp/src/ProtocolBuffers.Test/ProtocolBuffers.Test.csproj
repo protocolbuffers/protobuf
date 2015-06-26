@@ -75,6 +75,7 @@
     <Compile Include="CodedInputStreamTest.cs" />
     <Compile Include="CodedOutputStreamTest.cs" />
     <Compile Include="EqualityTester.cs" />
+    <Compile Include="FieldCodecTest.cs" />
     <Compile Include="GeneratedMessageTest.cs" />
     <Compile Include="Collections\MapFieldTest.cs" />
     <Compile Include="Collections\RepeatedFieldTest.cs" />
