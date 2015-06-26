@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.IO;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
@@ -157,63 +156,204 @@ namespace Google.Protobuf
             Assert.AreEqual(message, parsed);
         }
 
+        // Note that not every map within map_unittest_proto3 is used. They all go through very
+        // similar code paths. The fact that all maps are present is validation that we have codecs
+        // for every type.
         [Test]
         public void RoundTrip_Maps()
         {
-            var message = new TestAllTypes
+            var message = new TestMap
             {
-                MapBoolToEnum = {
-                    { false, TestAllTypes.Types.NestedEnum.BAR},
-                    { true, TestAllTypes.Types.NestedEnum.BAZ}
+                MapBoolBool = {
+                    { false, true },
+                    { true, false }
                 },
-                MapInt32ToBytes = {
+                MapInt32Bytes = {
                     { 5, ByteString.CopyFrom(6, 7, 8) },
                     { 25, ByteString.CopyFrom(1, 2, 3, 4, 5) },
                     { 10, ByteString.Empty }
                 },
-                MapStringToNestedMessage = {
-                    { "", new TestAllTypes.Types.NestedMessage { Bb = 10 } },
-                    { "null value", null },
+                MapInt32ForeignMessage = {
+                    { 0, new ForeignMessage { C = 10 } },
+                    { 5, null },
+                },
+                MapInt32Enum = {
+                    { 1, MapEnum.MAP_ENUM_BAR },
+                    { 2000, MapEnum.MAP_ENUM_FOO }
                 }
             };
 
             byte[] bytes = message.ToByteArray();
-            TestAllTypes parsed = TestAllTypes.Parser.ParseFrom(bytes);
+            TestMap parsed = TestMap.Parser.ParseFrom(bytes);
             Assert.AreEqual(message, parsed);
         }
 
         [Test]
         public void MapWithEmptyEntry()
         {
-            var message = new TestAllTypes
+            var message = new TestMap
             {
-                MapInt32ToBytes = { { 0, ByteString.Empty } }
+                MapInt32Bytes = { { 0, ByteString.Empty } }
             };
 
             byte[] bytes = message.ToByteArray();
-            Assert.AreEqual(3, bytes.Length); // Tag for field entry (2 bytes), length of entry (0; 1 byte)
+            Assert.AreEqual(2, bytes.Length); // Tag for field entry (1 byte), length of entry (0; 1 byte)
 
-            var parsed = TestAllTypes.Parser.ParseFrom(bytes);
-            Assert.AreEqual(1, parsed.MapInt32ToBytes.Count);
-            Assert.AreEqual(ByteString.Empty, parsed.MapInt32ToBytes[0]);
+            var parsed = TestMap.Parser.ParseFrom(bytes);
+            Assert.AreEqual(1, parsed.MapInt32Bytes.Count);
+            Assert.AreEqual(ByteString.Empty, parsed.MapInt32Bytes[0]);
         }
-
+        
         [Test]
         public void MapWithOnlyValue()
         {
             // Hand-craft the stream to contain a single entry with just a value.
             var memoryStream = new MemoryStream();
             var output = CodedOutputStream.CreateInstance(memoryStream);
-            output.WriteTag(TestAllTypes.MapStringToNestedMessageFieldNumber, WireFormat.WireType.LengthDelimited);
-            var nestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 20 };
+            output.WriteTag(TestMap.MapInt32ForeignMessageFieldNumber, WireFormat.WireType.LengthDelimited);
+            var nestedMessage = new ForeignMessage { C = 20 };
             // Size of the entry (tag, size written by WriteMessage, data written by WriteMessage)
             output.WriteRawVarint32((uint)(nestedMessage.CalculateSize() + 3));
             output.WriteTag(2, WireFormat.WireType.LengthDelimited);
             output.WriteMessage(nestedMessage);
             output.Flush();
 
-            var parsed = TestAllTypes.Parser.ParseFrom(memoryStream.ToArray());
-            Assert.AreEqual(nestedMessage, parsed.MapStringToNestedMessage[""]);
+            var parsed = TestMap.Parser.ParseFrom(memoryStream.ToArray());
+            Assert.AreEqual(nestedMessage, parsed.MapInt32ForeignMessage[0]);
+        }
+
+        [Test]
+        public void MapIgnoresExtraFieldsWithinEntryMessages()
+        {
+            // Hand-craft the stream to contain a single entry with three fields
+            var memoryStream = new MemoryStream();
+            var output = CodedOutputStream.CreateInstance(memoryStream);
+
+            output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
+
+            var key = 10; // Field 1 
+            var value = 20; // Field 2
+            var extra = 30; // Field 3
+
+            // Each field can be represented in a single byte, with a single byte tag.
+            // Total message size: 6 bytes.
+            output.WriteRawVarint32(6);
+            output.WriteTag(1, WireFormat.WireType.Varint);
+            output.WriteInt32(key);
+            output.WriteTag(2, WireFormat.WireType.Varint);
+            output.WriteInt32(value);
+            output.WriteTag(3, WireFormat.WireType.Varint);
+            output.WriteInt32(extra);
+            output.Flush();
+
+            var parsed = TestMap.Parser.ParseFrom(memoryStream.ToArray());
+            Assert.AreEqual(value, parsed.MapInt32Int32[key]);
+        }
+
+        [Test]
+        public void MapFieldOrderIsIrrelevant()
+        {
+            var memoryStream = new MemoryStream();
+            var output = CodedOutputStream.CreateInstance(memoryStream);
+
+            output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
+
+            var key = 10;
+            var value = 20;
+
+            // Each field can be represented in a single byte, with a single byte tag.
+            // Total message size: 4 bytes.
+            output.WriteRawVarint32(4);
+            output.WriteTag(2, WireFormat.WireType.Varint);
+            output.WriteInt32(value);
+            output.WriteTag(1, WireFormat.WireType.Varint);
+            output.WriteInt32(key);
+            output.Flush();
+
+            var parsed = TestMap.Parser.ParseFrom(memoryStream.ToArray());
+            Assert.AreEqual(value, parsed.MapInt32Int32[key]);
+        }
+
+        [Test]
+        public void MapNonContiguousEntries()
+        {
+            var memoryStream = new MemoryStream();
+            var output = CodedOutputStream.CreateInstance(memoryStream);
+
+            // Message structure:
+            // Entry for MapInt32Int32
+            // Entry for MapStringString
+            // Entry for MapInt32Int32
+
+            // First entry
+            var key1 = 10;
+            var value1 = 20;
+            output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(4);
+            output.WriteTag(1, WireFormat.WireType.Varint);
+            output.WriteInt32(key1);
+            output.WriteTag(2, WireFormat.WireType.Varint);
+            output.WriteInt32(value1);
+
+            // Second entry
+            var key2 = "a";
+            var value2 = "b";
+            output.WriteTag(TestMap.MapStringStringFieldNumber, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(6); // 3 bytes per entry: tag, size, character
+            output.WriteTag(1, WireFormat.WireType.LengthDelimited);
+            output.WriteString(key2);
+            output.WriteTag(2, WireFormat.WireType.LengthDelimited);
+            output.WriteString(value2);
+
+            // Third entry
+            var key3 = 15;
+            var value3 = 25;
+            output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(4);
+            output.WriteTag(1, WireFormat.WireType.Varint);
+            output.WriteInt32(key3);
+            output.WriteTag(2, WireFormat.WireType.Varint);
+            output.WriteInt32(value3);
+
+            output.Flush();
+            var parsed = TestMap.Parser.ParseFrom(memoryStream.ToArray());
+            var expected = new TestMap
+            {
+                MapInt32Int32 = { { key1, value1 }, { key3, value3 } },
+                MapStringString = { { key2, value2 } }
+            };
+            Assert.AreEqual(expected, parsed);
+        }
+
+        [Test]
+        public void DuplicateKeys_LastEntryWins()
+        {
+            var memoryStream = new MemoryStream();
+            var output = CodedOutputStream.CreateInstance(memoryStream);
+
+            var key = 10;
+            var value1 = 20;
+            var value2 = 30;
+
+            // First entry
+            output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(4);
+            output.WriteTag(1, WireFormat.WireType.Varint);
+            output.WriteInt32(key);
+            output.WriteTag(2, WireFormat.WireType.Varint);
+            output.WriteInt32(value1);
+
+            // Second entry - same key, different value
+            output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(4);
+            output.WriteTag(1, WireFormat.WireType.Varint);
+            output.WriteInt32(key);
+            output.WriteTag(2, WireFormat.WireType.Varint);
+            output.WriteInt32(value2);
+            output.Flush();
+
+            var parsed = TestMap.Parser.ParseFrom(memoryStream.ToArray());
+            Assert.AreEqual(value2, parsed.MapInt32Int32[key]);
         }
 
         [Test]

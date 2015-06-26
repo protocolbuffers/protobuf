@@ -408,7 +408,7 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
     // Start with a non-zero value to easily distinguish between null and "empty" messages.
     printer->Print(
         "public override int GetHashCode() {\n"
-        "  int hash = 17;\n");
+        "  int hash = 1;\n");
     printer->Indent();
     for (int i = 0; i < descriptor_->field_count(); i++) {
         scoped_ptr<FieldGeneratorBase> generator(

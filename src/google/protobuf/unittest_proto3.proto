@@ -140,11 +140,6 @@ message TestAllTypes {
     string oneof_string = 113;
     bytes oneof_bytes = 114;
   }
-  
-  // Sample maps
-  map<string, NestedMessage> map_string_to_nested_message = 200;
-  map<int32, bytes> map_int32_to_bytes = 201;
-  map<bool, NestedEnum> map_bool_to_enum = 202;
 }
 
 // This proto includes a recusively nested message.

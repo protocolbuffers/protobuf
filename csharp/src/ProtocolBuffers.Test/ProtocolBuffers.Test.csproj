@@ -78,6 +78,7 @@
     <Compile Include="GeneratedMessageTest.cs" />
     <Compile Include="Collections\MapFieldTest.cs" />
     <Compile Include="Collections\RepeatedFieldTest.cs" />
+    <Compile Include="TestProtos\MapUnittestProto3.cs" />
     <Compile Include="TestProtos\UnittestImportProto3.cs" />
     <Compile Include="TestProtos\UnittestImportPublicProto3.cs" />
     <Compile Include="TestProtos\UnittestIssues.cs" />

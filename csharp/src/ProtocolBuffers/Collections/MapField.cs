@@ -261,7 +261,7 @@ namespace Google.Protobuf.Collections
         public override int GetHashCode()
         {
             var valueComparer = EqualityComparer<TValue>.Default;
-            int hash = 19;
+            int hash = 0;
             foreach (var pair in list)
             {
                 hash ^= pair.Key.GetHashCode() * 31 + valueComparer.GetHashCode(pair.Value);
@@ -380,7 +380,6 @@ namespace Google.Protobuf.Collections
                 private readonly Codec codec;
                 internal TKey Key { get; set; }
                 internal TValue Value { get; set; }
-                internal int Size { get; set; }
 
                 internal MessageAdapter(Codec codec)
                 {

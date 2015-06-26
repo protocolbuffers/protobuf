@@ -43,9 +43,11 @@ $PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers/DescriptorProtos \
 rm src/google/protobuf/descriptor_proto_file.proto
 
 $PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
+    src/google/protobuf/map_unittest_proto3.proto \
     src/google/protobuf/unittest_proto3.proto \
     src/google/protobuf/unittest_import_proto3.proto \
     src/google/protobuf/unittest_import_public_proto3.proto
+
 
 $PROTOC -Icsharp/protos/extest --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
     csharp/protos/extest/unittest_issues.proto
