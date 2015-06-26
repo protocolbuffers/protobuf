@@ -49,7 +49,6 @@ namespace csharp {
 RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, int fieldOrdinal)
     : FieldGeneratorBase(descriptor, fieldOrdinal) {
-  variables_["packed"] = descriptor->is_packed() ? "Packed" : "";
 }
 
 RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {
@@ -57,6 +56,10 @@ RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "private static readonly pb::FieldCodec<$type_name$> _repeated_$name$_codec\n"
+    "    = pb::FieldCodec.For$capitalized_type_name$($tag$);\n");
   printer->Print(variables_,
     "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
   AddDeprecatedFlag(printer);
@@ -74,63 +77,21 @@ void RepeatedPrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) 
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) {
-  printer->Print(variables_,
-    "input.Read$capitalized_type_name$Array($name$_);\n");
-}
-
-void RepeatedPrimitiveFieldGenerator::GenerateSerializationCode(
-    io::Printer* printer) {
   printer->Print(
     variables_,
-    "if ($name$_.Count > 0) {\n");
-  printer->Indent();
-  if (descriptor_->is_packed()) {
-    printer->Print(
-      variables_,
-      "output.WriteRawTag($tag_bytes$);\n"
-      "output.WritePacked$capitalized_type_name$Array($name$_);\n");
-  } else {
-    printer->Print(
-      variables_,
-      "output.Write$capitalized_type_name$Array($number$, $name$_);\n");
-  }
-  printer->Outdent();
-  printer->Print("}\n");
+    "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
 }
 
-void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(
-    io::Printer* printer) {
-  // TODO(jonskeet): Do this in the runtime if possible. It's a pain, but it must be feasible...
+void RepeatedPrimitiveFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
-    "if ($name$_.Count > 0) {\n",
-    "name", name());
-  printer->Indent();
-  printer->Print("int dataSize = 0;\n");
-  int fixedSize = GetFixedSize(descriptor_->type());
-  if (fixedSize == -1) {
-    printer->Print(
-      variables_,
-      "foreach ($type_name$ element in $name$_) {\n"
-      "  dataSize += pb::CodedOutputStream.Compute$capitalized_type_name$Size(element);\n"
-      "}\n");
-  } else {
-    printer->Print(
-      "dataSize = $size$ * $name$_.Count;\n",
-      "size", SimpleItoa(fixedSize), "name", name());
-  }
-  printer->Print("size += dataSize;\n");
-  int tagSize = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
-  if (descriptor_->is_packed()) {
-    printer->Print(
-      "size += $tag_size$ + pb::CodedOutputStream.ComputeInt32Size(dataSize);\n",
-      "tag_size", SimpleItoa(tagSize));
-  } else {
-    printer->Print(
-      "size += $tag_size$ * $name$_.Count;\n",
-      "tag_size", SimpleItoa(tagSize), "name", name());
-  }
-  printer->Outdent();
-  printer->Print("}\n");
+    variables_,
+    "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
+}
+
+void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::WriteHash(io::Printer* printer) {

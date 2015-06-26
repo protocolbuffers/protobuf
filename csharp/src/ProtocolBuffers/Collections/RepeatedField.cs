@@ -49,6 +49,112 @@ namespace Google.Protobuf.Collections
             return clone;
         }
 
+        public void AddEntriesFrom(CodedInputStream input, FieldCodec<T> codec)
+        {
+            uint tag = input.LastTag;
+            var reader = codec.ValueReader;
+            // Value types can be packed or not.
+            if (typeof(T).IsValueType && WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited)
+            {
+                int length = (int)(input.ReadRawVarint32() & int.MaxValue);
+                if (length > 0)
+                {
+                    int oldLimit = input.PushLimit(length);
+                    while (!input.ReachedLimit)
+                    {
+                        Add(reader(input));
+                    }
+                    input.PopLimit(oldLimit);
+                }
+                // Empty packed field. Odd, but valid - just ignore.
+            }
+            else
+            {
+                // Not packed... (possibly not packable)
+                do
+                {
+                    Add(reader(input));
+                } while (input.MaybeConsumeTag(tag));
+            }
+        }
+
+        public int CalculateSize(FieldCodec<T> codec)
+        {
+            if (count == 0)
+            {
+                return 0;
+            }
+            uint tag = codec.Tag;
+            if (typeof(T).IsValueType && WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited)
+            {
+                int dataSize = CalculatePackedDataSize(codec);
+                return CodedOutputStream.ComputeRawVarint32Size(tag) +
+                    CodedOutputStream.ComputeRawVarint32Size((uint)dataSize) +
+                    dataSize;
+            }
+            else
+            {
+                var sizeCalculator = codec.ValueSizeCalculator;
+                int size = count * CodedOutputStream.ComputeRawVarint32Size(tag);
+                for (int i = 0; i < count; i++)
+                {
+                    size += sizeCalculator(array[i]);
+                }
+                return size;
+            }
+        }
+
+        private int CalculatePackedDataSize(FieldCodec<T> codec)
+        {
+            int fixedSize = codec.FixedSize;
+            if (fixedSize == 0)
+            {
+                var calculator = codec.ValueSizeCalculator;
+                int tmp = 0;
+                for (int i = 0; i < count; i++)
+                {
+                    tmp += calculator(array[i]);
+                }
+                return tmp;
+            }
+            else
+            {
+                return fixedSize * Count;
+            }
+        }
+
+        public void WriteTo(CodedOutputStream output, FieldCodec<T> codec)
+        {
+            // TODO: Assert that T is a value type, and that codec.Tag is packed?
+            if (count == 0)
+            {
+                return;
+            }
+            var writer = codec.ValueWriter;
+            var tag = codec.Tag;
+            if (typeof(T).IsValueType && WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited)
+            {
+                // Packed primitive type
+                uint size = (uint)CalculatePackedDataSize(codec);
+                output.WriteTag(tag);
+                output.WriteRawVarint32(size);
+                for (int i = 0; i < count; i++)
+                {
+                    writer(output, array[i]);
+                }
+            }
+            else
+            {
+                // Not packed: a simple tag/value pair for each value.
+                // Can't use codec.WriteTagAndValue, as that omits default values.
+                for (int i = 0; i < count; i++)
+                {
+                    output.WriteTag(tag);
+                    writer(output, array[i]);
+                }
+            }
+        }
+
         public bool IsFrozen { get { return frozen; } }
 
         public void Freeze()
@@ -85,18 +191,6 @@ namespace Google.Protobuf.Collections
             this.CheckMutable();
             EnsureSize(count + 1);
             array[count++] = item;
-        }
-
-        /// <summary>
-        /// Hack to allow us to add enums easily... will only work with int-based types.
-        /// </summary>
-        /// <param name="readEnum"></param>
-        internal void AddInt32(int item)
-        {
-            this.CheckMutable();
-            EnsureSize(count + 1);
-            int[] castArray = (int[]) (object) array;
-            castArray[count++] = item;
         }
 
         public void Clear()
@@ -180,16 +274,7 @@ namespace Google.Protobuf.Collections
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        /// <summary>
-        /// Returns an enumerator of the values in this list as integers.
-        /// Used for enum types.
-        /// </summary>
-        internal Int32Enumerator GetInt32Enumerator()
-        {
-            return new Int32Enumerator((int[])(object)array, count);
-        }
+        }        
 
         public override int GetHashCode()
         {
@@ -297,17 +382,7 @@ namespace Google.Protobuf.Collections
                 array[index] = value;
             }
         }
-
-        internal uint CalculateSize(Func<T, int> sizeComputer)
-        {
-            int size = 0;
-            for (int i = 0; i < count; i++)
-            {
-                size += sizeComputer(array[i]);
-            }
-            return (uint)size;
-        }
-
+        
         public struct Enumerator : IEnumerator<T>
         {
             private int index;
@@ -345,47 +420,6 @@ namespace Google.Protobuf.Collections
                     return field.array[index];
                 }
             }
-
-            object IEnumerator.Current
-            {
-                get { return Current; }
-            }
-
-            public void Dispose()
-            {
-            }
-        }
-
-        internal struct Int32Enumerator : IEnumerator<int>
-        {
-            private int index;
-            private readonly int[] array;
-            private readonly int count;
-
-            public Int32Enumerator(int[] array, int count)
-            {
-                this.array = array;
-                this.index = -1;
-                this.count = count;
-            }
-
-            public bool MoveNext()
-            {
-                if (index + 1 >= count)
-                {
-                    return false;
-                }
-                index++;
-                return true;
-            }
-
-            public void Reset()
-            {
-                index = -1;
-            }
-
-            // No guard here, as we're only going to use this internally...
-            public int Current { get { return array[index]; } }
 
             object IEnumerator.Current
             {

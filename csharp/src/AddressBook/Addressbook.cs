@@ -131,6 +131,8 @@ namespace Google.Protobuf.Examples.AddressBook {
     }
 
     public const int PhoneFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> _repeated_phone_codec
+        = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> phone_ = new pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber>();
     public pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> Phone {
       get { return phone_; }
@@ -176,9 +178,7 @@ namespace Google.Protobuf.Examples.AddressBook {
         output.WriteRawTag(26);
         output.WriteString(Email);
       }
-      if (phone_.Count > 0) {
-        output.WriteMessageArray(4, phone_);
-      }
+      phone_.WriteTo(output, _repeated_phone_codec);
     }
 
     public int CalculateSize() {
@@ -192,12 +192,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       if (Email.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Email);
       }
-      if (phone_.Count > 0) {
-        foreach (global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber element in phone_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * phone_.Count;
-      }
+      size += phone_.CalculateSize(_repeated_phone_codec);
       return size;
     }
 
@@ -241,7 +236,7 @@ namespace Google.Protobuf.Examples.AddressBook {
             break;
           }
           case 34: {
-            input.ReadMessageArray(phone_, global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser);
+            phone_.AddEntriesFrom(input, _repeated_phone_codec);
             break;
           }
         }
@@ -437,6 +432,8 @@ namespace Google.Protobuf.Examples.AddressBook {
     }
 
     public const int PersonFieldNumber = 1;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Examples.AddressBook.Person> _repeated_person_codec
+        = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Examples.AddressBook.Person.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person> person_ = new pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person>();
     public pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person> Person {
       get { return person_; }
@@ -464,19 +461,12 @@ namespace Google.Protobuf.Examples.AddressBook {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (person_.Count > 0) {
-        output.WriteMessageArray(1, person_);
-      }
+      person_.WriteTo(output, _repeated_person_codec);
     }
 
     public int CalculateSize() {
       int size = 0;
-      if (person_.Count > 0) {
-        foreach (global::Google.Protobuf.Examples.AddressBook.Person element in person_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * person_.Count;
-      }
+      size += person_.CalculateSize(_repeated_person_codec);
       return size;
     }
 
@@ -499,7 +489,7 @@ namespace Google.Protobuf.Examples.AddressBook {
             }
             break;
           case 10: {
-            input.ReadMessageArray(person_, global::Google.Protobuf.Examples.AddressBook.Person.Parser);
+            person_.AddEntriesFrom(input, _repeated_person_codec);
             break;
           }
         }
