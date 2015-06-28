@@ -35,7 +35,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 
 namespace Google.Protobuf
 {
@@ -52,31 +51,6 @@ namespace Google.Protobuf
             if (value == null)
             {
                 throw new ArgumentNullException(name);
-            }
-        }
-
-        /// <summary>
-        /// Throws an ArgumentNullException if the given value is null.
-        /// </summary>
-        internal static void ThrowIfNull(object value)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException();
-            }
-        }
-
-        /// <summary>
-        /// Throws an ArgumentNullException if the given value or any element within it is null.
-        /// </summary>
-        internal static void ThrowIfAnyNull<T>(IEnumerable<T> sequence)
-        {
-            foreach (T t in sequence)
-            {
-                if (t == null)
-                {
-                    throw new ArgumentNullException();
-                }
             }
         }
     }

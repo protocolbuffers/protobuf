@@ -36,8 +36,6 @@ syntax = "proto2";
 // In map_test_util.h we do "using namespace unittest = protobuf_unittest".
 package protobuf_unittest;
 
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
-
 enum Proto2MapEnum {
   PROTO2_MAP_ENUM_FOO   = 0;
   PROTO2_MAP_ENUM_BAR   = 1;

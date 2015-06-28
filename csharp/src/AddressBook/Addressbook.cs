@@ -7,18 +7,18 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbd = global::Google.Protobuf.Descriptors;
 using scg = global::System.Collections.Generic;
-namespace Google.ProtocolBuffers.Examples.AddressBook {
+namespace Google.Protobuf.Examples.AddressBook {
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class Addressbook {
 
     #region Static variables
     internal static pbd::MessageDescriptor internal__static_tutorial_Person__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person> internal__static_tutorial_Person__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.Examples.AddressBook.Person> internal__static_tutorial_Person__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_tutorial_Person_PhoneNumber__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable;
     internal static pbd::MessageDescriptor internal__static_tutorial_AddressBook__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook> internal__static_tutorial_AddressBook__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.Examples.AddressBook.AddressBook> internal__static_tutorial_AddressBook__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -35,22 +35,22 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
             "TnVtYmVyEg4KBm51bWJlchgBIAIoCRIuCgR0eXBlGAIgASgOMhoudHV0b3Jp", 
             "YWwuUGVyc29uLlBob25lVHlwZToESE9NRSIrCglQaG9uZVR5cGUSCgoGTU9C", 
             "SUxFEAASCAoESE9NRRABEggKBFdPUksQAiIvCgtBZGRyZXNzQm9vaxIgCgZw", 
-            "ZXJzb24YASADKAsyEC50dXRvcmlhbC5QZXJzb25CVwoUY29tLmV4YW1wbGUu", 
-            "dHV0b3JpYWxCEUFkZHJlc3NCb29rUHJvdG9zqgIrR29vZ2xlLlByb3RvY29s", 
-          "QnVmZmVycy5FeGFtcGxlcy5BZGRyZXNzQm9vaw=="));
+            "ZXJzb24YASADKAsyEC50dXRvcmlhbC5QZXJzb25CUAoUY29tLmV4YW1wbGUu", 
+            "dHV0b3JpYWxCEUFkZHJlc3NCb29rUHJvdG9zqgIkR29vZ2xlLlByb3RvYnVm", 
+          "LkV4YW1wbGVzLkFkZHJlc3NCb29r"));
       pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
         descriptor = root;
         internal__static_tutorial_Person__Descriptor = Descriptor.MessageTypes[0];
         internal__static_tutorial_Person__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person>(internal__static_tutorial_Person__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.Examples.AddressBook.Person>(internal__static_tutorial_Person__Descriptor,
                 new string[] { "Name", "Id", "Email", "Phone", });
         internal__static_tutorial_Person_PhoneNumber__Descriptor = internal__static_tutorial_Person__Descriptor.NestedTypes[0];
         internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber>(internal__static_tutorial_Person_PhoneNumber__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber>(internal__static_tutorial_Person_PhoneNumber__Descriptor,
                 new string[] { "Number", "Type", });
         internal__static_tutorial_AddressBook__Descriptor = Descriptor.MessageTypes[1];
         internal__static_tutorial_AddressBook__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.ProtocolBuffers.Examples.AddressBook.AddressBook>(internal__static_tutorial_AddressBook__Descriptor,
+            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.Examples.AddressBook.AddressBook>(internal__static_tutorial_AddressBook__Descriptor,
                 new string[] { "Person", });
       };
       pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
@@ -69,11 +69,11 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     private static readonly string[] _fieldNames = new string[] { "email", "id", "name", "phone" };
     private static readonly uint[] _fieldTags = new uint[] { 26, 16, 10, 34 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_Person__Descriptor; }
+      get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.internal__static_tutorial_Person__Descriptor; }
     }
 
     public pb::FieldAccess.FieldAccessorTable<Person> Fields {
-      get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_Person__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.internal__static_tutorial_Person__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -131,8 +131,8 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
 
     public const int PhoneFieldNumber = 4;
-    private readonly pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> phone_ = new pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber>();
-    public pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber> Phone {
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> phone_ = new pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber>();
+    public pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> Phone {
       get { return phone_; }
     }
 
@@ -193,7 +193,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Email);
       }
       if (phone_.Count > 0) {
-        foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber element in phone_) {
+        foreach (global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber element in phone_) {
           size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
         size += 1 * phone_.Count;
@@ -241,7 +241,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
             break;
           }
           case 34: {
-            input.ReadMessageArray(phone_, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneNumber.Parser);
+            input.ReadMessageArray(phone_, global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser);
             break;
           }
         }
@@ -265,11 +265,11 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         private static readonly string[] _fieldNames = new string[] { "number", "type" };
         private static readonly uint[] _fieldTags = new uint[] { 10, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_Person_PhoneNumber__Descriptor; }
+          get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.internal__static_tutorial_Person_PhoneNumber__Descriptor; }
         }
 
         public pb::FieldAccess.FieldAccessorTable<PhoneNumber> Fields {
-          get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable; }
+          get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
@@ -304,8 +304,8 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         }
 
         public const int TypeFieldNumber = 2;
-        private global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType type_ = global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME;
-        public global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType Type {
+        private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.HOME;
+        public global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType Type {
           get { return type_; }
           set {
             pb::Freezable.CheckMutable(this);
@@ -332,7 +332,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
         public override int GetHashCode() {
           int hash = 1;
           if (Number.Length != 0) hash ^= Number.GetHashCode();
-          if (Type != global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME) hash ^= Type.GetHashCode();
+          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.HOME) hash ^= Type.GetHashCode();
           return hash;
         }
 
@@ -341,7 +341,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
             output.WriteRawTag(10);
             output.WriteString(Number);
           }
-          if (Type != global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME) {
+          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.HOME) {
             output.WriteRawTag(16);
             output.WriteEnum((int) Type);
           }
@@ -352,7 +352,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           if (Number.Length != 0) {
             size += 1 + pb::CodedOutputStream.ComputeStringSize(Number);
           }
-          if (Type != global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME) {
+          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.HOME) {
             size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
           }
           return size;
@@ -365,7 +365,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
           if (other.Number.Length != 0) {
             Number = other.Number;
           }
-          if (other.Type != global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType.HOME) {
+          if (other.Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.HOME) {
             Type = other.Type;
           }
         }
@@ -386,7 +386,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
                 break;
               }
               case 16: {
-                type_ = (global::Google.ProtocolBuffers.Examples.AddressBook.Person.Types.PhoneType) input.ReadEnum();
+                type_ = (global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) input.ReadEnum();
                 break;
               }
             }
@@ -408,11 +408,11 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     private static readonly string[] _fieldNames = new string[] { "person" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_AddressBook__Descriptor; }
+      get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.internal__static_tutorial_AddressBook__Descriptor; }
     }
 
     public pb::FieldAccess.FieldAccessorTable<AddressBook> Fields {
-      get { return global::Google.ProtocolBuffers.Examples.AddressBook.Addressbook.internal__static_tutorial_AddressBook__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.internal__static_tutorial_AddressBook__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -437,8 +437,8 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     }
 
     public const int PersonFieldNumber = 1;
-    private readonly pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person> person_ = new pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person>();
-    public pbc::RepeatedField<global::Google.ProtocolBuffers.Examples.AddressBook.Person> Person {
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person> person_ = new pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person>();
+    public pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person> Person {
       get { return person_; }
     }
 
@@ -472,7 +472,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
     public int CalculateSize() {
       int size = 0;
       if (person_.Count > 0) {
-        foreach (global::Google.ProtocolBuffers.Examples.AddressBook.Person element in person_) {
+        foreach (global::Google.Protobuf.Examples.AddressBook.Person element in person_) {
           size += pb::CodedOutputStream.ComputeMessageSize(element);
         }
         size += 1 * person_.Count;
@@ -499,7 +499,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook {
             }
             break;
           case 10: {
-            input.ReadMessageArray(person_, global::Google.ProtocolBuffers.Examples.AddressBook.Person.Parser);
+            input.ReadMessageArray(person_, global::Google.Protobuf.Examples.AddressBook.Person.Parser);
             break;
           }
         }

@@ -11,13 +11,8 @@ SRC=$(dirname $0)/src
 
 set -ex
 
-# echo Building the solution.
-# TODO(jonskeet): Re-enable building the whole solution when we have ProtoBench et al
-# working again.
-# xbuild /p:Configuration=$CONFIG $SRC/ProtocolBuffers.sln
-
-xbuild /p:Configuration=$CONFIG $SRC/ProtocolBuffers/ProtocolBuffers.csproj
-xbuild /p:Configuration=$CONFIG $SRC/ProtocolBuffers.Test/ProtocolBuffers.Test.csproj
+echo Building the solution.
+xbuild /p:Configuration=$CONFIG $SRC/ProtocolBuffers.sln
 
 echo Running tests.
 $NUNIT_CONSOLE $SRC/ProtocolBuffers.Test/bin/$CONFIG/Google.Protobuf.Test.dll

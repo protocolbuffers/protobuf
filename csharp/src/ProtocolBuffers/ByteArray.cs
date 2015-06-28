@@ -59,19 +59,11 @@ namespace Google.Protobuf
             }
             else
             {
-                ByteCopy(src, srcOffset, dst, dstOffset, count);
-            }
-        }
-
-        /// <summary>
-        /// Copy the bytes provided with a for loop, faster when there are only a few bytes to copy
-        /// </summary>
-        internal static void ByteCopy(byte[] src, int srcOffset, byte[] dst, int dstOffset, int count)
-        {
-            int stop = srcOffset + count;
-            for (int i = srcOffset; i < stop; i++)
-            {
-                dst[dstOffset++] = src[i];
+                int stop = srcOffset + count;
+                for (int i = srcOffset; i < stop; i++)
+                {
+                    dst[dstOffset++] = src[i];
+                }
             }
         }
 

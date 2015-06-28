@@ -114,7 +114,6 @@ namespace Google.Protobuf
 
         /// <summary>
         /// Makes a tag value given a field number and wire type.
-        /// TODO(jonskeet): Should we just have a Tag structure?
         /// </summary>
         public static uint MakeTag(int fieldNumber, WireType wireType)
         {

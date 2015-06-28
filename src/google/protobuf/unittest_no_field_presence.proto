@@ -37,8 +37,6 @@ import "google/protobuf/unittest.proto";
 
 package proto2_nofieldpresence_unittest;
 
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos.Proto3";
-
 // This proto includes every type of field in both singular and repeated
 // forms.
 message TestAllTypes {

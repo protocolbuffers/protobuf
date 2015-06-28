@@ -147,17 +147,14 @@ namespace Google.Protobuf
             Assert.AreEqual(messageType, primitiveField.ContainingType);
             Assert.AreEqual(UnittestProto3.Descriptor, primitiveField.File);
             Assert.AreEqual(FieldType.Int32, primitiveField.FieldType);
-            Assert.AreEqual(MappedType.Int32, primitiveField.MappedType);
             Assert.IsNull(primitiveField.Options);
             
             Assert.AreEqual("single_nested_enum", enumField.Name);
             Assert.AreEqual(FieldType.Enum, enumField.FieldType);
-            Assert.AreEqual(MappedType.Enum, enumField.MappedType);
             // Assert.AreEqual(TestAllTypes.Types.NestedEnum.DescriptorProtoFile, enumField.EnumType);
 
             Assert.AreEqual("single_foreign_message", messageField.Name);
             Assert.AreEqual(FieldType.Message, messageField.FieldType);
-            Assert.AreEqual(MappedType.Message, messageField.MappedType);
             Assert.AreEqual(ForeignMessage.Descriptor, messageField.MessageType);
         }
 
@@ -169,9 +166,7 @@ namespace Google.Protobuf
             FieldDescriptor repeatedField =
                 TestAllTypes.Descriptor.FindDescriptor<FieldDescriptor>("repeated_int32");
 
-            Assert.IsFalse(singleField.IsRequired);
             Assert.IsFalse(singleField.IsRepeated);
-            Assert.IsFalse(repeatedField.IsRequired);
             Assert.IsTrue(repeatedField.IsRepeated);
         }
 

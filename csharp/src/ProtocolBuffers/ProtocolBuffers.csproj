@@ -54,16 +54,12 @@
   <ItemGroup>
     <Compile Include="ByteArray.cs" />
     <Compile Include="ByteString.cs" />
-    <Compile Include="Collections\Enumerables.cs" />
     <Compile Include="CodedOutputStream.ComputeSize.cs" />
     <Compile Include="CodedInputStream.cs" />
     <Compile Include="CodedOutputStream.cs" />
-    <Compile Include="Collections\Dictionaries.cs" />
-    <Compile Include="Collections\Lists.cs" />
     <Compile Include="Collections\MapField.cs" />
     <Compile Include="Collections\ReadOnlyDictionary.cs" />
     <Compile Include="Collections\RepeatedField.cs" />
-    <Compile Include="Collections\RepeatedFieldExtensions.cs" />
     <Compile Include="DescriptorProtos\DescriptorProtoFile.cs" />
     <Compile Include="DescriptorProtos\IDescriptorProto.cs" />
     <Compile Include="DescriptorProtos\PartialClasses.cs" />
@@ -74,13 +70,11 @@
     <Compile Include="Descriptors\EnumDescriptor.cs" />
     <Compile Include="Descriptors\EnumValueDescriptor.cs" />
     <Compile Include="Descriptors\FieldDescriptor.cs" />
-    <Compile Include="Descriptors\FieldMappingAttribute.cs" />
     <Compile Include="Descriptors\FieldType.cs" />
     <Compile Include="Descriptors\FileDescriptor.cs" />
     <Compile Include="Descriptors\OneofDescriptor.cs" />
     <Compile Include="Descriptors\IDescriptor.cs" />
     <Compile Include="Descriptors\IndexedDescriptorBase.cs" />
-    <Compile Include="Descriptors\MappedType.cs" />
     <Compile Include="Descriptors\MessageDescriptor.cs" />
     <Compile Include="Descriptors\MethodDescriptor.cs" />
     <Compile Include="Descriptors\PackageDescriptor.cs" />
@@ -101,7 +95,6 @@
     <Compile Include="LimitedInputStream.cs" />
     <Compile Include="MessageParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TextGenerator.cs" />
     <Compile Include="ThrowHelper.cs" />
     <Compile Include="WireFormat.cs" />
   </ItemGroup>

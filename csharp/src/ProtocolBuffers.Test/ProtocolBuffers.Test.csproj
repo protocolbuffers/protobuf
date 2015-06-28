@@ -89,7 +89,6 @@
     <Compile Include="IssuesTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestCornerCases.cs" />
-    <Compile Include="WireFormatTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.csproj">

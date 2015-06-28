@@ -10,7 +10,7 @@
     <ProjectGuid>{D7282E99-2DC3-405B-946F-177DB2FD2AE2}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Google.ProtocolBuffers.ProtoDump</RootNamespace>
+    <RootNamespace>Google.Protobuf.ProtoDump</RootNamespace>
     <AssemblyName>ProtoDump</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

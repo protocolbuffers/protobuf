@@ -32,8 +32,6 @@ syntax = "proto2";
 
 package proto2_preserve_unknown_enum_unittest;
 
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
-
 enum MyEnum {
   FOO = 0;
   BAR = 1;

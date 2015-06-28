@@ -43,24 +43,21 @@ namespace Google.Protobuf.Descriptors
     public sealed class FieldDescriptor : IndexedDescriptorBase<FieldDescriptorProto, FieldOptions>,
                                           IComparable<FieldDescriptor>
     {
-        private readonly MessageDescriptor extensionScope;
         private EnumDescriptor enumType;
         private MessageDescriptor messageType;
         private MessageDescriptor containingType;
         private OneofDescriptor containingOneof;
         private FieldType fieldType;
-        private MappedType mappedType;
 
         private readonly object optionsLock = new object();
 
         internal FieldDescriptor(FieldDescriptorProto proto, FileDescriptor file,
-                                 MessageDescriptor parent, int index, bool isExtension)
+                                 MessageDescriptor parent, int index)
             : base(proto, file, ComputeFullName(file, parent, proto.Name), index)
         {
             if (proto.Type != 0)
             {
                 fieldType = GetFieldTypeFromProtoType(proto.Type);
-                mappedType = FieldTypeToMappedTypeMap[fieldType];
             }
 
             if (FieldNumber <= 0)
@@ -68,38 +65,16 @@ namespace Google.Protobuf.Descriptors
                 throw new DescriptorValidationException(this,
                                                         "Field numbers must be positive integers.");
             }
-
-            if (isExtension)
+            containingType = parent;
+            if (proto.OneofIndex != 0)
             {
-                if (proto.Extendee != "")
+                if (proto.OneofIndex < 0 || proto.OneofIndex >= parent.Proto.OneofDecl.Count)
                 {
                     throw new DescriptorValidationException(this,
-                                                            "FieldDescriptorProto.Extendee not set for extension field.");
+                        "FieldDescriptorProto.oneof_index is out of range for type " + parent.Name);
                 }
-                containingType = null; // Will be filled in when cross-linking
-                if (parent != null)
-                {
-                    extensionScope = parent;
-                }
-                else
-                {
-                    extensionScope = null;
-                }
-            }
-            else
-            {
-                containingType = parent;
-                if (proto.OneofIndex != 0)
-                {
-                    if (proto.OneofIndex < 0 || proto.OneofIndex >= parent.Proto.OneofDecl.Count)
-                    {
-                        throw new DescriptorValidationException(this,
-                            "FieldDescriptorProto.oneof_index is out of range for type " + parent.Name);
-                    }
-                    containingOneof = parent.Oneofs[proto.OneofIndex];
-                    containingOneof.fieldCount ++;
-                }
-                extensionScope = null;
+                containingOneof = parent.Oneofs[proto.OneofIndex];
+                containingOneof.fieldCount ++;
             }
 
             file.DescriptorPool.AddSymbol(this);
@@ -151,51 +126,7 @@ namespace Google.Protobuf.Descriptors
                 default:
                     throw new ArgumentException("Invalid type specified");
             }
-        }
-
-        /// <summary>
-        /// Returns the default value for a mapped type.
-        /// </summary>
-        private static object GetDefaultValueForMappedType(MappedType type)
-        {
-            switch (type)
-            {
-                case MappedType.Int32:
-                    return 0;
-                case MappedType.Int64:
-                    return (long) 0;
-                case MappedType.UInt32:
-                    return (uint) 0;
-                case MappedType.UInt64:
-                    return (ulong) 0;
-                case MappedType.Single:
-                    return (float) 0;
-                case MappedType.Double:
-                    return (double) 0;
-                case MappedType.Boolean:
-                    return false;
-                case MappedType.String:
-                    return "";
-                case MappedType.ByteString:
-                    return ByteString.Empty;
-                case MappedType.Message:
-                    return null;
-                case MappedType.Enum:
-                    return null;
-                default:
-                    throw new ArgumentException("Invalid type specified");
-            }
-        }
-
-        public bool IsRequired
-        {
-            get { return Proto.Label == FieldDescriptorProto.Types.Label.LABEL_REQUIRED; }
-        }
-
-        public bool IsOptional
-        {
-            get { return Proto.Label == FieldDescriptorProto.Types.Label.LABEL_OPTIONAL; }
-        }
+        }        
 
         public bool IsRepeated
         {
@@ -205,16 +136,7 @@ namespace Google.Protobuf.Descriptors
         public bool IsPacked
         {
             get { return Proto.Options.Packed; }
-        }
-
-        /// <value>
-        /// Indicates whether or not this field is an extension. (Only relevant when parsing
-        /// the proto2 descriptor...)
-        /// </value>
-        internal bool IsExtension
-        {
-            get { return Proto.Extendee != ""; }
-        }
+        }        
 
         /// <summary>
         /// Get the field's containing type. For extensions, this is the type being
@@ -229,46 +151,7 @@ namespace Google.Protobuf.Descriptors
         public OneofDescriptor ContainingOneof
         {
             get { return containingOneof; }
-        }
-
-        /// <summary>
-        /// For extensions defined nested within message types, gets
-        /// the outer type. Not valid for non-extension fields.
-        /// </summary>
-        /// <example>
-        /// <code>
-        /// message Foo {
-        ///   extensions 1000 to max;
-        /// }
-        /// extend Foo {
-        ///   optional int32 baz = 1234;
-        /// }
-        /// message Bar {
-        ///   extend Foo {
-        ///     optional int32 qux = 4321;
-        ///   }
-        /// }
-        /// </code>
-        /// The containing type for both <c>baz</c> and <c>qux</c> is <c>Foo</c>.
-        /// However, the extension scope for <c>baz</c> is <c>null</c> while
-        /// the extension scope for <c>qux</c> is <c>Bar</c>.
-        /// </example>
-        public MessageDescriptor ExtensionScope
-        {
-            get
-            {
-                if (!IsExtension)
-                {
-                    throw new InvalidOperationException("This field is not an extension.");
-                }
-                return extensionScope;
-            }
-        }
-
-        public MappedType MappedType
-        {
-            get { return mappedType; }
-        }
+        }        
 
         public FieldType FieldType
         {
@@ -303,7 +186,7 @@ namespace Google.Protobuf.Descriptors
         {
             get
             {
-                if (MappedType != MappedType.Enum)
+                if (fieldType != FieldType.Enum)
                 {
                     throw new InvalidOperationException("EnumType is only valid for enum fields.");
                 }
@@ -318,31 +201,12 @@ namespace Google.Protobuf.Descriptors
         {
             get
             {
-                if (MappedType != MappedType.Message)
+                if (fieldType != FieldType.Message)
                 {
                     throw new InvalidOperationException("MessageType is only valid for enum fields.");
                 }
                 return messageType;
             }
-        }
-
-        /// <summary>
-        /// Immutable mapping from field type to mapped type. Built using the attributes on
-        /// FieldType values.
-        /// </summary>
-        public static readonly IDictionary<FieldType, MappedType> FieldTypeToMappedTypeMap = MapFieldTypes();
-
-        private static IDictionary<FieldType, MappedType> MapFieldTypes()
-        {
-            var map = new Dictionary<FieldType, MappedType>();
-            foreach (FieldInfo field in typeof(FieldType).GetFields(BindingFlags.Static | BindingFlags.Public))
-            {
-                FieldType fieldType = (FieldType) field.GetValue(null);
-                FieldMappingAttribute mapping =
-                    (FieldMappingAttribute) field.GetCustomAttributes(typeof(FieldMappingAttribute), false)[0];
-                map[fieldType] = mapping.MappedType;
-            }
-            return Dictionaries.AsReadOnly(map);
         }
 
         /// <summary>
@@ -361,12 +225,10 @@ namespace Google.Protobuf.Descriptors
                     if (typeDescriptor is MessageDescriptor)
                     {
                         fieldType = FieldType.Message;
-                        mappedType = MappedType.Message;
                     }
                     else if (typeDescriptor is EnumDescriptor)
                     {
                         fieldType = FieldType.Enum;
-                        mappedType = MappedType.Enum;
                     }
                     else
                     {
@@ -374,7 +236,7 @@ namespace Google.Protobuf.Descriptors
                     }
                 }
 
-                if (MappedType == MappedType.Message)
+                if (fieldType == FieldType.Message)
                 {
                     if (!(typeDescriptor is MessageDescriptor))
                     {
@@ -388,7 +250,7 @@ namespace Google.Protobuf.Descriptors
                         throw new DescriptorValidationException(this, "Messages can't have default values.");
                     }
                 }
-                else if (MappedType == Descriptors.MappedType.Enum)
+                else if (fieldType == FieldType.Enum)
                 {
                     if (!(typeDescriptor is EnumDescriptor))
                     {
@@ -403,7 +265,7 @@ namespace Google.Protobuf.Descriptors
             }
             else
             {
-                if (MappedType == MappedType.Message || MappedType == MappedType.Enum)
+                if (fieldType == FieldType.Message || fieldType == FieldType.Enum)
                 {
                     throw new DescriptorValidationException(this, "Field with message or enum type missing type_name.");
                 }
@@ -411,25 +273,11 @@ namespace Google.Protobuf.Descriptors
 
             // Note: no attempt to perform any default value parsing
 
-            if (!IsExtension)
-            {
-                File.DescriptorPool.AddFieldByNumber(this);
-            }
+            File.DescriptorPool.AddFieldByNumber(this);
 
             if (containingType != null && containingType.Options != null && containingType.Options.MessageSetWireFormat)
             {
-                if (IsExtension)
-                {
-                    if (!IsOptional || FieldType != FieldType.Message)
-                    {
-                        throw new DescriptorValidationException(this,
-                                                                "Extensions of MessageSets must be optional messages.");
-                    }
-                }
-                else
-                {
-                    throw new DescriptorValidationException(this, "MessageSets cannot have fields, only extensions.");
-                }
+                throw new DescriptorValidationException(this, "MessageSet format is not supported.");
             }
         }
     }

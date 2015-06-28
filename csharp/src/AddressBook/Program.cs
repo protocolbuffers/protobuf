@@ -36,7 +36,7 @@
 
 using System;
 
-namespace Google.ProtocolBuffers.Examples.AddressBook
+namespace Google.Protobuf.Examples.AddressBook
 {
     /// <summary>
     /// Entry point. Repeatedly prompts user for an action to take, delegating actual behaviour

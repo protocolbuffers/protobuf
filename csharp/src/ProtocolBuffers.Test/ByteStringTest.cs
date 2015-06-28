@@ -40,7 +40,6 @@ using NUnit.Framework;
 
 namespace Google.Protobuf
 {
-    [TestFixture]
     public class ByteStringTest
     {
         [Test]
