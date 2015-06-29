@@ -1459,14 +1459,14 @@ static inline uint32 bswap_32(uint32 x) {
 }
 #define bswap_32(x) bswap_32(x)
 static inline uint64 bswap_64(uint64 x) {
-  return (((x & GG_ULONGLONG(0xFF)) << 56) |
-          ((x & GG_ULONGLONG(0xFF00)) << 40) |
-          ((x & GG_ULONGLONG(0xFF0000)) << 24) |
-          ((x & GG_ULONGLONG(0xFF000000)) << 8) |
-          ((x & GG_ULONGLONG(0xFF00000000)) >> 8) |
-          ((x & GG_ULONGLONG(0xFF0000000000)) >> 24) |
-          ((x & GG_ULONGLONG(0xFF000000000000)) >> 40) |
-          ((x & GG_ULONGLONG(0xFF00000000000000)) >> 56));
+  return (((x & GOOGLE_ULONGLONG(0xFF)) << 56) |
+          ((x & GOOGLE_ULONGLONG(0xFF00)) << 40) |
+          ((x & GOOGLE_ULONGLONG(0xFF0000)) << 24) |
+          ((x & GOOGLE_ULONGLONG(0xFF000000)) << 8) |
+          ((x & GOOGLE_ULONGLONG(0xFF00000000)) >> 8) |
+          ((x & GOOGLE_ULONGLONG(0xFF0000000000)) >> 24) |
+          ((x & GOOGLE_ULONGLONG(0xFF000000000000)) >> 40) |
+          ((x & GOOGLE_ULONGLONG(0xFF00000000000000)) >> 56));
 }
 #define bswap_64(x) bswap_64(x)
 

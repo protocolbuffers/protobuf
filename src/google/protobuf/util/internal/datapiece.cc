@@ -36,6 +36,7 @@
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/mathutil.h>
+#include <google/protobuf/stubs/mathlimits.h>
 
 namespace google {
 namespace protobuf {
@@ -78,7 +79,7 @@ StatusOr<To> NumberConvertAndCheck(From before) {
 // For conversion between double and float only.
 template <typename To, typename From>
 StatusOr<To> FloatingPointConvertAndCheck(From before) {
-  if (isnan(before)) return std::numeric_limits<To>::quiet_NaN();
+  if (MathLimits<From>::IsNaN(before)) return std::numeric_limits<To>::quiet_NaN();
 
   To after = static_cast<To>(before);
   if (MathUtil::AlmostEquals<To>(after, before)) {
