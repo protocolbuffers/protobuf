@@ -9,6 +9,15 @@ option csharp_namespace = "UnitTest.Issues.TestProtos";
 package unittest_issues;
 option optimize_for = SPEED;
 
+// Issue 307: when generating doubly-nested types, any references
+// should be of the form A.Types.B.Types.C.
+message Issue307 {
+  message NestedOnce {
+    message NestedTwice {
+    }
+  }
+}
+
 // Old issue 13: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=13
 // New issue 309: https://github.com/google/protobuf/issues/309
  
