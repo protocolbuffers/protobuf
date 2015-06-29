@@ -308,6 +308,7 @@ namespace Google.Protobuf
 
         enum TestNegEnum { None = 0, Value = -2 }
 
+        /*
         [Test]
         public void TestNegativeEnumArrayPacked()
         {
@@ -355,6 +356,7 @@ namespace Google.Protobuf
             for (int i = 0; i > -6; i--)
                 Assert.AreEqual(i, values[Math.Abs(i)]);
         }
+        */
 
         [Test]
         public void TestCodedInputOutputPosition()

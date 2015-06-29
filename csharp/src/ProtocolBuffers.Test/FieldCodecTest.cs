@@ -104,7 +104,7 @@ namespace Google.Protobuf
             {
                 var stream = new MemoryStream();
                 var codedOutput = CodedOutputStream.CreateInstance(stream);
-                codec.Write(codedOutput, sampleValue);
+                codec.WriteTagAndValue(codedOutput, sampleValue);
                 codedOutput.Flush();
                 stream.Position = 0;
                 var codedInput = CodedInputStream.CreateInstance(stream);
@@ -119,19 +119,19 @@ namespace Google.Protobuf
             {
                 var stream = new MemoryStream();
                 var codedOutput = CodedOutputStream.CreateInstance(stream);
-                codec.Write(codedOutput, sampleValue);
+                codec.WriteTagAndValue(codedOutput, sampleValue);
                 codedOutput.Flush();
-                Assert.AreEqual(stream.Position, codec.CalculateSize(sampleValue));
+                Assert.AreEqual(stream.Position, codec.CalculateSizeWithTag(sampleValue));
             }
 
             public void TestDefaultValue()
             {
                 var stream = new MemoryStream();
                 var codedOutput = CodedOutputStream.CreateInstance(stream);
-                codec.Write(codedOutput, codec.DefaultValue);
+                codec.WriteTagAndValue(codedOutput, codec.DefaultValue);
                 codedOutput.Flush();
                 Assert.AreEqual(0, stream.Position);
-                Assert.AreEqual(0, codec.CalculateSize(codec.DefaultValue));
+                Assert.AreEqual(0, codec.CalculateSizeWithTag(codec.DefaultValue));
                 if (typeof(T).IsValueType)
                 {
                     Assert.AreEqual(default(T), codec.DefaultValue);

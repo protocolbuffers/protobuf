@@ -479,22 +479,34 @@ namespace Google.Protobuf
             int msgSize = 1 + 1 + arraySize;
             byte[] bytes = new byte[msgSize];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteTag(8, WireFormat.WireType.LengthDelimited);
-            output.WritePackedInt32Array(new RepeatedField<int> { 0, -1, -2, -3, -4, -5 });
-
+            // Length-delimited to show we want the packed representation
+            uint tag = WireFormat.MakeTag(8, WireFormat.WireType.LengthDelimited);
+            output.WriteTag(tag);
+            int size = 0;
+            for (int i = 0; i >= -5; i--)
+            {
+                size += CodedOutputStream.ComputeEnumSize(i);
+            }
+            output.WriteRawVarint32((uint) size);
+            for (int i = 0; i >= -5; i--)
+            {
+                output.WriteEnum(i);
+            }
             Assert.AreEqual(0, output.SpaceLeft);
 
             CodedInputStream input = CodedInputStream.CreateInstance(bytes);
-            uint tag;
             Assert.IsTrue(input.ReadTag(out tag));
 
             RepeatedField<TestNegEnum> values = new RepeatedField<TestNegEnum>();
-            input.ReadEnumArray(values);
+            values.AddEntriesFrom(input, FieldCodec.ForEnum(tag, x => (int) x, x => (TestNegEnum) x));
 
             Assert.AreEqual(6, values.Count);
             Assert.AreEqual(TestNegEnum.None, values[0]);
+            Assert.AreEqual(((TestNegEnum) (-1)), values[1]);
             Assert.AreEqual(TestNegEnum.Value, values[2]);
-            // TODO(jonskeet): Test unknown value preservation
+            Assert.AreEqual(((TestNegEnum)(-3)), values[3]);
+            Assert.AreEqual(((TestNegEnum)(-4)), values[4]);
+            Assert.AreEqual(((TestNegEnum)(-5)), values[5]);
         }
 
         [Test]
@@ -504,21 +516,28 @@ namespace Google.Protobuf
             int msgSize = arraySize;
             byte[] bytes = new byte[msgSize];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteInt32Array(8, new RepeatedField<int> { 0, -1, -2, -3, -4, -5 });
+            uint tag = WireFormat.MakeTag(8, WireFormat.WireType.Varint);
+            for (int i = 0; i >= -5; i--)
+            {
+                output.WriteTag(tag);
+                output.WriteEnum(i);
+            }
 
             Assert.AreEqual(0, output.SpaceLeft);
 
             CodedInputStream input = CodedInputStream.CreateInstance(bytes);
-            uint tag;
             Assert.IsTrue(input.ReadTag(out tag));
 
             RepeatedField<TestNegEnum> values = new RepeatedField<TestNegEnum>();
-            input.ReadEnumArray(values);
+            values.AddEntriesFrom(input, FieldCodec.ForEnum(tag, x => (int)x, x => (TestNegEnum)x));
 
             Assert.AreEqual(6, values.Count);
             Assert.AreEqual(TestNegEnum.None, values[0]);
+            Assert.AreEqual(((TestNegEnum)(-1)), values[1]);
             Assert.AreEqual(TestNegEnum.Value, values[2]);
-            // TODO(jonskeet): Test unknown value preservation
+            Assert.AreEqual(((TestNegEnum)(-3)), values[3]);
+            Assert.AreEqual(((TestNegEnum)(-4)), values[4]);
+            Assert.AreEqual(((TestNegEnum)(-5)), values[5]);
         }
 
         //Issue 71:	CodedInputStream.ReadBytes go to slow path unnecessarily
