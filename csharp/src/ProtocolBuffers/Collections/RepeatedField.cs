@@ -51,12 +51,14 @@ namespace Google.Protobuf.Collections
 
         public void AddEntriesFrom(CodedInputStream input, FieldCodec<T> codec)
         {
+            // TODO: Inline some of the Add code, so we can avoid checking the size on every
+            // iteration and the mutability.
             uint tag = input.LastTag;
             var reader = codec.ValueReader;
             // Value types can be packed or not.
             if (typeof(T).IsValueType && WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited)
             {
-                int length = (int)(input.ReadRawVarint32() & int.MaxValue);
+                int length = input.ReadLength();
                 if (length > 0)
                 {
                     int oldLimit = input.PushLimit(length);
@@ -125,7 +127,6 @@ namespace Google.Protobuf.Collections
 
         public void WriteTo(CodedOutputStream output, FieldCodec<T> codec)
         {
-            // TODO: Assert that T is a value type, and that codec.Tag is packed?
             if (count == 0)
             {
                 return;
@@ -172,9 +173,9 @@ namespace Google.Protobuf.Collections
 
         private void EnsureSize(int size)
         {
-            size = Math.Max(size, MinArraySize);
             if (array.Length < size)
             {
+                size = Math.Max(size, MinArraySize);
                 int newSize = Math.Max(array.Length * 2, size);
                 var tmp = new T[newSize];
                 Array.Copy(array, 0, tmp, 0, array.Length);

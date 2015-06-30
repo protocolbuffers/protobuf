@@ -53,13 +53,13 @@ namespace Google.Protobuf
         #region Fixed sizes.
 
         // TODO(jonskeet): Move these somewhere else. They're messy. Consider making FieldType a smarter kind of enum
-        public const int Fixed32Size = 4;
-        public const int Fixed64Size = 8;
-        public const int SFixed32Size = 4;
-        public const int SFixed64Size = 8;
-        public const int FloatSize = 4;
-        public const int DoubleSize = 8;
-        public const int BoolSize = 1;
+        internal const int Fixed32Size = 4;
+        internal const int Fixed64Size = 8;
+        internal const int SFixed32Size = 4;
+        internal const int SFixed64Size = 8;
+        internal const int FloatSize = 4;
+        internal const int DoubleSize = 8;
+        internal const int BoolSize = 1;
 
         #endregion
 
@@ -72,22 +72,7 @@ namespace Google.Protobuf
             EndGroup = 4,
             Fixed32 = 5
         }
-
-        internal static class MessageSetField
-        {
-            internal const int Item = 1;
-            internal const int TypeID = 2;
-            internal const int Message = 3;
-        }
-
-        internal static class MessageSetTag
-        {
-            internal static readonly uint ItemStart = MakeTag(MessageSetField.Item, WireType.StartGroup);
-            internal static readonly uint ItemEnd = MakeTag(MessageSetField.Item, WireType.EndGroup);
-            internal static readonly uint TypeID = MakeTag(MessageSetField.TypeID, WireType.Varint);
-            internal static readonly uint Message = MakeTag(MessageSetField.Message, WireType.LengthDelimited);
-        }
-
+        
         private const int TagTypeBits = 3;
         private const uint TagTypeMask = (1 << TagTypeBits) - 1;
 
@@ -120,7 +105,6 @@ namespace Google.Protobuf
             return (uint) (fieldNumber << TagTypeBits) | (uint) wireType;
         }
 
-#if !LITE
         public static uint MakeTag(FieldDescriptor field)
         {
             return MakeTag(field.FieldNumber, GetWireType(field));
@@ -134,8 +118,6 @@ namespace Google.Protobuf
         {
             return descriptor.IsPacked ? WireType.LengthDelimited : GetWireType(descriptor.FieldType);
         }
-
-#endif
 
         /// <summary>
         /// Converts a field type to its wire type. Done with a switch for the sake
@@ -177,7 +159,7 @@ namespace Google.Protobuf
                 case FieldType.Enum:
                     return WireType.Varint;
                 default:
-                    throw new ArgumentOutOfRangeException("No such field type");
+                    throw new ArgumentOutOfRangeException("fieldType", "No such field type");
             }
         }
     }

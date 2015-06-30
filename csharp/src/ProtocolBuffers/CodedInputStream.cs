@@ -37,7 +37,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Google.Protobuf.Collections;
 
 namespace Google.Protobuf
 {
@@ -178,8 +177,61 @@ namespace Google.Protobuf
         /// </summary>
         internal uint LastTag { get { return lastTag; } }
 
-        #region Validation
+        #region Limits for recursion and length
+        /// <summary>
+        /// Set the maximum message recursion depth.
+        /// </summary>
+        /// <remarks>
+        /// In order to prevent malicious
+        /// messages from causing stack overflows, CodedInputStream limits
+        /// how deeply messages may be nested.  The default limit is 64.
+        /// </remarks>
+        public int SetRecursionLimit(int limit)
+        {
+            if (limit < 0)
+            {
+                throw new ArgumentOutOfRangeException("Recursion limit cannot be negative: " + limit);
+            }
+            int oldLimit = recursionLimit;
+            recursionLimit = limit;
+            return oldLimit;
+        }
 
+        /// <summary>
+        /// Set the maximum message size.
+        /// </summary>
+        /// <remarks>
+        /// In order to prevent malicious messages from exhausting memory or
+        /// causing integer overflows, CodedInputStream limits how large a message may be.
+        /// The default limit is 64MB.  You should set this limit as small
+        /// as you can without harming your app's functionality.  Note that
+        /// size limits only apply when reading from an InputStream, not
+        /// when constructed around a raw byte array (nor with ByteString.NewCodedInput).
+        /// If you want to read several messages from a single CodedInputStream, you
+        /// can call ResetSizeCounter() after each message to avoid hitting the
+        /// size limit.
+        /// </remarks>
+        public int SetSizeLimit(int limit)
+        {
+            if (limit < 0)
+            {
+                throw new ArgumentOutOfRangeException("Size limit cannot be negative: " + limit);
+            }
+            int oldLimit = sizeLimit;
+            sizeLimit = limit;
+            return oldLimit;
+        }
+
+        /// <summary>
+        /// Resets the current size counter to zero (see <see cref="SetSizeLimit"/>).
+        /// </summary>
+        public void ResetSizeCounter()
+        {
+            totalBytesRetired = 0;
+        }
+        #endregion
+
+        #region Validation
         /// <summary>
         /// Verifies that the last call to ReadTag() returned the given tag value.
         /// This is used to verify that a nested group ended with the correct
@@ -194,13 +246,12 @@ namespace Google.Protobuf
                 throw InvalidProtocolBufferException.InvalidEndTag();
             }
         }
-
         #endregion
 
         #region Reading of tags etc
 
         /// <summary>
-        /// Attempt to peek at the next field tag.
+        /// Attempts to peek at the next field tag.
         /// </summary>
         public bool PeekNextTag(out uint fieldTag)
         {
@@ -218,7 +269,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Attempt to read a field tag, returning false if we have reached the end
+        /// Attempts to read a field tag, returning false if we have reached the end
         /// of the input data.
         /// </summary>
         /// <param name="fieldTag">The 'tag' of the field (id * 8 + wire-format)</param>
@@ -233,14 +284,42 @@ namespace Google.Protobuf
                 return true;
             }
 
-            if (IsAtEnd)
+            // Optimize for the incredibly common case of having at least two bytes left in the buffer,
+            // and those two bytes being enough to get the tag. This will be true for fields up to 4095.
+            if (bufferPos + 2 <= bufferSize)
             {
-                fieldTag = 0;
-                lastTag = fieldTag;
-                return false;
+                int tmp = buffer[bufferPos++];
+                if (tmp < 128)
+                {
+                    fieldTag = (uint)tmp;
+                }
+                else
+                {
+                    int result = tmp & 0x7f;
+                    if ((tmp = buffer[bufferPos++]) < 128)
+                    {
+                        result |= tmp << 7;
+                        fieldTag = (uint) result;
+                    }
+                    else
+                    {
+                        // Nope, rewind and go the potentially slow route.
+                        bufferPos -= 2;
+                        fieldTag = ReadRawVarint32();
+                    }
+                }
             }
+            else
+            {
+                if (IsAtEnd)
+                {
+                    fieldTag = 0;
+                    lastTag = fieldTag;
+                    return false;
+                }
 
-            fieldTag = ReadRawVarint32();
+                fieldTag = ReadRawVarint32();
+            }
             lastTag = fieldTag;
             if (lastTag == 0)
             {
@@ -251,7 +330,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read a double field from the stream.
+        /// Reads a double field from the stream.
         /// </summary>
         public double ReadDouble()
         {
@@ -259,7 +338,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read a float field from the stream.
+        /// Reads a float field from the stream.
         /// </summary>
         public float ReadFloat()
         {
@@ -281,7 +360,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read a uint64 field from the stream.
+        /// Reads a uint64 field from the stream.
         /// </summary>
         public ulong ReadUInt64()
         {
@@ -289,7 +368,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read an int64 field from the stream.
+        /// Reads an int64 field from the stream.
         /// </summary>
         public long ReadInt64()
         {
@@ -297,7 +376,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read an int32 field from the stream.
+        /// Reads an int32 field from the stream.
         /// </summary>
         public int ReadInt32()
         {
@@ -305,7 +384,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read a fixed64 field from the stream.
+        /// Reads a fixed64 field from the stream.
         /// </summary>
         public ulong ReadFixed64()
         {
@@ -313,7 +392,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read a fixed32 field from the stream.
+        /// Reads a fixed32 field from the stream.
         /// </summary>
         public uint ReadFixed32()
         {
@@ -321,7 +400,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read a bool field from the stream.
+        /// Reads a bool field from the stream.
         /// </summary>
         public bool ReadBool()
         {
@@ -333,22 +412,22 @@ namespace Google.Protobuf
         /// </summary>
         public string ReadString()
         {
-            int size = (int) ReadRawVarint32();
+            int length = ReadLength();
             // No need to read any data for an empty string.
-            if (size == 0)
+            if (length == 0)
             {
                 return "";
             }
-            if (size <= bufferSize - bufferPos)
+            if (length <= bufferSize - bufferPos)
             {
                 // Fast path:  We already have the bytes in a contiguous buffer, so
                 //   just copy directly from it.
-                String result = CodedOutputStream.Utf8Encoding.GetString(buffer, bufferPos, size);
-                bufferPos += size;
+                String result = CodedOutputStream.Utf8Encoding.GetString(buffer, bufferPos, length);
+                bufferPos += length;
                 return result;
             }
             // Slow path: Build a byte array first then copy it.
-            return CodedOutputStream.Utf8Encoding.GetString(ReadRawBytes(size), 0, size);
+            return CodedOutputStream.Utf8Encoding.GetString(ReadRawBytes(length), 0, length);
         }
 
         /// <summary>
@@ -356,7 +435,7 @@ namespace Google.Protobuf
         /// </summary>   
         public void ReadMessage(IMessage builder)
         {
-            int length = (int) ReadRawVarint32();
+            int length = ReadLength();
             if (recursionDepth >= recursionLimit)
             {
                 throw InvalidProtocolBufferException.RecursionLimitExceeded();
@@ -374,19 +453,19 @@ namespace Google.Protobuf
         /// </summary>   
         public ByteString ReadBytes()
         {
-            int size = (int) ReadRawVarint32();
-            if (size <= bufferSize - bufferPos && size > 0)
+            int length = ReadLength();
+            if (length <= bufferSize - bufferPos && length > 0)
             {
                 // Fast path:  We already have the bytes in a contiguous buffer, so
                 //   just copy directly from it.
-                ByteString result = ByteString.CopyFrom(buffer, bufferPos, size);
-                bufferPos += size;
+                ByteString result = ByteString.CopyFrom(buffer, bufferPos, length);
+                bufferPos += length;
                 return result;
             }
             else
             {
                 // Slow path:  Build a byte array and attach it to a new ByteString.
-                return ByteString.AttachBytes(ReadRawBytes(size));
+                return ByteString.AttachBytes(ReadRawBytes(length));
             }
         }
 
@@ -439,6 +518,18 @@ namespace Google.Protobuf
         public long ReadSInt64()
         {
             return DecodeZigZag64(ReadRawVarint64());
+        }
+
+        /// <summary>
+        /// Reads a length for length-delimited data.
+        /// </summary>
+        /// <remarks>
+        /// This is internally just reading a varint, but this method exists
+        /// to make the calling code clearer.
+        /// </remarks>
+        public int ReadLength()
+        {
+            return (int) ReadRawVarint32();
         }
 
         /// <summary>
@@ -517,12 +608,12 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read a raw Varint from the stream.  If larger than 32 bits, discard the upper bits.
+        /// Reads a raw Varint from the stream.  If larger than 32 bits, discard the upper bits.
         /// This method is optimised for the case where we've got lots of data in the buffer.
         /// That means we can check the size just once, then just read directly from the buffer
         /// without constant rechecking of the buffer length.
         /// </summary>
-        public uint ReadRawVarint32()
+        internal uint ReadRawVarint32()
         {
             if (bufferPos + 5 > bufferSize)
             {
@@ -581,13 +672,13 @@ namespace Google.Protobuf
         /// <summary>
         /// Reads a varint from the input one byte at a time, so that it does not
         /// read any bytes after the end of the varint. If you simply wrapped the
-        /// stream in a CodedInputStream and used ReadRawVarint32(Stream)}
+        /// stream in a CodedInputStream and used ReadRawVarint32(Stream)
         /// then you would probably end up reading past the end of the varint since
         /// CodedInputStream buffers its input.
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static uint ReadRawVarint32(Stream input)
+        internal static uint ReadRawVarint32(Stream input)
         {
             int result = 0;
             int offset = 0;
@@ -621,9 +712,9 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read a raw varint from the stream.
+        /// Reads a raw varint from the stream.
         /// </summary>
-        public ulong ReadRawVarint64()
+        internal ulong ReadRawVarint64()
         {
             int shift = 0;
             ulong result = 0;
@@ -641,9 +732,9 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read a 32-bit little-endian integer from the stream.
+        /// Reads a 32-bit little-endian integer from the stream.
         /// </summary>
-        public uint ReadRawLittleEndian32()
+        internal uint ReadRawLittleEndian32()
         {
             uint b1 = ReadRawByte();
             uint b2 = ReadRawByte();
@@ -653,9 +744,9 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read a 64-bit little-endian integer from the stream.
+        /// Reads a 64-bit little-endian integer from the stream.
         /// </summary>
-        public ulong ReadRawLittleEndian64()
+        internal ulong ReadRawLittleEndian64()
         {
             ulong b1 = ReadRawByte();
             ulong b2 = ReadRawByte();
@@ -669,89 +760,36 @@ namespace Google.Protobuf
                    | (b5 << 32) | (b6 << 40) | (b7 << 48) | (b8 << 56);
         }
 
+        /// <summary>
+        /// Decode a 32-bit value with ZigZag encoding.
+        /// </summary>
+        /// <remarks>
+        /// ZigZag encodes signed integers into values that can be efficiently
+        /// encoded with varint.  (Otherwise, negative values must be 
+        /// sign-extended to 64 bits to be varint encoded, thus always taking
+        /// 10 bytes on the wire.)
+        /// </remarks>
+        internal static int DecodeZigZag32(uint n)
+        {
+            return (int)(n >> 1) ^ -(int)(n & 1);
+        }
+
+        /// <summary>
+        /// Decode a 32-bit value with ZigZag encoding.
+        /// </summary>
+        /// <remarks>
+        /// ZigZag encodes signed integers into values that can be efficiently
+        /// encoded with varint.  (Otherwise, negative values must be 
+        /// sign-extended to 64 bits to be varint encoded, thus always taking
+        /// 10 bytes on the wire.)
+        /// </remarks>
+        internal static long DecodeZigZag64(ulong n)
+        {
+            return (long)(n >> 1) ^ -(long)(n & 1);
+        }
         #endregion
 
-        /// <summary>
-        /// Decode a 32-bit value with ZigZag encoding.
-        /// </summary>
-        /// <remarks>
-        /// ZigZag encodes signed integers into values that can be efficiently
-        /// encoded with varint.  (Otherwise, negative values must be 
-        /// sign-extended to 64 bits to be varint encoded, thus always taking
-        /// 10 bytes on the wire.)
-        /// </remarks>
-        public static int DecodeZigZag32(uint n)
-        {
-            return (int) (n >> 1) ^ -(int) (n & 1);
-        }
-
-        /// <summary>
-        /// Decode a 32-bit value with ZigZag encoding.
-        /// </summary>
-        /// <remarks>
-        /// ZigZag encodes signed integers into values that can be efficiently
-        /// encoded with varint.  (Otherwise, negative values must be 
-        /// sign-extended to 64 bits to be varint encoded, thus always taking
-        /// 10 bytes on the wire.)
-        /// </remarks>
-        public static long DecodeZigZag64(ulong n)
-        {
-            return (long) (n >> 1) ^ -(long) (n & 1);
-        }
-
-        /// <summary>
-        /// Set the maximum message recursion depth.
-        /// </summary>
-        /// <remarks>
-        /// In order to prevent malicious
-        /// messages from causing stack overflows, CodedInputStream limits
-        /// how deeply messages may be nested.  The default limit is 64.
-        /// </remarks>
-        public int SetRecursionLimit(int limit)
-        {
-            if (limit < 0)
-            {
-                throw new ArgumentOutOfRangeException("Recursion limit cannot be negative: " + limit);
-            }
-            int oldLimit = recursionLimit;
-            recursionLimit = limit;
-            return oldLimit;
-        }
-
-        /// <summary>
-        /// Set the maximum message size.
-        /// </summary>
-        /// <remarks>
-        /// In order to prevent malicious messages from exhausting memory or
-        /// causing integer overflows, CodedInputStream limits how large a message may be.
-        /// The default limit is 64MB.  You should set this limit as small
-        /// as you can without harming your app's functionality.  Note that
-        /// size limits only apply when reading from an InputStream, not
-        /// when constructed around a raw byte array (nor with ByteString.NewCodedInput).
-        /// If you want to read several messages from a single CodedInputStream, you
-        /// can call ResetSizeCounter() after each message to avoid hitting the
-        /// size limit.
-        /// </remarks>
-        public int SetSizeLimit(int limit)
-        {
-            if (limit < 0)
-            {
-                throw new ArgumentOutOfRangeException("Size limit cannot be negative: " + limit);
-            }
-            int oldLimit = sizeLimit;
-            sizeLimit = limit;
-            return oldLimit;
-        }
-
         #region Internal reading and buffer management
-
-        /// <summary>
-        /// Resets the current size counter to zero (see SetSizeLimit).
-        /// </summary>
-        public void ResetSizeCounter()
-        {
-            totalBytesRetired = 0;
-        }
 
         /// <summary>
         /// Sets currentLimit to (current position) + byteLimit. This is called
@@ -759,7 +797,7 @@ namespace Google.Protobuf
         /// limit is returned.
         /// </summary>
         /// <returns>The old limit.</returns>
-        public int PushLimit(int byteLimit)
+        internal int PushLimit(int byteLimit)
         {
             if (byteLimit < 0)
             {
@@ -797,7 +835,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Discards the current limit, returning the previous limit.
         /// </summary>
-        public void PopLimit(int oldLimit)
+        internal void PopLimit(int oldLimit)
         {
             currentLimit = oldLimit;
             RecomputeBufferSizeAfterLimit();
@@ -807,7 +845,7 @@ namespace Google.Protobuf
         /// Returns whether or not all the data before the limit has been read.
         /// </summary>
         /// <returns></returns>
-        public bool ReachedLimit
+        internal bool ReachedLimit
         {
             get
             {
@@ -897,7 +935,7 @@ namespace Google.Protobuf
         /// <exception cref="InvalidProtocolBufferException">
         /// the end of the stream or the current limit was reached
         /// </exception>
-        public byte ReadRawByte()
+        internal byte ReadRawByte()
         {
             if (bufferPos == bufferSize)
             {
@@ -907,12 +945,12 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Read a fixed size of bytes from the input.
+        /// Reads a fixed size of bytes from the input.
         /// </summary>
         /// <exception cref="InvalidProtocolBufferException">
         /// the end of the stream or the current limit was reached
         /// </exception>
-        public byte[] ReadRawBytes(int size)
+        internal byte[] ReadRawBytes(int size)
         {
             if (size < 0)
             {
@@ -921,7 +959,8 @@ namespace Google.Protobuf
 
             if (totalBytesRetired + bufferPos + size > currentLimit)
             {
-                // Read to the end of the stream anyway.
+                // Read to the end of the stream (up to the current limit) anyway.
+                // TODO(jonskeet): This is the only usage of SkipRawBytes. Do we really need to do it?
                 SkipRawBytes(currentLimit - totalBytesRetired - bufferPos);
                 // Then fail.
                 throw InvalidProtocolBufferException.TruncatedMessage();
@@ -1026,62 +1065,11 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Reads and discards a single field, given its tag value.
-        /// </summary>
-        /// <returns>false if the tag is an end-group tag, in which case
-        /// nothing is skipped. Otherwise, returns true.</returns>
-        public bool SkipField()
-        {
-            uint tag = lastTag;
-            switch (WireFormat.GetTagWireType(tag))
-            {
-                case WireFormat.WireType.Varint:
-                    ReadRawVarint64();
-                    return true;
-                case WireFormat.WireType.Fixed64:
-                    ReadRawLittleEndian64();
-                    return true;
-                case WireFormat.WireType.LengthDelimited:
-                    SkipRawBytes((int) ReadRawVarint32());
-                    return true;
-                case WireFormat.WireType.StartGroup:
-                    SkipMessage();
-                    CheckLastTagWas(
-                        WireFormat.MakeTag(WireFormat.GetTagFieldNumber(tag),
-                                           WireFormat.WireType.EndGroup));
-                    return true;
-                case WireFormat.WireType.EndGroup:
-                    return false;
-                case WireFormat.WireType.Fixed32:
-                    ReadRawLittleEndian32();
-                    return true;
-                default:
-                    throw InvalidProtocolBufferException.InvalidWireType();
-            }
-        }
-
-        /// <summary>
-        /// Reads and discards an entire message.  This will read either until EOF
-        /// or until an endgroup tag, whichever comes first.
-        /// </summary>
-        public void SkipMessage()
-        {
-            uint tag;
-            while (ReadTag(out tag))
-            {
-                if (!SkipField())
-                {
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
         /// Reads and discards <paramref name="size"/> bytes.
         /// </summary>
         /// <exception cref="InvalidProtocolBufferException">the end of the stream
         /// or the current limit was reached</exception>
-        public void SkipRawBytes(int size)
+        private void SkipRawBytes(int size)
         {
             if (size < 0)
             {

@@ -8,6 +8,7 @@ namespace Google.Protobuf
     /// </summary>
     public static class FieldCodec
     {
+        // TODO: Avoid the "dual hit" of lambda expressions: create open delegates instead. (At least test...)
         public static FieldCodec<string> ForString(uint tag)
         {
             return new FieldCodec<string>(input => input.ReadString(), (output, value) => output.WriteString(value), CodedOutputStream.ComputeStringSize, tag); 
@@ -84,7 +85,7 @@ namespace Google.Protobuf
         }
 
         // Enums are tricky. We can probably use expression trees to build these delegates automatically,
-        // but it's easy to generate the code fdor it.
+        // but it's easy to generate the code for it.
         public static FieldCodec<T> ForEnum<T>(uint tag, Func<T, int> toInt32, Func<int, T> fromInt32)
         {
             return new FieldCodec<T>(input => fromInt32(

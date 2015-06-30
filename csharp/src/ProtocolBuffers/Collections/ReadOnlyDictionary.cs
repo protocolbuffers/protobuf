@@ -38,7 +38,7 @@ namespace Google.Protobuf.Collections
     /// <summary>
     /// Read-only wrapper around another dictionary.
     /// </summary>
-    public sealed class ReadOnlyDictionary<TKey, TValue> : IDictionary<TKey, TValue>
+    internal sealed class ReadOnlyDictionary<TKey, TValue> : IDictionary<TKey, TValue>
     {
         private readonly IDictionary<TKey, TValue> wrapped;
 

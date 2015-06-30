@@ -35,9 +35,8 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using Google.Protobuf.Collections;
+using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
 namespace Google.Protobuf
@@ -195,42 +194,24 @@ namespace Google.Protobuf
                 0x9abcdef012345678UL);
         }
 
-        /*
         [Test]
-        public void WriteWholeMessage()
+        public void WriteWholeMessage_VaryingBlockSizes()
         {
-            TestAllTypes message = TestUtil.GetAllSet();
+            TestAllTypes message = GeneratedMessageTest.GetSampleMessage();
 
             byte[] rawBytes = message.ToByteArray();
-            TestUtil.AssertEqualBytes(TestUtil.GoldenMessage.ToByteArray(), rawBytes);
 
             // Try different block sizes.
             for (int blockSize = 1; blockSize < 256; blockSize *= 2)
             {
                 MemoryStream rawOutput = new MemoryStream();
-                CodedOutputStream output =
-                    CodedOutputStream.CreateInstance(rawOutput, blockSize);
+                CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput, blockSize);
                 message.WriteTo(output);
                 output.Flush();
-                TestUtil.AssertEqualBytes(rawBytes, rawOutput.ToArray());
+                Assert.AreEqual(rawBytes, rawOutput.ToArray());
             }
         }
-
-        /// <summary>
-        /// Tests writing a whole message with every packed field type. Ensures the
-        /// wire format of packed fields is compatible with C++.
-        /// </summary>
-        [Test]
-        public void WriteWholePackedFieldsMessage()
-        {
-            TestPackedTypes message = TestUtil.GetPackedSet();
-
-            byte[] rawBytes = message.ToByteArray();
-            TestUtil.AssertEqualBytes(TestUtil.GetGoldenPackedFieldsMessage().ToByteArray(),
-                                      rawBytes);
-        }
-        */
-
+        
         [Test]
         public void EncodeZigZag32()
         {
@@ -296,67 +277,15 @@ namespace Google.Protobuf
         public void TestNegativeEnumNoTag()
         {
             Assert.AreEqual(10, CodedOutputStream.ComputeInt32Size(-2));
-            Assert.AreEqual(10, CodedOutputStream.ComputeEnumSize((int) TestNegEnum.Value));
+            Assert.AreEqual(10, CodedOutputStream.ComputeEnumSize((int) SampleEnum.NegativeValue));
 
             byte[] bytes = new byte[10];
             CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteEnum((int) TestNegEnum.Value);
+            output.WriteEnum((int) SampleEnum.NegativeValue);
 
             Assert.AreEqual(0, output.SpaceLeft);
             Assert.AreEqual("FE-FF-FF-FF-FF-FF-FF-FF-FF-01", BitConverter.ToString(bytes));
         }
-
-        enum TestNegEnum { None = 0, Value = -2 }
-
-        /*
-        [Test]
-        public void TestNegativeEnumArrayPacked()
-        {
-            int arraySize = 1 + (10 * 5);
-            int msgSize = 1 + 1 + arraySize;
-            byte[] bytes = new byte[msgSize];
-            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteTag(8, WireFormat.WireType.LengthDelimited);
-            output.WritePackedEnumArray(new RepeatedField<TestNegEnum> {
-                0, (TestNegEnum) (-1), TestNegEnum.Value, (TestNegEnum) (-3), (TestNegEnum) (-4), (TestNegEnum) (-5) });
-
-            Assert.AreEqual(0, output.SpaceLeft);
-
-            CodedInputStream input = CodedInputStream.CreateInstance(bytes);
-            uint tag;
-            Assert.IsTrue(input.ReadTag(out tag));
-
-            List<int> values = new List<int>();
-            input.ReadInt32Array(values);
-
-            Assert.AreEqual(6, values.Count);
-            for (int i = 0; i > -6; i--)
-                Assert.AreEqual(i, values[Math.Abs(i)]);
-        }
-
-        [Test]
-        public void TestNegativeEnumArray()
-        {
-            int arraySize = 1 + 1 + (11 * 5);
-            int msgSize = arraySize;
-            byte[] bytes = new byte[msgSize];
-            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteEnumArray(8, new RepeatedField<TestNegEnum> {
-                0, (TestNegEnum) (-1), TestNegEnum.Value, (TestNegEnum) (-3), (TestNegEnum) (-4), (TestNegEnum) (-5) });
-            Assert.AreEqual(0, output.SpaceLeft);
-
-            CodedInputStream input = CodedInputStream.CreateInstance(bytes);
-            uint tag;
-            Assert.IsTrue(input.ReadTag(out tag));
-
-            List<int> values = new List<int>();
-            input.ReadInt32Array(values);
-
-            Assert.AreEqual(6, values.Count);
-            for (int i = 0; i > -6; i--)
-                Assert.AreEqual(i, values[Math.Abs(i)]);
-        }
-        */
 
         [Test]
         public void TestCodedInputOutputPosition()
@@ -407,7 +336,7 @@ namespace Google.Protobuf
                 Assert.AreEqual(130, cout.Position);
                 cout.Flush();
             }
-            //Now test Input stream:
+            // Now test Input stream:
             {
                 CodedInputStream cin = CodedInputStream.CreateInstance(new MemoryStream(bytes), new byte[50]);
                 uint tag;
@@ -420,8 +349,8 @@ namespace Google.Protobuf
                 //Field 2:
                 Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 2);
                 Assert.AreEqual(4, cin.Position);
-                uint childlen = cin.ReadRawVarint32();
-                Assert.AreEqual(120u, childlen);
+                int childlen = cin.ReadLength();
+                Assert.AreEqual(120, childlen);
                 Assert.AreEqual(5, cin.Position);
                 int oldlimit = cin.PushLimit((int)childlen);
                 Assert.AreEqual(5, cin.Position);

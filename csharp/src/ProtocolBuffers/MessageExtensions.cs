@@ -38,7 +38,7 @@ namespace Google.Protobuf
         {
             ThrowHelper.ThrowIfNull(message, "message");
             ThrowHelper.ThrowIfNull(input, "input");
-            int size = (int)CodedInputStream.ReadRawVarint32(input);
+            int size = (int) CodedInputStream.ReadRawVarint32(input);
             Stream limitedStream = new LimitedInputStream(input, size);
             message.MergeFrom(limitedStream);
         }
