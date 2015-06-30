@@ -1153,7 +1153,10 @@ void ImmutableMessageLiteGenerator::GenerateParser(io::Printer* printer) {
   printer->Print(
       "public static final com.google.protobuf.Parser<$classname$> PARSER =\n"
       "    new DefaultInstanceBasedParser(DEFAULT_INSTANCE);\n"
-      "\n",
+      "\n"
+      "public static com.google.protobuf.Parser<$classname$> parser() {\n"
+      "  return PARSER;\n"
+      "}\n",
       "classname", descriptor_->name());
 }
 

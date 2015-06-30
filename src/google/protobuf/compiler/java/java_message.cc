@@ -1250,6 +1250,10 @@ void ImmutableMessageGenerator::GenerateParser(io::Printer* printer) {
       "\n");
 
   printer->Print(
+      "public static com.google.protobuf.Parser<$classname$> parser() {\n"
+      "  return PARSER;\n"
+      "}\n"
+      "\n"
       "@java.lang.Override\n"
       "public com.google.protobuf.Parser<$classname$> getParserForType() {\n"
       "  return PARSER;\n"
