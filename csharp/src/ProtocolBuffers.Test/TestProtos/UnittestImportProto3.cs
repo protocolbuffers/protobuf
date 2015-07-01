@@ -72,9 +72,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public ImportMessage() { }
+    public ImportMessage() {
+      OnConstruction();
+    }
 
-    public ImportMessage(ImportMessage other) {
+    partial void OnConstruction();
+
+    public ImportMessage(ImportMessage other) : this() {
       d_ = other.d_;
     }
 

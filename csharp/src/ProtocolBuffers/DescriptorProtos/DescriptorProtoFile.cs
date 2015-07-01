@@ -10,7 +10,7 @@ using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.DescriptorProtos {
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class DescriptorProtoFile {
+  internal static partial class DescriptorProtoFile {
 
     #region Static variables
     internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable;
@@ -231,7 +231,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet> {
+  internal sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet> {
     private static readonly pb::MessageParser<FileDescriptorSet> _parser = new pb::MessageParser<FileDescriptorSet>(() => new FileDescriptorSet());
     public static pb::MessageParser<FileDescriptorSet> Parser { get { return _parser; } }
 
@@ -248,9 +248,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FileDescriptorSet() { }
+    public FileDescriptorSet() {
+      OnConstruction();
+    }
 
-    public FileDescriptorSet(FileDescriptorSet other) {
+    partial void OnConstruction();
+
+    public FileDescriptorSet(FileDescriptorSet other) : this() {
       file_ = other.file_.Clone();
     }
 
@@ -270,7 +274,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto> _repeated_file_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.DescriptorProtos.FileDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto> file_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto> File {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto> File {
       get { return file_; }
     }
 
@@ -334,7 +338,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto> {
+  internal sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto> {
     private static readonly pb::MessageParser<FileDescriptorProto> _parser = new pb::MessageParser<FileDescriptorProto>(() => new FileDescriptorProto());
     public static pb::MessageParser<FileDescriptorProto> Parser { get { return _parser; } }
 
@@ -351,9 +355,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FileDescriptorProto() { }
+    public FileDescriptorProto() {
+      OnConstruction();
+    }
 
-    public FileDescriptorProto(FileDescriptorProto other) {
+    partial void OnConstruction();
+
+    public FileDescriptorProto(FileDescriptorProto other) : this() {
       name_ = other.name_;
       package_ = other.package_;
       dependency_ = other.dependency_.Clone();
@@ -390,7 +398,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    public string Name {
+    internal string Name {
       get { return name_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -400,7 +408,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int PackageFieldNumber = 2;
     private string package_ = "";
-    public string Package {
+    internal string Package {
       get { return package_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -412,7 +420,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<string> _repeated_dependency_codec
         = pb::FieldCodec.ForString(26);
     private readonly pbc::RepeatedField<string> dependency_ = new pbc::RepeatedField<string>();
-    public pbc::RepeatedField<string> Dependency {
+    internal pbc::RepeatedField<string> Dependency {
       get { return dependency_; }
     }
 
@@ -420,7 +428,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<int> _repeated_publicDependency_codec
         = pb::FieldCodec.ForInt32(80);
     private readonly pbc::RepeatedField<int> publicDependency_ = new pbc::RepeatedField<int>();
-    public pbc::RepeatedField<int> PublicDependency {
+    internal pbc::RepeatedField<int> PublicDependency {
       get { return publicDependency_; }
     }
 
@@ -428,7 +436,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<int> _repeated_weakDependency_codec
         = pb::FieldCodec.ForInt32(88);
     private readonly pbc::RepeatedField<int> weakDependency_ = new pbc::RepeatedField<int>();
-    public pbc::RepeatedField<int> WeakDependency {
+    internal pbc::RepeatedField<int> WeakDependency {
       get { return weakDependency_; }
     }
 
@@ -436,7 +444,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.DescriptorProto> _repeated_messageType_codec
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> messageType_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> MessageType {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> MessageType {
       get { return messageType_; }
     }
 
@@ -444,7 +452,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> _repeated_enumType_codec
         = pb::FieldCodec.ForMessage(42, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> enumType_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> EnumType {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> EnumType {
       get { return enumType_; }
     }
 
@@ -452,7 +460,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto> _repeated_service_codec
         = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto> service_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto> Service {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto> Service {
       get { return service_; }
     }
 
@@ -460,13 +468,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> _repeated_extension_codec
         = pb::FieldCodec.ForMessage(58, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> extension_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> Extension {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> Extension {
       get { return extension_; }
     }
 
     public const int OptionsFieldNumber = 8;
     private global::Google.Protobuf.DescriptorProtos.FileOptions options_;
-    public global::Google.Protobuf.DescriptorProtos.FileOptions Options {
+    internal global::Google.Protobuf.DescriptorProtos.FileOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -476,7 +484,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int SourceCodeInfoFieldNumber = 9;
     private global::Google.Protobuf.DescriptorProtos.SourceCodeInfo sourceCodeInfo_;
-    public global::Google.Protobuf.DescriptorProtos.SourceCodeInfo SourceCodeInfo {
+    internal global::Google.Protobuf.DescriptorProtos.SourceCodeInfo SourceCodeInfo {
       get { return sourceCodeInfo_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -486,7 +494,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int SyntaxFieldNumber = 12;
     private string syntax_ = "";
-    public string Syntax {
+    internal string Syntax {
       get { return syntax_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -702,7 +710,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class DescriptorProto : pb::IMessage<DescriptorProto> {
+  internal sealed partial class DescriptorProto : pb::IMessage<DescriptorProto> {
     private static readonly pb::MessageParser<DescriptorProto> _parser = new pb::MessageParser<DescriptorProto>(() => new DescriptorProto());
     public static pb::MessageParser<DescriptorProto> Parser { get { return _parser; } }
 
@@ -719,9 +727,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public DescriptorProto() { }
+    public DescriptorProto() {
+      OnConstruction();
+    }
 
-    public DescriptorProto(DescriptorProto other) {
+    partial void OnConstruction();
+
+    public DescriptorProto(DescriptorProto other) : this() {
       name_ = other.name_;
       field_ = other.field_.Clone();
       extension_ = other.extension_.Clone();
@@ -756,7 +768,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    public string Name {
+    internal string Name {
       get { return name_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -768,7 +780,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> _repeated_field_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> field_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> Field {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> Field {
       get { return field_; }
     }
 
@@ -776,7 +788,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> _repeated_extension_codec
         = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> extension_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> Extension {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> Extension {
       get { return extension_; }
     }
 
@@ -784,7 +796,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.DescriptorProto> _repeated_nestedType_codec
         = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> nestedType_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> NestedType {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> NestedType {
       get { return nestedType_; }
     }
 
@@ -792,7 +804,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> _repeated_enumType_codec
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> enumType_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> EnumType {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> EnumType {
       get { return enumType_; }
     }
 
@@ -800,7 +812,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange> _repeated_extensionRange_codec
         = pb::FieldCodec.ForMessage(42, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange> extensionRange_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange> ExtensionRange {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange> ExtensionRange {
       get { return extensionRange_; }
     }
 
@@ -808,13 +820,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto> _repeated_oneofDecl_codec
         = pb::FieldCodec.ForMessage(66, global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto> oneofDecl_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto> OneofDecl {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto> OneofDecl {
       get { return oneofDecl_; }
     }
 
     public const int OptionsFieldNumber = 7;
     private global::Google.Protobuf.DescriptorProtos.MessageOptions options_;
-    public global::Google.Protobuf.DescriptorProtos.MessageOptions Options {
+    internal global::Google.Protobuf.DescriptorProtos.MessageOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -826,7 +838,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange> _repeated_reservedRange_codec
         = pb::FieldCodec.ForMessage(74, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange> reservedRange_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange> ReservedRange {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange> ReservedRange {
       get { return reservedRange_; }
     }
 
@@ -834,7 +846,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<string> _repeated_reservedName_codec
         = pb::FieldCodec.ForString(82);
     private readonly pbc::RepeatedField<string> reservedName_ = new pbc::RepeatedField<string>();
-    public pbc::RepeatedField<string> ReservedName {
+    internal pbc::RepeatedField<string> ReservedName {
       get { return reservedName_; }
     }
 
@@ -1000,7 +1012,7 @@ namespace Google.Protobuf.DescriptorProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class ExtensionRange : pb::IMessage<ExtensionRange> {
+      internal sealed partial class ExtensionRange : pb::IMessage<ExtensionRange> {
         private static readonly pb::MessageParser<ExtensionRange> _parser = new pb::MessageParser<ExtensionRange>(() => new ExtensionRange());
         public static pb::MessageParser<ExtensionRange> Parser { get { return _parser; } }
 
@@ -1017,9 +1029,13 @@ namespace Google.Protobuf.DescriptorProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public ExtensionRange() { }
+        public ExtensionRange() {
+          OnConstruction();
+        }
 
-        public ExtensionRange(ExtensionRange other) {
+        partial void OnConstruction();
+
+        public ExtensionRange(ExtensionRange other) : this() {
           start_ = other.start_;
           end_ = other.end_;
         }
@@ -1037,7 +1053,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public const int StartFieldNumber = 1;
         private int start_;
-        public int Start {
+        internal int Start {
           get { return start_; }
           set {
             pb::Freezable.CheckMutable(this);
@@ -1047,7 +1063,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public const int EndFieldNumber = 2;
         private int end_;
-        public int End {
+        internal int End {
           get { return end_; }
           set {
             pb::Freezable.CheckMutable(this);
@@ -1138,7 +1154,7 @@ namespace Google.Protobuf.DescriptorProtos {
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class ReservedRange : pb::IMessage<ReservedRange> {
+      internal sealed partial class ReservedRange : pb::IMessage<ReservedRange> {
         private static readonly pb::MessageParser<ReservedRange> _parser = new pb::MessageParser<ReservedRange>(() => new ReservedRange());
         public static pb::MessageParser<ReservedRange> Parser { get { return _parser; } }
 
@@ -1155,9 +1171,13 @@ namespace Google.Protobuf.DescriptorProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public ReservedRange() { }
+        public ReservedRange() {
+          OnConstruction();
+        }
 
-        public ReservedRange(ReservedRange other) {
+        partial void OnConstruction();
+
+        public ReservedRange(ReservedRange other) : this() {
           start_ = other.start_;
           end_ = other.end_;
         }
@@ -1175,7 +1195,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public const int StartFieldNumber = 1;
         private int start_;
-        public int Start {
+        internal int Start {
           get { return start_; }
           set {
             pb::Freezable.CheckMutable(this);
@@ -1185,7 +1205,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public const int EndFieldNumber = 2;
         private int end_;
-        public int End {
+        internal int End {
           get { return end_; }
           set {
             pb::Freezable.CheckMutable(this);
@@ -1281,7 +1301,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto> {
+  internal sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto> {
     private static readonly pb::MessageParser<FieldDescriptorProto> _parser = new pb::MessageParser<FieldDescriptorProto>(() => new FieldDescriptorProto());
     public static pb::MessageParser<FieldDescriptorProto> Parser { get { return _parser; } }
 
@@ -1298,9 +1318,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FieldDescriptorProto() { }
+    public FieldDescriptorProto() {
+      OnConstruction();
+    }
 
-    public FieldDescriptorProto(FieldDescriptorProto other) {
+    partial void OnConstruction();
+
+    public FieldDescriptorProto(FieldDescriptorProto other) : this() {
       name_ = other.name_;
       number_ = other.number_;
       label_ = other.label_;
@@ -1326,7 +1350,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    public string Name {
+    internal string Name {
       get { return name_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1336,7 +1360,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int NumberFieldNumber = 3;
     private int number_;
-    public int Number {
+    internal int Number {
       get { return number_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1346,7 +1370,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int LabelFieldNumber = 4;
     private global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label label_ = global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL;
-    public global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label Label {
+    internal global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label Label {
       get { return label_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1356,7 +1380,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int TypeFieldNumber = 5;
     private global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type type_ = global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE;
-    public global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type Type {
+    internal global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type Type {
       get { return type_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1366,7 +1390,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int TypeNameFieldNumber = 6;
     private string typeName_ = "";
-    public string TypeName {
+    internal string TypeName {
       get { return typeName_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1376,7 +1400,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int ExtendeeFieldNumber = 2;
     private string extendee_ = "";
-    public string Extendee {
+    internal string Extendee {
       get { return extendee_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1386,7 +1410,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int DefaultValueFieldNumber = 7;
     private string defaultValue_ = "";
-    public string DefaultValue {
+    internal string DefaultValue {
       get { return defaultValue_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1396,7 +1420,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int OneofIndexFieldNumber = 9;
     private int oneofIndex_;
-    public int OneofIndex {
+    internal int OneofIndex {
       get { return oneofIndex_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1406,7 +1430,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int OptionsFieldNumber = 8;
     private global::Google.Protobuf.DescriptorProtos.FieldOptions options_;
-    public global::Google.Protobuf.DescriptorProtos.FieldOptions Options {
+    internal global::Google.Protobuf.DescriptorProtos.FieldOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1615,7 +1639,7 @@ namespace Google.Protobuf.DescriptorProtos {
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
-      public enum Type {
+      internal enum Type {
         TYPE_DOUBLE = 1,
         TYPE_FLOAT = 2,
         TYPE_INT64 = 3,
@@ -1636,7 +1660,7 @@ namespace Google.Protobuf.DescriptorProtos {
         TYPE_SINT64 = 18,
       }
 
-      public enum Label {
+      internal enum Label {
         LABEL_OPTIONAL = 1,
         LABEL_REQUIRED = 2,
         LABEL_REPEATED = 3,
@@ -1648,7 +1672,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto> {
+  internal sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto> {
     private static readonly pb::MessageParser<OneofDescriptorProto> _parser = new pb::MessageParser<OneofDescriptorProto>(() => new OneofDescriptorProto());
     public static pb::MessageParser<OneofDescriptorProto> Parser { get { return _parser; } }
 
@@ -1665,9 +1689,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public OneofDescriptorProto() { }
+    public OneofDescriptorProto() {
+      OnConstruction();
+    }
 
-    public OneofDescriptorProto(OneofDescriptorProto other) {
+    partial void OnConstruction();
+
+    public OneofDescriptorProto(OneofDescriptorProto other) : this() {
       name_ = other.name_;
     }
 
@@ -1684,7 +1712,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    public string Name {
+    internal string Name {
       get { return name_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1759,7 +1787,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto> {
+  internal sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto> {
     private static readonly pb::MessageParser<EnumDescriptorProto> _parser = new pb::MessageParser<EnumDescriptorProto>(() => new EnumDescriptorProto());
     public static pb::MessageParser<EnumDescriptorProto> Parser { get { return _parser; } }
 
@@ -1776,9 +1804,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public EnumDescriptorProto() { }
+    public EnumDescriptorProto() {
+      OnConstruction();
+    }
 
-    public EnumDescriptorProto(EnumDescriptorProto other) {
+    partial void OnConstruction();
+
+    public EnumDescriptorProto(EnumDescriptorProto other) : this() {
       name_ = other.name_;
       value_ = other.value_.Clone();
       Options = other.options_ != null ? other.Options.Clone() : null;
@@ -1799,7 +1831,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    public string Name {
+    internal string Name {
       get { return name_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1811,13 +1843,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto> _repeated_value_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto> value_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto> Value {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto> Value {
       get { return value_; }
     }
 
     public const int OptionsFieldNumber = 3;
     private global::Google.Protobuf.DescriptorProtos.EnumOptions options_;
-    public global::Google.Protobuf.DescriptorProtos.EnumOptions Options {
+    internal global::Google.Protobuf.DescriptorProtos.EnumOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1923,7 +1955,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto> {
+  internal sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto> {
     private static readonly pb::MessageParser<EnumValueDescriptorProto> _parser = new pb::MessageParser<EnumValueDescriptorProto>(() => new EnumValueDescriptorProto());
     public static pb::MessageParser<EnumValueDescriptorProto> Parser { get { return _parser; } }
 
@@ -1940,9 +1972,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public EnumValueDescriptorProto() { }
+    public EnumValueDescriptorProto() {
+      OnConstruction();
+    }
 
-    public EnumValueDescriptorProto(EnumValueDescriptorProto other) {
+    partial void OnConstruction();
+
+    public EnumValueDescriptorProto(EnumValueDescriptorProto other) : this() {
       name_ = other.name_;
       number_ = other.number_;
       Options = other.options_ != null ? other.Options.Clone() : null;
@@ -1962,7 +1998,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    public string Name {
+    internal string Name {
       get { return name_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1972,7 +2008,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int NumberFieldNumber = 2;
     private int number_;
-    public int Number {
+    internal int Number {
       get { return number_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1982,7 +2018,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int OptionsFieldNumber = 3;
     private global::Google.Protobuf.DescriptorProtos.EnumValueOptions options_;
-    public global::Google.Protobuf.DescriptorProtos.EnumValueOptions Options {
+    internal global::Google.Protobuf.DescriptorProtos.EnumValueOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2095,7 +2131,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto> {
+  internal sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto> {
     private static readonly pb::MessageParser<ServiceDescriptorProto> _parser = new pb::MessageParser<ServiceDescriptorProto>(() => new ServiceDescriptorProto());
     public static pb::MessageParser<ServiceDescriptorProto> Parser { get { return _parser; } }
 
@@ -2112,9 +2148,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public ServiceDescriptorProto() { }
+    public ServiceDescriptorProto() {
+      OnConstruction();
+    }
 
-    public ServiceDescriptorProto(ServiceDescriptorProto other) {
+    partial void OnConstruction();
+
+    public ServiceDescriptorProto(ServiceDescriptorProto other) : this() {
       name_ = other.name_;
       method_ = other.method_.Clone();
       Options = other.options_ != null ? other.Options.Clone() : null;
@@ -2135,7 +2175,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    public string Name {
+    internal string Name {
       get { return name_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2147,13 +2187,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto> _repeated_method_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto> method_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto> Method {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto> Method {
       get { return method_; }
     }
 
     public const int OptionsFieldNumber = 3;
     private global::Google.Protobuf.DescriptorProtos.ServiceOptions options_;
-    public global::Google.Protobuf.DescriptorProtos.ServiceOptions Options {
+    internal global::Google.Protobuf.DescriptorProtos.ServiceOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2259,7 +2299,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto> {
+  internal sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto> {
     private static readonly pb::MessageParser<MethodDescriptorProto> _parser = new pb::MessageParser<MethodDescriptorProto>(() => new MethodDescriptorProto());
     public static pb::MessageParser<MethodDescriptorProto> Parser { get { return _parser; } }
 
@@ -2276,9 +2316,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public MethodDescriptorProto() { }
+    public MethodDescriptorProto() {
+      OnConstruction();
+    }
 
-    public MethodDescriptorProto(MethodDescriptorProto other) {
+    partial void OnConstruction();
+
+    public MethodDescriptorProto(MethodDescriptorProto other) : this() {
       name_ = other.name_;
       inputType_ = other.inputType_;
       outputType_ = other.outputType_;
@@ -2301,7 +2345,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    public string Name {
+    internal string Name {
       get { return name_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2311,7 +2355,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int InputTypeFieldNumber = 2;
     private string inputType_ = "";
-    public string InputType {
+    internal string InputType {
       get { return inputType_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2321,7 +2365,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int OutputTypeFieldNumber = 3;
     private string outputType_ = "";
-    public string OutputType {
+    internal string OutputType {
       get { return outputType_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2331,7 +2375,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int OptionsFieldNumber = 4;
     private global::Google.Protobuf.DescriptorProtos.MethodOptions options_;
-    public global::Google.Protobuf.DescriptorProtos.MethodOptions Options {
+    internal global::Google.Protobuf.DescriptorProtos.MethodOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2341,7 +2385,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int ClientStreamingFieldNumber = 5;
     private bool clientStreaming_;
-    public bool ClientStreaming {
+    internal bool ClientStreaming {
       get { return clientStreaming_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2351,7 +2395,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int ServerStreamingFieldNumber = 6;
     private bool serverStreaming_;
-    public bool ServerStreaming {
+    internal bool ServerStreaming {
       get { return serverStreaming_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2512,7 +2556,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FileOptions : pb::IMessage<FileOptions> {
+  internal sealed partial class FileOptions : pb::IMessage<FileOptions> {
     private static readonly pb::MessageParser<FileOptions> _parser = new pb::MessageParser<FileOptions>(() => new FileOptions());
     public static pb::MessageParser<FileOptions> Parser { get { return _parser; } }
 
@@ -2529,9 +2573,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FileOptions() { }
+    public FileOptions() {
+      OnConstruction();
+    }
 
-    public FileOptions(FileOptions other) {
+    partial void OnConstruction();
+
+    public FileOptions(FileOptions other) : this() {
       javaPackage_ = other.javaPackage_;
       javaOuterClassname_ = other.javaOuterClassname_;
       javaMultipleFiles_ = other.javaMultipleFiles_;
@@ -2563,7 +2611,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int JavaPackageFieldNumber = 1;
     private string javaPackage_ = "";
-    public string JavaPackage {
+    internal string JavaPackage {
       get { return javaPackage_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2573,7 +2621,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int JavaOuterClassnameFieldNumber = 8;
     private string javaOuterClassname_ = "";
-    public string JavaOuterClassname {
+    internal string JavaOuterClassname {
       get { return javaOuterClassname_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2583,7 +2631,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int JavaMultipleFilesFieldNumber = 10;
     private bool javaMultipleFiles_;
-    public bool JavaMultipleFiles {
+    internal bool JavaMultipleFiles {
       get { return javaMultipleFiles_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2593,7 +2641,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int JavaGenerateEqualsAndHashFieldNumber = 20;
     private bool javaGenerateEqualsAndHash_;
-    public bool JavaGenerateEqualsAndHash {
+    internal bool JavaGenerateEqualsAndHash {
       get { return javaGenerateEqualsAndHash_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2603,7 +2651,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int JavaStringCheckUtf8FieldNumber = 27;
     private bool javaStringCheckUtf8_;
-    public bool JavaStringCheckUtf8 {
+    internal bool JavaStringCheckUtf8 {
       get { return javaStringCheckUtf8_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2613,7 +2661,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int OptimizeForFieldNumber = 9;
     private global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode optimizeFor_ = global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED;
-    public global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode OptimizeFor {
+    internal global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode OptimizeFor {
       get { return optimizeFor_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2623,7 +2671,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int GoPackageFieldNumber = 11;
     private string goPackage_ = "";
-    public string GoPackage {
+    internal string GoPackage {
       get { return goPackage_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2633,7 +2681,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int CcGenericServicesFieldNumber = 16;
     private bool ccGenericServices_;
-    public bool CcGenericServices {
+    internal bool CcGenericServices {
       get { return ccGenericServices_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2643,7 +2691,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int JavaGenericServicesFieldNumber = 17;
     private bool javaGenericServices_;
-    public bool JavaGenericServices {
+    internal bool JavaGenericServices {
       get { return javaGenericServices_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2653,7 +2701,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int PyGenericServicesFieldNumber = 18;
     private bool pyGenericServices_;
-    public bool PyGenericServices {
+    internal bool PyGenericServices {
       get { return pyGenericServices_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2663,7 +2711,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int DeprecatedFieldNumber = 23;
     private bool deprecated_;
-    public bool Deprecated {
+    internal bool Deprecated {
       get { return deprecated_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2673,7 +2721,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int CcEnableArenasFieldNumber = 31;
     private bool ccEnableArenas_;
-    public bool CcEnableArenas {
+    internal bool CcEnableArenas {
       get { return ccEnableArenas_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2683,7 +2731,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int ObjcClassPrefixFieldNumber = 36;
     private string objcClassPrefix_ = "";
-    public string ObjcClassPrefix {
+    internal string ObjcClassPrefix {
       get { return objcClassPrefix_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2693,7 +2741,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int CsharpNamespaceFieldNumber = 37;
     private string csharpNamespace_ = "";
-    public string CsharpNamespace {
+    internal string CsharpNamespace {
       get { return csharpNamespace_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2705,7 +2753,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -2993,7 +3041,7 @@ namespace Google.Protobuf.DescriptorProtos {
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
-      public enum OptimizeMode {
+      internal enum OptimizeMode {
         SPEED = 1,
         CODE_SIZE = 2,
         LITE_RUNTIME = 3,
@@ -3005,7 +3053,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MessageOptions : pb::IMessage<MessageOptions> {
+  internal sealed partial class MessageOptions : pb::IMessage<MessageOptions> {
     private static readonly pb::MessageParser<MessageOptions> _parser = new pb::MessageParser<MessageOptions>(() => new MessageOptions());
     public static pb::MessageParser<MessageOptions> Parser { get { return _parser; } }
 
@@ -3022,9 +3070,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public MessageOptions() { }
+    public MessageOptions() {
+      OnConstruction();
+    }
 
-    public MessageOptions(MessageOptions other) {
+    partial void OnConstruction();
+
+    public MessageOptions(MessageOptions other) : this() {
       messageSetWireFormat_ = other.messageSetWireFormat_;
       noStandardDescriptorAccessor_ = other.noStandardDescriptorAccessor_;
       deprecated_ = other.deprecated_;
@@ -3046,7 +3098,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int MessageSetWireFormatFieldNumber = 1;
     private bool messageSetWireFormat_;
-    public bool MessageSetWireFormat {
+    internal bool MessageSetWireFormat {
       get { return messageSetWireFormat_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3056,7 +3108,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int NoStandardDescriptorAccessorFieldNumber = 2;
     private bool noStandardDescriptorAccessor_;
-    public bool NoStandardDescriptorAccessor {
+    internal bool NoStandardDescriptorAccessor {
       get { return noStandardDescriptorAccessor_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3066,7 +3118,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int DeprecatedFieldNumber = 3;
     private bool deprecated_;
-    public bool Deprecated {
+    internal bool Deprecated {
       get { return deprecated_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3076,7 +3128,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int MapEntryFieldNumber = 7;
     private bool mapEntry_;
-    public bool MapEntry {
+    internal bool MapEntry {
       get { return mapEntry_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3088,7 +3140,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3216,7 +3268,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class FieldOptions : pb::IMessage<FieldOptions> {
+  internal sealed partial class FieldOptions : pb::IMessage<FieldOptions> {
     private static readonly pb::MessageParser<FieldOptions> _parser = new pb::MessageParser<FieldOptions>(() => new FieldOptions());
     public static pb::MessageParser<FieldOptions> Parser { get { return _parser; } }
 
@@ -3233,9 +3285,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FieldOptions() { }
+    public FieldOptions() {
+      OnConstruction();
+    }
 
-    public FieldOptions(FieldOptions other) {
+    partial void OnConstruction();
+
+    public FieldOptions(FieldOptions other) : this() {
       ctype_ = other.ctype_;
       packed_ = other.packed_;
       jstype_ = other.jstype_;
@@ -3259,7 +3315,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int CtypeFieldNumber = 1;
     private global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType ctype_ = global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING;
-    public global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType Ctype {
+    internal global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType Ctype {
       get { return ctype_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3269,7 +3325,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int PackedFieldNumber = 2;
     private bool packed_;
-    public bool Packed {
+    internal bool Packed {
       get { return packed_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3279,7 +3335,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int JstypeFieldNumber = 6;
     private global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType jstype_ = global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL;
-    public global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType Jstype {
+    internal global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType Jstype {
       get { return jstype_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3289,7 +3345,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int LazyFieldNumber = 5;
     private bool lazy_;
-    public bool Lazy {
+    internal bool Lazy {
       get { return lazy_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3299,7 +3355,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int DeprecatedFieldNumber = 3;
     private bool deprecated_;
-    public bool Deprecated {
+    internal bool Deprecated {
       get { return deprecated_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3309,7 +3365,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int WeakFieldNumber = 10;
     private bool weak_;
-    public bool Weak {
+    internal bool Weak {
       get { return weak_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3321,7 +3377,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3481,13 +3537,13 @@ namespace Google.Protobuf.DescriptorProtos {
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
-      public enum CType {
+      internal enum CType {
         STRING = 0,
         CORD = 1,
         STRING_PIECE = 2,
       }
 
-      public enum JSType {
+      internal enum JSType {
         JS_NORMAL = 0,
         JS_STRING = 1,
         JS_NUMBER = 2,
@@ -3499,7 +3555,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class EnumOptions : pb::IMessage<EnumOptions> {
+  internal sealed partial class EnumOptions : pb::IMessage<EnumOptions> {
     private static readonly pb::MessageParser<EnumOptions> _parser = new pb::MessageParser<EnumOptions>(() => new EnumOptions());
     public static pb::MessageParser<EnumOptions> Parser { get { return _parser; } }
 
@@ -3516,9 +3572,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public EnumOptions() { }
+    public EnumOptions() {
+      OnConstruction();
+    }
 
-    public EnumOptions(EnumOptions other) {
+    partial void OnConstruction();
+
+    public EnumOptions(EnumOptions other) : this() {
       allowAlias_ = other.allowAlias_;
       deprecated_ = other.deprecated_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
@@ -3538,7 +3598,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int AllowAliasFieldNumber = 2;
     private bool allowAlias_;
-    public bool AllowAlias {
+    internal bool AllowAlias {
       get { return allowAlias_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3548,7 +3608,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int DeprecatedFieldNumber = 3;
     private bool deprecated_;
-    public bool Deprecated {
+    internal bool Deprecated {
       get { return deprecated_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3560,7 +3620,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3656,7 +3716,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class EnumValueOptions : pb::IMessage<EnumValueOptions> {
+  internal sealed partial class EnumValueOptions : pb::IMessage<EnumValueOptions> {
     private static readonly pb::MessageParser<EnumValueOptions> _parser = new pb::MessageParser<EnumValueOptions>(() => new EnumValueOptions());
     public static pb::MessageParser<EnumValueOptions> Parser { get { return _parser; } }
 
@@ -3673,9 +3733,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public EnumValueOptions() { }
+    public EnumValueOptions() {
+      OnConstruction();
+    }
 
-    public EnumValueOptions(EnumValueOptions other) {
+    partial void OnConstruction();
+
+    public EnumValueOptions(EnumValueOptions other) : this() {
       deprecated_ = other.deprecated_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
@@ -3694,7 +3758,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int DeprecatedFieldNumber = 1;
     private bool deprecated_;
-    public bool Deprecated {
+    internal bool Deprecated {
       get { return deprecated_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3706,7 +3770,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3786,7 +3850,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class ServiceOptions : pb::IMessage<ServiceOptions> {
+  internal sealed partial class ServiceOptions : pb::IMessage<ServiceOptions> {
     private static readonly pb::MessageParser<ServiceOptions> _parser = new pb::MessageParser<ServiceOptions>(() => new ServiceOptions());
     public static pb::MessageParser<ServiceOptions> Parser { get { return _parser; } }
 
@@ -3803,9 +3867,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public ServiceOptions() { }
+    public ServiceOptions() {
+      OnConstruction();
+    }
 
-    public ServiceOptions(ServiceOptions other) {
+    partial void OnConstruction();
+
+    public ServiceOptions(ServiceOptions other) : this() {
       deprecated_ = other.deprecated_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
@@ -3824,7 +3892,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int DeprecatedFieldNumber = 33;
     private bool deprecated_;
-    public bool Deprecated {
+    internal bool Deprecated {
       get { return deprecated_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3836,7 +3904,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3916,7 +3984,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class MethodOptions : pb::IMessage<MethodOptions> {
+  internal sealed partial class MethodOptions : pb::IMessage<MethodOptions> {
     private static readonly pb::MessageParser<MethodOptions> _parser = new pb::MessageParser<MethodOptions>(() => new MethodOptions());
     public static pb::MessageParser<MethodOptions> Parser { get { return _parser; } }
 
@@ -3933,9 +4001,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public MethodOptions() { }
+    public MethodOptions() {
+      OnConstruction();
+    }
 
-    public MethodOptions(MethodOptions other) {
+    partial void OnConstruction();
+
+    public MethodOptions(MethodOptions other) : this() {
       deprecated_ = other.deprecated_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
@@ -3954,7 +4026,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int DeprecatedFieldNumber = 33;
     private bool deprecated_;
-    public bool Deprecated {
+    internal bool Deprecated {
       get { return deprecated_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3966,7 +4038,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -4046,7 +4118,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption> {
+  internal sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption> {
     private static readonly pb::MessageParser<UninterpretedOption> _parser = new pb::MessageParser<UninterpretedOption>(() => new UninterpretedOption());
     public static pb::MessageParser<UninterpretedOption> Parser { get { return _parser; } }
 
@@ -4063,9 +4135,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public UninterpretedOption() { }
+    public UninterpretedOption() {
+      OnConstruction();
+    }
 
-    public UninterpretedOption(UninterpretedOption other) {
+    partial void OnConstruction();
+
+    public UninterpretedOption(UninterpretedOption other) : this() {
       name_ = other.name_.Clone();
       identifierValue_ = other.identifierValue_;
       positiveIntValue_ = other.positiveIntValue_;
@@ -4091,13 +4167,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> _repeated_name_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> name_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> Name {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> Name {
       get { return name_; }
     }
 
     public const int IdentifierValueFieldNumber = 3;
     private string identifierValue_ = "";
-    public string IdentifierValue {
+    internal string IdentifierValue {
       get { return identifierValue_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -4107,7 +4183,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int PositiveIntValueFieldNumber = 4;
     private ulong positiveIntValue_;
-    public ulong PositiveIntValue {
+    internal ulong PositiveIntValue {
       get { return positiveIntValue_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -4117,7 +4193,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int NegativeIntValueFieldNumber = 5;
     private long negativeIntValue_;
-    public long NegativeIntValue {
+    internal long NegativeIntValue {
       get { return negativeIntValue_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -4127,7 +4203,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int DoubleValueFieldNumber = 6;
     private double doubleValue_;
-    public double DoubleValue {
+    internal double DoubleValue {
       get { return doubleValue_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -4137,7 +4213,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int StringValueFieldNumber = 7;
     private pb::ByteString stringValue_ = pb::ByteString.Empty;
-    public pb::ByteString StringValue {
+    internal pb::ByteString StringValue {
       get { return stringValue_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -4147,7 +4223,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public const int AggregateValueFieldNumber = 8;
     private string aggregateValue_ = "";
-    public string AggregateValue {
+    internal string AggregateValue {
       get { return aggregateValue_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -4312,7 +4388,7 @@ namespace Google.Protobuf.DescriptorProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class NamePart : pb::IMessage<NamePart> {
+      internal sealed partial class NamePart : pb::IMessage<NamePart> {
         private static readonly pb::MessageParser<NamePart> _parser = new pb::MessageParser<NamePart>(() => new NamePart());
         public static pb::MessageParser<NamePart> Parser { get { return _parser; } }
 
@@ -4329,9 +4405,13 @@ namespace Google.Protobuf.DescriptorProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public NamePart() { }
+        public NamePart() {
+          OnConstruction();
+        }
 
-        public NamePart(NamePart other) {
+        partial void OnConstruction();
+
+        public NamePart(NamePart other) : this() {
           namePart_ = other.namePart_;
           isExtension_ = other.isExtension_;
         }
@@ -4349,7 +4429,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public const int NamePart_FieldNumber = 1;
         private string namePart_ = "";
-        public string NamePart_ {
+        internal string NamePart_ {
           get { return namePart_; }
           set {
             pb::Freezable.CheckMutable(this);
@@ -4359,7 +4439,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public const int IsExtensionFieldNumber = 2;
         private bool isExtension_;
-        public bool IsExtension {
+        internal bool IsExtension {
           get { return isExtension_; }
           set {
             pb::Freezable.CheckMutable(this);
@@ -4455,7 +4535,7 @@ namespace Google.Protobuf.DescriptorProtos {
   }
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo> {
+  internal sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo> {
     private static readonly pb::MessageParser<SourceCodeInfo> _parser = new pb::MessageParser<SourceCodeInfo>(() => new SourceCodeInfo());
     public static pb::MessageParser<SourceCodeInfo> Parser { get { return _parser; } }
 
@@ -4472,9 +4552,13 @@ namespace Google.Protobuf.DescriptorProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public SourceCodeInfo() { }
+    public SourceCodeInfo() {
+      OnConstruction();
+    }
 
-    public SourceCodeInfo(SourceCodeInfo other) {
+    partial void OnConstruction();
+
+    public SourceCodeInfo(SourceCodeInfo other) : this() {
       location_ = other.location_.Clone();
     }
 
@@ -4494,7 +4578,7 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location> _repeated_location_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location> location_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location>();
-    public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location> Location {
+    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location> Location {
       get { return location_; }
     }
 
@@ -4559,7 +4643,7 @@ namespace Google.Protobuf.DescriptorProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class Location : pb::IMessage<Location> {
+      internal sealed partial class Location : pb::IMessage<Location> {
         private static readonly pb::MessageParser<Location> _parser = new pb::MessageParser<Location>(() => new Location());
         public static pb::MessageParser<Location> Parser { get { return _parser; } }
 
@@ -4576,9 +4660,13 @@ namespace Google.Protobuf.DescriptorProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public Location() { }
+        public Location() {
+          OnConstruction();
+        }
 
-        public Location(Location other) {
+        partial void OnConstruction();
+
+        public Location(Location other) : this() {
           path_ = other.path_.Clone();
           span_ = other.span_.Clone();
           leadingComments_ = other.leadingComments_;
@@ -4604,7 +4692,7 @@ namespace Google.Protobuf.DescriptorProtos {
         private static readonly pb::FieldCodec<int> _repeated_path_codec
             = pb::FieldCodec.ForInt32(10);
         private readonly pbc::RepeatedField<int> path_ = new pbc::RepeatedField<int>();
-        public pbc::RepeatedField<int> Path {
+        internal pbc::RepeatedField<int> Path {
           get { return path_; }
         }
 
@@ -4612,13 +4700,13 @@ namespace Google.Protobuf.DescriptorProtos {
         private static readonly pb::FieldCodec<int> _repeated_span_codec
             = pb::FieldCodec.ForInt32(18);
         private readonly pbc::RepeatedField<int> span_ = new pbc::RepeatedField<int>();
-        public pbc::RepeatedField<int> Span {
+        internal pbc::RepeatedField<int> Span {
           get { return span_; }
         }
 
         public const int LeadingCommentsFieldNumber = 3;
         private string leadingComments_ = "";
-        public string LeadingComments {
+        internal string LeadingComments {
           get { return leadingComments_; }
           set {
             pb::Freezable.CheckMutable(this);
@@ -4628,7 +4716,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
         public const int TrailingCommentsFieldNumber = 4;
         private string trailingComments_ = "";
-        public string TrailingComments {
+        internal string TrailingComments {
           get { return trailingComments_; }
           set {
             pb::Freezable.CheckMutable(this);
@@ -4640,7 +4728,7 @@ namespace Google.Protobuf.DescriptorProtos {
         private static readonly pb::FieldCodec<string> _repeated_leadingDetachedComments_codec
             = pb::FieldCodec.ForString(50);
         private readonly pbc::RepeatedField<string> leadingDetachedComments_ = new pbc::RepeatedField<string>();
-        public pbc::RepeatedField<string> LeadingDetachedComments {
+        internal pbc::RepeatedField<string> LeadingDetachedComments {
           get { return leadingDetachedComments_; }
         }
 

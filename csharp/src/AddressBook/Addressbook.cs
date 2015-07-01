@@ -26,15 +26,15 @@ namespace Google.Protobuf.Examples.AddressBook {
     static Addressbook() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChFhZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwi2gEKBlBlcnNvbhIMCgRu", 
-            "YW1lGAEgAigJEgoKAmlkGAIgAigFEg0KBWVtYWlsGAMgASgJEisKBXBob25l", 
-            "GAQgAygLMhwudHV0b3JpYWwuUGVyc29uLlBob25lTnVtYmVyGk0KC1Bob25l", 
-            "TnVtYmVyEg4KBm51bWJlchgBIAIoCRIuCgR0eXBlGAIgASgOMhoudHV0b3Jp", 
-            "YWwuUGVyc29uLlBob25lVHlwZToESE9NRSIrCglQaG9uZVR5cGUSCgoGTU9C", 
-            "SUxFEAASCAoESE9NRRABEggKBFdPUksQAiIvCgtBZGRyZXNzQm9vaxIgCgZw", 
-            "ZXJzb24YASADKAsyEC50dXRvcmlhbC5QZXJzb25CUAoUY29tLmV4YW1wbGUu", 
-            "dHV0b3JpYWxCEUFkZHJlc3NCb29rUHJvdG9zqgIkR29vZ2xlLlByb3RvYnVm", 
-          "LkV4YW1wbGVzLkFkZHJlc3NCb29r"));
+            "ChFhZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwi1AEKBlBlcnNvbhIMCgRu", 
+            "YW1lGAEgASgJEgoKAmlkGAIgASgFEg0KBWVtYWlsGAMgASgJEisKBXBob25l", 
+            "GAQgAygLMhwudHV0b3JpYWwuUGVyc29uLlBob25lTnVtYmVyGkcKC1Bob25l", 
+            "TnVtYmVyEg4KBm51bWJlchgBIAEoCRIoCgR0eXBlGAIgASgOMhoudHV0b3Jp", 
+            "YWwuUGVyc29uLlBob25lVHlwZSIrCglQaG9uZVR5cGUSCgoGTU9CSUxFEAAS", 
+            "CAoESE9NRRABEggKBFdPUksQAiIvCgtBZGRyZXNzQm9vaxIgCgZwZXJzb24Y", 
+            "ASADKAsyEC50dXRvcmlhbC5QZXJzb25CUAoUY29tLmV4YW1wbGUudHV0b3Jp", 
+            "YWxCEUFkZHJlc3NCb29rUHJvdG9zqgIkR29vZ2xlLlByb3RvYnVmLkV4YW1w", 
+          "bGVzLkFkZHJlc3NCb29rYgZwcm90bzM="));
       descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbd::FileDescriptor[] {
           });
@@ -70,9 +70,13 @@ namespace Google.Protobuf.Examples.AddressBook {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public Person() { }
+    public Person() {
+      OnConstruction();
+    }
 
-    public Person(Person other) {
+    partial void OnConstruction();
+
+    public Person(Person other) : this() {
       name_ = other.name_;
       id_ = other.id_;
       email_ = other.email_;
@@ -261,9 +265,13 @@ namespace Google.Protobuf.Examples.AddressBook {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public PhoneNumber() { }
+        public PhoneNumber() {
+          OnConstruction();
+        }
 
-        public PhoneNumber(PhoneNumber other) {
+        partial void OnConstruction();
+
+        public PhoneNumber(PhoneNumber other) : this() {
           number_ = other.number_;
           type_ = other.type_;
         }
@@ -290,7 +298,7 @@ namespace Google.Protobuf.Examples.AddressBook {
         }
 
         public const int TypeFieldNumber = 2;
-        private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.HOME;
+        private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE;
         public global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType Type {
           get { return type_; }
           set {
@@ -318,7 +326,7 @@ namespace Google.Protobuf.Examples.AddressBook {
         public override int GetHashCode() {
           int hash = 1;
           if (Number.Length != 0) hash ^= Number.GetHashCode();
-          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.HOME) hash ^= Type.GetHashCode();
+          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE) hash ^= Type.GetHashCode();
           return hash;
         }
 
@@ -327,7 +335,7 @@ namespace Google.Protobuf.Examples.AddressBook {
             output.WriteRawTag(10);
             output.WriteString(Number);
           }
-          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.HOME) {
+          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE) {
             output.WriteRawTag(16);
             output.WriteEnum((int) Type);
           }
@@ -338,7 +346,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           if (Number.Length != 0) {
             size += 1 + pb::CodedOutputStream.ComputeStringSize(Number);
           }
-          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.HOME) {
+          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE) {
             size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
           }
           return size;
@@ -351,7 +359,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           if (other.Number.Length != 0) {
             Number = other.Number;
           }
-          if (other.Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.HOME) {
+          if (other.Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE) {
             Type = other.Type;
           }
         }
@@ -404,9 +412,13 @@ namespace Google.Protobuf.Examples.AddressBook {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public AddressBook() { }
+    public AddressBook() {
+      OnConstruction();
+    }
 
-    public AddressBook(AddressBook other) {
+    partial void OnConstruction();
+
+    public AddressBook(AddressBook other) : this() {
       person_ = other.person_.Clone();
     }
 

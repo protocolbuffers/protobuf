@@ -346,9 +346,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestAllTypes() { }
+    public TestAllTypes() {
+      OnConstruction();
+    }
 
-    public TestAllTypes(TestAllTypes other) {
+    partial void OnConstruction();
+
+    public TestAllTypes(TestAllTypes other) : this() {
       singleInt32_ = other.singleInt32_;
       singleInt64_ = other.singleInt64_;
       singleUint32_ = other.singleUint32_;
@@ -1639,9 +1643,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public NestedMessage() { }
+        public NestedMessage() {
+          OnConstruction();
+        }
 
-        public NestedMessage(NestedMessage other) {
+        partial void OnConstruction();
+
+        public NestedMessage(NestedMessage other) : this() {
           bb_ = other.bb_;
         }
 
@@ -1755,9 +1763,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public NestedTestAllTypes() { }
+    public NestedTestAllTypes() {
+      OnConstruction();
+    }
 
-    public NestedTestAllTypes(NestedTestAllTypes other) {
+    partial void OnConstruction();
+
+    public NestedTestAllTypes(NestedTestAllTypes other) : this() {
       Child = other.child_ != null ? other.Child.Clone() : null;
       Payload = other.payload_ != null ? other.Payload.Clone() : null;
       repeatedChild_ = other.repeatedChild_.Clone();
@@ -1926,9 +1938,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestDeprecatedFields() { }
+    public TestDeprecatedFields() {
+      OnConstruction();
+    }
 
-    public TestDeprecatedFields(TestDeprecatedFields other) {
+    partial void OnConstruction();
+
+    public TestDeprecatedFields(TestDeprecatedFields other) : this() {
       deprecatedInt32_ = other.deprecatedInt32_;
     }
 
@@ -2038,9 +2054,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public ForeignMessage() { }
+    public ForeignMessage() {
+      OnConstruction();
+    }
 
-    public ForeignMessage(ForeignMessage other) {
+    partial void OnConstruction();
+
+    public ForeignMessage(ForeignMessage other) : this() {
       c_ = other.c_;
     }
 
@@ -2149,9 +2169,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestReservedFields() { }
+    public TestReservedFields() {
+      OnConstruction();
+    }
 
-    public TestReservedFields(TestReservedFields other) {
+    partial void OnConstruction();
+
+    public TestReservedFields(TestReservedFields other) : this() {
     }
 
     public TestReservedFields Clone() {
@@ -2233,9 +2257,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestForeignNested() { }
+    public TestForeignNested() {
+      OnConstruction();
+    }
 
-    public TestForeignNested(TestForeignNested other) {
+    partial void OnConstruction();
+
+    public TestForeignNested(TestForeignNested other) : this() {
       ForeignNested = other.foreignNested_ != null ? other.ForeignNested.Clone() : null;
     }
 
@@ -2351,9 +2379,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestReallyLargeTagNumber() { }
+    public TestReallyLargeTagNumber() {
+      OnConstruction();
+    }
 
-    public TestReallyLargeTagNumber(TestReallyLargeTagNumber other) {
+    partial void OnConstruction();
+
+    public TestReallyLargeTagNumber(TestReallyLargeTagNumber other) : this() {
       a_ = other.a_;
       bb_ = other.bb_;
     }
@@ -2489,9 +2521,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestRecursiveMessage() { }
+    public TestRecursiveMessage() {
+      OnConstruction();
+    }
 
-    public TestRecursiveMessage(TestRecursiveMessage other) {
+    partial void OnConstruction();
+
+    public TestRecursiveMessage(TestRecursiveMessage other) : this() {
       A = other.a_ != null ? other.A.Clone() : null;
       i_ = other.i_;
     }
@@ -2634,9 +2670,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestMutualRecursionA() { }
+    public TestMutualRecursionA() {
+      OnConstruction();
+    }
 
-    public TestMutualRecursionA(TestMutualRecursionA other) {
+    partial void OnConstruction();
+
+    public TestMutualRecursionA(TestMutualRecursionA other) : this() {
       Bb = other.bb_ != null ? other.Bb.Clone() : null;
     }
 
@@ -2752,9 +2792,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestMutualRecursionB() { }
+    public TestMutualRecursionB() {
+      OnConstruction();
+    }
 
-    public TestMutualRecursionB(TestMutualRecursionB other) {
+    partial void OnConstruction();
+
+    public TestMutualRecursionB(TestMutualRecursionB other) : this() {
       A = other.a_ != null ? other.A.Clone() : null;
       optionalInt32_ = other.optionalInt32_;
     }
@@ -2897,9 +2941,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestCamelCaseFieldNames() { }
+    public TestCamelCaseFieldNames() {
+      OnConstruction();
+    }
 
-    public TestCamelCaseFieldNames(TestCamelCaseFieldNames other) {
+    partial void OnConstruction();
+
+    public TestCamelCaseFieldNames(TestCamelCaseFieldNames other) : this() {
       primitiveField_ = other.primitiveField_;
       stringField_ = other.stringField_;
       enumField_ = other.enumField_;
@@ -3173,9 +3221,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestFieldOrderings() { }
+    public TestFieldOrderings() {
+      OnConstruction();
+    }
 
-    public TestFieldOrderings(TestFieldOrderings other) {
+    partial void OnConstruction();
+
+    public TestFieldOrderings(TestFieldOrderings other) : this() {
       myString_ = other.myString_;
       myInt_ = other.myInt_;
       myFloat_ = other.myFloat_;
@@ -3373,9 +3425,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public NestedMessage() { }
+        public NestedMessage() {
+          OnConstruction();
+        }
 
-        public NestedMessage(NestedMessage other) {
+        partial void OnConstruction();
+
+        public NestedMessage(NestedMessage other) : this() {
           oo_ = other.oo_;
           bb_ = other.bb_;
         }
@@ -3516,9 +3572,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public SparseEnumMessage() { }
+    public SparseEnumMessage() {
+      OnConstruction();
+    }
 
-    public SparseEnumMessage(SparseEnumMessage other) {
+    partial void OnConstruction();
+
+    public SparseEnumMessage(SparseEnumMessage other) : this() {
       sparseEnum_ = other.sparseEnum_;
     }
 
@@ -3627,9 +3687,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public OneString() { }
+    public OneString() {
+      OnConstruction();
+    }
 
-    public OneString(OneString other) {
+    partial void OnConstruction();
+
+    public OneString(OneString other) : this() {
       data_ = other.data_;
     }
 
@@ -3738,9 +3802,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public MoreString() { }
+    public MoreString() {
+      OnConstruction();
+    }
 
-    public MoreString(MoreString other) {
+    partial void OnConstruction();
+
+    public MoreString(MoreString other) : this() {
       data_ = other.data_.Clone();
     }
 
@@ -3841,9 +3909,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public OneBytes() { }
+    public OneBytes() {
+      OnConstruction();
+    }
 
-    public OneBytes(OneBytes other) {
+    partial void OnConstruction();
+
+    public OneBytes(OneBytes other) : this() {
       data_ = other.data_;
     }
 
@@ -3952,9 +4024,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public MoreBytes() { }
+    public MoreBytes() {
+      OnConstruction();
+    }
 
-    public MoreBytes(MoreBytes other) {
+    partial void OnConstruction();
+
+    public MoreBytes(MoreBytes other) : this() {
       data_ = other.data_;
     }
 
@@ -4063,9 +4139,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public Int32Message() { }
+    public Int32Message() {
+      OnConstruction();
+    }
 
-    public Int32Message(Int32Message other) {
+    partial void OnConstruction();
+
+    public Int32Message(Int32Message other) : this() {
       data_ = other.data_;
     }
 
@@ -4174,9 +4254,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public Uint32Message() { }
+    public Uint32Message() {
+      OnConstruction();
+    }
 
-    public Uint32Message(Uint32Message other) {
+    partial void OnConstruction();
+
+    public Uint32Message(Uint32Message other) : this() {
       data_ = other.data_;
     }
 
@@ -4285,9 +4369,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public Int64Message() { }
+    public Int64Message() {
+      OnConstruction();
+    }
 
-    public Int64Message(Int64Message other) {
+    partial void OnConstruction();
+
+    public Int64Message(Int64Message other) : this() {
       data_ = other.data_;
     }
 
@@ -4396,9 +4484,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public Uint64Message() { }
+    public Uint64Message() {
+      OnConstruction();
+    }
 
-    public Uint64Message(Uint64Message other) {
+    partial void OnConstruction();
+
+    public Uint64Message(Uint64Message other) : this() {
       data_ = other.data_;
     }
 
@@ -4507,9 +4599,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public BoolMessage() { }
+    public BoolMessage() {
+      OnConstruction();
+    }
 
-    public BoolMessage(BoolMessage other) {
+    partial void OnConstruction();
+
+    public BoolMessage(BoolMessage other) : this() {
       data_ = other.data_;
     }
 
@@ -4618,9 +4714,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestOneof() { }
+    public TestOneof() {
+      OnConstruction();
+    }
 
-    public TestOneof(TestOneof other) {
+    partial void OnConstruction();
+
+    public TestOneof(TestOneof other) : this() {
       switch (other.FooCase) {
         case FooOneofCase.FooInt:
           FooInt = other.FooInt;
@@ -4819,9 +4919,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestPackedTypes() { }
+    public TestPackedTypes() {
+      OnConstruction();
+    }
 
-    public TestPackedTypes(TestPackedTypes other) {
+    partial void OnConstruction();
+
+    public TestPackedTypes(TestPackedTypes other) : this() {
       packedInt32_ = other.packedInt32_.Clone();
       packedInt64_ = other.packedInt64_.Clone();
       packedUint32_ = other.packedUint32_.Clone();
@@ -5182,9 +5286,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestUnpackedTypes() { }
+    public TestUnpackedTypes() {
+      OnConstruction();
+    }
 
-    public TestUnpackedTypes(TestUnpackedTypes other) {
+    partial void OnConstruction();
+
+    public TestUnpackedTypes(TestUnpackedTypes other) : this() {
       unpackedInt32_ = other.unpackedInt32_.Clone();
       unpackedInt64_ = other.unpackedInt64_.Clone();
       unpackedUint32_ = other.unpackedUint32_.Clone();
@@ -5545,9 +5653,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestRepeatedScalarDifferentTagSizes() { }
+    public TestRepeatedScalarDifferentTagSizes() {
+      OnConstruction();
+    }
 
-    public TestRepeatedScalarDifferentTagSizes(TestRepeatedScalarDifferentTagSizes other) {
+    partial void OnConstruction();
+
+    public TestRepeatedScalarDifferentTagSizes(TestRepeatedScalarDifferentTagSizes other) : this() {
       repeatedFixed32_ = other.repeatedFixed32_.Clone();
       repeatedInt32_ = other.repeatedInt32_.Clone();
       repeatedFixed64_ = other.repeatedFixed64_.Clone();
@@ -5749,9 +5861,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestCommentInjectionMessage() { }
+    public TestCommentInjectionMessage() {
+      OnConstruction();
+    }
 
-    public TestCommentInjectionMessage(TestCommentInjectionMessage other) {
+    partial void OnConstruction();
+
+    public TestCommentInjectionMessage(TestCommentInjectionMessage other) : this() {
       a_ = other.a_;
     }
 
@@ -5860,9 +5976,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FooRequest() { }
+    public FooRequest() {
+      OnConstruction();
+    }
 
-    public FooRequest(FooRequest other) {
+    partial void OnConstruction();
+
+    public FooRequest(FooRequest other) : this() {
     }
 
     public FooRequest Clone() {
@@ -5944,9 +6064,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FooResponse() { }
+    public FooResponse() {
+      OnConstruction();
+    }
 
-    public FooResponse(FooResponse other) {
+    partial void OnConstruction();
+
+    public FooResponse(FooResponse other) : this() {
     }
 
     public FooResponse Clone() {
@@ -6028,9 +6152,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FooClientMessage() { }
+    public FooClientMessage() {
+      OnConstruction();
+    }
 
-    public FooClientMessage(FooClientMessage other) {
+    partial void OnConstruction();
+
+    public FooClientMessage(FooClientMessage other) : this() {
     }
 
     public FooClientMessage Clone() {
@@ -6112,9 +6240,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FooServerMessage() { }
+    public FooServerMessage() {
+      OnConstruction();
+    }
 
-    public FooServerMessage(FooServerMessage other) {
+    partial void OnConstruction();
+
+    public FooServerMessage(FooServerMessage other) : this() {
     }
 
     public FooServerMessage Clone() {
@@ -6196,9 +6328,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public BarRequest() { }
+    public BarRequest() {
+      OnConstruction();
+    }
 
-    public BarRequest(BarRequest other) {
+    partial void OnConstruction();
+
+    public BarRequest(BarRequest other) : this() {
     }
 
     public BarRequest Clone() {
@@ -6280,9 +6416,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public BarResponse() { }
+    public BarResponse() {
+      OnConstruction();
+    }
 
-    public BarResponse(BarResponse other) {
+    partial void OnConstruction();
+
+    public BarResponse(BarResponse other) : this() {
     }
 
     public BarResponse Clone() {

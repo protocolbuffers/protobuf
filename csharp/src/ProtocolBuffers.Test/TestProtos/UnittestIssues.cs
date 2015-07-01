@@ -109,9 +109,13 @@ namespace UnitTest.Issues.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public Issue307() { }
+    public Issue307() {
+      OnConstruction();
+    }
 
-    public Issue307(Issue307 other) {
+    partial void OnConstruction();
+
+    public Issue307(Issue307 other) : this() {
     }
 
     public Issue307 Clone() {
@@ -194,9 +198,13 @@ namespace UnitTest.Issues.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public NestedOnce() { }
+        public NestedOnce() {
+          OnConstruction();
+        }
 
-        public NestedOnce(NestedOnce other) {
+        partial void OnConstruction();
+
+        public NestedOnce(NestedOnce other) : this() {
         }
 
         public NestedOnce Clone() {
@@ -279,9 +287,13 @@ namespace UnitTest.Issues.TestProtos {
             private bool _frozen = false;
             public bool IsFrozen { get { return _frozen; } }
 
-            public NestedTwice() { }
+            public NestedTwice() {
+              OnConstruction();
+            }
 
-            public NestedTwice(NestedTwice other) {
+            partial void OnConstruction();
+
+            public NestedTwice(NestedTwice other) : this() {
             }
 
             public NestedTwice Clone() {
@@ -373,9 +385,13 @@ namespace UnitTest.Issues.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public NegativeEnumMessage() { }
+    public NegativeEnumMessage() {
+      OnConstruction();
+    }
 
-    public NegativeEnumMessage(NegativeEnumMessage other) {
+    partial void OnConstruction();
+
+    public NegativeEnumMessage(NegativeEnumMessage other) : this() {
       value_ = other.value_;
       values_ = other.values_.Clone();
       packedValues_ = other.packedValues_.Clone();
@@ -522,9 +538,13 @@ namespace UnitTest.Issues.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public DeprecatedChild() { }
+    public DeprecatedChild() {
+      OnConstruction();
+    }
 
-    public DeprecatedChild(DeprecatedChild other) {
+    partial void OnConstruction();
+
+    public DeprecatedChild(DeprecatedChild other) : this() {
     }
 
     public DeprecatedChild Clone() {
@@ -606,9 +626,13 @@ namespace UnitTest.Issues.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public DeprecatedFieldsMessage() { }
+    public DeprecatedFieldsMessage() {
+      OnConstruction();
+    }
 
-    public DeprecatedFieldsMessage(DeprecatedFieldsMessage other) {
+    partial void OnConstruction();
+
+    public DeprecatedFieldsMessage(DeprecatedFieldsMessage other) : this() {
       primitiveValue_ = other.primitiveValue_;
       primitiveArray_ = other.primitiveArray_.Clone();
       MessageValue = other.messageValue_ != null ? other.MessageValue.Clone() : null;
@@ -842,9 +866,13 @@ namespace UnitTest.Issues.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public ItemField() { }
+    public ItemField() {
+      OnConstruction();
+    }
 
-    public ItemField(ItemField other) {
+    partial void OnConstruction();
+
+    public ItemField(ItemField other) : this() {
       item_ = other.item_;
     }
 

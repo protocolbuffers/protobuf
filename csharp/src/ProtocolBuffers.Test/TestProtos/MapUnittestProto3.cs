@@ -359,9 +359,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestMap() { }
+    public TestMap() {
+      OnConstruction();
+    }
 
-    public TestMap(TestMap other) {
+    partial void OnConstruction();
+
+    public TestMap(TestMap other) : this() {
       mapInt32Int32_ = other.mapInt32Int32_.Clone();
       mapInt64Int64_ = other.mapInt64Int64_.Clone();
       mapUint32Uint32_ = other.mapUint32Uint32_.Clone();
@@ -767,9 +771,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32Int32Entry() { }
+        public MapInt32Int32Entry() {
+          OnConstruction();
+        }
 
-        public MapInt32Int32Entry(MapInt32Int32Entry other) {
+        partial void OnConstruction();
+
+        public MapInt32Int32Entry(MapInt32Int32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -905,9 +913,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt64Int64Entry() { }
+        public MapInt64Int64Entry() {
+          OnConstruction();
+        }
 
-        public MapInt64Int64Entry(MapInt64Int64Entry other) {
+        partial void OnConstruction();
+
+        public MapInt64Int64Entry(MapInt64Int64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1043,9 +1055,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapUint32Uint32Entry() { }
+        public MapUint32Uint32Entry() {
+          OnConstruction();
+        }
 
-        public MapUint32Uint32Entry(MapUint32Uint32Entry other) {
+        partial void OnConstruction();
+
+        public MapUint32Uint32Entry(MapUint32Uint32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1181,9 +1197,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapUint64Uint64Entry() { }
+        public MapUint64Uint64Entry() {
+          OnConstruction();
+        }
 
-        public MapUint64Uint64Entry(MapUint64Uint64Entry other) {
+        partial void OnConstruction();
+
+        public MapUint64Uint64Entry(MapUint64Uint64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1319,9 +1339,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSint32Sint32Entry() { }
+        public MapSint32Sint32Entry() {
+          OnConstruction();
+        }
 
-        public MapSint32Sint32Entry(MapSint32Sint32Entry other) {
+        partial void OnConstruction();
+
+        public MapSint32Sint32Entry(MapSint32Sint32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1457,9 +1481,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSint64Sint64Entry() { }
+        public MapSint64Sint64Entry() {
+          OnConstruction();
+        }
 
-        public MapSint64Sint64Entry(MapSint64Sint64Entry other) {
+        partial void OnConstruction();
+
+        public MapSint64Sint64Entry(MapSint64Sint64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1595,9 +1623,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapFixed32Fixed32Entry() { }
+        public MapFixed32Fixed32Entry() {
+          OnConstruction();
+        }
 
-        public MapFixed32Fixed32Entry(MapFixed32Fixed32Entry other) {
+        partial void OnConstruction();
+
+        public MapFixed32Fixed32Entry(MapFixed32Fixed32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1733,9 +1765,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapFixed64Fixed64Entry() { }
+        public MapFixed64Fixed64Entry() {
+          OnConstruction();
+        }
 
-        public MapFixed64Fixed64Entry(MapFixed64Fixed64Entry other) {
+        partial void OnConstruction();
+
+        public MapFixed64Fixed64Entry(MapFixed64Fixed64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1871,9 +1907,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSfixed32Sfixed32Entry() { }
+        public MapSfixed32Sfixed32Entry() {
+          OnConstruction();
+        }
 
-        public MapSfixed32Sfixed32Entry(MapSfixed32Sfixed32Entry other) {
+        partial void OnConstruction();
+
+        public MapSfixed32Sfixed32Entry(MapSfixed32Sfixed32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2009,9 +2049,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSfixed64Sfixed64Entry() { }
+        public MapSfixed64Sfixed64Entry() {
+          OnConstruction();
+        }
 
-        public MapSfixed64Sfixed64Entry(MapSfixed64Sfixed64Entry other) {
+        partial void OnConstruction();
+
+        public MapSfixed64Sfixed64Entry(MapSfixed64Sfixed64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2147,9 +2191,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32FloatEntry() { }
+        public MapInt32FloatEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32FloatEntry(MapInt32FloatEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32FloatEntry(MapInt32FloatEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2285,9 +2333,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32DoubleEntry() { }
+        public MapInt32DoubleEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32DoubleEntry(MapInt32DoubleEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32DoubleEntry(MapInt32DoubleEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2423,9 +2475,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapBoolBoolEntry() { }
+        public MapBoolBoolEntry() {
+          OnConstruction();
+        }
 
-        public MapBoolBoolEntry(MapBoolBoolEntry other) {
+        partial void OnConstruction();
+
+        public MapBoolBoolEntry(MapBoolBoolEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2561,9 +2617,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapStringStringEntry() { }
+        public MapStringStringEntry() {
+          OnConstruction();
+        }
 
-        public MapStringStringEntry(MapStringStringEntry other) {
+        partial void OnConstruction();
+
+        public MapStringStringEntry(MapStringStringEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2699,9 +2759,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32BytesEntry() { }
+        public MapInt32BytesEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32BytesEntry(MapInt32BytesEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32BytesEntry(MapInt32BytesEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2837,9 +2901,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32EnumEntry() { }
+        public MapInt32EnumEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32EnumEntry(MapInt32EnumEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32EnumEntry(MapInt32EnumEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2975,9 +3043,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32ForeignMessageEntry() { }
+        public MapInt32ForeignMessageEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32ForeignMessageEntry(MapInt32ForeignMessageEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32ForeignMessageEntry(MapInt32ForeignMessageEntry other) : this() {
           key_ = other.key_;
           Value = other.value_ != null ? other.Value.Clone() : null;
         }
@@ -3125,9 +3197,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestMapSubmessage() { }
+    public TestMapSubmessage() {
+      OnConstruction();
+    }
 
-    public TestMapSubmessage(TestMapSubmessage other) {
+    partial void OnConstruction();
+
+    public TestMapSubmessage(TestMapSubmessage other) : this() {
       TestMap = other.testMap_ != null ? other.TestMap.Clone() : null;
     }
 
@@ -3243,9 +3319,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestMessageMap() { }
+    public TestMessageMap() {
+      OnConstruction();
+    }
 
-    public TestMessageMap(TestMessageMap other) {
+    partial void OnConstruction();
+
+    public TestMessageMap(TestMessageMap other) : this() {
       mapInt32Message_ = other.mapInt32Message_.Clone();
     }
 
@@ -3347,9 +3427,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32MessageEntry() { }
+        public MapInt32MessageEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32MessageEntry(MapInt32MessageEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32MessageEntry(MapInt32MessageEntry other) : this() {
           key_ = other.key_;
           Value = other.value_ != null ? other.Value.Clone() : null;
         }
@@ -3497,9 +3581,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestSameTypeMap() { }
+    public TestSameTypeMap() {
+      OnConstruction();
+    }
 
-    public TestSameTypeMap(TestSameTypeMap other) {
+    partial void OnConstruction();
+
+    public TestSameTypeMap(TestSameTypeMap other) : this() {
       map1_ = other.map1_.Clone();
       map2_ = other.map2_.Clone();
     }
@@ -3620,9 +3708,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public Map1Entry() { }
+        public Map1Entry() {
+          OnConstruction();
+        }
 
-        public Map1Entry(Map1Entry other) {
+        partial void OnConstruction();
+
+        public Map1Entry(Map1Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -3758,9 +3850,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public Map2Entry() { }
+        public Map2Entry() {
+          OnConstruction();
+        }
 
-        public Map2Entry(Map2Entry other) {
+        partial void OnConstruction();
+
+        public Map2Entry(Map2Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -3901,9 +3997,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestArenaMap() { }
+    public TestArenaMap() {
+      OnConstruction();
+    }
 
-    public TestArenaMap(TestArenaMap other) {
+    partial void OnConstruction();
+
+    public TestArenaMap(TestArenaMap other) : this() {
       mapInt32Int32_ = other.mapInt32Int32_.Clone();
       mapInt64Int64_ = other.mapInt64Int64_.Clone();
       mapUint32Uint32_ = other.mapUint32Uint32_.Clone();
@@ -4271,9 +4371,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32Int32Entry() { }
+        public MapInt32Int32Entry() {
+          OnConstruction();
+        }
 
-        public MapInt32Int32Entry(MapInt32Int32Entry other) {
+        partial void OnConstruction();
+
+        public MapInt32Int32Entry(MapInt32Int32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -4409,9 +4513,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt64Int64Entry() { }
+        public MapInt64Int64Entry() {
+          OnConstruction();
+        }
 
-        public MapInt64Int64Entry(MapInt64Int64Entry other) {
+        partial void OnConstruction();
+
+        public MapInt64Int64Entry(MapInt64Int64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -4547,9 +4655,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapUint32Uint32Entry() { }
+        public MapUint32Uint32Entry() {
+          OnConstruction();
+        }
 
-        public MapUint32Uint32Entry(MapUint32Uint32Entry other) {
+        partial void OnConstruction();
+
+        public MapUint32Uint32Entry(MapUint32Uint32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -4685,9 +4797,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapUint64Uint64Entry() { }
+        public MapUint64Uint64Entry() {
+          OnConstruction();
+        }
 
-        public MapUint64Uint64Entry(MapUint64Uint64Entry other) {
+        partial void OnConstruction();
+
+        public MapUint64Uint64Entry(MapUint64Uint64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -4823,9 +4939,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSint32Sint32Entry() { }
+        public MapSint32Sint32Entry() {
+          OnConstruction();
+        }
 
-        public MapSint32Sint32Entry(MapSint32Sint32Entry other) {
+        partial void OnConstruction();
+
+        public MapSint32Sint32Entry(MapSint32Sint32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -4961,9 +5081,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSint64Sint64Entry() { }
+        public MapSint64Sint64Entry() {
+          OnConstruction();
+        }
 
-        public MapSint64Sint64Entry(MapSint64Sint64Entry other) {
+        partial void OnConstruction();
+
+        public MapSint64Sint64Entry(MapSint64Sint64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5099,9 +5223,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapFixed32Fixed32Entry() { }
+        public MapFixed32Fixed32Entry() {
+          OnConstruction();
+        }
 
-        public MapFixed32Fixed32Entry(MapFixed32Fixed32Entry other) {
+        partial void OnConstruction();
+
+        public MapFixed32Fixed32Entry(MapFixed32Fixed32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5237,9 +5365,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapFixed64Fixed64Entry() { }
+        public MapFixed64Fixed64Entry() {
+          OnConstruction();
+        }
 
-        public MapFixed64Fixed64Entry(MapFixed64Fixed64Entry other) {
+        partial void OnConstruction();
+
+        public MapFixed64Fixed64Entry(MapFixed64Fixed64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5375,9 +5507,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSfixed32Sfixed32Entry() { }
+        public MapSfixed32Sfixed32Entry() {
+          OnConstruction();
+        }
 
-        public MapSfixed32Sfixed32Entry(MapSfixed32Sfixed32Entry other) {
+        partial void OnConstruction();
+
+        public MapSfixed32Sfixed32Entry(MapSfixed32Sfixed32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5513,9 +5649,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSfixed64Sfixed64Entry() { }
+        public MapSfixed64Sfixed64Entry() {
+          OnConstruction();
+        }
 
-        public MapSfixed64Sfixed64Entry(MapSfixed64Sfixed64Entry other) {
+        partial void OnConstruction();
+
+        public MapSfixed64Sfixed64Entry(MapSfixed64Sfixed64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5651,9 +5791,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32FloatEntry() { }
+        public MapInt32FloatEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32FloatEntry(MapInt32FloatEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32FloatEntry(MapInt32FloatEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5789,9 +5933,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32DoubleEntry() { }
+        public MapInt32DoubleEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32DoubleEntry(MapInt32DoubleEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32DoubleEntry(MapInt32DoubleEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5927,9 +6075,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapBoolBoolEntry() { }
+        public MapBoolBoolEntry() {
+          OnConstruction();
+        }
 
-        public MapBoolBoolEntry(MapBoolBoolEntry other) {
+        partial void OnConstruction();
+
+        public MapBoolBoolEntry(MapBoolBoolEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -6065,9 +6217,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32EnumEntry() { }
+        public MapInt32EnumEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32EnumEntry(MapInt32EnumEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32EnumEntry(MapInt32EnumEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -6203,9 +6359,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32ForeignMessageEntry() { }
+        public MapInt32ForeignMessageEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32ForeignMessageEntry(MapInt32ForeignMessageEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32ForeignMessageEntry(MapInt32ForeignMessageEntry other) : this() {
           key_ = other.key_;
           Value = other.value_ != null ? other.Value.Clone() : null;
         }
@@ -6353,9 +6513,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public MessageContainingEnumCalledType() { }
+    public MessageContainingEnumCalledType() {
+      OnConstruction();
+    }
 
-    public MessageContainingEnumCalledType(MessageContainingEnumCalledType other) {
+    partial void OnConstruction();
+
+    public MessageContainingEnumCalledType(MessageContainingEnumCalledType other) : this() {
       type_ = other.type_.Clone();
     }
 
@@ -6461,9 +6625,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public TypeEntry() { }
+        public TypeEntry() {
+          OnConstruction();
+        }
 
-        public TypeEntry(TypeEntry other) {
+        partial void OnConstruction();
+
+        public TypeEntry(TypeEntry other) : this() {
           key_ = other.key_;
           Value = other.value_ != null ? other.Value.Clone() : null;
         }
@@ -6611,9 +6779,13 @@ namespace Google.Protobuf.TestProtos {
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public MessageContainingMapCalledEntry() { }
+    public MessageContainingMapCalledEntry() {
+      OnConstruction();
+    }
 
-    public MessageContainingMapCalledEntry(MessageContainingMapCalledEntry other) {
+    partial void OnConstruction();
+
+    public MessageContainingMapCalledEntry(MessageContainingMapCalledEntry other) : this() {
       entry_ = other.entry_.Clone();
     }
 
@@ -6715,9 +6887,13 @@ namespace Google.Protobuf.TestProtos {
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public EntryEntry() { }
+        public EntryEntry() {
+          OnConstruction();
+        }
 
-        public EntryEntry(EntryEntry other) {
+        partial void OnConstruction();
+
+        public EntryEntry(EntryEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
