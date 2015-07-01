@@ -13,8 +13,7 @@ namespace Google.Protobuf.TestProtos {
   public static partial class UnittestImportProto3 {
 
     #region Static variables
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_import_ImportMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.ImportMessage> internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -33,17 +32,13 @@ namespace Google.Protobuf.TestProtos {
             "UhAIEg4KCklNUE9SVF9CQVoQCUI8Chhjb20uZ29vZ2xlLnByb3RvYnVmLnRl", 
             "c3RIAfgBAaoCGkdvb2dsZS5Qcm90b2J1Zi5UZXN0UHJvdG9zUABiBnByb3Rv", 
           "Mw=="));
-      pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
-        descriptor = root;
-        internal__static_protobuf_unittest_import_ImportMessage__Descriptor = Descriptor.MessageTypes[0];
-        internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.ImportMessage>(internal__static_protobuf_unittest_import_ImportMessage__Descriptor,
-                new string[] { "D", });
-      };
-      pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+      descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbd::FileDescriptor[] {
           global::Google.Protobuf.TestProtos.UnittestImportPublicProto3.Descriptor, 
-          }, assigner);
+          });
+      internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.ImportMessage), descriptor.MessageTypes[0],
+              new string[] { "D", });
     }
     #endregion
 
@@ -67,10 +62,10 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "d" };
     private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestImportProto3.internal__static_protobuf_unittest_import_ImportMessage__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestImportProto3.Descriptor.MessageTypes[0]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<ImportMessage> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestImportProto3.internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable; }
     }
 
