@@ -176,22 +176,11 @@ void UmbrellaClassGenerator::WriteDescriptor(io::Printer* printer) {
   printer->Print("\"$base64$\"));\n", "base64", base64);
   printer->Outdent();
   printer->Outdent();
-  printer->Print(
-    "pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {\n");
-  printer->Indent();
-  printer->Print("descriptor = root;\n");
-  for (int i = 0; i < file_->message_type_count(); i++) {
-    MessageGenerator messageGenerator(file_->message_type(i));
-    messageGenerator.GenerateStaticVariableInitializers(printer);
-  }
-
-  printer->Outdent();
-  printer->Print("};\n");
 
   // -----------------------------------------------------------------
-  // Invoke internalBuildGeneratedFileFrom() to build the file.
+  // Invoke InternalBuildGeneratedFileFrom() to build the file.
   printer->Print(
-      "pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,\n");
+      "descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,\n");
   printer->Print("    new pbd::FileDescriptor[] {\n");
   for (int i = 0; i < file_->dependency_count(); i++) {
     printer->Print(
@@ -199,7 +188,12 @@ void UmbrellaClassGenerator::WriteDescriptor(io::Printer* printer) {
       "full_umbrella_class_name",
       GetFullUmbrellaClassName(file_->dependency(i)));
   }
-  printer->Print("    }, assigner);\n");
+  printer->Print("    });\n");
+  // Then invoke any other static variable initializers, e.g. field accessors.
+  for (int i = 0; i < file_->message_type_count(); i++) {
+      MessageGenerator messageGenerator(file_->message_type(i));
+      messageGenerator.GenerateStaticVariableInitializers(printer);
+  }
   printer->Outdent();
   printer->Print("}\n");
   printer->Print("#endregion\n\n");

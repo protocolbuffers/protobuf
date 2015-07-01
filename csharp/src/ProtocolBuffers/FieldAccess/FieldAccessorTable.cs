@@ -31,6 +31,7 @@
 #endregion
 
 using System;
+using System.Collections.ObjectModel;
 using Google.Protobuf.Descriptors;
 
 namespace Google.Protobuf.FieldAccess
@@ -38,34 +39,43 @@ namespace Google.Protobuf.FieldAccess
     /// <summary>
     /// Provides access to fields in generated messages via reflection.
     /// </summary>
-    public sealed class FieldAccessorTable<T> where T : IMessage<T>
+    public sealed class FieldAccessorTable
     {
-        private readonly IFieldAccessor<T>[] accessors;
+        private readonly ReadOnlyCollection<IFieldAccessor> accessors;
         private readonly MessageDescriptor descriptor;
 
         /// <summary>
         /// Constructs a FieldAccessorTable for a particular message class.
         /// Only one FieldAccessorTable should be constructed per class.
         /// </summary>
+        /// <param name="type">The CLR type for the message.</param>
         /// <param name="descriptor">The type's descriptor</param>
         /// <param name="propertyNames">The Pascal-case names of all the field-based properties in the message.</param>
-        public FieldAccessorTable(MessageDescriptor descriptor, string[] propertyNames)
+        public FieldAccessorTable(Type type, MessageDescriptor descriptor, string[] propertyNames)
         {
             this.descriptor = descriptor;
-            accessors = new IFieldAccessor<T>[descriptor.Fields.Count];
-            bool supportFieldPresence = descriptor.File.Syntax == FileDescriptor.ProtoSyntax.Proto2;
-            for (int i = 0; i < accessors.Length; i++)
+            var accessorsArray = new IFieldAccessor[descriptor.Fields.Count];
+            for (int i = 0; i < accessorsArray.Length; i++)
             {
                 var field = descriptor.Fields[i];
                 var name = propertyNames[i];
-                accessors[i] = field.IsRepeated
-                    ? (IFieldAccessor<T>) new RepeatedFieldAccessor<T>(propertyNames[i])
-                    : new SingleFieldAccessor<T>(field, name, supportFieldPresence);
+                accessorsArray[i] =
+                    field.IsMap ? new MapFieldAccessor(type, name, field)
+                    : field.IsRepeated ? new RepeatedFieldAccessor(type, name, field)
+                    : (IFieldAccessor) new SingleFieldAccessor(type, name, field);
             }
+            accessors = new ReadOnlyCollection<IFieldAccessor>(accessorsArray);
             // TODO(jonskeet): Oneof support
         }
 
-        internal IFieldAccessor<T> this[int fieldNumber]
+        // TODO: Validate the name here... should possibly make this type a more "general reflection access" type,
+        // bearing in mind the oneof parts to come as well.
+        /// <summary>
+        /// Returns all of the field accessors for the message type.
+        /// </summary>
+        public ReadOnlyCollection<IFieldAccessor> Accessors { get { return accessors; } }
+
+        public IFieldAccessor this[int fieldNumber]
         {
             get
             {
@@ -74,7 +84,7 @@ namespace Google.Protobuf.FieldAccess
             }
         }
 
-        internal IFieldAccessor<T> this[FieldDescriptor field]
+        internal IFieldAccessor this[FieldDescriptor field]
         {
             get
             {

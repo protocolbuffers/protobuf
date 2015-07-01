@@ -131,6 +131,11 @@ namespace Google.Protobuf.Descriptors
             get { return Proto.Label == FieldDescriptorProto.Types.Label.LABEL_REPEATED; }
         }
 
+        public bool IsMap
+        {
+            get { return fieldType == FieldType.Message && messageType.Options != null && messageType.Options.MapEntry; }
+        }
+
         public bool IsPacked
         {
             get { return Proto.Options.Packed; }

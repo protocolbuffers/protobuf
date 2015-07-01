@@ -336,33 +336,8 @@ namespace Google.Protobuf.Descriptors
             }
         }
 
-        /// <summary>
-        /// This method is to be called by generated code only.  It is equivalent
-        /// to BuildFrom except that the FileDescriptorProto is encoded in
-        /// protocol buffer wire format. This overload is maintained for backward
-        /// compatibility with source code generated before the custom options were available
-        /// (and working).
-        /// </summary>
-        public static FileDescriptor InternalBuildGeneratedFileFrom(byte[] descriptorData, FileDescriptor[] dependencies)
-        {
-            return InternalBuildGeneratedFileFrom(descriptorData, dependencies, x => { });
-        }
-
-        /// <summary>
-        /// This delegate should be used by generated code only. When calling
-        /// FileDescriptor.InternalBuildGeneratedFileFrom, the caller can provide
-        /// a callback which assigns the global variables defined in the generated code
-        /// which point at parts of the FileDescriptor. The callback returns an
-        /// Extension Registry which contains any extensions which might be used in
-        /// the descriptor - that is, extensions of the various "Options" messages defined
-        /// in descriptor.proto. The callback may also return null to indicate that
-        /// no extensions are used in the descriptor.
-        /// </summary>
-        public delegate void InternalDescriptorAssigner(FileDescriptor descriptor);
-
         public static FileDescriptor InternalBuildGeneratedFileFrom(byte[] descriptorData,
-                                                                    FileDescriptor[] dependencies,
-                                                                    InternalDescriptorAssigner descriptorAssigner)
+                                                                    FileDescriptor[] dependencies)
         {
             FileDescriptorProto proto;
             try
@@ -374,20 +349,16 @@ namespace Google.Protobuf.Descriptors
                 throw new ArgumentException("Failed to parse protocol buffer descriptor for generated code.", e);
             }
 
-            FileDescriptor result;
             try
             {
                 // When building descriptors for generated code, we allow unknown
                 // dependencies by default.
-                result = BuildFrom(proto, dependencies, true);
+                return BuildFrom(proto, dependencies, true);
             }
             catch (DescriptorValidationException e)
             {
                 throw new ArgumentException("Invalid embedded descriptor for \"" + proto.Name + "\".", e);
             }
-
-            descriptorAssigner(result);
-            return result;
         }
         
         public override string ToString()

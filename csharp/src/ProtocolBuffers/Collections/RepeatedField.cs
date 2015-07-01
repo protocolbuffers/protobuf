@@ -41,7 +41,7 @@ namespace Google.Protobuf.Collections
     /// restrictions (no null values) and capabilities (deep cloning and freezing).
     /// </summary>
     /// <typeparam name="T">The element type of the repeated field.</typeparam>
-    public sealed class RepeatedField<T> : IList<T>, IDeepCloneable<RepeatedField<T>>, IEquatable<RepeatedField<T>>, IFreezable
+    public sealed class RepeatedField<T> : IList<T>, IList, IDeepCloneable<RepeatedField<T>>, IEquatable<RepeatedField<T>>, IFreezable
     {
         private static readonly T[] EmptyArray = new T[0];
 
@@ -415,7 +415,66 @@ namespace Google.Protobuf.Collections
                 array[index] = value;
             }
         }
-        
+
+        #region Explicit interface implementation for IList and ICollection.
+        bool IList.IsFixedSize { get { return IsFrozen; } }
+
+        void ICollection.CopyTo(Array array, int index)
+        {
+            ThrowHelper.ThrowIfNull(array, "array");
+            T[] strongArray = array as T[];
+            if (strongArray == null)
+            {
+                throw new ArgumentException("Array is of incorrect type", "array");
+            }
+            CopyTo(strongArray, index);
+        }
+
+        bool ICollection.IsSynchronized { get { return false; } }
+
+        object ICollection.SyncRoot { get { return null; } }
+
+        object IList.this[int index]
+        {
+            get { return this[index]; }
+            set { this[index] = (T)value; }
+        }
+
+        int IList.Add(object value)
+        {
+            Add((T) value);
+            return count - 1;
+        }
+
+        bool IList.Contains(object value)
+        {
+            return (value is T && Contains((T)value));
+        }
+
+        int IList.IndexOf(object value)
+        {
+            if (!(value is T))
+            {
+                return -1;
+            }
+            return IndexOf((T)value);
+        }
+
+        void IList.Insert(int index, object value)
+        {
+            Insert(index, (T) value);
+        }
+
+        void IList.Remove(object value)
+        {
+            if (!(value is T))
+            {
+                return;
+            }
+            Remove((T)value);
+        }
+        #endregion
+
         public struct Enumerator : IEnumerator<T>
         {
             private int index;

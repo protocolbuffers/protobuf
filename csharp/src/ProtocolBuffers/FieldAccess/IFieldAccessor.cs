@@ -30,39 +30,41 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Descriptors;
+
 namespace Google.Protobuf.FieldAccess
 {
     /// <summary>
-    /// Allows fields to be reflectively accessed in a smart manner.
-    /// The property descriptors for each field are created once and then cached.
-    /// In addition, this interface holds knowledge of repeated fields, builders etc.
+    /// Allows fields to be reflectively accessed.
     /// </summary>
-    internal interface IFieldAccessor<T> where T : IMessage<T>
+    public interface IFieldAccessor
     {
         /// <summary>
-        /// Indicates whether the specified message contains the field. For primitive fields
-        /// declared in proto3-syntax messages, this simply checks whether the value is the default one.
+        /// Returns the descriptor associated with this field.
         /// </summary>
-        /// <exception cref="InvalidOperationException">The field is a repeated field, or a single primitive field.</exception>
-        bool HasValue(T message);
+        FieldDescriptor Descriptor { get; }
 
         /// <summary>
         /// Clears the field in the specified message. (For repeated fields,
         /// this clears the list.)
         /// </summary>
-        void Clear(T message);
+        void Clear(object message);
 
         /// <summary>
         /// Fetches the field value. For repeated values, this will be an
-        /// <see cref="IList"/> implementation.
+        /// <see cref="IList"/> implementation. For map values, this will be an
+        /// <see cref="IDictionary"/> implementation.
         /// </summary>
-        object GetValue(T message);
+        object GetValue(object message);
 
         /// <summary>
-        /// Mutator for single fields only. (Repeated fields must be mutated
-        /// by fetching the list, then mutating that.)
+        /// Mutator for single "simple" fields only.
         /// </summary>
-        /// <exception cref="InvalidOperationException">The field is a repeated field.</exception>
-        void SetValue(T message, object value);
+        /// <remarks>
+        /// Repeated fields are mutated by fetching the value and manipulating it as a list.
+        /// Map fields are mutated by fetching the value and manipulating it as a dictionary.
+        /// </remarks>
+        /// <exception cref="InvalidOperationException">The field is not a "simple" field, or the message is frozen.</exception>
+        void SetValue(object message, object value);
     }
 }
