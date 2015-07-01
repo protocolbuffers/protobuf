@@ -221,10 +221,13 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "private bool _frozen = false;\n"
     "public bool IsFrozen { get { return _frozen; } }\n\n");
 
-  // Parameterless constructor
+  // Parameterless constructor and partial OnConstruction method.
   printer->Print(
     vars,
-    "public $class_name$() { }\n\n");
+    "public $class_name$() {\n"
+    "  OnConstruction();\n"
+    "}\n\n"
+    "partial void OnConstruction();\n\n");
 
   GenerateCloningCode(printer);
   GenerateFreezingCode(printer);
@@ -311,7 +314,7 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
   vars["class_name"] = class_name();
     printer->Print(
     vars,
-    "public $class_name$($class_name$ other) {\n");
+    "public $class_name$($class_name$ other) : this() {\n");
   printer->Indent();
   // Clone non-oneof fields first
   for (int i = 0; i < descriptor_->field_count(); i++) {
