@@ -38,14 +38,16 @@ namespace Google.Protobuf.Descriptors
     /// <summary>
     /// Descriptor for an enum type in a .proto file.
     /// </summary>
-    public sealed class EnumDescriptor : IndexedDescriptorBase<EnumDescriptorProto, EnumOptions>
+    public sealed class EnumDescriptor : DescriptorBase
     {
+        private readonly EnumDescriptorProto proto;
         private readonly MessageDescriptor containingType;
         private readonly IList<EnumValueDescriptor> values;
 
         internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index)
-            : base(proto, file, ComputeFullName(file, parent, proto.Name), index)
+            : base(file, file.ComputeFullName(parent, proto.Name), index)
         {
+            this.proto = proto;
             containingType = parent;
 
             if (proto.Value.Count == 0)
@@ -60,6 +62,13 @@ namespace Google.Protobuf.Descriptors
 
             File.DescriptorPool.AddSymbol(this);
         }
+
+        internal EnumDescriptorProto Proto { get { return proto; } }
+
+        /// <summary>
+        /// The brief name of the descriptor's target.
+        /// </summary>
+        public override string Name { get { return proto.Name; } }
 
         /// <value>
         /// If this is a nested type, get the outer descriptor, otherwise null.
@@ -94,15 +103,6 @@ namespace Google.Protobuf.Descriptors
         public EnumValueDescriptor FindValueByName(string name)
         {
             return File.DescriptorPool.FindSymbol<EnumValueDescriptor>(FullName + "." + name);
-        }
-
-        internal override void ReplaceProto(EnumDescriptorProto newProto)
-        {
-            base.ReplaceProto(newProto);
-            for (int i = 0; i < values.Count; i++)
-            {
-                values[i].ReplaceProto(newProto.Value[i]);
-            }
         }
     }
 }

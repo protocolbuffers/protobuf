@@ -37,27 +37,27 @@ namespace Google.Protobuf.Descriptors
     /// <summary>
     /// Descriptor for a single enum value within an enum in a .proto file.
     /// </summary>
-    public sealed class EnumValueDescriptor : IndexedDescriptorBase<EnumValueDescriptorProto, EnumValueOptions>                                              
+    public sealed class EnumValueDescriptor : DescriptorBase                                            
     {
         private readonly EnumDescriptor enumDescriptor;
+        private readonly EnumValueDescriptorProto proto;
 
         internal EnumValueDescriptor(EnumValueDescriptorProto proto, FileDescriptor file,
                                      EnumDescriptor parent, int index)
-            : base(proto, file, parent.FullName + "." + proto.Name, index)
+            : base(file, parent.FullName + "." + proto.Name, index)
         {
+            this.proto = proto;
             enumDescriptor = parent;
             file.DescriptorPool.AddSymbol(this);
             file.DescriptorPool.AddEnumValueByNumber(this);
         }
 
-        public int Number
-        {
-            get { return Proto.Number; }
-        }
+        internal EnumValueDescriptorProto Proto { get { return proto; } }
+        
+        public override string Name { get { return proto.Name; } }
 
-        public EnumDescriptor EnumDescriptor
-        {
-            get { return enumDescriptor; }
-        }
+        public int Number { get { return Proto.Number; } }
+
+        public EnumDescriptor EnumDescriptor { get { return enumDescriptor; } }
     }
 }

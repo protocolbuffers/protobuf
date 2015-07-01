@@ -43,7 +43,7 @@ namespace Google.Protobuf.Descriptors
     /// IDescriptor is implemented such that the File property returns this descriptor,
     /// and the FullName is the same as the Name.
     /// </summary>
-    public sealed class FileDescriptor : IDescriptor<FileDescriptorProto>
+    public sealed class FileDescriptor : IDescriptor
     {
         private readonly FileDescriptorProto proto;
         private readonly IList<MessageDescriptor> messageTypes;
@@ -88,6 +88,22 @@ namespace Google.Protobuf.Descriptors
         }
 
         /// <summary>
+        /// Computes the full name of a descriptor within this file, with an optional parent message.
+        /// </summary>
+        internal string ComputeFullName(MessageDescriptor parent, string name)
+        {
+            if (parent != null)
+            {
+                return parent.FullName + "." + name;
+            }
+            if (Package.Length > 0)
+            {
+                return Package + "." + name;
+            }
+            return name;
+        }
+
+        /// <summary>
         /// Extracts public dependencies from direct dependencies. This is a static method despite its
         /// first parameter, as the value we're in the middle of constructing is only used for exceptions.
         /// </summary>
@@ -127,17 +143,9 @@ namespace Google.Protobuf.Descriptors
         /// <value>
         /// The descriptor in its protocol message representation.
         /// </value>
-        public FileDescriptorProto Proto
+        internal FileDescriptorProto Proto
         {
             get { return proto; }
-        }
-
-        /// <value>
-        /// The <see cref="DescriptorProtos.FileOptions" /> defined in <c>descriptor.proto</c>.
-        /// </value>
-        public FileOptions Options
-        {
-            get { return proto.Options; }
         }
 
         /// <value>
@@ -214,14 +222,6 @@ namespace Google.Protobuf.Descriptors
         }
 
         /// <value>
-        /// Protocol buffer describing this descriptor.
-        /// </value>
-        IMessage IDescriptor.Proto
-        {
-            get { return Proto; }
-        }
-
-        /// <value>
         /// Pool containing symbol descriptors.
         /// </value>
         internal DescriptorPool DescriptorPool
@@ -255,22 +255,7 @@ namespace Google.Protobuf.Descriptors
             }
             return null;
         }
-
-        /// <summary>
-        /// Builds a FileDescriptor from its protocol buffer representation.
-        /// </summary>
-        /// <param name="proto">The protocol message form of the FileDescriptor.</param>
-        /// <param name="dependencies">FileDescriptors corresponding to all of the
-        /// file's dependencies, in the exact order listed in the .proto file. May be null,
-        /// in which case it is treated as an empty array.</param>
-        /// <exception cref="DescriptorValidationException">If <paramref name="proto"/> is not
-        /// a valid descriptor. This can occur for a number of reasons, such as a field
-        /// having an undefined type or because two messages were defined with the same name.</exception>
-        public static FileDescriptor BuildFrom(FileDescriptorProto proto, FileDescriptor[] dependencies)
-        {
-            return BuildFrom(proto, dependencies, false);
-        }
-
+        
         /// <summary>
         /// Builds a FileDescriptor from its protocol buffer representation.
         /// </summary>

@@ -39,8 +39,9 @@ namespace Google.Protobuf.Descriptors
     /// <summary>
     /// Describes a message type.
     /// </summary>
-    public sealed class MessageDescriptor : IndexedDescriptorBase<DescriptorProto, MessageOptions>
+    public sealed class MessageDescriptor : DescriptorBase
     {
+        private readonly DescriptorProto proto;
         private readonly MessageDescriptor containingType;
         private readonly IList<MessageDescriptor> nestedTypes;
         private readonly IList<EnumDescriptor> enumTypes;
@@ -48,8 +49,9 @@ namespace Google.Protobuf.Descriptors
         private readonly IList<OneofDescriptor> oneofs;
         
         internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex)
-            : base(proto, file, ComputeFullName(file, parent, proto.Name), typeIndex)
+            : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
         {
+            this.proto = proto;
             containingType = parent;
 
             oneofs = DescriptorUtil.ConvertAndMakeReadOnly(proto.OneofDecl,
@@ -68,22 +70,15 @@ namespace Google.Protobuf.Descriptors
             fields = DescriptorUtil.ConvertAndMakeReadOnly(proto.Field,
                                                            (field, index) =>
                                                            new FieldDescriptor(field, file, this, index));
-
-            for (int i = 0; i < proto.OneofDecl.Count; i++)
-            {
-                oneofs[i].fields = new FieldDescriptor[oneofs[i].FieldCount];
-                oneofs[i].fieldCount = 0;
-            }
-            for (int i = 0; i< proto.Field.Count; i++)
-            {
-                OneofDescriptor oneofDescriptor = fields[i].ContainingOneof;
-                if (oneofDescriptor != null)
-                {
-                    oneofDescriptor.fields[oneofDescriptor.fieldCount++] = fields[i];
-                }
-            }
             file.DescriptorPool.AddSymbol(this);
         }
+
+        /// <summary>
+        /// The brief name of the descriptor's target.
+        /// </summary>
+        public override string Name { get { return proto.Name; } }
+
+        internal DescriptorProto Proto { get { return proto; } }
 
         /// <value>
         /// If this is a nested type, get the outer descriptor, otherwise null.
@@ -144,7 +139,7 @@ namespace Google.Protobuf.Descriptors
 
         /// <summary>
         /// Finds a nested descriptor by name. The is valid for fields, nested
-        /// message types and enums.
+        /// message types, oneofs and enums.
         /// </summary>
         /// <param name="name">The unqualified name of the descriptor, e.g. "Foo"</param>
         /// <returns>The descriptor, or null if not found.</returns>
@@ -171,32 +166,8 @@ namespace Google.Protobuf.Descriptors
 
             foreach (OneofDescriptor oneof in oneofs)
             {
-                // TODO(jonskeet): Do we need to do this?
-                // oneof.C
+                oneof.CrossLink();
             }
-        }
-
-        /// <summary>
-        /// See FileDescriptor.ReplaceProto
-        /// </summary>
-        internal override void ReplaceProto(DescriptorProto newProto)
-        {
-            base.ReplaceProto(newProto);
-
-            for (int i = 0; i < nestedTypes.Count; i++)
-            {
-                nestedTypes[i].ReplaceProto(newProto.NestedType[i]);
-            }
-
-            for (int i = 0; i < enumTypes.Count; i++)
-            {
-                enumTypes[i].ReplaceProto(newProto.EnumType[i]);
-            }
-
-            for (int i = 0; i < fields.Count; i++)
-            {
-                fields[i].ReplaceProto(newProto.Field[i]);
-            }
-        }
+        }        
     }
 }

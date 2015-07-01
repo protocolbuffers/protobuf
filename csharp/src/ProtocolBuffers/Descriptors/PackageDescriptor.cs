@@ -37,7 +37,7 @@ namespace Google.Protobuf.Descriptors
     /// just as placeholders so that someone cannot define, say, a message type
     /// that has the same name as an existing package.
     /// </summary>
-    internal sealed class PackageDescriptor : IDescriptor<IMessage>
+    internal sealed class PackageDescriptor : IDescriptor
     {
         private readonly string name;
         private readonly string fullName;
@@ -48,11 +48,6 @@ namespace Google.Protobuf.Descriptors
             this.file = file;
             this.fullName = fullName;
             this.name = name;
-        }
-
-        public IMessage Proto
-        {
-            get { return file.Proto; }
         }
 
         public string Name

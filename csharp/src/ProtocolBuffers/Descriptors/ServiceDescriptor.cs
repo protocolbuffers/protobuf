@@ -39,18 +39,27 @@ namespace Google.Protobuf.Descriptors
     /// <summary>
     /// Describes a service type.
     /// </summary>
-    public sealed class ServiceDescriptor : IndexedDescriptorBase<ServiceDescriptorProto, ServiceOptions>
+    public sealed class ServiceDescriptor : DescriptorBase
     {
+        private readonly ServiceDescriptorProto proto;
         private readonly IList<MethodDescriptor> methods;
 
-        public ServiceDescriptor(ServiceDescriptorProto proto, FileDescriptor file, int index)
-            : base(proto, file, ComputeFullName(file, null, proto.Name), index)
+        internal ServiceDescriptor(ServiceDescriptorProto proto, FileDescriptor file, int index)
+            : base(file, file.ComputeFullName(null, proto.Name), index)
         {
+            this.proto = proto;
             methods = DescriptorUtil.ConvertAndMakeReadOnly(proto.Method,
                                                             (method, i) => new MethodDescriptor(method, file, this, i));
 
             file.DescriptorPool.AddSymbol(this);
         }
+
+        /// <summary>
+        /// The brief name of the descriptor's target.
+        /// </summary>
+        public override string Name { get { return proto.Name; } }
+
+        internal ServiceDescriptorProto Proto { get { return proto; } }
 
         /// <value>
         /// An unmodifiable list of methods in this service.
@@ -75,15 +84,6 @@ namespace Google.Protobuf.Descriptors
             foreach (MethodDescriptor method in methods)
             {
                 method.CrossLink();
-            }
-        }
-
-        internal override void ReplaceProto(ServiceDescriptorProto newProto)
-        {
-            base.ReplaceProto(newProto);
-            for (int i = 0; i < methods.Count; i++)
-            {
-                methods[i].ReplaceProto(newProto.Method[i]);
             }
         }
     }

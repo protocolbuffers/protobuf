@@ -61,7 +61,6 @@
     <Compile Include="Collections\ReadOnlyDictionary.cs" />
     <Compile Include="Collections\RepeatedField.cs" />
     <Compile Include="DescriptorProtos\DescriptorProtoFile.cs" />
-    <Compile Include="DescriptorProtos\IDescriptorProto.cs" />
     <Compile Include="DescriptorProtos\PartialClasses.cs" />
     <Compile Include="Descriptors\DescriptorBase.cs" />
     <Compile Include="Descriptors\DescriptorPool.cs" />
@@ -74,7 +73,6 @@
     <Compile Include="Descriptors\FileDescriptor.cs" />
     <Compile Include="Descriptors\OneofDescriptor.cs" />
     <Compile Include="Descriptors\IDescriptor.cs" />
-    <Compile Include="Descriptors\IndexedDescriptorBase.cs" />
     <Compile Include="Descriptors\MessageDescriptor.cs" />
     <Compile Include="Descriptors\MethodDescriptor.cs" />
     <Compile Include="Descriptors\PackageDescriptor.cs" />

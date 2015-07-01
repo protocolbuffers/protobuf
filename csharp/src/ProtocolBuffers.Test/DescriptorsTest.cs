@@ -30,6 +30,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using System.Linq;
+using Google.Protobuf.DescriptorProtos;
 using Google.Protobuf.Descriptors;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
@@ -50,7 +52,7 @@ namespace Google.Protobuf
             Assert.AreEqual("google/protobuf/unittest_proto3.proto", file.Name);
             Assert.AreEqual("protobuf_unittest", file.Package);
 
-            Assert.AreEqual("UnittestProto", file.Options.JavaOuterClassname);
+            Assert.AreEqual("UnittestProto", file.Proto.Options.JavaOuterClassname);
             Assert.AreEqual("google/protobuf/unittest_proto3.proto", file.Proto.Name);
 
             // unittest.proto doesn't have any public imports, but unittest_import.proto does.
@@ -92,7 +94,7 @@ namespace Google.Protobuf
             Assert.AreEqual("protobuf_unittest.TestAllTypes", messageType.FullName);
             Assert.AreEqual(UnittestProto3.Descriptor, messageType.File);
             Assert.IsNull(messageType.ContainingType);
-            Assert.IsNull(messageType.Options);
+            Assert.IsNull(messageType.Proto.Options);
 
             Assert.AreEqual("TestAllTypes", messageType.Name);
 
@@ -143,7 +145,7 @@ namespace Google.Protobuf
             Assert.AreEqual(messageType, primitiveField.ContainingType);
             Assert.AreEqual(UnittestProto3.Descriptor, primitiveField.File);
             Assert.AreEqual(FieldType.Int32, primitiveField.FieldType);
-            Assert.IsNull(primitiveField.Options);
+            Assert.IsNull(primitiveField.Proto.Options);
             
             Assert.AreEqual("single_nested_enum", enumField.Name);
             Assert.AreEqual(FieldType.Enum, enumField.FieldType);
@@ -177,7 +179,7 @@ namespace Google.Protobuf
             Assert.AreEqual("protobuf_unittest.ForeignEnum", enumType.FullName);
             Assert.AreEqual(UnittestProto3.Descriptor, enumType.File);
             Assert.Null(enumType.ContainingType);
-            Assert.Null(enumType.Options);
+            Assert.Null(enumType.Proto.Options);
 
             Assert.AreEqual("NestedEnum", nestedType.Name);
             Assert.AreEqual("protobuf_unittest.TestAllTypes.NestedEnum",
@@ -196,6 +198,28 @@ namespace Google.Protobuf
             {
                 Assert.AreEqual(i, enumType.Values[i].Index);
             }
+        }
+
+        [Test]
+        public void OneofDescriptor()
+        {
+            OneofDescriptor descriptor = TestAllTypes.Descriptor.FindDescriptor<OneofDescriptor>("oneof_field");
+            Assert.AreEqual("oneof_field", descriptor.Name);
+            Assert.AreEqual("protobuf_unittest.TestAllTypes.oneof_field", descriptor.FullName);
+
+            var expectedFields = new[] {
+                TestAllTypes.OneofBytesFieldNumber,
+                TestAllTypes.OneofNestedMessageFieldNumber,
+                TestAllTypes.OneofStringFieldNumber,
+                TestAllTypes.OneofUint32FieldNumber }
+                .Select(fieldNumber => TestAllTypes.Descriptor.FindFieldByNumber(fieldNumber))
+                .ToList();
+            foreach (var field in expectedFields)
+            {
+                Assert.AreSame(descriptor, field.ContainingOneof);
+            }
+
+            CollectionAssert.AreEquivalent(expectedFields, descriptor.Fields);
         }
     }
 }
