@@ -81,6 +81,7 @@
     <Compile Include="FieldCodec.cs" />
     <Compile Include="FrameworkPortability.cs" />
     <Compile Include="Freezable.cs" />
+    <Compile Include="JsonFormatter.cs" />
     <Compile Include="MessageExtensions.cs" />
     <Compile Include="FieldAccess\FieldAccessorBase.cs" />
     <Compile Include="FieldAccess\ReflectionUtil.cs" />
