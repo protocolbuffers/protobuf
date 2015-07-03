@@ -376,6 +376,7 @@ namespace Google.Protobuf.Collections
             this.CheckMutable();
             EnsureSize(count + 1);
             Array.Copy(array, index, array, index + 1, count - index);
+            array[index] = item;
             count++;
         }
 
@@ -421,18 +422,12 @@ namespace Google.Protobuf.Collections
 
         void ICollection.CopyTo(Array array, int index)
         {
-            ThrowHelper.ThrowIfNull(array, "array");
-            T[] strongArray = array as T[];
-            if (strongArray == null)
-            {
-                throw new ArgumentException("Array is of incorrect type", "array");
-            }
-            CopyTo(strongArray, index);
+            Array.Copy(this.array, 0, array, index, count);
         }
 
         bool ICollection.IsSynchronized { get { return false; } }
 
-        object ICollection.SyncRoot { get { return null; } }
+        object ICollection.SyncRoot { get { return this; } }
 
         object IList.this[int index]
         {
@@ -490,6 +485,7 @@ namespace Google.Protobuf.Collections
             {
                 if (index + 1 >= field.Count)
                 {
+                    index = field.Count;
                     return false;
                 }
                 index++;

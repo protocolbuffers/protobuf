@@ -45,15 +45,20 @@ namespace Google.Protobuf
         public static void AssertEquality<T>(T first, T second) where T : IEquatable<T>
         {
             Assert.IsTrue(first.Equals(second));
+            Assert.IsTrue(first.Equals((object) second));
             Assert.AreEqual(first.GetHashCode(), second.GetHashCode());
         }
 
         public static void AssertInequality<T>(T first, T second) where T : IEquatable<T>
         {
             Assert.IsFalse(first.Equals(second));
+            Assert.IsFalse(first.Equals((object) second));
             // While this isn't a requirement, the chances of this test failing due to
             // coincidence rather than a bug are very small.
-            Assert.AreNotEqual(first.GetHashCode(), second.GetHashCode());
+            if (first != null && second != null)
+            {
+                Assert.AreNotEqual(first.GetHashCode(), second.GetHashCode());
+            }
         }
     }
 }

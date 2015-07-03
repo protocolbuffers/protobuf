@@ -367,11 +367,13 @@ namespace Google.Protobuf.Collections
 
         IDictionaryEnumerator IDictionary.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new DictionaryEnumerator(GetEnumerator());
         }
 
         void IDictionary.Remove(object key)
         {
+            ThrowHelper.ThrowIfNull(key, "key");
+            this.CheckMutable();
             if (!(key is TKey))
             {
                 return;
@@ -381,7 +383,9 @@ namespace Google.Protobuf.Collections
 
         void ICollection.CopyTo(Array array, int index)
         {
-            throw new NotImplementedException();
+            // This is ugly and slow as heck, but with any luck it will never be used anyway.
+            ICollection temp = this.Select(pair => new DictionaryEntry(pair.Key, pair.Value)).ToList();
+            temp.CopyTo(array, index);
         }
 
         bool IDictionary.IsFixedSize { get { return IsFrozen; } }
@@ -392,12 +396,13 @@ namespace Google.Protobuf.Collections
 
         bool ICollection.IsSynchronized { get { return false; } }
 
-        object ICollection.SyncRoot { get { return null; } }
+        object ICollection.SyncRoot { get { return this; } }
 
         object IDictionary.this[object key]
         {
             get
             {
+                ThrowHelper.ThrowIfNull(key, "key");
                 if (!(key is TKey))
                 {
                     return null;
@@ -407,9 +412,41 @@ namespace Google.Protobuf.Collections
                 return value;
             }
 
-            set { this[(TKey)key] = (TValue)value; }
+            set
+            {
+                if (frozen)
+                {
+                    throw new NotSupportedException("Dictionary is frozen");
+                }
+                this[(TKey)key] = (TValue)value;
+            }
         }
         #endregion
+
+        private class DictionaryEnumerator : IDictionaryEnumerator
+        {
+            private readonly IEnumerator<KeyValuePair<TKey, TValue>> enumerator;
+
+            internal DictionaryEnumerator(IEnumerator<KeyValuePair<TKey, TValue>> enumerator)
+            {
+                this.enumerator = enumerator;
+            }
+
+            public bool MoveNext()
+            {
+                return enumerator.MoveNext();
+            }
+
+            public void Reset()
+            {
+                enumerator.Reset();
+            }
+
+            public object Current { get { return Entry; } }
+            public DictionaryEntry Entry { get { return new DictionaryEntry(Key, Value); } }
+            public object Key { get { return enumerator.Current.Key; } }
+            public object Value { get { return enumerator.Current.Value; } }
+        }
 
         /// <summary>
         /// A codec for a specific map field. This contains all the information required to encoded and
