@@ -109,6 +109,10 @@ namespace Google.Protobuf.TestProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (E != 0) {
         output.WriteRawTag(8);

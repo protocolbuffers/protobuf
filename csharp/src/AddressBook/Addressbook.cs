@@ -160,6 +160,10 @@ namespace Google.Protobuf.Examples.AddressBook {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
         output.WriteRawTag(10);
@@ -330,6 +334,10 @@ namespace Google.Protobuf.Examples.AddressBook {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Number.Length != 0) {
             output.WriteRawTag(10);
@@ -461,6 +469,10 @@ namespace Google.Protobuf.Examples.AddressBook {
       int hash = 1;
       hash ^= person_.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {

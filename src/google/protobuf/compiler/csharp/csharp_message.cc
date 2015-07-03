@@ -429,7 +429,10 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
     printer->Outdent();
     printer->Print("}\n\n");
 
-    // TODO(jonskeet): ToString.
+    printer->Print(
+        "public override string ToString() {\n"
+        "  return pb::JsonFormatter.Default.Format(this);\n"
+        "}\n\n");
 }
 
 void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer) {

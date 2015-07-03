@@ -602,6 +602,10 @@ namespace Google.Protobuf.TestProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       mapInt32Int32_.WriteTo(output, _map_mapInt32Int32_codec);
       mapInt64Int64_.WriteTo(output, _map_mapInt64Int64_codec);
@@ -836,6 +840,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(8);
@@ -976,6 +984,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0L) hash ^= Key.GetHashCode();
           if (Value != 0L) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -1120,6 +1132,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(8);
@@ -1260,6 +1276,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0UL) hash ^= Key.GetHashCode();
           if (Value != 0UL) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -1404,6 +1424,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(8);
@@ -1544,6 +1568,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0L) hash ^= Key.GetHashCode();
           if (Value != 0L) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -1688,6 +1716,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(13);
@@ -1828,6 +1860,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0UL) hash ^= Key.GetHashCode();
           if (Value != 0UL) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -1972,6 +2008,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(13);
@@ -2112,6 +2152,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0L) hash ^= Key.GetHashCode();
           if (Value != 0L) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -2256,6 +2300,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(8);
@@ -2396,6 +2444,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0) hash ^= Key.GetHashCode();
           if (Value != 0D) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -2540,6 +2592,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != false) {
             output.WriteRawTag(8);
@@ -2680,6 +2736,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key.Length != 0) hash ^= Key.GetHashCode();
           if (Value.Length != 0) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -2824,6 +2884,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(8);
@@ -2964,6 +3028,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0) hash ^= Key.GetHashCode();
           if (Value != global::Google.Protobuf.TestProtos.MapEnum.MAP_ENUM_FOO) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -3109,6 +3177,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(8);
@@ -3250,6 +3322,10 @@ namespace Google.Protobuf.TestProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (testMap_ != null) {
         output.WriteRawTag(10);
@@ -3368,6 +3444,10 @@ namespace Google.Protobuf.TestProtos {
       int hash = 1;
       hash ^= MapInt32Message.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -3491,6 +3571,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0) hash ^= Key.GetHashCode();
           if (value_ != null) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -3644,6 +3728,10 @@ namespace Google.Protobuf.TestProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       map1_.WriteTo(output, _map_map1_codec);
       map2_.WriteTo(output, _map_map2_codec);
@@ -3771,6 +3859,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0) hash ^= Key.GetHashCode();
           if (Value != 0) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -3913,6 +4005,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0) hash ^= Key.GetHashCode();
           if (Value != 0) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -4216,6 +4312,10 @@ namespace Google.Protobuf.TestProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       mapInt32Int32_.WriteTo(output, _map_mapInt32Int32_codec);
       mapInt64Int64_.WriteTo(output, _map_mapInt64Int64_codec);
@@ -4436,6 +4536,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(8);
@@ -4576,6 +4680,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0L) hash ^= Key.GetHashCode();
           if (Value != 0L) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -4720,6 +4828,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(8);
@@ -4860,6 +4972,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0UL) hash ^= Key.GetHashCode();
           if (Value != 0UL) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -5004,6 +5120,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(8);
@@ -5144,6 +5264,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0L) hash ^= Key.GetHashCode();
           if (Value != 0L) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -5288,6 +5412,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(13);
@@ -5428,6 +5556,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0UL) hash ^= Key.GetHashCode();
           if (Value != 0UL) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -5572,6 +5704,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(13);
@@ -5712,6 +5848,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0L) hash ^= Key.GetHashCode();
           if (Value != 0L) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -5856,6 +5996,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(8);
@@ -5996,6 +6140,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0) hash ^= Key.GetHashCode();
           if (Value != 0D) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -6140,6 +6288,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != false) {
             output.WriteRawTag(8);
@@ -6280,6 +6432,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0) hash ^= Key.GetHashCode();
           if (Value != global::Google.Protobuf.TestProtos.MapEnum.MAP_ENUM_FOO) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -6425,6 +6581,10 @@ namespace Google.Protobuf.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Key != 0) {
             output.WriteRawTag(8);
@@ -6564,6 +6724,10 @@ namespace Google.Protobuf.TestProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       type_.WriteTo(output, _map_type_codec);
     }
@@ -6689,6 +6853,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0) hash ^= Key.GetHashCode();
           if (value_ != null) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -6830,6 +6998,10 @@ namespace Google.Protobuf.TestProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       entry_.WriteTo(output, _map_entry_codec);
     }
@@ -6950,6 +7122,10 @@ namespace Google.Protobuf.TestProtos {
           if (Key != 0) hash ^= Key.GetHashCode();
           if (Value != 0) hash ^= Value.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {

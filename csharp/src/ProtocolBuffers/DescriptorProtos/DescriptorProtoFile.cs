@@ -299,6 +299,10 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       file_.WriteTo(output, _repeated_file_codec);
     }
@@ -543,6 +547,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (sourceCodeInfo_ != null) hash ^= SourceCodeInfo.GetHashCode();
       if (Syntax.Length != 0) hash ^= Syntax.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -889,6 +897,10 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
         output.WriteRawTag(10);
@@ -1094,6 +1106,10 @@ namespace Google.Protobuf.DescriptorProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Start != 0) {
             output.WriteRawTag(8);
@@ -1234,6 +1250,10 @@ namespace Google.Protobuf.DescriptorProtos {
           if (Start != 0) hash ^= Start.GetHashCode();
           if (End != 0) hash ^= End.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -1473,6 +1493,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (OneofIndex != 0) hash ^= OneofIndex.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -1741,6 +1765,10 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (Name.Length != 0) {
         output.WriteRawTag(10);
@@ -1880,6 +1908,10 @@ namespace Google.Protobuf.DescriptorProtos {
       hash ^= value_.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -2049,6 +2081,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Number != 0) hash ^= Number.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -2224,6 +2260,10 @@ namespace Google.Protobuf.DescriptorProtos {
       hash ^= method_.GetHashCode();
       if (options_ != null) hash ^= Options.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -2432,6 +2472,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (ClientStreaming != false) hash ^= ClientStreaming.GetHashCode();
       if (ServerStreaming != false) hash ^= ServerStreaming.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -2806,6 +2850,10 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (JavaPackage.Length != 0) {
         output.WriteRawTag(10);
@@ -3173,6 +3221,10 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (MessageSetWireFormat != false) {
         output.WriteRawTag(8);
@@ -3414,6 +3466,10 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (Ctype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING) {
         output.WriteRawTag(8);
@@ -3649,6 +3705,10 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (AllowAlias != false) {
         output.WriteRawTag(16);
@@ -3797,6 +3857,10 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (Deprecated != false) {
         output.WriteRawTag(8);
@@ -3931,6 +3995,10 @@ namespace Google.Protobuf.DescriptorProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (Deprecated != false) {
         output.WriteRawTag(136, 2);
@@ -4063,6 +4131,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) hash ^= Deprecated.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -4262,6 +4334,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (StringValue.Length != 0) hash ^= StringValue.GetHashCode();
       if (AggregateValue.Length != 0) hash ^= AggregateValue.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -4470,6 +4546,10 @@ namespace Google.Protobuf.DescriptorProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (NamePart_.Length != 0) {
             output.WriteRawTag(10);
@@ -4601,6 +4681,10 @@ namespace Google.Protobuf.DescriptorProtos {
       int hash = 1;
       hash ^= location_.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -4759,6 +4843,10 @@ namespace Google.Protobuf.DescriptorProtos {
           if (TrailingComments.Length != 0) hash ^= TrailingComments.GetHashCode();
           hash ^= leadingDetachedComments_.GetHashCode();
           return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {

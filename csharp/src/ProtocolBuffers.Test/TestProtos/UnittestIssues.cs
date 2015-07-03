@@ -148,6 +148,10 @@ namespace UnitTest.Issues.TestProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
     }
 
@@ -237,6 +241,10 @@ namespace UnitTest.Issues.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
         }
 
@@ -324,6 +332,10 @@ namespace UnitTest.Issues.TestProtos {
             public override int GetHashCode() {
               int hash = 1;
               return hash;
+            }
+
+            public override string ToString() {
+              return pb::JsonFormatter.Default.Format(this);
             }
 
             public void WriteTo(pb::CodedOutputStream output) {
@@ -459,6 +471,10 @@ namespace UnitTest.Issues.TestProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
         output.WriteRawTag(8);
@@ -575,6 +591,10 @@ namespace UnitTest.Issues.TestProtos {
     public override int GetHashCode() {
       int hash = 1;
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -744,6 +764,10 @@ namespace UnitTest.Issues.TestProtos {
       if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) hash ^= EnumValue.GetHashCode();
       hash ^= enumArray_.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -916,6 +940,10 @@ namespace UnitTest.Issues.TestProtos {
       int hash = 1;
       if (Item != 0) hash ^= Item.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
