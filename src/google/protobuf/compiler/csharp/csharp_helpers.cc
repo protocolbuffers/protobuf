@@ -113,7 +113,7 @@ std::string GetFileNamespace(const FileDescriptor* descriptor) {
   if (descriptor->options().has_csharp_namespace()) {
     return descriptor->options().csharp_namespace();
   }
-  return descriptor->package();
+  return UnderscoresToCamelCase(descriptor->package(), true, true);
 }
 
 std::string GetUmbrellaClassNameInternal(const std::string& proto_file) {
@@ -154,7 +154,8 @@ std::string GetFileUmbrellaNamespace(const FileDescriptor* descriptor) {
 
 // TODO(jtattermusch): can we reuse a utility function?
 std::string UnderscoresToCamelCase(const std::string& input,
-                                   bool cap_next_letter) {
+                                   bool cap_next_letter,
+                                   bool preserve_period) {
   string result;
   // Note:  I distrust ctype.h due to locales.
   for (int i = 0; i < input.size(); i++) {
@@ -180,6 +181,9 @@ std::string UnderscoresToCamelCase(const std::string& input,
       cap_next_letter = true;
     } else {
       cap_next_letter = true;
+      if (input[i] == '.' && preserve_period) {
+        result += '.';
+      }
     }
   }
   // Add a trailing "_" if the name should be altered.
