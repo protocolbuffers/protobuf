@@ -39,6 +39,32 @@ namespace Google.Protobuf
     public class ByteStringTest
     {
         [Test]
+        public void Equality()
+        {
+            ByteString b1 = ByteString.CopyFrom(1, 2, 3);
+            ByteString b2 = ByteString.CopyFrom(1, 2, 3);
+            ByteString b3 = ByteString.CopyFrom(1, 2, 4);
+            ByteString b4 = ByteString.CopyFrom(1, 2, 3, 4);
+            EqualityTester.AssertEquality(b1, b1);
+            EqualityTester.AssertEquality(b1, b2);
+            EqualityTester.AssertInequality(b1, b3);
+            EqualityTester.AssertInequality(b1, b4);
+            EqualityTester.AssertInequality(b1, null);
+            Assert.IsTrue(b1 == b1);
+            Assert.IsTrue(b1 == b2);
+            Assert.IsFalse(b1 == b3);
+            Assert.IsFalse(b1 == b4);
+            Assert.IsFalse(b1 == null);
+            Assert.IsTrue((ByteString) null == null);
+            Assert.IsFalse(b1 != b1);
+            Assert.IsFalse(b1 != b2);
+            Assert.IsTrue(b1 != b3);
+            Assert.IsTrue(b1 != b4);
+            Assert.IsTrue(b1 != null);
+            Assert.IsFalse((ByteString) null != null);
+        }
+
+        [Test]
         public void EmptyByteStringHasZeroSize()
         {
             Assert.AreEqual(0, ByteString.Empty.Length);
