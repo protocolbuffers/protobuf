@@ -173,7 +173,7 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 
 // Include our platform specific implementation.
 #define GOOGLE_PROTOBUF_ATOMICOPS_ERROR \
-#error "Atomic operations are not supported on your platform"
+"Atomic operations are not supported on your platform"
 
 // ThreadSanitizer, http://clang.llvm.org/docs/ThreadSanitizer.html.
 #if defined(THREAD_SANITIZER)
@@ -183,7 +183,7 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 #if defined(GOOGLE_PROTOBUF_ARCH_IA32) || defined(GOOGLE_PROTOBUF_ARCH_X64)
 #include <google/protobuf/stubs/atomicops_internals_x86_msvc.h>
 #else
-GOOGLE_PROTOBUF_ATOMICOPS_ERROR
+#error GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 #endif
 
 // Solaris
@@ -218,15 +218,15 @@ GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 #if __has_extension(c_atomic)
 #include <google/protobuf/stubs/atomicops_internals_generic_gcc.h>
 #else
-GOOGLE_PROTOBUF_ATOMICOPS_ERROR
+#error GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 #endif
 #else
-GOOGLE_PROTOBUF_ATOMICOPS_ERROR
+#error GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 #endif
 
 // Unknown.
 #else
-GOOGLE_PROTOBUF_ATOMICOPS_ERROR
+#error GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 #endif
 
 // On some platforms we need additional declarations to make AtomicWord
