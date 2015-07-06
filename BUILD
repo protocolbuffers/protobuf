@@ -2,6 +2,10 @@
 
 licenses(["notice"])
 
+################################################################################
+# Protobuf Runtime Library
+################################################################################
+
 COPTS = [
     "-DHAVE_PTHREAD",
     "-Wall",
@@ -109,6 +113,34 @@ cc_library(
     deps = [":protobuf_lite"],
 )
 
+objc_library(
+    name = "protobuf_objc",
+    hdrs = ["objectivec/GPBProtocolBuffers.h"],
+    includes = ["objectivec"],
+    non_arc_srcs = ["objectivec/GPBProtocolBuffers.m"],
+    visibility = ["//visibility:public"],
+)
+
+WELL_KNOWN_PROTOS = [
+    # AUTOGEN(well_known_protos)
+    "google/protobuf/any.proto",
+    "google/protobuf/api.proto",
+    "google/protobuf/compiler/plugin.proto",
+    "google/protobuf/descriptor.proto",
+    "google/protobuf/duration.proto",
+    "google/protobuf/empty.proto",
+    "google/protobuf/field_mask.proto",
+    "google/protobuf/source_context.proto",
+    "google/protobuf/struct.proto",
+    "google/protobuf/timestamp.proto",
+    "google/protobuf/type.proto",
+    "google/protobuf/wrappers.proto",
+]
+
+################################################################################
+# Protocol Buffers Compiler
+################################################################################
+
 cc_library(
     name = "protoc_lib",
     srcs = [
@@ -215,22 +247,6 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [":protoc_lib"],
 )
-
-WELL_KNOWN_PROTOS = [
-    # AUTOGEN(well_known_protos)
-    "google/protobuf/any.proto",
-    "google/protobuf/api.proto",
-    "google/protobuf/compiler/plugin.proto",
-    "google/protobuf/descriptor.proto",
-    "google/protobuf/duration.proto",
-    "google/protobuf/empty.proto",
-    "google/protobuf/field_mask.proto",
-    "google/protobuf/source_context.proto",
-    "google/protobuf/struct.proto",
-    "google/protobuf/timestamp.proto",
-    "google/protobuf/type.proto",
-    "google/protobuf/wrappers.proto",
-]
 
 ################################################################################
 # Tests
@@ -403,3 +419,4 @@ cc_test(
         "//external:gtest_main",
     ],
 )
+
