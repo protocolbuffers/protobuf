@@ -445,7 +445,7 @@ testlua: lua
 	@set -e  # Abort on error.
 	@for test in $(LUATESTS) ; do \
 	  echo LUA $$test; \
-	  LUA_PATH="tests/bindings/lua/lunit/?.lua;upb/bindings/lua/?.lua" \
+	  LUA_PATH="third_party/lunit/?.lua;upb/bindings/lua/?.lua" \
 	    LUA_CPATH=upb/bindings/lua/?.so \
 	    lua $$test; \
 	done
