@@ -129,8 +129,8 @@ static char *upb_vasprintf(const char *fmt, va_list ap);
 static char *upb_asprintf(const char *fmt, ...);
 #endif
 
-#include "dynasm/dasm_proto.h"
-#include "dynasm/dasm_x86.h"
+#include "third_party/dynasm/dasm_proto.h"
+#include "third_party/dynasm/dasm_x86.h"
 #include "upb/pb/compile_decoder_x64.h"
 
 static jitcompiler *newjitcompiler(mgroup *group) {
