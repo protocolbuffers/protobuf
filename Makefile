@@ -182,7 +182,7 @@ obj/upb/pb/compile_decoder_x64.lo : CSTD = -std=gnu89
 
 upb/pb/compile_decoder_x64.h: upb/pb/compile_decoder_x64.dasc
 	$(E) DYNASM $<
-	$(Q) $(LUA) dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
+	$(Q) $(LUA) third_party/dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
 endif
 
 upb_json_SRCS = \
@@ -256,7 +256,7 @@ upb/descriptor/descriptor.pb: upb/descriptor/descriptor.proto
 
 genfiles: upb/descriptor/descriptor.pb tools/upbc
 	./tools/upbc upb/descriptor/descriptor.pb upb/descriptor/descriptor google_protobuf_descriptor
-	$(LUA) dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
+	$(LUA) third_party/dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
 
 # upbc depends on these Lua extensions.
 UPBC_LUA_EXTS = \
