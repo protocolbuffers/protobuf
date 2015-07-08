@@ -31,6 +31,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Google.ProtocolBuffers.Collections;
 
@@ -66,7 +67,7 @@ namespace Google.ProtocolBuffers.Descriptors
             {
                 FieldType fieldType = (FieldType) field.GetValue(null);
                 FieldMappingAttribute mapping =
-                    (FieldMappingAttribute) field.GetCustomAttributes(typeof(FieldMappingAttribute), false)[0];
+                    (FieldMappingAttribute) field.GetCustomAttributes(typeof(FieldMappingAttribute), false).First();
                 map[fieldType] = mapping;
             }
             return Dictionaries.AsReadOnly(map);
