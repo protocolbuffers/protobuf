@@ -1,26 +1,23 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A parser that uses the Ragel State Machine Compiler to generate
- * the finite automata.
- *
- * Ragel only natively handles regular languages, but we can manually
- * program it a bit to handle context-free languages like JSON, by using
- * the "fcall" and "fret" constructs.
- *
- * This parser can handle the basics, but needs several things to be fleshed
- * out:
- *
- * - handling of unicode escape sequences (including high surrogate pairs).
- * - properly check and report errors for unknown fields, stack overflow,
- *   improper array nesting (or lack of nesting).
- * - handling of base64 sequences with padding characters.
- * - handling of push-back (non-success returns from sink functions).
- * - handling of keys/escape-sequences/etc that span input buffers.
- */
+** upb::json::Parser (upb_json_parser)
+**
+** A parser that uses the Ragel State Machine Compiler to generate
+** the finite automata.
+**
+** Ragel only natively handles regular languages, but we can manually
+** program it a bit to handle context-free languages like JSON, by using
+** the "fcall" and "fret" constructs.
+**
+** This parser can handle the basics, but needs several things to be fleshed
+** out:
+**
+** - handling of unicode escape sequences (including high surrogate pairs).
+** - properly check and report errors for unknown fields, stack overflow,
+**   improper array nesting (or lack of nesting).
+** - handling of base64 sequences with padding characters.
+** - handling of push-back (non-success returns from sink functions).
+** - handling of keys/escape-sequences/etc that span input buffers.
+*/
 
 #include <stdio.h>
 #include <stdint.h>
