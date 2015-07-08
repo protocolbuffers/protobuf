@@ -1,19 +1,16 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A upb::Environment provides a means for injecting malloc and an
- * error-reporting callback into encoders/decoders.  This allows them to be
- * independent of nearly all assumptions about their actual environment.
- *
- * It is also a container for allocating the encoders/decoders themselves that
- * insulates clients from knowing their actual size.  This provides ABI
- * compatibility even if the size of the objects change.  And this allows the
- * structure definitions to be in the .c files instead of the .h files, making
- * the .h files smaller and more readable.
- */
+** upb::Environment (upb_env)
+**
+** A upb::Environment provides a means for injecting malloc and an
+** error-reporting callback into encoders/decoders.  This allows them to be
+** independent of nearly all assumptions about their actual environment.
+**
+** It is also a container for allocating the encoders/decoders themselves that
+** insulates clients from knowing their actual size.  This provides ABI
+** compatibility even if the size of the objects change.  And this allows the
+** structure definitions to be in the .c files instead of the .h files, making
+** the .h files smaller and more readable.
+*/
 
 #include "upb/upb.h"
 

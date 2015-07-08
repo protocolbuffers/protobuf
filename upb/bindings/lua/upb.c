@@ -1,27 +1,24 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A Lua extension for upb.  Exposes only the core library
- * (sub-libraries are exposed in other extensions).
- *
- * 64-bit woes: Lua can only represent numbers of type lua_Number (which is
- * double unless the user specifically overrides this).  Doubles can represent
- * the entire range of 64-bit integers, but lose precision once the integers are
- * greater than 2^53.
- *
- * Lua 5.3 is adding support for integers, which will allow for 64-bit
- * integers (which can be interpreted as signed or unsigned).
- *
- * LuaJIT supports 64-bit signed and unsigned boxed representations
- * through its "cdata" mechanism, but this is not portable to regular Lua.
- *
- * Hopefully Lua 5.3 will come soon enough that we can either use Lua 5.3
- * integer support or LuaJIT 64-bit cdata for users that need the entire
- * domain of [u]int64 values.
- */
+** require("lua") -- A Lua extension for upb.
+**
+** Exposes only the core library
+** (sub-libraries are exposed in other extensions).
+**
+** 64-bit woes: Lua can only represent numbers of type lua_Number (which is
+** double unless the user specifically overrides this).  Doubles can represent
+** the entire range of 64-bit integers, but lose precision once the integers are
+** greater than 2^53.
+**
+** Lua 5.3 is adding support for integers, which will allow for 64-bit
+** integers (which can be interpreted as signed or unsigned).
+**
+** LuaJIT supports 64-bit signed and unsigned boxed representations
+** through its "cdata" mechanism, but this is not portable to regular Lua.
+**
+** Hopefully Lua 5.3 will come soon enough that we can either use Lua 5.3
+** integer support or LuaJIT 64-bit cdata for users that need the entire
+** domain of [u]int64 values.
+*/
 
 #include <float.h>
 #include <math.h>

@@ -1,11 +1,6 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Shared definitions for upb Lua modules.
- */
+** Shared definitions for upb Lua modules.
+*/
 
 #ifndef UPB_LUA_UPB_H_
 #define UPB_LUA_UPB_H_

@@ -1,14 +1,9 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A Lua extension for upb.pb.
- *
- * Exposes all the types defined in upb/pb/{*}.h
- * Also defines a few convenience functions on top.
- */
+** require("upb.pb") -- A Lua extension for upb.pb.
+**
+** Exposes all the types defined in upb/pb/{*}.h
+** Also defines a few convenience functions on top.
+*/
 
 #include "upb/bindings/lua/upb.h"
 #include "upb/pb/decoder.h"

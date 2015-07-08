@@ -1,12 +1,7 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Inline definitions for handlers.h, which are particularly long and a bit
- * tricky.
- */
+** Inline definitions for handlers.h, which are particularly long and a bit
+** tricky.
+*/
 
 #ifndef UPB_HANDLERS_INL_H_
 #define UPB_HANDLERS_INL_H_

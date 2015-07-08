@@ -1,14 +1,9 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * This file contains shared definitions that are widely used across upb.
- *
- * This is a mixed C/C++ interface that offers a full API to both languages.
- * See the top-level README for more information.
- */
+** This file contains shared definitions that are widely used across upb.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
 
 #ifndef UPB_H_
 #define UPB_H_

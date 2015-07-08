@@ -1,12 +1,8 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * upb::json::Printer allows you to create handlers that emit JSON
- * according to a specific protobuf schema.
- */
+** upb::json::Printer
+**
+** Handlers that emit JSON according to a specific protobuf schema.
+*/
 
 #ifndef UPB_JSON_TYPED_PRINTER_H_
 #define UPB_JSON_TYPED_PRINTER_H_

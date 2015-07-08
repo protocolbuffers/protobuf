@@ -1,11 +1,7 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2011 Google Inc.  See LICENSE for details.
- *
- * Test of defs and symtab.  There should be far more tests of edge conditions
- * (like attempts to link defs that don't have required properties set).
- */
+** Test of defs and symtab.  There should be far more tests of edge conditions
+** (like attempts to link defs that don't have required properties set).
+*/
 
 #include "upb/def.h"
 #include "upb/pb/glue.h"

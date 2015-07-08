@@ -1,17 +1,14 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A symtab (symbol table) stores a name->def map of upb_defs.  Clients could
- * always create such tables themselves, but upb_symtab has logic for resolving
- * symbolic references, and in particular, for keeping a whole set of consistent
- * defs when replacing some subset of those defs.  This logic is nontrivial.
- *
- * This is a mixed C/C++ interface that offers a full API to both languages.
- * See the top-level README for more information.
- */
+** upb::SymbolTable (upb_symtab)
+**
+** A symtab (symbol table) stores a name->def map of upb_defs.  Clients could
+** always create such tables themselves, but upb_symtab has logic for resolving
+** symbolic references, and in particular, for keeping a whole set of consistent
+** defs when replacing some subset of those defs.  This logic is nontrivial.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
 
 #ifndef UPB_SYMTAB_H_
 #define UPB_SYMTAB_H_

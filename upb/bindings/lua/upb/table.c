@@ -1,21 +1,17 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Lua extension that provides access to upb_table.  This is an internal-only
- * interface and exists for the sole purpose of writing a C code generator in
- * Lua that can dump a upb_table as static C initializers.  This lets us use
- * Lua for convenient string manipulation while saving us from re-implementing
- * the upb_table hash function and hash table layout / collision strategy in
- * Lua.
- *
- * Since this is used only as part of the toolchain (and not part of the
- * runtime) we do not hold this module to the same stringent requirements as
- * the main Lua modules (for example that misbehaving Lua programs cannot
- * crash the interpreter).
- */
+** require("upb.table") -- a Lua extension for accessing upb_table
+**
+** This is an internal-only interface and exists for the sole purpose of
+** writing a C code generator in Lua that can dump a upb_table as static C
+** initializers.  This lets us use Lua for convenient string manipulation while
+** saving us from re-implementing the upb_table hash function and hash table
+** layout / collision strategy in Lua.
+**
+** Since this is used only as part of the toolchain (and not part of the
+** runtime) we do not hold this module to the same stringent requirements as
+** the main Lua modules (for example that misbehaving Lua programs cannot
+** crash the interpreter).
+*/
 
 #include <float.h>
 #include <math.h>

@@ -1,11 +1,6 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2013 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Driver code for the x64 JIT compiler.
- */
+** Driver code for the x64 JIT compiler.
+*/
 
 /* Needed to ensure we get defines like MAP_ANON. */
 #define _GNU_SOURCE

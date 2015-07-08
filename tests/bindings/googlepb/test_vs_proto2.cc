@@ -1,7 +1,4 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
  *
  * A test that verifies that our results are identical to proto2 for a
  * given proto type and input protobuf.

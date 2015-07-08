@@ -1,19 +1,14 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2013 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * For handlers that do very tiny, very simple operations, the function call
- * overhead of calling a handler can be significant.  This file allows the
- * user to define handlers that do something very simple like store the value
- * to memory and/or set a hasbit.  JIT compilers can then special-case these
- * handlers and emit specialized code for them instead of actually calling the
- * handler.
- *
- * The functionality is very simple/limited right now but may expand to be able
- * to call another function.
- */
+** For handlers that do very tiny, very simple operations, the function call
+** overhead of calling a handler can be significant.  This file allows the
+** user to define handlers that do something very simple like store the value
+** to memory and/or set a hasbit.  JIT compilers can then special-case these
+** handlers and emit specialized code for them instead of actually calling the
+** handler.
+**
+** The functionality is very simple/limited right now but may expand to be able
+** to call another function.
+*/
 
 #ifndef UPB_SHIM_H
 #define UPB_SHIM_H

@@ -1,9 +1,4 @@
-//
-// upb - a minimalist implementation of protocol buffers.
-//
-// Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
-// Author: Josh Haberman <jhaberman@gmail.com>
-//
+
 // IMPORTANT NOTE!  Inside Google, This file is compiled TWICE, once with
 // UPB_GOOGLE3 defined and once without!  This allows us to provide
 // functionality against proto2 and protobuf opensource both in a single binary

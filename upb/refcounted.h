@@ -1,20 +1,17 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A refcounting scheme that supports circular refs.  It accomplishes this by
- * partitioning the set of objects into groups such that no cycle spans groups;
- * we can then reference-count the group as a whole and ignore refs within the
- * group.  When objects are mutable, these groups are computed very
- * conservatively; we group any objects that have ever had a link between them.
- * When objects are frozen, we compute strongly-connected components which
- * allows us to be precise and only group objects that are actually cyclic.
- *
- * This is a mixed C/C++ interface that offers a full API to both languages.
- * See the top-level README for more information.
- */
+** upb::RefCounted (upb_refcounted)
+**
+** A refcounting scheme that supports circular refs.  It accomplishes this by
+** partitioning the set of objects into groups such that no cycle spans groups;
+** we can then reference-count the group as a whole and ignore refs within the
+** group.  When objects are mutable, these groups are computed very
+** conservatively; we group any objects that have ever had a link between them.
+** When objects are frozen, we compute strongly-connected components which
+** allows us to be precise and only group objects that are actually cyclic.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
 
 #ifndef UPB_REFCOUNTED_H_
 #define UPB_REFCOUNTED_H_

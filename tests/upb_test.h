@@ -1,8 +1,3 @@
-/*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2011 Google Inc.  See LICENSE for details.
- */
 
 #ifndef UPB_TEST_H_
 #define UPB_TEST_H_

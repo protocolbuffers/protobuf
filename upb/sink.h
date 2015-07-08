@@ -1,21 +1,19 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2010-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A upb_sink is an object that binds a upb_handlers object to some runtime
- * state.  It is the object that can actually receive data via the upb_handlers
- * interface.
- *
- * Unlike upb_def and upb_handlers, upb_sink is never frozen, immutable, or
- * thread-safe.  You can create as many of them as you want, but each one may
- * only be used in a single thread at a time.
- *
- * If we compare with class-based OOP, a you can think of a upb_def as an
- * abstract base class, a upb_handlers as a concrete derived class, and a
- * upb_sink as an object (class instance).
- */
+** upb::Sink (upb_sink)
+** upb::BytesSink (upb_bytessink)
+**
+** A upb_sink is an object that binds a upb_handlers object to some runtime
+** state.  It is the object that can actually receive data via the upb_handlers
+** interface.
+**
+** Unlike upb_def and upb_handlers, upb_sink is never frozen, immutable, or
+** thread-safe.  You can create as many of them as you want, but each one may
+** only be used in a single thread at a time.
+**
+** If we compare with class-based OOP, a you can think of a upb_def as an
+** abstract base class, a upb_handlers as a concrete derived class, and a
+** upb_sink as an object (class instance).
+*/
 
 #ifndef UPB_SINK_H
 #define UPB_SINK_H

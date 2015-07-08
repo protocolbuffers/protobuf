@@ -1,7 +1,3 @@
-// Copyright 2014 Google Inc. All Rights Reserved.
-// Author: haberman@google.com (Josh Haberman)
-//
-// upb - a minimalist implementation of protocol buffers.
 
 #ifndef UPB_STDCPP_H_
 #define UPB_STDCPP_H_

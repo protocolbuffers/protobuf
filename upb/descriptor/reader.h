@@ -1,12 +1,8 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2011 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * upb::descriptor::Reader provides a way of building upb::Defs from
- * data in descriptor.proto format.
- */
+** upb::descriptor::Reader (upb_descreader)
+**
+** Provides a way of building upb::Defs from data in descriptor.proto format.
+*/
 
 #ifndef UPB_DESCRIPTOR_H
 #define UPB_DESCRIPTOR_H

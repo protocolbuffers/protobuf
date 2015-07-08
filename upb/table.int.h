@@ -1,24 +1,21 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
- * This file defines very fast int->upb_value (inttable) and string->upb_value
- * (strtable) hash tables.
- *
- * The table uses chained scatter with Brent's variation (inspired by the Lua
- * implementation of hash tables).  The hash function for strings is Austin
- * Appleby's "MurmurHash."
- *
- * The inttable uses uintptr_t as its key, which guarantees it can be used to
- * store pointers or integers of at least 32 bits (upb isn't really useful on
- * systems where sizeof(void*) < 4).
- *
- * The table must be homogenous (all values of the same type).  In debug
- * mode, we check this on insert and lookup.
- */
+** upb_table
+**
+** This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
+** This file defines very fast int->upb_value (inttable) and string->upb_value
+** (strtable) hash tables.
+**
+** The table uses chained scatter with Brent's variation (inspired by the Lua
+** implementation of hash tables).  The hash function for strings is Austin
+** Appleby's "MurmurHash."
+**
+** The inttable uses uintptr_t as its key, which guarantees it can be used to
+** store pointers or integers of at least 32 bits (upb isn't really useful on
+** systems where sizeof(void*) < 4).
+**
+** The table must be homogenous (all values of the same type).  In debug
+** mode, we check this on insert and lookup.
+*/
 
 #ifndef UPB_TABLE_H_
 #define UPB_TABLE_H_

@@ -1,7 +1,4 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2011 Google Inc.  See LICENSE for details.
  *
  * An exhaustive set of tests for parsing both valid and invalid protobuf
  * input, with buffer breaks in arbitrary places.

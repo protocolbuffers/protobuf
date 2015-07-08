@@ -1,12 +1,7 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * This currently uses snprintf() to format primitives, and could be optimized
- * further.
- */
+** This currently uses snprintf() to format primitives, and could be optimized
+** further.
+*/
 
 #include "upb/json/printer.h"
 

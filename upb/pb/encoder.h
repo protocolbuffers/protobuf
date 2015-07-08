@@ -1,16 +1,13 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009-2010 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Implements a set of upb_handlers that write protobuf data to the binary wire
- * format.
- *
- * This encoder implementation does not have any access to any out-of-band or
- * precomputed lengths for submessages, so it must buffer submessages internally
- * before it can emit the first byte.
- */
+** upb::pb::Encoder (upb_pb_encoder)
+**
+** Implements a set of upb_handlers that write protobuf data to the binary wire
+** format.
+**
+** This encoder implementation does not have any access to any out-of-band or
+** precomputed lengths for submessages, so it must buffer submessages internally
+** before it can emit the first byte.
+*/
 
 #ifndef UPB_ENCODER_H_
 #define UPB_ENCODER_H_

@@ -1,8 +1,5 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
+ * upb::pb::TextPrinter
  *
  * OPT: This is not optimized at all.  It uses printf() which parses the format
  * string every time, and it allocates memory for every put.

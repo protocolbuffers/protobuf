@@ -1,15 +1,10 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2008-2009 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * XXX: The routines in this file that consume a string do not currently
- * support having the string span buffers.  In the future, as upb_sink and
- * its buffering/sharing functionality evolve there should be an easy and
- * idiomatic way of correctly handling this case.  For now, we accept this
- * limitation since we currently only parse descriptors from single strings.
- */
+** XXX: The routines in this file that consume a string do not currently
+** support having the string span buffers.  In the future, as upb_sink and
+** its buffering/sharing functionality evolve there should be an easy and
+** idiomatic way of correctly handling this case.  For now, we accept this
+** limitation since we currently only parse descriptors from single strings.
+*/
 
 #include "upb/descriptor/reader.h"
 

@@ -1,23 +1,21 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Defs are upb's internal representation of the constructs that can appear
- * in a .proto file:
- *
- * - upb_msgdef: describes a "message" construct.
- * - upb_fielddef: describes a message field.
- * - upb_enumdef: describes an enum.
- * (TODO: definitions of services).
- *
- * Like upb_refcounted objects, defs are mutable only until frozen, and are
- * only thread-safe once frozen.
- *
- * This is a mixed C/C++ interface that offers a full API to both languages.
- * See the top-level README for more information.
- */
+** Defs are upb's internal representation of the constructs that can appear
+** in a .proto file:
+**
+** - upb::MessageDef (upb_msgdef): describes a "message" construct.
+** - upb::FieldDef (upb_fielddef): describes a message field.
+** - upb::EnumDef (upb_enumdef): describes an enum.
+** - upb::OneofDef (upb_oneofdef): describes a oneof.
+** - upb::Def (upb_def): base class of all the others.
+**
+** TODO: definitions of services.
+**
+** Like upb_refcounted objects, defs are mutable only until frozen, and are
+** only thread-safe once frozen.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
 
 #ifndef UPB_DEF_H_
 #define UPB_DEF_H_

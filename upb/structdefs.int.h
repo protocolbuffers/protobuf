@@ -1,23 +1,18 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2015 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * This file contains definitions of structs that should be considered private
- * and NOT stable across versions of upb.
- *
- * The only reason they are declared here and not in .c files is to allow upb
- * and the application (if desired) to embed statically-initialized instances
- * of structures like defs.
- *
- * If you include this file, all guarantees of ABI compatibility go out the
- * window!  Any code that includes this file needs to recompile against the
- * exact same version of upb that they are linking against.
- *
- * You also need to recompile if you change the value of the UPB_DEBUG_REFS
- * flag.
- */
+** This file contains definitions of structs that should be considered private
+** and NOT stable across versions of upb.
+**
+** The only reason they are declared here and not in .c files is to allow upb
+** and the application (if desired) to embed statically-initialized instances
+** of structures like defs.
+**
+** If you include this file, all guarantees of ABI compatibility go out the
+** window!  Any code that includes this file needs to recompile against the
+** exact same version of upb that they are linking against.
+**
+** You also need to recompile if you change the value of the UPB_DEBUG_REFS
+** flag.
+*/
 
 #include "upb/def.h"
 

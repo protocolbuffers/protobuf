@@ -1,7 +1,4 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2014 Google Inc.  See LICENSE for details.
  *
  * A set of tests for JSON parsing and serialization.
  */

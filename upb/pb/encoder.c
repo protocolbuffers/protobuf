@@ -1,61 +1,58 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Since we are implementing pure handlers (ie. without any out-of-band access
- * to pre-computed lengths), we have to buffer all submessages before we can
- * emit even their first byte.
- *
- * Not knowing the size of submessages also means we can't write a perfect
- * zero-copy implementation, even with buffering.  Lengths are stored as
- * varints, which means that we don't know how many bytes to reserve for the
- * length until we know what the length is.
- *
- * This leaves us with three main choices:
- *
- * 1. buffer all submessage data in a temporary buffer, then copy it exactly
- *    once into the output buffer.
- *
- * 2. attempt to buffer data directly into the output buffer, estimating how
- *    many bytes each length will take.  When our guesses are wrong, use
- *    memmove() to grow or shrink the allotted space.
- *
- * 3. buffer directly into the output buffer, allocating a max length
- *    ahead-of-time for each submessage length.  If we overallocated, we waste
- *    space, but no memcpy() or memmove() is required.  This approach requires
- *    defining a maximum size for submessages and rejecting submessages that
- *    exceed that size.
- *
- * (2) and (3) have the potential to have better performance, but they are more
- * complicated and subtle to implement:
- *
- *   (3) requires making an arbitrary choice of the maximum message size; it
- *       wastes space when submessages are shorter than this and fails
- *       completely when they are longer.  This makes it more finicky and
- *       requires configuration based on the input.  It also makes it impossible
- *       to perfectly match the output of reference encoders that always use the
- *       optimal amount of space for each length.
- *
- *   (2) requires guessing the the size upfront, and if multiple lengths are
- *       guessed wrong the minimum required number of memmove() operations may
- *       be complicated to compute correctly.  Implemented properly, it may have
- *       a useful amortized or average cost, but more investigation is required
- *       to determine this and what the optimal algorithm is to achieve it.
- *
- *   (1) makes you always pay for exactly one copy, but its implementation is
- *       the simplest and its performance is predictable.
- *
- * So for now, we implement (1) only.  If we wish to optimize later, we should
- * be able to do it without affecting users.
- *
- * The strategy is to buffer the segments of data that do *not* depend on
- * unknown lengths in one buffer, and keep a separate buffer of segment pointers
- * and lengths.  When the top-level submessage ends, we can go beginning to end,
- * alternating the writing of lengths with memcpy() of the rest of the data.
- * At the top level though, no buffering is required.
- */
+** upb::Encoder
+**
+** Since we are implementing pure handlers (ie. without any out-of-band access
+** to pre-computed lengths), we have to buffer all submessages before we can
+** emit even their first byte.
+**
+** Not knowing the size of submessages also means we can't write a perfect
+** zero-copy implementation, even with buffering.  Lengths are stored as
+** varints, which means that we don't know how many bytes to reserve for the
+** length until we know what the length is.
+**
+** This leaves us with three main choices:
+**
+** 1. buffer all submessage data in a temporary buffer, then copy it exactly
+**    once into the output buffer.
+**
+** 2. attempt to buffer data directly into the output buffer, estimating how
+**    many bytes each length will take.  When our guesses are wrong, use
+**    memmove() to grow or shrink the allotted space.
+**
+** 3. buffer directly into the output buffer, allocating a max length
+**    ahead-of-time for each submessage length.  If we overallocated, we waste
+**    space, but no memcpy() or memmove() is required.  This approach requires
+**    defining a maximum size for submessages and rejecting submessages that
+**    exceed that size.
+**
+** (2) and (3) have the potential to have better performance, but they are more
+** complicated and subtle to implement:
+**
+**   (3) requires making an arbitrary choice of the maximum message size; it
+**       wastes space when submessages are shorter than this and fails
+**       completely when they are longer.  This makes it more finicky and
+**       requires configuration based on the input.  It also makes it impossible
+**       to perfectly match the output of reference encoders that always use the
+**       optimal amount of space for each length.
+**
+**   (2) requires guessing the the size upfront, and if multiple lengths are
+**       guessed wrong the minimum required number of memmove() operations may
+**       be complicated to compute correctly.  Implemented properly, it may have
+**       a useful amortized or average cost, but more investigation is required
+**       to determine this and what the optimal algorithm is to achieve it.
+**
+**   (1) makes you always pay for exactly one copy, but its implementation is
+**       the simplest and its performance is predictable.
+**
+** So for now, we implement (1) only.  If we wish to optimize later, we should
+** be able to do it without affecting users.
+**
+** The strategy is to buffer the segments of data that do *not* depend on
+** unknown lengths in one buffer, and keep a separate buffer of segment pointers
+** and lengths.  When the top-level submessage ends, we can go beginning to end,
+** alternating the writing of lengths with memcpy() of the rest of the data.
+** At the top level though, no buffering is required.
+*/
 
 #include "upb/pb/encoder.h"
 #include "upb/pb/varint.int.h"

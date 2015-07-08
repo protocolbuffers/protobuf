@@ -1,22 +1,19 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Our key invariants are:
- * 1. reference cycles never span groups
- * 2. for ref2(to, from), we increment to's count iff group(from) != group(to)
- *
- * The previous two are how we avoid leaking cycles.  Other important
- * invariants are:
- * 3. for mutable objects "from" and "to", if there exists a ref2(to, from)
- *    this implies group(from) == group(to).  (In practice, what we implement
- *    is even stronger; "from" and "to" will share a group if there has *ever*
- *    been a ref2(to, from), but all that is necessary for correctness is the
- *    weaker one).
- * 4. mutable and immutable objects are never in the same group.
- */
+** upb::RefCounted Implementation
+**
+** Our key invariants are:
+** 1. reference cycles never span groups
+** 2. for ref2(to, from), we increment to's count iff group(from) != group(to)
+**
+** The previous two are how we avoid leaking cycles.  Other important
+** invariants are:
+** 3. for mutable objects "from" and "to", if there exists a ref2(to, from)
+**    this implies group(from) == group(to).  (In practice, what we implement
+**    is even stronger; "from" and "to" will share a group if there has *ever*
+**    been a ref2(to, from), but all that is necessary for correctness is the
+**    weaker one).
+** 4. mutable and immutable objects are never in the same group.
+*/
 
 #include "upb/refcounted.h"
 

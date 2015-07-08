@@ -1,12 +1,7 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2011 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A number of routines for varint manipulation (we keep them all around to
- * have multiple approaches available for benchmarking).
- */
+** A number of routines for varint manipulation (we keep them all around to
+** have multiple approaches available for benchmarking).
+*/
 
 #ifndef UPB_VARINT_DECODER_H_
 #define UPB_VARINT_DECODER_H_

@@ -1,23 +1,20 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2010-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A upb_handlers is like a virtual table for a upb_msgdef.  Each field of the
- * message can have associated functions that will be called when we are
- * parsing or visiting a stream of data.  This is similar to how handlers work
- * in SAX (the Simple API for XML).
- *
- * The handlers have no idea where the data is coming from, so a single set of
- * handlers could be used with two completely different data sources (for
- * example, a parser and a visitor over in-memory objects).  This decoupling is
- * the most important feature of upb, because it allows parsers and serializers
- * to be highly reusable.
- *
- * This is a mixed C/C++ interface that offers a full API to both languages.
- * See the top-level README for more information.
- */
+** upb::Handlers (upb_handlers)
+**
+** A upb_handlers is like a virtual table for a upb_msgdef.  Each field of the
+** message can have associated functions that will be called when we are
+** parsing or visiting a stream of data.  This is similar to how handlers work
+** in SAX (the Simple API for XML).
+**
+** The handlers have no idea where the data is coming from, so a single set of
+** handlers could be used with two completely different data sources (for
+** example, a parser and a visitor over in-memory objects).  This decoupling is
+** the most important feature of upb, because it allows parsers and serializers
+** to be highly reusable.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
 
 #ifndef UPB_HANDLERS_H
 #define UPB_HANDLERS_H

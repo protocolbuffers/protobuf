@@ -1,12 +1,7 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * TODO(haberman): it's unclear whether a lot of the consistency checks should
- * assert() or return false.
- */
+** TODO(haberman): it's unclear whether a lot of the consistency checks should
+** assert() or return false.
+*/
 
 #include "upb/handlers.h"
 #include "upb/structdefs.int.h"

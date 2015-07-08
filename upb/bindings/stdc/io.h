@@ -1,11 +1,6 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * ANSI C file I/O.
- */
+** ANSI C file I/O.
+*/
 
 #ifndef UPB_STDC_IO_H_
 #define UPB_STDC_IO_H_

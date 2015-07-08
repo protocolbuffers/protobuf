@@ -1,9 +1,4 @@
 //
-// upb - a minimalist implementation of protocol buffers.
-//
-// Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
-// Author: Josh Haberman <jhaberman@gmail.com>
-//
 // Note that we have received an exception from c-style-artiters regarding
 // dynamic_cast<> in this file:
 // https://groups.google.com/a/google.com/d/msg/c-style/7Zp_XCX0e7s/I6dpzno4l-MJ

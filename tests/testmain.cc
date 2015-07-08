@@ -1,5 +1,3 @@
-// Copyright 2012 Google Inc. All Rights Reserved.
-// Author: haberman@google.com (Josh Haberman)
 
 #include <stdlib.h>
 #ifdef USE_GOOGLE

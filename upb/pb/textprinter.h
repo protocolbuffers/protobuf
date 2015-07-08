@@ -1,9 +1,8 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- */
+** upb::pb::TextPrinter (upb_textprinter)
+**
+** Handlers for writing to protobuf text format.
+*/
 
 #ifndef UPB_TEXT_H_
 #define UPB_TEXT_H_

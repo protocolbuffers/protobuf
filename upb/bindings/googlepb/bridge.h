@@ -1,8 +1,7 @@
 //
-// upb - a minimalist implementation of protocol buffers.
-//
-// Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
-// Author: Josh Haberman <jhaberman@gmail.com>
+// upb::googlepb::DefBuilder
+// upb::googlepb::WriteHandlers
+// upb::googlepb::CodeCache
 //
 // This file contains functionality for constructing upb Defs and Handlers
 // corresponding to proto2 messages.  Using this functionality, you can use upb

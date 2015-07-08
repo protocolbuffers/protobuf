@@ -1,12 +1,7 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Python extension exposing the core of upb: definitions, handlers,
- * and a message type.
- */
+** Python extension exposing the core of upb: definitions, handlers,
+** and a message type.
+**/
 
 #include <stddef.h>
 #include <Python.h>

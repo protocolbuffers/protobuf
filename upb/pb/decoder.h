@@ -1,19 +1,16 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009-2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * upb::pb::Decoder implements a high performance, streaming, resumable decoder
- * for the binary protobuf format.
- *
- * This interface works the same regardless of what decoder backend is being
- * used.  A client of this class does not need to know whether decoding is using
- * a JITted decoder (DynASM, LLVM, etc) or an interpreted decoder.  By default,
- * it will always use the fastest available decoder.  However, you can call
- * set_allow_jit(false) to disable any JIT decoder that might be available.
- * This is primarily useful for testing purposes.
- */
+** upb::pb::Decoder
+**
+** A high performance, streaming, resumable decoder for the binary protobuf
+** format.
+**
+** This interface works the same regardless of what decoder backend is being
+** used.  A client of this class does not need to know whether decoding is using
+** a JITted decoder (DynASM, LLVM, etc) or an interpreted decoder.  By default,
+** it will always use the fastest available decoder.  However, you can call
+** set_allow_jit(false) to disable any JIT decoder that might be available.
+** This is primarily useful for testing purposes.
+*/
 
 #ifndef UPB_DECODER_H_
 #define UPB_DECODER_H_

@@ -1,12 +1,9 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * upb::json::Parser can parse JSON according to a specific schema.
- * Support for parsing arbitrary JSON (schema-less) will be added later.
- */
+** upb::json::Parser (upb_json_parser)
+**
+** Parses JSON according to a specific schema.
+** Support for parsing arbitrary JSON (schema-less) will be added later.
+*/
 
 #ifndef UPB_JSON_PARSER_H_
 #define UPB_JSON_PARSER_H_

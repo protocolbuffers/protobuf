@@ -1,22 +1,17 @@
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2008-2013 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * This file implements a VM for the interpreted (bytecode) decoder.
- *
- * Bytecode must previously have been generated using the bytecode compiler in
- * compile_decoder.c.  This decoder then walks through the bytecode op-by-op to
- * parse the input.
- *
- * Decoding is fully resumable; we just keep a pointer to the current bytecode
- * instruction and resume from there.  A fair amount of the logic here is to
- * handle the fact that values can span buffer seams and we have to be able to
- * be capable of suspending/resuming from any byte in the stream.  This
- * sometimes requires keeping a few trailing bytes from the last buffer around
- * in the "residual" buffer.
- */
+** upb::Decoder (Bytecode Decoder VM)
+**
+** Bytecode must previously have been generated using the bytecode compiler in
+** compile_decoder.c.  This decoder then walks through the bytecode op-by-op to
+** parse the input.
+**
+** Decoding is fully resumable; we just keep a pointer to the current bytecode
+** instruction and resume from there.  A fair amount of the logic here is to
+** handle the fact that values can span buffer seams and we have to be able to
+** be capable of suspending/resuming from any byte in the stream.  This
+** sometimes requires keeping a few trailing bytes from the last buffer around
+** in the "residual" buffer.
+*/
 
 #include <inttypes.h>
 #include <stddef.h>

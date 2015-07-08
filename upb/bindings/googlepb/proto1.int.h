@@ -1,9 +1,3 @@
-//
-// upb - a minimalist implementation of protocol buffers.
-//
-// Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
-// Author: Josh Haberman <jhaberman@gmail.com>
-//
 // Support for registering field handlers that can write into a legacy proto1
 // message.  This functionality is only needed inside Google.
 //

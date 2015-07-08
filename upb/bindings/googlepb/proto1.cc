@@ -1,9 +1,4 @@
 //
-// upb - a minimalist implementation of protocol buffers.
-//
-// Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
-// Author: Josh Haberman <jhaberman@gmail.com>
-//
 // This set of handlers can write into a proto2::Message whose reflection class
 // is _pi::Proto2Reflection (ie. proto1 messages; while slightly confusing, the
 // name "Proto2Reflection" indicates that it is a reflection class implementing
