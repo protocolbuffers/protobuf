@@ -1,10 +1,5 @@
 --[[
 
-  upb - a minimalist implementation of protocol buffers.
-
-  Copyright (c) 2012 Google Inc.  See LICENSE for details.
-  Author: Josh Haberman <jhaberman@gmail.com>
-
   Tests for dump_cinit.lua.  Runs first in a mode that generates
   some C code for an extension.  The C code is compiled and then
   loaded by a second invocation of the test which checks that the

@@ -1,10 +1,5 @@
 --[[
 
-  upb - a minimalist implementation of protocol buffers.
-
-  Copyright (c) 2012 Google Inc.  See LICENSE for details.
-  Author: Josh Haberman <jhaberman@gmail.com>
-
   Routines for dumping internal data structures into C initializers
   that can be compiled into a .o file.
 

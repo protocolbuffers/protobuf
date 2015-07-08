@@ -1,10 +1,5 @@
 --[[
 
-  upb - a minimalist implementation of protocol buffers.
-
-  Copyright (c) 2012 Google Inc.  See LICENSE for details.
-  Author: Josh Haberman <jhaberman@gmail.com>
-
   The upb compiler.  Unlike the proto2 compiler, this does
   not output any parsing code or generated classes or anything
   specific to the protobuf binary format at all.  At the moment

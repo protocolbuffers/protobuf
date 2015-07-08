@@ -1,11 +1,3 @@
---[[--------------------------------------------------------------------
-
-  upb - a minimalist implementation of protocol buffers.
-
-  Copyright (c) 2009 Google Inc.  See LICENSE for details.
-  Author: Josh Haberman <jhaberman@gmail.com>
-
---------------------------------------------------------------------]]--
 
 -- Before calling require on "upb_c", we need to load the same library
 -- as RTLD_GLOBAL, for the benefit of other C extensions that depend on
