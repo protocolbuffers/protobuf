@@ -603,7 +603,7 @@ namespace Google.Protobuf
         [Test]
         public void Reflection_GetValue()
         {
-            var message = GetSampleMessage();
+            var message = SampleMessages.CreateFullTestAllTypes();
             var fields = message.Fields;
             Assert.AreEqual(message.SingleBool, fields[TestAllTypes.SingleBoolFieldNumber].GetValue(message));
             Assert.AreEqual(message.SingleBytes, fields[TestAllTypes.SingleBytesFieldNumber].GetValue(message));
@@ -647,7 +647,7 @@ namespace Google.Protobuf
         [Test]
         public void Reflection_Clear()
         {
-            var message = GetSampleMessage();
+            var message = SampleMessages.CreateFullTestAllTypes();
             var fields = message.Fields;
             fields[TestAllTypes.SingleBoolFieldNumber].Clear(message);
             fields[TestAllTypes.SingleInt32FieldNumber].Clear(message);
@@ -657,7 +657,7 @@ namespace Google.Protobuf
             fields[TestAllTypes.SingleForeignMessageFieldNumber].Clear(message);
             fields[TestAllTypes.RepeatedDoubleFieldNumber].Clear(message);
 
-            var expected = new TestAllTypes(GetSampleMessage())
+            var expected = new TestAllTypes(SampleMessages.CreateFullTestAllTypes())
             {
                 SingleBool = false,
                 SingleInt32 = 0,
@@ -680,7 +680,7 @@ namespace Google.Protobuf
         public void Reflection_SetValue_SingleFields()
         {
             // Just a sample (primitives, messages, enums, strings, byte strings)
-            var message = GetSampleMessage();
+            var message = SampleMessages.CreateFullTestAllTypes();
             var fields = message.Fields;
             fields[TestAllTypes.SingleBoolFieldNumber].SetValue(message, false);
             fields[TestAllTypes.SingleInt32FieldNumber].SetValue(message, 500);
@@ -690,7 +690,7 @@ namespace Google.Protobuf
             fields[TestAllTypes.SingleForeignMessageFieldNumber].SetValue(message, new ForeignMessage { C = 12345 });
             fields[TestAllTypes.SingleDoubleFieldNumber].SetValue(message, 20150701.5);
 
-            var expected = new TestAllTypes(GetSampleMessage())
+            var expected = new TestAllTypes(SampleMessages.CreateFullTestAllTypes())
             {
                 SingleBool = false,
                 SingleInt32 = 500,
@@ -707,7 +707,7 @@ namespace Google.Protobuf
         [Test]
         public void Reflection_SetValue_SingleFields_WrongType()
         {
-            var message = GetSampleMessage();
+            var message = SampleMessages.CreateFullTestAllTypes();
             var fields = message.Fields;
             Assert.Throws<InvalidCastException>(() => fields[TestAllTypes.SingleBoolFieldNumber].SetValue(message, "This isn't a bool"));
         }
@@ -723,7 +723,7 @@ namespace Google.Protobuf
         [Test]
         public void Reflection_SetValue_RepeatedFields()
         {
-            var message = GetSampleMessage();
+            var message = SampleMessages.CreateFullTestAllTypes();
             var fields = message.Fields;
             Assert.Throws<InvalidOperationException>(() => fields[TestAllTypes.RepeatedDoubleFieldNumber].SetValue(message, new double[10]));
         }
@@ -731,7 +731,7 @@ namespace Google.Protobuf
         [Test]
         public void Reflection_GetValue_IncorrectType()
         {
-            var message = GetSampleMessage();
+            var message = SampleMessages.CreateFullTestAllTypes();
             Assert.Throws<InvalidCastException>(() => message.Fields[TestAllTypes.SingleBoolFieldNumber].GetValue(new TestMap()));
         }
     }
