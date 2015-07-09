@@ -49,7 +49,6 @@ namespace csharp {
 RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
     const FieldDescriptor* descriptor, int fieldOrdinal)
     : FieldGeneratorBase(descriptor, fieldOrdinal) {
-  variables_["packed"] = descriptor->is_packed() ? "Packed" : "";
 }
 
 RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {
@@ -57,6 +56,10 @@ RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {
 }
 
 void RepeatedEnumFieldGenerator::GenerateMembers(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "private static readonly pb::FieldCodec<$type_name$> _repeated_$name$_codec\n"
+    "    = pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x);");
   printer->Print(variables_,
     "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
   AddDeprecatedFlag(printer);
@@ -76,53 +79,19 @@ void RepeatedEnumFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "input.ReadEnumArray<$type_name$>($name$_);\n");
+    "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if ($name$_.Count > 0) {\n");
-  printer->Indent();
-  if (descriptor_->is_packed()) {
-    printer->Print(
-      variables_,
-      "output.WriteRawTag($tag_bytes$);\n"
-      "output.WritePackedEnumArray($name$_);\n");
-  } else {
-    printer->Print(
-      variables_,
-      "output.Write$capitalized_type_name$Array($number$, $name$_);\n");
-  }
-  printer->Outdent();
-  printer->Print("}\n");
+    "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
 }
 
-void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
-  // TODO(jonskeet): Move all this code into CodedOutputStream? It's a lot to repeat everywhere...
+void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {  
   printer->Print(
     variables_,
-    "if ($name$_.Count > 0) {\n");
-  printer->Indent();
-  printer->Print("int dataSize = 0;\n");
-  printer->Print(
-    variables_,
-    "foreach ($type_name$ element in $name$_) {\n"
-    "  dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);\n"
-    "}\n"
-    "size += dataSize;\n");
-  int tagSize = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
-  if (descriptor_->is_packed()) {
-    printer->Print(
-      "size += $tag_size$ + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);\n",
-      "tag_size", SimpleItoa(tagSize));
-  } else {
-    printer->Print(
-      "size += $tag_size$ * $name$_.Count;\n",
-      "tag_size", SimpleItoa(tagSize), "name", name());
-  }
-  printer->Outdent();
-  printer->Print("}\n");
+    "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");
 }
 
 void RepeatedEnumFieldGenerator::WriteHash(io::Printer* printer) {

@@ -334,6 +334,10 @@ namespace Google.Protobuf.Collections
 
         public int CalculateSize(Codec codec)
         {
+            if (Count == 0)
+            {
+                return 0;
+            }
             var message = new Codec.MessageAdapter(codec);
             int size = 0;
             foreach (var entry in list)
@@ -419,13 +423,13 @@ namespace Google.Protobuf.Collections
 
                 public void WriteTo(CodedOutputStream output)
                 {
-                    codec.keyCodec.Write(output, Key);
-                    codec.valueCodec.Write(output, Value);
+                    codec.keyCodec.WriteTagAndValue(output, Key);
+                    codec.valueCodec.WriteTagAndValue(output, Value);
                 }
 
                 public int CalculateSize()
                 {
-                    return codec.keyCodec.CalculateSize(Key) + codec.valueCodec.CalculateSize(Value);
+                    return codec.keyCodec.CalculateSizeWithTag(Key) + codec.valueCodec.CalculateSizeWithTag(Value);
                 }
             }
         }

@@ -422,13 +422,15 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public const int ValuesFieldNumber = 2;
-    private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> values_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
+    private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.NegativeEnum> _repeated_values_codec
+        = pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::UnitTest.Issues.TestProtos.NegativeEnum) x);private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> values_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
     public pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> Values {
       get { return values_; }
     }
 
     public const int PackedValuesFieldNumber = 3;
-    private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> packedValues_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
+    private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.NegativeEnum> _repeated_packedValues_codec
+        = pb::FieldCodec.ForEnum(26, x => (int) x, x => (global::UnitTest.Issues.TestProtos.NegativeEnum) x);private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> packedValues_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
     public pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> PackedValues {
       get { return packedValues_; }
     }
@@ -463,13 +465,8 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(8);
         output.WriteEnum((int) Value);
       }
-      if (values_.Count > 0) {
-        output.WriteEnumArray(2, values_);
-      }
-      if (packedValues_.Count > 0) {
-        output.WriteRawTag(26);
-        output.WritePackedEnumArray(packedValues_);
-      }
+      values_.WriteTo(output, _repeated_values_codec);
+      packedValues_.WriteTo(output, _repeated_packedValues_codec);
     }
 
     public int CalculateSize() {
@@ -477,22 +474,8 @@ namespace UnitTest.Issues.TestProtos {
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Value);
       }
-      if (values_.Count > 0) {
-        int dataSize = 0;
-        foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in values_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
-        }
-        size += dataSize;
-        size += 1 * values_.Count;
-      }
-      if (packedValues_.Count > 0) {
-        int dataSize = 0;
-        foreach (global::UnitTest.Issues.TestProtos.NegativeEnum element in packedValues_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
-        }
-        size += dataSize;
-        size += 1 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
-      }
+      size += values_.CalculateSize(_repeated_values_codec);
+      size += packedValues_.CalculateSize(_repeated_packedValues_codec);
       return size;
     }
 
@@ -524,12 +507,12 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 18:
           case 16: {
-            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(values_);
+            values_.AddEntriesFrom(input, _repeated_values_codec);
             break;
           }
           case 26:
           case 24: {
-            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.NegativeEnum>(packedValues_);
+            packedValues_.AddEntriesFrom(input, _repeated_packedValues_codec);
             break;
           }
         }
@@ -678,6 +661,8 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public const int PrimitiveArrayFieldNumber = 2;
+    private static readonly pb::FieldCodec<int> _repeated_primitiveArray_codec
+        = pb::FieldCodec.ForInt32(18);
     private readonly pbc::RepeatedField<int> primitiveArray_ = new pbc::RepeatedField<int>();
     [global::System.ObsoleteAttribute()]
     public pbc::RepeatedField<int> PrimitiveArray {
@@ -696,6 +681,8 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public const int MessageArrayFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.DeprecatedChild> _repeated_messageArray_codec
+        = pb::FieldCodec.ForMessage(34, global::UnitTest.Issues.TestProtos.DeprecatedChild.Parser);
     private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedChild> messageArray_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedChild>();
     [global::System.ObsoleteAttribute()]
     public pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedChild> MessageArray {
@@ -714,7 +701,8 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public const int EnumArrayFieldNumber = 6;
-    private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum> enumArray_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum>();
+    private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.DeprecatedEnum> _repeated_enumArray_codec
+        = pb::FieldCodec.ForEnum(50, x => (int) x, x => (global::UnitTest.Issues.TestProtos.DeprecatedEnum) x);private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum> enumArray_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum>();
     [global::System.ObsoleteAttribute()]
     public pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum> EnumArray {
       get { return enumArray_; }
@@ -756,25 +744,17 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(8);
         output.WriteInt32(PrimitiveValue);
       }
-      if (primitiveArray_.Count > 0) {
-        output.WriteRawTag(18);
-        output.WritePackedInt32Array(primitiveArray_);
-      }
+      primitiveArray_.WriteTo(output, _repeated_primitiveArray_codec);
       if (messageValue_ != null) {
         output.WriteRawTag(26);
         output.WriteMessage(MessageValue);
       }
-      if (messageArray_.Count > 0) {
-        output.WriteMessageArray(4, messageArray_);
-      }
+      messageArray_.WriteTo(output, _repeated_messageArray_codec);
       if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
         output.WriteRawTag(40);
         output.WriteEnum((int) EnumValue);
       }
-      if (enumArray_.Count > 0) {
-        output.WriteRawTag(50);
-        output.WritePackedEnumArray(enumArray_);
-      }
+      enumArray_.WriteTo(output, _repeated_enumArray_codec);
     }
 
     public int CalculateSize() {
@@ -782,34 +762,15 @@ namespace UnitTest.Issues.TestProtos {
       if (PrimitiveValue != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(PrimitiveValue);
       }
-      if (primitiveArray_.Count > 0) {
-        int dataSize = 0;
-        foreach (int element in primitiveArray_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
-        }
-        size += dataSize;
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
+      size += primitiveArray_.CalculateSize(_repeated_primitiveArray_codec);
       if (messageValue_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(MessageValue);
       }
-      if (messageArray_.Count > 0) {
-        foreach (global::UnitTest.Issues.TestProtos.DeprecatedChild element in messageArray_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * messageArray_.Count;
-      }
+      size += messageArray_.CalculateSize(_repeated_messageArray_codec);
       if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EnumValue);
       }
-      if (enumArray_.Count > 0) {
-        int dataSize = 0;
-        foreach (global::UnitTest.Issues.TestProtos.DeprecatedEnum element in enumArray_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
-        }
-        size += dataSize;
-        size += 1 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
-      }
+      size += enumArray_.CalculateSize(_repeated_enumArray_codec);
       return size;
     }
 
@@ -851,7 +812,7 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 18:
           case 16: {
-            input.ReadInt32Array(primitiveArray_);
+            primitiveArray_.AddEntriesFrom(input, _repeated_primitiveArray_codec);
             break;
           }
           case 26: {
@@ -862,7 +823,7 @@ namespace UnitTest.Issues.TestProtos {
             break;
           }
           case 34: {
-            input.ReadMessageArray(messageArray_, global::UnitTest.Issues.TestProtos.DeprecatedChild.Parser);
+            messageArray_.AddEntriesFrom(input, _repeated_messageArray_codec);
             break;
           }
           case 40: {
@@ -871,7 +832,7 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 50:
           case 48: {
-            input.ReadEnumArray<global::UnitTest.Issues.TestProtos.DeprecatedEnum>(enumArray_);
+            enumArray_.AddEntriesFrom(input, _repeated_enumArray_codec);
             break;
           }
         }

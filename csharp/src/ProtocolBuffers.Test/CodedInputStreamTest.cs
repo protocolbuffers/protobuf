@@ -35,10 +35,8 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Google.Protobuf.Collections;
-using Google.Protobuf.Descriptors;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
@@ -62,7 +60,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Parses the given bytes using ReadRawVarint32() and ReadRawVarint64() and
+        /// Parses the given bytes using ReadRawVarint32() and ReadRawVarint64()
         /// </summary>
         private static void AssertReadVarint(byte[] data, ulong value)
         {
@@ -232,66 +230,26 @@ namespace Google.Protobuf
             Assert.AreEqual(0x7FFFFFFFFFFFFFFFL, CodedInputStream.DecodeZigZag64(0xFFFFFFFFFFFFFFFEL));
             Assert.AreEqual(unchecked((long) 0x8000000000000000L), CodedInputStream.DecodeZigZag64(0xFFFFFFFFFFFFFFFFL));
         }
-        /*
+        
         [Test]
-        public void ReadWholeMessage()
+        public void ReadWholeMessage_VaryingBlockSizes()
         {
-            TestAllTypes message = TestUtil.GetAllSet();
+            TestAllTypes message = GeneratedMessageTest.GetSampleMessage();
 
             byte[] rawBytes = message.ToByteArray();
-            Assert.AreEqual(rawBytes.Length, message.SerializedSize);
-            TestAllTypes message2 = TestAllTypes.ParseFrom(rawBytes);
-            TestUtil.AssertAllFieldsSet(message2);
+            Assert.AreEqual(rawBytes.Length, message.CalculateSize());
+            TestAllTypes message2 = TestAllTypes.Parser.ParseFrom(rawBytes);
+            Assert.AreEqual(message, message2);
 
             // Try different block sizes.
             for (int blockSize = 1; blockSize < 256; blockSize *= 2)
             {
-                message2 = TestAllTypes.ParseFrom(new SmallBlockInputStream(rawBytes, blockSize));
-                TestUtil.AssertAllFieldsSet(message2);
+                message2 = TestAllTypes.Parser.ParseFrom(new SmallBlockInputStream(rawBytes, blockSize));
+                Assert.AreEqual(message, message2);
             }
         }
-
+                
         [Test]
-        public void SkipWholeMessage()
-        {
-            TestAllTypes message = TestUtil.GetAllSet();
-            byte[] rawBytes = message.ToByteArray();
-
-            // Create two parallel inputs.  Parse one as unknown fields while using
-            // skipField() to skip each field on the other.  Expect the same tags.
-            CodedInputStream input1 = CodedInputStream.CreateInstance(rawBytes);
-            CodedInputStream input2 = CodedInputStream.CreateInstance(rawBytes);
-            UnknownFieldSet.Builder unknownFields = UnknownFieldSet.CreateBuilder();
-
-            uint tag;
-            string name;
-            while (input1.ReadTag(out tag, out name))
-            {
-                uint tag2;
-                Assert.IsTrue(input2.ReadTag(out tag2, out name));
-                Assert.AreEqual(tag, tag2);
-
-                unknownFields.MergeFieldFrom(tag, input1);
-                input2.SkipField();
-            }
-        }*/
-
-        /// <summary>
-        /// Test that a bug in SkipRawBytes has been fixed: if the skip
-        /// skips exactly up to a limit, this should bnot break things
-        /// </summary>
-        [Test]
-        public void SkipRawBytesBug()
-        {
-            byte[] rawBytes = new byte[] {1, 2};
-            CodedInputStream input = CodedInputStream.CreateInstance(rawBytes);
-
-            int limit = input.PushLimit(1);
-            input.SkipRawBytes(1);
-            input.PopLimit(limit);
-            Assert.AreEqual(2, input.ReadRawByte());
-        }
-        /*
         public void ReadHugeBlob()
         {
             // Allocate and initialize a 1MB blob.
@@ -302,24 +260,15 @@ namespace Google.Protobuf
             }
 
             // Make a message containing it.
-            TestAllTypes.Builder builder = TestAllTypes.CreateBuilder();
-            TestUtil.SetAllFields(builder);
-            builder.SetOptionalBytes(ByteString.CopyFrom(blob));
-            TestAllTypes message = builder.Build();
+            var message = new TestAllTypes { SingleBytes = ByteString.CopyFrom(blob) };
 
             // Serialize and parse it.  Make sure to parse from an InputStream, not
             // directly from a ByteString, so that CodedInputStream uses buffered
             // reading.
-            TestAllTypes message2 = TestAllTypes.ParseFrom(message.ToByteString().CreateCodedInput());
+            TestAllTypes message2 = TestAllTypes.Parser.ParseFrom(message.ToByteString());
 
-            Assert.AreEqual(message.OptionalBytes, message2.OptionalBytes);
-
-            // Make sure all the other fields were parsed correctly.
-            TestAllTypes message3 = TestAllTypes.CreateBuilder(message2)
-                .SetOptionalBytes(TestUtil.GetAllSet().OptionalBytes)
-                .Build();
-            TestUtil.AssertAllFieldsSet(message3);
-        }*/
+            Assert.AreEqual(message, message2);
+        }
 
         [Test]
         public void ReadMaliciouslyLargeBlob()
@@ -461,64 +410,13 @@ namespace Google.Protobuf
             }
         }
 
-        enum TestNegEnum { None = 0, Value = -2 }
-
         [Test]
         public void TestNegativeEnum()
         {
-            byte[] bytes = new byte[10] { 0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 };
+            byte[] bytes = { 0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 };
             CodedInputStream input = CodedInputStream.CreateInstance(bytes);
-            Assert.AreEqual((int)TestNegEnum.Value, input.ReadEnum());
+            Assert.AreEqual((int)SampleEnum.NegativeValue, input.ReadEnum());
             Assert.IsTrue(input.IsAtEnd);
-        }
-
-        [Test]
-        public void TestNegativeEnumPackedArray()
-        {
-            int arraySize = 1 + (10 * 5);
-            int msgSize = 1 + 1 + arraySize;
-            byte[] bytes = new byte[msgSize];
-            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteTag(8, WireFormat.WireType.LengthDelimited);
-            output.WritePackedInt32Array(new RepeatedField<int> { 0, -1, -2, -3, -4, -5 });
-
-            Assert.AreEqual(0, output.SpaceLeft);
-
-            CodedInputStream input = CodedInputStream.CreateInstance(bytes);
-            uint tag;
-            Assert.IsTrue(input.ReadTag(out tag));
-
-            RepeatedField<TestNegEnum> values = new RepeatedField<TestNegEnum>();
-            input.ReadEnumArray(values);
-
-            Assert.AreEqual(6, values.Count);
-            Assert.AreEqual(TestNegEnum.None, values[0]);
-            Assert.AreEqual(TestNegEnum.Value, values[2]);
-            // TODO(jonskeet): Test unknown value preservation
-        }
-
-        [Test]
-        public void TestNegativeEnumArray()
-        {
-            int arraySize = 1 + 1 + (11 * 5);
-            int msgSize = arraySize;
-            byte[] bytes = new byte[msgSize];
-            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
-            output.WriteInt32Array(8, new RepeatedField<int> { 0, -1, -2, -3, -4, -5 });
-
-            Assert.AreEqual(0, output.SpaceLeft);
-
-            CodedInputStream input = CodedInputStream.CreateInstance(bytes);
-            uint tag;
-            Assert.IsTrue(input.ReadTag(out tag));
-
-            RepeatedField<TestNegEnum> values = new RepeatedField<TestNegEnum>();
-            input.ReadEnumArray(values);
-
-            Assert.AreEqual(6, values.Count);
-            Assert.AreEqual(TestNegEnum.None, values[0]);
-            Assert.AreEqual(TestNegEnum.Value, values[2]);
-            // TODO(jonskeet): Test unknown value preservation
         }
 
         //Issue 71:	CodedInputStream.ReadBytes go to slow path unnecessarily

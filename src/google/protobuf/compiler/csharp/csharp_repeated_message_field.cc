@@ -57,6 +57,10 @@ RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {
 void RepeatedMessageFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
     variables_,
+    "private static readonly pb::FieldCodec<$type_name$> _repeated_$name$_codec\n"
+    "    = pb::FieldCodec.ForMessage($tag$, $type_name$.Parser);\n");
+  printer->Print(
+    variables_,
     "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
   AddDeprecatedFlag(printer);
   printer->Print(
@@ -75,28 +79,19 @@ void RepeatedMessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 void RepeatedMessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "input.ReadMessageArray($name$_, $type_name$.Parser);\n");
+    "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
-  // TODO(jonskeet): Bake the foreach loop into the generated code? We lose the
-  // advantage of knowing the tag bytes this way :(
   printer->Print(
     variables_,
-    "if ($name$_.Count > 0) {\n"
-    "  output.WriteMessageArray($number$, $name$_);\n"
-    "}\n");
+    "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "if ($name$_.Count > 0) {\n"
-    "  foreach ($type_name$ element in $name$_) {\n"
-    "    size += pb::CodedOutputStream.ComputeMessageSize(element);\n"
-    "  }\n"
-    "  size += $tag_size$ * $name$_.Count;\n"
-    "}\n");
+    "size += $name$_.CalculateSize(_repeated_$name$_codec);\n");
 }
 
 void RepeatedMessageFieldGenerator::WriteHash(io::Printer* printer) {

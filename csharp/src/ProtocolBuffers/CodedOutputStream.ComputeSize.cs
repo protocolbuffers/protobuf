@@ -50,7 +50,7 @@ namespace Google.Protobuf
         private const int LittleEndian32Size = 4;        
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
+        /// Computes the number of bytes that would be needed to encode a
         /// double field, including the tag.
         /// </summary>
         public static int ComputeDoubleSize(double value)
@@ -59,7 +59,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
+        /// Computes the number of bytes that would be needed to encode a
         /// float field, including the tag.
         /// </summary>
         public static int ComputeFloatSize(float value)
@@ -68,7 +68,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
+        /// Computes the number of bytes that would be needed to encode a
         /// uint64 field, including the tag.
         /// </summary>
         public static int ComputeUInt64Size(ulong value)
@@ -77,7 +77,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode an
+        /// Computes the number of bytes that would be needed to encode an
         /// int64 field, including the tag.
         /// </summary>
         public static int ComputeInt64Size(long value)
@@ -86,7 +86,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode an
+        /// Computes the number of bytes that would be needed to encode an
         /// int32 field, including the tag.
         /// </summary>
         public static int ComputeInt32Size(int value)
@@ -103,7 +103,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
+        /// Computes the number of bytes that would be needed to encode a
         /// fixed64 field, including the tag.
         /// </summary>
         public static int ComputeFixed64Size(ulong value)
@@ -112,7 +112,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
+        /// Computes the number of bytes that would be needed to encode a
         /// fixed32 field, including the tag.
         /// </summary>
         public static int ComputeFixed32Size(uint value)
@@ -121,7 +121,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
+        /// Computes the number of bytes that would be needed to encode a
         /// bool field, including the tag.
         /// </summary>
         public static int ComputeBoolSize(bool value)
@@ -130,7 +130,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
+        /// Computes the number of bytes that would be needed to encode a
         /// string field, including the tag.
         /// </summary>
         public static int ComputeStringSize(String value)
@@ -141,7 +141,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
+        /// Computes the number of bytes that would be needed to encode a
         /// group field, including the tag.
         /// </summary>
         public static int ComputeGroupSize(IMessage value)
@@ -150,7 +150,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode an
+        /// Computes the number of bytes that would be needed to encode an
         /// embedded message field, including the tag.
         /// </summary>
         public static int ComputeMessageSize(IMessage value)
@@ -160,7 +160,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
+        /// Computes the number of bytes that would be needed to encode a
         /// bytes field, including the tag.
         /// </summary>
         public static int ComputeBytesSize(ByteString value)
@@ -170,7 +170,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
+        /// Computes the number of bytes that would be needed to encode a
         /// uint32 field, including the tag.
         /// </summary>
         public static int ComputeUInt32Size(uint value)
@@ -179,7 +179,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a
+        /// Computes the number of bytes that would be needed to encode a
         /// enum field, including the tag. The caller is responsible for
         /// converting the enum value to its numeric value.
         /// </summary>
@@ -190,7 +190,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode an
+        /// Computes the number of bytes that would be needed to encode an
         /// sfixed32 field, including the tag.
         /// </summary>
         public static int ComputeSFixed32Size(int value)
@@ -199,7 +199,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode an
+        /// Computes the number of bytes that would be needed to encode an
         /// sfixed64 field, including the tag.
         /// </summary>
         public static int ComputeSFixed64Size(long value)
@@ -208,7 +208,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode an
+        /// Computes the number of bytes that would be needed to encode an
         /// sint32 field, including the tag.
         /// </summary>
         public static int ComputeSInt32Size(int value)
@@ -217,7 +217,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode an
+        /// Computes the number of bytes that would be needed to encode an
         /// sint64 field, including the tag.
         /// </summary>
         public static int ComputeSInt64Size(long value)
@@ -226,7 +226,16 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a varint.
+        /// Computes the number of bytes that would be needed to encode a length,
+        /// as written by <see cref="WriteLength"/>.
+        /// </summary>
+        public static int ComputeLengthSize(int length)
+        {
+            return ComputeRawVarint32Size((uint) length);
+        }
+
+        /// <summary>
+        /// Computes the number of bytes that would be needed to encode a varint.
         /// </summary>
         public static int ComputeRawVarint32Size(uint value)
         {
@@ -250,7 +259,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a varint.
+        /// Computes the number of bytes that would be needed to encode a varint.
         /// </summary>
         public static int ComputeRawVarint64Size(ulong value)
         {
@@ -294,7 +303,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Compute the number of bytes that would be needed to encode a tag.
+        /// Computes the number of bytes that would be needed to encode a tag.
         /// </summary>
         public static int ComputeTagSize(int fieldNumber)
         {

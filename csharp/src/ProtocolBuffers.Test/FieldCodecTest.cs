@@ -63,15 +63,21 @@ namespace Google.Protobuf
         };
 
         [Test, TestCaseSource("Codecs")]
-        public void RoundTrip(ICodecTestData codec)
+        public void RoundTripWithTag(ICodecTestData codec)
         {
-            codec.TestRoundTrip();
+            codec.TestRoundTripWithTag();
+        }
+
+        [Test, TestCaseSource("Codecs")]
+        public void RoundTripRaw(ICodecTestData codec)
+        {
+            codec.TestRoundTripRaw();
         }
 
         [Test, TestCaseSource("Codecs")]
         public void CalculateSize(ICodecTestData codec)
         {
-            codec.TestCalculateSize();
+            codec.TestCalculateSizeWithTag();
         }
 
         [Test, TestCaseSource("Codecs")]
@@ -82,8 +88,9 @@ namespace Google.Protobuf
 
         public interface ICodecTestData
         {
-            void TestRoundTrip();
-            void TestCalculateSize();
+            void TestRoundTripRaw();
+            void TestRoundTripWithTag();
+            void TestCalculateSizeWithTag();
             void TestDefaultValue();
         }
 
@@ -100,45 +107,67 @@ namespace Google.Protobuf
                 this.name = name;
             }
 
-            public void TestRoundTrip()
+            public void TestRoundTripRaw()
             {
                 var stream = new MemoryStream();
                 var codedOutput = CodedOutputStream.CreateInstance(stream);
-                codec.Write(codedOutput, sampleValue);
+                codec.ValueWriter(codedOutput, sampleValue);
                 codedOutput.Flush();
                 stream.Position = 0;
                 var codedInput = CodedInputStream.CreateInstance(stream);
-                uint tag;
-                Assert.IsTrue(codedInput.ReadTag(out tag));
-                Assert.AreEqual(codec.Tag, tag);
+                Assert.AreEqual(sampleValue, codec.ValueReader(codedInput));
+                Assert.IsTrue(codedInput.IsAtEnd);
+            }
+
+            public void TestRoundTripWithTag()
+            {
+                var stream = new MemoryStream();
+                var codedOutput = CodedOutputStream.CreateInstance(stream);
+                codec.WriteTagAndValue(codedOutput, sampleValue);
+                codedOutput.Flush();
+                stream.Position = 0;
+                var codedInput = CodedInputStream.CreateInstance(stream);
+                codedInput.AssertNextTag(codec.Tag);
                 Assert.AreEqual(sampleValue, codec.Read(codedInput));
                 Assert.IsTrue(codedInput.IsAtEnd);
             }
 
-            public void TestCalculateSize()
+            public void TestCalculateSizeWithTag()
             {
                 var stream = new MemoryStream();
                 var codedOutput = CodedOutputStream.CreateInstance(stream);
-                codec.Write(codedOutput, sampleValue);
+                codec.WriteTagAndValue(codedOutput, sampleValue);
                 codedOutput.Flush();
-                Assert.AreEqual(stream.Position, codec.CalculateSize(sampleValue));
+                Assert.AreEqual(stream.Position, codec.CalculateSizeWithTag(sampleValue));
             }
 
             public void TestDefaultValue()
             {
+                // WriteTagAndValue ignores default values
                 var stream = new MemoryStream();
                 var codedOutput = CodedOutputStream.CreateInstance(stream);
-                codec.Write(codedOutput, codec.DefaultValue);
+                codec.WriteTagAndValue(codedOutput, codec.DefaultValue);
                 codedOutput.Flush();
                 Assert.AreEqual(0, stream.Position);
-                Assert.AreEqual(0, codec.CalculateSize(codec.DefaultValue));
+                Assert.AreEqual(0, codec.CalculateSizeWithTag(codec.DefaultValue));
                 if (typeof(T).IsValueType)
                 {
                     Assert.AreEqual(default(T), codec.DefaultValue);
                 }
-            }
 
-            public string Description { get { return name; } }
+                // The plain ValueWriter/ValueReader delegates don't.
+                if (codec.DefaultValue != null) // This part isn't appropriate for message types.
+                {
+                    codedOutput = CodedOutputStream.CreateInstance(stream);
+                    codec.ValueWriter(codedOutput, codec.DefaultValue);
+                    codedOutput.Flush();
+                    Assert.AreNotEqual(0, stream.Position);
+                    Assert.AreEqual(stream.Position, codec.ValueSizeCalculator(codec.DefaultValue));
+                    stream.Position = 0;
+                    var codedInput = CodedInputStream.CreateInstance(stream);
+                    Assert.AreEqual(codec.DefaultValue, codec.ValueReader(codedInput));
+                }
+            }
 
             public override string ToString()
             {

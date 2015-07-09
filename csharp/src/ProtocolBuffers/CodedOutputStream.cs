@@ -37,7 +37,6 @@
 using System;
 using System.IO;
 using System.Text;
-using Google.Protobuf.Collections;
 
 namespace Google.Protobuf
 {
@@ -141,11 +140,12 @@ namespace Google.Protobuf
             }
         }
 
-        #region Writing of values without tags
+        #region Writing of values (not including tags)
 
         /// <summary>
-        /// Writes a double field value, including tag, to the stream.
+        /// Writes a double field value, without a tag, to the stream.
         /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteDouble(double value)
         {
             WriteRawLittleEndian64((ulong)BitConverter.DoubleToInt64Bits(value));
@@ -154,6 +154,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes a float field value, without a tag, to the stream.
         /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteFloat(float value)
         {
             byte[] rawBytes = BitConverter.GetBytes(value);
@@ -178,6 +179,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes a uint64 field value, without a tag, to the stream.
         /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteUInt64(ulong value)
         {
             WriteRawVarint64(value);
@@ -186,6 +188,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes an int64 field value, without a tag, to the stream.
         /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteInt64(long value)
         {
             WriteRawVarint64((ulong) value);
@@ -194,6 +197,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes an int32 field value, without a tag, to the stream.
         /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteInt32(int value)
         {
             if (value >= 0)
@@ -210,6 +214,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes a fixed64 field value, without a tag, to the stream.
         /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteFixed64(ulong value)
         {
             WriteRawLittleEndian64(value);
@@ -218,6 +223,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes a fixed32 field value, without a tag, to the stream.
         /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteFixed32(uint value)
         {
             WriteRawLittleEndian32(value);
@@ -226,6 +232,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes a bool field value, without a tag, to the stream.
         /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteBool(bool value)
         {
             WriteRawByte(value ? (byte) 1 : (byte) 0);
@@ -233,13 +240,15 @@ namespace Google.Protobuf
 
         /// <summary>
         /// Writes a string field value, without a tag, to the stream.
+        /// The data is length-prefixed.
         /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteString(string value)
         {
             // Optimise the case where we have enough space to write
             // the string directly to the buffer, which should be common.
             int length = Utf8Encoding.GetByteCount(value);
-            WriteRawVarint32((uint)length);
+            WriteLength(length);
             if (limit - position >= length)
             {
                 if (length == value.Length) // Must be all ASCII...
@@ -262,23 +271,41 @@ namespace Google.Protobuf
             }
         }
 
+        /// <summary>
+        /// Writes a message, without a tag, to the stream.
+        /// The data is length-prefixed.
+        /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteMessage(IMessage value)
         {
             WriteRawVarint32((uint) value.CalculateSize());
             value.WriteTo(this);
         }
 
+        /// <summary>
+        /// Write a byte string, without a tag, to the stream.
+        /// The data is length-prefixed.
+        /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteBytes(ByteString value)
         {
             WriteRawVarint32((uint) value.Length);
             value.WriteRawBytesTo(this);
         }
 
+        /// <summary>
+        /// Writes a uint32 value, without a tag, to the stream.
+        /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteUInt32(uint value)
         {
             WriteRawVarint32(value);
         }
 
+        /// <summary>
+        /// Writes an enum value, without a tag, to the stream.
+        /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteEnum(int value)
         {
             WriteInt32(value);
@@ -289,179 +316,43 @@ namespace Google.Protobuf
             WriteRawLittleEndian32((uint) value);
         }
 
+        /// <summary>
+        /// Writes an sfixed64 value, without a tag, to the stream.
+        /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteSFixed64(long value)
         {
             WriteRawLittleEndian64((ulong) value);
         }
 
+        /// <summary>
+        /// Writes an sint32 value, without a tag, to the stream.
+        /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteSInt32(int value)
         {
             WriteRawVarint32(EncodeZigZag32(value));
         }
 
+        /// <summary>
+        /// Writes an sint64 value, without a tag, to the stream.
+        /// </summary>
+        /// <param name="value">The value to write</param>
         public void WriteSInt64(long value)
         {
             WriteRawVarint64(EncodeZigZag64(value));
         }
 
-        #endregion
-
-        #region Write array members, with fields.
-        public void WriteMessageArray<T>(int fieldNumber, RepeatedField<T> list)
-            where T : IMessage
+        /// <summary>
+        /// Writes a length (in bytes) for length-delimited data.
+        /// </summary>
+        /// <remarks>
+        /// This method simply writes a rawint, but exists for clarity in calling code.
+        /// </remarks>
+        /// <param name="length">Length value, in bytes.</param>
+        public void WriteLength(int length)
         {
-            foreach (T value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-                WriteMessage(value);
-            }
-        }
-
-        public void WriteStringArray(int fieldNumber, RepeatedField<string> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-                WriteString(value);
-            }
-        }
-
-        public void WriteBytesArray(int fieldNumber, RepeatedField<ByteString> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
-                WriteBytes(value);
-            }
-        }
-
-        public void WriteBoolArray(int fieldNumber, RepeatedField<bool> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Varint);
-                WriteBool(value);
-            }
-        }
-
-        public void WriteInt32Array(int fieldNumber, RepeatedField<int> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Varint);
-                WriteInt32(value);
-            }
-        }
-
-        public void WriteSInt32Array(int fieldNumber, RepeatedField<int> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Varint);
-                WriteSInt32(value);
-            }
-        }
-
-        public void WriteUInt32Array(int fieldNumber, RepeatedField<uint> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Varint);
-                WriteUInt32(value);
-            }
-        }
-
-        public void WriteFixed32Array(int fieldNumber, RepeatedField<uint> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
-                WriteFixed32(value);
-            }
-        }
-
-        public void WriteSFixed32Array(int fieldNumber, RepeatedField<int> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
-                WriteSFixed32(value);
-            }
-        }
-
-        public void WriteInt64Array(int fieldNumber, RepeatedField<long> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
-                WriteInt64(value);
-            }
-        }
-
-        public void WriteSInt64Array(int fieldNumber, RepeatedField<long> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Varint);
-                WriteSInt64(value);
-            }
-        }
-
-        public void WriteUInt64Array(int fieldNumber, RepeatedField<ulong> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Varint);
-                WriteUInt64(value);
-            }
-        }
-
-        public void WriteFixed64Array(int fieldNumber, RepeatedField<ulong> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
-                WriteFixed64(value);
-            }
-        }
-
-        public void WriteSFixed64Array(int fieldNumber, RepeatedField<long> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
-                WriteSFixed64(value);
-            }
-        }
-
-        public void WriteDoubleArray(int fieldNumber, RepeatedField<double> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
-                WriteDouble(value);
-            }
-        }
-
-        public void WriteFloatArray(int fieldNumber, RepeatedField<float> list)
-        {
-            foreach (var value in list)
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
-                WriteFloat(value);
-            }
-        }
-
-        public void WriteEnumArray<T>(int fieldNumber, RepeatedField<T> list)
-            where T : struct, IComparable, IFormattable
-        {
-            // Bit of a hack, to access the values as ints
-            var iterator = list.GetInt32Enumerator();
-            while (iterator.MoveNext())
-            {
-                WriteTag(fieldNumber, WireFormat.WireType.Varint);
-                WriteEnum(iterator.Current);
-            }
+            WriteRawVarint32((uint) length);
         }
 
         #endregion
@@ -470,6 +361,8 @@ namespace Google.Protobuf
         /// <summary>
         /// Encodes and writes a tag.
         /// </summary>
+        /// <param name="fieldNumber">The number of the field to write the tag for</param>
+        /// <param name="type">The wire format type of the tag to write</param>
         public void WriteTag(int fieldNumber, WireFormat.WireType type)
         {
             WriteRawVarint32(WireFormat.MakeTag(fieldNumber, type));
@@ -478,6 +371,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes an already-encoded tag.
         /// </summary>
+        /// <param name="tag">The encoded tag</param>
         public void WriteTag(uint tag)
         {
             WriteRawVarint32(tag);
@@ -486,6 +380,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes the given single-byte tag directly to the stream.
         /// </summary>
+        /// <param name="b1">The encoded tag</param>
         public void WriteRawTag(byte b1)
         {
             WriteRawByte(b1);
@@ -494,6 +389,8 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes the given two-byte tag directly to the stream.
         /// </summary>
+        /// <param name="b1">The first byte of the encoded tag</param>
+        /// <param name="b2">The second byte of the encoded tag</param>
         public void WriteRawTag(byte b1, byte b2)
         {
             WriteRawByte(b1);
@@ -503,6 +400,9 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes the given three-byte tag directly to the stream.
         /// </summary>
+        /// <param name="b1">The first byte of the encoded tag</param>
+        /// <param name="b2">The second byte of the encoded tag</param>
+        /// <param name="b3">The third byte of the encoded tag</param>
         public void WriteRawTag(byte b1, byte b2, byte b3)
         {
             WriteRawByte(b1);
@@ -513,6 +413,10 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes the given four-byte tag directly to the stream.
         /// </summary>
+        /// <param name="b1">The first byte of the encoded tag</param>
+        /// <param name="b2">The second byte of the encoded tag</param>
+        /// <param name="b3">The third byte of the encoded tag</param>
+        /// <param name="b4">The fourth byte of the encoded tag</param>
         public void WriteRawTag(byte b1, byte b2, byte b3, byte b4)
         {
             WriteRawByte(b1);
@@ -524,6 +428,11 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes the given five-byte tag directly to the stream.
         /// </summary>
+        /// <param name="b1">The first byte of the encoded tag</param>
+        /// <param name="b2">The second byte of the encoded tag</param>
+        /// <param name="b3">The third byte of the encoded tag</param>
+        /// <param name="b4">The fourth byte of the encoded tag</param>
+        /// <param name="b5">The fifth byte of the encoded tag</param>
         public void WriteRawTag(byte b1, byte b2, byte b3, byte b4, byte b5)
         {
             WriteRawByte(b1);
@@ -534,178 +443,13 @@ namespace Google.Protobuf
         }
         #endregion
 
-        #region Write packed array members
-        // TODO(jonskeet): A lot of these are really inefficient, due to method group conversions. Fix!
-        // (Alternatively, add extension methods to RepeatedField, accepting the Write* methods via delegates too.)
-        public void WritePackedBoolArray(RepeatedField<bool> list)
-        {
-            uint size = (uint)list.Count;
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteBool(value);
-            }
-        }
-
-        public void WritePackedInt32Array(RepeatedField<int> list)
-        {
-            uint size = list.CalculateSize(ComputeInt32Size);
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteInt32(value);
-            }
-        }
-
-        public void WritePackedSInt32Array(RepeatedField<int> list)
-        {
-            uint size = list.CalculateSize(ComputeSInt32Size);
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteSInt32(value);
-            }
-        }
-
-        public void WritePackedUInt32Array(RepeatedField<uint> list)
-        {
-            uint size = list.CalculateSize(ComputeUInt32Size);
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteUInt32(value);
-            }
-        }
-
-        public void WritePackedFixed32Array(RepeatedField<uint> list)
-        {
-            uint size = (uint) list.Count * 4;
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteFixed32(value);
-            }
-        }
-
-        public void WritePackedSFixed32Array(RepeatedField<int> list)
-        {
-            uint size = (uint) list.Count * 4;
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteSFixed32(value);
-            }
-        }
-
-        public void WritePackedInt64Array(RepeatedField<long> list)
-        {
-            uint size = list.CalculateSize(ComputeInt64Size);
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteInt64(value);
-            }
-        }
-
-        public void WritePackedSInt64Array(RepeatedField<long> list)
-        {
-            uint size = list.CalculateSize(ComputeSInt64Size);
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteSInt64(value);
-            }
-        }
-
-        public void WritePackedUInt64Array(RepeatedField<ulong> list)
-        {
-            if (list.Count == 0)
-            {
-                return;
-            }
-            uint size = list.CalculateSize(ComputeUInt64Size);
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteUInt64(value);
-            }
-        }
-
-        public void WritePackedFixed64Array(RepeatedField<ulong> list)
-        {
-            uint size = (uint) list.Count * 8;
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteFixed64(value);
-            }
-        }
-
-        public void WritePackedSFixed64Array(RepeatedField<long> list)
-        {
-            uint size = (uint) list.Count * 8;
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteSFixed64(value);
-            }
-        }
-
-        public void WritePackedDoubleArray(RepeatedField<double> list)
-        {
-            uint size = (uint) list.Count * 8;
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteDouble(value);
-            }
-        }
-
-        public void WritePackedFloatArray(RepeatedField<float> list)
-        {
-            if (list.Count == 0)
-            {
-                return;
-            }
-            uint size = (uint) list.Count * 4;
-            WriteRawVarint32(size);
-            foreach (var value in list)
-            {
-                WriteFloat(value);
-            }
-        }
-
-        public void WritePackedEnumArray<T>(RepeatedField<T> list)
-            where T : struct, IComparable, IFormattable
-        {
-            if (list.Count == 0)
-            {
-                return;
-            }
-            // Bit of a hack, to access the values as ints
-            var iterator = list.GetInt32Enumerator();
-            uint size = 0;
-            while (iterator.MoveNext())
-            {
-                size += (uint) ComputeEnumSize(iterator.Current);
-            }
-            iterator.Reset();
-            WriteRawVarint32(size);
-            while (iterator.MoveNext())
-            {
-                WriteEnum(iterator.Current);
-            }
-        }
-
-        #endregion
-
         #region Underlying writing primitives
         /// <summary>
         /// Writes a 32 bit value as a varint. The fast route is taken when
         /// there's enough buffer space left to whizz through without checking
         /// for each byte; otherwise, we resort to calling WriteRawByte each time.
         /// </summary>
-        public void WriteRawVarint32(uint value)
+        internal void WriteRawVarint32(uint value)
         {
             // Optimize for the common case of a single byte value
             if (value < 128 && position < limit)
@@ -734,7 +478,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WriteRawVarint64(ulong value)
+        internal void WriteRawVarint64(ulong value)
         {
             while (value > 127 && position < limit)
             {
@@ -756,7 +500,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WriteRawLittleEndian32(uint value)
+        internal void WriteRawLittleEndian32(uint value)
         {
             if (position + 4 > limit)
             {
@@ -774,7 +518,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WriteRawLittleEndian64(ulong value)
+        internal void WriteRawLittleEndian64(ulong value)
         {
             if (position + 8 > limit)
             {
@@ -800,7 +544,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void WriteRawByte(byte value)
+        internal void WriteRawByte(byte value)
         {
             if (position == limit)
             {
@@ -810,7 +554,7 @@ namespace Google.Protobuf
             buffer[position++] = value;
         }
 
-        public void WriteRawByte(uint value)
+        internal void WriteRawByte(uint value)
         {
             WriteRawByte((byte) value);
         }
@@ -818,7 +562,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes out an array of bytes.
         /// </summary>
-        public void WriteRawBytes(byte[] value)
+        internal void WriteRawBytes(byte[] value)
         {
             WriteRawBytes(value, 0, value.Length);
         }
@@ -826,7 +570,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Writes out part of an array of bytes.
         /// </summary>
-        public void WriteRawBytes(byte[] value, int offset, int length)
+        internal void WriteRawBytes(byte[] value, int offset, int length)
         {
             if (limit - position >= length)
             {
@@ -873,7 +617,7 @@ namespace Google.Protobuf
         /// sign-extended to 64 bits to be varint encoded, thus always taking
         /// 10 bytes on the wire.)
         /// </remarks>
-        public static uint EncodeZigZag32(int n)
+        internal static uint EncodeZigZag32(int n)
         {
             // Note:  the right-shift must be arithmetic
             return (uint) ((n << 1) ^ (n >> 31));
@@ -888,7 +632,7 @@ namespace Google.Protobuf
         /// sign-extended to 64 bits to be varint encoded, thus always taking
         /// 10 bytes on the wire.)
         /// </remarks>
-        public static ulong EncodeZigZag64(long n)
+        internal static ulong EncodeZigZag64(long n)
         {
             return (ulong) ((n << 1) ^ (n >> 63));
         }

@@ -742,132 +742,173 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int RepeatedInt32FieldNumber = 31;
+    private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
+        = pb::FieldCodec.ForInt32(250);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> RepeatedInt32 {
       get { return repeatedInt32_; }
     }
 
     public const int RepeatedInt64FieldNumber = 32;
+    private static readonly pb::FieldCodec<long> _repeated_repeatedInt64_codec
+        = pb::FieldCodec.ForInt64(258);
     private readonly pbc::RepeatedField<long> repeatedInt64_ = new pbc::RepeatedField<long>();
     public pbc::RepeatedField<long> RepeatedInt64 {
       get { return repeatedInt64_; }
     }
 
     public const int RepeatedUint32FieldNumber = 33;
+    private static readonly pb::FieldCodec<uint> _repeated_repeatedUint32_codec
+        = pb::FieldCodec.ForUInt32(266);
     private readonly pbc::RepeatedField<uint> repeatedUint32_ = new pbc::RepeatedField<uint>();
     public pbc::RepeatedField<uint> RepeatedUint32 {
       get { return repeatedUint32_; }
     }
 
     public const int RepeatedUint64FieldNumber = 34;
+    private static readonly pb::FieldCodec<ulong> _repeated_repeatedUint64_codec
+        = pb::FieldCodec.ForUInt64(274);
     private readonly pbc::RepeatedField<ulong> repeatedUint64_ = new pbc::RepeatedField<ulong>();
     public pbc::RepeatedField<ulong> RepeatedUint64 {
       get { return repeatedUint64_; }
     }
 
     public const int RepeatedSint32FieldNumber = 35;
+    private static readonly pb::FieldCodec<int> _repeated_repeatedSint32_codec
+        = pb::FieldCodec.ForSInt32(282);
     private readonly pbc::RepeatedField<int> repeatedSint32_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> RepeatedSint32 {
       get { return repeatedSint32_; }
     }
 
     public const int RepeatedSint64FieldNumber = 36;
+    private static readonly pb::FieldCodec<long> _repeated_repeatedSint64_codec
+        = pb::FieldCodec.ForSInt64(290);
     private readonly pbc::RepeatedField<long> repeatedSint64_ = new pbc::RepeatedField<long>();
     public pbc::RepeatedField<long> RepeatedSint64 {
       get { return repeatedSint64_; }
     }
 
     public const int RepeatedFixed32FieldNumber = 37;
+    private static readonly pb::FieldCodec<uint> _repeated_repeatedFixed32_codec
+        = pb::FieldCodec.ForFixed32(298);
     private readonly pbc::RepeatedField<uint> repeatedFixed32_ = new pbc::RepeatedField<uint>();
     public pbc::RepeatedField<uint> RepeatedFixed32 {
       get { return repeatedFixed32_; }
     }
 
     public const int RepeatedFixed64FieldNumber = 38;
+    private static readonly pb::FieldCodec<ulong> _repeated_repeatedFixed64_codec
+        = pb::FieldCodec.ForFixed64(306);
     private readonly pbc::RepeatedField<ulong> repeatedFixed64_ = new pbc::RepeatedField<ulong>();
     public pbc::RepeatedField<ulong> RepeatedFixed64 {
       get { return repeatedFixed64_; }
     }
 
     public const int RepeatedSfixed32FieldNumber = 39;
+    private static readonly pb::FieldCodec<int> _repeated_repeatedSfixed32_codec
+        = pb::FieldCodec.ForSFixed32(314);
     private readonly pbc::RepeatedField<int> repeatedSfixed32_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> RepeatedSfixed32 {
       get { return repeatedSfixed32_; }
     }
 
     public const int RepeatedSfixed64FieldNumber = 40;
+    private static readonly pb::FieldCodec<long> _repeated_repeatedSfixed64_codec
+        = pb::FieldCodec.ForSFixed64(322);
     private readonly pbc::RepeatedField<long> repeatedSfixed64_ = new pbc::RepeatedField<long>();
     public pbc::RepeatedField<long> RepeatedSfixed64 {
       get { return repeatedSfixed64_; }
     }
 
     public const int RepeatedFloatFieldNumber = 41;
+    private static readonly pb::FieldCodec<float> _repeated_repeatedFloat_codec
+        = pb::FieldCodec.ForFloat(330);
     private readonly pbc::RepeatedField<float> repeatedFloat_ = new pbc::RepeatedField<float>();
     public pbc::RepeatedField<float> RepeatedFloat {
       get { return repeatedFloat_; }
     }
 
     public const int RepeatedDoubleFieldNumber = 42;
+    private static readonly pb::FieldCodec<double> _repeated_repeatedDouble_codec
+        = pb::FieldCodec.ForDouble(338);
     private readonly pbc::RepeatedField<double> repeatedDouble_ = new pbc::RepeatedField<double>();
     public pbc::RepeatedField<double> RepeatedDouble {
       get { return repeatedDouble_; }
     }
 
     public const int RepeatedBoolFieldNumber = 43;
+    private static readonly pb::FieldCodec<bool> _repeated_repeatedBool_codec
+        = pb::FieldCodec.ForBool(346);
     private readonly pbc::RepeatedField<bool> repeatedBool_ = new pbc::RepeatedField<bool>();
     public pbc::RepeatedField<bool> RepeatedBool {
       get { return repeatedBool_; }
     }
 
     public const int RepeatedStringFieldNumber = 44;
+    private static readonly pb::FieldCodec<string> _repeated_repeatedString_codec
+        = pb::FieldCodec.ForString(354);
     private readonly pbc::RepeatedField<string> repeatedString_ = new pbc::RepeatedField<string>();
     public pbc::RepeatedField<string> RepeatedString {
       get { return repeatedString_; }
     }
 
     public const int RepeatedBytesFieldNumber = 45;
+    private static readonly pb::FieldCodec<pb::ByteString> _repeated_repeatedBytes_codec
+        = pb::FieldCodec.ForBytes(362);
     private readonly pbc::RepeatedField<pb::ByteString> repeatedBytes_ = new pbc::RepeatedField<pb::ByteString>();
     public pbc::RepeatedField<pb::ByteString> RepeatedBytes {
       get { return repeatedBytes_; }
     }
 
     public const int RepeatedNestedMessageFieldNumber = 48;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage> _repeated_repeatedNestedMessage_codec
+        = pb::FieldCodec.ForMessage(386, global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage> repeatedNestedMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage>();
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage> RepeatedNestedMessage {
       get { return repeatedNestedMessage_; }
     }
 
     public const int RepeatedForeignMessageFieldNumber = 49;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignMessage> _repeated_repeatedForeignMessage_codec
+        = pb::FieldCodec.ForMessage(394, global::Google.Protobuf.TestProtos.ForeignMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage> repeatedForeignMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage>();
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage> RepeatedForeignMessage {
       get { return repeatedForeignMessage_; }
     }
 
     public const int RepeatedImportMessageFieldNumber = 50;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ImportMessage> _repeated_repeatedImportMessage_codec
+        = pb::FieldCodec.ForMessage(402, global::Google.Protobuf.TestProtos.ImportMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportMessage> repeatedImportMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportMessage>();
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportMessage> RepeatedImportMessage {
       get { return repeatedImportMessage_; }
     }
 
     public const int RepeatedNestedEnumFieldNumber = 51;
-    private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum> repeatedNestedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum>();
+    private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum> _repeated_repeatedNestedEnum_codec
+        = pb::FieldCodec.ForEnum(410, x => (int) x, x => (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) x);private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum> repeatedNestedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum>();
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum> RepeatedNestedEnum {
       get { return repeatedNestedEnum_; }
     }
 
     public const int RepeatedForeignEnumFieldNumber = 52;
-    private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> repeatedForeignEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
+    private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignEnum> _repeated_repeatedForeignEnum_codec
+        = pb::FieldCodec.ForEnum(418, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> repeatedForeignEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> RepeatedForeignEnum {
       get { return repeatedForeignEnum_; }
     }
 
     public const int RepeatedImportEnumFieldNumber = 53;
-    private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum> repeatedImportEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum>();
+    private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ImportEnum> _repeated_repeatedImportEnum_codec
+        = pb::FieldCodec.ForEnum(426, x => (int) x, x => (global::Google.Protobuf.TestProtos.ImportEnum) x);private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum> repeatedImportEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum>();
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum> RepeatedImportEnum {
       get { return repeatedImportEnum_; }
     }
 
     public const int RepeatedPublicImportMessageFieldNumber = 54;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.PublicImportMessage> _repeated_repeatedPublicImportMessage_codec
+        = pb::FieldCodec.ForMessage(434, global::Google.Protobuf.TestProtos.PublicImportMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage> repeatedPublicImportMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage>();
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage> RepeatedPublicImportMessage {
       get { return repeatedPublicImportMessage_; }
@@ -1136,88 +1177,28 @@ namespace Google.Protobuf.TestProtos {
         output.WriteRawTag(210, 1);
         output.WriteMessage(SinglePublicImportMessage);
       }
-      if (repeatedInt32_.Count > 0) {
-        output.WriteRawTag(250, 1);
-        output.WritePackedInt32Array(repeatedInt32_);
-      }
-      if (repeatedInt64_.Count > 0) {
-        output.WriteRawTag(130, 2);
-        output.WritePackedInt64Array(repeatedInt64_);
-      }
-      if (repeatedUint32_.Count > 0) {
-        output.WriteRawTag(138, 2);
-        output.WritePackedUInt32Array(repeatedUint32_);
-      }
-      if (repeatedUint64_.Count > 0) {
-        output.WriteRawTag(146, 2);
-        output.WritePackedUInt64Array(repeatedUint64_);
-      }
-      if (repeatedSint32_.Count > 0) {
-        output.WriteRawTag(154, 2);
-        output.WritePackedSInt32Array(repeatedSint32_);
-      }
-      if (repeatedSint64_.Count > 0) {
-        output.WriteRawTag(162, 2);
-        output.WritePackedSInt64Array(repeatedSint64_);
-      }
-      if (repeatedFixed32_.Count > 0) {
-        output.WriteRawTag(170, 2);
-        output.WritePackedFixed32Array(repeatedFixed32_);
-      }
-      if (repeatedFixed64_.Count > 0) {
-        output.WriteRawTag(178, 2);
-        output.WritePackedFixed64Array(repeatedFixed64_);
-      }
-      if (repeatedSfixed32_.Count > 0) {
-        output.WriteRawTag(186, 2);
-        output.WritePackedSFixed32Array(repeatedSfixed32_);
-      }
-      if (repeatedSfixed64_.Count > 0) {
-        output.WriteRawTag(194, 2);
-        output.WritePackedSFixed64Array(repeatedSfixed64_);
-      }
-      if (repeatedFloat_.Count > 0) {
-        output.WriteRawTag(202, 2);
-        output.WritePackedFloatArray(repeatedFloat_);
-      }
-      if (repeatedDouble_.Count > 0) {
-        output.WriteRawTag(210, 2);
-        output.WritePackedDoubleArray(repeatedDouble_);
-      }
-      if (repeatedBool_.Count > 0) {
-        output.WriteRawTag(218, 2);
-        output.WritePackedBoolArray(repeatedBool_);
-      }
-      if (repeatedString_.Count > 0) {
-        output.WriteStringArray(44, repeatedString_);
-      }
-      if (repeatedBytes_.Count > 0) {
-        output.WriteBytesArray(45, repeatedBytes_);
-      }
-      if (repeatedNestedMessage_.Count > 0) {
-        output.WriteMessageArray(48, repeatedNestedMessage_);
-      }
-      if (repeatedForeignMessage_.Count > 0) {
-        output.WriteMessageArray(49, repeatedForeignMessage_);
-      }
-      if (repeatedImportMessage_.Count > 0) {
-        output.WriteMessageArray(50, repeatedImportMessage_);
-      }
-      if (repeatedNestedEnum_.Count > 0) {
-        output.WriteRawTag(154, 3);
-        output.WritePackedEnumArray(repeatedNestedEnum_);
-      }
-      if (repeatedForeignEnum_.Count > 0) {
-        output.WriteRawTag(162, 3);
-        output.WritePackedEnumArray(repeatedForeignEnum_);
-      }
-      if (repeatedImportEnum_.Count > 0) {
-        output.WriteRawTag(170, 3);
-        output.WritePackedEnumArray(repeatedImportEnum_);
-      }
-      if (repeatedPublicImportMessage_.Count > 0) {
-        output.WriteMessageArray(54, repeatedPublicImportMessage_);
-      }
+      repeatedInt32_.WriteTo(output, _repeated_repeatedInt32_codec);
+      repeatedInt64_.WriteTo(output, _repeated_repeatedInt64_codec);
+      repeatedUint32_.WriteTo(output, _repeated_repeatedUint32_codec);
+      repeatedUint64_.WriteTo(output, _repeated_repeatedUint64_codec);
+      repeatedSint32_.WriteTo(output, _repeated_repeatedSint32_codec);
+      repeatedSint64_.WriteTo(output, _repeated_repeatedSint64_codec);
+      repeatedFixed32_.WriteTo(output, _repeated_repeatedFixed32_codec);
+      repeatedFixed64_.WriteTo(output, _repeated_repeatedFixed64_codec);
+      repeatedSfixed32_.WriteTo(output, _repeated_repeatedSfixed32_codec);
+      repeatedSfixed64_.WriteTo(output, _repeated_repeatedSfixed64_codec);
+      repeatedFloat_.WriteTo(output, _repeated_repeatedFloat_codec);
+      repeatedDouble_.WriteTo(output, _repeated_repeatedDouble_codec);
+      repeatedBool_.WriteTo(output, _repeated_repeatedBool_codec);
+      repeatedString_.WriteTo(output, _repeated_repeatedString_codec);
+      repeatedBytes_.WriteTo(output, _repeated_repeatedBytes_codec);
+      repeatedNestedMessage_.WriteTo(output, _repeated_repeatedNestedMessage_codec);
+      repeatedForeignMessage_.WriteTo(output, _repeated_repeatedForeignMessage_codec);
+      repeatedImportMessage_.WriteTo(output, _repeated_repeatedImportMessage_codec);
+      repeatedNestedEnum_.WriteTo(output, _repeated_repeatedNestedEnum_codec);
+      repeatedForeignEnum_.WriteTo(output, _repeated_repeatedForeignEnum_codec);
+      repeatedImportEnum_.WriteTo(output, _repeated_repeatedImportEnum_codec);
+      repeatedPublicImportMessage_.WriteTo(output, _repeated_repeatedPublicImportMessage_codec);
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
         output.WriteRawTag(248, 6);
         output.WriteUInt32(OneofUint32);
@@ -1304,160 +1285,28 @@ namespace Google.Protobuf.TestProtos {
       if (singlePublicImportMessage_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(SinglePublicImportMessage);
       }
-      if (repeatedInt32_.Count > 0) {
-        int dataSize = 0;
-        foreach (int element in repeatedInt32_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedInt64_.Count > 0) {
-        int dataSize = 0;
-        foreach (long element in repeatedInt64_) {
-          dataSize += pb::CodedOutputStream.ComputeInt64Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedUint32_.Count > 0) {
-        int dataSize = 0;
-        foreach (uint element in repeatedUint32_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt32Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedUint64_.Count > 0) {
-        int dataSize = 0;
-        foreach (ulong element in repeatedUint64_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt64Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedSint32_.Count > 0) {
-        int dataSize = 0;
-        foreach (int element in repeatedSint32_) {
-          dataSize += pb::CodedOutputStream.ComputeSInt32Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedSint64_.Count > 0) {
-        int dataSize = 0;
-        foreach (long element in repeatedSint64_) {
-          dataSize += pb::CodedOutputStream.ComputeSInt64Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedFixed32_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 4 * repeatedFixed32_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedFixed64_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 8 * repeatedFixed64_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedSfixed32_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 4 * repeatedSfixed32_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedSfixed64_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 8 * repeatedSfixed64_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedFloat_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 4 * repeatedFloat_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedDouble_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 8 * repeatedDouble_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedBool_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 1 * repeatedBool_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedString_.Count > 0) {
-        int dataSize = 0;
-        foreach (string element in repeatedString_) {
-          dataSize += pb::CodedOutputStream.ComputeStringSize(element);
-        }
-        size += dataSize;
-        size += 2 * repeatedString_.Count;
-      }
-      if (repeatedBytes_.Count > 0) {
-        int dataSize = 0;
-        foreach (pb::ByteString element in repeatedBytes_) {
-          dataSize += pb::CodedOutputStream.ComputeBytesSize(element);
-        }
-        size += dataSize;
-        size += 2 * repeatedBytes_.Count;
-      }
-      if (repeatedNestedMessage_.Count > 0) {
-        foreach (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage element in repeatedNestedMessage_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 2 * repeatedNestedMessage_.Count;
-      }
-      if (repeatedForeignMessage_.Count > 0) {
-        foreach (global::Google.Protobuf.TestProtos.ForeignMessage element in repeatedForeignMessage_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 2 * repeatedForeignMessage_.Count;
-      }
-      if (repeatedImportMessage_.Count > 0) {
-        foreach (global::Google.Protobuf.TestProtos.ImportMessage element in repeatedImportMessage_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 2 * repeatedImportMessage_.Count;
-      }
-      if (repeatedNestedEnum_.Count > 0) {
-        int dataSize = 0;
-        foreach (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum element in repeatedNestedEnum_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
-      }
-      if (repeatedForeignEnum_.Count > 0) {
-        int dataSize = 0;
-        foreach (global::Google.Protobuf.TestProtos.ForeignEnum element in repeatedForeignEnum_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
-      }
-      if (repeatedImportEnum_.Count > 0) {
-        int dataSize = 0;
-        foreach (global::Google.Protobuf.TestProtos.ImportEnum element in repeatedImportEnum_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
-      }
-      if (repeatedPublicImportMessage_.Count > 0) {
-        foreach (global::Google.Protobuf.TestProtos.PublicImportMessage element in repeatedPublicImportMessage_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 2 * repeatedPublicImportMessage_.Count;
-      }
+      size += repeatedInt32_.CalculateSize(_repeated_repeatedInt32_codec);
+      size += repeatedInt64_.CalculateSize(_repeated_repeatedInt64_codec);
+      size += repeatedUint32_.CalculateSize(_repeated_repeatedUint32_codec);
+      size += repeatedUint64_.CalculateSize(_repeated_repeatedUint64_codec);
+      size += repeatedSint32_.CalculateSize(_repeated_repeatedSint32_codec);
+      size += repeatedSint64_.CalculateSize(_repeated_repeatedSint64_codec);
+      size += repeatedFixed32_.CalculateSize(_repeated_repeatedFixed32_codec);
+      size += repeatedFixed64_.CalculateSize(_repeated_repeatedFixed64_codec);
+      size += repeatedSfixed32_.CalculateSize(_repeated_repeatedSfixed32_codec);
+      size += repeatedSfixed64_.CalculateSize(_repeated_repeatedSfixed64_codec);
+      size += repeatedFloat_.CalculateSize(_repeated_repeatedFloat_codec);
+      size += repeatedDouble_.CalculateSize(_repeated_repeatedDouble_codec);
+      size += repeatedBool_.CalculateSize(_repeated_repeatedBool_codec);
+      size += repeatedString_.CalculateSize(_repeated_repeatedString_codec);
+      size += repeatedBytes_.CalculateSize(_repeated_repeatedBytes_codec);
+      size += repeatedNestedMessage_.CalculateSize(_repeated_repeatedNestedMessage_codec);
+      size += repeatedForeignMessage_.CalculateSize(_repeated_repeatedForeignMessage_codec);
+      size += repeatedImportMessage_.CalculateSize(_repeated_repeatedImportMessage_codec);
+      size += repeatedNestedEnum_.CalculateSize(_repeated_repeatedNestedEnum_codec);
+      size += repeatedForeignEnum_.CalculateSize(_repeated_repeatedForeignEnum_codec);
+      size += repeatedImportEnum_.CalculateSize(_repeated_repeatedImportEnum_codec);
+      size += repeatedPublicImportMessage_.CalculateSize(_repeated_repeatedPublicImportMessage_codec);
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
         size += 2 + pb::CodedOutputStream.ComputeUInt32Size(OneofUint32);
       }
@@ -1707,106 +1556,106 @@ namespace Google.Protobuf.TestProtos {
           }
           case 250:
           case 248: {
-            input.ReadInt32Array(repeatedInt32_);
+            repeatedInt32_.AddEntriesFrom(input, _repeated_repeatedInt32_codec);
             break;
           }
           case 258:
           case 256: {
-            input.ReadInt64Array(repeatedInt64_);
+            repeatedInt64_.AddEntriesFrom(input, _repeated_repeatedInt64_codec);
             break;
           }
           case 266:
           case 264: {
-            input.ReadUInt32Array(repeatedUint32_);
+            repeatedUint32_.AddEntriesFrom(input, _repeated_repeatedUint32_codec);
             break;
           }
           case 274:
           case 272: {
-            input.ReadUInt64Array(repeatedUint64_);
+            repeatedUint64_.AddEntriesFrom(input, _repeated_repeatedUint64_codec);
             break;
           }
           case 282:
           case 280: {
-            input.ReadSInt32Array(repeatedSint32_);
+            repeatedSint32_.AddEntriesFrom(input, _repeated_repeatedSint32_codec);
             break;
           }
           case 290:
           case 288: {
-            input.ReadSInt64Array(repeatedSint64_);
+            repeatedSint64_.AddEntriesFrom(input, _repeated_repeatedSint64_codec);
             break;
           }
           case 298:
           case 301: {
-            input.ReadFixed32Array(repeatedFixed32_);
+            repeatedFixed32_.AddEntriesFrom(input, _repeated_repeatedFixed32_codec);
             break;
           }
           case 306:
           case 305: {
-            input.ReadFixed64Array(repeatedFixed64_);
+            repeatedFixed64_.AddEntriesFrom(input, _repeated_repeatedFixed64_codec);
             break;
           }
           case 314:
           case 317: {
-            input.ReadSFixed32Array(repeatedSfixed32_);
+            repeatedSfixed32_.AddEntriesFrom(input, _repeated_repeatedSfixed32_codec);
             break;
           }
           case 322:
           case 321: {
-            input.ReadSFixed64Array(repeatedSfixed64_);
+            repeatedSfixed64_.AddEntriesFrom(input, _repeated_repeatedSfixed64_codec);
             break;
           }
           case 330:
           case 333: {
-            input.ReadFloatArray(repeatedFloat_);
+            repeatedFloat_.AddEntriesFrom(input, _repeated_repeatedFloat_codec);
             break;
           }
           case 338:
           case 337: {
-            input.ReadDoubleArray(repeatedDouble_);
+            repeatedDouble_.AddEntriesFrom(input, _repeated_repeatedDouble_codec);
             break;
           }
           case 346:
           case 344: {
-            input.ReadBoolArray(repeatedBool_);
+            repeatedBool_.AddEntriesFrom(input, _repeated_repeatedBool_codec);
             break;
           }
           case 354: {
-            input.ReadStringArray(repeatedString_);
+            repeatedString_.AddEntriesFrom(input, _repeated_repeatedString_codec);
             break;
           }
           case 362: {
-            input.ReadBytesArray(repeatedBytes_);
+            repeatedBytes_.AddEntriesFrom(input, _repeated_repeatedBytes_codec);
             break;
           }
           case 386: {
-            input.ReadMessageArray(repeatedNestedMessage_, global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage.Parser);
+            repeatedNestedMessage_.AddEntriesFrom(input, _repeated_repeatedNestedMessage_codec);
             break;
           }
           case 394: {
-            input.ReadMessageArray(repeatedForeignMessage_, global::Google.Protobuf.TestProtos.ForeignMessage.Parser);
+            repeatedForeignMessage_.AddEntriesFrom(input, _repeated_repeatedForeignMessage_codec);
             break;
           }
           case 402: {
-            input.ReadMessageArray(repeatedImportMessage_, global::Google.Protobuf.TestProtos.ImportMessage.Parser);
+            repeatedImportMessage_.AddEntriesFrom(input, _repeated_repeatedImportMessage_codec);
             break;
           }
           case 410:
           case 408: {
-            input.ReadEnumArray<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum>(repeatedNestedEnum_);
+            repeatedNestedEnum_.AddEntriesFrom(input, _repeated_repeatedNestedEnum_codec);
             break;
           }
           case 418:
           case 416: {
-            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ForeignEnum>(repeatedForeignEnum_);
+            repeatedForeignEnum_.AddEntriesFrom(input, _repeated_repeatedForeignEnum_codec);
             break;
           }
           case 426:
           case 424: {
-            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ImportEnum>(repeatedImportEnum_);
+            repeatedImportEnum_.AddEntriesFrom(input, _repeated_repeatedImportEnum_codec);
             break;
           }
           case 434: {
-            input.ReadMessageArray(repeatedPublicImportMessage_, global::Google.Protobuf.TestProtos.PublicImportMessage.Parser);
+            repeatedPublicImportMessage_.AddEntriesFrom(input, _repeated_repeatedPublicImportMessage_codec);
             break;
           }
           case 888: {
@@ -2022,6 +1871,8 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int RepeatedChildFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.NestedTestAllTypes> _repeated_repeatedChild_codec
+        = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.TestProtos.NestedTestAllTypes.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.NestedTestAllTypes> repeatedChild_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.NestedTestAllTypes>();
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.NestedTestAllTypes> RepeatedChild {
       get { return repeatedChild_; }
@@ -2061,9 +1912,7 @@ namespace Google.Protobuf.TestProtos {
         output.WriteRawTag(18);
         output.WriteMessage(Payload);
       }
-      if (repeatedChild_.Count > 0) {
-        output.WriteMessageArray(3, repeatedChild_);
-      }
+      repeatedChild_.WriteTo(output, _repeated_repeatedChild_codec);
     }
 
     public int CalculateSize() {
@@ -2074,12 +1923,7 @@ namespace Google.Protobuf.TestProtos {
       if (payload_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Payload);
       }
-      if (repeatedChild_.Count > 0) {
-        foreach (global::Google.Protobuf.TestProtos.NestedTestAllTypes element in repeatedChild_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * repeatedChild_.Count;
-      }
+      size += repeatedChild_.CalculateSize(_repeated_repeatedChild_codec);
       return size;
     }
 
@@ -2128,7 +1972,7 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 26: {
-            input.ReadMessageArray(repeatedChild_, global::Google.Protobuf.TestProtos.NestedTestAllTypes.Parser);
+            repeatedChild_.AddEntriesFrom(input, _repeated_repeatedChild_codec);
             break;
           }
         }
@@ -3196,24 +3040,31 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int RepeatedPrimitiveFieldFieldNumber = 7;
+    private static readonly pb::FieldCodec<int> _repeated_repeatedPrimitiveField_codec
+        = pb::FieldCodec.ForInt32(58);
     private readonly pbc::RepeatedField<int> repeatedPrimitiveField_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> RepeatedPrimitiveField {
       get { return repeatedPrimitiveField_; }
     }
 
     public const int RepeatedStringFieldFieldNumber = 8;
+    private static readonly pb::FieldCodec<string> _repeated_repeatedStringField_codec
+        = pb::FieldCodec.ForString(66);
     private readonly pbc::RepeatedField<string> repeatedStringField_ = new pbc::RepeatedField<string>();
     public pbc::RepeatedField<string> RepeatedStringField {
       get { return repeatedStringField_; }
     }
 
     public const int RepeatedEnumFieldFieldNumber = 9;
-    private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> repeatedEnumField_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
+    private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignEnum> _repeated_repeatedEnumField_codec
+        = pb::FieldCodec.ForEnum(74, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> repeatedEnumField_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> RepeatedEnumField {
       get { return repeatedEnumField_; }
     }
 
     public const int RepeatedMessageFieldFieldNumber = 10;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignMessage> _repeated_repeatedMessageField_codec
+        = pb::FieldCodec.ForMessage(82, global::Google.Protobuf.TestProtos.ForeignMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage> repeatedMessageField_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage>();
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage> RepeatedMessageField {
       get { return repeatedMessageField_; }
@@ -3271,20 +3122,10 @@ namespace Google.Protobuf.TestProtos {
         output.WriteRawTag(34);
         output.WriteMessage(MessageField);
       }
-      if (repeatedPrimitiveField_.Count > 0) {
-        output.WriteRawTag(58);
-        output.WritePackedInt32Array(repeatedPrimitiveField_);
-      }
-      if (repeatedStringField_.Count > 0) {
-        output.WriteStringArray(8, repeatedStringField_);
-      }
-      if (repeatedEnumField_.Count > 0) {
-        output.WriteRawTag(74);
-        output.WritePackedEnumArray(repeatedEnumField_);
-      }
-      if (repeatedMessageField_.Count > 0) {
-        output.WriteMessageArray(10, repeatedMessageField_);
-      }
+      repeatedPrimitiveField_.WriteTo(output, _repeated_repeatedPrimitiveField_codec);
+      repeatedStringField_.WriteTo(output, _repeated_repeatedStringField_codec);
+      repeatedEnumField_.WriteTo(output, _repeated_repeatedEnumField_codec);
+      repeatedMessageField_.WriteTo(output, _repeated_repeatedMessageField_codec);
     }
 
     public int CalculateSize() {
@@ -3301,36 +3142,10 @@ namespace Google.Protobuf.TestProtos {
       if (messageField_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(MessageField);
       }
-      if (repeatedPrimitiveField_.Count > 0) {
-        int dataSize = 0;
-        foreach (int element in repeatedPrimitiveField_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
-        }
-        size += dataSize;
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedStringField_.Count > 0) {
-        int dataSize = 0;
-        foreach (string element in repeatedStringField_) {
-          dataSize += pb::CodedOutputStream.ComputeStringSize(element);
-        }
-        size += dataSize;
-        size += 1 * repeatedStringField_.Count;
-      }
-      if (repeatedEnumField_.Count > 0) {
-        int dataSize = 0;
-        foreach (global::Google.Protobuf.TestProtos.ForeignEnum element in repeatedEnumField_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
-        }
-        size += dataSize;
-        size += 1 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
-      }
-      if (repeatedMessageField_.Count > 0) {
-        foreach (global::Google.Protobuf.TestProtos.ForeignMessage element in repeatedMessageField_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * repeatedMessageField_.Count;
-      }
+      size += repeatedPrimitiveField_.CalculateSize(_repeated_repeatedPrimitiveField_codec);
+      size += repeatedStringField_.CalculateSize(_repeated_repeatedStringField_codec);
+      size += repeatedEnumField_.CalculateSize(_repeated_repeatedEnumField_codec);
+      size += repeatedMessageField_.CalculateSize(_repeated_repeatedMessageField_codec);
       return size;
     }
 
@@ -3391,20 +3206,20 @@ namespace Google.Protobuf.TestProtos {
           }
           case 58:
           case 56: {
-            input.ReadInt32Array(repeatedPrimitiveField_);
+            repeatedPrimitiveField_.AddEntriesFrom(input, _repeated_repeatedPrimitiveField_codec);
             break;
           }
           case 66: {
-            input.ReadStringArray(repeatedStringField_);
+            repeatedStringField_.AddEntriesFrom(input, _repeated_repeatedStringField_codec);
             break;
           }
           case 74:
           case 72: {
-            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ForeignEnum>(repeatedEnumField_);
+            repeatedEnumField_.AddEntriesFrom(input, _repeated_repeatedEnumField_codec);
             break;
           }
           case 82: {
-            input.ReadMessageArray(repeatedMessageField_, global::Google.Protobuf.TestProtos.ForeignMessage.Parser);
+            repeatedMessageField_.AddEntriesFrom(input, _repeated_repeatedMessageField_codec);
             break;
           }
         }
@@ -4015,6 +3830,8 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int DataFieldNumber = 1;
+    private static readonly pb::FieldCodec<string> _repeated_data_codec
+        = pb::FieldCodec.ForString(10);
     private readonly pbc::RepeatedField<string> data_ = new pbc::RepeatedField<string>();
     public pbc::RepeatedField<string> Data {
       get { return data_; }
@@ -4042,21 +3859,12 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (data_.Count > 0) {
-        output.WriteStringArray(1, data_);
-      }
+      data_.WriteTo(output, _repeated_data_codec);
     }
 
     public int CalculateSize() {
       int size = 0;
-      if (data_.Count > 0) {
-        int dataSize = 0;
-        foreach (string element in data_) {
-          dataSize += pb::CodedOutputStream.ComputeStringSize(element);
-        }
-        size += dataSize;
-        size += 1 * data_.Count;
-      }
+      size += data_.CalculateSize(_repeated_data_codec);
       return size;
     }
 
@@ -4079,7 +3887,7 @@ namespace Google.Protobuf.TestProtos {
             }
             break;
           case 10: {
-            input.ReadStringArray(data_);
+            data_.AddEntriesFrom(input, _repeated_data_codec);
             break;
           }
         }
@@ -5129,85 +4937,112 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int PackedInt32FieldNumber = 90;
+    private static readonly pb::FieldCodec<int> _repeated_packedInt32_codec
+        = pb::FieldCodec.ForInt32(722);
     private readonly pbc::RepeatedField<int> packedInt32_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> PackedInt32 {
       get { return packedInt32_; }
     }
 
     public const int PackedInt64FieldNumber = 91;
+    private static readonly pb::FieldCodec<long> _repeated_packedInt64_codec
+        = pb::FieldCodec.ForInt64(730);
     private readonly pbc::RepeatedField<long> packedInt64_ = new pbc::RepeatedField<long>();
     public pbc::RepeatedField<long> PackedInt64 {
       get { return packedInt64_; }
     }
 
     public const int PackedUint32FieldNumber = 92;
+    private static readonly pb::FieldCodec<uint> _repeated_packedUint32_codec
+        = pb::FieldCodec.ForUInt32(738);
     private readonly pbc::RepeatedField<uint> packedUint32_ = new pbc::RepeatedField<uint>();
     public pbc::RepeatedField<uint> PackedUint32 {
       get { return packedUint32_; }
     }
 
     public const int PackedUint64FieldNumber = 93;
+    private static readonly pb::FieldCodec<ulong> _repeated_packedUint64_codec
+        = pb::FieldCodec.ForUInt64(746);
     private readonly pbc::RepeatedField<ulong> packedUint64_ = new pbc::RepeatedField<ulong>();
     public pbc::RepeatedField<ulong> PackedUint64 {
       get { return packedUint64_; }
     }
 
     public const int PackedSint32FieldNumber = 94;
+    private static readonly pb::FieldCodec<int> _repeated_packedSint32_codec
+        = pb::FieldCodec.ForSInt32(754);
     private readonly pbc::RepeatedField<int> packedSint32_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> PackedSint32 {
       get { return packedSint32_; }
     }
 
     public const int PackedSint64FieldNumber = 95;
+    private static readonly pb::FieldCodec<long> _repeated_packedSint64_codec
+        = pb::FieldCodec.ForSInt64(762);
     private readonly pbc::RepeatedField<long> packedSint64_ = new pbc::RepeatedField<long>();
     public pbc::RepeatedField<long> PackedSint64 {
       get { return packedSint64_; }
     }
 
     public const int PackedFixed32FieldNumber = 96;
+    private static readonly pb::FieldCodec<uint> _repeated_packedFixed32_codec
+        = pb::FieldCodec.ForFixed32(770);
     private readonly pbc::RepeatedField<uint> packedFixed32_ = new pbc::RepeatedField<uint>();
     public pbc::RepeatedField<uint> PackedFixed32 {
       get { return packedFixed32_; }
     }
 
     public const int PackedFixed64FieldNumber = 97;
+    private static readonly pb::FieldCodec<ulong> _repeated_packedFixed64_codec
+        = pb::FieldCodec.ForFixed64(778);
     private readonly pbc::RepeatedField<ulong> packedFixed64_ = new pbc::RepeatedField<ulong>();
     public pbc::RepeatedField<ulong> PackedFixed64 {
       get { return packedFixed64_; }
     }
 
     public const int PackedSfixed32FieldNumber = 98;
+    private static readonly pb::FieldCodec<int> _repeated_packedSfixed32_codec
+        = pb::FieldCodec.ForSFixed32(786);
     private readonly pbc::RepeatedField<int> packedSfixed32_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> PackedSfixed32 {
       get { return packedSfixed32_; }
     }
 
     public const int PackedSfixed64FieldNumber = 99;
+    private static readonly pb::FieldCodec<long> _repeated_packedSfixed64_codec
+        = pb::FieldCodec.ForSFixed64(794);
     private readonly pbc::RepeatedField<long> packedSfixed64_ = new pbc::RepeatedField<long>();
     public pbc::RepeatedField<long> PackedSfixed64 {
       get { return packedSfixed64_; }
     }
 
     public const int PackedFloatFieldNumber = 100;
+    private static readonly pb::FieldCodec<float> _repeated_packedFloat_codec
+        = pb::FieldCodec.ForFloat(802);
     private readonly pbc::RepeatedField<float> packedFloat_ = new pbc::RepeatedField<float>();
     public pbc::RepeatedField<float> PackedFloat {
       get { return packedFloat_; }
     }
 
     public const int PackedDoubleFieldNumber = 101;
+    private static readonly pb::FieldCodec<double> _repeated_packedDouble_codec
+        = pb::FieldCodec.ForDouble(810);
     private readonly pbc::RepeatedField<double> packedDouble_ = new pbc::RepeatedField<double>();
     public pbc::RepeatedField<double> PackedDouble {
       get { return packedDouble_; }
     }
 
     public const int PackedBoolFieldNumber = 102;
+    private static readonly pb::FieldCodec<bool> _repeated_packedBool_codec
+        = pb::FieldCodec.ForBool(818);
     private readonly pbc::RepeatedField<bool> packedBool_ = new pbc::RepeatedField<bool>();
     public pbc::RepeatedField<bool> PackedBool {
       get { return packedBool_; }
     }
 
     public const int PackedEnumFieldNumber = 103;
-    private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> packedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
+    private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignEnum> _repeated_packedEnum_codec
+        = pb::FieldCodec.ForEnum(826, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> packedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> PackedEnum {
       get { return packedEnum_; }
     }
@@ -5260,164 +5095,38 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (packedInt32_.Count > 0) {
-        output.WriteRawTag(210, 5);
-        output.WritePackedInt32Array(packedInt32_);
-      }
-      if (packedInt64_.Count > 0) {
-        output.WriteRawTag(218, 5);
-        output.WritePackedInt64Array(packedInt64_);
-      }
-      if (packedUint32_.Count > 0) {
-        output.WriteRawTag(226, 5);
-        output.WritePackedUInt32Array(packedUint32_);
-      }
-      if (packedUint64_.Count > 0) {
-        output.WriteRawTag(234, 5);
-        output.WritePackedUInt64Array(packedUint64_);
-      }
-      if (packedSint32_.Count > 0) {
-        output.WriteRawTag(242, 5);
-        output.WritePackedSInt32Array(packedSint32_);
-      }
-      if (packedSint64_.Count > 0) {
-        output.WriteRawTag(250, 5);
-        output.WritePackedSInt64Array(packedSint64_);
-      }
-      if (packedFixed32_.Count > 0) {
-        output.WriteRawTag(130, 6);
-        output.WritePackedFixed32Array(packedFixed32_);
-      }
-      if (packedFixed64_.Count > 0) {
-        output.WriteRawTag(138, 6);
-        output.WritePackedFixed64Array(packedFixed64_);
-      }
-      if (packedSfixed32_.Count > 0) {
-        output.WriteRawTag(146, 6);
-        output.WritePackedSFixed32Array(packedSfixed32_);
-      }
-      if (packedSfixed64_.Count > 0) {
-        output.WriteRawTag(154, 6);
-        output.WritePackedSFixed64Array(packedSfixed64_);
-      }
-      if (packedFloat_.Count > 0) {
-        output.WriteRawTag(162, 6);
-        output.WritePackedFloatArray(packedFloat_);
-      }
-      if (packedDouble_.Count > 0) {
-        output.WriteRawTag(170, 6);
-        output.WritePackedDoubleArray(packedDouble_);
-      }
-      if (packedBool_.Count > 0) {
-        output.WriteRawTag(178, 6);
-        output.WritePackedBoolArray(packedBool_);
-      }
-      if (packedEnum_.Count > 0) {
-        output.WriteRawTag(186, 6);
-        output.WritePackedEnumArray(packedEnum_);
-      }
+      packedInt32_.WriteTo(output, _repeated_packedInt32_codec);
+      packedInt64_.WriteTo(output, _repeated_packedInt64_codec);
+      packedUint32_.WriteTo(output, _repeated_packedUint32_codec);
+      packedUint64_.WriteTo(output, _repeated_packedUint64_codec);
+      packedSint32_.WriteTo(output, _repeated_packedSint32_codec);
+      packedSint64_.WriteTo(output, _repeated_packedSint64_codec);
+      packedFixed32_.WriteTo(output, _repeated_packedFixed32_codec);
+      packedFixed64_.WriteTo(output, _repeated_packedFixed64_codec);
+      packedSfixed32_.WriteTo(output, _repeated_packedSfixed32_codec);
+      packedSfixed64_.WriteTo(output, _repeated_packedSfixed64_codec);
+      packedFloat_.WriteTo(output, _repeated_packedFloat_codec);
+      packedDouble_.WriteTo(output, _repeated_packedDouble_codec);
+      packedBool_.WriteTo(output, _repeated_packedBool_codec);
+      packedEnum_.WriteTo(output, _repeated_packedEnum_codec);
     }
 
     public int CalculateSize() {
       int size = 0;
-      if (packedInt32_.Count > 0) {
-        int dataSize = 0;
-        foreach (int element in packedInt32_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedInt64_.Count > 0) {
-        int dataSize = 0;
-        foreach (long element in packedInt64_) {
-          dataSize += pb::CodedOutputStream.ComputeInt64Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedUint32_.Count > 0) {
-        int dataSize = 0;
-        foreach (uint element in packedUint32_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt32Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedUint64_.Count > 0) {
-        int dataSize = 0;
-        foreach (ulong element in packedUint64_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt64Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedSint32_.Count > 0) {
-        int dataSize = 0;
-        foreach (int element in packedSint32_) {
-          dataSize += pb::CodedOutputStream.ComputeSInt32Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedSint64_.Count > 0) {
-        int dataSize = 0;
-        foreach (long element in packedSint64_) {
-          dataSize += pb::CodedOutputStream.ComputeSInt64Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedFixed32_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 4 * packedFixed32_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedFixed64_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 8 * packedFixed64_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedSfixed32_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 4 * packedSfixed32_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedSfixed64_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 8 * packedSfixed64_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedFloat_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 4 * packedFloat_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedDouble_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 8 * packedDouble_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedBool_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 1 * packedBool_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (packedEnum_.Count > 0) {
-        int dataSize = 0;
-        foreach (global::Google.Protobuf.TestProtos.ForeignEnum element in packedEnum_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeRawVarint32Size((uint) dataSize);
-      }
+      size += packedInt32_.CalculateSize(_repeated_packedInt32_codec);
+      size += packedInt64_.CalculateSize(_repeated_packedInt64_codec);
+      size += packedUint32_.CalculateSize(_repeated_packedUint32_codec);
+      size += packedUint64_.CalculateSize(_repeated_packedUint64_codec);
+      size += packedSint32_.CalculateSize(_repeated_packedSint32_codec);
+      size += packedSint64_.CalculateSize(_repeated_packedSint64_codec);
+      size += packedFixed32_.CalculateSize(_repeated_packedFixed32_codec);
+      size += packedFixed64_.CalculateSize(_repeated_packedFixed64_codec);
+      size += packedSfixed32_.CalculateSize(_repeated_packedSfixed32_codec);
+      size += packedSfixed64_.CalculateSize(_repeated_packedSfixed64_codec);
+      size += packedFloat_.CalculateSize(_repeated_packedFloat_codec);
+      size += packedDouble_.CalculateSize(_repeated_packedDouble_codec);
+      size += packedBool_.CalculateSize(_repeated_packedBool_codec);
+      size += packedEnum_.CalculateSize(_repeated_packedEnum_codec);
       return size;
     }
 
@@ -5454,72 +5163,72 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 722:
           case 720: {
-            input.ReadInt32Array(packedInt32_);
+            packedInt32_.AddEntriesFrom(input, _repeated_packedInt32_codec);
             break;
           }
           case 730:
           case 728: {
-            input.ReadInt64Array(packedInt64_);
+            packedInt64_.AddEntriesFrom(input, _repeated_packedInt64_codec);
             break;
           }
           case 738:
           case 736: {
-            input.ReadUInt32Array(packedUint32_);
+            packedUint32_.AddEntriesFrom(input, _repeated_packedUint32_codec);
             break;
           }
           case 746:
           case 744: {
-            input.ReadUInt64Array(packedUint64_);
+            packedUint64_.AddEntriesFrom(input, _repeated_packedUint64_codec);
             break;
           }
           case 754:
           case 752: {
-            input.ReadSInt32Array(packedSint32_);
+            packedSint32_.AddEntriesFrom(input, _repeated_packedSint32_codec);
             break;
           }
           case 762:
           case 760: {
-            input.ReadSInt64Array(packedSint64_);
+            packedSint64_.AddEntriesFrom(input, _repeated_packedSint64_codec);
             break;
           }
           case 770:
           case 773: {
-            input.ReadFixed32Array(packedFixed32_);
+            packedFixed32_.AddEntriesFrom(input, _repeated_packedFixed32_codec);
             break;
           }
           case 778:
           case 777: {
-            input.ReadFixed64Array(packedFixed64_);
+            packedFixed64_.AddEntriesFrom(input, _repeated_packedFixed64_codec);
             break;
           }
           case 786:
           case 789: {
-            input.ReadSFixed32Array(packedSfixed32_);
+            packedSfixed32_.AddEntriesFrom(input, _repeated_packedSfixed32_codec);
             break;
           }
           case 794:
           case 793: {
-            input.ReadSFixed64Array(packedSfixed64_);
+            packedSfixed64_.AddEntriesFrom(input, _repeated_packedSfixed64_codec);
             break;
           }
           case 802:
           case 805: {
-            input.ReadFloatArray(packedFloat_);
+            packedFloat_.AddEntriesFrom(input, _repeated_packedFloat_codec);
             break;
           }
           case 810:
           case 809: {
-            input.ReadDoubleArray(packedDouble_);
+            packedDouble_.AddEntriesFrom(input, _repeated_packedDouble_codec);
             break;
           }
           case 818:
           case 816: {
-            input.ReadBoolArray(packedBool_);
+            packedBool_.AddEntriesFrom(input, _repeated_packedBool_codec);
             break;
           }
           case 826:
           case 824: {
-            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ForeignEnum>(packedEnum_);
+            packedEnum_.AddEntriesFrom(input, _repeated_packedEnum_codec);
             break;
           }
         }
@@ -5591,85 +5300,112 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int UnpackedInt32FieldNumber = 90;
+    private static readonly pb::FieldCodec<int> _repeated_unpackedInt32_codec
+        = pb::FieldCodec.ForInt32(720);
     private readonly pbc::RepeatedField<int> unpackedInt32_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> UnpackedInt32 {
       get { return unpackedInt32_; }
     }
 
     public const int UnpackedInt64FieldNumber = 91;
+    private static readonly pb::FieldCodec<long> _repeated_unpackedInt64_codec
+        = pb::FieldCodec.ForInt64(728);
     private readonly pbc::RepeatedField<long> unpackedInt64_ = new pbc::RepeatedField<long>();
     public pbc::RepeatedField<long> UnpackedInt64 {
       get { return unpackedInt64_; }
     }
 
     public const int UnpackedUint32FieldNumber = 92;
+    private static readonly pb::FieldCodec<uint> _repeated_unpackedUint32_codec
+        = pb::FieldCodec.ForUInt32(736);
     private readonly pbc::RepeatedField<uint> unpackedUint32_ = new pbc::RepeatedField<uint>();
     public pbc::RepeatedField<uint> UnpackedUint32 {
       get { return unpackedUint32_; }
     }
 
     public const int UnpackedUint64FieldNumber = 93;
+    private static readonly pb::FieldCodec<ulong> _repeated_unpackedUint64_codec
+        = pb::FieldCodec.ForUInt64(744);
     private readonly pbc::RepeatedField<ulong> unpackedUint64_ = new pbc::RepeatedField<ulong>();
     public pbc::RepeatedField<ulong> UnpackedUint64 {
       get { return unpackedUint64_; }
     }
 
     public const int UnpackedSint32FieldNumber = 94;
+    private static readonly pb::FieldCodec<int> _repeated_unpackedSint32_codec
+        = pb::FieldCodec.ForSInt32(752);
     private readonly pbc::RepeatedField<int> unpackedSint32_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> UnpackedSint32 {
       get { return unpackedSint32_; }
     }
 
     public const int UnpackedSint64FieldNumber = 95;
+    private static readonly pb::FieldCodec<long> _repeated_unpackedSint64_codec
+        = pb::FieldCodec.ForSInt64(760);
     private readonly pbc::RepeatedField<long> unpackedSint64_ = new pbc::RepeatedField<long>();
     public pbc::RepeatedField<long> UnpackedSint64 {
       get { return unpackedSint64_; }
     }
 
     public const int UnpackedFixed32FieldNumber = 96;
+    private static readonly pb::FieldCodec<uint> _repeated_unpackedFixed32_codec
+        = pb::FieldCodec.ForFixed32(773);
     private readonly pbc::RepeatedField<uint> unpackedFixed32_ = new pbc::RepeatedField<uint>();
     public pbc::RepeatedField<uint> UnpackedFixed32 {
       get { return unpackedFixed32_; }
     }
 
     public const int UnpackedFixed64FieldNumber = 97;
+    private static readonly pb::FieldCodec<ulong> _repeated_unpackedFixed64_codec
+        = pb::FieldCodec.ForFixed64(777);
     private readonly pbc::RepeatedField<ulong> unpackedFixed64_ = new pbc::RepeatedField<ulong>();
     public pbc::RepeatedField<ulong> UnpackedFixed64 {
       get { return unpackedFixed64_; }
     }
 
     public const int UnpackedSfixed32FieldNumber = 98;
+    private static readonly pb::FieldCodec<int> _repeated_unpackedSfixed32_codec
+        = pb::FieldCodec.ForSFixed32(789);
     private readonly pbc::RepeatedField<int> unpackedSfixed32_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> UnpackedSfixed32 {
       get { return unpackedSfixed32_; }
     }
 
     public const int UnpackedSfixed64FieldNumber = 99;
+    private static readonly pb::FieldCodec<long> _repeated_unpackedSfixed64_codec
+        = pb::FieldCodec.ForSFixed64(793);
     private readonly pbc::RepeatedField<long> unpackedSfixed64_ = new pbc::RepeatedField<long>();
     public pbc::RepeatedField<long> UnpackedSfixed64 {
       get { return unpackedSfixed64_; }
     }
 
     public const int UnpackedFloatFieldNumber = 100;
+    private static readonly pb::FieldCodec<float> _repeated_unpackedFloat_codec
+        = pb::FieldCodec.ForFloat(805);
     private readonly pbc::RepeatedField<float> unpackedFloat_ = new pbc::RepeatedField<float>();
     public pbc::RepeatedField<float> UnpackedFloat {
       get { return unpackedFloat_; }
     }
 
     public const int UnpackedDoubleFieldNumber = 101;
+    private static readonly pb::FieldCodec<double> _repeated_unpackedDouble_codec
+        = pb::FieldCodec.ForDouble(809);
     private readonly pbc::RepeatedField<double> unpackedDouble_ = new pbc::RepeatedField<double>();
     public pbc::RepeatedField<double> UnpackedDouble {
       get { return unpackedDouble_; }
     }
 
     public const int UnpackedBoolFieldNumber = 102;
+    private static readonly pb::FieldCodec<bool> _repeated_unpackedBool_codec
+        = pb::FieldCodec.ForBool(816);
     private readonly pbc::RepeatedField<bool> unpackedBool_ = new pbc::RepeatedField<bool>();
     public pbc::RepeatedField<bool> UnpackedBool {
       get { return unpackedBool_; }
     }
 
     public const int UnpackedEnumFieldNumber = 103;
-    private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> unpackedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
+    private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignEnum> _repeated_unpackedEnum_codec
+        = pb::FieldCodec.ForEnum(824, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> unpackedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> UnpackedEnum {
       get { return unpackedEnum_; }
     }
@@ -5722,150 +5458,38 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (unpackedInt32_.Count > 0) {
-        output.WriteInt32Array(90, unpackedInt32_);
-      }
-      if (unpackedInt64_.Count > 0) {
-        output.WriteInt64Array(91, unpackedInt64_);
-      }
-      if (unpackedUint32_.Count > 0) {
-        output.WriteUInt32Array(92, unpackedUint32_);
-      }
-      if (unpackedUint64_.Count > 0) {
-        output.WriteUInt64Array(93, unpackedUint64_);
-      }
-      if (unpackedSint32_.Count > 0) {
-        output.WriteSInt32Array(94, unpackedSint32_);
-      }
-      if (unpackedSint64_.Count > 0) {
-        output.WriteSInt64Array(95, unpackedSint64_);
-      }
-      if (unpackedFixed32_.Count > 0) {
-        output.WriteFixed32Array(96, unpackedFixed32_);
-      }
-      if (unpackedFixed64_.Count > 0) {
-        output.WriteFixed64Array(97, unpackedFixed64_);
-      }
-      if (unpackedSfixed32_.Count > 0) {
-        output.WriteSFixed32Array(98, unpackedSfixed32_);
-      }
-      if (unpackedSfixed64_.Count > 0) {
-        output.WriteSFixed64Array(99, unpackedSfixed64_);
-      }
-      if (unpackedFloat_.Count > 0) {
-        output.WriteFloatArray(100, unpackedFloat_);
-      }
-      if (unpackedDouble_.Count > 0) {
-        output.WriteDoubleArray(101, unpackedDouble_);
-      }
-      if (unpackedBool_.Count > 0) {
-        output.WriteBoolArray(102, unpackedBool_);
-      }
-      if (unpackedEnum_.Count > 0) {
-        output.WriteEnumArray(103, unpackedEnum_);
-      }
+      unpackedInt32_.WriteTo(output, _repeated_unpackedInt32_codec);
+      unpackedInt64_.WriteTo(output, _repeated_unpackedInt64_codec);
+      unpackedUint32_.WriteTo(output, _repeated_unpackedUint32_codec);
+      unpackedUint64_.WriteTo(output, _repeated_unpackedUint64_codec);
+      unpackedSint32_.WriteTo(output, _repeated_unpackedSint32_codec);
+      unpackedSint64_.WriteTo(output, _repeated_unpackedSint64_codec);
+      unpackedFixed32_.WriteTo(output, _repeated_unpackedFixed32_codec);
+      unpackedFixed64_.WriteTo(output, _repeated_unpackedFixed64_codec);
+      unpackedSfixed32_.WriteTo(output, _repeated_unpackedSfixed32_codec);
+      unpackedSfixed64_.WriteTo(output, _repeated_unpackedSfixed64_codec);
+      unpackedFloat_.WriteTo(output, _repeated_unpackedFloat_codec);
+      unpackedDouble_.WriteTo(output, _repeated_unpackedDouble_codec);
+      unpackedBool_.WriteTo(output, _repeated_unpackedBool_codec);
+      unpackedEnum_.WriteTo(output, _repeated_unpackedEnum_codec);
     }
 
     public int CalculateSize() {
       int size = 0;
-      if (unpackedInt32_.Count > 0) {
-        int dataSize = 0;
-        foreach (int element in unpackedInt32_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
-        }
-        size += dataSize;
-        size += 2 * unpackedInt32_.Count;
-      }
-      if (unpackedInt64_.Count > 0) {
-        int dataSize = 0;
-        foreach (long element in unpackedInt64_) {
-          dataSize += pb::CodedOutputStream.ComputeInt64Size(element);
-        }
-        size += dataSize;
-        size += 2 * unpackedInt64_.Count;
-      }
-      if (unpackedUint32_.Count > 0) {
-        int dataSize = 0;
-        foreach (uint element in unpackedUint32_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt32Size(element);
-        }
-        size += dataSize;
-        size += 2 * unpackedUint32_.Count;
-      }
-      if (unpackedUint64_.Count > 0) {
-        int dataSize = 0;
-        foreach (ulong element in unpackedUint64_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt64Size(element);
-        }
-        size += dataSize;
-        size += 2 * unpackedUint64_.Count;
-      }
-      if (unpackedSint32_.Count > 0) {
-        int dataSize = 0;
-        foreach (int element in unpackedSint32_) {
-          dataSize += pb::CodedOutputStream.ComputeSInt32Size(element);
-        }
-        size += dataSize;
-        size += 2 * unpackedSint32_.Count;
-      }
-      if (unpackedSint64_.Count > 0) {
-        int dataSize = 0;
-        foreach (long element in unpackedSint64_) {
-          dataSize += pb::CodedOutputStream.ComputeSInt64Size(element);
-        }
-        size += dataSize;
-        size += 2 * unpackedSint64_.Count;
-      }
-      if (unpackedFixed32_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 4 * unpackedFixed32_.Count;
-        size += dataSize;
-        size += 2 * unpackedFixed32_.Count;
-      }
-      if (unpackedFixed64_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 8 * unpackedFixed64_.Count;
-        size += dataSize;
-        size += 2 * unpackedFixed64_.Count;
-      }
-      if (unpackedSfixed32_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 4 * unpackedSfixed32_.Count;
-        size += dataSize;
-        size += 2 * unpackedSfixed32_.Count;
-      }
-      if (unpackedSfixed64_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 8 * unpackedSfixed64_.Count;
-        size += dataSize;
-        size += 2 * unpackedSfixed64_.Count;
-      }
-      if (unpackedFloat_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 4 * unpackedFloat_.Count;
-        size += dataSize;
-        size += 2 * unpackedFloat_.Count;
-      }
-      if (unpackedDouble_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 8 * unpackedDouble_.Count;
-        size += dataSize;
-        size += 2 * unpackedDouble_.Count;
-      }
-      if (unpackedBool_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 1 * unpackedBool_.Count;
-        size += dataSize;
-        size += 2 * unpackedBool_.Count;
-      }
-      if (unpackedEnum_.Count > 0) {
-        int dataSize = 0;
-        foreach (global::Google.Protobuf.TestProtos.ForeignEnum element in unpackedEnum_) {
-          dataSize += pb::CodedOutputStream.ComputeEnumSize((int) element);
-        }
-        size += dataSize;
-        size += 2 * unpackedEnum_.Count;
-      }
+      size += unpackedInt32_.CalculateSize(_repeated_unpackedInt32_codec);
+      size += unpackedInt64_.CalculateSize(_repeated_unpackedInt64_codec);
+      size += unpackedUint32_.CalculateSize(_repeated_unpackedUint32_codec);
+      size += unpackedUint64_.CalculateSize(_repeated_unpackedUint64_codec);
+      size += unpackedSint32_.CalculateSize(_repeated_unpackedSint32_codec);
+      size += unpackedSint64_.CalculateSize(_repeated_unpackedSint64_codec);
+      size += unpackedFixed32_.CalculateSize(_repeated_unpackedFixed32_codec);
+      size += unpackedFixed64_.CalculateSize(_repeated_unpackedFixed64_codec);
+      size += unpackedSfixed32_.CalculateSize(_repeated_unpackedSfixed32_codec);
+      size += unpackedSfixed64_.CalculateSize(_repeated_unpackedSfixed64_codec);
+      size += unpackedFloat_.CalculateSize(_repeated_unpackedFloat_codec);
+      size += unpackedDouble_.CalculateSize(_repeated_unpackedDouble_codec);
+      size += unpackedBool_.CalculateSize(_repeated_unpackedBool_codec);
+      size += unpackedEnum_.CalculateSize(_repeated_unpackedEnum_codec);
       return size;
     }
 
@@ -5902,72 +5526,72 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 722:
           case 720: {
-            input.ReadInt32Array(unpackedInt32_);
+            unpackedInt32_.AddEntriesFrom(input, _repeated_unpackedInt32_codec);
             break;
           }
           case 730:
           case 728: {
-            input.ReadInt64Array(unpackedInt64_);
+            unpackedInt64_.AddEntriesFrom(input, _repeated_unpackedInt64_codec);
             break;
           }
           case 738:
           case 736: {
-            input.ReadUInt32Array(unpackedUint32_);
+            unpackedUint32_.AddEntriesFrom(input, _repeated_unpackedUint32_codec);
             break;
           }
           case 746:
           case 744: {
-            input.ReadUInt64Array(unpackedUint64_);
+            unpackedUint64_.AddEntriesFrom(input, _repeated_unpackedUint64_codec);
             break;
           }
           case 754:
           case 752: {
-            input.ReadSInt32Array(unpackedSint32_);
+            unpackedSint32_.AddEntriesFrom(input, _repeated_unpackedSint32_codec);
             break;
           }
           case 762:
           case 760: {
-            input.ReadSInt64Array(unpackedSint64_);
+            unpackedSint64_.AddEntriesFrom(input, _repeated_unpackedSint64_codec);
             break;
           }
           case 770:
           case 773: {
-            input.ReadFixed32Array(unpackedFixed32_);
+            unpackedFixed32_.AddEntriesFrom(input, _repeated_unpackedFixed32_codec);
             break;
           }
           case 778:
           case 777: {
-            input.ReadFixed64Array(unpackedFixed64_);
+            unpackedFixed64_.AddEntriesFrom(input, _repeated_unpackedFixed64_codec);
             break;
           }
           case 786:
           case 789: {
-            input.ReadSFixed32Array(unpackedSfixed32_);
+            unpackedSfixed32_.AddEntriesFrom(input, _repeated_unpackedSfixed32_codec);
             break;
           }
           case 794:
           case 793: {
-            input.ReadSFixed64Array(unpackedSfixed64_);
+            unpackedSfixed64_.AddEntriesFrom(input, _repeated_unpackedSfixed64_codec);
             break;
           }
           case 802:
           case 805: {
-            input.ReadFloatArray(unpackedFloat_);
+            unpackedFloat_.AddEntriesFrom(input, _repeated_unpackedFloat_codec);
             break;
           }
           case 810:
           case 809: {
-            input.ReadDoubleArray(unpackedDouble_);
+            unpackedDouble_.AddEntriesFrom(input, _repeated_unpackedDouble_codec);
             break;
           }
           case 818:
           case 816: {
-            input.ReadBoolArray(unpackedBool_);
+            unpackedBool_.AddEntriesFrom(input, _repeated_unpackedBool_codec);
             break;
           }
           case 826:
           case 824: {
-            input.ReadEnumArray<global::Google.Protobuf.TestProtos.ForeignEnum>(unpackedEnum_);
+            unpackedEnum_.AddEntriesFrom(input, _repeated_unpackedEnum_codec);
             break;
           }
         }
@@ -6023,36 +5647,48 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int RepeatedFixed32FieldNumber = 12;
+    private static readonly pb::FieldCodec<uint> _repeated_repeatedFixed32_codec
+        = pb::FieldCodec.ForFixed32(98);
     private readonly pbc::RepeatedField<uint> repeatedFixed32_ = new pbc::RepeatedField<uint>();
     public pbc::RepeatedField<uint> RepeatedFixed32 {
       get { return repeatedFixed32_; }
     }
 
     public const int RepeatedInt32FieldNumber = 13;
+    private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
+        = pb::FieldCodec.ForInt32(106);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> RepeatedInt32 {
       get { return repeatedInt32_; }
     }
 
     public const int RepeatedFixed64FieldNumber = 2046;
+    private static readonly pb::FieldCodec<ulong> _repeated_repeatedFixed64_codec
+        = pb::FieldCodec.ForFixed64(16370);
     private readonly pbc::RepeatedField<ulong> repeatedFixed64_ = new pbc::RepeatedField<ulong>();
     public pbc::RepeatedField<ulong> RepeatedFixed64 {
       get { return repeatedFixed64_; }
     }
 
     public const int RepeatedInt64FieldNumber = 2047;
+    private static readonly pb::FieldCodec<long> _repeated_repeatedInt64_codec
+        = pb::FieldCodec.ForInt64(16378);
     private readonly pbc::RepeatedField<long> repeatedInt64_ = new pbc::RepeatedField<long>();
     public pbc::RepeatedField<long> RepeatedInt64 {
       get { return repeatedInt64_; }
     }
 
     public const int RepeatedFloatFieldNumber = 262142;
+    private static readonly pb::FieldCodec<float> _repeated_repeatedFloat_codec
+        = pb::FieldCodec.ForFloat(2097138);
     private readonly pbc::RepeatedField<float> repeatedFloat_ = new pbc::RepeatedField<float>();
     public pbc::RepeatedField<float> RepeatedFloat {
       get { return repeatedFloat_; }
     }
 
     public const int RepeatedUint64FieldNumber = 262143;
+    private static readonly pb::FieldCodec<ulong> _repeated_repeatedUint64_codec
+        = pb::FieldCodec.ForUInt64(2097146);
     private readonly pbc::RepeatedField<ulong> repeatedUint64_ = new pbc::RepeatedField<ulong>();
     public pbc::RepeatedField<ulong> RepeatedUint64 {
       get { return repeatedUint64_; }
@@ -6090,76 +5726,22 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (repeatedFixed32_.Count > 0) {
-        output.WriteRawTag(98);
-        output.WritePackedFixed32Array(repeatedFixed32_);
-      }
-      if (repeatedInt32_.Count > 0) {
-        output.WriteRawTag(106);
-        output.WritePackedInt32Array(repeatedInt32_);
-      }
-      if (repeatedFixed64_.Count > 0) {
-        output.WriteRawTag(242, 127);
-        output.WritePackedFixed64Array(repeatedFixed64_);
-      }
-      if (repeatedInt64_.Count > 0) {
-        output.WriteRawTag(250, 127);
-        output.WritePackedInt64Array(repeatedInt64_);
-      }
-      if (repeatedFloat_.Count > 0) {
-        output.WriteRawTag(242, 255, 127);
-        output.WritePackedFloatArray(repeatedFloat_);
-      }
-      if (repeatedUint64_.Count > 0) {
-        output.WriteRawTag(250, 255, 127);
-        output.WritePackedUInt64Array(repeatedUint64_);
-      }
+      repeatedFixed32_.WriteTo(output, _repeated_repeatedFixed32_codec);
+      repeatedInt32_.WriteTo(output, _repeated_repeatedInt32_codec);
+      repeatedFixed64_.WriteTo(output, _repeated_repeatedFixed64_codec);
+      repeatedInt64_.WriteTo(output, _repeated_repeatedInt64_codec);
+      repeatedFloat_.WriteTo(output, _repeated_repeatedFloat_codec);
+      repeatedUint64_.WriteTo(output, _repeated_repeatedUint64_codec);
     }
 
     public int CalculateSize() {
       int size = 0;
-      if (repeatedFixed32_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 4 * repeatedFixed32_.Count;
-        size += dataSize;
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedInt32_.Count > 0) {
-        int dataSize = 0;
-        foreach (int element in repeatedInt32_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
-        }
-        size += dataSize;
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedFixed64_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 8 * repeatedFixed64_.Count;
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedInt64_.Count > 0) {
-        int dataSize = 0;
-        foreach (long element in repeatedInt64_) {
-          dataSize += pb::CodedOutputStream.ComputeInt64Size(element);
-        }
-        size += dataSize;
-        size += 2 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedFloat_.Count > 0) {
-        int dataSize = 0;
-        dataSize = 4 * repeatedFloat_.Count;
-        size += dataSize;
-        size += 3 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
-      if (repeatedUint64_.Count > 0) {
-        int dataSize = 0;
-        foreach (ulong element in repeatedUint64_) {
-          dataSize += pb::CodedOutputStream.ComputeUInt64Size(element);
-        }
-        size += dataSize;
-        size += 3 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-      }
+      size += repeatedFixed32_.CalculateSize(_repeated_repeatedFixed32_codec);
+      size += repeatedInt32_.CalculateSize(_repeated_repeatedInt32_codec);
+      size += repeatedFixed64_.CalculateSize(_repeated_repeatedFixed64_codec);
+      size += repeatedInt64_.CalculateSize(_repeated_repeatedInt64_codec);
+      size += repeatedFloat_.CalculateSize(_repeated_repeatedFloat_codec);
+      size += repeatedUint64_.CalculateSize(_repeated_repeatedUint64_codec);
       return size;
     }
 
@@ -6188,32 +5770,32 @@ namespace Google.Protobuf.TestProtos {
             break;
           case 98:
           case 101: {
-            input.ReadFixed32Array(repeatedFixed32_);
+            repeatedFixed32_.AddEntriesFrom(input, _repeated_repeatedFixed32_codec);
             break;
           }
           case 106:
           case 104: {
-            input.ReadInt32Array(repeatedInt32_);
+            repeatedInt32_.AddEntriesFrom(input, _repeated_repeatedInt32_codec);
             break;
           }
           case 16370:
           case 16369: {
-            input.ReadFixed64Array(repeatedFixed64_);
+            repeatedFixed64_.AddEntriesFrom(input, _repeated_repeatedFixed64_codec);
             break;
           }
           case 16378:
           case 16376: {
-            input.ReadInt64Array(repeatedInt64_);
+            repeatedInt64_.AddEntriesFrom(input, _repeated_repeatedInt64_codec);
             break;
           }
           case 2097138:
           case 2097141: {
-            input.ReadFloatArray(repeatedFloat_);
+            repeatedFloat_.AddEntriesFrom(input, _repeated_repeatedFloat_codec);
             break;
           }
           case 2097146:
           case 2097144: {
-            input.ReadUInt64Array(repeatedUint64_);
+            repeatedUint64_.AddEntriesFrom(input, _repeated_repeatedUint64_codec);
             break;
           }
         }

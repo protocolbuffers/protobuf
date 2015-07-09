@@ -314,6 +314,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int FileFieldNumber = 1;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto> _repeated_file_codec
+        = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.DescriptorProtos.FileDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto> file_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto> File {
       get { return file_; }
@@ -341,19 +343,12 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (file_.Count > 0) {
-        output.WriteMessageArray(1, file_);
-      }
+      file_.WriteTo(output, _repeated_file_codec);
     }
 
     public int CalculateSize() {
       int size = 0;
-      if (file_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.FileDescriptorProto element in file_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * file_.Count;
-      }
+      size += file_.CalculateSize(_repeated_file_codec);
       return size;
     }
 
@@ -376,7 +371,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadMessageArray(file_, global::Google.Protobuf.DescriptorProtos.FileDescriptorProto.Parser);
+            file_.AddEntriesFrom(input, _repeated_file_codec);
             break;
           }
         }
@@ -461,42 +456,56 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int DependencyFieldNumber = 3;
+    private static readonly pb::FieldCodec<string> _repeated_dependency_codec
+        = pb::FieldCodec.ForString(26);
     private readonly pbc::RepeatedField<string> dependency_ = new pbc::RepeatedField<string>();
     public pbc::RepeatedField<string> Dependency {
       get { return dependency_; }
     }
 
     public const int PublicDependencyFieldNumber = 10;
+    private static readonly pb::FieldCodec<int> _repeated_publicDependency_codec
+        = pb::FieldCodec.ForInt32(80);
     private readonly pbc::RepeatedField<int> publicDependency_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> PublicDependency {
       get { return publicDependency_; }
     }
 
     public const int WeakDependencyFieldNumber = 11;
+    private static readonly pb::FieldCodec<int> _repeated_weakDependency_codec
+        = pb::FieldCodec.ForInt32(88);
     private readonly pbc::RepeatedField<int> weakDependency_ = new pbc::RepeatedField<int>();
     public pbc::RepeatedField<int> WeakDependency {
       get { return weakDependency_; }
     }
 
     public const int MessageTypeFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.DescriptorProto> _repeated_messageType_codec
+        = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> messageType_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> MessageType {
       get { return messageType_; }
     }
 
     public const int EnumTypeFieldNumber = 5;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> _repeated_enumType_codec
+        = pb::FieldCodec.ForMessage(42, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> enumType_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> EnumType {
       get { return enumType_; }
     }
 
     public const int ServiceFieldNumber = 6;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto> _repeated_service_codec
+        = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto> service_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto> Service {
       get { return service_; }
     }
 
     public const int ExtensionFieldNumber = 7;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> _repeated_extension_codec
+        = pb::FieldCodec.ForMessage(58, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> extension_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> Extension {
       get { return extension_; }
@@ -584,21 +593,11 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(18);
         output.WriteString(Package);
       }
-      if (dependency_.Count > 0) {
-        output.WriteStringArray(3, dependency_);
-      }
-      if (messageType_.Count > 0) {
-        output.WriteMessageArray(4, messageType_);
-      }
-      if (enumType_.Count > 0) {
-        output.WriteMessageArray(5, enumType_);
-      }
-      if (service_.Count > 0) {
-        output.WriteMessageArray(6, service_);
-      }
-      if (extension_.Count > 0) {
-        output.WriteMessageArray(7, extension_);
-      }
+      dependency_.WriteTo(output, _repeated_dependency_codec);
+      messageType_.WriteTo(output, _repeated_messageType_codec);
+      enumType_.WriteTo(output, _repeated_enumType_codec);
+      service_.WriteTo(output, _repeated_service_codec);
+      extension_.WriteTo(output, _repeated_extension_codec);
       if (options_ != null) {
         output.WriteRawTag(66);
         output.WriteMessage(Options);
@@ -607,12 +606,8 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(74);
         output.WriteMessage(SourceCodeInfo);
       }
-      if (publicDependency_.Count > 0) {
-        output.WriteInt32Array(10, publicDependency_);
-      }
-      if (weakDependency_.Count > 0) {
-        output.WriteInt32Array(11, weakDependency_);
-      }
+      publicDependency_.WriteTo(output, _repeated_publicDependency_codec);
+      weakDependency_.WriteTo(output, _repeated_weakDependency_codec);
       if (Syntax.Length != 0) {
         output.WriteRawTag(98);
         output.WriteString(Syntax);
@@ -627,54 +622,13 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Package.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Package);
       }
-      if (dependency_.Count > 0) {
-        int dataSize = 0;
-        foreach (string element in dependency_) {
-          dataSize += pb::CodedOutputStream.ComputeStringSize(element);
-        }
-        size += dataSize;
-        size += 1 * dependency_.Count;
-      }
-      if (publicDependency_.Count > 0) {
-        int dataSize = 0;
-        foreach (int element in publicDependency_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
-        }
-        size += dataSize;
-        size += 1 * publicDependency_.Count;
-      }
-      if (weakDependency_.Count > 0) {
-        int dataSize = 0;
-        foreach (int element in weakDependency_) {
-          dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
-        }
-        size += dataSize;
-        size += 1 * weakDependency_.Count;
-      }
-      if (messageType_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto element in messageType_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * messageType_.Count;
-      }
-      if (enumType_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto element in enumType_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * enumType_.Count;
-      }
-      if (service_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto element in service_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * service_.Count;
-      }
-      if (extension_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto element in extension_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * extension_.Count;
-      }
+      size += dependency_.CalculateSize(_repeated_dependency_codec);
+      size += publicDependency_.CalculateSize(_repeated_publicDependency_codec);
+      size += weakDependency_.CalculateSize(_repeated_weakDependency_codec);
+      size += messageType_.CalculateSize(_repeated_messageType_codec);
+      size += enumType_.CalculateSize(_repeated_enumType_codec);
+      size += service_.CalculateSize(_repeated_service_codec);
+      size += extension_.CalculateSize(_repeated_extension_codec);
       if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
@@ -741,23 +695,23 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 26: {
-            input.ReadStringArray(dependency_);
+            dependency_.AddEntriesFrom(input, _repeated_dependency_codec);
             break;
           }
           case 34: {
-            input.ReadMessageArray(messageType_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
+            messageType_.AddEntriesFrom(input, _repeated_messageType_codec);
             break;
           }
           case 42: {
-            input.ReadMessageArray(enumType_, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
+            enumType_.AddEntriesFrom(input, _repeated_enumType_codec);
             break;
           }
           case 50: {
-            input.ReadMessageArray(service_, global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto.Parser);
+            service_.AddEntriesFrom(input, _repeated_service_codec);
             break;
           }
           case 58: {
-            input.ReadMessageArray(extension_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
+            extension_.AddEntriesFrom(input, _repeated_extension_codec);
             break;
           }
           case 66: {
@@ -776,12 +730,12 @@ namespace Google.Protobuf.DescriptorProtos {
           }
           case 82:
           case 80: {
-            input.ReadInt32Array(publicDependency_);
+            publicDependency_.AddEntriesFrom(input, _repeated_publicDependency_codec);
             break;
           }
           case 90:
           case 88: {
-            input.ReadInt32Array(weakDependency_);
+            weakDependency_.AddEntriesFrom(input, _repeated_weakDependency_codec);
             break;
           }
           case 98: {
@@ -858,36 +812,48 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int FieldFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> _repeated_field_codec
+        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> field_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> Field {
       get { return field_; }
     }
 
     public const int ExtensionFieldNumber = 6;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> _repeated_extension_codec
+        = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> extension_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> Extension {
       get { return extension_; }
     }
 
     public const int NestedTypeFieldNumber = 3;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.DescriptorProto> _repeated_nestedType_codec
+        = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> nestedType_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> NestedType {
       get { return nestedType_; }
     }
 
     public const int EnumTypeFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> _repeated_enumType_codec
+        = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> enumType_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> EnumType {
       get { return enumType_; }
     }
 
     public const int ExtensionRangeFieldNumber = 5;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange> _repeated_extensionRange_codec
+        = pb::FieldCodec.ForMessage(42, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange> extensionRange_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange> ExtensionRange {
       get { return extensionRange_; }
     }
 
     public const int OneofDeclFieldNumber = 8;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto> _repeated_oneofDecl_codec
+        = pb::FieldCodec.ForMessage(66, global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto> oneofDecl_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto> OneofDecl {
       get { return oneofDecl_; }
@@ -904,12 +870,16 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int ReservedRangeFieldNumber = 9;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange> _repeated_reservedRange_codec
+        = pb::FieldCodec.ForMessage(74, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange> reservedRange_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange> ReservedRange {
       get { return reservedRange_; }
     }
 
     public const int ReservedNameFieldNumber = 10;
+    private static readonly pb::FieldCodec<string> _repeated_reservedName_codec
+        = pb::FieldCodec.ForString(82);
     private readonly pbc::RepeatedField<string> reservedName_ = new pbc::RepeatedField<string>();
     public pbc::RepeatedField<string> ReservedName {
       get { return reservedName_; }
@@ -959,34 +929,18 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(10);
         output.WriteString(Name);
       }
-      if (field_.Count > 0) {
-        output.WriteMessageArray(2, field_);
-      }
-      if (nestedType_.Count > 0) {
-        output.WriteMessageArray(3, nestedType_);
-      }
-      if (enumType_.Count > 0) {
-        output.WriteMessageArray(4, enumType_);
-      }
-      if (extensionRange_.Count > 0) {
-        output.WriteMessageArray(5, extensionRange_);
-      }
-      if (extension_.Count > 0) {
-        output.WriteMessageArray(6, extension_);
-      }
+      field_.WriteTo(output, _repeated_field_codec);
+      nestedType_.WriteTo(output, _repeated_nestedType_codec);
+      enumType_.WriteTo(output, _repeated_enumType_codec);
+      extensionRange_.WriteTo(output, _repeated_extensionRange_codec);
+      extension_.WriteTo(output, _repeated_extension_codec);
       if (options_ != null) {
         output.WriteRawTag(58);
         output.WriteMessage(Options);
       }
-      if (oneofDecl_.Count > 0) {
-        output.WriteMessageArray(8, oneofDecl_);
-      }
-      if (reservedRange_.Count > 0) {
-        output.WriteMessageArray(9, reservedRange_);
-      }
-      if (reservedName_.Count > 0) {
-        output.WriteStringArray(10, reservedName_);
-      }
+      oneofDecl_.WriteTo(output, _repeated_oneofDecl_codec);
+      reservedRange_.WriteTo(output, _repeated_reservedRange_codec);
+      reservedName_.WriteTo(output, _repeated_reservedName_codec);
     }
 
     public int CalculateSize() {
@@ -994,59 +948,17 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Name.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
-      if (field_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto element in field_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * field_.Count;
-      }
-      if (extension_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto element in extension_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * extension_.Count;
-      }
-      if (nestedType_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto element in nestedType_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * nestedType_.Count;
-      }
-      if (enumType_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto element in enumType_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * enumType_.Count;
-      }
-      if (extensionRange_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange element in extensionRange_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * extensionRange_.Count;
-      }
-      if (oneofDecl_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto element in oneofDecl_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * oneofDecl_.Count;
-      }
+      size += field_.CalculateSize(_repeated_field_codec);
+      size += extension_.CalculateSize(_repeated_extension_codec);
+      size += nestedType_.CalculateSize(_repeated_nestedType_codec);
+      size += enumType_.CalculateSize(_repeated_enumType_codec);
+      size += extensionRange_.CalculateSize(_repeated_extensionRange_codec);
+      size += oneofDecl_.CalculateSize(_repeated_oneofDecl_codec);
       if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
-      if (reservedRange_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange element in reservedRange_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * reservedRange_.Count;
-      }
-      if (reservedName_.Count > 0) {
-        int dataSize = 0;
-        foreach (string element in reservedName_) {
-          dataSize += pb::CodedOutputStream.ComputeStringSize(element);
-        }
-        size += dataSize;
-        size += 1 * reservedName_.Count;
-      }
+      size += reservedRange_.CalculateSize(_repeated_reservedRange_codec);
+      size += reservedName_.CalculateSize(_repeated_reservedName_codec);
       return size;
     }
 
@@ -1089,23 +1001,23 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 18: {
-            input.ReadMessageArray(field_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
+            field_.AddEntriesFrom(input, _repeated_field_codec);
             break;
           }
           case 26: {
-            input.ReadMessageArray(nestedType_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
+            nestedType_.AddEntriesFrom(input, _repeated_nestedType_codec);
             break;
           }
           case 34: {
-            input.ReadMessageArray(enumType_, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
+            enumType_.AddEntriesFrom(input, _repeated_enumType_codec);
             break;
           }
           case 42: {
-            input.ReadMessageArray(extensionRange_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Parser);
+            extensionRange_.AddEntriesFrom(input, _repeated_extensionRange_codec);
             break;
           }
           case 50: {
-            input.ReadMessageArray(extension_, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
+            extension_.AddEntriesFrom(input, _repeated_extension_codec);
             break;
           }
           case 58: {
@@ -1116,15 +1028,15 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 66: {
-            input.ReadMessageArray(oneofDecl_, global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto.Parser);
+            oneofDecl_.AddEntriesFrom(input, _repeated_oneofDecl_codec);
             break;
           }
           case 74: {
-            input.ReadMessageArray(reservedRange_, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange.Parser);
+            reservedRange_.AddEntriesFrom(input, _repeated_reservedRange_codec);
             break;
           }
           case 82: {
-            input.ReadStringArray(reservedName_);
+            reservedName_.AddEntriesFrom(input, _repeated_reservedName_codec);
             break;
           }
         }
@@ -1943,6 +1855,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int ValueFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto> _repeated_value_codec
+        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto> value_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto> Value {
       get { return value_; }
@@ -1988,9 +1902,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(10);
         output.WriteString(Name);
       }
-      if (value_.Count > 0) {
-        output.WriteMessageArray(2, value_);
-      }
+      value_.WriteTo(output, _repeated_value_codec);
       if (options_ != null) {
         output.WriteRawTag(26);
         output.WriteMessage(Options);
@@ -2002,12 +1914,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Name.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
-      if (value_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto element in value_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * value_.Count;
-      }
+      size += value_.CalculateSize(_repeated_value_codec);
       if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
@@ -2046,7 +1953,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 18: {
-            input.ReadMessageArray(value_, global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto.Parser);
+            value_.AddEntriesFrom(input, _repeated_value_codec);
             break;
           }
           case 26: {
@@ -2284,6 +2191,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int MethodFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto> _repeated_method_codec
+        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto> method_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto> Method {
       get { return method_; }
@@ -2329,9 +2238,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(10);
         output.WriteString(Name);
       }
-      if (method_.Count > 0) {
-        output.WriteMessageArray(2, method_);
-      }
+      method_.WriteTo(output, _repeated_method_codec);
       if (options_ != null) {
         output.WriteRawTag(26);
         output.WriteMessage(Options);
@@ -2343,12 +2250,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Name.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
-      if (method_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto element in method_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * method_.Count;
-      }
+      size += method_.CalculateSize(_repeated_method_codec);
       if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
@@ -2387,7 +2289,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 18: {
-            input.ReadMessageArray(method_, global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto.Parser);
+            method_.AddEntriesFrom(input, _repeated_method_codec);
             break;
           }
           case 26: {
@@ -2847,6 +2749,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
@@ -2958,9 +2862,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(170, 2);
         output.WriteString(CsharpNamespace);
       }
-      if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, uninterpretedOption_);
-      }
+      uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
     }
 
     public int CalculateSize() {
@@ -3007,12 +2909,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (CsharpNamespace.Length != 0) {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(CsharpNamespace);
       }
-      if (uninterpretedOption_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 2 * uninterpretedOption_.Count;
-      }
+      size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
       return size;
     }
 
@@ -3133,7 +3030,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            uninterpretedOption_.AddEntriesFrom(input, _repeated_uninterpretedOption_codec);
             break;
           }
         }
@@ -3235,6 +3132,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
@@ -3286,9 +3185,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(56);
         output.WriteBool(MapEntry);
       }
-      if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, uninterpretedOption_);
-      }
+      uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
     }
 
     public int CalculateSize() {
@@ -3305,12 +3202,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (MapEntry != false) {
         size += 1 + 1;
       }
-      if (uninterpretedOption_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 2 * uninterpretedOption_.Count;
-      }
+      size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
       return size;
     }
 
@@ -3361,7 +3253,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            uninterpretedOption_.AddEntriesFrom(input, _repeated_uninterpretedOption_codec);
             break;
           }
         }
@@ -3473,6 +3365,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
@@ -3536,9 +3430,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(80);
         output.WriteBool(Weak);
       }
-      if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, uninterpretedOption_);
-      }
+      uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
     }
 
     public int CalculateSize() {
@@ -3561,12 +3453,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Weak != false) {
         size += 1 + 1;
       }
-      if (uninterpretedOption_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 2 * uninterpretedOption_.Count;
-      }
+      size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
       return size;
     }
 
@@ -3631,7 +3518,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            uninterpretedOption_.AddEntriesFrom(input, _repeated_uninterpretedOption_codec);
             break;
           }
         }
@@ -3717,6 +3604,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
@@ -3756,9 +3645,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(24);
         output.WriteBool(Deprecated);
       }
-      if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, uninterpretedOption_);
-      }
+      uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
     }
 
     public int CalculateSize() {
@@ -3769,12 +3656,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) {
         size += 1 + 1;
       }
-      if (uninterpretedOption_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 2 * uninterpretedOption_.Count;
-      }
+      size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
       return size;
     }
 
@@ -3811,7 +3693,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            uninterpretedOption_.AddEntriesFrom(input, _repeated_uninterpretedOption_codec);
             break;
           }
         }
@@ -3868,6 +3750,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
@@ -3901,9 +3785,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(8);
         output.WriteBool(Deprecated);
       }
-      if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, uninterpretedOption_);
-      }
+      uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
     }
 
     public int CalculateSize() {
@@ -3911,12 +3793,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) {
         size += 1 + 1;
       }
-      if (uninterpretedOption_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 2 * uninterpretedOption_.Count;
-      }
+      size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
       return size;
     }
 
@@ -3946,7 +3823,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            uninterpretedOption_.AddEntriesFrom(input, _repeated_uninterpretedOption_codec);
             break;
           }
         }
@@ -4003,6 +3880,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
@@ -4036,9 +3915,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(136, 2);
         output.WriteBool(Deprecated);
       }
-      if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, uninterpretedOption_);
-      }
+      uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
     }
 
     public int CalculateSize() {
@@ -4046,12 +3923,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) {
         size += 2 + 1;
       }
-      if (uninterpretedOption_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 2 * uninterpretedOption_.Count;
-      }
+      size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
       return size;
     }
 
@@ -4081,7 +3953,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            uninterpretedOption_.AddEntriesFrom(input, _repeated_uninterpretedOption_codec);
             break;
           }
         }
@@ -4138,6 +4010,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
@@ -4171,9 +4045,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(136, 2);
         output.WriteBool(Deprecated);
       }
-      if (uninterpretedOption_.Count > 0) {
-        output.WriteMessageArray(999, uninterpretedOption_);
-      }
+      uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
     }
 
     public int CalculateSize() {
@@ -4181,12 +4053,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Deprecated != false) {
         size += 2 + 1;
       }
-      if (uninterpretedOption_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption element in uninterpretedOption_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 2 * uninterpretedOption_.Count;
-      }
+      size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
       return size;
     }
 
@@ -4216,7 +4083,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 7994: {
-            input.ReadMessageArray(uninterpretedOption_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
+            uninterpretedOption_.AddEntriesFrom(input, _repeated_uninterpretedOption_codec);
             break;
           }
         }
@@ -4268,6 +4135,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int NameFieldNumber = 2;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> _repeated_name_codec
+        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> name_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> Name {
       get { return name_; }
@@ -4367,9 +4236,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (name_.Count > 0) {
-        output.WriteMessageArray(2, name_);
-      }
+      name_.WriteTo(output, _repeated_name_codec);
       if (IdentifierValue.Length != 0) {
         output.WriteRawTag(26);
         output.WriteString(IdentifierValue);
@@ -4398,12 +4265,7 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public int CalculateSize() {
       int size = 0;
-      if (name_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart element in name_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * name_.Count;
-      }
+      size += name_.CalculateSize(_repeated_name_codec);
       if (IdentifierValue.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(IdentifierValue);
       }
@@ -4462,7 +4324,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 18: {
-            input.ReadMessageArray(name_, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart.Parser);
+            name_.AddEntriesFrom(input, _repeated_name_codec);
             break;
           }
           case 26: {
@@ -4676,6 +4538,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int LocationFieldNumber = 1;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location> _repeated_location_codec
+        = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location> location_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location>();
     public pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location> Location {
       get { return location_; }
@@ -4703,19 +4567,12 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (location_.Count > 0) {
-        output.WriteMessageArray(1, location_);
-      }
+      location_.WriteTo(output, _repeated_location_codec);
     }
 
     public int CalculateSize() {
       int size = 0;
-      if (location_.Count > 0) {
-        foreach (global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location element in location_) {
-          size += pb::CodedOutputStream.ComputeMessageSize(element);
-        }
-        size += 1 * location_.Count;
-      }
+      size += location_.CalculateSize(_repeated_location_codec);
       return size;
     }
 
@@ -4738,7 +4595,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 10: {
-            input.ReadMessageArray(location_, global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location.Parser);
+            location_.AddEntriesFrom(input, _repeated_location_codec);
             break;
           }
         }
@@ -4791,12 +4648,16 @@ namespace Google.Protobuf.DescriptorProtos {
         }
 
         public const int PathFieldNumber = 1;
+        private static readonly pb::FieldCodec<int> _repeated_path_codec
+            = pb::FieldCodec.ForInt32(10);
         private readonly pbc::RepeatedField<int> path_ = new pbc::RepeatedField<int>();
         public pbc::RepeatedField<int> Path {
           get { return path_; }
         }
 
         public const int SpanFieldNumber = 2;
+        private static readonly pb::FieldCodec<int> _repeated_span_codec
+            = pb::FieldCodec.ForInt32(18);
         private readonly pbc::RepeatedField<int> span_ = new pbc::RepeatedField<int>();
         public pbc::RepeatedField<int> Span {
           get { return span_; }
@@ -4823,6 +4684,8 @@ namespace Google.Protobuf.DescriptorProtos {
         }
 
         public const int LeadingDetachedCommentsFieldNumber = 6;
+        private static readonly pb::FieldCodec<string> _repeated_leadingDetachedComments_codec
+            = pb::FieldCodec.ForString(50);
         private readonly pbc::RepeatedField<string> leadingDetachedComments_ = new pbc::RepeatedField<string>();
         public pbc::RepeatedField<string> LeadingDetachedComments {
           get { return leadingDetachedComments_; }
@@ -4858,14 +4721,8 @@ namespace Google.Protobuf.DescriptorProtos {
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
-          if (path_.Count > 0) {
-            output.WriteRawTag(10);
-            output.WritePackedInt32Array(path_);
-          }
-          if (span_.Count > 0) {
-            output.WriteRawTag(18);
-            output.WritePackedInt32Array(span_);
-          }
+          path_.WriteTo(output, _repeated_path_codec);
+          span_.WriteTo(output, _repeated_span_codec);
           if (LeadingComments.Length != 0) {
             output.WriteRawTag(26);
             output.WriteString(LeadingComments);
@@ -4874,43 +4731,20 @@ namespace Google.Protobuf.DescriptorProtos {
             output.WriteRawTag(34);
             output.WriteString(TrailingComments);
           }
-          if (leadingDetachedComments_.Count > 0) {
-            output.WriteStringArray(6, leadingDetachedComments_);
-          }
+          leadingDetachedComments_.WriteTo(output, _repeated_leadingDetachedComments_codec);
         }
 
         public int CalculateSize() {
           int size = 0;
-          if (path_.Count > 0) {
-            int dataSize = 0;
-            foreach (int element in path_) {
-              dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
-            }
-            size += dataSize;
-            size += 1 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-          }
-          if (span_.Count > 0) {
-            int dataSize = 0;
-            foreach (int element in span_) {
-              dataSize += pb::CodedOutputStream.ComputeInt32Size(element);
-            }
-            size += dataSize;
-            size += 1 + pb::CodedOutputStream.ComputeInt32Size(dataSize);
-          }
+          size += path_.CalculateSize(_repeated_path_codec);
+          size += span_.CalculateSize(_repeated_span_codec);
           if (LeadingComments.Length != 0) {
             size += 1 + pb::CodedOutputStream.ComputeStringSize(LeadingComments);
           }
           if (TrailingComments.Length != 0) {
             size += 1 + pb::CodedOutputStream.ComputeStringSize(TrailingComments);
           }
-          if (leadingDetachedComments_.Count > 0) {
-            int dataSize = 0;
-            foreach (string element in leadingDetachedComments_) {
-              dataSize += pb::CodedOutputStream.ComputeStringSize(element);
-            }
-            size += dataSize;
-            size += 1 * leadingDetachedComments_.Count;
-          }
+          size += leadingDetachedComments_.CalculateSize(_repeated_leadingDetachedComments_codec);
           return size;
         }
 
@@ -4942,12 +4776,12 @@ namespace Google.Protobuf.DescriptorProtos {
                 break;
               case 10:
               case 8: {
-                input.ReadInt32Array(path_);
+                path_.AddEntriesFrom(input, _repeated_path_codec);
                 break;
               }
               case 18:
               case 16: {
-                input.ReadInt32Array(span_);
+                span_.AddEntriesFrom(input, _repeated_span_codec);
                 break;
               }
               case 26: {
@@ -4959,7 +4793,7 @@ namespace Google.Protobuf.DescriptorProtos {
                 break;
               }
               case 50: {
-                input.ReadStringArray(leadingDetachedComments_);
+                leadingDetachedComments_.AddEntriesFrom(input, _repeated_leadingDetachedComments_codec);
                 break;
               }
             }

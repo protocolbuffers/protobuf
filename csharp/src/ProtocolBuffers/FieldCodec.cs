@@ -8,6 +8,7 @@ namespace Google.Protobuf
     /// </summary>
     public static class FieldCodec
     {
+        // TODO: Avoid the "dual hit" of lambda expressions: create open delegates instead. (At least test...)
         public static FieldCodec<string> ForString(uint tag)
         {
             return new FieldCodec<string>(input => input.ReadString(), (output, value) => output.WriteString(value), CodedOutputStream.ComputeStringSize, tag); 
@@ -84,7 +85,7 @@ namespace Google.Protobuf
         }
 
         // Enums are tricky. We can probably use expression trees to build these delegates automatically,
-        // but it's easy to generate the code fdor it.
+        // but it's easy to generate the code for it.
         public static FieldCodec<T> ForEnum<T>(uint tag, Func<T, int> toInt32, Func<int, T> fromInt32)
         {
             return new FieldCodec<T>(input => fromInt32(
@@ -145,28 +146,68 @@ namespace Google.Protobuf
 
         private readonly Func<CodedInputStream, T> reader;
         private readonly Action<CodedOutputStream, T> writer;
-        private readonly Func<T, int> sizeComputer;
+        private readonly Func<T, int> sizeCalculator;
         private readonly uint tag;
         private readonly int tagSize;
+        private readonly int fixedSize;
 
         internal FieldCodec(
             Func<CodedInputStream, T> reader,
             Action<CodedOutputStream, T> writer,
-            Func<T, int> sizeComputer,
+            Func<T, int> sizeCalculator,
             uint tag)
         {
             this.reader = reader;
             this.writer = writer;
-            this.sizeComputer = sizeComputer;
+            this.sizeCalculator = sizeCalculator;
+            this.fixedSize = 0;
             this.tag = tag;
             tagSize = CodedOutputStream.ComputeRawVarint32Size(tag);
         }
+
+        internal FieldCodec(
+            Func<CodedInputStream, T> reader,
+            Action<CodedOutputStream, T> writer,
+            int fixedSize,
+            uint tag)
+        {
+            this.reader = reader;
+            this.writer = writer;
+            this.sizeCalculator = _ => fixedSize;
+            this.fixedSize = fixedSize;
+            this.tag = tag;
+            tagSize = CodedOutputStream.ComputeRawVarint32Size(tag);
+        }
+
+        /// <summary>
+        /// Returns the size calculator for just a value.
+        /// </summary>
+        internal Func<T, int> ValueSizeCalculator { get { return sizeCalculator; } }
+
+        /// <summary>
+        /// Returns a delegate to write a value (unconditionally) to a coded output stream.
+        /// </summary>
+        internal Action<CodedOutputStream, T> ValueWriter { get { return writer; } }
+
+        /// <summary>
+        /// Returns a delegate to read a value from a coded input stream. It is assumed that
+        /// the stream is already positioned on the appropriate tag.
+        /// </summary>
+        internal Func<CodedInputStream, T> ValueReader { get { return reader; } }
+
+        /// <summary>
+        /// Returns the fixed size for an entry, or 0 if sizes vary.
+        /// </summary>
+        internal int FixedSize { get { return fixedSize; } }
 
         public uint Tag { get { return tag; } }
 
         public T DefaultValue { get { return Default; } }
 
-        public void Write(CodedOutputStream output, T value)
+        /// <summary>
+        /// Write a tag and the given value, *if* the value is not the default.
+        /// </summary>
+        public void WriteTagAndValue(CodedOutputStream output, T value)
         {
             if (!IsDefault(value))
             {
@@ -180,9 +221,13 @@ namespace Google.Protobuf
             return reader(input);
         }
 
-        public int CalculateSize(T value)
+        /// <summary>
+        /// Calculates the size required to write the given value, with a tag,
+        /// if the value is not the default.
+        /// </summary>
+        public int CalculateSizeWithTag(T value)
         {
-            return IsDefault(value) ? 0 : sizeComputer(value) + CodedOutputStream.ComputeRawVarint32Size(tag);
+            return IsDefault(value) ? 0 : sizeCalculator(value) + tagSize;
         }        
     }
 }

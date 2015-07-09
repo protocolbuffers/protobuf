@@ -72,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ByteStringTest.cs" />
+    <Compile Include="CodedInputStreamExtensions.cs" />
     <Compile Include="CodedInputStreamTest.cs" />
     <Compile Include="CodedOutputStreamTest.cs" />
     <Compile Include="EqualityTester.cs" />
@@ -79,6 +80,7 @@
     <Compile Include="GeneratedMessageTest.cs" />
     <Compile Include="Collections\MapFieldTest.cs" />
     <Compile Include="Collections\RepeatedFieldTest.cs" />
+    <Compile Include="SampleEnum.cs" />
     <Compile Include="TestProtos\MapUnittestProto3.cs" />
     <Compile Include="TestProtos\UnittestImportProto3.cs" />
     <Compile Include="TestProtos\UnittestImportPublicProto3.cs" />
