@@ -193,7 +193,7 @@ namespace Google.Protobuf
         [Test]
         public void WriteWholeMessage_VaryingBlockSizes()
         {
-            TestAllTypes message = GeneratedMessageTest.GetSampleMessage();
+            TestAllTypes message = SampleMessages.CreateFullTestAllTypes();
 
             byte[] rawBytes = message.ToByteArray();
 
