@@ -42,61 +42,6 @@ namespace Google.Protobuf
     /// </summary>
     public class GeneratedMessageTest
     {
-        /// <summary>
-        /// Returns a sample TestAllTypes with all fields populated
-        /// </summary>
-        public static TestAllTypes GetSampleMessage()
-        {
-            return new TestAllTypes
-            {
-                SingleBool = true,
-                SingleBytes = ByteString.CopyFrom(1, 2, 3, 4),
-                SingleDouble = 23.5,
-                SingleFixed32 = 23,
-                SingleFixed64 = 1234567890123,
-                SingleFloat = 12.25f,
-                SingleForeignEnum = ForeignEnum.FOREIGN_BAR,
-                SingleForeignMessage = new ForeignMessage { C = 10 },
-                SingleImportEnum = ImportEnum.IMPORT_BAZ,
-                SingleImportMessage = new ImportMessage { D = 20 },
-                SingleInt32 = 100,
-                SingleInt64 = 3210987654321,
-                SingleNestedEnum = TestAllTypes.Types.NestedEnum.FOO,
-                SingleNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 35 },
-                SinglePublicImportMessage = new PublicImportMessage { E = 54 },
-                SingleSfixed32 = -123,
-                SingleSfixed64 = -12345678901234,
-                SingleSint32 = -456,
-                SingleSint64 = -12345678901235,
-                SingleString = "test",
-                SingleUint32 = uint.MaxValue,
-                SingleUint64 = ulong.MaxValue,
-                RepeatedBool = { true, false },
-                RepeatedBytes = { ByteString.CopyFrom(1, 2, 3, 4), ByteString.CopyFrom(5, 6), ByteString.CopyFrom(new byte[1000]) },
-                RepeatedDouble = { -12.25, 23.5 },
-                RepeatedFixed32 = { uint.MaxValue, 23 },
-                RepeatedFixed64 = { ulong.MaxValue, 1234567890123 },
-                RepeatedFloat = { 100f, 12.25f },
-                RepeatedForeignEnum = { ForeignEnum.FOREIGN_FOO, ForeignEnum.FOREIGN_BAR },
-                RepeatedForeignMessage = { new ForeignMessage(), new ForeignMessage { C = 10 } },
-                RepeatedImportEnum = { ImportEnum.IMPORT_BAZ, ImportEnum.IMPORT_ENUM_UNSPECIFIED },
-                RepeatedImportMessage = { new ImportMessage { D = 20 }, new ImportMessage { D = 25 } },
-                RepeatedInt32 = { 100, 200 },
-                RepeatedInt64 = { 3210987654321, long.MaxValue },
-                RepeatedNestedEnum = { TestAllTypes.Types.NestedEnum.FOO, TestAllTypes.Types.NestedEnum.NEG },
-                RepeatedNestedMessage = { new TestAllTypes.Types.NestedMessage { Bb = 35 }, new TestAllTypes.Types.NestedMessage { Bb = 10 } },
-                RepeatedPublicImportMessage = { new PublicImportMessage { E = 54 }, new PublicImportMessage { E = -1 } },
-                RepeatedSfixed32 = { -123, 123 },
-                RepeatedSfixed64 = { -12345678901234, 12345678901234 },
-                RepeatedSint32 = { -456, 100 },
-                RepeatedSint64 = { -12345678901235, 123 },
-                RepeatedString = { "foo", "bar" },
-                RepeatedUint32 = { uint.MaxValue, uint.MinValue },
-                RepeatedUint64 = { ulong.MaxValue, uint.MinValue },
-                OneofString = "Oneof string"                
-            };
-        }
-
         [Test]
         public void EmptyMessageFieldDistinctFromMissingMessageField()
         {

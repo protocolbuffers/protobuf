@@ -229,7 +229,7 @@ namespace Google.Protobuf
         [Test]
         public void ReadWholeMessage_VaryingBlockSizes()
         {
-            TestAllTypes message = GeneratedMessageTest.GetSampleMessage();
+            TestAllTypes message = SampleMessages.CreateFullTestAllTypes();
 
             byte[] rawBytes = message.ToByteArray();
             Assert.AreEqual(rawBytes.Length, message.CalculateSize());
