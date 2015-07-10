@@ -51,6 +51,12 @@ option java_package = "com.google.protobuf.conformance";
 //   - running as a sub-process may be more tricky in unusual environments like
 //     iOS apps, where fork/stdin/stdout are not available.
 
+enum WireFormat {
+  UNSPECIFIED = 0;
+  PROTOBUF = 1;
+  JSON = 2;
+}
+
 // Represents a single test case's input.  The testee should:
 //
 //   1. parse this proto (which should always succeed)
@@ -64,14 +70,8 @@ message ConformanceRequest {
     string json_payload = 2;
   }
 
-  enum RequestedOutput {
-    UNSPECIFIED = 0;
-    PROTOBUF = 1;
-    JSON = 2;
-  }
-
   // Which format should the testee serialize its message to?
-  RequestedOutput requested_output = 3;
+  WireFormat requested_output_format = 3;
 }
 
 // Represents a single test case's output.
@@ -96,6 +96,10 @@ message ConformanceResponse {
     // If the input was successfully parsed and the requested output was JSON,
     // serialize to JSON and set it in this field.
     string json_payload = 4;
+
+    // For when the testee skipped the test, likely because a certain feature
+    // wasn't supported, like JSON input/output.
+    string skipped = 5;
   }
 }
 
