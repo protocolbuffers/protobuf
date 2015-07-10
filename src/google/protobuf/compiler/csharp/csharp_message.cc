@@ -43,9 +43,10 @@
 #include <google/protobuf/wire_format_lite.h>
 
 #include <google/protobuf/compiler/csharp/csharp_enum.h>
-#include <google/protobuf/compiler/csharp/csharp_message.h>
-#include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
+#include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_message.h>
+#include <google/protobuf/compiler/csharp/csharp_names.h>
 
 using google::protobuf::internal::scoped_ptr;
 

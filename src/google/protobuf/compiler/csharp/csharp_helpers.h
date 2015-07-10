@@ -69,15 +69,14 @@ CSharpType GetCSharpType(FieldDescriptor::Type type);
 
 std::string StripDotProto(const std::string& proto_file);
 
-std::string GetFileNamespace(const FileDescriptor* descriptor);
 std::string GetFileUmbrellaClassname(const FileDescriptor* descriptor);
+
 std::string GetFileUmbrellaNamespace(const FileDescriptor* descriptor);
 
 std::string GetFullUmbrellaClassName(const FileDescriptor* descriptor);
 
 std::string GetQualifiedUmbrellaClassName(const FileDescriptor* descriptor);
 
-std::string GetClassName(const Descriptor* descriptor);
 std::string GetClassName(const EnumDescriptor* descriptor);
 
 std::string GetFieldName(const FieldDescriptor* descriptor);
