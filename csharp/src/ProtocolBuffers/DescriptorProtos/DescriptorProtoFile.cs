@@ -161,70 +161,70 @@ namespace Google.Protobuf.DescriptorProtos {
           });
       internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FileDescriptorSet), descriptor.MessageTypes[0],
-              new string[] { "File", });
+              new string[] { "File", }, new string[] { });
       internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FileDescriptorProto), descriptor.MessageTypes[1],
-              new string[] { "Name", "Package", "Dependency", "PublicDependency", "WeakDependency", "MessageType", "EnumType", "Service", "Extension", "Options", "SourceCodeInfo", "Syntax", });
+              new string[] { "Name", "Package", "Dependency", "PublicDependency", "WeakDependency", "MessageType", "EnumType", "Service", "Extension", "Options", "SourceCodeInfo", "Syntax", }, new string[] { });
       internal__static_google_protobuf_DescriptorProto__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.DescriptorProto), descriptor.MessageTypes[2],
-              new string[] { "Name", "Field", "Extension", "NestedType", "EnumType", "ExtensionRange", "OneofDecl", "Options", "ReservedRange", "ReservedName", });
+              new string[] { "Name", "Field", "Extension", "NestedType", "EnumType", "ExtensionRange", "OneofDecl", "Options", "ReservedRange", "ReservedName", }, new string[] { });
       internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange), descriptor.MessageTypes[2].NestedTypes[0],
-              new string[] { "Start", "End", });
+              new string[] { "Start", "End", }, new string[] { });
       internal__static_google_protobuf_DescriptorProto_ReservedRange__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange), descriptor.MessageTypes[2].NestedTypes[1],
-              new string[] { "Start", "End", });
+              new string[] { "Start", "End", }, new string[] { });
       internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto), descriptor.MessageTypes[3],
-              new string[] { "Name", "Number", "Label", "Type", "TypeName", "Extendee", "DefaultValue", "OneofIndex", "Options", });
+              new string[] { "Name", "Number", "Label", "Type", "TypeName", "Extendee", "DefaultValue", "OneofIndex", "Options", }, new string[] { });
       internal__static_google_protobuf_OneofDescriptorProto__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto), descriptor.MessageTypes[4],
-              new string[] { "Name", });
+              new string[] { "Name", }, new string[] { });
       internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto), descriptor.MessageTypes[5],
-              new string[] { "Name", "Value", "Options", });
+              new string[] { "Name", "Value", "Options", }, new string[] { });
       internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto), descriptor.MessageTypes[6],
-              new string[] { "Name", "Number", "Options", });
+              new string[] { "Name", "Number", "Options", }, new string[] { });
       internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto), descriptor.MessageTypes[7],
-              new string[] { "Name", "Method", "Options", });
+              new string[] { "Name", "Method", "Options", }, new string[] { });
       internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto), descriptor.MessageTypes[8],
-              new string[] { "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming", });
+              new string[] { "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming", }, new string[] { });
       internal__static_google_protobuf_FileOptions__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FileOptions), descriptor.MessageTypes[9],
-              new string[] { "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "UninterpretedOption", });
+              new string[] { "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_MessageOptions__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.MessageOptions), descriptor.MessageTypes[10],
-              new string[] { "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "UninterpretedOption", });
+              new string[] { "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_FieldOptions__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FieldOptions), descriptor.MessageTypes[11],
-              new string[] { "Ctype", "Packed", "Jstype", "Lazy", "Deprecated", "Weak", "UninterpretedOption", });
+              new string[] { "Ctype", "Packed", "Jstype", "Lazy", "Deprecated", "Weak", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_EnumOptions__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumOptions), descriptor.MessageTypes[12],
-              new string[] { "AllowAlias", "Deprecated", "UninterpretedOption", });
+              new string[] { "AllowAlias", "Deprecated", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumValueOptions), descriptor.MessageTypes[13],
-              new string[] { "Deprecated", "UninterpretedOption", });
+              new string[] { "Deprecated", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_ServiceOptions__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.ServiceOptions), descriptor.MessageTypes[14],
-              new string[] { "Deprecated", "UninterpretedOption", });
+              new string[] { "Deprecated", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_MethodOptions__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.MethodOptions), descriptor.MessageTypes[15],
-              new string[] { "Deprecated", "UninterpretedOption", });
+              new string[] { "Deprecated", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.UninterpretedOption), descriptor.MessageTypes[16],
-              new string[] { "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", "AggregateValue", });
+              new string[] { "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", "AggregateValue", }, new string[] { });
       internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart), descriptor.MessageTypes[16].NestedTypes[0],
-              new string[] { "NamePart_", "IsExtension", });
+              new string[] { "NamePart_", "IsExtension", }, new string[] { });
       internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.SourceCodeInfo), descriptor.MessageTypes[17],
-              new string[] { "Location", });
+              new string[] { "Location", }, new string[] { });
       internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location), descriptor.MessageTypes[17].NestedTypes[0],
-              new string[] { "Path", "Span", "LeadingComments", "TrailingComments", "LeadingDetachedComments", });
+              new string[] { "Path", "Span", "LeadingComments", "TrailingComments", "LeadingDetachedComments", }, new string[] { });
     }
     #endregion
 

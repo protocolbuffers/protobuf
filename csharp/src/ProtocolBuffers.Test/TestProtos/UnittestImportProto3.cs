@@ -38,7 +38,7 @@ namespace Google.Protobuf.TestProtos {
           });
       internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.ImportMessage), descriptor.MessageTypes[0],
-              new string[] { "D", });
+              new string[] { "D", }, new string[] { });
     }
     #endregion
 
