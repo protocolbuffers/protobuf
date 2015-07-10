@@ -160,10 +160,34 @@ namespace Google.Protobuf
         }
 
         [Test]
-        public void UnknownEnumValue()
+        public void UnknownEnumValueOmitted_SingleField()
         {
             var message = new TestAllTypes { SingleForeignEnum = (ForeignEnum) 100 };
-            Assert.AreEqual("{ \"singleForeignEnum\": 100 }", JsonFormatter.Default.Format(message));
+            Assert.AreEqual("{ }", JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void UnknownEnumValueOmitted_RepeatedField()
+        {
+            var message = new TestAllTypes { RepeatedForeignEnum = { ForeignEnum.FOREIGN_BAZ, (ForeignEnum) 100, ForeignEnum.FOREIGN_FOO } };
+            Assert.AreEqual("{ \"repeatedForeignEnum\": [ \"FOREIGN_BAZ\", \"FOREIGN_FOO\" ] }", JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void UnknownEnumValueOmitted_MapField()
+        {
+            // This matches the C++ behaviour.
+            var message = new TestMap { MapInt32Enum = { { 1, MapEnum.MAP_ENUM_FOO }, { 2, (MapEnum) 100 }, { 3, MapEnum.MAP_ENUM_BAR } } };
+            Assert.AreEqual("{ \"mapInt32Enum\": { \"1\": \"MAP_ENUM_FOO\", \"3\": \"MAP_ENUM_BAR\" } }", JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void UnknownEnumValueOmitted_RepeatedField_AllEntriesUnknown()
+        {
+            // *Maybe* we should hold off on writing the "[" until we find that we've got at least one value to write...
+            // but this is what happens at the moment, and it doesn't seem too awful.
+            var message = new TestAllTypes { RepeatedForeignEnum = { (ForeignEnum) 200, (ForeignEnum) 100 } };
+            Assert.AreEqual("{ \"repeatedForeignEnum\": [ ] }", JsonFormatter.Default.Format(message));
         }
 
         [Test]
@@ -212,6 +236,26 @@ namespace Google.Protobuf
         public void ToCamelCase(string original, string expected)
         {
             Assert.AreEqual(expected, JsonFormatter.ToCamelCase(original));
+        }
+
+        [Test]
+        [TestCase(null, "{ }")]
+        [TestCase("x", "{ \"fooString\": \"x\" }")]
+        [TestCase("", "{ \"fooString\": \"\" }")]
+        [TestCase(null, "{ }")]
+        public void Oneof(string fooStringValue, string expectedJson)
+        {
+            var message = new TestOneof();
+            if (fooStringValue != null)
+            {
+                message.FooString = fooStringValue;
+            }
+
+            // We should get the same result both with and without "format default values".
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false));
+            Assert.AreEqual(expectedJson, formatter.Format(message));
+            formatter = new JsonFormatter(new JsonFormatter.Settings(true));
+            Assert.AreEqual(expectedJson, formatter.Format(message));
         }
     }
 }

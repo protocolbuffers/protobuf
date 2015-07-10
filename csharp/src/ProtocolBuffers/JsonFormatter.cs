@@ -136,13 +136,28 @@ namespace Google.Protobuf
             builder.Append("{ ");
             var fields = message.Fields;
             bool first = true;
+            // First non-oneof fields
             foreach (var accessor in fields.Accessors)
             {
+                var descriptor = accessor.Descriptor;
+                // Oneofs are written later
+                if (descriptor.ContainingOneof != null)
+                {
+                    continue;
+                }
+                // Omit default values unless we're asked to format them
                 object value = accessor.GetValue(message);
                 if (!settings.FormatDefaultValues && IsDefaultValue(accessor, value))
                 {
                     continue;
                 }
+                // Omit awkward (single) values such as unknown enum values
+                if (!descriptor.IsRepeated && !descriptor.IsMap && !CanWriteSingleValue(accessor.Descriptor, value))
+                {
+                    continue;
+                }
+
+                // Okay, all tests complete: let's write the field value...
                 if (!first)
                 {
                     builder.Append(", ");
@@ -150,6 +165,32 @@ namespace Google.Protobuf
                 WriteString(builder, ToCamelCase(accessor.Descriptor.Name));
                 builder.Append(": ");
                 WriteValue(builder, accessor, value);
+                first = false;
+            }
+
+            // Now oneofs
+            foreach (var accessor in fields.Oneofs)
+            {
+                var fieldDescriptor = accessor.GetCaseFieldDescriptor(message);
+                if (fieldDescriptor == null)
+                {
+                    continue;
+                }
+                var fieldAccessor = fields[fieldDescriptor];
+                object value = fieldAccessor.GetValue(message);
+                // Omit awkward (single) values such as unknown enum values
+                if (!fieldDescriptor.IsRepeated && !fieldDescriptor.IsMap && !CanWriteSingleValue(fieldDescriptor, value))
+                {
+                    continue;
+                }
+
+                if (!first)
+                {
+                    builder.Append(", ");
+                }
+                WriteString(builder, ToCamelCase(fieldDescriptor.Name));
+                builder.Append(": ");
+                WriteValue(builder, fieldAccessor, value);
                 first = false;
             }
             builder.Append(first ? "}" : " }");
@@ -303,15 +344,8 @@ namespace Google.Protobuf
                     }
                 case FieldType.Enum:
                     EnumValueDescriptor enumValue = descriptor.EnumType.FindValueByNumber((int) value);
-                    if (enumValue != null)
-                    {
-                        WriteString(builder, enumValue.Name);
-                    }
-                    else
-                    {
-                        // ??? Need more documentation
-                        builder.Append(((int) value).ToString("d", CultureInfo.InvariantCulture));
-                    }
+                    // We will already have validated that this is a known value.
+                    WriteString(builder, enumValue.Name);
                     break;
                 case FieldType.Fixed64:
                 case FieldType.UInt64:
@@ -354,6 +388,10 @@ namespace Google.Protobuf
             bool first = true;
             foreach (var value in list)
             {
+                if (!CanWriteSingleValue(accessor.Descriptor, value))
+                {
+                    continue;
+                }
                 if (!first)
                 {
                     builder.Append(", ");
@@ -373,6 +411,10 @@ namespace Google.Protobuf
             // This will box each pair. Could use IDictionaryEnumerator, but that's ugly in terms of disposal.
             foreach (DictionaryEntry pair in dictionary)
             {
+                if (!CanWriteSingleValue(valueType, pair.Value))
+                {
+                    continue;
+                }
                 if (!first)
                 {
                     builder.Append(", ");
@@ -407,6 +449,21 @@ namespace Google.Protobuf
                 first = false;
             }
             builder.Append(first ? "}" : " }");
+        }
+
+        /// <summary>
+        /// Returns whether or not a singular value can be represented in JSON.
+        /// Currently only relevant for enums, where unknown values can't be represented.
+        /// For repeated/map fields, this always returns true.
+        /// </summary>
+        private bool CanWriteSingleValue(FieldDescriptor descriptor, object value)
+        {
+            if (descriptor.FieldType == FieldType.Enum)
+            {
+                EnumValueDescriptor enumValue = descriptor.EnumType.FindValueByNumber((int) value);
+                return enumValue != null;
+            }
+            return true;
         }
 
         /// <summary>
