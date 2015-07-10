@@ -57,11 +57,13 @@ VALUE Message_alloc(VALUE klass) {
   Descriptor* desc = ruby_to_Descriptor(descriptor);
   MessageHeader* msg = (MessageHeader*)ALLOC_N(
       uint8_t, sizeof(MessageHeader) + desc->layout->size);
+  VALUE ret;
+
   memset(Message_data(msg), 0, desc->layout->size);
 
   // We wrap first so that everything in the message object is GC-rooted in case
   // a collection happens during object creation in layout_init().
-  VALUE ret = TypedData_Wrap_Struct(klass, &Message_type, msg);
+  ret = TypedData_Wrap_Struct(klass, &Message_type, msg);
   msg->descriptor = desc;
   rb_ivar_set(ret, descriptor_instancevar_interned, descriptor);
 
@@ -71,29 +73,34 @@ VALUE Message_alloc(VALUE klass) {
 }
 
 static VALUE which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
+  upb_oneof_iter it;
+  size_t case_ofs;
+  uint32_t oneof_case;
+  const upb_fielddef* first_field;
+  const upb_fielddef* f;
+
   // If no fields in the oneof, always nil.
   if (upb_oneofdef_numfields(o) == 0) {
     return Qnil;
   }
   // Grab the first field in the oneof so we can get its layout info to find the
   // oneof_case field.
-  upb_oneof_iter it;
   upb_oneof_begin(&it, o);
   assert(!upb_oneof_done(&it));
-  const upb_fielddef* first_field = upb_oneof_iter_field(&it);
+  first_field = upb_oneof_iter_field(&it);
   assert(upb_fielddef_containingoneof(first_field) != NULL);
 
-  size_t case_ofs =
+  case_ofs =
       self->descriptor->layout->
       fields[upb_fielddef_index(first_field)].case_offset;
-  uint32_t oneof_case = *((uint32_t*)((char*)Message_data(self) + case_ofs));
+  oneof_case = *((uint32_t*)((char*)Message_data(self) + case_ofs));
 
   if (oneof_case == ONEOF_CASE_NONE) {
     return Qnil;
   }
 
   // oneof_case is a field index, so find that field.
-  const upb_fielddef* f = upb_oneofdef_itof(o, oneof_case);
+  f = upb_oneofdef_itof(o, oneof_case);
   assert(f != NULL);
 
   return ID2SYM(rb_intern(upb_fielddef_name(f)));
@@ -118,18 +125,25 @@ static VALUE which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
  */
 VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   MessageHeader* self;
+  VALUE method_name, method_str;
+  char* name;
+  size_t name_len;
+  bool setter;
+  const upb_oneofdef* o;
+  const upb_fielddef* f;
+
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
   if (argc < 1) {
     rb_raise(rb_eArgError, "Expected method name as first argument.");
   }
-  VALUE method_name = argv[0];
+  method_name = argv[0];
   if (!SYMBOL_P(method_name)) {
     rb_raise(rb_eArgError, "Expected symbol as method name.");
   }
-  VALUE method_str = rb_id2str(SYM2ID(method_name));
-  char* name = RSTRING_PTR(method_str);
-  size_t name_len = RSTRING_LEN(method_str);
-  bool setter = false;
+  method_str = rb_id2str(SYM2ID(method_name));
+  name = RSTRING_PTR(method_str);
+  name_len = RSTRING_LEN(method_str);
+  setter = false;
 
   // Setters have names that end in '='.
   if (name[name_len - 1] == '=') {
@@ -138,7 +152,7 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   }
 
   // Check for a oneof name first.
-  const upb_oneofdef* o = upb_msgdef_ntoo(self->descriptor->msgdef,
+  o = upb_msgdef_ntoo(self->descriptor->msgdef,
                                           name, name_len);
   if (o != NULL) {
     if (setter) {
@@ -148,7 +162,7 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   }
 
   // Otherwise, check for a field with that name.
-  const upb_fielddef* f = upb_msgdef_ntof(self->descriptor->msgdef,
+  f = upb_msgdef_ntof(self->descriptor->msgdef,
                                           name, name_len);
 
   if (f == NULL) {
@@ -168,6 +182,9 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
 
 int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
   MessageHeader* self;
+  VALUE method_str;
+  char* name;
+  const upb_fielddef* f;
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
 
   if (!SYMBOL_P(key)) {
@@ -175,27 +192,31 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
              "Expected symbols as hash keys in initialization map.");
   }
 
-  VALUE method_str = rb_id2str(SYM2ID(key));
-  char* name = RSTRING_PTR(method_str);
-  const upb_fielddef* f = upb_msgdef_ntofz(self->descriptor->msgdef, name);
+  method_str = rb_id2str(SYM2ID(key));
+  name = RSTRING_PTR(method_str);
+  f = upb_msgdef_ntofz(self->descriptor->msgdef, name);
   if (f == NULL) {
     rb_raise(rb_eArgError,
              "Unknown field name in initialization map entry.");
   }
 
   if (is_map_field(f)) {
+    VALUE map;
+
     if (TYPE(val) != T_HASH) {
       rb_raise(rb_eArgError,
                "Expected Hash object as initializer value for map field.");
     }
-    VALUE map = layout_get(self->descriptor->layout, Message_data(self), f);
+    map = layout_get(self->descriptor->layout, Message_data(self), f);
     Map_merge_into_self(map, val);
   } else if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
+    VALUE ary;
+
     if (TYPE(val) != T_ARRAY) {
       rb_raise(rb_eArgError,
                "Expected array as initializer value for repeated field.");
     }
-    VALUE ary = layout_get(self->descriptor->layout, Message_data(self), f);
+    ary = layout_get(self->descriptor->layout, Message_data(self), f);
     for (int i = 0; i < RARRAY_LEN(val); i++) {
       RepeatedField_push(ary, rb_ary_entry(val, i));
     }
@@ -218,13 +239,15 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
  * Message class are provided on each concrete message class.
  */
 VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
+  VALUE hash_args;
+
   if (argc == 0) {
     return Qnil;
   }
   if (argc != 1) {
     rb_raise(rb_eArgError, "Expected 0 or 1 arguments.");
   }
-  VALUE hash_args = argv[0];
+  hash_args = argv[0];
   if (TYPE(hash_args) != T_HASH) {
     rb_raise(rb_eArgError, "Expected hash arguments.");
   }
@@ -241,10 +264,11 @@ VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
  */
 VALUE Message_dup(VALUE _self) {
   MessageHeader* self;
+  VALUE new_msg;
+  MessageHeader* new_msg_self;
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
 
-  VALUE new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
-  MessageHeader* new_msg_self;
+  new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
   TypedData_Get_Struct(new_msg, MessageHeader, &Message_type, new_msg_self);
 
   layout_dup(self->descriptor->layout,
@@ -257,10 +281,11 @@ VALUE Message_dup(VALUE _self) {
 // Internal only; used by Google::Protobuf.deep_copy.
 VALUE Message_deep_copy(VALUE _self) {
   MessageHeader* self;
+  MessageHeader* new_msg_self;
+  VALUE new_msg;
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
 
-  VALUE new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
-  MessageHeader* new_msg_self;
+  new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
   TypedData_Get_Struct(new_msg, MessageHeader, &Message_type, new_msg_self);
 
   layout_deep_copy(self->descriptor->layout,
@@ -281,9 +306,8 @@ VALUE Message_deep_copy(VALUE _self) {
  */
 VALUE Message_eq(VALUE _self, VALUE _other) {
   MessageHeader* self;
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
-
   MessageHeader* other;
+  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
   TypedData_Get_Struct(_other, MessageHeader, &Message_type, other);
 
   if (self->descriptor != other->descriptor) {
@@ -318,9 +342,10 @@ VALUE Message_hash(VALUE _self) {
  */
 VALUE Message_inspect(VALUE _self) {
   MessageHeader* self;
+  VALUE str;
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
 
-  VALUE str = rb_str_new2("<");
+  str = rb_str_new2("<");
   str = rb_str_append(str, rb_str_new2(rb_class2name(CLASS_OF(_self))));
   str = rb_str_cat2(str, ": ");
   str = rb_str_append(str, layout_inspect(
@@ -332,11 +357,12 @@ VALUE Message_inspect(VALUE _self) {
 
 VALUE Message_to_h(VALUE _self) {
   MessageHeader* self;
+  VALUE hash;
+  upb_msg_field_iter it;
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
 
-  VALUE hash = rb_hash_new();
+  hash = rb_hash_new();
 
-  upb_msg_field_iter it;
   for (upb_msg_field_begin(&it, self->descriptor->msgdef);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
@@ -363,10 +389,10 @@ VALUE Message_to_h(VALUE _self) {
  */
 VALUE Message_index(VALUE _self, VALUE field_name) {
   MessageHeader* self;
+  const upb_fielddef* field;
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
   Check_Type(field_name, T_STRING);
-  const upb_fielddef* field =
-      upb_msgdef_ntofz(self->descriptor->msgdef, RSTRING_PTR(field_name));
+  field = upb_msgdef_ntofz(self->descriptor->msgdef, RSTRING_PTR(field_name));
   if (field == NULL) {
     return Qnil;
   }
@@ -382,10 +408,10 @@ VALUE Message_index(VALUE _self, VALUE field_name) {
  */
 VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
   MessageHeader* self;
+  const upb_fielddef* field;
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
   Check_Type(field_name, T_STRING);
-  const upb_fielddef* field =
-      upb_msgdef_ntofz(self->descriptor->msgdef, RSTRING_PTR(field_name));
+  field = upb_msgdef_ntofz(self->descriptor->msgdef, RSTRING_PTR(field_name));
   if (field == NULL) {
     rb_raise(rb_eArgError, "Unknown field: %s", RSTRING_PTR(field_name));
   }
@@ -405,6 +431,9 @@ VALUE Message_descriptor(VALUE klass) {
 }
 
 VALUE build_class_from_descriptor(Descriptor* desc) {
+  const char *name;
+  VALUE klass;
+
   if (desc->layout == NULL) {
     desc->layout = create_layout(desc->msgdef);
   }
@@ -412,12 +441,12 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
     desc->fill_method = new_fillmsg_decodermethod(desc, &desc->fill_method);
   }
 
-  const char* name = upb_msgdef_fullname(desc->msgdef);
+  name = upb_msgdef_fullname(desc->msgdef);
   if (name == NULL) {
     rb_raise(rb_eRuntimeError, "Descriptor does not have assigned name.");
   }
 
-  VALUE klass = rb_define_class_id(
+  klass = rb_define_class_id(
       // Docs say this parameter is ignored. User will assign return value to
       // their own toplevel constant class name.
       rb_intern("Message"),

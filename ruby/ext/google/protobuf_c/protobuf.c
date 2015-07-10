@@ -80,10 +80,11 @@ ID descriptor_instancevar_interned;
 // This must be named "Init_protobuf_c" because the Ruby module is named
 // "protobuf_c" -- the VM looks for this symbol in our .so.
 void Init_protobuf_c() {
-  descriptor_instancevar_interned = rb_intern(kDescriptorInstanceVar);
   VALUE google = rb_define_module("Google");
   VALUE protobuf = rb_define_module_under(google, "Protobuf");
   VALUE internal = rb_define_module_under(protobuf, "Internal");
+
+  descriptor_instancevar_interned = rb_intern(kDescriptorInstanceVar);
   DescriptorPool_register(protobuf);
   Descriptor_register(protobuf);
   FieldDescriptor_register(protobuf);
