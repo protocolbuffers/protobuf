@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>Google.Protobuf</id>
+    <title>Google Protocol Buffers C#</title>
+    <summary>C# runtime library for Protocol Buffers - Google's data interchange format.</summary>
+    <description>See project site for more info.</description>
+    <version>3.0.0-experimental</version>
+    <authors>Google Inc.</authors>
+    <owners>protobuf-packages</owners>
+    <licenseUrl>https://github.com/google/protobuf/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/google/protobuf</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <releaseNotes>Experimental version of C# Protocol Buffers</releaseNotes>
+    <copyright>Copyright 2015, Google Inc.</copyright>
+    <tags>Protocol Buffers Binary Serialization Format Google proto proto3</tags>
+  </metadata>
+  <files>
+    <file src="bin/Release/Google.Protobuf.dll" target="lib/portable-net45+win8+wp8+wpa81" />
+	  <file src="bin/Release/Google.Protobuf.pdb" target="lib/portable-net45+win8+wp8+wpa81" />
+	  <file src="bin/Release/Google.Protobuf.xml" target="lib/portable-net45+win8+wp8+wpa81" />
+	  <file src="**\*.cs" target="src" />
+  </files>
+</package>
