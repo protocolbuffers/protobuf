@@ -42,6 +42,7 @@ namespace Google.Protobuf.FieldAccess
     public sealed class FieldAccessorTable
     {
         private readonly ReadOnlyCollection<IFieldAccessor> accessors;
+        private readonly ReadOnlyCollection<OneofAccessor> oneofs;
         private readonly MessageDescriptor descriptor;
 
         /// <summary>
@@ -51,7 +52,7 @@ namespace Google.Protobuf.FieldAccess
         /// <param name="type">The CLR type for the message.</param>
         /// <param name="descriptor">The type's descriptor</param>
         /// <param name="propertyNames">The Pascal-case names of all the field-based properties in the message.</param>
-        public FieldAccessorTable(Type type, MessageDescriptor descriptor, string[] propertyNames)
+        public FieldAccessorTable(Type type, MessageDescriptor descriptor, string[] propertyNames, string[] oneofPropertyNames)
         {
             this.descriptor = descriptor;
             var accessorsArray = new IFieldAccessor[descriptor.Fields.Count];
@@ -65,7 +66,13 @@ namespace Google.Protobuf.FieldAccess
                     : (IFieldAccessor) new SingleFieldAccessor(type, name, field);
             }
             accessors = new ReadOnlyCollection<IFieldAccessor>(accessorsArray);
-            // TODO(jonskeet): Oneof support
+            var oneofsArray = new OneofAccessor[descriptor.Oneofs.Count];
+            for (int i = 0; i < oneofsArray.Length; i++)
+            {
+                var oneof = descriptor.Oneofs[i];
+                oneofsArray[i] = new OneofAccessor(type, oneofPropertyNames[i], oneof);
+            }
+            oneofs = new ReadOnlyCollection<OneofAccessor>(oneofsArray);
         }
 
         // TODO: Validate the name here... should possibly make this type a more "general reflection access" type,
@@ -74,6 +81,10 @@ namespace Google.Protobuf.FieldAccess
         /// Returns all of the field accessors for the message type.
         /// </summary>
         public ReadOnlyCollection<IFieldAccessor> Accessors { get { return accessors; } }
+
+        public ReadOnlyCollection<OneofAccessor> Oneofs { get { return oneofs; } }
+
+        // TODO: Review the API for the indexers. Now that we have fields and oneofs, it's not as clear...
 
         public IFieldAccessor this[int fieldNumber]
         {
@@ -84,7 +95,7 @@ namespace Google.Protobuf.FieldAccess
             }
         }
 
-        internal IFieldAccessor this[FieldDescriptor field]
+        public IFieldAccessor this[FieldDescriptor field]
         {
             get
             {
@@ -93,6 +104,18 @@ namespace Google.Protobuf.FieldAccess
                     throw new ArgumentException("FieldDescriptor does not match message type.");
                 }
                 return accessors[field.Index];
+            }
+        }
+
+        public OneofAccessor this[OneofDescriptor oneof]
+        {
+            get
+            {
+                if (oneof.ContainingType != descriptor)
+                {
+                    throw new ArgumentException("OneofDescriptor does not match message type.");
+                }
+                return oneofs[oneof.Index];
             }
         }
     }

@@ -151,6 +151,7 @@ void MessageGenerator::GenerateStaticVariableInitializers(io::Printer* printer) 
     printer->Print("\"$property_name$\", ",
                    "property_name", GetPropertyName(descriptor_->field(i)));
   }
+  printer->Print("}, new string[] { ");
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     printer->Print("\"$oneof_name$\", ",
                    "oneof_name",
