@@ -68,12 +68,12 @@ namespace Google.Protobuf
 
         public static FieldCodec<uint> ForFixed32(uint tag)
         {
-            return new FieldCodec<uint>(input => input.ReadFixed32(), (output, value) => output.WriteFixed32(value), CodedOutputStream.ComputeFixed32Size, tag);
+            return new FieldCodec<uint>(input => input.ReadFixed32(), (output, value) => output.WriteFixed32(value), 4, tag);
         }
 
         public static FieldCodec<int> ForSFixed32(uint tag)
         {
-            return new FieldCodec<int>(input => input.ReadSFixed32(), (output, value) => output.WriteSFixed32(value), CodedOutputStream.ComputeSFixed32Size, tag);
+            return new FieldCodec<int>(input => input.ReadSFixed32(), (output, value) => output.WriteSFixed32(value), 4, tag);
         }
 
         public static FieldCodec<uint> ForUInt32(uint tag)
@@ -93,12 +93,12 @@ namespace Google.Protobuf
 
         public static FieldCodec<ulong> ForFixed64(uint tag)
         {
-            return new FieldCodec<ulong>(input => input.ReadFixed64(), (output, value) => output.WriteFixed64(value), CodedOutputStream.ComputeFixed64Size, tag);
+            return new FieldCodec<ulong>(input => input.ReadFixed64(), (output, value) => output.WriteFixed64(value), 8, tag);
         }
 
         public static FieldCodec<long> ForSFixed64(uint tag)
         {
-            return new FieldCodec<long>(input => input.ReadSFixed64(), (output, value) => output.WriteSFixed64(value), CodedOutputStream.ComputeSFixed64Size, tag);
+            return new FieldCodec<long>(input => input.ReadSFixed64(), (output, value) => output.WriteSFixed64(value), 8, tag);
         }
 
         public static FieldCodec<ulong> ForUInt64(uint tag)

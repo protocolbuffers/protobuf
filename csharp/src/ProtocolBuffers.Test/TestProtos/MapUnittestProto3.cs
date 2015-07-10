@@ -13,94 +13,50 @@ namespace Google.Protobuf.TestProtos {
   public static partial class MapUnittestProto3 {
 
     #region Static variables
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap> internal__static_protobuf_unittest_TestMap__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapInt32Int32Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32Int32Entry> internal__static_protobuf_unittest_TestMap_MapInt32Int32Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapInt64Int64Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt64Int64Entry> internal__static_protobuf_unittest_TestMap_MapInt64Int64Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapUint32Uint32Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapUint32Uint32Entry> internal__static_protobuf_unittest_TestMap_MapUint32Uint32Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapUint64Uint64Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapUint64Uint64Entry> internal__static_protobuf_unittest_TestMap_MapUint64Uint64Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapSint32Sint32Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapSint32Sint32Entry> internal__static_protobuf_unittest_TestMap_MapSint32Sint32Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapSint64Sint64Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapSint64Sint64Entry> internal__static_protobuf_unittest_TestMap_MapSint64Sint64Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapFixed32Fixed32Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapFixed32Fixed32Entry> internal__static_protobuf_unittest_TestMap_MapFixed32Fixed32Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapFixed64Fixed64Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapFixed64Fixed64Entry> internal__static_protobuf_unittest_TestMap_MapFixed64Fixed64Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapSfixed32Sfixed32Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapSfixed32Sfixed32Entry> internal__static_protobuf_unittest_TestMap_MapSfixed32Sfixed32Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapSfixed64Sfixed64Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapSfixed64Sfixed64Entry> internal__static_protobuf_unittest_TestMap_MapSfixed64Sfixed64Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapInt32FloatEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32FloatEntry> internal__static_protobuf_unittest_TestMap_MapInt32FloatEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapInt32DoubleEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32DoubleEntry> internal__static_protobuf_unittest_TestMap_MapInt32DoubleEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapBoolBoolEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapBoolBoolEntry> internal__static_protobuf_unittest_TestMap_MapBoolBoolEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapStringStringEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapStringStringEntry> internal__static_protobuf_unittest_TestMap_MapStringStringEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapInt32BytesEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32BytesEntry> internal__static_protobuf_unittest_TestMap_MapInt32BytesEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapInt32EnumEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32EnumEntry> internal__static_protobuf_unittest_TestMap_MapInt32EnumEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMap_MapInt32ForeignMessageEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32ForeignMessageEntry> internal__static_protobuf_unittest_TestMap_MapInt32ForeignMessageEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMapSubmessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMapSubmessage> internal__static_protobuf_unittest_TestMapSubmessage__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMessageMap__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMessageMap> internal__static_protobuf_unittest_TestMessageMap__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMessageMap_MapInt32MessageEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMessageMap.Types.MapInt32MessageEntry> internal__static_protobuf_unittest_TestMessageMap_MapInt32MessageEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestSameTypeMap__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestSameTypeMap> internal__static_protobuf_unittest_TestSameTypeMap__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestSameTypeMap_Map1Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestSameTypeMap.Types.Map1Entry> internal__static_protobuf_unittest_TestSameTypeMap_Map1Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestSameTypeMap_Map2Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestSameTypeMap.Types.Map2Entry> internal__static_protobuf_unittest_TestSameTypeMap_Map2Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap> internal__static_protobuf_unittest_TestArenaMap__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapInt32Int32Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32Int32Entry> internal__static_protobuf_unittest_TestArenaMap_MapInt32Int32Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapInt64Int64Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt64Int64Entry> internal__static_protobuf_unittest_TestArenaMap_MapInt64Int64Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapUint32Uint32Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapUint32Uint32Entry> internal__static_protobuf_unittest_TestArenaMap_MapUint32Uint32Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapUint64Uint64Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapUint64Uint64Entry> internal__static_protobuf_unittest_TestArenaMap_MapUint64Uint64Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapSint32Sint32Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapSint32Sint32Entry> internal__static_protobuf_unittest_TestArenaMap_MapSint32Sint32Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapSint64Sint64Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapSint64Sint64Entry> internal__static_protobuf_unittest_TestArenaMap_MapSint64Sint64Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapFixed32Fixed32Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapFixed32Fixed32Entry> internal__static_protobuf_unittest_TestArenaMap_MapFixed32Fixed32Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapFixed64Fixed64Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapFixed64Fixed64Entry> internal__static_protobuf_unittest_TestArenaMap_MapFixed64Fixed64Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapSfixed32Sfixed32Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapSfixed32Sfixed32Entry> internal__static_protobuf_unittest_TestArenaMap_MapSfixed32Sfixed32Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapSfixed64Sfixed64Entry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapSfixed64Sfixed64Entry> internal__static_protobuf_unittest_TestArenaMap_MapSfixed64Sfixed64Entry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapInt32FloatEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32FloatEntry> internal__static_protobuf_unittest_TestArenaMap_MapInt32FloatEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapInt32DoubleEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32DoubleEntry> internal__static_protobuf_unittest_TestArenaMap_MapInt32DoubleEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapBoolBoolEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapBoolBoolEntry> internal__static_protobuf_unittest_TestArenaMap_MapBoolBoolEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapInt32EnumEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32EnumEntry> internal__static_protobuf_unittest_TestArenaMap_MapInt32EnumEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestArenaMap_MapInt32ForeignMessageEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32ForeignMessageEntry> internal__static_protobuf_unittest_TestArenaMap_MapInt32ForeignMessageEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_MessageContainingEnumCalledType__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType> internal__static_protobuf_unittest_MessageContainingEnumCalledType__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_MessageContainingEnumCalledType_TypeEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType.Types.TypeEntry> internal__static_protobuf_unittest_MessageContainingEnumCalledType_TypeEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_MessageContainingMapCalledEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.MessageContainingMapCalledEntry> internal__static_protobuf_unittest_MessageContainingMapCalledEntry__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_MessageContainingMapCalledEntry_EntryEntry__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.MessageContainingMapCalledEntry.Types.EntryEntry> internal__static_protobuf_unittest_MessageContainingMapCalledEntry_EntryEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapInt32Int32Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapInt64Int64Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapUint32Uint32Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapUint64Uint64Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapSint32Sint32Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapSint64Sint64Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapFixed32Fixed32Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapFixed64Fixed64Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapSfixed32Sfixed32Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapSfixed64Sfixed64Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapInt32FloatEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapInt32DoubleEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapBoolBoolEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapStringStringEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapInt32BytesEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapInt32EnumEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMap_MapInt32ForeignMessageEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMapSubmessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMessageMap__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMessageMap_MapInt32MessageEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestSameTypeMap__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestSameTypeMap_Map1Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestSameTypeMap_Map2Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapInt32Int32Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapInt64Int64Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapUint32Uint32Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapUint64Uint64Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapSint32Sint32Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapSint64Sint64Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapFixed32Fixed32Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapFixed64Fixed64Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapSfixed32Sfixed32Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapSfixed64Sfixed64Entry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapInt32FloatEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapInt32DoubleEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapBoolBoolEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapInt32EnumEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestArenaMap_MapInt32ForeignMessageEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_MessageContainingEnumCalledType__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_MessageContainingEnumCalledType_TypeEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_MessageContainingMapCalledEntry__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_MessageContainingMapCalledEntry_EntryEntry__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -235,189 +191,142 @@ namespace Google.Protobuf.TestProtos {
             "dmFsdWUYAiABKAU6AjgBKj8KB01hcEVudW0SEAoMTUFQX0VOVU1fRk9PEAAS", 
             "EAoMTUFQX0VOVU1fQkFSEAESEAoMTUFQX0VOVU1fQkFaEAJCIPgBAaoCGkdv", 
           "b2dsZS5Qcm90b2J1Zi5UZXN0UHJvdG9zYgZwcm90bzM="));
-      pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
-        descriptor = root;
-        internal__static_protobuf_unittest_TestMap__Descriptor = Descriptor.MessageTypes[0];
-        internal__static_protobuf_unittest_TestMap__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap>(internal__static_protobuf_unittest_TestMap__Descriptor,
-                new string[] { "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapInt32Bytes", "MapInt32Enum", "MapInt32ForeignMessage", });
-        internal__static_protobuf_unittest_TestMap_MapInt32Int32Entry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[0];
-        internal__static_protobuf_unittest_TestMap_MapInt32Int32Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32Int32Entry>(internal__static_protobuf_unittest_TestMap_MapInt32Int32Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapInt64Int64Entry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[1];
-        internal__static_protobuf_unittest_TestMap_MapInt64Int64Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt64Int64Entry>(internal__static_protobuf_unittest_TestMap_MapInt64Int64Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapUint32Uint32Entry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[2];
-        internal__static_protobuf_unittest_TestMap_MapUint32Uint32Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapUint32Uint32Entry>(internal__static_protobuf_unittest_TestMap_MapUint32Uint32Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapUint64Uint64Entry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[3];
-        internal__static_protobuf_unittest_TestMap_MapUint64Uint64Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapUint64Uint64Entry>(internal__static_protobuf_unittest_TestMap_MapUint64Uint64Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapSint32Sint32Entry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[4];
-        internal__static_protobuf_unittest_TestMap_MapSint32Sint32Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapSint32Sint32Entry>(internal__static_protobuf_unittest_TestMap_MapSint32Sint32Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapSint64Sint64Entry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[5];
-        internal__static_protobuf_unittest_TestMap_MapSint64Sint64Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapSint64Sint64Entry>(internal__static_protobuf_unittest_TestMap_MapSint64Sint64Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapFixed32Fixed32Entry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[6];
-        internal__static_protobuf_unittest_TestMap_MapFixed32Fixed32Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapFixed32Fixed32Entry>(internal__static_protobuf_unittest_TestMap_MapFixed32Fixed32Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapFixed64Fixed64Entry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[7];
-        internal__static_protobuf_unittest_TestMap_MapFixed64Fixed64Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapFixed64Fixed64Entry>(internal__static_protobuf_unittest_TestMap_MapFixed64Fixed64Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapSfixed32Sfixed32Entry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[8];
-        internal__static_protobuf_unittest_TestMap_MapSfixed32Sfixed32Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapSfixed32Sfixed32Entry>(internal__static_protobuf_unittest_TestMap_MapSfixed32Sfixed32Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapSfixed64Sfixed64Entry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[9];
-        internal__static_protobuf_unittest_TestMap_MapSfixed64Sfixed64Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapSfixed64Sfixed64Entry>(internal__static_protobuf_unittest_TestMap_MapSfixed64Sfixed64Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapInt32FloatEntry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[10];
-        internal__static_protobuf_unittest_TestMap_MapInt32FloatEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32FloatEntry>(internal__static_protobuf_unittest_TestMap_MapInt32FloatEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapInt32DoubleEntry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[11];
-        internal__static_protobuf_unittest_TestMap_MapInt32DoubleEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32DoubleEntry>(internal__static_protobuf_unittest_TestMap_MapInt32DoubleEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapBoolBoolEntry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[12];
-        internal__static_protobuf_unittest_TestMap_MapBoolBoolEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapBoolBoolEntry>(internal__static_protobuf_unittest_TestMap_MapBoolBoolEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapStringStringEntry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[13];
-        internal__static_protobuf_unittest_TestMap_MapStringStringEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapStringStringEntry>(internal__static_protobuf_unittest_TestMap_MapStringStringEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapInt32BytesEntry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[14];
-        internal__static_protobuf_unittest_TestMap_MapInt32BytesEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32BytesEntry>(internal__static_protobuf_unittest_TestMap_MapInt32BytesEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapInt32EnumEntry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[15];
-        internal__static_protobuf_unittest_TestMap_MapInt32EnumEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32EnumEntry>(internal__static_protobuf_unittest_TestMap_MapInt32EnumEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMap_MapInt32ForeignMessageEntry__Descriptor = internal__static_protobuf_unittest_TestMap__Descriptor.NestedTypes[16];
-        internal__static_protobuf_unittest_TestMap_MapInt32ForeignMessageEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32ForeignMessageEntry>(internal__static_protobuf_unittest_TestMap_MapInt32ForeignMessageEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestMapSubmessage__Descriptor = Descriptor.MessageTypes[1];
-        internal__static_protobuf_unittest_TestMapSubmessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMapSubmessage>(internal__static_protobuf_unittest_TestMapSubmessage__Descriptor,
-                new string[] { "TestMap", });
-        internal__static_protobuf_unittest_TestMessageMap__Descriptor = Descriptor.MessageTypes[2];
-        internal__static_protobuf_unittest_TestMessageMap__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMessageMap>(internal__static_protobuf_unittest_TestMessageMap__Descriptor,
-                new string[] { "MapInt32Message", });
-        internal__static_protobuf_unittest_TestMessageMap_MapInt32MessageEntry__Descriptor = internal__static_protobuf_unittest_TestMessageMap__Descriptor.NestedTypes[0];
-        internal__static_protobuf_unittest_TestMessageMap_MapInt32MessageEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMessageMap.Types.MapInt32MessageEntry>(internal__static_protobuf_unittest_TestMessageMap_MapInt32MessageEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestSameTypeMap__Descriptor = Descriptor.MessageTypes[3];
-        internal__static_protobuf_unittest_TestSameTypeMap__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestSameTypeMap>(internal__static_protobuf_unittest_TestSameTypeMap__Descriptor,
-                new string[] { "Map1", "Map2", });
-        internal__static_protobuf_unittest_TestSameTypeMap_Map1Entry__Descriptor = internal__static_protobuf_unittest_TestSameTypeMap__Descriptor.NestedTypes[0];
-        internal__static_protobuf_unittest_TestSameTypeMap_Map1Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestSameTypeMap.Types.Map1Entry>(internal__static_protobuf_unittest_TestSameTypeMap_Map1Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestSameTypeMap_Map2Entry__Descriptor = internal__static_protobuf_unittest_TestSameTypeMap__Descriptor.NestedTypes[1];
-        internal__static_protobuf_unittest_TestSameTypeMap_Map2Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestSameTypeMap.Types.Map2Entry>(internal__static_protobuf_unittest_TestSameTypeMap_Map2Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap__Descriptor = Descriptor.MessageTypes[4];
-        internal__static_protobuf_unittest_TestArenaMap__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap>(internal__static_protobuf_unittest_TestArenaMap__Descriptor,
-                new string[] { "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapInt32Enum", "MapInt32ForeignMessage", });
-        internal__static_protobuf_unittest_TestArenaMap_MapInt32Int32Entry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[0];
-        internal__static_protobuf_unittest_TestArenaMap_MapInt32Int32Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32Int32Entry>(internal__static_protobuf_unittest_TestArenaMap_MapInt32Int32Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapInt64Int64Entry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[1];
-        internal__static_protobuf_unittest_TestArenaMap_MapInt64Int64Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt64Int64Entry>(internal__static_protobuf_unittest_TestArenaMap_MapInt64Int64Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapUint32Uint32Entry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[2];
-        internal__static_protobuf_unittest_TestArenaMap_MapUint32Uint32Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapUint32Uint32Entry>(internal__static_protobuf_unittest_TestArenaMap_MapUint32Uint32Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapUint64Uint64Entry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[3];
-        internal__static_protobuf_unittest_TestArenaMap_MapUint64Uint64Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapUint64Uint64Entry>(internal__static_protobuf_unittest_TestArenaMap_MapUint64Uint64Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapSint32Sint32Entry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[4];
-        internal__static_protobuf_unittest_TestArenaMap_MapSint32Sint32Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapSint32Sint32Entry>(internal__static_protobuf_unittest_TestArenaMap_MapSint32Sint32Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapSint64Sint64Entry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[5];
-        internal__static_protobuf_unittest_TestArenaMap_MapSint64Sint64Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapSint64Sint64Entry>(internal__static_protobuf_unittest_TestArenaMap_MapSint64Sint64Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapFixed32Fixed32Entry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[6];
-        internal__static_protobuf_unittest_TestArenaMap_MapFixed32Fixed32Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapFixed32Fixed32Entry>(internal__static_protobuf_unittest_TestArenaMap_MapFixed32Fixed32Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapFixed64Fixed64Entry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[7];
-        internal__static_protobuf_unittest_TestArenaMap_MapFixed64Fixed64Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapFixed64Fixed64Entry>(internal__static_protobuf_unittest_TestArenaMap_MapFixed64Fixed64Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapSfixed32Sfixed32Entry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[8];
-        internal__static_protobuf_unittest_TestArenaMap_MapSfixed32Sfixed32Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapSfixed32Sfixed32Entry>(internal__static_protobuf_unittest_TestArenaMap_MapSfixed32Sfixed32Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapSfixed64Sfixed64Entry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[9];
-        internal__static_protobuf_unittest_TestArenaMap_MapSfixed64Sfixed64Entry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapSfixed64Sfixed64Entry>(internal__static_protobuf_unittest_TestArenaMap_MapSfixed64Sfixed64Entry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapInt32FloatEntry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[10];
-        internal__static_protobuf_unittest_TestArenaMap_MapInt32FloatEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32FloatEntry>(internal__static_protobuf_unittest_TestArenaMap_MapInt32FloatEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapInt32DoubleEntry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[11];
-        internal__static_protobuf_unittest_TestArenaMap_MapInt32DoubleEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32DoubleEntry>(internal__static_protobuf_unittest_TestArenaMap_MapInt32DoubleEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapBoolBoolEntry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[12];
-        internal__static_protobuf_unittest_TestArenaMap_MapBoolBoolEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapBoolBoolEntry>(internal__static_protobuf_unittest_TestArenaMap_MapBoolBoolEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapInt32EnumEntry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[13];
-        internal__static_protobuf_unittest_TestArenaMap_MapInt32EnumEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32EnumEntry>(internal__static_protobuf_unittest_TestArenaMap_MapInt32EnumEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_TestArenaMap_MapInt32ForeignMessageEntry__Descriptor = internal__static_protobuf_unittest_TestArenaMap__Descriptor.NestedTypes[14];
-        internal__static_protobuf_unittest_TestArenaMap_MapInt32ForeignMessageEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32ForeignMessageEntry>(internal__static_protobuf_unittest_TestArenaMap_MapInt32ForeignMessageEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_MessageContainingEnumCalledType__Descriptor = Descriptor.MessageTypes[5];
-        internal__static_protobuf_unittest_MessageContainingEnumCalledType__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType>(internal__static_protobuf_unittest_MessageContainingEnumCalledType__Descriptor,
-                new string[] { "Type", });
-        internal__static_protobuf_unittest_MessageContainingEnumCalledType_TypeEntry__Descriptor = internal__static_protobuf_unittest_MessageContainingEnumCalledType__Descriptor.NestedTypes[0];
-        internal__static_protobuf_unittest_MessageContainingEnumCalledType_TypeEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType.Types.TypeEntry>(internal__static_protobuf_unittest_MessageContainingEnumCalledType_TypeEntry__Descriptor,
-                new string[] { "Key", "Value", });
-        internal__static_protobuf_unittest_MessageContainingMapCalledEntry__Descriptor = Descriptor.MessageTypes[6];
-        internal__static_protobuf_unittest_MessageContainingMapCalledEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.MessageContainingMapCalledEntry>(internal__static_protobuf_unittest_MessageContainingMapCalledEntry__Descriptor,
-                new string[] { "Entry", });
-        internal__static_protobuf_unittest_MessageContainingMapCalledEntry_EntryEntry__Descriptor = internal__static_protobuf_unittest_MessageContainingMapCalledEntry__Descriptor.NestedTypes[0];
-        internal__static_protobuf_unittest_MessageContainingMapCalledEntry_EntryEntry__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.MessageContainingMapCalledEntry.Types.EntryEntry>(internal__static_protobuf_unittest_MessageContainingMapCalledEntry_EntryEntry__Descriptor,
-                new string[] { "Key", "Value", });
-      };
-      pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+      descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbd::FileDescriptor[] {
           global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor, 
-          }, assigner);
+          });
+      internal__static_protobuf_unittest_TestMap__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap), descriptor.MessageTypes[0],
+              new string[] { "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapInt32Bytes", "MapInt32Enum", "MapInt32ForeignMessage", });
+      internal__static_protobuf_unittest_TestMap_MapInt32Int32Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32Int32Entry), descriptor.MessageTypes[0].NestedTypes[0],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapInt64Int64Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapInt64Int64Entry), descriptor.MessageTypes[0].NestedTypes[1],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapUint32Uint32Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapUint32Uint32Entry), descriptor.MessageTypes[0].NestedTypes[2],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapUint64Uint64Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapUint64Uint64Entry), descriptor.MessageTypes[0].NestedTypes[3],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapSint32Sint32Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapSint32Sint32Entry), descriptor.MessageTypes[0].NestedTypes[4],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapSint64Sint64Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapSint64Sint64Entry), descriptor.MessageTypes[0].NestedTypes[5],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapFixed32Fixed32Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapFixed32Fixed32Entry), descriptor.MessageTypes[0].NestedTypes[6],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapFixed64Fixed64Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapFixed64Fixed64Entry), descriptor.MessageTypes[0].NestedTypes[7],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapSfixed32Sfixed32Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapSfixed32Sfixed32Entry), descriptor.MessageTypes[0].NestedTypes[8],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapSfixed64Sfixed64Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapSfixed64Sfixed64Entry), descriptor.MessageTypes[0].NestedTypes[9],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapInt32FloatEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32FloatEntry), descriptor.MessageTypes[0].NestedTypes[10],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapInt32DoubleEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32DoubleEntry), descriptor.MessageTypes[0].NestedTypes[11],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapBoolBoolEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapBoolBoolEntry), descriptor.MessageTypes[0].NestedTypes[12],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapStringStringEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapStringStringEntry), descriptor.MessageTypes[0].NestedTypes[13],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapInt32BytesEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32BytesEntry), descriptor.MessageTypes[0].NestedTypes[14],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapInt32EnumEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32EnumEntry), descriptor.MessageTypes[0].NestedTypes[15],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMap_MapInt32ForeignMessageEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMap.Types.MapInt32ForeignMessageEntry), descriptor.MessageTypes[0].NestedTypes[16],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestMapSubmessage__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMapSubmessage), descriptor.MessageTypes[1],
+              new string[] { "TestMap", });
+      internal__static_protobuf_unittest_TestMessageMap__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMessageMap), descriptor.MessageTypes[2],
+              new string[] { "MapInt32Message", });
+      internal__static_protobuf_unittest_TestMessageMap_MapInt32MessageEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMessageMap.Types.MapInt32MessageEntry), descriptor.MessageTypes[2].NestedTypes[0],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestSameTypeMap__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestSameTypeMap), descriptor.MessageTypes[3],
+              new string[] { "Map1", "Map2", });
+      internal__static_protobuf_unittest_TestSameTypeMap_Map1Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestSameTypeMap.Types.Map1Entry), descriptor.MessageTypes[3].NestedTypes[0],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestSameTypeMap_Map2Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestSameTypeMap.Types.Map2Entry), descriptor.MessageTypes[3].NestedTypes[1],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap), descriptor.MessageTypes[4],
+              new string[] { "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapInt32Enum", "MapInt32ForeignMessage", });
+      internal__static_protobuf_unittest_TestArenaMap_MapInt32Int32Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32Int32Entry), descriptor.MessageTypes[4].NestedTypes[0],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapInt64Int64Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt64Int64Entry), descriptor.MessageTypes[4].NestedTypes[1],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapUint32Uint32Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapUint32Uint32Entry), descriptor.MessageTypes[4].NestedTypes[2],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapUint64Uint64Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapUint64Uint64Entry), descriptor.MessageTypes[4].NestedTypes[3],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapSint32Sint32Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapSint32Sint32Entry), descriptor.MessageTypes[4].NestedTypes[4],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapSint64Sint64Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapSint64Sint64Entry), descriptor.MessageTypes[4].NestedTypes[5],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapFixed32Fixed32Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapFixed32Fixed32Entry), descriptor.MessageTypes[4].NestedTypes[6],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapFixed64Fixed64Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapFixed64Fixed64Entry), descriptor.MessageTypes[4].NestedTypes[7],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapSfixed32Sfixed32Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapSfixed32Sfixed32Entry), descriptor.MessageTypes[4].NestedTypes[8],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapSfixed64Sfixed64Entry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapSfixed64Sfixed64Entry), descriptor.MessageTypes[4].NestedTypes[9],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapInt32FloatEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32FloatEntry), descriptor.MessageTypes[4].NestedTypes[10],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapInt32DoubleEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32DoubleEntry), descriptor.MessageTypes[4].NestedTypes[11],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapBoolBoolEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapBoolBoolEntry), descriptor.MessageTypes[4].NestedTypes[12],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapInt32EnumEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32EnumEntry), descriptor.MessageTypes[4].NestedTypes[13],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_TestArenaMap_MapInt32ForeignMessageEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestArenaMap.Types.MapInt32ForeignMessageEntry), descriptor.MessageTypes[4].NestedTypes[14],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_MessageContainingEnumCalledType__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType), descriptor.MessageTypes[5],
+              new string[] { "Type", });
+      internal__static_protobuf_unittest_MessageContainingEnumCalledType_TypeEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType.Types.TypeEntry), descriptor.MessageTypes[5].NestedTypes[0],
+              new string[] { "Key", "Value", });
+      internal__static_protobuf_unittest_MessageContainingMapCalledEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.MessageContainingMapCalledEntry), descriptor.MessageTypes[6],
+              new string[] { "Entry", });
+      internal__static_protobuf_unittest_MessageContainingMapCalledEntry_EntryEntry__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.MessageContainingMapCalledEntry.Types.EntryEntry), descriptor.MessageTypes[6].NestedTypes[0],
+              new string[] { "Key", "Value", });
     }
     #endregion
 
@@ -440,19 +349,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "map_bool_bool", "map_fixed32_fixed32", "map_fixed64_fixed64", "map_int32_bytes", "map_int32_double", "map_int32_enum", "map_int32_float", "map_int32_foreign_message", "map_int32_int32", "map_int64_int64", "map_sfixed32_sfixed32", "map_sfixed64_sfixed64", "map_sint32_sint32", "map_sint64_sint64", "map_string_string", "map_uint32_uint32", "map_uint64_uint64" };
     private static readonly uint[] _fieldTags = new uint[] { 106, 58, 66, 122, 98, 130, 90, 138, 10, 18, 74, 82, 42, 50, 114, 26, 34 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[0]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestMap> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestMap() { }
+    public TestMap() {
+      OnConstruction();
+    }
 
-    public TestMap(TestMap other) {
+    partial void OnConstruction();
+
+    public TestMap(TestMap other) : this() {
       mapInt32Int32_ = other.mapInt32Int32_.Clone();
       mapInt64Int64_ = other.mapInt64Int64_.Clone();
       mapUint32Uint32_ = other.mapUint32Uint32_.Clone();
@@ -848,19 +761,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32Int32Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[0]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt32Int32Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32Int32Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32Int32Entry() { }
+        public MapInt32Int32Entry() {
+          OnConstruction();
+        }
 
-        public MapInt32Int32Entry(MapInt32Int32Entry other) {
+        partial void OnConstruction();
+
+        public MapInt32Int32Entry(MapInt32Int32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -986,19 +903,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt64Int64Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[1]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt64Int64Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt64Int64Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt64Int64Entry() { }
+        public MapInt64Int64Entry() {
+          OnConstruction();
+        }
 
-        public MapInt64Int64Entry(MapInt64Int64Entry other) {
+        partial void OnConstruction();
+
+        public MapInt64Int64Entry(MapInt64Int64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1124,19 +1045,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapUint32Uint32Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[2]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapUint32Uint32Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapUint32Uint32Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapUint32Uint32Entry() { }
+        public MapUint32Uint32Entry() {
+          OnConstruction();
+        }
 
-        public MapUint32Uint32Entry(MapUint32Uint32Entry other) {
+        partial void OnConstruction();
+
+        public MapUint32Uint32Entry(MapUint32Uint32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1262,19 +1187,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapUint64Uint64Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[3]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapUint64Uint64Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapUint64Uint64Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapUint64Uint64Entry() { }
+        public MapUint64Uint64Entry() {
+          OnConstruction();
+        }
 
-        public MapUint64Uint64Entry(MapUint64Uint64Entry other) {
+        partial void OnConstruction();
+
+        public MapUint64Uint64Entry(MapUint64Uint64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1400,19 +1329,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapSint32Sint32Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[4]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapSint32Sint32Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapSint32Sint32Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSint32Sint32Entry() { }
+        public MapSint32Sint32Entry() {
+          OnConstruction();
+        }
 
-        public MapSint32Sint32Entry(MapSint32Sint32Entry other) {
+        partial void OnConstruction();
+
+        public MapSint32Sint32Entry(MapSint32Sint32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1538,19 +1471,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapSint64Sint64Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[5]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapSint64Sint64Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapSint64Sint64Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSint64Sint64Entry() { }
+        public MapSint64Sint64Entry() {
+          OnConstruction();
+        }
 
-        public MapSint64Sint64Entry(MapSint64Sint64Entry other) {
+        partial void OnConstruction();
+
+        public MapSint64Sint64Entry(MapSint64Sint64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1676,19 +1613,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 13, 21 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapFixed32Fixed32Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[6]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapFixed32Fixed32Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapFixed32Fixed32Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapFixed32Fixed32Entry() { }
+        public MapFixed32Fixed32Entry() {
+          OnConstruction();
+        }
 
-        public MapFixed32Fixed32Entry(MapFixed32Fixed32Entry other) {
+        partial void OnConstruction();
+
+        public MapFixed32Fixed32Entry(MapFixed32Fixed32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1814,19 +1755,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 9, 17 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapFixed64Fixed64Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[7]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapFixed64Fixed64Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapFixed64Fixed64Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapFixed64Fixed64Entry() { }
+        public MapFixed64Fixed64Entry() {
+          OnConstruction();
+        }
 
-        public MapFixed64Fixed64Entry(MapFixed64Fixed64Entry other) {
+        partial void OnConstruction();
+
+        public MapFixed64Fixed64Entry(MapFixed64Fixed64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -1952,19 +1897,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 13, 21 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapSfixed32Sfixed32Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[8]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapSfixed32Sfixed32Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapSfixed32Sfixed32Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSfixed32Sfixed32Entry() { }
+        public MapSfixed32Sfixed32Entry() {
+          OnConstruction();
+        }
 
-        public MapSfixed32Sfixed32Entry(MapSfixed32Sfixed32Entry other) {
+        partial void OnConstruction();
+
+        public MapSfixed32Sfixed32Entry(MapSfixed32Sfixed32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2090,19 +2039,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 9, 17 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapSfixed64Sfixed64Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[9]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapSfixed64Sfixed64Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapSfixed64Sfixed64Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSfixed64Sfixed64Entry() { }
+        public MapSfixed64Sfixed64Entry() {
+          OnConstruction();
+        }
 
-        public MapSfixed64Sfixed64Entry(MapSfixed64Sfixed64Entry other) {
+        partial void OnConstruction();
+
+        public MapSfixed64Sfixed64Entry(MapSfixed64Sfixed64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2228,19 +2181,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 21 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32FloatEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[10]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt32FloatEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32FloatEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32FloatEntry() { }
+        public MapInt32FloatEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32FloatEntry(MapInt32FloatEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32FloatEntry(MapInt32FloatEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2366,19 +2323,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 17 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32DoubleEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[11]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt32DoubleEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32DoubleEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32DoubleEntry() { }
+        public MapInt32DoubleEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32DoubleEntry(MapInt32DoubleEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32DoubleEntry(MapInt32DoubleEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2504,19 +2465,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapBoolBoolEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[12]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapBoolBoolEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapBoolBoolEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapBoolBoolEntry() { }
+        public MapBoolBoolEntry() {
+          OnConstruction();
+        }
 
-        public MapBoolBoolEntry(MapBoolBoolEntry other) {
+        partial void OnConstruction();
+
+        public MapBoolBoolEntry(MapBoolBoolEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2642,19 +2607,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 10, 18 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapStringStringEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[13]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapStringStringEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapStringStringEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapStringStringEntry() { }
+        public MapStringStringEntry() {
+          OnConstruction();
+        }
 
-        public MapStringStringEntry(MapStringStringEntry other) {
+        partial void OnConstruction();
+
+        public MapStringStringEntry(MapStringStringEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2780,19 +2749,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 18 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32BytesEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[14]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt32BytesEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32BytesEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32BytesEntry() { }
+        public MapInt32BytesEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32BytesEntry(MapInt32BytesEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32BytesEntry(MapInt32BytesEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -2918,19 +2891,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32EnumEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[15]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt32EnumEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32EnumEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32EnumEntry() { }
+        public MapInt32EnumEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32EnumEntry(MapInt32EnumEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32EnumEntry(MapInt32EnumEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -3056,19 +3033,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 18 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32ForeignMessageEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[16]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt32ForeignMessageEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32ForeignMessageEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32ForeignMessageEntry() { }
+        public MapInt32ForeignMessageEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32ForeignMessageEntry(MapInt32ForeignMessageEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32ForeignMessageEntry(MapInt32ForeignMessageEntry other) : this() {
           key_ = other.key_;
           Value = other.value_ != null ? other.Value.Clone() : null;
         }
@@ -3206,19 +3187,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "test_map" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMapSubmessage__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[1]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestMapSubmessage> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMapSubmessage__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestMapSubmessage() { }
+    public TestMapSubmessage() {
+      OnConstruction();
+    }
 
-    public TestMapSubmessage(TestMapSubmessage other) {
+    partial void OnConstruction();
+
+    public TestMapSubmessage(TestMapSubmessage other) : this() {
       TestMap = other.testMap_ != null ? other.TestMap.Clone() : null;
     }
 
@@ -3324,19 +3309,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "map_int32_message" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMessageMap__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[2]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestMessageMap> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMessageMap__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestMessageMap() { }
+    public TestMessageMap() {
+      OnConstruction();
+    }
 
-    public TestMessageMap(TestMessageMap other) {
+    partial void OnConstruction();
+
+    public TestMessageMap(TestMessageMap other) : this() {
       mapInt32Message_ = other.mapInt32Message_.Clone();
     }
 
@@ -3428,19 +3417,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 18 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMessageMap_MapInt32MessageEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestMessageMap.Descriptor.NestedTypes[0]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt32MessageEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMessageMap_MapInt32MessageEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32MessageEntry() { }
+        public MapInt32MessageEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32MessageEntry(MapInt32MessageEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32MessageEntry(MapInt32MessageEntry other) : this() {
           key_ = other.key_;
           Value = other.value_ != null ? other.Value.Clone() : null;
         }
@@ -3578,19 +3571,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "map1", "map2" };
     private static readonly uint[] _fieldTags = new uint[] { 10, 18 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestSameTypeMap__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[3]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestSameTypeMap> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestSameTypeMap__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestSameTypeMap() { }
+    public TestSameTypeMap() {
+      OnConstruction();
+    }
 
-    public TestSameTypeMap(TestSameTypeMap other) {
+    partial void OnConstruction();
+
+    public TestSameTypeMap(TestSameTypeMap other) : this() {
       map1_ = other.map1_.Clone();
       map2_ = other.map2_.Clone();
     }
@@ -3701,19 +3698,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestSameTypeMap_Map1Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestSameTypeMap.Descriptor.NestedTypes[0]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<Map1Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestSameTypeMap_Map1Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public Map1Entry() { }
+        public Map1Entry() {
+          OnConstruction();
+        }
 
-        public Map1Entry(Map1Entry other) {
+        partial void OnConstruction();
+
+        public Map1Entry(Map1Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -3839,19 +3840,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestSameTypeMap_Map2Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestSameTypeMap.Descriptor.NestedTypes[1]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<Map2Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestSameTypeMap_Map2Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public Map2Entry() { }
+        public Map2Entry() {
+          OnConstruction();
+        }
 
-        public Map2Entry(Map2Entry other) {
+        partial void OnConstruction();
+
+        public Map2Entry(Map2Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -3982,19 +3987,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "map_bool_bool", "map_fixed32_fixed32", "map_fixed64_fixed64", "map_int32_double", "map_int32_enum", "map_int32_float", "map_int32_foreign_message", "map_int32_int32", "map_int64_int64", "map_sfixed32_sfixed32", "map_sfixed64_sfixed64", "map_sint32_sint32", "map_sint64_sint64", "map_uint32_uint32", "map_uint64_uint64" };
     private static readonly uint[] _fieldTags = new uint[] { 106, 58, 66, 98, 114, 90, 122, 10, 18, 74, 82, 42, 50, 26, 34 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[4]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestArenaMap> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestArenaMap() { }
+    public TestArenaMap() {
+      OnConstruction();
+    }
 
-    public TestArenaMap(TestArenaMap other) {
+    partial void OnConstruction();
+
+    public TestArenaMap(TestArenaMap other) : this() {
       mapInt32Int32_ = other.mapInt32Int32_.Clone();
       mapInt64Int64_ = other.mapInt64Int64_.Clone();
       mapUint32Uint32_ = other.mapUint32Uint32_.Clone();
@@ -4352,19 +4361,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32Int32Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[0]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt32Int32Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32Int32Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32Int32Entry() { }
+        public MapInt32Int32Entry() {
+          OnConstruction();
+        }
 
-        public MapInt32Int32Entry(MapInt32Int32Entry other) {
+        partial void OnConstruction();
+
+        public MapInt32Int32Entry(MapInt32Int32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -4490,19 +4503,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt64Int64Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[1]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt64Int64Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt64Int64Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt64Int64Entry() { }
+        public MapInt64Int64Entry() {
+          OnConstruction();
+        }
 
-        public MapInt64Int64Entry(MapInt64Int64Entry other) {
+        partial void OnConstruction();
+
+        public MapInt64Int64Entry(MapInt64Int64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -4628,19 +4645,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapUint32Uint32Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[2]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapUint32Uint32Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapUint32Uint32Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapUint32Uint32Entry() { }
+        public MapUint32Uint32Entry() {
+          OnConstruction();
+        }
 
-        public MapUint32Uint32Entry(MapUint32Uint32Entry other) {
+        partial void OnConstruction();
+
+        public MapUint32Uint32Entry(MapUint32Uint32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -4766,19 +4787,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapUint64Uint64Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[3]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapUint64Uint64Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapUint64Uint64Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapUint64Uint64Entry() { }
+        public MapUint64Uint64Entry() {
+          OnConstruction();
+        }
 
-        public MapUint64Uint64Entry(MapUint64Uint64Entry other) {
+        partial void OnConstruction();
+
+        public MapUint64Uint64Entry(MapUint64Uint64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -4904,19 +4929,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapSint32Sint32Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[4]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapSint32Sint32Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapSint32Sint32Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSint32Sint32Entry() { }
+        public MapSint32Sint32Entry() {
+          OnConstruction();
+        }
 
-        public MapSint32Sint32Entry(MapSint32Sint32Entry other) {
+        partial void OnConstruction();
+
+        public MapSint32Sint32Entry(MapSint32Sint32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5042,19 +5071,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapSint64Sint64Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[5]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapSint64Sint64Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapSint64Sint64Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSint64Sint64Entry() { }
+        public MapSint64Sint64Entry() {
+          OnConstruction();
+        }
 
-        public MapSint64Sint64Entry(MapSint64Sint64Entry other) {
+        partial void OnConstruction();
+
+        public MapSint64Sint64Entry(MapSint64Sint64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5180,19 +5213,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 13, 21 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapFixed32Fixed32Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[6]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapFixed32Fixed32Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapFixed32Fixed32Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapFixed32Fixed32Entry() { }
+        public MapFixed32Fixed32Entry() {
+          OnConstruction();
+        }
 
-        public MapFixed32Fixed32Entry(MapFixed32Fixed32Entry other) {
+        partial void OnConstruction();
+
+        public MapFixed32Fixed32Entry(MapFixed32Fixed32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5318,19 +5355,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 9, 17 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapFixed64Fixed64Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[7]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapFixed64Fixed64Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapFixed64Fixed64Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapFixed64Fixed64Entry() { }
+        public MapFixed64Fixed64Entry() {
+          OnConstruction();
+        }
 
-        public MapFixed64Fixed64Entry(MapFixed64Fixed64Entry other) {
+        partial void OnConstruction();
+
+        public MapFixed64Fixed64Entry(MapFixed64Fixed64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5456,19 +5497,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 13, 21 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapSfixed32Sfixed32Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[8]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapSfixed32Sfixed32Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapSfixed32Sfixed32Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSfixed32Sfixed32Entry() { }
+        public MapSfixed32Sfixed32Entry() {
+          OnConstruction();
+        }
 
-        public MapSfixed32Sfixed32Entry(MapSfixed32Sfixed32Entry other) {
+        partial void OnConstruction();
+
+        public MapSfixed32Sfixed32Entry(MapSfixed32Sfixed32Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5594,19 +5639,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 9, 17 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapSfixed64Sfixed64Entry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[9]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapSfixed64Sfixed64Entry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapSfixed64Sfixed64Entry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapSfixed64Sfixed64Entry() { }
+        public MapSfixed64Sfixed64Entry() {
+          OnConstruction();
+        }
 
-        public MapSfixed64Sfixed64Entry(MapSfixed64Sfixed64Entry other) {
+        partial void OnConstruction();
+
+        public MapSfixed64Sfixed64Entry(MapSfixed64Sfixed64Entry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5732,19 +5781,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 21 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32FloatEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[10]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt32FloatEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32FloatEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32FloatEntry() { }
+        public MapInt32FloatEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32FloatEntry(MapInt32FloatEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32FloatEntry(MapInt32FloatEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -5870,19 +5923,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 17 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32DoubleEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[11]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt32DoubleEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32DoubleEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32DoubleEntry() { }
+        public MapInt32DoubleEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32DoubleEntry(MapInt32DoubleEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32DoubleEntry(MapInt32DoubleEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -6008,19 +6065,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapBoolBoolEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[12]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapBoolBoolEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapBoolBoolEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapBoolBoolEntry() { }
+        public MapBoolBoolEntry() {
+          OnConstruction();
+        }
 
-        public MapBoolBoolEntry(MapBoolBoolEntry other) {
+        partial void OnConstruction();
+
+        public MapBoolBoolEntry(MapBoolBoolEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -6146,19 +6207,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32EnumEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[13]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt32EnumEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32EnumEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32EnumEntry() { }
+        public MapInt32EnumEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32EnumEntry(MapInt32EnumEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32EnumEntry(MapInt32EnumEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }
@@ -6284,19 +6349,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 18 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32ForeignMessageEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[14]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<MapInt32ForeignMessageEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32ForeignMessageEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public MapInt32ForeignMessageEntry() { }
+        public MapInt32ForeignMessageEntry() {
+          OnConstruction();
+        }
 
-        public MapInt32ForeignMessageEntry(MapInt32ForeignMessageEntry other) {
+        partial void OnConstruction();
+
+        public MapInt32ForeignMessageEntry(MapInt32ForeignMessageEntry other) : this() {
           key_ = other.key_;
           Value = other.value_ != null ? other.Value.Clone() : null;
         }
@@ -6434,19 +6503,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "type" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_MessageContainingEnumCalledType__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[5]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<MessageContainingEnumCalledType> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_MessageContainingEnumCalledType__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public MessageContainingEnumCalledType() { }
+    public MessageContainingEnumCalledType() {
+      OnConstruction();
+    }
 
-    public MessageContainingEnumCalledType(MessageContainingEnumCalledType other) {
+    partial void OnConstruction();
+
+    public MessageContainingEnumCalledType(MessageContainingEnumCalledType other) : this() {
       type_ = other.type_.Clone();
     }
 
@@ -6542,19 +6615,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 18 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_MessageContainingEnumCalledType_TypeEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType.Descriptor.NestedTypes[0]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<TypeEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_MessageContainingEnumCalledType_TypeEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public TypeEntry() { }
+        public TypeEntry() {
+          OnConstruction();
+        }
 
-        public TypeEntry(TypeEntry other) {
+        partial void OnConstruction();
+
+        public TypeEntry(TypeEntry other) : this() {
           key_ = other.key_;
           Value = other.value_ != null ? other.Value.Clone() : null;
         }
@@ -6692,19 +6769,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "entry" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_MessageContainingMapCalledEntry__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[6]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<MessageContainingMapCalledEntry> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_MessageContainingMapCalledEntry__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public MessageContainingMapCalledEntry() { }
+    public MessageContainingMapCalledEntry() {
+      OnConstruction();
+    }
 
-    public MessageContainingMapCalledEntry(MessageContainingMapCalledEntry other) {
+    partial void OnConstruction();
+
+    public MessageContainingMapCalledEntry(MessageContainingMapCalledEntry other) : this() {
       entry_ = other.entry_.Clone();
     }
 
@@ -6796,19 +6877,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "key", "value" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_MessageContainingMapCalledEntry_EntryEntry__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.MessageContainingMapCalledEntry.Descriptor.NestedTypes[0]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<EntryEntry> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_MessageContainingMapCalledEntry_EntryEntry__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public EntryEntry() { }
+        public EntryEntry() {
+          OnConstruction();
+        }
 
-        public EntryEntry(EntryEntry other) {
+        partial void OnConstruction();
+
+        public EntryEntry(EntryEntry other) : this() {
           key_ = other.key_;
           value_ = other.value_;
         }

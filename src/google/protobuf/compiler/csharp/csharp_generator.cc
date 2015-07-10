@@ -68,6 +68,12 @@ bool Generator::Generate(
   vector<pair<string, string> > options;
   ParseGeneratorParameter(parameter, &options);
 
+  // We only support proto3 - but we make an exception for descriptor.proto.
+  if (file->syntax() != FileDescriptor::SYNTAX_PROTO3 && !IsDescriptorProto(file)) {
+    *error = "C# code generation only supports proto3 syntax";
+    return false;
+  }
+
   std::string file_extension = ".cs";
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "file_extension") {

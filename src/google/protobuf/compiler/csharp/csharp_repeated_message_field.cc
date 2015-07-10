@@ -65,7 +65,7 @@ void RepeatedMessageFieldGenerator::GenerateMembers(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
-    "public pbc::RepeatedField<$type_name$> $property_name$ {\n"
+    "$access_level$ pbc::RepeatedField<$type_name$> $property_name$ {\n"
     "  get { return $name$_; }\n"
     "}\n");
 }

@@ -31,9 +31,11 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
@@ -83,6 +85,115 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
+        public void RemoveAt_Valid()
+        {
+            var list = new RepeatedField<string> { "first", "second", "third" };
+            list.RemoveAt(1);
+            CollectionAssert.AreEqual(new[] { "first", "third" }, list);
+            // Just check that these don't throw...
+            list.RemoveAt(list.Count - 1); // Now the count will be 1...
+            list.RemoveAt(0);
+            Assert.AreEqual(0, list.Count);
+        }
+
+        [Test]
+        public void RemoveAt_Invalid()
+        {
+            var list = new RepeatedField<string> { "first", "second", "third" };
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.RemoveAt(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.RemoveAt(3));
+        }
+
+        [Test]
+        public void Insert_Valid()
+        {
+            var list = new RepeatedField<string> { "first", "second" };
+            list.Insert(1, "middle");
+            CollectionAssert.AreEqual(new[] { "first", "middle", "second" }, list);
+            list.Insert(3, "end");
+            CollectionAssert.AreEqual(new[] { "first", "middle", "second", "end" }, list);
+            list.Insert(0, "start");
+            CollectionAssert.AreEqual(new[] { "start", "first", "middle", "second", "end" }, list);
+        }
+
+        [Test]
+        public void Insert_Invalid()
+        {
+            var list = new RepeatedField<string> { "first", "second" };
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Insert(-1, "foo"));
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Insert(3, "foo"));
+            Assert.Throws<ArgumentNullException>(() => list.Insert(0, null));
+        }
+
+        [Test]
+        public void Equals_RepeatedField()
+        {
+            var list = new RepeatedField<string> { "first", "second" };
+            Assert.IsFalse(list.Equals((RepeatedField<string>) null));
+            Assert.IsTrue(list.Equals(list));
+            Assert.IsFalse(list.Equals(new RepeatedField<string> { "first", "third" }));
+            Assert.IsFalse(list.Equals(new RepeatedField<string> { "first" }));
+            Assert.IsTrue(list.Equals(new RepeatedField<string> { "first", "second" }));
+        }
+
+        [Test]
+        public void Equals_Object()
+        {
+            var list = new RepeatedField<string> { "first", "second" };
+            Assert.IsFalse(list.Equals((object) null));
+            Assert.IsTrue(list.Equals((object) list));
+            Assert.IsFalse(list.Equals((object) new RepeatedField<string> { "first", "third" }));
+            Assert.IsFalse(list.Equals((object) new RepeatedField<string> { "first" }));
+            Assert.IsTrue(list.Equals((object) new RepeatedField<string> { "first", "second" }));
+            Assert.IsFalse(list.Equals(new object()));
+        }
+
+        [Test]
+        public void GetEnumerator_GenericInterface()
+        {
+            IEnumerable<string> list = new RepeatedField<string> { "first", "second" };
+            // Select gets rid of the optimizations in ToList...
+            CollectionAssert.AreEqual(new[] { "first", "second" }, list.Select(x => x).ToList());
+        }
+
+        [Test]
+        public void GetEnumerator_NonGenericInterface()
+        {
+            IEnumerable list = new RepeatedField<string> { "first", "second" };
+            CollectionAssert.AreEqual(new[] { "first", "second" }, list.Cast<object>().ToList());
+        }
+
+        [Test]
+        public void CopyTo()
+        {
+            var list = new RepeatedField<string> { "first", "second" };
+            string[] stringArray = new string[4];
+            list.CopyTo(stringArray, 1);
+            CollectionAssert.AreEqual(new[] { null, "first", "second", null }, stringArray);
+        }
+
+        [Test]
+        public void Indexer_Get()
+        {
+            var list = new RepeatedField<string> { "first", "second" };
+            Assert.AreEqual("first", list[0]);
+            Assert.AreEqual("second", list[1]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => list[-1].GetHashCode());
+            Assert.Throws<ArgumentOutOfRangeException>(() => list[2].GetHashCode());
+        }
+
+        [Test]
+        public void Indexer_Set()
+        {
+            var list = new RepeatedField<string> { "first", "second" };
+            list[0] = "changed";
+            Assert.AreEqual("changed", list[0]);
+            Assert.Throws<ArgumentNullException>(() => list[0] = null);
+            Assert.Throws<ArgumentOutOfRangeException>(() => list[-1] = "bad");
+            Assert.Throws<ArgumentOutOfRangeException>(() => list[2] = "bad");
+        }
+
+        [Test]
         public void Freeze_FreezesElements()
         {
             var list = new RepeatedField<TestAllTypes> { new TestAllTypes() };
@@ -122,6 +233,27 @@ namespace Google.Protobuf.Collections
             list.Freeze();
             var clone = list.Clone();
             clone[0] = 1;
+        }
+
+        [Test]
+        public void Enumerator()
+        {
+            var list = new RepeatedField<string> { "first", "second" };
+            using (var enumerator = list.GetEnumerator())
+            {
+                Assert.Throws<InvalidOperationException>(() => enumerator.Current.GetHashCode());
+                Assert.IsTrue(enumerator.MoveNext());
+                Assert.AreEqual("first", enumerator.Current);
+                Assert.IsTrue(enumerator.MoveNext());
+                Assert.AreEqual("second", enumerator.Current);
+                Assert.IsFalse(enumerator.MoveNext());
+                Assert.Throws<InvalidOperationException>(() => enumerator.Current.GetHashCode());
+                Assert.IsFalse(enumerator.MoveNext());
+                enumerator.Reset();
+                Assert.Throws<InvalidOperationException>(() => enumerator.Current.GetHashCode());
+                Assert.IsTrue(enumerator.MoveNext());
+                Assert.AreEqual("first", enumerator.Current);
+            }
         }
 
         [Test]
@@ -309,6 +441,42 @@ namespace Google.Protobuf.Collections
             Assert.IsTrue(input.IsAtEnd);
         }
 
+        [Test]
+        public void CalculateSize_VariableSizeNonPacked()
+        {
+            var list = new RepeatedField<int> { 1, 500, 1 };
+            var tag = WireFormat.MakeTag(1, WireFormat.WireType.Varint);
+            // 2 bytes for the first entry, 3 bytes for the second, 2 bytes for the third
+            Assert.AreEqual(7, list.CalculateSize(FieldCodec.ForInt32(tag)));
+        }
+
+        [Test]
+        public void CalculateSize_FixedSizeNonPacked()
+        {
+            var list = new RepeatedField<int> { 1, 500, 1 };
+            var tag = WireFormat.MakeTag(1, WireFormat.WireType.Fixed32);
+            // 5 bytes for the each entry
+            Assert.AreEqual(15, list.CalculateSize(FieldCodec.ForSFixed32(tag)));
+        }
+
+        [Test]
+        public void CalculateSize_VariableSizePacked()
+        {
+            var list = new RepeatedField<int> { 1, 500, 1};
+            var tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            // 1 byte for the tag, 1 byte for the length,
+            // 1 byte for the first entry, 2 bytes for the second, 1 byte for the third
+            Assert.AreEqual(6, list.CalculateSize(FieldCodec.ForInt32(tag)));
+        }
+
+        [Test]
+        public void CalculateSize_FixedSizePacked()
+        {
+            var list = new RepeatedField<int> { 1, 500, 1 };
+            var tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            // 1 byte for the tag, 1 byte for the length, 4 bytes per entry
+            Assert.AreEqual(14, list.CalculateSize(FieldCodec.ForSFixed32(tag)));
+        }
 
         [Test]
         public void TestNegativeEnumArray()
@@ -377,6 +545,101 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(((SampleEnum)(-3)), values[3]);
             Assert.AreEqual(((SampleEnum)(-4)), values[4]);
             Assert.AreEqual(((SampleEnum)(-5)), values[5]);
+        }
+
+        // Fairly perfunctory tests for the non-generic IList implementation
+        [Test]
+        public void IList_Indexer()
+        {
+            var field = new RepeatedField<string> { "first", "second" };
+            IList list = field;
+            Assert.AreEqual("first", list[0]);
+            list[1] = "changed";
+            Assert.AreEqual("changed", field[1]);
+        }
+
+        [Test]
+        public void IList_Contains()
+        {
+            IList list = new RepeatedField<string> { "first", "second" };
+            Assert.IsTrue(list.Contains("second"));
+            Assert.IsFalse(list.Contains("third"));
+            Assert.IsFalse(list.Contains(new object()));
+        }
+
+        [Test]
+        public void IList_Add()
+        {
+            IList list = new RepeatedField<string> { "first", "second" };
+            list.Add("third");
+            CollectionAssert.AreEqual(new[] { "first", "second", "third" }, list);
+        }
+
+        [Test]
+        public void IList_Remove()
+        {
+            IList list = new RepeatedField<string> { "first", "second" };
+            list.Remove("third"); // No-op, no exception
+            list.Remove(new object()); // No-op, no exception
+            list.Remove("first");
+            CollectionAssert.AreEqual(new[] { "second" }, list);
+        }
+
+        [Test]
+        public void IList_IsFixedSize()
+        {
+            var field = new RepeatedField<string> { "first", "second" };
+            IList list = field;
+            Assert.IsFalse(list.IsFixedSize);
+            field.Freeze();
+            Assert.IsTrue(list.IsFixedSize);
+        }
+
+        [Test]
+        public void IList_IndexOf()
+        {
+            IList list = new RepeatedField<string> { "first", "second" };
+            Assert.AreEqual(1, list.IndexOf("second"));
+            Assert.AreEqual(-1, list.IndexOf("third"));
+            Assert.AreEqual(-1, list.IndexOf(new object()));
+        }
+
+        [Test]
+        public void IList_SyncRoot()
+        {
+            IList list = new RepeatedField<string> { "first", "second" };
+            Assert.AreSame(list, list.SyncRoot);
+        }
+
+        [Test]
+        public void IList_CopyTo()
+        {
+            IList list = new RepeatedField<string> { "first", "second" };
+            string[] stringArray = new string[4];
+            list.CopyTo(stringArray, 1);
+            CollectionAssert.AreEqual(new[] { null, "first",  "second", null }, stringArray);
+
+            object[] objectArray = new object[4];
+            list.CopyTo(objectArray, 1);
+            CollectionAssert.AreEqual(new[] { null, "first", "second", null }, objectArray);
+
+            Assert.Throws<ArrayTypeMismatchException>(() => list.CopyTo(new StringBuilder[4], 1));
+            Assert.Throws<ArrayTypeMismatchException>(() => list.CopyTo(new int[4], 1));
+        }
+
+        [Test]
+        public void IList_IsSynchronized()
+        {
+            IList list = new RepeatedField<string> { "first", "second" };
+            Assert.IsFalse(list.IsSynchronized);
+        }
+
+        [Test]
+        public void IList_Insert()
+        {
+            IList list = new RepeatedField<string> { "first", "second" };
+            list.Insert(1, "middle");
+            CollectionAssert.AreEqual(new[] { "first", "middle", "second" }, list);
         }
     }
 }

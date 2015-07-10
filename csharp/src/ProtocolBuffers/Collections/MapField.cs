@@ -48,7 +48,7 @@ namespace Google.Protobuf.Collections
     /// </remarks>
     /// <typeparam name="TKey">Key type in the map. Must be a type supported by Protocol Buffer map keys.</typeparam>
     /// <typeparam name="TValue">Value type in the map. Must be a type supported by Protocol Buffers.</typeparam>
-    public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IFreezable, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>
+    public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IFreezable, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary
     {
         // TODO: Don't create the map/list until we have an entry. (Assume many maps will be empty.)
         private bool frozen;
@@ -64,7 +64,7 @@ namespace Google.Protobuf.Collections
             {
                 foreach (var pair in list)
                 {
-                    clone.Add(pair.Key, pair.Value == null ? pair.Value : ((IDeepCloneable<TValue>) pair.Value).Clone());
+                    clone.Add(pair.Key, pair.Value == null ? pair.Value : ((IDeepCloneable<TValue>)pair.Value).Clone());
                 }
             }
             else
@@ -309,7 +309,7 @@ namespace Google.Protobuf.Collections
         /// </remarks>
         /// <param name="input">Stream to read from</param>
         /// <param name="codec">Codec describing how the key/value pairs are encoded</param>
-        public void AddEntriesFrom(CodedInputStream input, Codec codec)            
+        public void AddEntriesFrom(CodedInputStream input, Codec codec)
         {
             var adapter = new Codec.MessageAdapter(codec);
             do
@@ -318,7 +318,7 @@ namespace Google.Protobuf.Collections
                 input.ReadMessage(adapter);
                 this[adapter.Key] = adapter.Value;
             } while (input.MaybeConsumeTag(codec.MapTag));
-        }        
+        }
 
         public void WriteTo(CodedOutputStream output, Codec codec)
         {
@@ -348,6 +348,104 @@ namespace Google.Protobuf.Collections
                 size += CodedOutputStream.ComputeMessageSize(message);
             }
             return size;
+        }
+
+        #region IDictionary explicit interface implementation
+        void IDictionary.Add(object key, object value)
+        {
+            Add((TKey)key, (TValue)value);
+        }
+
+        bool IDictionary.Contains(object key)
+        {
+            if (!(key is TKey))
+            {
+                return false;
+            }
+            return ContainsKey((TKey)key);
+        }
+
+        IDictionaryEnumerator IDictionary.GetEnumerator()
+        {
+            return new DictionaryEnumerator(GetEnumerator());
+        }
+
+        void IDictionary.Remove(object key)
+        {
+            ThrowHelper.ThrowIfNull(key, "key");
+            this.CheckMutable();
+            if (!(key is TKey))
+            {
+                return;
+            }
+            Remove((TKey)key);
+        }
+
+        void ICollection.CopyTo(Array array, int index)
+        {
+            // This is ugly and slow as heck, but with any luck it will never be used anyway.
+            ICollection temp = this.Select(pair => new DictionaryEntry(pair.Key, pair.Value)).ToList();
+            temp.CopyTo(array, index);
+        }
+
+        bool IDictionary.IsFixedSize { get { return IsFrozen; } }
+
+        ICollection IDictionary.Keys { get { return (ICollection)Keys; } }
+
+        ICollection IDictionary.Values { get { return (ICollection)Values; } }
+
+        bool ICollection.IsSynchronized { get { return false; } }
+
+        object ICollection.SyncRoot { get { return this; } }
+
+        object IDictionary.this[object key]
+        {
+            get
+            {
+                ThrowHelper.ThrowIfNull(key, "key");
+                if (!(key is TKey))
+                {
+                    return null;
+                }
+                TValue value;
+                TryGetValue((TKey)key, out value);
+                return value;
+            }
+
+            set
+            {
+                if (frozen)
+                {
+                    throw new NotSupportedException("Dictionary is frozen");
+                }
+                this[(TKey)key] = (TValue)value;
+            }
+        }
+        #endregion
+
+        private class DictionaryEnumerator : IDictionaryEnumerator
+        {
+            private readonly IEnumerator<KeyValuePair<TKey, TValue>> enumerator;
+
+            internal DictionaryEnumerator(IEnumerator<KeyValuePair<TKey, TValue>> enumerator)
+            {
+                this.enumerator = enumerator;
+            }
+
+            public bool MoveNext()
+            {
+                return enumerator.MoveNext();
+            }
+
+            public void Reset()
+            {
+                enumerator.Reset();
+            }
+
+            public object Current { get { return Entry; } }
+            public DictionaryEntry Entry { get { return new DictionaryEntry(Key, Value); } }
+            public object Key { get { return enumerator.Current.Key; } }
+            public object Value { get { return enumerator.Current.Value; } }
         }
 
         /// <summary>

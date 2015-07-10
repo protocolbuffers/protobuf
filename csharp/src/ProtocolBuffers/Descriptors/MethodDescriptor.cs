@@ -37,8 +37,9 @@ namespace Google.Protobuf.Descriptors
     /// <summary>
     /// Describes a single method in a service.
     /// </summary>
-    public sealed class MethodDescriptor : IndexedDescriptorBase<MethodDescriptorProto, MethodOptions>
+    public sealed class MethodDescriptor : DescriptorBase
     {
+        private readonly MethodDescriptorProto proto;
         private readonly ServiceDescriptor service;
         private MessageDescriptor inputType;
         private MessageDescriptor outputType;
@@ -46,34 +47,33 @@ namespace Google.Protobuf.Descriptors
         /// <value>
         /// The service this method belongs to.
         /// </value>
-        public ServiceDescriptor Service
-        {
-            get { return service; }
-        }
+        public ServiceDescriptor Service { get { return service; } }
 
         /// <value>
         /// The method's input type.
         /// </value>
-        public MessageDescriptor InputType
-        {
-            get { return inputType; }
-        }
+        public MessageDescriptor InputType { get { return inputType; } }
 
         /// <value>
         /// The method's input type.
         /// </value>
-        public MessageDescriptor OutputType
-        {
-            get { return outputType; }
-        }
+        public MessageDescriptor OutputType { get { return outputType; } }
 
         internal MethodDescriptor(MethodDescriptorProto proto, FileDescriptor file,
                                   ServiceDescriptor parent, int index)
-            : base(proto, file, parent.FullName + "." + proto.Name, index)
+            : base(file, parent.FullName + "." + proto.Name, index)
         {
+            this.proto = proto;
             service = parent;
             file.DescriptorPool.AddSymbol(this);
         }
+
+        internal MethodDescriptorProto Proto { get { return proto; } }
+
+        /// <summary>
+        /// The brief name of the descriptor's target.
+        /// </summary>
+        public override string Name { get { return proto.Name; } }
 
         internal void CrossLink()
         {

@@ -34,6 +34,8 @@ using System;
 using System.Collections.Generic;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
+using System.Collections;
+using System.Linq;
 
 namespace Google.Protobuf.Collections
 {
@@ -49,6 +51,18 @@ namespace Google.Protobuf.Collections
         {
             var message = new ForeignMessage { C = 20 };
             var map = new MapField<string, ForeignMessage> { { "x", message } };
+            map.Freeze();
+            Assert.IsTrue(message.IsFrozen);
+        }
+
+        [Test]
+        public void Freeze_Idempotent()
+        {
+            var message = new ForeignMessage { C = 20 };
+            var map = new MapField<string, ForeignMessage> { { "x", message } };
+            Assert.IsFalse(map.IsFrozen);
+            map.Freeze();
+            Assert.IsTrue(message.IsFrozen);
             map.Freeze();
             Assert.IsTrue(message.IsFrozen);
         }
@@ -188,6 +202,15 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
+        public void Equality_Simple()
+        {
+            var map = new MapField<string, string>();
+            EqualityTester.AssertEquality(map, map);
+            EqualityTester.AssertInequality(map, null);
+            Assert.IsFalse(map.Equals(new object()));
+        }
+
+        [Test]
         public void EqualityIsValueSensitive()
         {
             // Note: Without some care, it's a little easier than one might
@@ -287,7 +310,8 @@ namespace Google.Protobuf.Collections
             Assert.IsFalse(map.Remove("missing"));
             Assert.AreEqual(1, map.Count);
             Assert.IsTrue(map.Remove("foo"));
-            Assert.AreEqual(0, map.Count);           
+            Assert.AreEqual(0, map.Count);
+            Assert.Throws<ArgumentNullException>(() => map.Remove(null));
         }
 
         [Test]
@@ -344,6 +368,164 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual("y", map["x"]);
             map["x"] = "z"; // This won't throw, unlike Add.
             Assert.AreEqual("z", map["x"]);
+        }
+
+        [Test]
+        public void GetEnumerator_NonGeneric()
+        {
+            IEnumerable map = new MapField<string, string> { { "x", "y" } };
+            CollectionAssert.AreEqual(new[] { new KeyValuePair<string, string>("x", "y") },
+                map.Cast<object>().ToList());
+        }
+
+        // Test for the explicitly-implemented non-generic IDictionary interface
+        [Test]
+        public void IDictionary_GetEnumerator()
+        {
+            IDictionary map = new MapField<string, string> { { "x", "y" } };
+            var enumerator = map.GetEnumerator();
+
+            // Commented assertions show an ideal situation - it looks like
+            // the LinkedList enumerator doesn't throw when you ask for the current entry
+            // at an inappropriate time; fixing this would be more work than it's worth.
+            // Assert.Throws<InvalidOperationException>(() => enumerator.Current.GetHashCode());
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual("x", enumerator.Key);
+            Assert.AreEqual("y", enumerator.Value);
+            Assert.AreEqual(new DictionaryEntry("x", "y"), enumerator.Current);
+            Assert.AreEqual(new DictionaryEntry("x", "y"), enumerator.Entry);
+            Assert.IsFalse(enumerator.MoveNext());
+            // Assert.Throws<InvalidOperationException>(() => enumerator.Current.GetHashCode());
+            enumerator.Reset();
+            // Assert.Throws<InvalidOperationException>(() => enumerator.Current.GetHashCode());
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual("x", enumerator.Key); // Assume the rest are okay
+        }
+
+        [Test]
+        public void IDictionary_Add()
+        {
+            var map = new MapField<string, string> { { "x", "y" } };
+            IDictionary dictionary = map;
+            dictionary.Add("a", "b");
+            Assert.AreEqual("b", map["a"]);
+            Assert.Throws<ArgumentException>(() => dictionary.Add("a", "duplicate"));
+            Assert.Throws<InvalidCastException>(() => dictionary.Add(new object(), "key is bad"));
+            Assert.Throws<InvalidCastException>(() => dictionary.Add("value is bad", new object()));
+        }
+
+        [Test]
+        public void IDictionary_Contains()
+        {
+            var map = new MapField<string, string> { { "x", "y" } };
+            IDictionary dictionary = map;
+
+            Assert.IsFalse(dictionary.Contains("a"));
+            Assert.IsFalse(dictionary.Contains(5));
+            // Surprising, but IDictionary.Contains is only about keys.
+            Assert.IsFalse(dictionary.Contains(new DictionaryEntry("x", "y")));
+            Assert.IsTrue(dictionary.Contains("x"));
+        }
+
+        [Test]
+        public void IDictionary_Remove()
+        {
+            var map = new MapField<string, string> { { "x", "y" } };
+            IDictionary dictionary = map;
+            dictionary.Remove("a");
+            Assert.AreEqual(1, dictionary.Count);
+            dictionary.Remove(5);
+            Assert.AreEqual(1, dictionary.Count);
+            dictionary.Remove(new DictionaryEntry("x", "y"));
+            Assert.AreEqual(1, dictionary.Count);
+            dictionary.Remove("x");
+            Assert.AreEqual(0, dictionary.Count);
+            Assert.Throws<ArgumentNullException>(() => dictionary.Remove(null));
+
+            map.Freeze();
+            // Call should fail even though it clearly doesn't contain 5 as a key.
+            Assert.Throws<InvalidOperationException>(() => dictionary.Remove(5));
+        }
+
+        [Test]
+        public void IDictionary_CopyTo()
+        {
+            var map = new MapField<string, string> { { "x", "y" } };
+            IDictionary dictionary = map;
+            var array = new DictionaryEntry[3];
+            dictionary.CopyTo(array, 1);
+            CollectionAssert.AreEqual(new[] { default(DictionaryEntry), new DictionaryEntry("x", "y"), default(DictionaryEntry) },
+                array);
+            var objectArray = new object[3];
+            dictionary.CopyTo(objectArray, 1);
+            CollectionAssert.AreEqual(new object[] { null, new DictionaryEntry("x", "y"), null },
+                objectArray);
+        }
+
+        [Test]
+        public void IDictionary_IsFixedSize()
+        {
+            var map = new MapField<string, string> { { "x", "y" } };
+            IDictionary dictionary = map;
+            Assert.IsFalse(dictionary.IsFixedSize);
+            map.Freeze();
+            Assert.IsTrue(dictionary.IsFixedSize);
+        }
+
+        [Test]
+        public void IDictionary_Keys()
+        {
+            IDictionary dictionary = new MapField<string, string> { { "x", "y" } };
+            CollectionAssert.AreEqual(new[] { "x" }, dictionary.Keys);
+        }
+
+        [Test]
+        public void IDictionary_Values()
+        {
+            IDictionary dictionary = new MapField<string, string> { { "x", "y" } };
+            CollectionAssert.AreEqual(new[] { "y" }, dictionary.Values);
+        }
+
+        [Test]
+        public void IDictionary_IsSynchronized()
+        {
+            IDictionary dictionary = new MapField<string, string> { { "x", "y" } };
+            Assert.IsFalse(dictionary.IsSynchronized);
+        }
+
+        [Test]
+        public void IDictionary_SyncRoot()
+        {
+            IDictionary dictionary = new MapField<string, string> { { "x", "y" } };
+            Assert.AreSame(dictionary, dictionary.SyncRoot);
+        }
+
+        [Test]
+        public void IDictionary_Indexer_Get()
+        {
+            IDictionary dictionary = new MapField<string, string> { { "x", "y" } };
+            Assert.AreEqual("y", dictionary["x"]);
+            Assert.IsNull(dictionary["a"]);
+            Assert.IsNull(dictionary[5]);
+            Assert.Throws<ArgumentNullException>(() => dictionary[null].GetHashCode());
+        }
+
+        [Test]
+        public void IDictionary_Indexer_Set()
+        {
+            var map = new MapField<string, string> { { "x", "y" } };
+            IDictionary dictionary = map;
+            map["a"] = "b";
+            Assert.AreEqual("b", map["a"]);
+            map["a"] = "c";
+            Assert.AreEqual("c", map["a"]);
+            Assert.Throws<InvalidCastException>(() => dictionary[5] = "x");
+            Assert.Throws<InvalidCastException>(() => dictionary["x"] = 5);
+            Assert.Throws<ArgumentNullException>(() => dictionary[null] = "z");
+            Assert.Throws<ArgumentNullException>(() => dictionary["x"] = null);
+            map.Freeze();
+            // Note: Not InvalidOperationException.
+            Assert.Throws<NotSupportedException>(() => dictionary["a"] = "c");
         }
 
         private static KeyValuePair<TKey, TValue> NewKeyValuePair<TKey, TValue>(TKey key, TValue value)

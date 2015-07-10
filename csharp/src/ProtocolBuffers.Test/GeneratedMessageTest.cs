@@ -29,11 +29,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
-    
+
 using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Google.Protobuf
 {
@@ -594,6 +596,143 @@ namespace Google.Protobuf
             var message2 = TestAllTypes.Parser.ParseFrom(bytes);
             Assert.AreEqual(message, message2);
             Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofUint32, message2.OneofFieldCase);
+        }
+
+        // TODO: Consider moving these tests to a separate reflection test - although they do require generated messages.
+
+        [Test]
+        public void Reflection_GetValue()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var fields = message.Fields;
+            Assert.AreEqual(message.SingleBool, fields[TestAllTypes.SingleBoolFieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleBytes, fields[TestAllTypes.SingleBytesFieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleDouble, fields[TestAllTypes.SingleDoubleFieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleFixed32, fields[TestAllTypes.SingleFixed32FieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleFixed64, fields[TestAllTypes.SingleFixed64FieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleFloat, fields[TestAllTypes.SingleFloatFieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleForeignEnum, fields[TestAllTypes.SingleForeignEnumFieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleForeignMessage, fields[TestAllTypes.SingleForeignMessageFieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleImportEnum, fields[TestAllTypes.SingleImportEnumFieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleImportMessage, fields[TestAllTypes.SingleImportMessageFieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleInt32, fields[TestAllTypes.SingleInt32FieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleInt64, fields[TestAllTypes.SingleInt64FieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleNestedEnum, fields[TestAllTypes.SingleNestedEnumFieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleNestedMessage, fields[TestAllTypes.SingleNestedMessageFieldNumber].GetValue(message));
+            Assert.AreEqual(message.SinglePublicImportMessage, fields[TestAllTypes.SinglePublicImportMessageFieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleSint32, fields[TestAllTypes.SingleSint32FieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleSint64, fields[TestAllTypes.SingleSint64FieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleString, fields[TestAllTypes.SingleStringFieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleSfixed32, fields[TestAllTypes.SingleSfixed32FieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleSfixed64, fields[TestAllTypes.SingleSfixed64FieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleUint32, fields[TestAllTypes.SingleUint32FieldNumber].GetValue(message));
+            Assert.AreEqual(message.SingleUint64, fields[TestAllTypes.SingleUint64FieldNumber].GetValue(message));
+            Assert.AreEqual(message.OneofBytes, fields[TestAllTypes.OneofBytesFieldNumber].GetValue(message));
+            Assert.AreEqual(message.OneofString, fields[TestAllTypes.OneofStringFieldNumber].GetValue(message));
+            Assert.AreEqual(message.OneofNestedMessage, fields[TestAllTypes.OneofNestedMessageFieldNumber].GetValue(message));
+            Assert.AreEqual(message.OneofUint32, fields[TestAllTypes.OneofUint32FieldNumber].GetValue(message));
+
+            // Just one example for repeated fields - they're all just returning the list
+            var list = (IList)fields[TestAllTypes.RepeatedInt32FieldNumber].GetValue(message);
+            Assert.AreEqual(message.RepeatedInt32, list);
+            Assert.AreEqual(message.RepeatedInt32[0], list[0]); // Just in case there was any doubt...
+
+            // Just a single map field, for the same reason
+            var mapMessage = new TestMap { MapStringString = { { "key1", "value1" }, { "key2", "value2" } } };
+            var dictionary = (IDictionary)mapMessage.Fields[TestMap.MapStringStringFieldNumber].GetValue(mapMessage);
+            Assert.AreEqual(mapMessage.MapStringString, dictionary);
+            Assert.AreEqual("value1", dictionary["key1"]);
+        }
+
+        [Test]
+        public void Reflection_Clear()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var fields = message.Fields;
+            fields[TestAllTypes.SingleBoolFieldNumber].Clear(message);
+            fields[TestAllTypes.SingleInt32FieldNumber].Clear(message);
+            fields[TestAllTypes.SingleStringFieldNumber].Clear(message);
+            fields[TestAllTypes.SingleBytesFieldNumber].Clear(message);
+            fields[TestAllTypes.SingleForeignEnumFieldNumber].Clear(message);
+            fields[TestAllTypes.SingleForeignMessageFieldNumber].Clear(message);
+            fields[TestAllTypes.RepeatedDoubleFieldNumber].Clear(message);
+
+            var expected = new TestAllTypes(SampleMessages.CreateFullTestAllTypes())
+            {
+                SingleBool = false,
+                SingleInt32 = 0,
+                SingleString = "",
+                SingleBytes = ByteString.Empty,
+                SingleForeignEnum = 0,
+                SingleForeignMessage = null,
+            };
+            expected.RepeatedDouble.Clear();
+
+            Assert.AreEqual(expected, message);
+
+            // Separately, maps.
+            var mapMessage = new TestMap { MapStringString = { { "key1", "value1" }, { "key2", "value2" } } };
+            mapMessage.Fields[TestMap.MapStringStringFieldNumber].Clear(mapMessage);
+            Assert.AreEqual(0, mapMessage.MapStringString.Count);
+        }
+
+        [Test]
+        public void Reflection_SetValue_SingleFields()
+        {
+            // Just a sample (primitives, messages, enums, strings, byte strings)
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var fields = message.Fields;
+            fields[TestAllTypes.SingleBoolFieldNumber].SetValue(message, false);
+            fields[TestAllTypes.SingleInt32FieldNumber].SetValue(message, 500);
+            fields[TestAllTypes.SingleStringFieldNumber].SetValue(message, "It's a string");
+            fields[TestAllTypes.SingleBytesFieldNumber].SetValue(message, ByteString.CopyFrom(99, 98, 97));
+            fields[TestAllTypes.SingleForeignEnumFieldNumber].SetValue(message, ForeignEnum.FOREIGN_FOO);
+            fields[TestAllTypes.SingleForeignMessageFieldNumber].SetValue(message, new ForeignMessage { C = 12345 });
+            fields[TestAllTypes.SingleDoubleFieldNumber].SetValue(message, 20150701.5);
+
+            var expected = new TestAllTypes(SampleMessages.CreateFullTestAllTypes())
+            {
+                SingleBool = false,
+                SingleInt32 = 500,
+                SingleString = "It's a string",
+                SingleBytes = ByteString.CopyFrom(99, 98, 97),
+                SingleForeignEnum = ForeignEnum.FOREIGN_FOO,
+                SingleForeignMessage = new ForeignMessage { C = 12345 },
+                SingleDouble = 20150701.5
+            };
+
+            Assert.AreEqual(expected, message);
+        }
+
+        [Test]
+        public void Reflection_SetValue_SingleFields_WrongType()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var fields = message.Fields;
+            Assert.Throws<InvalidCastException>(() => fields[TestAllTypes.SingleBoolFieldNumber].SetValue(message, "This isn't a bool"));
+        }
+
+        [Test]
+        public void Reflection_SetValue_MapFields()
+        {
+            var message = new TestMap();
+            var fields = message.Fields;
+            Assert.Throws<InvalidOperationException>(() => fields[TestMap.MapStringStringFieldNumber].SetValue(message, new Dictionary<string, string>()));
+        }
+
+        [Test]
+        public void Reflection_SetValue_RepeatedFields()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var fields = message.Fields;
+            Assert.Throws<InvalidOperationException>(() => fields[TestAllTypes.RepeatedDoubleFieldNumber].SetValue(message, new double[10]));
+        }
+
+        [Test]
+        public void Reflection_GetValue_IncorrectType()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            Assert.Throws<InvalidCastException>(() => message.Fields[TestAllTypes.SingleBoolFieldNumber].GetValue(new TestMap()));
         }
     }
 }

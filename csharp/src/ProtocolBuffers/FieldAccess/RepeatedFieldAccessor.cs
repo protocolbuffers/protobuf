@@ -32,33 +32,28 @@
 
 using System;
 using System.Collections;
+using Google.Protobuf.Descriptors;
 
 namespace Google.Protobuf.FieldAccess
 {
     /// <summary>
     /// Accessor for repeated fields.
     /// </summary>
-    /// <typeparam name="T">The type of message containing the field.</typeparam>
-    internal sealed class RepeatedFieldAccessor<T> : FieldAccessorBase<T> where T : IMessage<T>
+    internal sealed class RepeatedFieldAccessor : FieldAccessorBase
     {
-        internal RepeatedFieldAccessor(string name) : base(name)
+        internal RepeatedFieldAccessor(Type type, string propertyName, FieldDescriptor descriptor) : base(type, propertyName, descriptor)
         {
         }
 
-        public override void Clear(T message)
+        public override void Clear(object message)
         {
             IList list = (IList) GetValue(message);
             list.Clear();
         }
 
-        public override bool HasValue(T message)
+        public override void SetValue(object message, object value)
         {
-            throw new NotImplementedException("HasValue is not implemented for repeated fields");
-        }
-
-        public override void SetValue(T message, object value)
-        {
-            throw new NotImplementedException("SetValue is not implemented for repeated fields");
+            throw new InvalidOperationException("SetValue is not implemented for repeated fields");
         }
 
     }

@@ -13,76 +13,41 @@ namespace Google.Protobuf.TestProtos {
   public static partial class UnittestProto3 {
 
     #region Static variables
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllTypes__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestAllTypes> internal__static_protobuf_unittest_TestAllTypes__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestAllTypes_NestedMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage> internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_NestedTestAllTypes__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.NestedTestAllTypes> internal__static_protobuf_unittest_NestedTestAllTypes__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestDeprecatedFields__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestDeprecatedFields> internal__static_protobuf_unittest_TestDeprecatedFields__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_ForeignMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.ForeignMessage> internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestReservedFields__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestReservedFields> internal__static_protobuf_unittest_TestReservedFields__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestForeignNested__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestForeignNested> internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber> internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestRecursiveMessage> internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMutualRecursionA__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMutualRecursionA> internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestMutualRecursionB__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMutualRecursionB> internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames> internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestFieldOrderings__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestFieldOrderings> internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage> internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_SparseEnumMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.SparseEnumMessage> internal__static_protobuf_unittest_SparseEnumMessage__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_OneString__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.OneString> internal__static_protobuf_unittest_OneString__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_MoreString__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.MoreString> internal__static_protobuf_unittest_MoreString__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_OneBytes__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.OneBytes> internal__static_protobuf_unittest_OneBytes__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_MoreBytes__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.MoreBytes> internal__static_protobuf_unittest_MoreBytes__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_Int32Message__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.Int32Message> internal__static_protobuf_unittest_Int32Message__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_Uint32Message__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.Uint32Message> internal__static_protobuf_unittest_Uint32Message__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_Int64Message__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.Int64Message> internal__static_protobuf_unittest_Int64Message__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_Uint64Message__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.Uint64Message> internal__static_protobuf_unittest_Uint64Message__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_BoolMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.BoolMessage> internal__static_protobuf_unittest_BoolMessage__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestOneof__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestOneof> internal__static_protobuf_unittest_TestOneof__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestPackedTypes__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestPackedTypes> internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestUnpackedTypes__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestUnpackedTypes> internal__static_protobuf_unittest_TestUnpackedTypes__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes> internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_TestCommentInjectionMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestCommentInjectionMessage> internal__static_protobuf_unittest_TestCommentInjectionMessage__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_FooRequest__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.FooRequest> internal__static_protobuf_unittest_FooRequest__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_FooResponse__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.FooResponse> internal__static_protobuf_unittest_FooResponse__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_FooClientMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.FooClientMessage> internal__static_protobuf_unittest_FooClientMessage__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_FooServerMessage__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.FooServerMessage> internal__static_protobuf_unittest_FooServerMessage__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_BarRequest__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.BarRequest> internal__static_protobuf_unittest_BarRequest__FieldAccessorTable;
-    internal static pbd::MessageDescriptor internal__static_protobuf_unittest_BarResponse__Descriptor;
-    internal static pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.BarResponse> internal__static_protobuf_unittest_BarResponse__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestAllTypes__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_NestedTestAllTypes__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestDeprecatedFields__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestReservedFields__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_SparseEnumMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_OneString__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_MoreString__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_OneBytes__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_MoreBytes__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_Int32Message__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_Uint32Message__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_Int64Message__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_Uint64Message__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_BoolMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestOneof__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestUnpackedTypes__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_TestCommentInjectionMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_FooRequest__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_FooResponse__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_FooClientMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_FooServerMessage__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_BarRequest__FieldAccessorTable;
+    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_BarResponse__FieldAccessorTable;
     #endregion
     #region Descriptor
     public static pbd::FileDescriptor Descriptor {
@@ -220,153 +185,115 @@ namespace Google.Protobuf.TestProtos {
             "HS5wcm90b2J1Zl91bml0dGVzdC5CYXJSZXF1ZXN0Gh4ucHJvdG9idWZfdW5p", 
             "dHRlc3QuQmFyUmVzcG9uc2VCOkINVW5pdHRlc3RQcm90b0gBgAEBiAEBkAEB", 
           "+AEBqgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
-      pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {
-        descriptor = root;
-        internal__static_protobuf_unittest_TestAllTypes__Descriptor = Descriptor.MessageTypes[0];
-        internal__static_protobuf_unittest_TestAllTypes__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestAllTypes>(internal__static_protobuf_unittest_TestAllTypes__Descriptor,
-                new string[] { "SingleInt32", "SingleInt64", "SingleUint32", "SingleUint64", "SingleSint32", "SingleSint64", "SingleFixed32", "SingleFixed64", "SingleSfixed32", "SingleSfixed64", "SingleFloat", "SingleDouble", "SingleBool", "SingleString", "SingleBytes", "SingleNestedMessage", "SingleForeignMessage", "SingleImportMessage", "SingleNestedEnum", "SingleForeignEnum", "SingleImportEnum", "SinglePublicImportMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedImportMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedImportEnum", "RepeatedPublicImportMessage", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OneofField", });
-        internal__static_protobuf_unittest_TestAllTypes_NestedMessage__Descriptor = internal__static_protobuf_unittest_TestAllTypes__Descriptor.NestedTypes[0];
-        internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage>(internal__static_protobuf_unittest_TestAllTypes_NestedMessage__Descriptor,
-                new string[] { "Bb", });
-        internal__static_protobuf_unittest_NestedTestAllTypes__Descriptor = Descriptor.MessageTypes[1];
-        internal__static_protobuf_unittest_NestedTestAllTypes__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.NestedTestAllTypes>(internal__static_protobuf_unittest_NestedTestAllTypes__Descriptor,
-                new string[] { "Child", "Payload", "RepeatedChild", });
-        internal__static_protobuf_unittest_TestDeprecatedFields__Descriptor = Descriptor.MessageTypes[2];
-        internal__static_protobuf_unittest_TestDeprecatedFields__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestDeprecatedFields>(internal__static_protobuf_unittest_TestDeprecatedFields__Descriptor,
-                new string[] { "DeprecatedInt32", });
-        internal__static_protobuf_unittest_ForeignMessage__Descriptor = Descriptor.MessageTypes[3];
-        internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.ForeignMessage>(internal__static_protobuf_unittest_ForeignMessage__Descriptor,
-                new string[] { "C", });
-        internal__static_protobuf_unittest_TestReservedFields__Descriptor = Descriptor.MessageTypes[4];
-        internal__static_protobuf_unittest_TestReservedFields__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestReservedFields>(internal__static_protobuf_unittest_TestReservedFields__Descriptor,
-                new string[] { });
-        internal__static_protobuf_unittest_TestForeignNested__Descriptor = Descriptor.MessageTypes[5];
-        internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestForeignNested>(internal__static_protobuf_unittest_TestForeignNested__Descriptor,
-                new string[] { "ForeignNested", });
-        internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor = Descriptor.MessageTypes[6];
-        internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber>(internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor,
-                new string[] { "A", "Bb", });
-        internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor = Descriptor.MessageTypes[7];
-        internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestRecursiveMessage>(internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor,
-                new string[] { "A", "I", });
-        internal__static_protobuf_unittest_TestMutualRecursionA__Descriptor = Descriptor.MessageTypes[8];
-        internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMutualRecursionA>(internal__static_protobuf_unittest_TestMutualRecursionA__Descriptor,
-                new string[] { "Bb", });
-        internal__static_protobuf_unittest_TestMutualRecursionB__Descriptor = Descriptor.MessageTypes[9];
-        internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestMutualRecursionB>(internal__static_protobuf_unittest_TestMutualRecursionB__Descriptor,
-                new string[] { "A", "OptionalInt32", });
-        internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor = Descriptor.MessageTypes[10];
-        internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames>(internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor,
-                new string[] { "PrimitiveField", "StringField", "EnumField", "MessageField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedEnumField", "RepeatedMessageField", });
-        internal__static_protobuf_unittest_TestFieldOrderings__Descriptor = Descriptor.MessageTypes[11];
-        internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestFieldOrderings>(internal__static_protobuf_unittest_TestFieldOrderings__Descriptor,
-                new string[] { "MyString", "MyInt", "MyFloat", "SingleNestedMessage", });
-        internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__Descriptor = internal__static_protobuf_unittest_TestFieldOrderings__Descriptor.NestedTypes[0];
-        internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage>(internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__Descriptor,
-                new string[] { "Oo", "Bb", });
-        internal__static_protobuf_unittest_SparseEnumMessage__Descriptor = Descriptor.MessageTypes[12];
-        internal__static_protobuf_unittest_SparseEnumMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.SparseEnumMessage>(internal__static_protobuf_unittest_SparseEnumMessage__Descriptor,
-                new string[] { "SparseEnum", });
-        internal__static_protobuf_unittest_OneString__Descriptor = Descriptor.MessageTypes[13];
-        internal__static_protobuf_unittest_OneString__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.OneString>(internal__static_protobuf_unittest_OneString__Descriptor,
-                new string[] { "Data", });
-        internal__static_protobuf_unittest_MoreString__Descriptor = Descriptor.MessageTypes[14];
-        internal__static_protobuf_unittest_MoreString__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.MoreString>(internal__static_protobuf_unittest_MoreString__Descriptor,
-                new string[] { "Data", });
-        internal__static_protobuf_unittest_OneBytes__Descriptor = Descriptor.MessageTypes[15];
-        internal__static_protobuf_unittest_OneBytes__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.OneBytes>(internal__static_protobuf_unittest_OneBytes__Descriptor,
-                new string[] { "Data", });
-        internal__static_protobuf_unittest_MoreBytes__Descriptor = Descriptor.MessageTypes[16];
-        internal__static_protobuf_unittest_MoreBytes__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.MoreBytes>(internal__static_protobuf_unittest_MoreBytes__Descriptor,
-                new string[] { "Data", });
-        internal__static_protobuf_unittest_Int32Message__Descriptor = Descriptor.MessageTypes[17];
-        internal__static_protobuf_unittest_Int32Message__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.Int32Message>(internal__static_protobuf_unittest_Int32Message__Descriptor,
-                new string[] { "Data", });
-        internal__static_protobuf_unittest_Uint32Message__Descriptor = Descriptor.MessageTypes[18];
-        internal__static_protobuf_unittest_Uint32Message__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.Uint32Message>(internal__static_protobuf_unittest_Uint32Message__Descriptor,
-                new string[] { "Data", });
-        internal__static_protobuf_unittest_Int64Message__Descriptor = Descriptor.MessageTypes[19];
-        internal__static_protobuf_unittest_Int64Message__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.Int64Message>(internal__static_protobuf_unittest_Int64Message__Descriptor,
-                new string[] { "Data", });
-        internal__static_protobuf_unittest_Uint64Message__Descriptor = Descriptor.MessageTypes[20];
-        internal__static_protobuf_unittest_Uint64Message__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.Uint64Message>(internal__static_protobuf_unittest_Uint64Message__Descriptor,
-                new string[] { "Data", });
-        internal__static_protobuf_unittest_BoolMessage__Descriptor = Descriptor.MessageTypes[21];
-        internal__static_protobuf_unittest_BoolMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.BoolMessage>(internal__static_protobuf_unittest_BoolMessage__Descriptor,
-                new string[] { "Data", });
-        internal__static_protobuf_unittest_TestOneof__Descriptor = Descriptor.MessageTypes[22];
-        internal__static_protobuf_unittest_TestOneof__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestOneof>(internal__static_protobuf_unittest_TestOneof__Descriptor,
-                new string[] { "FooInt", "FooString", "FooMessage", "Foo", });
-        internal__static_protobuf_unittest_TestPackedTypes__Descriptor = Descriptor.MessageTypes[23];
-        internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestPackedTypes>(internal__static_protobuf_unittest_TestPackedTypes__Descriptor,
-                new string[] { "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedEnum", });
-        internal__static_protobuf_unittest_TestUnpackedTypes__Descriptor = Descriptor.MessageTypes[24];
-        internal__static_protobuf_unittest_TestUnpackedTypes__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestUnpackedTypes>(internal__static_protobuf_unittest_TestUnpackedTypes__Descriptor,
-                new string[] { "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedEnum", });
-        internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__Descriptor = Descriptor.MessageTypes[25];
-        internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes>(internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__Descriptor,
-                new string[] { "RepeatedFixed32", "RepeatedInt32", "RepeatedFixed64", "RepeatedInt64", "RepeatedFloat", "RepeatedUint64", });
-        internal__static_protobuf_unittest_TestCommentInjectionMessage__Descriptor = Descriptor.MessageTypes[26];
-        internal__static_protobuf_unittest_TestCommentInjectionMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.TestCommentInjectionMessage>(internal__static_protobuf_unittest_TestCommentInjectionMessage__Descriptor,
-                new string[] { "A", });
-        internal__static_protobuf_unittest_FooRequest__Descriptor = Descriptor.MessageTypes[27];
-        internal__static_protobuf_unittest_FooRequest__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.FooRequest>(internal__static_protobuf_unittest_FooRequest__Descriptor,
-                new string[] { });
-        internal__static_protobuf_unittest_FooResponse__Descriptor = Descriptor.MessageTypes[28];
-        internal__static_protobuf_unittest_FooResponse__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.FooResponse>(internal__static_protobuf_unittest_FooResponse__Descriptor,
-                new string[] { });
-        internal__static_protobuf_unittest_FooClientMessage__Descriptor = Descriptor.MessageTypes[29];
-        internal__static_protobuf_unittest_FooClientMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.FooClientMessage>(internal__static_protobuf_unittest_FooClientMessage__Descriptor,
-                new string[] { });
-        internal__static_protobuf_unittest_FooServerMessage__Descriptor = Descriptor.MessageTypes[30];
-        internal__static_protobuf_unittest_FooServerMessage__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.FooServerMessage>(internal__static_protobuf_unittest_FooServerMessage__Descriptor,
-                new string[] { });
-        internal__static_protobuf_unittest_BarRequest__Descriptor = Descriptor.MessageTypes[31];
-        internal__static_protobuf_unittest_BarRequest__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.BarRequest>(internal__static_protobuf_unittest_BarRequest__Descriptor,
-                new string[] { });
-        internal__static_protobuf_unittest_BarResponse__Descriptor = Descriptor.MessageTypes[32];
-        internal__static_protobuf_unittest_BarResponse__FieldAccessorTable = 
-            new pb::FieldAccess.FieldAccessorTable<global::Google.Protobuf.TestProtos.BarResponse>(internal__static_protobuf_unittest_BarResponse__Descriptor,
-                new string[] { });
-      };
-      pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+      descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbd::FileDescriptor[] {
           global::Google.Protobuf.TestProtos.UnittestImportProto3.Descriptor, 
-          }, assigner);
+          });
+      internal__static_protobuf_unittest_TestAllTypes__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestAllTypes), descriptor.MessageTypes[0],
+              new string[] { "SingleInt32", "SingleInt64", "SingleUint32", "SingleUint64", "SingleSint32", "SingleSint64", "SingleFixed32", "SingleFixed64", "SingleSfixed32", "SingleSfixed64", "SingleFloat", "SingleDouble", "SingleBool", "SingleString", "SingleBytes", "SingleNestedMessage", "SingleForeignMessage", "SingleImportMessage", "SingleNestedEnum", "SingleForeignEnum", "SingleImportEnum", "SinglePublicImportMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedImportMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedImportEnum", "RepeatedPublicImportMessage", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OneofField", });
+      internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage), descriptor.MessageTypes[0].NestedTypes[0],
+              new string[] { "Bb", });
+      internal__static_protobuf_unittest_NestedTestAllTypes__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.NestedTestAllTypes), descriptor.MessageTypes[1],
+              new string[] { "Child", "Payload", "RepeatedChild", });
+      internal__static_protobuf_unittest_TestDeprecatedFields__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestDeprecatedFields), descriptor.MessageTypes[2],
+              new string[] { "DeprecatedInt32", });
+      internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.ForeignMessage), descriptor.MessageTypes[3],
+              new string[] { "C", });
+      internal__static_protobuf_unittest_TestReservedFields__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestReservedFields), descriptor.MessageTypes[4],
+              new string[] { });
+      internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestForeignNested), descriptor.MessageTypes[5],
+              new string[] { "ForeignNested", });
+      internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber), descriptor.MessageTypes[6],
+              new string[] { "A", "Bb", });
+      internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestRecursiveMessage), descriptor.MessageTypes[7],
+              new string[] { "A", "I", });
+      internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionA), descriptor.MessageTypes[8],
+              new string[] { "Bb", });
+      internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionB), descriptor.MessageTypes[9],
+              new string[] { "A", "OptionalInt32", });
+      internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames), descriptor.MessageTypes[10],
+              new string[] { "PrimitiveField", "StringField", "EnumField", "MessageField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedEnumField", "RepeatedMessageField", });
+      internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings), descriptor.MessageTypes[11],
+              new string[] { "MyString", "MyInt", "MyFloat", "SingleNestedMessage", });
+      internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage), descriptor.MessageTypes[11].NestedTypes[0],
+              new string[] { "Oo", "Bb", });
+      internal__static_protobuf_unittest_SparseEnumMessage__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.SparseEnumMessage), descriptor.MessageTypes[12],
+              new string[] { "SparseEnum", });
+      internal__static_protobuf_unittest_OneString__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.OneString), descriptor.MessageTypes[13],
+              new string[] { "Data", });
+      internal__static_protobuf_unittest_MoreString__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.MoreString), descriptor.MessageTypes[14],
+              new string[] { "Data", });
+      internal__static_protobuf_unittest_OneBytes__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.OneBytes), descriptor.MessageTypes[15],
+              new string[] { "Data", });
+      internal__static_protobuf_unittest_MoreBytes__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.MoreBytes), descriptor.MessageTypes[16],
+              new string[] { "Data", });
+      internal__static_protobuf_unittest_Int32Message__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.Int32Message), descriptor.MessageTypes[17],
+              new string[] { "Data", });
+      internal__static_protobuf_unittest_Uint32Message__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.Uint32Message), descriptor.MessageTypes[18],
+              new string[] { "Data", });
+      internal__static_protobuf_unittest_Int64Message__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.Int64Message), descriptor.MessageTypes[19],
+              new string[] { "Data", });
+      internal__static_protobuf_unittest_Uint64Message__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.Uint64Message), descriptor.MessageTypes[20],
+              new string[] { "Data", });
+      internal__static_protobuf_unittest_BoolMessage__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.BoolMessage), descriptor.MessageTypes[21],
+              new string[] { "Data", });
+      internal__static_protobuf_unittest_TestOneof__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestOneof), descriptor.MessageTypes[22],
+              new string[] { "FooInt", "FooString", "FooMessage", "Foo", });
+      internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestPackedTypes), descriptor.MessageTypes[23],
+              new string[] { "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedEnum", });
+      internal__static_protobuf_unittest_TestUnpackedTypes__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestUnpackedTypes), descriptor.MessageTypes[24],
+              new string[] { "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedEnum", });
+      internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes), descriptor.MessageTypes[25],
+              new string[] { "RepeatedFixed32", "RepeatedInt32", "RepeatedFixed64", "RepeatedInt64", "RepeatedFloat", "RepeatedUint64", });
+      internal__static_protobuf_unittest_TestCommentInjectionMessage__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestCommentInjectionMessage), descriptor.MessageTypes[26],
+              new string[] { "A", });
+      internal__static_protobuf_unittest_FooRequest__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.FooRequest), descriptor.MessageTypes[27],
+              new string[] { });
+      internal__static_protobuf_unittest_FooResponse__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.FooResponse), descriptor.MessageTypes[28],
+              new string[] { });
+      internal__static_protobuf_unittest_FooClientMessage__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.FooClientMessage), descriptor.MessageTypes[29],
+              new string[] { });
+      internal__static_protobuf_unittest_FooServerMessage__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.FooServerMessage), descriptor.MessageTypes[30],
+              new string[] { });
+      internal__static_protobuf_unittest_BarRequest__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.BarRequest), descriptor.MessageTypes[31],
+              new string[] { });
+      internal__static_protobuf_unittest_BarResponse__FieldAccessorTable = 
+          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.BarResponse), descriptor.MessageTypes[32],
+              new string[] { });
     }
     #endregion
 
@@ -409,19 +336,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "oneof_bytes", "oneof_nested_message", "oneof_string", "oneof_uint32", "repeated_bool", "repeated_bytes", "repeated_double", "repeated_fixed32", "repeated_fixed64", "repeated_float", "repeated_foreign_enum", "repeated_foreign_message", "repeated_import_enum", "repeated_import_message", "repeated_int32", "repeated_int64", "repeated_nested_enum", "repeated_nested_message", "repeated_public_import_message", "repeated_sfixed32", "repeated_sfixed64", "repeated_sint32", "repeated_sint64", "repeated_string", "repeated_uint32", "repeated_uint64", "single_bool", "single_bytes", "single_double", "single_fixed32", "single_fixed64", "single_float", "single_foreign_enum", "single_foreign_message", "single_import_enum", "single_import_message", "single_int32", "single_int64", "single_nested_enum", "single_nested_message", "single_public_import_message", "single_sfixed32", "single_sfixed64", "single_sint32", "single_sint64", "single_string", "single_uint32", "single_uint64" };
     private static readonly uint[] _fieldTags = new uint[] { 914, 898, 906, 888, 346, 362, 338, 298, 306, 330, 418, 394, 426, 402, 250, 258, 410, 386, 434, 314, 322, 282, 290, 354, 266, 274, 104, 122, 97, 61, 65, 93, 176, 154, 184, 162, 8, 16, 168, 146, 210, 77, 81, 40, 48, 114, 24, 32 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestAllTypes__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[0]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestAllTypes> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestAllTypes__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestAllTypes() { }
+    public TestAllTypes() {
+      OnConstruction();
+    }
 
-    public TestAllTypes(TestAllTypes other) {
+    partial void OnConstruction();
+
+    public TestAllTypes(TestAllTypes other) : this() {
       singleInt32_ = other.singleInt32_;
       singleInt64_ = other.singleInt64_;
       singleUint32_ = other.singleUint32_;
@@ -1702,19 +1633,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "bb" };
         private static readonly uint[] _fieldTags = new uint[] { 8 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestAllTypes_NestedMessage__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestAllTypes.Descriptor.NestedTypes[0]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<NestedMessage> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public NestedMessage() { }
+        public NestedMessage() {
+          OnConstruction();
+        }
 
-        public NestedMessage(NestedMessage other) {
+        partial void OnConstruction();
+
+        public NestedMessage(NestedMessage other) : this() {
           bb_ = other.bb_;
         }
 
@@ -1818,19 +1753,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "child", "payload", "repeated_child" };
     private static readonly uint[] _fieldTags = new uint[] { 10, 18, 26 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_NestedTestAllTypes__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[1]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<NestedTestAllTypes> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_NestedTestAllTypes__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public NestedTestAllTypes() { }
+    public NestedTestAllTypes() {
+      OnConstruction();
+    }
 
-    public NestedTestAllTypes(NestedTestAllTypes other) {
+    partial void OnConstruction();
+
+    public NestedTestAllTypes(NestedTestAllTypes other) : this() {
       Child = other.child_ != null ? other.Child.Clone() : null;
       Payload = other.payload_ != null ? other.Payload.Clone() : null;
       repeatedChild_ = other.repeatedChild_.Clone();
@@ -1989,19 +1928,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "deprecated_int32" };
     private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestDeprecatedFields__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[2]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestDeprecatedFields> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestDeprecatedFields__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestDeprecatedFields() { }
+    public TestDeprecatedFields() {
+      OnConstruction();
+    }
 
-    public TestDeprecatedFields(TestDeprecatedFields other) {
+    partial void OnConstruction();
+
+    public TestDeprecatedFields(TestDeprecatedFields other) : this() {
       deprecatedInt32_ = other.deprecatedInt32_;
     }
 
@@ -2101,19 +2044,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "c" };
     private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_ForeignMessage__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[3]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<ForeignMessage> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public ForeignMessage() { }
+    public ForeignMessage() {
+      OnConstruction();
+    }
 
-    public ForeignMessage(ForeignMessage other) {
+    partial void OnConstruction();
+
+    public ForeignMessage(ForeignMessage other) : this() {
       c_ = other.c_;
     }
 
@@ -2212,19 +2159,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] {  };
     private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestReservedFields__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[4]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestReservedFields> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestReservedFields__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestReservedFields() { }
+    public TestReservedFields() {
+      OnConstruction();
+    }
 
-    public TestReservedFields(TestReservedFields other) {
+    partial void OnConstruction();
+
+    public TestReservedFields(TestReservedFields other) : this() {
     }
 
     public TestReservedFields Clone() {
@@ -2296,19 +2247,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "foreign_nested" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestForeignNested__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[5]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestForeignNested> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestForeignNested() { }
+    public TestForeignNested() {
+      OnConstruction();
+    }
 
-    public TestForeignNested(TestForeignNested other) {
+    partial void OnConstruction();
+
+    public TestForeignNested(TestForeignNested other) : this() {
       ForeignNested = other.foreignNested_ != null ? other.ForeignNested.Clone() : null;
     }
 
@@ -2414,19 +2369,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "a", "bb" };
     private static readonly uint[] _fieldTags = new uint[] { 8, 2147483640 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestReallyLargeTagNumber__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[6]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestReallyLargeTagNumber> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestReallyLargeTagNumber() { }
+    public TestReallyLargeTagNumber() {
+      OnConstruction();
+    }
 
-    public TestReallyLargeTagNumber(TestReallyLargeTagNumber other) {
+    partial void OnConstruction();
+
+    public TestReallyLargeTagNumber(TestReallyLargeTagNumber other) : this() {
       a_ = other.a_;
       bb_ = other.bb_;
     }
@@ -2552,19 +2511,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "a", "i" };
     private static readonly uint[] _fieldTags = new uint[] { 10, 16 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestRecursiveMessage__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[7]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestRecursiveMessage> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestRecursiveMessage() { }
+    public TestRecursiveMessage() {
+      OnConstruction();
+    }
 
-    public TestRecursiveMessage(TestRecursiveMessage other) {
+    partial void OnConstruction();
+
+    public TestRecursiveMessage(TestRecursiveMessage other) : this() {
       A = other.a_ != null ? other.A.Clone() : null;
       i_ = other.i_;
     }
@@ -2697,19 +2660,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "bb" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestMutualRecursionA__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[8]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestMutualRecursionA> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestMutualRecursionA() { }
+    public TestMutualRecursionA() {
+      OnConstruction();
+    }
 
-    public TestMutualRecursionA(TestMutualRecursionA other) {
+    partial void OnConstruction();
+
+    public TestMutualRecursionA(TestMutualRecursionA other) : this() {
       Bb = other.bb_ != null ? other.Bb.Clone() : null;
     }
 
@@ -2815,19 +2782,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "a", "optional_int32" };
     private static readonly uint[] _fieldTags = new uint[] { 10, 16 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestMutualRecursionB__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[9]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestMutualRecursionB> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestMutualRecursionB() { }
+    public TestMutualRecursionB() {
+      OnConstruction();
+    }
 
-    public TestMutualRecursionB(TestMutualRecursionB other) {
+    partial void OnConstruction();
+
+    public TestMutualRecursionB(TestMutualRecursionB other) : this() {
       A = other.a_ != null ? other.A.Clone() : null;
       optionalInt32_ = other.optionalInt32_;
     }
@@ -2960,19 +2931,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "EnumField", "MessageField", "PrimitiveField", "RepeatedEnumField", "RepeatedMessageField", "RepeatedPrimitiveField", "RepeatedStringField", "StringField" };
     private static readonly uint[] _fieldTags = new uint[] { 24, 34, 8, 74, 82, 58, 66, 18 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestCamelCaseFieldNames__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[10]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestCamelCaseFieldNames> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestCamelCaseFieldNames() { }
+    public TestCamelCaseFieldNames() {
+      OnConstruction();
+    }
 
-    public TestCamelCaseFieldNames(TestCamelCaseFieldNames other) {
+    partial void OnConstruction();
+
+    public TestCamelCaseFieldNames(TestCamelCaseFieldNames other) : this() {
       primitiveField_ = other.primitiveField_;
       stringField_ = other.stringField_;
       enumField_ = other.enumField_;
@@ -3236,19 +3211,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "my_float", "my_int", "my_string", "single_nested_message" };
     private static readonly uint[] _fieldTags = new uint[] { 813, 8, 90, 1602 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestFieldOrderings__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[11]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestFieldOrderings> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestFieldOrderings() { }
+    public TestFieldOrderings() {
+      OnConstruction();
+    }
 
-    public TestFieldOrderings(TestFieldOrderings other) {
+    partial void OnConstruction();
+
+    public TestFieldOrderings(TestFieldOrderings other) : this() {
       myString_ = other.myString_;
       myInt_ = other.myInt_;
       myFloat_ = other.myFloat_;
@@ -3436,19 +3415,23 @@ namespace Google.Protobuf.TestProtos {
         private static readonly string[] _fieldNames = new string[] { "bb", "oo" };
         private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbd::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__Descriptor; }
+          get { return global::Google.Protobuf.TestProtos.TestFieldOrderings.Descriptor.NestedTypes[0]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable<NestedMessage> Fields {
+        public pb::FieldAccess.FieldAccessorTable Fields {
           get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
         public bool IsFrozen { get { return _frozen; } }
 
-        public NestedMessage() { }
+        public NestedMessage() {
+          OnConstruction();
+        }
 
-        public NestedMessage(NestedMessage other) {
+        partial void OnConstruction();
+
+        public NestedMessage(NestedMessage other) : this() {
           oo_ = other.oo_;
           bb_ = other.bb_;
         }
@@ -3579,19 +3562,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "sparse_enum" };
     private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_SparseEnumMessage__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[12]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<SparseEnumMessage> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_SparseEnumMessage__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public SparseEnumMessage() { }
+    public SparseEnumMessage() {
+      OnConstruction();
+    }
 
-    public SparseEnumMessage(SparseEnumMessage other) {
+    partial void OnConstruction();
+
+    public SparseEnumMessage(SparseEnumMessage other) : this() {
       sparseEnum_ = other.sparseEnum_;
     }
 
@@ -3690,19 +3677,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "data" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_OneString__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[13]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<OneString> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_OneString__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public OneString() { }
+    public OneString() {
+      OnConstruction();
+    }
 
-    public OneString(OneString other) {
+    partial void OnConstruction();
+
+    public OneString(OneString other) : this() {
       data_ = other.data_;
     }
 
@@ -3801,19 +3792,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "data" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_MoreString__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[14]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<MoreString> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_MoreString__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public MoreString() { }
+    public MoreString() {
+      OnConstruction();
+    }
 
-    public MoreString(MoreString other) {
+    partial void OnConstruction();
+
+    public MoreString(MoreString other) : this() {
       data_ = other.data_.Clone();
     }
 
@@ -3904,19 +3899,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "data" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_OneBytes__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[15]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<OneBytes> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_OneBytes__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public OneBytes() { }
+    public OneBytes() {
+      OnConstruction();
+    }
 
-    public OneBytes(OneBytes other) {
+    partial void OnConstruction();
+
+    public OneBytes(OneBytes other) : this() {
       data_ = other.data_;
     }
 
@@ -4015,19 +4014,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "data" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_MoreBytes__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[16]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<MoreBytes> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_MoreBytes__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public MoreBytes() { }
+    public MoreBytes() {
+      OnConstruction();
+    }
 
-    public MoreBytes(MoreBytes other) {
+    partial void OnConstruction();
+
+    public MoreBytes(MoreBytes other) : this() {
       data_ = other.data_;
     }
 
@@ -4126,19 +4129,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "data" };
     private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Int32Message__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[17]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<Int32Message> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Int32Message__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public Int32Message() { }
+    public Int32Message() {
+      OnConstruction();
+    }
 
-    public Int32Message(Int32Message other) {
+    partial void OnConstruction();
+
+    public Int32Message(Int32Message other) : this() {
       data_ = other.data_;
     }
 
@@ -4237,19 +4244,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "data" };
     private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Uint32Message__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[18]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<Uint32Message> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Uint32Message__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public Uint32Message() { }
+    public Uint32Message() {
+      OnConstruction();
+    }
 
-    public Uint32Message(Uint32Message other) {
+    partial void OnConstruction();
+
+    public Uint32Message(Uint32Message other) : this() {
       data_ = other.data_;
     }
 
@@ -4348,19 +4359,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "data" };
     private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Int64Message__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[19]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<Int64Message> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Int64Message__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public Int64Message() { }
+    public Int64Message() {
+      OnConstruction();
+    }
 
-    public Int64Message(Int64Message other) {
+    partial void OnConstruction();
+
+    public Int64Message(Int64Message other) : this() {
       data_ = other.data_;
     }
 
@@ -4459,19 +4474,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "data" };
     private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Uint64Message__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[20]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<Uint64Message> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Uint64Message__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public Uint64Message() { }
+    public Uint64Message() {
+      OnConstruction();
+    }
 
-    public Uint64Message(Uint64Message other) {
+    partial void OnConstruction();
+
+    public Uint64Message(Uint64Message other) : this() {
       data_ = other.data_;
     }
 
@@ -4570,19 +4589,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "data" };
     private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_BoolMessage__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[21]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<BoolMessage> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_BoolMessage__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public BoolMessage() { }
+    public BoolMessage() {
+      OnConstruction();
+    }
 
-    public BoolMessage(BoolMessage other) {
+    partial void OnConstruction();
+
+    public BoolMessage(BoolMessage other) : this() {
       data_ = other.data_;
     }
 
@@ -4681,19 +4704,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "foo_int", "foo_message", "foo_string" };
     private static readonly uint[] _fieldTags = new uint[] { 8, 26, 18 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestOneof__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[22]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestOneof> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestOneof__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestOneof() { }
+    public TestOneof() {
+      OnConstruction();
+    }
 
-    public TestOneof(TestOneof other) {
+    partial void OnConstruction();
+
+    public TestOneof(TestOneof other) : this() {
       switch (other.FooCase) {
         case FooOneofCase.FooInt:
           FooInt = other.FooInt;
@@ -4882,19 +4909,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "packed_bool", "packed_double", "packed_enum", "packed_fixed32", "packed_fixed64", "packed_float", "packed_int32", "packed_int64", "packed_sfixed32", "packed_sfixed64", "packed_sint32", "packed_sint64", "packed_uint32", "packed_uint64" };
     private static readonly uint[] _fieldTags = new uint[] { 818, 810, 826, 770, 778, 802, 722, 730, 786, 794, 754, 762, 738, 746 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestPackedTypes__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[23]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestPackedTypes> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestPackedTypes() { }
+    public TestPackedTypes() {
+      OnConstruction();
+    }
 
-    public TestPackedTypes(TestPackedTypes other) {
+    partial void OnConstruction();
+
+    public TestPackedTypes(TestPackedTypes other) : this() {
       packedInt32_ = other.packedInt32_.Clone();
       packedInt64_ = other.packedInt64_.Clone();
       packedUint32_ = other.packedUint32_.Clone();
@@ -5245,19 +5276,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "unpacked_bool", "unpacked_double", "unpacked_enum", "unpacked_fixed32", "unpacked_fixed64", "unpacked_float", "unpacked_int32", "unpacked_int64", "unpacked_sfixed32", "unpacked_sfixed64", "unpacked_sint32", "unpacked_sint64", "unpacked_uint32", "unpacked_uint64" };
     private static readonly uint[] _fieldTags = new uint[] { 816, 809, 824, 773, 777, 805, 720, 728, 789, 793, 752, 760, 736, 744 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestUnpackedTypes__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[24]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestUnpackedTypes> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestUnpackedTypes__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestUnpackedTypes() { }
+    public TestUnpackedTypes() {
+      OnConstruction();
+    }
 
-    public TestUnpackedTypes(TestUnpackedTypes other) {
+    partial void OnConstruction();
+
+    public TestUnpackedTypes(TestUnpackedTypes other) : this() {
       unpackedInt32_ = other.unpackedInt32_.Clone();
       unpackedInt64_ = other.unpackedInt64_.Clone();
       unpackedUint32_ = other.unpackedUint32_.Clone();
@@ -5608,19 +5643,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "repeated_fixed32", "repeated_fixed64", "repeated_float", "repeated_int32", "repeated_int64", "repeated_uint64" };
     private static readonly uint[] _fieldTags = new uint[] { 98, 16370, 2097138, 106, 16378, 2097146 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[25]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestRepeatedScalarDifferentTagSizes> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestRepeatedScalarDifferentTagSizes() { }
+    public TestRepeatedScalarDifferentTagSizes() {
+      OnConstruction();
+    }
 
-    public TestRepeatedScalarDifferentTagSizes(TestRepeatedScalarDifferentTagSizes other) {
+    partial void OnConstruction();
+
+    public TestRepeatedScalarDifferentTagSizes(TestRepeatedScalarDifferentTagSizes other) : this() {
       repeatedFixed32_ = other.repeatedFixed32_.Clone();
       repeatedInt32_ = other.repeatedInt32_.Clone();
       repeatedFixed64_ = other.repeatedFixed64_.Clone();
@@ -5812,19 +5851,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] { "a" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestCommentInjectionMessage__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[26]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<TestCommentInjectionMessage> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestCommentInjectionMessage__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public TestCommentInjectionMessage() { }
+    public TestCommentInjectionMessage() {
+      OnConstruction();
+    }
 
-    public TestCommentInjectionMessage(TestCommentInjectionMessage other) {
+    partial void OnConstruction();
+
+    public TestCommentInjectionMessage(TestCommentInjectionMessage other) : this() {
       a_ = other.a_;
     }
 
@@ -5923,19 +5966,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] {  };
     private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooRequest__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[27]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<FooRequest> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooRequest__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FooRequest() { }
+    public FooRequest() {
+      OnConstruction();
+    }
 
-    public FooRequest(FooRequest other) {
+    partial void OnConstruction();
+
+    public FooRequest(FooRequest other) : this() {
     }
 
     public FooRequest Clone() {
@@ -6007,19 +6054,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] {  };
     private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooResponse__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[28]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<FooResponse> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooResponse__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FooResponse() { }
+    public FooResponse() {
+      OnConstruction();
+    }
 
-    public FooResponse(FooResponse other) {
+    partial void OnConstruction();
+
+    public FooResponse(FooResponse other) : this() {
     }
 
     public FooResponse Clone() {
@@ -6091,19 +6142,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] {  };
     private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooClientMessage__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[29]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<FooClientMessage> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooClientMessage__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FooClientMessage() { }
+    public FooClientMessage() {
+      OnConstruction();
+    }
 
-    public FooClientMessage(FooClientMessage other) {
+    partial void OnConstruction();
+
+    public FooClientMessage(FooClientMessage other) : this() {
     }
 
     public FooClientMessage Clone() {
@@ -6175,19 +6230,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] {  };
     private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooServerMessage__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[30]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<FooServerMessage> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooServerMessage__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public FooServerMessage() { }
+    public FooServerMessage() {
+      OnConstruction();
+    }
 
-    public FooServerMessage(FooServerMessage other) {
+    partial void OnConstruction();
+
+    public FooServerMessage(FooServerMessage other) : this() {
     }
 
     public FooServerMessage Clone() {
@@ -6259,19 +6318,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] {  };
     private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_BarRequest__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[31]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<BarRequest> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_BarRequest__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public BarRequest() { }
+    public BarRequest() {
+      OnConstruction();
+    }
 
-    public BarRequest(BarRequest other) {
+    partial void OnConstruction();
+
+    public BarRequest(BarRequest other) : this() {
     }
 
     public BarRequest Clone() {
@@ -6343,19 +6406,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly string[] _fieldNames = new string[] {  };
     private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbd::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_BarResponse__Descriptor; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[32]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable<BarResponse> Fields {
+    public pb::FieldAccess.FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_BarResponse__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
     public bool IsFrozen { get { return _frozen; } }
 
-    public BarResponse() { }
+    public BarResponse() {
+      OnConstruction();
+    }
 
-    public BarResponse(BarResponse other) {
+    partial void OnConstruction();
+
+    public BarResponse(BarResponse other) : this() {
     }
 
     public BarResponse Clone() {

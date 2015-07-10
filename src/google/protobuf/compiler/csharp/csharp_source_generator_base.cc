@@ -57,7 +57,7 @@ void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
 }
 
 std::string SourceGeneratorBase::class_access_level() {
-  return "public";  // public_classes is always on.
+  return IsDescriptorProto(descriptor_) ? "internal" : "public";  // public_classes is always on.
 }
 
 }  // namespace csharp
