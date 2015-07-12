@@ -5,7 +5,7 @@
     <title>Google Protocol Buffers C#</title>
     <summary>C# runtime library for Protocol Buffers - Google's data interchange format.</summary>
     <description>See project site for more info.</description>
-    <version>3.0.0-experimental</version>
+    <version>3.0.0-beta*</version>
     <authors>Google Inc.</authors>
     <owners>protobuf-packages</owners>
     <licenseUrl>https://github.com/google/protobuf/blob/master/LICENSE</licenseUrl>
