@@ -39,6 +39,8 @@
 #define CONFORMANCE_CONFORMANCE_TEST_H
 
 #include <string>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/wire_format_lite.h>
 
 namespace conformance {
@@ -98,10 +100,22 @@ class ConformanceTestSuite {
 
  private:
   void ReportSuccess(const std::string& test_name);
-  void ReportFailure(const std::string& test_name, const char* fmt, ...);
+  void ReportFailure(const string& test_name,
+                     const conformance::ConformanceRequest& request,
+                     const conformance::ConformanceResponse& response,
+                     const char* fmt, ...);
+  void ReportSkip(const string& test_name,
+                  const conformance::ConformanceRequest& request,
+                  const conformance::ConformanceResponse& response);
   void RunTest(const std::string& test_name,
                const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
+  void RunValidInputTest(const string& test_name, const string& input,
+                         conformance::WireFormat input_format,
+                         const string& equivalent_text_format,
+                         conformance::WireFormat requested_output);
+  void RunValidJsonTest(const string& test_name, const string& input_json,
+                        const string& equivalent_text_format);
   void ExpectParseFailureForProto(const std::string& proto,
                                   const std::string& test_name);
   void ExpectHardParseFailureForProto(const std::string& proto,
@@ -110,7 +124,7 @@ class ConformanceTestSuite {
   bool CheckSetEmpty(const set<string>& set_to_check, const char* msg);
   ConformanceTestRunner* runner_;
   int successes_;
-  int failures_;
+  int expected_failures_;
   bool verbose_;
   std::string output_;
 
@@ -127,6 +141,13 @@ class ConformanceTestSuite {
 
   // The set of tests that succeeded, but weren't expected to.
   std::set<std::string> unexpected_succeeding_tests_;
+
+  // The set of tests that the testee opted out of;
+  std::set<std::string> skipped_;
+
+  google::protobuf::internal::scoped_ptr<google::protobuf::util::TypeResolver>
+      type_resolver_;
+  std::string type_url_;
 };
 
 }  // namespace protobuf

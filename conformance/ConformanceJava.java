@@ -54,7 +54,7 @@ class ConformanceJava {
         break;
       }
       case JSON_PAYLOAD: {
-        return Conformance.ConformanceResponse.newBuilder().setRuntimeError("JSON not yet supported.").build();
+        return Conformance.ConformanceResponse.newBuilder().setSkipped("JSON not yet supported.").build();
       }
       case PAYLOAD_NOT_SET: {
         throw new RuntimeException("Request didn't have payload.");
@@ -65,7 +65,7 @@ class ConformanceJava {
       }
     }
 
-    switch (request.getRequestedOutput()) {
+    switch (request.getRequestedOutputFormat()) {
       case UNSPECIFIED:
         throw new RuntimeException("Unspecified output format.");
 
@@ -73,7 +73,7 @@ class ConformanceJava {
         return Conformance.ConformanceResponse.newBuilder().setProtobufPayload(testMessage.toByteString()).build();
 
       case JSON:
-        return Conformance.ConformanceResponse.newBuilder().setRuntimeError("JSON not yet supported.").build();
+        return Conformance.ConformanceResponse.newBuilder().setSkipped("JSON not yet supported.").build();
 
       default: {
         throw new RuntimeException("Unexpected request output.");
