@@ -89,7 +89,6 @@ copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\common.h include
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\fastmem.h include\google\protobuf\stubs\fastmem.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\hash.h include\google\protobuf\stubs\hash.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\once.h include\google\protobuf\stubs\once.h
-copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\pbconfig.h include\google\protobuf\stubs\pbconfig.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\platform_macros.h include\google\protobuf\stubs\platform_macros.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\shared_ptr.h include\google\protobuf\stubs\shared_ptr.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\singleton.h include\google\protobuf\stubs\singleton.h
