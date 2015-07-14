@@ -31,38 +31,29 @@
 #endregion
 
 using System;
-using System.Reflection;
-using Google.Protobuf.Descriptors;
+using System.Collections;
 
-namespace Google.Protobuf.FieldAccess
+namespace Google.Protobuf.Reflection
 {
     /// <summary>
-    /// Base class for field accessors.
+    /// Accessor for repeated fields.
     /// </summary>
-    internal abstract class FieldAccessorBase : IFieldAccessor
+    internal sealed class RepeatedFieldAccessor : FieldAccessorBase
     {
-        private readonly Func<object, object> getValueDelegate;
-        private readonly FieldDescriptor descriptor;
-
-        internal FieldAccessorBase(Type type, string propertyName, FieldDescriptor descriptor)
+        internal RepeatedFieldAccessor(Type type, string propertyName, FieldDescriptor descriptor) : base(type, propertyName, descriptor)
         {
-            PropertyInfo property = type.GetProperty(propertyName);
-            if (property == null || !property.CanRead)
-            {
-                throw new ArgumentException("Not all required properties/methods available");
-            }
-            this.descriptor = descriptor;
-            getValueDelegate = ReflectionUtil.CreateFuncObjectObject(property.GetGetMethod());
         }
 
-        public FieldDescriptor Descriptor { get { return descriptor; } }
-
-        public object GetValue(object message)
+        public override void Clear(object message)
         {
-            return getValueDelegate(message);
+            IList list = (IList) GetValue(message);
+            list.Clear();
         }
 
-        public abstract void Clear(object message);
-        public abstract void SetValue(object message, object value);
+        public override void SetValue(object message, object value)
+        {
+            throw new InvalidOperationException("SetValue is not implemented for repeated fields");
+        }
+
     }
 }

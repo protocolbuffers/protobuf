@@ -81,6 +81,7 @@
     <Compile Include="Collections\MapFieldTest.cs" />
     <Compile Include="Collections\RepeatedFieldTest.cs" />
     <Compile Include="JsonFormatterTest.cs" />
+    <Compile Include="Reflection\DescriptorsTest.cs" />
     <Compile Include="SampleEnum.cs" />
     <Compile Include="SampleMessages.cs" />
     <Compile Include="TestProtos\MapUnittestProto3.cs" />
@@ -89,7 +90,6 @@
     <Compile Include="TestProtos\UnittestIssues.cs" />
     <Compile Include="TestProtos\UnittestProto3.cs" />
     <Compile Include="DeprecatedMemberTest.cs" />
-    <Compile Include="DescriptorsTest.cs" />
     <Compile Include="IssuesTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestCornerCases.cs" />

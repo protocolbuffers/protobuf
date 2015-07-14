@@ -1,6 +1,6 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2015 Google Inc.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -31,30 +31,50 @@
 #endregion
 
 using System;
-using System.Collections;
-using Google.Protobuf.Descriptors;
 
-namespace Google.Protobuf.FieldAccess
+namespace Google.Protobuf.Reflection
 {
     /// <summary>
-    /// Accessor for repeated fields.
+    /// Thrown when building descriptors fails because the source DescriptorProtos
+    /// are not valid.
     /// </summary>
-    internal sealed class RepeatedFieldAccessor : FieldAccessorBase
+    public sealed class DescriptorValidationException : Exception
     {
-        internal RepeatedFieldAccessor(Type type, string propertyName, FieldDescriptor descriptor) : base(type, propertyName, descriptor)
+        private readonly String name;
+        private readonly string description;
+
+        /// <value>
+        /// The full name of the descriptor where the error occurred.
+        /// </value>
+        public String ProblemSymbolName
         {
+            get { return name; }
         }
 
-        public override void Clear(object message)
+        /// <value>
+        /// A human-readable description of the error. (The Message property
+        /// is made up of the descriptor's name and this description.)
+        /// </value>
+        public string Description
         {
-            IList list = (IList) GetValue(message);
-            list.Clear();
+            get { return description; }
         }
 
-        public override void SetValue(object message, object value)
+        internal DescriptorValidationException(IDescriptor problemDescriptor, string description) :
+            base(problemDescriptor.FullName + ": " + description)
         {
-            throw new InvalidOperationException("SetValue is not implemented for repeated fields");
+            // Note that problemDescriptor may be partially uninitialized, so we
+            // don't want to expose it directly to the user.  So, we only provide
+            // the name and the original proto.
+            name = problemDescriptor.FullName;
+            this.description = description;
         }
 
+        internal DescriptorValidationException(IDescriptor problemDescriptor, string description, Exception cause) :
+            base(problemDescriptor.FullName + ": " + description, cause)
+        {
+            name = problemDescriptor.FullName;
+            this.description = description;
+        }
     }
 }

@@ -34,8 +34,7 @@ using System;
 using System.Collections;
 using System.Globalization;
 using System.Text;
-using Google.Protobuf.Descriptors;
-using Google.Protobuf.FieldAccess;
+using Google.Protobuf.Reflection;
 
 namespace Google.Protobuf
 {

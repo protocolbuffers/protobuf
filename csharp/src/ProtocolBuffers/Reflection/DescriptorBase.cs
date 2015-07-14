@@ -1,6 +1,6 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2015 Google Inc.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -30,30 +30,53 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System;
-using System.Collections;
-using Google.Protobuf.Descriptors;
-
-namespace Google.Protobuf.FieldAccess
+namespace Google.Protobuf.Reflection
 {
     /// <summary>
-    /// Accessor for map fields.
+    /// Base class for nearly all descriptors, providing common functionality.
     /// </summary>
-    internal sealed class MapFieldAccessor : FieldAccessorBase
+    public abstract class DescriptorBase : IDescriptor
     {
-        internal MapFieldAccessor(Type type, string propertyName, FieldDescriptor descriptor) : base(type, propertyName, descriptor)
+        private readonly FileDescriptor file;
+        private readonly string fullName;
+        private readonly int index;
+
+        internal DescriptorBase(FileDescriptor file, string fullName, int index)
         {
+            this.file = file;
+            this.fullName = fullName;
+            this.index = index;
         }
 
-        public override void Clear(object message)
+        /// <value>
+        /// The index of this descriptor within its parent descriptor. 
+        /// </value>
+        /// <remarks>
+        /// This returns the index of this descriptor within its parent, for
+        /// this descriptor's type. (There can be duplicate values for different
+        /// types, e.g. one enum type with index 0 and one message type with index 0.)
+        /// </remarks>
+        public int Index
         {
-            IDictionary list = (IDictionary) GetValue(message);
-            list.Clear();
+            get { return index; }
         }
 
-        public override void SetValue(object message, object value)
+        public abstract string Name { get; }
+
+        /// <summary>
+        /// The fully qualified name of the descriptor's target.
+        /// </summary>
+        public string FullName
         {
-            throw new InvalidOperationException("SetValue is not implemented for map fields");
+            get { return fullName; }
+        }
+
+        /// <value>
+        /// The file this descriptor was declared in.
+        /// </value>
+        public FileDescriptor File
+        {
+            get { return file; }
         }
     }
 }
