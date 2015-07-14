@@ -88,7 +88,11 @@ std::string GetPropertyName(const FieldDescriptor* descriptor);
 
 int GetFixedSize(FieldDescriptor::Type type);
 
-std::string UnderscoresToCamelCase(const std::string& input, bool cap_next_letter);
+std::string UnderscoresToCamelCase(const std::string& input, bool cap_next_letter, bool preserve_period);
+
+inline std::string UnderscoresToCamelCase(const std::string& input, bool cap_next_letter) {
+  return UnderscoresToCamelCase(input, cap_next_letter, false);
+}
 
 std::string UnderscoresToPascalCase(const std::string& input);
 
