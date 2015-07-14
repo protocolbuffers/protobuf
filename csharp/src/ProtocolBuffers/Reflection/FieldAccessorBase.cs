@@ -29,58 +29,39 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
-    
+
 using System;
 using System.Reflection;
-using Google.Protobuf.Descriptors;
 
-namespace Google.Protobuf.FieldAccess
+namespace Google.Protobuf.Reflection
 {
     /// <summary>
-    /// Accessor for single fields.
+    /// Base class for field accessors.
     /// </summary>
-    internal sealed class SingleFieldAccessor : FieldAccessorBase
+    internal abstract class FieldAccessorBase : IFieldAccessor
     {
-        // All the work here is actually done in the constructor - it creates the appropriate delegates.
-        // There are various cases to consider, based on the property type (message, string/bytes, or "genuine" primitive)
-        // and proto2 vs proto3 for non-message types, as proto3 doesn't support "full" presence detection or default
-        // values.
+        private readonly Func<object, object> getValueDelegate;
+        private readonly FieldDescriptor descriptor;
 
-        private readonly Action<object, object> setValueDelegate;
-        private readonly Action<object> clearDelegate;
-
-        internal SingleFieldAccessor(Type type, string propertyName, FieldDescriptor descriptor) : base(type, propertyName, descriptor)
+        internal FieldAccessorBase(Type type, string propertyName, FieldDescriptor descriptor)
         {
             PropertyInfo property = type.GetProperty(propertyName);
-            // We know there *is* such a property, or the base class constructor would have thrown. We should be able to write
-            // to it though.
-            if (!property.CanWrite)
+            if (property == null || !property.CanRead)
             {
                 throw new ArgumentException("Not all required properties/methods available");
             }
-            setValueDelegate = ReflectionUtil.CreateActionObjectObject(property.GetSetMethod());
-
-            var clrType = property.PropertyType;
-            
-            // TODO: What should clear on a oneof member do? Clear the oneof?
-
-            // TODO: Validate that this is a reasonable single field? (Should be a value type, a message type, or string/ByteString.)
-            object defaultValue =
-                typeof(IMessage).IsAssignableFrom(clrType) ? null
-                : clrType == typeof(string) ? ""
-                : clrType == typeof(ByteString) ? ByteString.Empty
-                : Activator.CreateInstance(clrType);
-            clearDelegate = message => SetValue(message, defaultValue);
+            this.descriptor = descriptor;
+            getValueDelegate = ReflectionUtil.CreateFuncObjectObject(property.GetGetMethod());
         }
 
-        public override void Clear(object message)
+        public FieldDescriptor Descriptor { get { return descriptor; } }
+
+        public object GetValue(object message)
         {
-            clearDelegate(message);
+            return getValueDelegate(message);
         }
 
-        public override void SetValue(object message, object value)
-        {
-            setValueDelegate(message, value);
-        }
+        public abstract void Clear(object message);
+        public abstract void SetValue(object message, object value);
     }
 }

@@ -5,7 +5,7 @@
 
 using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
-using pbd = global::Google.Protobuf.Descriptors;
+using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.TestProtos {
 
@@ -13,13 +13,13 @@ namespace Google.Protobuf.TestProtos {
   public static partial class UnittestImportPublicProto3 {
 
     #region Static variables
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_protobuf_unittest_import_PublicImportMessage__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_import_PublicImportMessage__FieldAccessorTable;
     #endregion
     #region Descriptor
-    public static pbd::FileDescriptor Descriptor {
+    public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }
-    private static pbd::FileDescriptor descriptor;
+    private static pbr::FileDescriptor descriptor;
 
     static UnittestImportPublicProto3() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
@@ -28,11 +28,11 @@ namespace Google.Protobuf.TestProtos {
             "bzMucHJvdG8SGHByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydCIgChNQdWJsaWNJ", 
             "bXBvcnRNZXNzYWdlEgkKAWUYASABKAVCNwoYY29tLmdvb2dsZS5wcm90b2J1", 
           "Zi50ZXN0qgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
-      descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbd::FileDescriptor[] {
+      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+          new pbr::FileDescriptor[] {
           });
       internal__static_protobuf_unittest_import_PublicImportMessage__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.PublicImportMessage), descriptor.MessageTypes[0],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.PublicImportMessage), descriptor.MessageTypes[0],
               new string[] { "E", }, new string[] { });
     }
     #endregion
@@ -46,11 +46,11 @@ namespace Google.Protobuf.TestProtos {
 
     private static readonly string[] _fieldNames = new string[] { "e" };
     private static readonly uint[] _fieldTags = new uint[] { 8 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestImportPublicProto3.Descriptor.MessageTypes[0]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestImportPublicProto3.internal__static_protobuf_unittest_import_PublicImportMessage__FieldAccessorTable; }
     }
 

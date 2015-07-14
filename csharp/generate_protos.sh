@@ -38,7 +38,7 @@ fi
 # Descriptor proto
 # TODO(jonskeet): Remove fixup
 cp src/google/protobuf/descriptor.proto src/google/protobuf/descriptor_proto_file.proto
-$PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers/DescriptorProtos \
+$PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers/Reflection \
     src/google/protobuf/descriptor_proto_file.proto
 rm src/google/protobuf/descriptor_proto_file.proto
 

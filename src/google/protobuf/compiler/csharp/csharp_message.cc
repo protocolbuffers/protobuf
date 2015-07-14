@@ -116,7 +116,7 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
 
   // The descriptor for this type.
   printer->Print(
-      "internal static pb::FieldAccess.FieldAccessorTable internal__$identifier$__FieldAccessorTable;\n",
+      "internal static pbr::FieldAccessorTable internal__$identifier$__FieldAccessorTable;\n",
       "identifier", GetUniqueFileScopeIdentifier(descriptor_),
       "full_class_name", full_class_name());
 
@@ -145,7 +145,7 @@ void MessageGenerator::GenerateStaticVariableInitializers(io::Printer* printer) 
   printer->Print(
     vars,
     "internal__$identifier$__FieldAccessorTable = \n"
-    "    new pb::FieldAccess.FieldAccessorTable(typeof($full_class_name$), $descriptor_chain$,\n");
+    "    new pbr::FieldAccessorTable(typeof($full_class_name$), $descriptor_chain$,\n");
   printer->Print("        new string[] { ");
   for (int i = 0; i < descriptor_->field_count(); i++) {
     printer->Print("\"$property_name$\", ",
@@ -211,11 +211,11 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
     vars,
-    "public static pbd::MessageDescriptor Descriptor {\n"
+    "public static pbr::MessageDescriptor Descriptor {\n"
     "  get { return $descriptor_accessor$; }\n"
     "}\n"
     "\n"
-    "public pb::FieldAccess.FieldAccessorTable Fields {\n"
+    "public pbr::FieldAccessorTable Fields {\n"
     "  get { return $umbrella_class_name$.internal__$identifier$__FieldAccessorTable; }\n"
     "}\n"
     "\n"

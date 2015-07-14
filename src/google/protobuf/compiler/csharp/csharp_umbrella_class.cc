@@ -119,7 +119,7 @@ void UmbrellaClassGenerator::WriteIntroduction(io::Printer* printer) {
     "\n"
     "using pb = global::Google.Protobuf;\n"
     "using pbc = global::Google.Protobuf.Collections;\n"
-    "using pbd = global::Google.Protobuf.Descriptors;\n"
+    "using pbr = global::Google.Protobuf.Reflection;\n"
     "using scg = global::System.Collections.Generic;\n",
     "file_name", file_->name());
 
@@ -151,10 +151,10 @@ void UmbrellaClassGenerator::WriteIntroduction(io::Printer* printer) {
 void UmbrellaClassGenerator::WriteDescriptor(io::Printer* printer) {
   printer->Print(
     "#region Descriptor\n"
-    "public static pbd::FileDescriptor Descriptor {\n"
+    "public static pbr::FileDescriptor Descriptor {\n"
     "  get { return descriptor; }\n"
     "}\n"
-    "private static pbd::FileDescriptor descriptor;\n"
+    "private static pbr::FileDescriptor descriptor;\n"
     "\n"
     "static $umbrella_class_name$() {\n",
     "umbrella_class_name", umbrellaClassname_);
@@ -180,8 +180,8 @@ void UmbrellaClassGenerator::WriteDescriptor(io::Printer* printer) {
   // -----------------------------------------------------------------
   // Invoke InternalBuildGeneratedFileFrom() to build the file.
   printer->Print(
-      "descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,\n");
-  printer->Print("    new pbd::FileDescriptor[] {\n");
+      "descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,\n");
+  printer->Print("    new pbr::FileDescriptor[] {\n");
   for (int i = 0; i < file_->dependency_count(); i++) {
     printer->Print(
       "    $full_umbrella_class_name$.Descriptor, \n",

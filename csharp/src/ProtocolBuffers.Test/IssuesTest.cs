@@ -30,7 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using Google.Protobuf.Descriptors;
+using Google.Protobuf.Reflection;
 using UnitTest.Issues.TestProtos;
 using NUnit.Framework;
 
