@@ -32,7 +32,6 @@
 
 using System;
 using System.Collections.Generic;
-using Google.Protobuf.DescriptorProtos;
 
 namespace Google.Protobuf.Reflection
 {

@@ -31,7 +31,6 @@
 #endregion
 
 using System;
-using Google.Protobuf.DescriptorProtos;
 
 namespace Google.Protobuf.Reflection
 {

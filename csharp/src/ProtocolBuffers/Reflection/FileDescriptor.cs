@@ -33,8 +33,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Google.Protobuf.DescriptorProtos;
-using FileOptions = Google.Protobuf.DescriptorProtos.FileOptions;
 
 namespace Google.Protobuf.Reflection
 {
