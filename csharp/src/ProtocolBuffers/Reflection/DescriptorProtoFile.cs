@@ -7,7 +7,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace Google.Protobuf.DescriptorProtos {
+namespace Google.Protobuf.Reflection {
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   internal static partial class DescriptorProtoFile {
@@ -153,77 +153,77 @@ namespace Google.Protobuf.DescriptorProtos {
             "LkxvY2F0aW9uGoYBCghMb2NhdGlvbhIQCgRwYXRoGAEgAygFQgIQARIQCgRz", 
             "cGFuGAIgAygFQgIQARIYChBsZWFkaW5nX2NvbW1lbnRzGAMgASgJEhkKEXRy", 
             "YWlsaW5nX2NvbW1lbnRzGAQgASgJEiEKGWxlYWRpbmdfZGV0YWNoZWRfY29t", 
-            "bWVudHMYBiADKAlCXgoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRv", 
-            "clByb3Rvc0gBWgpkZXNjcmlwdG9yogIDR1BCqgIgR29vZ2xlLlByb3RvYnVm", 
-          "LkRlc2NyaXB0b3JQcm90b3M="));
+            "bWVudHMYBiADKAlCWAoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRv", 
+            "clByb3Rvc0gBWgpkZXNjcmlwdG9yogIDR1BCqgIaR29vZ2xlLlByb3RvYnVm", 
+          "LlJlZmxlY3Rpb24="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] {
           });
       internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FileDescriptorSet), descriptor.MessageTypes[0],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.FileDescriptorSet), descriptor.MessageTypes[0],
               new string[] { "File", }, new string[] { });
       internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FileDescriptorProto), descriptor.MessageTypes[1],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.FileDescriptorProto), descriptor.MessageTypes[1],
               new string[] { "Name", "Package", "Dependency", "PublicDependency", "WeakDependency", "MessageType", "EnumType", "Service", "Extension", "Options", "SourceCodeInfo", "Syntax", }, new string[] { });
       internal__static_google_protobuf_DescriptorProto__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.DescriptorProto), descriptor.MessageTypes[2],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.DescriptorProto), descriptor.MessageTypes[2],
               new string[] { "Name", "Field", "Extension", "NestedType", "EnumType", "ExtensionRange", "OneofDecl", "Options", "ReservedRange", "ReservedName", }, new string[] { });
       internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange), descriptor.MessageTypes[2].NestedTypes[0],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange), descriptor.MessageTypes[2].NestedTypes[0],
               new string[] { "Start", "End", }, new string[] { });
       internal__static_google_protobuf_DescriptorProto_ReservedRange__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange), descriptor.MessageTypes[2].NestedTypes[1],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange), descriptor.MessageTypes[2].NestedTypes[1],
               new string[] { "Start", "End", }, new string[] { });
       internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto), descriptor.MessageTypes[3],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.FieldDescriptorProto), descriptor.MessageTypes[3],
               new string[] { "Name", "Number", "Label", "Type", "TypeName", "Extendee", "DefaultValue", "OneofIndex", "Options", }, new string[] { });
       internal__static_google_protobuf_OneofDescriptorProto__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto), descriptor.MessageTypes[4],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.OneofDescriptorProto), descriptor.MessageTypes[4],
               new string[] { "Name", }, new string[] { });
       internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto), descriptor.MessageTypes[5],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.EnumDescriptorProto), descriptor.MessageTypes[5],
               new string[] { "Name", "Value", "Options", }, new string[] { });
       internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto), descriptor.MessageTypes[6],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.EnumValueDescriptorProto), descriptor.MessageTypes[6],
               new string[] { "Name", "Number", "Options", }, new string[] { });
       internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto), descriptor.MessageTypes[7],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.ServiceDescriptorProto), descriptor.MessageTypes[7],
               new string[] { "Name", "Method", "Options", }, new string[] { });
       internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto), descriptor.MessageTypes[8],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.MethodDescriptorProto), descriptor.MessageTypes[8],
               new string[] { "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming", }, new string[] { });
       internal__static_google_protobuf_FileOptions__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FileOptions), descriptor.MessageTypes[9],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.FileOptions), descriptor.MessageTypes[9],
               new string[] { "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_MessageOptions__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.MessageOptions), descriptor.MessageTypes[10],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.MessageOptions), descriptor.MessageTypes[10],
               new string[] { "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_FieldOptions__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FieldOptions), descriptor.MessageTypes[11],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.FieldOptions), descriptor.MessageTypes[11],
               new string[] { "Ctype", "Packed", "Jstype", "Lazy", "Deprecated", "Weak", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_EnumOptions__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumOptions), descriptor.MessageTypes[12],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.EnumOptions), descriptor.MessageTypes[12],
               new string[] { "AllowAlias", "Deprecated", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumValueOptions), descriptor.MessageTypes[13],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.EnumValueOptions), descriptor.MessageTypes[13],
               new string[] { "Deprecated", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_ServiceOptions__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.ServiceOptions), descriptor.MessageTypes[14],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.ServiceOptions), descriptor.MessageTypes[14],
               new string[] { "Deprecated", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_MethodOptions__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.MethodOptions), descriptor.MessageTypes[15],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.MethodOptions), descriptor.MessageTypes[15],
               new string[] { "Deprecated", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.UninterpretedOption), descriptor.MessageTypes[16],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.UninterpretedOption), descriptor.MessageTypes[16],
               new string[] { "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", "AggregateValue", }, new string[] { });
       internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart), descriptor.MessageTypes[16].NestedTypes[0],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart), descriptor.MessageTypes[16].NestedTypes[0],
               new string[] { "NamePart_", "IsExtension", }, new string[] { });
       internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.SourceCodeInfo), descriptor.MessageTypes[17],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.SourceCodeInfo), descriptor.MessageTypes[17],
               new string[] { "Location", }, new string[] { });
       internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location), descriptor.MessageTypes[17].NestedTypes[0],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location), descriptor.MessageTypes[17].NestedTypes[0],
               new string[] { "Path", "Span", "LeadingComments", "TrailingComments", "LeadingDetachedComments", }, new string[] { });
     }
     #endregion
@@ -238,11 +238,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "file" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[0]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -271,10 +271,10 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int FileFieldNumber = 1;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto> _repeated_file_codec
-        = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.DescriptorProtos.FileDescriptorProto.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto> file_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FileDescriptorProto> File {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FileDescriptorProto> _repeated_file_codec
+        = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Reflection.FileDescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> file_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> File {
       get { return file_; }
     }
 
@@ -349,11 +349,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "dependency", "enum_type", "extension", "message_type", "name", "options", "package", "public_dependency", "service", "source_code_info", "syntax", "weak_dependency" };
     private static readonly uint[] _fieldTags = new uint[] { 26, 42, 58, 34, 10, 66, 18, 80, 50, 74, 98, 88 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[1]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[1]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -445,40 +445,40 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int MessageTypeFieldNumber = 4;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.DescriptorProto> _repeated_messageType_codec
-        = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> messageType_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> MessageType {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.DescriptorProto> _repeated_messageType_codec
+        = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Reflection.DescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> messageType_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> MessageType {
       get { return messageType_; }
     }
 
     public const int EnumTypeFieldNumber = 5;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> _repeated_enumType_codec
-        = pb::FieldCodec.ForMessage(42, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> enumType_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> EnumType {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.EnumDescriptorProto> _repeated_enumType_codec
+        = pb::FieldCodec.ForMessage(42, global::Google.Protobuf.Reflection.EnumDescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto> enumType_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto> EnumType {
       get { return enumType_; }
     }
 
     public const int ServiceFieldNumber = 6;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto> _repeated_service_codec
-        = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto> service_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto> Service {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.ServiceDescriptorProto> _repeated_service_codec
+        = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.Reflection.ServiceDescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.ServiceDescriptorProto> service_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.ServiceDescriptorProto>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.ServiceDescriptorProto> Service {
       get { return service_; }
     }
 
     public const int ExtensionFieldNumber = 7;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> _repeated_extension_codec
-        = pb::FieldCodec.ForMessage(58, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> extension_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> Extension {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FieldDescriptorProto> _repeated_extension_codec
+        = pb::FieldCodec.ForMessage(58, global::Google.Protobuf.Reflection.FieldDescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> extension_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> Extension {
       get { return extension_; }
     }
 
     public const int OptionsFieldNumber = 8;
-    private global::Google.Protobuf.DescriptorProtos.FileOptions options_;
-    internal global::Google.Protobuf.DescriptorProtos.FileOptions Options {
+    private global::Google.Protobuf.Reflection.FileOptions options_;
+    internal global::Google.Protobuf.Reflection.FileOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -487,8 +487,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int SourceCodeInfoFieldNumber = 9;
-    private global::Google.Protobuf.DescriptorProtos.SourceCodeInfo sourceCodeInfo_;
-    internal global::Google.Protobuf.DescriptorProtos.SourceCodeInfo SourceCodeInfo {
+    private global::Google.Protobuf.Reflection.SourceCodeInfo sourceCodeInfo_;
+    internal global::Google.Protobuf.Reflection.SourceCodeInfo SourceCodeInfo {
       get { return sourceCodeInfo_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -629,13 +629,13 @@ namespace Google.Protobuf.DescriptorProtos {
       extension_.Add(other.extension_);
       if (other.options_ != null) {
         if (options_ == null) {
-          options_ = new global::Google.Protobuf.DescriptorProtos.FileOptions();
+          options_ = new global::Google.Protobuf.Reflection.FileOptions();
         }
         Options.MergeFrom(other.Options);
       }
       if (other.sourceCodeInfo_ != null) {
         if (sourceCodeInfo_ == null) {
-          sourceCodeInfo_ = new global::Google.Protobuf.DescriptorProtos.SourceCodeInfo();
+          sourceCodeInfo_ = new global::Google.Protobuf.Reflection.SourceCodeInfo();
         }
         SourceCodeInfo.MergeFrom(other.SourceCodeInfo);
       }
@@ -685,14 +685,14 @@ namespace Google.Protobuf.DescriptorProtos {
           }
           case 66: {
             if (options_ == null) {
-              options_ = new global::Google.Protobuf.DescriptorProtos.FileOptions();
+              options_ = new global::Google.Protobuf.Reflection.FileOptions();
             }
             input.ReadMessage(options_);
             break;
           }
           case 74: {
             if (sourceCodeInfo_ == null) {
-              sourceCodeInfo_ = new global::Google.Protobuf.DescriptorProtos.SourceCodeInfo();
+              sourceCodeInfo_ = new global::Google.Protobuf.Reflection.SourceCodeInfo();
             }
             input.ReadMessage(sourceCodeInfo_);
             break;
@@ -725,11 +725,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "enum_type", "extension", "extension_range", "field", "name", "nested_type", "oneof_decl", "options", "reserved_name", "reserved_range" };
     private static readonly uint[] _fieldTags = new uint[] { 34, 50, 42, 18, 10, 26, 66, 58, 82, 74 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[2]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[2]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -785,56 +785,56 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int FieldFieldNumber = 2;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> _repeated_field_codec
-        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> field_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> Field {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FieldDescriptorProto> _repeated_field_codec
+        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.Reflection.FieldDescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> field_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> Field {
       get { return field_; }
     }
 
     public const int ExtensionFieldNumber = 6;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> _repeated_extension_codec
-        = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> extension_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto> Extension {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FieldDescriptorProto> _repeated_extension_codec
+        = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.Reflection.FieldDescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> extension_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> Extension {
       get { return extension_; }
     }
 
     public const int NestedTypeFieldNumber = 3;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.DescriptorProto> _repeated_nestedType_codec
-        = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> nestedType_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto> NestedType {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.DescriptorProto> _repeated_nestedType_codec
+        = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.Reflection.DescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> nestedType_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> NestedType {
       get { return nestedType_; }
     }
 
     public const int EnumTypeFieldNumber = 4;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> _repeated_enumType_codec
-        = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> enumType_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto> EnumType {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.EnumDescriptorProto> _repeated_enumType_codec
+        = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Reflection.EnumDescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto> enumType_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto> EnumType {
       get { return enumType_; }
     }
 
     public const int ExtensionRangeFieldNumber = 5;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange> _repeated_extensionRange_codec
-        = pb::FieldCodec.ForMessage(42, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange> extensionRange_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange> ExtensionRange {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange> _repeated_extensionRange_codec
+        = pb::FieldCodec.ForMessage(42, global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange> extensionRange_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange> ExtensionRange {
       get { return extensionRange_; }
     }
 
     public const int OneofDeclFieldNumber = 8;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto> _repeated_oneofDecl_codec
-        = pb::FieldCodec.ForMessage(66, global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto> oneofDecl_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto> OneofDecl {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.OneofDescriptorProto> _repeated_oneofDecl_codec
+        = pb::FieldCodec.ForMessage(66, global::Google.Protobuf.Reflection.OneofDescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.OneofDescriptorProto> oneofDecl_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.OneofDescriptorProto>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.OneofDescriptorProto> OneofDecl {
       get { return oneofDecl_; }
     }
 
     public const int OptionsFieldNumber = 7;
-    private global::Google.Protobuf.DescriptorProtos.MessageOptions options_;
-    internal global::Google.Protobuf.DescriptorProtos.MessageOptions Options {
+    private global::Google.Protobuf.Reflection.MessageOptions options_;
+    internal global::Google.Protobuf.Reflection.MessageOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -843,10 +843,10 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int ReservedRangeFieldNumber = 9;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange> _repeated_reservedRange_codec
-        = pb::FieldCodec.ForMessage(74, global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange> reservedRange_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange> ReservedRange {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange> _repeated_reservedRange_codec
+        = pb::FieldCodec.ForMessage(74, global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange> reservedRange_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange> ReservedRange {
       get { return reservedRange_; }
     }
 
@@ -954,7 +954,7 @@ namespace Google.Protobuf.DescriptorProtos {
       oneofDecl_.Add(other.oneofDecl_);
       if (other.options_ != null) {
         if (options_ == null) {
-          options_ = new global::Google.Protobuf.DescriptorProtos.MessageOptions();
+          options_ = new global::Google.Protobuf.Reflection.MessageOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -999,7 +999,7 @@ namespace Google.Protobuf.DescriptorProtos {
           }
           case 58: {
             if (options_ == null) {
-              options_ = new global::Google.Protobuf.DescriptorProtos.MessageOptions();
+              options_ = new global::Google.Protobuf.Reflection.MessageOptions();
             }
             input.ReadMessage(options_);
             break;
@@ -1031,11 +1031,11 @@ namespace Google.Protobuf.DescriptorProtos {
         private static readonly string[] _fieldNames = new string[] { "end", "start" };
         private static readonly uint[] _fieldTags = new uint[] { 16, 8 };
         public static pbr::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.DescriptorProtos.DescriptorProto.Descriptor.NestedTypes[0]; }
+          get { return global::Google.Protobuf.Reflection.DescriptorProto.Descriptor.NestedTypes[0]; }
         }
 
         public pbr::FieldAccessorTable Fields {
-          get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable; }
+          get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
@@ -1177,11 +1177,11 @@ namespace Google.Protobuf.DescriptorProtos {
         private static readonly string[] _fieldNames = new string[] { "end", "start" };
         private static readonly uint[] _fieldTags = new uint[] { 16, 8 };
         public static pbr::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.DescriptorProtos.DescriptorProto.Descriptor.NestedTypes[1]; }
+          get { return global::Google.Protobuf.Reflection.DescriptorProto.Descriptor.NestedTypes[1]; }
         }
 
         public pbr::FieldAccessorTable Fields {
-          get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto_ReservedRange__FieldAccessorTable; }
+          get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto_ReservedRange__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
@@ -1328,11 +1328,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "default_value", "extendee", "label", "name", "number", "oneof_index", "options", "type", "type_name" };
     private static readonly uint[] _fieldTags = new uint[] { 58, 18, 32, 10, 24, 72, 66, 40, 50 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[3]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[3]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -1389,8 +1389,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int LabelFieldNumber = 4;
-    private global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label label_ = global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL;
-    internal global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label Label {
+    private global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label label_ = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL;
+    internal global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label Label {
       get { return label_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1399,8 +1399,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int TypeFieldNumber = 5;
-    private global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type type_ = global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE;
-    internal global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type Type {
+    private global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type type_ = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type.TYPE_DOUBLE;
+    internal global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type Type {
       get { return type_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1449,8 +1449,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int OptionsFieldNumber = 8;
-    private global::Google.Protobuf.DescriptorProtos.FieldOptions options_;
-    internal global::Google.Protobuf.DescriptorProtos.FieldOptions Options {
+    private global::Google.Protobuf.Reflection.FieldOptions options_;
+    internal global::Google.Protobuf.Reflection.FieldOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1485,8 +1485,8 @@ namespace Google.Protobuf.DescriptorProtos {
       int hash = 1;
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Number != 0) hash ^= Number.GetHashCode();
-      if (Label != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) hash ^= Label.GetHashCode();
-      if (Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) hash ^= Type.GetHashCode();
+      if (Label != global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) hash ^= Label.GetHashCode();
+      if (Type != global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) hash ^= Type.GetHashCode();
       if (TypeName.Length != 0) hash ^= TypeName.GetHashCode();
       if (Extendee.Length != 0) hash ^= Extendee.GetHashCode();
       if (DefaultValue.Length != 0) hash ^= DefaultValue.GetHashCode();
@@ -1512,11 +1512,11 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(24);
         output.WriteInt32(Number);
       }
-      if (Label != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) {
+      if (Label != global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) {
         output.WriteRawTag(32);
         output.WriteEnum((int) Label);
       }
-      if (Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
+      if (Type != global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
         output.WriteRawTag(40);
         output.WriteEnum((int) Type);
       }
@@ -1546,10 +1546,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (Number != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Number);
       }
-      if (Label != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) {
+      if (Label != global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Label);
       }
-      if (Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
+      if (Type != global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
       }
       if (TypeName.Length != 0) {
@@ -1580,10 +1580,10 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other.Number != 0) {
         Number = other.Number;
       }
-      if (other.Label != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) {
+      if (other.Label != global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL) {
         Label = other.Label;
       }
-      if (other.Type != global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
+      if (other.Type != global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type.TYPE_DOUBLE) {
         Type = other.Type;
       }
       if (other.TypeName.Length != 0) {
@@ -1600,7 +1600,7 @@ namespace Google.Protobuf.DescriptorProtos {
       }
       if (other.options_ != null) {
         if (options_ == null) {
-          options_ = new global::Google.Protobuf.DescriptorProtos.FieldOptions();
+          options_ = new global::Google.Protobuf.Reflection.FieldOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -1630,11 +1630,11 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 32: {
-            label_ = (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Label) input.ReadEnum();
+            label_ = (global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label) input.ReadEnum();
             break;
           }
           case 40: {
-            type_ = (global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto.Types.Type) input.ReadEnum();
+            type_ = (global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type) input.ReadEnum();
             break;
           }
           case 50: {
@@ -1647,7 +1647,7 @@ namespace Google.Protobuf.DescriptorProtos {
           }
           case 66: {
             if (options_ == null) {
-              options_ = new global::Google.Protobuf.DescriptorProtos.FieldOptions();
+              options_ = new global::Google.Protobuf.Reflection.FieldOptions();
             }
             input.ReadMessage(options_);
             break;
@@ -1703,11 +1703,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "name" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[4]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[4]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_OneofDescriptorProto__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_OneofDescriptorProto__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -1822,11 +1822,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "name", "options", "value" };
     private static readonly uint[] _fieldTags = new uint[] { 10, 26, 18 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[5]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[5]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -1868,16 +1868,16 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int ValueFieldNumber = 2;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto> _repeated_value_codec
-        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto> value_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto> Value {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.EnumValueDescriptorProto> _repeated_value_codec
+        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.Reflection.EnumValueDescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumValueDescriptorProto> value_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumValueDescriptorProto>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumValueDescriptorProto> Value {
       get { return value_; }
     }
 
     public const int OptionsFieldNumber = 3;
-    private global::Google.Protobuf.DescriptorProtos.EnumOptions options_;
-    internal global::Google.Protobuf.DescriptorProtos.EnumOptions Options {
+    private global::Google.Protobuf.Reflection.EnumOptions options_;
+    internal global::Google.Protobuf.Reflection.EnumOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -1948,7 +1948,7 @@ namespace Google.Protobuf.DescriptorProtos {
       value_.Add(other.value_);
       if (other.options_ != null) {
         if (options_ == null) {
-          options_ = new global::Google.Protobuf.DescriptorProtos.EnumOptions();
+          options_ = new global::Google.Protobuf.Reflection.EnumOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -1975,7 +1975,7 @@ namespace Google.Protobuf.DescriptorProtos {
           }
           case 26: {
             if (options_ == null) {
-              options_ = new global::Google.Protobuf.DescriptorProtos.EnumOptions();
+              options_ = new global::Google.Protobuf.Reflection.EnumOptions();
             }
             input.ReadMessage(options_);
             break;
@@ -1994,11 +1994,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "name", "number", "options" };
     private static readonly uint[] _fieldTags = new uint[] { 10, 16, 26 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[6]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[6]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -2049,8 +2049,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int OptionsFieldNumber = 3;
-    private global::Google.Protobuf.DescriptorProtos.EnumValueOptions options_;
-    internal global::Google.Protobuf.DescriptorProtos.EnumValueOptions Options {
+    private global::Google.Protobuf.Reflection.EnumValueOptions options_;
+    internal global::Google.Protobuf.Reflection.EnumValueOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2128,7 +2128,7 @@ namespace Google.Protobuf.DescriptorProtos {
       }
       if (other.options_ != null) {
         if (options_ == null) {
-          options_ = new global::Google.Protobuf.DescriptorProtos.EnumValueOptions();
+          options_ = new global::Google.Protobuf.Reflection.EnumValueOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -2155,7 +2155,7 @@ namespace Google.Protobuf.DescriptorProtos {
           }
           case 26: {
             if (options_ == null) {
-              options_ = new global::Google.Protobuf.DescriptorProtos.EnumValueOptions();
+              options_ = new global::Google.Protobuf.Reflection.EnumValueOptions();
             }
             input.ReadMessage(options_);
             break;
@@ -2174,11 +2174,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "method", "name", "options" };
     private static readonly uint[] _fieldTags = new uint[] { 18, 10, 26 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[7]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[7]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -2220,16 +2220,16 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int MethodFieldNumber = 2;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto> _repeated_method_codec
-        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto> method_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto> Method {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.MethodDescriptorProto> _repeated_method_codec
+        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.Reflection.MethodDescriptorProto.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.MethodDescriptorProto> method_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.MethodDescriptorProto>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.MethodDescriptorProto> Method {
       get { return method_; }
     }
 
     public const int OptionsFieldNumber = 3;
-    private global::Google.Protobuf.DescriptorProtos.ServiceOptions options_;
-    internal global::Google.Protobuf.DescriptorProtos.ServiceOptions Options {
+    private global::Google.Protobuf.Reflection.ServiceOptions options_;
+    internal global::Google.Protobuf.Reflection.ServiceOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2300,7 +2300,7 @@ namespace Google.Protobuf.DescriptorProtos {
       method_.Add(other.method_);
       if (other.options_ != null) {
         if (options_ == null) {
-          options_ = new global::Google.Protobuf.DescriptorProtos.ServiceOptions();
+          options_ = new global::Google.Protobuf.Reflection.ServiceOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -2327,7 +2327,7 @@ namespace Google.Protobuf.DescriptorProtos {
           }
           case 26: {
             if (options_ == null) {
-              options_ = new global::Google.Protobuf.DescriptorProtos.ServiceOptions();
+              options_ = new global::Google.Protobuf.Reflection.ServiceOptions();
             }
             input.ReadMessage(options_);
             break;
@@ -2346,11 +2346,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "client_streaming", "input_type", "name", "options", "output_type", "server_streaming" };
     private static readonly uint[] _fieldTags = new uint[] { 40, 18, 10, 34, 26, 48 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[8]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[8]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -2414,8 +2414,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int OptionsFieldNumber = 4;
-    private global::Google.Protobuf.DescriptorProtos.MethodOptions options_;
-    internal global::Google.Protobuf.DescriptorProtos.MethodOptions Options {
+    private global::Google.Protobuf.Reflection.MethodOptions options_;
+    internal global::Google.Protobuf.Reflection.MethodOptions Options {
       get { return options_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2543,7 +2543,7 @@ namespace Google.Protobuf.DescriptorProtos {
       }
       if (other.options_ != null) {
         if (options_ == null) {
-          options_ = new global::Google.Protobuf.DescriptorProtos.MethodOptions();
+          options_ = new global::Google.Protobuf.Reflection.MethodOptions();
         }
         Options.MergeFrom(other.Options);
       }
@@ -2580,7 +2580,7 @@ namespace Google.Protobuf.DescriptorProtos {
           }
           case 34: {
             if (options_ == null) {
-              options_ = new global::Google.Protobuf.DescriptorProtos.MethodOptions();
+              options_ = new global::Google.Protobuf.Reflection.MethodOptions();
             }
             input.ReadMessage(options_);
             break;
@@ -2607,11 +2607,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "cc_enable_arenas", "cc_generic_services", "csharp_namespace", "deprecated", "go_package", "java_generate_equals_and_hash", "java_generic_services", "java_multiple_files", "java_outer_classname", "java_package", "java_string_check_utf8", "objc_class_prefix", "optimize_for", "py_generic_services", "uninterpreted_option" };
     private static readonly uint[] _fieldTags = new uint[] { 248, 128, 298, 184, 90, 160, 136, 80, 66, 10, 216, 290, 72, 144, 7994 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[9]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[9]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FileOptions__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_FileOptions__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -2704,8 +2704,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int OptimizeForFieldNumber = 9;
-    private global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode optimizeFor_ = global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED;
-    internal global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode OptimizeFor {
+    private global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode optimizeFor_ = global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode.SPEED;
+    internal global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode OptimizeFor {
       get { return optimizeFor_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -2794,10 +2794,10 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
-        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -2837,7 +2837,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (JavaMultipleFiles != false) hash ^= JavaMultipleFiles.GetHashCode();
       if (JavaGenerateEqualsAndHash != false) hash ^= JavaGenerateEqualsAndHash.GetHashCode();
       if (JavaStringCheckUtf8 != false) hash ^= JavaStringCheckUtf8.GetHashCode();
-      if (OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) hash ^= OptimizeFor.GetHashCode();
+      if (OptimizeFor != global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode.SPEED) hash ^= OptimizeFor.GetHashCode();
       if (GoPackage.Length != 0) hash ^= GoPackage.GetHashCode();
       if (CcGenericServices != false) hash ^= CcGenericServices.GetHashCode();
       if (JavaGenericServices != false) hash ^= JavaGenericServices.GetHashCode();
@@ -2863,7 +2863,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(66);
         output.WriteString(JavaOuterClassname);
       }
-      if (OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) {
+      if (OptimizeFor != global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode.SPEED) {
         output.WriteRawTag(72);
         output.WriteEnum((int) OptimizeFor);
       }
@@ -2931,7 +2931,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (JavaStringCheckUtf8 != false) {
         size += 2 + 1;
       }
-      if (OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) {
+      if (OptimizeFor != global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode.SPEED) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) OptimizeFor);
       }
       if (GoPackage.Length != 0) {
@@ -2981,7 +2981,7 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other.JavaStringCheckUtf8 != false) {
         JavaStringCheckUtf8 = other.JavaStringCheckUtf8;
       }
-      if (other.OptimizeFor != global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode.SPEED) {
+      if (other.OptimizeFor != global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode.SPEED) {
         OptimizeFor = other.OptimizeFor;
       }
       if (other.GoPackage.Length != 0) {
@@ -3031,7 +3031,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 72: {
-            optimizeFor_ = (global::Google.Protobuf.DescriptorProtos.FileOptions.Types.OptimizeMode) input.ReadEnum();
+            optimizeFor_ = (global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) input.ReadEnum();
             break;
           }
           case 80: {
@@ -3108,11 +3108,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "deprecated", "map_entry", "message_set_wire_format", "no_standard_descriptor_accessor", "uninterpreted_option" };
     private static readonly uint[] _fieldTags = new uint[] { 24, 56, 8, 16, 7994 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[10]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[10]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_MessageOptions__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_MessageOptions__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -3185,10 +3185,10 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
-        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3327,11 +3327,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "ctype", "deprecated", "jstype", "lazy", "packed", "uninterpreted_option", "weak" };
     private static readonly uint[] _fieldTags = new uint[] { 8, 24, 48, 40, 16, 7994, 80 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[11]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[11]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FieldOptions__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_FieldOptions__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -3366,8 +3366,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int CtypeFieldNumber = 1;
-    private global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType ctype_ = global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING;
-    internal global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType Ctype {
+    private global::Google.Protobuf.Reflection.FieldOptions.Types.CType ctype_ = global::Google.Protobuf.Reflection.FieldOptions.Types.CType.STRING;
+    internal global::Google.Protobuf.Reflection.FieldOptions.Types.CType Ctype {
       get { return ctype_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3386,8 +3386,8 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int JstypeFieldNumber = 6;
-    private global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType jstype_ = global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL;
-    internal global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType Jstype {
+    private global::Google.Protobuf.Reflection.FieldOptions.Types.JSType jstype_ = global::Google.Protobuf.Reflection.FieldOptions.Types.JSType.JS_NORMAL;
+    internal global::Google.Protobuf.Reflection.FieldOptions.Types.JSType Jstype {
       get { return jstype_; }
       set {
         pb::Freezable.CheckMutable(this);
@@ -3426,10 +3426,10 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
-        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3456,9 +3456,9 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public override int GetHashCode() {
       int hash = 1;
-      if (Ctype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING) hash ^= Ctype.GetHashCode();
+      if (Ctype != global::Google.Protobuf.Reflection.FieldOptions.Types.CType.STRING) hash ^= Ctype.GetHashCode();
       if (Packed != false) hash ^= Packed.GetHashCode();
-      if (Jstype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL) hash ^= Jstype.GetHashCode();
+      if (Jstype != global::Google.Protobuf.Reflection.FieldOptions.Types.JSType.JS_NORMAL) hash ^= Jstype.GetHashCode();
       if (Lazy != false) hash ^= Lazy.GetHashCode();
       if (Deprecated != false) hash ^= Deprecated.GetHashCode();
       if (Weak != false) hash ^= Weak.GetHashCode();
@@ -3471,7 +3471,7 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Ctype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING) {
+      if (Ctype != global::Google.Protobuf.Reflection.FieldOptions.Types.CType.STRING) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Ctype);
       }
@@ -3487,7 +3487,7 @@ namespace Google.Protobuf.DescriptorProtos {
         output.WriteRawTag(40);
         output.WriteBool(Lazy);
       }
-      if (Jstype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL) {
+      if (Jstype != global::Google.Protobuf.Reflection.FieldOptions.Types.JSType.JS_NORMAL) {
         output.WriteRawTag(48);
         output.WriteEnum((int) Jstype);
       }
@@ -3500,13 +3500,13 @@ namespace Google.Protobuf.DescriptorProtos {
 
     public int CalculateSize() {
       int size = 0;
-      if (Ctype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING) {
+      if (Ctype != global::Google.Protobuf.Reflection.FieldOptions.Types.CType.STRING) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Ctype);
       }
       if (Packed != false) {
         size += 1 + 1;
       }
-      if (Jstype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL) {
+      if (Jstype != global::Google.Protobuf.Reflection.FieldOptions.Types.JSType.JS_NORMAL) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Jstype);
       }
       if (Lazy != false) {
@@ -3526,13 +3526,13 @@ namespace Google.Protobuf.DescriptorProtos {
       if (other == null) {
         return;
       }
-      if (other.Ctype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType.STRING) {
+      if (other.Ctype != global::Google.Protobuf.Reflection.FieldOptions.Types.CType.STRING) {
         Ctype = other.Ctype;
       }
       if (other.Packed != false) {
         Packed = other.Packed;
       }
-      if (other.Jstype != global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType.JS_NORMAL) {
+      if (other.Jstype != global::Google.Protobuf.Reflection.FieldOptions.Types.JSType.JS_NORMAL) {
         Jstype = other.Jstype;
       }
       if (other.Lazy != false) {
@@ -3559,7 +3559,7 @@ namespace Google.Protobuf.DescriptorProtos {
             }
             break;
           case 8: {
-            ctype_ = (global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.CType) input.ReadEnum();
+            ctype_ = (global::Google.Protobuf.Reflection.FieldOptions.Types.CType) input.ReadEnum();
             break;
           }
           case 16: {
@@ -3575,7 +3575,7 @@ namespace Google.Protobuf.DescriptorProtos {
             break;
           }
           case 48: {
-            jstype_ = (global::Google.Protobuf.DescriptorProtos.FieldOptions.Types.JSType) input.ReadEnum();
+            jstype_ = (global::Google.Protobuf.Reflection.FieldOptions.Types.JSType) input.ReadEnum();
             break;
           }
           case 80: {
@@ -3618,11 +3618,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "allow_alias", "deprecated", "uninterpreted_option" };
     private static readonly uint[] _fieldTags = new uint[] { 16, 24, 7994 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[12]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[12]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumOptions__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_EnumOptions__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -3673,10 +3673,10 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
-        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3783,11 +3783,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "deprecated", "uninterpreted_option" };
     private static readonly uint[] _fieldTags = new uint[] { 8, 7994 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[13]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[13]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -3827,10 +3827,10 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
-        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3921,11 +3921,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "deprecated", "uninterpreted_option" };
     private static readonly uint[] _fieldTags = new uint[] { 264, 7994 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[14]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[14]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_ServiceOptions__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_ServiceOptions__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -3965,10 +3965,10 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
-        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -4059,11 +4059,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "deprecated", "uninterpreted_option" };
     private static readonly uint[] _fieldTags = new uint[] { 264, 7994 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[15]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[15]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_MethodOptions__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_MethodOptions__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -4103,10 +4103,10 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int UninterpretedOptionFieldNumber = 999;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> _repeated_uninterpretedOption_codec
-        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption> UninterpretedOption {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
+        = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -4197,11 +4197,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "aggregate_value", "double_value", "identifier_value", "name", "negative_int_value", "positive_int_value", "string_value" };
     private static readonly uint[] _fieldTags = new uint[] { 66, 49, 26, 18, 40, 32, 58 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[16]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[16]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -4236,10 +4236,10 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int NameFieldNumber = 2;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> _repeated_name_codec
-        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> name_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart> Name {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart> _repeated_name_codec
+        = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart> name_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart> Name {
       get { return name_; }
     }
 
@@ -4471,11 +4471,11 @@ namespace Google.Protobuf.DescriptorProtos {
         private static readonly string[] _fieldNames = new string[] { "is_extension", "name_part" };
         private static readonly uint[] _fieldTags = new uint[] { 16, 10 };
         public static pbr::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Descriptor.NestedTypes[0]; }
+          get { return global::Google.Protobuf.Reflection.UninterpretedOption.Descriptor.NestedTypes[0]; }
         }
 
         public pbr::FieldAccessorTable Fields {
-          get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable; }
+          get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable; }
         }
 
         private bool _frozen = false;
@@ -4622,11 +4622,11 @@ namespace Google.Protobuf.DescriptorProtos {
     private static readonly string[] _fieldNames = new string[] { "location" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[17]; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[17]; }
     }
 
     public pbr::FieldAccessorTable Fields {
-      get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable; }
+      get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable; }
     }
 
     private bool _frozen = false;
@@ -4655,10 +4655,10 @@ namespace Google.Protobuf.DescriptorProtos {
     }
 
     public const int LocationFieldNumber = 1;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location> _repeated_location_codec
-        = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location> location_ = new pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location>();
-    internal pbc::RepeatedField<global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location> Location {
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> _repeated_location_codec
+        = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> location_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location>();
+    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> Location {
       get { return location_; }
     }
 
@@ -4734,11 +4734,11 @@ namespace Google.Protobuf.DescriptorProtos {
         private static readonly string[] _fieldNames = new string[] { "leading_comments", "leading_detached_comments", "path", "span", "trailing_comments" };
         private static readonly uint[] _fieldTags = new uint[] { 26, 50, 10, 18, 34 };
         public static pbr::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Descriptor.NestedTypes[0]; }
+          get { return global::Google.Protobuf.Reflection.SourceCodeInfo.Descriptor.NestedTypes[0]; }
         }
 
         public pbr::FieldAccessorTable Fields {
-          get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable; }
+          get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable; }
         }
 
         private bool _frozen = false;

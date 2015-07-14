@@ -60,8 +60,6 @@
     <Compile Include="Collections\MapField.cs" />
     <Compile Include="Collections\ReadOnlyDictionary.cs" />
     <Compile Include="Collections\RepeatedField.cs" />
-    <Compile Include="DescriptorProtos\DescriptorProtoFile.cs" />
-    <Compile Include="DescriptorProtos\PartialClasses.cs" />
     <Compile Include="FieldCodec.cs" />
     <Compile Include="FrameworkPortability.cs" />
     <Compile Include="Freezable.cs" />
@@ -74,6 +72,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reflection\DescriptorBase.cs" />
     <Compile Include="Reflection\DescriptorPool.cs" />
+    <Compile Include="Reflection\DescriptorProtoFile.cs" />
     <Compile Include="Reflection\DescriptorUtil.cs" />
     <Compile Include="Reflection\DescriptorValidationException.cs" />
     <Compile Include="Reflection\EnumDescriptor.cs" />
@@ -91,6 +90,7 @@
     <Compile Include="Reflection\OneofAccessor.cs" />
     <Compile Include="Reflection\OneofDescriptor.cs" />
     <Compile Include="Reflection\PackageDescriptor.cs" />
+    <Compile Include="Reflection\PartialClasses.cs" />
     <Compile Include="Reflection\ReflectionUtil.cs" />
     <Compile Include="Reflection\RepeatedFieldAccessor.cs" />
     <Compile Include="Reflection\ServiceDescriptor.cs" />
