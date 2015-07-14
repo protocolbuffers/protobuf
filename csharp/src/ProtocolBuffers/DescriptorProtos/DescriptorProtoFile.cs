@@ -5,7 +5,7 @@
 
 using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
-using pbd = global::Google.Protobuf.Descriptors;
+using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.DescriptorProtos {
 
@@ -13,34 +13,34 @@ namespace Google.Protobuf.DescriptorProtos {
   internal static partial class DescriptorProtoFile {
 
     #region Static variables
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_DescriptorProto__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_DescriptorProto_ReservedRange__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_OneofDescriptorProto__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_FileOptions__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_MessageOptions__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_FieldOptions__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_EnumOptions__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_ServiceOptions__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_MethodOptions__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable;
-    internal static pb::FieldAccess.FieldAccessorTable internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_DescriptorProto__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_DescriptorProto_ReservedRange__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_OneofDescriptorProto__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_FileOptions__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_MessageOptions__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_FieldOptions__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_EnumOptions__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_ServiceOptions__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_MethodOptions__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable;
+    internal static pbr::FieldAccessorTable internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable;
     #endregion
     #region Descriptor
-    public static pbd::FileDescriptor Descriptor {
+    public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }
-    private static pbd::FileDescriptor descriptor;
+    private static pbr::FileDescriptor descriptor;
 
     static DescriptorProtoFile() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
@@ -156,74 +156,74 @@ namespace Google.Protobuf.DescriptorProtos {
             "bWVudHMYBiADKAlCXgoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRv", 
             "clByb3Rvc0gBWgpkZXNjcmlwdG9yogIDR1BCqgIgR29vZ2xlLlByb3RvYnVm", 
           "LkRlc2NyaXB0b3JQcm90b3M="));
-      descriptor = pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbd::FileDescriptor[] {
+      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+          new pbr::FileDescriptor[] {
           });
       internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FileDescriptorSet), descriptor.MessageTypes[0],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FileDescriptorSet), descriptor.MessageTypes[0],
               new string[] { "File", }, new string[] { });
       internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FileDescriptorProto), descriptor.MessageTypes[1],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FileDescriptorProto), descriptor.MessageTypes[1],
               new string[] { "Name", "Package", "Dependency", "PublicDependency", "WeakDependency", "MessageType", "EnumType", "Service", "Extension", "Options", "SourceCodeInfo", "Syntax", }, new string[] { });
       internal__static_google_protobuf_DescriptorProto__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.DescriptorProto), descriptor.MessageTypes[2],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.DescriptorProto), descriptor.MessageTypes[2],
               new string[] { "Name", "Field", "Extension", "NestedType", "EnumType", "ExtensionRange", "OneofDecl", "Options", "ReservedRange", "ReservedName", }, new string[] { });
       internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange), descriptor.MessageTypes[2].NestedTypes[0],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ExtensionRange), descriptor.MessageTypes[2].NestedTypes[0],
               new string[] { "Start", "End", }, new string[] { });
       internal__static_google_protobuf_DescriptorProto_ReservedRange__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange), descriptor.MessageTypes[2].NestedTypes[1],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.DescriptorProto.Types.ReservedRange), descriptor.MessageTypes[2].NestedTypes[1],
               new string[] { "Start", "End", }, new string[] { });
       internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto), descriptor.MessageTypes[3],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FieldDescriptorProto), descriptor.MessageTypes[3],
               new string[] { "Name", "Number", "Label", "Type", "TypeName", "Extendee", "DefaultValue", "OneofIndex", "Options", }, new string[] { });
       internal__static_google_protobuf_OneofDescriptorProto__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto), descriptor.MessageTypes[4],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.OneofDescriptorProto), descriptor.MessageTypes[4],
               new string[] { "Name", }, new string[] { });
       internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto), descriptor.MessageTypes[5],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumDescriptorProto), descriptor.MessageTypes[5],
               new string[] { "Name", "Value", "Options", }, new string[] { });
       internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto), descriptor.MessageTypes[6],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumValueDescriptorProto), descriptor.MessageTypes[6],
               new string[] { "Name", "Number", "Options", }, new string[] { });
       internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto), descriptor.MessageTypes[7],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.ServiceDescriptorProto), descriptor.MessageTypes[7],
               new string[] { "Name", "Method", "Options", }, new string[] { });
       internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto), descriptor.MessageTypes[8],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.MethodDescriptorProto), descriptor.MessageTypes[8],
               new string[] { "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming", }, new string[] { });
       internal__static_google_protobuf_FileOptions__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FileOptions), descriptor.MessageTypes[9],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FileOptions), descriptor.MessageTypes[9],
               new string[] { "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_MessageOptions__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.MessageOptions), descriptor.MessageTypes[10],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.MessageOptions), descriptor.MessageTypes[10],
               new string[] { "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_FieldOptions__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FieldOptions), descriptor.MessageTypes[11],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.FieldOptions), descriptor.MessageTypes[11],
               new string[] { "Ctype", "Packed", "Jstype", "Lazy", "Deprecated", "Weak", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_EnumOptions__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumOptions), descriptor.MessageTypes[12],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumOptions), descriptor.MessageTypes[12],
               new string[] { "AllowAlias", "Deprecated", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumValueOptions), descriptor.MessageTypes[13],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.EnumValueOptions), descriptor.MessageTypes[13],
               new string[] { "Deprecated", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_ServiceOptions__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.ServiceOptions), descriptor.MessageTypes[14],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.ServiceOptions), descriptor.MessageTypes[14],
               new string[] { "Deprecated", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_MethodOptions__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.MethodOptions), descriptor.MessageTypes[15],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.MethodOptions), descriptor.MessageTypes[15],
               new string[] { "Deprecated", "UninterpretedOption", }, new string[] { });
       internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.UninterpretedOption), descriptor.MessageTypes[16],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.UninterpretedOption), descriptor.MessageTypes[16],
               new string[] { "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", "AggregateValue", }, new string[] { });
       internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart), descriptor.MessageTypes[16].NestedTypes[0],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Types.NamePart), descriptor.MessageTypes[16].NestedTypes[0],
               new string[] { "NamePart_", "IsExtension", }, new string[] { });
       internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.SourceCodeInfo), descriptor.MessageTypes[17],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.SourceCodeInfo), descriptor.MessageTypes[17],
               new string[] { "Location", }, new string[] { });
       internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable = 
-          new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location), descriptor.MessageTypes[17].NestedTypes[0],
+          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Types.Location), descriptor.MessageTypes[17].NestedTypes[0],
               new string[] { "Path", "Span", "LeadingComments", "TrailingComments", "LeadingDetachedComments", }, new string[] { });
     }
     #endregion
@@ -237,11 +237,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "file" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[0]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable; }
     }
 
@@ -348,11 +348,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "dependency", "enum_type", "extension", "message_type", "name", "options", "package", "public_dependency", "service", "source_code_info", "syntax", "weak_dependency" };
     private static readonly uint[] _fieldTags = new uint[] { 26, 42, 58, 34, 10, 66, 18, 80, 50, 74, 98, 88 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[1]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable; }
     }
 
@@ -724,11 +724,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "enum_type", "extension", "extension_range", "field", "name", "nested_type", "oneof_decl", "options", "reserved_name", "reserved_range" };
     private static readonly uint[] _fieldTags = new uint[] { 34, 50, 42, 18, 10, 26, 66, 58, 82, 74 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[2]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto__FieldAccessorTable; }
     }
 
@@ -1030,11 +1030,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
         private static readonly string[] _fieldNames = new string[] { "end", "start" };
         private static readonly uint[] _fieldTags = new uint[] { 16, 8 };
-        public static pbd::MessageDescriptor Descriptor {
+        public static pbr::MessageDescriptor Descriptor {
           get { return global::Google.Protobuf.DescriptorProtos.DescriptorProto.Descriptor.NestedTypes[0]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable Fields {
+        public pbr::FieldAccessorTable Fields {
           get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable; }
         }
 
@@ -1176,11 +1176,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
         private static readonly string[] _fieldNames = new string[] { "end", "start" };
         private static readonly uint[] _fieldTags = new uint[] { 16, 8 };
-        public static pbd::MessageDescriptor Descriptor {
+        public static pbr::MessageDescriptor Descriptor {
           get { return global::Google.Protobuf.DescriptorProtos.DescriptorProto.Descriptor.NestedTypes[1]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable Fields {
+        public pbr::FieldAccessorTable Fields {
           get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto_ReservedRange__FieldAccessorTable; }
         }
 
@@ -1327,11 +1327,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "default_value", "extendee", "label", "name", "number", "oneof_index", "options", "type", "type_name" };
     private static readonly uint[] _fieldTags = new uint[] { 58, 18, 32, 10, 24, 72, 66, 40, 50 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[3]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable; }
     }
 
@@ -1702,11 +1702,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "name" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[4]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_OneofDescriptorProto__FieldAccessorTable; }
     }
 
@@ -1821,11 +1821,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "name", "options", "value" };
     private static readonly uint[] _fieldTags = new uint[] { 10, 26, 18 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[5]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable; }
     }
 
@@ -1993,11 +1993,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "name", "number", "options" };
     private static readonly uint[] _fieldTags = new uint[] { 10, 16, 26 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[6]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable; }
     }
 
@@ -2173,11 +2173,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "method", "name", "options" };
     private static readonly uint[] _fieldTags = new uint[] { 18, 10, 26 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[7]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable; }
     }
 
@@ -2345,11 +2345,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "client_streaming", "input_type", "name", "options", "output_type", "server_streaming" };
     private static readonly uint[] _fieldTags = new uint[] { 40, 18, 10, 34, 26, 48 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[8]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable; }
     }
 
@@ -2606,11 +2606,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "cc_enable_arenas", "cc_generic_services", "csharp_namespace", "deprecated", "go_package", "java_generate_equals_and_hash", "java_generic_services", "java_multiple_files", "java_outer_classname", "java_package", "java_string_check_utf8", "objc_class_prefix", "optimize_for", "py_generic_services", "uninterpreted_option" };
     private static readonly uint[] _fieldTags = new uint[] { 248, 128, 298, 184, 90, 160, 136, 80, 66, 10, 216, 290, 72, 144, 7994 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[9]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FileOptions__FieldAccessorTable; }
     }
 
@@ -3107,11 +3107,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "deprecated", "map_entry", "message_set_wire_format", "no_standard_descriptor_accessor", "uninterpreted_option" };
     private static readonly uint[] _fieldTags = new uint[] { 24, 56, 8, 16, 7994 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[10]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_MessageOptions__FieldAccessorTable; }
     }
 
@@ -3326,11 +3326,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "ctype", "deprecated", "jstype", "lazy", "packed", "uninterpreted_option", "weak" };
     private static readonly uint[] _fieldTags = new uint[] { 8, 24, 48, 40, 16, 7994, 80 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[11]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_FieldOptions__FieldAccessorTable; }
     }
 
@@ -3617,11 +3617,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "allow_alias", "deprecated", "uninterpreted_option" };
     private static readonly uint[] _fieldTags = new uint[] { 16, 24, 7994 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[12]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumOptions__FieldAccessorTable; }
     }
 
@@ -3782,11 +3782,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "deprecated", "uninterpreted_option" };
     private static readonly uint[] _fieldTags = new uint[] { 8, 7994 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[13]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable; }
     }
 
@@ -3920,11 +3920,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "deprecated", "uninterpreted_option" };
     private static readonly uint[] _fieldTags = new uint[] { 264, 7994 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[14]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_ServiceOptions__FieldAccessorTable; }
     }
 
@@ -4058,11 +4058,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "deprecated", "uninterpreted_option" };
     private static readonly uint[] _fieldTags = new uint[] { 264, 7994 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[15]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_MethodOptions__FieldAccessorTable; }
     }
 
@@ -4196,11 +4196,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "aggregate_value", "double_value", "identifier_value", "name", "negative_int_value", "positive_int_value", "string_value" };
     private static readonly uint[] _fieldTags = new uint[] { 66, 49, 26, 18, 40, 32, 58 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[16]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable; }
     }
 
@@ -4470,11 +4470,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
         private static readonly string[] _fieldNames = new string[] { "is_extension", "name_part" };
         private static readonly uint[] _fieldTags = new uint[] { 16, 10 };
-        public static pbd::MessageDescriptor Descriptor {
+        public static pbr::MessageDescriptor Descriptor {
           get { return global::Google.Protobuf.DescriptorProtos.UninterpretedOption.Descriptor.NestedTypes[0]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable Fields {
+        public pbr::FieldAccessorTable Fields {
           get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable; }
         }
 
@@ -4621,11 +4621,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
     private static readonly string[] _fieldNames = new string[] { "location" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
-    public static pbd::MessageDescriptor Descriptor {
+    public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.Descriptor.MessageTypes[17]; }
     }
 
-    public pb::FieldAccess.FieldAccessorTable Fields {
+    public pbr::FieldAccessorTable Fields {
       get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable; }
     }
 
@@ -4733,11 +4733,11 @@ namespace Google.Protobuf.DescriptorProtos {
 
         private static readonly string[] _fieldNames = new string[] { "leading_comments", "leading_detached_comments", "path", "span", "trailing_comments" };
         private static readonly uint[] _fieldTags = new uint[] { 26, 50, 10, 18, 34 };
-        public static pbd::MessageDescriptor Descriptor {
+        public static pbr::MessageDescriptor Descriptor {
           get { return global::Google.Protobuf.DescriptorProtos.SourceCodeInfo.Descriptor.NestedTypes[0]; }
         }
 
-        public pb::FieldAccess.FieldAccessorTable Fields {
+        public pbr::FieldAccessorTable Fields {
           get { return global::Google.Protobuf.DescriptorProtos.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable; }
         }
 
