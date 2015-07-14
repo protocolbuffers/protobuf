@@ -80,6 +80,7 @@
     <Compile Include="GeneratedMessageTest.cs" />
     <Compile Include="Collections\MapFieldTest.cs" />
     <Compile Include="Collections\RepeatedFieldTest.cs" />
+    <Compile Include="JsonFormatterTest.cs" />
     <Compile Include="SampleEnum.cs" />
     <Compile Include="SampleMessages.cs" />
     <Compile Include="TestProtos\MapUnittestProto3.cs" />

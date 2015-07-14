@@ -63,7 +63,20 @@ namespace Google.Protobuf.FieldAccess
             Expression upcast = Expression.Convert(call, typeof(object));
             return Expression.Lambda<Func<object, object>>(upcast, parameter).Compile();
         }
-        
+
+        /// <summary>
+        /// Creates a delegate which will cast the argument to the appropriate method target type,
+        /// call the method on it, then convert the result to the specified type.
+        /// </summary>
+        internal static Func<object, T> CreateFuncObjectT<T>(MethodInfo method)
+        {
+            ParameterExpression parameter = Expression.Parameter(typeof(object), "p");
+            Expression downcast = Expression.Convert(parameter, method.DeclaringType);
+            Expression call = Expression.Call(downcast, method);
+            Expression upcast = Expression.Convert(call, typeof(T));
+            return Expression.Lambda<Func<object, T>>(upcast, parameter).Compile();
+        }
+
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
         /// the target type of the method, and the second argument to the first parameter type of the method.

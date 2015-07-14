@@ -40,9 +40,9 @@ namespace Google.Protobuf
     // TODO(jonskeet): Split these interfaces into separate files when we're happy with them.
 
     /// <summary>
-    /// Reflection support for a specific message type.
+    /// Reflection support for accessing field values.
     /// </summary>
-    public interface IReflectedMessage
+    public interface IReflectedMessage : IMessage
     {
         FieldAccessorTable Fields { get; }
         // TODO(jonskeet): Descriptor? Or a single property which has "all you need for reflection"?
@@ -81,7 +81,7 @@ namespace Google.Protobuf
     /// the implementation class.
     /// </summary>
     /// <typeparam name="T">The message type.</typeparam>
-    public interface IMessage<T> : IMessage, IEquatable<T>, IDeepCloneable<T>, IFreezable where T : IMessage<T>
+    public interface IMessage<T> : IReflectedMessage, IEquatable<T>, IDeepCloneable<T>, IFreezable where T : IMessage<T>
     {
         /// <summary>
         /// Merges the given message into this one.

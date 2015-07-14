@@ -117,12 +117,9 @@ void MapFieldGenerator::WriteEquals(io::Printer* printer) {
     variables_,
     "if (!$property_name$.Equals(other.$property_name$)) return false;\n");
 }
+
 void MapFieldGenerator::WriteToString(io::Printer* printer) {
-    /*
-  variables_["field_name"] = GetFieldName(descriptor_);
-  printer->Print(
-    variables_,
-    "PrintField(\"$field_name$\", has$property_name$, $name$_, writer);\n");*/
+    // TODO: If we ever actually use ToString, we'll need to impleme this...
 }
 
 void MapFieldGenerator::GenerateCloningCode(io::Printer* printer) {

@@ -53,25 +53,25 @@ namespace UnitTest.Issues.TestProtos {
           });
       internal__static_unittest_issues_Issue307__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.Issue307), descriptor.MessageTypes[0],
-              new string[] { });
+              new string[] { }, new string[] { });
       internal__static_unittest_issues_Issue307_NestedOnce__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce), descriptor.MessageTypes[0].NestedTypes[0],
-              new string[] { });
+              new string[] { }, new string[] { });
       internal__static_unittest_issues_Issue307_NestedOnce_NestedTwice__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice), descriptor.MessageTypes[0].NestedTypes[0].NestedTypes[0],
-              new string[] { });
+              new string[] { }, new string[] { });
       internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.NegativeEnumMessage), descriptor.MessageTypes[1],
-              new string[] { "Value", "Values", "PackedValues", });
+              new string[] { "Value", "Values", "PackedValues", }, new string[] { });
       internal__static_unittest_issues_DeprecatedChild__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.DeprecatedChild), descriptor.MessageTypes[2],
-              new string[] { });
+              new string[] { }, new string[] { });
       internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage), descriptor.MessageTypes[3],
-              new string[] { "PrimitiveValue", "PrimitiveArray", "MessageValue", "MessageArray", "EnumValue", "EnumArray", });
+              new string[] { "PrimitiveValue", "PrimitiveArray", "MessageValue", "MessageArray", "EnumValue", "EnumArray", }, new string[] { });
       internal__static_unittest_issues_ItemField__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.ItemField), descriptor.MessageTypes[4],
-              new string[] { "Item", });
+              new string[] { "Item", }, new string[] { });
     }
     #endregion
 
@@ -146,6 +146,10 @@ namespace UnitTest.Issues.TestProtos {
     public override int GetHashCode() {
       int hash = 1;
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -237,6 +241,10 @@ namespace UnitTest.Issues.TestProtos {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
         }
 
@@ -324,6 +332,10 @@ namespace UnitTest.Issues.TestProtos {
             public override int GetHashCode() {
               int hash = 1;
               return hash;
+            }
+
+            public override string ToString() {
+              return pb::JsonFormatter.Default.Format(this);
             }
 
             public void WriteTo(pb::CodedOutputStream output) {
@@ -459,6 +471,10 @@ namespace UnitTest.Issues.TestProtos {
       return hash;
     }
 
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
     public void WriteTo(pb::CodedOutputStream output) {
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
         output.WriteRawTag(8);
@@ -575,6 +591,10 @@ namespace UnitTest.Issues.TestProtos {
     public override int GetHashCode() {
       int hash = 1;
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -744,6 +764,10 @@ namespace UnitTest.Issues.TestProtos {
       if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) hash ^= EnumValue.GetHashCode();
       hash ^= enumArray_.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -916,6 +940,10 @@ namespace UnitTest.Issues.TestProtos {
       int hash = 1;
       if (Item != 0) hash ^= Item.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {

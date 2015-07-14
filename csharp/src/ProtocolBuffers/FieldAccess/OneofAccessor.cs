@@ -30,62 +30,57 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Descriptors;
+using System;
+using System.Reflection;
+
 namespace Google.Protobuf.FieldAccess
 {
-    // TODO(jonskeet): Add "new" oneof API support
-
     /// <summary>
-    /// Access for an oneof
+    /// Reflection access for a oneof, allowing clear and "get case" actions.
     /// </summary>
-    internal class OneofAccessor<TMessage> where TMessage : IMessage<TMessage>
+    public sealed class OneofAccessor
     {
-        /*
-        private readonly Func<TMessage, object> caseDelegate;
-        private readonly Func<TBuilder, IBuilder> clearDelegate;
-        private MessageDescriptor descriptor;
+        private readonly Func<object, int> caseDelegate;
+        private readonly Action<object> clearDelegate;
+        private OneofDescriptor descriptor;
 
-        internal OneofAccessor(MessageDescriptor descriptor, string name) 
+        internal OneofAccessor(Type type, string propertyName, OneofDescriptor descriptor) 
         {
-            this.descriptor = descriptor;
-            MethodInfo clearMethod = typeof(TBuilder).GetMethod("Clear" + name);
-            PropertyInfo caseProperty = typeof(TMessage).GetProperty(name + "Case");
-            if (clearMethod == null || caseProperty == null)
+            PropertyInfo property = type.GetProperty(propertyName + "Case");
+            if (property == null || !property.CanRead)
             {
-                throw new ArgumentException("Not all required properties/methods available for oneof");
+                throw new ArgumentException("Not all required properties/methods available");
             }
-            
+            this.descriptor = descriptor;
+            caseDelegate = ReflectionUtil.CreateFuncObjectT<int>(property.GetGetMethod());
 
-            clearDelegate = ReflectionUtil.CreateDelegateFunc<TBuilder, IBuilder>(clearMethod);
-            caseDelegate = ReflectionUtil.CreateUpcastDelegate<TMessage>(caseProperty.GetGetMethod());
+            this.descriptor = descriptor;
+            MethodInfo clearMethod = type.GetMethod("Clear" + propertyName);
+            clearDelegate = ReflectionUtil.CreateActionObject(clearMethod);
         }
 
-        /// <summary>
-        /// Indicates whether the specified message has set any field in the oneof.
-        /// </summary>
-        public bool Has(TMessage message)
-        {
-            return ((int) caseDelegate(message) != 0);
-        }
+        public OneofDescriptor Descriptor { get { return descriptor; } }
 
         /// <summary>
-        /// Clears the oneof in the specified builder.
+        /// Clears the oneof in the specified message.
         /// </summary>
-        public void Clear(TBuilder builder)
+        public void Clear(object message)
         {
-            clearDelegate(builder);
+            clearDelegate(message);
         }
 
         /// <summary>
         /// Indicates which field in the oneof is set for specified message
         /// </summary>
-        public virtual FieldDescriptor GetOneofFieldDescriptor(TMessage message)
+        public FieldDescriptor GetCaseFieldDescriptor(object message)
         {
-            int fieldNumber = (int) caseDelegate(message);
+            int fieldNumber = caseDelegate(message);
             if (fieldNumber > 0)
             {
-                return descriptor.FindFieldByNumber(fieldNumber);
+                return descriptor.ContainingType.FindFieldByNumber(fieldNumber);
             }
             return null;
-        }*/
+        }
     }
 }

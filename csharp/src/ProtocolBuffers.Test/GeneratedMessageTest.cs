@@ -734,5 +734,25 @@ namespace Google.Protobuf
             var message = SampleMessages.CreateFullTestAllTypes();
             Assert.Throws<InvalidCastException>(() => message.Fields[TestAllTypes.SingleBoolFieldNumber].GetValue(new TestMap()));
         }
+
+        [Test]
+        public void Reflection_Oneof()
+        {
+            var message = new TestAllTypes();
+            var fields = message.Fields;
+            Assert.AreEqual(1, fields.Oneofs.Count);
+            var oneof = fields.Oneofs[0];
+            Assert.AreEqual("oneof_field", oneof.Descriptor.Name);
+            Assert.IsNull(oneof.GetCaseFieldDescriptor(message));
+
+            message.OneofString = "foo";
+            Assert.AreSame(fields[TestAllTypes.OneofStringFieldNumber].Descriptor, oneof.GetCaseFieldDescriptor(message));
+
+            message.OneofUint32 = 10;
+            Assert.AreSame(fields[TestAllTypes.OneofUint32FieldNumber].Descriptor, oneof.GetCaseFieldDescriptor(message));
+
+            oneof.Clear(message);
+            Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+        }
     }
 }

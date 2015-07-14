@@ -89,6 +89,7 @@ namespace Google.Protobuf.Descriptors
         /// <summary>
         /// Finds an enum value by number. If multiple enum values have the
         /// same number, this returns the first defined value with that number.
+        /// If there is no value for the given number, this returns <c>null</c>.
         /// </summary>
         public EnumValueDescriptor FindValueByNumber(int number)
         {

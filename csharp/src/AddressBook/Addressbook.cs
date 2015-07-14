@@ -40,13 +40,13 @@ namespace Google.Protobuf.Examples.AddressBook {
           });
       internal__static_tutorial_Person__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.Examples.AddressBook.Person), descriptor.MessageTypes[0],
-              new string[] { "Name", "Id", "Email", "Phone", });
+              new string[] { "Name", "Id", "Email", "Phone", }, new string[] { });
       internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), descriptor.MessageTypes[0].NestedTypes[0],
-              new string[] { "Number", "Type", });
+              new string[] { "Number", "Type", }, new string[] { });
       internal__static_tutorial_AddressBook__FieldAccessorTable = 
           new pb::FieldAccess.FieldAccessorTable(typeof(global::Google.Protobuf.Examples.AddressBook.AddressBook), descriptor.MessageTypes[1],
-              new string[] { "Person", });
+              new string[] { "Person", }, new string[] { });
     }
     #endregion
 
@@ -158,6 +158,10 @@ namespace Google.Protobuf.Examples.AddressBook {
       if (Email.Length != 0) hash ^= Email.GetHashCode();
       hash ^= phone_.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -330,6 +334,10 @@ namespace Google.Protobuf.Examples.AddressBook {
           return hash;
         }
 
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
         public void WriteTo(pb::CodedOutputStream output) {
           if (Number.Length != 0) {
             output.WriteRawTag(10);
@@ -461,6 +469,10 @@ namespace Google.Protobuf.Examples.AddressBook {
       int hash = 1;
       hash ^= person_.GetHashCode();
       return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
