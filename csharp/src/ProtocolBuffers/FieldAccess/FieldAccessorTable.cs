@@ -84,38 +84,14 @@ namespace Google.Protobuf.FieldAccess
 
         public ReadOnlyCollection<OneofAccessor> Oneofs { get { return oneofs; } }
 
-        // TODO: Review the API for the indexers. Now that we have fields and oneofs, it's not as clear...
-
+        // TODO: Review this, as it's easy to get confused between FieldNumber and Index.
+        // Currently only used to get an accessor related to a oneof... maybe just make that simpler?
         public IFieldAccessor this[int fieldNumber]
         {
             get
             {
                 FieldDescriptor field = descriptor.FindFieldByNumber(fieldNumber);
                 return accessors[field.Index];
-            }
-        }
-
-        public IFieldAccessor this[FieldDescriptor field]
-        {
-            get
-            {
-                if (field.ContainingType != descriptor)
-                {
-                    throw new ArgumentException("FieldDescriptor does not match message type.");
-                }
-                return accessors[field.Index];
-            }
-        }
-
-        public OneofAccessor this[OneofDescriptor oneof]
-        {
-            get
-            {
-                if (oneof.ContainingType != descriptor)
-                {
-                    throw new ArgumentException("OneofDescriptor does not match message type.");
-                }
-                return oneofs[oneof.Index];
             }
         }
     }

@@ -141,6 +141,7 @@ namespace Google.Protobuf
             {
                 var descriptor = accessor.Descriptor;
                 // Oneofs are written later
+                // TODO: Change to write out fields in order, interleaving oneofs appropriately (as per binary format)
                 if (descriptor.ContainingOneof != null)
                 {
                     continue;
@@ -176,7 +177,7 @@ namespace Google.Protobuf
                 {
                     continue;
                 }
-                var fieldAccessor = fields[fieldDescriptor];
+                var fieldAccessor = fields[fieldDescriptor.FieldNumber];
                 object value = fieldAccessor.GetValue(message);
                 // Omit awkward (single) values such as unknown enum values
                 if (!fieldDescriptor.IsRepeated && !fieldDescriptor.IsMap && !CanWriteSingleValue(fieldDescriptor, value))
