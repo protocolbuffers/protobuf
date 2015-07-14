@@ -339,7 +339,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[0]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestAllTypes__FieldAccessorTable; }
     }
 
@@ -1640,7 +1640,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestAllTypes.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable; }
         }
 
@@ -1764,7 +1764,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[1]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_NestedTestAllTypes__FieldAccessorTable; }
     }
 
@@ -1943,7 +1943,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[2]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestDeprecatedFields__FieldAccessorTable; }
     }
 
@@ -2063,7 +2063,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[3]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable; }
     }
 
@@ -2182,7 +2182,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[4]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestReservedFields__FieldAccessorTable; }
     }
 
@@ -2274,7 +2274,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[5]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable; }
     }
 
@@ -2400,7 +2400,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[6]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable; }
     }
 
@@ -2546,7 +2546,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[7]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable; }
     }
 
@@ -2699,7 +2699,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[8]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable; }
     }
 
@@ -2825,7 +2825,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[9]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable; }
     }
 
@@ -2978,7 +2978,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[10]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable; }
     }
 
@@ -3262,7 +3262,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[11]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable; }
     }
 
@@ -3470,7 +3470,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestFieldOrderings.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__FieldAccessorTable; }
         }
 
@@ -3621,7 +3621,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[12]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_SparseEnumMessage__FieldAccessorTable; }
     }
 
@@ -3740,7 +3740,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[13]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_OneString__FieldAccessorTable; }
     }
 
@@ -3859,7 +3859,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[14]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_MoreString__FieldAccessorTable; }
     }
 
@@ -3970,7 +3970,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[15]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_OneBytes__FieldAccessorTable; }
     }
 
@@ -4089,7 +4089,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[16]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_MoreBytes__FieldAccessorTable; }
     }
 
@@ -4208,7 +4208,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[17]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Int32Message__FieldAccessorTable; }
     }
 
@@ -4327,7 +4327,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[18]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Uint32Message__FieldAccessorTable; }
     }
 
@@ -4446,7 +4446,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[19]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Int64Message__FieldAccessorTable; }
     }
 
@@ -4565,7 +4565,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[20]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Uint64Message__FieldAccessorTable; }
     }
 
@@ -4684,7 +4684,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[21]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_BoolMessage__FieldAccessorTable; }
     }
 
@@ -4803,7 +4803,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[22]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestOneof__FieldAccessorTable; }
     }
 
@@ -5012,7 +5012,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[23]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable; }
     }
 
@@ -5383,7 +5383,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[24]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestUnpackedTypes__FieldAccessorTable; }
     }
 
@@ -5754,7 +5754,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[25]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__FieldAccessorTable; }
     }
 
@@ -5966,7 +5966,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[26]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestCommentInjectionMessage__FieldAccessorTable; }
     }
 
@@ -6085,7 +6085,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[27]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooRequest__FieldAccessorTable; }
     }
 
@@ -6177,7 +6177,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[28]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooResponse__FieldAccessorTable; }
     }
 
@@ -6269,7 +6269,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[29]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooClientMessage__FieldAccessorTable; }
     }
 
@@ -6361,7 +6361,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[30]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooServerMessage__FieldAccessorTable; }
     }
 
@@ -6453,7 +6453,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[31]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_BarRequest__FieldAccessorTable; }
     }
 
@@ -6545,7 +6545,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[32]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_BarResponse__FieldAccessorTable; }
     }
 
