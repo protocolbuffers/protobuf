@@ -69,6 +69,8 @@ class MessageGenerator : public SourceGeneratorBase {
   FieldGeneratorBase* CreateFieldGeneratorInternal(
       const FieldDescriptor* descriptor);
 
+  bool HasNestedGeneratedTypes();
+
   std::string class_name();
   std::string full_class_name();
 
