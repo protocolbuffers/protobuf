@@ -1285,6 +1285,7 @@ static void json_parser_reset(upb_json_parser *p) {
   p->multipart_state = MULTIPART_INACTIVE;
   p->capture = NULL;
   p->accumulated = NULL;
+  upb_status_clear(&p->status);
 }
 
 

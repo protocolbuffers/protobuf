@@ -1550,6 +1550,7 @@ static void json_parser_reset(upb_json_parser *p) {
   p->multipart_state = MULTIPART_INACTIVE;
   p->capture = NULL;
   p->accumulated = NULL;
+  upb_status_clear(&p->status);
 }
 
 
@@ -1576,7 +1577,7 @@ upb_json_parser *upb_json_parser_create(upb_env *env, upb_sink *output) {
   p->top->m = upb_handlers_msgdef(output->handlers);
 
   /* If this fails, uncomment and increase the value in parser.h. */
-   fprintf(stderr, "%zd\n", upb_env_bytesallocated(env) - size_before);
+  /* fprintf(stderr, "%zd\n", upb_env_bytesallocated(env) - size_before); */
   assert(upb_env_bytesallocated(env) - size_before <= UPB_JSON_PARSER_SIZE);
   return p;
 }
