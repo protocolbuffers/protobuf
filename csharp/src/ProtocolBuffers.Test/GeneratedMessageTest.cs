@@ -604,7 +604,7 @@ namespace Google.Protobuf
         public void Reflection_GetValue()
         {
             var message = SampleMessages.CreateFullTestAllTypes();
-            var fields = message.Fields;
+            var fields = ((IReflectedMessage) message).Fields;
             Assert.AreEqual(message.SingleBool, fields[TestAllTypes.SingleBoolFieldNumber].GetValue(message));
             Assert.AreEqual(message.SingleBytes, fields[TestAllTypes.SingleBytesFieldNumber].GetValue(message));
             Assert.AreEqual(message.SingleDouble, fields[TestAllTypes.SingleDoubleFieldNumber].GetValue(message));
@@ -639,7 +639,8 @@ namespace Google.Protobuf
 
             // Just a single map field, for the same reason
             var mapMessage = new TestMap { MapStringString = { { "key1", "value1" }, { "key2", "value2" } } };
-            var dictionary = (IDictionary)mapMessage.Fields[TestMap.MapStringStringFieldNumber].GetValue(mapMessage);
+            fields = ((IReflectedMessage) mapMessage).Fields;
+            var dictionary = (IDictionary) fields[TestMap.MapStringStringFieldNumber].GetValue(mapMessage);
             Assert.AreEqual(mapMessage.MapStringString, dictionary);
             Assert.AreEqual("value1", dictionary["key1"]);
         }
@@ -647,7 +648,7 @@ namespace Google.Protobuf
         [Test]
         public void Reflection_Clear()
         {
-            var message = SampleMessages.CreateFullTestAllTypes();
+            IReflectedMessage message = SampleMessages.CreateFullTestAllTypes();
             var fields = message.Fields;
             fields[TestAllTypes.SingleBoolFieldNumber].Clear(message);
             fields[TestAllTypes.SingleInt32FieldNumber].Clear(message);
@@ -672,7 +673,8 @@ namespace Google.Protobuf
 
             // Separately, maps.
             var mapMessage = new TestMap { MapStringString = { { "key1", "value1" }, { "key2", "value2" } } };
-            mapMessage.Fields[TestMap.MapStringStringFieldNumber].Clear(mapMessage);
+            fields = ((IReflectedMessage) mapMessage).Fields;
+            fields[TestMap.MapStringStringFieldNumber].Clear(mapMessage);
             Assert.AreEqual(0, mapMessage.MapStringString.Count);
         }
 
@@ -680,7 +682,7 @@ namespace Google.Protobuf
         public void Reflection_SetValue_SingleFields()
         {
             // Just a sample (primitives, messages, enums, strings, byte strings)
-            var message = SampleMessages.CreateFullTestAllTypes();
+            IReflectedMessage message = SampleMessages.CreateFullTestAllTypes();
             var fields = message.Fields;
             fields[TestAllTypes.SingleBoolFieldNumber].SetValue(message, false);
             fields[TestAllTypes.SingleInt32FieldNumber].SetValue(message, 500);
@@ -707,7 +709,7 @@ namespace Google.Protobuf
         [Test]
         public void Reflection_SetValue_SingleFields_WrongType()
         {
-            var message = SampleMessages.CreateFullTestAllTypes();
+            IReflectedMessage message = SampleMessages.CreateFullTestAllTypes();
             var fields = message.Fields;
             Assert.Throws<InvalidCastException>(() => fields[TestAllTypes.SingleBoolFieldNumber].SetValue(message, "This isn't a bool"));
         }
@@ -715,7 +717,7 @@ namespace Google.Protobuf
         [Test]
         public void Reflection_SetValue_MapFields()
         {
-            var message = new TestMap();
+            IReflectedMessage message = new TestMap();
             var fields = message.Fields;
             Assert.Throws<InvalidOperationException>(() => fields[TestMap.MapStringStringFieldNumber].SetValue(message, new Dictionary<string, string>()));
         }
@@ -723,7 +725,7 @@ namespace Google.Protobuf
         [Test]
         public void Reflection_SetValue_RepeatedFields()
         {
-            var message = SampleMessages.CreateFullTestAllTypes();
+            IReflectedMessage message = SampleMessages.CreateFullTestAllTypes();
             var fields = message.Fields;
             Assert.Throws<InvalidOperationException>(() => fields[TestAllTypes.RepeatedDoubleFieldNumber].SetValue(message, new double[10]));
         }
@@ -731,7 +733,7 @@ namespace Google.Protobuf
         [Test]
         public void Reflection_GetValue_IncorrectType()
         {
-            var message = SampleMessages.CreateFullTestAllTypes();
+            IReflectedMessage message = SampleMessages.CreateFullTestAllTypes();
             Assert.Throws<InvalidCastException>(() => message.Fields[TestAllTypes.SingleBoolFieldNumber].GetValue(new TestMap()));
         }
 
@@ -739,7 +741,7 @@ namespace Google.Protobuf
         public void Reflection_Oneof()
         {
             var message = new TestAllTypes();
-            var fields = message.Fields;
+            var fields = ((IReflectedMessage) message).Fields;
             Assert.AreEqual(1, fields.Oneofs.Count);
             var oneof = fields.Oneofs[0];
             Assert.AreEqual("oneof_field", oneof.Descriptor.Name);

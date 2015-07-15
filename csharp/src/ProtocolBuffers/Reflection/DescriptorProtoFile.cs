@@ -241,7 +241,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[0]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_FileDescriptorSet__FieldAccessorTable; }
     }
 
@@ -352,7 +352,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[1]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_FileDescriptorProto__FieldAccessorTable; }
     }
 
@@ -728,7 +728,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[2]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto__FieldAccessorTable; }
     }
 
@@ -1034,7 +1034,7 @@ namespace Google.Protobuf.Reflection {
           get { return global::Google.Protobuf.Reflection.DescriptorProto.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto_ExtensionRange__FieldAccessorTable; }
         }
 
@@ -1180,7 +1180,7 @@ namespace Google.Protobuf.Reflection {
           get { return global::Google.Protobuf.Reflection.DescriptorProto.Descriptor.NestedTypes[1]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_DescriptorProto_ReservedRange__FieldAccessorTable; }
         }
 
@@ -1331,7 +1331,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[3]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_FieldDescriptorProto__FieldAccessorTable; }
     }
 
@@ -1706,7 +1706,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[4]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_OneofDescriptorProto__FieldAccessorTable; }
     }
 
@@ -1825,7 +1825,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[5]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_EnumDescriptorProto__FieldAccessorTable; }
     }
 
@@ -1997,7 +1997,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[6]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_EnumValueDescriptorProto__FieldAccessorTable; }
     }
 
@@ -2177,7 +2177,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[7]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_ServiceDescriptorProto__FieldAccessorTable; }
     }
 
@@ -2349,7 +2349,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[8]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_MethodDescriptorProto__FieldAccessorTable; }
     }
 
@@ -2610,7 +2610,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[9]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_FileOptions__FieldAccessorTable; }
     }
 
@@ -3111,7 +3111,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[10]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_MessageOptions__FieldAccessorTable; }
     }
 
@@ -3330,7 +3330,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[11]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_FieldOptions__FieldAccessorTable; }
     }
 
@@ -3621,7 +3621,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[12]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_EnumOptions__FieldAccessorTable; }
     }
 
@@ -3786,7 +3786,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[13]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_EnumValueOptions__FieldAccessorTable; }
     }
 
@@ -3924,7 +3924,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[14]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_ServiceOptions__FieldAccessorTable; }
     }
 
@@ -4062,7 +4062,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[15]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_MethodOptions__FieldAccessorTable; }
     }
 
@@ -4200,7 +4200,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[16]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption__FieldAccessorTable; }
     }
 
@@ -4474,7 +4474,7 @@ namespace Google.Protobuf.Reflection {
           get { return global::Google.Protobuf.Reflection.UninterpretedOption.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_UninterpretedOption_NamePart__FieldAccessorTable; }
         }
 
@@ -4625,7 +4625,7 @@ namespace Google.Protobuf.Reflection {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.Descriptor.MessageTypes[17]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo__FieldAccessorTable; }
     }
 
@@ -4737,7 +4737,7 @@ namespace Google.Protobuf.Reflection {
           get { return global::Google.Protobuf.Reflection.SourceCodeInfo.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.Reflection.DescriptorProtoFile.internal__static_google_protobuf_SourceCodeInfo_Location__FieldAccessorTable; }
         }
 

@@ -102,7 +102,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[0]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_Issue307__FieldAccessorTable; }
     }
 
@@ -195,7 +195,7 @@ namespace UnitTest.Issues.TestProtos {
           get { return global::UnitTest.Issues.TestProtos.Issue307.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_Issue307_NestedOnce__FieldAccessorTable; }
         }
 
@@ -288,7 +288,7 @@ namespace UnitTest.Issues.TestProtos {
               get { return global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Descriptor.NestedTypes[0]; }
             }
 
-            public pbr::FieldAccessorTable Fields {
+            pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
               get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_Issue307_NestedOnce_NestedTwice__FieldAccessorTable; }
             }
 
@@ -390,7 +390,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[1]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable; }
     }
 
@@ -547,7 +547,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[2]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_DeprecatedChild__FieldAccessorTable; }
     }
 
@@ -639,7 +639,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[3]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable; }
     }
 
@@ -883,7 +883,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[4]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_ItemField__FieldAccessorTable; }
     }
 

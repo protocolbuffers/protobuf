@@ -352,7 +352,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[0]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap__FieldAccessorTable; }
     }
 
@@ -768,7 +768,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32Int32Entry__FieldAccessorTable; }
         }
 
@@ -914,7 +914,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[1]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt64Int64Entry__FieldAccessorTable; }
         }
 
@@ -1060,7 +1060,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[2]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapUint32Uint32Entry__FieldAccessorTable; }
         }
 
@@ -1206,7 +1206,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[3]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapUint64Uint64Entry__FieldAccessorTable; }
         }
 
@@ -1352,7 +1352,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[4]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapSint32Sint32Entry__FieldAccessorTable; }
         }
 
@@ -1498,7 +1498,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[5]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapSint64Sint64Entry__FieldAccessorTable; }
         }
 
@@ -1644,7 +1644,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[6]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapFixed32Fixed32Entry__FieldAccessorTable; }
         }
 
@@ -1790,7 +1790,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[7]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapFixed64Fixed64Entry__FieldAccessorTable; }
         }
 
@@ -1936,7 +1936,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[8]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapSfixed32Sfixed32Entry__FieldAccessorTable; }
         }
 
@@ -2082,7 +2082,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[9]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapSfixed64Sfixed64Entry__FieldAccessorTable; }
         }
 
@@ -2228,7 +2228,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[10]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32FloatEntry__FieldAccessorTable; }
         }
 
@@ -2374,7 +2374,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[11]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32DoubleEntry__FieldAccessorTable; }
         }
 
@@ -2520,7 +2520,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[12]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapBoolBoolEntry__FieldAccessorTable; }
         }
 
@@ -2666,7 +2666,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[13]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapStringStringEntry__FieldAccessorTable; }
         }
 
@@ -2812,7 +2812,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[14]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32BytesEntry__FieldAccessorTable; }
         }
 
@@ -2958,7 +2958,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[15]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32EnumEntry__FieldAccessorTable; }
         }
 
@@ -3104,7 +3104,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMap.Descriptor.NestedTypes[16]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMap_MapInt32ForeignMessageEntry__FieldAccessorTable; }
         }
 
@@ -3262,7 +3262,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[1]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMapSubmessage__FieldAccessorTable; }
     }
 
@@ -3388,7 +3388,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[2]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMessageMap__FieldAccessorTable; }
     }
 
@@ -3500,7 +3500,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestMessageMap.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestMessageMap_MapInt32MessageEntry__FieldAccessorTable; }
         }
 
@@ -3658,7 +3658,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[3]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestSameTypeMap__FieldAccessorTable; }
     }
 
@@ -3789,7 +3789,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestSameTypeMap.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestSameTypeMap_Map1Entry__FieldAccessorTable; }
         }
 
@@ -3935,7 +3935,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestSameTypeMap.Descriptor.NestedTypes[1]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestSameTypeMap_Map2Entry__FieldAccessorTable; }
         }
 
@@ -4086,7 +4086,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[4]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap__FieldAccessorTable; }
     }
 
@@ -4464,7 +4464,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32Int32Entry__FieldAccessorTable; }
         }
 
@@ -4610,7 +4610,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[1]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt64Int64Entry__FieldAccessorTable; }
         }
 
@@ -4756,7 +4756,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[2]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapUint32Uint32Entry__FieldAccessorTable; }
         }
 
@@ -4902,7 +4902,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[3]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapUint64Uint64Entry__FieldAccessorTable; }
         }
 
@@ -5048,7 +5048,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[4]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapSint32Sint32Entry__FieldAccessorTable; }
         }
 
@@ -5194,7 +5194,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[5]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapSint64Sint64Entry__FieldAccessorTable; }
         }
 
@@ -5340,7 +5340,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[6]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapFixed32Fixed32Entry__FieldAccessorTable; }
         }
 
@@ -5486,7 +5486,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[7]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapFixed64Fixed64Entry__FieldAccessorTable; }
         }
 
@@ -5632,7 +5632,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[8]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapSfixed32Sfixed32Entry__FieldAccessorTable; }
         }
 
@@ -5778,7 +5778,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[9]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapSfixed64Sfixed64Entry__FieldAccessorTable; }
         }
 
@@ -5924,7 +5924,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[10]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32FloatEntry__FieldAccessorTable; }
         }
 
@@ -6070,7 +6070,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[11]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32DoubleEntry__FieldAccessorTable; }
         }
 
@@ -6216,7 +6216,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[12]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapBoolBoolEntry__FieldAccessorTable; }
         }
 
@@ -6362,7 +6362,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[13]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32EnumEntry__FieldAccessorTable; }
         }
 
@@ -6508,7 +6508,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestArenaMap.Descriptor.NestedTypes[14]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_TestArenaMap_MapInt32ForeignMessageEntry__FieldAccessorTable; }
         }
 
@@ -6666,7 +6666,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[5]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_MessageContainingEnumCalledType__FieldAccessorTable; }
     }
 
@@ -6782,7 +6782,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_MessageContainingEnumCalledType_TypeEntry__FieldAccessorTable; }
         }
 
@@ -6940,7 +6940,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[6]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_MessageContainingMapCalledEntry__FieldAccessorTable; }
     }
 
@@ -7052,7 +7052,7 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.MessageContainingMapCalledEntry.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.internal__static_protobuf_unittest_MessageContainingMapCalledEntry_EntryEntry__FieldAccessorTable; }
         }
 

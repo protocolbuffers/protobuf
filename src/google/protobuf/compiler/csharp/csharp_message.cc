@@ -215,7 +215,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "  get { return $descriptor_accessor$; }\n"
     "}\n"
     "\n"
-    "public pbr::FieldAccessorTable Fields {\n"
+    "pbr::FieldAccessorTable pb::IReflectedMessage.Fields {\n"
     "  get { return $umbrella_class_name$.internal__$identifier$__FieldAccessorTable; }\n"
     "}\n"
     "\n"

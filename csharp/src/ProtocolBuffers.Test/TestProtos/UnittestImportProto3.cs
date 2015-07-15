@@ -65,7 +65,7 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestImportProto3.Descriptor.MessageTypes[0]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.TestProtos.UnittestImportProto3.internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable; }
     }
 

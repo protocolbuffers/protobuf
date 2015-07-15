@@ -63,7 +63,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.Descriptor.MessageTypes[0]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.internal__static_tutorial_Person__FieldAccessorTable; }
     }
 
@@ -262,7 +262,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           get { return global::Google.Protobuf.Examples.AddressBook.Person.Descriptor.NestedTypes[0]; }
         }
 
-        public pbr::FieldAccessorTable Fields {
+        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
           get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable; }
         }
 
@@ -413,7 +413,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.Descriptor.MessageTypes[1]; }
     }
 
-    public pbr::FieldAccessorTable Fields {
+    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
       get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.internal__static_tutorial_AddressBook__FieldAccessorTable; }
     }
 
