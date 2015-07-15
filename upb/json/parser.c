@@ -68,7 +68,7 @@ struct upb_json_parser {
   upb_jsonparser_frame *top;
   upb_jsonparser_frame *limit;
 
-  upb_status *status;
+  upb_status status;
 
   /* Ragel's internal parsing stack for the parsing state machine. */
   int current_state;
@@ -115,7 +115,8 @@ static upb_selector_t parser_getsel(upb_json_parser *p) {
 
 static bool check_stack(upb_json_parser *p) {
   if ((p->top + 1) == p->limit) {
-    upb_status_seterrmsg(p->status, "Nesting too deep");
+    upb_status_seterrmsg(&p->status, "Nesting too deep");
+    upb_env_reporterror(p->env, &p->status);
     return false;
   }
 
@@ -197,9 +198,10 @@ static bool base64_push(upb_json_parser *p, upb_selector_t sel, const char *ptr,
     char output[3];
 
     if (limit - ptr < 4) {
-      upb_status_seterrf(p->status,
+      upb_status_seterrf(&p->status,
                          "Base64 input for bytes field not a multiple of 4: %s",
                          upb_fielddef_name(p->top->f));
+      upb_env_reporterror(p->env, &p->status);
       return false;
     }
 
@@ -223,9 +225,10 @@ static bool base64_push(upb_json_parser *p, upb_selector_t sel, const char *ptr,
 otherchar:
   if (nonbase64(ptr[0]) || nonbase64(ptr[1]) || nonbase64(ptr[2]) ||
       nonbase64(ptr[3]) ) {
-    upb_status_seterrf(p->status,
+    upb_status_seterrf(&p->status,
                        "Non-base64 characters in bytes field: %s",
                        upb_fielddef_name(p->top->f));
+    upb_env_reporterror(p->env, &p->status);
     return false;
   } if (ptr[2] == '=') {
     uint32_t val;
@@ -263,10 +266,11 @@ otherchar:
   }
 
 badpadding:
-  upb_status_seterrf(p->status,
+  upb_status_seterrf(&p->status,
                      "Incorrect base64 padding for field: %s (%.*s)",
                      upb_fielddef_name(p->top->f),
                      4, ptr);
+  upb_env_reporterror(p->env, &p->status);
   return false;
 }
 
@@ -313,7 +317,8 @@ static bool accumulate_realloc(upb_json_parser *p, size_t need) {
 
   mem = upb_env_realloc(p->env, p->accumulate_buf, old_size, new_size);
   if (!mem) {
-    upb_status_seterrmsg(p->status, "Out of memory allocating buffer.");
+    upb_status_seterrmsg(&p->status, "Out of memory allocating buffer.");
+    upb_env_reporterror(p->env, &p->status);
     return false;
   }
 
@@ -336,7 +341,8 @@ static bool accumulate_append(upb_json_parser *p, const char *buf, size_t len,
   }
 
   if (!checked_add(p->accumulated_len, len, &need)) {
-    upb_status_seterrmsg(p->status, "Integer overflow.");
+    upb_status_seterrmsg(&p->status, "Integer overflow.");
+    upb_env_reporterror(p->env, &p->status);
     return false;
   }
 
@@ -414,7 +420,8 @@ static bool multipart_text(upb_json_parser *p, const char *buf, size_t len,
   switch (p->multipart_state) {
     case MULTIPART_INACTIVE:
       upb_status_seterrmsg(
-          p->status, "Internal error: unexpected state MULTIPART_INACTIVE");
+          &p->status, "Internal error: unexpected state MULTIPART_INACTIVE");
+      upb_env_reporterror(p->env, &p->status);
       return false;
 
     case MULTIPART_ACCUMULATE:
@@ -673,7 +680,8 @@ static bool parse_number(upb_json_parser *p) {
   return true;
 
 err:
-  upb_status_seterrf(p->status, "error parsing number: %s", buf);
+  upb_status_seterrf(&p->status, "error parsing number: %s", buf);
+  upb_env_reporterror(p->env, &p->status);
   multipart_end(p);
   return false;
 }
@@ -682,9 +690,10 @@ static bool parser_putbool(upb_json_parser *p, bool val) {
   bool ok;
 
   if (upb_fielddef_type(p->top->f) != UPB_TYPE_BOOL) {
-    upb_status_seterrf(p->status,
+    upb_status_seterrf(&p->status,
                        "Boolean value specified for non-bool field: %s",
                        upb_fielddef_name(p->top->f));
+    upb_env_reporterror(p->env, &p->status);
     return false;
   }
 
@@ -735,9 +744,10 @@ static bool start_stringval(upb_json_parser *p) {
     multipart_startaccum(p);
     return true;
   } else {
-    upb_status_seterrf(p->status,
+    upb_status_seterrf(&p->status,
                        "String specified for non-string/non-enum field: %s",
                        upb_fielddef_name(p->top->f));
+    upb_env_reporterror(p->env, &p->status);
     return false;
   }
 }
@@ -775,7 +785,8 @@ static bool end_stringval(upb_json_parser *p) {
         upb_selector_t sel = parser_getsel(p);
         upb_sink_putint32(&p->top->sink, sel, int_val);
       } else {
-        upb_status_seterrf(p->status, "Enum value unknown: '%.*s'", len, buf);
+        upb_status_seterrf(&p->status, "Enum value unknown: '%.*s'", len, buf);
+        upb_env_reporterror(p->env, &p->status);
       }
 
       break;
@@ -783,7 +794,8 @@ static bool end_stringval(upb_json_parser *p) {
 
     default:
       assert(false);
-      upb_status_seterrmsg(p->status, "Internal error in JSON decoder");
+      upb_status_seterrmsg(&p->status, "Internal error in JSON decoder");
+      upb_env_reporterror(p->env, &p->status);
       ok = false;
       break;
   }
@@ -813,7 +825,8 @@ static bool parse_mapentry_key(upb_json_parser *p) {
 
   p->top->f = upb_msgdef_itof(p->top->m, UPB_MAPENTRY_KEY);
   if (p->top->f == NULL) {
-    upb_status_seterrmsg(p->status, "mapentry message has no key");
+    upb_status_seterrmsg(&p->status, "mapentry message has no key");
+    upb_env_reporterror(p->env, &p->status);
     return false;
   }
   switch (upb_fielddef_type(p->top->f)) {
@@ -836,8 +849,9 @@ static bool parse_mapentry_key(upb_json_parser *p) {
           return false;
         }
       } else {
-        upb_status_seterrmsg(p->status,
+        upb_status_seterrmsg(&p->status,
                              "Map bool key not 'true' or 'false'");
+        upb_env_reporterror(p->env, &p->status);
         return false;
       }
       multipart_end(p);
@@ -855,7 +869,8 @@ static bool parse_mapentry_key(upb_json_parser *p) {
       break;
     }
     default:
-      upb_status_seterrmsg(p->status, "Invalid field type for map key");
+      upb_status_seterrmsg(&p->status, "Invalid field type for map key");
+      upb_env_reporterror(p->env, &p->status);
       return false;
   }
 
@@ -910,7 +925,8 @@ static bool handle_mapentry(upb_json_parser *p) {
   p->top->is_mapentry = true;  /* set up to pop frame after value is parsed. */
   p->top->mapfield = mapfield;
   if (p->top->f == NULL) {
-    upb_status_seterrmsg(p->status, "mapentry message has no value");
+    upb_status_seterrmsg(&p->status, "mapentry message has no value");
+    upb_env_reporterror(p->env, &p->status);
     return false;
   }
 
@@ -930,7 +946,8 @@ static bool end_membername(upb_json_parser *p) {
     if (!f) {
       /* TODO(haberman): Ignore unknown fields if requested/configured to do
        * so. */
-      upb_status_seterrf(p->status, "No such field: %.*s\n", (int)len, buf);
+      upb_status_seterrf(&p->status, "No such field: %.*s\n", (int)len, buf);
+      upb_env_reporterror(p->env, &p->status);
       return false;
     }
 
@@ -1006,9 +1023,10 @@ static bool start_subobject(upb_json_parser *p) {
 
     return true;
   } else {
-    upb_status_seterrf(p->status,
+    upb_status_seterrf(&p->status,
                        "Object specified for non-message/group field: %s",
                        upb_fielddef_name(p->top->f));
+    upb_env_reporterror(p->env, &p->status);
     return false;
   }
 }
@@ -1034,9 +1052,10 @@ static bool start_array(upb_json_parser *p) {
   assert(p->top->f);
 
   if (!upb_fielddef_isseq(p->top->f)) {
-    upb_status_seterrf(p->status,
+    upb_status_seterrf(&p->status,
                        "Array specified for non-repeated field: %s",
                        upb_fielddef_name(p->top->f));
+    upb_env_reporterror(p->env, &p->status);
     return false;
   }
 
@@ -1073,7 +1092,11 @@ static void start_object(upb_json_parser *p) {
 static void end_object(upb_json_parser *p) {
   if (!p->top->is_map) {
     upb_status status;
+    upb_status_clear(&status);
     upb_sink_endmsg(&p->top->sink, &status);
+    if (!upb_ok(&status)) {
+      upb_env_reporterror(p->env, &status);
+    }
   }
 }
 
@@ -1099,11 +1122,11 @@ static void end_object(upb_json_parser *p) {
  * final state once, when the closing '"' is seen. */
 
 
-#line 1195 "upb/json/parser.rl"
+#line 1218 "upb/json/parser.rl"
 
 
 
-#line 1107 "upb/json/parser.c"
+#line 1130 "upb/json/parser.c"
 static const char _json_actions[] = {
 	0, 1, 0, 1, 2, 1, 3, 1, 
 	5, 1, 6, 1, 7, 1, 8, 1, 
@@ -1252,7 +1275,7 @@ static const int json_en_value_machine = 27;
 static const int json_en_main = 1;
 
 
-#line 1198 "upb/json/parser.rl"
+#line 1221 "upb/json/parser.rl"
 
 size_t parse(void *closure, const void *hd, const char *buf, size_t size,
              const upb_bufhandle *handle) {
@@ -1274,7 +1297,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   capture_resume(parser, buf);
 
   
-#line 1278 "upb/json/parser.c"
+#line 1301 "upb/json/parser.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -1349,118 +1372,118 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 1110 "upb/json/parser.rl"
+#line 1133 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 1:
-#line 1111 "upb/json/parser.rl"
+#line 1134 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 10; goto _again;} }
 	break;
 	case 2:
-#line 1115 "upb/json/parser.rl"
+#line 1138 "upb/json/parser.rl"
 	{ start_text(parser, p); }
 	break;
 	case 3:
-#line 1116 "upb/json/parser.rl"
+#line 1139 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_text(parser, p)); }
 	break;
 	case 4:
-#line 1122 "upb/json/parser.rl"
+#line 1145 "upb/json/parser.rl"
 	{ start_hex(parser); }
 	break;
 	case 5:
-#line 1123 "upb/json/parser.rl"
+#line 1146 "upb/json/parser.rl"
 	{ hexdigit(parser, p); }
 	break;
 	case 6:
-#line 1124 "upb/json/parser.rl"
+#line 1147 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_hex(parser)); }
 	break;
 	case 7:
-#line 1130 "upb/json/parser.rl"
+#line 1153 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(escape(parser, p)); }
 	break;
 	case 8:
-#line 1136 "upb/json/parser.rl"
+#line 1159 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 9:
-#line 1139 "upb/json/parser.rl"
+#line 1162 "upb/json/parser.rl"
 	{ {stack[top++] = cs; cs = 19; goto _again;} }
 	break;
 	case 10:
-#line 1141 "upb/json/parser.rl"
+#line 1164 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 27; goto _again;} }
 	break;
 	case 11:
-#line 1146 "upb/json/parser.rl"
+#line 1169 "upb/json/parser.rl"
 	{ start_member(parser); }
 	break;
 	case 12:
-#line 1147 "upb/json/parser.rl"
+#line 1170 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_membername(parser)); }
 	break;
 	case 13:
-#line 1150 "upb/json/parser.rl"
+#line 1173 "upb/json/parser.rl"
 	{ end_member(parser); }
 	break;
 	case 14:
-#line 1156 "upb/json/parser.rl"
+#line 1179 "upb/json/parser.rl"
 	{ start_object(parser); }
 	break;
 	case 15:
-#line 1159 "upb/json/parser.rl"
+#line 1182 "upb/json/parser.rl"
 	{ end_object(parser); }
 	break;
 	case 16:
-#line 1165 "upb/json/parser.rl"
+#line 1188 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_array(parser)); }
 	break;
 	case 17:
-#line 1169 "upb/json/parser.rl"
+#line 1192 "upb/json/parser.rl"
 	{ end_array(parser); }
 	break;
 	case 18:
-#line 1174 "upb/json/parser.rl"
+#line 1197 "upb/json/parser.rl"
 	{ start_number(parser, p); }
 	break;
 	case 19:
-#line 1175 "upb/json/parser.rl"
+#line 1198 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
 	case 20:
-#line 1177 "upb/json/parser.rl"
+#line 1200 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_stringval(parser)); }
 	break;
 	case 21:
-#line 1178 "upb/json/parser.rl"
+#line 1201 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_stringval(parser)); }
 	break;
 	case 22:
-#line 1180 "upb/json/parser.rl"
+#line 1203 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(parser_putbool(parser, true)); }
 	break;
 	case 23:
-#line 1182 "upb/json/parser.rl"
+#line 1205 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(parser_putbool(parser, false)); }
 	break;
 	case 24:
-#line 1184 "upb/json/parser.rl"
+#line 1207 "upb/json/parser.rl"
 	{ /* null value */ }
 	break;
 	case 25:
-#line 1186 "upb/json/parser.rl"
+#line 1209 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_subobject(parser)); }
 	break;
 	case 26:
-#line 1187 "upb/json/parser.rl"
+#line 1210 "upb/json/parser.rl"
 	{ end_subobject(parser); }
 	break;
 	case 27:
-#line 1192 "upb/json/parser.rl"
+#line 1215 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
-#line 1464 "upb/json/parser.c"
+#line 1487 "upb/json/parser.c"
 		}
 	}
 
@@ -1473,10 +1496,11 @@ _again:
 	_out: {}
 	}
 
-#line 1219 "upb/json/parser.rl"
+#line 1242 "upb/json/parser.rl"
 
   if (p != pe) {
-    upb_status_seterrf(parser->status, "Parse error at %s\n", p);
+    upb_status_seterrf(&parser->status, "Parse error at %s\n", p);
+    upb_env_reporterror(parser->env, &parser->status);
   } else {
     capture_suspend(parser, &p);
   }
@@ -1513,19 +1537,20 @@ static void json_parser_reset(upb_json_parser *p) {
 
   /* Emit Ragel initialization of the parser. */
   
-#line 1517 "upb/json/parser.c"
+#line 1541 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
 	}
 
-#line 1258 "upb/json/parser.rl"
+#line 1282 "upb/json/parser.rl"
   p->current_state = cs;
   p->parser_top = top;
   accumulate_clear(p);
   p->multipart_state = MULTIPART_INACTIVE;
   p->capture = NULL;
   p->accumulated = NULL;
+  upb_status_clear(&p->status);
 }
 
 
@@ -1551,8 +1576,8 @@ upb_json_parser *upb_json_parser_create(upb_env *env, upb_sink *output) {
   upb_sink_reset(&p->top->sink, output->handlers, output->closure);
   p->top->m = upb_handlers_msgdef(output->handlers);
 
-  /* If this fails, uncomment and increase the value in parser.h.
-   * fprintf(stderr, "%zd\n", upb_env_bytesallocated(env) - size_before); */
+  /* If this fails, uncomment and increase the value in parser.h. */
+  /* fprintf(stderr, "%zd\n", upb_env_bytesallocated(env) - size_before); */
   assert(upb_env_bytesallocated(env) - size_before <= UPB_JSON_PARSER_SIZE);
   return p;
 }

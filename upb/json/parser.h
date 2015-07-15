@@ -27,7 +27,7 @@ UPB_DECLARE_TYPE(upb::json::Parser, upb_json_parser)
  * constructed.  This hint may be an overestimate for some build configurations.
  * But if the parser library is upgraded without recompiling the application,
  * it may be an underestimate. */
-#define UPB_JSON_PARSER_SIZE 3568
+#define UPB_JSON_PARSER_SIZE 3704
 
 #ifdef __cplusplus
 
