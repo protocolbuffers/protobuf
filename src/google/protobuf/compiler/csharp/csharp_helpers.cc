@@ -52,6 +52,7 @@
 #include <google/protobuf/compiler/csharp/csharp_repeated_enum_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_message_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h>
+#include <google/protobuf/compiler/csharp/csharp_wrapper_field.h>
 
 namespace google {
 namespace protobuf {
@@ -366,31 +367,39 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
           return new RepeatedMessageFieldGenerator(descriptor, fieldOrdinal);
         }
       } else {
-	if (descriptor->containing_oneof()) {
-	  return new MessageOneofFieldGenerator(descriptor, fieldOrdinal);
-	} else {
-	  return new MessageFieldGenerator(descriptor, fieldOrdinal);
-	}
+        if (IsWrapperType(descriptor)) {
+          if (descriptor->containing_oneof()) {
+            return new WrapperOneofFieldGenerator(descriptor, fieldOrdinal);
+          } else {
+            return new WrapperFieldGenerator(descriptor, fieldOrdinal);
+          }
+        } else {
+          if (descriptor->containing_oneof()) {
+            return new MessageOneofFieldGenerator(descriptor, fieldOrdinal);
+          } else {
+            return new MessageFieldGenerator(descriptor, fieldOrdinal);
+          }
+        }
       }
     case FieldDescriptor::TYPE_ENUM:
       if (descriptor->is_repeated()) {
         return new RepeatedEnumFieldGenerator(descriptor, fieldOrdinal);
       } else {
-	if (descriptor->containing_oneof()) {
-	  return new EnumOneofFieldGenerator(descriptor, fieldOrdinal);
-	} else {
-	  return new EnumFieldGenerator(descriptor, fieldOrdinal);
-	}
+        if (descriptor->containing_oneof()) {
+          return new EnumOneofFieldGenerator(descriptor, fieldOrdinal);
+        } else {
+          return new EnumFieldGenerator(descriptor, fieldOrdinal);
+        }
       }
     default:
       if (descriptor->is_repeated()) {
         return new RepeatedPrimitiveFieldGenerator(descriptor, fieldOrdinal);
       } else {
-	if (descriptor->containing_oneof()) {
-	  return new PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal);
-	} else {
-	  return new PrimitiveFieldGenerator(descriptor, fieldOrdinal);
-	}
+        if (descriptor->containing_oneof()) {
+          return new PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal);
+        } else {
+          return new PrimitiveFieldGenerator(descriptor, fieldOrdinal);
+        }
       }
   }
 }
