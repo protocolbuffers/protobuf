@@ -110,7 +110,6 @@ clean_leave_profile:
 	@rm -rf obj lib
 	@rm -f tests/google_message?.h
 	@rm -f $(TESTS) tests/testmain.o tests/t.*
-	@rm -f upb/descriptor/descriptor.pb
 	@rm -rf tools/upbc deps
 	@rm -rf upb/bindings/python/build
 	@rm -f upb/bindings/ruby/Makefile
