@@ -105,6 +105,12 @@ uint FixedMakeTag(const FieldDescriptor* descriptor);
 
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
 
+// Determines whether the given message is a map entry message, i.e. one implicitly created
+// by protoc due to a map<key, value> field.
+inline bool IsMapEntryMessage(const Descriptor* descriptor) {
+  return descriptor->options().map_entry();
+}
+
 // Determines whether we're generating code for the proto representation of descriptors etc,
 // for use in the runtime. This is the only type which is allowed to use proto2 syntax,
 // and it generates internal classes.

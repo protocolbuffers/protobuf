@@ -121,6 +121,9 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
       "full_class_name", full_class_name());
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    // Don't generate accessor table fields for maps...
+    if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
+
     MessageGenerator messageGenerator(descriptor_->nested_type(i));
     messageGenerator.GenerateStaticVariables(printer);
   }
@@ -159,8 +162,10 @@ void MessageGenerator::GenerateStaticVariableInitializers(io::Printer* printer) 
   }
   printer->Print("});\n");
 
-  // Generate static member initializers for all nested types.
+  // Generate static member initializers for all non-map-entry nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
+
     MessageGenerator messageGenerator(descriptor_->nested_type(i));
     messageGenerator.GenerateStaticVariableInitializers(printer);
   }
@@ -285,7 +290,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   GenerateMergingMethods(printer);
 
   // Nested messages and enums
-  if (descriptor_->enum_type_count() + descriptor_->nested_type_count() > 0) {
+  if (HasNestedGeneratedTypes()) {
     printer->Print("#region Nested types\n"
 		   "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n");
     WriteGeneratedCodeAttributes(printer);
@@ -296,6 +301,9 @@ void MessageGenerator::Generate(io::Printer* printer) {
       enumGenerator.Generate(printer);
     }
     for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+      // Don't generate nested types for maps...
+      if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
+
       MessageGenerator messageGenerator(descriptor_->nested_type(i));
       messageGenerator.Generate(printer);
     }
@@ -308,6 +316,21 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
   printer->Print("}\n");
   printer->Print("\n");
+}
+
+// Helper to work out whether we need to generate a class to hold nested types/enums.
+// Only tricky because we don't want to generate map entry types.
+bool MessageGenerator::HasNestedGeneratedTypes()
+{
+  if (descriptor_->enum_type_count() > 0) {
+    return true;
+  }
+  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    if (!IsMapEntryMessage(descriptor_->nested_type(i))) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void MessageGenerator::GenerateCloningCode(io::Printer* printer) {

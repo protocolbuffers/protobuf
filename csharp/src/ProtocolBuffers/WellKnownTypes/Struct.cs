@@ -16,7 +16,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
       #region Static variables
       internal static pbr::FieldAccessorTable internal__static_google_protobuf_Struct__FieldAccessorTable;
-      internal static pbr::FieldAccessorTable internal__static_google_protobuf_Struct_FieldsEntry__FieldAccessorTable;
       internal static pbr::FieldAccessorTable internal__static_google_protobuf_Value__FieldAccessorTable;
       internal static pbr::FieldAccessorTable internal__static_google_protobuf_ListValue__FieldAccessorTable;
       #endregion
@@ -49,9 +48,6 @@ namespace Google.Protobuf.WellKnownTypes {
         internal__static_google_protobuf_Struct__FieldAccessorTable = 
             new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.Struct), descriptor.MessageTypes[0],
                 new string[] { "Fields", }, new string[] { });
-        internal__static_google_protobuf_Struct_FieldsEntry__FieldAccessorTable = 
-            new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.Struct.Types.FieldsEntry), descriptor.MessageTypes[0].NestedTypes[0],
-                new string[] { "Key", "Value", }, new string[] { });
         internal__static_google_protobuf_Value__FieldAccessorTable = 
             new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.Value), descriptor.MessageTypes[1],
                 new string[] { "NullValue", "NumberValue", "StringValue", "BoolValue", "StructValue", "ListValue", }, new string[] { "Kind", });
@@ -179,165 +175,6 @@ namespace Google.Protobuf.WellKnownTypes {
         }
       }
     }
-
-    #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public static partial class Types {
-      [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-      public sealed partial class FieldsEntry : pb::IMessage<FieldsEntry> {
-        private static readonly pb::MessageParser<FieldsEntry> _parser = new pb::MessageParser<FieldsEntry>(() => new FieldsEntry());
-        public static pb::MessageParser<FieldsEntry> Parser { get { return _parser; } }
-
-        private static readonly string[] _fieldNames = new string[] { "key", "value" };
-        private static readonly uint[] _fieldTags = new uint[] { 10, 18 };
-        public static pbr::MessageDescriptor Descriptor {
-          get { return global::Google.Protobuf.WellKnownTypes.Struct.Descriptor.NestedTypes[0]; }
-        }
-
-        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-          get { return global::Google.Protobuf.WellKnownTypes.Proto.Struct.internal__static_google_protobuf_Struct_FieldsEntry__FieldAccessorTable; }
-        }
-
-        private bool _frozen = false;
-        public bool IsFrozen { get { return _frozen; } }
-
-        public FieldsEntry() {
-          OnConstruction();
-        }
-
-        partial void OnConstruction();
-
-        public FieldsEntry(FieldsEntry other) : this() {
-          key_ = other.key_;
-          Value = other.value_ != null ? other.Value.Clone() : null;
-        }
-
-        public FieldsEntry Clone() {
-          return new FieldsEntry(this);
-        }
-
-        public void Freeze() {
-          if (IsFrozen) {
-            return;
-          }
-          _frozen = true;
-          if (value_ != null) Value.Freeze();
-        }
-
-        public const int KeyFieldNumber = 1;
-        private string key_ = "";
-        public string Key {
-          get { return key_; }
-          set {
-            pb::Freezable.CheckMutable(this);
-            key_ = value ?? "";
-          }
-        }
-
-        public const int ValueFieldNumber = 2;
-        private global::Google.Protobuf.WellKnownTypes.Value value_;
-        public global::Google.Protobuf.WellKnownTypes.Value Value {
-          get { return value_; }
-          set {
-            pb::Freezable.CheckMutable(this);
-            value_ = value;
-          }
-        }
-
-        public override bool Equals(object other) {
-          return Equals(other as FieldsEntry);
-        }
-
-        public bool Equals(FieldsEntry other) {
-          if (ReferenceEquals(other, null)) {
-            return false;
-          }
-          if (ReferenceEquals(other, this)) {
-            return true;
-          }
-          if (Key != other.Key) return false;
-          if (!object.Equals(Value, other.Value)) return false;
-          return true;
-        }
-
-        public override int GetHashCode() {
-          int hash = 1;
-          if (Key.Length != 0) hash ^= Key.GetHashCode();
-          if (value_ != null) hash ^= Value.GetHashCode();
-          return hash;
-        }
-
-        public override string ToString() {
-          return pb::JsonFormatter.Default.Format(this);
-        }
-
-        public void WriteTo(pb::CodedOutputStream output) {
-          if (Key.Length != 0) {
-            output.WriteRawTag(10);
-            output.WriteString(Key);
-          }
-          if (value_ != null) {
-            output.WriteRawTag(18);
-            output.WriteMessage(Value);
-          }
-        }
-
-        public int CalculateSize() {
-          int size = 0;
-          if (Key.Length != 0) {
-            size += 1 + pb::CodedOutputStream.ComputeStringSize(Key);
-          }
-          if (value_ != null) {
-            size += 1 + pb::CodedOutputStream.ComputeMessageSize(Value);
-          }
-          return size;
-        }
-
-        public void MergeFrom(FieldsEntry other) {
-          if (other == null) {
-            return;
-          }
-          if (other.Key.Length != 0) {
-            Key = other.Key;
-          }
-          if (other.value_ != null) {
-            if (value_ == null) {
-              value_ = new global::Google.Protobuf.WellKnownTypes.Value();
-            }
-            Value.MergeFrom(other.Value);
-          }
-        }
-
-        public void MergeFrom(pb::CodedInputStream input) {
-          uint tag;
-          while (input.ReadTag(out tag)) {
-            switch(tag) {
-              case 0:
-                throw pb::InvalidProtocolBufferException.InvalidTag();
-              default:
-                if (pb::WireFormat.IsEndGroupTag(tag)) {
-                  return;
-                }
-                break;
-              case 10: {
-                Key = input.ReadString();
-                break;
-              }
-              case 18: {
-                if (value_ == null) {
-                  value_ = new global::Google.Protobuf.WellKnownTypes.Value();
-                }
-                input.ReadMessage(value_);
-                break;
-              }
-            }
-          }
-        }
-
-      }
-
-    }
-    #endregion
 
   }
 
