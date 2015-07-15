@@ -13,7 +13,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     optional :optional_double, :double, 6
     optional :optional_float, :float, 7
     optional :optional_string, :string, 8
-    optional :optional_bytes, :string, 9
+    optional :optional_bytes, :bytes, 9
     optional :optional_enum, :enum, 10, "A.B.C.TestEnum"
     optional :optional_msg, :message, 11, "A.B.C.TestMessage"
     repeated :repeated_int32, :int32, 21
@@ -24,7 +24,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
     repeated :repeated_double, :double, 26
     repeated :repeated_float, :float, 27
     repeated :repeated_string, :string, 28
-    repeated :repeated_bytes, :string, 29
+    repeated :repeated_bytes, :bytes, 29
     repeated :repeated_enum, :enum, 30, "A.B.C.TestEnum"
     repeated :repeated_msg, :message, 31, "A.B.C.TestMessage"
     map :map_int32_string, :int32, :string, 61
@@ -47,7 +47,7 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
       optional :oneof_double, :double, 46
       optional :oneof_float, :float, 47
       optional :oneof_string, :string, 48
-      optional :oneof_bytes, :string, 49
+      optional :oneof_bytes, :bytes, 49
       optional :oneof_enum, :enum, 50, "A.B.C.TestEnum"
       optional :oneof_msg, :message, 51, "A.B.C.TestMessage"
     end

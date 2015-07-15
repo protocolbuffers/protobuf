@@ -9,7 +9,9 @@ test_version() {
     "rvm install $version && rvm use $version && \
      which ruby && \
      gem install bundler && bundle && \
-     rake test"
+     rake test && \
+     cd ../conformance && \
+     make test_ruby"
 }
 
 test_version $1

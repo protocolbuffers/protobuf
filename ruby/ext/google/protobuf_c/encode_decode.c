@@ -656,8 +656,10 @@ static bool env_error_func(void* ud, const upb_status* status) {
   // Free the env -- rb_raise will longjmp up the stack past the encode/decode
   // function so it would not otherwise have been freed.
   stackenv_uninit(se);
-  rb_raise(rb_eRuntimeError, se->ruby_error_template,
-           upb_status_errmsg(status));
+
+  // TODO(haberman): have a way to verify that this is actually a parse error,
+  // instead of just throwing "parse error" unconditionally.
+  rb_raise(cParseError, se->ruby_error_template, upb_status_errmsg(status));
   // Never reached: rb_raise() always longjmp()s up the stack, past all of our
   // code, back to Ruby.
   return false;
