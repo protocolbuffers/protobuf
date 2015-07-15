@@ -122,10 +122,10 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     // Don't generate accessor table fields for maps...
-    if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
-
-    MessageGenerator messageGenerator(descriptor_->nested_type(i));
-    messageGenerator.GenerateStaticVariables(printer);
+    if (!IsMapEntryMessage(descriptor_->nested_type(i))) {
+      MessageGenerator messageGenerator(descriptor_->nested_type(i));
+      messageGenerator.GenerateStaticVariables(printer);
+    }
   }
 }
 
@@ -164,10 +164,10 @@ void MessageGenerator::GenerateStaticVariableInitializers(io::Printer* printer) 
 
   // Generate static member initializers for all non-map-entry nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
-
-    MessageGenerator messageGenerator(descriptor_->nested_type(i));
-    messageGenerator.GenerateStaticVariableInitializers(printer);
+    if (!IsMapEntryMessage(descriptor_->nested_type(i))) {
+      MessageGenerator messageGenerator(descriptor_->nested_type(i));
+      messageGenerator.GenerateStaticVariableInitializers(printer);
+    }
   }
 }
 
@@ -302,10 +302,10 @@ void MessageGenerator::Generate(io::Printer* printer) {
     }
     for (int i = 0; i < descriptor_->nested_type_count(); i++) {
       // Don't generate nested types for maps...
-      if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
-
-      MessageGenerator messageGenerator(descriptor_->nested_type(i));
-      messageGenerator.Generate(printer);
+      if (!IsMapEntryMessage(descriptor_->nested_type(i))) {
+        MessageGenerator messageGenerator(descriptor_->nested_type(i));
+        messageGenerator.Generate(printer);
+      }
     }
     printer->Outdent();
     printer->Print("}\n"
