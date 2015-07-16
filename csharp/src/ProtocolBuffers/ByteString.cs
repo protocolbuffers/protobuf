@@ -134,6 +134,8 @@ namespace Google.Protobuf
         /// Constructs a ByteString from the given array. The contents
         /// are copied, so further modifications to the array will not
         /// be reflected in the returned ByteString.
+        /// This method can also be invoked in <c>ByteString.CopyFrom(0xaa, 0xbb, ...)</c> form
+        /// which is primarily useful for testing.
         /// </summary>
         public static ByteString CopyFrom(params byte[] bytes)
         {
