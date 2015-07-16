@@ -44,9 +44,9 @@ namespace Google.Protobuf.Collections
     public sealed class RepeatedField<T> : IList<T>, IList, IDeepCloneable<RepeatedField<T>>, IEquatable<RepeatedField<T>>, IFreezable
     {
         private static readonly T[] EmptyArray = new T[0];
+        private const int MinArraySize = 8;
 
         private bool frozen;
-        private const int MinArraySize = 8;
         private T[] array = EmptyArray;
         private int count = 0;
 
@@ -259,7 +259,6 @@ namespace Google.Protobuf.Collections
 
         public int Count { get { return count; } }
 
-        // TODO(jonskeet): If we implement freezing, make this reflect it.
         public bool IsReadOnly { get { return IsFrozen; } }
 
         public void Add(RepeatedField<T> values)

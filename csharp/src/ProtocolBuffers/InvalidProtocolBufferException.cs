@@ -79,12 +79,6 @@ namespace Google.Protobuf
                 "Protocol message end-group tag did not match expected tag.");
         }
 
-        internal static InvalidProtocolBufferException InvalidWireType()
-        {
-            return new InvalidProtocolBufferException(
-                "Protocol message tag had invalid wire type.");
-        }
-
         internal static InvalidProtocolBufferException RecursionLimitExceeded()
         {
             return new InvalidProtocolBufferException(
