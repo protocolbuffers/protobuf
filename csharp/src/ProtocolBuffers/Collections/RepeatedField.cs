@@ -288,14 +288,12 @@ namespace Google.Protobuf.Collections
             }
         }
 
-        public RepeatedField<T>.Enumerator GetEnumerator()
+        public IEnumerator<T> GetEnumerator()
         {
-            return new Enumerator(this);
-        }
-
-        IEnumerator<T> IEnumerable<T>.GetEnumerator()
-        {
-            return GetEnumerator();
+            for (int i = 0; i < count; i++)
+            {
+                yield return array[i];
+            }
         }
 
         public override bool Equals(object obj)
@@ -467,55 +465,6 @@ namespace Google.Protobuf.Collections
             }
             Remove((T)value);
         }
-        #endregion
-
-        public struct Enumerator : IEnumerator<T>
-        {
-            private int index;
-            private readonly RepeatedField<T> field;
-
-            public Enumerator(RepeatedField<T> field)
-            {
-                this.field = field;
-                this.index = -1;
-            }
-
-            public bool MoveNext()
-            {
-                if (index + 1 >= field.Count)
-                {
-                    index = field.Count;
-                    return false;
-                }
-                index++;
-                return true;
-            }
-
-            public void Reset()
-            {
-                index = -1;
-            }
-
-            public T Current
-            {
-                get
-                {
-                    if (index == -1 || index >= field.count)
-                    {
-                        throw new InvalidOperationException();
-                    }
-                    return field.array[index];
-                }
-            }
-
-            object IEnumerator.Current
-            {
-                get { return Current; }
-            }
-
-            public void Dispose()
-            {
-            }
-        }
+        #endregion        
     }
 }
