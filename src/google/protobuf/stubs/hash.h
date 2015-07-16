@@ -37,12 +37,117 @@
 
 #include <string.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/pbconfig.h>
+
+#define GOOGLE_PROTOBUF_HAVE_HASH_MAP 1
+#define GOOGLE_PROTOBUF_HAVE_HASH_SET 1
+
+// Use C++11 unordered_{map|set} if available. Otherwise, libc++ always support
+// unordered_{map|set}
+#if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X) || \
+    defined(_LIBCPP_VERSION)
+# define GOOGLE_PROTOBUF_HAS_CXX11_HASH
+
+// For XCode >= 4.6:  the compiler is clang with libc++.
+// For earlier XCode version: the compiler is gcc-4.2.1 with libstdc++.
+// libc++ provides <unordered_map> and friends even in non C++11 mode,
+// and it does not provide the tr1 library. Therefore the following macro
+// checks against this special case.
+// Note that we should not test the __APPLE_CC__ version number or the
+// __clang__ macro, since the new compiler can still use -stdlib=libstdc++, in
+// which case <unordered_map> is not compilable without -std=c++11
+#elif defined(__APPLE_CC__)
+# if __GNUC__ >= 4
+#  define GOOGLE_PROTOBUF_HAS_TR1
+# else
+// Not tested for gcc < 4... These setting can compile under 4.2.1 though.
+#  define GOOGLE_PROTOBUF_HASH_NAMESPACE __gnu_cxx
+#  include <ext/hash_map>
+#  define GOOGLE_PROTOBUF_HASH_MAP_CLASS hash_map
+#  include <ext/hash_set>
+#  define GOOGLE_PROTOBUF_HASH_SET_CLASS hash_set
+# endif
+
+// Version checks for gcc.
+#elif defined(__GNUC__)
+// For GCC 4.x+, use tr1::unordered_map/set; otherwise, follow the
+// instructions from:
+// https://gcc.gnu.org/onlinedocs/libstdc++/manual/backwards.html
+# if __GNUC__ >= 4
+#  define GOOGLE_PROTOBUF_HAS_TR1
+# elif __GNUC__ >= 3
+#  include <backward/hash_map>
+#  define GOOGLE_PROTOBUF_HASH_MAP_CLASS hash_map
+#  include <backward/hash_set>
+#  define GOOGLE_PROTOBUF_HASH_SET_CLASS hash_set
+#  if __GNUC__ == 3 && __GNUC_MINOR__ == 0
+#   define GOOGLE_PROTOBUF_HASH_NAMESPACE std       // GCC 3.0
+#  else
+#   define GOOGLE_PROTOBUF_HASH_NAMESPACE __gnu_cxx // GCC 3.1 and later
+#  endif
+# else
+#  define GOOGLE_PROTOBUF_HASH_NAMESPACE
+#  include <hash_map>
+#  define GOOGLE_PROTOBUF_HASH_MAP_CLASS hash_map
+#  include <hash_set>
+#  define GOOGLE_PROTOBUF_HASH_SET_CLASS hash_set
+# endif
+
+// Version checks for MSC.
+// Apparently Microsoft decided to move hash_map *back* to the std namespace in
+// MSVC 2010:
+// http://blogs.msdn.com/vcblog/archive/2009/05/25/stl-breaking-changes-in-visual-studio-2010-beta-1.aspx
+// And.. they are moved back to stdext in MSVC 2013 (haven't checked 2012). That
+// said, use unordered_map for MSVC 2010 and beyond is our safest bet.
+#elif defined(_MSC_VER)
+# if _MSC_VER >= 1600  // Since Visual Studio 2010
+#  define GOOGLE_PROTOBUF_HAS_CXX11_HASH
+#  define GOOGLE_PROTOBUF_HASH_COMPARE std::hash_compare
+# elif _MSC_VER >= 1500  // Since Visual Studio 2008
+#  define GOOGLE_PROTOBUF_HAS_TR1
+#  define GOOGLE_PROTOBUF_HASH_COMPARE stdext::hash_compare
+# elif _MSC_VER >= 1310
+#  define GOOGLE_PROTOBUF_HASH_NAMESPACE stdext
+#  include <hash_map>
+#  define GOOGLE_PROTOBUF_HASH_MAP_CLASS hash_map
+#  include <hash_set>
+#  define GOOGLE_PROTOBUF_HASH_SET_CLASS hash_set
+#  define GOOGLE_PROTOBUF_HASH_COMPARE stdext::hash_compare
+# else
+#  define GOOGLE_PROTOBUF_HASH_NAMESPACE std
+#  include <hash_map>
+#  define GOOGLE_PROTOBUF_HASH_MAP_CLASS hash_map
+#  include <hash_set>
+#  define GOOGLE_PROTOBUF_HASH_SET_CLASS hash_set
+#  define GOOGLE_PROTOBUF_HASH_COMPARE stdext::hash_compare
+# endif
+
+// **ADD NEW COMPILERS SUPPORT HERE.**
+// For other compilers, undefine the macro and fallback to use std::map, in
+// google/protobuf/stubs/hash.h
+#else
+# undef GOOGLE_PROTOBUF_HAVE_HASH_MAP
+# undef GOOGLE_PROTOBUF_HAVE_HASH_SET
+#endif
+
+#if defined(GOOGLE_PROTOBUF_HAS_CXX11_HASH)
+# define GOOGLE_PROTOBUF_HASH_NAMESPACE std
+# include <unordered_map>
+# define GOOGLE_PROTOBUF_HASH_MAP_CLASS unordered_map
+# include <unordered_set>
+# define GOOGLE_PROTOBUF_HASH_SET_CLASS unordered_set
+#elif defined(GOOGLE_PROTOBUF_HAS_TR1)
+# define GOOGLE_PROTOBUF_HASH_NAMESPACE std::tr1
+# include <tr1/unordered_map>
+# define GOOGLE_PROTOBUF_HASH_MAP_CLASS unordered_map
+# include <tr1/unordered_set>
+# define GOOGLE_PROTOBUF_HASH_SET_CLASS unordered_set
+#endif
+
+#undef GOOGLE_PROTOBUF_HAS_CXX11_HASH
+#undef GOOGLE_PROTOBUF_HAS_TR1
 
 #if defined(GOOGLE_PROTOBUF_HAVE_HASH_MAP) && \
     defined(GOOGLE_PROTOBUF_HAVE_HASH_SET)
-#include GOOGLE_PROTOBUF_HASH_MAP_H
-#include GOOGLE_PROTOBUF_HASH_SET_H
 #else
 #define GOOGLE_PROTOBUF_MISSING_HASH
 #include <map>
@@ -92,13 +197,13 @@ template <typename Key, typename Data,
           typename HashFcn = hash<Key>,
           typename EqualKey = std::equal_to<Key>,
           typename Alloc = std::allocator< std::pair<const Key, Data> > >
-class hash_map : public std::map<Key, Data, HashFcn, EqualKey, Alloc> {
-  typedef std::map<Key, Data, HashFcn, EqualKey, Alloc> BaseClass;
+class hash_map : public std::map<Key, Data, HashFcn, Alloc> {
+  typedef std::map<Key, Data, HashFcn, Alloc> BaseClass;
 
  public:
   hash_map(int a = 0, const HashFcn& b = HashFcn(),
            const EqualKey& c = EqualKey(),
-           const Alloc& d = Alloc()) : BaseClass(a, b, c, d) {}
+           const Alloc& d = Alloc()) : BaseClass(b, d) {}
 };
 
 template <typename Key,

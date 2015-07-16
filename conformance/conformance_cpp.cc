@@ -33,14 +33,33 @@
 #include <unistd.h>
 
 #include "conformance.pb.h"
+#include <google/protobuf/util/json_util.h>
+#include <google/protobuf/util/type_resolver_util.h>
 
-using std::string;
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using conformance::TestAllTypes;
+using google::protobuf::Descriptor;
+using google::protobuf::DescriptorPool;
+using google::protobuf::internal::scoped_ptr;
+using google::protobuf::util::BinaryToJsonString;
+using google::protobuf::util::JsonToBinaryString;
+using google::protobuf::util::NewTypeResolverForDescriptorPool;
+using google::protobuf::util::Status;
+using google::protobuf::util::TypeResolver;
+using std::string;
+
+static const char kTypeUrlPrefix[] = "type.googleapis.com";
+
+static string GetTypeUrl(const Descriptor* message) {
+  return string(kTypeUrlPrefix) + "/" + message->full_name();
+}
 
 int test_count = 0;
 bool verbose = false;
+TypeResolver* type_resolver;
+string* type_url;
+
 
 bool CheckedRead(int fd, void *buf, size_t len) {
   size_t ofs = 0;
@@ -79,27 +98,43 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       }
       break;
 
-    case ConformanceRequest::kJsonPayload:
-      response->set_runtime_error("JSON input is not yet supported.");
+    case ConformanceRequest::kJsonPayload: {
+      string proto_binary;
+      Status status = JsonToBinaryString(type_resolver, *type_url,
+                                         request.json_payload(), &proto_binary);
+      if (!status.ok()) {
+        response->set_parse_error(string("Parse error: ") +
+                                  status.error_message().as_string());
+        return;
+      }
+
+      GOOGLE_CHECK(test_message.ParseFromString(proto_binary));
       break;
+    }
 
     case ConformanceRequest::PAYLOAD_NOT_SET:
       GOOGLE_LOG(FATAL) << "Request didn't have payload.";
       break;
   }
 
-  switch (request.requested_output()) {
-    case ConformanceRequest::UNSPECIFIED:
+  switch (request.requested_output_format()) {
+    case conformance::UNSPECIFIED:
       GOOGLE_LOG(FATAL) << "Unspecified output format";
       break;
 
-    case ConformanceRequest::PROTOBUF:
-      test_message.SerializeToString(response->mutable_protobuf_payload());
+    case conformance::PROTOBUF:
+      GOOGLE_CHECK(
+          test_message.SerializeToString(response->mutable_protobuf_payload()));
       break;
 
-    case ConformanceRequest::JSON:
-      response->set_runtime_error("JSON output is not yet supported.");
+    case conformance::JSON: {
+      string proto_binary;
+      GOOGLE_CHECK(test_message.SerializeToString(&proto_binary));
+      Status status = BinaryToJsonString(type_resolver, *type_url, proto_binary,
+                                         response->mutable_json_payload());
+      GOOGLE_CHECK(status.ok());
       break;
+    }
   }
 }
 
@@ -146,6 +181,9 @@ bool DoTestIo() {
 }
 
 int main() {
+  type_resolver = NewTypeResolverForDescriptorPool(
+      kTypeUrlPrefix, DescriptorPool::generated_pool());
+  type_url = new string(GetTypeUrl(TestAllTypes::descriptor()));
   while (1) {
     if (!DoTestIo()) {
       fprintf(stderr, "conformance-cpp: received EOF from test runner "

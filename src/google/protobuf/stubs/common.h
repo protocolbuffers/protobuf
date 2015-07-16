@@ -203,14 +203,22 @@ typedef unsigned __int16 uint16;
 typedef unsigned __int32 uint32;
 typedef unsigned __int64 uint64;
 #else
-typedef int8_t  int8;
-typedef int16_t int16;
-typedef int32_t int32;
+typedef signed char  int8;
+typedef short int16;
+typedef int int32;
+// NOTE: This should be "long long" for consistency with upstream, but
+// something is stacked against this particular type for 64bit hashing.
+// Switching it causes an obvious missing hash function (with an unobvious
+// cause) when building the tests.
 typedef int64_t int64;
 
-typedef uint8_t  uint8;
-typedef uint16_t uint16;
-typedef uint32_t uint32;
+typedef unsigned char  uint8;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
+// NOTE: This should be "unsigned long long" for consistency with upstream, but
+// something is stacked against this particular type for 64bit hashing.
+// Switching it causes an obvious missing hash function (with an unobvious
+// cause) when building the tests.
 typedef uint64_t uint64;
 #endif
 
@@ -1459,14 +1467,14 @@ static inline uint32 bswap_32(uint32 x) {
 }
 #define bswap_32(x) bswap_32(x)
 static inline uint64 bswap_64(uint64 x) {
-  return (((x & GG_ULONGLONG(0xFF)) << 56) |
-          ((x & GG_ULONGLONG(0xFF00)) << 40) |
-          ((x & GG_ULONGLONG(0xFF0000)) << 24) |
-          ((x & GG_ULONGLONG(0xFF000000)) << 8) |
-          ((x & GG_ULONGLONG(0xFF00000000)) >> 8) |
-          ((x & GG_ULONGLONG(0xFF0000000000)) >> 24) |
-          ((x & GG_ULONGLONG(0xFF000000000000)) >> 40) |
-          ((x & GG_ULONGLONG(0xFF00000000000000)) >> 56));
+  return (((x & GOOGLE_ULONGLONG(0xFF)) << 56) |
+          ((x & GOOGLE_ULONGLONG(0xFF00)) << 40) |
+          ((x & GOOGLE_ULONGLONG(0xFF0000)) << 24) |
+          ((x & GOOGLE_ULONGLONG(0xFF000000)) << 8) |
+          ((x & GOOGLE_ULONGLONG(0xFF00000000)) >> 8) |
+          ((x & GOOGLE_ULONGLONG(0xFF0000000000)) >> 24) |
+          ((x & GOOGLE_ULONGLONG(0xFF000000000000)) >> 40) |
+          ((x & GOOGLE_ULONGLONG(0xFF00000000000000)) >> 56));
 }
 #define bswap_64(x) bswap_64(x)
 

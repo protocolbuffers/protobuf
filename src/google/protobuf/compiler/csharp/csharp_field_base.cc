@@ -38,6 +38,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/stubs/mathlimits.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/wire_format.h>
 
@@ -276,11 +277,6 @@ bool FieldGeneratorBase::is_nullable_type() {
   }
 }
 
-inline bool IsNaN(double value) {
-  // NaN is never equal to anything, even itself.
-  return value != value;
-}
-
 bool AllPrintableAscii(const std::string& text) {
   for(int i = 0; i < text.size(); i++) {
     if (text[i] < 0x20 || text[i] > 0x7e) {
@@ -313,7 +309,7 @@ std::string FieldGeneratorBase::default_value() {
         return "double.PositiveInfinity";
       } else if (value == -numeric_limits<double>::infinity()) {
         return "double.NegativeInfinity";
-      } else if (IsNaN(value)) {
+      } else if (MathLimits<double>::IsNaN(value)) {
         return "double.NaN";
       }
       return SimpleDtoa(value) + "D";
@@ -324,7 +320,7 @@ std::string FieldGeneratorBase::default_value() {
         return "float.PositiveInfinity";
       } else if (value == -numeric_limits<float>::infinity()) {
         return "float.NegativeInfinity";
-      } else if (IsNaN(value)) {
+      } else if (MathLimits<float>::IsNaN(value)) {
         return "float.NaN";
       }
       return SimpleFtoa(value) + "F";
