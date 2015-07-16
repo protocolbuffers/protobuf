@@ -239,21 +239,19 @@ namespace Google.Protobuf.Collections
         public void Enumerator()
         {
             var list = new RepeatedField<string> { "first", "second" };
-            using (var enumerator = list.GetEnumerator())
-            {
-                Assert.Throws<InvalidOperationException>(() => enumerator.Current.GetHashCode());
-                Assert.IsTrue(enumerator.MoveNext());
-                Assert.AreEqual("first", enumerator.Current);
-                Assert.IsTrue(enumerator.MoveNext());
-                Assert.AreEqual("second", enumerator.Current);
-                Assert.IsFalse(enumerator.MoveNext());
-                Assert.Throws<InvalidOperationException>(() => enumerator.Current.GetHashCode());
-                Assert.IsFalse(enumerator.MoveNext());
-                enumerator.Reset();
-                Assert.Throws<InvalidOperationException>(() => enumerator.Current.GetHashCode());
-                Assert.IsTrue(enumerator.MoveNext());
-                Assert.AreEqual("first", enumerator.Current);
-            }
+            var enumerator = list.GetEnumerator();
+            Assert.Throws<InvalidOperationException>(() => enumerator.Current.GetHashCode());
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual("first", enumerator.Current);
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual("second", enumerator.Current);
+            Assert.IsFalse(enumerator.MoveNext());
+            Assert.Throws<InvalidOperationException>(() => enumerator.Current.GetHashCode());
+            Assert.IsFalse(enumerator.MoveNext());
+            enumerator.Reset();
+            Assert.Throws<InvalidOperationException>(() => enumerator.Current.GetHashCode());
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual("first", enumerator.Current);
         }
 
         [Test]
