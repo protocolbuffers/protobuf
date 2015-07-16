@@ -61,8 +61,8 @@ inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
 inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
-  __atomic_compare_exchange(ptr, &old_value, &new_value, true,
-                            __ATOMIC_ACQUIRE, __ATOMIC_ACQUIRE);
+  __atomic_compare_exchange_n(ptr, &old_value, new_value, true,
+                              __ATOMIC_ACQUIRE, __ATOMIC_ACQUIRE);
   return old_value;
 }
 

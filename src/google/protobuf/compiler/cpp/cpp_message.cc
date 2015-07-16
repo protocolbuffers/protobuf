@@ -2932,7 +2932,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
                      "commontag", SimpleItoa(WireFormat::MakeTag(field)));
 
       if (need_label ||
-          (field->is_repeated() && !field->options().packed() && !loops)) {
+          (field->is_repeated() && !field->is_packed() && !loops)) {
         printer->Print(
             " parse_$name$:\n",
             "name", field->name());
@@ -2945,7 +2945,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       }
 
       printer->Indent();
-      if (field->options().packed()) {
+      if (field->is_packed()) {
         field_generator.GenerateMergeFromCodedStreamWithPacking(printer);
       } else {
         field_generator.GenerateMergeFromCodedStream(printer);
@@ -2953,7 +2953,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       printer->Outdent();
 
       // Emit code to parse unexpectedly packed or unpacked values.
-      if (field->is_packable() && field->options().packed()) {
+      if (field->is_packed()) {
         internal::WireFormatLite::WireType wiretype =
             WireFormat::WireTypeForFieldType(field->type());
         printer->Print("} else if (tag == $uncommontag$) {\n",
@@ -2963,7 +2963,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
         printer->Indent();
         field_generator.GenerateMergeFromCodedStream(printer);
         printer->Outdent();
-      } else if (field->is_packable() && !field->options().packed()) {
+      } else if (field->is_packable() && !field->is_packed()) {
         internal::WireFormatLite::WireType wiretype =
             internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
         printer->Print("} else if (tag == $uncommontag$) {\n",
@@ -2988,7 +2988,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
           "if (input->ExpectTag($tag$)) goto parse_loop_$name$;\n",
           "tag", SimpleItoa(WireFormat::MakeTag(field)),
           "name", field->name());
-      } else if (field->is_repeated() && !field->options().packed()) {
+      } else if (field->is_repeated() && !field->is_packed()) {
         printer->Print(
           "if (input->ExpectTag($tag$)) goto parse_$name$;\n",
           "tag", SimpleItoa(WireFormat::MakeTag(field)),

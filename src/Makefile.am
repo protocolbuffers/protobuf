@@ -76,7 +76,6 @@ nobase_include_HEADERS =                                        \
   google/protobuf/stubs/fastmem.h                               \
   google/protobuf/stubs/hash.h                                  \
   google/protobuf/stubs/once.h                                  \
-  google/protobuf/stubs/pbconfig.h                              \
   google/protobuf/stubs/platform_macros.h                       \
   google/protobuf/stubs/shared_ptr.h                            \
   google/protobuf/stubs/singleton.h                             \

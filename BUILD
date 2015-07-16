@@ -2,6 +2,10 @@
 
 licenses(["notice"])
 
+################################################################################
+# Protobuf Runtime Library
+################################################################################
+
 COPTS = [
     "-DHAVE_PTHREAD",
     "-Wall",
@@ -108,6 +112,34 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [":protobuf_lite"],
 )
+
+objc_library(
+    name = "protobuf_objc",
+    hdrs = ["objectivec/GPBProtocolBuffers.h"],
+    includes = ["objectivec"],
+    non_arc_srcs = ["objectivec/GPBProtocolBuffers.m"],
+    visibility = ["//visibility:public"],
+)
+
+WELL_KNOWN_PROTOS = [
+    # AUTOGEN(well_known_protos)
+    "google/protobuf/any.proto",
+    "google/protobuf/api.proto",
+    "google/protobuf/compiler/plugin.proto",
+    "google/protobuf/descriptor.proto",
+    "google/protobuf/duration.proto",
+    "google/protobuf/empty.proto",
+    "google/protobuf/field_mask.proto",
+    "google/protobuf/source_context.proto",
+    "google/protobuf/struct.proto",
+    "google/protobuf/timestamp.proto",
+    "google/protobuf/type.proto",
+    "google/protobuf/wrappers.proto",
+]
+
+################################################################################
+# Protocol Buffers Compiler
+################################################################################
 
 cc_library(
     name = "protoc_lib",
@@ -216,22 +248,6 @@ cc_binary(
     deps = [":protoc_lib"],
 )
 
-WELL_KNOWN_PROTOS = [
-    # AUTOGEN(well_known_protos)
-    "google/protobuf/any.proto",
-    "google/protobuf/api.proto",
-    "google/protobuf/compiler/plugin.proto",
-    "google/protobuf/descriptor.proto",
-    "google/protobuf/duration.proto",
-    "google/protobuf/empty.proto",
-    "google/protobuf/field_mask.proto",
-    "google/protobuf/source_context.proto",
-    "google/protobuf/struct.proto",
-    "google/protobuf/timestamp.proto",
-    "google/protobuf/type.proto",
-    "google/protobuf/wrappers.proto",
-]
-
 ################################################################################
 # Tests
 ################################################################################
@@ -286,11 +302,13 @@ PROTOS = LITE_TEST_PROTOS + TEST_PROTOS
 
 INPUTS = PROTOS + WELL_KNOWN_PROTOS
 
+OUTPUTS = ["src/" + x[:-5] + "pb.h" for x in PROTOS] + \
+          ["src/" + x[:-5] + "pb.cc" for x in PROTOS]
+
 genrule(
     name = "gen_test_protos",
     srcs = ["src/" + x for x in INPUTS],
-    outs = ["src/" + x[:-5] + "pb.h" for x in PROTOS] +
-           ["src/" + x[:-5] + "pb.cc" for x in PROTOS],
+    outs = OUTPUTS,
     cmd =
         "$(location :protoc) --cpp_out=$(@D)/src" +
         "".join([" -I" + x + "=$(location src/" + x + ")" for x in INPUTS]) +
@@ -307,78 +325,98 @@ COMMON_TEST_SRCS = [
     "src/google/protobuf/testing/googletest.cc",
 ]
 
-# TODO(liujisi): Add gtest dependency and enable tests.
-# cc_test(
-#     name = "protobuf_test",
-#     srcs = OUTPUTS + COMMON_TEST_SRCS + [
-#         "src/google/protobuf/any_test.cc",
-#         "src/google/protobuf/arena_unittest.cc",
-#         "src/google/protobuf/arenastring_unittest.cc",
-#         "src/google/protobuf/compiler/command_line_interface_unittest.cc",
-#         "src/google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc",
-#         "src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc",
-#         "src/google/protobuf/compiler/cpp/cpp_unittest.cc",
-#         "src/google/protobuf/compiler/csharp/csharp_generator_unittest.cc",
-#         "src/google/protobuf/compiler/importer_unittest.cc",
-#         "src/google/protobuf/compiler/java/java_doc_comment_unittest.cc",
-#         "src/google/protobuf/compiler/java/java_plugin_unittest.cc",
-#         "src/google/protobuf/compiler/mock_code_generator.cc",
-#         "src/google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc",
-#         "src/google/protobuf/compiler/parser_unittest.cc",
-#         "src/google/protobuf/compiler/python/python_plugin_unittest.cc",
-#         "src/google/protobuf/compiler/ruby/ruby_generator_unittest.cc",
-#         "src/google/protobuf/descriptor_database_unittest.cc",
-#         "src/google/protobuf/descriptor_unittest.cc",
-#         "src/google/protobuf/drop_unknown_fields_test.cc",
-#         "src/google/protobuf/dynamic_message_unittest.cc",
-#         "src/google/protobuf/extension_set_unittest.cc",
-#         "src/google/protobuf/generated_message_reflection_unittest.cc",
-#         "src/google/protobuf/io/coded_stream_unittest.cc",
-#         "src/google/protobuf/io/printer_unittest.cc",
-#         "src/google/protobuf/io/tokenizer_unittest.cc",
-#         "src/google/protobuf/io/zero_copy_stream_unittest.cc",
-#         "src/google/protobuf/map_field_test.cc",
-#         "src/google/protobuf/map_test.cc",
-#         "src/google/protobuf/message_unittest.cc",
-#         "src/google/protobuf/no_field_presence_test.cc",
-#         "src/google/protobuf/preserve_unknown_enum_test.cc",
-#         "src/google/protobuf/proto3_arena_unittest.cc",
-#         "src/google/protobuf/reflection_ops_unittest.cc",
-#         "src/google/protobuf/repeated_field_reflection_unittest.cc",
-#         "src/google/protobuf/repeated_field_unittest.cc",
-#         "src/google/protobuf/stubs/bytestream_unittest.cc",
-#         "src/google/protobuf/stubs/common_unittest.cc",
-#         "src/google/protobuf/stubs/once_unittest.cc",
-#         "src/google/protobuf/stubs/status_test.cc",
-#         "src/google/protobuf/stubs/statusor_test.cc",
-#         "src/google/protobuf/stubs/stringpiece_unittest.cc",
-#         "src/google/protobuf/stubs/stringprintf_unittest.cc",
-#         "src/google/protobuf/stubs/structurally_valid_unittest.cc",
-#         "src/google/protobuf/stubs/strutil_unittest.cc",
-#         "src/google/protobuf/stubs/template_util_unittest.cc",
-#         "src/google/protobuf/stubs/time_test.cc",
-#         "src/google/protobuf/stubs/type_traits_unittest.cc",
-#         "src/google/protobuf/text_format_unittest.cc",
-#         "src/google/protobuf/unknown_field_set_unittest.cc",
-#         "src/google/protobuf/util/field_comparator_test.cc",
-#         "src/google/protobuf/util/internal/default_value_objectwriter_test.cc",
-#         "src/google/protobuf/util/internal/json_objectwriter_test.cc",
-#         "src/google/protobuf/util/internal/json_stream_parser_test.cc",
-#         "src/google/protobuf/util/internal/protostream_objectsource_test.cc",
-#         "src/google/protobuf/util/internal/protostream_objectwriter_test.cc",
-#         "src/google/protobuf/util/internal/type_info_test_helper.cc",
-#         "src/google/protobuf/util/json_util_test.cc",
-#         "src/google/protobuf/util/type_resolver_util_test.cc",
-#         "src/google/protobuf/well_known_types_unittest.cc",
-#         "src/google/protobuf/wire_format_unittest.cc",
-#     ],
-#     copts = COPTS,
-#     includes = [
-#         "src/",
-#     ],
-#     linkopts = LINK_OPTS,
-#     deps = [
-#         ":protobuf",
-#         ":protoc_lib",
-#     ],
-# )
+cc_binary(
+    name = "test_plugin",
+    srcs = [
+        # AUTOGEN(test_plugin_srcs)
+        "src/google/protobuf/compiler/mock_code_generator.cc",
+        "src/google/protobuf/compiler/test_plugin.cc",
+        "src/google/protobuf/testing/file.cc",
+    ],
+    deps = [
+        ":protobuf",
+        ":protoc_lib",
+        "//external:gtest",
+    ],
+)
+
+cc_test(
+    name = "protobuf_test",
+    srcs = OUTPUTS + COMMON_TEST_SRCS + [
+        # AUTOGEN(test_srcs)
+        "src/google/protobuf/any_test.cc",
+        "src/google/protobuf/arena_unittest.cc",
+        "src/google/protobuf/arenastring_unittest.cc",
+        "src/google/protobuf/compiler/command_line_interface_unittest.cc",
+        "src/google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc",
+        "src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc",
+        "src/google/protobuf/compiler/cpp/cpp_unittest.cc",
+        "src/google/protobuf/compiler/csharp/csharp_generator_unittest.cc",
+        "src/google/protobuf/compiler/importer_unittest.cc",
+        "src/google/protobuf/compiler/java/java_doc_comment_unittest.cc",
+        "src/google/protobuf/compiler/java/java_plugin_unittest.cc",
+        "src/google/protobuf/compiler/mock_code_generator.cc",
+        "src/google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc",
+        "src/google/protobuf/compiler/parser_unittest.cc",
+        "src/google/protobuf/compiler/python/python_plugin_unittest.cc",
+        "src/google/protobuf/compiler/ruby/ruby_generator_unittest.cc",
+        "src/google/protobuf/descriptor_database_unittest.cc",
+        "src/google/protobuf/descriptor_unittest.cc",
+        "src/google/protobuf/drop_unknown_fields_test.cc",
+        "src/google/protobuf/dynamic_message_unittest.cc",
+        "src/google/protobuf/extension_set_unittest.cc",
+        "src/google/protobuf/generated_message_reflection_unittest.cc",
+        "src/google/protobuf/io/coded_stream_unittest.cc",
+        "src/google/protobuf/io/printer_unittest.cc",
+        "src/google/protobuf/io/tokenizer_unittest.cc",
+        "src/google/protobuf/io/zero_copy_stream_unittest.cc",
+        "src/google/protobuf/map_field_test.cc",
+        "src/google/protobuf/map_test.cc",
+        "src/google/protobuf/message_unittest.cc",
+        "src/google/protobuf/no_field_presence_test.cc",
+        "src/google/protobuf/preserve_unknown_enum_test.cc",
+        "src/google/protobuf/proto3_arena_unittest.cc",
+        "src/google/protobuf/reflection_ops_unittest.cc",
+        "src/google/protobuf/repeated_field_reflection_unittest.cc",
+        "src/google/protobuf/repeated_field_unittest.cc",
+        "src/google/protobuf/stubs/bytestream_unittest.cc",
+        "src/google/protobuf/stubs/common_unittest.cc",
+        "src/google/protobuf/stubs/once_unittest.cc",
+        "src/google/protobuf/stubs/status_test.cc",
+        "src/google/protobuf/stubs/statusor_test.cc",
+        "src/google/protobuf/stubs/stringpiece_unittest.cc",
+        "src/google/protobuf/stubs/stringprintf_unittest.cc",
+        "src/google/protobuf/stubs/structurally_valid_unittest.cc",
+        "src/google/protobuf/stubs/strutil_unittest.cc",
+        "src/google/protobuf/stubs/template_util_unittest.cc",
+        "src/google/protobuf/stubs/time_test.cc",
+        "src/google/protobuf/stubs/type_traits_unittest.cc",
+        "src/google/protobuf/text_format_unittest.cc",
+        "src/google/protobuf/unknown_field_set_unittest.cc",
+        "src/google/protobuf/util/field_comparator_test.cc",
+        "src/google/protobuf/util/internal/default_value_objectwriter_test.cc",
+        "src/google/protobuf/util/internal/json_objectwriter_test.cc",
+        "src/google/protobuf/util/internal/json_stream_parser_test.cc",
+        "src/google/protobuf/util/internal/protostream_objectsource_test.cc",
+        "src/google/protobuf/util/internal/protostream_objectwriter_test.cc",
+        "src/google/protobuf/util/internal/type_info_test_helper.cc",
+        "src/google/protobuf/util/json_util_test.cc",
+        "src/google/protobuf/util/type_resolver_util_test.cc",
+        "src/google/protobuf/well_known_types_unittest.cc",
+        "src/google/protobuf/wire_format_unittest.cc",
+    ],
+    copts = COPTS,
+    data = [
+        ":test_plugin",
+    ],
+    includes = [
+        "src/",
+    ],
+    linkopts = LINK_OPTS,
+    deps = [
+        ":protobuf",
+        ":protoc_lib",
+        "//external:gtest_main",
+    ],
+)
+

@@ -7,15 +7,15 @@
 # TODO(haberman): insert links to corresponding bugs tracking the issue.
 # Should we use GitHub issues or the Google-internal bug tracker?
 
-PrematureEofBeforeKnownRepeatedValue.MESSAGE
-PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE
-PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE
-PrematureEofInPackedField.BOOL
-PrematureEofInPackedField.ENUM
-PrematureEofInPackedField.INT32
-PrematureEofInPackedField.INT64
-PrematureEofInPackedField.SINT32
-PrematureEofInPackedField.SINT64
-PrematureEofInPackedField.UINT32
-PrematureEofInPackedField.UINT64
-PrematureEofInsideKnownRepeatedValue.MESSAGE
+ProtobufInput.PrematureEofBeforeKnownRepeatedValue.MESSAGE
+ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE
+ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE
+ProtobufInput.PrematureEofInPackedField.BOOL
+ProtobufInput.PrematureEofInPackedField.ENUM
+ProtobufInput.PrematureEofInPackedField.INT32
+ProtobufInput.PrematureEofInPackedField.INT64
+ProtobufInput.PrematureEofInPackedField.SINT32
+ProtobufInput.PrematureEofInPackedField.SINT64
+ProtobufInput.PrematureEofInPackedField.UINT32
+ProtobufInput.PrematureEofInPackedField.UINT64
+ProtobufInput.PrematureEofInsideKnownRepeatedValue.MESSAGE

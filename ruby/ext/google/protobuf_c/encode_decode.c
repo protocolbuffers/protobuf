@@ -30,6 +30,18 @@
 
 #include "protobuf.h"
 
+// This function is equivalent to rb_str_cat(), but unlike the real
+// rb_str_cat(), it doesn't leak memory in some versions of Ruby.
+// For more information, see:
+//   https://bugs.ruby-lang.org/issues/11328
+VALUE noleak_rb_str_cat(VALUE rb_str, const char *str, long len) {
+  size_t oldlen = RSTRING_LEN(rb_str);
+  rb_str_modify_expand(rb_str, len);
+  char *p = RSTRING_PTR(rb_str);
+  memcpy(p + oldlen, str, len);
+  rb_str_set_len(rb_str, oldlen + len);
+}
+
 // -----------------------------------------------------------------------------
 // Parsing.
 // -----------------------------------------------------------------------------
@@ -164,7 +176,7 @@ static size_t stringdata_handler(void* closure, const void* hd,
                                  const char* str, size_t len,
                                  const upb_bufhandle* handle) {
   VALUE rb_str = (VALUE)closure;
-  rb_str_cat(rb_str, str, len);
+  noleak_rb_str_cat(rb_str, str, len);
   return len;
 }
 
