@@ -167,6 +167,13 @@ namespace Google.Protobuf.WellKnownTypes
                 Uint32Field = { { 15, uint.MaxValue }, { 16, uint.MinValue }, { 17, 0U } },
                 Uint64Field = { { 18, ulong.MaxValue }, { 19, ulong.MinValue }, { 20, 0UL } },
             };
+
+            var bytes = message.ToByteArray();
+            var parsed = MapWellKnownTypes.Parser.ParseFrom(bytes);
+
+            Assert.AreEqual(message, parsed);
+            // Just to test a single value for sanity...
+            Assert.AreEqual("Second", message.StringField[12]);
         }
 
         [Test]
