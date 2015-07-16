@@ -59,9 +59,9 @@
 #ifndef GOOGLE_PROTOBUF_TYPE_TRAITS_H_
 #define GOOGLE_PROTOBUF_TYPE_TRAITS_H_
 
+#include <cstddef>                  // for NULL
 #include <utility>                  // For pair
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/template_util.h>  // For true_type and false_type
 
 namespace google {
