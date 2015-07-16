@@ -42,7 +42,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         FieldDescriptor Descriptor { get; }
 
-        // TODO: Should the argument type for these messages by IReflectedMessage?
+        // TODO: Should the argument type for these messages be IReflectedMessage?
 
         /// <summary>
         /// Clears the field in the specified message. (For repeated fields,
