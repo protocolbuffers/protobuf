@@ -50,6 +50,7 @@ namespace Google.Protobuf
             EqualityTester.AssertInequality(b1, b3);
             EqualityTester.AssertInequality(b1, b4);
             EqualityTester.AssertInequality(b1, null);
+#pragma warning disable 1718 // Deliberately calling ==(b1, b1) and !=(b1, b1)
             Assert.IsTrue(b1 == b1);
             Assert.IsTrue(b1 == b2);
             Assert.IsFalse(b1 == b3);
@@ -58,6 +59,7 @@ namespace Google.Protobuf
             Assert.IsTrue((ByteString) null == null);
             Assert.IsFalse(b1 != b1);
             Assert.IsFalse(b1 != b2);
+#pragma warning disable 1718
             Assert.IsTrue(b1 != b3);
             Assert.IsTrue(b1 != b4);
             Assert.IsTrue(b1 != null);

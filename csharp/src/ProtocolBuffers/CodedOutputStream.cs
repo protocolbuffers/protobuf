@@ -274,7 +274,7 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteMessage(IMessage value)
         {
-            WriteRawVarint32((uint) value.CalculateSize());
+            WriteLength(value.CalculateSize());
             value.WriteTo(this);
         }
 
@@ -285,7 +285,7 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteBytes(ByteString value)
         {
-            WriteRawVarint32((uint) value.Length);
+            WriteLength(value.Length);
             value.WriteRawBytesTo(this);
         }
 

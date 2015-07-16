@@ -55,7 +55,7 @@ namespace Google.Protobuf.TestProtos {
             "cm90b2J1Zi5VSW50MzJWYWx1ZRIuCgpib29sX2ZpZWxkGBAgASgLMhouZ29v", 
             "Z2xlLnByb3RvYnVmLkJvb2xWYWx1ZRIyCgxzdHJpbmdfZmllbGQYESABKAsy", 
             "HC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSMAoLYnl0ZXNfZmllbGQY", 
-            "EiABKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZSLNAwoWUmVwZWF0", 
+            "EiABKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZSKVBwoWUmVwZWF0", 
             "ZWRXZWxsS25vd25UeXBlcxInCglhbnlfZmllbGQYASADKAsyFC5nb29nbGUu", 
             "cHJvdG9idWYuQW55EicKCWFwaV9maWVsZBgCIAMoCzIULmdvb2dsZS5wcm90", 
             "b2J1Zi5BcGkSMQoOZHVyYXRpb25fZmllbGQYAyADKAsyGS5nb29nbGUucHJv", 
@@ -66,93 +66,103 @@ namespace Google.Protobuf.TestProtos {
             "dHJ1Y3RfZmllbGQYByADKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0EjMK", 
             "D3RpbWVzdGFtcF9maWVsZBgIIAMoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1l", 
             "c3RhbXASKQoKdHlwZV9maWVsZBgJIAMoCzIVLmdvb2dsZS5wcm90b2J1Zi5U", 
-            "eXBlIsUHChNPbmVvZldlbGxLbm93blR5cGVzEikKCWFueV9maWVsZBgBIAEo", 
-            "CzIULmdvb2dsZS5wcm90b2J1Zi5BbnlIABIpCglhcGlfZmllbGQYAiABKAsy", 
-            "FC5nb29nbGUucHJvdG9idWYuQXBpSAASMwoOZHVyYXRpb25fZmllbGQYAyAB", 
-            "KAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb25IABItCgtlbXB0eV9maWVs", 
-            "ZBgEIAEoCzIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eUgAEjYKEGZpZWxkX21h", 
-            "c2tfZmllbGQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuRmllbGRNYXNrSAAS", 
-            "PgoUc291cmNlX2NvbnRleHRfZmllbGQYBiABKAsyHi5nb29nbGUucHJvdG9i", 
-            "dWYuU291cmNlQ29udGV4dEgAEi8KDHN0cnVjdF9maWVsZBgHIAEoCzIXLmdv", 
-            "b2dsZS5wcm90b2J1Zi5TdHJ1Y3RIABI1Cg90aW1lc3RhbXBfZmllbGQYCCAB", 
-            "KAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSAASKwoKdHlwZV9maWVs", 
-            "ZBgJIAEoCzIVLmdvb2dsZS5wcm90b2J1Zi5UeXBlSAASNAoMZG91YmxlX2Zp", 
-            "ZWxkGAogASgLMhwuZ29vZ2xlLnByb3RvYnVmLkRvdWJsZVZhbHVlSAASMgoL", 
-            "ZmxvYXRfZmllbGQYCyABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1", 
-            "ZUgAEjIKC2ludDY0X2ZpZWxkGAwgASgLMhsuZ29vZ2xlLnByb3RvYnVmLklu", 
-            "dDY0VmFsdWVIABI0Cgx1aW50NjRfZmllbGQYDSABKAsyHC5nb29nbGUucHJv", 
-            "dG9idWYuVUludDY0VmFsdWVIABIyCgtpbnQzMl9maWVsZBgOIAEoCzIbLmdv", 
-            "b2dsZS5wcm90b2J1Zi5JbnQzMlZhbHVlSAASNAoMdWludDMyX2ZpZWxkGA8g", 
-            "ASgLMhwuZ29vZ2xlLnByb3RvYnVmLlVJbnQzMlZhbHVlSAASMAoKYm9vbF9m", 
-            "aWVsZBgQIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5Cb29sVmFsdWVIABI0Cgxz", 
-            "dHJpbmdfZmllbGQYESABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFs", 
-            "dWVIABIyCgtieXRlc19maWVsZBgSIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5C", 
-            "eXRlc1ZhbHVlSABCDQoLb25lb2ZfZmllbGQilhYKEU1hcFdlbGxLbm93blR5", 
-            "cGVzEkUKCWFueV9maWVsZBgBIAMoCzIyLnByb3RvYnVmX3VuaXR0ZXN0Lk1h", 
-            "cFdlbGxLbm93blR5cGVzLkFueUZpZWxkRW50cnkSRQoJYXBpX2ZpZWxkGAIg", 
-            "AygLMjIucHJvdG9idWZfdW5pdHRlc3QuTWFwV2VsbEtub3duVHlwZXMuQXBp", 
-            "RmllbGRFbnRyeRJPCg5kdXJhdGlvbl9maWVsZBgDIAMoCzI3LnByb3RvYnVm", 
-            "X3VuaXR0ZXN0Lk1hcFdlbGxLbm93blR5cGVzLkR1cmF0aW9uRmllbGRFbnRy", 
-            "eRJJCgtlbXB0eV9maWVsZBgEIAMoCzI0LnByb3RvYnVmX3VuaXR0ZXN0Lk1h", 
-            "cFdlbGxLbm93blR5cGVzLkVtcHR5RmllbGRFbnRyeRJSChBmaWVsZF9tYXNr", 
-            "X2ZpZWxkGAUgAygLMjgucHJvdG9idWZfdW5pdHRlc3QuTWFwV2VsbEtub3du", 
-            "VHlwZXMuRmllbGRNYXNrRmllbGRFbnRyeRJaChRzb3VyY2VfY29udGV4dF9m", 
-            "aWVsZBgGIAMoCzI8LnByb3RvYnVmX3VuaXR0ZXN0Lk1hcFdlbGxLbm93blR5", 
-            "cGVzLlNvdXJjZUNvbnRleHRGaWVsZEVudHJ5EksKDHN0cnVjdF9maWVsZBgH", 
-            "IAMoCzI1LnByb3RvYnVmX3VuaXR0ZXN0Lk1hcFdlbGxLbm93blR5cGVzLlN0", 
-            "cnVjdEZpZWxkRW50cnkSUQoPdGltZXN0YW1wX2ZpZWxkGAggAygLMjgucHJv", 
-            "dG9idWZfdW5pdHRlc3QuTWFwV2VsbEtub3duVHlwZXMuVGltZXN0YW1wRmll", 
-            "bGRFbnRyeRJHCgp0eXBlX2ZpZWxkGAkgAygLMjMucHJvdG9idWZfdW5pdHRl", 
-            "c3QuTWFwV2VsbEtub3duVHlwZXMuVHlwZUZpZWxkRW50cnkSSwoMZG91Ymxl", 
-            "X2ZpZWxkGAogAygLMjUucHJvdG9idWZfdW5pdHRlc3QuTWFwV2VsbEtub3du", 
-            "VHlwZXMuRG91YmxlRmllbGRFbnRyeRJJCgtmbG9hdF9maWVsZBgLIAMoCzI0", 
-            "LnByb3RvYnVmX3VuaXR0ZXN0Lk1hcFdlbGxLbm93blR5cGVzLkZsb2F0Rmll", 
-            "bGRFbnRyeRJJCgtpbnQ2NF9maWVsZBgMIAMoCzI0LnByb3RvYnVmX3VuaXR0", 
-            "ZXN0Lk1hcFdlbGxLbm93blR5cGVzLkludDY0RmllbGRFbnRyeRJLCgx1aW50", 
-            "NjRfZmllbGQYDSADKAsyNS5wcm90b2J1Zl91bml0dGVzdC5NYXBXZWxsS25v", 
-            "d25UeXBlcy5VaW50NjRGaWVsZEVudHJ5EkkKC2ludDMyX2ZpZWxkGA4gAygL", 
-            "MjQucHJvdG9idWZfdW5pdHRlc3QuTWFwV2VsbEtub3duVHlwZXMuSW50MzJG", 
-            "aWVsZEVudHJ5EksKDHVpbnQzMl9maWVsZBgPIAMoCzI1LnByb3RvYnVmX3Vu", 
-            "aXR0ZXN0Lk1hcFdlbGxLbm93blR5cGVzLlVpbnQzMkZpZWxkRW50cnkSRwoK", 
-            "Ym9vbF9maWVsZBgQIAMoCzIzLnByb3RvYnVmX3VuaXR0ZXN0Lk1hcFdlbGxL", 
-            "bm93blR5cGVzLkJvb2xGaWVsZEVudHJ5EksKDHN0cmluZ19maWVsZBgRIAMo", 
-            "CzI1LnByb3RvYnVmX3VuaXR0ZXN0Lk1hcFdlbGxLbm93blR5cGVzLlN0cmlu", 
-            "Z0ZpZWxkRW50cnkSSQoLYnl0ZXNfZmllbGQYEiADKAsyNC5wcm90b2J1Zl91", 
-            "bml0dGVzdC5NYXBXZWxsS25vd25UeXBlcy5CeXRlc0ZpZWxkRW50cnkaRQoN", 
-            "QW55RmllbGRFbnRyeRILCgNrZXkYASABKAUSIwoFdmFsdWUYAiABKAsyFC5n", 
-            "b29nbGUucHJvdG9idWYuQW55OgI4ARpFCg1BcGlGaWVsZEVudHJ5EgsKA2tl", 
-            "eRgBIAEoBRIjCgV2YWx1ZRgCIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BcGk6", 
-            "AjgBGk8KEkR1cmF0aW9uRmllbGRFbnRyeRILCgNrZXkYASABKAUSKAoFdmFs", 
-            "dWUYAiABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb246AjgBGkkKD0Vt", 
-            "cHR5RmllbGRFbnRyeRILCgNrZXkYASABKAUSJQoFdmFsdWUYAiABKAsyFi5n", 
-            "b29nbGUucHJvdG9idWYuRW1wdHk6AjgBGlEKE0ZpZWxkTWFza0ZpZWxkRW50", 
-            "cnkSCwoDa2V5GAEgASgFEikKBXZhbHVlGAIgASgLMhouZ29vZ2xlLnByb3Rv", 
-            "YnVmLkZpZWxkTWFzazoCOAEaWQoXU291cmNlQ29udGV4dEZpZWxkRW50cnkS", 
-            "CwoDa2V5GAEgASgFEi0KBXZhbHVlGAIgASgLMh4uZ29vZ2xlLnByb3RvYnVm", 
-            "LlNvdXJjZUNvbnRleHQ6AjgBGksKEFN0cnVjdEZpZWxkRW50cnkSCwoDa2V5", 
-            "GAEgASgFEiYKBXZhbHVlGAIgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVj", 
-            "dDoCOAEaUQoTVGltZXN0YW1wRmllbGRFbnRyeRILCgNrZXkYASABKAUSKQoF", 
-            "dmFsdWUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wOgI4ARpH", 
-            "Cg5UeXBlRmllbGRFbnRyeRILCgNrZXkYASABKAUSJAoFdmFsdWUYAiABKAsy", 
-            "FS5nb29nbGUucHJvdG9idWYuVHlwZToCOAEaUAoQRG91YmxlRmllbGRFbnRy", 
-            "eRILCgNrZXkYASABKAUSKwoFdmFsdWUYAiABKAsyHC5nb29nbGUucHJvdG9i", 
-            "dWYuRG91YmxlVmFsdWU6AjgBGk4KD0Zsb2F0RmllbGRFbnRyeRILCgNrZXkY", 
-            "ASABKAUSKgoFdmFsdWUYAiABKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRW", 
-            "YWx1ZToCOAEaTgoPSW50NjRGaWVsZEVudHJ5EgsKA2tleRgBIAEoBRIqCgV2", 
-            "YWx1ZRgCIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5JbnQ2NFZhbHVlOgI4ARpQ", 
-            "ChBVaW50NjRGaWVsZEVudHJ5EgsKA2tleRgBIAEoBRIrCgV2YWx1ZRgCIAEo", 
-            "CzIcLmdvb2dsZS5wcm90b2J1Zi5VSW50NjRWYWx1ZToCOAEaTgoPSW50MzJG", 
-            "aWVsZEVudHJ5EgsKA2tleRgBIAEoBRIqCgV2YWx1ZRgCIAEoCzIbLmdvb2ds", 
-            "ZS5wcm90b2J1Zi5JbnQzMlZhbHVlOgI4ARpQChBVaW50MzJGaWVsZEVudHJ5", 
-            "EgsKA2tleRgBIAEoBRIrCgV2YWx1ZRgCIAEoCzIcLmdvb2dsZS5wcm90b2J1", 
-            "Zi5VSW50MzJWYWx1ZToCOAEaTAoOQm9vbEZpZWxkRW50cnkSCwoDa2V5GAEg", 
-            "ASgFEikKBXZhbHVlGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLkJvb2xWYWx1", 
-            "ZToCOAEaUAoQU3RyaW5nRmllbGRFbnRyeRILCgNrZXkYASABKAUSKwoFdmFs", 
-            "dWUYAiABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWU6AjgBGk4K", 
-            "D0J5dGVzRmllbGRFbnRyeRILCgNrZXkYASABKAUSKgoFdmFsdWUYAiABKAsy", 
-            "Gy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZToCOAFCOQoYY29tLmdvb2ds", 
-            "ZS5wcm90b2J1Zi50ZXN0UAGqAhpHb29nbGUuUHJvdG9idWYuVGVzdFByb3Rv", 
-          "c2IGcHJvdG8z"));
+            "eXBlEjIKDGRvdWJsZV9maWVsZBgKIAMoCzIcLmdvb2dsZS5wcm90b2J1Zi5E", 
+            "b3VibGVWYWx1ZRIwCgtmbG9hdF9maWVsZBgLIAMoCzIbLmdvb2dsZS5wcm90", 
+            "b2J1Zi5GbG9hdFZhbHVlEjAKC2ludDY0X2ZpZWxkGAwgAygLMhsuZ29vZ2xl", 
+            "LnByb3RvYnVmLkludDY0VmFsdWUSMgoMdWludDY0X2ZpZWxkGA0gAygLMhwu", 
+            "Z29vZ2xlLnByb3RvYnVmLlVJbnQ2NFZhbHVlEjAKC2ludDMyX2ZpZWxkGA4g", 
+            "AygLMhsuZ29vZ2xlLnByb3RvYnVmLkludDMyVmFsdWUSMgoMdWludDMyX2Zp", 
+            "ZWxkGA8gAygLMhwuZ29vZ2xlLnByb3RvYnVmLlVJbnQzMlZhbHVlEi4KCmJv", 
+            "b2xfZmllbGQYECADKAsyGi5nb29nbGUucHJvdG9idWYuQm9vbFZhbHVlEjIK", 
+            "DHN0cmluZ19maWVsZBgRIAMoCzIcLmdvb2dsZS5wcm90b2J1Zi5TdHJpbmdW", 
+            "YWx1ZRIwCgtieXRlc19maWVsZBgSIAMoCzIbLmdvb2dsZS5wcm90b2J1Zi5C", 
+            "eXRlc1ZhbHVlIsUHChNPbmVvZldlbGxLbm93blR5cGVzEikKCWFueV9maWVs", 
+            "ZBgBIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnlIABIpCglhcGlfZmllbGQY", 
+            "AiABKAsyFC5nb29nbGUucHJvdG9idWYuQXBpSAASMwoOZHVyYXRpb25fZmll", 
+            "bGQYAyABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb25IABItCgtlbXB0", 
+            "eV9maWVsZBgEIAEoCzIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eUgAEjYKEGZp", 
+            "ZWxkX21hc2tfZmllbGQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuRmllbGRN", 
+            "YXNrSAASPgoUc291cmNlX2NvbnRleHRfZmllbGQYBiABKAsyHi5nb29nbGUu", 
+            "cHJvdG9idWYuU291cmNlQ29udGV4dEgAEi8KDHN0cnVjdF9maWVsZBgHIAEo", 
+            "CzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3RIABI1Cg90aW1lc3RhbXBfZmll", 
+            "bGQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wSAASKwoKdHlw", 
+            "ZV9maWVsZBgJIAEoCzIVLmdvb2dsZS5wcm90b2J1Zi5UeXBlSAASNAoMZG91", 
+            "YmxlX2ZpZWxkGAogASgLMhwuZ29vZ2xlLnByb3RvYnVmLkRvdWJsZVZhbHVl", 
+            "SAASMgoLZmxvYXRfZmllbGQYCyABKAsyGy5nb29nbGUucHJvdG9idWYuRmxv", 
+            "YXRWYWx1ZUgAEjIKC2ludDY0X2ZpZWxkGAwgASgLMhsuZ29vZ2xlLnByb3Rv", 
+            "YnVmLkludDY0VmFsdWVIABI0Cgx1aW50NjRfZmllbGQYDSABKAsyHC5nb29n", 
+            "bGUucHJvdG9idWYuVUludDY0VmFsdWVIABIyCgtpbnQzMl9maWVsZBgOIAEo", 
+            "CzIbLmdvb2dsZS5wcm90b2J1Zi5JbnQzMlZhbHVlSAASNAoMdWludDMyX2Zp", 
+            "ZWxkGA8gASgLMhwuZ29vZ2xlLnByb3RvYnVmLlVJbnQzMlZhbHVlSAASMAoK", 
+            "Ym9vbF9maWVsZBgQIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5Cb29sVmFsdWVI", 
+            "ABI0CgxzdHJpbmdfZmllbGQYESABKAsyHC5nb29nbGUucHJvdG9idWYuU3Ry", 
+            "aW5nVmFsdWVIABIyCgtieXRlc19maWVsZBgSIAEoCzIbLmdvb2dsZS5wcm90", 
+            "b2J1Zi5CeXRlc1ZhbHVlSABCDQoLb25lb2ZfZmllbGQilhYKEU1hcFdlbGxL", 
+            "bm93blR5cGVzEkUKCWFueV9maWVsZBgBIAMoCzIyLnByb3RvYnVmX3VuaXR0", 
+            "ZXN0Lk1hcFdlbGxLbm93blR5cGVzLkFueUZpZWxkRW50cnkSRQoJYXBpX2Zp", 
+            "ZWxkGAIgAygLMjIucHJvdG9idWZfdW5pdHRlc3QuTWFwV2VsbEtub3duVHlw", 
+            "ZXMuQXBpRmllbGRFbnRyeRJPCg5kdXJhdGlvbl9maWVsZBgDIAMoCzI3LnBy", 
+            "b3RvYnVmX3VuaXR0ZXN0Lk1hcFdlbGxLbm93blR5cGVzLkR1cmF0aW9uRmll", 
+            "bGRFbnRyeRJJCgtlbXB0eV9maWVsZBgEIAMoCzI0LnByb3RvYnVmX3VuaXR0", 
+            "ZXN0Lk1hcFdlbGxLbm93blR5cGVzLkVtcHR5RmllbGRFbnRyeRJSChBmaWVs", 
+            "ZF9tYXNrX2ZpZWxkGAUgAygLMjgucHJvdG9idWZfdW5pdHRlc3QuTWFwV2Vs", 
+            "bEtub3duVHlwZXMuRmllbGRNYXNrRmllbGRFbnRyeRJaChRzb3VyY2VfY29u", 
+            "dGV4dF9maWVsZBgGIAMoCzI8LnByb3RvYnVmX3VuaXR0ZXN0Lk1hcFdlbGxL", 
+            "bm93blR5cGVzLlNvdXJjZUNvbnRleHRGaWVsZEVudHJ5EksKDHN0cnVjdF9m", 
+            "aWVsZBgHIAMoCzI1LnByb3RvYnVmX3VuaXR0ZXN0Lk1hcFdlbGxLbm93blR5", 
+            "cGVzLlN0cnVjdEZpZWxkRW50cnkSUQoPdGltZXN0YW1wX2ZpZWxkGAggAygL", 
+            "MjgucHJvdG9idWZfdW5pdHRlc3QuTWFwV2VsbEtub3duVHlwZXMuVGltZXN0", 
+            "YW1wRmllbGRFbnRyeRJHCgp0eXBlX2ZpZWxkGAkgAygLMjMucHJvdG9idWZf", 
+            "dW5pdHRlc3QuTWFwV2VsbEtub3duVHlwZXMuVHlwZUZpZWxkRW50cnkSSwoM", 
+            "ZG91YmxlX2ZpZWxkGAogAygLMjUucHJvdG9idWZfdW5pdHRlc3QuTWFwV2Vs", 
+            "bEtub3duVHlwZXMuRG91YmxlRmllbGRFbnRyeRJJCgtmbG9hdF9maWVsZBgL", 
+            "IAMoCzI0LnByb3RvYnVmX3VuaXR0ZXN0Lk1hcFdlbGxLbm93blR5cGVzLkZs", 
+            "b2F0RmllbGRFbnRyeRJJCgtpbnQ2NF9maWVsZBgMIAMoCzI0LnByb3RvYnVm", 
+            "X3VuaXR0ZXN0Lk1hcFdlbGxLbm93blR5cGVzLkludDY0RmllbGRFbnRyeRJL", 
+            "Cgx1aW50NjRfZmllbGQYDSADKAsyNS5wcm90b2J1Zl91bml0dGVzdC5NYXBX", 
+            "ZWxsS25vd25UeXBlcy5VaW50NjRGaWVsZEVudHJ5EkkKC2ludDMyX2ZpZWxk", 
+            "GA4gAygLMjQucHJvdG9idWZfdW5pdHRlc3QuTWFwV2VsbEtub3duVHlwZXMu", 
+            "SW50MzJGaWVsZEVudHJ5EksKDHVpbnQzMl9maWVsZBgPIAMoCzI1LnByb3Rv", 
+            "YnVmX3VuaXR0ZXN0Lk1hcFdlbGxLbm93blR5cGVzLlVpbnQzMkZpZWxkRW50", 
+            "cnkSRwoKYm9vbF9maWVsZBgQIAMoCzIzLnByb3RvYnVmX3VuaXR0ZXN0Lk1h", 
+            "cFdlbGxLbm93blR5cGVzLkJvb2xGaWVsZEVudHJ5EksKDHN0cmluZ19maWVs", 
+            "ZBgRIAMoCzI1LnByb3RvYnVmX3VuaXR0ZXN0Lk1hcFdlbGxLbm93blR5cGVz", 
+            "LlN0cmluZ0ZpZWxkRW50cnkSSQoLYnl0ZXNfZmllbGQYEiADKAsyNC5wcm90", 
+            "b2J1Zl91bml0dGVzdC5NYXBXZWxsS25vd25UeXBlcy5CeXRlc0ZpZWxkRW50", 
+            "cnkaRQoNQW55RmllbGRFbnRyeRILCgNrZXkYASABKAUSIwoFdmFsdWUYAiAB", 
+            "KAsyFC5nb29nbGUucHJvdG9idWYuQW55OgI4ARpFCg1BcGlGaWVsZEVudHJ5", 
+            "EgsKA2tleRgBIAEoBRIjCgV2YWx1ZRgCIAEoCzIULmdvb2dsZS5wcm90b2J1", 
+            "Zi5BcGk6AjgBGk8KEkR1cmF0aW9uRmllbGRFbnRyeRILCgNrZXkYASABKAUS", 
+            "KAoFdmFsdWUYAiABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRpb246AjgB", 
+            "GkkKD0VtcHR5RmllbGRFbnRyeRILCgNrZXkYASABKAUSJQoFdmFsdWUYAiAB", 
+            "KAsyFi5nb29nbGUucHJvdG9idWYuRW1wdHk6AjgBGlEKE0ZpZWxkTWFza0Zp", 
+            "ZWxkRW50cnkSCwoDa2V5GAEgASgFEikKBXZhbHVlGAIgASgLMhouZ29vZ2xl", 
+            "LnByb3RvYnVmLkZpZWxkTWFzazoCOAEaWQoXU291cmNlQ29udGV4dEZpZWxk", 
+            "RW50cnkSCwoDa2V5GAEgASgFEi0KBXZhbHVlGAIgASgLMh4uZ29vZ2xlLnBy", 
+            "b3RvYnVmLlNvdXJjZUNvbnRleHQ6AjgBGksKEFN0cnVjdEZpZWxkRW50cnkS", 
+            "CwoDa2V5GAEgASgFEiYKBXZhbHVlGAIgASgLMhcuZ29vZ2xlLnByb3RvYnVm", 
+            "LlN0cnVjdDoCOAEaUQoTVGltZXN0YW1wRmllbGRFbnRyeRILCgNrZXkYASAB", 
+            "KAUSKQoFdmFsdWUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1w", 
+            "OgI4ARpHCg5UeXBlRmllbGRFbnRyeRILCgNrZXkYASABKAUSJAoFdmFsdWUY", 
+            "AiABKAsyFS5nb29nbGUucHJvdG9idWYuVHlwZToCOAEaUAoQRG91YmxlRmll", 
+            "bGRFbnRyeRILCgNrZXkYASABKAUSKwoFdmFsdWUYAiABKAsyHC5nb29nbGUu", 
+            "cHJvdG9idWYuRG91YmxlVmFsdWU6AjgBGk4KD0Zsb2F0RmllbGRFbnRyeRIL", 
+            "CgNrZXkYASABKAUSKgoFdmFsdWUYAiABKAsyGy5nb29nbGUucHJvdG9idWYu", 
+            "RmxvYXRWYWx1ZToCOAEaTgoPSW50NjRGaWVsZEVudHJ5EgsKA2tleRgBIAEo", 
+            "BRIqCgV2YWx1ZRgCIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5JbnQ2NFZhbHVl", 
+            "OgI4ARpQChBVaW50NjRGaWVsZEVudHJ5EgsKA2tleRgBIAEoBRIrCgV2YWx1", 
+            "ZRgCIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5VSW50NjRWYWx1ZToCOAEaTgoP", 
+            "SW50MzJGaWVsZEVudHJ5EgsKA2tleRgBIAEoBRIqCgV2YWx1ZRgCIAEoCzIb", 
+            "Lmdvb2dsZS5wcm90b2J1Zi5JbnQzMlZhbHVlOgI4ARpQChBVaW50MzJGaWVs", 
+            "ZEVudHJ5EgsKA2tleRgBIAEoBRIrCgV2YWx1ZRgCIAEoCzIcLmdvb2dsZS5w", 
+            "cm90b2J1Zi5VSW50MzJWYWx1ZToCOAEaTAoOQm9vbEZpZWxkRW50cnkSCwoD", 
+            "a2V5GAEgASgFEikKBXZhbHVlGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLkJv", 
+            "b2xWYWx1ZToCOAEaUAoQU3RyaW5nRmllbGRFbnRyeRILCgNrZXkYASABKAUS", 
+            "KwoFdmFsdWUYAiABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWU6", 
+            "AjgBGk4KD0J5dGVzRmllbGRFbnRyeRILCgNrZXkYASABKAUSKgoFdmFsdWUY", 
+            "AiABKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZToCOAFCOQoYY29t", 
+            "Lmdvb2dsZS5wcm90b2J1Zi50ZXN0UAGqAhpHb29nbGUuUHJvdG9idWYuVGVz", 
+          "dFByb3Rvc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] {
           global::Google.Protobuf.WellKnownTypes.Proto.Any.Descriptor, 
@@ -171,7 +181,7 @@ namespace Google.Protobuf.TestProtos {
               new string[] { "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField", }, new string[] { });
       internal__static_protobuf_unittest_RepeatedWellKnownTypes__FieldAccessorTable = 
           new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes), descriptor.MessageTypes[1],
-              new string[] { "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", }, new string[] { });
+              new string[] { "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField", }, new string[] { });
       internal__static_protobuf_unittest_OneofWellKnownTypes__FieldAccessorTable = 
           new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.OneofWellKnownTypes), descriptor.MessageTypes[2],
               new string[] { "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField", }, new string[] { "OneofField", });
@@ -339,92 +349,101 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int DoubleFieldFieldNumber = 10;
-    private global::Google.Protobuf.WellKnownTypes.DoubleValue doubleField_;
+    private static readonly pb::FieldCodec<double?> _single_doubleField_codec = pb::FieldCodec.ForStructWrapper<double>(82);
+    private double? doubleField_;
     public double? DoubleField {
-      get { return doubleField_ == null ? (double?) null : doubleField_.Value; }
+      get { return doubleField_; }
       set {
         pb::Freezable.CheckMutable(this);
-        doubleField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.DoubleValue { Value = value.Value };
+        doubleField_ = value;
       }
     }
 
     public const int FloatFieldFieldNumber = 11;
-    private global::Google.Protobuf.WellKnownTypes.FloatValue floatField_;
+    private static readonly pb::FieldCodec<float?> _single_floatField_codec = pb::FieldCodec.ForStructWrapper<float>(90);
+    private float? floatField_;
     public float? FloatField {
-      get { return floatField_ == null ? (float?) null : floatField_.Value; }
+      get { return floatField_; }
       set {
         pb::Freezable.CheckMutable(this);
-        floatField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.FloatValue { Value = value.Value };
+        floatField_ = value;
       }
     }
 
     public const int Int64FieldFieldNumber = 12;
-    private global::Google.Protobuf.WellKnownTypes.Int64Value int64Field_;
+    private static readonly pb::FieldCodec<long?> _single_int64Field_codec = pb::FieldCodec.ForStructWrapper<long>(98);
+    private long? int64Field_;
     public long? Int64Field {
-      get { return int64Field_ == null ? (long?) null : int64Field_.Value; }
+      get { return int64Field_; }
       set {
         pb::Freezable.CheckMutable(this);
-        int64Field_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.Int64Value { Value = value.Value };
+        int64Field_ = value;
       }
     }
 
     public const int Uint64FieldFieldNumber = 13;
-    private global::Google.Protobuf.WellKnownTypes.UInt64Value uint64Field_;
+    private static readonly pb::FieldCodec<ulong?> _single_uint64Field_codec = pb::FieldCodec.ForStructWrapper<ulong>(106);
+    private ulong? uint64Field_;
     public ulong? Uint64Field {
-      get { return uint64Field_ == null ? (ulong?) null : uint64Field_.Value; }
+      get { return uint64Field_; }
       set {
         pb::Freezable.CheckMutable(this);
-        uint64Field_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.UInt64Value { Value = value.Value };
+        uint64Field_ = value;
       }
     }
 
     public const int Int32FieldFieldNumber = 14;
-    private global::Google.Protobuf.WellKnownTypes.Int32Value int32Field_;
+    private static readonly pb::FieldCodec<int?> _single_int32Field_codec = pb::FieldCodec.ForStructWrapper<int>(114);
+    private int? int32Field_;
     public int? Int32Field {
-      get { return int32Field_ == null ? (int?) null : int32Field_.Value; }
+      get { return int32Field_; }
       set {
         pb::Freezable.CheckMutable(this);
-        int32Field_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.Int32Value { Value = value.Value };
+        int32Field_ = value;
       }
     }
 
     public const int Uint32FieldFieldNumber = 15;
-    private global::Google.Protobuf.WellKnownTypes.UInt32Value uint32Field_;
+    private static readonly pb::FieldCodec<uint?> _single_uint32Field_codec = pb::FieldCodec.ForStructWrapper<uint>(122);
+    private uint? uint32Field_;
     public uint? Uint32Field {
-      get { return uint32Field_ == null ? (uint?) null : uint32Field_.Value; }
+      get { return uint32Field_; }
       set {
         pb::Freezable.CheckMutable(this);
-        uint32Field_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.UInt32Value { Value = value.Value };
+        uint32Field_ = value;
       }
     }
 
     public const int BoolFieldFieldNumber = 16;
-    private global::Google.Protobuf.WellKnownTypes.BoolValue boolField_;
+    private static readonly pb::FieldCodec<bool?> _single_boolField_codec = pb::FieldCodec.ForStructWrapper<bool>(130);
+    private bool? boolField_;
     public bool? BoolField {
-      get { return boolField_ == null ? (bool?) null : boolField_.Value; }
+      get { return boolField_; }
       set {
         pb::Freezable.CheckMutable(this);
-        boolField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.BoolValue { Value = value.Value };
+        boolField_ = value;
       }
     }
 
     public const int StringFieldFieldNumber = 17;
-    private global::Google.Protobuf.WellKnownTypes.StringValue stringField_;
+    private static readonly pb::FieldCodec<string> _single_stringField_codec = pb::FieldCodec.ForClassWrapper<string>(138);
+    private string stringField_;
     public string StringField {
-      get { return stringField_ == null ? (string) null : stringField_.Value; }
+      get { return stringField_; }
       set {
         pb::Freezable.CheckMutable(this);
-        stringField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.StringValue { Value = value };
+        stringField_ = value;
       }
     }
 
     public const int BytesFieldFieldNumber = 18;
-    private global::Google.Protobuf.WellKnownTypes.BytesValue bytesField_;
+    private static readonly pb::FieldCodec<pb::ByteString> _single_bytesField_codec = pb::FieldCodec.ForClassWrapper<pb::ByteString>(146);
+    private pb::ByteString bytesField_;
     public pb::ByteString BytesField {
-      get { return bytesField_ == null ? (pb::ByteString) null : bytesField_.Value; }
+      get { return bytesField_; }
       set {
         pb::Freezable.CheckMutable(this);
-        bytesField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.BytesValue { Value = value };
+        bytesField_ = value;
       }
     }
 
@@ -525,40 +544,31 @@ namespace Google.Protobuf.TestProtos {
         output.WriteMessage(TypeField);
       }
       if (doubleField_ != null) {
-        output.WriteRawTag(82);
-        output.WriteMessage(doubleField_);
+        _single_doubleField_codec.WriteTagAndValue(output, DoubleField);
       }
       if (floatField_ != null) {
-        output.WriteRawTag(90);
-        output.WriteMessage(floatField_);
+        _single_floatField_codec.WriteTagAndValue(output, FloatField);
       }
       if (int64Field_ != null) {
-        output.WriteRawTag(98);
-        output.WriteMessage(int64Field_);
+        _single_int64Field_codec.WriteTagAndValue(output, Int64Field);
       }
       if (uint64Field_ != null) {
-        output.WriteRawTag(106);
-        output.WriteMessage(uint64Field_);
+        _single_uint64Field_codec.WriteTagAndValue(output, Uint64Field);
       }
       if (int32Field_ != null) {
-        output.WriteRawTag(114);
-        output.WriteMessage(int32Field_);
+        _single_int32Field_codec.WriteTagAndValue(output, Int32Field);
       }
       if (uint32Field_ != null) {
-        output.WriteRawTag(122);
-        output.WriteMessage(uint32Field_);
+        _single_uint32Field_codec.WriteTagAndValue(output, Uint32Field);
       }
       if (boolField_ != null) {
-        output.WriteRawTag(130, 1);
-        output.WriteMessage(boolField_);
+        _single_boolField_codec.WriteTagAndValue(output, BoolField);
       }
       if (stringField_ != null) {
-        output.WriteRawTag(138, 1);
-        output.WriteMessage(stringField_);
+        _single_stringField_codec.WriteTagAndValue(output, StringField);
       }
       if (bytesField_ != null) {
-        output.WriteRawTag(146, 1);
-        output.WriteMessage(bytesField_);
+        _single_bytesField_codec.WriteTagAndValue(output, BytesField);
       }
     }
 
@@ -592,31 +602,31 @@ namespace Google.Protobuf.TestProtos {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(TypeField);
       }
       if (doubleField_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(doubleField_);
+        size += _single_doubleField_codec.CalculateSizeWithTag(DoubleField);
       }
       if (floatField_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(floatField_);
+        size += _single_floatField_codec.CalculateSizeWithTag(FloatField);
       }
       if (int64Field_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(int64Field_);
+        size += _single_int64Field_codec.CalculateSizeWithTag(Int64Field);
       }
       if (uint64Field_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(uint64Field_);
+        size += _single_uint64Field_codec.CalculateSizeWithTag(Uint64Field);
       }
       if (int32Field_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(int32Field_);
+        size += _single_int32Field_codec.CalculateSizeWithTag(Int32Field);
       }
       if (uint32Field_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(uint32Field_);
+        size += _single_uint32Field_codec.CalculateSizeWithTag(Uint32Field);
       }
       if (boolField_ != null) {
-        size += 2 + pb::CodedOutputStream.ComputeMessageSize(boolField_);
+        size += _single_boolField_codec.CalculateSizeWithTag(BoolField);
       }
       if (stringField_ != null) {
-        size += 2 + pb::CodedOutputStream.ComputeMessageSize(stringField_);
+        size += _single_stringField_codec.CalculateSizeWithTag(StringField);
       }
       if (bytesField_ != null) {
-        size += 2 + pb::CodedOutputStream.ComputeMessageSize(bytesField_);
+        size += _single_bytesField_codec.CalculateSizeWithTag(BytesField);
       }
       return size;
     }
@@ -680,58 +690,49 @@ namespace Google.Protobuf.TestProtos {
         TypeField.MergeFrom(other.TypeField);
       }
       if (other.doubleField_ != null) {
-        if (doubleField_ == null) {
-          doubleField_ = new global::Google.Protobuf.WellKnownTypes.DoubleValue();
+        if (doubleField_ == null || other.DoubleField != 0D) {
+          DoubleField = other.DoubleField;
         }
-        doubleField_.MergeFrom(other.doubleField_);
       }
       if (other.floatField_ != null) {
-        if (floatField_ == null) {
-          floatField_ = new global::Google.Protobuf.WellKnownTypes.FloatValue();
+        if (floatField_ == null || other.FloatField != 0F) {
+          FloatField = other.FloatField;
         }
-        floatField_.MergeFrom(other.floatField_);
       }
       if (other.int64Field_ != null) {
-        if (int64Field_ == null) {
-          int64Field_ = new global::Google.Protobuf.WellKnownTypes.Int64Value();
+        if (int64Field_ == null || other.Int64Field != 0L) {
+          Int64Field = other.Int64Field;
         }
-        int64Field_.MergeFrom(other.int64Field_);
       }
       if (other.uint64Field_ != null) {
-        if (uint64Field_ == null) {
-          uint64Field_ = new global::Google.Protobuf.WellKnownTypes.UInt64Value();
+        if (uint64Field_ == null || other.Uint64Field != 0UL) {
+          Uint64Field = other.Uint64Field;
         }
-        uint64Field_.MergeFrom(other.uint64Field_);
       }
       if (other.int32Field_ != null) {
-        if (int32Field_ == null) {
-          int32Field_ = new global::Google.Protobuf.WellKnownTypes.Int32Value();
+        if (int32Field_ == null || other.Int32Field != 0) {
+          Int32Field = other.Int32Field;
         }
-        int32Field_.MergeFrom(other.int32Field_);
       }
       if (other.uint32Field_ != null) {
-        if (uint32Field_ == null) {
-          uint32Field_ = new global::Google.Protobuf.WellKnownTypes.UInt32Value();
+        if (uint32Field_ == null || other.Uint32Field != 0) {
+          Uint32Field = other.Uint32Field;
         }
-        uint32Field_.MergeFrom(other.uint32Field_);
       }
       if (other.boolField_ != null) {
-        if (boolField_ == null) {
-          boolField_ = new global::Google.Protobuf.WellKnownTypes.BoolValue();
+        if (boolField_ == null || other.BoolField != false) {
+          BoolField = other.BoolField;
         }
-        boolField_.MergeFrom(other.boolField_);
       }
       if (other.stringField_ != null) {
-        if (stringField_ == null) {
-          stringField_ = new global::Google.Protobuf.WellKnownTypes.StringValue();
+        if (stringField_ == null || other.StringField != "") {
+          StringField = other.StringField;
         }
-        stringField_.MergeFrom(other.stringField_);
       }
       if (other.bytesField_ != null) {
-        if (bytesField_ == null) {
-          bytesField_ = new global::Google.Protobuf.WellKnownTypes.BytesValue();
+        if (bytesField_ == null || other.BytesField != pb::ByteString.Empty) {
+          BytesField = other.BytesField;
         }
-        bytesField_.MergeFrom(other.bytesField_);
       }
     }
 
@@ -810,66 +811,66 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 82: {
-            if (doubleField_ == null) {
-              doubleField_ = new global::Google.Protobuf.WellKnownTypes.DoubleValue();
+            double? value = _single_doubleField_codec.Read(input);
+            if (doubleField_ == null || value != 0D) {
+              DoubleField = value;
             }
-            input.ReadMessage(doubleField_);
             break;
           }
           case 90: {
-            if (floatField_ == null) {
-              floatField_ = new global::Google.Protobuf.WellKnownTypes.FloatValue();
+            float? value = _single_floatField_codec.Read(input);
+            if (floatField_ == null || value != 0F) {
+              FloatField = value;
             }
-            input.ReadMessage(floatField_);
             break;
           }
           case 98: {
-            if (int64Field_ == null) {
-              int64Field_ = new global::Google.Protobuf.WellKnownTypes.Int64Value();
+            long? value = _single_int64Field_codec.Read(input);
+            if (int64Field_ == null || value != 0L) {
+              Int64Field = value;
             }
-            input.ReadMessage(int64Field_);
             break;
           }
           case 106: {
-            if (uint64Field_ == null) {
-              uint64Field_ = new global::Google.Protobuf.WellKnownTypes.UInt64Value();
+            ulong? value = _single_uint64Field_codec.Read(input);
+            if (uint64Field_ == null || value != 0UL) {
+              Uint64Field = value;
             }
-            input.ReadMessage(uint64Field_);
             break;
           }
           case 114: {
-            if (int32Field_ == null) {
-              int32Field_ = new global::Google.Protobuf.WellKnownTypes.Int32Value();
+            int? value = _single_int32Field_codec.Read(input);
+            if (int32Field_ == null || value != 0) {
+              Int32Field = value;
             }
-            input.ReadMessage(int32Field_);
             break;
           }
           case 122: {
-            if (uint32Field_ == null) {
-              uint32Field_ = new global::Google.Protobuf.WellKnownTypes.UInt32Value();
+            uint? value = _single_uint32Field_codec.Read(input);
+            if (uint32Field_ == null || value != 0) {
+              Uint32Field = value;
             }
-            input.ReadMessage(uint32Field_);
             break;
           }
           case 130: {
-            if (boolField_ == null) {
-              boolField_ = new global::Google.Protobuf.WellKnownTypes.BoolValue();
+            bool? value = _single_boolField_codec.Read(input);
+            if (boolField_ == null || value != false) {
+              BoolField = value;
             }
-            input.ReadMessage(boolField_);
             break;
           }
           case 138: {
-            if (stringField_ == null) {
-              stringField_ = new global::Google.Protobuf.WellKnownTypes.StringValue();
+            string value = _single_stringField_codec.Read(input);
+            if (stringField_ == null || value != "") {
+              StringField = value;
             }
-            input.ReadMessage(stringField_);
             break;
           }
           case 146: {
-            if (bytesField_ == null) {
-              bytesField_ = new global::Google.Protobuf.WellKnownTypes.BytesValue();
+            pb::ByteString value = _single_bytesField_codec.Read(input);
+            if (bytesField_ == null || value != pb::ByteString.Empty) {
+              BytesField = value;
             }
-            input.ReadMessage(bytesField_);
             break;
           }
         }
@@ -883,8 +884,8 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<RepeatedWellKnownTypes> _parser = new pb::MessageParser<RepeatedWellKnownTypes>(() => new RepeatedWellKnownTypes());
     public static pb::MessageParser<RepeatedWellKnownTypes> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "any_field", "api_field", "duration_field", "empty_field", "field_mask_field", "source_context_field", "struct_field", "timestamp_field", "type_field" };
-    private static readonly uint[] _fieldTags = new uint[] { 10, 18, 26, 34, 42, 50, 58, 66, 74 };
+    private static readonly string[] _fieldNames = new string[] { "any_field", "api_field", "bool_field", "bytes_field", "double_field", "duration_field", "empty_field", "field_mask_field", "float_field", "int32_field", "int64_field", "source_context_field", "string_field", "struct_field", "timestamp_field", "type_field", "uint32_field", "uint64_field" };
+    private static readonly uint[] _fieldTags = new uint[] { 10, 18, 130, 146, 82, 26, 34, 42, 90, 114, 98, 50, 138, 58, 66, 74, 122, 106 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[1]; }
     }
@@ -912,6 +913,15 @@ namespace Google.Protobuf.TestProtos {
       structField_ = other.structField_.Clone();
       timestampField_ = other.timestampField_.Clone();
       typeField_ = other.typeField_.Clone();
+      doubleField_ = other.doubleField_.Clone();
+      floatField_ = other.floatField_.Clone();
+      int64Field_ = other.int64Field_.Clone();
+      uint64Field_ = other.uint64Field_.Clone();
+      int32Field_ = other.int32Field_.Clone();
+      uint32Field_ = other.uint32Field_.Clone();
+      boolField_ = other.boolField_.Clone();
+      stringField_ = other.stringField_.Clone();
+      bytesField_ = other.bytesField_.Clone();
     }
 
     public RepeatedWellKnownTypes Clone() {
@@ -932,6 +942,15 @@ namespace Google.Protobuf.TestProtos {
       structField_.Freeze();
       timestampField_.Freeze();
       typeField_.Freeze();
+      doubleField_.Freeze();
+      floatField_.Freeze();
+      int64Field_.Freeze();
+      uint64Field_.Freeze();
+      int32Field_.Freeze();
+      uint32Field_.Freeze();
+      boolField_.Freeze();
+      stringField_.Freeze();
+      bytesField_.Freeze();
     }
 
     public const int AnyFieldFieldNumber = 1;
@@ -1006,6 +1025,78 @@ namespace Google.Protobuf.TestProtos {
       get { return typeField_; }
     }
 
+    public const int DoubleFieldFieldNumber = 10;
+    private static readonly pb::FieldCodec<double?> _repeated_doubleField_codec
+        = pb::FieldCodec.ForStructWrapper<double>(82);
+    private readonly pbc::RepeatedField<double?> doubleField_ = new pbc::RepeatedField<double?>();
+    public pbc::RepeatedField<double?> DoubleField {
+      get { return doubleField_; }
+    }
+
+    public const int FloatFieldFieldNumber = 11;
+    private static readonly pb::FieldCodec<float?> _repeated_floatField_codec
+        = pb::FieldCodec.ForStructWrapper<float>(90);
+    private readonly pbc::RepeatedField<float?> floatField_ = new pbc::RepeatedField<float?>();
+    public pbc::RepeatedField<float?> FloatField {
+      get { return floatField_; }
+    }
+
+    public const int Int64FieldFieldNumber = 12;
+    private static readonly pb::FieldCodec<long?> _repeated_int64Field_codec
+        = pb::FieldCodec.ForStructWrapper<long>(98);
+    private readonly pbc::RepeatedField<long?> int64Field_ = new pbc::RepeatedField<long?>();
+    public pbc::RepeatedField<long?> Int64Field {
+      get { return int64Field_; }
+    }
+
+    public const int Uint64FieldFieldNumber = 13;
+    private static readonly pb::FieldCodec<ulong?> _repeated_uint64Field_codec
+        = pb::FieldCodec.ForStructWrapper<ulong>(106);
+    private readonly pbc::RepeatedField<ulong?> uint64Field_ = new pbc::RepeatedField<ulong?>();
+    public pbc::RepeatedField<ulong?> Uint64Field {
+      get { return uint64Field_; }
+    }
+
+    public const int Int32FieldFieldNumber = 14;
+    private static readonly pb::FieldCodec<int?> _repeated_int32Field_codec
+        = pb::FieldCodec.ForStructWrapper<int>(114);
+    private readonly pbc::RepeatedField<int?> int32Field_ = new pbc::RepeatedField<int?>();
+    public pbc::RepeatedField<int?> Int32Field {
+      get { return int32Field_; }
+    }
+
+    public const int Uint32FieldFieldNumber = 15;
+    private static readonly pb::FieldCodec<uint?> _repeated_uint32Field_codec
+        = pb::FieldCodec.ForStructWrapper<uint>(122);
+    private readonly pbc::RepeatedField<uint?> uint32Field_ = new pbc::RepeatedField<uint?>();
+    public pbc::RepeatedField<uint?> Uint32Field {
+      get { return uint32Field_; }
+    }
+
+    public const int BoolFieldFieldNumber = 16;
+    private static readonly pb::FieldCodec<bool?> _repeated_boolField_codec
+        = pb::FieldCodec.ForStructWrapper<bool>(130);
+    private readonly pbc::RepeatedField<bool?> boolField_ = new pbc::RepeatedField<bool?>();
+    public pbc::RepeatedField<bool?> BoolField {
+      get { return boolField_; }
+    }
+
+    public const int StringFieldFieldNumber = 17;
+    private static readonly pb::FieldCodec<string> _repeated_stringField_codec
+        = pb::FieldCodec.ForClassWrapper<string>(138);
+    private readonly pbc::RepeatedField<string> stringField_ = new pbc::RepeatedField<string>();
+    public pbc::RepeatedField<string> StringField {
+      get { return stringField_; }
+    }
+
+    public const int BytesFieldFieldNumber = 18;
+    private static readonly pb::FieldCodec<pb::ByteString> _repeated_bytesField_codec
+        = pb::FieldCodec.ForClassWrapper<pb::ByteString>(146);
+    private readonly pbc::RepeatedField<pb::ByteString> bytesField_ = new pbc::RepeatedField<pb::ByteString>();
+    public pbc::RepeatedField<pb::ByteString> BytesField {
+      get { return bytesField_; }
+    }
+
     public override bool Equals(object other) {
       return Equals(other as RepeatedWellKnownTypes);
     }
@@ -1026,6 +1117,15 @@ namespace Google.Protobuf.TestProtos {
       if(!structField_.Equals(other.structField_)) return false;
       if(!timestampField_.Equals(other.timestampField_)) return false;
       if(!typeField_.Equals(other.typeField_)) return false;
+      if(!doubleField_.Equals(other.doubleField_)) return false;
+      if(!floatField_.Equals(other.floatField_)) return false;
+      if(!int64Field_.Equals(other.int64Field_)) return false;
+      if(!uint64Field_.Equals(other.uint64Field_)) return false;
+      if(!int32Field_.Equals(other.int32Field_)) return false;
+      if(!uint32Field_.Equals(other.uint32Field_)) return false;
+      if(!boolField_.Equals(other.boolField_)) return false;
+      if(!stringField_.Equals(other.stringField_)) return false;
+      if(!bytesField_.Equals(other.bytesField_)) return false;
       return true;
     }
 
@@ -1040,6 +1140,15 @@ namespace Google.Protobuf.TestProtos {
       hash ^= structField_.GetHashCode();
       hash ^= timestampField_.GetHashCode();
       hash ^= typeField_.GetHashCode();
+      hash ^= doubleField_.GetHashCode();
+      hash ^= floatField_.GetHashCode();
+      hash ^= int64Field_.GetHashCode();
+      hash ^= uint64Field_.GetHashCode();
+      hash ^= int32Field_.GetHashCode();
+      hash ^= uint32Field_.GetHashCode();
+      hash ^= boolField_.GetHashCode();
+      hash ^= stringField_.GetHashCode();
+      hash ^= bytesField_.GetHashCode();
       return hash;
     }
 
@@ -1057,6 +1166,15 @@ namespace Google.Protobuf.TestProtos {
       structField_.WriteTo(output, _repeated_structField_codec);
       timestampField_.WriteTo(output, _repeated_timestampField_codec);
       typeField_.WriteTo(output, _repeated_typeField_codec);
+      doubleField_.WriteTo(output, _repeated_doubleField_codec);
+      floatField_.WriteTo(output, _repeated_floatField_codec);
+      int64Field_.WriteTo(output, _repeated_int64Field_codec);
+      uint64Field_.WriteTo(output, _repeated_uint64Field_codec);
+      int32Field_.WriteTo(output, _repeated_int32Field_codec);
+      uint32Field_.WriteTo(output, _repeated_uint32Field_codec);
+      boolField_.WriteTo(output, _repeated_boolField_codec);
+      stringField_.WriteTo(output, _repeated_stringField_codec);
+      bytesField_.WriteTo(output, _repeated_bytesField_codec);
     }
 
     public int CalculateSize() {
@@ -1070,6 +1188,15 @@ namespace Google.Protobuf.TestProtos {
       size += structField_.CalculateSize(_repeated_structField_codec);
       size += timestampField_.CalculateSize(_repeated_timestampField_codec);
       size += typeField_.CalculateSize(_repeated_typeField_codec);
+      size += doubleField_.CalculateSize(_repeated_doubleField_codec);
+      size += floatField_.CalculateSize(_repeated_floatField_codec);
+      size += int64Field_.CalculateSize(_repeated_int64Field_codec);
+      size += uint64Field_.CalculateSize(_repeated_uint64Field_codec);
+      size += int32Field_.CalculateSize(_repeated_int32Field_codec);
+      size += uint32Field_.CalculateSize(_repeated_uint32Field_codec);
+      size += boolField_.CalculateSize(_repeated_boolField_codec);
+      size += stringField_.CalculateSize(_repeated_stringField_codec);
+      size += bytesField_.CalculateSize(_repeated_bytesField_codec);
       return size;
     }
 
@@ -1086,6 +1213,15 @@ namespace Google.Protobuf.TestProtos {
       structField_.Add(other.structField_);
       timestampField_.Add(other.timestampField_);
       typeField_.Add(other.typeField_);
+      doubleField_.Add(other.doubleField_);
+      floatField_.Add(other.floatField_);
+      int64Field_.Add(other.int64Field_);
+      uint64Field_.Add(other.uint64Field_);
+      int32Field_.Add(other.int32Field_);
+      uint32Field_.Add(other.uint32Field_);
+      boolField_.Add(other.boolField_);
+      stringField_.Add(other.stringField_);
+      bytesField_.Add(other.bytesField_);
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
@@ -1133,6 +1269,42 @@ namespace Google.Protobuf.TestProtos {
           }
           case 74: {
             typeField_.AddEntriesFrom(input, _repeated_typeField_codec);
+            break;
+          }
+          case 82: {
+            doubleField_.AddEntriesFrom(input, _repeated_doubleField_codec);
+            break;
+          }
+          case 90: {
+            floatField_.AddEntriesFrom(input, _repeated_floatField_codec);
+            break;
+          }
+          case 98: {
+            int64Field_.AddEntriesFrom(input, _repeated_int64Field_codec);
+            break;
+          }
+          case 106: {
+            uint64Field_.AddEntriesFrom(input, _repeated_uint64Field_codec);
+            break;
+          }
+          case 114: {
+            int32Field_.AddEntriesFrom(input, _repeated_int32Field_codec);
+            break;
+          }
+          case 122: {
+            uint32Field_.AddEntriesFrom(input, _repeated_uint32Field_codec);
+            break;
+          }
+          case 130: {
+            boolField_.AddEntriesFrom(input, _repeated_boolField_codec);
+            break;
+          }
+          case 138: {
+            stringField_.AddEntriesFrom(input, _repeated_stringField_codec);
+            break;
+          }
+          case 146: {
+            bytesField_.AddEntriesFrom(input, _repeated_bytesField_codec);
             break;
           }
         }
@@ -1328,91 +1500,100 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int DoubleFieldFieldNumber = 10;
+    private static readonly pb::FieldCodec<double?> _oneof_doubleField_codec = pb::FieldCodec.ForStructWrapper<double>(82);
     public double? DoubleField {
-      get { return oneofFieldCase_ == OneofFieldOneofCase.DoubleField ? ((global::Google.Protobuf.WellKnownTypes.DoubleValue) oneofField_).Value : (double?) null; }
+      get { return oneofFieldCase_ == OneofFieldOneofCase.DoubleField ? (double?) oneofField_ : (double?) null; }
       set {
         pb::Freezable.CheckMutable(this);
-        oneofField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.DoubleValue { Value = value.Value };
+        oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.DoubleField;
       }
     }
 
     public const int FloatFieldFieldNumber = 11;
+    private static readonly pb::FieldCodec<float?> _oneof_floatField_codec = pb::FieldCodec.ForStructWrapper<float>(90);
     public float? FloatField {
-      get { return oneofFieldCase_ == OneofFieldOneofCase.FloatField ? ((global::Google.Protobuf.WellKnownTypes.FloatValue) oneofField_).Value : (float?) null; }
+      get { return oneofFieldCase_ == OneofFieldOneofCase.FloatField ? (float?) oneofField_ : (float?) null; }
       set {
         pb::Freezable.CheckMutable(this);
-        oneofField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.FloatValue { Value = value.Value };
+        oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.FloatField;
       }
     }
 
     public const int Int64FieldFieldNumber = 12;
+    private static readonly pb::FieldCodec<long?> _oneof_int64Field_codec = pb::FieldCodec.ForStructWrapper<long>(98);
     public long? Int64Field {
-      get { return oneofFieldCase_ == OneofFieldOneofCase.Int64Field ? ((global::Google.Protobuf.WellKnownTypes.Int64Value) oneofField_).Value : (long?) null; }
+      get { return oneofFieldCase_ == OneofFieldOneofCase.Int64Field ? (long?) oneofField_ : (long?) null; }
       set {
         pb::Freezable.CheckMutable(this);
-        oneofField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.Int64Value { Value = value.Value };
+        oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.Int64Field;
       }
     }
 
     public const int Uint64FieldFieldNumber = 13;
+    private static readonly pb::FieldCodec<ulong?> _oneof_uint64Field_codec = pb::FieldCodec.ForStructWrapper<ulong>(106);
     public ulong? Uint64Field {
-      get { return oneofFieldCase_ == OneofFieldOneofCase.Uint64Field ? ((global::Google.Protobuf.WellKnownTypes.UInt64Value) oneofField_).Value : (ulong?) null; }
+      get { return oneofFieldCase_ == OneofFieldOneofCase.Uint64Field ? (ulong?) oneofField_ : (ulong?) null; }
       set {
         pb::Freezable.CheckMutable(this);
-        oneofField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.UInt64Value { Value = value.Value };
+        oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.Uint64Field;
       }
     }
 
     public const int Int32FieldFieldNumber = 14;
+    private static readonly pb::FieldCodec<int?> _oneof_int32Field_codec = pb::FieldCodec.ForStructWrapper<int>(114);
     public int? Int32Field {
-      get { return oneofFieldCase_ == OneofFieldOneofCase.Int32Field ? ((global::Google.Protobuf.WellKnownTypes.Int32Value) oneofField_).Value : (int?) null; }
+      get { return oneofFieldCase_ == OneofFieldOneofCase.Int32Field ? (int?) oneofField_ : (int?) null; }
       set {
         pb::Freezable.CheckMutable(this);
-        oneofField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.Int32Value { Value = value.Value };
+        oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.Int32Field;
       }
     }
 
     public const int Uint32FieldFieldNumber = 15;
+    private static readonly pb::FieldCodec<uint?> _oneof_uint32Field_codec = pb::FieldCodec.ForStructWrapper<uint>(122);
     public uint? Uint32Field {
-      get { return oneofFieldCase_ == OneofFieldOneofCase.Uint32Field ? ((global::Google.Protobuf.WellKnownTypes.UInt32Value) oneofField_).Value : (uint?) null; }
+      get { return oneofFieldCase_ == OneofFieldOneofCase.Uint32Field ? (uint?) oneofField_ : (uint?) null; }
       set {
         pb::Freezable.CheckMutable(this);
-        oneofField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.UInt32Value { Value = value.Value };
+        oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.Uint32Field;
       }
     }
 
     public const int BoolFieldFieldNumber = 16;
+    private static readonly pb::FieldCodec<bool?> _oneof_boolField_codec = pb::FieldCodec.ForStructWrapper<bool>(130);
     public bool? BoolField {
-      get { return oneofFieldCase_ == OneofFieldOneofCase.BoolField ? ((global::Google.Protobuf.WellKnownTypes.BoolValue) oneofField_).Value : (bool?) null; }
+      get { return oneofFieldCase_ == OneofFieldOneofCase.BoolField ? (bool?) oneofField_ : (bool?) null; }
       set {
         pb::Freezable.CheckMutable(this);
-        oneofField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.BoolValue { Value = value.Value };
+        oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.BoolField;
       }
     }
 
     public const int StringFieldFieldNumber = 17;
+    private static readonly pb::FieldCodec<string> _oneof_stringField_codec = pb::FieldCodec.ForClassWrapper<string>(138);
     public string StringField {
-      get { return oneofFieldCase_ == OneofFieldOneofCase.StringField ? ((global::Google.Protobuf.WellKnownTypes.StringValue) oneofField_).Value : (string) null; }
+      get { return oneofFieldCase_ == OneofFieldOneofCase.StringField ? (string) oneofField_ : (string) null; }
       set {
         pb::Freezable.CheckMutable(this);
-        oneofField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.StringValue { Value = value };
+        oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.StringField;
       }
     }
 
     public const int BytesFieldFieldNumber = 18;
+    private static readonly pb::FieldCodec<pb::ByteString> _oneof_bytesField_codec = pb::FieldCodec.ForClassWrapper<pb::ByteString>(146);
     public pb::ByteString BytesField {
-      get { return oneofFieldCase_ == OneofFieldOneofCase.BytesField ? ((global::Google.Protobuf.WellKnownTypes.BytesValue) oneofField_).Value : (pb::ByteString) null; }
+      get { return oneofFieldCase_ == OneofFieldOneofCase.BytesField ? (pb::ByteString) oneofField_ : (pb::ByteString) null; }
       set {
         pb::Freezable.CheckMutable(this);
-        oneofField_ = value == null ? null : new global::Google.Protobuf.WellKnownTypes.BytesValue { Value = value };
+        oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.BytesField;
       }
     }
@@ -1547,40 +1728,31 @@ namespace Google.Protobuf.TestProtos {
         output.WriteMessage(TypeField);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.DoubleField) {
-        output.WriteRawTag(82);
-        output.WriteMessage((global::Google.Protobuf.WellKnownTypes.DoubleValue) oneofField_);
+        _oneof_doubleField_codec.WriteTagAndValue(output, (double?) oneofField_);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.FloatField) {
-        output.WriteRawTag(90);
-        output.WriteMessage((global::Google.Protobuf.WellKnownTypes.FloatValue) oneofField_);
+        _oneof_floatField_codec.WriteTagAndValue(output, (float?) oneofField_);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.Int64Field) {
-        output.WriteRawTag(98);
-        output.WriteMessage((global::Google.Protobuf.WellKnownTypes.Int64Value) oneofField_);
+        _oneof_int64Field_codec.WriteTagAndValue(output, (long?) oneofField_);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.Uint64Field) {
-        output.WriteRawTag(106);
-        output.WriteMessage((global::Google.Protobuf.WellKnownTypes.UInt64Value) oneofField_);
+        _oneof_uint64Field_codec.WriteTagAndValue(output, (ulong?) oneofField_);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.Int32Field) {
-        output.WriteRawTag(114);
-        output.WriteMessage((global::Google.Protobuf.WellKnownTypes.Int32Value) oneofField_);
+        _oneof_int32Field_codec.WriteTagAndValue(output, (int?) oneofField_);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.Uint32Field) {
-        output.WriteRawTag(122);
-        output.WriteMessage((global::Google.Protobuf.WellKnownTypes.UInt32Value) oneofField_);
+        _oneof_uint32Field_codec.WriteTagAndValue(output, (uint?) oneofField_);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.BoolField) {
-        output.WriteRawTag(130, 1);
-        output.WriteMessage((global::Google.Protobuf.WellKnownTypes.BoolValue) oneofField_);
+        _oneof_boolField_codec.WriteTagAndValue(output, (bool?) oneofField_);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.StringField) {
-        output.WriteRawTag(138, 1);
-        output.WriteMessage((global::Google.Protobuf.WellKnownTypes.StringValue) oneofField_);
+        _oneof_stringField_codec.WriteTagAndValue(output, (string) oneofField_);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.BytesField) {
-        output.WriteRawTag(146, 1);
-        output.WriteMessage((global::Google.Protobuf.WellKnownTypes.BytesValue) oneofField_);
+        _oneof_bytesField_codec.WriteTagAndValue(output, (pb::ByteString) oneofField_);
       }
     }
 
@@ -1614,31 +1786,31 @@ namespace Google.Protobuf.TestProtos {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(TypeField);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.DoubleField) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(((global::Google.Protobuf.WellKnownTypes.DoubleValue) oneofField_));
+        size += _oneof_doubleField_codec.CalculateSizeWithTag(DoubleField);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.FloatField) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(((global::Google.Protobuf.WellKnownTypes.FloatValue) oneofField_));
+        size += _oneof_floatField_codec.CalculateSizeWithTag(FloatField);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.Int64Field) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(((global::Google.Protobuf.WellKnownTypes.Int64Value) oneofField_));
+        size += _oneof_int64Field_codec.CalculateSizeWithTag(Int64Field);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.Uint64Field) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(((global::Google.Protobuf.WellKnownTypes.UInt64Value) oneofField_));
+        size += _oneof_uint64Field_codec.CalculateSizeWithTag(Uint64Field);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.Int32Field) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(((global::Google.Protobuf.WellKnownTypes.Int32Value) oneofField_));
+        size += _oneof_int32Field_codec.CalculateSizeWithTag(Int32Field);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.Uint32Field) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(((global::Google.Protobuf.WellKnownTypes.UInt32Value) oneofField_));
+        size += _oneof_uint32Field_codec.CalculateSizeWithTag(Uint32Field);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.BoolField) {
-        size += 2 + pb::CodedOutputStream.ComputeMessageSize(((global::Google.Protobuf.WellKnownTypes.BoolValue) oneofField_));
+        size += _oneof_boolField_codec.CalculateSizeWithTag(BoolField);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.StringField) {
-        size += 2 + pb::CodedOutputStream.ComputeMessageSize(((global::Google.Protobuf.WellKnownTypes.StringValue) oneofField_));
+        size += _oneof_stringField_codec.CalculateSizeWithTag(StringField);
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.BytesField) {
-        size += 2 + pb::CodedOutputStream.ComputeMessageSize(((global::Google.Protobuf.WellKnownTypes.BytesValue) oneofField_));
+        size += _oneof_bytesField_codec.CalculateSizeWithTag(BytesField);
       }
       return size;
     }
@@ -1799,93 +1971,39 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 82: {
-            global::Google.Protobuf.WellKnownTypes.DoubleValue subBuilder = new global::Google.Protobuf.WellKnownTypes.DoubleValue();
-            if (oneofFieldCase_ == OneofFieldOneofCase.DoubleField) {
-              subBuilder.MergeFrom((global::Google.Protobuf.WellKnownTypes.DoubleValue) oneofField_);
-            }
-            input.ReadMessage(subBuilder);
-            oneofFieldCase_ = OneofFieldOneofCase.DoubleField;
-            oneofField_ = subBuilder;
+            DoubleField = _oneof_doubleField_codec.Read(input);
             break;
           }
           case 90: {
-            global::Google.Protobuf.WellKnownTypes.FloatValue subBuilder = new global::Google.Protobuf.WellKnownTypes.FloatValue();
-            if (oneofFieldCase_ == OneofFieldOneofCase.FloatField) {
-              subBuilder.MergeFrom((global::Google.Protobuf.WellKnownTypes.FloatValue) oneofField_);
-            }
-            input.ReadMessage(subBuilder);
-            oneofFieldCase_ = OneofFieldOneofCase.FloatField;
-            oneofField_ = subBuilder;
+            FloatField = _oneof_floatField_codec.Read(input);
             break;
           }
           case 98: {
-            global::Google.Protobuf.WellKnownTypes.Int64Value subBuilder = new global::Google.Protobuf.WellKnownTypes.Int64Value();
-            if (oneofFieldCase_ == OneofFieldOneofCase.Int64Field) {
-              subBuilder.MergeFrom((global::Google.Protobuf.WellKnownTypes.Int64Value) oneofField_);
-            }
-            input.ReadMessage(subBuilder);
-            oneofFieldCase_ = OneofFieldOneofCase.Int64Field;
-            oneofField_ = subBuilder;
+            Int64Field = _oneof_int64Field_codec.Read(input);
             break;
           }
           case 106: {
-            global::Google.Protobuf.WellKnownTypes.UInt64Value subBuilder = new global::Google.Protobuf.WellKnownTypes.UInt64Value();
-            if (oneofFieldCase_ == OneofFieldOneofCase.Uint64Field) {
-              subBuilder.MergeFrom((global::Google.Protobuf.WellKnownTypes.UInt64Value) oneofField_);
-            }
-            input.ReadMessage(subBuilder);
-            oneofFieldCase_ = OneofFieldOneofCase.Uint64Field;
-            oneofField_ = subBuilder;
+            Uint64Field = _oneof_uint64Field_codec.Read(input);
             break;
           }
           case 114: {
-            global::Google.Protobuf.WellKnownTypes.Int32Value subBuilder = new global::Google.Protobuf.WellKnownTypes.Int32Value();
-            if (oneofFieldCase_ == OneofFieldOneofCase.Int32Field) {
-              subBuilder.MergeFrom((global::Google.Protobuf.WellKnownTypes.Int32Value) oneofField_);
-            }
-            input.ReadMessage(subBuilder);
-            oneofFieldCase_ = OneofFieldOneofCase.Int32Field;
-            oneofField_ = subBuilder;
+            Int32Field = _oneof_int32Field_codec.Read(input);
             break;
           }
           case 122: {
-            global::Google.Protobuf.WellKnownTypes.UInt32Value subBuilder = new global::Google.Protobuf.WellKnownTypes.UInt32Value();
-            if (oneofFieldCase_ == OneofFieldOneofCase.Uint32Field) {
-              subBuilder.MergeFrom((global::Google.Protobuf.WellKnownTypes.UInt32Value) oneofField_);
-            }
-            input.ReadMessage(subBuilder);
-            oneofFieldCase_ = OneofFieldOneofCase.Uint32Field;
-            oneofField_ = subBuilder;
+            Uint32Field = _oneof_uint32Field_codec.Read(input);
             break;
           }
           case 130: {
-            global::Google.Protobuf.WellKnownTypes.BoolValue subBuilder = new global::Google.Protobuf.WellKnownTypes.BoolValue();
-            if (oneofFieldCase_ == OneofFieldOneofCase.BoolField) {
-              subBuilder.MergeFrom((global::Google.Protobuf.WellKnownTypes.BoolValue) oneofField_);
-            }
-            input.ReadMessage(subBuilder);
-            oneofFieldCase_ = OneofFieldOneofCase.BoolField;
-            oneofField_ = subBuilder;
+            BoolField = _oneof_boolField_codec.Read(input);
             break;
           }
           case 138: {
-            global::Google.Protobuf.WellKnownTypes.StringValue subBuilder = new global::Google.Protobuf.WellKnownTypes.StringValue();
-            if (oneofFieldCase_ == OneofFieldOneofCase.StringField) {
-              subBuilder.MergeFrom((global::Google.Protobuf.WellKnownTypes.StringValue) oneofField_);
-            }
-            input.ReadMessage(subBuilder);
-            oneofFieldCase_ = OneofFieldOneofCase.StringField;
-            oneofField_ = subBuilder;
+            StringField = _oneof_stringField_codec.Read(input);
             break;
           }
           case 146: {
-            global::Google.Protobuf.WellKnownTypes.BytesValue subBuilder = new global::Google.Protobuf.WellKnownTypes.BytesValue();
-            if (oneofFieldCase_ == OneofFieldOneofCase.BytesField) {
-              subBuilder.MergeFrom((global::Google.Protobuf.WellKnownTypes.BytesValue) oneofField_);
-            }
-            input.ReadMessage(subBuilder);
-            oneofFieldCase_ = OneofFieldOneofCase.BytesField;
-            oneofField_ = subBuilder;
+            BytesField = _oneof_bytesField_codec.Read(input);
             break;
           }
         }
@@ -2042,72 +2160,72 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DoubleFieldFieldNumber = 10;
     private static readonly pbc::MapField<int, double?>.Codec _map_doubleField_codec
-        = new pbc::MapField<int, double?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForWrapperType<double?, global::Google.Protobuf.WellKnownTypes.DoubleValue>(18, global::Google.Protobuf.WellKnownTypes.DoubleValue.Parser), 82);
-    private readonly pbc::MapField<int, double?> doubleField_ = new pbc::MapField<int, double?>();
+        = new pbc::MapField<int, double?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<double>(18), 82);
+    private readonly pbc::MapField<int, double?> doubleField_ = new pbc::MapField<int, double?>(true);
     public pbc::MapField<int, double?> DoubleField {
       get { return doubleField_; }
     }
 
     public const int FloatFieldFieldNumber = 11;
     private static readonly pbc::MapField<int, float?>.Codec _map_floatField_codec
-        = new pbc::MapField<int, float?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForWrapperType<float?, global::Google.Protobuf.WellKnownTypes.FloatValue>(18, global::Google.Protobuf.WellKnownTypes.FloatValue.Parser), 90);
-    private readonly pbc::MapField<int, float?> floatField_ = new pbc::MapField<int, float?>();
+        = new pbc::MapField<int, float?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<float>(18), 90);
+    private readonly pbc::MapField<int, float?> floatField_ = new pbc::MapField<int, float?>(true);
     public pbc::MapField<int, float?> FloatField {
       get { return floatField_; }
     }
 
     public const int Int64FieldFieldNumber = 12;
     private static readonly pbc::MapField<int, long?>.Codec _map_int64Field_codec
-        = new pbc::MapField<int, long?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForWrapperType<long?, global::Google.Protobuf.WellKnownTypes.Int64Value>(18, global::Google.Protobuf.WellKnownTypes.Int64Value.Parser), 98);
-    private readonly pbc::MapField<int, long?> int64Field_ = new pbc::MapField<int, long?>();
+        = new pbc::MapField<int, long?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<long>(18), 98);
+    private readonly pbc::MapField<int, long?> int64Field_ = new pbc::MapField<int, long?>(true);
     public pbc::MapField<int, long?> Int64Field {
       get { return int64Field_; }
     }
 
     public const int Uint64FieldFieldNumber = 13;
     private static readonly pbc::MapField<int, ulong?>.Codec _map_uint64Field_codec
-        = new pbc::MapField<int, ulong?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForWrapperType<ulong?, global::Google.Protobuf.WellKnownTypes.UInt64Value>(18, global::Google.Protobuf.WellKnownTypes.UInt64Value.Parser), 106);
-    private readonly pbc::MapField<int, ulong?> uint64Field_ = new pbc::MapField<int, ulong?>();
+        = new pbc::MapField<int, ulong?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<ulong>(18), 106);
+    private readonly pbc::MapField<int, ulong?> uint64Field_ = new pbc::MapField<int, ulong?>(true);
     public pbc::MapField<int, ulong?> Uint64Field {
       get { return uint64Field_; }
     }
 
     public const int Int32FieldFieldNumber = 14;
     private static readonly pbc::MapField<int, int?>.Codec _map_int32Field_codec
-        = new pbc::MapField<int, int?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForWrapperType<int?, global::Google.Protobuf.WellKnownTypes.Int32Value>(18, global::Google.Protobuf.WellKnownTypes.Int32Value.Parser), 114);
-    private readonly pbc::MapField<int, int?> int32Field_ = new pbc::MapField<int, int?>();
+        = new pbc::MapField<int, int?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<int>(18), 114);
+    private readonly pbc::MapField<int, int?> int32Field_ = new pbc::MapField<int, int?>(true);
     public pbc::MapField<int, int?> Int32Field {
       get { return int32Field_; }
     }
 
     public const int Uint32FieldFieldNumber = 15;
     private static readonly pbc::MapField<int, uint?>.Codec _map_uint32Field_codec
-        = new pbc::MapField<int, uint?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForWrapperType<uint?, global::Google.Protobuf.WellKnownTypes.UInt32Value>(18, global::Google.Protobuf.WellKnownTypes.UInt32Value.Parser), 122);
-    private readonly pbc::MapField<int, uint?> uint32Field_ = new pbc::MapField<int, uint?>();
+        = new pbc::MapField<int, uint?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<uint>(18), 122);
+    private readonly pbc::MapField<int, uint?> uint32Field_ = new pbc::MapField<int, uint?>(true);
     public pbc::MapField<int, uint?> Uint32Field {
       get { return uint32Field_; }
     }
 
     public const int BoolFieldFieldNumber = 16;
     private static readonly pbc::MapField<int, bool?>.Codec _map_boolField_codec
-        = new pbc::MapField<int, bool?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForWrapperType<bool?, global::Google.Protobuf.WellKnownTypes.BoolValue>(18, global::Google.Protobuf.WellKnownTypes.BoolValue.Parser), 130);
-    private readonly pbc::MapField<int, bool?> boolField_ = new pbc::MapField<int, bool?>();
+        = new pbc::MapField<int, bool?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<bool>(18), 130);
+    private readonly pbc::MapField<int, bool?> boolField_ = new pbc::MapField<int, bool?>(true);
     public pbc::MapField<int, bool?> BoolField {
       get { return boolField_; }
     }
 
     public const int StringFieldFieldNumber = 17;
     private static readonly pbc::MapField<int, string>.Codec _map_stringField_codec
-        = new pbc::MapField<int, string>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForWrapperType<string, global::Google.Protobuf.WellKnownTypes.StringValue>(18, global::Google.Protobuf.WellKnownTypes.StringValue.Parser), 138);
-    private readonly pbc::MapField<int, string> stringField_ = new pbc::MapField<int, string>();
+        = new pbc::MapField<int, string>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForClassWrapper<string>(18), 138);
+    private readonly pbc::MapField<int, string> stringField_ = new pbc::MapField<int, string>(true);
     public pbc::MapField<int, string> StringField {
       get { return stringField_; }
     }
 
     public const int BytesFieldFieldNumber = 18;
     private static readonly pbc::MapField<int, pb::ByteString>.Codec _map_bytesField_codec
-        = new pbc::MapField<int, pb::ByteString>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForWrapperType<pb::ByteString, global::Google.Protobuf.WellKnownTypes.BytesValue>(18, global::Google.Protobuf.WellKnownTypes.BytesValue.Parser), 146);
-    private readonly pbc::MapField<int, pb::ByteString> bytesField_ = new pbc::MapField<int, pb::ByteString>();
+        = new pbc::MapField<int, pb::ByteString>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForClassWrapper<pb::ByteString>(18), 146);
+    private readonly pbc::MapField<int, pb::ByteString> bytesField_ = new pbc::MapField<int, pb::ByteString>(true);
     public pbc::MapField<int, pb::ByteString> BytesField {
       get { return bytesField_; }
     }

@@ -51,14 +51,38 @@ namespace Google.Protobuf.Collections
     public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IFreezable, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary
     {
         // TODO: Don't create the map/list until we have an entry. (Assume many maps will be empty.)
+        private bool allowNullValues;
         private bool frozen;
         private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> map =
             new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
         private readonly LinkedList<KeyValuePair<TKey, TValue>> list = new LinkedList<KeyValuePair<TKey, TValue>>();
 
+        /// <summary>
+        /// Constructs a new map field, defaulting the value nullability to only allow null values for message types
+        /// and non-nullable value types.
+        /// </summary>
+        public MapField() : this(typeof(IMessage).IsAssignableFrom(typeof(TValue)) || Nullable.GetUnderlyingType(typeof(TValue)) != null)
+        {
+        }
+
+        /// <summary>
+        /// Constructs a new map field, overriding the choice of whether null values are permitted in the map.
+        /// This is used by wrapper types, where maps with string and bytes wrappers as the value types
+        /// support null values.
+        /// </summary>
+        /// <param name="allowNullValues">Whether null values are permitted in the map or not.</param>
+        public MapField(bool allowNullValues)
+        {
+            if (allowNullValues && typeof(TValue).IsValueType && Nullable.GetUnderlyingType(typeof(TValue)) == null)
+            {
+                throw new ArgumentException("allowNullValues", "Non-nullable value types do not support null values");
+            }
+            this.allowNullValues = allowNullValues;
+        }
+
         public MapField<TKey, TValue> Clone()
         {
-            var clone = new MapField<TKey, TValue>();
+            var clone = new MapField<TKey, TValue>(allowNullValues);
             // Keys are never cloneable. Values might be.
             if (typeof(IDeepCloneable<TValue>).IsAssignableFrom(typeof(TValue)))
             {
@@ -138,7 +162,8 @@ namespace Google.Protobuf.Collections
             set
             {
                 ThrowHelper.ThrowIfNull(key, "key");
-                if (value == null && (typeof(TValue) == typeof(ByteString) || typeof(TValue) == typeof(string)))
+                // value == null check here is redundant, but avoids boxing.
+                if (value == null && !allowNullValues)
                 {
                     ThrowHelper.ThrowIfNull(value, "value");
                 }
@@ -224,6 +249,11 @@ namespace Google.Protobuf.Collections
                 return false;
             }
         }
+
+        /// <summary>
+        /// Returns whether or not this map allows values to be null.
+        /// </summary>
+        public bool AllowsNullValues { get { return allowNullValues; } }
 
         public int Count { get { return list.Count; } }
         public bool IsReadOnly { get { return frozen; } }

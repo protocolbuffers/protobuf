@@ -52,16 +52,16 @@ message RepeatedWellKnownTypes {
   repeated google.protobuf.Struct struct_field = 7;
   repeated google.protobuf.Timestamp timestamp_field = 8;
   repeated google.protobuf.Type type_field = 9;
-  // TODO: Do these even make sense? Should they be prohibited?
-//  repeated google.protobuf.DoubleValue double_field = 10;
-//  repeated google.protobuf.FloatValue float_field = 11;
-//  repeated google.protobuf.Int64Value int64_field = 12;
-//  repeated google.protobuf.UInt64Value uint64_field = 13;
-//  repeated google.protobuf.Int32Value int32_field = 14;
-//  repeated google.protobuf.UInt32Value uint32_field = 15;
-//  repeated google.protobuf.BoolValue bool_field = 16;
-//  repeated google.protobuf.StringValue string_field = 17;
-//  repeated google.protobuf.BytesValue bytes_field = 18;
+  // These don't actually make a lot of sense, but they're not prohibited...
+  repeated google.protobuf.DoubleValue double_field = 10;
+  repeated google.protobuf.FloatValue float_field = 11;
+  repeated google.protobuf.Int64Value int64_field = 12;
+  repeated google.protobuf.UInt64Value uint64_field = 13;
+  repeated google.protobuf.Int32Value int32_field = 14;
+  repeated google.protobuf.UInt32Value uint32_field = 15;
+  repeated google.protobuf.BoolValue bool_field = 16;
+  repeated google.protobuf.StringValue string_field = 17;
+  repeated google.protobuf.BytesValue bytes_field = 18;
 }
 
 message OneofWellKnownTypes {

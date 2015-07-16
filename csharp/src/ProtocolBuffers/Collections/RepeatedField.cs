@@ -123,7 +123,7 @@ namespace Google.Protobuf.Collections
             {
                 int dataSize = CalculatePackedDataSize(codec);
                 return CodedOutputStream.ComputeRawVarint32Size(tag) +
-                    CodedOutputStream.ComputeRawVarint32Size((uint)dataSize) +
+                    CodedOutputStream.ComputeLengthSize(dataSize) +
                     dataSize;
             }
             else
