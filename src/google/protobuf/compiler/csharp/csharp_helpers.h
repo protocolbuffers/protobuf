@@ -119,6 +119,15 @@ inline bool IsDescriptorProto(const FileDescriptor* descriptor) {
   return descriptor->name() == "google/protobuf/descriptor_proto_file.proto";
 }
 
+inline bool IsMapEntry(const Descriptor* descriptor) {
+    return descriptor->options().map_entry();
+}
+
+inline bool IsWrapperType(const FieldDescriptor* descriptor) {
+  return descriptor->type() == FieldDescriptor::TYPE_MESSAGE &&
+      descriptor->message_type()->file()->name() == "google/protobuf/wrappers.proto";
+}
+
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf

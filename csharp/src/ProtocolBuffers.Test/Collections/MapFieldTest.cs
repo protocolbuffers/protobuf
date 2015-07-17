@@ -103,32 +103,35 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
+        public void NullValues()
+        {
+            TestNullValues<int?>(0);
+            TestNullValues("");
+            TestNullValues(new TestAllTypes());
+        }
+
+        private void TestNullValues<T>(T nonNullValue)
+        {
+            var map = new MapField<int, T>(false);
+            var nullValue = (T) (object) null;
+            Assert.Throws<ArgumentNullException>(() => map.Add(0, nullValue));
+            Assert.Throws<ArgumentNullException>(() => map[0] = nullValue);
+            map.Add(1, nonNullValue);
+            map[1] = nonNullValue;
+
+            // Doesn't throw...
+            map = new MapField<int, T>(true);
+            map.Add(0, nullValue);
+            map[0] = nullValue;
+            map.Add(1, nonNullValue);
+            map[1] = nonNullValue;
+        }
+
+        [Test]
         public void Add_ForbidsNullKeys()
         {
             var map = new MapField<string, ForeignMessage>();
             Assert.Throws<ArgumentNullException>(() => map.Add(null, new ForeignMessage()));
-        }
-
-        [Test]
-        public void Add_AcceptsNullMessageValues()
-        {
-            var map = new MapField<string, ForeignMessage>();
-            map.Add("missing", null);
-            Assert.IsNull(map["missing"]);
-        }
-
-        [Test]
-        public void Add_ForbidsNullStringValues()
-        {
-            var map = new MapField<string, string>();
-            Assert.Throws<ArgumentNullException>(() => map.Add("missing", null));
-        }
-
-        [Test]
-        public void Add_ForbidsNullByteStringValues()
-        {
-            var map = new MapField<string, ByteString>();
-            Assert.Throws<ArgumentNullException>(() => map.Add("missing", null));
         }
 
         [Test]
@@ -137,29 +140,7 @@ namespace Google.Protobuf.Collections
             var map = new MapField<string, ForeignMessage>();
             Assert.Throws<ArgumentNullException>(() => map[null] = new ForeignMessage());
         }
-
-        [Test]
-        public void Indexer_AcceptsNullMessageValues()
-        {
-            var map = new MapField<string, ForeignMessage>();
-            map["missing"] = null;
-            Assert.IsNull(map["missing"]);
-        }
-
-        [Test]
-        public void Indexer_ForbidsNullStringValues()
-        {
-            var map = new MapField<string, string>();
-            Assert.Throws<ArgumentNullException>(() => map["missing"] = null);
-        }
-
-        [Test]
-        public void Indexer_ForbidsNullByteStringValues()
-        {
-            var map = new MapField<string, ByteString>();
-            Assert.Throws<ArgumentNullException>(() => map["missing"] = null);
-        }
-
+        
         [Test]
         public void AddPreservesInsertionOrder()
         {
@@ -526,6 +507,30 @@ namespace Google.Protobuf.Collections
             map.Freeze();
             // Note: Not InvalidOperationException.
             Assert.Throws<NotSupportedException>(() => dictionary["a"] = "c");
+        }
+
+        [Test]
+        public void AllowNullValues_Property()
+        {
+            // Non-message reference type values are non-nullable by default, but can be overridden
+            Assert.IsFalse(new MapField<int, string>().AllowsNullValues);
+            Assert.IsFalse(new MapField<int, string>(false).AllowsNullValues);
+            Assert.IsTrue(new MapField<int, string>(true).AllowsNullValues);
+
+            // Non-nullable value type values are never nullable
+            Assert.IsFalse(new MapField<int, int>().AllowsNullValues);
+            Assert.IsFalse(new MapField<int, int>(false).AllowsNullValues);
+            Assert.Throws<ArgumentException>(() => new MapField<int, int>(true));
+
+            // Message type values are nullable by default, but can be overridden
+            Assert.IsTrue(new MapField<int, TestAllTypes>().AllowsNullValues);
+            Assert.IsFalse(new MapField<int, TestAllTypes>(false).AllowsNullValues);
+            Assert.IsTrue(new MapField<int, TestAllTypes>(true).AllowsNullValues);
+
+            // Nullable value type values are nullable by default, but can be overridden
+            Assert.IsTrue(new MapField<int, int?>().AllowsNullValues);
+            Assert.IsFalse(new MapField<int, int?>(false).AllowsNullValues);
+            Assert.IsTrue(new MapField<int, int?>(true).AllowsNullValues);
         }
 
         private static KeyValuePair<TKey, TValue> NewKeyValuePair<TKey, TValue>(TKey key, TValue value)

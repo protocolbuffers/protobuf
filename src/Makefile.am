@@ -442,7 +442,9 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_source_generator_base.cc \
   google/protobuf/compiler/csharp/csharp_source_generator_base.h \
   google/protobuf/compiler/csharp/csharp_umbrella_class.cc     \
-  google/protobuf/compiler/csharp/csharp_umbrella_class.h
+  google/protobuf/compiler/csharp/csharp_umbrella_class.h      \
+  google/protobuf/compiler/csharp/csharp_wrapper_field.cc      \
+  google/protobuf/compiler/csharp/csharp_wrapper_field.h
 
 bin_PROGRAMS = protoc
 protoc_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
