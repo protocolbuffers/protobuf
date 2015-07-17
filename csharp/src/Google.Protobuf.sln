@@ -2,13 +2,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers", "ProtocolBuffers\ProtocolBuffers.csproj", "{6908BDCE-D925-43F3-94AC-A531E6DF2591}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf", "Google.Protobuf\Google.Protobuf.csproj", "{6908BDCE-D925-43F3-94AC-A531E6DF2591}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers.Test", "ProtocolBuffers.Test\ProtocolBuffers.Test.csproj", "{DD01ED24-3750-4567-9A23-1DB676A15610}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf.Test", "Google.Protobuf.Test\Google.Protobuf.Test.csproj", "{DD01ED24-3750-4567-9A23-1DB676A15610}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AddressBook", "AddressBook\AddressBook.csproj", "{A31F5FB2-4FF3-432A-B35B-5CD203606311}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtoDump", "ProtoDump\ProtoDump.csproj", "{D7282E99-2DC3-405B-946F-177DB2FD2AE2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf.JsonDump", "Google.Protobuf.JsonDump\Google.Protobuf.JsonDump.csproj", "{D7282E99-2DC3-405B-946F-177DB2FD2AE2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

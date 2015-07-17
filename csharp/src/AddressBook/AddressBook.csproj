@@ -53,9 +53,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.csproj">
+    <ProjectReference Include="..\Google.Protobuf\Google.Protobuf.csproj">
       <Project>{6908BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
-      <Name>ProtocolBuffers</Name>
+      <Name>Google.Protobuf</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

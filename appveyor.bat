@@ -20,8 +20,8 @@ goto :EOF
 echo Building C#
 cd csharp\src
 nuget restore
-msbuild ProtocolBuffers.sln /p:Platform="Any CPU" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" || goto error
-nunit-console ProtocolBuffers.Test\bin\%configuration%\Google.Protobuf.Test.dll || goto error
+msbuild Google.Protobuf.sln /p:Platform="Any CPU" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" || goto error
+nunit-console Google.Protobuf.Test\bin\%configuration%\Google.Protobuf.Test.dll || goto error
 goto :EOF
 
 :error

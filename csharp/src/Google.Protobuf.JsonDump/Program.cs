@@ -36,7 +36,7 @@ using System.IO;
 namespace Google.Protobuf.ProtoDump
 {
     /// <summary>
-    /// Small utility to load a binary message and dump it in text form
+    /// Small utility to load a binary message and dump it in JSON format.
     /// </summary>
     internal class Program
     {
@@ -44,7 +44,7 @@ namespace Google.Protobuf.ProtoDump
         {
             if (args.Length != 2)
             {
-                Console.Error.WriteLine("Usage: ProtoDump <descriptor type name> <input data>");
+                Console.Error.WriteLine("Usage: Google.Protobuf.JsonDump <descriptor type name> <input data>");
                 Console.Error.WriteLine("The descriptor type name is the fully-qualified message name,");
                 Console.Error.WriteLine("including assembly e.g. ProjectNamespace.Message,Company.Project");
                 return 1;
