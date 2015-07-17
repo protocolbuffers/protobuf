@@ -12,3 +12,7 @@ global-exclude *.dll
 global-exclude *.pyc
 global-exclude *.pyo
 global-exclude *.so
+
+include google/protobuf/pyext/*.h
+include google/protobuf/pyext/*.cc
+include google/protobuf/pyext/python.proto
