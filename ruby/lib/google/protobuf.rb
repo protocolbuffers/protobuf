@@ -35,7 +35,7 @@ require 'google/protobuf/message_exts'
 # That way the module init can grab references to these.
 module Google
   module Protobuf
-    class Error < RuntimeError; end
+    class Error < StandardError; end
     class ParseError < Error; end
   end
 end

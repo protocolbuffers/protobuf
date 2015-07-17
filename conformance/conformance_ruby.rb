@@ -32,8 +32,8 @@
 
 require 'conformance'
 
-test_count = 0;
-verbose = false;
+$test_count = 0
+$verbose = false
 
 def do_test(request)
   test_message = Conformance::TestAllTypes.new
@@ -43,9 +43,10 @@ def do_test(request)
     case request.payload
     when :protobuf_payload
       begin
-        test_message = Conformance::TestAllTypes.decode(request.protobuf_payload)
+        test_message =
+          Conformance::TestAllTypes.decode(request.protobuf_payload)
       rescue Google::Protobuf::ParseError => err
-        response.parse_error = err.message.encode("utf-8")
+        response.parse_error = err.message.encode('utf-8')
         return response
       end
 
@@ -53,34 +54,36 @@ def do_test(request)
       test_message = Conformance::TestAllTypes.decode_json(request.json_payload)
 
     when nil
-      raise "Request didn't have payload.";
+      fail "Request didn't have payload"
     end
 
     case request.requested_output_format
     when :UNSPECIFIED
-      raise "Unspecified output format"
+      fail 'Unspecified output format'
 
     when :PROTOBUF
-      response.protobuf_payload = Conformance::TestAllTypes.encode(test_message)
+      response.protobuf_payload = test_message.to_proto
 
     when :JSON
-      response.json_payload = Conformance::TestAllTypes.encode_json(test_message)
+      response.json_payload = test_message.to_json
     end
-  rescue Exception => err
-    response.runtime_error = err.message.encode("utf-8") + err.backtrace.join("\n")
+  rescue StandardError => err
+    response.runtime_error = err.message.encode('utf-8')
   end
 
-  return response
+  response
 end
 
+# Returns true if the test ran successfully, false on legitimate EOF.
+# If EOF is encountered in an unexpected place, raises IOError.
 def do_test_io
   length_bytes = STDIN.read(4)
   return false if length_bytes.nil?
 
-  length = length_bytes.unpack("V").first
+  length = length_bytes.unpack('V').first
   serialized_request = STDIN.read(length)
-  if serialized_request.nil? or serialized_request.length != length
-    raise "I/O error"
+  if serialized_request.nil? || serialized_request.length != length
+    fail IOError
   end
 
   request = Conformance::ConformanceRequest.decode(serialized_request)
@@ -88,24 +91,24 @@ def do_test_io
   response = do_test(request)
 
   serialized_response = Conformance::ConformanceResponse.encode(response)
-  STDOUT.write([serialized_response.length].pack("V"))
+  STDOUT.write([serialized_response.length].pack('V'))
   STDOUT.write(serialized_response)
   STDOUT.flush
 
-  #if verbose
-  #  fprintf(stderr, "conformance-cpp: request=%s, response=%s\n",
-  #          request.ShortDebugString().c_str(),
-  #          response.ShortDebugString().c_str());
+  if $verbose
+    STDERR.puts("conformance-cpp: request={request.to_json}, " \
+                                 "response={response.to_json}\n")
+  end
 
-  #test_count++;
+  $test_count += 1
 
-  return true;
+  true
 end
 
-while true
-  if not do_test_io()
-    STDERR.puts("conformance-cpp: received EOF from test runner " +
-                "after #{test_count} tests, exiting")
-    exit 0
+loop do
+  unless do_test_io
+    STDERR.puts('conformance-cpp: received EOF from test runner ' \
+                "after #{$test_count} tests, exiting")
+    break
   end
 end
