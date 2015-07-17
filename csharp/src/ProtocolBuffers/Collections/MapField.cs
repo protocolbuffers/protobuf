@@ -51,7 +51,7 @@ namespace Google.Protobuf.Collections
     public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IFreezable, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary
     {
         // TODO: Don't create the map/list until we have an entry. (Assume many maps will be empty.)
-        private bool allowNullValues;
+        private readonly bool allowNullValues;
         private bool frozen;
         private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> map =
             new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();

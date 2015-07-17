@@ -83,4 +83,3 @@ class WrapperOneofFieldGenerator : public WrapperFieldGenerator {
 }  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_WRAPPER_FIELD_H__
-

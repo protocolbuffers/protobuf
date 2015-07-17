@@ -34,6 +34,7 @@ using System;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 using System.Collections;
+using System.IO;
 
 namespace Google.Protobuf.WellKnownTypes
 {
@@ -232,9 +233,44 @@ namespace Google.Protobuf.WellKnownTypes
             Assert.IsTrue(dictionary.Contains(3));
         }
 
-        // Merging is odd with wrapper types, due to the way that default values aren't emitted in
-        // the binary stream. In fact we cheat a little bit - a message with an explicitly present default
-        // value will have that default value ignored.
+        [Test]
+        public void Oneof()
+        {
+            var message = new OneofWellKnownTypes { EmptyField = new Empty() };
+            // Start off with a non-wrapper
+            Assert.AreEqual(OneofWellKnownTypes.OneofFieldOneofCase.EmptyField, message.OneofFieldCase);
+            AssertOneofRoundTrip(message);
+
+            message.StringField = "foo";
+            Assert.AreEqual(OneofWellKnownTypes.OneofFieldOneofCase.StringField, message.OneofFieldCase);
+            AssertOneofRoundTrip(message);
+
+            message.StringField = "foo";
+            Assert.AreEqual(OneofWellKnownTypes.OneofFieldOneofCase.StringField, message.OneofFieldCase);
+            AssertOneofRoundTrip(message);
+
+            message.DoubleField = 0.0f;
+            Assert.AreEqual(OneofWellKnownTypes.OneofFieldOneofCase.DoubleField, message.OneofFieldCase);
+            AssertOneofRoundTrip(message);
+
+            message.DoubleField = 1.0f;
+            Assert.AreEqual(OneofWellKnownTypes.OneofFieldOneofCase.DoubleField, message.OneofFieldCase);
+            AssertOneofRoundTrip(message);
+
+            message.ClearOneofField();
+            Assert.AreEqual(OneofWellKnownTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+            AssertOneofRoundTrip(message);
+        }
+
+        private void AssertOneofRoundTrip(OneofWellKnownTypes message)
+        {
+            // Normal roundtrip, but explicitly checking the case...
+            var bytes = message.ToByteArray();
+            var parsed = OneofWellKnownTypes.Parser.ParseFrom(bytes);
+            Assert.AreEqual(message, parsed);
+            Assert.AreEqual(message.OneofFieldCase, parsed.OneofFieldCase);
+        }
+
         [Test]
         [TestCase("x", "y", "y")]
         [TestCase("x", "", "x")]
@@ -256,6 +292,35 @@ namespace Google.Protobuf.WellKnownTypes
             originalMessage = new TestWellKnownTypes { StringField = original };
             originalMessage.MergeFrom(mergingMessage.ToByteArray());
             Assert.AreEqual(expected, originalMessage.StringField);
+        }
+
+        // Merging is odd with wrapper types, due to the way that default values aren't emitted in
+        // the binary stream. In fact we cheat a little bit - a message with an explicitly present default
+        // value will have that default value ignored.
+        [Test]
+        public void MergingCornerCase()
+        {
+            var message = new TestWellKnownTypes { Int32Field = 5 };
+
+            // Create a byte array which has the data of an Int32Value explicitly containing a value of 0.
+            // This wouldn't normally happen.
+            byte[] bytes;
+            var wrapperTag = WireFormat.MakeTag(TestWellKnownTypes.Int32FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            var valueTag = WireFormat.MakeTag(Int32Value.ValueFieldNumber, WireFormat.WireType.Varint);
+            using (var stream = new MemoryStream())
+            {
+                var coded = CodedOutputStream.CreateInstance(stream);
+                coded.WriteTag(wrapperTag);
+                coded.WriteLength(2); // valueTag + a value 0, each one byte
+                coded.WriteTag(valueTag);
+                coded.WriteInt32(0);
+                coded.Flush();
+                bytes = stream.ToArray();
+            }
+
+            message.MergeFrom(bytes);
+            // A normal implementation would have 0 now, as the explicit default would have been overwritten the 5.
+            Assert.AreEqual(5, message.Int32Field);
         }
     }
 }

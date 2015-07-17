@@ -161,20 +161,30 @@ namespace Google.Protobuf
                 null); // Default value for the wrapper
         }
 
-        // Helper code to create codecs for wrapper types. Somewhat ugly with all the 
+        /// <summary>
+        /// Helper code to create codecs for wrapper types.
+        /// </summary>
+        /// <remarks>
+        /// Somewhat ugly with all the static methods, but the conversions involved to/from nullable types make it
+        /// slightly tricky to improve. So long as we keep the public API (ForClassWrapper, ForStructWrapper) in place,
+        /// we can refactor later if we come up with something cleaner.
+        /// </remarks>
         private static class WrapperCodecs
         {
+            // All the field numbers are the same (1).
+            private const int WrapperValueFieldNumber = Google.Protobuf.WellKnownTypes.Int32Value.ValueFieldNumber;
+
             private static readonly Dictionary<Type, object> Codecs = new Dictionary<Type, object>
             {
-                { typeof(bool), ForBool(WireFormat.MakeTag(1, WireFormat.WireType.Varint)) },
-                { typeof(int), ForInt32(WireFormat.MakeTag(1, WireFormat.WireType.Varint)) },
-                { typeof(long), ForInt64(WireFormat.MakeTag(1, WireFormat.WireType.Varint)) },
-                { typeof(uint), ForUInt32(WireFormat.MakeTag(1, WireFormat.WireType.Varint)) },
-                { typeof(ulong), ForUInt64(WireFormat.MakeTag(1, WireFormat.WireType.Varint)) },
-                { typeof(float), ForFloat(WireFormat.MakeTag(1, WireFormat.WireType.Fixed32)) },
-                { typeof(double), ForDouble(WireFormat.MakeTag(1, WireFormat.WireType.Fixed64)) },
-                { typeof(string), ForString(WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited)) },
-                { typeof(ByteString), ForBytes(WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited)) }
+                { typeof(bool), ForBool(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
+                { typeof(int), ForInt32(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
+                { typeof(long), ForInt64(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
+                { typeof(uint), ForUInt32(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
+                { typeof(ulong), ForUInt64(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
+                { typeof(float), ForFloat(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Fixed32)) },
+                { typeof(double), ForDouble(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Fixed64)) },
+                { typeof(string), ForString(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.LengthDelimited)) },
+                { typeof(ByteString), ForBytes(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.LengthDelimited)) }
             };
 
             /// <summary>
