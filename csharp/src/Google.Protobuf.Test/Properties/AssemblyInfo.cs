@@ -7,11 +7,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("ProtocolBuffers.Test")]
+[assembly: AssemblyTitle("Google.Protobuf.Test")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ProtocolBuffers.Test")]
+[assembly: AssemblyProduct("Google.Protobuf.Test")]
 [assembly: AssemblyCopyright("Copyright �  2008")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -13,7 +13,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\keys\Google.ProtocolBuffers.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <OldToolsVersion>3.5</OldToolsVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -97,9 +97,9 @@
     <Compile Include="WellKnownTypes\WrappersTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ProtocolBuffers\ProtocolBuffers.csproj">
+    <ProjectReference Include="..\Google.Protobuf\Google.Protobuf.csproj">
       <Project>{6908BDCE-D925-43F3-94AC-A531E6DF2591}</Project>
-      <Name>ProtocolBuffers</Name>
+      <Name>Google.Protobuf</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

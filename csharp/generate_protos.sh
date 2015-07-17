@@ -38,11 +38,11 @@ fi
 # Descriptor proto
 # TODO(jonskeet): Remove fixup
 cp src/google/protobuf/descriptor.proto src/google/protobuf/descriptor_proto_file.proto
-$PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers/Reflection \
+$PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf/Reflection \
     src/google/protobuf/descriptor_proto_file.proto
 rm src/google/protobuf/descriptor_proto_file.proto
 
-$PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers/WellKnownTypes \
+$PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf/WellKnownTypes \
     src/google/protobuf/any.proto \
     src/google/protobuf/api.proto \
     src/google/protobuf/duration.proto \
@@ -54,7 +54,7 @@ $PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers/WellKnownTypes \
     src/google/protobuf/type.proto \
     src/google/protobuf/wrappers.proto
 
-$PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
+$PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
     src/google/protobuf/map_unittest_proto3.proto \
     src/google/protobuf/unittest_proto3.proto \
     src/google/protobuf/unittest_import_proto3.proto \
@@ -62,7 +62,7 @@ $PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
     src/google/protobuf/unittest_well_known_types.proto
 
 
-$PROTOC -Icsharp/protos/extest --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
+$PROTOC -Icsharp/protos/extest --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
     csharp/protos/extest/unittest_issues.proto
 
 # AddressBook sample protos
