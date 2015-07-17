@@ -126,6 +126,26 @@ class clean(_clean):
     _clean.run(self)
 
 
+def add_cpp_extension(ext_module_list):
+  """Adds an extension to extension module list.
+
+  This extension enables a native C++ extension (assumes libprotobuf.so
+  is installed on the system).
+  """
+  # C++ implementation extension
+  ext_module_list.append(
+      Extension(
+          "google.protobuf.pyext._message",
+          glob.glob('google/protobuf/pyext/*.cc'),
+          define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
+          include_dirs=[".", "../src"],
+          libraries=['protobuf'],
+          library_dirs=['../src/.libs'],
+      )
+  )
+  os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
+
+
 class build_py(_build_py):
   def run(self):
     # Generate necessary .proto file if it doesn't exist.
@@ -155,17 +175,7 @@ if __name__ == '__main__':
   if cpp_impl in sys.argv:
     sys.argv.remove(cpp_impl)
     # C++ implementation extension
-    ext_module_list.append(
-        Extension(
-            "google.protobuf.pyext._message",
-            glob.glob('google/protobuf/pyext/*.cc'),
-            define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
-            include_dirs=[".", "../src"],
-            libraries=['protobuf'],
-            library_dirs=['../src/.libs'],
-        )
-    )
-    os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
+    add_cpp_extension(ext_module_list)
 
   setup(
       name='protobuf',
