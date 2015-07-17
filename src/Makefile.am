@@ -71,13 +71,19 @@ nobase_include_HEADERS =                                        \
   google/protobuf/stubs/atomicops_internals_tsan.h              \
   google/protobuf/stubs/atomicops_internals_x86_gcc.h           \
   google/protobuf/stubs/atomicops_internals_x86_msvc.h          \
+  google/protobuf/stubs/callback.h                              \
   google/protobuf/stubs/bytestream.h                            \
   google/protobuf/stubs/casts.h                                 \
   google/protobuf/stubs/common.h                                \
   google/protobuf/stubs/fastmem.h                               \
   google/protobuf/stubs/hash.h                                  \
+  google/protobuf/stubs/logging.h                               \
+  google/protobuf/stubs/macros.h                                \
+  google/protobuf/stubs/mutex.h                                 \
   google/protobuf/stubs/once.h                                  \
   google/protobuf/stubs/platform_macros.h                       \
+  google/protobuf/stubs/port.h                                  \
+  google/protobuf/stubs/scoped_ptr.h                            \
   google/protobuf/stubs/shared_ptr.h                            \
   google/protobuf/stubs/singleton.h                             \
   google/protobuf/stubs/status.h                                \
