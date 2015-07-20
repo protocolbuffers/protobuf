@@ -89,6 +89,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/stubs/status.h                                \
   google/protobuf/stubs/stl_util.h                              \
   google/protobuf/stubs/stringpiece.h                           \
+  google/protobuf/stubs/strutil.h                               \
   google/protobuf/stubs/template_util.h                         \
   google/protobuf/stubs/type_traits.h                           \
   google/protobuf/any.pb.h                                      \
