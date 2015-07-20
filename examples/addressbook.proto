@@ -24,10 +24,10 @@ message Person {
     PhoneType type = 2;
   }
 
-  repeated PhoneNumber phone = 4;
+  repeated PhoneNumber phones = 4;
 }
 
 // Our address book file is just one of these.
 message AddressBook {
-  repeated Person person = 1;
+  repeated Person people = 1;
 }
