@@ -257,5 +257,32 @@ namespace Google.Protobuf
             formatter = new JsonFormatter(new JsonFormatter.Settings(true));
             Assert.AreEqual(expectedJson, formatter.Format(message));
         }
+
+        [Test]
+        public void WrapperFormatting_Single()
+        {
+            // Just a few examples, handling both classes and value types, and
+            // default vs non-default values
+            var message = new TestWellKnownTypes
+            {
+                Int64Field = 10,
+                Int32Field = 0,
+                BytesField = ByteString.FromBase64("ABCD"),
+                StringField = ""
+            };
+            var expectedJson = "{ \"int64Field\": \"10\", \"int32Field\": 0, \"stringField\": \"\", \"bytesField\": \"ABCD\" }";
+            Assert.AreEqual(expectedJson, JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void WrapperFormatting_IncludeNull()
+        {
+            // The actual JSON here is very large because there are lots of fields. Just test a couple of them.
+            var message = new TestWellKnownTypes { Int32Field = 10 };
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(true));
+            var actualJson = formatter.Format(message);
+            Assert.IsTrue(actualJson.Contains("\"int64Field\": null"));
+            Assert.IsFalse(actualJson.Contains("\"int32Field\": null"));
+        }
     }
 }

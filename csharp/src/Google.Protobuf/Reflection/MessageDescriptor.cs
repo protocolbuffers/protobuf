@@ -40,6 +40,20 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class MessageDescriptor : DescriptorBase
     {
+        private static readonly HashSet<string> WellKnownTypeNames = new HashSet<string>
+        {
+            "google/protobuf/any.proto",
+            "google/protobuf/api.proto",
+            "google/protobuf/duration.proto",
+            "google/protobuf/empty.proto",
+            "google/protobuf/wrappers.proto",
+            "google/protobuf/timestamp.proto",
+            "google/protobuf/field_mask.proto",
+            "google/protobuf/source_context.proto",
+            "google/protobuf/struct.proto",
+            "google/protobuf/type.proto",
+        };
+
         private readonly DescriptorProto proto;
         private readonly MessageDescriptor containingType;
         private readonly IList<MessageDescriptor> nestedTypes;
@@ -78,6 +92,17 @@ namespace Google.Protobuf.Reflection
         public override string Name { get { return proto.Name; } }
 
         internal DescriptorProto Proto { get { return proto; } }
+
+        /// <summary>
+        /// Returns whether this message is one of the "well known types" which may have runtime/protoc support.
+        /// </summary>
+        internal bool IsWellKnownType
+        {
+            get
+            {
+                return File.Package == "google.protobuf" && WellKnownTypeNames.Contains(File.Name);
+            }
+        }
 
         /// <value>
         /// If this is a nested type, get the outer descriptor, otherwise null.
