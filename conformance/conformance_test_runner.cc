@@ -219,12 +219,16 @@ void ParseFailureList(const char *filename, vector<string>* failure_list) {
 int main(int argc, char *argv[]) {
   int arg = 1;
   char *program;
-  vector<string> failure_list;
+  google::protobuf::ConformanceTestSuite suite;
 
   for (int arg = 1; arg < argc; ++arg) {
     if (strcmp(argv[arg], "--failure_list") == 0) {
       if (++arg == argc) UsageError();
+      vector<string> failure_list;
       ParseFailureList(argv[arg], &failure_list);
+      suite.SetFailureList(failure_list);
+    } else if (strcmp(argv[arg], "--verbose") == 0) {
+      suite.SetVerbose(true);
     } else if (argv[arg][0] == '-') {
       fprintf(stderr, "Unknown option: %s\n", argv[arg]);
       UsageError();
@@ -238,8 +242,6 @@ int main(int argc, char *argv[]) {
   }
 
   ForkPipeRunner runner(program);
-  google::protobuf::ConformanceTestSuite suite;
-  suite.SetFailureList(failure_list);
 
   std::string output;
   bool ok = suite.RunSuite(&runner, &output);

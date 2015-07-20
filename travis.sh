@@ -8,10 +8,16 @@
 # .travis.yml uses matrix.exclude to block the cases where app-get can't be
 # use to install things.
 
-build_cpp() {
+# For when some other test needs the C++ main build, including protoc and
+# libprotobuf.
+internal_build_cpp() {
   ./autogen.sh
   ./configure
   make -j2
+}
+
+build_cpp() {
+  internal_build_cpp
   make check -j2
   cd conformance && make test_cpp && cd ..
 }
@@ -62,18 +68,14 @@ use_java() {
 
 build_java() {
   # Java build needs `protoc`.
-  ./autogen.sh
-  ./configure
-  make -j2
+  internal_build_cpp
   cd java && mvn test && cd ..
   cd conformance && make test_java && cd ..
 }
 
 build_javanano() {
   # Java build needs `protoc`.
-  ./autogen.sh
-  ./configure
-  make -j2
+  internal_build_cpp
   cd javanano && mvn test && cd ..
 }
 
@@ -104,9 +106,7 @@ build_javanano_oracle7() {
 }
 
 build_python() {
-  ./autogen.sh
-  ./configure
-  make -j2
+  internal_build_cpp
   cd python
   python setup.py build
   python setup.py test
@@ -116,9 +116,7 @@ build_python() {
 }
 
 build_python_cpp() {
-  ./autogen.sh
-  ./configure
-  make -j2
+  internal_build_cpp
   export   LD_LIBRARY_PATH=../src/.libs # for Linux
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
@@ -130,18 +128,23 @@ build_python_cpp() {
 }
 
 build_ruby19() {
+  internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-1.9 && cd ..
 }
 build_ruby20() {
+  internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.0 && cd ..
 }
 build_ruby21() {
+  internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.1 && cd ..
 }
 build_ruby22() {
+  internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.2 && cd ..
 }
 build_jruby() {
+  internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh jruby && cd ..
 }
 

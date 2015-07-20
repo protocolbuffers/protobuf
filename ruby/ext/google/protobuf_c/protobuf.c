@@ -39,6 +39,9 @@
 // Ruby integers) to MessageDef/EnumDef instances (as Ruby values).
 VALUE upb_def_to_ruby_obj_map;
 
+VALUE cError;
+VALUE cParseError;
+
 void add_def_obj(const void* def, VALUE value) {
   rb_hash_aset(upb_def_to_ruby_obj_map, ULL2NUM((intptr_t)def), value);
 }
@@ -95,6 +98,9 @@ void Init_protobuf_c() {
   Builder_register(internal);
   RepeatedField_register(protobuf);
   Map_register(protobuf);
+
+  cError = rb_const_get(protobuf, rb_intern("Error"));
+  cParseError = rb_const_get(protobuf, rb_intern("ParseError"));
 
   rb_define_singleton_method(protobuf, "deep_copy",
                              Google_Protobuf_deep_copy, 1);

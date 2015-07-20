@@ -548,7 +548,7 @@ upb_fieldtype_t ruby_to_fieldtype(VALUE type) {
 
 #define CONVERT(upb, ruby)                                           \
   if (SYM2ID(type) == rb_intern( # ruby )) {                         \
-    return UPB_TYPE_ ## upb;                                          \
+    return UPB_TYPE_ ## upb;                                         \
   }
 
   CONVERT(FLOAT, float);
@@ -589,6 +589,68 @@ VALUE fieldtype_to_ruby(upb_fieldtype_t type) {
   return Qnil;
 }
 
+upb_descriptortype_t ruby_to_descriptortype(VALUE type) {
+  if (TYPE(type) != T_SYMBOL) {
+    rb_raise(rb_eArgError, "Expected symbol for field type.");
+  }
+
+#define CONVERT(upb, ruby)                                           \
+  if (SYM2ID(type) == rb_intern( # ruby )) {                         \
+    return UPB_DESCRIPTOR_TYPE_ ## upb;                              \
+  }
+
+  CONVERT(FLOAT, float);
+  CONVERT(DOUBLE, double);
+  CONVERT(BOOL, bool);
+  CONVERT(STRING, string);
+  CONVERT(BYTES, bytes);
+  CONVERT(MESSAGE, message);
+  CONVERT(GROUP, group);
+  CONVERT(ENUM, enum);
+  CONVERT(INT32, int32);
+  CONVERT(INT64, int64);
+  CONVERT(UINT32, uint32);
+  CONVERT(UINT64, uint64);
+  CONVERT(SINT32, sint32);
+  CONVERT(SINT64, sint64);
+  CONVERT(FIXED32, fixed32);
+  CONVERT(FIXED64, fixed64);
+  CONVERT(SFIXED32, sfixed32);
+  CONVERT(SFIXED64, sfixed64);
+
+#undef CONVERT
+
+  rb_raise(rb_eArgError, "Unknown field type.");
+  return 0;
+}
+
+VALUE descriptortype_to_ruby(upb_descriptortype_t type) {
+  switch (type) {
+#define CONVERT(upb, ruby)                                           \
+    case UPB_DESCRIPTOR_TYPE_ ## upb : return ID2SYM(rb_intern( # ruby ));
+    CONVERT(FLOAT, float);
+    CONVERT(DOUBLE, double);
+    CONVERT(BOOL, bool);
+    CONVERT(STRING, string);
+    CONVERT(BYTES, bytes);
+    CONVERT(MESSAGE, message);
+    CONVERT(GROUP, group);
+    CONVERT(ENUM, enum);
+    CONVERT(INT32, int32);
+    CONVERT(INT64, int64);
+    CONVERT(UINT32, uint32);
+    CONVERT(UINT64, uint64);
+    CONVERT(SINT32, sint32);
+    CONVERT(SINT64, sint64);
+    CONVERT(FIXED32, fixed32);
+    CONVERT(FIXED64, fixed64);
+    CONVERT(SFIXED32, sfixed32);
+    CONVERT(SFIXED64, sfixed64);
+#undef CONVERT
+  }
+  return Qnil;
+}
+
 /*
  * call-seq:
  *     FieldDescriptor.type => type
@@ -604,7 +666,7 @@ VALUE FieldDescriptor_type(VALUE _self) {
   if (!upb_fielddef_typeisset(self->fielddef)) {
     return Qnil;
   }
-  return fieldtype_to_ruby(upb_fielddef_type(self->fielddef));
+  return descriptortype_to_ruby(upb_fielddef_descriptortype(self->fielddef));
 }
 
 /*
@@ -617,7 +679,7 @@ VALUE FieldDescriptor_type(VALUE _self) {
 VALUE FieldDescriptor_type_set(VALUE _self, VALUE type) {
   DEFINE_SELF(FieldDescriptor, self, _self);
   upb_fielddef* mut_def = check_field_notfrozen(self->fielddef);
-  upb_fielddef_settype(mut_def, ruby_to_fieldtype(type));
+  upb_fielddef_setdescriptortype(mut_def, ruby_to_descriptortype(type));
   return Qnil;
 }
 

@@ -47,7 +47,7 @@ namespace compiler {
 namespace ruby {
 
 // Forward decls.
-std::string IntToString(uint32 value);
+std::string IntToString(int32 value);
 std::string StripDotProto(const std::string& proto_file);
 std::string LabelForField(google::protobuf::FieldDescriptor* field);
 std::string TypeName(google::protobuf::FieldDescriptor* field);
@@ -64,7 +64,7 @@ void GenerateEnumAssignment(
     const google::protobuf::EnumDescriptor* en,
     google::protobuf::io::Printer* printer);
 
-std::string IntToString(uint32 value) {
+std::string IntToString(int32 value) {
   std::ostringstream os;
   os << value;
   return os.str();
@@ -85,17 +85,25 @@ std::string LabelForField(const google::protobuf::FieldDescriptor* field) {
 }
 
 std::string TypeName(const google::protobuf::FieldDescriptor* field) {
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT32: return "int32";
-    case FieldDescriptor::CPPTYPE_INT64: return "int64";
-    case FieldDescriptor::CPPTYPE_UINT32: return "uint32";
-    case FieldDescriptor::CPPTYPE_UINT64: return "uint64";
-    case FieldDescriptor::CPPTYPE_DOUBLE: return "double";
-    case FieldDescriptor::CPPTYPE_FLOAT: return "float";
-    case FieldDescriptor::CPPTYPE_BOOL: return "bool";
-    case FieldDescriptor::CPPTYPE_ENUM: return "enum";
-    case FieldDescriptor::CPPTYPE_STRING: return "string";
-    case FieldDescriptor::CPPTYPE_MESSAGE: return "message";
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32: return "int32";
+    case FieldDescriptor::TYPE_INT64: return "int64";
+    case FieldDescriptor::TYPE_UINT32: return "uint32";
+    case FieldDescriptor::TYPE_UINT64: return "uint64";
+    case FieldDescriptor::TYPE_SINT32: return "sint32";
+    case FieldDescriptor::TYPE_SINT64: return "sint64";
+    case FieldDescriptor::TYPE_FIXED32: return "fixed32";
+    case FieldDescriptor::TYPE_FIXED64: return "fixed64";
+    case FieldDescriptor::TYPE_SFIXED32: return "sfixed32";
+    case FieldDescriptor::TYPE_SFIXED64: return "sfixed64";
+    case FieldDescriptor::TYPE_DOUBLE: return "double";
+    case FieldDescriptor::TYPE_FLOAT: return "float";
+    case FieldDescriptor::TYPE_BOOL: return "bool";
+    case FieldDescriptor::TYPE_ENUM: return "enum";
+    case FieldDescriptor::TYPE_STRING: return "string";
+    case FieldDescriptor::TYPE_BYTES: return "bytes";
+    case FieldDescriptor::TYPE_MESSAGE: return "message";
+    case FieldDescriptor::TYPE_GROUP: return "group";
     default: assert(false); return "";
   }
 }

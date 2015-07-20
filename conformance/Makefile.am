@@ -22,7 +22,7 @@ conformance_cpp_CPPFLAGS = -I$(top_srcdir)/src
 if USE_EXTERNAL_PROTOC
 
 protoc_middleman: $(protoc_inputs)
-	$(PROTOC) -I$(srcdir) --cpp_out=. --java_out=. $^
+	$(PROTOC) -I$(srcdir) --cpp_out=. --java_out=. --ruby_out=. $^
 	touch protoc_middleman
 
 else
@@ -31,7 +31,7 @@ else
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
 protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(protoc_inputs)
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. --cpp_out=$$oldpwd --java_out=$$oldpwd $(protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd $(protoc_inputs) )
 	touch protoc_middleman
 
 endif
@@ -61,3 +61,6 @@ test_cpp: protoc_middleman conformance-test-runner conformance-cpp
 
 test_java: protoc_middleman conformance-test-runner conformance-java
 	./conformance-test-runner ./conformance-java
+
+test_ruby: protoc_middleman conformance-test-runner
+	RUBYLIB=../ruby/lib:. ./conformance-test-runner --failure_list failure_list_ruby.txt ./conformance_ruby.rb
