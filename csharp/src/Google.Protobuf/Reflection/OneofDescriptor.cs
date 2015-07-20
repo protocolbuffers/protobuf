@@ -32,6 +32,7 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Google.Protobuf.Reflection
 {
@@ -40,6 +41,7 @@ namespace Google.Protobuf.Reflection
         private readonly OneofDescriptorProto proto;
         private MessageDescriptor containingType;
         private IList<FieldDescriptor> fields;
+        private OneofAccessor accessor;
 
         internal OneofDescriptor(OneofDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index)
             : base(file, file.ComputeFullName(parent, proto.Name), index)
@@ -62,6 +64,8 @@ namespace Google.Protobuf.Reflection
 
         public IList<FieldDescriptor> Fields { get { return fields; } }
 
+        public OneofAccessor Accessor { get { return accessor; } }
+
         internal void CrossLink()
         {
             List<FieldDescriptor> fieldCollection = new List<FieldDescriptor>();
@@ -73,6 +77,36 @@ namespace Google.Protobuf.Reflection
                 }
             }
             fields = new ReadOnlyCollection<FieldDescriptor>(fieldCollection);
+            accessor = CreateAccessor();
+        }
+
+        private OneofAccessor CreateAccessor()
+        {
+            if (containingType.GeneratedType == null)
+            {
+                return null;
+            }
+            var caseProperty = containingType
+                .GeneratedType
+                .GetProperties()
+                .FirstOrDefault(p => p.IsDefined(typeof(ProtobufOneofAttribute), false) &&
+                                     p.GetCustomAttributes(typeof(ProtobufOneofAttribute), false).Cast<ProtobufOneofAttribute>().Single().Name == Name);
+            if (caseProperty == null)
+            {
+                return null;
+            }
+
+            var clearMethod = containingType
+                 .GeneratedType
+                 .GetMethods()
+                 .FirstOrDefault(p => p.IsDefined(typeof(ProtobufOneofAttribute), false) &&
+                                      p.GetCustomAttributes(typeof(ProtobufOneofAttribute), false).Cast<ProtobufOneofAttribute>().Single().Name == Name);
+            if (clearMethod == null)
+            {
+                return null;
+            }
+
+            return new OneofAccessor(caseProperty, clearMethod, this);
         }
     }
 }

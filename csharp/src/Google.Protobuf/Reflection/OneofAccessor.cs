@@ -44,18 +44,16 @@ namespace Google.Protobuf.Reflection
         private readonly Action<object> clearDelegate;
         private OneofDescriptor descriptor;
 
-        internal OneofAccessor(Type type, string propertyName, OneofDescriptor descriptor) 
+        internal OneofAccessor(PropertyInfo caseProperty, MethodInfo clearMethod, OneofDescriptor descriptor) 
         {
-            PropertyInfo property = type.GetProperty(propertyName + "Case");
-            if (property == null || !property.CanRead)
+            if (!caseProperty.CanRead)
             {
-                throw new ArgumentException("Not all required properties/methods available");
+                throw new ArgumentException("Cannot read from property");
             }
             this.descriptor = descriptor;
-            caseDelegate = ReflectionUtil.CreateFuncObjectT<int>(property.GetGetMethod());
+            caseDelegate = ReflectionUtil.CreateFuncObjectT<int>(caseProperty.GetGetMethod());
 
             this.descriptor = descriptor;
-            MethodInfo clearMethod = type.GetMethod("Clear" + propertyName);
             clearDelegate = ReflectionUtil.CreateActionObject(clearMethod);
         }
 

@@ -31,6 +31,7 @@
 #endregion
 
 using System;
+using System.Linq;
 
 namespace Google.Protobuf.Reflection
 {
@@ -45,6 +46,7 @@ namespace Google.Protobuf.Reflection
         private readonly MessageDescriptor containingType;
         private readonly OneofDescriptor containingOneof;
         private FieldType fieldType;
+        private IFieldAccessor accessor;
 
         internal FieldDescriptor(FieldDescriptorProto proto, FileDescriptor file,
                                  MessageDescriptor parent, int index)
@@ -82,6 +84,8 @@ namespace Google.Protobuf.Reflection
         public override string Name { get { return proto.Name; } }
 
         internal FieldDescriptorProto Proto { get { return proto; } }
+
+        public IFieldAccessor Accessor { get { return accessor; } }
         
         /// <summary>
         /// Maps a field type as included in the .proto file to a FieldType.
@@ -287,6 +291,30 @@ namespace Google.Protobuf.Reflection
             {
                 throw new DescriptorValidationException(this, "MessageSet format is not supported.");
             }
+
+            accessor = CreateAccessor();
+        }
+
+        private IFieldAccessor CreateAccessor()
+        {
+            // TODO: Check the performance of this with some large protos. Each message is O(N^2) in the number of fields,
+            // which isn't great...
+            if (containingType.GeneratedType == null)
+            {
+                return null;
+            }
+            var property = containingType
+                .GeneratedType
+                .GetProperties()
+                .FirstOrDefault(p => p.IsDefined(typeof(ProtobufFieldAttribute), false) &&
+                                     p.GetCustomAttributes(typeof(ProtobufFieldAttribute), false).Cast<ProtobufFieldAttribute>().Single().Number == FieldNumber);
+            if (property == null)
+            {
+                return null;
+            }
+            return IsMap ? new MapFieldAccessor(property, this)
+                : IsRepeated ? new RepeatedFieldAccessor(property, this)
+                : (IFieldAccessor) new SingleFieldAccessor(property, this);
         }
     }
 }

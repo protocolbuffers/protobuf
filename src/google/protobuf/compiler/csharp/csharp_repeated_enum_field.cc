@@ -59,12 +59,13 @@ void RepeatedEnumFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
     variables_,
     "private static readonly pb::FieldCodec<$type_name$> _repeated_$name$_codec\n"
-    "    = pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x);");
+    "    = pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x);\n");
   printer->Print(variables_,
     "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
+    "[pbr::ProtobufField($number$, \"$original_name$\")]\n"
     "$access_level$ pbc::RepeatedField<$type_name$> $property_name$ {\n"
     "  get { return $name$_; }\n"
     "}\n");

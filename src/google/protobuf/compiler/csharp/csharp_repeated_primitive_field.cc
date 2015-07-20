@@ -65,6 +65,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
+    "[pbr::ProtobufField($number$, \"$original_name$\")]\n"
     "$access_level$ pbc::RepeatedField<$type_name$> $property_name$ {\n"
     "  get { return $name$_; }\n"
     "}\n");

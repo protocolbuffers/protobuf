@@ -96,88 +96,11 @@ const std::vector<const FieldDescriptor*>& MessageGenerator::fields_by_number() 
   return fields_by_number_;
 }
 
-/// Get an identifier that uniquely identifies this type within the file.
-/// This is used to declare static variables related to this type at the
-/// outermost file scope.
-std::string GetUniqueFileScopeIdentifier(const Descriptor* descriptor) {
-  std::string result = descriptor->full_name();
-  std::replace(result.begin(), result.end(), '.', '_');
-  return "static_" + result;
-}
-
-void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
-  // Because descriptor.proto (Google.Protobuf.DescriptorProtos) is
-  // used in the construction of descriptors, we have a tricky bootstrapping
-  // problem.  To help control static initialization order, we make sure all
-  // descriptors and other static data that depends on them are members of
-  // the proto-descriptor class.  This way, they will be initialized in
-  // a deterministic order.
-
-  std::string identifier = GetUniqueFileScopeIdentifier(descriptor_);
-
-  // The descriptor for this type.
-  printer->Print(
-      "internal static pbr::FieldAccessorTable internal__$identifier$__FieldAccessorTable;\n",
-      "identifier", GetUniqueFileScopeIdentifier(descriptor_),
-      "full_class_name", full_class_name());
-
-  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    // Don't generate accessor table fields for maps...
-    if (!IsMapEntryMessage(descriptor_->nested_type(i))) {
-      MessageGenerator messageGenerator(descriptor_->nested_type(i));
-      messageGenerator.GenerateStaticVariables(printer);
-    }
-  }
-}
-
-void MessageGenerator::GenerateStaticVariableInitializers(io::Printer* printer) {
-  map<string, string> vars;
-  vars["identifier"] = GetUniqueFileScopeIdentifier(descriptor_);
-  vars["full_class_name"] = full_class_name();
-
-  // Work out how to get to the message descriptor (which may be multiply nested) from the file
-  // descriptor.
-  string descriptor_chain;
-  const Descriptor* current_descriptor = descriptor_;
-  while (current_descriptor->containing_type()) {
-    descriptor_chain = ".NestedTypes[" + SimpleItoa(current_descriptor->index()) + "]" + descriptor_chain;
-    current_descriptor = current_descriptor->containing_type();
-  }
-  descriptor_chain = "descriptor.MessageTypes[" + SimpleItoa(current_descriptor->index()) + "]" + descriptor_chain;
-  vars["descriptor_chain"] = descriptor_chain;
-
-  printer->Print(
-    vars,
-    "internal__$identifier$__FieldAccessorTable = \n"
-    "    new pbr::FieldAccessorTable(typeof($full_class_name$), $descriptor_chain$,\n");
-  printer->Print("        new string[] { ");
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    printer->Print("\"$property_name$\", ",
-                   "property_name", GetPropertyName(descriptor_->field(i)));
-  }
-  printer->Print("}, new string[] { ");
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    printer->Print("\"$oneof_name$\", ",
-                   "oneof_name",
-                   UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true));
-  }
-  printer->Print("});\n");
-
-  // Generate static member initializers for all non-map-entry nested types.
-  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    if (!IsMapEntryMessage(descriptor_->nested_type(i))) {
-      MessageGenerator messageGenerator(descriptor_->nested_type(i));
-      messageGenerator.GenerateStaticVariableInitializers(printer);
-    }
-  }
-}
-
 void MessageGenerator::Generate(io::Printer* printer) {
   map<string, string> vars;
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
   vars["umbrella_class_name"] = GetFullUmbrellaClassName(descriptor_->file());
-  vars["identifier"] = GetUniqueFileScopeIdentifier(descriptor_);
 
   printer->Print(
     "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n");
@@ -221,8 +144,8 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "  get { return $descriptor_accessor$; }\n"
     "}\n"
     "\n"
-    "pbr::FieldAccessorTable pb::IReflectedMessage.Fields {\n"
-    "  get { return $umbrella_class_name$.internal__$identifier$__FieldAccessorTable; }\n"
+    "pbr::MessageDescriptor pb::IMessage.Descriptor {\n"
+    "  get { return Descriptor; }\n"
     "}\n"
     "\n"
     "private bool _frozen = false;\n"
@@ -258,6 +181,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     vars["name"] = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false);
     vars["property_name"] = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true);
+    vars["original_name"] = descriptor_->oneof_decl(i)->name();
     printer->Print(
       vars,
       "private object $name$_;\n"
@@ -275,9 +199,11 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print(
       vars,
       "private $property_name$OneofCase $name$Case_ = $property_name$OneofCase.None;\n"
+      "[pbr::ProtobufOneof(\"$original_name$\")]\n"
       "public $property_name$OneofCase $property_name$Case {\n"
       "  get { return $name$Case_; }\n"
       "}\n\n"
+      "[pbr::ProtobufOneof(\"$original_name$\")]\n"
       "public void Clear$property_name$() {\n"
       "  pb::Freezable.CheckMutable(this);\n"
       "  $name$Case_ = $property_name$OneofCase.None;\n"

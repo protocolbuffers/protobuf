@@ -29,34 +29,30 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
-
 using System;
-using System.Reflection;
 
 namespace Google.Protobuf.Reflection
 {
     /// <summary>
-    /// Base class for field accessors.
+    /// Attribute applied to a generated property corresponding to a field in a .proto file.
     /// </summary>
-    internal abstract class FieldAccessorBase : IFieldAccessor
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    public sealed class ProtobufFieldAttribute : Attribute
     {
-        private readonly Func<object, object> getValueDelegate;
-        private readonly FieldDescriptor descriptor;
+        /// <summary>
+        /// The field number in the original .proto file.
+        /// </summary>
+        public int Number { get; set; }
+        
+        /// <summary>
+        /// The field name in the original .proto file.
+        /// </summary>
+        public string Name { get; set; }
 
-        internal FieldAccessorBase(PropertyInfo property, FieldDescriptor descriptor)
+        public ProtobufFieldAttribute(int number, string name)
         {
-            this.descriptor = descriptor;
-            getValueDelegate = ReflectionUtil.CreateFuncObjectObject(property.GetGetMethod());
+            this.Number = number;
+            this.Name = name;
         }
-
-        public FieldDescriptor Descriptor { get { return descriptor; } }
-
-        public object GetValue(object message)
-        {
-            return getValueDelegate(message);
-        }
-
-        public abstract void Clear(object message);
-        public abstract void SetValue(object message, object value);
     }
 }

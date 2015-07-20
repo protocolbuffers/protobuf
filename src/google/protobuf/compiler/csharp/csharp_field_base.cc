@@ -74,6 +74,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
 
   (*variables)["property_name"] = property_name();
   (*variables)["type_name"] = type_name();
+  (*variables)["original_name"] = descriptor_->name();
   (*variables)["name"] = name();
   (*variables)["descriptor_name"] = descriptor_->name();
   (*variables)["default_value"] = default_value();
@@ -85,7 +86,6 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   }
   (*variables)["capitalized_type_name"] = capitalized_type_name();
   (*variables)["number"] = number();
-  (*variables)["field_ordinal"] = field_ordinal();
   (*variables)["has_property_check"] =
     (*variables)["property_name"] + " != " + (*variables)["default_value"];
   (*variables)["other_has_property_check"] = "other." +

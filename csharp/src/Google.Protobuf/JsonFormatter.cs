@@ -118,7 +118,7 @@ namespace Google.Protobuf
             this.settings = settings;
         }
 
-        public string Format(IReflectedMessage message)
+        public string Format(IMessage message)
         {
             ThrowHelper.ThrowIfNull(message, "message");
             StringBuilder builder = new StringBuilder();
@@ -129,7 +129,7 @@ namespace Google.Protobuf
             return builder.ToString();
         }
 
-        private void WriteMessage(StringBuilder builder, IReflectedMessage message)
+        private void WriteMessage(StringBuilder builder, IMessage message)
         {
             if (message == null)
             {
@@ -137,15 +137,15 @@ namespace Google.Protobuf
                 return;
             }
             builder.Append("{ ");
-            var fields = message.Fields;
+            var fields = message.Descriptor.Fields;
             bool first = true;
             // First non-oneof fields
-            foreach (var accessor in fields.Accessors)
+            foreach (var field in fields)
             {
-                var descriptor = accessor.Descriptor;
+                var accessor = field.Accessor;
                 // Oneofs are written later
                 // TODO: Change to write out fields in order, interleaving oneofs appropriately (as per binary format)
-                if (descriptor.ContainingOneof != null)
+                if (field.ContainingOneof != null)
                 {
                     continue;
                 }
@@ -156,7 +156,7 @@ namespace Google.Protobuf
                     continue;
                 }
                 // Omit awkward (single) values such as unknown enum values
-                if (!descriptor.IsRepeated && !descriptor.IsMap && !CanWriteSingleValue(accessor.Descriptor, value))
+                if (!field.IsRepeated && !field.IsMap && !CanWriteSingleValue(accessor.Descriptor, value))
                 {
                     continue;
                 }
@@ -173,15 +173,15 @@ namespace Google.Protobuf
             }
 
             // Now oneofs
-            foreach (var accessor in fields.Oneofs)
+            foreach (var oneof in message.Descriptor.Oneofs)
             {
+                var accessor = oneof.Accessor;
                 var fieldDescriptor = accessor.GetCaseFieldDescriptor(message);
                 if (fieldDescriptor == null)
                 {
                     continue;
                 }
-                var fieldAccessor = fields[fieldDescriptor.FieldNumber];
-                object value = fieldAccessor.GetValue(message);
+                object value = fieldDescriptor.Accessor.GetValue(message);
                 // Omit awkward (single) values such as unknown enum values
                 if (!fieldDescriptor.IsRepeated && !fieldDescriptor.IsMap && !CanWriteSingleValue(fieldDescriptor, value))
                 {
@@ -194,7 +194,7 @@ namespace Google.Protobuf
                 }
                 WriteString(builder, ToCamelCase(fieldDescriptor.Name));
                 builder.Append(": ");
-                WriteValue(builder, fieldAccessor, value);
+                WriteValue(builder, fieldDescriptor.Accessor, value);
                 first = false;
             }
             builder.Append(first ? "}" : " }");
@@ -385,7 +385,7 @@ namespace Google.Protobuf
                     }
                     else
                     {
-                        WriteMessage(builder, (IReflectedMessage) value);
+                        WriteMessage(builder, (IMessage) value);
                     }
                     break;
                 default:
@@ -406,7 +406,7 @@ namespace Google.Protobuf
                 WriteSingleValue(builder, descriptor.MessageType.FindFieldByNumber(1), value);
                 return;
             }
-            WriteMessage(builder, (IReflectedMessage) value);
+            WriteMessage(builder, (IMessage) value);
         }
 
         private void WriteList(StringBuilder builder, IFieldAccessor accessor, IList list)

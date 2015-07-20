@@ -64,6 +64,7 @@ void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
+    "[pbr::ProtobufField($number$, \"$original_name$\")]\n"
     "$access_level$ $type_name$ $property_name$ {\n"
     "  get { return $name$_; }\n"
     "  set {\n"
@@ -158,6 +159,7 @@ void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
+    "[pbr::ProtobufField($number$, \"$original_name$\")]\n"
     "$access_level$ $type_name$ $property_name$ {\n"
     "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : null; }\n"
     "  set {\n"

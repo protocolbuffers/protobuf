@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Reflection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -559,6 +560,8 @@ namespace Google.Protobuf.Collections
                 {
                     return codec.keyCodec.CalculateSizeWithTag(Key) + codec.valueCodec.CalculateSizeWithTag(Value);
                 }
+
+                MessageDescriptor IMessage.Descriptor { get { return null; } }
             }
         }
     }

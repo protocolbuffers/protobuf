@@ -32,6 +32,7 @@
 
 using System;
 using System.Collections;
+using System.Reflection;
 
 namespace Google.Protobuf.Reflection
 {
@@ -40,7 +41,7 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     internal sealed class MapFieldAccessor : FieldAccessorBase
     {
-        internal MapFieldAccessor(Type type, string propertyName, FieldDescriptor descriptor) : base(type, propertyName, descriptor)
+        internal MapFieldAccessor(PropertyInfo property, FieldDescriptor descriptor) : base(property, descriptor)
         {
         }
 
