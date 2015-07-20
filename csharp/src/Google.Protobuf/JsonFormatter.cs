@@ -35,6 +35,7 @@ using System.Collections;
 using System.Globalization;
 using System.Text;
 using Google.Protobuf.Reflection;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Google.Protobuf
 {
@@ -121,6 +122,9 @@ namespace Google.Protobuf
         {
             ThrowHelper.ThrowIfNull(message, "message");
             StringBuilder builder = new StringBuilder();
+            // TODO(jonskeet): Handle well-known types here.
+            // Our reflection support needs improving so that we can get at the descriptor
+            // to find out whether *this* message is a well-known type.
             WriteMessage(builder, message);
             return builder.ToString();
         }
@@ -375,11 +379,34 @@ namespace Google.Protobuf
                     break;
                 case FieldType.Message:
                 case FieldType.Group: // Never expect to get this, but...
-                    WriteMessage(builder, (IReflectedMessage) value);
+                    if (descriptor.MessageType.IsWellKnownType)
+                    {
+                        WriteWellKnownTypeValue(builder, descriptor, value);
+                    }
+                    else
+                    {
+                        WriteMessage(builder, (IReflectedMessage) value);
+                    }
                     break;
                 default:
                     throw new ArgumentException("Invalid field type: " + descriptor.FieldType);
             }
+        }
+
+        /// <summary>
+        /// Central interception point for well-known type formatting. Any well-known types which
+        /// don't need special handling can fall back to WriteMessage.
+        /// </summary>
+        private void WriteWellKnownTypeValue(StringBuilder builder, FieldDescriptor descriptor, object value)
+        {
+            // For wrapper types, the value will be the (possibly boxed) "native" value,
+            // so we can write it as if we were unconditionally writing the Value field for the wrapper type.
+            if (descriptor.MessageType.File == Int32Value.Descriptor.File && value != null)
+            {
+                WriteSingleValue(builder, descriptor.MessageType.FindFieldByNumber(1), value);
+                return;
+            }
+            WriteMessage(builder, (IReflectedMessage) value);
         }
 
         private void WriteList(StringBuilder builder, IFieldAccessor accessor, IList list)
