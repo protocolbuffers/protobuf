@@ -86,7 +86,7 @@ namespace Google.Protobuf.Examples.AddressBook
                         break;
                 }
 
-                person.Phone.Add(phoneNumber);
+                person.Phones.Add(phoneNumber);
             }
             return person;
         }
@@ -119,7 +119,7 @@ namespace Google.Protobuf.Examples.AddressBook
             }
 
             // Add an address.
-            addressBook.Person.Add(PromptForAddress(Console.In, Console.Out));
+            addressBook.People.Add(PromptForAddress(Console.In, Console.Out));
 
             // Write the new address book back to disk.
             using (Stream output = File.OpenWrite(args[0]))

@@ -46,7 +46,7 @@ namespace Google.Protobuf.Examples.AddressBook
                 Id = 1,
                 Name = "Foo",
                 Email = "foo@bar",
-                Phone = { new Person.Types.PhoneNumber { Number = "555-1212" } }
+                Phones = { new Person.Types.PhoneNumber { Number = "555-1212" } }
             };
             using (MemoryStream stream = new MemoryStream())
             {
@@ -61,7 +61,7 @@ namespace Google.Protobuf.Examples.AddressBook
             // And read the address book back again
             AddressBook restored = AddressBook.Parser.ParseFrom(bytes);
             // The message performs a deep-comparison on equality:
-            if (restored.Person.Count != 1 || !person.Equals(restored.Person[0]))
+            if (restored.People.Count != 1 || !person.Equals(restored.People[0]))
             {
                 throw new ApplicationException("There is a bad person in here!");
             }
