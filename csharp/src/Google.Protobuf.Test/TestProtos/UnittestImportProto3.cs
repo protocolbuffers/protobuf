@@ -12,9 +12,6 @@ namespace Google.Protobuf.TestProtos {
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestImportProto3 {
 
-    #region Static variables
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable;
-    #endregion
     #region Descriptor
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
@@ -33,12 +30,8 @@ namespace Google.Protobuf.TestProtos {
             "c3RIAfgBAaoCGkdvb2dsZS5Qcm90b2J1Zi5UZXN0UHJvdG9zUABiBnByb3Rv", 
           "Mw=="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbr::FileDescriptor[] {
-          global::Google.Protobuf.TestProtos.UnittestImportPublicProto3.Descriptor, 
-          });
-      internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.ImportMessage), descriptor.MessageTypes[0],
-              new string[] { "D", }, new string[] { });
+          new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportPublicProto3.Descriptor, },
+          new global::System.Type[] { typeof(global::Google.Protobuf.TestProtos.ImportMessage), typeof(global::Google.Protobuf.TestProtos.ImportEnum), });
     }
     #endregion
 
@@ -65,8 +58,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestImportProto3.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestImportProto3.internal__static_protobuf_unittest_import_ImportMessage__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -95,6 +88,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DFieldNumber = 1;
     private int d_;
+    [pbr::ProtobufField(1, "d")]
     public int D {
       get { return d_; }
       set {

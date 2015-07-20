@@ -12,9 +12,6 @@ namespace Google.Protobuf.TestProtos {
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestImportPublicProto3 {
 
-    #region Static variables
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_import_PublicImportMessage__FieldAccessorTable;
-    #endregion
     #region Descriptor
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
@@ -29,11 +26,8 @@ namespace Google.Protobuf.TestProtos {
             "bXBvcnRNZXNzYWdlEgkKAWUYASABKAVCNwoYY29tLmdvb2dsZS5wcm90b2J1", 
           "Zi50ZXN0qgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbr::FileDescriptor[] {
-          });
-      internal__static_protobuf_unittest_import_PublicImportMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.PublicImportMessage), descriptor.MessageTypes[0],
-              new string[] { "E", }, new string[] { });
+          new pbr::FileDescriptor[] { },
+          new global::System.Type[] { typeof(global::Google.Protobuf.TestProtos.PublicImportMessage), });
     }
     #endregion
 
@@ -50,8 +44,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestImportPublicProto3.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestImportPublicProto3.internal__static_protobuf_unittest_import_PublicImportMessage__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -80,6 +74,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int EFieldNumber = 1;
     private int e_;
+    [pbr::ProtobufField(1, "e")]
     public int E {
       get { return e_; }
       set {

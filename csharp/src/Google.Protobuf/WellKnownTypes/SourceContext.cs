@@ -14,9 +14,6 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class SourceContext {
 
-      #region Static variables
-      internal static pbr::FieldAccessorTable internal__static_google_protobuf_SourceContext__FieldAccessorTable;
-      #endregion
       #region Descriptor
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
@@ -32,11 +29,8 @@ namespace Google.Protobuf.WellKnownTypes {
               "AaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IGcHJv", 
             "dG8z"));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-            new pbr::FileDescriptor[] {
-            });
-        internal__static_google_protobuf_SourceContext__FieldAccessorTable = 
-            new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.SourceContext), descriptor.MessageTypes[0],
-                new string[] { "FileName", }, new string[] { });
+            new pbr::FileDescriptor[] { },
+            new global::System.Type[] { typeof(global::Google.Protobuf.WellKnownTypes.SourceContext), });
       }
       #endregion
 
@@ -54,8 +48,8 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.SourceContext.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.SourceContext.internal__static_google_protobuf_SourceContext__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -84,6 +78,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int FileNameFieldNumber = 1;
     private string fileName_ = "";
+    [pbr::ProtobufField(1, "file_name")]
     public string FileName {
       get { return fileName_; }
       set {

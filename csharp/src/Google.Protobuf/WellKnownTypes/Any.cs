@@ -14,9 +14,6 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Any {
 
-      #region Static variables
-      internal static pbr::FieldAccessorTable internal__static_google_protobuf_Any__FieldAccessorTable;
-      #endregion
       #region Descriptor
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
@@ -31,11 +28,8 @@ namespace Google.Protobuf.WellKnownTypes {
               "bS5nb29nbGUucHJvdG9idWZCCEFueVByb3RvUAGgAQGiAgNHUEKqAh5Hb29n", 
             "bGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-            new pbr::FileDescriptor[] {
-            });
-        internal__static_google_protobuf_Any__FieldAccessorTable = 
-            new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.Any), descriptor.MessageTypes[0],
-                new string[] { "TypeUrl", "Value", }, new string[] { });
+            new pbr::FileDescriptor[] { },
+            new global::System.Type[] { typeof(global::Google.Protobuf.WellKnownTypes.Any), });
       }
       #endregion
 
@@ -53,8 +47,8 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.Any.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.Any.internal__static_google_protobuf_Any__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -84,6 +78,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int TypeUrlFieldNumber = 1;
     private string typeUrl_ = "";
+    [pbr::ProtobufField(1, "type_url")]
     public string TypeUrl {
       get { return typeUrl_; }
       set {
@@ -94,6 +89,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ValueFieldNumber = 2;
     private pb::ByteString value_ = pb::ByteString.Empty;
+    [pbr::ProtobufField(2, "value")]
     public pb::ByteString Value {
       get { return value_; }
       set {

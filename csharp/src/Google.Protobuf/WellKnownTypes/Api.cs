@@ -14,10 +14,6 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Api {
 
-      #region Static variables
-      internal static pbr::FieldAccessorTable internal__static_google_protobuf_Api__FieldAccessorTable;
-      internal static pbr::FieldAccessorTable internal__static_google_protobuf_Method__FieldAccessorTable;
-      #endregion
       #region Descriptor
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
@@ -41,16 +37,8 @@ namespace Google.Protobuf.WellKnownTypes {
               "dG9QAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IG", 
             "cHJvdG8z"));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-            new pbr::FileDescriptor[] {
-            global::Google.Protobuf.WellKnownTypes.Proto.SourceContext.Descriptor, 
-            global::Google.Protobuf.WellKnownTypes.Proto.Type.Descriptor, 
-            });
-        internal__static_google_protobuf_Api__FieldAccessorTable = 
-            new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.Api), descriptor.MessageTypes[0],
-                new string[] { "Name", "Methods", "Options", "Version", "SourceContext", }, new string[] { });
-        internal__static_google_protobuf_Method__FieldAccessorTable = 
-            new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.Method), descriptor.MessageTypes[1],
-                new string[] { "Name", "RequestTypeUrl", "RequestStreaming", "ResponseTypeUrl", "ResponseStreaming", "Options", }, new string[] { });
+            new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.Proto.SourceContext.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Type.Descriptor, },
+            new global::System.Type[] { typeof(global::Google.Protobuf.WellKnownTypes.Api), typeof(global::Google.Protobuf.WellKnownTypes.Method), });
       }
       #endregion
 
@@ -68,8 +56,8 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.Api.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.Api.internal__static_google_protobuf_Api__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -105,6 +93,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
+    [pbr::ProtobufField(1, "name")]
     public string Name {
       get { return name_; }
       set {
@@ -117,6 +106,7 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Method> _repeated_methods_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Method.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Method> methods_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Method>();
+    [pbr::ProtobufField(2, "methods")]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Method> Methods {
       get { return methods_; }
     }
@@ -125,12 +115,14 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Option> _repeated_options_codec
         = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
+    [pbr::ProtobufField(3, "options")]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
       get { return options_; }
     }
 
     public const int VersionFieldNumber = 4;
     private string version_ = "";
+    [pbr::ProtobufField(4, "version")]
     public string Version {
       get { return version_; }
       set {
@@ -141,6 +133,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int SourceContextFieldNumber = 5;
     private global::Google.Protobuf.WellKnownTypes.SourceContext sourceContext_;
+    [pbr::ProtobufField(5, "source_context")]
     public global::Google.Protobuf.WellKnownTypes.SourceContext SourceContext {
       get { return sourceContext_; }
       set {
@@ -286,8 +279,8 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.Api.Descriptor.MessageTypes[1]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.Api.internal__static_google_protobuf_Method__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -322,6 +315,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
+    [pbr::ProtobufField(1, "name")]
     public string Name {
       get { return name_; }
       set {
@@ -332,6 +326,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int RequestTypeUrlFieldNumber = 2;
     private string requestTypeUrl_ = "";
+    [pbr::ProtobufField(2, "request_type_url")]
     public string RequestTypeUrl {
       get { return requestTypeUrl_; }
       set {
@@ -342,6 +337,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int RequestStreamingFieldNumber = 3;
     private bool requestStreaming_;
+    [pbr::ProtobufField(3, "request_streaming")]
     public bool RequestStreaming {
       get { return requestStreaming_; }
       set {
@@ -352,6 +348,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ResponseTypeUrlFieldNumber = 4;
     private string responseTypeUrl_ = "";
+    [pbr::ProtobufField(4, "response_type_url")]
     public string ResponseTypeUrl {
       get { return responseTypeUrl_; }
       set {
@@ -362,6 +359,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ResponseStreamingFieldNumber = 5;
     private bool responseStreaming_;
+    [pbr::ProtobufField(5, "response_streaming")]
     public bool ResponseStreaming {
       get { return responseStreaming_; }
       set {
@@ -374,6 +372,7 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Option> _repeated_options_codec
         = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
+    [pbr::ProtobufField(6, "options")]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
       get { return options_; }
     }

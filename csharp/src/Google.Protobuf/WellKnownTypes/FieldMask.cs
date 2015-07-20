@@ -14,9 +14,6 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class FieldMask {
 
-      #region Static variables
-      internal static pbr::FieldAccessorTable internal__static_google_protobuf_FieldMask__FieldAccessorTable;
-      #endregion
       #region Descriptor
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
@@ -31,11 +28,8 @@ namespace Google.Protobuf.WellKnownTypes {
               "Z2xlLnByb3RvYnVmQg5GaWVsZE1hc2tQcm90b1ABogIDR1BCqgIeR29vZ2xl", 
             "LlByb3RvYnVmLldlbGxLbm93blR5cGVzYgZwcm90bzM="));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-            new pbr::FileDescriptor[] {
-            });
-        internal__static_google_protobuf_FieldMask__FieldAccessorTable = 
-            new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.FieldMask), descriptor.MessageTypes[0],
-                new string[] { "Paths", }, new string[] { });
+            new pbr::FileDescriptor[] { },
+            new global::System.Type[] { typeof(global::Google.Protobuf.WellKnownTypes.FieldMask), });
       }
       #endregion
 
@@ -53,8 +47,8 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.FieldMask.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.FieldMask.internal__static_google_protobuf_FieldMask__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -86,6 +80,7 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::FieldCodec<string> _repeated_paths_codec
         = pb::FieldCodec.ForString(10);
     private readonly pbc::RepeatedField<string> paths_ = new pbc::RepeatedField<string>();
+    [pbr::ProtobufField(1, "paths")]
     public pbc::RepeatedField<string> Paths {
       get { return paths_; }
     }

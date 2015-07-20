@@ -14,9 +14,6 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Timestamp {
 
-      #region Static variables
-      internal static pbr::FieldAccessorTable internal__static_google_protobuf_Timestamp__FieldAccessorTable;
-      #endregion
       #region Descriptor
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
@@ -32,11 +29,8 @@ namespace Google.Protobuf.WellKnownTypes {
               "AaABAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IG", 
             "cHJvdG8z"));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-            new pbr::FileDescriptor[] {
-            });
-        internal__static_google_protobuf_Timestamp__FieldAccessorTable = 
-            new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.Timestamp), descriptor.MessageTypes[0],
-                new string[] { "Seconds", "Nanos", }, new string[] { });
+            new pbr::FileDescriptor[] { },
+            new global::System.Type[] { typeof(global::Google.Protobuf.WellKnownTypes.Timestamp), });
       }
       #endregion
 
@@ -54,8 +48,8 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.Timestamp.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.Timestamp.internal__static_google_protobuf_Timestamp__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -85,6 +79,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int SecondsFieldNumber = 1;
     private long seconds_;
+    [pbr::ProtobufField(1, "seconds")]
     public long Seconds {
       get { return seconds_; }
       set {
@@ -95,6 +90,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int NanosFieldNumber = 2;
     private int nanos_;
+    [pbr::ProtobufField(2, "nanos")]
     public int Nanos {
       get { return nanos_; }
       set {

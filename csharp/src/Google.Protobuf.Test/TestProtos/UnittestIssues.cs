@@ -12,15 +12,6 @@ namespace UnitTest.Issues.TestProtos {
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestIssues {
 
-    #region Static variables
-    internal static pbr::FieldAccessorTable internal__static_unittest_issues_Issue307__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_unittest_issues_Issue307_NestedOnce__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_unittest_issues_Issue307_NestedOnce_NestedTwice__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_unittest_issues_DeprecatedChild__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_unittest_issues_ItemField__FieldAccessorTable;
-    #endregion
     #region Descriptor
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
@@ -49,29 +40,8 @@ namespace UnitTest.Issues.TestProtos {
             "dGVkRW51bRITCg9ERVBSRUNBVEVEX1pFUk8QABIHCgNvbmUQAUIfSAGqAhpV", 
           "bml0VGVzdC5Jc3N1ZXMuVGVzdFByb3Rvc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbr::FileDescriptor[] {
-          });
-      internal__static_unittest_issues_Issue307__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.Issue307), descriptor.MessageTypes[0],
-              new string[] { }, new string[] { });
-      internal__static_unittest_issues_Issue307_NestedOnce__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce), descriptor.MessageTypes[0].NestedTypes[0],
-              new string[] { }, new string[] { });
-      internal__static_unittest_issues_Issue307_NestedOnce_NestedTwice__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice), descriptor.MessageTypes[0].NestedTypes[0].NestedTypes[0],
-              new string[] { }, new string[] { });
-      internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.NegativeEnumMessage), descriptor.MessageTypes[1],
-              new string[] { "Value", "Values", "PackedValues", }, new string[] { });
-      internal__static_unittest_issues_DeprecatedChild__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.DeprecatedChild), descriptor.MessageTypes[2],
-              new string[] { }, new string[] { });
-      internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage), descriptor.MessageTypes[3],
-              new string[] { "PrimitiveValue", "PrimitiveArray", "MessageValue", "MessageArray", "EnumValue", "EnumArray", }, new string[] { });
-      internal__static_unittest_issues_ItemField__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::UnitTest.Issues.TestProtos.ItemField), descriptor.MessageTypes[4],
-              new string[] { "Item", }, new string[] { });
+          new pbr::FileDescriptor[] { },
+          new global::System.Type[] { typeof(global::UnitTest.Issues.TestProtos.Issue307), typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce), typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice), typeof(global::UnitTest.Issues.TestProtos.NegativeEnumMessage), typeof(global::UnitTest.Issues.TestProtos.DeprecatedChild), typeof(global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage), typeof(global::UnitTest.Issues.TestProtos.ItemField), typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), });
     }
     #endregion
 
@@ -102,8 +72,8 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_Issue307__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -195,8 +165,8 @@ namespace UnitTest.Issues.TestProtos {
           get { return global::UnitTest.Issues.TestProtos.Issue307.Descriptor.NestedTypes[0]; }
         }
 
-        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-          get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_Issue307_NestedOnce__FieldAccessorTable; }
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
         }
 
         private bool _frozen = false;
@@ -288,8 +258,8 @@ namespace UnitTest.Issues.TestProtos {
               get { return global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Descriptor.NestedTypes[0]; }
             }
 
-            pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-              get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_Issue307_NestedOnce_NestedTwice__FieldAccessorTable; }
+            pbr::MessageDescriptor pb::IMessage.Descriptor {
+              get { return Descriptor; }
             }
 
             private bool _frozen = false;
@@ -390,8 +360,8 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[1]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_NegativeEnumMessage__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -424,6 +394,7 @@ namespace UnitTest.Issues.TestProtos {
 
     public const int ValueFieldNumber = 1;
     private global::UnitTest.Issues.TestProtos.NegativeEnum value_ = global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO;
+    [pbr::ProtobufField(1, "value")]
     public global::UnitTest.Issues.TestProtos.NegativeEnum Value {
       get { return value_; }
       set {
@@ -434,14 +405,18 @@ namespace UnitTest.Issues.TestProtos {
 
     public const int ValuesFieldNumber = 2;
     private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.NegativeEnum> _repeated_values_codec
-        = pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::UnitTest.Issues.TestProtos.NegativeEnum) x);private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> values_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
+        = pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::UnitTest.Issues.TestProtos.NegativeEnum) x);
+    private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> values_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
+    [pbr::ProtobufField(2, "values")]
     public pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> Values {
       get { return values_; }
     }
 
     public const int PackedValuesFieldNumber = 3;
     private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.NegativeEnum> _repeated_packedValues_codec
-        = pb::FieldCodec.ForEnum(26, x => (int) x, x => (global::UnitTest.Issues.TestProtos.NegativeEnum) x);private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> packedValues_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
+        = pb::FieldCodec.ForEnum(26, x => (int) x, x => (global::UnitTest.Issues.TestProtos.NegativeEnum) x);
+    private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> packedValues_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
+    [pbr::ProtobufField(3, "packed_values")]
     public pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> PackedValues {
       get { return packedValues_; }
     }
@@ -547,8 +522,8 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[2]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_DeprecatedChild__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -639,8 +614,8 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[3]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_DeprecatedFieldsMessage__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -679,6 +654,7 @@ namespace UnitTest.Issues.TestProtos {
     public const int PrimitiveValueFieldNumber = 1;
     private int primitiveValue_;
     [global::System.ObsoleteAttribute()]
+    [pbr::ProtobufField(1, "PrimitiveValue")]
     public int PrimitiveValue {
       get { return primitiveValue_; }
       set {
@@ -692,6 +668,7 @@ namespace UnitTest.Issues.TestProtos {
         = pb::FieldCodec.ForInt32(18);
     private readonly pbc::RepeatedField<int> primitiveArray_ = new pbc::RepeatedField<int>();
     [global::System.ObsoleteAttribute()]
+    [pbr::ProtobufField(2, "PrimitiveArray")]
     public pbc::RepeatedField<int> PrimitiveArray {
       get { return primitiveArray_; }
     }
@@ -699,6 +676,7 @@ namespace UnitTest.Issues.TestProtos {
     public const int MessageValueFieldNumber = 3;
     private global::UnitTest.Issues.TestProtos.DeprecatedChild messageValue_;
     [global::System.ObsoleteAttribute()]
+    [pbr::ProtobufField(3, "MessageValue")]
     public global::UnitTest.Issues.TestProtos.DeprecatedChild MessageValue {
       get { return messageValue_; }
       set {
@@ -712,6 +690,7 @@ namespace UnitTest.Issues.TestProtos {
         = pb::FieldCodec.ForMessage(34, global::UnitTest.Issues.TestProtos.DeprecatedChild.Parser);
     private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedChild> messageArray_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedChild>();
     [global::System.ObsoleteAttribute()]
+    [pbr::ProtobufField(4, "MessageArray")]
     public pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedChild> MessageArray {
       get { return messageArray_; }
     }
@@ -719,6 +698,7 @@ namespace UnitTest.Issues.TestProtos {
     public const int EnumValueFieldNumber = 5;
     private global::UnitTest.Issues.TestProtos.DeprecatedEnum enumValue_ = global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO;
     [global::System.ObsoleteAttribute()]
+    [pbr::ProtobufField(5, "EnumValue")]
     public global::UnitTest.Issues.TestProtos.DeprecatedEnum EnumValue {
       get { return enumValue_; }
       set {
@@ -729,8 +709,10 @@ namespace UnitTest.Issues.TestProtos {
 
     public const int EnumArrayFieldNumber = 6;
     private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.DeprecatedEnum> _repeated_enumArray_codec
-        = pb::FieldCodec.ForEnum(50, x => (int) x, x => (global::UnitTest.Issues.TestProtos.DeprecatedEnum) x);private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum> enumArray_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum>();
+        = pb::FieldCodec.ForEnum(50, x => (int) x, x => (global::UnitTest.Issues.TestProtos.DeprecatedEnum) x);
+    private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum> enumArray_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum>();
     [global::System.ObsoleteAttribute()]
+    [pbr::ProtobufField(6, "EnumArray")]
     public pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum> EnumArray {
       get { return enumArray_; }
     }
@@ -883,8 +865,8 @@ namespace UnitTest.Issues.TestProtos {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[4]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.internal__static_unittest_issues_ItemField__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -913,6 +895,7 @@ namespace UnitTest.Issues.TestProtos {
 
     public const int ItemFieldNumber = 1;
     private int item_;
+    [pbr::ProtobufField(1, "item")]
     public int Item {
       get { return item_; }
       set {

@@ -12,43 +12,6 @@ namespace Google.Protobuf.TestProtos {
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestProto3 {
 
-    #region Static variables
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestAllTypes__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_NestedTestAllTypes__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestDeprecatedFields__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestReservedFields__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_SparseEnumMessage__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_OneString__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_MoreString__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_OneBytes__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_MoreBytes__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_Int32Message__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_Uint32Message__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_Int64Message__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_Uint64Message__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_BoolMessage__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestOneof__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestUnpackedTypes__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestCommentInjectionMessage__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_FooRequest__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_FooResponse__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_FooClientMessage__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_FooServerMessage__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_BarRequest__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_BarResponse__FieldAccessorTable;
-    #endregion
     #region Descriptor
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
@@ -186,114 +149,8 @@ namespace Google.Protobuf.TestProtos {
             "dHRlc3QuQmFyUmVzcG9uc2VCOkINVW5pdHRlc3RQcm90b0gBgAEBiAEBkAEB", 
           "+AEBqgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbr::FileDescriptor[] {
-          global::Google.Protobuf.TestProtos.UnittestImportProto3.Descriptor, 
-          });
-      internal__static_protobuf_unittest_TestAllTypes__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestAllTypes), descriptor.MessageTypes[0],
-              new string[] { "SingleInt32", "SingleInt64", "SingleUint32", "SingleUint64", "SingleSint32", "SingleSint64", "SingleFixed32", "SingleFixed64", "SingleSfixed32", "SingleSfixed64", "SingleFloat", "SingleDouble", "SingleBool", "SingleString", "SingleBytes", "SingleNestedMessage", "SingleForeignMessage", "SingleImportMessage", "SingleNestedEnum", "SingleForeignEnum", "SingleImportEnum", "SinglePublicImportMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedImportMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedImportEnum", "RepeatedPublicImportMessage", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", }, new string[] { "OneofField", });
-      internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage), descriptor.MessageTypes[0].NestedTypes[0],
-              new string[] { "Bb", }, new string[] { });
-      internal__static_protobuf_unittest_NestedTestAllTypes__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.NestedTestAllTypes), descriptor.MessageTypes[1],
-              new string[] { "Child", "Payload", "RepeatedChild", }, new string[] { });
-      internal__static_protobuf_unittest_TestDeprecatedFields__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestDeprecatedFields), descriptor.MessageTypes[2],
-              new string[] { "DeprecatedInt32", }, new string[] { });
-      internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.ForeignMessage), descriptor.MessageTypes[3],
-              new string[] { "C", }, new string[] { });
-      internal__static_protobuf_unittest_TestReservedFields__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestReservedFields), descriptor.MessageTypes[4],
-              new string[] { }, new string[] { });
-      internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestForeignNested), descriptor.MessageTypes[5],
-              new string[] { "ForeignNested", }, new string[] { });
-      internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber), descriptor.MessageTypes[6],
-              new string[] { "A", "Bb", }, new string[] { });
-      internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestRecursiveMessage), descriptor.MessageTypes[7],
-              new string[] { "A", "I", }, new string[] { });
-      internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionA), descriptor.MessageTypes[8],
-              new string[] { "Bb", }, new string[] { });
-      internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionB), descriptor.MessageTypes[9],
-              new string[] { "A", "OptionalInt32", }, new string[] { });
-      internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames), descriptor.MessageTypes[10],
-              new string[] { "PrimitiveField", "StringField", "EnumField", "MessageField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedEnumField", "RepeatedMessageField", }, new string[] { });
-      internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings), descriptor.MessageTypes[11],
-              new string[] { "MyString", "MyInt", "MyFloat", "SingleNestedMessage", }, new string[] { });
-      internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage), descriptor.MessageTypes[11].NestedTypes[0],
-              new string[] { "Oo", "Bb", }, new string[] { });
-      internal__static_protobuf_unittest_SparseEnumMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.SparseEnumMessage), descriptor.MessageTypes[12],
-              new string[] { "SparseEnum", }, new string[] { });
-      internal__static_protobuf_unittest_OneString__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.OneString), descriptor.MessageTypes[13],
-              new string[] { "Data", }, new string[] { });
-      internal__static_protobuf_unittest_MoreString__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.MoreString), descriptor.MessageTypes[14],
-              new string[] { "Data", }, new string[] { });
-      internal__static_protobuf_unittest_OneBytes__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.OneBytes), descriptor.MessageTypes[15],
-              new string[] { "Data", }, new string[] { });
-      internal__static_protobuf_unittest_MoreBytes__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.MoreBytes), descriptor.MessageTypes[16],
-              new string[] { "Data", }, new string[] { });
-      internal__static_protobuf_unittest_Int32Message__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.Int32Message), descriptor.MessageTypes[17],
-              new string[] { "Data", }, new string[] { });
-      internal__static_protobuf_unittest_Uint32Message__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.Uint32Message), descriptor.MessageTypes[18],
-              new string[] { "Data", }, new string[] { });
-      internal__static_protobuf_unittest_Int64Message__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.Int64Message), descriptor.MessageTypes[19],
-              new string[] { "Data", }, new string[] { });
-      internal__static_protobuf_unittest_Uint64Message__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.Uint64Message), descriptor.MessageTypes[20],
-              new string[] { "Data", }, new string[] { });
-      internal__static_protobuf_unittest_BoolMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.BoolMessage), descriptor.MessageTypes[21],
-              new string[] { "Data", }, new string[] { });
-      internal__static_protobuf_unittest_TestOneof__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestOneof), descriptor.MessageTypes[22],
-              new string[] { "FooInt", "FooString", "FooMessage", }, new string[] { "Foo", });
-      internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestPackedTypes), descriptor.MessageTypes[23],
-              new string[] { "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedEnum", }, new string[] { });
-      internal__static_protobuf_unittest_TestUnpackedTypes__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestUnpackedTypes), descriptor.MessageTypes[24],
-              new string[] { "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedEnum", }, new string[] { });
-      internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes), descriptor.MessageTypes[25],
-              new string[] { "RepeatedFixed32", "RepeatedInt32", "RepeatedFixed64", "RepeatedInt64", "RepeatedFloat", "RepeatedUint64", }, new string[] { });
-      internal__static_protobuf_unittest_TestCommentInjectionMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestCommentInjectionMessage), descriptor.MessageTypes[26],
-              new string[] { "A", }, new string[] { });
-      internal__static_protobuf_unittest_FooRequest__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.FooRequest), descriptor.MessageTypes[27],
-              new string[] { }, new string[] { });
-      internal__static_protobuf_unittest_FooResponse__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.FooResponse), descriptor.MessageTypes[28],
-              new string[] { }, new string[] { });
-      internal__static_protobuf_unittest_FooClientMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.FooClientMessage), descriptor.MessageTypes[29],
-              new string[] { }, new string[] { });
-      internal__static_protobuf_unittest_FooServerMessage__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.FooServerMessage), descriptor.MessageTypes[30],
-              new string[] { }, new string[] { });
-      internal__static_protobuf_unittest_BarRequest__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.BarRequest), descriptor.MessageTypes[31],
-              new string[] { }, new string[] { });
-      internal__static_protobuf_unittest_BarResponse__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.BarResponse), descriptor.MessageTypes[32],
-              new string[] { }, new string[] { });
+          new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportProto3.Descriptor, },
+          new global::System.Type[] { typeof(global::Google.Protobuf.TestProtos.TestAllTypes), typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage), typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum), typeof(global::Google.Protobuf.TestProtos.NestedTestAllTypes), typeof(global::Google.Protobuf.TestProtos.TestDeprecatedFields), typeof(global::Google.Protobuf.TestProtos.ForeignMessage), typeof(global::Google.Protobuf.TestProtos.TestReservedFields), typeof(global::Google.Protobuf.TestProtos.TestForeignNested), typeof(global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber), typeof(global::Google.Protobuf.TestProtos.TestRecursiveMessage), typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionA), typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionB), typeof(global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames), typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings), typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage), typeof(global::Google.Protobuf.TestProtos.SparseEnumMessage), typeof(global::Google.Protobuf.TestProtos.OneString), typeof(global::Google.Protobuf.TestProtos.MoreString), typeof(global::Google.Protobuf.TestProtos.OneBytes), typeof(global::Google.Protobuf.TestProtos.MoreBytes), typeof(global::Google.Protobuf.TestProtos.Int32Message), typeof(global::Google.Protobuf.TestProtos.Uint32Message), typeof(global::Google.Protobuf.TestProtos.Int64Message), typeof(global::Google.Protobuf.TestProtos.Uint64Message), typeof(global::Google.Protobuf.TestProtos.BoolMessage), typeof(global::Google.Protobuf.TestProtos.TestOneof), typeof(global::Google.Protobuf.TestProtos.TestPackedTypes), typeof(global::Google.Protobuf.TestProtos.TestUnpackedTypes), typeof(global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes), typeof(global::Google.Protobuf.TestProtos.TestCommentInjectionMessage), typeof(global::Google.Protobuf.TestProtos.FooRequest), typeof(global::Google.Protobuf.TestProtos.FooResponse), typeof(global::Google.Protobuf.TestProtos.FooClientMessage), typeof(global::Google.Protobuf.TestProtos.FooServerMessage), typeof(global::Google.Protobuf.TestProtos.BarRequest), typeof(global::Google.Protobuf.TestProtos.BarResponse), typeof(global::Google.Protobuf.TestProtos.ForeignEnum), typeof(global::Google.Protobuf.TestProtos.TestEnumWithDupValue), typeof(global::Google.Protobuf.TestProtos.TestSparseEnum), });
     }
     #endregion
 
@@ -339,8 +196,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestAllTypes__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -454,6 +311,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleInt32FieldNumber = 1;
     private int singleInt32_;
+    [pbr::ProtobufField(1, "single_int32")]
     public int SingleInt32 {
       get { return singleInt32_; }
       set {
@@ -464,6 +322,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleInt64FieldNumber = 2;
     private long singleInt64_;
+    [pbr::ProtobufField(2, "single_int64")]
     public long SingleInt64 {
       get { return singleInt64_; }
       set {
@@ -474,6 +333,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleUint32FieldNumber = 3;
     private uint singleUint32_;
+    [pbr::ProtobufField(3, "single_uint32")]
     public uint SingleUint32 {
       get { return singleUint32_; }
       set {
@@ -484,6 +344,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleUint64FieldNumber = 4;
     private ulong singleUint64_;
+    [pbr::ProtobufField(4, "single_uint64")]
     public ulong SingleUint64 {
       get { return singleUint64_; }
       set {
@@ -494,6 +355,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleSint32FieldNumber = 5;
     private int singleSint32_;
+    [pbr::ProtobufField(5, "single_sint32")]
     public int SingleSint32 {
       get { return singleSint32_; }
       set {
@@ -504,6 +366,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleSint64FieldNumber = 6;
     private long singleSint64_;
+    [pbr::ProtobufField(6, "single_sint64")]
     public long SingleSint64 {
       get { return singleSint64_; }
       set {
@@ -514,6 +377,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleFixed32FieldNumber = 7;
     private uint singleFixed32_;
+    [pbr::ProtobufField(7, "single_fixed32")]
     public uint SingleFixed32 {
       get { return singleFixed32_; }
       set {
@@ -524,6 +388,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleFixed64FieldNumber = 8;
     private ulong singleFixed64_;
+    [pbr::ProtobufField(8, "single_fixed64")]
     public ulong SingleFixed64 {
       get { return singleFixed64_; }
       set {
@@ -534,6 +399,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleSfixed32FieldNumber = 9;
     private int singleSfixed32_;
+    [pbr::ProtobufField(9, "single_sfixed32")]
     public int SingleSfixed32 {
       get { return singleSfixed32_; }
       set {
@@ -544,6 +410,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleSfixed64FieldNumber = 10;
     private long singleSfixed64_;
+    [pbr::ProtobufField(10, "single_sfixed64")]
     public long SingleSfixed64 {
       get { return singleSfixed64_; }
       set {
@@ -554,6 +421,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleFloatFieldNumber = 11;
     private float singleFloat_;
+    [pbr::ProtobufField(11, "single_float")]
     public float SingleFloat {
       get { return singleFloat_; }
       set {
@@ -564,6 +432,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleDoubleFieldNumber = 12;
     private double singleDouble_;
+    [pbr::ProtobufField(12, "single_double")]
     public double SingleDouble {
       get { return singleDouble_; }
       set {
@@ -574,6 +443,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleBoolFieldNumber = 13;
     private bool singleBool_;
+    [pbr::ProtobufField(13, "single_bool")]
     public bool SingleBool {
       get { return singleBool_; }
       set {
@@ -584,6 +454,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleStringFieldNumber = 14;
     private string singleString_ = "";
+    [pbr::ProtobufField(14, "single_string")]
     public string SingleString {
       get { return singleString_; }
       set {
@@ -594,6 +465,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleBytesFieldNumber = 15;
     private pb::ByteString singleBytes_ = pb::ByteString.Empty;
+    [pbr::ProtobufField(15, "single_bytes")]
     public pb::ByteString SingleBytes {
       get { return singleBytes_; }
       set {
@@ -604,6 +476,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleNestedMessageFieldNumber = 18;
     private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage singleNestedMessage_;
+    [pbr::ProtobufField(18, "single_nested_message")]
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage SingleNestedMessage {
       get { return singleNestedMessage_; }
       set {
@@ -614,6 +487,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleForeignMessageFieldNumber = 19;
     private global::Google.Protobuf.TestProtos.ForeignMessage singleForeignMessage_;
+    [pbr::ProtobufField(19, "single_foreign_message")]
     public global::Google.Protobuf.TestProtos.ForeignMessage SingleForeignMessage {
       get { return singleForeignMessage_; }
       set {
@@ -624,6 +498,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleImportMessageFieldNumber = 20;
     private global::Google.Protobuf.TestProtos.ImportMessage singleImportMessage_;
+    [pbr::ProtobufField(20, "single_import_message")]
     public global::Google.Protobuf.TestProtos.ImportMessage SingleImportMessage {
       get { return singleImportMessage_; }
       set {
@@ -634,6 +509,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleNestedEnumFieldNumber = 21;
     private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum singleNestedEnum_ = global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED;
+    [pbr::ProtobufField(21, "single_nested_enum")]
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum SingleNestedEnum {
       get { return singleNestedEnum_; }
       set {
@@ -644,6 +520,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleForeignEnumFieldNumber = 22;
     private global::Google.Protobuf.TestProtos.ForeignEnum singleForeignEnum_ = global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED;
+    [pbr::ProtobufField(22, "single_foreign_enum")]
     public global::Google.Protobuf.TestProtos.ForeignEnum SingleForeignEnum {
       get { return singleForeignEnum_; }
       set {
@@ -654,6 +531,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleImportEnumFieldNumber = 23;
     private global::Google.Protobuf.TestProtos.ImportEnum singleImportEnum_ = global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED;
+    [pbr::ProtobufField(23, "single_import_enum")]
     public global::Google.Protobuf.TestProtos.ImportEnum SingleImportEnum {
       get { return singleImportEnum_; }
       set {
@@ -664,6 +542,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SinglePublicImportMessageFieldNumber = 26;
     private global::Google.Protobuf.TestProtos.PublicImportMessage singlePublicImportMessage_;
+    [pbr::ProtobufField(26, "single_public_import_message")]
     public global::Google.Protobuf.TestProtos.PublicImportMessage SinglePublicImportMessage {
       get { return singlePublicImportMessage_; }
       set {
@@ -676,6 +555,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForInt32(250);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
+    [pbr::ProtobufField(31, "repeated_int32")]
     public pbc::RepeatedField<int> RepeatedInt32 {
       get { return repeatedInt32_; }
     }
@@ -684,6 +564,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_repeatedInt64_codec
         = pb::FieldCodec.ForInt64(258);
     private readonly pbc::RepeatedField<long> repeatedInt64_ = new pbc::RepeatedField<long>();
+    [pbr::ProtobufField(32, "repeated_int64")]
     public pbc::RepeatedField<long> RepeatedInt64 {
       get { return repeatedInt64_; }
     }
@@ -692,6 +573,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_repeatedUint32_codec
         = pb::FieldCodec.ForUInt32(266);
     private readonly pbc::RepeatedField<uint> repeatedUint32_ = new pbc::RepeatedField<uint>();
+    [pbr::ProtobufField(33, "repeated_uint32")]
     public pbc::RepeatedField<uint> RepeatedUint32 {
       get { return repeatedUint32_; }
     }
@@ -700,6 +582,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedUint64_codec
         = pb::FieldCodec.ForUInt64(274);
     private readonly pbc::RepeatedField<ulong> repeatedUint64_ = new pbc::RepeatedField<ulong>();
+    [pbr::ProtobufField(34, "repeated_uint64")]
     public pbc::RepeatedField<ulong> RepeatedUint64 {
       get { return repeatedUint64_; }
     }
@@ -708,6 +591,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_repeatedSint32_codec
         = pb::FieldCodec.ForSInt32(282);
     private readonly pbc::RepeatedField<int> repeatedSint32_ = new pbc::RepeatedField<int>();
+    [pbr::ProtobufField(35, "repeated_sint32")]
     public pbc::RepeatedField<int> RepeatedSint32 {
       get { return repeatedSint32_; }
     }
@@ -716,6 +600,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_repeatedSint64_codec
         = pb::FieldCodec.ForSInt64(290);
     private readonly pbc::RepeatedField<long> repeatedSint64_ = new pbc::RepeatedField<long>();
+    [pbr::ProtobufField(36, "repeated_sint64")]
     public pbc::RepeatedField<long> RepeatedSint64 {
       get { return repeatedSint64_; }
     }
@@ -724,6 +609,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_repeatedFixed32_codec
         = pb::FieldCodec.ForFixed32(298);
     private readonly pbc::RepeatedField<uint> repeatedFixed32_ = new pbc::RepeatedField<uint>();
+    [pbr::ProtobufField(37, "repeated_fixed32")]
     public pbc::RepeatedField<uint> RepeatedFixed32 {
       get { return repeatedFixed32_; }
     }
@@ -732,6 +618,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedFixed64_codec
         = pb::FieldCodec.ForFixed64(306);
     private readonly pbc::RepeatedField<ulong> repeatedFixed64_ = new pbc::RepeatedField<ulong>();
+    [pbr::ProtobufField(38, "repeated_fixed64")]
     public pbc::RepeatedField<ulong> RepeatedFixed64 {
       get { return repeatedFixed64_; }
     }
@@ -740,6 +627,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_repeatedSfixed32_codec
         = pb::FieldCodec.ForSFixed32(314);
     private readonly pbc::RepeatedField<int> repeatedSfixed32_ = new pbc::RepeatedField<int>();
+    [pbr::ProtobufField(39, "repeated_sfixed32")]
     public pbc::RepeatedField<int> RepeatedSfixed32 {
       get { return repeatedSfixed32_; }
     }
@@ -748,6 +636,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_repeatedSfixed64_codec
         = pb::FieldCodec.ForSFixed64(322);
     private readonly pbc::RepeatedField<long> repeatedSfixed64_ = new pbc::RepeatedField<long>();
+    [pbr::ProtobufField(40, "repeated_sfixed64")]
     public pbc::RepeatedField<long> RepeatedSfixed64 {
       get { return repeatedSfixed64_; }
     }
@@ -756,6 +645,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<float> _repeated_repeatedFloat_codec
         = pb::FieldCodec.ForFloat(330);
     private readonly pbc::RepeatedField<float> repeatedFloat_ = new pbc::RepeatedField<float>();
+    [pbr::ProtobufField(41, "repeated_float")]
     public pbc::RepeatedField<float> RepeatedFloat {
       get { return repeatedFloat_; }
     }
@@ -764,6 +654,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<double> _repeated_repeatedDouble_codec
         = pb::FieldCodec.ForDouble(338);
     private readonly pbc::RepeatedField<double> repeatedDouble_ = new pbc::RepeatedField<double>();
+    [pbr::ProtobufField(42, "repeated_double")]
     public pbc::RepeatedField<double> RepeatedDouble {
       get { return repeatedDouble_; }
     }
@@ -772,6 +663,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<bool> _repeated_repeatedBool_codec
         = pb::FieldCodec.ForBool(346);
     private readonly pbc::RepeatedField<bool> repeatedBool_ = new pbc::RepeatedField<bool>();
+    [pbr::ProtobufField(43, "repeated_bool")]
     public pbc::RepeatedField<bool> RepeatedBool {
       get { return repeatedBool_; }
     }
@@ -780,6 +672,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<string> _repeated_repeatedString_codec
         = pb::FieldCodec.ForString(354);
     private readonly pbc::RepeatedField<string> repeatedString_ = new pbc::RepeatedField<string>();
+    [pbr::ProtobufField(44, "repeated_string")]
     public pbc::RepeatedField<string> RepeatedString {
       get { return repeatedString_; }
     }
@@ -788,6 +681,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<pb::ByteString> _repeated_repeatedBytes_codec
         = pb::FieldCodec.ForBytes(362);
     private readonly pbc::RepeatedField<pb::ByteString> repeatedBytes_ = new pbc::RepeatedField<pb::ByteString>();
+    [pbr::ProtobufField(45, "repeated_bytes")]
     public pbc::RepeatedField<pb::ByteString> RepeatedBytes {
       get { return repeatedBytes_; }
     }
@@ -796,6 +690,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage> _repeated_repeatedNestedMessage_codec
         = pb::FieldCodec.ForMessage(386, global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage> repeatedNestedMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage>();
+    [pbr::ProtobufField(48, "repeated_nested_message")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage> RepeatedNestedMessage {
       get { return repeatedNestedMessage_; }
     }
@@ -804,6 +699,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignMessage> _repeated_repeatedForeignMessage_codec
         = pb::FieldCodec.ForMessage(394, global::Google.Protobuf.TestProtos.ForeignMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage> repeatedForeignMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage>();
+    [pbr::ProtobufField(49, "repeated_foreign_message")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage> RepeatedForeignMessage {
       get { return repeatedForeignMessage_; }
     }
@@ -812,27 +708,34 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ImportMessage> _repeated_repeatedImportMessage_codec
         = pb::FieldCodec.ForMessage(402, global::Google.Protobuf.TestProtos.ImportMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportMessage> repeatedImportMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportMessage>();
+    [pbr::ProtobufField(50, "repeated_import_message")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportMessage> RepeatedImportMessage {
       get { return repeatedImportMessage_; }
     }
 
     public const int RepeatedNestedEnumFieldNumber = 51;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum> _repeated_repeatedNestedEnum_codec
-        = pb::FieldCodec.ForEnum(410, x => (int) x, x => (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) x);private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum> repeatedNestedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum>();
+        = pb::FieldCodec.ForEnum(410, x => (int) x, x => (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) x);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum> repeatedNestedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum>();
+    [pbr::ProtobufField(51, "repeated_nested_enum")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum> RepeatedNestedEnum {
       get { return repeatedNestedEnum_; }
     }
 
     public const int RepeatedForeignEnumFieldNumber = 52;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignEnum> _repeated_repeatedForeignEnum_codec
-        = pb::FieldCodec.ForEnum(418, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> repeatedForeignEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
+        = pb::FieldCodec.ForEnum(418, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> repeatedForeignEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
+    [pbr::ProtobufField(52, "repeated_foreign_enum")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> RepeatedForeignEnum {
       get { return repeatedForeignEnum_; }
     }
 
     public const int RepeatedImportEnumFieldNumber = 53;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ImportEnum> _repeated_repeatedImportEnum_codec
-        = pb::FieldCodec.ForEnum(426, x => (int) x, x => (global::Google.Protobuf.TestProtos.ImportEnum) x);private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum> repeatedImportEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum>();
+        = pb::FieldCodec.ForEnum(426, x => (int) x, x => (global::Google.Protobuf.TestProtos.ImportEnum) x);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum> repeatedImportEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum>();
+    [pbr::ProtobufField(53, "repeated_import_enum")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum> RepeatedImportEnum {
       get { return repeatedImportEnum_; }
     }
@@ -841,11 +744,13 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.PublicImportMessage> _repeated_repeatedPublicImportMessage_codec
         = pb::FieldCodec.ForMessage(434, global::Google.Protobuf.TestProtos.PublicImportMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage> repeatedPublicImportMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage>();
+    [pbr::ProtobufField(54, "repeated_public_import_message")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage> RepeatedPublicImportMessage {
       get { return repeatedPublicImportMessage_; }
     }
 
     public const int OneofUint32FieldNumber = 111;
+    [pbr::ProtobufField(111, "oneof_uint32")]
     public uint OneofUint32 {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofUint32 ? (uint) oneofField_ : 0; }
       set {
@@ -856,6 +761,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int OneofNestedMessageFieldNumber = 112;
+    [pbr::ProtobufField(112, "oneof_nested_message")]
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage OneofNestedMessage {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage) oneofField_ : null; }
       set {
@@ -866,6 +772,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int OneofStringFieldNumber = 113;
+    [pbr::ProtobufField(113, "oneof_string")]
     public string OneofString {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofString ? (string) oneofField_ : ""; }
       set {
@@ -876,6 +783,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int OneofBytesFieldNumber = 114;
+    [pbr::ProtobufField(114, "oneof_bytes")]
     public pb::ByteString OneofBytes {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofBytes ? (pb::ByteString) oneofField_ : pb::ByteString.Empty; }
       set {
@@ -894,10 +802,12 @@ namespace Google.Protobuf.TestProtos {
       OneofBytes = 114,
     }
     private OneofFieldOneofCase oneofFieldCase_ = OneofFieldOneofCase.None;
+    [pbr::ProtobufOneof("oneof_field")]
     public OneofFieldOneofCase OneofFieldCase {
       get { return oneofFieldCase_; }
     }
 
+    [pbr::ProtobufOneof("oneof_field")]
     public void ClearOneofField() {
       pb::Freezable.CheckMutable(this);
       oneofFieldCase_ = OneofFieldOneofCase.None;
@@ -1640,8 +1550,8 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestAllTypes.Descriptor.NestedTypes[0]; }
         }
 
-        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-          get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestAllTypes_NestedMessage__FieldAccessorTable; }
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
         }
 
         private bool _frozen = false;
@@ -1670,6 +1580,7 @@ namespace Google.Protobuf.TestProtos {
 
         public const int BbFieldNumber = 1;
         private int bb_;
+        [pbr::ProtobufField(1, "bb")]
         public int Bb {
           get { return bb_; }
           set {
@@ -1764,8 +1675,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[1]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_NestedTestAllTypes__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -1799,6 +1710,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int ChildFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.NestedTestAllTypes child_;
+    [pbr::ProtobufField(1, "child")]
     public global::Google.Protobuf.TestProtos.NestedTestAllTypes Child {
       get { return child_; }
       set {
@@ -1809,6 +1721,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int PayloadFieldNumber = 2;
     private global::Google.Protobuf.TestProtos.TestAllTypes payload_;
+    [pbr::ProtobufField(2, "payload")]
     public global::Google.Protobuf.TestProtos.TestAllTypes Payload {
       get { return payload_; }
       set {
@@ -1821,6 +1734,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.NestedTestAllTypes> _repeated_repeatedChild_codec
         = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.TestProtos.NestedTestAllTypes.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.NestedTestAllTypes> repeatedChild_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.NestedTestAllTypes>();
+    [pbr::ProtobufField(3, "repeated_child")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.NestedTestAllTypes> RepeatedChild {
       get { return repeatedChild_; }
     }
@@ -1943,8 +1857,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[2]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestDeprecatedFields__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -1974,6 +1888,7 @@ namespace Google.Protobuf.TestProtos {
     public const int DeprecatedInt32FieldNumber = 1;
     private int deprecatedInt32_;
     [global::System.ObsoleteAttribute()]
+    [pbr::ProtobufField(1, "deprecated_int32")]
     public int DeprecatedInt32 {
       get { return deprecatedInt32_; }
       set {
@@ -2063,8 +1978,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[3]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_ForeignMessage__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -2093,6 +2008,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int CFieldNumber = 1;
     private int c_;
+    [pbr::ProtobufField(1, "c")]
     public int C {
       get { return c_; }
       set {
@@ -2182,8 +2098,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[4]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestReservedFields__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -2274,8 +2190,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[5]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestForeignNested__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -2305,6 +2221,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int ForeignNestedFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage foreignNested_;
+    [pbr::ProtobufField(1, "foreign_nested")]
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage ForeignNested {
       get { return foreignNested_; }
       set {
@@ -2400,8 +2317,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[6]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestReallyLargeTagNumber__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -2431,6 +2348,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int AFieldNumber = 1;
     private int a_;
+    [pbr::ProtobufField(1, "a")]
     public int A {
       get { return a_; }
       set {
@@ -2441,6 +2359,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int BbFieldNumber = 268435455;
     private int bb_;
+    [pbr::ProtobufField(268435455, "bb")]
     public int Bb {
       get { return bb_; }
       set {
@@ -2546,8 +2465,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[7]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestRecursiveMessage__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -2578,6 +2497,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int AFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestRecursiveMessage a_;
+    [pbr::ProtobufField(1, "a")]
     public global::Google.Protobuf.TestProtos.TestRecursiveMessage A {
       get { return a_; }
       set {
@@ -2588,6 +2508,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int IFieldNumber = 2;
     private int i_;
+    [pbr::ProtobufField(2, "i")]
     public int I {
       get { return i_; }
       set {
@@ -2699,8 +2620,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[8]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestMutualRecursionA__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -2730,6 +2651,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int BbFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestMutualRecursionB bb_;
+    [pbr::ProtobufField(1, "bb")]
     public global::Google.Protobuf.TestProtos.TestMutualRecursionB Bb {
       get { return bb_; }
       set {
@@ -2825,8 +2747,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[9]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestMutualRecursionB__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -2857,6 +2779,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int AFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestMutualRecursionA a_;
+    [pbr::ProtobufField(1, "a")]
     public global::Google.Protobuf.TestProtos.TestMutualRecursionA A {
       get { return a_; }
       set {
@@ -2867,6 +2790,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int OptionalInt32FieldNumber = 2;
     private int optionalInt32_;
+    [pbr::ProtobufField(2, "optional_int32")]
     public int OptionalInt32 {
       get { return optionalInt32_; }
       set {
@@ -2978,8 +2902,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[10]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestCamelCaseFieldNames__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -3020,6 +2944,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int PrimitiveFieldFieldNumber = 1;
     private int primitiveField_;
+    [pbr::ProtobufField(1, "PrimitiveField")]
     public int PrimitiveField {
       get { return primitiveField_; }
       set {
@@ -3030,6 +2955,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int StringFieldFieldNumber = 2;
     private string stringField_ = "";
+    [pbr::ProtobufField(2, "StringField")]
     public string StringField {
       get { return stringField_; }
       set {
@@ -3040,6 +2966,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int EnumFieldFieldNumber = 3;
     private global::Google.Protobuf.TestProtos.ForeignEnum enumField_ = global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED;
+    [pbr::ProtobufField(3, "EnumField")]
     public global::Google.Protobuf.TestProtos.ForeignEnum EnumField {
       get { return enumField_; }
       set {
@@ -3050,6 +2977,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int MessageFieldFieldNumber = 4;
     private global::Google.Protobuf.TestProtos.ForeignMessage messageField_;
+    [pbr::ProtobufField(4, "MessageField")]
     public global::Google.Protobuf.TestProtos.ForeignMessage MessageField {
       get { return messageField_; }
       set {
@@ -3062,6 +2990,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_repeatedPrimitiveField_codec
         = pb::FieldCodec.ForInt32(58);
     private readonly pbc::RepeatedField<int> repeatedPrimitiveField_ = new pbc::RepeatedField<int>();
+    [pbr::ProtobufField(7, "RepeatedPrimitiveField")]
     public pbc::RepeatedField<int> RepeatedPrimitiveField {
       get { return repeatedPrimitiveField_; }
     }
@@ -3070,13 +2999,16 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<string> _repeated_repeatedStringField_codec
         = pb::FieldCodec.ForString(66);
     private readonly pbc::RepeatedField<string> repeatedStringField_ = new pbc::RepeatedField<string>();
+    [pbr::ProtobufField(8, "RepeatedStringField")]
     public pbc::RepeatedField<string> RepeatedStringField {
       get { return repeatedStringField_; }
     }
 
     public const int RepeatedEnumFieldFieldNumber = 9;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignEnum> _repeated_repeatedEnumField_codec
-        = pb::FieldCodec.ForEnum(74, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> repeatedEnumField_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
+        = pb::FieldCodec.ForEnum(74, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> repeatedEnumField_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
+    [pbr::ProtobufField(9, "RepeatedEnumField")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> RepeatedEnumField {
       get { return repeatedEnumField_; }
     }
@@ -3085,6 +3017,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignMessage> _repeated_repeatedMessageField_codec
         = pb::FieldCodec.ForMessage(82, global::Google.Protobuf.TestProtos.ForeignMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage> repeatedMessageField_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage>();
+    [pbr::ProtobufField(10, "RepeatedMessageField")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage> RepeatedMessageField {
       get { return repeatedMessageField_; }
     }
@@ -3262,8 +3195,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[11]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestFieldOrderings__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -3296,6 +3229,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int MyStringFieldNumber = 11;
     private string myString_ = "";
+    [pbr::ProtobufField(11, "my_string")]
     public string MyString {
       get { return myString_; }
       set {
@@ -3306,6 +3240,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int MyIntFieldNumber = 1;
     private long myInt_;
+    [pbr::ProtobufField(1, "my_int")]
     public long MyInt {
       get { return myInt_; }
       set {
@@ -3316,6 +3251,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int MyFloatFieldNumber = 101;
     private float myFloat_;
+    [pbr::ProtobufField(101, "my_float")]
     public float MyFloat {
       get { return myFloat_; }
       set {
@@ -3326,6 +3262,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleNestedMessageFieldNumber = 200;
     private global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage singleNestedMessage_;
+    [pbr::ProtobufField(200, "single_nested_message")]
     public global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage SingleNestedMessage {
       get { return singleNestedMessage_; }
       set {
@@ -3470,8 +3407,8 @@ namespace Google.Protobuf.TestProtos {
           get { return global::Google.Protobuf.TestProtos.TestFieldOrderings.Descriptor.NestedTypes[0]; }
         }
 
-        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-          get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestFieldOrderings_NestedMessage__FieldAccessorTable; }
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
         }
 
         private bool _frozen = false;
@@ -3501,6 +3438,7 @@ namespace Google.Protobuf.TestProtos {
 
         public const int OoFieldNumber = 2;
         private long oo_;
+        [pbr::ProtobufField(2, "oo")]
         public long Oo {
           get { return oo_; }
           set {
@@ -3511,6 +3449,7 @@ namespace Google.Protobuf.TestProtos {
 
         public const int BbFieldNumber = 1;
         private int bb_;
+        [pbr::ProtobufField(1, "bb")]
         public int Bb {
           get { return bb_; }
           set {
@@ -3621,8 +3560,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[12]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_SparseEnumMessage__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -3651,6 +3590,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SparseEnumFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestSparseEnum sparseEnum_ = global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED;
+    [pbr::ProtobufField(1, "sparse_enum")]
     public global::Google.Protobuf.TestProtos.TestSparseEnum SparseEnum {
       get { return sparseEnum_; }
       set {
@@ -3740,8 +3680,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[13]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_OneString__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -3770,6 +3710,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private string data_ = "";
+    [pbr::ProtobufField(1, "data")]
     public string Data {
       get { return data_; }
       set {
@@ -3859,8 +3800,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[14]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_MoreString__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -3892,6 +3833,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<string> _repeated_data_codec
         = pb::FieldCodec.ForString(10);
     private readonly pbc::RepeatedField<string> data_ = new pbc::RepeatedField<string>();
+    [pbr::ProtobufField(1, "data")]
     public pbc::RepeatedField<string> Data {
       get { return data_; }
     }
@@ -3970,8 +3912,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[15]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_OneBytes__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -4000,6 +3942,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private pb::ByteString data_ = pb::ByteString.Empty;
+    [pbr::ProtobufField(1, "data")]
     public pb::ByteString Data {
       get { return data_; }
       set {
@@ -4089,8 +4032,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[16]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_MoreBytes__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -4119,6 +4062,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private pb::ByteString data_ = pb::ByteString.Empty;
+    [pbr::ProtobufField(1, "data")]
     public pb::ByteString Data {
       get { return data_; }
       set {
@@ -4208,8 +4152,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[17]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Int32Message__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -4238,6 +4182,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private int data_;
+    [pbr::ProtobufField(1, "data")]
     public int Data {
       get { return data_; }
       set {
@@ -4327,8 +4272,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[18]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Uint32Message__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -4357,6 +4302,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private uint data_;
+    [pbr::ProtobufField(1, "data")]
     public uint Data {
       get { return data_; }
       set {
@@ -4446,8 +4392,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[19]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Int64Message__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -4476,6 +4422,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private long data_;
+    [pbr::ProtobufField(1, "data")]
     public long Data {
       get { return data_; }
       set {
@@ -4565,8 +4512,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[20]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_Uint64Message__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -4595,6 +4542,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private ulong data_;
+    [pbr::ProtobufField(1, "data")]
     public ulong Data {
       get { return data_; }
       set {
@@ -4684,8 +4632,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[21]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_BoolMessage__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -4714,6 +4662,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private bool data_;
+    [pbr::ProtobufField(1, "data")]
     public bool Data {
       get { return data_; }
       set {
@@ -4803,8 +4752,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[22]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestOneof__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -4844,6 +4793,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int FooIntFieldNumber = 1;
+    [pbr::ProtobufField(1, "foo_int")]
     public int FooInt {
       get { return fooCase_ == FooOneofCase.FooInt ? (int) foo_ : 0; }
       set {
@@ -4854,6 +4804,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int FooStringFieldNumber = 2;
+    [pbr::ProtobufField(2, "foo_string")]
     public string FooString {
       get { return fooCase_ == FooOneofCase.FooString ? (string) foo_ : ""; }
       set {
@@ -4864,6 +4815,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int FooMessageFieldNumber = 3;
+    [pbr::ProtobufField(3, "foo_message")]
     public global::Google.Protobuf.TestProtos.TestAllTypes FooMessage {
       get { return fooCase_ == FooOneofCase.FooMessage ? (global::Google.Protobuf.TestProtos.TestAllTypes) foo_ : null; }
       set {
@@ -4881,10 +4833,12 @@ namespace Google.Protobuf.TestProtos {
       FooMessage = 3,
     }
     private FooOneofCase fooCase_ = FooOneofCase.None;
+    [pbr::ProtobufOneof("foo")]
     public FooOneofCase FooCase {
       get { return fooCase_; }
     }
 
+    [pbr::ProtobufOneof("foo")]
     public void ClearFoo() {
       pb::Freezable.CheckMutable(this);
       fooCase_ = FooOneofCase.None;
@@ -5012,8 +4966,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[23]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestPackedTypes__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -5071,6 +5025,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_packedInt32_codec
         = pb::FieldCodec.ForInt32(722);
     private readonly pbc::RepeatedField<int> packedInt32_ = new pbc::RepeatedField<int>();
+    [pbr::ProtobufField(90, "packed_int32")]
     public pbc::RepeatedField<int> PackedInt32 {
       get { return packedInt32_; }
     }
@@ -5079,6 +5034,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_packedInt64_codec
         = pb::FieldCodec.ForInt64(730);
     private readonly pbc::RepeatedField<long> packedInt64_ = new pbc::RepeatedField<long>();
+    [pbr::ProtobufField(91, "packed_int64")]
     public pbc::RepeatedField<long> PackedInt64 {
       get { return packedInt64_; }
     }
@@ -5087,6 +5043,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_packedUint32_codec
         = pb::FieldCodec.ForUInt32(738);
     private readonly pbc::RepeatedField<uint> packedUint32_ = new pbc::RepeatedField<uint>();
+    [pbr::ProtobufField(92, "packed_uint32")]
     public pbc::RepeatedField<uint> PackedUint32 {
       get { return packedUint32_; }
     }
@@ -5095,6 +5052,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_packedUint64_codec
         = pb::FieldCodec.ForUInt64(746);
     private readonly pbc::RepeatedField<ulong> packedUint64_ = new pbc::RepeatedField<ulong>();
+    [pbr::ProtobufField(93, "packed_uint64")]
     public pbc::RepeatedField<ulong> PackedUint64 {
       get { return packedUint64_; }
     }
@@ -5103,6 +5061,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_packedSint32_codec
         = pb::FieldCodec.ForSInt32(754);
     private readonly pbc::RepeatedField<int> packedSint32_ = new pbc::RepeatedField<int>();
+    [pbr::ProtobufField(94, "packed_sint32")]
     public pbc::RepeatedField<int> PackedSint32 {
       get { return packedSint32_; }
     }
@@ -5111,6 +5070,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_packedSint64_codec
         = pb::FieldCodec.ForSInt64(762);
     private readonly pbc::RepeatedField<long> packedSint64_ = new pbc::RepeatedField<long>();
+    [pbr::ProtobufField(95, "packed_sint64")]
     public pbc::RepeatedField<long> PackedSint64 {
       get { return packedSint64_; }
     }
@@ -5119,6 +5079,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_packedFixed32_codec
         = pb::FieldCodec.ForFixed32(770);
     private readonly pbc::RepeatedField<uint> packedFixed32_ = new pbc::RepeatedField<uint>();
+    [pbr::ProtobufField(96, "packed_fixed32")]
     public pbc::RepeatedField<uint> PackedFixed32 {
       get { return packedFixed32_; }
     }
@@ -5127,6 +5088,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_packedFixed64_codec
         = pb::FieldCodec.ForFixed64(778);
     private readonly pbc::RepeatedField<ulong> packedFixed64_ = new pbc::RepeatedField<ulong>();
+    [pbr::ProtobufField(97, "packed_fixed64")]
     public pbc::RepeatedField<ulong> PackedFixed64 {
       get { return packedFixed64_; }
     }
@@ -5135,6 +5097,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_packedSfixed32_codec
         = pb::FieldCodec.ForSFixed32(786);
     private readonly pbc::RepeatedField<int> packedSfixed32_ = new pbc::RepeatedField<int>();
+    [pbr::ProtobufField(98, "packed_sfixed32")]
     public pbc::RepeatedField<int> PackedSfixed32 {
       get { return packedSfixed32_; }
     }
@@ -5143,6 +5106,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_packedSfixed64_codec
         = pb::FieldCodec.ForSFixed64(794);
     private readonly pbc::RepeatedField<long> packedSfixed64_ = new pbc::RepeatedField<long>();
+    [pbr::ProtobufField(99, "packed_sfixed64")]
     public pbc::RepeatedField<long> PackedSfixed64 {
       get { return packedSfixed64_; }
     }
@@ -5151,6 +5115,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<float> _repeated_packedFloat_codec
         = pb::FieldCodec.ForFloat(802);
     private readonly pbc::RepeatedField<float> packedFloat_ = new pbc::RepeatedField<float>();
+    [pbr::ProtobufField(100, "packed_float")]
     public pbc::RepeatedField<float> PackedFloat {
       get { return packedFloat_; }
     }
@@ -5159,6 +5124,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<double> _repeated_packedDouble_codec
         = pb::FieldCodec.ForDouble(810);
     private readonly pbc::RepeatedField<double> packedDouble_ = new pbc::RepeatedField<double>();
+    [pbr::ProtobufField(101, "packed_double")]
     public pbc::RepeatedField<double> PackedDouble {
       get { return packedDouble_; }
     }
@@ -5167,13 +5133,16 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<bool> _repeated_packedBool_codec
         = pb::FieldCodec.ForBool(818);
     private readonly pbc::RepeatedField<bool> packedBool_ = new pbc::RepeatedField<bool>();
+    [pbr::ProtobufField(102, "packed_bool")]
     public pbc::RepeatedField<bool> PackedBool {
       get { return packedBool_; }
     }
 
     public const int PackedEnumFieldNumber = 103;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignEnum> _repeated_packedEnum_codec
-        = pb::FieldCodec.ForEnum(826, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> packedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
+        = pb::FieldCodec.ForEnum(826, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> packedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
+    [pbr::ProtobufField(103, "packed_enum")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> PackedEnum {
       get { return packedEnum_; }
     }
@@ -5383,8 +5352,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[24]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestUnpackedTypes__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -5442,6 +5411,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_unpackedInt32_codec
         = pb::FieldCodec.ForInt32(720);
     private readonly pbc::RepeatedField<int> unpackedInt32_ = new pbc::RepeatedField<int>();
+    [pbr::ProtobufField(90, "unpacked_int32")]
     public pbc::RepeatedField<int> UnpackedInt32 {
       get { return unpackedInt32_; }
     }
@@ -5450,6 +5420,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_unpackedInt64_codec
         = pb::FieldCodec.ForInt64(728);
     private readonly pbc::RepeatedField<long> unpackedInt64_ = new pbc::RepeatedField<long>();
+    [pbr::ProtobufField(91, "unpacked_int64")]
     public pbc::RepeatedField<long> UnpackedInt64 {
       get { return unpackedInt64_; }
     }
@@ -5458,6 +5429,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_unpackedUint32_codec
         = pb::FieldCodec.ForUInt32(736);
     private readonly pbc::RepeatedField<uint> unpackedUint32_ = new pbc::RepeatedField<uint>();
+    [pbr::ProtobufField(92, "unpacked_uint32")]
     public pbc::RepeatedField<uint> UnpackedUint32 {
       get { return unpackedUint32_; }
     }
@@ -5466,6 +5438,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_unpackedUint64_codec
         = pb::FieldCodec.ForUInt64(744);
     private readonly pbc::RepeatedField<ulong> unpackedUint64_ = new pbc::RepeatedField<ulong>();
+    [pbr::ProtobufField(93, "unpacked_uint64")]
     public pbc::RepeatedField<ulong> UnpackedUint64 {
       get { return unpackedUint64_; }
     }
@@ -5474,6 +5447,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_unpackedSint32_codec
         = pb::FieldCodec.ForSInt32(752);
     private readonly pbc::RepeatedField<int> unpackedSint32_ = new pbc::RepeatedField<int>();
+    [pbr::ProtobufField(94, "unpacked_sint32")]
     public pbc::RepeatedField<int> UnpackedSint32 {
       get { return unpackedSint32_; }
     }
@@ -5482,6 +5456,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_unpackedSint64_codec
         = pb::FieldCodec.ForSInt64(760);
     private readonly pbc::RepeatedField<long> unpackedSint64_ = new pbc::RepeatedField<long>();
+    [pbr::ProtobufField(95, "unpacked_sint64")]
     public pbc::RepeatedField<long> UnpackedSint64 {
       get { return unpackedSint64_; }
     }
@@ -5490,6 +5465,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_unpackedFixed32_codec
         = pb::FieldCodec.ForFixed32(773);
     private readonly pbc::RepeatedField<uint> unpackedFixed32_ = new pbc::RepeatedField<uint>();
+    [pbr::ProtobufField(96, "unpacked_fixed32")]
     public pbc::RepeatedField<uint> UnpackedFixed32 {
       get { return unpackedFixed32_; }
     }
@@ -5498,6 +5474,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_unpackedFixed64_codec
         = pb::FieldCodec.ForFixed64(777);
     private readonly pbc::RepeatedField<ulong> unpackedFixed64_ = new pbc::RepeatedField<ulong>();
+    [pbr::ProtobufField(97, "unpacked_fixed64")]
     public pbc::RepeatedField<ulong> UnpackedFixed64 {
       get { return unpackedFixed64_; }
     }
@@ -5506,6 +5483,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_unpackedSfixed32_codec
         = pb::FieldCodec.ForSFixed32(789);
     private readonly pbc::RepeatedField<int> unpackedSfixed32_ = new pbc::RepeatedField<int>();
+    [pbr::ProtobufField(98, "unpacked_sfixed32")]
     public pbc::RepeatedField<int> UnpackedSfixed32 {
       get { return unpackedSfixed32_; }
     }
@@ -5514,6 +5492,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_unpackedSfixed64_codec
         = pb::FieldCodec.ForSFixed64(793);
     private readonly pbc::RepeatedField<long> unpackedSfixed64_ = new pbc::RepeatedField<long>();
+    [pbr::ProtobufField(99, "unpacked_sfixed64")]
     public pbc::RepeatedField<long> UnpackedSfixed64 {
       get { return unpackedSfixed64_; }
     }
@@ -5522,6 +5501,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<float> _repeated_unpackedFloat_codec
         = pb::FieldCodec.ForFloat(805);
     private readonly pbc::RepeatedField<float> unpackedFloat_ = new pbc::RepeatedField<float>();
+    [pbr::ProtobufField(100, "unpacked_float")]
     public pbc::RepeatedField<float> UnpackedFloat {
       get { return unpackedFloat_; }
     }
@@ -5530,6 +5510,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<double> _repeated_unpackedDouble_codec
         = pb::FieldCodec.ForDouble(809);
     private readonly pbc::RepeatedField<double> unpackedDouble_ = new pbc::RepeatedField<double>();
+    [pbr::ProtobufField(101, "unpacked_double")]
     public pbc::RepeatedField<double> UnpackedDouble {
       get { return unpackedDouble_; }
     }
@@ -5538,13 +5519,16 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<bool> _repeated_unpackedBool_codec
         = pb::FieldCodec.ForBool(816);
     private readonly pbc::RepeatedField<bool> unpackedBool_ = new pbc::RepeatedField<bool>();
+    [pbr::ProtobufField(102, "unpacked_bool")]
     public pbc::RepeatedField<bool> UnpackedBool {
       get { return unpackedBool_; }
     }
 
     public const int UnpackedEnumFieldNumber = 103;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignEnum> _repeated_unpackedEnum_codec
-        = pb::FieldCodec.ForEnum(824, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> unpackedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
+        = pb::FieldCodec.ForEnum(824, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> unpackedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
+    [pbr::ProtobufField(103, "unpacked_enum")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> UnpackedEnum {
       get { return unpackedEnum_; }
     }
@@ -5754,8 +5738,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[25]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestRepeatedScalarDifferentTagSizes__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -5797,6 +5781,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_repeatedFixed32_codec
         = pb::FieldCodec.ForFixed32(98);
     private readonly pbc::RepeatedField<uint> repeatedFixed32_ = new pbc::RepeatedField<uint>();
+    [pbr::ProtobufField(12, "repeated_fixed32")]
     public pbc::RepeatedField<uint> RepeatedFixed32 {
       get { return repeatedFixed32_; }
     }
@@ -5805,6 +5790,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForInt32(106);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
+    [pbr::ProtobufField(13, "repeated_int32")]
     public pbc::RepeatedField<int> RepeatedInt32 {
       get { return repeatedInt32_; }
     }
@@ -5813,6 +5799,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedFixed64_codec
         = pb::FieldCodec.ForFixed64(16370);
     private readonly pbc::RepeatedField<ulong> repeatedFixed64_ = new pbc::RepeatedField<ulong>();
+    [pbr::ProtobufField(2046, "repeated_fixed64")]
     public pbc::RepeatedField<ulong> RepeatedFixed64 {
       get { return repeatedFixed64_; }
     }
@@ -5821,6 +5808,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_repeatedInt64_codec
         = pb::FieldCodec.ForInt64(16378);
     private readonly pbc::RepeatedField<long> repeatedInt64_ = new pbc::RepeatedField<long>();
+    [pbr::ProtobufField(2047, "repeated_int64")]
     public pbc::RepeatedField<long> RepeatedInt64 {
       get { return repeatedInt64_; }
     }
@@ -5829,6 +5817,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<float> _repeated_repeatedFloat_codec
         = pb::FieldCodec.ForFloat(2097138);
     private readonly pbc::RepeatedField<float> repeatedFloat_ = new pbc::RepeatedField<float>();
+    [pbr::ProtobufField(262142, "repeated_float")]
     public pbc::RepeatedField<float> RepeatedFloat {
       get { return repeatedFloat_; }
     }
@@ -5837,6 +5826,7 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedUint64_codec
         = pb::FieldCodec.ForUInt64(2097146);
     private readonly pbc::RepeatedField<ulong> repeatedUint64_ = new pbc::RepeatedField<ulong>();
+    [pbr::ProtobufField(262143, "repeated_uint64")]
     public pbc::RepeatedField<ulong> RepeatedUint64 {
       get { return repeatedUint64_; }
     }
@@ -5966,8 +5956,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[26]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_TestCommentInjectionMessage__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -5996,6 +5986,7 @@ namespace Google.Protobuf.TestProtos {
 
     public const int AFieldNumber = 1;
     private string a_ = "";
+    [pbr::ProtobufField(1, "a")]
     public string A {
       get { return a_; }
       set {
@@ -6085,8 +6076,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[27]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooRequest__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -6177,8 +6168,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[28]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooResponse__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -6269,8 +6260,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[29]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooClientMessage__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -6361,8 +6352,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[30]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_FooServerMessage__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -6453,8 +6444,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[31]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_BarRequest__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -6545,8 +6536,8 @@ namespace Google.Protobuf.TestProtos {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[32]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.internal__static_protobuf_unittest_BarResponse__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
