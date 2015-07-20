@@ -50,7 +50,7 @@ except IOError:
   print sys.argv[1] + ": File not found.  Creating a new file."
 
 # Add an address.
-PromptForAddress(address_book.persons.add())
+PromptForAddress(address_book.people.add())
 
 # Write the new address book back to disk.
 f = open(sys.argv[1], "wb")

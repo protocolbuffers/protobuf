@@ -9,7 +9,7 @@ import java.io.PrintStream;
 class ListPeople {
   // Iterates though all people in the AddressBook and prints info about them.
   static void Print(AddressBook addressBook) {
-    for (Person person: addressBook.getPersonsList()) {
+    for (Person person: addressBook.getPeopleList()) {
       System.out.println("Person ID: " + person.getId());
       System.out.println("  Name: " + person.getName());
       if (!person.getEmail().isEmpty()) {

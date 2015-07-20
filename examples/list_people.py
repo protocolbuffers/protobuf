@@ -7,7 +7,7 @@ import sys
 
 # Iterates though all people in the AddressBook and prints info about them.
 def ListPeople(address_book):
-  for person in address_book.persons:
+  for person in address_book.people:
     print "Person ID:", person.id
     print "  Name:", person.name
     if person.email != "":

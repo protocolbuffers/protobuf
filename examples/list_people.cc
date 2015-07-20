@@ -8,8 +8,8 @@ using namespace std;
 
 // Iterates though all people in the AddressBook and prints info about them.
 void ListPeople(const tutorial::AddressBook& address_book) {
-  for (int i = 0; i < address_book.persons_size(); i++) {
-    const tutorial::Person& person = address_book.persons(i);
+  for (int i = 0; i < address_book.people_size(); i++) {
+    const tutorial::Person& person = address_book.people(i);
 
     cout << "Person ID: " << person.id() << endl;
     cout << "  Name: " << person.name() << endl;

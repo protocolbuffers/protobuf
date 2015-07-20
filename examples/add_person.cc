@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Add an address.
-  PromptForAddress(address_book.add_persons());
+  PromptForAddress(address_book.add_people());
 
   {
     // Write the new address book back to disk.

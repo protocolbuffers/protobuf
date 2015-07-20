@@ -80,7 +80,7 @@ class AddPerson {
     }
 
     // Add an address.
-    addressBook.addPersons(
+    addressBook.addPeople(
       PromptForAddress(new BufferedReader(new InputStreamReader(System.in)),
                        System.out));
 
