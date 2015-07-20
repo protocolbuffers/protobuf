@@ -26,27 +26,27 @@ namespace Google.Protobuf.Examples.AddressBook {
     static Addressbook() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChFhZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwi1AEKBlBlcnNvbhIMCgRu", 
-            "YW1lGAEgASgJEgoKAmlkGAIgASgFEg0KBWVtYWlsGAMgASgJEisKBXBob25l", 
-            "GAQgAygLMhwudHV0b3JpYWwuUGVyc29uLlBob25lTnVtYmVyGkcKC1Bob25l", 
-            "TnVtYmVyEg4KBm51bWJlchgBIAEoCRIoCgR0eXBlGAIgASgOMhoudHV0b3Jp", 
-            "YWwuUGVyc29uLlBob25lVHlwZSIrCglQaG9uZVR5cGUSCgoGTU9CSUxFEAAS", 
-            "CAoESE9NRRABEggKBFdPUksQAiIvCgtBZGRyZXNzQm9vaxIgCgZwZXJzb24Y", 
-            "ASADKAsyEC50dXRvcmlhbC5QZXJzb25CUAoUY29tLmV4YW1wbGUudHV0b3Jp", 
-            "YWxCEUFkZHJlc3NCb29rUHJvdG9zqgIkR29vZ2xlLlByb3RvYnVmLkV4YW1w", 
-          "bGVzLkFkZHJlc3NCb29rYgZwcm90bzM="));
+            "ChFhZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwi1QEKBlBlcnNvbhIMCgRu", 
+            "YW1lGAEgASgJEgoKAmlkGAIgASgFEg0KBWVtYWlsGAMgASgJEiwKBnBob25l", 
+            "cxgEIAMoCzIcLnR1dG9yaWFsLlBlcnNvbi5QaG9uZU51bWJlchpHCgtQaG9u", 
+            "ZU51bWJlchIOCgZudW1iZXIYASABKAkSKAoEdHlwZRgCIAEoDjIaLnR1dG9y", 
+            "aWFsLlBlcnNvbi5QaG9uZVR5cGUiKwoJUGhvbmVUeXBlEgoKBk1PQklMRRAA", 
+            "EggKBEhPTUUQARIICgRXT1JLEAIiLwoLQWRkcmVzc0Jvb2sSIAoGcGVvcGxl", 
+            "GAEgAygLMhAudHV0b3JpYWwuUGVyc29uQlAKFGNvbS5leGFtcGxlLnR1dG9y", 
+            "aWFsQhFBZGRyZXNzQm9va1Byb3Rvc6oCJEdvb2dsZS5Qcm90b2J1Zi5FeGFt", 
+          "cGxlcy5BZGRyZXNzQm9va2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] {
           });
       internal__static_tutorial_Person__FieldAccessorTable = 
           new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Examples.AddressBook.Person), descriptor.MessageTypes[0],
-              new string[] { "Name", "Id", "Email", "Phone", }, new string[] { });
+              new string[] { "Name", "Id", "Email", "Phones", }, new string[] { });
       internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable = 
           new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), descriptor.MessageTypes[0].NestedTypes[0],
               new string[] { "Number", "Type", }, new string[] { });
       internal__static_tutorial_AddressBook__FieldAccessorTable = 
           new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Examples.AddressBook.AddressBook), descriptor.MessageTypes[1],
-              new string[] { "Person", }, new string[] { });
+              new string[] { "People", }, new string[] { });
     }
     #endregion
 
@@ -57,7 +57,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     private static readonly pb::MessageParser<Person> _parser = new pb::MessageParser<Person>(() => new Person());
     public static pb::MessageParser<Person> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "email", "id", "name", "phone" };
+    private static readonly string[] _fieldNames = new string[] { "email", "id", "name", "phones" };
     private static readonly uint[] _fieldTags = new uint[] { 26, 16, 10, 34 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.Descriptor.MessageTypes[0]; }
@@ -80,7 +80,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       name_ = other.name_;
       id_ = other.id_;
       email_ = other.email_;
-      phone_ = other.phone_.Clone();
+      phones_ = other.phones_.Clone();
     }
 
     public Person Clone() {
@@ -92,7 +92,7 @@ namespace Google.Protobuf.Examples.AddressBook {
         return;
       }
       _frozen = true;
-      phone_.Freeze();
+      phones_.Freeze();
     }
 
     public const int NameFieldNumber = 1;
@@ -125,12 +125,12 @@ namespace Google.Protobuf.Examples.AddressBook {
       }
     }
 
-    public const int PhoneFieldNumber = 4;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> _repeated_phone_codec
+    public const int PhonesFieldNumber = 4;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> _repeated_phones_codec
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> phone_ = new pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber>();
-    public pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> Phone {
-      get { return phone_; }
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> phones_ = new pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber>();
+    public pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> Phones {
+      get { return phones_; }
     }
 
     public override bool Equals(object other) {
@@ -147,7 +147,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       if (Name != other.Name) return false;
       if (Id != other.Id) return false;
       if (Email != other.Email) return false;
-      if(!phone_.Equals(other.phone_)) return false;
+      if(!phones_.Equals(other.phones_)) return false;
       return true;
     }
 
@@ -156,7 +156,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Id != 0) hash ^= Id.GetHashCode();
       if (Email.Length != 0) hash ^= Email.GetHashCode();
-      hash ^= phone_.GetHashCode();
+      hash ^= phones_.GetHashCode();
       return hash;
     }
 
@@ -177,7 +177,7 @@ namespace Google.Protobuf.Examples.AddressBook {
         output.WriteRawTag(26);
         output.WriteString(Email);
       }
-      phone_.WriteTo(output, _repeated_phone_codec);
+      phones_.WriteTo(output, _repeated_phones_codec);
     }
 
     public int CalculateSize() {
@@ -191,7 +191,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       if (Email.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Email);
       }
-      size += phone_.CalculateSize(_repeated_phone_codec);
+      size += phones_.CalculateSize(_repeated_phones_codec);
       return size;
     }
 
@@ -208,7 +208,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       if (other.Email.Length != 0) {
         Email = other.Email;
       }
-      phone_.Add(other.phone_);
+      phones_.Add(other.phones_);
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
@@ -235,7 +235,7 @@ namespace Google.Protobuf.Examples.AddressBook {
             break;
           }
           case 34: {
-            phone_.AddEntriesFrom(input, _repeated_phone_codec);
+            phones_.AddEntriesFrom(input, _repeated_phones_codec);
             break;
           }
         }
@@ -407,7 +407,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     private static readonly pb::MessageParser<AddressBook> _parser = new pb::MessageParser<AddressBook>(() => new AddressBook());
     public static pb::MessageParser<AddressBook> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "person" };
+    private static readonly string[] _fieldNames = new string[] { "people" };
     private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.Descriptor.MessageTypes[1]; }
@@ -427,7 +427,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     partial void OnConstruction();
 
     public AddressBook(AddressBook other) : this() {
-      person_ = other.person_.Clone();
+      people_ = other.people_.Clone();
     }
 
     public AddressBook Clone() {
@@ -439,15 +439,15 @@ namespace Google.Protobuf.Examples.AddressBook {
         return;
       }
       _frozen = true;
-      person_.Freeze();
+      people_.Freeze();
     }
 
-    public const int PersonFieldNumber = 1;
-    private static readonly pb::FieldCodec<global::Google.Protobuf.Examples.AddressBook.Person> _repeated_person_codec
+    public const int PeopleFieldNumber = 1;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.Examples.AddressBook.Person> _repeated_people_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Examples.AddressBook.Person.Parser);
-    private readonly pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person> person_ = new pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person>();
-    public pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person> Person {
-      get { return person_; }
+    private readonly pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person> people_ = new pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person>();
+    public pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person> People {
+      get { return people_; }
     }
 
     public override bool Equals(object other) {
@@ -461,13 +461,13 @@ namespace Google.Protobuf.Examples.AddressBook {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if(!person_.Equals(other.person_)) return false;
+      if(!people_.Equals(other.people_)) return false;
       return true;
     }
 
     public override int GetHashCode() {
       int hash = 1;
-      hash ^= person_.GetHashCode();
+      hash ^= people_.GetHashCode();
       return hash;
     }
 
@@ -476,12 +476,12 @@ namespace Google.Protobuf.Examples.AddressBook {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      person_.WriteTo(output, _repeated_person_codec);
+      people_.WriteTo(output, _repeated_people_codec);
     }
 
     public int CalculateSize() {
       int size = 0;
-      size += person_.CalculateSize(_repeated_person_codec);
+      size += people_.CalculateSize(_repeated_people_codec);
       return size;
     }
 
@@ -489,7 +489,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       if (other == null) {
         return;
       }
-      person_.Add(other.person_);
+      people_.Add(other.people_);
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
@@ -504,7 +504,7 @@ namespace Google.Protobuf.Examples.AddressBook {
             }
             break;
           case 10: {
-            person_.AddEntriesFrom(input, _repeated_person_codec);
+            people_.AddEntriesFrom(input, _repeated_people_codec);
             break;
           }
         }
