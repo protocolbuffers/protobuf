@@ -42,7 +42,7 @@ namespace Google.Protobuf.Examples.AddressBook
         /// </summary>
         private static void Print(AddressBook addressBook)
         {
-            foreach (Person person in addressBook.Person)
+            foreach (Person person in addressBook.People)
             {
                 Console.WriteLine("Person ID: {0}", person.Id);
                 Console.WriteLine("  Name: {0}", person.Name);
@@ -51,7 +51,7 @@ namespace Google.Protobuf.Examples.AddressBook
                     Console.WriteLine("  E-mail address: {0}", person.Email);
                 }
 
-                foreach (Person.Types.PhoneNumber phoneNumber in person.Phone)
+                foreach (Person.Types.PhoneNumber phoneNumber in person.Phones)
                 {
                     switch (phoneNumber.Type)
                     {
