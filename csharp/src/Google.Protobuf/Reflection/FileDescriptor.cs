@@ -331,7 +331,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         /// <remarks>
         /// The <paramref name="generatedTypes"/> parameter should be null for descriptors which don't correspond to
-        /// generated types. Otherwise, the array should be represent all the generated types in the file: messages then
+        /// generated types. Otherwise, the array should represent all the generated types in the file: messages then
         /// enums. Within each message, there can be nested messages and enums, which must be specified "inline" in the array:
         /// containing message, nested messages, nested enums - and of course each nested message may contain *more* nested messages,
         /// etc. All messages within the descriptor should be represented, even if they do not have a generated type - any
