@@ -79,6 +79,7 @@
 #define GOOGLE_PROTOBUF_STUBS_ONCE_H__
 
 #include <google/protobuf/stubs/atomicops.h>
+#include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 
 namespace google {

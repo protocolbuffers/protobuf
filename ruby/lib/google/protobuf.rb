@@ -31,6 +31,15 @@
 # require mixins before we hook them into the java & c code
 require 'google/protobuf/message_exts'
 
+# We define these before requiring the platform-specific modules.
+# That way the module init can grab references to these.
+module Google
+  module Protobuf
+    class Error < StandardError; end
+    class ParseError < Error; end
+  end
+end
+
 if RUBY_PLATFORM == "java"
   require 'json'
   require 'google/protobuf_java'

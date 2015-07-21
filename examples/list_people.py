@@ -7,13 +7,13 @@ import sys
 
 # Iterates though all people in the AddressBook and prints info about them.
 def ListPeople(address_book):
-  for person in address_book.person:
+  for person in address_book.people:
     print "Person ID:", person.id
     print "  Name:", person.name
-    if person.HasField('email'):
+    if person.email != "":
       print "  E-mail address:", person.email
 
-    for phone_number in person.phone:
+    for phone_number in person.phones:
       if phone_number.type == addressbook_pb2.Person.MOBILE:
         print "  Mobile phone #:",
       elif phone_number.type == addressbook_pb2.Person.HOME:

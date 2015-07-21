@@ -1,70 +1,62 @@
 // Amalgamated source file
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Defs are upb's internal representation of the constructs that can appear
- * in a .proto file:
- *
- * - upb_msgdef: describes a "message" construct.
- * - upb_fielddef: describes a message field.
- * - upb_enumdef: describes an enum.
- * (TODO: definitions of services).
- *
- * Like upb_refcounted objects, defs are mutable only until frozen, and are
- * only thread-safe once frozen.
- *
- * This is a mixed C/C++ interface that offers a full API to both languages.
- * See the top-level README for more information.
- */
+** Defs are upb's internal representation of the constructs that can appear
+** in a .proto file:
+**
+** - upb::MessageDef (upb_msgdef): describes a "message" construct.
+** - upb::FieldDef (upb_fielddef): describes a message field.
+** - upb::EnumDef (upb_enumdef): describes an enum.
+** - upb::OneofDef (upb_oneofdef): describes a oneof.
+** - upb::Def (upb_def): base class of all the others.
+**
+** TODO: definitions of services.
+**
+** Like upb_refcounted objects, defs are mutable only until frozen, and are
+** only thread-safe once frozen.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
 
 #ifndef UPB_DEF_H_
 #define UPB_DEF_H_
 
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A refcounting scheme that supports circular refs.  It accomplishes this by
- * partitioning the set of objects into groups such that no cycle spans groups;
- * we can then reference-count the group as a whole and ignore refs within the
- * group.  When objects are mutable, these groups are computed very
- * conservatively; we group any objects that have ever had a link between them.
- * When objects are frozen, we compute strongly-connected components which
- * allows us to be precise and only group objects that are actually cyclic.
- *
- * This is a mixed C/C++ interface that offers a full API to both languages.
- * See the top-level README for more information.
- */
+** upb::RefCounted (upb_refcounted)
+**
+** A refcounting scheme that supports circular refs.  It accomplishes this by
+** partitioning the set of objects into groups such that no cycle spans groups;
+** we can then reference-count the group as a whole and ignore refs within the
+** group.  When objects are mutable, these groups are computed very
+** conservatively; we group any objects that have ever had a link between them.
+** When objects are frozen, we compute strongly-connected components which
+** allows us to be precise and only group objects that are actually cyclic.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
 
 #ifndef UPB_REFCOUNTED_H_
 #define UPB_REFCOUNTED_H_
 
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
- * This file defines very fast int->upb_value (inttable) and string->upb_value
- * (strtable) hash tables.
- *
- * The table uses chained scatter with Brent's variation (inspired by the Lua
- * implementation of hash tables).  The hash function for strings is Austin
- * Appleby's "MurmurHash."
- *
- * The inttable uses uintptr_t as its key, which guarantees it can be used to
- * store pointers or integers of at least 32 bits (upb isn't really useful on
- * systems where sizeof(void*) < 4).
- *
- * The table must be homogenous (all values of the same type).  In debug
- * mode, we check this on insert and lookup.
- */
+** upb_table
+**
+** This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
+** This file defines very fast int->upb_value (inttable) and string->upb_value
+** (strtable) hash tables.
+**
+** The table uses chained scatter with Brent's variation (inspired by the Lua
+** implementation of hash tables).  The hash function for strings is Austin
+** Appleby's "MurmurHash."
+**
+** The inttable uses uintptr_t as its key, which guarantees it can be used to
+** store pointers or integers of at least 32 bits (upb isn't really useful on
+** systems where sizeof(void*) < 4).
+**
+** The table must be homogenous (all values of the same type).  In debug
+** mode, we check this on insert and lookup.
+*/
 
 #ifndef UPB_TABLE_H_
 #define UPB_TABLE_H_
@@ -73,16 +65,11 @@
 #include <stdint.h>
 #include <string.h>
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * This file contains shared definitions that are widely used across upb.
- *
- * This is a mixed C/C++ interface that offers a full API to both languages.
- * See the top-level README for more information.
- */
+** This file contains shared definitions that are widely used across upb.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
 
 #ifndef UPB_H_
 #define UPB_H_
@@ -3006,25 +2993,20 @@ inline bool OneofDef::const_iterator::operator!=(
 
 #endif /* UPB_DEF_H_ */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2015 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * This file contains definitions of structs that should be considered private
- * and NOT stable across versions of upb.
- *
- * The only reason they are declared here and not in .c files is to allow upb
- * and the application (if desired) to embed statically-initialized instances
- * of structures like defs.
- *
- * If you include this file, all guarantees of ABI compatibility go out the
- * window!  Any code that includes this file needs to recompile against the
- * exact same version of upb that they are linking against.
- *
- * You also need to recompile if you change the value of the UPB_DEBUG_REFS
- * flag.
- */
+** This file contains definitions of structs that should be considered private
+** and NOT stable across versions of upb.
+**
+** The only reason they are declared here and not in .c files is to allow upb
+** and the application (if desired) to embed statically-initialized instances
+** of structures like defs.
+**
+** If you include this file, all guarantees of ABI compatibility go out the
+** window!  Any code that includes this file needs to recompile against the
+** exact same version of upb that they are linking against.
+**
+** You also need to recompile if you change the value of the UPB_DEBUG_REFS
+** flag.
+*/
 
 
 #ifndef UPB_STATICINIT_H_
@@ -3181,25 +3163,22 @@ struct upb_symtab {
 
 #endif  /* UPB_STATICINIT_H_ */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2010-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A upb_handlers is like a virtual table for a upb_msgdef.  Each field of the
- * message can have associated functions that will be called when we are
- * parsing or visiting a stream of data.  This is similar to how handlers work
- * in SAX (the Simple API for XML).
- *
- * The handlers have no idea where the data is coming from, so a single set of
- * handlers could be used with two completely different data sources (for
- * example, a parser and a visitor over in-memory objects).  This decoupling is
- * the most important feature of upb, because it allows parsers and serializers
- * to be highly reusable.
- *
- * This is a mixed C/C++ interface that offers a full API to both languages.
- * See the top-level README for more information.
- */
+** upb::Handlers (upb_handlers)
+**
+** A upb_handlers is like a virtual table for a upb_msgdef.  Each field of the
+** message can have associated functions that will be called when we are
+** parsing or visiting a stream of data.  This is similar to how handlers work
+** in SAX (the Simple API for XML).
+**
+** The handlers have no idea where the data is coming from, so a single set of
+** handlers could be used with two completely different data sources (for
+** example, a parser and a visitor over in-memory objects).  This decoupling is
+** the most important feature of upb, because it allows parsers and serializers
+** to be highly reusable.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
 
 #ifndef UPB_HANDLERS_H
 #define UPB_HANDLERS_H
@@ -3980,14 +3959,9 @@ uint32_t upb_handlers_selectorcount(const upb_fielddef *f);
 UPB_END_EXTERN_C
 
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Inline definitions for handlers.h, which are particularly long and a bit
- * tricky.
- */
+** Inline definitions for handlers.h, which are particularly long and a bit
+** tricky.
+*/
 
 #ifndef UPB_HANDLERS_INL_H_
 #define UPB_HANDLERS_INL_H_
@@ -5128,21 +5102,18 @@ inline BytesHandler::~BytesHandler() {}
 
 #endif  /* UPB_HANDLERS_H */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A upb::Environment provides a means for injecting malloc and an
- * error-reporting callback into encoders/decoders.  This allows them to be
- * independent of nearly all assumptions about their actual environment.
- *
- * It is also a container for allocating the encoders/decoders themselves that
- * insulates clients from knowing their actual size.  This provides ABI
- * compatibility even if the size of the objects change.  And this allows the
- * structure definitions to be in the .c files instead of the .h files, making
- * the .h files smaller and more readable.
- */
+** upb::Environment (upb_env)
+**
+** A upb::Environment provides a means for injecting malloc and an
+** error-reporting callback into encoders/decoders.  This allows them to be
+** independent of nearly all assumptions about their actual environment.
+**
+** It is also a container for allocating the encoders/decoders themselves that
+** insulates clients from knowing their actual size.  This provides ABI
+** compatibility even if the size of the objects change.  And this allows the
+** structure definitions to be in the .c files instead of the .h files, making
+** the .h files smaller and more readable.
+*/
 
 
 #ifndef UPB_ENV_H_
@@ -5392,23 +5363,21 @@ inline upb_alloc_func *SeededAllocator::GetAllocationFunction() {
 
 #endif  /* UPB_ENV_H_ */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2010-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A upb_sink is an object that binds a upb_handlers object to some runtime
- * state.  It is the object that can actually receive data via the upb_handlers
- * interface.
- *
- * Unlike upb_def and upb_handlers, upb_sink is never frozen, immutable, or
- * thread-safe.  You can create as many of them as you want, but each one may
- * only be used in a single thread at a time.
- *
- * If we compare with class-based OOP, a you can think of a upb_def as an
- * abstract base class, a upb_handlers as a concrete derived class, and a
- * upb_sink as an object (class instance).
- */
+** upb::Sink (upb_sink)
+** upb::BytesSink (upb_bytessink)
+**
+** A upb_sink is an object that binds a upb_handlers object to some runtime
+** state.  It is the object that can actually receive data via the upb_handlers
+** interface.
+**
+** Unlike upb_def and upb_handlers, upb_sink is never frozen, immutable, or
+** thread-safe.  You can create as many of them as you want, but each one may
+** only be used in a single thread at a time.
+**
+** If we compare with class-based OOP, a you can think of a upb_def as an
+** abstract base class, a upb_handlers as a concrete derived class, and a
+** upb_sink as an object (class instance).
+*/
 
 #ifndef UPB_SINK_H
 #define UPB_SINK_H
@@ -5921,21 +5890,16 @@ inline bool BufferSource::PutBuffer(const char *buf, size_t len,
 
 #endif
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2013 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * For handlers that do very tiny, very simple operations, the function call
- * overhead of calling a handler can be significant.  This file allows the
- * user to define handlers that do something very simple like store the value
- * to memory and/or set a hasbit.  JIT compilers can then special-case these
- * handlers and emit specialized code for them instead of actually calling the
- * handler.
- *
- * The functionality is very simple/limited right now but may expand to be able
- * to call another function.
- */
+** For handlers that do very tiny, very simple operations, the function call
+** overhead of calling a handler can be significant.  This file allows the
+** user to define handlers that do something very simple like store the value
+** to memory and/or set a hasbit.  JIT compilers can then special-case these
+** handlers and emit specialized code for them instead of actually calling the
+** handler.
+**
+** The functionality is very simple/limited right now but may expand to be able
+** to call another function.
+*/
 
 #ifndef UPB_SHIM_H
 #define UPB_SHIM_H
@@ -5994,19 +5958,16 @@ inline const Shim::Data* Shim::GetData(const Handlers* h, Handlers::Selector s,
 
 #endif  /* UPB_SHIM_H */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A symtab (symbol table) stores a name->def map of upb_defs.  Clients could
- * always create such tables themselves, but upb_symtab has logic for resolving
- * symbolic references, and in particular, for keeping a whole set of consistent
- * defs when replacing some subset of those defs.  This logic is nontrivial.
- *
- * This is a mixed C/C++ interface that offers a full API to both languages.
- * See the top-level README for more information.
- */
+** upb::SymbolTable (upb_symtab)
+**
+** A symtab (symbol table) stores a name->def map of upb_defs.  Clients could
+** always create such tables themselves, but upb_symtab has logic for resolving
+** symbolic references, and in particular, for keeping a whole set of consistent
+** defs when replacing some subset of those defs.  This logic is nontrivial.
+**
+** This is a mixed C/C++ interface that offers a full API to both languages.
+** See the top-level README for more information.
+*/
 
 #ifndef UPB_SYMTAB_H_
 #define UPB_SYMTAB_H_
@@ -6182,14 +6143,10 @@ inline bool SymbolTable::Add(
 
 #endif  /* UPB_SYMTAB_H_ */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2011 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * upb::descriptor::Reader provides a way of building upb::Defs from
- * data in descriptor.proto format.
- */
+** upb::descriptor::Reader (upb_descreader)
+**
+** Provides a way of building upb::Defs from data in descriptor.proto format.
+*/
 
 #ifndef UPB_DESCRIPTOR_H
 #define UPB_DESCRIPTOR_H
@@ -7067,34 +7024,26 @@ inline upb::reffed_ptr<const upb::FieldDef> name_part() { RETURN_REFFED(upb::Fie
 
 #endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_UPB_H_ */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009-2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Internal-only definitions for the decoder.
- */
+** Internal-only definitions for the decoder.
+*/
 
 #ifndef UPB_DECODER_INT_H_
 #define UPB_DECODER_INT_H_
 
 #include <stdlib.h>
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009-2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * upb::pb::Decoder implements a high performance, streaming, resumable decoder
- * for the binary protobuf format.
- *
- * This interface works the same regardless of what decoder backend is being
- * used.  A client of this class does not need to know whether decoding is using
- * a JITted decoder (DynASM, LLVM, etc) or an interpreted decoder.  By default,
- * it will always use the fastest available decoder.  However, you can call
- * set_allow_jit(false) to disable any JIT decoder that might be available.
- * This is primarily useful for testing purposes.
- */
+** upb::pb::Decoder
+**
+** A high performance, streaming, resumable decoder for the binary protobuf
+** format.
+**
+** This interface works the same regardless of what decoder backend is being
+** used.  A client of this class does not need to know whether decoding is using
+** a JITted decoder (DynASM, LLVM, etc) or an interpreted decoder.  By default,
+** it will always use the fastest available decoder.  However, you can call
+** set_allow_jit(false) to disable any JIT decoder that might be available.
+** This is primarily useful for testing purposes.
+*/
 
 #ifndef UPB_DECODER_H_
 #define UPB_DECODER_H_
@@ -7702,14 +7651,9 @@ UPB_INLINE void upb_pbdecoder_unpackdispatch(uint64_t dispatch, uint64_t *ofs,
 
 #endif  /* UPB_DECODER_INT_H_ */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2011 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * A number of routines for varint manipulation (we keep them all around to
- * have multiple approaches available for benchmarking).
- */
+** A number of routines for varint manipulation (we keep them all around to
+** have multiple approaches available for benchmarking).
+*/
 
 #ifndef UPB_VARINT_DECODER_H_
 #define UPB_VARINT_DECODER_H_
@@ -7873,18 +7817,15 @@ UPB_INLINE uint64_t upb_vencode32(uint32_t val) {
 
 #endif  /* UPB_VARINT_DECODER_H_ */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009-2010 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * Implements a set of upb_handlers that write protobuf data to the binary wire
- * format.
- *
- * This encoder implementation does not have any access to any out-of-band or
- * precomputed lengths for submessages, so it must buffer submessages internally
- * before it can emit the first byte.
- */
+** upb::pb::Encoder (upb_pb_encoder)
+**
+** Implements a set of upb_handlers that write protobuf data to the binary wire
+** format.
+**
+** This encoder implementation does not have any access to any out-of-band or
+** precomputed lengths for submessages, so it must buffer submessages internally
+** before it can emit the first byte.
+*/
 
 #ifndef UPB_ENCODER_H_
 #define UPB_ENCODER_H_
@@ -7966,29 +7907,24 @@ inline reffed_ptr<const Handlers> Encoder::NewHandlers(
 
 #endif  /* UPB_ENCODER_H_ */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2011-2012 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * upb's core components like upb_decoder and upb_msg are carefully designed to
- * avoid depending on each other for maximum orthogonality.  In other words,
- * you can use a upb_decoder to decode into *any* kind of structure; upb_msg is
- * just one such structure.  A upb_msg can be serialized/deserialized into any
- * format, protobuf binary format is just one such format.
- *
- * However, for convenience we provide functions here for doing common
- * operations like deserializing protobuf binary format into a upb_msg.  The
- * compromise is that this file drags in almost all of upb as a dependency,
- * which could be undesirable if you're trying to use a trimmed-down build of
- * upb.
- *
- * While these routines are convenient, they do not reuse any encoding/decoding
- * state.  For example, if a decoder is JIT-based, it will be re-JITted every
- * time these functions are called.  For this reason, if you are parsing lots
- * of data and efficiency is an issue, these may not be the best functions to
- * use (though they are useful for prototyping, before optimizing).
- */
+** upb's core components like upb_decoder and upb_msg are carefully designed to
+** avoid depending on each other for maximum orthogonality.  In other words,
+** you can use a upb_decoder to decode into *any* kind of structure; upb_msg is
+** just one such structure.  A upb_msg can be serialized/deserialized into any
+** format, protobuf binary format is just one such format.
+**
+** However, for convenience we provide functions here for doing common
+** operations like deserializing protobuf binary format into a upb_msg.  The
+** compromise is that this file drags in almost all of upb as a dependency,
+** which could be undesirable if you're trying to use a trimmed-down build of
+** upb.
+**
+** While these routines are convenient, they do not reuse any encoding/decoding
+** state.  For example, if a decoder is JIT-based, it will be re-JITted every
+** time these functions are called.  For this reason, if you are parsing lots
+** of data and efficiency is an issue, these may not be the best functions to
+** use (though they are useful for prototyping, before optimizing).
+*/
 
 #ifndef UPB_GLUE_H
 #define UPB_GLUE_H
@@ -8047,11 +7983,10 @@ bool LoadDescriptorIntoSymtab(SymbolTable* s, const T& desc, Status* status) {
 
 #endif  /* UPB_GLUE_H */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2009 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- */
+** upb::pb::TextPrinter (upb_textprinter)
+**
+** Handlers for writing to protobuf text format.
+*/
 
 #ifndef UPB_TEXT_H_
 #define UPB_TEXT_H_
@@ -8127,14 +8062,11 @@ inline reffed_ptr<const Handlers> TextPrinter::NewHandlers(
 
 #endif  /* UPB_TEXT_H_ */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * upb::json::Parser can parse JSON according to a specific schema.
- * Support for parsing arbitrary JSON (schema-less) will be added later.
- */
+** upb::json::Parser (upb_json_parser)
+**
+** Parses JSON according to a specific schema.
+** Support for parsing arbitrary JSON (schema-less) will be added later.
+*/
 
 #ifndef UPB_JSON_PARSER_H_
 #define UPB_JSON_PARSER_H_
@@ -8156,7 +8088,7 @@ UPB_DECLARE_TYPE(upb::json::Parser, upb_json_parser)
  * constructed.  This hint may be an overestimate for some build configurations.
  * But if the parser library is upgraded without recompiling the application,
  * it may be an underestimate. */
-#define UPB_JSON_PARSER_SIZE 3568
+#define UPB_JSON_PARSER_SIZE 3704
 
 #ifdef __cplusplus
 
@@ -8199,14 +8131,10 @@ inline BytesSink* Parser::input() {
 
 #endif  /* UPB_JSON_PARSER_H_ */
 /*
- * upb - a minimalist implementation of protocol buffers.
- *
- * Copyright (c) 2014 Google Inc.  See LICENSE for details.
- * Author: Josh Haberman <jhaberman@gmail.com>
- *
- * upb::json::Printer allows you to create handlers that emit JSON
- * according to a specific protobuf schema.
- */
+** upb::json::Printer
+**
+** Handlers that emit JSON according to a specific protobuf schema.
+*/
 
 #ifndef UPB_JSON_TYPED_PRINTER_H_
 #define UPB_JSON_TYPED_PRINTER_H_

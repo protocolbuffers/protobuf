@@ -85,6 +85,8 @@ class ConformanceTestSuite {
  public:
   ConformanceTestSuite() : verbose_(false) {}
 
+  void SetVerbose(bool verbose) { verbose_ = verbose; }
+
   // Sets the list of tests that are expected to fail when RunSuite() is called.
   // RunSuite() will fail unless the set of failing tests is exactly the same
   // as this list.

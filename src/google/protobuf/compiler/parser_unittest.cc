@@ -229,6 +229,32 @@ TEST_F(ParserTest, WarnIfSyntaxIdentifierOmmitted) {
 
 typedef ParserTest ParseMessageTest;
 
+TEST_F(ParseMessageTest, IgnoreBOM) {
+  char input[] = "   message TestMessage {\n"
+      "  required int32 foo = 1;\n"
+      "}\n";
+  // Set UTF-8 BOM.
+  input[0] = (char)0xEF;
+  input[1] = (char)0xBB;
+  input[2] = (char)0xBF;
+  ExpectParsesTo(input,
+    "message_type {"
+    "  name: \"TestMessage\""
+    "  field { name:\"foo\" label:LABEL_REQUIRED type:TYPE_INT32 number:1 }"
+    "}");
+}
+
+TEST_F(ParseMessageTest, BOMError) {
+  char input[] = "   message TestMessage {\n"
+      "  required int32 foo = 1;\n"
+      "}\n";
+  input[0] = (char)0xEF;
+  ExpectHasErrors(input,
+                  "0:1: Proto file starts with 0xEF but not UTF-8 BOM. "
+                  "Only UTF-8 is accepted for proto file.\n"
+                  "0:0: Expected top-level statement (e.g. \"message\").\n");
+}
+
 TEST_F(ParseMessageTest, SimpleMessage) {
   ExpectParsesTo(
     "message TestMessage {\n"
