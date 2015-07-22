@@ -231,7 +231,7 @@ namespace Google.Protobuf.Reflection
         /// Finds a type (message, enum, service or extension) in the file by name. Does not find nested types.
         /// </summary>
         /// <param name="name">The unqualified type name to look for.</param>
-        /// <typeparam name="T">The type of descriptor to look for (or ITypeDescriptor for any)</typeparam>
+        /// <typeparam name="T">The type of descriptor to look for</typeparam>
         /// <returns>The type's descriptor, or null if not found.</returns>
         public T FindTypeByName<T>(String name)
             where T : class, IDescriptor

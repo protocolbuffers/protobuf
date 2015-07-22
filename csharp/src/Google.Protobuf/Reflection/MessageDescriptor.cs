@@ -61,10 +61,10 @@ namespace Google.Protobuf.Reflection
         private readonly IList<MessageDescriptor> nestedTypes;
         private readonly IList<EnumDescriptor> enumTypes;
         private readonly IList<FieldDescriptor> fields;
+        private readonly FieldAccessorCollection fieldAccessors;
         private readonly IList<OneofDescriptor> oneofs;
         // CLR representation of the type described by this descriptor, if any.
         private readonly Type generatedType;
-        private IDictionary<int, IFieldAccessor> fieldAccessorsByFieldNumber;
         
         internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedCodeInfo generatedCodeInfo)
             : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
@@ -94,6 +94,7 @@ namespace Google.Protobuf.Reflection
                 (field, index) =>
                 new FieldDescriptor(field, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.PropertyNames[index]));
             file.DescriptorPool.AddSymbol(this);
+            fieldAccessors = new FieldAccessorCollection(this);
         }
                 
         /// <summary>
@@ -135,12 +136,25 @@ namespace Google.Protobuf.Reflection
             get { return containingType; }
         }
 
+        // TODO: It's confusing that FieldAccessors[x] doesn't retrieve the accessor
+        // for Fields[x]. We should think about this further... how often does a user really
+        // want the fields in declaration order?
+
         /// <value>
-        /// An unmodifiable list of this message type's fields.
+        /// An unmodifiable list of this message type's fields, in the declaration order
+        /// within the .proto file.
         /// </value>
         public IList<FieldDescriptor> Fields
         {
             get { return fields; }
+        }
+
+        /// <value>
+        /// A collection of accessors, which can be retrieved by name or field number.
+        /// </value>
+        public FieldAccessorCollection FieldAccessors
+        {
+            get { return fieldAccessors; }
         }
 
         /// <value>
@@ -163,13 +177,6 @@ namespace Google.Protobuf.Reflection
         {
             get { return oneofs; }
         }
-
-        /// <summary>
-        /// Returns a map from field number to accessor.
-        /// TODO: Revisit this. It's mostly in place to make the transition from FieldAccessorTable
-        /// to descriptor-based reflection simple in terms of tests. Work out what we really want.
-        /// </summary>
-        public IDictionary<int, IFieldAccessor> FieldAccessorsByFieldNumber { get { return fieldAccessorsByFieldNumber; } }
 
         /// <summary>
         /// Finds a field by field name.
@@ -222,8 +229,61 @@ namespace Google.Protobuf.Reflection
             {
                 oneof.CrossLink();
             }
+        }
 
-            fieldAccessorsByFieldNumber = new ReadOnlyDictionary<int, IFieldAccessor>(fields.ToDictionary(field => field.FieldNumber, field => field.Accessor));
+        /// <summary>
+        /// A collection to simplify retrieving the field accessor for a particular field.
+        /// </summary>
+        public sealed class FieldAccessorCollection
+        {
+            private readonly MessageDescriptor messageDescriptor;
+
+            internal FieldAccessorCollection(MessageDescriptor messageDescriptor)
+            {
+                this.messageDescriptor = messageDescriptor;
+            }
+
+            /// <summary>
+            /// Retrieves the accessor for the field with the given number.
+            /// </summary>
+            /// <param name="number">Number of the field to retrieve the accessor for</param>
+            /// <returns>The accessor for the given field, or null if reflective field access is
+            /// not supported for the field.</returns>
+            /// <exception cref="KeyNotFoundException">The message descriptor does not contain a field
+            /// with the given number</exception>
+            public IFieldAccessor this[int number]
+            {
+                get
+                {
+                    var fieldDescriptor = messageDescriptor.FindFieldByNumber(number);
+                    if (fieldDescriptor == null)
+                    {
+                        throw new KeyNotFoundException("No such field number");
+                    }
+                    return fieldDescriptor.Accessor;
+                }
+            }
+
+            /// <summary>
+            /// Retrieves the accessor for the field with the given name.
+            /// </summary>
+            /// <param name="number">Number of the field to retrieve the accessor for</param>
+            /// <returns>The accessor for the given field, or null if reflective field access is
+            /// not supported for the field.</returns>
+            /// <exception cref="KeyNotFoundException">The message descriptor does not contain a field
+            /// with the given name</exception>
+            public IFieldAccessor this[string name]
+            {
+                get
+                {
+                    var fieldDescriptor = messageDescriptor.FindFieldByName(name);
+                    if (fieldDescriptor == null)
+                    {
+                        throw new KeyNotFoundException("No such field name");
+                    }
+                    return fieldDescriptor.Accessor;
+                }
+            }
         }
     }
 }

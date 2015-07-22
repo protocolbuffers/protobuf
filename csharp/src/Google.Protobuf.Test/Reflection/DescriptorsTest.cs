@@ -33,6 +33,7 @@
 using System.Linq;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf.Reflection
 {
@@ -219,6 +220,20 @@ namespace Google.Protobuf.Reflection
             }
 
             CollectionAssert.AreEquivalent(expectedFields, descriptor.Fields);
+        }
+
+        [Test]
+        public void ConstructionWithoutGeneratedCodeInfo()
+        {
+            var data = UnittestIssues.Descriptor.Proto.ToByteArray();
+            var newDescriptor = Google.Protobuf.Reflection.FileDescriptor.InternalBuildGeneratedFileFrom(data, new Reflection.FileDescriptor[] { }, null);
+
+            // We should still be able to get at a field...
+            var messageDescriptor = newDescriptor.FindTypeByName<MessageDescriptor>("ItemField");
+            var fieldDescriptor = messageDescriptor.FindFieldByName("item");
+            // But there shouldn't be an accessor (or a generated type for the message)
+            Assert.IsNull(fieldDescriptor.Accessor);
+            Assert.IsNull(messageDescriptor.GeneratedType);
         }
     }
 }
