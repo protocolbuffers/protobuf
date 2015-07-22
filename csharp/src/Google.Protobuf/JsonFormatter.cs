@@ -140,7 +140,7 @@ namespace Google.Protobuf
             var fields = message.Descriptor.Fields;
             bool first = true;
             // First non-oneof fields
-            foreach (var field in fields)
+            foreach (var field in fields.InFieldNumberOrder())
             {
                 var accessor = field.Accessor;
                 // Oneofs are written later

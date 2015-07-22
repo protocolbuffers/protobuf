@@ -103,15 +103,16 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual(UnittestProto3.Descriptor, nestedType.File);
             Assert.AreEqual(messageType, nestedType.ContainingType);
 
-            FieldDescriptor field = messageType.Fields[0];
+            FieldDescriptor field = messageType.Fields.InDeclarationOrder()[0];
             Assert.AreEqual("single_int32", field.Name);
             Assert.AreEqual(field, messageType.FindDescriptor<FieldDescriptor>("single_int32"));
             Assert.Null(messageType.FindDescriptor<FieldDescriptor>("no_such_field"));
             Assert.AreEqual(field, messageType.FindFieldByNumber(1));
             Assert.Null(messageType.FindFieldByNumber(571283));
-            for (int i = 0; i < messageType.Fields.Count; i++)
+            var fieldsInDeclarationOrder = messageType.Fields.InDeclarationOrder();
+            for (int i = 0; i < fieldsInDeclarationOrder.Count; i++)
             {
-                Assert.AreEqual(i, messageType.Fields[i].Index);
+                Assert.AreEqual(i, fieldsInDeclarationOrder[i].Index);
             }
 
             Assert.AreEqual(nestedType, messageType.NestedTypes[0]);

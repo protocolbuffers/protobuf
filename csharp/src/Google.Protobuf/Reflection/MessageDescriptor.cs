@@ -33,6 +33,7 @@
 using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Google.Protobuf.Reflection
@@ -60,8 +61,9 @@ namespace Google.Protobuf.Reflection
         private readonly MessageDescriptor containingType;
         private readonly IList<MessageDescriptor> nestedTypes;
         private readonly IList<EnumDescriptor> enumTypes;
-        private readonly IList<FieldDescriptor> fields;
-        private readonly FieldAccessorCollection fieldAccessors;
+        private readonly IList<FieldDescriptor> fieldsInDeclarationOrder;
+        private readonly IList<FieldDescriptor> fieldsInNumberOrder;
+        private readonly FieldCollection fields;
         private readonly IList<OneofDescriptor> oneofs;
         // CLR representation of the type described by this descriptor, if any.
         private readonly Type generatedType;
@@ -89,12 +91,13 @@ namespace Google.Protobuf.Reflection
                 (type, index) =>
                 new EnumDescriptor(type, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.NestedEnums[index]));
 
-            fields = DescriptorUtil.ConvertAndMakeReadOnly(
+            fieldsInDeclarationOrder = DescriptorUtil.ConvertAndMakeReadOnly(
                 proto.Field,
                 (field, index) =>
                 new FieldDescriptor(field, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.PropertyNames[index]));
+            fieldsInNumberOrder = new ReadOnlyCollection<FieldDescriptor>(fieldsInDeclarationOrder.OrderBy(field => field.FieldNumber).ToArray());
             file.DescriptorPool.AddSymbol(this);
-            fieldAccessors = new FieldAccessorCollection(this);
+            fields = new FieldCollection(this);
         }
                 
         /// <summary>
@@ -136,25 +139,12 @@ namespace Google.Protobuf.Reflection
             get { return containingType; }
         }
 
-        // TODO: It's confusing that FieldAccessors[x] doesn't retrieve the accessor
-        // for Fields[x]. We should think about this further... how often does a user really
-        // want the fields in declaration order?
-
         /// <value>
-        /// An unmodifiable list of this message type's fields, in the declaration order
-        /// within the .proto file.
+        /// A collection of fields, which can be retrieved by name or field number.
         /// </value>
-        public IList<FieldDescriptor> Fields
+        public FieldCollection Fields
         {
             get { return fields; }
-        }
-
-        /// <value>
-        /// A collection of accessors, which can be retrieved by name or field number.
-        /// </value>
-        public FieldAccessorCollection FieldAccessors
-        {
-            get { return fieldAccessors; }
         }
 
         /// <value>
@@ -220,7 +210,7 @@ namespace Google.Protobuf.Reflection
                 message.CrossLink();
             }
 
-            foreach (FieldDescriptor field in fields)
+            foreach (FieldDescriptor field in fieldsInDeclarationOrder)
             {
                 field.CrossLink();
             }
@@ -234,24 +224,43 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// A collection to simplify retrieving the field accessor for a particular field.
         /// </summary>
-        public sealed class FieldAccessorCollection
+        public sealed class FieldCollection
         {
             private readonly MessageDescriptor messageDescriptor;
 
-            internal FieldAccessorCollection(MessageDescriptor messageDescriptor)
+            internal FieldCollection(MessageDescriptor messageDescriptor)
             {
                 this.messageDescriptor = messageDescriptor;
             }
 
+            /// <value>
+            /// Returns the fields in the message as an immutable list, in the order in which they
+            /// are declared in the source .proto file.
+            /// </value>
+            public IList<FieldDescriptor> InDeclarationOrder()
+            {
+                return messageDescriptor.fieldsInDeclarationOrder;
+            }
+
+            /// <value>
+            /// Returns the fields in the message as an immutable list, in ascending field number
+            /// order. Field numbers need not be contiguous, so there is no direct mapping from the
+            /// index in the list to the field number; to retrieve a field by field number, it is better
+            /// to use the <see cref="FieldCollection"/> indexer.
+            /// </value>
+            public IList<FieldDescriptor> InFieldNumberOrder()
+            {
+                return messageDescriptor.fieldsInDeclarationOrder;
+            }
+
             /// <summary>
-            /// Retrieves the accessor for the field with the given number.
+            /// Retrieves the descriptor for the field with the given number.
             /// </summary>
-            /// <param name="number">Number of the field to retrieve the accessor for</param>
-            /// <returns>The accessor for the given field, or null if reflective field access is
-            /// not supported for the field.</returns>
+            /// <param name="number">Number of the field to retrieve the descriptor for</param>
+            /// <returns>The accessor for the given field</returns>
             /// <exception cref="KeyNotFoundException">The message descriptor does not contain a field
             /// with the given number</exception>
-            public IFieldAccessor this[int number]
+            public FieldDescriptor this[int number]
             {
                 get
                 {
@@ -260,19 +269,18 @@ namespace Google.Protobuf.Reflection
                     {
                         throw new KeyNotFoundException("No such field number");
                     }
-                    return fieldDescriptor.Accessor;
+                    return fieldDescriptor;
                 }
             }
 
             /// <summary>
-            /// Retrieves the accessor for the field with the given name.
+            /// Retrieves the descriptor for the field with the given name.
             /// </summary>
-            /// <param name="number">Number of the field to retrieve the accessor for</param>
-            /// <returns>The accessor for the given field, or null if reflective field access is
-            /// not supported for the field.</returns>
+            /// <param name="number">Number of the field to retrieve the descriptor for</param>
+            /// <returns>The descriptor for the given field</returns>
             /// <exception cref="KeyNotFoundException">The message descriptor does not contain a field
             /// with the given name</exception>
-            public IFieldAccessor this[string name]
+            public FieldDescriptor this[string name]
             {
                 get
                 {
@@ -281,7 +289,7 @@ namespace Google.Protobuf.Reflection
                     {
                         throw new KeyNotFoundException("No such field name");
                     }
-                    return fieldDescriptor.Accessor;
+                    return fieldDescriptor;
                 }
             }
         }

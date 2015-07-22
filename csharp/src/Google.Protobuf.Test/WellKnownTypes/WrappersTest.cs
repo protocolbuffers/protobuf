@@ -192,23 +192,23 @@ namespace Google.Protobuf.WellKnownTypes
                 Uint32Field = 3,
                 Uint64Field = 4
             };
-            var fields = TestWellKnownTypes.Descriptor.FieldAccessors;
+            var fields = TestWellKnownTypes.Descriptor.Fields;
 
-            Assert.AreEqual("x", fields[TestWellKnownTypes.StringFieldFieldNumber].GetValue(message));
-            Assert.AreEqual(ByteString.CopyFrom(1, 2, 3), fields[TestWellKnownTypes.BytesFieldFieldNumber].GetValue(message));
-            Assert.AreEqual(true, fields[TestWellKnownTypes.BoolFieldFieldNumber].GetValue(message));
-            Assert.AreEqual(12.5f, fields[TestWellKnownTypes.FloatFieldFieldNumber].GetValue(message));
-            Assert.AreEqual(12.25d, fields[TestWellKnownTypes.DoubleFieldFieldNumber].GetValue(message));
-            Assert.AreEqual(1, fields[TestWellKnownTypes.Int32FieldFieldNumber].GetValue(message));
-            Assert.AreEqual(2L, fields[TestWellKnownTypes.Int64FieldFieldNumber].GetValue(message));
-            Assert.AreEqual(3U, fields[TestWellKnownTypes.Uint32FieldFieldNumber].GetValue(message));
-            Assert.AreEqual(4UL, fields[TestWellKnownTypes.Uint64FieldFieldNumber].GetValue(message));
+            Assert.AreEqual("x", fields[TestWellKnownTypes.StringFieldFieldNumber].Accessor.GetValue(message));
+            Assert.AreEqual(ByteString.CopyFrom(1, 2, 3), fields[TestWellKnownTypes.BytesFieldFieldNumber].Accessor.GetValue(message));
+            Assert.AreEqual(true, fields[TestWellKnownTypes.BoolFieldFieldNumber].Accessor.GetValue(message));
+            Assert.AreEqual(12.5f, fields[TestWellKnownTypes.FloatFieldFieldNumber].Accessor.GetValue(message));
+            Assert.AreEqual(12.25d, fields[TestWellKnownTypes.DoubleFieldFieldNumber].Accessor.GetValue(message));
+            Assert.AreEqual(1, fields[TestWellKnownTypes.Int32FieldFieldNumber].Accessor.GetValue(message));
+            Assert.AreEqual(2L, fields[TestWellKnownTypes.Int64FieldFieldNumber].Accessor.GetValue(message));
+            Assert.AreEqual(3U, fields[TestWellKnownTypes.Uint32FieldFieldNumber].Accessor.GetValue(message));
+            Assert.AreEqual(4UL, fields[TestWellKnownTypes.Uint64FieldFieldNumber].Accessor.GetValue(message));
 
             // And a couple of null fields...
             message.StringField = null;
             message.FloatField = null;
-            Assert.IsNull(fields[TestWellKnownTypes.StringFieldFieldNumber].GetValue(message));
-            Assert.IsNull(fields[TestWellKnownTypes.FloatFieldFieldNumber].GetValue(message));
+            Assert.IsNull(fields[TestWellKnownTypes.StringFieldFieldNumber].Accessor.GetValue(message));
+            Assert.IsNull(fields[TestWellKnownTypes.FloatFieldFieldNumber].Accessor.GetValue(message));
         }
 
         [Test]
@@ -216,8 +216,8 @@ namespace Google.Protobuf.WellKnownTypes
         {
             // Just a single example... note that we can't have a null value here
             var message = new RepeatedWellKnownTypes { Int32Field = { 1, 2 } };
-            var fields = RepeatedWellKnownTypes.Descriptor.FieldAccessors;
-            var list = (IList) fields[RepeatedWellKnownTypes.Int32FieldFieldNumber].GetValue(message);
+            var fields = RepeatedWellKnownTypes.Descriptor.Fields;
+            var list = (IList) fields[RepeatedWellKnownTypes.Int32FieldFieldNumber].Accessor.GetValue(message);
             CollectionAssert.AreEqual(new[] { 1, 2 }, list);
         }
 
@@ -226,8 +226,8 @@ namespace Google.Protobuf.WellKnownTypes
         {
             // Just a single example... note that we can't have a null value here
             var message = new MapWellKnownTypes { Int32Field = { { 1, 2 }, { 3, null } } };
-            var fields = MapWellKnownTypes.Descriptor.FieldAccessors;
-            var dictionary = (IDictionary) fields[MapWellKnownTypes.Int32FieldFieldNumber].GetValue(message);
+            var fields = MapWellKnownTypes.Descriptor.Fields;
+            var dictionary = (IDictionary) fields[MapWellKnownTypes.Int32FieldFieldNumber].Accessor.GetValue(message);
             Assert.AreEqual(2, dictionary[1]);
             Assert.IsNull(dictionary[3]);
             Assert.IsTrue(dictionary.Contains(3));
