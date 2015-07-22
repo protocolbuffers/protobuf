@@ -29,10 +29,20 @@ namespace Google.Protobuf.WellKnownTypes {
             "DSIaCglCb29sVmFsdWUSDQoFdmFsdWUYASABKAgiHAoLU3RyaW5nVmFsdWUS", 
             "DQoFdmFsdWUYASABKAkiGwoKQnl0ZXNWYWx1ZRINCgV2YWx1ZRgBIAEoDEJN", 
             "ChNjb20uZ29vZ2xlLnByb3RvYnVmQg1XcmFwcGVyc1Byb3RvUAGiAgNHUEKq", 
-          "Ah5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
+            "Ah5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] { },
-          new global::System.Type[] { typeof(global::Google.Protobuf.WellKnownTypes.DoubleValue), typeof(global::Google.Protobuf.WellKnownTypes.FloatValue), typeof(global::Google.Protobuf.WellKnownTypes.Int64Value), typeof(global::Google.Protobuf.WellKnownTypes.UInt64Value), typeof(global::Google.Protobuf.WellKnownTypes.Int32Value), typeof(global::Google.Protobuf.WellKnownTypes.UInt32Value), typeof(global::Google.Protobuf.WellKnownTypes.BoolValue), typeof(global::Google.Protobuf.WellKnownTypes.StringValue), typeof(global::Google.Protobuf.WellKnownTypes.BytesValue), });
+          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.DoubleValue), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.FloatValue), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Int64Value), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.UInt64Value), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Int32Value), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.UInt32Value), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.BoolValue), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.StringValue), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.BytesValue), new[]{ "Value" }, null, null, null)
+          }));
     }
     #endregion
 
@@ -43,8 +53,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<DoubleValue> _parser = new pb::MessageParser<DoubleValue>(() => new DoubleValue());
     public static pb::MessageParser<DoubleValue> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 9 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[0]; }
     }
@@ -79,7 +87,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ValueFieldNumber = 1;
     private double value_;
-    [pbr::ProtobufField(1, "value")]
     public double Value {
       get { return value_; }
       set {
@@ -163,8 +170,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<FloatValue> _parser = new pb::MessageParser<FloatValue>(() => new FloatValue());
     public static pb::MessageParser<FloatValue> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 13 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[1]; }
     }
@@ -199,7 +204,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ValueFieldNumber = 1;
     private float value_;
-    [pbr::ProtobufField(1, "value")]
     public float Value {
       get { return value_; }
       set {
@@ -283,8 +287,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<Int64Value> _parser = new pb::MessageParser<Int64Value>(() => new Int64Value());
     public static pb::MessageParser<Int64Value> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[2]; }
     }
@@ -319,7 +321,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ValueFieldNumber = 1;
     private long value_;
-    [pbr::ProtobufField(1, "value")]
     public long Value {
       get { return value_; }
       set {
@@ -403,8 +404,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<UInt64Value> _parser = new pb::MessageParser<UInt64Value>(() => new UInt64Value());
     public static pb::MessageParser<UInt64Value> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[3]; }
     }
@@ -439,7 +438,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ValueFieldNumber = 1;
     private ulong value_;
-    [pbr::ProtobufField(1, "value")]
     public ulong Value {
       get { return value_; }
       set {
@@ -523,8 +521,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<Int32Value> _parser = new pb::MessageParser<Int32Value>(() => new Int32Value());
     public static pb::MessageParser<Int32Value> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[4]; }
     }
@@ -559,7 +555,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ValueFieldNumber = 1;
     private int value_;
-    [pbr::ProtobufField(1, "value")]
     public int Value {
       get { return value_; }
       set {
@@ -643,8 +638,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<UInt32Value> _parser = new pb::MessageParser<UInt32Value>(() => new UInt32Value());
     public static pb::MessageParser<UInt32Value> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[5]; }
     }
@@ -679,7 +672,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ValueFieldNumber = 1;
     private uint value_;
-    [pbr::ProtobufField(1, "value")]
     public uint Value {
       get { return value_; }
       set {
@@ -763,8 +755,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<BoolValue> _parser = new pb::MessageParser<BoolValue>(() => new BoolValue());
     public static pb::MessageParser<BoolValue> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[6]; }
     }
@@ -799,7 +789,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ValueFieldNumber = 1;
     private bool value_;
-    [pbr::ProtobufField(1, "value")]
     public bool Value {
       get { return value_; }
       set {
@@ -883,8 +872,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<StringValue> _parser = new pb::MessageParser<StringValue>(() => new StringValue());
     public static pb::MessageParser<StringValue> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[7]; }
     }
@@ -919,7 +906,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ValueFieldNumber = 1;
     private string value_ = "";
-    [pbr::ProtobufField(1, "value")]
     public string Value {
       get { return value_; }
       set {
@@ -1003,8 +989,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<BytesValue> _parser = new pb::MessageParser<BytesValue>(() => new BytesValue());
     public static pb::MessageParser<BytesValue> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[8]; }
     }
@@ -1039,7 +1023,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ValueFieldNumber = 1;
     private pb::ByteString value_ = pb::ByteString.Empty;
-    [pbr::ProtobufField(1, "value")]
     public pb::ByteString Value {
       get { return value_; }
       set {

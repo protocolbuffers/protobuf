@@ -26,10 +26,12 @@ namespace Google.Protobuf.WellKnownTypes {
               "Chlnb29nbGUvcHJvdG9idWYvYW55LnByb3RvEg9nb29nbGUucHJvdG9idWYi", 
               "JgoDQW55EhAKCHR5cGVfdXJsGAEgASgJEg0KBXZhbHVlGAIgASgMQksKE2Nv", 
               "bS5nb29nbGUucHJvdG9idWZCCEFueVByb3RvUAGgAQGiAgNHUEKqAh5Hb29n", 
-            "bGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
+              "bGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
             new pbr::FileDescriptor[] { },
-            new global::System.Type[] { typeof(global::Google.Protobuf.WellKnownTypes.Any), });
+            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Any), new[]{ "TypeUrl", "Value" }, null, null, null)
+            }));
       }
       #endregion
 
@@ -41,8 +43,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<Any> _parser = new pb::MessageParser<Any>(() => new Any());
     public static pb::MessageParser<Any> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "type_url", "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 10, 18 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.Any.Descriptor.MessageTypes[0]; }
     }
@@ -78,7 +78,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int TypeUrlFieldNumber = 1;
     private string typeUrl_ = "";
-    [pbr::ProtobufField(1, "type_url")]
     public string TypeUrl {
       get { return typeUrl_; }
       set {
@@ -89,7 +88,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int ValueFieldNumber = 2;
     private pb::ByteString value_ = pb::ByteString.Empty;
-    [pbr::ProtobufField(2, "value")]
     public pb::ByteString Value {
       get { return value_; }
       set {

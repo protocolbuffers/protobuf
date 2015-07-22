@@ -26,10 +26,12 @@ namespace Google.Protobuf.WellKnownTypes {
               "Chtnb29nbGUvcHJvdG9idWYvZW1wdHkucHJvdG8SD2dvb2dsZS5wcm90b2J1", 
               "ZiIHCgVFbXB0eUJKChNjb20uZ29vZ2xlLnByb3RvYnVmQgpFbXB0eVByb3Rv", 
               "UAGiAgNHUEKqAh5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnBy", 
-            "b3RvMw=="));
+              "b3RvMw=="));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
             new pbr::FileDescriptor[] { },
-            new global::System.Type[] { typeof(global::Google.Protobuf.WellKnownTypes.Empty), });
+            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Empty), null, null, null, null)
+            }));
       }
       #endregion
 
@@ -41,8 +43,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<Empty> _parser = new pb::MessageParser<Empty>(() => new Empty());
     public static pb::MessageParser<Empty> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] {  };
-    private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.Empty.Descriptor.MessageTypes[0]; }
     }

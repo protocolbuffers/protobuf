@@ -36,10 +36,14 @@ namespace Google.Protobuf.WellKnownTypes {
               "Lmdvb2dsZS5wcm90b2J1Zi5WYWx1ZSobCglOdWxsVmFsdWUSDgoKTlVMTF9W", 
               "QUxVRRAAQk4KE2NvbS5nb29nbGUucHJvdG9idWZCC1N0cnVjdFByb3RvUAGg", 
               "AQGiAgNHUEKqAh5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnBy", 
-            "b3RvMw=="));
+              "b3RvMw=="));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
             new pbr::FileDescriptor[] { },
-            new global::System.Type[] { typeof(global::Google.Protobuf.WellKnownTypes.Struct), null, typeof(global::Google.Protobuf.WellKnownTypes.Value), typeof(global::Google.Protobuf.WellKnownTypes.ListValue), typeof(global::Google.Protobuf.WellKnownTypes.NullValue), });
+            new pbr::GeneratedCodeInfo(new[] {typeof(global::Google.Protobuf.WellKnownTypes.NullValue), }, new pbr::GeneratedCodeInfo[] {
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Struct), new[]{ "Fields" }, null, null, new pbr::GeneratedCodeInfo[] { null, }),
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Value), new[]{ "NullValue", "NumberValue", "StringValue", "BoolValue", "StructValue", "ListValue" }, new[]{ "Kind" }, null, null),
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.ListValue), new[]{ "Values" }, null, null, null)
+            }));
       }
       #endregion
 
@@ -58,8 +62,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<Struct> _parser = new pb::MessageParser<Struct>(() => new Struct());
     public static pb::MessageParser<Struct> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "fields" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.Struct.Descriptor.MessageTypes[0]; }
     }
@@ -97,7 +99,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pbc::MapField<string, global::Google.Protobuf.WellKnownTypes.Value>.Codec _map_fields_codec
         = new pbc::MapField<string, global::Google.Protobuf.WellKnownTypes.Value>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Value.Parser), 10);
     private readonly pbc::MapField<string, global::Google.Protobuf.WellKnownTypes.Value> fields_ = new pbc::MapField<string, global::Google.Protobuf.WellKnownTypes.Value>();
-    [pbr::ProtobufField(1, "fields")]
     public pbc::MapField<string, global::Google.Protobuf.WellKnownTypes.Value> Fields {
       get { return fields_; }
     }
@@ -170,8 +171,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<Value> _parser = new pb::MessageParser<Value>(() => new Value());
     public static pb::MessageParser<Value> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "bool_value", "list_value", "null_value", "number_value", "string_value", "struct_value" };
-    private static readonly uint[] _fieldTags = new uint[] { 32, 50, 8, 17, 26, 42 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.Struct.Descriptor.MessageTypes[1]; }
     }
@@ -226,7 +225,6 @@ namespace Google.Protobuf.WellKnownTypes {
     }
 
     public const int NullValueFieldNumber = 1;
-    [pbr::ProtobufField(1, "null_value")]
     public global::Google.Protobuf.WellKnownTypes.NullValue NullValue {
       get { return kindCase_ == KindOneofCase.NullValue ? (global::Google.Protobuf.WellKnownTypes.NullValue) kind_ : global::Google.Protobuf.WellKnownTypes.NullValue.NULL_VALUE; }
       set {
@@ -237,7 +235,6 @@ namespace Google.Protobuf.WellKnownTypes {
     }
 
     public const int NumberValueFieldNumber = 2;
-    [pbr::ProtobufField(2, "number_value")]
     public double NumberValue {
       get { return kindCase_ == KindOneofCase.NumberValue ? (double) kind_ : 0D; }
       set {
@@ -248,7 +245,6 @@ namespace Google.Protobuf.WellKnownTypes {
     }
 
     public const int StringValueFieldNumber = 3;
-    [pbr::ProtobufField(3, "string_value")]
     public string StringValue {
       get { return kindCase_ == KindOneofCase.StringValue ? (string) kind_ : ""; }
       set {
@@ -259,7 +255,6 @@ namespace Google.Protobuf.WellKnownTypes {
     }
 
     public const int BoolValueFieldNumber = 4;
-    [pbr::ProtobufField(4, "bool_value")]
     public bool BoolValue {
       get { return kindCase_ == KindOneofCase.BoolValue ? (bool) kind_ : false; }
       set {
@@ -270,7 +265,6 @@ namespace Google.Protobuf.WellKnownTypes {
     }
 
     public const int StructValueFieldNumber = 5;
-    [pbr::ProtobufField(5, "struct_value")]
     public global::Google.Protobuf.WellKnownTypes.Struct StructValue {
       get { return kindCase_ == KindOneofCase.StructValue ? (global::Google.Protobuf.WellKnownTypes.Struct) kind_ : null; }
       set {
@@ -281,7 +275,6 @@ namespace Google.Protobuf.WellKnownTypes {
     }
 
     public const int ListValueFieldNumber = 6;
-    [pbr::ProtobufField(6, "list_value")]
     public global::Google.Protobuf.WellKnownTypes.ListValue ListValue {
       get { return kindCase_ == KindOneofCase.ListValue ? (global::Google.Protobuf.WellKnownTypes.ListValue) kind_ : null; }
       set {
@@ -483,8 +476,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<ListValue> _parser = new pb::MessageParser<ListValue>(() => new ListValue());
     public static pb::MessageParser<ListValue> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "values" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.Struct.Descriptor.MessageTypes[2]; }
     }
@@ -522,7 +513,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Value> _repeated_values_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.WellKnownTypes.Value.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Value> values_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Value>();
-    [pbr::ProtobufField(1, "values")]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Value> Values {
       get { return values_; }
     }

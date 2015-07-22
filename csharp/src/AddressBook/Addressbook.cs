@@ -29,10 +29,13 @@ namespace Google.Protobuf.Examples.AddressBook {
             "EggKBEhPTUUQARIICgRXT1JLEAIiLwoLQWRkcmVzc0Jvb2sSIAoGcGVvcGxl", 
             "GAEgAygLMhAudHV0b3JpYWwuUGVyc29uQlAKFGNvbS5leGFtcGxlLnR1dG9y", 
             "aWFsQhFBZGRyZXNzQm9va1Byb3Rvc6oCJEdvb2dsZS5Qcm90b2J1Zi5FeGFt", 
-          "cGxlcy5BZGRyZXNzQm9va2IGcHJvdG8z"));
+            "cGxlcy5BZGRyZXNzQm9va2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] { },
-          new global::System.Type[] { typeof(global::Google.Protobuf.Examples.AddressBook.Person), typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType), typeof(global::Google.Protobuf.Examples.AddressBook.AddressBook), });
+          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person), new[]{ "Name", "Id", "Email", "Phones" }, null, new[]{ typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) }, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), new[]{ "Number", "Type" }, null, null, null)}),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.AddressBook), new[]{ "People" }, null, null, null)
+          }));
     }
     #endregion
 
@@ -43,8 +46,6 @@ namespace Google.Protobuf.Examples.AddressBook {
     private static readonly pb::MessageParser<Person> _parser = new pb::MessageParser<Person>(() => new Person());
     public static pb::MessageParser<Person> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "email", "id", "name", "phones" };
-    private static readonly uint[] _fieldTags = new uint[] { 26, 16, 10, 34 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.Descriptor.MessageTypes[0]; }
     }
@@ -83,7 +84,6 @@ namespace Google.Protobuf.Examples.AddressBook {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    [pbr::ProtobufField(1, "name")]
     public string Name {
       get { return name_; }
       set {
@@ -94,7 +94,6 @@ namespace Google.Protobuf.Examples.AddressBook {
 
     public const int IdFieldNumber = 2;
     private int id_;
-    [pbr::ProtobufField(2, "id")]
     public int Id {
       get { return id_; }
       set {
@@ -105,7 +104,6 @@ namespace Google.Protobuf.Examples.AddressBook {
 
     public const int EmailFieldNumber = 3;
     private string email_ = "";
-    [pbr::ProtobufField(3, "email")]
     public string Email {
       get { return email_; }
       set {
@@ -118,7 +116,6 @@ namespace Google.Protobuf.Examples.AddressBook {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> _repeated_phones_codec
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> phones_ = new pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber>();
-    [pbr::ProtobufField(4, "phones")]
     public pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> Phones {
       get { return phones_; }
     }
@@ -246,8 +243,6 @@ namespace Google.Protobuf.Examples.AddressBook {
         private static readonly pb::MessageParser<PhoneNumber> _parser = new pb::MessageParser<PhoneNumber>(() => new PhoneNumber());
         public static pb::MessageParser<PhoneNumber> Parser { get { return _parser; } }
 
-        private static readonly string[] _fieldNames = new string[] { "number", "type" };
-        private static readonly uint[] _fieldTags = new uint[] { 10, 16 };
         public static pbr::MessageDescriptor Descriptor {
           get { return global::Google.Protobuf.Examples.AddressBook.Person.Descriptor.NestedTypes[0]; }
         }
@@ -283,7 +278,6 @@ namespace Google.Protobuf.Examples.AddressBook {
 
         public const int NumberFieldNumber = 1;
         private string number_ = "";
-        [pbr::ProtobufField(1, "number")]
         public string Number {
           get { return number_; }
           set {
@@ -294,7 +288,6 @@ namespace Google.Protobuf.Examples.AddressBook {
 
         public const int TypeFieldNumber = 2;
         private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE;
-        [pbr::ProtobufField(2, "type")]
         public global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType Type {
           get { return type_; }
           set {
@@ -399,8 +392,6 @@ namespace Google.Protobuf.Examples.AddressBook {
     private static readonly pb::MessageParser<AddressBook> _parser = new pb::MessageParser<AddressBook>(() => new AddressBook());
     public static pb::MessageParser<AddressBook> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "people" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.Descriptor.MessageTypes[1]; }
     }
@@ -438,7 +429,6 @@ namespace Google.Protobuf.Examples.AddressBook {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Examples.AddressBook.Person> _repeated_people_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Examples.AddressBook.Person.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person> people_ = new pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person>();
-    [pbr::ProtobufField(1, "people")]
     public pbc::RepeatedField<global::Google.Protobuf.Examples.AddressBook.Person> People {
       get { return people_; }
     }

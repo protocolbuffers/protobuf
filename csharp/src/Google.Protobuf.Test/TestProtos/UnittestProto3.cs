@@ -147,10 +147,44 @@ namespace Google.Protobuf.TestProtos {
             "cXVlc3QaHi5wcm90b2J1Zl91bml0dGVzdC5Gb29SZXNwb25zZRJECgNCYXIS", 
             "HS5wcm90b2J1Zl91bml0dGVzdC5CYXJSZXF1ZXN0Gh4ucHJvdG9idWZfdW5p", 
             "dHRlc3QuQmFyUmVzcG9uc2VCOkINVW5pdHRlc3RQcm90b0gBgAEBiAEBkAEB", 
-          "+AEBqgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
+            "+AEBqgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportProto3.Descriptor, },
-          new global::System.Type[] { typeof(global::Google.Protobuf.TestProtos.TestAllTypes), typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage), typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum), typeof(global::Google.Protobuf.TestProtos.NestedTestAllTypes), typeof(global::Google.Protobuf.TestProtos.TestDeprecatedFields), typeof(global::Google.Protobuf.TestProtos.ForeignMessage), typeof(global::Google.Protobuf.TestProtos.TestReservedFields), typeof(global::Google.Protobuf.TestProtos.TestForeignNested), typeof(global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber), typeof(global::Google.Protobuf.TestProtos.TestRecursiveMessage), typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionA), typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionB), typeof(global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames), typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings), typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage), typeof(global::Google.Protobuf.TestProtos.SparseEnumMessage), typeof(global::Google.Protobuf.TestProtos.OneString), typeof(global::Google.Protobuf.TestProtos.MoreString), typeof(global::Google.Protobuf.TestProtos.OneBytes), typeof(global::Google.Protobuf.TestProtos.MoreBytes), typeof(global::Google.Protobuf.TestProtos.Int32Message), typeof(global::Google.Protobuf.TestProtos.Uint32Message), typeof(global::Google.Protobuf.TestProtos.Int64Message), typeof(global::Google.Protobuf.TestProtos.Uint64Message), typeof(global::Google.Protobuf.TestProtos.BoolMessage), typeof(global::Google.Protobuf.TestProtos.TestOneof), typeof(global::Google.Protobuf.TestProtos.TestPackedTypes), typeof(global::Google.Protobuf.TestProtos.TestUnpackedTypes), typeof(global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes), typeof(global::Google.Protobuf.TestProtos.TestCommentInjectionMessage), typeof(global::Google.Protobuf.TestProtos.FooRequest), typeof(global::Google.Protobuf.TestProtos.FooResponse), typeof(global::Google.Protobuf.TestProtos.FooClientMessage), typeof(global::Google.Protobuf.TestProtos.FooServerMessage), typeof(global::Google.Protobuf.TestProtos.BarRequest), typeof(global::Google.Protobuf.TestProtos.BarResponse), typeof(global::Google.Protobuf.TestProtos.ForeignEnum), typeof(global::Google.Protobuf.TestProtos.TestEnumWithDupValue), typeof(global::Google.Protobuf.TestProtos.TestSparseEnum), });
+          new pbr::GeneratedCodeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.ForeignEnum), typeof(global::Google.Protobuf.TestProtos.TestEnumWithDupValue), typeof(global::Google.Protobuf.TestProtos.TestSparseEnum), }, new pbr::GeneratedCodeInfo[] {
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestAllTypes), new[]{ "SingleInt32", "SingleInt64", "SingleUint32", "SingleUint64", "SingleSint32", "SingleSint64", "SingleFixed32", "SingleFixed64", "SingleSfixed32", "SingleSfixed64", "SingleFloat", "SingleDouble", "SingleBool", "SingleString", "SingleBytes", "SingleNestedMessage", "SingleForeignMessage", "SingleImportMessage", "SingleNestedEnum", "SingleForeignEnum", "SingleImportEnum", "SinglePublicImportMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedImportMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedImportEnum", "RepeatedPublicImportMessage", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes" }, new[]{ "OneofField" }, new[]{ typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) }, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage), new[]{ "Bb" }, null, null, null)}),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.NestedTestAllTypes), new[]{ "Child", "Payload", "RepeatedChild" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestDeprecatedFields), new[]{ "DeprecatedInt32" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.ForeignMessage), new[]{ "C" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestReservedFields), null, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestForeignNested), new[]{ "ForeignNested" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber), new[]{ "A", "Bb" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestRecursiveMessage), new[]{ "A", "I" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionA), new[]{ "Bb" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionB), new[]{ "A", "OptionalInt32" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames), new[]{ "PrimitiveField", "StringField", "EnumField", "MessageField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedEnumField", "RepeatedMessageField" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings), new[]{ "MyString", "MyInt", "MyFloat", "SingleNestedMessage" }, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage), new[]{ "Oo", "Bb" }, null, null, null)}),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.SparseEnumMessage), new[]{ "SparseEnum" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.OneString), new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.MoreString), new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.OneBytes), new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.MoreBytes), new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.Int32Message), new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.Uint32Message), new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.Int64Message), new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.Uint64Message), new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.BoolMessage), new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestOneof), new[]{ "FooInt", "FooString", "FooMessage" }, new[]{ "Foo" }, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestPackedTypes), new[]{ "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedEnum" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestUnpackedTypes), new[]{ "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedEnum" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes), new[]{ "RepeatedFixed32", "RepeatedInt32", "RepeatedFixed64", "RepeatedInt64", "RepeatedFloat", "RepeatedUint64" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestCommentInjectionMessage), new[]{ "A" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.FooRequest), null, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.FooResponse), null, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.FooClientMessage), null, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.FooServerMessage), null, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.BarRequest), null, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.BarResponse), null, null, null, null)
+          }));
     }
     #endregion
 
@@ -190,8 +224,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestAllTypes> _parser = new pb::MessageParser<TestAllTypes>(() => new TestAllTypes());
     public static pb::MessageParser<TestAllTypes> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "oneof_bytes", "oneof_nested_message", "oneof_string", "oneof_uint32", "repeated_bool", "repeated_bytes", "repeated_double", "repeated_fixed32", "repeated_fixed64", "repeated_float", "repeated_foreign_enum", "repeated_foreign_message", "repeated_import_enum", "repeated_import_message", "repeated_int32", "repeated_int64", "repeated_nested_enum", "repeated_nested_message", "repeated_public_import_message", "repeated_sfixed32", "repeated_sfixed64", "repeated_sint32", "repeated_sint64", "repeated_string", "repeated_uint32", "repeated_uint64", "single_bool", "single_bytes", "single_double", "single_fixed32", "single_fixed64", "single_float", "single_foreign_enum", "single_foreign_message", "single_import_enum", "single_import_message", "single_int32", "single_int64", "single_nested_enum", "single_nested_message", "single_public_import_message", "single_sfixed32", "single_sfixed64", "single_sint32", "single_sint64", "single_string", "single_uint32", "single_uint64" };
-    private static readonly uint[] _fieldTags = new uint[] { 914, 898, 906, 888, 346, 362, 338, 298, 306, 330, 418, 394, 426, 402, 250, 258, 410, 386, 434, 314, 322, 282, 290, 354, 266, 274, 104, 122, 97, 61, 65, 93, 176, 154, 184, 162, 8, 16, 168, 146, 210, 77, 81, 40, 48, 114, 24, 32 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[0]; }
     }
@@ -311,7 +343,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleInt32FieldNumber = 1;
     private int singleInt32_;
-    [pbr::ProtobufField(1, "single_int32")]
     public int SingleInt32 {
       get { return singleInt32_; }
       set {
@@ -322,7 +353,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleInt64FieldNumber = 2;
     private long singleInt64_;
-    [pbr::ProtobufField(2, "single_int64")]
     public long SingleInt64 {
       get { return singleInt64_; }
       set {
@@ -333,7 +363,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleUint32FieldNumber = 3;
     private uint singleUint32_;
-    [pbr::ProtobufField(3, "single_uint32")]
     public uint SingleUint32 {
       get { return singleUint32_; }
       set {
@@ -344,7 +373,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleUint64FieldNumber = 4;
     private ulong singleUint64_;
-    [pbr::ProtobufField(4, "single_uint64")]
     public ulong SingleUint64 {
       get { return singleUint64_; }
       set {
@@ -355,7 +383,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleSint32FieldNumber = 5;
     private int singleSint32_;
-    [pbr::ProtobufField(5, "single_sint32")]
     public int SingleSint32 {
       get { return singleSint32_; }
       set {
@@ -366,7 +393,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleSint64FieldNumber = 6;
     private long singleSint64_;
-    [pbr::ProtobufField(6, "single_sint64")]
     public long SingleSint64 {
       get { return singleSint64_; }
       set {
@@ -377,7 +403,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleFixed32FieldNumber = 7;
     private uint singleFixed32_;
-    [pbr::ProtobufField(7, "single_fixed32")]
     public uint SingleFixed32 {
       get { return singleFixed32_; }
       set {
@@ -388,7 +413,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleFixed64FieldNumber = 8;
     private ulong singleFixed64_;
-    [pbr::ProtobufField(8, "single_fixed64")]
     public ulong SingleFixed64 {
       get { return singleFixed64_; }
       set {
@@ -399,7 +423,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleSfixed32FieldNumber = 9;
     private int singleSfixed32_;
-    [pbr::ProtobufField(9, "single_sfixed32")]
     public int SingleSfixed32 {
       get { return singleSfixed32_; }
       set {
@@ -410,7 +433,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleSfixed64FieldNumber = 10;
     private long singleSfixed64_;
-    [pbr::ProtobufField(10, "single_sfixed64")]
     public long SingleSfixed64 {
       get { return singleSfixed64_; }
       set {
@@ -421,7 +443,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleFloatFieldNumber = 11;
     private float singleFloat_;
-    [pbr::ProtobufField(11, "single_float")]
     public float SingleFloat {
       get { return singleFloat_; }
       set {
@@ -432,7 +453,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleDoubleFieldNumber = 12;
     private double singleDouble_;
-    [pbr::ProtobufField(12, "single_double")]
     public double SingleDouble {
       get { return singleDouble_; }
       set {
@@ -443,7 +463,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleBoolFieldNumber = 13;
     private bool singleBool_;
-    [pbr::ProtobufField(13, "single_bool")]
     public bool SingleBool {
       get { return singleBool_; }
       set {
@@ -454,7 +473,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleStringFieldNumber = 14;
     private string singleString_ = "";
-    [pbr::ProtobufField(14, "single_string")]
     public string SingleString {
       get { return singleString_; }
       set {
@@ -465,7 +483,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleBytesFieldNumber = 15;
     private pb::ByteString singleBytes_ = pb::ByteString.Empty;
-    [pbr::ProtobufField(15, "single_bytes")]
     public pb::ByteString SingleBytes {
       get { return singleBytes_; }
       set {
@@ -476,7 +493,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleNestedMessageFieldNumber = 18;
     private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage singleNestedMessage_;
-    [pbr::ProtobufField(18, "single_nested_message")]
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage SingleNestedMessage {
       get { return singleNestedMessage_; }
       set {
@@ -487,7 +503,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleForeignMessageFieldNumber = 19;
     private global::Google.Protobuf.TestProtos.ForeignMessage singleForeignMessage_;
-    [pbr::ProtobufField(19, "single_foreign_message")]
     public global::Google.Protobuf.TestProtos.ForeignMessage SingleForeignMessage {
       get { return singleForeignMessage_; }
       set {
@@ -498,7 +513,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleImportMessageFieldNumber = 20;
     private global::Google.Protobuf.TestProtos.ImportMessage singleImportMessage_;
-    [pbr::ProtobufField(20, "single_import_message")]
     public global::Google.Protobuf.TestProtos.ImportMessage SingleImportMessage {
       get { return singleImportMessage_; }
       set {
@@ -509,7 +523,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleNestedEnumFieldNumber = 21;
     private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum singleNestedEnum_ = global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED;
-    [pbr::ProtobufField(21, "single_nested_enum")]
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum SingleNestedEnum {
       get { return singleNestedEnum_; }
       set {
@@ -520,7 +533,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleForeignEnumFieldNumber = 22;
     private global::Google.Protobuf.TestProtos.ForeignEnum singleForeignEnum_ = global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED;
-    [pbr::ProtobufField(22, "single_foreign_enum")]
     public global::Google.Protobuf.TestProtos.ForeignEnum SingleForeignEnum {
       get { return singleForeignEnum_; }
       set {
@@ -531,7 +543,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleImportEnumFieldNumber = 23;
     private global::Google.Protobuf.TestProtos.ImportEnum singleImportEnum_ = global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED;
-    [pbr::ProtobufField(23, "single_import_enum")]
     public global::Google.Protobuf.TestProtos.ImportEnum SingleImportEnum {
       get { return singleImportEnum_; }
       set {
@@ -542,7 +553,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SinglePublicImportMessageFieldNumber = 26;
     private global::Google.Protobuf.TestProtos.PublicImportMessage singlePublicImportMessage_;
-    [pbr::ProtobufField(26, "single_public_import_message")]
     public global::Google.Protobuf.TestProtos.PublicImportMessage SinglePublicImportMessage {
       get { return singlePublicImportMessage_; }
       set {
@@ -555,7 +565,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForInt32(250);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
-    [pbr::ProtobufField(31, "repeated_int32")]
     public pbc::RepeatedField<int> RepeatedInt32 {
       get { return repeatedInt32_; }
     }
@@ -564,7 +573,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_repeatedInt64_codec
         = pb::FieldCodec.ForInt64(258);
     private readonly pbc::RepeatedField<long> repeatedInt64_ = new pbc::RepeatedField<long>();
-    [pbr::ProtobufField(32, "repeated_int64")]
     public pbc::RepeatedField<long> RepeatedInt64 {
       get { return repeatedInt64_; }
     }
@@ -573,7 +581,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_repeatedUint32_codec
         = pb::FieldCodec.ForUInt32(266);
     private readonly pbc::RepeatedField<uint> repeatedUint32_ = new pbc::RepeatedField<uint>();
-    [pbr::ProtobufField(33, "repeated_uint32")]
     public pbc::RepeatedField<uint> RepeatedUint32 {
       get { return repeatedUint32_; }
     }
@@ -582,7 +589,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedUint64_codec
         = pb::FieldCodec.ForUInt64(274);
     private readonly pbc::RepeatedField<ulong> repeatedUint64_ = new pbc::RepeatedField<ulong>();
-    [pbr::ProtobufField(34, "repeated_uint64")]
     public pbc::RepeatedField<ulong> RepeatedUint64 {
       get { return repeatedUint64_; }
     }
@@ -591,7 +597,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_repeatedSint32_codec
         = pb::FieldCodec.ForSInt32(282);
     private readonly pbc::RepeatedField<int> repeatedSint32_ = new pbc::RepeatedField<int>();
-    [pbr::ProtobufField(35, "repeated_sint32")]
     public pbc::RepeatedField<int> RepeatedSint32 {
       get { return repeatedSint32_; }
     }
@@ -600,7 +605,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_repeatedSint64_codec
         = pb::FieldCodec.ForSInt64(290);
     private readonly pbc::RepeatedField<long> repeatedSint64_ = new pbc::RepeatedField<long>();
-    [pbr::ProtobufField(36, "repeated_sint64")]
     public pbc::RepeatedField<long> RepeatedSint64 {
       get { return repeatedSint64_; }
     }
@@ -609,7 +613,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_repeatedFixed32_codec
         = pb::FieldCodec.ForFixed32(298);
     private readonly pbc::RepeatedField<uint> repeatedFixed32_ = new pbc::RepeatedField<uint>();
-    [pbr::ProtobufField(37, "repeated_fixed32")]
     public pbc::RepeatedField<uint> RepeatedFixed32 {
       get { return repeatedFixed32_; }
     }
@@ -618,7 +621,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedFixed64_codec
         = pb::FieldCodec.ForFixed64(306);
     private readonly pbc::RepeatedField<ulong> repeatedFixed64_ = new pbc::RepeatedField<ulong>();
-    [pbr::ProtobufField(38, "repeated_fixed64")]
     public pbc::RepeatedField<ulong> RepeatedFixed64 {
       get { return repeatedFixed64_; }
     }
@@ -627,7 +629,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_repeatedSfixed32_codec
         = pb::FieldCodec.ForSFixed32(314);
     private readonly pbc::RepeatedField<int> repeatedSfixed32_ = new pbc::RepeatedField<int>();
-    [pbr::ProtobufField(39, "repeated_sfixed32")]
     public pbc::RepeatedField<int> RepeatedSfixed32 {
       get { return repeatedSfixed32_; }
     }
@@ -636,7 +637,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_repeatedSfixed64_codec
         = pb::FieldCodec.ForSFixed64(322);
     private readonly pbc::RepeatedField<long> repeatedSfixed64_ = new pbc::RepeatedField<long>();
-    [pbr::ProtobufField(40, "repeated_sfixed64")]
     public pbc::RepeatedField<long> RepeatedSfixed64 {
       get { return repeatedSfixed64_; }
     }
@@ -645,7 +645,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<float> _repeated_repeatedFloat_codec
         = pb::FieldCodec.ForFloat(330);
     private readonly pbc::RepeatedField<float> repeatedFloat_ = new pbc::RepeatedField<float>();
-    [pbr::ProtobufField(41, "repeated_float")]
     public pbc::RepeatedField<float> RepeatedFloat {
       get { return repeatedFloat_; }
     }
@@ -654,7 +653,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<double> _repeated_repeatedDouble_codec
         = pb::FieldCodec.ForDouble(338);
     private readonly pbc::RepeatedField<double> repeatedDouble_ = new pbc::RepeatedField<double>();
-    [pbr::ProtobufField(42, "repeated_double")]
     public pbc::RepeatedField<double> RepeatedDouble {
       get { return repeatedDouble_; }
     }
@@ -663,7 +661,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<bool> _repeated_repeatedBool_codec
         = pb::FieldCodec.ForBool(346);
     private readonly pbc::RepeatedField<bool> repeatedBool_ = new pbc::RepeatedField<bool>();
-    [pbr::ProtobufField(43, "repeated_bool")]
     public pbc::RepeatedField<bool> RepeatedBool {
       get { return repeatedBool_; }
     }
@@ -672,7 +669,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<string> _repeated_repeatedString_codec
         = pb::FieldCodec.ForString(354);
     private readonly pbc::RepeatedField<string> repeatedString_ = new pbc::RepeatedField<string>();
-    [pbr::ProtobufField(44, "repeated_string")]
     public pbc::RepeatedField<string> RepeatedString {
       get { return repeatedString_; }
     }
@@ -681,7 +677,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<pb::ByteString> _repeated_repeatedBytes_codec
         = pb::FieldCodec.ForBytes(362);
     private readonly pbc::RepeatedField<pb::ByteString> repeatedBytes_ = new pbc::RepeatedField<pb::ByteString>();
-    [pbr::ProtobufField(45, "repeated_bytes")]
     public pbc::RepeatedField<pb::ByteString> RepeatedBytes {
       get { return repeatedBytes_; }
     }
@@ -690,7 +685,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage> _repeated_repeatedNestedMessage_codec
         = pb::FieldCodec.ForMessage(386, global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage> repeatedNestedMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage>();
-    [pbr::ProtobufField(48, "repeated_nested_message")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage> RepeatedNestedMessage {
       get { return repeatedNestedMessage_; }
     }
@@ -699,7 +693,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignMessage> _repeated_repeatedForeignMessage_codec
         = pb::FieldCodec.ForMessage(394, global::Google.Protobuf.TestProtos.ForeignMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage> repeatedForeignMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage>();
-    [pbr::ProtobufField(49, "repeated_foreign_message")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage> RepeatedForeignMessage {
       get { return repeatedForeignMessage_; }
     }
@@ -708,7 +701,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ImportMessage> _repeated_repeatedImportMessage_codec
         = pb::FieldCodec.ForMessage(402, global::Google.Protobuf.TestProtos.ImportMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportMessage> repeatedImportMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportMessage>();
-    [pbr::ProtobufField(50, "repeated_import_message")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportMessage> RepeatedImportMessage {
       get { return repeatedImportMessage_; }
     }
@@ -717,7 +709,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum> _repeated_repeatedNestedEnum_codec
         = pb::FieldCodec.ForEnum(410, x => (int) x, x => (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) x);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum> repeatedNestedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum>();
-    [pbr::ProtobufField(51, "repeated_nested_enum")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum> RepeatedNestedEnum {
       get { return repeatedNestedEnum_; }
     }
@@ -726,7 +717,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignEnum> _repeated_repeatedForeignEnum_codec
         = pb::FieldCodec.ForEnum(418, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> repeatedForeignEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
-    [pbr::ProtobufField(52, "repeated_foreign_enum")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> RepeatedForeignEnum {
       get { return repeatedForeignEnum_; }
     }
@@ -735,7 +725,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ImportEnum> _repeated_repeatedImportEnum_codec
         = pb::FieldCodec.ForEnum(426, x => (int) x, x => (global::Google.Protobuf.TestProtos.ImportEnum) x);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum> repeatedImportEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum>();
-    [pbr::ProtobufField(53, "repeated_import_enum")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ImportEnum> RepeatedImportEnum {
       get { return repeatedImportEnum_; }
     }
@@ -744,13 +733,11 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.PublicImportMessage> _repeated_repeatedPublicImportMessage_codec
         = pb::FieldCodec.ForMessage(434, global::Google.Protobuf.TestProtos.PublicImportMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage> repeatedPublicImportMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage>();
-    [pbr::ProtobufField(54, "repeated_public_import_message")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage> RepeatedPublicImportMessage {
       get { return repeatedPublicImportMessage_; }
     }
 
     public const int OneofUint32FieldNumber = 111;
-    [pbr::ProtobufField(111, "oneof_uint32")]
     public uint OneofUint32 {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofUint32 ? (uint) oneofField_ : 0; }
       set {
@@ -761,7 +748,6 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int OneofNestedMessageFieldNumber = 112;
-    [pbr::ProtobufField(112, "oneof_nested_message")]
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage OneofNestedMessage {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage) oneofField_ : null; }
       set {
@@ -772,7 +758,6 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int OneofStringFieldNumber = 113;
-    [pbr::ProtobufField(113, "oneof_string")]
     public string OneofString {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofString ? (string) oneofField_ : ""; }
       set {
@@ -783,7 +768,6 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int OneofBytesFieldNumber = 114;
-    [pbr::ProtobufField(114, "oneof_bytes")]
     public pb::ByteString OneofBytes {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofBytes ? (pb::ByteString) oneofField_ : pb::ByteString.Empty; }
       set {
@@ -1544,8 +1528,6 @@ namespace Google.Protobuf.TestProtos {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
 
-        private static readonly string[] _fieldNames = new string[] { "bb" };
-        private static readonly uint[] _fieldTags = new uint[] { 8 };
         public static pbr::MessageDescriptor Descriptor {
           get { return global::Google.Protobuf.TestProtos.TestAllTypes.Descriptor.NestedTypes[0]; }
         }
@@ -1580,7 +1562,6 @@ namespace Google.Protobuf.TestProtos {
 
         public const int BbFieldNumber = 1;
         private int bb_;
-        [pbr::ProtobufField(1, "bb")]
         public int Bb {
           get { return bb_; }
           set {
@@ -1669,8 +1650,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<NestedTestAllTypes> _parser = new pb::MessageParser<NestedTestAllTypes>(() => new NestedTestAllTypes());
     public static pb::MessageParser<NestedTestAllTypes> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "child", "payload", "repeated_child" };
-    private static readonly uint[] _fieldTags = new uint[] { 10, 18, 26 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[1]; }
     }
@@ -1710,7 +1689,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int ChildFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.NestedTestAllTypes child_;
-    [pbr::ProtobufField(1, "child")]
     public global::Google.Protobuf.TestProtos.NestedTestAllTypes Child {
       get { return child_; }
       set {
@@ -1721,7 +1699,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int PayloadFieldNumber = 2;
     private global::Google.Protobuf.TestProtos.TestAllTypes payload_;
-    [pbr::ProtobufField(2, "payload")]
     public global::Google.Protobuf.TestProtos.TestAllTypes Payload {
       get { return payload_; }
       set {
@@ -1734,7 +1711,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.NestedTestAllTypes> _repeated_repeatedChild_codec
         = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.TestProtos.NestedTestAllTypes.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.NestedTestAllTypes> repeatedChild_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.NestedTestAllTypes>();
-    [pbr::ProtobufField(3, "repeated_child")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.NestedTestAllTypes> RepeatedChild {
       get { return repeatedChild_; }
     }
@@ -1851,8 +1827,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestDeprecatedFields> _parser = new pb::MessageParser<TestDeprecatedFields>(() => new TestDeprecatedFields());
     public static pb::MessageParser<TestDeprecatedFields> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "deprecated_int32" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[2]; }
     }
@@ -1888,7 +1862,6 @@ namespace Google.Protobuf.TestProtos {
     public const int DeprecatedInt32FieldNumber = 1;
     private int deprecatedInt32_;
     [global::System.ObsoleteAttribute()]
-    [pbr::ProtobufField(1, "deprecated_int32")]
     public int DeprecatedInt32 {
       get { return deprecatedInt32_; }
       set {
@@ -1972,8 +1945,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
     public static pb::MessageParser<ForeignMessage> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "c" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[3]; }
     }
@@ -2008,7 +1979,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int CFieldNumber = 1;
     private int c_;
-    [pbr::ProtobufField(1, "c")]
     public int C {
       get { return c_; }
       set {
@@ -2092,8 +2062,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestReservedFields> _parser = new pb::MessageParser<TestReservedFields>(() => new TestReservedFields());
     public static pb::MessageParser<TestReservedFields> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] {  };
-    private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[4]; }
     }
@@ -2184,8 +2152,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestForeignNested> _parser = new pb::MessageParser<TestForeignNested>(() => new TestForeignNested());
     public static pb::MessageParser<TestForeignNested> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "foreign_nested" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[5]; }
     }
@@ -2221,7 +2187,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int ForeignNestedFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage foreignNested_;
-    [pbr::ProtobufField(1, "foreign_nested")]
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage ForeignNested {
       get { return foreignNested_; }
       set {
@@ -2311,8 +2276,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestReallyLargeTagNumber> _parser = new pb::MessageParser<TestReallyLargeTagNumber>(() => new TestReallyLargeTagNumber());
     public static pb::MessageParser<TestReallyLargeTagNumber> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "a", "bb" };
-    private static readonly uint[] _fieldTags = new uint[] { 8, 2147483640 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[6]; }
     }
@@ -2348,7 +2311,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int AFieldNumber = 1;
     private int a_;
-    [pbr::ProtobufField(1, "a")]
     public int A {
       get { return a_; }
       set {
@@ -2359,7 +2321,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int BbFieldNumber = 268435455;
     private int bb_;
-    [pbr::ProtobufField(268435455, "bb")]
     public int Bb {
       get { return bb_; }
       set {
@@ -2459,8 +2420,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestRecursiveMessage> _parser = new pb::MessageParser<TestRecursiveMessage>(() => new TestRecursiveMessage());
     public static pb::MessageParser<TestRecursiveMessage> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "a", "i" };
-    private static readonly uint[] _fieldTags = new uint[] { 10, 16 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[7]; }
     }
@@ -2497,7 +2456,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int AFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestRecursiveMessage a_;
-    [pbr::ProtobufField(1, "a")]
     public global::Google.Protobuf.TestProtos.TestRecursiveMessage A {
       get { return a_; }
       set {
@@ -2508,7 +2466,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int IFieldNumber = 2;
     private int i_;
-    [pbr::ProtobufField(2, "i")]
     public int I {
       get { return i_; }
       set {
@@ -2614,8 +2571,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestMutualRecursionA> _parser = new pb::MessageParser<TestMutualRecursionA>(() => new TestMutualRecursionA());
     public static pb::MessageParser<TestMutualRecursionA> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "bb" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[8]; }
     }
@@ -2651,7 +2606,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int BbFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestMutualRecursionB bb_;
-    [pbr::ProtobufField(1, "bb")]
     public global::Google.Protobuf.TestProtos.TestMutualRecursionB Bb {
       get { return bb_; }
       set {
@@ -2741,8 +2695,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestMutualRecursionB> _parser = new pb::MessageParser<TestMutualRecursionB>(() => new TestMutualRecursionB());
     public static pb::MessageParser<TestMutualRecursionB> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "a", "optional_int32" };
-    private static readonly uint[] _fieldTags = new uint[] { 10, 16 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[9]; }
     }
@@ -2779,7 +2731,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int AFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestMutualRecursionA a_;
-    [pbr::ProtobufField(1, "a")]
     public global::Google.Protobuf.TestProtos.TestMutualRecursionA A {
       get { return a_; }
       set {
@@ -2790,7 +2741,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int OptionalInt32FieldNumber = 2;
     private int optionalInt32_;
-    [pbr::ProtobufField(2, "optional_int32")]
     public int OptionalInt32 {
       get { return optionalInt32_; }
       set {
@@ -2896,8 +2846,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestCamelCaseFieldNames> _parser = new pb::MessageParser<TestCamelCaseFieldNames>(() => new TestCamelCaseFieldNames());
     public static pb::MessageParser<TestCamelCaseFieldNames> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "EnumField", "MessageField", "PrimitiveField", "RepeatedEnumField", "RepeatedMessageField", "RepeatedPrimitiveField", "RepeatedStringField", "StringField" };
-    private static readonly uint[] _fieldTags = new uint[] { 24, 34, 8, 74, 82, 58, 66, 18 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[10]; }
     }
@@ -2944,7 +2892,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int PrimitiveFieldFieldNumber = 1;
     private int primitiveField_;
-    [pbr::ProtobufField(1, "PrimitiveField")]
     public int PrimitiveField {
       get { return primitiveField_; }
       set {
@@ -2955,7 +2902,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int StringFieldFieldNumber = 2;
     private string stringField_ = "";
-    [pbr::ProtobufField(2, "StringField")]
     public string StringField {
       get { return stringField_; }
       set {
@@ -2966,7 +2912,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int EnumFieldFieldNumber = 3;
     private global::Google.Protobuf.TestProtos.ForeignEnum enumField_ = global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED;
-    [pbr::ProtobufField(3, "EnumField")]
     public global::Google.Protobuf.TestProtos.ForeignEnum EnumField {
       get { return enumField_; }
       set {
@@ -2977,7 +2922,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int MessageFieldFieldNumber = 4;
     private global::Google.Protobuf.TestProtos.ForeignMessage messageField_;
-    [pbr::ProtobufField(4, "MessageField")]
     public global::Google.Protobuf.TestProtos.ForeignMessage MessageField {
       get { return messageField_; }
       set {
@@ -2990,7 +2934,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_repeatedPrimitiveField_codec
         = pb::FieldCodec.ForInt32(58);
     private readonly pbc::RepeatedField<int> repeatedPrimitiveField_ = new pbc::RepeatedField<int>();
-    [pbr::ProtobufField(7, "RepeatedPrimitiveField")]
     public pbc::RepeatedField<int> RepeatedPrimitiveField {
       get { return repeatedPrimitiveField_; }
     }
@@ -2999,7 +2942,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<string> _repeated_repeatedStringField_codec
         = pb::FieldCodec.ForString(66);
     private readonly pbc::RepeatedField<string> repeatedStringField_ = new pbc::RepeatedField<string>();
-    [pbr::ProtobufField(8, "RepeatedStringField")]
     public pbc::RepeatedField<string> RepeatedStringField {
       get { return repeatedStringField_; }
     }
@@ -3008,7 +2950,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignEnum> _repeated_repeatedEnumField_codec
         = pb::FieldCodec.ForEnum(74, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> repeatedEnumField_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
-    [pbr::ProtobufField(9, "RepeatedEnumField")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> RepeatedEnumField {
       get { return repeatedEnumField_; }
     }
@@ -3017,7 +2958,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignMessage> _repeated_repeatedMessageField_codec
         = pb::FieldCodec.ForMessage(82, global::Google.Protobuf.TestProtos.ForeignMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage> repeatedMessageField_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage>();
-    [pbr::ProtobufField(10, "RepeatedMessageField")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignMessage> RepeatedMessageField {
       get { return repeatedMessageField_; }
     }
@@ -3189,8 +3129,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestFieldOrderings> _parser = new pb::MessageParser<TestFieldOrderings>(() => new TestFieldOrderings());
     public static pb::MessageParser<TestFieldOrderings> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "my_float", "my_int", "my_string", "single_nested_message" };
-    private static readonly uint[] _fieldTags = new uint[] { 813, 8, 90, 1602 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[11]; }
     }
@@ -3229,7 +3167,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int MyStringFieldNumber = 11;
     private string myString_ = "";
-    [pbr::ProtobufField(11, "my_string")]
     public string MyString {
       get { return myString_; }
       set {
@@ -3240,7 +3177,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int MyIntFieldNumber = 1;
     private long myInt_;
-    [pbr::ProtobufField(1, "my_int")]
     public long MyInt {
       get { return myInt_; }
       set {
@@ -3251,7 +3187,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int MyFloatFieldNumber = 101;
     private float myFloat_;
-    [pbr::ProtobufField(101, "my_float")]
     public float MyFloat {
       get { return myFloat_; }
       set {
@@ -3262,7 +3197,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SingleNestedMessageFieldNumber = 200;
     private global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage singleNestedMessage_;
-    [pbr::ProtobufField(200, "single_nested_message")]
     public global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage SingleNestedMessage {
       get { return singleNestedMessage_; }
       set {
@@ -3401,8 +3335,6 @@ namespace Google.Protobuf.TestProtos {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
 
-        private static readonly string[] _fieldNames = new string[] { "bb", "oo" };
-        private static readonly uint[] _fieldTags = new uint[] { 8, 16 };
         public static pbr::MessageDescriptor Descriptor {
           get { return global::Google.Protobuf.TestProtos.TestFieldOrderings.Descriptor.NestedTypes[0]; }
         }
@@ -3438,7 +3370,6 @@ namespace Google.Protobuf.TestProtos {
 
         public const int OoFieldNumber = 2;
         private long oo_;
-        [pbr::ProtobufField(2, "oo")]
         public long Oo {
           get { return oo_; }
           set {
@@ -3449,7 +3380,6 @@ namespace Google.Protobuf.TestProtos {
 
         public const int BbFieldNumber = 1;
         private int bb_;
-        [pbr::ProtobufField(1, "bb")]
         public int Bb {
           get { return bb_; }
           set {
@@ -3554,8 +3484,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<SparseEnumMessage> _parser = new pb::MessageParser<SparseEnumMessage>(() => new SparseEnumMessage());
     public static pb::MessageParser<SparseEnumMessage> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "sparse_enum" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[12]; }
     }
@@ -3590,7 +3518,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int SparseEnumFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestSparseEnum sparseEnum_ = global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED;
-    [pbr::ProtobufField(1, "sparse_enum")]
     public global::Google.Protobuf.TestProtos.TestSparseEnum SparseEnum {
       get { return sparseEnum_; }
       set {
@@ -3674,8 +3601,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<OneString> _parser = new pb::MessageParser<OneString>(() => new OneString());
     public static pb::MessageParser<OneString> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "data" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[13]; }
     }
@@ -3710,7 +3635,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private string data_ = "";
-    [pbr::ProtobufField(1, "data")]
     public string Data {
       get { return data_; }
       set {
@@ -3794,8 +3718,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<MoreString> _parser = new pb::MessageParser<MoreString>(() => new MoreString());
     public static pb::MessageParser<MoreString> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "data" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[14]; }
     }
@@ -3833,7 +3755,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<string> _repeated_data_codec
         = pb::FieldCodec.ForString(10);
     private readonly pbc::RepeatedField<string> data_ = new pbc::RepeatedField<string>();
-    [pbr::ProtobufField(1, "data")]
     public pbc::RepeatedField<string> Data {
       get { return data_; }
     }
@@ -3906,8 +3827,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<OneBytes> _parser = new pb::MessageParser<OneBytes>(() => new OneBytes());
     public static pb::MessageParser<OneBytes> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "data" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[15]; }
     }
@@ -3942,7 +3861,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private pb::ByteString data_ = pb::ByteString.Empty;
-    [pbr::ProtobufField(1, "data")]
     public pb::ByteString Data {
       get { return data_; }
       set {
@@ -4026,8 +3944,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<MoreBytes> _parser = new pb::MessageParser<MoreBytes>(() => new MoreBytes());
     public static pb::MessageParser<MoreBytes> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "data" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[16]; }
     }
@@ -4062,7 +3978,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private pb::ByteString data_ = pb::ByteString.Empty;
-    [pbr::ProtobufField(1, "data")]
     public pb::ByteString Data {
       get { return data_; }
       set {
@@ -4146,8 +4061,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<Int32Message> _parser = new pb::MessageParser<Int32Message>(() => new Int32Message());
     public static pb::MessageParser<Int32Message> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "data" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[17]; }
     }
@@ -4182,7 +4095,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private int data_;
-    [pbr::ProtobufField(1, "data")]
     public int Data {
       get { return data_; }
       set {
@@ -4266,8 +4178,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<Uint32Message> _parser = new pb::MessageParser<Uint32Message>(() => new Uint32Message());
     public static pb::MessageParser<Uint32Message> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "data" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[18]; }
     }
@@ -4302,7 +4212,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private uint data_;
-    [pbr::ProtobufField(1, "data")]
     public uint Data {
       get { return data_; }
       set {
@@ -4386,8 +4295,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<Int64Message> _parser = new pb::MessageParser<Int64Message>(() => new Int64Message());
     public static pb::MessageParser<Int64Message> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "data" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[19]; }
     }
@@ -4422,7 +4329,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private long data_;
-    [pbr::ProtobufField(1, "data")]
     public long Data {
       get { return data_; }
       set {
@@ -4506,8 +4412,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<Uint64Message> _parser = new pb::MessageParser<Uint64Message>(() => new Uint64Message());
     public static pb::MessageParser<Uint64Message> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "data" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[20]; }
     }
@@ -4542,7 +4446,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private ulong data_;
-    [pbr::ProtobufField(1, "data")]
     public ulong Data {
       get { return data_; }
       set {
@@ -4626,8 +4529,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<BoolMessage> _parser = new pb::MessageParser<BoolMessage>(() => new BoolMessage());
     public static pb::MessageParser<BoolMessage> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "data" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[21]; }
     }
@@ -4662,7 +4563,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int DataFieldNumber = 1;
     private bool data_;
-    [pbr::ProtobufField(1, "data")]
     public bool Data {
       get { return data_; }
       set {
@@ -4746,8 +4646,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestOneof> _parser = new pb::MessageParser<TestOneof>(() => new TestOneof());
     public static pb::MessageParser<TestOneof> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "foo_int", "foo_message", "foo_string" };
-    private static readonly uint[] _fieldTags = new uint[] { 8, 26, 18 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[22]; }
     }
@@ -4793,7 +4691,6 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int FooIntFieldNumber = 1;
-    [pbr::ProtobufField(1, "foo_int")]
     public int FooInt {
       get { return fooCase_ == FooOneofCase.FooInt ? (int) foo_ : 0; }
       set {
@@ -4804,7 +4701,6 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int FooStringFieldNumber = 2;
-    [pbr::ProtobufField(2, "foo_string")]
     public string FooString {
       get { return fooCase_ == FooOneofCase.FooString ? (string) foo_ : ""; }
       set {
@@ -4815,7 +4711,6 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public const int FooMessageFieldNumber = 3;
-    [pbr::ProtobufField(3, "foo_message")]
     public global::Google.Protobuf.TestProtos.TestAllTypes FooMessage {
       get { return fooCase_ == FooOneofCase.FooMessage ? (global::Google.Protobuf.TestProtos.TestAllTypes) foo_ : null; }
       set {
@@ -4960,8 +4855,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestPackedTypes> _parser = new pb::MessageParser<TestPackedTypes>(() => new TestPackedTypes());
     public static pb::MessageParser<TestPackedTypes> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "packed_bool", "packed_double", "packed_enum", "packed_fixed32", "packed_fixed64", "packed_float", "packed_int32", "packed_int64", "packed_sfixed32", "packed_sfixed64", "packed_sint32", "packed_sint64", "packed_uint32", "packed_uint64" };
-    private static readonly uint[] _fieldTags = new uint[] { 818, 810, 826, 770, 778, 802, 722, 730, 786, 794, 754, 762, 738, 746 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[23]; }
     }
@@ -5025,7 +4918,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_packedInt32_codec
         = pb::FieldCodec.ForInt32(722);
     private readonly pbc::RepeatedField<int> packedInt32_ = new pbc::RepeatedField<int>();
-    [pbr::ProtobufField(90, "packed_int32")]
     public pbc::RepeatedField<int> PackedInt32 {
       get { return packedInt32_; }
     }
@@ -5034,7 +4926,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_packedInt64_codec
         = pb::FieldCodec.ForInt64(730);
     private readonly pbc::RepeatedField<long> packedInt64_ = new pbc::RepeatedField<long>();
-    [pbr::ProtobufField(91, "packed_int64")]
     public pbc::RepeatedField<long> PackedInt64 {
       get { return packedInt64_; }
     }
@@ -5043,7 +4934,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_packedUint32_codec
         = pb::FieldCodec.ForUInt32(738);
     private readonly pbc::RepeatedField<uint> packedUint32_ = new pbc::RepeatedField<uint>();
-    [pbr::ProtobufField(92, "packed_uint32")]
     public pbc::RepeatedField<uint> PackedUint32 {
       get { return packedUint32_; }
     }
@@ -5052,7 +4942,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_packedUint64_codec
         = pb::FieldCodec.ForUInt64(746);
     private readonly pbc::RepeatedField<ulong> packedUint64_ = new pbc::RepeatedField<ulong>();
-    [pbr::ProtobufField(93, "packed_uint64")]
     public pbc::RepeatedField<ulong> PackedUint64 {
       get { return packedUint64_; }
     }
@@ -5061,7 +4950,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_packedSint32_codec
         = pb::FieldCodec.ForSInt32(754);
     private readonly pbc::RepeatedField<int> packedSint32_ = new pbc::RepeatedField<int>();
-    [pbr::ProtobufField(94, "packed_sint32")]
     public pbc::RepeatedField<int> PackedSint32 {
       get { return packedSint32_; }
     }
@@ -5070,7 +4958,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_packedSint64_codec
         = pb::FieldCodec.ForSInt64(762);
     private readonly pbc::RepeatedField<long> packedSint64_ = new pbc::RepeatedField<long>();
-    [pbr::ProtobufField(95, "packed_sint64")]
     public pbc::RepeatedField<long> PackedSint64 {
       get { return packedSint64_; }
     }
@@ -5079,7 +4966,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_packedFixed32_codec
         = pb::FieldCodec.ForFixed32(770);
     private readonly pbc::RepeatedField<uint> packedFixed32_ = new pbc::RepeatedField<uint>();
-    [pbr::ProtobufField(96, "packed_fixed32")]
     public pbc::RepeatedField<uint> PackedFixed32 {
       get { return packedFixed32_; }
     }
@@ -5088,7 +4974,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_packedFixed64_codec
         = pb::FieldCodec.ForFixed64(778);
     private readonly pbc::RepeatedField<ulong> packedFixed64_ = new pbc::RepeatedField<ulong>();
-    [pbr::ProtobufField(97, "packed_fixed64")]
     public pbc::RepeatedField<ulong> PackedFixed64 {
       get { return packedFixed64_; }
     }
@@ -5097,7 +4982,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_packedSfixed32_codec
         = pb::FieldCodec.ForSFixed32(786);
     private readonly pbc::RepeatedField<int> packedSfixed32_ = new pbc::RepeatedField<int>();
-    [pbr::ProtobufField(98, "packed_sfixed32")]
     public pbc::RepeatedField<int> PackedSfixed32 {
       get { return packedSfixed32_; }
     }
@@ -5106,7 +4990,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_packedSfixed64_codec
         = pb::FieldCodec.ForSFixed64(794);
     private readonly pbc::RepeatedField<long> packedSfixed64_ = new pbc::RepeatedField<long>();
-    [pbr::ProtobufField(99, "packed_sfixed64")]
     public pbc::RepeatedField<long> PackedSfixed64 {
       get { return packedSfixed64_; }
     }
@@ -5115,7 +4998,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<float> _repeated_packedFloat_codec
         = pb::FieldCodec.ForFloat(802);
     private readonly pbc::RepeatedField<float> packedFloat_ = new pbc::RepeatedField<float>();
-    [pbr::ProtobufField(100, "packed_float")]
     public pbc::RepeatedField<float> PackedFloat {
       get { return packedFloat_; }
     }
@@ -5124,7 +5006,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<double> _repeated_packedDouble_codec
         = pb::FieldCodec.ForDouble(810);
     private readonly pbc::RepeatedField<double> packedDouble_ = new pbc::RepeatedField<double>();
-    [pbr::ProtobufField(101, "packed_double")]
     public pbc::RepeatedField<double> PackedDouble {
       get { return packedDouble_; }
     }
@@ -5133,7 +5014,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<bool> _repeated_packedBool_codec
         = pb::FieldCodec.ForBool(818);
     private readonly pbc::RepeatedField<bool> packedBool_ = new pbc::RepeatedField<bool>();
-    [pbr::ProtobufField(102, "packed_bool")]
     public pbc::RepeatedField<bool> PackedBool {
       get { return packedBool_; }
     }
@@ -5142,7 +5022,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignEnum> _repeated_packedEnum_codec
         = pb::FieldCodec.ForEnum(826, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> packedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
-    [pbr::ProtobufField(103, "packed_enum")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> PackedEnum {
       get { return packedEnum_; }
     }
@@ -5346,8 +5225,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestUnpackedTypes> _parser = new pb::MessageParser<TestUnpackedTypes>(() => new TestUnpackedTypes());
     public static pb::MessageParser<TestUnpackedTypes> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "unpacked_bool", "unpacked_double", "unpacked_enum", "unpacked_fixed32", "unpacked_fixed64", "unpacked_float", "unpacked_int32", "unpacked_int64", "unpacked_sfixed32", "unpacked_sfixed64", "unpacked_sint32", "unpacked_sint64", "unpacked_uint32", "unpacked_uint64" };
-    private static readonly uint[] _fieldTags = new uint[] { 816, 809, 824, 773, 777, 805, 720, 728, 789, 793, 752, 760, 736, 744 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[24]; }
     }
@@ -5411,7 +5288,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_unpackedInt32_codec
         = pb::FieldCodec.ForInt32(720);
     private readonly pbc::RepeatedField<int> unpackedInt32_ = new pbc::RepeatedField<int>();
-    [pbr::ProtobufField(90, "unpacked_int32")]
     public pbc::RepeatedField<int> UnpackedInt32 {
       get { return unpackedInt32_; }
     }
@@ -5420,7 +5296,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_unpackedInt64_codec
         = pb::FieldCodec.ForInt64(728);
     private readonly pbc::RepeatedField<long> unpackedInt64_ = new pbc::RepeatedField<long>();
-    [pbr::ProtobufField(91, "unpacked_int64")]
     public pbc::RepeatedField<long> UnpackedInt64 {
       get { return unpackedInt64_; }
     }
@@ -5429,7 +5304,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_unpackedUint32_codec
         = pb::FieldCodec.ForUInt32(736);
     private readonly pbc::RepeatedField<uint> unpackedUint32_ = new pbc::RepeatedField<uint>();
-    [pbr::ProtobufField(92, "unpacked_uint32")]
     public pbc::RepeatedField<uint> UnpackedUint32 {
       get { return unpackedUint32_; }
     }
@@ -5438,7 +5312,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_unpackedUint64_codec
         = pb::FieldCodec.ForUInt64(744);
     private readonly pbc::RepeatedField<ulong> unpackedUint64_ = new pbc::RepeatedField<ulong>();
-    [pbr::ProtobufField(93, "unpacked_uint64")]
     public pbc::RepeatedField<ulong> UnpackedUint64 {
       get { return unpackedUint64_; }
     }
@@ -5447,7 +5320,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_unpackedSint32_codec
         = pb::FieldCodec.ForSInt32(752);
     private readonly pbc::RepeatedField<int> unpackedSint32_ = new pbc::RepeatedField<int>();
-    [pbr::ProtobufField(94, "unpacked_sint32")]
     public pbc::RepeatedField<int> UnpackedSint32 {
       get { return unpackedSint32_; }
     }
@@ -5456,7 +5328,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_unpackedSint64_codec
         = pb::FieldCodec.ForSInt64(760);
     private readonly pbc::RepeatedField<long> unpackedSint64_ = new pbc::RepeatedField<long>();
-    [pbr::ProtobufField(95, "unpacked_sint64")]
     public pbc::RepeatedField<long> UnpackedSint64 {
       get { return unpackedSint64_; }
     }
@@ -5465,7 +5336,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_unpackedFixed32_codec
         = pb::FieldCodec.ForFixed32(773);
     private readonly pbc::RepeatedField<uint> unpackedFixed32_ = new pbc::RepeatedField<uint>();
-    [pbr::ProtobufField(96, "unpacked_fixed32")]
     public pbc::RepeatedField<uint> UnpackedFixed32 {
       get { return unpackedFixed32_; }
     }
@@ -5474,7 +5344,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_unpackedFixed64_codec
         = pb::FieldCodec.ForFixed64(777);
     private readonly pbc::RepeatedField<ulong> unpackedFixed64_ = new pbc::RepeatedField<ulong>();
-    [pbr::ProtobufField(97, "unpacked_fixed64")]
     public pbc::RepeatedField<ulong> UnpackedFixed64 {
       get { return unpackedFixed64_; }
     }
@@ -5483,7 +5352,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_unpackedSfixed32_codec
         = pb::FieldCodec.ForSFixed32(789);
     private readonly pbc::RepeatedField<int> unpackedSfixed32_ = new pbc::RepeatedField<int>();
-    [pbr::ProtobufField(98, "unpacked_sfixed32")]
     public pbc::RepeatedField<int> UnpackedSfixed32 {
       get { return unpackedSfixed32_; }
     }
@@ -5492,7 +5360,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_unpackedSfixed64_codec
         = pb::FieldCodec.ForSFixed64(793);
     private readonly pbc::RepeatedField<long> unpackedSfixed64_ = new pbc::RepeatedField<long>();
-    [pbr::ProtobufField(99, "unpacked_sfixed64")]
     public pbc::RepeatedField<long> UnpackedSfixed64 {
       get { return unpackedSfixed64_; }
     }
@@ -5501,7 +5368,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<float> _repeated_unpackedFloat_codec
         = pb::FieldCodec.ForFloat(805);
     private readonly pbc::RepeatedField<float> unpackedFloat_ = new pbc::RepeatedField<float>();
-    [pbr::ProtobufField(100, "unpacked_float")]
     public pbc::RepeatedField<float> UnpackedFloat {
       get { return unpackedFloat_; }
     }
@@ -5510,7 +5376,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<double> _repeated_unpackedDouble_codec
         = pb::FieldCodec.ForDouble(809);
     private readonly pbc::RepeatedField<double> unpackedDouble_ = new pbc::RepeatedField<double>();
-    [pbr::ProtobufField(101, "unpacked_double")]
     public pbc::RepeatedField<double> UnpackedDouble {
       get { return unpackedDouble_; }
     }
@@ -5519,7 +5384,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<bool> _repeated_unpackedBool_codec
         = pb::FieldCodec.ForBool(816);
     private readonly pbc::RepeatedField<bool> unpackedBool_ = new pbc::RepeatedField<bool>();
-    [pbr::ProtobufField(102, "unpacked_bool")]
     public pbc::RepeatedField<bool> UnpackedBool {
       get { return unpackedBool_; }
     }
@@ -5528,7 +5392,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.ForeignEnum> _repeated_unpackedEnum_codec
         = pb::FieldCodec.ForEnum(824, x => (int) x, x => (global::Google.Protobuf.TestProtos.ForeignEnum) x);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> unpackedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum>();
-    [pbr::ProtobufField(103, "unpacked_enum")]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.ForeignEnum> UnpackedEnum {
       get { return unpackedEnum_; }
     }
@@ -5732,8 +5595,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestRepeatedScalarDifferentTagSizes> _parser = new pb::MessageParser<TestRepeatedScalarDifferentTagSizes>(() => new TestRepeatedScalarDifferentTagSizes());
     public static pb::MessageParser<TestRepeatedScalarDifferentTagSizes> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "repeated_fixed32", "repeated_fixed64", "repeated_float", "repeated_int32", "repeated_int64", "repeated_uint64" };
-    private static readonly uint[] _fieldTags = new uint[] { 98, 16370, 2097138, 106, 16378, 2097146 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[25]; }
     }
@@ -5781,7 +5642,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<uint> _repeated_repeatedFixed32_codec
         = pb::FieldCodec.ForFixed32(98);
     private readonly pbc::RepeatedField<uint> repeatedFixed32_ = new pbc::RepeatedField<uint>();
-    [pbr::ProtobufField(12, "repeated_fixed32")]
     public pbc::RepeatedField<uint> RepeatedFixed32 {
       get { return repeatedFixed32_; }
     }
@@ -5790,7 +5650,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForInt32(106);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
-    [pbr::ProtobufField(13, "repeated_int32")]
     public pbc::RepeatedField<int> RepeatedInt32 {
       get { return repeatedInt32_; }
     }
@@ -5799,7 +5658,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedFixed64_codec
         = pb::FieldCodec.ForFixed64(16370);
     private readonly pbc::RepeatedField<ulong> repeatedFixed64_ = new pbc::RepeatedField<ulong>();
-    [pbr::ProtobufField(2046, "repeated_fixed64")]
     public pbc::RepeatedField<ulong> RepeatedFixed64 {
       get { return repeatedFixed64_; }
     }
@@ -5808,7 +5666,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<long> _repeated_repeatedInt64_codec
         = pb::FieldCodec.ForInt64(16378);
     private readonly pbc::RepeatedField<long> repeatedInt64_ = new pbc::RepeatedField<long>();
-    [pbr::ProtobufField(2047, "repeated_int64")]
     public pbc::RepeatedField<long> RepeatedInt64 {
       get { return repeatedInt64_; }
     }
@@ -5817,7 +5674,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<float> _repeated_repeatedFloat_codec
         = pb::FieldCodec.ForFloat(2097138);
     private readonly pbc::RepeatedField<float> repeatedFloat_ = new pbc::RepeatedField<float>();
-    [pbr::ProtobufField(262142, "repeated_float")]
     public pbc::RepeatedField<float> RepeatedFloat {
       get { return repeatedFloat_; }
     }
@@ -5826,7 +5682,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedUint64_codec
         = pb::FieldCodec.ForUInt64(2097146);
     private readonly pbc::RepeatedField<ulong> repeatedUint64_ = new pbc::RepeatedField<ulong>();
-    [pbr::ProtobufField(262143, "repeated_uint64")]
     public pbc::RepeatedField<ulong> RepeatedUint64 {
       get { return repeatedUint64_; }
     }
@@ -5950,8 +5805,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestCommentInjectionMessage> _parser = new pb::MessageParser<TestCommentInjectionMessage>(() => new TestCommentInjectionMessage());
     public static pb::MessageParser<TestCommentInjectionMessage> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "a" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[26]; }
     }
@@ -5986,7 +5839,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int AFieldNumber = 1;
     private string a_ = "";
-    [pbr::ProtobufField(1, "a")]
     public string A {
       get { return a_; }
       set {
@@ -6070,8 +5922,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<FooRequest> _parser = new pb::MessageParser<FooRequest>(() => new FooRequest());
     public static pb::MessageParser<FooRequest> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] {  };
-    private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[27]; }
     }
@@ -6162,8 +6012,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<FooResponse> _parser = new pb::MessageParser<FooResponse>(() => new FooResponse());
     public static pb::MessageParser<FooResponse> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] {  };
-    private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[28]; }
     }
@@ -6254,8 +6102,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<FooClientMessage> _parser = new pb::MessageParser<FooClientMessage>(() => new FooClientMessage());
     public static pb::MessageParser<FooClientMessage> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] {  };
-    private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[29]; }
     }
@@ -6346,8 +6192,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<FooServerMessage> _parser = new pb::MessageParser<FooServerMessage>(() => new FooServerMessage());
     public static pb::MessageParser<FooServerMessage> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] {  };
-    private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[30]; }
     }
@@ -6438,8 +6282,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<BarRequest> _parser = new pb::MessageParser<BarRequest>(() => new BarRequest());
     public static pb::MessageParser<BarRequest> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] {  };
-    private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[31]; }
     }
@@ -6530,8 +6372,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<BarResponse> _parser = new pb::MessageParser<BarResponse>(() => new BarResponse());
     public static pb::MessageParser<BarResponse> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] {  };
-    private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[32]; }
     }

@@ -27,10 +27,12 @@ namespace Google.Protobuf.WellKnownTypes {
               "dG9idWYiKwoJVGltZXN0YW1wEg8KB3NlY29uZHMYASABKAMSDQoFbmFub3MY", 
               "AiABKAVCUQoTY29tLmdvb2dsZS5wcm90b2J1ZkIOVGltZXN0YW1wUHJvdG9Q", 
               "AaABAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IG", 
-            "cHJvdG8z"));
+              "cHJvdG8z"));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
             new pbr::FileDescriptor[] { },
-            new global::System.Type[] { typeof(global::Google.Protobuf.WellKnownTypes.Timestamp), });
+            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Timestamp), new[]{ "Seconds", "Nanos" }, null, null, null)
+            }));
       }
       #endregion
 
@@ -42,8 +44,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<Timestamp> _parser = new pb::MessageParser<Timestamp>(() => new Timestamp());
     public static pb::MessageParser<Timestamp> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "nanos", "seconds" };
-    private static readonly uint[] _fieldTags = new uint[] { 16, 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.Timestamp.Descriptor.MessageTypes[0]; }
     }
@@ -79,7 +79,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int SecondsFieldNumber = 1;
     private long seconds_;
-    [pbr::ProtobufField(1, "seconds")]
     public long Seconds {
       get { return seconds_; }
       set {
@@ -90,7 +89,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int NanosFieldNumber = 2;
     private int nanos_;
-    [pbr::ProtobufField(2, "nanos")]
     public int Nanos {
       get { return nanos_; }
       set {

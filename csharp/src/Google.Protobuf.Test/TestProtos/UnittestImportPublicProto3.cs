@@ -24,10 +24,12 @@ namespace Google.Protobuf.TestProtos {
             "CjNnb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfaW1wb3J0X3B1YmxpY19wcm90", 
             "bzMucHJvdG8SGHByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydCIgChNQdWJsaWNJ", 
             "bXBvcnRNZXNzYWdlEgkKAWUYASABKAVCNwoYY29tLmdvb2dsZS5wcm90b2J1", 
-          "Zi50ZXN0qgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
+            "Zi50ZXN0qgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] { },
-          new global::System.Type[] { typeof(global::Google.Protobuf.TestProtos.PublicImportMessage), });
+          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.PublicImportMessage), new[]{ "E" }, null, null, null)
+          }));
     }
     #endregion
 
@@ -38,8 +40,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<PublicImportMessage> _parser = new pb::MessageParser<PublicImportMessage>(() => new PublicImportMessage());
     public static pb::MessageParser<PublicImportMessage> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "e" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestImportPublicProto3.Descriptor.MessageTypes[0]; }
     }
@@ -74,7 +74,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int EFieldNumber = 1;
     private int e_;
-    [pbr::ProtobufField(1, "e")]
     public int E {
       get { return e_; }
       set {

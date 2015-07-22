@@ -26,10 +26,12 @@ namespace Google.Protobuf.WellKnownTypes {
               "CiBnb29nbGUvcHJvdG9idWYvZmllbGRfbWFzay5wcm90bxIPZ29vZ2xlLnBy", 
               "b3RvYnVmIhoKCUZpZWxkTWFzaxINCgVwYXRocxgBIAMoCUJOChNjb20uZ29v", 
               "Z2xlLnByb3RvYnVmQg5GaWVsZE1hc2tQcm90b1ABogIDR1BCqgIeR29vZ2xl", 
-            "LlByb3RvYnVmLldlbGxLbm93blR5cGVzYgZwcm90bzM="));
+              "LlByb3RvYnVmLldlbGxLbm93blR5cGVzYgZwcm90bzM="));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
             new pbr::FileDescriptor[] { },
-            new global::System.Type[] { typeof(global::Google.Protobuf.WellKnownTypes.FieldMask), });
+            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.FieldMask), new[]{ "Paths" }, null, null, null)
+            }));
       }
       #endregion
 
@@ -41,8 +43,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<FieldMask> _parser = new pb::MessageParser<FieldMask>(() => new FieldMask());
     public static pb::MessageParser<FieldMask> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "paths" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.FieldMask.Descriptor.MessageTypes[0]; }
     }
@@ -80,7 +80,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::FieldCodec<string> _repeated_paths_codec
         = pb::FieldCodec.ForString(10);
     private readonly pbc::RepeatedField<string> paths_ = new pbc::RepeatedField<string>();
-    [pbr::ProtobufField(1, "paths")]
     public pbc::RepeatedField<string> Paths {
       get { return paths_; }
     }

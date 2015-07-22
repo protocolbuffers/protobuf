@@ -27,10 +27,12 @@ namespace Google.Protobuf.WellKnownTypes {
               "ZS5wcm90b2J1ZiIiCg1Tb3VyY2VDb250ZXh0EhEKCWZpbGVfbmFtZRgBIAEo", 
               "CUJSChNjb20uZ29vZ2xlLnByb3RvYnVmQhJTb3VyY2VDb250ZXh0UHJvdG9Q", 
               "AaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IGcHJv", 
-            "dG8z"));
+              "dG8z"));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
             new pbr::FileDescriptor[] { },
-            new global::System.Type[] { typeof(global::Google.Protobuf.WellKnownTypes.SourceContext), });
+            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.SourceContext), new[]{ "FileName" }, null, null, null)
+            }));
       }
       #endregion
 
@@ -42,8 +44,6 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<SourceContext> _parser = new pb::MessageParser<SourceContext>(() => new SourceContext());
     public static pb::MessageParser<SourceContext> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "file_name" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.SourceContext.Descriptor.MessageTypes[0]; }
     }
@@ -78,7 +78,6 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public const int FileNameFieldNumber = 1;
     private string fileName_ = "";
-    [pbr::ProtobufField(1, "file_name")]
     public string FileName {
       get { return fileName_; }
       set {

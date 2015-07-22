@@ -144,10 +144,18 @@ namespace Google.Protobuf.TestProtos {
             "dHJ5LkVudHJ5RW50cnkaLAoKRW50cnlFbnRyeRILCgNrZXkYASABKAUSDQoF", 
             "dmFsdWUYAiABKAU6AjgBKj8KB01hcEVudW0SEAoMTUFQX0VOVU1fRk9PEAAS", 
             "EAoMTUFQX0VOVU1fQkFSEAESEAoMTUFQX0VOVU1fQkFaEAJCIPgBAaoCGkdv", 
-          "b2dsZS5Qcm90b2J1Zi5UZXN0UHJvdG9zYgZwcm90bzM="));
+            "b2dsZS5Qcm90b2J1Zi5UZXN0UHJvdG9zYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor, },
-          new global::System.Type[] { typeof(global::Google.Protobuf.TestProtos.TestMap), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, typeof(global::Google.Protobuf.TestProtos.TestMapSubmessage), typeof(global::Google.Protobuf.TestProtos.TestMessageMap), null, typeof(global::Google.Protobuf.TestProtos.TestSameTypeMap), null, null, typeof(global::Google.Protobuf.TestProtos.TestArenaMap), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, typeof(global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType), null, typeof(global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType.Types.Type), typeof(global::Google.Protobuf.TestProtos.MessageContainingMapCalledEntry), null, typeof(global::Google.Protobuf.TestProtos.MapEnum), });
+          new pbr::GeneratedCodeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.MapEnum), }, new pbr::GeneratedCodeInfo[] {
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestMap), new[]{ "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapInt32Bytes", "MapInt32Enum", "MapInt32ForeignMessage" }, null, null, new pbr::GeneratedCodeInfo[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, }),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestMapSubmessage), new[]{ "TestMap" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestMessageMap), new[]{ "MapInt32Message" }, null, null, new pbr::GeneratedCodeInfo[] { null, }),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestSameTypeMap), new[]{ "Map1", "Map2" }, null, null, new pbr::GeneratedCodeInfo[] { null, null, }),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestArenaMap), new[]{ "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapInt32Enum", "MapInt32ForeignMessage" }, null, null, new pbr::GeneratedCodeInfo[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, }),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType), new[]{ "Type" }, null, new[]{ typeof(global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType.Types.Type) }, new pbr::GeneratedCodeInfo[] { null, }),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.MessageContainingMapCalledEntry), new[]{ "Entry" }, null, null, new pbr::GeneratedCodeInfo[] { null, })
+          }));
     }
     #endregion
 
@@ -167,8 +175,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestMap> _parser = new pb::MessageParser<TestMap>(() => new TestMap());
     public static pb::MessageParser<TestMap> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "map_bool_bool", "map_fixed32_fixed32", "map_fixed64_fixed64", "map_int32_bytes", "map_int32_double", "map_int32_enum", "map_int32_float", "map_int32_foreign_message", "map_int32_int32", "map_int64_int64", "map_sfixed32_sfixed32", "map_sfixed64_sfixed64", "map_sint32_sint32", "map_sint64_sint64", "map_string_string", "map_uint32_uint32", "map_uint64_uint64" };
-    private static readonly uint[] _fieldTags = new uint[] { 106, 58, 66, 122, 98, 130, 90, 138, 10, 18, 74, 82, 42, 50, 114, 26, 34 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[0]; }
     }
@@ -238,7 +244,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, int>.Codec _map_mapInt32Int32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForInt32(16), 10);
     private readonly pbc::MapField<int, int> mapInt32Int32_ = new pbc::MapField<int, int>();
-    [pbr::ProtobufField(1, "map_int32_int32")]
     public pbc::MapField<int, int> MapInt32Int32 {
       get { return mapInt32Int32_; }
     }
@@ -247,7 +252,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<long, long>.Codec _map_mapInt64Int64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForInt64(8), pb::FieldCodec.ForInt64(16), 18);
     private readonly pbc::MapField<long, long> mapInt64Int64_ = new pbc::MapField<long, long>();
-    [pbr::ProtobufField(2, "map_int64_int64")]
     public pbc::MapField<long, long> MapInt64Int64 {
       get { return mapInt64Int64_; }
     }
@@ -256,7 +260,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<uint, uint>.Codec _map_mapUint32Uint32_codec
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForUInt32(8), pb::FieldCodec.ForUInt32(16), 26);
     private readonly pbc::MapField<uint, uint> mapUint32Uint32_ = new pbc::MapField<uint, uint>();
-    [pbr::ProtobufField(3, "map_uint32_uint32")]
     public pbc::MapField<uint, uint> MapUint32Uint32 {
       get { return mapUint32Uint32_; }
     }
@@ -265,7 +268,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<ulong, ulong>.Codec _map_mapUint64Uint64_codec
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForUInt64(8), pb::FieldCodec.ForUInt64(16), 34);
     private readonly pbc::MapField<ulong, ulong> mapUint64Uint64_ = new pbc::MapField<ulong, ulong>();
-    [pbr::ProtobufField(4, "map_uint64_uint64")]
     public pbc::MapField<ulong, ulong> MapUint64Uint64 {
       get { return mapUint64Uint64_; }
     }
@@ -274,7 +276,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, int>.Codec _map_mapSint32Sint32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSInt32(8), pb::FieldCodec.ForSInt32(16), 42);
     private readonly pbc::MapField<int, int> mapSint32Sint32_ = new pbc::MapField<int, int>();
-    [pbr::ProtobufField(5, "map_sint32_sint32")]
     public pbc::MapField<int, int> MapSint32Sint32 {
       get { return mapSint32Sint32_; }
     }
@@ -283,7 +284,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<long, long>.Codec _map_mapSint64Sint64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSInt64(8), pb::FieldCodec.ForSInt64(16), 50);
     private readonly pbc::MapField<long, long> mapSint64Sint64_ = new pbc::MapField<long, long>();
-    [pbr::ProtobufField(6, "map_sint64_sint64")]
     public pbc::MapField<long, long> MapSint64Sint64 {
       get { return mapSint64Sint64_; }
     }
@@ -292,7 +292,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<uint, uint>.Codec _map_mapFixed32Fixed32_codec
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForFixed32(13), pb::FieldCodec.ForFixed32(21), 58);
     private readonly pbc::MapField<uint, uint> mapFixed32Fixed32_ = new pbc::MapField<uint, uint>();
-    [pbr::ProtobufField(7, "map_fixed32_fixed32")]
     public pbc::MapField<uint, uint> MapFixed32Fixed32 {
       get { return mapFixed32Fixed32_; }
     }
@@ -301,7 +300,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<ulong, ulong>.Codec _map_mapFixed64Fixed64_codec
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForFixed64(9), pb::FieldCodec.ForFixed64(17), 66);
     private readonly pbc::MapField<ulong, ulong> mapFixed64Fixed64_ = new pbc::MapField<ulong, ulong>();
-    [pbr::ProtobufField(8, "map_fixed64_fixed64")]
     public pbc::MapField<ulong, ulong> MapFixed64Fixed64 {
       get { return mapFixed64Fixed64_; }
     }
@@ -310,7 +308,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, int>.Codec _map_mapSfixed32Sfixed32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSFixed32(13), pb::FieldCodec.ForSFixed32(21), 74);
     private readonly pbc::MapField<int, int> mapSfixed32Sfixed32_ = new pbc::MapField<int, int>();
-    [pbr::ProtobufField(9, "map_sfixed32_sfixed32")]
     public pbc::MapField<int, int> MapSfixed32Sfixed32 {
       get { return mapSfixed32Sfixed32_; }
     }
@@ -319,7 +316,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<long, long>.Codec _map_mapSfixed64Sfixed64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSFixed64(9), pb::FieldCodec.ForSFixed64(17), 82);
     private readonly pbc::MapField<long, long> mapSfixed64Sfixed64_ = new pbc::MapField<long, long>();
-    [pbr::ProtobufField(10, "map_sfixed64_sfixed64")]
     public pbc::MapField<long, long> MapSfixed64Sfixed64 {
       get { return mapSfixed64Sfixed64_; }
     }
@@ -328,7 +324,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, float>.Codec _map_mapInt32Float_codec
         = new pbc::MapField<int, float>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForFloat(21), 90);
     private readonly pbc::MapField<int, float> mapInt32Float_ = new pbc::MapField<int, float>();
-    [pbr::ProtobufField(11, "map_int32_float")]
     public pbc::MapField<int, float> MapInt32Float {
       get { return mapInt32Float_; }
     }
@@ -337,7 +332,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, double>.Codec _map_mapInt32Double_codec
         = new pbc::MapField<int, double>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForDouble(17), 98);
     private readonly pbc::MapField<int, double> mapInt32Double_ = new pbc::MapField<int, double>();
-    [pbr::ProtobufField(12, "map_int32_double")]
     public pbc::MapField<int, double> MapInt32Double {
       get { return mapInt32Double_; }
     }
@@ -346,7 +340,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<bool, bool>.Codec _map_mapBoolBool_codec
         = new pbc::MapField<bool, bool>.Codec(pb::FieldCodec.ForBool(8), pb::FieldCodec.ForBool(16), 106);
     private readonly pbc::MapField<bool, bool> mapBoolBool_ = new pbc::MapField<bool, bool>();
-    [pbr::ProtobufField(13, "map_bool_bool")]
     public pbc::MapField<bool, bool> MapBoolBool {
       get { return mapBoolBool_; }
     }
@@ -355,7 +348,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<string, string>.Codec _map_mapStringString_codec
         = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 114);
     private readonly pbc::MapField<string, string> mapStringString_ = new pbc::MapField<string, string>();
-    [pbr::ProtobufField(14, "map_string_string")]
     public pbc::MapField<string, string> MapStringString {
       get { return mapStringString_; }
     }
@@ -364,7 +356,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, pb::ByteString>.Codec _map_mapInt32Bytes_codec
         = new pbc::MapField<int, pb::ByteString>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForBytes(18), 122);
     private readonly pbc::MapField<int, pb::ByteString> mapInt32Bytes_ = new pbc::MapField<int, pb::ByteString>();
-    [pbr::ProtobufField(15, "map_int32_bytes")]
     public pbc::MapField<int, pb::ByteString> MapInt32Bytes {
       get { return mapInt32Bytes_; }
     }
@@ -373,7 +364,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum>.Codec _map_mapInt32Enum_codec
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::Google.Protobuf.TestProtos.MapEnum) x), 130);
     private readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum> mapInt32Enum_ = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum>();
-    [pbr::ProtobufField(16, "map_int32_enum")]
     public pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum> MapInt32Enum {
       get { return mapInt32Enum_; }
     }
@@ -382,7 +372,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage>.Codec _map_mapInt32ForeignMessage_codec
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.TestProtos.ForeignMessage.Parser), 138);
     private readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage> mapInt32ForeignMessage_ = new pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage>();
-    [pbr::ProtobufField(17, "map_int32_foreign_message")]
     public pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage> MapInt32ForeignMessage {
       get { return mapInt32ForeignMessage_; }
     }
@@ -599,8 +588,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestMapSubmessage> _parser = new pb::MessageParser<TestMapSubmessage>(() => new TestMapSubmessage());
     public static pb::MessageParser<TestMapSubmessage> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "test_map" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[1]; }
     }
@@ -636,7 +623,6 @@ namespace Google.Protobuf.TestProtos {
 
     public const int TestMapFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestMap testMap_;
-    [pbr::ProtobufField(1, "test_map")]
     public global::Google.Protobuf.TestProtos.TestMap TestMap {
       get { return testMap_; }
       set {
@@ -726,8 +712,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestMessageMap> _parser = new pb::MessageParser<TestMessageMap>(() => new TestMessageMap());
     public static pb::MessageParser<TestMessageMap> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "map_int32_message" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[2]; }
     }
@@ -765,7 +749,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.TestAllTypes>.Codec _map_mapInt32Message_codec
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.TestAllTypes>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.TestProtos.TestAllTypes.Parser), 10);
     private readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.TestAllTypes> mapInt32Message_ = new pbc::MapField<int, global::Google.Protobuf.TestProtos.TestAllTypes>();
-    [pbr::ProtobufField(1, "map_int32_message")]
     public pbc::MapField<int, global::Google.Protobuf.TestProtos.TestAllTypes> MapInt32Message {
       get { return mapInt32Message_; }
     }
@@ -838,8 +821,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestSameTypeMap> _parser = new pb::MessageParser<TestSameTypeMap>(() => new TestSameTypeMap());
     public static pb::MessageParser<TestSameTypeMap> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "map1", "map2" };
-    private static readonly uint[] _fieldTags = new uint[] { 10, 18 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[3]; }
     }
@@ -879,7 +860,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, int>.Codec _map_map1_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForInt32(16), 10);
     private readonly pbc::MapField<int, int> map1_ = new pbc::MapField<int, int>();
-    [pbr::ProtobufField(1, "map1")]
     public pbc::MapField<int, int> Map1 {
       get { return map1_; }
     }
@@ -888,7 +868,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, int>.Codec _map_map2_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForInt32(16), 18);
     private readonly pbc::MapField<int, int> map2_ = new pbc::MapField<int, int>();
-    [pbr::ProtobufField(2, "map2")]
     public pbc::MapField<int, int> Map2 {
       get { return map2_; }
     }
@@ -970,8 +949,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestArenaMap> _parser = new pb::MessageParser<TestArenaMap>(() => new TestArenaMap());
     public static pb::MessageParser<TestArenaMap> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "map_bool_bool", "map_fixed32_fixed32", "map_fixed64_fixed64", "map_int32_double", "map_int32_enum", "map_int32_float", "map_int32_foreign_message", "map_int32_int32", "map_int64_int64", "map_sfixed32_sfixed32", "map_sfixed64_sfixed64", "map_sint32_sint32", "map_sint64_sint64", "map_uint32_uint32", "map_uint64_uint64" };
-    private static readonly uint[] _fieldTags = new uint[] { 106, 58, 66, 98, 114, 90, 122, 10, 18, 74, 82, 42, 50, 26, 34 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[4]; }
     }
@@ -1037,7 +1014,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, int>.Codec _map_mapInt32Int32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForInt32(16), 10);
     private readonly pbc::MapField<int, int> mapInt32Int32_ = new pbc::MapField<int, int>();
-    [pbr::ProtobufField(1, "map_int32_int32")]
     public pbc::MapField<int, int> MapInt32Int32 {
       get { return mapInt32Int32_; }
     }
@@ -1046,7 +1022,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<long, long>.Codec _map_mapInt64Int64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForInt64(8), pb::FieldCodec.ForInt64(16), 18);
     private readonly pbc::MapField<long, long> mapInt64Int64_ = new pbc::MapField<long, long>();
-    [pbr::ProtobufField(2, "map_int64_int64")]
     public pbc::MapField<long, long> MapInt64Int64 {
       get { return mapInt64Int64_; }
     }
@@ -1055,7 +1030,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<uint, uint>.Codec _map_mapUint32Uint32_codec
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForUInt32(8), pb::FieldCodec.ForUInt32(16), 26);
     private readonly pbc::MapField<uint, uint> mapUint32Uint32_ = new pbc::MapField<uint, uint>();
-    [pbr::ProtobufField(3, "map_uint32_uint32")]
     public pbc::MapField<uint, uint> MapUint32Uint32 {
       get { return mapUint32Uint32_; }
     }
@@ -1064,7 +1038,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<ulong, ulong>.Codec _map_mapUint64Uint64_codec
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForUInt64(8), pb::FieldCodec.ForUInt64(16), 34);
     private readonly pbc::MapField<ulong, ulong> mapUint64Uint64_ = new pbc::MapField<ulong, ulong>();
-    [pbr::ProtobufField(4, "map_uint64_uint64")]
     public pbc::MapField<ulong, ulong> MapUint64Uint64 {
       get { return mapUint64Uint64_; }
     }
@@ -1073,7 +1046,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, int>.Codec _map_mapSint32Sint32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSInt32(8), pb::FieldCodec.ForSInt32(16), 42);
     private readonly pbc::MapField<int, int> mapSint32Sint32_ = new pbc::MapField<int, int>();
-    [pbr::ProtobufField(5, "map_sint32_sint32")]
     public pbc::MapField<int, int> MapSint32Sint32 {
       get { return mapSint32Sint32_; }
     }
@@ -1082,7 +1054,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<long, long>.Codec _map_mapSint64Sint64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSInt64(8), pb::FieldCodec.ForSInt64(16), 50);
     private readonly pbc::MapField<long, long> mapSint64Sint64_ = new pbc::MapField<long, long>();
-    [pbr::ProtobufField(6, "map_sint64_sint64")]
     public pbc::MapField<long, long> MapSint64Sint64 {
       get { return mapSint64Sint64_; }
     }
@@ -1091,7 +1062,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<uint, uint>.Codec _map_mapFixed32Fixed32_codec
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForFixed32(13), pb::FieldCodec.ForFixed32(21), 58);
     private readonly pbc::MapField<uint, uint> mapFixed32Fixed32_ = new pbc::MapField<uint, uint>();
-    [pbr::ProtobufField(7, "map_fixed32_fixed32")]
     public pbc::MapField<uint, uint> MapFixed32Fixed32 {
       get { return mapFixed32Fixed32_; }
     }
@@ -1100,7 +1070,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<ulong, ulong>.Codec _map_mapFixed64Fixed64_codec
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForFixed64(9), pb::FieldCodec.ForFixed64(17), 66);
     private readonly pbc::MapField<ulong, ulong> mapFixed64Fixed64_ = new pbc::MapField<ulong, ulong>();
-    [pbr::ProtobufField(8, "map_fixed64_fixed64")]
     public pbc::MapField<ulong, ulong> MapFixed64Fixed64 {
       get { return mapFixed64Fixed64_; }
     }
@@ -1109,7 +1078,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, int>.Codec _map_mapSfixed32Sfixed32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSFixed32(13), pb::FieldCodec.ForSFixed32(21), 74);
     private readonly pbc::MapField<int, int> mapSfixed32Sfixed32_ = new pbc::MapField<int, int>();
-    [pbr::ProtobufField(9, "map_sfixed32_sfixed32")]
     public pbc::MapField<int, int> MapSfixed32Sfixed32 {
       get { return mapSfixed32Sfixed32_; }
     }
@@ -1118,7 +1086,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<long, long>.Codec _map_mapSfixed64Sfixed64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSFixed64(9), pb::FieldCodec.ForSFixed64(17), 82);
     private readonly pbc::MapField<long, long> mapSfixed64Sfixed64_ = new pbc::MapField<long, long>();
-    [pbr::ProtobufField(10, "map_sfixed64_sfixed64")]
     public pbc::MapField<long, long> MapSfixed64Sfixed64 {
       get { return mapSfixed64Sfixed64_; }
     }
@@ -1127,7 +1094,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, float>.Codec _map_mapInt32Float_codec
         = new pbc::MapField<int, float>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForFloat(21), 90);
     private readonly pbc::MapField<int, float> mapInt32Float_ = new pbc::MapField<int, float>();
-    [pbr::ProtobufField(11, "map_int32_float")]
     public pbc::MapField<int, float> MapInt32Float {
       get { return mapInt32Float_; }
     }
@@ -1136,7 +1102,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, double>.Codec _map_mapInt32Double_codec
         = new pbc::MapField<int, double>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForDouble(17), 98);
     private readonly pbc::MapField<int, double> mapInt32Double_ = new pbc::MapField<int, double>();
-    [pbr::ProtobufField(12, "map_int32_double")]
     public pbc::MapField<int, double> MapInt32Double {
       get { return mapInt32Double_; }
     }
@@ -1145,7 +1110,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<bool, bool>.Codec _map_mapBoolBool_codec
         = new pbc::MapField<bool, bool>.Codec(pb::FieldCodec.ForBool(8), pb::FieldCodec.ForBool(16), 106);
     private readonly pbc::MapField<bool, bool> mapBoolBool_ = new pbc::MapField<bool, bool>();
-    [pbr::ProtobufField(13, "map_bool_bool")]
     public pbc::MapField<bool, bool> MapBoolBool {
       get { return mapBoolBool_; }
     }
@@ -1154,7 +1118,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum>.Codec _map_mapInt32Enum_codec
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::Google.Protobuf.TestProtos.MapEnum) x), 114);
     private readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum> mapInt32Enum_ = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum>();
-    [pbr::ProtobufField(14, "map_int32_enum")]
     public pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum> MapInt32Enum {
       get { return mapInt32Enum_; }
     }
@@ -1163,7 +1126,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage>.Codec _map_mapInt32ForeignMessage_codec
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.TestProtos.ForeignMessage.Parser), 122);
     private readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage> mapInt32ForeignMessage_ = new pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage>();
-    [pbr::ProtobufField(15, "map_int32_foreign_message")]
     public pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage> MapInt32ForeignMessage {
       get { return mapInt32ForeignMessage_; }
     }
@@ -1362,8 +1324,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<MessageContainingEnumCalledType> _parser = new pb::MessageParser<MessageContainingEnumCalledType>(() => new MessageContainingEnumCalledType());
     public static pb::MessageParser<MessageContainingEnumCalledType> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "type" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[5]; }
     }
@@ -1401,7 +1361,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType>.Codec _map_type_codec
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType.Parser), 10);
     private readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType> type_ = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType>();
-    [pbr::ProtobufField(1, "type")]
     public pbc::MapField<int, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType> Type {
       get { return type_; }
     }
@@ -1484,8 +1443,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<MessageContainingMapCalledEntry> _parser = new pb::MessageParser<MessageContainingMapCalledEntry>(() => new MessageContainingMapCalledEntry());
     public static pb::MessageParser<MessageContainingMapCalledEntry> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "entry" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3.Descriptor.MessageTypes[6]; }
     }
@@ -1523,7 +1480,6 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pbc::MapField<int, int>.Codec _map_entry_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForInt32(16), 10);
     private readonly pbc::MapField<int, int> entry_ = new pbc::MapField<int, int>();
-    [pbr::ProtobufField(1, "entry")]
     public pbc::MapField<int, int> Entry {
       get { return entry_; }
     }
