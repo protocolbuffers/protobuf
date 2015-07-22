@@ -12,17 +12,6 @@ namespace Google.Protobuf.WellKnownTypes {
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class Wrappers {
 
-    #region Static variables
-    internal static pbr::FieldAccessorTable internal__static_google_protobuf_DoubleValue__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_google_protobuf_FloatValue__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_google_protobuf_Int64Value__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_google_protobuf_UInt64Value__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_google_protobuf_Int32Value__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_google_protobuf_UInt32Value__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_google_protobuf_BoolValue__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_google_protobuf_StringValue__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_google_protobuf_BytesValue__FieldAccessorTable;
-    #endregion
     #region Descriptor
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
@@ -40,37 +29,20 @@ namespace Google.Protobuf.WellKnownTypes {
             "DSIaCglCb29sVmFsdWUSDQoFdmFsdWUYASABKAgiHAoLU3RyaW5nVmFsdWUS", 
             "DQoFdmFsdWUYASABKAkiGwoKQnl0ZXNWYWx1ZRINCgV2YWx1ZRgBIAEoDEJN", 
             "ChNjb20uZ29vZ2xlLnByb3RvYnVmQg1XcmFwcGVyc1Byb3RvUAGiAgNHUEKq", 
-          "Ah5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
+            "Ah5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbr::FileDescriptor[] {
-          });
-      internal__static_google_protobuf_DoubleValue__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.DoubleValue), descriptor.MessageTypes[0],
-              new string[] { "Value", }, new string[] { });
-      internal__static_google_protobuf_FloatValue__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.FloatValue), descriptor.MessageTypes[1],
-              new string[] { "Value", }, new string[] { });
-      internal__static_google_protobuf_Int64Value__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.Int64Value), descriptor.MessageTypes[2],
-              new string[] { "Value", }, new string[] { });
-      internal__static_google_protobuf_UInt64Value__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.UInt64Value), descriptor.MessageTypes[3],
-              new string[] { "Value", }, new string[] { });
-      internal__static_google_protobuf_Int32Value__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.Int32Value), descriptor.MessageTypes[4],
-              new string[] { "Value", }, new string[] { });
-      internal__static_google_protobuf_UInt32Value__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.UInt32Value), descriptor.MessageTypes[5],
-              new string[] { "Value", }, new string[] { });
-      internal__static_google_protobuf_BoolValue__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.BoolValue), descriptor.MessageTypes[6],
-              new string[] { "Value", }, new string[] { });
-      internal__static_google_protobuf_StringValue__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.StringValue), descriptor.MessageTypes[7],
-              new string[] { "Value", }, new string[] { });
-      internal__static_google_protobuf_BytesValue__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.BytesValue), descriptor.MessageTypes[8],
-              new string[] { "Value", }, new string[] { });
+          new pbr::FileDescriptor[] { },
+          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.DoubleValue), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.FloatValue), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Int64Value), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.UInt64Value), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Int32Value), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.UInt32Value), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.BoolValue), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.StringValue), new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.BytesValue), new[]{ "Value" }, null, null, null)
+          }));
     }
     #endregion
 
@@ -81,14 +53,12 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<DoubleValue> _parser = new pb::MessageParser<DoubleValue>(() => new DoubleValue());
     public static pb::MessageParser<DoubleValue> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 9 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.internal__static_google_protobuf_DoubleValue__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -200,14 +170,12 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<FloatValue> _parser = new pb::MessageParser<FloatValue>(() => new FloatValue());
     public static pb::MessageParser<FloatValue> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 13 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[1]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.internal__static_google_protobuf_FloatValue__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -319,14 +287,12 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<Int64Value> _parser = new pb::MessageParser<Int64Value>(() => new Int64Value());
     public static pb::MessageParser<Int64Value> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[2]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.internal__static_google_protobuf_Int64Value__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -438,14 +404,12 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<UInt64Value> _parser = new pb::MessageParser<UInt64Value>(() => new UInt64Value());
     public static pb::MessageParser<UInt64Value> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[3]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.internal__static_google_protobuf_UInt64Value__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -557,14 +521,12 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<Int32Value> _parser = new pb::MessageParser<Int32Value>(() => new Int32Value());
     public static pb::MessageParser<Int32Value> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[4]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.internal__static_google_protobuf_Int32Value__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -676,14 +638,12 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<UInt32Value> _parser = new pb::MessageParser<UInt32Value>(() => new UInt32Value());
     public static pb::MessageParser<UInt32Value> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[5]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.internal__static_google_protobuf_UInt32Value__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -795,14 +755,12 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<BoolValue> _parser = new pb::MessageParser<BoolValue>(() => new BoolValue());
     public static pb::MessageParser<BoolValue> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[6]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.internal__static_google_protobuf_BoolValue__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -914,14 +872,12 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<StringValue> _parser = new pb::MessageParser<StringValue>(() => new StringValue());
     public static pb::MessageParser<StringValue> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[7]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.internal__static_google_protobuf_StringValue__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -1033,14 +989,12 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<BytesValue> _parser = new pb::MessageParser<BytesValue>(() => new BytesValue());
     public static pb::MessageParser<BytesValue> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "value" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[8]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.internal__static_google_protobuf_BytesValue__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;

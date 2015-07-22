@@ -30,8 +30,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Google.Protobuf.Reflection
 {
@@ -60,30 +62,46 @@ namespace Google.Protobuf.Reflection
         private readonly IList<EnumDescriptor> enumTypes;
         private readonly IList<FieldDescriptor> fields;
         private readonly IList<OneofDescriptor> oneofs;
+        // CLR representation of the type described by this descriptor, if any.
+        private readonly Type generatedType;
+        private IDictionary<int, IFieldAccessor> fieldAccessorsByFieldNumber;
         
-        internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex)
+        internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedCodeInfo generatedCodeInfo)
             : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
         {
             this.proto = proto;
+            generatedType = generatedCodeInfo == null ? null : generatedCodeInfo.ClrType;
+
             containingType = parent;
 
-            oneofs = DescriptorUtil.ConvertAndMakeReadOnly(proto.OneofDecl,
-                                                               (oneof, index) =>
-                                                               new OneofDescriptor(oneof, file, this, index));
+            oneofs = DescriptorUtil.ConvertAndMakeReadOnly(
+                proto.OneofDecl,
+                (oneof, index) =>
+                new OneofDescriptor(oneof, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.OneofNames[index]));
 
-            nestedTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.NestedType,
-                                                                (type, index) =>
-                                                                new MessageDescriptor(type, file, this, index));
+            nestedTypes = DescriptorUtil.ConvertAndMakeReadOnly(
+                proto.NestedType,
+                (type, index) =>
+                new MessageDescriptor(type, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.NestedTypes[index]));
 
-            enumTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.EnumType,
-                                                              (type, index) =>
-                                                              new EnumDescriptor(type, file, this, index));
+            enumTypes = DescriptorUtil.ConvertAndMakeReadOnly(
+                proto.EnumType,
+                (type, index) =>
+                new EnumDescriptor(type, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.NestedEnums[index]));
 
-            // TODO(jonskeet): Sort fields first?
-            fields = DescriptorUtil.ConvertAndMakeReadOnly(proto.Field,
-                                                           (field, index) =>
-                                                           new FieldDescriptor(field, file, this, index));
+            fields = DescriptorUtil.ConvertAndMakeReadOnly(
+                proto.Field,
+                (field, index) =>
+                new FieldDescriptor(field, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.PropertyNames[index]));
             file.DescriptorPool.AddSymbol(this);
+        }
+                
+        /// <summary>
+        /// Returns the total number of nested types and enums, recursively.
+        /// </summary>
+        private int CountTotalGeneratedTypes()
+        {
+            return nestedTypes.Sum(nested => nested.CountTotalGeneratedTypes()) + enumTypes.Count;
         }
 
         /// <summary>
@@ -92,6 +110,11 @@ namespace Google.Protobuf.Reflection
         public override string Name { get { return proto.Name; } }
 
         internal DescriptorProto Proto { get { return proto; } }
+
+        /// <summary>
+        /// The generated type for this message, or <c>null</c> if the descriptor does not represent a generated type.
+        /// </summary>
+        public Type GeneratedType { get { return generatedType; } }
 
         /// <summary>
         /// Returns whether this message is one of the "well known types" which may have runtime/protoc support.
@@ -140,6 +163,13 @@ namespace Google.Protobuf.Reflection
         {
             get { return oneofs; }
         }
+
+        /// <summary>
+        /// Returns a map from field number to accessor.
+        /// TODO: Revisit this. It's mostly in place to make the transition from FieldAccessorTable
+        /// to descriptor-based reflection simple in terms of tests. Work out what we really want.
+        /// </summary>
+        public IDictionary<int, IFieldAccessor> FieldAccessorsByFieldNumber { get { return fieldAccessorsByFieldNumber; } }
 
         /// <summary>
         /// Finds a field by field name.
@@ -192,6 +222,8 @@ namespace Google.Protobuf.Reflection
             {
                 oneof.CrossLink();
             }
-        }        
+
+            fieldAccessorsByFieldNumber = new ReadOnlyDictionary<int, IFieldAccessor>(fields.ToDictionary(field => field.FieldNumber, field => field.Accessor));
+        }
     }
 }

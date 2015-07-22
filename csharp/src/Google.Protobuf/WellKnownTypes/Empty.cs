@@ -14,9 +14,6 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Empty {
 
-      #region Static variables
-      internal static pbr::FieldAccessorTable internal__static_google_protobuf_Empty__FieldAccessorTable;
-      #endregion
       #region Descriptor
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
@@ -29,13 +26,12 @@ namespace Google.Protobuf.WellKnownTypes {
               "Chtnb29nbGUvcHJvdG9idWYvZW1wdHkucHJvdG8SD2dvb2dsZS5wcm90b2J1", 
               "ZiIHCgVFbXB0eUJKChNjb20uZ29vZ2xlLnByb3RvYnVmQgpFbXB0eVByb3Rv", 
               "UAGiAgNHUEKqAh5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnBy", 
-            "b3RvMw=="));
+              "b3RvMw=="));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-            new pbr::FileDescriptor[] {
-            });
-        internal__static_google_protobuf_Empty__FieldAccessorTable = 
-            new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.Empty), descriptor.MessageTypes[0],
-                new string[] { }, new string[] { });
+            new pbr::FileDescriptor[] { },
+            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Empty), null, null, null, null)
+            }));
       }
       #endregion
 
@@ -47,14 +43,12 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<Empty> _parser = new pb::MessageParser<Empty>(() => new Empty());
     public static pb::MessageParser<Empty> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] {  };
-    private static readonly uint[] _fieldTags = new uint[] {  };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.Empty.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.Empty.internal__static_google_protobuf_Empty__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;

@@ -48,11 +48,8 @@ namespace Google.Protobuf.Reflection
         private readonly Action<object, object> setValueDelegate;
         private readonly Action<object> clearDelegate;
 
-        internal SingleFieldAccessor(Type type, string propertyName, FieldDescriptor descriptor) : base(type, propertyName, descriptor)
+        internal SingleFieldAccessor(PropertyInfo property, FieldDescriptor descriptor) : base(property, descriptor)
         {
-            PropertyInfo property = type.GetProperty(propertyName);
-            // We know there *is* such a property, or the base class constructor would have thrown. We should be able to write
-            // to it though.
             if (!property.CanWrite)
             {
                 throw new ArgumentException("Not all required properties/methods available");

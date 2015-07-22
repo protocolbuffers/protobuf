@@ -50,9 +50,8 @@ namespace Google.Protobuf.Reflection
         /// Converts the given array into a read-only list, applying the specified conversion to
         /// each input element.
         /// </summary>
-        internal static IList<TOutput> ConvertAndMakeReadOnly<TInput, TOutput>(IList<TInput> input,
-                                                                               IndexedConverter<TInput, TOutput>
-                                                                                   converter)
+        internal static IList<TOutput> ConvertAndMakeReadOnly<TInput, TOutput>
+            (IList<TInput> input, IndexedConverter<TInput, TOutput> converter)
         {
             TOutput[] array = new TOutput[input.Count];
             for (int i = 0; i < array.Length; i++)

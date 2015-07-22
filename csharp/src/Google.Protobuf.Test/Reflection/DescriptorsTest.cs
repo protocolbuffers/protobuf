@@ -62,6 +62,7 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual(UnittestImportProto3.Descriptor, file.Dependencies[0]);
 
             MessageDescriptor messageType = TestAllTypes.Descriptor;
+            Assert.AreSame(typeof(TestAllTypes), messageType.GeneratedType);
             Assert.AreEqual(messageType, file.MessageTypes[0]);
             Assert.AreEqual(messageType, file.FindTypeByName<MessageDescriptor>("TestAllTypes"));
             Assert.Null(file.FindTypeByName<MessageDescriptor>("NoSuchType"));

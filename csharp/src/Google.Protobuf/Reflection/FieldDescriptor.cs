@@ -31,6 +31,7 @@
 #endregion
 
 using System;
+using System.Linq;
 
 namespace Google.Protobuf.Reflection
 {
@@ -45,9 +46,11 @@ namespace Google.Protobuf.Reflection
         private readonly MessageDescriptor containingType;
         private readonly OneofDescriptor containingOneof;
         private FieldType fieldType;
+        private readonly string propertyName; // Annoyingly, needed in Crosslink.
+        private IFieldAccessor accessor;
 
         internal FieldDescriptor(FieldDescriptorProto proto, FileDescriptor file,
-                                 MessageDescriptor parent, int index)
+                                 MessageDescriptor parent, int index, string propertyName)
             : base(file, file.ComputeFullName(parent, proto.Name), index)
         {
             this.proto = proto;
@@ -74,6 +77,12 @@ namespace Google.Protobuf.Reflection
             }
 
             file.DescriptorPool.AddSymbol(this);
+            // We can't create the accessor until we've cross-linked, unfortunately, as we
+            // may not know whether the type of the field is a map or not. Remember the property name
+            // for later.
+            // We could trust the generated code and check whether the type of the property is
+            // a MapField, but that feels a tad nasty.
+            this.propertyName = propertyName;
         }
 
         /// <summary>
@@ -82,6 +91,8 @@ namespace Google.Protobuf.Reflection
         public override string Name { get { return proto.Name; } }
 
         internal FieldDescriptorProto Proto { get { return proto; } }
+
+        public IFieldAccessor Accessor { get { return accessor; } }
         
         /// <summary>
         /// Maps a field type as included in the .proto file to a FieldType.
@@ -287,6 +298,23 @@ namespace Google.Protobuf.Reflection
             {
                 throw new DescriptorValidationException(this, "MessageSet format is not supported.");
             }
+            accessor = CreateAccessor(propertyName);
+        }
+
+        private IFieldAccessor CreateAccessor(string propertyName)
+        {
+            if (containingType.GeneratedType == null || propertyName == null)
+            {
+                return null;
+            }
+            var property = containingType.GeneratedType.GetProperty(propertyName);
+            if (property == null)
+            {
+                throw new DescriptorValidationException(this, "Property " + propertyName + " not found in " + containingType.GeneratedType);
+            }
+            return IsMap ? new MapFieldAccessor(property, this)
+                : IsRepeated ? new RepeatedFieldAccessor(property, this)
+                : (IFieldAccessor) new SingleFieldAccessor(property, this);
         }
     }
 }

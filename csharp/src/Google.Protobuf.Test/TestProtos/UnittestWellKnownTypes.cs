@@ -12,12 +12,6 @@ namespace Google.Protobuf.TestProtos {
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestWellKnownTypes {
 
-    #region Static variables
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_TestWellKnownTypes__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_RepeatedWellKnownTypes__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_OneofWellKnownTypes__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_protobuf_unittest_MapWellKnownTypes__FieldAccessorTable;
-    #endregion
     #region Descriptor
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
@@ -162,32 +156,15 @@ namespace Google.Protobuf.TestProtos {
             "AjgBGk4KD0J5dGVzRmllbGRFbnRyeRILCgNrZXkYASABKAUSKgoFdmFsdWUY", 
             "AiABKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZToCOAFCOQoYY29t", 
             "Lmdvb2dsZS5wcm90b2J1Zi50ZXN0UAGqAhpHb29nbGUuUHJvdG9idWYuVGVz", 
-          "dFByb3Rvc2IGcHJvdG8z"));
+            "dFByb3Rvc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbr::FileDescriptor[] {
-          global::Google.Protobuf.WellKnownTypes.Proto.Any.Descriptor, 
-          global::Google.Protobuf.WellKnownTypes.Proto.Api.Descriptor, 
-          global::Google.Protobuf.WellKnownTypes.Proto.Duration.Descriptor, 
-          global::Google.Protobuf.WellKnownTypes.Proto.Empty.Descriptor, 
-          global::Google.Protobuf.WellKnownTypes.Proto.FieldMask.Descriptor, 
-          global::Google.Protobuf.WellKnownTypes.Proto.SourceContext.Descriptor, 
-          global::Google.Protobuf.WellKnownTypes.Proto.Struct.Descriptor, 
-          global::Google.Protobuf.WellKnownTypes.Proto.Timestamp.Descriptor, 
-          global::Google.Protobuf.WellKnownTypes.Proto.Type.Descriptor, 
-          global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor, 
-          });
-      internal__static_protobuf_unittest_TestWellKnownTypes__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.TestWellKnownTypes), descriptor.MessageTypes[0],
-              new string[] { "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField", }, new string[] { });
-      internal__static_protobuf_unittest_RepeatedWellKnownTypes__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes), descriptor.MessageTypes[1],
-              new string[] { "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField", }, new string[] { });
-      internal__static_protobuf_unittest_OneofWellKnownTypes__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.OneofWellKnownTypes), descriptor.MessageTypes[2],
-              new string[] { "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField", }, new string[] { "OneofField", });
-      internal__static_protobuf_unittest_MapWellKnownTypes__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.TestProtos.MapWellKnownTypes), descriptor.MessageTypes[3],
-              new string[] { "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField", }, new string[] { });
+          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.Proto.Any.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Api.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Duration.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Empty.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.FieldMask.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.SourceContext.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Struct.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Timestamp.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Type.Descriptor, global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor, },
+          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestWellKnownTypes), new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes), new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.OneofWellKnownTypes), new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, new[]{ "OneofField" }, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.MapWellKnownTypes), new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, new pbr::GeneratedCodeInfo[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, })
+          }));
     }
     #endregion
 
@@ -198,14 +175,12 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestWellKnownTypes> _parser = new pb::MessageParser<TestWellKnownTypes>(() => new TestWellKnownTypes());
     public static pb::MessageParser<TestWellKnownTypes> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "any_field", "api_field", "bool_field", "bytes_field", "double_field", "duration_field", "empty_field", "field_mask_field", "float_field", "int32_field", "int64_field", "source_context_field", "string_field", "struct_field", "timestamp_field", "type_field", "uint32_field", "uint64_field" };
-    private static readonly uint[] _fieldTags = new uint[] { 10, 18, 130, 146, 82, 26, 34, 42, 90, 114, 98, 50, 138, 58, 66, 74, 122, 106 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.internal__static_protobuf_unittest_TestWellKnownTypes__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -884,14 +859,12 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<RepeatedWellKnownTypes> _parser = new pb::MessageParser<RepeatedWellKnownTypes>(() => new RepeatedWellKnownTypes());
     public static pb::MessageParser<RepeatedWellKnownTypes> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "any_field", "api_field", "bool_field", "bytes_field", "double_field", "duration_field", "empty_field", "field_mask_field", "float_field", "int32_field", "int64_field", "source_context_field", "string_field", "struct_field", "timestamp_field", "type_field", "uint32_field", "uint64_field" };
-    private static readonly uint[] _fieldTags = new uint[] { 10, 18, 130, 146, 82, 26, 34, 42, 90, 114, 98, 50, 138, 58, 66, 74, 122, 106 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[1]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.internal__static_protobuf_unittest_RepeatedWellKnownTypes__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -1318,14 +1291,12 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<OneofWellKnownTypes> _parser = new pb::MessageParser<OneofWellKnownTypes>(() => new OneofWellKnownTypes());
     public static pb::MessageParser<OneofWellKnownTypes> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "any_field", "api_field", "bool_field", "bytes_field", "double_field", "duration_field", "empty_field", "field_mask_field", "float_field", "int32_field", "int64_field", "source_context_field", "string_field", "struct_field", "timestamp_field", "type_field", "uint32_field", "uint64_field" };
-    private static readonly uint[] _fieldTags = new uint[] { 10, 18, 130, 146, 82, 26, 34, 42, 90, 114, 98, 50, 138, 58, 66, 74, 122, 106 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[2]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.internal__static_protobuf_unittest_OneofWellKnownTypes__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -2017,14 +1988,12 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<MapWellKnownTypes> _parser = new pb::MessageParser<MapWellKnownTypes>(() => new MapWellKnownTypes());
     public static pb::MessageParser<MapWellKnownTypes> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "any_field", "api_field", "bool_field", "bytes_field", "double_field", "duration_field", "empty_field", "field_mask_field", "float_field", "int32_field", "int64_field", "source_context_field", "string_field", "struct_field", "timestamp_field", "type_field", "uint32_field", "uint64_field" };
-    private static readonly uint[] _fieldTags = new uint[] { 10, 18, 130, 146, 82, 26, 34, 42, 90, 114, 98, 50, 138, 58, 66, 74, 122, 106 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[3]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.internal__static_protobuf_unittest_MapWellKnownTypes__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;

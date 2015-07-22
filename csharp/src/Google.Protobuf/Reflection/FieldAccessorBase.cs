@@ -43,13 +43,8 @@ namespace Google.Protobuf.Reflection
         private readonly Func<object, object> getValueDelegate;
         private readonly FieldDescriptor descriptor;
 
-        internal FieldAccessorBase(Type type, string propertyName, FieldDescriptor descriptor)
+        internal FieldAccessorBase(PropertyInfo property, FieldDescriptor descriptor)
         {
-            PropertyInfo property = type.GetProperty(propertyName);
-            if (property == null || !property.CanRead)
-            {
-                throw new ArgumentException("Not all required properties/methods available");
-            }
             this.descriptor = descriptor;
             getValueDelegate = ReflectionUtil.CreateFuncObjectObject(property.GetGetMethod());
         }

@@ -14,9 +14,6 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Timestamp {
 
-      #region Static variables
-      internal static pbr::FieldAccessorTable internal__static_google_protobuf_Timestamp__FieldAccessorTable;
-      #endregion
       #region Descriptor
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
@@ -30,13 +27,12 @@ namespace Google.Protobuf.WellKnownTypes {
               "dG9idWYiKwoJVGltZXN0YW1wEg8KB3NlY29uZHMYASABKAMSDQoFbmFub3MY", 
               "AiABKAVCUQoTY29tLmdvb2dsZS5wcm90b2J1ZkIOVGltZXN0YW1wUHJvdG9Q", 
               "AaABAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IG", 
-            "cHJvdG8z"));
+              "cHJvdG8z"));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-            new pbr::FileDescriptor[] {
-            });
-        internal__static_google_protobuf_Timestamp__FieldAccessorTable = 
-            new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.Timestamp), descriptor.MessageTypes[0],
-                new string[] { "Seconds", "Nanos", }, new string[] { });
+            new pbr::FileDescriptor[] { },
+            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Timestamp), new[]{ "Seconds", "Nanos" }, null, null, null)
+            }));
       }
       #endregion
 
@@ -48,14 +44,12 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<Timestamp> _parser = new pb::MessageParser<Timestamp>(() => new Timestamp());
     public static pb::MessageParser<Timestamp> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "nanos", "seconds" };
-    private static readonly uint[] _fieldTags = new uint[] { 16, 8 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.Timestamp.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.Timestamp.internal__static_google_protobuf_Timestamp__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;

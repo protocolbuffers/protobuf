@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using System;
 using System.Collections.Generic;
 
 namespace Google.Protobuf.Reflection
@@ -42,11 +43,13 @@ namespace Google.Protobuf.Reflection
         private readonly EnumDescriptorProto proto;
         private readonly MessageDescriptor containingType;
         private readonly IList<EnumValueDescriptor> values;
+        private readonly Type generatedType;
 
-        internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index)
+        internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, Type generatedType)
             : base(file, file.ComputeFullName(parent, proto.Name), index)
         {
             this.proto = proto;
+            this.generatedType = generatedType;
             containingType = parent;
 
             if (proto.Value.Count == 0)
@@ -68,6 +71,11 @@ namespace Google.Protobuf.Reflection
         /// The brief name of the descriptor's target.
         /// </summary>
         public override string Name { get { return proto.Name; } }
+
+        /// <summary>
+        /// The generated type for this enum, or <c>null</c> if the descriptor does not represent a generated type.
+        /// </summary>
+        public Type GeneratedType { get { return generatedType; } }
 
         /// <value>
         /// If this is a nested type, get the outer descriptor, otherwise null.

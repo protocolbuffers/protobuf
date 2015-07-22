@@ -40,15 +40,6 @@ namespace Google.Protobuf
     // TODO(jonskeet): Split these interfaces into separate files when we're happy with them.
 
     /// <summary>
-    /// Reflection support for accessing field values.
-    /// </summary>
-    public interface IReflectedMessage : IMessage
-    {
-        FieldAccessorTable Fields { get; }
-        // TODO(jonskeet): Descriptor? Or a single property which has "all you need for reflection"?
-    }
-
-    /// <summary>
     /// Interface for a Protocol Buffers message, supporting
     /// basic operations required for serialization.
     /// </summary>
@@ -73,6 +64,13 @@ namespace Google.Protobuf
         /// <returns>The number of bytes required to write this message
         /// to a coded output stream.</returns>
         int CalculateSize();
+
+        /// <summary>
+        /// Descriptor for this message. All instances are expected to return the same descriptor,
+        /// and for generated types this will be an explicitly-implemented member, returning the
+        /// same value as the static property declared on the type.
+        /// </summary>
+        MessageDescriptor Descriptor { get; }
     }
 
     /// <summary>
@@ -81,7 +79,7 @@ namespace Google.Protobuf
     /// the implementation class.
     /// </summary>
     /// <typeparam name="T">The message type.</typeparam>
-    public interface IMessage<T> : IReflectedMessage, IEquatable<T>, IDeepCloneable<T>, IFreezable where T : IMessage<T>
+    public interface IMessage<T> : IMessage, IEquatable<T>, IDeepCloneable<T>, IFreezable where T : IMessage<T>
     {
         /// <summary>
         /// Merges the given message into this one.

@@ -117,10 +117,10 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Reflection/EnumDescriptor.cs                    \
   csharp/src/Google.Protobuf/Reflection/EnumValueDescriptor.cs               \
   csharp/src/Google.Protobuf/Reflection/FieldAccessorBase.cs                 \
-  csharp/src/Google.Protobuf/Reflection/FieldAccessorTable.cs                \
   csharp/src/Google.Protobuf/Reflection/FieldDescriptor.cs                   \
   csharp/src/Google.Protobuf/Reflection/FieldType.cs                         \
   csharp/src/Google.Protobuf/Reflection/FileDescriptor.cs                    \
+  csharp/src/Google.Protobuf/Reflection/GeneratedCodeInfo.cs                 \
   csharp/src/Google.Protobuf/Reflection/IDescriptor.cs                       \
   csharp/src/Google.Protobuf/Reflection/IFieldAccessor.cs                    \
   csharp/src/Google.Protobuf/Reflection/MapFieldAccessor.cs                  \

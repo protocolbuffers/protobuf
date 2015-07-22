@@ -12,11 +12,6 @@ namespace Google.Protobuf.Examples.AddressBook {
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class Addressbook {
 
-    #region Static variables
-    internal static pbr::FieldAccessorTable internal__static_tutorial_Person__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable;
-    internal static pbr::FieldAccessorTable internal__static_tutorial_AddressBook__FieldAccessorTable;
-    #endregion
     #region Descriptor
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
@@ -34,19 +29,13 @@ namespace Google.Protobuf.Examples.AddressBook {
             "EggKBEhPTUUQARIICgRXT1JLEAIiLwoLQWRkcmVzc0Jvb2sSIAoGcGVvcGxl", 
             "GAEgAygLMhAudHV0b3JpYWwuUGVyc29uQlAKFGNvbS5leGFtcGxlLnR1dG9y", 
             "aWFsQhFBZGRyZXNzQm9va1Byb3Rvc6oCJEdvb2dsZS5Qcm90b2J1Zi5FeGFt", 
-          "cGxlcy5BZGRyZXNzQm9va2IGcHJvdG8z"));
+            "cGxlcy5BZGRyZXNzQm9va2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbr::FileDescriptor[] {
-          });
-      internal__static_tutorial_Person__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Examples.AddressBook.Person), descriptor.MessageTypes[0],
-              new string[] { "Name", "Id", "Email", "Phones", }, new string[] { });
-      internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), descriptor.MessageTypes[0].NestedTypes[0],
-              new string[] { "Number", "Type", }, new string[] { });
-      internal__static_tutorial_AddressBook__FieldAccessorTable = 
-          new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.Examples.AddressBook.AddressBook), descriptor.MessageTypes[1],
-              new string[] { "People", }, new string[] { });
+          new pbr::FileDescriptor[] { },
+          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person), new[]{ "Name", "Id", "Email", "Phones" }, null, new[]{ typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) }, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), new[]{ "Number", "Type" }, null, null, null)}),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.AddressBook), new[]{ "People" }, null, null, null)
+          }));
     }
     #endregion
 
@@ -57,14 +46,12 @@ namespace Google.Protobuf.Examples.AddressBook {
     private static readonly pb::MessageParser<Person> _parser = new pb::MessageParser<Person>(() => new Person());
     public static pb::MessageParser<Person> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "email", "id", "name", "phones" };
-    private static readonly uint[] _fieldTags = new uint[] { 26, 16, 10, 34 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.internal__static_tutorial_Person__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;
@@ -256,14 +243,12 @@ namespace Google.Protobuf.Examples.AddressBook {
         private static readonly pb::MessageParser<PhoneNumber> _parser = new pb::MessageParser<PhoneNumber>(() => new PhoneNumber());
         public static pb::MessageParser<PhoneNumber> Parser { get { return _parser; } }
 
-        private static readonly string[] _fieldNames = new string[] { "number", "type" };
-        private static readonly uint[] _fieldTags = new uint[] { 10, 16 };
         public static pbr::MessageDescriptor Descriptor {
           get { return global::Google.Protobuf.Examples.AddressBook.Person.Descriptor.NestedTypes[0]; }
         }
 
-        pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-          get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.internal__static_tutorial_Person_PhoneNumber__FieldAccessorTable; }
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
         }
 
         private bool _frozen = false;
@@ -407,14 +392,12 @@ namespace Google.Protobuf.Examples.AddressBook {
     private static readonly pb::MessageParser<AddressBook> _parser = new pb::MessageParser<AddressBook>(() => new AddressBook());
     public static pb::MessageParser<AddressBook> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "people" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.Descriptor.MessageTypes[1]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.internal__static_tutorial_AddressBook__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;

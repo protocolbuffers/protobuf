@@ -53,8 +53,6 @@ class MessageGenerator : public SourceGeneratorBase {
   void GenerateCloningCode(io::Printer* printer);
   void GenerateFreezingCode(io::Printer* printer);
   void GenerateFrameworkMethods(io::Printer* printer);
-  void GenerateStaticVariables(io::Printer* printer);
-  void GenerateStaticVariableInitializers(io::Printer* printer);
   void Generate(io::Printer* printer);
 
  private:

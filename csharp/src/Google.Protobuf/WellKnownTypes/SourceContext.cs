@@ -14,9 +14,6 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class SourceContext {
 
-      #region Static variables
-      internal static pbr::FieldAccessorTable internal__static_google_protobuf_SourceContext__FieldAccessorTable;
-      #endregion
       #region Descriptor
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
@@ -30,13 +27,12 @@ namespace Google.Protobuf.WellKnownTypes {
               "ZS5wcm90b2J1ZiIiCg1Tb3VyY2VDb250ZXh0EhEKCWZpbGVfbmFtZRgBIAEo", 
               "CUJSChNjb20uZ29vZ2xlLnByb3RvYnVmQhJTb3VyY2VDb250ZXh0UHJvdG9Q", 
               "AaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IGcHJv", 
-            "dG8z"));
+              "dG8z"));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-            new pbr::FileDescriptor[] {
-            });
-        internal__static_google_protobuf_SourceContext__FieldAccessorTable = 
-            new pbr::FieldAccessorTable(typeof(global::Google.Protobuf.WellKnownTypes.SourceContext), descriptor.MessageTypes[0],
-                new string[] { "FileName", }, new string[] { });
+            new pbr::FileDescriptor[] { },
+            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.SourceContext), new[]{ "FileName" }, null, null, null)
+            }));
       }
       #endregion
 
@@ -48,14 +44,12 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::MessageParser<SourceContext> _parser = new pb::MessageParser<SourceContext>(() => new SourceContext());
     public static pb::MessageParser<SourceContext> Parser { get { return _parser; } }
 
-    private static readonly string[] _fieldNames = new string[] { "file_name" };
-    private static readonly uint[] _fieldTags = new uint[] { 10 };
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.Proto.SourceContext.Descriptor.MessageTypes[0]; }
     }
 
-    pbr::FieldAccessorTable pb::IReflectedMessage.Fields {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.SourceContext.internal__static_google_protobuf_SourceContext__FieldAccessorTable; }
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
     }
 
     private bool _frozen = false;

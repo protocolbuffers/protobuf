@@ -36,6 +36,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/stubs/strutil.h>
 
 
 #include <google/protobuf/compiler/csharp/csharp_enum.h>
@@ -63,12 +64,6 @@ UmbrellaClassGenerator::~UmbrellaClassGenerator() {
 void UmbrellaClassGenerator::Generate(io::Printer* printer) {
   WriteIntroduction(printer);
 
-  printer->Print("#region Static variables\n");
-  for (int i = 0; i < file_->message_type_count(); i++) {
-    MessageGenerator messageGenerator(file_->message_type(i));
-    messageGenerator.GenerateStaticVariables(printer);
-  }
-  printer->Print("#endregion\n");
   WriteDescriptor(printer);
   // Close the class declaration.
   printer->Outdent();
@@ -174,8 +169,8 @@ void UmbrellaClassGenerator::WriteDescriptor(io::Printer* printer) {
     printer->Print("\"$base64$\", \n", "base64", base64.substr(0, 60));
     base64 = base64.substr(60);
   }
-  printer->Outdent();
   printer->Print("\"$base64$\"));\n", "base64", base64);
+  printer->Outdent();
   printer->Outdent();
   printer->Outdent();
 
@@ -183,22 +178,115 @@ void UmbrellaClassGenerator::WriteDescriptor(io::Printer* printer) {
   // Invoke InternalBuildGeneratedFileFrom() to build the file.
   printer->Print(
       "descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,\n");
-  printer->Print("    new pbr::FileDescriptor[] {\n");
+  printer->Print("    new pbr::FileDescriptor[] { ");
   for (int i = 0; i < file_->dependency_count(); i++) {
     printer->Print(
-      "    $full_umbrella_class_name$.Descriptor, \n",
+      "$full_umbrella_class_name$.Descriptor, ",
       "full_umbrella_class_name",
       GetFullUmbrellaClassName(file_->dependency(i)));
   }
-  printer->Print("    });\n");
-  // Then invoke any other static variable initializers, e.g. field accessors.
-  for (int i = 0; i < file_->message_type_count(); i++) {
-      MessageGenerator messageGenerator(file_->message_type(i));
-      messageGenerator.GenerateStaticVariableInitializers(printer);
+  printer->Print("},\n"
+      "    new pbr::GeneratedCodeInfo(");
+  // Specify all the generated code information, recursively.
+  if (file_->enum_type_count() > 0) {
+      printer->Print("new[] {");
+      for (int i = 0; i < file_->enum_type_count(); i++) {
+          printer->Print("typeof($type_name$), ", "type_name", GetClassName(file_->enum_type(i)));
+      }
+      printer->Print("}, ");
   }
+  else {
+      printer->Print("null, ");
+  }
+  if (file_->message_type_count() > 0) {
+      printer->Print("new pbr::GeneratedCodeInfo[] {\n");
+      printer->Indent();
+      printer->Indent();
+      printer->Indent();
+      for (int i = 0; i < file_->message_type_count(); i++) {
+          WriteGeneratedCodeInfo(file_->message_type(i), printer, i == file_->message_type_count() - 1);
+      }
+      printer->Outdent();
+      printer->Print("\n}));\n");
+      printer->Outdent();
+      printer->Outdent();
+  }
+  else {
+      printer->Print("null));\n");
+  }
+
   printer->Outdent();
   printer->Print("}\n");
   printer->Print("#endregion\n\n");
+}
+
+// Write out the generated code for a particular message. This consists of the CLR type, property names
+// corresponding to fields, names corresponding to oneofs, nested enums, and nested types. Each array part
+// can be specified as null if it would be empty, to make the generated code somewhat simpler to read.
+// We write a line break at the end of each generated code info, so that in the final file we'll see all
+// the types, pre-ordered depth first, one per line. The indentation will be slightly unusual,
+// in that it will look like a single array when it's actually constructing a tree, but it'll be easy to
+// read even with multiple levels of nesting.
+// The "last" parameter indicates whether this message descriptor is the last one being printed in this immediate
+// context. It governs whether or not a trailing comma and newline is written after the constructor, effectively
+// just controlling the formatting in the generated code.
+void UmbrellaClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descriptor, io::Printer* printer, bool last) {
+  if (IsMapEntryMessage(descriptor)) {
+    printer->Print("null, ");
+    return;
+  }
+  // Generated message type
+  printer->Print("new pbr::GeneratedCodeInfo(typeof($type_name$), ", "type_name", GetClassName(descriptor));
+  
+  // Fields
+  if (descriptor->field_count() > 0) {
+      std::vector<std::string> fields;
+      for (int i = 0; i < descriptor->field_count(); i++) {
+          fields.push_back(GetPropertyName(descriptor->field(i)));
+      }
+      printer->Print("new[]{ \"$fields$\" }, ", "fields", JoinStrings(fields, "\", \""));
+  }
+  else {
+      printer->Print("null, ");
+  }
+
+  // Oneofs
+  if (descriptor->oneof_decl_count() > 0) {
+      std::vector<std::string> oneofs;
+      for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
+          oneofs.push_back(UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
+      }
+      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", JoinStrings(oneofs, "\", \""));
+  }
+  else {
+      printer->Print("null, ");
+  }
+
+  // Nested enums
+  if (descriptor->enum_type_count() > 0) {
+      std::vector<std::string> enums;
+      for (int i = 0; i < descriptor->enum_type_count(); i++) {
+          enums.push_back(GetClassName(descriptor->enum_type(i)));
+      }
+      printer->Print("new[]{ typeof($enums$) }, ", "enums", JoinStrings(enums, "), typeof("));
+  }
+  else {
+      printer->Print("null, ");
+  }
+
+  // Nested types
+  if (descriptor->nested_type_count() > 0) {
+      // Need to specify array type explicitly here, as all elements may be null. 
+      printer->Print("new pbr::GeneratedCodeInfo[] { ");
+      for (int i = 0; i < descriptor->nested_type_count(); i++) {
+          WriteGeneratedCodeInfo(descriptor->nested_type(i), printer, i == descriptor->nested_type_count() - 1);
+      }
+      printer->Print("}");
+  }
+  else {
+      printer->Print("null");
+  }
+  printer->Print(last ? ")" : "),\n");
 }
 
 }  // namespace csharp
