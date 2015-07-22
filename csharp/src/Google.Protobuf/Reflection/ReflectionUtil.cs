@@ -102,25 +102,6 @@ namespace Google.Protobuf.Reflection
             Expression castTarget = Expression.Convert(targetParameter, method.DeclaringType);
             Expression call = Expression.Call(castTarget, method);
             return Expression.Lambda<Action<object>>(call, targetParameter).Compile();
-        }
-
-        /// <summary>
-        /// Returns the next type from an iterator of types, unless the iterator is a null reference,
-        /// in which case null is returned.
-        /// </summary>
-        internal static Type GetNextType(IEnumerator<Type> generatedTypeIterator)
-        {
-            if (generatedTypeIterator == null)
-            {
-                return null;
-            }
-            if (!generatedTypeIterator.MoveNext())
-            {
-                // This parameter name corresponds to any public method supplying the generated types to start with.
-                throw new ArgumentException("More generated types left over after consuming all expected ones", "generatedTypes");
-            }
-            return generatedTypeIterator.Current;
-        }
-
+        }        
     }
 }

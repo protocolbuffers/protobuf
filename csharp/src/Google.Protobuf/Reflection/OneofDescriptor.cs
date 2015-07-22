@@ -41,15 +41,16 @@ namespace Google.Protobuf.Reflection
         private readonly OneofDescriptorProto proto;
         private MessageDescriptor containingType;
         private IList<FieldDescriptor> fields;
-        private OneofAccessor accessor;
+        private readonly OneofAccessor accessor;
 
-        internal OneofDescriptor(OneofDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index)
+        internal OneofDescriptor(OneofDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, string clrName)
             : base(file, file.ComputeFullName(parent, proto.Name), index)
         {
             this.proto = proto;
             containingType = parent;
 
             file.DescriptorPool.AddSymbol(this);
+            accessor = CreateAccessor(clrName);
         }
 
         /// <summary>
@@ -77,33 +78,23 @@ namespace Google.Protobuf.Reflection
                 }
             }
             fields = new ReadOnlyCollection<FieldDescriptor>(fieldCollection);
-            accessor = CreateAccessor();
         }
 
-        private OneofAccessor CreateAccessor()
+        private OneofAccessor CreateAccessor(string clrName)
         {
-            if (containingType.GeneratedType == null)
+            if (containingType.GeneratedType == null || clrName == null)
             {
                 return null;
             }
-            var caseProperty = containingType
-                .GeneratedType
-                .GetProperties()
-                .FirstOrDefault(p => p.IsDefined(typeof(ProtobufOneofAttribute), false) &&
-                                     p.GetCustomAttributes(typeof(ProtobufOneofAttribute), false).Cast<ProtobufOneofAttribute>().Single().Name == Name);
+            var caseProperty = containingType.GeneratedType.GetProperty(clrName + "Case");
             if (caseProperty == null)
             {
-                return null;
+                throw new DescriptorValidationException(this, "Property " + clrName + "Case not found in " + containingType.GeneratedType);
             }
-
-            var clearMethod = containingType
-                 .GeneratedType
-                 .GetMethods()
-                 .FirstOrDefault(p => p.IsDefined(typeof(ProtobufOneofAttribute), false) &&
-                                      p.GetCustomAttributes(typeof(ProtobufOneofAttribute), false).Cast<ProtobufOneofAttribute>().Single().Name == Name);
+            var clearMethod = containingType.GeneratedType.GetMethod("Clear" + clrName, ReflectionUtil.EmptyTypes);
             if (clearMethod == null)
             {
-                return null;
+                throw new DescriptorValidationException(this, "Method Clear" + clrName + " not found in " + containingType.GeneratedType);
             }
 
             return new OneofAccessor(caseProperty, clearMethod, this);

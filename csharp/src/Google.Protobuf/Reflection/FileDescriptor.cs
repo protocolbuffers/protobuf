@@ -62,12 +62,11 @@ namespace Google.Protobuf.Reflection
             get { return proto.Syntax == "proto3" ? ProtoSyntax.Proto3 : ProtoSyntax.Proto2; }
         }
 
-        private FileDescriptor(FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies, Type[] generatedTypes)
+        private FileDescriptor(FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
         {
             this.pool = pool;
             this.proto = proto;
             this.dependencies = new ReadOnlyCollection<FileDescriptor>((FileDescriptor[]) dependencies.Clone());
-            IEnumerator<Type> generatedTypeIterator = generatedTypes == null ? null : ((IEnumerable<Type>)generatedTypes).GetEnumerator();
 
             publicDependencies = DeterminePublicDependencies(this, proto, dependencies, allowUnknownDependencies);
 
@@ -75,21 +74,15 @@ namespace Google.Protobuf.Reflection
 
             messageTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.MessageType,
                                                                  (message, index) =>
-                                                                 new MessageDescriptor(message, this, null, index, generatedTypeIterator));
+                                                                 new MessageDescriptor(message, this, null, index, generatedCodeInfo == null ? null : generatedCodeInfo.NestedTypes[index]));
 
             enumTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.EnumType,
                                                               (enumType, index) =>
-                                                              new EnumDescriptor(enumType, this, null, index, ReflectionUtil.GetNextType(generatedTypeIterator)));
+                                                              new EnumDescriptor(enumType, this, null, index, generatedCodeInfo == null ? null : generatedCodeInfo.NestedEnums[index]));
 
             services = DescriptorUtil.ConvertAndMakeReadOnly(proto.Service,
                                                              (service, index) =>
                                                              new ServiceDescriptor(service, this, index));
-
-            // We should now have consumed all the generated types.
-            if (generatedTypeIterator != null && generatedTypeIterator.MoveNext())
-            {
-                throw new ArgumentException("More generated types left over after consuming all expected ones", "generatedTypes");
-            }
         }
 
         /// <summary>
@@ -260,7 +253,7 @@ namespace Google.Protobuf.Reflection
             }
             return null;
         }
-        
+
         /// <summary>
         /// Builds a FileDescriptor from its protocol buffer representation.
         /// </summary>
@@ -269,10 +262,11 @@ namespace Google.Protobuf.Reflection
         /// file's dependencies, in the exact order listed in the .proto file. May be null,
         /// in which case it is treated as an empty array.</param>
         /// <param name="allowUnknownDependencies">Whether unknown dependencies are ignored (true) or cause an exception to be thrown (false).</param>
+        /// <param name="generatedCodeInfo">Reflection information, if any. May be null, specifically for non-generated code.</param>
         /// <exception cref="DescriptorValidationException">If <paramref name="proto"/> is not
         /// a valid descriptor. This can occur for a number of reasons, such as a field
         /// having an undefined type or because two messages were defined with the same name.</exception>
-        private static FileDescriptor BuildFrom(FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies, Type[] generatedTypes)
+        private static FileDescriptor BuildFrom(FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
         {
             // Building descriptors involves two steps: translating and linking.
             // In the translation step (implemented by FileDescriptor's
@@ -289,7 +283,7 @@ namespace Google.Protobuf.Reflection
             }
 
             DescriptorPool pool = new DescriptorPool(dependencies);
-            FileDescriptor result = new FileDescriptor(proto, dependencies, pool, allowUnknownDependencies, generatedTypes);
+            FileDescriptor result = new FileDescriptor(proto, dependencies, pool, allowUnknownDependencies, generatedCodeInfo);
 
             // TODO(jonskeet): Reinstate these checks, or get rid of them entirely. They aren't in the Java code,
             // and fail for the CustomOptions test right now. (We get "descriptor.proto" vs "google/protobuf/descriptor.proto".)
@@ -330,19 +324,13 @@ namespace Google.Protobuf.Reflection
         /// Creates an instance for generated code.
         /// </summary>
         /// <remarks>
-        /// The <paramref name="generatedTypes"/> parameter should be null for descriptors which don't correspond to
-        /// generated types. Otherwise, the array should represent all the generated types in the file: messages then
-        /// enums. Within each message, there can be nested messages and enums, which must be specified "inline" in the array:
-        /// containing message, nested messages, nested enums - and of course each nested message may contain *more* nested messages,
-        /// etc. All messages within the descriptor should be represented, even if they do not have a generated type - any
-        /// type without a corresponding generated type (such as map entries) should respond to a null element.
-        /// For example, a file with a messages OuterMessage and InnerMessage, and enums OuterEnum and InnerEnum (where
-        /// InnerMessage and InnerEnum are nested within InnerMessage) would result in an array of
-        /// OuterMessage, InnerMessage, InnerEnum, OuterEnum.
+        /// The <paramref name="generatedCodeInfo"/> parameter should be null for descriptors which don't correspond to
+        /// generated types. Otherwise, it should be a <see cref="GeneratedCodeInfo"/> with nested types and nested
+        /// enums corresponding to the types and enums contained within the file descriptor.
         /// </remarks>
         public static FileDescriptor InternalBuildGeneratedFileFrom(byte[] descriptorData,
                                                                     FileDescriptor[] dependencies,
-                                                                    Type[] generatedTypes)
+                                                                    GeneratedCodeInfo generatedCodeInfo)
         {
             FileDescriptorProto proto;
             try
@@ -358,7 +346,7 @@ namespace Google.Protobuf.Reflection
             {
                 // When building descriptors for generated code, we allow unknown
                 // dependencies by default.
-                return BuildFrom(proto, dependencies, true, generatedTypes);
+                return BuildFrom(proto, dependencies, true, generatedCodeInfo);
             }
             catch (DescriptorValidationException e)
             {

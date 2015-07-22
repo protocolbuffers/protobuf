@@ -115,19 +115,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
       vars,
       "private static readonly pb::MessageParser<$class_name$> _parser = new pb::MessageParser<$class_name$>(() => new $class_name$());\n"
       "public static pb::MessageParser<$class_name$> Parser { get { return _parser; } }\n\n");
-  printer->Print(
-    "private static readonly string[] _fieldNames = "
-    "new string[] { $slash$$field_names$$slash$ };\n",
-    "field_names", JoinStrings(field_names(), "\", \""),
-      "slash", field_names().size() > 0 ? "\"" : "");
-  std::vector<std::string> tags;
-  for (int i = 0; i < field_names().size(); i++) {
-    uint32 tag = FixedMakeTag(descriptor_->FindFieldByName(field_names()[i]));
-    tags.push_back(SimpleItoa(tag));
-  }
-  printer->Print(
-    "private static readonly uint[] _fieldTags = new uint[] { $tags$ };\n",
-    "tags", JoinStrings(tags, ", "));
 
   // Access the message descriptor via the relevant file descriptor or containing message descriptor.
   if (!descriptor_->containing_type()) {

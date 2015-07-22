@@ -81,6 +81,7 @@
     <Compile Include="Reflection\FieldDescriptor.cs" />
     <Compile Include="Reflection\FieldType.cs" />
     <Compile Include="Reflection\FileDescriptor.cs" />
+    <Compile Include="Reflection\GeneratedCodeInfo.cs" />
     <Compile Include="Reflection\IDescriptor.cs" />
     <Compile Include="Reflection\IFieldAccessor.cs" />
     <Compile Include="Reflection\MapFieldAccessor.cs" />
@@ -90,8 +91,6 @@
     <Compile Include="Reflection\OneofDescriptor.cs" />
     <Compile Include="Reflection\PackageDescriptor.cs" />
     <Compile Include="Reflection\PartialClasses.cs" />
-    <Compile Include="Reflection\ProtobufOneofAttribute.cs" />
-    <Compile Include="Reflection\ProtobufFieldAttribute.cs" />
     <Compile Include="Reflection\ReflectionUtil.cs" />
     <Compile Include="Reflection\RepeatedFieldAccessor.cs" />
     <Compile Include="Reflection\ServiceDescriptor.cs" />

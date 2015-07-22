@@ -46,10 +46,11 @@ namespace Google.Protobuf.Reflection
         private readonly MessageDescriptor containingType;
         private readonly OneofDescriptor containingOneof;
         private FieldType fieldType;
+        private readonly string propertyName; // Annoyingly, needed in Crosslink.
         private IFieldAccessor accessor;
 
         internal FieldDescriptor(FieldDescriptorProto proto, FileDescriptor file,
-                                 MessageDescriptor parent, int index)
+                                 MessageDescriptor parent, int index, string propertyName)
             : base(file, file.ComputeFullName(parent, proto.Name), index)
         {
             this.proto = proto;
@@ -76,6 +77,12 @@ namespace Google.Protobuf.Reflection
             }
 
             file.DescriptorPool.AddSymbol(this);
+            // We can't create the accessor until we've cross-linked, unfortunately, as we
+            // may not know whether the type of the field is a map or not. Remember the property name
+            // for later.
+            // We could trust the generated code and check whether the type of the property is
+            // a MapField, but that feels a tad nasty.
+            this.propertyName = propertyName;
         }
 
         /// <summary>
@@ -291,26 +298,19 @@ namespace Google.Protobuf.Reflection
             {
                 throw new DescriptorValidationException(this, "MessageSet format is not supported.");
             }
-
-            accessor = CreateAccessor();
+            accessor = CreateAccessor(propertyName);
         }
 
-        private IFieldAccessor CreateAccessor()
+        private IFieldAccessor CreateAccessor(string propertyName)
         {
-            // TODO: Check the performance of this with some large protos. Each message is O(N^2) in the number of fields,
-            // which isn't great...
-            if (containingType.GeneratedType == null)
+            if (containingType.GeneratedType == null || propertyName == null)
             {
                 return null;
             }
-            var property = containingType
-                .GeneratedType
-                .GetProperties()
-                .FirstOrDefault(p => p.IsDefined(typeof(ProtobufFieldAttribute), false) &&
-                                     p.GetCustomAttributes(typeof(ProtobufFieldAttribute), false).Cast<ProtobufFieldAttribute>().Single().Number == FieldNumber);
+            var property = containingType.GeneratedType.GetProperty(propertyName);
             if (property == null)
             {
-                return null;
+                throw new DescriptorValidationException(this, "Property " + propertyName + " not found in " + containingType.GeneratedType);
             }
             return IsMap ? new MapFieldAccessor(property, this)
                 : IsRepeated ? new RepeatedFieldAccessor(property, this)

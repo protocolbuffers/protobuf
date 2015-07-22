@@ -74,7 +74,6 @@ void FieldGeneratorBase::SetCommonFieldVariables(
 
   (*variables)["property_name"] = property_name();
   (*variables)["type_name"] = type_name();
-  (*variables)["original_name"] = descriptor_->name();
   (*variables)["name"] = name();
   (*variables)["descriptor_name"] = descriptor_->name();
   (*variables)["default_value"] = default_value();
@@ -429,10 +428,6 @@ std::string FieldGeneratorBase::capitalized_type_name() {
       GOOGLE_LOG(FATAL)<< "Unknown field type.";
       return "";
   }
-}
-
-std::string FieldGeneratorBase::field_ordinal() {
-  return SimpleItoa(fieldOrdinal_);
 }
 
 }  // namespace csharp

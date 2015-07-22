@@ -66,29 +66,33 @@ namespace Google.Protobuf.Reflection
         private readonly Type generatedType;
         private IDictionary<int, IFieldAccessor> fieldAccessorsByFieldNumber;
         
-        internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, IEnumerator<Type> generatedTypeIterator)
+        internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedCodeInfo generatedCodeInfo)
             : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
         {
             this.proto = proto;
-            generatedType = ReflectionUtil.GetNextType(generatedTypeIterator);
+            generatedType = generatedCodeInfo == null ? null : generatedCodeInfo.ClrType;
+
             containingType = parent;
 
-            oneofs = DescriptorUtil.ConvertAndMakeReadOnly(proto.OneofDecl,
-                                                               (oneof, index) =>
-                                                               new OneofDescriptor(oneof, file, this, index));
+            oneofs = DescriptorUtil.ConvertAndMakeReadOnly(
+                proto.OneofDecl,
+                (oneof, index) =>
+                new OneofDescriptor(oneof, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.OneofNames[index]));
 
-            nestedTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.NestedType,
-                                                                (type, index) =>
-                                                                new MessageDescriptor(type, file, this, index, generatedTypeIterator));
+            nestedTypes = DescriptorUtil.ConvertAndMakeReadOnly(
+                proto.NestedType,
+                (type, index) =>
+                new MessageDescriptor(type, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.NestedTypes[index]));
 
-            enumTypes = DescriptorUtil.ConvertAndMakeReadOnly(proto.EnumType,
-                                                              (type, index) =>
-                                                              new EnumDescriptor(type, file, this, index, ReflectionUtil.GetNextType(generatedTypeIterator)));
+            enumTypes = DescriptorUtil.ConvertAndMakeReadOnly(
+                proto.EnumType,
+                (type, index) =>
+                new EnumDescriptor(type, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.NestedEnums[index]));
 
-            // TODO(jonskeet): Sort fields first?
-            fields = DescriptorUtil.ConvertAndMakeReadOnly(proto.Field,
-                                                           (field, index) =>
-                                                           new FieldDescriptor(field, file, this, index));
+            fields = DescriptorUtil.ConvertAndMakeReadOnly(
+                proto.Field,
+                (field, index) =>
+                new FieldDescriptor(field, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.PropertyNames[index]));
             file.DescriptorPool.AddSymbol(this);
         }
                 
@@ -220,6 +224,6 @@ namespace Google.Protobuf.Reflection
             }
 
             fieldAccessorsByFieldNumber = new ReadOnlyDictionary<int, IFieldAccessor>(fields.ToDictionary(field => field.FieldNumber, field => field.Accessor));
-        }        
+        }
     }
 }
