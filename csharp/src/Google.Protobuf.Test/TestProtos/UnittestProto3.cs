@@ -786,12 +786,10 @@ namespace Google.Protobuf.TestProtos {
       OneofBytes = 114,
     }
     private OneofFieldOneofCase oneofFieldCase_ = OneofFieldOneofCase.None;
-    [pbr::ProtobufOneof("oneof_field")]
     public OneofFieldOneofCase OneofFieldCase {
       get { return oneofFieldCase_; }
     }
 
-    [pbr::ProtobufOneof("oneof_field")]
     public void ClearOneofField() {
       pb::Freezable.CheckMutable(this);
       oneofFieldCase_ = OneofFieldOneofCase.None;
@@ -4728,12 +4726,10 @@ namespace Google.Protobuf.TestProtos {
       FooMessage = 3,
     }
     private FooOneofCase fooCase_ = FooOneofCase.None;
-    [pbr::ProtobufOneof("foo")]
     public FooOneofCase FooCase {
       get { return fooCase_; }
     }
 
-    [pbr::ProtobufOneof("foo")]
     public void ClearFoo() {
       pb::Freezable.CheckMutable(this);
       fooCase_ = FooOneofCase.None;

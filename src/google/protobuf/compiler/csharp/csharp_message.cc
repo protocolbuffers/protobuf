@@ -186,11 +186,9 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print(
       vars,
       "private $property_name$OneofCase $name$Case_ = $property_name$OneofCase.None;\n"
-      "[pbr::ProtobufOneof(\"$original_name$\")]\n"
       "public $property_name$OneofCase $property_name$Case {\n"
       "  get { return $name$Case_; }\n"
       "}\n\n"
-      "[pbr::ProtobufOneof(\"$original_name$\")]\n"
       "public void Clear$property_name$() {\n"
       "  pb::Freezable.CheckMutable(this);\n"
       "  $name$Case_ = $property_name$OneofCase.None;\n"

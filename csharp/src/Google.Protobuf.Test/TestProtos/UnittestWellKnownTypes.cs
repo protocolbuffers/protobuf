@@ -1592,12 +1592,10 @@ namespace Google.Protobuf.TestProtos {
       BytesField = 18,
     }
     private OneofFieldOneofCase oneofFieldCase_ = OneofFieldOneofCase.None;
-    [pbr::ProtobufOneof("oneof_field")]
     public OneofFieldOneofCase OneofFieldCase {
       get { return oneofFieldCase_; }
     }
 
-    [pbr::ProtobufOneof("oneof_field")]
     public void ClearOneofField() {
       pb::Freezable.CheckMutable(this);
       oneofFieldCase_ = OneofFieldOneofCase.None;

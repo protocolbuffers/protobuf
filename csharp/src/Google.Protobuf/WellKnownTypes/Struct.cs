@@ -295,12 +295,10 @@ namespace Google.Protobuf.WellKnownTypes {
       ListValue = 6,
     }
     private KindOneofCase kindCase_ = KindOneofCase.None;
-    [pbr::ProtobufOneof("kind")]
     public KindOneofCase KindCase {
       get { return kindCase_; }
     }
 
-    [pbr::ProtobufOneof("kind")]
     public void ClearKind() {
       pb::Freezable.CheckMutable(this);
       kindCase_ = KindOneofCase.None;
