@@ -32,32 +32,34 @@
 
 using System;
 using System.Reflection;
-using Google.Protobuf.Compatibility;
 
-namespace Google.Protobuf.Reflection
+namespace Google.Protobuf.Compatibility
 {
     /// <summary>
-    /// Base class for field accessors.
+    /// Provides extension methods on Type that just proxy to TypeInfo.
+    /// These are used to support the new type system from .NET 4.5, without
+    /// having calls to GetTypeInfo all over the place.
     /// </summary>
-    internal abstract class FieldAccessorBase : IFieldAccessor
+    internal static class TypeExtensions
     {
-        private readonly Func<object, object> getValueDelegate;
-        private readonly FieldDescriptor descriptor;
-
-        internal FieldAccessorBase(PropertyInfo property, FieldDescriptor descriptor)
+        internal static bool IsValueType(this Type target)
         {
-            this.descriptor = descriptor;
-            getValueDelegate = ReflectionUtil.CreateFuncObjectObject(property.GetGetMethod());
+            return target.GetTypeInfo().IsValueType;
         }
 
-        public FieldDescriptor Descriptor { get { return descriptor; } }
-
-        public object GetValue(object message)
+        internal static bool IsAssignableFrom(this Type target, Type c)
         {
-            return getValueDelegate(message);
+            return target.GetTypeInfo().IsAssignableFrom(c.GetTypeInfo());
         }
 
-        public abstract void Clear(object message);
-        public abstract void SetValue(object message, object value);
+        internal static PropertyInfo GetProperty(this Type target, string name)
+        {
+            return target.GetTypeInfo().GetDeclaredProperty(name);
+        }
+
+        internal static MethodInfo GetMethod(this Type target, string name)
+        {
+            return target.GetTypeInfo().GetDeclaredMethod(name);
+        }
     }
 }

@@ -30,34 +30,20 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System;
 using System.Reflection;
-using Google.Protobuf.Compatibility;
 
-namespace Google.Protobuf.Reflection
+namespace Google.Protobuf.Compatibility
 {
-    /// <summary>
-    /// Base class for field accessors.
-    /// </summary>
-    internal abstract class FieldAccessorBase : IFieldAccessor
+    internal static class PropertyInfoExtensions
     {
-        private readonly Func<object, object> getValueDelegate;
-        private readonly FieldDescriptor descriptor;
-
-        internal FieldAccessorBase(PropertyInfo property, FieldDescriptor descriptor)
+        internal static MethodInfo GetGetMethod(this PropertyInfo target)
         {
-            this.descriptor = descriptor;
-            getValueDelegate = ReflectionUtil.CreateFuncObjectObject(property.GetGetMethod());
+            return target.GetMethod;
         }
 
-        public FieldDescriptor Descriptor { get { return descriptor; } }
-
-        public object GetValue(object message)
+        internal static MethodInfo GetSetMethod(this PropertyInfo target)
         {
-            return getValueDelegate(message);
+            return target.SetMethod;
         }
-
-        public abstract void Clear(object message);
-        public abstract void SetValue(object message, object value);
     }
 }

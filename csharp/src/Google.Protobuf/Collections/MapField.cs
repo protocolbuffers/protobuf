@@ -35,6 +35,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Google.Protobuf.Compatibility;
 
 namespace Google.Protobuf.Collections
 {
@@ -74,7 +75,7 @@ namespace Google.Protobuf.Collections
         /// <param name="allowNullValues">Whether null values are permitted in the map or not.</param>
         public MapField(bool allowNullValues)
         {
-            if (allowNullValues && typeof(TValue).IsValueType && Nullable.GetUnderlyingType(typeof(TValue)) == null)
+            if (allowNullValues && typeof(TValue).IsValueType() && Nullable.GetUnderlyingType(typeof(TValue)) == null)
             {
                 throw new ArgumentException("allowNullValues", "Non-nullable value types do not support null values");
             }
