@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -82,6 +82,7 @@
     <Compile Include="Collections\RepeatedFieldTest.cs" />
     <Compile Include="JsonFormatterTest.cs" />
     <Compile Include="Reflection\DescriptorsTest.cs" />
+    <Compile Include="Reflection\FieldAccessTest.cs" />
     <Compile Include="SampleEnum.cs" />
     <Compile Include="SampleMessages.cs" />
     <Compile Include="TestProtos\MapUnittestProto3.cs" />

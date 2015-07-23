@@ -33,6 +33,7 @@
 using System.Linq;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf.Reflection
 {
@@ -102,15 +103,16 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual(UnittestProto3.Descriptor, nestedType.File);
             Assert.AreEqual(messageType, nestedType.ContainingType);
 
-            FieldDescriptor field = messageType.Fields[0];
+            FieldDescriptor field = messageType.Fields.InDeclarationOrder()[0];
             Assert.AreEqual("single_int32", field.Name);
             Assert.AreEqual(field, messageType.FindDescriptor<FieldDescriptor>("single_int32"));
             Assert.Null(messageType.FindDescriptor<FieldDescriptor>("no_such_field"));
             Assert.AreEqual(field, messageType.FindFieldByNumber(1));
             Assert.Null(messageType.FindFieldByNumber(571283));
-            for (int i = 0; i < messageType.Fields.Count; i++)
+            var fieldsInDeclarationOrder = messageType.Fields.InDeclarationOrder();
+            for (int i = 0; i < fieldsInDeclarationOrder.Count; i++)
             {
-                Assert.AreEqual(i, messageType.Fields[i].Index);
+                Assert.AreEqual(i, fieldsInDeclarationOrder[i].Index);
             }
 
             Assert.AreEqual(nestedType, messageType.NestedTypes[0]);
@@ -219,6 +221,20 @@ namespace Google.Protobuf.Reflection
             }
 
             CollectionAssert.AreEquivalent(expectedFields, descriptor.Fields);
+        }
+
+        [Test]
+        public void ConstructionWithoutGeneratedCodeInfo()
+        {
+            var data = UnittestIssues.Descriptor.Proto.ToByteArray();
+            var newDescriptor = Google.Protobuf.Reflection.FileDescriptor.InternalBuildGeneratedFileFrom(data, new Reflection.FileDescriptor[] { }, null);
+
+            // We should still be able to get at a field...
+            var messageDescriptor = newDescriptor.FindTypeByName<MessageDescriptor>("ItemField");
+            var fieldDescriptor = messageDescriptor.FindFieldByName("item");
+            // But there shouldn't be an accessor (or a generated type for the message)
+            Assert.IsNull(fieldDescriptor.Accessor);
+            Assert.IsNull(messageDescriptor.GeneratedType);
         }
     }
 }

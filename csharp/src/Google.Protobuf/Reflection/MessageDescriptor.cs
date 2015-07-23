@@ -33,6 +33,7 @@
 using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Google.Protobuf.Reflection
@@ -60,11 +61,12 @@ namespace Google.Protobuf.Reflection
         private readonly MessageDescriptor containingType;
         private readonly IList<MessageDescriptor> nestedTypes;
         private readonly IList<EnumDescriptor> enumTypes;
-        private readonly IList<FieldDescriptor> fields;
+        private readonly IList<FieldDescriptor> fieldsInDeclarationOrder;
+        private readonly IList<FieldDescriptor> fieldsInNumberOrder;
+        private readonly FieldCollection fields;
         private readonly IList<OneofDescriptor> oneofs;
         // CLR representation of the type described by this descriptor, if any.
         private readonly Type generatedType;
-        private IDictionary<int, IFieldAccessor> fieldAccessorsByFieldNumber;
         
         internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedCodeInfo generatedCodeInfo)
             : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
@@ -89,11 +91,13 @@ namespace Google.Protobuf.Reflection
                 (type, index) =>
                 new EnumDescriptor(type, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.NestedEnums[index]));
 
-            fields = DescriptorUtil.ConvertAndMakeReadOnly(
+            fieldsInDeclarationOrder = DescriptorUtil.ConvertAndMakeReadOnly(
                 proto.Field,
                 (field, index) =>
                 new FieldDescriptor(field, file, this, index, generatedCodeInfo == null ? null : generatedCodeInfo.PropertyNames[index]));
+            fieldsInNumberOrder = new ReadOnlyCollection<FieldDescriptor>(fieldsInDeclarationOrder.OrderBy(field => field.FieldNumber).ToArray());
             file.DescriptorPool.AddSymbol(this);
+            fields = new FieldCollection(this);
         }
                 
         /// <summary>
@@ -136,9 +140,9 @@ namespace Google.Protobuf.Reflection
         }
 
         /// <value>
-        /// An unmodifiable list of this message type's fields.
+        /// A collection of fields, which can be retrieved by name or field number.
         /// </value>
-        public IList<FieldDescriptor> Fields
+        public FieldCollection Fields
         {
             get { return fields; }
         }
@@ -163,13 +167,6 @@ namespace Google.Protobuf.Reflection
         {
             get { return oneofs; }
         }
-
-        /// <summary>
-        /// Returns a map from field number to accessor.
-        /// TODO: Revisit this. It's mostly in place to make the transition from FieldAccessorTable
-        /// to descriptor-based reflection simple in terms of tests. Work out what we really want.
-        /// </summary>
-        public IDictionary<int, IFieldAccessor> FieldAccessorsByFieldNumber { get { return fieldAccessorsByFieldNumber; } }
 
         /// <summary>
         /// Finds a field by field name.
@@ -213,7 +210,7 @@ namespace Google.Protobuf.Reflection
                 message.CrossLink();
             }
 
-            foreach (FieldDescriptor field in fields)
+            foreach (FieldDescriptor field in fieldsInDeclarationOrder)
             {
                 field.CrossLink();
             }
@@ -222,8 +219,79 @@ namespace Google.Protobuf.Reflection
             {
                 oneof.CrossLink();
             }
+        }
 
-            fieldAccessorsByFieldNumber = new ReadOnlyDictionary<int, IFieldAccessor>(fields.ToDictionary(field => field.FieldNumber, field => field.Accessor));
+        /// <summary>
+        /// A collection to simplify retrieving the field accessor for a particular field.
+        /// </summary>
+        public sealed class FieldCollection
+        {
+            private readonly MessageDescriptor messageDescriptor;
+
+            internal FieldCollection(MessageDescriptor messageDescriptor)
+            {
+                this.messageDescriptor = messageDescriptor;
+            }
+
+            /// <value>
+            /// Returns the fields in the message as an immutable list, in the order in which they
+            /// are declared in the source .proto file.
+            /// </value>
+            public IList<FieldDescriptor> InDeclarationOrder()
+            {
+                return messageDescriptor.fieldsInDeclarationOrder;
+            }
+
+            /// <value>
+            /// Returns the fields in the message as an immutable list, in ascending field number
+            /// order. Field numbers need not be contiguous, so there is no direct mapping from the
+            /// index in the list to the field number; to retrieve a field by field number, it is better
+            /// to use the <see cref="FieldCollection"/> indexer.
+            /// </value>
+            public IList<FieldDescriptor> InFieldNumberOrder()
+            {
+                return messageDescriptor.fieldsInDeclarationOrder;
+            }
+
+            /// <summary>
+            /// Retrieves the descriptor for the field with the given number.
+            /// </summary>
+            /// <param name="number">Number of the field to retrieve the descriptor for</param>
+            /// <returns>The accessor for the given field</returns>
+            /// <exception cref="KeyNotFoundException">The message descriptor does not contain a field
+            /// with the given number</exception>
+            public FieldDescriptor this[int number]
+            {
+                get
+                {
+                    var fieldDescriptor = messageDescriptor.FindFieldByNumber(number);
+                    if (fieldDescriptor == null)
+                    {
+                        throw new KeyNotFoundException("No such field number");
+                    }
+                    return fieldDescriptor;
+                }
+            }
+
+            /// <summary>
+            /// Retrieves the descriptor for the field with the given name.
+            /// </summary>
+            /// <param name="number">Number of the field to retrieve the descriptor for</param>
+            /// <returns>The descriptor for the given field</returns>
+            /// <exception cref="KeyNotFoundException">The message descriptor does not contain a field
+            /// with the given name</exception>
+            public FieldDescriptor this[string name]
+            {
+                get
+                {
+                    var fieldDescriptor = messageDescriptor.FindFieldByName(name);
+                    if (fieldDescriptor == null)
+                    {
+                        throw new KeyNotFoundException("No such field name");
+                    }
+                    return fieldDescriptor;
+                }
+            }
         }
     }
 }

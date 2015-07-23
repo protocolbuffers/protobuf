@@ -70,7 +70,7 @@ namespace Google.Protobuf.Reflection
         internal void CrossLink()
         {
             List<FieldDescriptor> fieldCollection = new List<FieldDescriptor>();
-            foreach (var field in ContainingType.Fields)
+            foreach (var field in ContainingType.Fields.InDeclarationOrder())
             {
                 if (field.ContainingOneof == this)
                 {
