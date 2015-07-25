@@ -82,6 +82,8 @@ namespace Google.Protobuf.Reflection
             {
                 Assert.AreEqual(i, file.EnumTypes[i].Index);
             }
+
+            Assert.AreEqual(10, file.SerializedData[0]);
         }
 
         [Test]
