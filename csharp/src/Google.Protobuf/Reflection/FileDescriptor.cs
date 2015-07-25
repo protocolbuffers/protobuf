@@ -43,6 +43,7 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class FileDescriptor : IDescriptor
     {
+        private readonly ByteString descriptorData;
         private readonly FileDescriptorProto proto;
         private readonly IList<MessageDescriptor> messageTypes;
         private readonly IList<EnumDescriptor> enumTypes;
@@ -62,8 +63,9 @@ namespace Google.Protobuf.Reflection
             get { return proto.Syntax == "proto3" ? ProtoSyntax.Proto3 : ProtoSyntax.Proto2; }
         }
 
-        private FileDescriptor(FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
+        private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
         {
+            this.descriptorData = descriptorData;
             this.pool = pool;
             this.proto = proto;
             this.dependencies = new ReadOnlyCollection<FileDescriptor>((FileDescriptor[]) dependencies.Clone());
@@ -204,6 +206,14 @@ namespace Google.Protobuf.Reflection
         }
 
         /// <value>
+        /// The original serialized binary form of this descriptor.
+        /// </value>
+        public ByteString SerializedData
+        {
+            get { return descriptorData; }
+        }
+
+        /// <value>
         /// Implementation of IDescriptor.FullName - just returns the same as Name.
         /// </value>
         string IDescriptor.FullName
@@ -257,6 +267,9 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Builds a FileDescriptor from its protocol buffer representation.
         /// </summary>
+        /// <param name="descriptorData">The original serialized descriptor data.
+        /// We have only limited proto2 support, so serializing FileDescriptorProto
+        /// would not necessarily give us this.</param>
         /// <param name="proto">The protocol message form of the FileDescriptor.</param>
         /// <param name="dependencies">FileDescriptors corresponding to all of the
         /// file's dependencies, in the exact order listed in the .proto file. May be null,
@@ -266,7 +279,7 @@ namespace Google.Protobuf.Reflection
         /// <exception cref="DescriptorValidationException">If <paramref name="proto"/> is not
         /// a valid descriptor. This can occur for a number of reasons, such as a field
         /// having an undefined type or because two messages were defined with the same name.</exception>
-        private static FileDescriptor BuildFrom(FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
+        private static FileDescriptor BuildFrom(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
         {
             // Building descriptors involves two steps: translating and linking.
             // In the translation step (implemented by FileDescriptor's
@@ -283,7 +296,7 @@ namespace Google.Protobuf.Reflection
             }
 
             DescriptorPool pool = new DescriptorPool(dependencies);
-            FileDescriptor result = new FileDescriptor(proto, dependencies, pool, allowUnknownDependencies, generatedCodeInfo);
+            FileDescriptor result = new FileDescriptor(descriptorData, proto, dependencies, pool, allowUnknownDependencies, generatedCodeInfo);
 
             // TODO(jonskeet): Reinstate these checks, or get rid of them entirely. They aren't in the Java code,
             // and fail for the CustomOptions test right now. (We get "descriptor.proto" vs "google/protobuf/descriptor.proto".)
@@ -342,11 +355,13 @@ namespace Google.Protobuf.Reflection
                 throw new ArgumentException("Failed to parse protocol buffer descriptor for generated code.", e);
             }
 
+
+
             try
             {
                 // When building descriptors for generated code, we allow unknown
                 // dependencies by default.
-                return BuildFrom(proto, dependencies, true, generatedCodeInfo);
+                return BuildFrom(ByteString.CopyFrom(descriptorData), proto, dependencies, true, generatedCodeInfo);
             }
             catch (DescriptorValidationException e)
             {
