@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.22609.0
+VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtocolBuffers", "ProtocolBuffers\ProtocolBuffers.csproj", "{6908BDCE-D925-43F3-94AC-A531E6DF2591}"
 EndProject
@@ -23,6 +23,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtoMunge", "ProtoMunge\ProtoMunge.csproj", "{8F09AF72-3327-4FA7-BC09-070B80221AB9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProtoBench", "ProtoBench\ProtoBench.csproj", "{C7A4A435-2813-41C8-AA87-BD914BA5223D}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ProtocolBuffersLiteCoreFx", "ProtocolBuffersLiteCoreFx\ProtocolBuffersLiteCoreFx.xproj", "{AAF448F1-FF03-41CF-BCF7-09B829C818C9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -74,6 +76,10 @@ Global
 		{C7A4A435-2813-41C8-AA87-BD914BA5223D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7A4A435-2813-41C8-AA87-BD914BA5223D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7A4A435-2813-41C8-AA87-BD914BA5223D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAF448F1-FF03-41CF-BCF7-09B829C818C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAF448F1-FF03-41CF-BCF7-09B829C818C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAF448F1-FF03-41CF-BCF7-09B829C818C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAF448F1-FF03-41CF-BCF7-09B829C818C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
