@@ -872,13 +872,6 @@ char *FastHex32ToBuffer(uint32 value, char* buffer) {
   return InternalFastHexToBuffer(value, buffer, 8);
 }
 
-static inline char* PlaceNum(char* p, int num, char prev_sep) {
-   *p-- = '0' + num % 10;
-   *p-- = '0' + num / 10;
-   *p-- = prev_sep;
-   return p;
-}
-
 // ----------------------------------------------------------------------
 // FastInt32ToBufferLeft()
 // FastUInt32ToBufferLeft()
