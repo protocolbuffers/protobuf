@@ -115,6 +115,8 @@ GOOGLE_PROTOBUF_PLATFORM_ERROR
 // TLS support on android.
 // iOS also does not support the __thread keyword.
 #define GOOGLE_PROTOBUF_NO_THREADLOCAL
+
+#include <pthread.h>
 #endif
 
 #endif  // GOOGLE_PROTOBUF_PLATFORM_MACROS_H_
