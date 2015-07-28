@@ -16,9 +16,9 @@
     <tags>Protocol Buffers Binary Serialization Format Google proto proto3</tags>
   </metadata>
   <files>
-    <file src="bin/Release/Google.Protobuf.dll" target="lib/portable-net45+win8+wp8+wpa81" />
-	  <file src="bin/Release/Google.Protobuf.pdb" target="lib/portable-net45+win8+wp8+wpa81" />
-	  <file src="bin/Release/Google.Protobuf.xml" target="lib/portable-net45+win8+wp8+wpa81" />
-	  <file src="**\*.cs" target="src" />
+    <file src="bin/Release/Google.Protobuf.dll" target="lib/portable-net45+netcore45+wpa81+wp8" />
+	<file src="bin/Release/Google.Protobuf.pdb" target="lib/portable-net45+netcore45+wpa81+wp8" />
+	<file src="bin/Release/Google.Protobuf.xml" target="lib/portable-net45+netcore45+wpa81+wp8" />
+	<file src="**\*.cs" target="src" />
   </files>
 </package>

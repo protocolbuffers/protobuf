@@ -34,16 +34,31 @@ using System.Reflection;
 
 namespace Google.Protobuf.Compatibility
 {
+    /// <summary>
+    /// Extension methods for <see cref="PropertyInfo"/>, effectively providing
+    /// the familiar members from previous desktop framework versions while
+    /// targeting the newer releases, .NET Core etc.
+    /// </summary>
     internal static class PropertyInfoExtensions
     {
+        /// <summary>
+        /// Returns the public getter of a property, or null if there is no such getter
+        /// (either because it's read-only, or the getter isn't public).
+        /// </summary>
         internal static MethodInfo GetGetMethod(this PropertyInfo target)
         {
-            return target.GetMethod;
+            var method = target.GetMethod;
+            return method != null && method.IsPublic ? method : null;
         }
 
+        /// <summary>
+        /// Returns the public setter of a property, or null if there is no such setter
+        /// (either because it's write-only, or the setter isn't public).
+        /// </summary>
         internal static MethodInfo GetSetMethod(this PropertyInfo target)
         {
-            return target.SetMethod;
+            var method = target.SetMethod;
+            return method != null && method.IsPublic ? method : null;
         }
     }
 }
