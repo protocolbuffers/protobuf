@@ -162,19 +162,7 @@ class MapEntryLite : public MessageLite {
           if (!KeyWireHandler::Read(input, mutable_key())) return false;
           set_has_key();
           if (!input->ExpectTag(kValueTag)) break;
-          // BEGIN GOOGLE LOCAL MODIFICATION
-          //   Add __has_cpp_attribute and NaCl and Emscripten checks.
-#if defined(__clang__) && defined(__has_cpp_attribute) \
-    && !defined(GOOGLE_PROTOBUF_OS_APPLE)
-#if defined(GOOGLE_PROTOBUF_OS_NACL) || defined(EMSCRIPTEN)
-          [[clang::fallthrough]];
-#elif __has_cpp_attribute(clang::fallthrough)
-          [[clang::fallthrough]];
-#endif
-#else
           GOOGLE_FALLTHROUGH_INTENDED;
-#endif
-          // END GOOGLE LOCAL MODIFICATION
 
         case kValueTag:
           if (!ValueWireHandler::Read(input, mutable_value())) return false;
