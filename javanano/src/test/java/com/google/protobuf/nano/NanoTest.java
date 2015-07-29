@@ -30,20 +30,20 @@
 
 package com.google.protobuf.nano;
 
-import com.google.protobuf.nano.MapTestProto.nano.TestMap;
+import com.google.protobuf.nano.MapTestProto.TestMap;
 import com.google.protobuf.nano.CodedOutputByteBufferNano;
-import com.google.protobuf.nano.MapTestProto.nano.TestMap.MessageValue;
+import com.google.protobuf.nano.MapTestProto.TestMap.MessageValue;
 import com.google.protobuf.nano.NanoAccessorsOuterClass.TestNanoAccessors;
 import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;
 import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
-import com.google.protobuf.nano.UnittestRecursiveNano.nano.RecursiveMessageNano;
+import com.google.protobuf.nano.UnittestRecursiveNano.RecursiveMessageNano;
 import com.google.protobuf.nano.NanoReferenceTypesCompat;
-import com.google.protobuf.nano.UnittestSimpleNano.nano.SimpleMessageNano;
-import com.google.protobuf.nano.UnittestSingleNano.nano.SingleMessageNano;
-import com.google.protobuf.nano.testext.Extensions;
-import com.google.protobuf.nano.testext.Extensions.AnotherMessage;
-import com.google.protobuf.nano.testext.Extensions.MessageWithGroup;
-import com.google.protobuf.nano.testimport.UnittestImportNano;
+import com.google.protobuf.nano.UnittestSimpleNano.SimpleMessageNano;
+import com.google.protobuf.nano.UnittestSingleNano.SingleMessageNano;
+import com.google.protobuf.nano.testext.nano.Extensions;
+import com.google.protobuf.nano.testext.nano.Extensions.AnotherMessage;
+import com.google.protobuf.nano.testext.nano.Extensions.MessageWithGroup;
+import com.google.protobuf.nano.testimport.nano.UnittestImportNano;
 
 import junit.framework.TestCase;
 
