@@ -30,34 +30,35 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System;
 using System.Reflection;
-using Google.Protobuf.Compatibility;
 
-namespace Google.Protobuf.Reflection
+namespace Google.Protobuf.Compatibility
 {
     /// <summary>
-    /// Base class for field accessors.
+    /// Extension methods for <see cref="PropertyInfo"/>, effectively providing
+    /// the familiar members from previous desktop framework versions while
+    /// targeting the newer releases, .NET Core etc.
     /// </summary>
-    internal abstract class FieldAccessorBase : IFieldAccessor
+    internal static class PropertyInfoExtensions
     {
-        private readonly Func<object, object> getValueDelegate;
-        private readonly FieldDescriptor descriptor;
-
-        internal FieldAccessorBase(PropertyInfo property, FieldDescriptor descriptor)
+        /// <summary>
+        /// Returns the public getter of a property, or null if there is no such getter
+        /// (either because it's read-only, or the getter isn't public).
+        /// </summary>
+        internal static MethodInfo GetGetMethod(this PropertyInfo target)
         {
-            this.descriptor = descriptor;
-            getValueDelegate = ReflectionUtil.CreateFuncObjectObject(property.GetGetMethod());
+            var method = target.GetMethod;
+            return method != null && method.IsPublic ? method : null;
         }
 
-        public FieldDescriptor Descriptor { get { return descriptor; } }
-
-        public object GetValue(object message)
+        /// <summary>
+        /// Returns the public setter of a property, or null if there is no such setter
+        /// (either because it's write-only, or the setter isn't public).
+        /// </summary>
+        internal static MethodInfo GetSetMethod(this PropertyInfo target)
         {
-            return getValueDelegate(message);
+            var method = target.SetMethod;
+            return method != null && method.IsPublic ? method : null;
         }
-
-        public abstract void Clear(object message);
-        public abstract void SetValue(object message, object value);
     }
 }

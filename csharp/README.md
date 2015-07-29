@@ -22,6 +22,17 @@ Use `protoc` with the `--csharp_out` option to generate C# files in the specifie
 Include these in your C# project, and add a reference to the `Google.Protobuf` project. Currently
 there is no NuGet package for this, but we will be building one as soon as the API is stable.
 
+Supported platforms
+===================
+
+The runtime library is built as a portable class library, supporting:
+
+- .NET 4.5
+- Windows 8
+- Windows Phone Silverlight 8
+- Windows Phone 8.1
+- .NET Core (dnxcore)
+
 Building
 ========
 

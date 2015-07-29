@@ -75,6 +75,8 @@
     <Compile Include="CodedInputStreamExtensions.cs" />
     <Compile Include="CodedInputStreamTest.cs" />
     <Compile Include="CodedOutputStreamTest.cs" />
+    <Compile Include="Compatibility\PropertyInfoExtensionsTest.cs" />
+    <Compile Include="Compatibility\TypeExtensionsTest.cs" />
     <Compile Include="EqualityTester.cs" />
     <Compile Include="FieldCodecTest.cs" />
     <Compile Include="GeneratedMessageTest.cs" />

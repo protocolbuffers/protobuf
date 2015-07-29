@@ -32,6 +32,7 @@
 
 using System;
 using System.Linq;
+using Google.Protobuf.Compatibility;
 
 namespace Google.Protobuf.Reflection
 {
