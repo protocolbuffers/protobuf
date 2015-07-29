@@ -50,7 +50,7 @@ namespace Google.Protobuf.Collections
     /// </remarks>
     /// <typeparam name="TKey">Key type in the map. Must be a type supported by Protocol Buffer map keys.</typeparam>
     /// <typeparam name="TValue">Value type in the map. Must be a type supported by Protocol Buffers.</typeparam>
-    public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IFreezable, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary
+    public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary
     {
         // TODO: Don't create the map/list until we have an entry. (Assume many maps will be empty.)
         private readonly bool allowNullValues;
@@ -119,7 +119,6 @@ namespace Google.Protobuf.Collections
 
         public bool Remove(TKey key)
         {
-            this.CheckMutable();
             ThrowHelper.ThrowIfNull(key, "key");
             LinkedListNode<KeyValuePair<TKey, TValue>> node;
             if (map.TryGetValue(key, out node))
@@ -169,7 +168,6 @@ namespace Google.Protobuf.Collections
                 {
                     ThrowHelper.ThrowIfNull(value, "value");
                 }
-                this.CheckMutable();
                 LinkedListNode<KeyValuePair<TKey, TValue>> node;
                 var pair = new KeyValuePair<TKey, TValue>(key, value);
                 if (map.TryGetValue(key, out node))
@@ -214,7 +212,6 @@ namespace Google.Protobuf.Collections
 
         public void Clear()
         {
-            this.CheckMutable();
             list.Clear();
             map.Clear();
         }
@@ -233,7 +230,6 @@ namespace Google.Protobuf.Collections
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
-            this.CheckMutable();
             if (item.Key == null)
             {
                 throw new ArgumentException("Key is null", "item");
@@ -259,31 +255,6 @@ namespace Google.Protobuf.Collections
 
         public int Count { get { return list.Count; } }
         public bool IsReadOnly { get { return frozen; } }
-
-        public void Freeze()
-        {
-            if (IsFrozen)
-            {
-                return;
-            }
-            frozen = true;
-            // Only values can be frozen, as all the key types are simple.
-            // Everything can be done in-place, as we're just freezing objects.
-            if (typeof(IFreezable).IsAssignableFrom(typeof(TValue)))
-            {
-                for (var node = list.First; node != null; node = node.Next)
-                {
-                    var pair = node.Value;
-                    IFreezable freezableValue = pair.Value as IFreezable;
-                    if (freezableValue != null)
-                    {
-                        freezableValue.Freeze();
-                    }
-                }
-            }
-        }
-
-        public bool IsFrozen { get { return frozen; } }
 
         public override bool Equals(object other)
         {
@@ -405,7 +376,6 @@ namespace Google.Protobuf.Collections
         void IDictionary.Remove(object key)
         {
             ThrowHelper.ThrowIfNull(key, "key");
-            this.CheckMutable();
             if (!(key is TKey))
             {
                 return;
@@ -420,7 +390,7 @@ namespace Google.Protobuf.Collections
             temp.CopyTo(array, index);
         }
 
-        bool IDictionary.IsFixedSize { get { return IsFrozen; } }
+        bool IDictionary.IsFixedSize { get { return false; } }
 
         ICollection IDictionary.Keys { get { return (ICollection)Keys; } }
 

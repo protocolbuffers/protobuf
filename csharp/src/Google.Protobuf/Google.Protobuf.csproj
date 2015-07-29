@@ -64,7 +64,6 @@
     <Compile Include="Compatibility\TypeExtensions.cs" />
     <Compile Include="FieldCodec.cs" />
     <Compile Include="FrameworkPortability.cs" />
-    <Compile Include="Freezable.cs" />
     <Compile Include="JsonFormatter.cs" />
     <Compile Include="MessageExtensions.cs" />
     <Compile Include="IMessage.cs" />

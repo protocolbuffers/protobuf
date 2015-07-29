@@ -504,23 +504,6 @@ namespace Google.Protobuf
         }
 
         [Test]
-        public void Freeze()
-        {
-            var frozen = new TestAllTypes();
-            frozen.Freeze();
-            Assert.IsTrue(frozen.IsFrozen);
-
-            Assert.Throws<InvalidOperationException>(() => frozen.ClearOneofField());
-            Assert.Throws<InvalidOperationException>(() => frozen.SingleInt32 = 0);
-            Assert.Throws<InvalidOperationException>(() => frozen.SingleNestedMessage = null);
-            Assert.Throws<InvalidOperationException>(() => frozen.SingleNestedEnum = 0);
-            Assert.Throws<InvalidOperationException>(() => frozen.OneofString = null);
-            Assert.Throws<InvalidOperationException>(() => frozen.OneofUint32 = 0U);
-            Assert.Throws<InvalidOperationException>(() => frozen.RepeatedDouble.Add(0.0));
-            Assert.Throws<InvalidOperationException>(() => frozen.RepeatedNestedMessage.Add(new TestAllTypes.Types.NestedMessage()));
-        }
-
-        [Test]
         public void OneofProperties()
         {
             // Switch the oneof case between each of the different options, and check everything behaves

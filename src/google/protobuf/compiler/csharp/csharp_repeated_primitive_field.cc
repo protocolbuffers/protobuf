@@ -115,8 +115,6 @@ void RepeatedPrimitiveFieldGenerator::GenerateCloningCode(io::Printer* printer) 
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
-  printer->Print(variables_,
-    "$name$_.Freeze();\n");
 }
 
 }  // namespace csharp

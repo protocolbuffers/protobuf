@@ -117,8 +117,6 @@ void RepeatedEnumFieldGenerator::GenerateCloningCode(io::Printer* printer) {
 }
 
 void RepeatedEnumFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
-  printer->Print(variables_,
-    "$name$_.Freeze();\n");
 }
 
 }  // namespace csharp

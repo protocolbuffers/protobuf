@@ -45,53 +45,6 @@ namespace Google.Protobuf.Collections
     /// </summary>
     public class MapFieldTest
     {
-        // Protobuf-specific tests
-        [Test]
-        public void Freeze_FreezesMessages()
-        {
-            var message = new ForeignMessage { C = 20 };
-            var map = new MapField<string, ForeignMessage> { { "x", message } };
-            map.Freeze();
-            Assert.IsTrue(message.IsFrozen);
-        }
-
-        [Test]
-        public void Freeze_Idempotent()
-        {
-            var message = new ForeignMessage { C = 20 };
-            var map = new MapField<string, ForeignMessage> { { "x", message } };
-            Assert.IsFalse(map.IsFrozen);
-            map.Freeze();
-            Assert.IsTrue(message.IsFrozen);
-            map.Freeze();
-            Assert.IsTrue(message.IsFrozen);
-        }
-
-        [Test]
-        public void Freeze_PreventsMutation()
-        {
-            var map = new MapField<string, string>();
-            map.Freeze();
-            Assert.IsTrue(map.IsFrozen);
-            Assert.IsTrue(map.IsReadOnly);
-            ICollection<KeyValuePair<string, string>> collection = map;
-            Assert.Throws<InvalidOperationException>(() => map["x"] = "y");
-            Assert.Throws<InvalidOperationException>(() => map.Add("x", "y"));
-            Assert.Throws<InvalidOperationException>(() => map.Remove("x"));
-            Assert.Throws<InvalidOperationException>(() => map.Clear());
-            Assert.Throws<InvalidOperationException>(() => collection.Add(NewKeyValuePair("x", "y")));
-            Assert.Throws<InvalidOperationException>(() => collection.Remove(NewKeyValuePair("x", "y")));
-        }
-
-        [Test]
-        public void Clone_ReturnsNonFrozen()
-        {
-            var map = new MapField<string, string>();
-            map.Freeze();
-            var clone = map.Clone();
-            clone.Add("x", "y");
-        }
-
         [Test]
         public void Clone_ClonesMessages()
         {
@@ -422,10 +375,6 @@ namespace Google.Protobuf.Collections
             dictionary.Remove("x");
             Assert.AreEqual(0, dictionary.Count);
             Assert.Throws<ArgumentNullException>(() => dictionary.Remove(null));
-
-            map.Freeze();
-            // Call should fail even though it clearly doesn't contain 5 as a key.
-            Assert.Throws<InvalidOperationException>(() => dictionary.Remove(5));
         }
 
         [Test]
@@ -449,8 +398,6 @@ namespace Google.Protobuf.Collections
             var map = new MapField<string, string> { { "x", "y" } };
             IDictionary dictionary = map;
             Assert.IsFalse(dictionary.IsFixedSize);
-            map.Freeze();
-            Assert.IsTrue(dictionary.IsFixedSize);
         }
 
         [Test]
@@ -504,9 +451,6 @@ namespace Google.Protobuf.Collections
             Assert.Throws<InvalidCastException>(() => dictionary["x"] = 5);
             Assert.Throws<ArgumentNullException>(() => dictionary[null] = "z");
             Assert.Throws<ArgumentNullException>(() => dictionary["x"] = null);
-            map.Freeze();
-            // Note: Not InvalidOperationException.
-            Assert.Throws<NotSupportedException>(() => dictionary["a"] = "c");
         }
 
         [Test]

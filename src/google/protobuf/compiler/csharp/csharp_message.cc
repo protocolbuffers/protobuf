@@ -190,7 +190,6 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "  get { return $name$Case_; }\n"
       "}\n\n"
       "public void Clear$property_name$() {\n"
-      "  pb::Freezable.CheckMutable(this);\n"
       "  $name$Case_ = $property_name$OneofCase.None;\n"
       "  $name$_ = null;\n"
       "}\n\n");
@@ -293,33 +292,6 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateFreezingCode(io::Printer* printer) {
-    map<string, string> vars;
-    vars["class_name"] = class_name();
-    printer->Print(
-      "public void Freeze() {\n"
-      "  if (IsFrozen) {\n"
-      "    return;\n"
-      "  }\n"
-      "  _frozen = true;\n");
-    printer->Indent();
-    // Freeze non-oneof fields first (only messages and repeated fields will actually generate any code)
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-        if (!descriptor_->field(i)->containing_oneof()) {
-            scoped_ptr<FieldGeneratorBase> generator(
-                CreateFieldGeneratorInternal(descriptor_->field(i)));
-            generator->GenerateFreezingCode(printer);
-        }
-    }
-
-    // For each oneof, if the value is freezable, freeze it. We don't actually need to know which type it was.
-    for (int i = 0; i < descriptor_->oneof_decl_count(); ++i) {
-        vars["name"] = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false);
-        printer->Print(vars,
-            "if ($name$_ is IFreezable) ((IFreezable) $name$_).Freeze();\n");
-    }
-
-    printer->Outdent();
-    printer->Print("}\n\n");
 }
 
 void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
