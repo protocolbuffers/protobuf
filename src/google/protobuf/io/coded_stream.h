@@ -112,8 +112,8 @@
 #include <string>
 #include <utility>
 #ifdef _MSC_VER
-  #if (defined(_M_IX86) || defined(_M_AMD64)) && \
-      !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+  // Assuming windows is always little-endian.
+  #if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
     #define PROTOBUF_LITTLE_ENDIAN 1
   #endif
   #if _MSC_VER >= 1300
