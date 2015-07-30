@@ -73,8 +73,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"
     "  get { return $name$_; }\n"
-    "  set {\n"
-    "    pb::Freezable.CheckMutable(this);\n");
+    "  set {\n");
   if (is_value_type) {
     printer->Print(
       variables_,
@@ -176,8 +175,7 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"
     "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : $default_value$; }\n"
-    "  set {\n"
-    "    pb::Freezable.CheckMutable(this);\n");
+    "  set {\n");
     if (is_value_type) {
       printer->Print(
         variables_,

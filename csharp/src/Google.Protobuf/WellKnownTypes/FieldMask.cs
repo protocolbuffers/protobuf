@@ -68,14 +68,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return new FieldMask(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      paths_.Freeze();
-    }
-
     public const int PathsFieldNumber = 1;
     private static readonly pb::FieldCodec<string> _repeated_paths_codec
         = pb::FieldCodec.ForString(10);

@@ -79,7 +79,7 @@ namespace Google.Protobuf
     /// the implementation class.
     /// </summary>
     /// <typeparam name="T">The message type.</typeparam>
-    public interface IMessage<T> : IMessage, IEquatable<T>, IDeepCloneable<T>, IFreezable where T : IMessage<T>
+    public interface IMessage<T> : IMessage, IEquatable<T>, IDeepCloneable<T> where T : IMessage<T>
     {
         /// <summary>
         /// Merges the given message into this one.
@@ -97,10 +97,6 @@ namespace Google.Protobuf
     /// Additionally, due to the type constraint on <c>T</c> in <see cref="IMessage{T}"/>,
     /// it is simpler to keep this as a separate interface.
     /// </para>
-    /// <para>
-    /// Freezable types which implement this interface should always return a mutable clone,
-    /// even if the original object is frozen.
-    /// </para>
     /// </remarks>
     /// <typeparam name="T">The type itself, returned by the <see cref="Clone"/> method.</typeparam>
     public interface IDeepCloneable<T>
@@ -110,33 +106,5 @@ namespace Google.Protobuf
         /// </summary>
         /// <returns>A deep clone of this object.</returns>
         T Clone();
-    }
-
-    /// <summary>
-    /// Provides a mechanism for freezing a message (or repeated field collection)
-    /// to make it immutable.
-    /// </summary>
-    /// <remarks>
-    /// Implementations are under no obligation to make this thread-safe: if a freezable
-    /// type instance is shared between threads before being frozen, and one thread then
-    /// freezes it, it is possible for other threads to make changes during the freezing
-    /// operation and also to observe stale values for mutated fields. Objects should be
-    /// frozen before being made available to other threads.
-    /// </remarks>
-    public interface IFreezable
-    {
-        /// <summary>
-        /// Freezes this object.
-        /// </summary>
-        /// <remarks>
-        /// If the object is already frozen, this method has no effect.
-        /// </remarks>
-        void Freeze();
-
-        /// <summary>
-        /// Returns whether or not this object is frozen (and therefore immutable).
-        /// </summary>
-        /// <value><c>true</c> if this object is frozen; <c>false</c> otherwise.</value>
-        bool IsFrozen { get; }
     }
 }

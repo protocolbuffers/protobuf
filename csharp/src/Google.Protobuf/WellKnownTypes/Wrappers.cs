@@ -78,19 +78,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new DoubleValue(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int ValueFieldNumber = 1;
     private double value_;
     public double Value {
       get { return value_; }
       set {
-        pb::Freezable.CheckMutable(this);
         value_ = value;
       }
     }
@@ -195,19 +187,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new FloatValue(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int ValueFieldNumber = 1;
     private float value_;
     public float Value {
       get { return value_; }
       set {
-        pb::Freezable.CheckMutable(this);
         value_ = value;
       }
     }
@@ -312,19 +296,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Int64Value(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int ValueFieldNumber = 1;
     private long value_;
     public long Value {
       get { return value_; }
       set {
-        pb::Freezable.CheckMutable(this);
         value_ = value;
       }
     }
@@ -429,19 +405,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new UInt64Value(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int ValueFieldNumber = 1;
     private ulong value_;
     public ulong Value {
       get { return value_; }
       set {
-        pb::Freezable.CheckMutable(this);
         value_ = value;
       }
     }
@@ -546,19 +514,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Int32Value(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int ValueFieldNumber = 1;
     private int value_;
     public int Value {
       get { return value_; }
       set {
-        pb::Freezable.CheckMutable(this);
         value_ = value;
       }
     }
@@ -663,19 +623,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new UInt32Value(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int ValueFieldNumber = 1;
     private uint value_;
     public uint Value {
       get { return value_; }
       set {
-        pb::Freezable.CheckMutable(this);
         value_ = value;
       }
     }
@@ -780,19 +732,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new BoolValue(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int ValueFieldNumber = 1;
     private bool value_;
     public bool Value {
       get { return value_; }
       set {
-        pb::Freezable.CheckMutable(this);
         value_ = value;
       }
     }
@@ -897,19 +841,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new StringValue(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int ValueFieldNumber = 1;
     private string value_ = "";
     public string Value {
       get { return value_; }
       set {
-        pb::Freezable.CheckMutable(this);
         value_ = value ?? "";
       }
     }
@@ -1014,19 +950,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new BytesValue(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int ValueFieldNumber = 1;
     private pb::ByteString value_ = pb::ByteString.Empty;
     public pb::ByteString Value {
       get { return value_; }
       set {
-        pb::Freezable.CheckMutable(this);
         value_ = value ?? pb::ByteString.Empty;
       }
     }

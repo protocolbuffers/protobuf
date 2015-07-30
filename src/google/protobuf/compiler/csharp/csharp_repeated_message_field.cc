@@ -132,8 +132,6 @@ void RepeatedMessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
 }
 
 void RepeatedMessageFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
-  printer->Print(variables_,
-    "$name$_.Freeze();\n");
 }
 
 }  // namespace csharp

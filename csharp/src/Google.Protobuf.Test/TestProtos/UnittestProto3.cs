@@ -307,46 +307,11 @@ namespace Google.Protobuf.TestProtos {
       return new TestAllTypes(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (singleNestedMessage_ != null) SingleNestedMessage.Freeze();
-      if (singleForeignMessage_ != null) SingleForeignMessage.Freeze();
-      if (singleImportMessage_ != null) SingleImportMessage.Freeze();
-      if (singlePublicImportMessage_ != null) SinglePublicImportMessage.Freeze();
-      repeatedInt32_.Freeze();
-      repeatedInt64_.Freeze();
-      repeatedUint32_.Freeze();
-      repeatedUint64_.Freeze();
-      repeatedSint32_.Freeze();
-      repeatedSint64_.Freeze();
-      repeatedFixed32_.Freeze();
-      repeatedFixed64_.Freeze();
-      repeatedSfixed32_.Freeze();
-      repeatedSfixed64_.Freeze();
-      repeatedFloat_.Freeze();
-      repeatedDouble_.Freeze();
-      repeatedBool_.Freeze();
-      repeatedString_.Freeze();
-      repeatedBytes_.Freeze();
-      repeatedNestedMessage_.Freeze();
-      repeatedForeignMessage_.Freeze();
-      repeatedImportMessage_.Freeze();
-      repeatedNestedEnum_.Freeze();
-      repeatedForeignEnum_.Freeze();
-      repeatedImportEnum_.Freeze();
-      repeatedPublicImportMessage_.Freeze();
-      if (oneofField_ is IFreezable) ((IFreezable) oneofField_).Freeze();
-    }
-
     public const int SingleInt32FieldNumber = 1;
     private int singleInt32_;
     public int SingleInt32 {
       get { return singleInt32_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleInt32_ = value;
       }
     }
@@ -356,7 +321,6 @@ namespace Google.Protobuf.TestProtos {
     public long SingleInt64 {
       get { return singleInt64_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleInt64_ = value;
       }
     }
@@ -366,7 +330,6 @@ namespace Google.Protobuf.TestProtos {
     public uint SingleUint32 {
       get { return singleUint32_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleUint32_ = value;
       }
     }
@@ -376,7 +339,6 @@ namespace Google.Protobuf.TestProtos {
     public ulong SingleUint64 {
       get { return singleUint64_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleUint64_ = value;
       }
     }
@@ -386,7 +348,6 @@ namespace Google.Protobuf.TestProtos {
     public int SingleSint32 {
       get { return singleSint32_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleSint32_ = value;
       }
     }
@@ -396,7 +357,6 @@ namespace Google.Protobuf.TestProtos {
     public long SingleSint64 {
       get { return singleSint64_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleSint64_ = value;
       }
     }
@@ -406,7 +366,6 @@ namespace Google.Protobuf.TestProtos {
     public uint SingleFixed32 {
       get { return singleFixed32_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleFixed32_ = value;
       }
     }
@@ -416,7 +375,6 @@ namespace Google.Protobuf.TestProtos {
     public ulong SingleFixed64 {
       get { return singleFixed64_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleFixed64_ = value;
       }
     }
@@ -426,7 +384,6 @@ namespace Google.Protobuf.TestProtos {
     public int SingleSfixed32 {
       get { return singleSfixed32_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleSfixed32_ = value;
       }
     }
@@ -436,7 +393,6 @@ namespace Google.Protobuf.TestProtos {
     public long SingleSfixed64 {
       get { return singleSfixed64_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleSfixed64_ = value;
       }
     }
@@ -446,7 +402,6 @@ namespace Google.Protobuf.TestProtos {
     public float SingleFloat {
       get { return singleFloat_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleFloat_ = value;
       }
     }
@@ -456,7 +411,6 @@ namespace Google.Protobuf.TestProtos {
     public double SingleDouble {
       get { return singleDouble_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleDouble_ = value;
       }
     }
@@ -466,7 +420,6 @@ namespace Google.Protobuf.TestProtos {
     public bool SingleBool {
       get { return singleBool_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleBool_ = value;
       }
     }
@@ -476,7 +429,6 @@ namespace Google.Protobuf.TestProtos {
     public string SingleString {
       get { return singleString_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleString_ = value ?? "";
       }
     }
@@ -486,7 +438,6 @@ namespace Google.Protobuf.TestProtos {
     public pb::ByteString SingleBytes {
       get { return singleBytes_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleBytes_ = value ?? pb::ByteString.Empty;
       }
     }
@@ -496,7 +447,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage SingleNestedMessage {
       get { return singleNestedMessage_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleNestedMessage_ = value;
       }
     }
@@ -506,7 +456,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.ForeignMessage SingleForeignMessage {
       get { return singleForeignMessage_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleForeignMessage_ = value;
       }
     }
@@ -516,7 +465,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.ImportMessage SingleImportMessage {
       get { return singleImportMessage_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleImportMessage_ = value;
       }
     }
@@ -526,7 +474,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum SingleNestedEnum {
       get { return singleNestedEnum_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleNestedEnum_ = value;
       }
     }
@@ -536,7 +483,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.ForeignEnum SingleForeignEnum {
       get { return singleForeignEnum_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleForeignEnum_ = value;
       }
     }
@@ -546,7 +492,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.ImportEnum SingleImportEnum {
       get { return singleImportEnum_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleImportEnum_ = value;
       }
     }
@@ -556,7 +501,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.PublicImportMessage SinglePublicImportMessage {
       get { return singlePublicImportMessage_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singlePublicImportMessage_ = value;
       }
     }
@@ -741,7 +685,6 @@ namespace Google.Protobuf.TestProtos {
     public uint OneofUint32 {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofUint32 ? (uint) oneofField_ : 0; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = OneofFieldOneofCase.OneofUint32;
       }
@@ -751,7 +694,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage OneofNestedMessage {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage) oneofField_ : null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.OneofNestedMessage;
       }
@@ -761,7 +703,6 @@ namespace Google.Protobuf.TestProtos {
     public string OneofString {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofString ? (string) oneofField_ : ""; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value ?? "";
         oneofFieldCase_ = OneofFieldOneofCase.OneofString;
       }
@@ -771,7 +712,6 @@ namespace Google.Protobuf.TestProtos {
     public pb::ByteString OneofBytes {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofBytes ? (pb::ByteString) oneofField_ : pb::ByteString.Empty; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value ?? pb::ByteString.Empty;
         oneofFieldCase_ = OneofFieldOneofCase.OneofBytes;
       }
@@ -791,7 +731,6 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public void ClearOneofField() {
-      pb::Freezable.CheckMutable(this);
       oneofFieldCase_ = OneofFieldOneofCase.None;
       oneofField_ = null;
     }
@@ -1551,19 +1490,11 @@ namespace Google.Protobuf.TestProtos {
           return new NestedMessage(this);
         }
 
-        public void Freeze() {
-          if (IsFrozen) {
-            return;
-          }
-          _frozen = true;
-        }
-
         public const int BbFieldNumber = 1;
         private int bb_;
         public int Bb {
           get { return bb_; }
           set {
-            pb::Freezable.CheckMutable(this);
             bb_ = value;
           }
         }
@@ -1675,22 +1606,11 @@ namespace Google.Protobuf.TestProtos {
       return new NestedTestAllTypes(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (child_ != null) Child.Freeze();
-      if (payload_ != null) Payload.Freeze();
-      repeatedChild_.Freeze();
-    }
-
     public const int ChildFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.NestedTestAllTypes child_;
     public global::Google.Protobuf.TestProtos.NestedTestAllTypes Child {
       get { return child_; }
       set {
-        pb::Freezable.CheckMutable(this);
         child_ = value;
       }
     }
@@ -1700,7 +1620,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.TestAllTypes Payload {
       get { return payload_; }
       set {
-        pb::Freezable.CheckMutable(this);
         payload_ = value;
       }
     }
@@ -1850,20 +1769,12 @@ namespace Google.Protobuf.TestProtos {
       return new TestDeprecatedFields(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int DeprecatedInt32FieldNumber = 1;
     private int deprecatedInt32_;
     [global::System.ObsoleteAttribute()]
     public int DeprecatedInt32 {
       get { return deprecatedInt32_; }
       set {
-        pb::Freezable.CheckMutable(this);
         deprecatedInt32_ = value;
       }
     }
@@ -1968,19 +1879,11 @@ namespace Google.Protobuf.TestProtos {
       return new ForeignMessage(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int CFieldNumber = 1;
     private int c_;
     public int C {
       get { return c_; }
       set {
-        pb::Freezable.CheckMutable(this);
         c_ = value;
       }
     }
@@ -2084,13 +1987,6 @@ namespace Google.Protobuf.TestProtos {
       return new TestReservedFields(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public override bool Equals(object other) {
       return Equals(other as TestReservedFields);
     }
@@ -2175,20 +2071,11 @@ namespace Google.Protobuf.TestProtos {
       return new TestForeignNested(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (foreignNested_ != null) ForeignNested.Freeze();
-    }
-
     public const int ForeignNestedFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage foreignNested_;
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage ForeignNested {
       get { return foreignNested_; }
       set {
-        pb::Freezable.CheckMutable(this);
         foreignNested_ = value;
       }
     }
@@ -2300,19 +2187,11 @@ namespace Google.Protobuf.TestProtos {
       return new TestReallyLargeTagNumber(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int AFieldNumber = 1;
     private int a_;
     public int A {
       get { return a_; }
       set {
-        pb::Freezable.CheckMutable(this);
         a_ = value;
       }
     }
@@ -2322,7 +2201,6 @@ namespace Google.Protobuf.TestProtos {
     public int Bb {
       get { return bb_; }
       set {
-        pb::Freezable.CheckMutable(this);
         bb_ = value;
       }
     }
@@ -2444,20 +2322,11 @@ namespace Google.Protobuf.TestProtos {
       return new TestRecursiveMessage(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (a_ != null) A.Freeze();
-    }
-
     public const int AFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestRecursiveMessage a_;
     public global::Google.Protobuf.TestProtos.TestRecursiveMessage A {
       get { return a_; }
       set {
-        pb::Freezable.CheckMutable(this);
         a_ = value;
       }
     }
@@ -2467,7 +2336,6 @@ namespace Google.Protobuf.TestProtos {
     public int I {
       get { return i_; }
       set {
-        pb::Freezable.CheckMutable(this);
         i_ = value;
       }
     }
@@ -2594,20 +2462,11 @@ namespace Google.Protobuf.TestProtos {
       return new TestMutualRecursionA(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (bb_ != null) Bb.Freeze();
-    }
-
     public const int BbFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestMutualRecursionB bb_;
     public global::Google.Protobuf.TestProtos.TestMutualRecursionB Bb {
       get { return bb_; }
       set {
-        pb::Freezable.CheckMutable(this);
         bb_ = value;
       }
     }
@@ -2719,20 +2578,11 @@ namespace Google.Protobuf.TestProtos {
       return new TestMutualRecursionB(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (a_ != null) A.Freeze();
-    }
-
     public const int AFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestMutualRecursionA a_;
     public global::Google.Protobuf.TestProtos.TestMutualRecursionA A {
       get { return a_; }
       set {
-        pb::Freezable.CheckMutable(this);
         a_ = value;
       }
     }
@@ -2742,7 +2592,6 @@ namespace Google.Protobuf.TestProtos {
     public int OptionalInt32 {
       get { return optionalInt32_; }
       set {
-        pb::Freezable.CheckMutable(this);
         optionalInt32_ = value;
       }
     }
@@ -2876,24 +2725,11 @@ namespace Google.Protobuf.TestProtos {
       return new TestCamelCaseFieldNames(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (messageField_ != null) MessageField.Freeze();
-      repeatedPrimitiveField_.Freeze();
-      repeatedStringField_.Freeze();
-      repeatedEnumField_.Freeze();
-      repeatedMessageField_.Freeze();
-    }
-
     public const int PrimitiveFieldFieldNumber = 1;
     private int primitiveField_;
     public int PrimitiveField {
       get { return primitiveField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         primitiveField_ = value;
       }
     }
@@ -2903,7 +2739,6 @@ namespace Google.Protobuf.TestProtos {
     public string StringField {
       get { return stringField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         stringField_ = value ?? "";
       }
     }
@@ -2913,7 +2748,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.ForeignEnum EnumField {
       get { return enumField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         enumField_ = value;
       }
     }
@@ -2923,7 +2757,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.ForeignMessage MessageField {
       get { return messageField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         messageField_ = value;
       }
     }
@@ -3155,20 +2988,11 @@ namespace Google.Protobuf.TestProtos {
       return new TestFieldOrderings(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (singleNestedMessage_ != null) SingleNestedMessage.Freeze();
-    }
-
     public const int MyStringFieldNumber = 11;
     private string myString_ = "";
     public string MyString {
       get { return myString_; }
       set {
-        pb::Freezable.CheckMutable(this);
         myString_ = value ?? "";
       }
     }
@@ -3178,7 +3002,6 @@ namespace Google.Protobuf.TestProtos {
     public long MyInt {
       get { return myInt_; }
       set {
-        pb::Freezable.CheckMutable(this);
         myInt_ = value;
       }
     }
@@ -3188,7 +3011,6 @@ namespace Google.Protobuf.TestProtos {
     public float MyFloat {
       get { return myFloat_; }
       set {
-        pb::Freezable.CheckMutable(this);
         myFloat_ = value;
       }
     }
@@ -3198,7 +3020,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage SingleNestedMessage {
       get { return singleNestedMessage_; }
       set {
-        pb::Freezable.CheckMutable(this);
         singleNestedMessage_ = value;
       }
     }
@@ -3359,19 +3180,11 @@ namespace Google.Protobuf.TestProtos {
           return new NestedMessage(this);
         }
 
-        public void Freeze() {
-          if (IsFrozen) {
-            return;
-          }
-          _frozen = true;
-        }
-
         public const int OoFieldNumber = 2;
         private long oo_;
         public long Oo {
           get { return oo_; }
           set {
-            pb::Freezable.CheckMutable(this);
             oo_ = value;
           }
         }
@@ -3381,7 +3194,6 @@ namespace Google.Protobuf.TestProtos {
         public int Bb {
           get { return bb_; }
           set {
-            pb::Freezable.CheckMutable(this);
             bb_ = value;
           }
         }
@@ -3507,19 +3319,11 @@ namespace Google.Protobuf.TestProtos {
       return new SparseEnumMessage(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int SparseEnumFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestSparseEnum sparseEnum_ = global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED;
     public global::Google.Protobuf.TestProtos.TestSparseEnum SparseEnum {
       get { return sparseEnum_; }
       set {
-        pb::Freezable.CheckMutable(this);
         sparseEnum_ = value;
       }
     }
@@ -3624,19 +3428,11 @@ namespace Google.Protobuf.TestProtos {
       return new OneString(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int DataFieldNumber = 1;
     private string data_ = "";
     public string Data {
       get { return data_; }
       set {
-        pb::Freezable.CheckMutable(this);
         data_ = value ?? "";
       }
     }
@@ -3741,14 +3537,6 @@ namespace Google.Protobuf.TestProtos {
       return new MoreString(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      data_.Freeze();
-    }
-
     public const int DataFieldNumber = 1;
     private static readonly pb::FieldCodec<string> _repeated_data_codec
         = pb::FieldCodec.ForString(10);
@@ -3850,19 +3638,11 @@ namespace Google.Protobuf.TestProtos {
       return new OneBytes(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int DataFieldNumber = 1;
     private pb::ByteString data_ = pb::ByteString.Empty;
     public pb::ByteString Data {
       get { return data_; }
       set {
-        pb::Freezable.CheckMutable(this);
         data_ = value ?? pb::ByteString.Empty;
       }
     }
@@ -3967,19 +3747,11 @@ namespace Google.Protobuf.TestProtos {
       return new MoreBytes(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int DataFieldNumber = 1;
     private pb::ByteString data_ = pb::ByteString.Empty;
     public pb::ByteString Data {
       get { return data_; }
       set {
-        pb::Freezable.CheckMutable(this);
         data_ = value ?? pb::ByteString.Empty;
       }
     }
@@ -4084,19 +3856,11 @@ namespace Google.Protobuf.TestProtos {
       return new Int32Message(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int DataFieldNumber = 1;
     private int data_;
     public int Data {
       get { return data_; }
       set {
-        pb::Freezable.CheckMutable(this);
         data_ = value;
       }
     }
@@ -4201,19 +3965,11 @@ namespace Google.Protobuf.TestProtos {
       return new Uint32Message(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int DataFieldNumber = 1;
     private uint data_;
     public uint Data {
       get { return data_; }
       set {
-        pb::Freezable.CheckMutable(this);
         data_ = value;
       }
     }
@@ -4318,19 +4074,11 @@ namespace Google.Protobuf.TestProtos {
       return new Int64Message(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int DataFieldNumber = 1;
     private long data_;
     public long Data {
       get { return data_; }
       set {
-        pb::Freezable.CheckMutable(this);
         data_ = value;
       }
     }
@@ -4435,19 +4183,11 @@ namespace Google.Protobuf.TestProtos {
       return new Uint64Message(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int DataFieldNumber = 1;
     private ulong data_;
     public ulong Data {
       get { return data_; }
       set {
-        pb::Freezable.CheckMutable(this);
         data_ = value;
       }
     }
@@ -4552,19 +4292,11 @@ namespace Google.Protobuf.TestProtos {
       return new BoolMessage(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int DataFieldNumber = 1;
     private bool data_;
     public bool Data {
       get { return data_; }
       set {
-        pb::Freezable.CheckMutable(this);
         data_ = value;
       }
     }
@@ -4680,19 +4412,10 @@ namespace Google.Protobuf.TestProtos {
       return new TestOneof(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (foo_ is IFreezable) ((IFreezable) foo_).Freeze();
-    }
-
     public const int FooIntFieldNumber = 1;
     public int FooInt {
       get { return fooCase_ == FooOneofCase.FooInt ? (int) foo_ : 0; }
       set {
-        pb::Freezable.CheckMutable(this);
         foo_ = value;
         fooCase_ = FooOneofCase.FooInt;
       }
@@ -4702,7 +4425,6 @@ namespace Google.Protobuf.TestProtos {
     public string FooString {
       get { return fooCase_ == FooOneofCase.FooString ? (string) foo_ : ""; }
       set {
-        pb::Freezable.CheckMutable(this);
         foo_ = value ?? "";
         fooCase_ = FooOneofCase.FooString;
       }
@@ -4712,7 +4434,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.TestProtos.TestAllTypes FooMessage {
       get { return fooCase_ == FooOneofCase.FooMessage ? (global::Google.Protobuf.TestProtos.TestAllTypes) foo_ : null; }
       set {
-        pb::Freezable.CheckMutable(this);
         foo_ = value;
         fooCase_ = value == null ? FooOneofCase.None : FooOneofCase.FooMessage;
       }
@@ -4731,7 +4452,6 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public void ClearFoo() {
-      pb::Freezable.CheckMutable(this);
       fooCase_ = FooOneofCase.None;
       foo_ = null;
     }
@@ -4887,27 +4607,6 @@ namespace Google.Protobuf.TestProtos {
 
     public TestPackedTypes Clone() {
       return new TestPackedTypes(this);
-    }
-
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      packedInt32_.Freeze();
-      packedInt64_.Freeze();
-      packedUint32_.Freeze();
-      packedUint64_.Freeze();
-      packedSint32_.Freeze();
-      packedSint64_.Freeze();
-      packedFixed32_.Freeze();
-      packedFixed64_.Freeze();
-      packedSfixed32_.Freeze();
-      packedSfixed64_.Freeze();
-      packedFloat_.Freeze();
-      packedDouble_.Freeze();
-      packedBool_.Freeze();
-      packedEnum_.Freeze();
     }
 
     public const int PackedInt32FieldNumber = 90;
@@ -5259,27 +4958,6 @@ namespace Google.Protobuf.TestProtos {
       return new TestUnpackedTypes(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      unpackedInt32_.Freeze();
-      unpackedInt64_.Freeze();
-      unpackedUint32_.Freeze();
-      unpackedUint64_.Freeze();
-      unpackedSint32_.Freeze();
-      unpackedSint64_.Freeze();
-      unpackedFixed32_.Freeze();
-      unpackedFixed64_.Freeze();
-      unpackedSfixed32_.Freeze();
-      unpackedSfixed64_.Freeze();
-      unpackedFloat_.Freeze();
-      unpackedDouble_.Freeze();
-      unpackedBool_.Freeze();
-      unpackedEnum_.Freeze();
-    }
-
     public const int UnpackedInt32FieldNumber = 90;
     private static readonly pb::FieldCodec<int> _repeated_unpackedInt32_codec
         = pb::FieldCodec.ForInt32(720);
@@ -5621,19 +5299,6 @@ namespace Google.Protobuf.TestProtos {
       return new TestRepeatedScalarDifferentTagSizes(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      repeatedFixed32_.Freeze();
-      repeatedInt32_.Freeze();
-      repeatedFixed64_.Freeze();
-      repeatedInt64_.Freeze();
-      repeatedFloat_.Freeze();
-      repeatedUint64_.Freeze();
-    }
-
     public const int RepeatedFixed32FieldNumber = 12;
     private static readonly pb::FieldCodec<uint> _repeated_repeatedFixed32_codec
         = pb::FieldCodec.ForFixed32(98);
@@ -5826,19 +5491,11 @@ namespace Google.Protobuf.TestProtos {
       return new TestCommentInjectionMessage(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int AFieldNumber = 1;
     private string a_ = "";
     public string A {
       get { return a_; }
       set {
-        pb::Freezable.CheckMutable(this);
         a_ = value ?? "";
       }
     }
@@ -5942,13 +5599,6 @@ namespace Google.Protobuf.TestProtos {
       return new FooRequest(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public override bool Equals(object other) {
       return Equals(other as FooRequest);
     }
@@ -6030,13 +5680,6 @@ namespace Google.Protobuf.TestProtos {
 
     public FooResponse Clone() {
       return new FooResponse(this);
-    }
-
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
     }
 
     public override bool Equals(object other) {
@@ -6122,13 +5765,6 @@ namespace Google.Protobuf.TestProtos {
       return new FooClientMessage(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public override bool Equals(object other) {
       return Equals(other as FooClientMessage);
     }
@@ -6210,13 +5846,6 @@ namespace Google.Protobuf.TestProtos {
 
     public FooServerMessage Clone() {
       return new FooServerMessage(this);
-    }
-
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
     }
 
     public override bool Equals(object other) {
@@ -6302,13 +5931,6 @@ namespace Google.Protobuf.TestProtos {
       return new BarRequest(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public override bool Equals(object other) {
       return Equals(other as BarRequest);
     }
@@ -6390,13 +6012,6 @@ namespace Google.Protobuf.TestProtos {
 
     public BarResponse Clone() {
       return new BarResponse(this);
-    }
-
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
     }
 
     public override bool Equals(object other) {

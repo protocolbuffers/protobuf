@@ -99,7 +99,6 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Collections/RepeatedField.cs                    \
   csharp/src/Google.Protobuf/FieldCodec.cs                                   \
   csharp/src/Google.Protobuf/FrameworkPortability.cs                         \
-  csharp/src/Google.Protobuf/Freezable.cs                                    \
   csharp/src/Google.Protobuf/Google.Protobuf.csproj                          \
   csharp/src/Google.Protobuf/Google.Protobuf.nuspec                          \
   csharp/src/Google.Protobuf/IMessage.cs                                     \

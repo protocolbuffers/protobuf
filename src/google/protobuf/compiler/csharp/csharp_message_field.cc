@@ -67,7 +67,6 @@ void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
     "$access_level$ $type_name$ $property_name$ {\n"
     "  get { return $name$_; }\n"
     "  set {\n"
-    "    pb::Freezable.CheckMutable(this);\n"
     "    $name$_ = value;\n"
     "  }\n"
     "}\n");
@@ -134,8 +133,6 @@ void MessageFieldGenerator::GenerateCloningCode(io::Printer* printer) {
 }
 
 void MessageFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
-  printer->Print(variables_,
-    "if ($has_property_check$) $property_name$.Freeze();\n");
 }
 
 void MessageFieldGenerator::GenerateCodecCode(io::Printer* printer) {
@@ -161,7 +158,6 @@ void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     "$access_level$ $type_name$ $property_name$ {\n"
     "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : null; }\n"
     "  set {\n"
-    "    pb::Freezable.CheckMutable(this);\n"
     "    $oneof_name$_ = value;\n"
     "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n"
     "  }\n"

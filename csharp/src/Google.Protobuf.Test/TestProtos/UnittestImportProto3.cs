@@ -79,19 +79,11 @@ namespace Google.Protobuf.TestProtos {
       return new ImportMessage(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int DFieldNumber = 1;
     private int d_;
     public int D {
       get { return d_; }
       set {
-        pb::Freezable.CheckMutable(this);
         d_ = value;
       }
     }

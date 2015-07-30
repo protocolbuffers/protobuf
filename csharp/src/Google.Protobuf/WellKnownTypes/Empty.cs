@@ -67,13 +67,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Empty(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public override bool Equals(object other) {
       return Equals(other as Empty);
     }

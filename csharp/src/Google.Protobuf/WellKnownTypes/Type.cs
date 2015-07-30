@@ -103,23 +103,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Type(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      fields_.Freeze();
-      oneofs_.Freeze();
-      options_.Freeze();
-      if (sourceContext_ != null) SourceContext.Freeze();
-    }
-
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -153,7 +141,6 @@ namespace Google.Protobuf.WellKnownTypes {
     public global::Google.Protobuf.WellKnownTypes.SourceContext SourceContext {
       get { return sourceContext_; }
       set {
-        pb::Freezable.CheckMutable(this);
         sourceContext_ = value;
       }
     }
@@ -314,20 +301,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Field(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      options_.Freeze();
-    }
-
     public const int KindFieldNumber = 1;
     private global::Google.Protobuf.WellKnownTypes.Field.Types.Kind kind_ = global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TYPE_UNKNOWN;
     public global::Google.Protobuf.WellKnownTypes.Field.Types.Kind Kind {
       get { return kind_; }
       set {
-        pb::Freezable.CheckMutable(this);
         kind_ = value;
       }
     }
@@ -337,7 +315,6 @@ namespace Google.Protobuf.WellKnownTypes {
     public global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality Cardinality {
       get { return cardinality_; }
       set {
-        pb::Freezable.CheckMutable(this);
         cardinality_ = value;
       }
     }
@@ -347,7 +324,6 @@ namespace Google.Protobuf.WellKnownTypes {
     public int Number {
       get { return number_; }
       set {
-        pb::Freezable.CheckMutable(this);
         number_ = value;
       }
     }
@@ -357,7 +333,6 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -367,7 +342,6 @@ namespace Google.Protobuf.WellKnownTypes {
     public string TypeUrl {
       get { return typeUrl_; }
       set {
-        pb::Freezable.CheckMutable(this);
         typeUrl_ = value ?? "";
       }
     }
@@ -377,7 +351,6 @@ namespace Google.Protobuf.WellKnownTypes {
     public int OneofIndex {
       get { return oneofIndex_; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofIndex_ = value;
       }
     }
@@ -387,7 +360,6 @@ namespace Google.Protobuf.WellKnownTypes {
     public bool Packed {
       get { return packed_; }
       set {
-        pb::Freezable.CheckMutable(this);
         packed_ = value;
       }
     }
@@ -642,22 +614,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Enum(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      enumvalue_.Freeze();
-      options_.Freeze();
-      if (sourceContext_ != null) SourceContext.Freeze();
-    }
-
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -683,7 +644,6 @@ namespace Google.Protobuf.WellKnownTypes {
     public global::Google.Protobuf.WellKnownTypes.SourceContext SourceContext {
       get { return sourceContext_; }
       set {
-        pb::Freezable.CheckMutable(this);
         sourceContext_ = value;
       }
     }
@@ -830,20 +790,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new EnumValue(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      options_.Freeze();
-    }
-
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -853,7 +804,6 @@ namespace Google.Protobuf.WellKnownTypes {
     public int Number {
       get { return number_; }
       set {
-        pb::Freezable.CheckMutable(this);
         number_ = value;
       }
     }
@@ -992,20 +942,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Option(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (value_ != null) Value.Freeze();
-    }
-
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -1015,7 +956,6 @@ namespace Google.Protobuf.WellKnownTypes {
     public global::Google.Protobuf.WellKnownTypes.Any Value {
       get { return value_; }
       set {
-        pb::Freezable.CheckMutable(this);
         value_ = value;
       }
     }

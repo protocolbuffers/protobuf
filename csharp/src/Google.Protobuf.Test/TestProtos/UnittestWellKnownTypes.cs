@@ -217,28 +217,11 @@ namespace Google.Protobuf.TestProtos {
       return new TestWellKnownTypes(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (anyField_ != null) AnyField.Freeze();
-      if (apiField_ != null) ApiField.Freeze();
-      if (durationField_ != null) DurationField.Freeze();
-      if (emptyField_ != null) EmptyField.Freeze();
-      if (fieldMaskField_ != null) FieldMaskField.Freeze();
-      if (sourceContextField_ != null) SourceContextField.Freeze();
-      if (structField_ != null) StructField.Freeze();
-      if (timestampField_ != null) TimestampField.Freeze();
-      if (typeField_ != null) TypeField.Freeze();
-    }
-
     public const int AnyFieldFieldNumber = 1;
     private global::Google.Protobuf.WellKnownTypes.Any anyField_;
     public global::Google.Protobuf.WellKnownTypes.Any AnyField {
       get { return anyField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         anyField_ = value;
       }
     }
@@ -248,7 +231,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.Api ApiField {
       get { return apiField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         apiField_ = value;
       }
     }
@@ -258,7 +240,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.Duration DurationField {
       get { return durationField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         durationField_ = value;
       }
     }
@@ -268,7 +249,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.Empty EmptyField {
       get { return emptyField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         emptyField_ = value;
       }
     }
@@ -278,7 +258,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.FieldMask FieldMaskField {
       get { return fieldMaskField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         fieldMaskField_ = value;
       }
     }
@@ -288,7 +267,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.SourceContext SourceContextField {
       get { return sourceContextField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         sourceContextField_ = value;
       }
     }
@@ -298,7 +276,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.Struct StructField {
       get { return structField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         structField_ = value;
       }
     }
@@ -308,7 +285,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.Timestamp TimestampField {
       get { return timestampField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         timestampField_ = value;
       }
     }
@@ -318,7 +294,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.Type TypeField {
       get { return typeField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         typeField_ = value;
       }
     }
@@ -329,7 +304,6 @@ namespace Google.Protobuf.TestProtos {
     public double? DoubleField {
       get { return doubleField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         doubleField_ = value;
       }
     }
@@ -340,7 +314,6 @@ namespace Google.Protobuf.TestProtos {
     public float? FloatField {
       get { return floatField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         floatField_ = value;
       }
     }
@@ -351,7 +324,6 @@ namespace Google.Protobuf.TestProtos {
     public long? Int64Field {
       get { return int64Field_; }
       set {
-        pb::Freezable.CheckMutable(this);
         int64Field_ = value;
       }
     }
@@ -362,7 +334,6 @@ namespace Google.Protobuf.TestProtos {
     public ulong? Uint64Field {
       get { return uint64Field_; }
       set {
-        pb::Freezable.CheckMutable(this);
         uint64Field_ = value;
       }
     }
@@ -373,7 +344,6 @@ namespace Google.Protobuf.TestProtos {
     public int? Int32Field {
       get { return int32Field_; }
       set {
-        pb::Freezable.CheckMutable(this);
         int32Field_ = value;
       }
     }
@@ -384,7 +354,6 @@ namespace Google.Protobuf.TestProtos {
     public uint? Uint32Field {
       get { return uint32Field_; }
       set {
-        pb::Freezable.CheckMutable(this);
         uint32Field_ = value;
       }
     }
@@ -395,7 +364,6 @@ namespace Google.Protobuf.TestProtos {
     public bool? BoolField {
       get { return boolField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         boolField_ = value;
       }
     }
@@ -406,7 +374,6 @@ namespace Google.Protobuf.TestProtos {
     public string StringField {
       get { return stringField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         stringField_ = value;
       }
     }
@@ -417,7 +384,6 @@ namespace Google.Protobuf.TestProtos {
     public pb::ByteString BytesField {
       get { return bytesField_; }
       set {
-        pb::Freezable.CheckMutable(this);
         bytesField_ = value;
       }
     }
@@ -901,31 +867,6 @@ namespace Google.Protobuf.TestProtos {
       return new RepeatedWellKnownTypes(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      anyField_.Freeze();
-      apiField_.Freeze();
-      durationField_.Freeze();
-      emptyField_.Freeze();
-      fieldMaskField_.Freeze();
-      sourceContextField_.Freeze();
-      structField_.Freeze();
-      timestampField_.Freeze();
-      typeField_.Freeze();
-      doubleField_.Freeze();
-      floatField_.Freeze();
-      int64Field_.Freeze();
-      uint64Field_.Freeze();
-      int32Field_.Freeze();
-      uint32Field_.Freeze();
-      boolField_.Freeze();
-      stringField_.Freeze();
-      bytesField_.Freeze();
-    }
-
     public const int AnyFieldFieldNumber = 1;
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Any> _repeated_anyField_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.WellKnownTypes.Any.Parser);
@@ -1372,19 +1313,10 @@ namespace Google.Protobuf.TestProtos {
       return new OneofWellKnownTypes(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (oneofField_ is IFreezable) ((IFreezable) oneofField_).Freeze();
-    }
-
     public const int AnyFieldFieldNumber = 1;
     public global::Google.Protobuf.WellKnownTypes.Any AnyField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.AnyField ? (global::Google.Protobuf.WellKnownTypes.Any) oneofField_ : null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.AnyField;
       }
@@ -1394,7 +1326,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.Api ApiField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.ApiField ? (global::Google.Protobuf.WellKnownTypes.Api) oneofField_ : null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.ApiField;
       }
@@ -1404,7 +1335,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.Duration DurationField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.DurationField ? (global::Google.Protobuf.WellKnownTypes.Duration) oneofField_ : null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.DurationField;
       }
@@ -1414,7 +1344,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.Empty EmptyField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.EmptyField ? (global::Google.Protobuf.WellKnownTypes.Empty) oneofField_ : null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.EmptyField;
       }
@@ -1424,7 +1353,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.FieldMask FieldMaskField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.FieldMaskField ? (global::Google.Protobuf.WellKnownTypes.FieldMask) oneofField_ : null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.FieldMaskField;
       }
@@ -1434,7 +1362,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.SourceContext SourceContextField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.SourceContextField ? (global::Google.Protobuf.WellKnownTypes.SourceContext) oneofField_ : null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.SourceContextField;
       }
@@ -1444,7 +1371,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.Struct StructField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.StructField ? (global::Google.Protobuf.WellKnownTypes.Struct) oneofField_ : null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.StructField;
       }
@@ -1454,7 +1380,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.Timestamp TimestampField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.TimestampField ? (global::Google.Protobuf.WellKnownTypes.Timestamp) oneofField_ : null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.TimestampField;
       }
@@ -1464,7 +1389,6 @@ namespace Google.Protobuf.TestProtos {
     public global::Google.Protobuf.WellKnownTypes.Type TypeField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.TypeField ? (global::Google.Protobuf.WellKnownTypes.Type) oneofField_ : null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.TypeField;
       }
@@ -1475,7 +1399,6 @@ namespace Google.Protobuf.TestProtos {
     public double? DoubleField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.DoubleField ? (double?) oneofField_ : (double?) null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.DoubleField;
       }
@@ -1486,7 +1409,6 @@ namespace Google.Protobuf.TestProtos {
     public float? FloatField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.FloatField ? (float?) oneofField_ : (float?) null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.FloatField;
       }
@@ -1497,7 +1419,6 @@ namespace Google.Protobuf.TestProtos {
     public long? Int64Field {
       get { return oneofFieldCase_ == OneofFieldOneofCase.Int64Field ? (long?) oneofField_ : (long?) null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.Int64Field;
       }
@@ -1508,7 +1429,6 @@ namespace Google.Protobuf.TestProtos {
     public ulong? Uint64Field {
       get { return oneofFieldCase_ == OneofFieldOneofCase.Uint64Field ? (ulong?) oneofField_ : (ulong?) null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.Uint64Field;
       }
@@ -1519,7 +1439,6 @@ namespace Google.Protobuf.TestProtos {
     public int? Int32Field {
       get { return oneofFieldCase_ == OneofFieldOneofCase.Int32Field ? (int?) oneofField_ : (int?) null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.Int32Field;
       }
@@ -1530,7 +1449,6 @@ namespace Google.Protobuf.TestProtos {
     public uint? Uint32Field {
       get { return oneofFieldCase_ == OneofFieldOneofCase.Uint32Field ? (uint?) oneofField_ : (uint?) null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.Uint32Field;
       }
@@ -1541,7 +1459,6 @@ namespace Google.Protobuf.TestProtos {
     public bool? BoolField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.BoolField ? (bool?) oneofField_ : (bool?) null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.BoolField;
       }
@@ -1552,7 +1469,6 @@ namespace Google.Protobuf.TestProtos {
     public string StringField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.StringField ? (string) oneofField_ : (string) null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.StringField;
       }
@@ -1563,7 +1479,6 @@ namespace Google.Protobuf.TestProtos {
     public pb::ByteString BytesField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.BytesField ? (pb::ByteString) oneofField_ : (pb::ByteString) null; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.BytesField;
       }
@@ -1597,7 +1512,6 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public void ClearOneofField() {
-      pb::Freezable.CheckMutable(this);
       oneofFieldCase_ = OneofFieldOneofCase.None;
       oneofField_ = null;
     }
@@ -2028,31 +1942,6 @@ namespace Google.Protobuf.TestProtos {
 
     public MapWellKnownTypes Clone() {
       return new MapWellKnownTypes(this);
-    }
-
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      anyField_.Freeze();
-      apiField_.Freeze();
-      durationField_.Freeze();
-      emptyField_.Freeze();
-      fieldMaskField_.Freeze();
-      sourceContextField_.Freeze();
-      structField_.Freeze();
-      timestampField_.Freeze();
-      typeField_.Freeze();
-      doubleField_.Freeze();
-      floatField_.Freeze();
-      int64Field_.Freeze();
-      uint64Field_.Freeze();
-      int32Field_.Freeze();
-      uint32Field_.Freeze();
-      boolField_.Freeze();
-      stringField_.Freeze();
-      bytesField_.Freeze();
     }
 
     public const int AnyFieldFieldNumber = 1;

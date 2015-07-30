@@ -70,19 +70,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Timestamp(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int SecondsFieldNumber = 1;
     private long seconds_;
     public long Seconds {
       get { return seconds_; }
       set {
-        pb::Freezable.CheckMutable(this);
         seconds_ = value;
       }
     }
@@ -92,7 +84,6 @@ namespace Google.Protobuf.WellKnownTypes {
     public int Nanos {
       get { return nanos_; }
       set {
-        pb::Freezable.CheckMutable(this);
         nanos_ = value;
       }
     }

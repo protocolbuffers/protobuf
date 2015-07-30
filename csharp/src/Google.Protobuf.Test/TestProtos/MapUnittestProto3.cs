@@ -216,30 +216,6 @@ namespace Google.Protobuf.TestProtos {
       return new TestMap(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      mapInt32Int32_.Freeze();
-      mapInt64Int64_.Freeze();
-      mapUint32Uint32_.Freeze();
-      mapUint64Uint64_.Freeze();
-      mapSint32Sint32_.Freeze();
-      mapSint64Sint64_.Freeze();
-      mapFixed32Fixed32_.Freeze();
-      mapFixed64Fixed64_.Freeze();
-      mapSfixed32Sfixed32_.Freeze();
-      mapSfixed64Sfixed64_.Freeze();
-      mapInt32Float_.Freeze();
-      mapInt32Double_.Freeze();
-      mapBoolBool_.Freeze();
-      mapStringString_.Freeze();
-      mapInt32Bytes_.Freeze();
-      mapInt32Enum_.Freeze();
-      mapInt32ForeignMessage_.Freeze();
-    }
-
     public const int MapInt32Int32FieldNumber = 1;
     private static readonly pbc::MapField<int, int>.Codec _map_mapInt32Int32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForInt32(16), 10);
@@ -613,20 +589,11 @@ namespace Google.Protobuf.TestProtos {
       return new TestMapSubmessage(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (testMap_ != null) TestMap.Freeze();
-    }
-
     public const int TestMapFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestMap testMap_;
     public global::Google.Protobuf.TestProtos.TestMap TestMap {
       get { return testMap_; }
       set {
-        pb::Freezable.CheckMutable(this);
         testMap_ = value;
       }
     }
@@ -737,14 +704,6 @@ namespace Google.Protobuf.TestProtos {
       return new TestMessageMap(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      mapInt32Message_.Freeze();
-    }
-
     public const int MapInt32MessageFieldNumber = 1;
     private static readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.TestAllTypes>.Codec _map_mapInt32Message_codec
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.TestAllTypes>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.TestProtos.TestAllTypes.Parser), 10);
@@ -845,15 +804,6 @@ namespace Google.Protobuf.TestProtos {
 
     public TestSameTypeMap Clone() {
       return new TestSameTypeMap(this);
-    }
-
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      map1_.Freeze();
-      map2_.Freeze();
     }
 
     public const int Map1FieldNumber = 1;
@@ -986,28 +936,6 @@ namespace Google.Protobuf.TestProtos {
 
     public TestArenaMap Clone() {
       return new TestArenaMap(this);
-    }
-
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      mapInt32Int32_.Freeze();
-      mapInt64Int64_.Freeze();
-      mapUint32Uint32_.Freeze();
-      mapUint64Uint64_.Freeze();
-      mapSint32Sint32_.Freeze();
-      mapSint64Sint64_.Freeze();
-      mapFixed32Fixed32_.Freeze();
-      mapFixed64Fixed64_.Freeze();
-      mapSfixed32Sfixed32_.Freeze();
-      mapSfixed64Sfixed64_.Freeze();
-      mapInt32Float_.Freeze();
-      mapInt32Double_.Freeze();
-      mapBoolBool_.Freeze();
-      mapInt32Enum_.Freeze();
-      mapInt32ForeignMessage_.Freeze();
     }
 
     public const int MapInt32Int32FieldNumber = 1;
@@ -1349,14 +1277,6 @@ namespace Google.Protobuf.TestProtos {
       return new MessageContainingEnumCalledType(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      type_.Freeze();
-    }
-
     public const int TypeFieldNumber = 1;
     private static readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType>.Codec _map_type_codec
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType.Parser), 10);
@@ -1466,14 +1386,6 @@ namespace Google.Protobuf.TestProtos {
 
     public MessageContainingMapCalledEntry Clone() {
       return new MessageContainingMapCalledEntry(this);
-    }
-
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      entry_.Freeze();
     }
 
     public const int EntryFieldNumber = 1;
