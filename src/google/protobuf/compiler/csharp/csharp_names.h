@@ -65,6 +65,14 @@ string GetFileNamespace(const FileDescriptor* descriptor);
 //   The fully-qualified C# class name.
 string GetClassName(const Descriptor* descriptor);
 
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
+//   The fully-qualified name of the C# class that provides
+//   access to the file descriptor. Proto compiler generates
+//   such class for each .proto file processed.
+std::string GetUmbrellaClassName(const FileDescriptor* descriptor);
 
 }  // namespace csharp
 }  // namespace compiler

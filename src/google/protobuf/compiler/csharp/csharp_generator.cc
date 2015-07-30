@@ -50,7 +50,7 @@ namespace csharp {
 
 std::string GetOutputFile(const google::protobuf::FileDescriptor* file, const std::string file_extension)
 {
-  return GetFileUmbrellaClassname(file) + file_extension;
+  return GetUmbrellaClassUnqualifiedName(file) + file_extension;
 }
 
 void GenerateFile(const google::protobuf::FileDescriptor* file,
