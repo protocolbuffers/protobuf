@@ -54,8 +54,8 @@ UmbrellaClassGenerator::UmbrellaClassGenerator(const FileDescriptor* file)
     : SourceGeneratorBase(file),
       file_(file) {
   namespace_ = GetFileNamespace(file);
-  umbrellaClassname_ = GetFileUmbrellaClassname(file);
-  umbrellaNamespace_ = GetFileUmbrellaNamespace(file);
+  umbrellaClassname_ = GetUmbrellaClassUnqualifiedName(file);
+  umbrellaNamespace_ = GetUmbrellaClassNestedNamespace(file);
 }
 
 UmbrellaClassGenerator::~UmbrellaClassGenerator() {
@@ -183,7 +183,7 @@ void UmbrellaClassGenerator::WriteDescriptor(io::Printer* printer) {
     printer->Print(
       "$full_umbrella_class_name$.Descriptor, ",
       "full_umbrella_class_name",
-      GetFullUmbrellaClassName(file_->dependency(i)));
+      GetUmbrellaClassName(file_->dependency(i)));
   }
   printer->Print("},\n"
       "    new pbr::GeneratedCodeInfo(");
