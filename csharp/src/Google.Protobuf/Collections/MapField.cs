@@ -54,7 +54,6 @@ namespace Google.Protobuf.Collections
     {
         // TODO: Don't create the map/list until we have an entry. (Assume many maps will be empty.)
         private readonly bool allowNullValues;
-        private bool frozen;
         private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> map =
             new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
         private readonly LinkedList<KeyValuePair<TKey, TValue>> list = new LinkedList<KeyValuePair<TKey, TValue>>();
@@ -254,7 +253,7 @@ namespace Google.Protobuf.Collections
         public bool AllowsNullValues { get { return allowNullValues; } }
 
         public int Count { get { return list.Count; } }
-        public bool IsReadOnly { get { return frozen; } }
+        public bool IsReadOnly { get { return false; } }
 
         public override bool Equals(object other)
         {
@@ -416,10 +415,6 @@ namespace Google.Protobuf.Collections
 
             set
             {
-                if (frozen)
-                {
-                    throw new NotSupportedException("Dictionary is frozen");
-                }
                 this[(TKey)key] = (TValue)value;
             }
         }

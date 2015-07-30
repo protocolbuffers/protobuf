@@ -54,9 +54,6 @@ namespace Google.Protobuf.Examples.AddressBook {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public Person() {
       OnConstruction();
     }
@@ -240,9 +237,6 @@ namespace Google.Protobuf.Examples.AddressBook {
           get { return Descriptor; }
         }
 
-        private bool _frozen = false;
-        public bool IsFrozen { get { return _frozen; } }
-
         public PhoneNumber() {
           OnConstruction();
         }
@@ -379,9 +373,6 @@ namespace Google.Protobuf.Examples.AddressBook {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public AddressBook() {
       OnConstruction();

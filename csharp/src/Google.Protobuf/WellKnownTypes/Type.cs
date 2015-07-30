@@ -82,9 +82,6 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public Type() {
       OnConstruction();
     }
@@ -276,9 +273,6 @@ namespace Google.Protobuf.WellKnownTypes {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public Field() {
       OnConstruction();
@@ -594,9 +588,6 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public Enum() {
       OnConstruction();
     }
@@ -771,9 +762,6 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public EnumValue() {
       OnConstruction();
     }
@@ -923,9 +911,6 @@ namespace Google.Protobuf.WellKnownTypes {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public Option() {
       OnConstruction();

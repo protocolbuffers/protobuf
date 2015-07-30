@@ -80,9 +80,6 @@ namespace UnitTest.Issues.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public Issue307() {
       OnConstruction();
     }
@@ -164,9 +161,6 @@ namespace UnitTest.Issues.TestProtos {
           get { return Descriptor; }
         }
 
-        private bool _frozen = false;
-        public bool IsFrozen { get { return _frozen; } }
-
         public NestedOnce() {
           OnConstruction();
         }
@@ -247,9 +241,6 @@ namespace UnitTest.Issues.TestProtos {
             pbr::MessageDescriptor pb::IMessage.Descriptor {
               get { return Descriptor; }
             }
-
-            private bool _frozen = false;
-            public bool IsFrozen { get { return _frozen; } }
 
             public NestedTwice() {
               OnConstruction();
@@ -340,9 +331,6 @@ namespace UnitTest.Issues.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public NegativeEnumMessage() {
       OnConstruction();
@@ -488,9 +476,6 @@ namespace UnitTest.Issues.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public DeprecatedChild() {
       OnConstruction();
     }
@@ -570,9 +555,6 @@ namespace UnitTest.Issues.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public DeprecatedFieldsMessage() {
       OnConstruction();
@@ -799,9 +781,6 @@ namespace UnitTest.Issues.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public ItemField() {
       OnConstruction();
