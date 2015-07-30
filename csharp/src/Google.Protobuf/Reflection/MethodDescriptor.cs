@@ -57,6 +57,16 @@ namespace Google.Protobuf.Reflection
         /// </value>
         public MessageDescriptor OutputType { get { return outputType; } }
 
+        /// <value>
+        /// Indicates if client streams multiple requests.
+        /// </value>
+        public bool IsClientStreaming { get { return proto.ClientStreaming; } }
+
+        /// <value>
+        /// Indicates if server streams multiple responses.
+        /// </value>
+        public bool IsServerStreaming { get { return proto.ServerStreaming; } }
+
         internal MethodDescriptor(MethodDescriptorProto proto, FileDescriptor file,
                                   ServiceDescriptor parent, int index)
             : base(file, parent.FullName + "." + proto.Name, index)
