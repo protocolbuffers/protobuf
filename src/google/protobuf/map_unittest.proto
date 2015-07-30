@@ -31,7 +31,6 @@
 syntax = "proto3";
 
 option cc_enable_arenas = true;
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 import "google/protobuf/unittest.proto";
 

@@ -41,17 +41,17 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-class Writer;
-
+// TODO(jonskeet): Refactor repeated field support; all the implementations are *really* similar. We
+// should probably have a RepeatedFieldGeneratorBase.
 class RepeatedEnumFieldGenerator : public FieldGeneratorBase {
  public:
   RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~RepeatedEnumFieldGenerator();
 
+  virtual void GenerateCloningCode(io::Printer* printer);
+  virtual void GenerateFreezingCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer);
-  virtual void GenerateBuilderMembers(io::Printer* printer);
   virtual void GenerateMergingCode(io::Printer* printer);
-  virtual void GenerateBuildingCode(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
   virtual void GenerateSerializationCode(io::Printer* printer);
   virtual void GenerateSerializedSizeCode(io::Printer* printer);

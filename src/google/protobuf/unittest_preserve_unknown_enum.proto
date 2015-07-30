@@ -33,7 +33,7 @@ syntax = "proto3";
 package proto3_preserve_unknown_enum_unittest;
 option objc_class_prefix = "UnknownEnums";
 
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
+option csharp_namespace = "Google.Protobuf.TestProtos";
 
 enum MyEnum {
   FOO = 0;

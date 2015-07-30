@@ -46,11 +46,13 @@
 
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
 #include <google/protobuf/compiler/csharp/csharp_enum_field.h>
+#include <google/protobuf/compiler/csharp/csharp_map_field.h>
 #include <google/protobuf/compiler/csharp/csharp_message_field.h>
 #include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_enum_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_message_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h>
+#include <google/protobuf/compiler/csharp/csharp_wrapper_field.h>
 
 namespace google {
 namespace protobuf {
@@ -112,7 +114,7 @@ std::string GetFileNamespace(const FileDescriptor* descriptor) {
   if (descriptor->options().has_csharp_namespace()) {
     return descriptor->options().csharp_namespace();
   }
-  return descriptor->package();
+  return UnderscoresToCamelCase(descriptor->package(), true, true);
 }
 
 std::string GetUmbrellaClassNameInternal(const std::string& proto_file) {
@@ -153,7 +155,8 @@ std::string GetFileUmbrellaNamespace(const FileDescriptor* descriptor) {
 
 // TODO(jtattermusch): can we reuse a utility function?
 std::string UnderscoresToCamelCase(const std::string& input,
-                                   bool cap_next_letter) {
+                                   bool cap_next_letter,
+                                   bool preserve_period) {
   string result;
   // Note:  I distrust ctype.h due to locales.
   for (int i = 0; i < input.size(); i++) {
@@ -179,6 +182,9 @@ std::string UnderscoresToCamelCase(const std::string& input,
       cap_next_letter = true;
     } else {
       cap_next_letter = true;
+      if (input[i] == '.' && preserve_period) {
+        result += '.';
+      }
     }
   }
   // Add a trailing "_" if the name should be altered.
@@ -205,7 +211,7 @@ std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
     // the C# namespace.
     classname = name.substr(file->package().size() + 1);
   }
-  result += StringReplace(classname, ".", ".Types.", false);
+  result += StringReplace(classname, ".", ".Types.", true);
   return "global::" + result;
 }
 
@@ -338,84 +344,67 @@ std::string FileDescriptorToBase64(const FileDescriptor* descriptor) {
   return StringToBase64(fdp_bytes);
 }
 
+// TODO(jonskeet): Remove this when internal::WireFormat::MakeTag works
+// properly...
+// Workaround for issue #493
+uint FixedMakeTag(const FieldDescriptor* field) {
+  internal::WireFormatLite::WireType field_type = field->is_packed()
+      ? internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED
+      : internal::WireFormat::WireTypeForFieldType(field->type());
+
+  return internal::WireFormatLite::MakeTag(field->number(), field_type);
+}
+
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
                                          int fieldOrdinal) {
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_GROUP:
     case FieldDescriptor::TYPE_MESSAGE:
       if (descriptor->is_repeated()) {
-        return new RepeatedMessageFieldGenerator(descriptor, fieldOrdinal);
+        if (descriptor->is_map()) {
+          return new MapFieldGenerator(descriptor, fieldOrdinal);
+        } else {
+          return new RepeatedMessageFieldGenerator(descriptor, fieldOrdinal);
+        }
       } else {
-	if (descriptor->containing_oneof()) {
-	  return new MessageOneofFieldGenerator(descriptor, fieldOrdinal);
-	} else {
-	  return new MessageFieldGenerator(descriptor, fieldOrdinal);
-	}
+        if (IsWrapperType(descriptor)) {
+          if (descriptor->containing_oneof()) {
+            return new WrapperOneofFieldGenerator(descriptor, fieldOrdinal);
+          } else {
+            return new WrapperFieldGenerator(descriptor, fieldOrdinal);
+          }
+        } else {
+          if (descriptor->containing_oneof()) {
+            return new MessageOneofFieldGenerator(descriptor, fieldOrdinal);
+          } else {
+            return new MessageFieldGenerator(descriptor, fieldOrdinal);
+          }
+        }
       }
     case FieldDescriptor::TYPE_ENUM:
       if (descriptor->is_repeated()) {
         return new RepeatedEnumFieldGenerator(descriptor, fieldOrdinal);
       } else {
-	if (descriptor->containing_oneof()) {
-	  return new EnumOneofFieldGenerator(descriptor, fieldOrdinal);
-	} else {
-	  return new EnumFieldGenerator(descriptor, fieldOrdinal);
-	}
+        if (descriptor->containing_oneof()) {
+          return new EnumOneofFieldGenerator(descriptor, fieldOrdinal);
+        } else {
+          return new EnumFieldGenerator(descriptor, fieldOrdinal);
+        }
       }
     default:
       if (descriptor->is_repeated()) {
         return new RepeatedPrimitiveFieldGenerator(descriptor, fieldOrdinal);
       } else {
-	if (descriptor->containing_oneof()) {
-	  return new PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal);
-	} else {
-	  return new PrimitiveFieldGenerator(descriptor, fieldOrdinal);
-	}
+        if (descriptor->containing_oneof()) {
+          return new PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal);
+        } else {
+          return new PrimitiveFieldGenerator(descriptor, fieldOrdinal);
+        }
       }
   }
 }
 
-bool HasRequiredFields(const Descriptor* descriptor, std::set<const Descriptor*>* already_seen) {
-  if (already_seen->find(descriptor) != already_seen->end()) {
-    // The type is already in cache.  This means that either:
-    // a. The type has no required fields.
-    // b. We are in the midst of checking if the type has required fields,
-    //    somewhere up the stack.  In this case, we know that if the type
-    //    has any required fields, they'll be found when we return to it,
-    //    and the whole call to HasRequiredFields() will return true.
-    //    Therefore, we don't have to check if this type has required fields
-    //    here.
-    return false;
-  }
-  already_seen->insert(descriptor);
-
-  // If the type has extensions, an extension with message type could contain
-  // required fields, so we have to be conservative and assume such an
-  // extension exists.
-  if (descriptor->extension_count() > 0) {
-    return true;
-  }
-
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    const FieldDescriptor* field = descriptor->field(i);
-    if (field->is_required()) {
-      return true;
-    }
-    if (GetCSharpType(field->type()) == CSHARPTYPE_MESSAGE) {
-      if (HasRequiredFields(field->message_type(), already_seen)) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-bool HasRequiredFields(const Descriptor* descriptor) {
-  std::set<const Descriptor*> already_seen;
-  return HasRequiredFields(descriptor, &already_seen);
-}
-
-}  // namespace java
+}  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

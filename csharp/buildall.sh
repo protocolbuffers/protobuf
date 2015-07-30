@@ -6,17 +6,13 @@ NUNIT_CONSOLE=nunit-console
 
 # The rest you can leave intact
 CONFIG=Release
-KEYFILE=../keys/Google.ProtocolBuffers.snk  # TODO(jtattermusch): signing!
+KEYFILE=../keys/Google.Protobuf.snk  # TODO(jtattermusch): signing!
 SRC=$(dirname $0)/src
 
 set -ex
 
 echo Building the solution.
-xbuild /p:Configuration=$CONFIG $SRC/ProtocolBuffers.sln
+xbuild /p:Configuration=$CONFIG $SRC/Google.Protobuf.sln
 
 echo Running tests.
-$NUNIT_CONSOLE $SRC/ProtocolBuffers.Test/bin/$CONFIG/Google.ProtocolBuffers.Test.dll
-
-$NUNIT_CONSOLE $SRC/ProtocolBuffersLite.Test/bin/$CONFIG/Google.ProtocolBuffersLite.Test.dll
-
-$NUNIT_CONSOLE $SRC/ProtocolBuffersLite.Test/bin/$CONFIG/Google.ProtocolBuffersMixedLite.Test.dll
+$NUNIT_CONSOLE $SRC/Google.Protobuf.Test/bin/$CONFIG/Google.Protobuf.Test.dll

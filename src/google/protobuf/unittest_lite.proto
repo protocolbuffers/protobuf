@@ -40,7 +40,6 @@ import "google/protobuf/unittest_import_lite.proto";
 option optimize_for = LITE_RUNTIME;
 
 option java_package = "com.google.protobuf";
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 // Same as TestAllTypes but with the lite runtime.
 message TestAllTypesLite {

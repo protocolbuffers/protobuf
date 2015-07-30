@@ -41,17 +41,16 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-class Writer;
-
 class MessageFieldGenerator : public FieldGeneratorBase {
  public:
   MessageFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~MessageFieldGenerator();
 
+  virtual void GenerateCodecCode(io::Printer* printer);
+  virtual void GenerateCloningCode(io::Printer* printer);
+  virtual void GenerateFreezingCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer);
-  virtual void GenerateBuilderMembers(io::Printer* printer);
   virtual void GenerateMergingCode(io::Printer* printer);
-  virtual void GenerateBuildingCode(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
   virtual void GenerateSerializationCode(io::Printer* printer);
   virtual void GenerateSerializedSizeCode(io::Printer* printer);
@@ -69,9 +68,8 @@ class MessageOneofFieldGenerator : public MessageFieldGenerator {
   MessageOneofFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
   ~MessageOneofFieldGenerator();
 
+  virtual void GenerateCloningCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer);
-  virtual void GenerateBuilderMembers(io::Printer* printer);
-  virtual void WriteEquals(io::Printer* printer);
   virtual void WriteToString(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
 

@@ -36,12 +36,14 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/stubs/strutil.h>
 
-#include <google/protobuf/compiler/csharp/csharp_umbrella_class.h>
+
 #include <google/protobuf/compiler/csharp/csharp_enum.h>
-#include <google/protobuf/compiler/csharp/csharp_extension.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_message.h>
+#include <google/protobuf/compiler/csharp/csharp_names.h>
+#include <google/protobuf/compiler/csharp/csharp_umbrella_class.h>
 
 namespace google {
 namespace protobuf {
@@ -61,30 +63,8 @@ UmbrellaClassGenerator::~UmbrellaClassGenerator() {
 
 void UmbrellaClassGenerator::Generate(io::Printer* printer) {
   WriteIntroduction(printer);
-  WriteExtensionRegistration(printer);
 
-  // write children: Extensions
-  if (file_->extension_count() > 0) {
-    printer->Print("#region Extensions\n");
-    for (int i = 0; i < file_->extension_count(); i++) {
-      ExtensionGenerator extensionGenerator(file_->extension(i));
-      extensionGenerator.Generate(printer);
-    }
-    printer->Print("#endregion\n");
-    printer->Print("\n");
-  }
-
-  printer->Print("#region Static variables\n");
-  for (int i = 0; i < file_->message_type_count(); i++) {
-    MessageGenerator messageGenerator(file_->message_type(i));
-    messageGenerator.GenerateStaticVariables(printer);
-  }
-  printer->Print("#endregion\n");
-  if (!use_lite_runtime()) {
-    WriteDescriptor(printer);
-  } else {
-    WriteLiteExtensions(printer);
-  }
+  WriteDescriptor(printer);
   // Close the class declaration.
   printer->Outdent();
   printer->Print("}\n");
@@ -134,9 +114,9 @@ void UmbrellaClassGenerator::WriteIntroduction(io::Printer* printer) {
     "#pragma warning disable 1591, 0612, 3021\n"
     "#region Designer generated code\n"
     "\n"
-    "using pb = global::Google.ProtocolBuffers;\n"
-    "using pbc = global::Google.ProtocolBuffers.Collections;\n"
-    "using pbd = global::Google.ProtocolBuffers.Descriptors;\n"
+    "using pb = global::Google.Protobuf;\n"
+    "using pbc = global::Google.Protobuf.Collections;\n"
+    "using pbr = global::Google.Protobuf.Reflection;\n"
     "using scg = global::System.Collections.Generic;\n",
     "file_name", file_->name());
 
@@ -165,31 +145,13 @@ void UmbrellaClassGenerator::WriteIntroduction(io::Printer* printer) {
   printer->Indent();
 }
 
-void UmbrellaClassGenerator::WriteExtensionRegistration(io::Printer* printer) {
-  printer->Print(
-    "#region Extension registration\n"
-    "public static void RegisterAllExtensions(pb::ExtensionRegistry registry) {\n");
-  printer->Indent();
-  for (int i = 0; i < file_->extension_count(); i++) {
-    ExtensionGenerator extensionGenerator(file_->extension(i));
-    extensionGenerator.GenerateExtensionRegistrationCode(printer);
-  }
-  for (int i = 0; i < file_->message_type_count(); i++) {
-    MessageGenerator messageGenerator(file_->message_type(i));
-    messageGenerator.GenerateExtensionRegistrationCode(printer);
-  }
-  printer->Outdent();
-  printer->Print("}\n");
-  printer->Print("#endregion\n");
-}
-
 void UmbrellaClassGenerator::WriteDescriptor(io::Printer* printer) {
   printer->Print(
     "#region Descriptor\n"
-    "public static pbd::FileDescriptor Descriptor {\n"
+    "public static pbr::FileDescriptor Descriptor {\n"
     "  get { return descriptor; }\n"
     "}\n"
-    "private static pbd::FileDescriptor descriptor;\n"
+    "private static pbr::FileDescriptor descriptor;\n"
     "\n"
     "static $umbrella_class_name$() {\n",
     "umbrella_class_name", umbrellaClassname_);
@@ -207,82 +169,124 @@ void UmbrellaClassGenerator::WriteDescriptor(io::Printer* printer) {
     printer->Print("\"$base64$\", \n", "base64", base64.substr(0, 60));
     base64 = base64.substr(60);
   }
-  printer->Outdent();
   printer->Print("\"$base64$\"));\n", "base64", base64);
   printer->Outdent();
   printer->Outdent();
-  printer->Print(
-    "pbd::FileDescriptor.InternalDescriptorAssigner assigner = delegate(pbd::FileDescriptor root) {\n");
-  printer->Indent();
-  printer->Print("descriptor = root;\n");
-  for (int i = 0; i < file_->message_type_count(); i++) {
-    MessageGenerator messageGenerator(file_->message_type(i));
-    messageGenerator.GenerateStaticVariableInitializers(printer);
-  }
-  for (int i = 0; i < file_->extension_count(); i++) {
-    ExtensionGenerator extensionGenerator(file_->extension(i));
-    extensionGenerator.GenerateStaticVariableInitializers(printer);
-  }
-
-  if (uses_extensions()) {
-    // Must construct an ExtensionRegistry containing all possible extensions
-    // and return it.
-    printer->Print(
-        "pb::ExtensionRegistry registry = pb::ExtensionRegistry.CreateInstance();\n");
-    printer->Print("RegisterAllExtensions(registry);\n");
-    for (int i = 0; i < file_->dependency_count(); i++) {
-      printer->Print("$dependency$.RegisterAllExtensions(registry);\n",
-		     "dependency", GetFullUmbrellaClassName(file_->dependency(i)));
-    }
-    printer->Print("return registry;\n");
-  } else {
-    printer->Print("return null;\n");
-  }
   printer->Outdent();
-  printer->Print("};\n");
 
   // -----------------------------------------------------------------
-  // Invoke internalBuildGeneratedFileFrom() to build the file.
+  // Invoke InternalBuildGeneratedFileFrom() to build the file.
   printer->Print(
-      "pbd::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,\n");
-  printer->Print("    new pbd::FileDescriptor[] {\n");
+      "descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,\n");
+  printer->Print("    new pbr::FileDescriptor[] { ");
   for (int i = 0; i < file_->dependency_count(); i++) {
     printer->Print(
-      "    $full_umbrella_class_name$.Descriptor, \n",
+      "$full_umbrella_class_name$.Descriptor, ",
       "full_umbrella_class_name",
       GetFullUmbrellaClassName(file_->dependency(i)));
   }
-  printer->Print("    }, assigner);\n");
+  printer->Print("},\n"
+      "    new pbr::GeneratedCodeInfo(");
+  // Specify all the generated code information, recursively.
+  if (file_->enum_type_count() > 0) {
+      printer->Print("new[] {");
+      for (int i = 0; i < file_->enum_type_count(); i++) {
+          printer->Print("typeof($type_name$), ", "type_name", GetClassName(file_->enum_type(i)));
+      }
+      printer->Print("}, ");
+  }
+  else {
+      printer->Print("null, ");
+  }
+  if (file_->message_type_count() > 0) {
+      printer->Print("new pbr::GeneratedCodeInfo[] {\n");
+      printer->Indent();
+      printer->Indent();
+      printer->Indent();
+      for (int i = 0; i < file_->message_type_count(); i++) {
+          WriteGeneratedCodeInfo(file_->message_type(i), printer, i == file_->message_type_count() - 1);
+      }
+      printer->Outdent();
+      printer->Print("\n}));\n");
+      printer->Outdent();
+      printer->Outdent();
+  }
+  else {
+      printer->Print("null));\n");
+  }
+
   printer->Outdent();
   printer->Print("}\n");
   printer->Print("#endregion\n\n");
 }
 
-void UmbrellaClassGenerator::WriteLiteExtensions(io::Printer* printer) {
-  printer->Print(
-    "#region Extensions\n"
-    "internal static readonly object Descriptor;\n"
-    "static $umbrella_class_name$() {\n",
-    "umbrella_class_name", umbrellaClassname_);
-  printer->Indent();
-  printer->Print("Descriptor = null;\n");
-  for (int i = 0; i < file_->message_type_count(); i++) {
-    MessageGenerator messageGenerator(file_->message_type(i));
-    messageGenerator.GenerateStaticVariableInitializers(printer);
+// Write out the generated code for a particular message. This consists of the CLR type, property names
+// corresponding to fields, names corresponding to oneofs, nested enums, and nested types. Each array part
+// can be specified as null if it would be empty, to make the generated code somewhat simpler to read.
+// We write a line break at the end of each generated code info, so that in the final file we'll see all
+// the types, pre-ordered depth first, one per line. The indentation will be slightly unusual,
+// in that it will look like a single array when it's actually constructing a tree, but it'll be easy to
+// read even with multiple levels of nesting.
+// The "last" parameter indicates whether this message descriptor is the last one being printed in this immediate
+// context. It governs whether or not a trailing comma and newline is written after the constructor, effectively
+// just controlling the formatting in the generated code.
+void UmbrellaClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descriptor, io::Printer* printer, bool last) {
+  if (IsMapEntryMessage(descriptor)) {
+    printer->Print("null, ");
+    return;
   }
-  for (int i = 0; i < file_->extension_count(); i++) {
-    ExtensionGenerator extensionGenerator(file_->extension(i));
-    extensionGenerator.GenerateStaticVariableInitializers(printer);
+  // Generated message type
+  printer->Print("new pbr::GeneratedCodeInfo(typeof($type_name$), ", "type_name", GetClassName(descriptor));
+  
+  // Fields
+  if (descriptor->field_count() > 0) {
+      std::vector<std::string> fields;
+      for (int i = 0; i < descriptor->field_count(); i++) {
+          fields.push_back(GetPropertyName(descriptor->field(i)));
+      }
+      printer->Print("new[]{ \"$fields$\" }, ", "fields", JoinStrings(fields, "\", \""));
   }
-  printer->Outdent();
-  printer->Print("}\n");
-  printer->Print("#endregion\n\n");
-}
+  else {
+      printer->Print("null, ");
+  }
 
-bool UmbrellaClassGenerator::uses_extensions() {
-  // TODO(jtattermusch): implement recursive descent that looks for extensions.
-  // For now, we conservatively assume that extensions are used.
-  return true;
+  // Oneofs
+  if (descriptor->oneof_decl_count() > 0) {
+      std::vector<std::string> oneofs;
+      for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
+          oneofs.push_back(UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
+      }
+      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", JoinStrings(oneofs, "\", \""));
+  }
+  else {
+      printer->Print("null, ");
+  }
+
+  // Nested enums
+  if (descriptor->enum_type_count() > 0) {
+      std::vector<std::string> enums;
+      for (int i = 0; i < descriptor->enum_type_count(); i++) {
+          enums.push_back(GetClassName(descriptor->enum_type(i)));
+      }
+      printer->Print("new[]{ typeof($enums$) }, ", "enums", JoinStrings(enums, "), typeof("));
+  }
+  else {
+      printer->Print("null, ");
+  }
+
+  // Nested types
+  if (descriptor->nested_type_count() > 0) {
+      // Need to specify array type explicitly here, as all elements may be null. 
+      printer->Print("new pbr::GeneratedCodeInfo[] { ");
+      for (int i = 0; i < descriptor->nested_type_count(); i++) {
+          WriteGeneratedCodeInfo(descriptor->nested_type(i), printer, i == descriptor->nested_type_count() - 1);
+      }
+      printer->Print("}");
+  }
+  else {
+      printer->Print("null");
+  }
+  printer->Print(last ? ")" : "),\n");
 }
 
 }  // namespace csharp

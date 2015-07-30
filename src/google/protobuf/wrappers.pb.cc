@@ -262,9 +262,9 @@ void protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto() {
     "e\030\001 \001(\004\"\033\n\nInt32Value\022\r\n\005value\030\001 \001(\005\"\034\n\013"
     "UInt32Value\022\r\n\005value\030\001 \001(\r\"\032\n\tBoolValue\022"
     "\r\n\005value\030\001 \001(\010\"\034\n\013StringValue\022\r\n\005value\030\001"
-    " \001(\t\"\033\n\nBytesValue\022\r\n\005value\030\001 \001(\014BE\n\023com"
+    " \001(\t\"\033\n\nBytesValue\022\r\n\005value\030\001 \001(\014B>\n\023com"
     ".google.protobufB\rWrappersProtoP\001\242\002\003GPB\252"
-    "\002\026Google.ProtocolBuffersb\006proto3", 392);
+    "\002\017Google.Protobufb\006proto3", 385);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/wrappers.proto", &protobuf_RegisterTypes);
   DoubleValue::default_instance_ = new DoubleValue();

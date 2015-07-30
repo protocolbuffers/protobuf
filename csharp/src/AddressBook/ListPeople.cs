@@ -1,10 +1,7 @@
 ﻿#region Copyright notice and license
-
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// http://github.com/jskeet/dotnet-protobufs/
-// Original C++/Java/Python code:
-// http://code.google.com/p/protobuf/
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -31,13 +28,12 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 #endregion
 
 using System;
 using System.IO;
 
-namespace Google.ProtocolBuffers.Examples.AddressBook
+namespace Google.Protobuf.Examples.AddressBook
 {
     internal class ListPeople
     {
@@ -46,16 +42,16 @@ namespace Google.ProtocolBuffers.Examples.AddressBook
         /// </summary>
         private static void Print(AddressBook addressBook)
         {
-            foreach (Person person in addressBook.PersonList)
+            foreach (Person person in addressBook.People)
             {
                 Console.WriteLine("Person ID: {0}", person.Id);
                 Console.WriteLine("  Name: {0}", person.Name);
-                if (person.HasEmail)
+                if (person.Email != "")
                 {
                     Console.WriteLine("  E-mail address: {0}", person.Email);
                 }
 
-                foreach (Person.Types.PhoneNumber phoneNumber in person.PhoneList)
+                foreach (Person.Types.PhoneNumber phoneNumber in person.Phones)
                 {
                     switch (phoneNumber.Type)
                     {
@@ -94,7 +90,7 @@ namespace Google.ProtocolBuffers.Examples.AddressBook
             // Read the existing address book.
             using (Stream stream = File.OpenRead(args[0]))
             {
-                AddressBook addressBook = AddressBook.ParseFrom(stream);
+                AddressBook addressBook = AddressBook.Parser.ParseFrom(stream);
                 Print(addressBook);
             }
             return 0;
