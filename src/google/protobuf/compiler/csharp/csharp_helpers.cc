@@ -219,8 +219,7 @@ std::string GetUmbrellaClassName(const FileDescriptor* descriptor) {
   }
   std::string umbrellaNamespace = GetUmbrellaClassNestedNamespace(descriptor);
   if (!umbrellaNamespace.empty()) {
-      result += umbrellaNamespace;
-      result += '.';
+      result += umbrellaNamespace + ".";
   }
   result += GetUmbrellaClassUnqualifiedName(descriptor);
   return "global::" + result;
