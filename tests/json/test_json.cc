@@ -288,33 +288,22 @@ void test_json_roundtrip_message(const char* json_src,
                                  const char* json_expected,
                                  const upb::Handlers* serialize_handlers,
                                  int seam) {
-  upb::Status st;
-  upb::Environment env;
-  env.ReportErrorsTo(&st);
+  VerboseParserEnvironment env(verbose);
   StringSink data_sink;
-  upb::json::Printer* printer =
-      upb::json::Printer::Create(&env, serialize_handlers, data_sink.Sink());
-  upb::json::Parser* parser = upb::json::Parser::Create(&env, printer->input());
+  upb::json::Printer* printer = upb::json::Printer::Create(
+      env.env(), serialize_handlers, data_sink.Sink());
+  upb::json::Parser* parser =
+      upb::json::Parser::Create(env.env(), printer->input());
+  env.ResetBytesSink(parser->input());
+  env.Reset(json_src, strlen(json_src), false);
 
-  upb::BytesSink* input = parser->input();
-  void *sub;
-  size_t len = strlen(json_src);
-  size_t ofs = 0;
-
-  bool ok = input->Start(0, &sub) &&
-            parse_buffer(input, sub, json_src, 0, seam, &ofs, &st, verbose) &&
-            parse_buffer(input, sub, json_src, seam, len, &ofs, &st, verbose) &&
-            ofs == len;
-
-  if (ok) {
-    if (verbose) {
-      fprintf(stderr, "calling end()\n");
-    }
-    ok = input->End();
-  }
+  bool ok = env.Start() &&
+            env.ParseBuffer(seam) &&
+            env.ParseBuffer(-1) &&
+            env.End();
 
   if (!ok) {
-    fprintf(stderr, "upb parse error: %s\n", st.error_message());
+    fprintf(stderr, "upb parse error: %s\n", env.status().error_message());
   }
   ASSERT(ok);
 

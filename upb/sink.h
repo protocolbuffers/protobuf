@@ -272,7 +272,7 @@ UPB_INLINE bool upb_bufsrc_putbuf(const char *buf, size_t len,
   upb_bufhandle_setbuf(&handle, buf, 0);
   ret = upb_bytessink_start(sink, len, &subc);
   if (ret && len != 0) {
-    ret = (upb_bytessink_putbuf(sink, subc, buf, len, &handle) == len);
+    ret = (upb_bytessink_putbuf(sink, subc, buf, len, &handle) >= len);
   }
   if (ret) {
     ret = upb_bytessink_end(sink);

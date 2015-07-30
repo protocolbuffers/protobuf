@@ -60,6 +60,28 @@ static bool consumes_input(opcode op) {
   }
 }
 
+static size_t stacksize(upb_pbdecoder *d, size_t entries) {
+  UPB_UNUSED(d);
+  return entries * sizeof(upb_pbdecoder_frame);
+}
+
+static size_t callstacksize(upb_pbdecoder *d, size_t entries) {
+  UPB_UNUSED(d);
+
+#ifdef UPB_USE_JIT_X64
+  if (d->method_->is_native_) {
+    /* Each native stack frame needs two pointers, plus we need a few frames for
+     * the enter/exit trampolines. */
+    size_t ret = entries * sizeof(void*) * 2;
+    ret += sizeof(void*) * 10;
+    return ret;
+  }
+#endif
+
+  return entries * sizeof(uint32_t*);
+}
+
+
 static bool in_residual_buf(const upb_pbdecoder *d, const char *p);
 
 /* It's unfortunate that we have to micro-manage the compiler with
@@ -145,24 +167,66 @@ static void checkpoint(upb_pbdecoder *d) {
   d->checkpoint = d->ptr;
 }
 
+/* Skips "bytes" bytes in the stream, which may be more than available.  If we
+ * skip more bytes than are available, we return a long read count to the caller
+ * indicating how many bytes can be skipped over before passing actual data
+ * again.  Skipped bytes can pass a NULL buffer and the decoder guarantees they
+ * won't actually be read.
+ */
+static int32_t skip(upb_pbdecoder *d, size_t bytes) {
+  assert(!in_residual_buf(d, d->ptr) || d->size_param == 0);
+  if (curbufleft(d) > bytes) {
+    /* Skipped data is all in current buffer, and more is still available. */
+    advance(d, bytes);
+    d->skip = 0;
+    return DECODE_OK;
+  } else {
+    /* Skipped data extends beyond currently available buffers. */
+    d->pc = d->last;
+    d->skip = bytes - curbufleft(d);
+    d->bufstart_ofs += (d->end - d->buf);
+    d->residual_end = d->residual;
+    switchtobuf(d, d->residual, d->residual_end);
+    return d->size_param + d->skip;
+  }
+}
+
+
 /* Resumes the decoder from an initial state or from a previous suspend. */
 int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
                              size_t size, const upb_bufhandle *handle) {
   UPB_UNUSED(p);  /* Useless; just for the benefit of the JIT. */
+
   d->buf_param = buf;
   d->size_param = size;
   d->handle = handle;
+
   if (d->residual_end > d->residual) {
     /* We have residual bytes from the last buffer. */
     assert(d->ptr == d->residual);
   } else {
     switchtobuf(d, buf, buf + size);
   }
+
   d->checkpoint = d->ptr;
+
+  if (d->skip) {
+    CHECK_RETURN(skip(d, d->skip));
+    d->checkpoint = d->ptr;
+  }
+
+  if (!buf) {
+    /* NULL buf is ok if its entire span is covered by the "skip" above, but
+     * by this point we know that "skip" doesn't cover the buffer. */
+    seterr(d, "Passed NULL buffer over non-skippable region.");
+    return upb_pbdecoder_suspend(d);
+  }
+
   if (d->top->groupnum < 0) {
     CHECK_RETURN(upb_pbdecoder_skipunknown(d, -1, 0));
     d->checkpoint = d->ptr;
   }
+
   return DECODE_OK;
 }
 
@@ -220,28 +284,6 @@ static size_t suspend_save(upb_pbdecoder *d) {
 
   switchtobuf(d, d->residual, d->residual_end);
   return d->size_param;
-}
-
-/* Skips "bytes" bytes in the stream, which may be more than available.  If we
- * skip more bytes than are available, we return a long read count to the caller
- * indicating how many bytes the caller should skip before passing a new buffer.
- */
-static int32_t skip(upb_pbdecoder *d, size_t bytes) {
-  assert(!in_residual_buf(d, d->ptr) || d->size_param == 0);
-  if (curbufleft(d) >= bytes) {
-    /* Skipped data is all in current buffer. */
-    advance(d, bytes);
-    return DECODE_OK;
-  } else {
-    /* Skipped data extends beyond currently available buffers. */
-    size_t skip;
-    d->pc = d->last;
-    skip = bytes - curbufleft(d);
-    d->bufstart_ofs += (d->end - d->buf) + skip;
-    d->residual_end = d->residual;
-    switchtobuf(d, d->residual, d->residual_end);
-    return d->size_param + skip;
-  }
 }
 
 /* Copies the next "bytes" bytes into "buf" and advances the stream.
@@ -618,18 +660,8 @@ upb_pbdecoder_frame *outer_frame(upb_pbdecoder *d) {
 
 /* The main decoder VM function.  Uses traditional bytecode dispatch loop with a
  * switch() statement. */
-size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
-                            size_t size, const upb_bufhandle *handle) {
-  upb_pbdecoder *d = closure;
-  const mgroup *group = hd;
-  int32_t result;
-  assert(buf);
-  result = upb_pbdecoder_resume(d, NULL, buf, size, handle);
-  if (result == DECODE_ENDGROUP) {
-    goto_endmsg(d);
-  }
-  CHECK_RETURN(result);
-  UPB_UNUSED(group);
+size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
+                      const upb_bufhandle* handle) {
 
 #define VMCASE(op, code) \
   case op: { code; if (consumes_input(op)) checkpoint(d); break; }
@@ -652,6 +684,7 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
     arg = instruction >> 8;
     longofs = arg;
     assert(d->ptr != d->residual_end);
+    UPB_UNUSED(group);
 #ifdef UPB_DUMP_BYTECODE
     fprintf(stderr, "s_ofs=%d buf_ofs=%d data_rem=%d buf_rem=%d delim_rem=%d "
                     "%x %s (%d)\n",
@@ -827,11 +860,14 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
         CHECK_RETURN(dispatch(d));
       })
       VMCASE(OP_HALT, {
-        return size;
+        return d->size_param;
       })
     }
   }
 }
+
+
+/* BytesHandler handlers ******************************************************/
 
 void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint) {
   upb_pbdecoder *d = closure;
@@ -841,6 +877,7 @@ void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint) {
   d->call_len = 1;
   d->callstack[0] = &halt;
   d->pc = pc;
+  d->skip = 0;
   return d;
 }
 
@@ -851,6 +888,7 @@ void *upb_pbdecoder_startjit(void *closure, const void *hd, size_t size_hint) {
   d->top->end_ofs = UINT64_MAX;
   d->bufstart_ofs = 0;
   d->call_len = 0;
+  d->skip = 0;
   return d;
 }
 
@@ -859,12 +897,9 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   const upb_pbdecodermethod *method = handler_data;
   uint64_t end;
   char dummy;
-#ifdef UPB_USE_JIT_X64
-  const mgroup *group = (const mgroup*)method->group;
-#endif
 
   if (d->residual_end > d->residual) {
-    seterr(d, "Unexpected EOF");
+    seterr(d, "Unexpected EOF: decoder still has buffered unparsed data");
     return false;
   }
 
@@ -873,15 +908,15 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
     return false;
   }
 
-  /* Message ends here. */
+  /* The user's end() call indicates that the message ends here. */
   end = offset(d);
   d->top->end_ofs = end;
 
 #ifdef UPB_USE_JIT_X64
-  if (group->jit_code) {
+  if (method->group->jit_code) {
     if (d->top != d->stack)
       d->stack->end_ofs = 0;
-    group->jit_code(closure, method->code_base.ptr, &dummy, 0, NULL);
+    method->group->jit_code(closure, method->code_base.ptr, &dummy, 0, NULL);
   } else
 #endif
   {
@@ -901,12 +936,25 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   }
 
   if (d->call_len != 0) {
-    seterr(d, "Unexpected EOF");
+    seterr(d, "Unexpected EOF inside submessage or group");
     return false;
   }
 
   return true;
 }
+
+size_t upb_pbdecoder_decode(void *decoder, const void *group, const char *buf,
+                            size_t size, const upb_bufhandle *handle) {
+  int32_t result = upb_pbdecoder_resume(decoder, NULL, buf, size, handle);
+
+  if (result == DECODE_ENDGROUP) goto_endmsg(decoder);
+  CHECK_RETURN(result);
+
+  return run_decoder_vm(decoder, group, handle);
+}
+
+
+/* Public API *****************************************************************/
 
 void upb_pbdecoder_reset(upb_pbdecoder *d) {
   d->top = d->stack;
@@ -915,27 +963,6 @@ void upb_pbdecoder_reset(upb_pbdecoder *d) {
   d->buf = d->residual;
   d->end = d->residual;
   d->residual_end = d->residual;
-}
-
-static size_t stacksize(upb_pbdecoder *d, size_t entries) {
-  UPB_UNUSED(d);
-  return entries * sizeof(upb_pbdecoder_frame);
-}
-
-static size_t callstacksize(upb_pbdecoder *d, size_t entries) {
-  UPB_UNUSED(d);
-
-#ifdef UPB_USE_JIT_X64
-  if (d->method_->is_native_) {
-    /* Each native stack frame needs two pointers, plus we need a few frames for
-     * the enter/exit trampolines. */
-    size_t ret = entries * sizeof(void*) * 2;
-    ret += sizeof(void*) * 10;
-    return ret;
-  }
-#endif
-
-  return entries * sizeof(uint32_t*);
 }
 
 upb_pbdecoder *upb_pbdecoder_create(upb_env *e, const upb_pbdecodermethod *m,
