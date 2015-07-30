@@ -134,9 +134,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "pbr::MessageDescriptor pb::IMessage.Descriptor {\n"
     "  get { return Descriptor; }\n"
     "}\n"
-    "\n"
-    "private bool _frozen = false;\n"
-    "public bool IsFrozen { get { return _frozen; } }\n\n");
+    "\n");
 
   // Parameterless constructor and partial OnConstruction method.
   printer->Print(

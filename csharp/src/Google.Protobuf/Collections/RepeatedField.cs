@@ -40,7 +40,7 @@ namespace Google.Protobuf.Collections
 {
     /// <summary>
     /// The contents of a repeated field: essentially, a collection with some extra
-    /// restrictions (no null values) and capabilities (deep cloning and freezing).
+    /// restrictions (no null values) and capabilities (deep cloning).
     /// </summary>
     /// <typeparam name="T">The element type of the repeated field.</typeparam>
     public sealed class RepeatedField<T> : IList<T>, IList, IDeepCloneable<RepeatedField<T>>, IEquatable<RepeatedField<T>>
@@ -65,7 +65,6 @@ namespace Google.Protobuf.Collections
         public RepeatedField<T> Clone()
         {
             RepeatedField<T> clone = new RepeatedField<T>();
-            // Clone is implicitly *not* frozen, even if this object is.
             if (array != EmptyArray)
             {
                 clone.array = (T[])array.Clone();
