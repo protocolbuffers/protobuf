@@ -112,6 +112,16 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void NullStringAndBytesRejected()
+        {
+            var message = new TestAllTypes();
+            Assert.Throws<ArgumentNullException>(() => message.SingleString = null);
+            Assert.Throws<ArgumentNullException>(() => message.OneofString = null);
+            Assert.Throws<ArgumentNullException>(() => message.SingleBytes = null);
+            Assert.Throws<ArgumentNullException>(() => message.OneofBytes = null);
+        }
+
+        [Test]
         public void RoundTrip_Empty()
         {
             var message = new TestAllTypes();

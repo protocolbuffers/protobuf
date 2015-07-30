@@ -81,7 +81,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   } else {
     printer->Print(
       variables_,
-      "    $name$_ = value ?? $default_value$;\n");
+      "    $name$_ = pb::Preconditions.CheckNotNull(value, \"value\");\n");
   }
   printer->Print(
     "  }\n"
@@ -183,7 +183,7 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     } else {
       printer->Print(
         variables_,
-        "    $oneof_name$_ = value ?? $default_value$;\n");
+        "    $oneof_name$_ = pb::Preconditions.CheckNotNull(value, \"value\");\n");
     }
     printer->Print(
       variables_,
