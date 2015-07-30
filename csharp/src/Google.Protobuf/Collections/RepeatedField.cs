@@ -48,7 +48,6 @@ namespace Google.Protobuf.Collections
         private static readonly T[] EmptyArray = new T[0];
         private const int MinArraySize = 8;
 
-        private bool frozen;
         private T[] array = EmptyArray;
         private int count = 0;
 
