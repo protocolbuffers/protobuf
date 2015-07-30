@@ -80,3 +80,12 @@ message DeprecatedFieldsMessage {
 message ItemField {
   int32 item = 1;
 }
+
+message ReservedNames {
+  // Force a nested type called Types
+  message SomeNestedType {
+  }
+
+  int32 types = 1;
+  int32 descriptor = 2;
+}

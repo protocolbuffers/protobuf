@@ -52,5 +52,13 @@ namespace Google.Protobuf
             // TODO(jonskeet): Reflection...
             // Assert.AreEqual(3, (int)message[field]);
         }
+
+        [Test]
+        public void ReservedNames()
+        {
+            var message = new ReservedNames { Types_ = 10, Descriptor_ = 20 };
+            // Underscores aren't reflected in the JSON.
+            Assert.AreEqual("{ \"types\": 10, \"descriptor\": 20 }", message.ToString());
+        }
     }
 }

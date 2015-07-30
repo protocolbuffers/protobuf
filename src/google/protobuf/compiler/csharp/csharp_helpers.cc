@@ -251,7 +251,13 @@ std::string GetFieldConstantName(const FieldDescriptor* field) {
 std::string GetPropertyName(const FieldDescriptor* descriptor) {
   // TODO(jtattermusch): consider introducing csharp_property_name field option
   std::string property_name = UnderscoresToPascalCase(GetFieldName(descriptor));
-  if (property_name == descriptor->containing_type()->name()) {
+  // Avoid either our own type name or reserved names. Note that not all names
+  // are reserved - a field called to_string, write_to etc would still cause a problem.
+  // There are various ways of ending up with naming collisions, but we try to avoid obvious
+  // ones.
+  if (property_name == descriptor->containing_type()->name()
+      || property_name == "Types"
+      || property_name == "Descriptor") {
     property_name += "_";
   }
   return property_name;
