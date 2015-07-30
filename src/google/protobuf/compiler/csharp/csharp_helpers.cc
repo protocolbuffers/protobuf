@@ -117,21 +117,18 @@ std::string GetFileNamespace(const FileDescriptor* descriptor) {
   return UnderscoresToCamelCase(descriptor->package(), true, true);
 }
 
-std::string GetUmbrellaClassNameInternal(const std::string& proto_file) {
+std::string GetUmbrellaClassUnqualifiedName(const FileDescriptor* descriptor) {
+  // umbrella_classname can no longer be set using message option.
+  std::string proto_file = descriptor->name();
   int lastslash = proto_file.find_last_of("/");
   std::string base = proto_file.substr(lastslash + 1);
   return UnderscoresToPascalCase(StripDotProto(base));
 }
 
-std::string GetFileUmbrellaClassname(const FileDescriptor* descriptor) {
-  // umbrella_classname can no longer be set using message option.
-  return GetUmbrellaClassNameInternal(descriptor->name());
-}
-
-std::string GetFileUmbrellaNamespace(const FileDescriptor* descriptor) {
+std::string GetUmbrellaClassNestedNamespace(const FileDescriptor* descriptor) {
   // TODO(jtattermusch): reintroduce csharp_umbrella_namespace option
   bool collision = false;
-  std::string umbrella_classname = GetFileUmbrellaClassname(descriptor);
+  std::string umbrella_classname = GetUmbrellaClassUnqualifiedName(descriptor);
   for(int i = 0; i < descriptor->message_type_count(); i++) {
     if (descriptor->message_type(i)->name() == umbrella_classname) {
       collision = true;
@@ -215,26 +212,17 @@ std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
   return "global::" + result;
 }
 
-
-
-std::string GetFullUmbrellaClassName(const FileDescriptor* descriptor) {
+std::string GetUmbrellaClassName(const FileDescriptor* descriptor) {
   std::string result = GetFileNamespace(descriptor);
   if (!result.empty()) {
     result += '.';
   }
-  result += GetQualifiedUmbrellaClassName(descriptor);
-  return "global::" + result;
-}
-
-std::string GetQualifiedUmbrellaClassName(const FileDescriptor* descriptor) {
-  std::string umbrellaNamespace = GetFileUmbrellaNamespace(descriptor);
-  std::string umbrellaClassname = GetFileUmbrellaClassname(descriptor);
-
-  std::string fullName = umbrellaClassname;
+  std::string umbrellaNamespace = GetUmbrellaClassNestedNamespace(descriptor);
   if (!umbrellaNamespace.empty()) {
-    fullName = umbrellaNamespace + "." + umbrellaClassname;
+      result += umbrellaNamespace + ".";
   }
-  return fullName;
+  result += GetUmbrellaClassUnqualifiedName(descriptor);
+  return "global::" + result;
 }
 
 std::string GetClassName(const Descriptor* descriptor) {
