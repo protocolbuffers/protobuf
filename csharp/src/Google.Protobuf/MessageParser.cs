@@ -84,7 +84,7 @@ namespace Google.Protobuf
         /// <returns>The newly parsed message.</returns>
         public T ParseFrom(byte[] data)
         {
-            ThrowHelper.ThrowIfNull(data, "data");
+            Preconditions.CheckNotNull(data, "data");
             T message = factory();
             message.MergeFrom(data);
             return message;
@@ -92,7 +92,7 @@ namespace Google.Protobuf
 
         public T ParseFrom(ByteString data)
         {
-            ThrowHelper.ThrowIfNull(data, "data");
+            Preconditions.CheckNotNull(data, "data");
             T message = factory();
             message.MergeFrom(data);
             return message;

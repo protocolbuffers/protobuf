@@ -301,7 +301,7 @@ namespace Google.Protobuf.Reflection {
     internal string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -310,7 +310,7 @@ namespace Google.Protobuf.Reflection {
     internal string Package {
       get { return package_; }
       set {
-        package_ = value ?? "";
+        package_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -393,7 +393,7 @@ namespace Google.Protobuf.Reflection {
     internal string Syntax {
       get { return syntax_; }
       set {
-        syntax_ = value ?? "";
+        syntax_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -649,7 +649,7 @@ namespace Google.Protobuf.Reflection {
     internal string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1200,7 +1200,7 @@ namespace Google.Protobuf.Reflection {
     internal string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1236,7 +1236,7 @@ namespace Google.Protobuf.Reflection {
     internal string TypeName {
       get { return typeName_; }
       set {
-        typeName_ = value ?? "";
+        typeName_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1245,7 +1245,7 @@ namespace Google.Protobuf.Reflection {
     internal string Extendee {
       get { return extendee_; }
       set {
-        extendee_ = value ?? "";
+        extendee_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1254,7 +1254,7 @@ namespace Google.Protobuf.Reflection {
     internal string DefaultValue {
       get { return defaultValue_; }
       set {
-        defaultValue_ = value ?? "";
+        defaultValue_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1545,7 +1545,7 @@ namespace Google.Protobuf.Reflection {
     internal string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1653,7 +1653,7 @@ namespace Google.Protobuf.Reflection {
     internal string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1809,7 +1809,7 @@ namespace Google.Protobuf.Reflection {
     internal string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1973,7 +1973,7 @@ namespace Google.Protobuf.Reflection {
     internal string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2132,7 +2132,7 @@ namespace Google.Protobuf.Reflection {
     internal string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2141,7 +2141,7 @@ namespace Google.Protobuf.Reflection {
     internal string InputType {
       get { return inputType_; }
       set {
-        inputType_ = value ?? "";
+        inputType_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2150,7 +2150,7 @@ namespace Google.Protobuf.Reflection {
     internal string OutputType {
       get { return outputType_; }
       set {
-        outputType_ = value ?? "";
+        outputType_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2383,7 +2383,7 @@ namespace Google.Protobuf.Reflection {
     internal string JavaPackage {
       get { return javaPackage_; }
       set {
-        javaPackage_ = value ?? "";
+        javaPackage_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2392,7 +2392,7 @@ namespace Google.Protobuf.Reflection {
     internal string JavaOuterClassname {
       get { return javaOuterClassname_; }
       set {
-        javaOuterClassname_ = value ?? "";
+        javaOuterClassname_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2437,7 +2437,7 @@ namespace Google.Protobuf.Reflection {
     internal string GoPackage {
       get { return goPackage_; }
       set {
-        goPackage_ = value ?? "";
+        goPackage_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2491,7 +2491,7 @@ namespace Google.Protobuf.Reflection {
     internal string ObjcClassPrefix {
       get { return objcClassPrefix_; }
       set {
-        objcClassPrefix_ = value ?? "";
+        objcClassPrefix_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2500,7 +2500,7 @@ namespace Google.Protobuf.Reflection {
     internal string CsharpNamespace {
       get { return csharpNamespace_; }
       set {
-        csharpNamespace_ = value ?? "";
+        csharpNamespace_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -3853,7 +3853,7 @@ namespace Google.Protobuf.Reflection {
     internal string IdentifierValue {
       get { return identifierValue_; }
       set {
-        identifierValue_ = value ?? "";
+        identifierValue_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -3889,7 +3889,7 @@ namespace Google.Protobuf.Reflection {
     internal pb::ByteString StringValue {
       get { return stringValue_; }
       set {
-        stringValue_ = value ?? pb::ByteString.Empty;
+        stringValue_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -3898,7 +3898,7 @@ namespace Google.Protobuf.Reflection {
     internal string AggregateValue {
       get { return aggregateValue_; }
       set {
-        aggregateValue_ = value ?? "";
+        aggregateValue_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -4095,7 +4095,7 @@ namespace Google.Protobuf.Reflection {
         internal string NamePart_ {
           get { return namePart_; }
           set {
-            namePart_ = value ?? "";
+            namePart_ = pb::Preconditions.CheckNotNull(value, "value");
           }
         }
 
@@ -4350,7 +4350,7 @@ namespace Google.Protobuf.Reflection {
         internal string LeadingComments {
           get { return leadingComments_; }
           set {
-            leadingComments_ = value ?? "";
+            leadingComments_ = pb::Preconditions.CheckNotNull(value, "value");
           }
         }
 
@@ -4359,7 +4359,7 @@ namespace Google.Protobuf.Reflection {
         internal string TrailingComments {
           get { return trailingComments_; }
           set {
-            trailingComments_ = value ?? "";
+            trailingComments_ = pb::Preconditions.CheckNotNull(value, "value");
           }
         }
 

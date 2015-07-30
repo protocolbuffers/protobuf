@@ -105,7 +105,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -327,7 +327,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -336,7 +336,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string TypeUrl {
       get { return typeUrl_; }
       set {
-        typeUrl_ = value ?? "";
+        typeUrl_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -610,7 +610,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -783,7 +783,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -932,7 +932,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = value ?? "";
+        name_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 

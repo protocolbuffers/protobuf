@@ -224,7 +224,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string StringValue {
       get { return kindCase_ == KindOneofCase.StringValue ? (string) kind_ : ""; }
       set {
-        kind_ = value ?? "";
+        kind_ = pb::Preconditions.CheckNotNull(value, "value");
         kindCase_ = KindOneofCase.StringValue;
       }
     }

@@ -127,17 +127,6 @@ void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
   }
 }
 
-void FieldGeneratorBase::AddNullCheck(io::Printer* printer) {
-  AddNullCheck(printer, "value");
-}
-
-void FieldGeneratorBase::AddNullCheck(io::Printer* printer, const std::string& name) {
-  if (is_nullable_type()) {
-    printer->Print("  pb::ThrowHelper.ThrowIfNull($name$, \"$name$\");\n",
-                   "name", name);
-  }
-}
-
 void FieldGeneratorBase::AddPublicMemberAttributes(io::Printer* printer) {
   AddDeprecatedFlag(printer);
 }

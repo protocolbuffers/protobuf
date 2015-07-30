@@ -822,7 +822,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Value {
       get { return value_; }
       set {
-        value_ = value ?? "";
+        value_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -928,7 +928,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public pb::ByteString Value {
       get { return value_; }
       set {
-        value_ = value ?? pb::ByteString.Empty;
+        value_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 

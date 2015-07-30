@@ -41,8 +41,8 @@ namespace Google.Protobuf
     {
         public static void MergeFrom(this IMessage message, byte[] data)
         {
-            ThrowHelper.ThrowIfNull(message, "message");
-            ThrowHelper.ThrowIfNull(data, "data");
+            Preconditions.CheckNotNull(message, "message");
+            Preconditions.CheckNotNull(data, "data");
             CodedInputStream input = CodedInputStream.CreateInstance(data);
             message.MergeFrom(input);
             input.CheckLastTagWas(0);
@@ -50,8 +50,8 @@ namespace Google.Protobuf
 
         public static void MergeFrom(this IMessage message, ByteString data)
         {
-            ThrowHelper.ThrowIfNull(message, "message");
-            ThrowHelper.ThrowIfNull(data, "data");
+            Preconditions.CheckNotNull(message, "message");
+            Preconditions.CheckNotNull(data, "data");
             CodedInputStream input = data.CreateCodedInput();
             message.MergeFrom(input);
             input.CheckLastTagWas(0);
@@ -59,8 +59,8 @@ namespace Google.Protobuf
 
         public static void MergeFrom(this IMessage message, Stream input)
         {
-            ThrowHelper.ThrowIfNull(message, "message");
-            ThrowHelper.ThrowIfNull(input, "input");
+            Preconditions.CheckNotNull(message, "message");
+            Preconditions.CheckNotNull(input, "input");
             CodedInputStream codedInput = CodedInputStream.CreateInstance(input);
             message.MergeFrom(codedInput);
             codedInput.CheckLastTagWas(0);
@@ -68,8 +68,8 @@ namespace Google.Protobuf
 
         public static void MergeDelimitedFrom(this IMessage message, Stream input)
         {
-            ThrowHelper.ThrowIfNull(message, "message");
-            ThrowHelper.ThrowIfNull(input, "input");
+            Preconditions.CheckNotNull(message, "message");
+            Preconditions.CheckNotNull(input, "input");
             int size = (int) CodedInputStream.ReadRawVarint32(input);
             Stream limitedStream = new LimitedInputStream(input, size);
             message.MergeFrom(limitedStream);
@@ -77,7 +77,7 @@ namespace Google.Protobuf
 
         public static byte[] ToByteArray(this IMessage message)
         {
-            ThrowHelper.ThrowIfNull(message, "message");
+            Preconditions.CheckNotNull(message, "message");
             byte[] result = new byte[message.CalculateSize()];
             CodedOutputStream output = CodedOutputStream.CreateInstance(result);
             message.WriteTo(output);
@@ -87,8 +87,8 @@ namespace Google.Protobuf
 
         public static void WriteTo(this IMessage message, Stream output)
         {
-            ThrowHelper.ThrowIfNull(message, "message");
-            ThrowHelper.ThrowIfNull(output, "output");
+            Preconditions.CheckNotNull(message, "message");
+            Preconditions.CheckNotNull(output, "output");
             CodedOutputStream codedOutput = CodedOutputStream.CreateInstance(output);
             message.WriteTo(codedOutput);
             codedOutput.Flush();
@@ -96,8 +96,8 @@ namespace Google.Protobuf
 
         public static void WriteDelimitedTo(this IMessage message, Stream output)
         {
-            ThrowHelper.ThrowIfNull(message, "message");
-            ThrowHelper.ThrowIfNull(output, "output");
+            Preconditions.CheckNotNull(message, "message");
+            Preconditions.CheckNotNull(output, "output");
             CodedOutputStream codedOutput = CodedOutputStream.CreateInstance(output);
             codedOutput.WriteRawVarint32((uint)message.CalculateSize());
             message.WriteTo(codedOutput);
@@ -106,7 +106,7 @@ namespace Google.Protobuf
 
         public static ByteString ToByteString(this IMessage message)
         {
-            ThrowHelper.ThrowIfNull(message, "message");
+            Preconditions.CheckNotNull(message, "message");
             return ByteString.AttachBytes(message.ToByteArray());
         }        
     }
