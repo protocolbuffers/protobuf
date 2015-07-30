@@ -6,7 +6,6 @@ NUNIT_CONSOLE=nunit-console
 
 # The rest you can leave intact
 CONFIG=Release
-KEYFILE=../keys/Google.Protobuf.snk  # TODO(jtattermusch): signing!
 SRC=$(dirname $0)/src
 
 set -ex
