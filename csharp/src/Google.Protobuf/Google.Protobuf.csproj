@@ -46,6 +46,21 @@
     <NoStdLib>true</NoStdLib>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseSigned|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\ReleaseSigned</OutputPath>
+    <IntermediateOutputPath>obj\ReleaseSigned\</IntermediateOutputPath>
+    <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
+    <DefineConstants>TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate);SIGNED</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>C:\keys\Google.Protobuf.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
