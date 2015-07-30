@@ -190,14 +190,6 @@ namespace Google.Protobuf.Reflection {
       return new FileDescriptorSet(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      file_.Freeze();
-    }
-
     public const int FileFieldNumber = 1;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FileDescriptorProto> _repeated_file_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Reflection.FileDescriptorProto.Parser);
@@ -310,28 +302,11 @@ namespace Google.Protobuf.Reflection {
       return new FileDescriptorProto(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      dependency_.Freeze();
-      publicDependency_.Freeze();
-      weakDependency_.Freeze();
-      messageType_.Freeze();
-      enumType_.Freeze();
-      service_.Freeze();
-      extension_.Freeze();
-      if (options_ != null) Options.Freeze();
-      if (sourceCodeInfo_ != null) SourceCodeInfo.Freeze();
-    }
-
     public const int NameFieldNumber = 1;
     private string name_ = "";
     internal string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -341,7 +316,6 @@ namespace Google.Protobuf.Reflection {
     internal string Package {
       get { return package_; }
       set {
-        pb::Freezable.CheckMutable(this);
         package_ = value ?? "";
       }
     }
@@ -407,7 +381,6 @@ namespace Google.Protobuf.Reflection {
     internal global::Google.Protobuf.Reflection.FileOptions Options {
       get { return options_; }
       set {
-        pb::Freezable.CheckMutable(this);
         options_ = value;
       }
     }
@@ -417,7 +390,6 @@ namespace Google.Protobuf.Reflection {
     internal global::Google.Protobuf.Reflection.SourceCodeInfo SourceCodeInfo {
       get { return sourceCodeInfo_; }
       set {
-        pb::Freezable.CheckMutable(this);
         sourceCodeInfo_ = value;
       }
     }
@@ -427,7 +399,6 @@ namespace Google.Protobuf.Reflection {
     internal string Syntax {
       get { return syntax_; }
       set {
-        pb::Freezable.CheckMutable(this);
         syntax_ = value ?? "";
       }
     }
@@ -682,28 +653,11 @@ namespace Google.Protobuf.Reflection {
       return new DescriptorProto(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      field_.Freeze();
-      extension_.Freeze();
-      nestedType_.Freeze();
-      enumType_.Freeze();
-      extensionRange_.Freeze();
-      oneofDecl_.Freeze();
-      if (options_ != null) Options.Freeze();
-      reservedRange_.Freeze();
-      reservedName_.Freeze();
-    }
-
     public const int NameFieldNumber = 1;
     private string name_ = "";
     internal string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -761,7 +715,6 @@ namespace Google.Protobuf.Reflection {
     internal global::Google.Protobuf.Reflection.MessageOptions Options {
       get { return options_; }
       set {
-        pb::Freezable.CheckMutable(this);
         options_ = value;
       }
     }
@@ -978,19 +931,11 @@ namespace Google.Protobuf.Reflection {
           return new ExtensionRange(this);
         }
 
-        public void Freeze() {
-          if (IsFrozen) {
-            return;
-          }
-          _frozen = true;
-        }
-
         public const int StartFieldNumber = 1;
         private int start_;
         internal int Start {
           get { return start_; }
           set {
-            pb::Freezable.CheckMutable(this);
             start_ = value;
           }
         }
@@ -1000,7 +945,6 @@ namespace Google.Protobuf.Reflection {
         internal int End {
           get { return end_; }
           set {
-            pb::Freezable.CheckMutable(this);
             end_ = value;
           }
         }
@@ -1122,19 +1066,11 @@ namespace Google.Protobuf.Reflection {
           return new ReservedRange(this);
         }
 
-        public void Freeze() {
-          if (IsFrozen) {
-            return;
-          }
-          _frozen = true;
-        }
-
         public const int StartFieldNumber = 1;
         private int start_;
         internal int Start {
           get { return start_; }
           set {
-            pb::Freezable.CheckMutable(this);
             start_ = value;
           }
         }
@@ -1144,7 +1080,6 @@ namespace Google.Protobuf.Reflection {
         internal int End {
           get { return end_; }
           set {
-            pb::Freezable.CheckMutable(this);
             end_ = value;
           }
         }
@@ -1278,20 +1213,11 @@ namespace Google.Protobuf.Reflection {
       return new FieldDescriptorProto(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (options_ != null) Options.Freeze();
-    }
-
     public const int NameFieldNumber = 1;
     private string name_ = "";
     internal string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -1301,7 +1227,6 @@ namespace Google.Protobuf.Reflection {
     internal int Number {
       get { return number_; }
       set {
-        pb::Freezable.CheckMutable(this);
         number_ = value;
       }
     }
@@ -1311,7 +1236,6 @@ namespace Google.Protobuf.Reflection {
     internal global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label Label {
       get { return label_; }
       set {
-        pb::Freezable.CheckMutable(this);
         label_ = value;
       }
     }
@@ -1321,7 +1245,6 @@ namespace Google.Protobuf.Reflection {
     internal global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type Type {
       get { return type_; }
       set {
-        pb::Freezable.CheckMutable(this);
         type_ = value;
       }
     }
@@ -1331,7 +1254,6 @@ namespace Google.Protobuf.Reflection {
     internal string TypeName {
       get { return typeName_; }
       set {
-        pb::Freezable.CheckMutable(this);
         typeName_ = value ?? "";
       }
     }
@@ -1341,7 +1263,6 @@ namespace Google.Protobuf.Reflection {
     internal string Extendee {
       get { return extendee_; }
       set {
-        pb::Freezable.CheckMutable(this);
         extendee_ = value ?? "";
       }
     }
@@ -1351,7 +1272,6 @@ namespace Google.Protobuf.Reflection {
     internal string DefaultValue {
       get { return defaultValue_; }
       set {
-        pb::Freezable.CheckMutable(this);
         defaultValue_ = value ?? "";
       }
     }
@@ -1361,7 +1281,6 @@ namespace Google.Protobuf.Reflection {
     internal int OneofIndex {
       get { return oneofIndex_; }
       set {
-        pb::Freezable.CheckMutable(this);
         oneofIndex_ = value;
       }
     }
@@ -1371,7 +1290,6 @@ namespace Google.Protobuf.Reflection {
     internal global::Google.Protobuf.Reflection.FieldOptions Options {
       get { return options_; }
       set {
-        pb::Freezable.CheckMutable(this);
         options_ = value;
       }
     }
@@ -1643,19 +1561,11 @@ namespace Google.Protobuf.Reflection {
       return new OneofDescriptorProto(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int NameFieldNumber = 1;
     private string name_ = "";
     internal string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -1762,21 +1672,11 @@ namespace Google.Protobuf.Reflection {
       return new EnumDescriptorProto(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      value_.Freeze();
-      if (options_ != null) Options.Freeze();
-    }
-
     public const int NameFieldNumber = 1;
     private string name_ = "";
     internal string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -1794,7 +1694,6 @@ namespace Google.Protobuf.Reflection {
     internal global::Google.Protobuf.Reflection.EnumOptions Options {
       get { return options_; }
       set {
-        pb::Freezable.CheckMutable(this);
         options_ = value;
       }
     }
@@ -1932,20 +1831,11 @@ namespace Google.Protobuf.Reflection {
       return new EnumValueDescriptorProto(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (options_ != null) Options.Freeze();
-    }
-
     public const int NameFieldNumber = 1;
     private string name_ = "";
     internal string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -1955,7 +1845,6 @@ namespace Google.Protobuf.Reflection {
     internal int Number {
       get { return number_; }
       set {
-        pb::Freezable.CheckMutable(this);
         number_ = value;
       }
     }
@@ -1965,7 +1854,6 @@ namespace Google.Protobuf.Reflection {
     internal global::Google.Protobuf.Reflection.EnumValueOptions Options {
       get { return options_; }
       set {
-        pb::Freezable.CheckMutable(this);
         options_ = value;
       }
     }
@@ -2110,21 +1998,11 @@ namespace Google.Protobuf.Reflection {
       return new ServiceDescriptorProto(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      method_.Freeze();
-      if (options_ != null) Options.Freeze();
-    }
-
     public const int NameFieldNumber = 1;
     private string name_ = "";
     internal string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -2142,7 +2020,6 @@ namespace Google.Protobuf.Reflection {
     internal global::Google.Protobuf.Reflection.ServiceOptions Options {
       get { return options_; }
       set {
-        pb::Freezable.CheckMutable(this);
         options_ = value;
       }
     }
@@ -2283,20 +2160,11 @@ namespace Google.Protobuf.Reflection {
       return new MethodDescriptorProto(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      if (options_ != null) Options.Freeze();
-    }
-
     public const int NameFieldNumber = 1;
     private string name_ = "";
     internal string Name {
       get { return name_; }
       set {
-        pb::Freezable.CheckMutable(this);
         name_ = value ?? "";
       }
     }
@@ -2306,7 +2174,6 @@ namespace Google.Protobuf.Reflection {
     internal string InputType {
       get { return inputType_; }
       set {
-        pb::Freezable.CheckMutable(this);
         inputType_ = value ?? "";
       }
     }
@@ -2316,7 +2183,6 @@ namespace Google.Protobuf.Reflection {
     internal string OutputType {
       get { return outputType_; }
       set {
-        pb::Freezable.CheckMutable(this);
         outputType_ = value ?? "";
       }
     }
@@ -2326,7 +2192,6 @@ namespace Google.Protobuf.Reflection {
     internal global::Google.Protobuf.Reflection.MethodOptions Options {
       get { return options_; }
       set {
-        pb::Freezable.CheckMutable(this);
         options_ = value;
       }
     }
@@ -2336,7 +2201,6 @@ namespace Google.Protobuf.Reflection {
     internal bool ClientStreaming {
       get { return clientStreaming_; }
       set {
-        pb::Freezable.CheckMutable(this);
         clientStreaming_ = value;
       }
     }
@@ -2346,7 +2210,6 @@ namespace Google.Protobuf.Reflection {
     internal bool ServerStreaming {
       get { return serverStreaming_; }
       set {
-        pb::Freezable.CheckMutable(this);
         serverStreaming_ = value;
       }
     }
@@ -2551,20 +2414,11 @@ namespace Google.Protobuf.Reflection {
       return new FileOptions(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      uninterpretedOption_.Freeze();
-    }
-
     public const int JavaPackageFieldNumber = 1;
     private string javaPackage_ = "";
     internal string JavaPackage {
       get { return javaPackage_; }
       set {
-        pb::Freezable.CheckMutable(this);
         javaPackage_ = value ?? "";
       }
     }
@@ -2574,7 +2428,6 @@ namespace Google.Protobuf.Reflection {
     internal string JavaOuterClassname {
       get { return javaOuterClassname_; }
       set {
-        pb::Freezable.CheckMutable(this);
         javaOuterClassname_ = value ?? "";
       }
     }
@@ -2584,7 +2437,6 @@ namespace Google.Protobuf.Reflection {
     internal bool JavaMultipleFiles {
       get { return javaMultipleFiles_; }
       set {
-        pb::Freezable.CheckMutable(this);
         javaMultipleFiles_ = value;
       }
     }
@@ -2594,7 +2446,6 @@ namespace Google.Protobuf.Reflection {
     internal bool JavaGenerateEqualsAndHash {
       get { return javaGenerateEqualsAndHash_; }
       set {
-        pb::Freezable.CheckMutable(this);
         javaGenerateEqualsAndHash_ = value;
       }
     }
@@ -2604,7 +2455,6 @@ namespace Google.Protobuf.Reflection {
     internal bool JavaStringCheckUtf8 {
       get { return javaStringCheckUtf8_; }
       set {
-        pb::Freezable.CheckMutable(this);
         javaStringCheckUtf8_ = value;
       }
     }
@@ -2614,7 +2464,6 @@ namespace Google.Protobuf.Reflection {
     internal global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode OptimizeFor {
       get { return optimizeFor_; }
       set {
-        pb::Freezable.CheckMutable(this);
         optimizeFor_ = value;
       }
     }
@@ -2624,7 +2473,6 @@ namespace Google.Protobuf.Reflection {
     internal string GoPackage {
       get { return goPackage_; }
       set {
-        pb::Freezable.CheckMutable(this);
         goPackage_ = value ?? "";
       }
     }
@@ -2634,7 +2482,6 @@ namespace Google.Protobuf.Reflection {
     internal bool CcGenericServices {
       get { return ccGenericServices_; }
       set {
-        pb::Freezable.CheckMutable(this);
         ccGenericServices_ = value;
       }
     }
@@ -2644,7 +2491,6 @@ namespace Google.Protobuf.Reflection {
     internal bool JavaGenericServices {
       get { return javaGenericServices_; }
       set {
-        pb::Freezable.CheckMutable(this);
         javaGenericServices_ = value;
       }
     }
@@ -2654,7 +2500,6 @@ namespace Google.Protobuf.Reflection {
     internal bool PyGenericServices {
       get { return pyGenericServices_; }
       set {
-        pb::Freezable.CheckMutable(this);
         pyGenericServices_ = value;
       }
     }
@@ -2664,7 +2509,6 @@ namespace Google.Protobuf.Reflection {
     internal bool Deprecated {
       get { return deprecated_; }
       set {
-        pb::Freezable.CheckMutable(this);
         deprecated_ = value;
       }
     }
@@ -2674,7 +2518,6 @@ namespace Google.Protobuf.Reflection {
     internal bool CcEnableArenas {
       get { return ccEnableArenas_; }
       set {
-        pb::Freezable.CheckMutable(this);
         ccEnableArenas_ = value;
       }
     }
@@ -2684,7 +2527,6 @@ namespace Google.Protobuf.Reflection {
     internal string ObjcClassPrefix {
       get { return objcClassPrefix_; }
       set {
-        pb::Freezable.CheckMutable(this);
         objcClassPrefix_ = value ?? "";
       }
     }
@@ -2694,7 +2536,6 @@ namespace Google.Protobuf.Reflection {
     internal string CsharpNamespace {
       get { return csharpNamespace_; }
       set {
-        pb::Freezable.CheckMutable(this);
         csharpNamespace_ = value ?? "";
       }
     }
@@ -3040,20 +2881,11 @@ namespace Google.Protobuf.Reflection {
       return new MessageOptions(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      uninterpretedOption_.Freeze();
-    }
-
     public const int MessageSetWireFormatFieldNumber = 1;
     private bool messageSetWireFormat_;
     internal bool MessageSetWireFormat {
       get { return messageSetWireFormat_; }
       set {
-        pb::Freezable.CheckMutable(this);
         messageSetWireFormat_ = value;
       }
     }
@@ -3063,7 +2895,6 @@ namespace Google.Protobuf.Reflection {
     internal bool NoStandardDescriptorAccessor {
       get { return noStandardDescriptorAccessor_; }
       set {
-        pb::Freezable.CheckMutable(this);
         noStandardDescriptorAccessor_ = value;
       }
     }
@@ -3073,7 +2904,6 @@ namespace Google.Protobuf.Reflection {
     internal bool Deprecated {
       get { return deprecated_; }
       set {
-        pb::Freezable.CheckMutable(this);
         deprecated_ = value;
       }
     }
@@ -3083,7 +2913,6 @@ namespace Google.Protobuf.Reflection {
     internal bool MapEntry {
       get { return mapEntry_; }
       set {
-        pb::Freezable.CheckMutable(this);
         mapEntry_ = value;
       }
     }
@@ -3259,20 +3088,11 @@ namespace Google.Protobuf.Reflection {
       return new FieldOptions(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      uninterpretedOption_.Freeze();
-    }
-
     public const int CtypeFieldNumber = 1;
     private global::Google.Protobuf.Reflection.FieldOptions.Types.CType ctype_ = global::Google.Protobuf.Reflection.FieldOptions.Types.CType.STRING;
     internal global::Google.Protobuf.Reflection.FieldOptions.Types.CType Ctype {
       get { return ctype_; }
       set {
-        pb::Freezable.CheckMutable(this);
         ctype_ = value;
       }
     }
@@ -3282,7 +3102,6 @@ namespace Google.Protobuf.Reflection {
     internal bool Packed {
       get { return packed_; }
       set {
-        pb::Freezable.CheckMutable(this);
         packed_ = value;
       }
     }
@@ -3292,7 +3111,6 @@ namespace Google.Protobuf.Reflection {
     internal global::Google.Protobuf.Reflection.FieldOptions.Types.JSType Jstype {
       get { return jstype_; }
       set {
-        pb::Freezable.CheckMutable(this);
         jstype_ = value;
       }
     }
@@ -3302,7 +3120,6 @@ namespace Google.Protobuf.Reflection {
     internal bool Lazy {
       get { return lazy_; }
       set {
-        pb::Freezable.CheckMutable(this);
         lazy_ = value;
       }
     }
@@ -3312,7 +3129,6 @@ namespace Google.Protobuf.Reflection {
     internal bool Deprecated {
       get { return deprecated_; }
       set {
-        pb::Freezable.CheckMutable(this);
         deprecated_ = value;
       }
     }
@@ -3322,7 +3138,6 @@ namespace Google.Protobuf.Reflection {
     internal bool Weak {
       get { return weak_; }
       set {
-        pb::Freezable.CheckMutable(this);
         weak_ = value;
       }
     }
@@ -3544,20 +3359,11 @@ namespace Google.Protobuf.Reflection {
       return new EnumOptions(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      uninterpretedOption_.Freeze();
-    }
-
     public const int AllowAliasFieldNumber = 2;
     private bool allowAlias_;
     internal bool AllowAlias {
       get { return allowAlias_; }
       set {
-        pb::Freezable.CheckMutable(this);
         allowAlias_ = value;
       }
     }
@@ -3567,7 +3373,6 @@ namespace Google.Protobuf.Reflection {
     internal bool Deprecated {
       get { return deprecated_; }
       set {
-        pb::Freezable.CheckMutable(this);
         deprecated_ = value;
       }
     }
@@ -3706,20 +3511,11 @@ namespace Google.Protobuf.Reflection {
       return new EnumValueOptions(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      uninterpretedOption_.Freeze();
-    }
-
     public const int DeprecatedFieldNumber = 1;
     private bool deprecated_;
     internal bool Deprecated {
       get { return deprecated_; }
       set {
-        pb::Freezable.CheckMutable(this);
         deprecated_ = value;
       }
     }
@@ -3842,20 +3638,11 @@ namespace Google.Protobuf.Reflection {
       return new ServiceOptions(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      uninterpretedOption_.Freeze();
-    }
-
     public const int DeprecatedFieldNumber = 33;
     private bool deprecated_;
     internal bool Deprecated {
       get { return deprecated_; }
       set {
-        pb::Freezable.CheckMutable(this);
         deprecated_ = value;
       }
     }
@@ -3978,20 +3765,11 @@ namespace Google.Protobuf.Reflection {
       return new MethodOptions(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      uninterpretedOption_.Freeze();
-    }
-
     public const int DeprecatedFieldNumber = 33;
     private bool deprecated_;
     internal bool Deprecated {
       get { return deprecated_; }
       set {
-        pb::Freezable.CheckMutable(this);
         deprecated_ = value;
       }
     }
@@ -4119,14 +3897,6 @@ namespace Google.Protobuf.Reflection {
       return new UninterpretedOption(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      name_.Freeze();
-    }
-
     public const int NameFieldNumber = 2;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart> _repeated_name_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart.Parser);
@@ -4140,7 +3910,6 @@ namespace Google.Protobuf.Reflection {
     internal string IdentifierValue {
       get { return identifierValue_; }
       set {
-        pb::Freezable.CheckMutable(this);
         identifierValue_ = value ?? "";
       }
     }
@@ -4150,7 +3919,6 @@ namespace Google.Protobuf.Reflection {
     internal ulong PositiveIntValue {
       get { return positiveIntValue_; }
       set {
-        pb::Freezable.CheckMutable(this);
         positiveIntValue_ = value;
       }
     }
@@ -4160,7 +3928,6 @@ namespace Google.Protobuf.Reflection {
     internal long NegativeIntValue {
       get { return negativeIntValue_; }
       set {
-        pb::Freezable.CheckMutable(this);
         negativeIntValue_ = value;
       }
     }
@@ -4170,7 +3937,6 @@ namespace Google.Protobuf.Reflection {
     internal double DoubleValue {
       get { return doubleValue_; }
       set {
-        pb::Freezable.CheckMutable(this);
         doubleValue_ = value;
       }
     }
@@ -4180,7 +3946,6 @@ namespace Google.Protobuf.Reflection {
     internal pb::ByteString StringValue {
       get { return stringValue_; }
       set {
-        pb::Freezable.CheckMutable(this);
         stringValue_ = value ?? pb::ByteString.Empty;
       }
     }
@@ -4190,7 +3955,6 @@ namespace Google.Protobuf.Reflection {
     internal string AggregateValue {
       get { return aggregateValue_; }
       set {
-        pb::Freezable.CheckMutable(this);
         aggregateValue_ = value ?? "";
       }
     }
@@ -4386,19 +4150,11 @@ namespace Google.Protobuf.Reflection {
           return new NamePart(this);
         }
 
-        public void Freeze() {
-          if (IsFrozen) {
-            return;
-          }
-          _frozen = true;
-        }
-
         public const int NamePart_FieldNumber = 1;
         private string namePart_ = "";
         internal string NamePart_ {
           get { return namePart_; }
           set {
-            pb::Freezable.CheckMutable(this);
             namePart_ = value ?? "";
           }
         }
@@ -4408,7 +4164,6 @@ namespace Google.Protobuf.Reflection {
         internal bool IsExtension {
           get { return isExtension_; }
           set {
-            pb::Freezable.CheckMutable(this);
             isExtension_ = value;
           }
         }
@@ -4534,14 +4289,6 @@ namespace Google.Protobuf.Reflection {
       return new SourceCodeInfo(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-      location_.Freeze();
-    }
-
     public const int LocationFieldNumber = 1;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> _repeated_location_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location.Parser);
@@ -4648,16 +4395,6 @@ namespace Google.Protobuf.Reflection {
           return new Location(this);
         }
 
-        public void Freeze() {
-          if (IsFrozen) {
-            return;
-          }
-          _frozen = true;
-          path_.Freeze();
-          span_.Freeze();
-          leadingDetachedComments_.Freeze();
-        }
-
         public const int PathFieldNumber = 1;
         private static readonly pb::FieldCodec<int> _repeated_path_codec
             = pb::FieldCodec.ForInt32(10);
@@ -4679,7 +4416,6 @@ namespace Google.Protobuf.Reflection {
         internal string LeadingComments {
           get { return leadingComments_; }
           set {
-            pb::Freezable.CheckMutable(this);
             leadingComments_ = value ?? "";
           }
         }
@@ -4689,7 +4425,6 @@ namespace Google.Protobuf.Reflection {
         internal string TrailingComments {
           get { return trailingComments_; }
           set {
-            pb::Freezable.CheckMutable(this);
             trailingComments_ = value ?? "";
           }
         }

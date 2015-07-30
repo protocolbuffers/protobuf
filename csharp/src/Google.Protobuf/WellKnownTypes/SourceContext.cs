@@ -69,19 +69,11 @@ namespace Google.Protobuf.WellKnownTypes {
       return new SourceContext(this);
     }
 
-    public void Freeze() {
-      if (IsFrozen) {
-        return;
-      }
-      _frozen = true;
-    }
-
     public const int FileNameFieldNumber = 1;
     private string fileName_ = "";
     public string FileName {
       get { return fileName_; }
       set {
-        pb::Freezable.CheckMutable(this);
         fileName_ = value ?? "";
       }
     }
