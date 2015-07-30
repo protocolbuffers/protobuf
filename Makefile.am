@@ -107,6 +107,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/LimitedInputStream.cs                           \
   csharp/src/Google.Protobuf/MessageExtensions.cs                            \
   csharp/src/Google.Protobuf/MessageParser.cs                                \
+  csharp/src/Google.Protobuf/Preconditions.cs                                \
   csharp/src/Google.Protobuf/Properties/AssemblyInfo.cs                      \
   csharp/src/Google.Protobuf/Reflection/DescriptorBase.cs                    \
   csharp/src/Google.Protobuf/Reflection/DescriptorPool.cs                    \
@@ -133,7 +134,6 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Reflection/RepeatedFieldAccessor.cs             \
   csharp/src/Google.Protobuf/Reflection/ServiceDescriptor.cs                 \
   csharp/src/Google.Protobuf/Reflection/SingleFieldAccessor.cs               \
-  csharp/src/Google.Protobuf/ThrowHelper.cs                                  \
   csharp/src/Google.Protobuf/WellKnownTypes/Any.cs                           \
   csharp/src/Google.Protobuf/WellKnownTypes/Api.cs                           \
   csharp/src/Google.Protobuf/WellKnownTypes/Duration.cs                      \

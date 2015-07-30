@@ -112,13 +112,13 @@ namespace Google.Protobuf.Collections
 
         public bool ContainsKey(TKey key)
         {
-            ThrowHelper.ThrowIfNull(key, "key");
+            Preconditions.CheckNotNullUnconstrained(key, "key");
             return map.ContainsKey(key);
         }
 
         public bool Remove(TKey key)
         {
-            ThrowHelper.ThrowIfNull(key, "key");
+            Preconditions.CheckNotNullUnconstrained(key, "key");
             LinkedListNode<KeyValuePair<TKey, TValue>> node;
             if (map.TryGetValue(key, out node))
             {
@@ -151,7 +151,7 @@ namespace Google.Protobuf.Collections
         {
             get
             {
-                ThrowHelper.ThrowIfNull(key, "key");
+                Preconditions.CheckNotNullUnconstrained(key, "key");
                 TValue value;
                 if (TryGetValue(key, out value))
                 {
@@ -161,11 +161,11 @@ namespace Google.Protobuf.Collections
             }
             set
             {
-                ThrowHelper.ThrowIfNull(key, "key");
+                Preconditions.CheckNotNullUnconstrained(key, "key");
                 // value == null check here is redundant, but avoids boxing.
                 if (value == null && !allowNullValues)
                 {
-                    ThrowHelper.ThrowIfNull(value, "value");
+                    Preconditions.CheckNotNullUnconstrained(value, "value");
                 }
                 LinkedListNode<KeyValuePair<TKey, TValue>> node;
                 var pair = new KeyValuePair<TKey, TValue>(key, value);
@@ -187,7 +187,7 @@ namespace Google.Protobuf.Collections
 
         public void Add(IDictionary<TKey, TValue> entries)
         {
-            ThrowHelper.ThrowIfNull(entries, "entries");
+            Preconditions.CheckNotNull(entries, "entries");
             foreach (var pair in entries)
             {
                 Add(pair.Key, pair.Value);
@@ -374,7 +374,7 @@ namespace Google.Protobuf.Collections
 
         void IDictionary.Remove(object key)
         {
-            ThrowHelper.ThrowIfNull(key, "key");
+            Preconditions.CheckNotNull(key, "key");
             if (!(key is TKey))
             {
                 return;
@@ -403,7 +403,7 @@ namespace Google.Protobuf.Collections
         {
             get
             {
-                ThrowHelper.ThrowIfNull(key, "key");
+                Preconditions.CheckNotNull(key, "key");
                 if (!(key is TKey))
                 {
                     return null;

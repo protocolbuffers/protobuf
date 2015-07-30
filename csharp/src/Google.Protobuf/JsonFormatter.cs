@@ -120,7 +120,7 @@ namespace Google.Protobuf
 
         public string Format(IMessage message)
         {
-            ThrowHelper.ThrowIfNull(message, "message");
+            Preconditions.CheckNotNull(message, "message");
             StringBuilder builder = new StringBuilder();
             // TODO(jonskeet): Handle well-known types here.
             // Our reflection support needs improving so that we can get at the descriptor

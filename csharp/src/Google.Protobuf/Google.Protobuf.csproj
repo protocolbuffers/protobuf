@@ -96,7 +96,7 @@
     <Compile Include="Reflection\RepeatedFieldAccessor.cs" />
     <Compile Include="Reflection\ServiceDescriptor.cs" />
     <Compile Include="Reflection\SingleFieldAccessor.cs" />
-    <Compile Include="ThrowHelper.cs" />
+    <Compile Include="Preconditions.cs" />
     <Compile Include="WellKnownTypes\Any.cs" />
     <Compile Include="WellKnownTypes\Api.cs" />
     <Compile Include="WellKnownTypes\Duration.cs" />
