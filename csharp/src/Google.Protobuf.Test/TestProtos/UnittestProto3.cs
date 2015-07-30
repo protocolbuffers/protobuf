@@ -232,9 +232,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public TestAllTypes() {
       OnConstruction();
     }
@@ -1473,9 +1470,6 @@ namespace Google.Protobuf.TestProtos {
           get { return Descriptor; }
         }
 
-        private bool _frozen = false;
-        public bool IsFrozen { get { return _frozen; } }
-
         public NestedMessage() {
           OnConstruction();
         }
@@ -1586,9 +1580,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public NestedTestAllTypes() {
       OnConstruction();
@@ -1752,9 +1743,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public TestDeprecatedFields() {
       OnConstruction();
     }
@@ -1862,9 +1850,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public ForeignMessage() {
       OnConstruction();
     }
@@ -1971,9 +1956,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public TestReservedFields() {
       OnConstruction();
     }
@@ -2053,9 +2035,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public TestForeignNested() {
       OnConstruction();
@@ -2168,9 +2147,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public TestReallyLargeTagNumber() {
       OnConstruction();
@@ -2303,9 +2279,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public TestRecursiveMessage() {
       OnConstruction();
@@ -2445,9 +2418,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public TestMutualRecursionA() {
       OnConstruction();
     }
@@ -2559,9 +2529,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public TestMutualRecursionB() {
       OnConstruction();
@@ -2700,9 +2667,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public TestCamelCaseFieldNames() {
       OnConstruction();
@@ -2968,9 +2932,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public TestFieldOrderings() {
       OnConstruction();
     }
@@ -3162,9 +3123,6 @@ namespace Google.Protobuf.TestProtos {
           get { return Descriptor; }
         }
 
-        private bool _frozen = false;
-        public bool IsFrozen { get { return _frozen; } }
-
         public NestedMessage() {
           OnConstruction();
         }
@@ -3302,9 +3260,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public SparseEnumMessage() {
       OnConstruction();
     }
@@ -3410,9 +3365,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public OneString() {
       OnConstruction();
@@ -3520,9 +3472,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public MoreString() {
       OnConstruction();
     }
@@ -3620,9 +3569,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public OneBytes() {
       OnConstruction();
@@ -3730,9 +3676,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public MoreBytes() {
       OnConstruction();
     }
@@ -3838,9 +3781,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public Int32Message() {
       OnConstruction();
@@ -3948,9 +3888,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public Uint32Message() {
       OnConstruction();
     }
@@ -4056,9 +3993,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public Int64Message() {
       OnConstruction();
@@ -4166,9 +4100,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public Uint64Message() {
       OnConstruction();
     }
@@ -4275,9 +4206,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public BoolMessage() {
       OnConstruction();
     }
@@ -4383,9 +4311,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public TestOneof() {
       OnConstruction();
@@ -4578,9 +4503,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public TestPackedTypes() {
       OnConstruction();
@@ -4928,9 +4850,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public TestUnpackedTypes() {
       OnConstruction();
     }
@@ -5277,9 +5196,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public TestRepeatedScalarDifferentTagSizes() {
       OnConstruction();
     }
@@ -5474,9 +5390,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public TestCommentInjectionMessage() {
       OnConstruction();
     }
@@ -5583,9 +5496,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public FooRequest() {
       OnConstruction();
     }
@@ -5665,9 +5575,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public FooResponse() {
       OnConstruction();
@@ -5749,9 +5656,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public FooClientMessage() {
       OnConstruction();
     }
@@ -5831,9 +5735,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public FooServerMessage() {
       OnConstruction();
@@ -5915,9 +5816,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public BarRequest() {
       OnConstruction();
     }
@@ -5997,9 +5895,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public BarResponse() {
       OnConstruction();

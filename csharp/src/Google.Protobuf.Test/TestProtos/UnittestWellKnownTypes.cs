@@ -183,9 +183,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public TestWellKnownTypes() {
       OnConstruction();
     }
@@ -833,9 +830,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public RepeatedWellKnownTypes() {
       OnConstruction();
     }
@@ -1239,9 +1233,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public OneofWellKnownTypes() {
       OnConstruction();
@@ -1909,9 +1900,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public MapWellKnownTypes() {
       OnConstruction();

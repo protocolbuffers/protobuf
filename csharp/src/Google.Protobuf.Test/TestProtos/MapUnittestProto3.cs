@@ -183,9 +183,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public TestMap() {
       OnConstruction();
     }
@@ -572,9 +569,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public TestMapSubmessage() {
       OnConstruction();
     }
@@ -687,9 +681,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public TestMessageMap() {
       OnConstruction();
     }
@@ -787,9 +778,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public TestSameTypeMap() {
       OnConstruction();
@@ -906,9 +894,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public TestArenaMap() {
       OnConstruction();
@@ -1260,9 +1245,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public MessageContainingEnumCalledType() {
       OnConstruction();
     }
@@ -1370,9 +1352,6 @@ namespace Google.Protobuf.TestProtos {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public MessageContainingMapCalledEntry() {
       OnConstruction();

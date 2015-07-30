@@ -51,9 +51,6 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public Any() {
       OnConstruction();
     }

@@ -61,9 +61,6 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public Api() {
       OnConstruction();
     }
@@ -263,9 +260,6 @@ namespace Google.Protobuf.WellKnownTypes {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public Method() {
       OnConstruction();

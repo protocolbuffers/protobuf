@@ -61,9 +61,6 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public DoubleValue() {
       OnConstruction();
     }
@@ -169,9 +166,6 @@ namespace Google.Protobuf.WellKnownTypes {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public FloatValue() {
       OnConstruction();
@@ -279,9 +273,6 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public Int64Value() {
       OnConstruction();
     }
@@ -387,9 +378,6 @@ namespace Google.Protobuf.WellKnownTypes {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public UInt64Value() {
       OnConstruction();
@@ -497,9 +485,6 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public Int32Value() {
       OnConstruction();
     }
@@ -605,9 +590,6 @@ namespace Google.Protobuf.WellKnownTypes {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public UInt32Value() {
       OnConstruction();
@@ -715,9 +697,6 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public BoolValue() {
       OnConstruction();
     }
@@ -824,9 +803,6 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public StringValue() {
       OnConstruction();
     }
@@ -932,9 +908,6 @@ namespace Google.Protobuf.WellKnownTypes {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public BytesValue() {
       OnConstruction();

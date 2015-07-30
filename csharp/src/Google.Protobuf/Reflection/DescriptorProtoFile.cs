@@ -173,9 +173,6 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public FileDescriptorSet() {
       OnConstruction();
     }
@@ -273,9 +270,6 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public FileDescriptorProto() {
       OnConstruction();
@@ -627,9 +621,6 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public DescriptorProto() {
       OnConstruction();
     }
@@ -913,9 +904,6 @@ namespace Google.Protobuf.Reflection {
           get { return Descriptor; }
         }
 
-        private bool _frozen = false;
-        public bool IsFrozen { get { return _frozen; } }
-
         public ExtensionRange() {
           OnConstruction();
         }
@@ -1047,9 +1035,6 @@ namespace Google.Protobuf.Reflection {
         pbr::MessageDescriptor pb::IMessage.Descriptor {
           get { return Descriptor; }
         }
-
-        private bool _frozen = false;
-        public bool IsFrozen { get { return _frozen; } }
 
         public ReservedRange() {
           OnConstruction();
@@ -1187,9 +1172,6 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public FieldDescriptorProto() {
       OnConstruction();
@@ -1544,9 +1526,6 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public OneofDescriptorProto() {
       OnConstruction();
     }
@@ -1652,9 +1631,6 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public EnumDescriptorProto() {
       OnConstruction();
@@ -1811,9 +1787,6 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public EnumValueDescriptorProto() {
       OnConstruction();
@@ -1979,9 +1952,6 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public ServiceDescriptorProto() {
       OnConstruction();
     }
@@ -2137,9 +2107,6 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public MethodDescriptorProto() {
       OnConstruction();
@@ -2382,9 +2349,6 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public FileOptions() {
       OnConstruction();
@@ -2860,9 +2824,6 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public MessageOptions() {
       OnConstruction();
     }
@@ -3064,9 +3025,6 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public FieldOptions() {
       OnConstruction();
@@ -3340,9 +3298,6 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public EnumOptions() {
       OnConstruction();
     }
@@ -3493,9 +3448,6 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public EnumValueOptions() {
       OnConstruction();
     }
@@ -3619,9 +3571,6 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public ServiceOptions() {
       OnConstruction();
@@ -3747,9 +3696,6 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public MethodOptions() {
       OnConstruction();
     }
@@ -3873,9 +3819,6 @@ namespace Google.Protobuf.Reflection {
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
-
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
 
     public UninterpretedOption() {
       OnConstruction();
@@ -4132,9 +4075,6 @@ namespace Google.Protobuf.Reflection {
           get { return Descriptor; }
         }
 
-        private bool _frozen = false;
-        public bool IsFrozen { get { return _frozen; } }
-
         public NamePart() {
           OnConstruction();
         }
@@ -4272,9 +4212,6 @@ namespace Google.Protobuf.Reflection {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public SourceCodeInfo() {
       OnConstruction();
     }
@@ -4373,9 +4310,6 @@ namespace Google.Protobuf.Reflection {
         pbr::MessageDescriptor pb::IMessage.Descriptor {
           get { return Descriptor; }
         }
-
-        private bool _frozen = false;
-        public bool IsFrozen { get { return _frozen; } }
 
         public Location() {
           OnConstruction();

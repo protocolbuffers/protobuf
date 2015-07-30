@@ -48,9 +48,6 @@ namespace Google.Protobuf.TestProtos {
       get { return Descriptor; }
     }
 
-    private bool _frozen = false;
-    public bool IsFrozen { get { return _frozen; } }
-
     public PublicImportMessage() {
       OnConstruction();
     }
