@@ -34,6 +34,7 @@ using System;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 using UnitTest.Issues.TestProtos;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Google.Protobuf
 {
@@ -308,6 +309,66 @@ namespace Google.Protobuf
             AssertJson("{ 'plainString': 'plain', 'o2String': 'o2', 'plainInt32': 10, 'o1Int32': 5 }", formatter.Format(message));
             message = new TestJsonFieldOrdering { O1String = "", O2Int32 = 0, PlainInt32 = 10, PlainString = "plain" };
             AssertJson("{ 'plainString': 'plain', 'o1String': '', 'plainInt32': 10, 'o2Int32': 0 }", formatter.Format(message));
+        }
+
+        [Test]
+        public void TimestampStandalone()
+        {
+            Assert.AreEqual("1970-01-01T00:00:00Z", new Timestamp().ToString());
+            Assert.AreEqual("1970-01-01T00:00:00.100Z", new Timestamp { Nanos = 100000000 }.ToString());
+            Assert.AreEqual("1970-01-01T00:00:00.120Z", new Timestamp { Nanos = 120000000 }.ToString());
+            Assert.AreEqual("1970-01-01T00:00:00.123Z", new Timestamp { Nanos = 123000000 }.ToString());
+            Assert.AreEqual("1970-01-01T00:00:00.123400Z", new Timestamp { Nanos = 123400000 }.ToString());
+            Assert.AreEqual("1970-01-01T00:00:00.123450Z", new Timestamp { Nanos = 123450000 }.ToString());
+            Assert.AreEqual("1970-01-01T00:00:00.123456Z", new Timestamp { Nanos = 123456000 }.ToString());
+            Assert.AreEqual("1970-01-01T00:00:00.123456700Z", new Timestamp { Nanos = 123456700 }.ToString());
+            Assert.AreEqual("1970-01-01T00:00:00.123456780Z", new Timestamp { Nanos = 123456780 }.ToString());
+            Assert.AreEqual("1970-01-01T00:00:00.123456789Z", new Timestamp { Nanos = 123456789 }.ToString());
+
+            // One before and one after the Unix epoch
+            Assert.AreEqual("1673-06-19T12:34:56Z",
+                new DateTime(1673, 6, 19, 12, 34, 56, DateTimeKind.Utc).ToTimestamp().ToString());
+            Assert.AreEqual("2015-07-31T10:29:34Z",
+                new DateTime(2015, 7, 31, 10, 29, 34, DateTimeKind.Utc).ToTimestamp().ToString());
+        }
+
+        [Test]
+        public void TimestampField()
+        {
+            var message = new TestWellKnownTypes { TimestampField = new Timestamp() };
+            AssertJson("{ 'timestampField': '1970-01-01T00:00:00Z' }", JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        [TestCase(0, 0, "0s")]
+        [TestCase(1, 0, "1s")]
+        [TestCase(-1, 0, "-1s")]
+        [TestCase(0, 100000000, "0.100s")]
+        [TestCase(0, 120000000, "0.120s")]
+        [TestCase(0, 123000000, "0.123s")]
+        [TestCase(0, 123400000, "0.123400s")]
+        [TestCase(0, 123450000, "0.123450s")]
+        [TestCase(0, 123456000, "0.123456s")]
+        [TestCase(0, 123456700, "0.123456700s")]
+        [TestCase(0, 123456780, "0.123456780s")]
+        [TestCase(0, 123456789, "0.123456789s")]
+        [TestCase(0, -100000000, "-0.100s")]
+        [TestCase(1, 100000000, "1.100s")]
+        [TestCase(-1, -100000000, "-1.100s")]
+        // Non-normalized examples
+        [TestCase(1, 2123456789, "3.123456789s")]
+        [TestCase(1, -100000000, "0.900s")]
+        public void DurationStandalone(long seconds, int nanoseconds, string expected)
+        {
+            Assert.AreEqual(expected, new Duration { Seconds = seconds, Nanos = nanoseconds }.ToString());
+        }
+
+        [Test]
+        public void DurationField()
+        {
+            var message = new TestWellKnownTypes { DurationField = new Duration() };
+            AssertJson("{ 'durationField': '0s' }", JsonFormatter.Default.Format(message));
+
         }
 
         /// <summary>
