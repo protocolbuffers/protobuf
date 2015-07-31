@@ -250,7 +250,7 @@ namespace Google.Protobuf.Reflection
             /// </value>
             public IList<FieldDescriptor> InFieldNumberOrder()
             {
-                return messageDescriptor.fieldsInDeclarationOrder;
+                return messageDescriptor.fieldsInNumberOrder;
             }
 
             /// <summary>
