@@ -11,24 +11,31 @@ if (MSVC)
   option(ZLIB "Build with zlib support" OFF)
 endif (MSVC)
 
-# Path to common header
-set(protobuf_COMMON_HEADER "../src/google/protobuf/stubs/common.h")
+# Path to main configure script
+set(protobuf_CONFIGURE_SCRIPT "../configure.ac")
 
-# Parse version from common header
-file(STRINGS "${protobuf_COMMON_HEADER}" protobuf_VERSION_LINE
+# Parse version from configure script
+file(STRINGS "${protobuf_CONFIGURE_SCRIPT}" protobuf_VERSION_LINE
   LIMIT_COUNT 1
-  REGEX "^#define GOOGLE_PROTOBUF_VERSION [0-9]+$")
-string(REGEX REPLACE "^.*PROTOBUF_VERSION ([0-9]+).*$" "\\1"
-    protobuf_VERSION_NUMBER "${protobuf_VERSION_LINE}")
-math(EXPR protobuf_VERSION_MICRO
-  "${protobuf_VERSION_NUMBER} % 1000")
-math(EXPR protobuf_VERSION_MINOR
-  "(${protobuf_VERSION_NUMBER} - ${protobuf_VERSION_MICRO}) % 1000000 / 1000")
-math(EXPR protobuf_VERSION_MAJOR
-  "(${protobuf_VERSION_NUMBER} - ${protobuf_VERSION_MINOR} * 1000 - ${protobuf_VERSION_MICRO}) % 1000000000 / 1000000")
-set(protobuf_VERSION_PATCH ${protobuf_VERSION_MICRO})
+  REGEX "^AC_INIT")
+# Replace special characters
+string(REPLACE "(" "_" protobuf_VERSION_LINE ${protobuf_VERSION_LINE})
+string(REPLACE ")" "_" protobuf_VERSION_LINE ${protobuf_VERSION_LINE})
+string(REPLACE "[" "_" protobuf_VERSION_LINE ${protobuf_VERSION_LINE})
+string(REPLACE "]" "_" protobuf_VERSION_LINE ${protobuf_VERSION_LINE})
+# Parse version string
+string(REGEX REPLACE "^AC_INIT__Protocol Buffers_,_([^_]+).*$" "\\1"
+    protobuf_VERSION_STRING "${protobuf_VERSION_LINE}")
+# Parse version tweaks
+string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*$" "\\1"
+  protobuf_VERSION_MAJOR "${protobuf_VERSION_STRING}")
+string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*$" "\\2"
+  protobuf_VERSION_MINOR "${protobuf_VERSION_STRING}")
+string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*$" "\\3"
+  protobuf_VERSION_PATCH "${protobuf_VERSION_STRING}")
+# Package version
 set(protobuf_VERSION
-  "${protobuf_VERSION_MAJOR}.${protobuf_VERSION_MINOR}.${protobuf_VERSION_MICRO}")
+  "${protobuf_VERSION_MAJOR}.${protobuf_VERSION_MINOR}.${protobuf_VERSION_PATCH}")
 
 add_definitions(-DGOOGLE_PROTOBUF_CMAKE_BUILD)
 

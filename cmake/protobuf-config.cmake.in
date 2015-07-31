@@ -1,1 +1,3 @@
+set(protobuf_VERSION_STRING "@protobuf_VERSION_STRING@")
+
 include("${CMAKE_CURRENT_LIST_DIR}/protobuf-targets.cmake")
