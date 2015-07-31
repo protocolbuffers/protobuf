@@ -89,3 +89,28 @@ message ReservedNames {
   int32 types = 1;
   int32 descriptor = 2;
 }
+
+message TestJsonFieldOrdering {
+  // These fields are deliberately not declared in numeric
+  // order, and the oneof fields aren't contiguous either.
+  // This allows for reasonably robust tests of JSON output
+  // ordering.
+  // TestFieldOrderings in unittest_proto3.proto is similar,
+  // but doesn't include oneofs.
+  // TODO: Consider adding 
+  
+  int32 plain_int32 = 4;
+
+  oneof o1 {
+    string o1_string = 2;
+    int32 o1_int32 = 5;
+  }
+  
+  string plain_string = 1;
+  
+  oneof o2 {
+    int32 o2_int32 = 6;
+    string o2_string = 3;
+  }
+  
+}
