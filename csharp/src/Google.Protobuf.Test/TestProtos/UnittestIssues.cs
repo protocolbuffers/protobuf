@@ -34,11 +34,13 @@ namespace UnitTest.Issues.TestProtos {
             "aXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkQ2hpbGRCAhgBEjYKCUVudW1WYWx1", 
             "ZRgFIAEoDjIfLnVuaXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkRW51bUICGAES", 
             "NgoJRW51bUFycmF5GAYgAygOMh8udW5pdHRlc3RfaXNzdWVzLkRlcHJlY2F0", 
-            "ZWRFbnVtQgIYASIZCglJdGVtRmllbGQSDAoEaXRlbRgBIAEoBSpVCgxOZWdh", 
-            "dGl2ZUVudW0SFgoSTkVHQVRJVkVfRU5VTV9aRVJPEAASFgoJRml2ZUJlbG93", 
-            "EPv//////////wESFQoITWludXNPbmUQ////////////ASouCg5EZXByZWNh", 
-            "dGVkRW51bRITCg9ERVBSRUNBVEVEX1pFUk8QABIHCgNvbmUQAUIfSAGqAhpV", 
-            "bml0VGVzdC5Jc3N1ZXMuVGVzdFByb3Rvc2IGcHJvdG8z"));
+            "ZWRFbnVtQgIYASIZCglJdGVtRmllbGQSDAoEaXRlbRgBIAEoBSJECg1SZXNl", 
+            "cnZlZE5hbWVzEg0KBXR5cGVzGAEgASgFEhIKCmRlc2NyaXB0b3IYAiABKAUa", 
+            "EAoOU29tZU5lc3RlZFR5cGUqVQoMTmVnYXRpdmVFbnVtEhYKEk5FR0FUSVZF", 
+            "X0VOVU1fWkVSTxAAEhYKCUZpdmVCZWxvdxD7//////////8BEhUKCE1pbnVz", 
+            "T25lEP///////////wEqLgoORGVwcmVjYXRlZEVudW0SEwoPREVQUkVDQVRF", 
+            "RF9aRVJPEAASBwoDb25lEAFCH0gBqgIaVW5pdFRlc3QuSXNzdWVzLlRlc3RQ", 
+            "cm90b3NiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedCodeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, new pbr::GeneratedCodeInfo[] {
@@ -46,7 +48,8 @@ namespace UnitTest.Issues.TestProtos {
             new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.NegativeEnumMessage), new[]{ "Value", "Values", "PackedValues" }, null, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.DeprecatedChild), null, null, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage), new[]{ "PrimitiveValue", "PrimitiveArray", "MessageValue", "MessageArray", "EnumValue", "EnumArray" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ItemField), new[]{ "Item" }, null, null, null)
+            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ItemField), new[]{ "Item" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames), new[]{ "Types_", "Descriptor_" }, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType), null, null, null, null)})
           }));
     }
     #endregion
@@ -872,6 +875,224 @@ namespace UnitTest.Issues.TestProtos {
         }
       }
     }
+
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  public sealed partial class ReservedNames : pb::IMessage<ReservedNames> {
+    private static readonly pb::MessageParser<ReservedNames> _parser = new pb::MessageParser<ReservedNames>(() => new ReservedNames());
+    public static pb::MessageParser<ReservedNames> Parser { get { return _parser; } }
+
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[5]; }
+    }
+
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    public ReservedNames() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    public ReservedNames(ReservedNames other) : this() {
+      types_ = other.types_;
+      descriptor_ = other.descriptor_;
+    }
+
+    public ReservedNames Clone() {
+      return new ReservedNames(this);
+    }
+
+    public const int Types_FieldNumber = 1;
+    private int types_;
+    public int Types_ {
+      get { return types_; }
+      set {
+        types_ = value;
+      }
+    }
+
+    public const int Descriptor_FieldNumber = 2;
+    private int descriptor_;
+    public int Descriptor_ {
+      get { return descriptor_; }
+      set {
+        descriptor_ = value;
+      }
+    }
+
+    public override bool Equals(object other) {
+      return Equals(other as ReservedNames);
+    }
+
+    public bool Equals(ReservedNames other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Types_ != other.Types_) return false;
+      if (Descriptor_ != other.Descriptor_) return false;
+      return true;
+    }
+
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Types_ != 0) hash ^= Types_.GetHashCode();
+      if (Descriptor_ != 0) hash ^= Descriptor_.GetHashCode();
+      return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Types_ != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Types_);
+      }
+      if (Descriptor_ != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Descriptor_);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (Types_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Types_);
+      }
+      if (Descriptor_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Descriptor_);
+      }
+      return size;
+    }
+
+    public void MergeFrom(ReservedNames other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Types_ != 0) {
+        Types_ = other.Types_;
+      }
+      if (other.Descriptor_ != 0) {
+        Descriptor_ = other.Descriptor_;
+      }
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while (input.ReadTag(out tag)) {
+        switch(tag) {
+          case 0:
+            throw pb::InvalidProtocolBufferException.InvalidTag();
+          default:
+            if (pb::WireFormat.IsEndGroupTag(tag)) {
+              return;
+            }
+            break;
+          case 8: {
+            Types_ = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Descriptor_ = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+    #region Nested types
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    public static partial class Types {
+      [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+      public sealed partial class SomeNestedType : pb::IMessage<SomeNestedType> {
+        private static readonly pb::MessageParser<SomeNestedType> _parser = new pb::MessageParser<SomeNestedType>(() => new SomeNestedType());
+        public static pb::MessageParser<SomeNestedType> Parser { get { return _parser; } }
+
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::UnitTest.Issues.TestProtos.ReservedNames.Descriptor.NestedTypes[0]; }
+        }
+
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        public SomeNestedType() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        public SomeNestedType(SomeNestedType other) : this() {
+        }
+
+        public SomeNestedType Clone() {
+          return new SomeNestedType(this);
+        }
+
+        public override bool Equals(object other) {
+          return Equals(other as SomeNestedType);
+        }
+
+        public bool Equals(SomeNestedType other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          return true;
+        }
+
+        public override int GetHashCode() {
+          int hash = 1;
+          return hash;
+        }
+
+        public override string ToString() {
+          return pb::JsonFormatter.Default.Format(this);
+        }
+
+        public void WriteTo(pb::CodedOutputStream output) {
+        }
+
+        public int CalculateSize() {
+          int size = 0;
+          return size;
+        }
+
+        public void MergeFrom(SomeNestedType other) {
+          if (other == null) {
+            return;
+          }
+        }
+
+        public void MergeFrom(pb::CodedInputStream input) {
+          uint tag;
+          while (input.ReadTag(out tag)) {
+            switch(tag) {
+              case 0:
+                throw pb::InvalidProtocolBufferException.InvalidTag();
+              default:
+                if (pb::WireFormat.IsEndGroupTag(tag)) {
+                  return;
+                }
+                break;
+            }
+          }
+        }
+
+      }
+
+    }
+    #endregion
 
   }
 
