@@ -69,13 +69,12 @@ CSharpType GetCSharpType(FieldDescriptor::Type type);
 
 std::string StripDotProto(const std::string& proto_file);
 
-std::string GetFileUmbrellaClassname(const FileDescriptor* descriptor);
+// Gets unqualified name of the umbrella class
+std::string GetUmbrellaClassUnqualifiedName(const FileDescriptor* descriptor);
 
-std::string GetFileUmbrellaNamespace(const FileDescriptor* descriptor);
-
-std::string GetFullUmbrellaClassName(const FileDescriptor* descriptor);
-
-std::string GetQualifiedUmbrellaClassName(const FileDescriptor* descriptor);
+// Gets name of the nested for umbrella class (just the nested part,
+// not including the GetFileNamespace part).
+std::string GetUmbrellaClassNestedNamespace(const FileDescriptor* descriptor);
 
 std::string GetClassName(const Descriptor* descriptor);
 

@@ -27,7 +27,6 @@ __EOF__
 fi
 
 cd src
-make $@ google/protobuf/stubs/pbconfig.h
 
 declare -a RUNTIME_PROTO_FILES=(\
   google/protobuf/any.proto \

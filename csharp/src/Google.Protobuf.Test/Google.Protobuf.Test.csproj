@@ -97,6 +97,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestCornerCases.cs" />
     <Compile Include="TestProtos\UnittestWellKnownTypes.cs" />
+    <Compile Include="WellKnownTypes\DurationTest.cs" />
+    <Compile Include="WellKnownTypes\TimestampTest.cs" />
     <Compile Include="WellKnownTypes\WrappersTest.cs" />
   </ItemGroup>
   <ItemGroup>

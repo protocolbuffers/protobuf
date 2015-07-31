@@ -1,5 +1,6 @@
+﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2015 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,56 +28,34 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#endregion
 
-// Author: kenton@google.com (Kenton Varda)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
-//
-// Provides a mechanism for mapping a descriptor to the
-// fully-qualified name of the corresponding C# class.
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_NAMES_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_NAMES_H__
+namespace Google.Protobuf.WellKnownTypes
+{
+    /// <summary>
+    /// Extension methods on BCL time-related types, converting to protobuf types.
+    /// </summary>
+    public static class TimeExtensions
+    {
+        public static Timestamp ToTimestamp(this DateTime dateTime)
+        {
+            return Timestamp.FromDateTime(dateTime);
+        }
 
-#include <string>
+        public static Timestamp ToTimestamp(this DateTimeOffset dateTimeOffset)
+        {
+            return Timestamp.FromDateTimeOffset(dateTimeOffset);
+        }
 
-namespace google {
-namespace protobuf {
-
-class Descriptor;
-class EnumDescriptor;
-class FileDescriptor;
-class ServiceDescriptor;
-
-namespace compiler {
-namespace csharp {
-
-// Requires:
-//   descriptor != NULL
-//
-// Returns:
-//   The namespace to use for given file descriptor.
-string GetFileNamespace(const FileDescriptor* descriptor);
-
-// Requires:
-//   descriptor != NULL
-//
-// Returns:
-//   The fully-qualified C# class name.
-string GetClassName(const Descriptor* descriptor);
-
-// Requires:
-//   descriptor != NULL
-//
-// Returns:
-//   The fully-qualified name of the C# class that provides
-//   access to the file descriptor. Proto compiler generates
-//   such class for each .proto file processed.
-std::string GetUmbrellaClassName(const FileDescriptor* descriptor);
-
-}  // namespace csharp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_NAMES_H__
+        public static Duration ToDuration(this TimeSpan timeSpan)
+        {
+            return Duration.FromTimeSpan(timeSpan);
+        }
+    }
+}
