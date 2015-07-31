@@ -238,5 +238,18 @@ namespace Google.Protobuf.Reflection
             Assert.IsNull(fieldDescriptor.Accessor);
             Assert.IsNull(messageDescriptor.GeneratedType);
         }
+
+        // From TestFieldOrdering:
+        // string my_string = 11;
+        // int64 my_int = 1;
+        // float my_float = 101;
+        // NestedMessage single_nested_message = 200;
+        [Test]
+        public void FieldListOrderings()
+        { 
+            var fields = TestFieldOrderings.Descriptor.Fields;
+            Assert.AreEqual(new[] { 11, 1, 101, 200 }, fields.InDeclarationOrder().Select(x => x.FieldNumber));
+            Assert.AreEqual(new[] { 1, 11, 101, 200 }, fields.InFieldNumberOrder().Select(x => x.FieldNumber));
+        }
     }
 }
