@@ -1,12 +1,34 @@
+# Minimum CMake required
 cmake_minimum_required(VERSION 2.8)
 
+# Project
 project(protobuf C CXX)
 
+# Options
 option(BUILD_TESTING "Build tests" ON)
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 if (MSVC)
   option(ZLIB "Build with zlib support" OFF)
 endif (MSVC)
+
+# Path to common header
+set(protobuf_COMMON_HEADER "../src/google/protobuf/stubs/common.h")
+
+# Parse version from common header
+file(STRINGS "${protobuf_COMMON_HEADER}" protobuf_VERSION_LINE
+  LIMIT_COUNT 1
+  REGEX "^#define GOOGLE_PROTOBUF_VERSION [0-9]+$")
+string(REGEX REPLACE "^.*PROTOBUF_VERSION ([0-9]+).*$" "\\1"
+    protobuf_VERSION_NUMBER "${protobuf_VERSION_LINE}")
+math(EXPR protobuf_VERSION_MICRO
+  "${protobuf_VERSION_NUMBER} % 1000")
+math(EXPR protobuf_VERSION_MINOR
+  "(${protobuf_VERSION_NUMBER} - ${protobuf_VERSION_MICRO}) % 1000000 / 1000")
+math(EXPR protobuf_VERSION_MAJOR
+  "(${protobuf_VERSION_NUMBER} - ${protobuf_VERSION_MINOR} * 1000 - ${protobuf_VERSION_MICRO}) % 1000000000 / 1000000")
+set(protobuf_VERSION_PATCH ${protobuf_VERSION_MICRO})
+set(protobuf_VERSION
+  "${protobuf_VERSION_MAJOR}.${protobuf_VERSION_MINOR}.${protobuf_VERSION_MICRO}")
 
 add_definitions(-DGOOGLE_PROTOBUF_CMAKE_BUILD)
 
@@ -73,6 +95,9 @@ include(libprotobuf-lite.cmake)
 include(libprotobuf.cmake)
 include(libprotoc.cmake)
 include(protoc.cmake)
+
 if (BUILD_TESTING)
   include(tests.cmake)
 endif (BUILD_TESTING)
+
+include(install.cmake)
