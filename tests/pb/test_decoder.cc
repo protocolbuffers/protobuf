@@ -63,6 +63,8 @@
 
 #define MAX_NESTING 64
 
+#define LINE(x) x "\n"
+
 uint32_t filter_hash = 0;
 double completed;
 double total;
@@ -517,12 +519,13 @@ upb::pb::Decoder* CreateDecoder(upb::Environment* env,
 }
 
 uint32_t Hash(const string& proto, const string* expected_output, size_t seam1,
-              size_t seam2) {
+              size_t seam2, bool may_skip) {
   uint32_t hash = MurmurHash2(proto.c_str(), proto.size(), 0);
   if (expected_output)
     hash = MurmurHash2(expected_output->c_str(), expected_output->size(), hash);
   hash = MurmurHash2(&seam1, sizeof(seam1), hash);
   hash = MurmurHash2(&seam2, sizeof(seam2), hash);
+  hash = MurmurHash2(&may_skip, sizeof(may_skip), hash);
   return hash;
 }
 
@@ -538,91 +541,88 @@ void CheckBytesParsed(const upb::pb::Decoder& decoder, size_t ofs) {
   ASSERT(ofs <= (decoder.BytesParsed() + MAX_BUFFERED));
 }
 
-static bool parse(upb::pb::Decoder* decoder, void* subc, const char* buf,
-                  size_t start, size_t end, size_t* ofs, upb::Status* status) {
-  CheckBytesParsed(*decoder, *ofs);
-  bool ret = parse_buffer(decoder->input(), subc, buf, start, end, ofs, status,
-                          filter_hash != 0);
+static bool parse(VerboseParserEnvironment* env,
+                  const upb::pb::Decoder& decoder, int bytes) {
+  CheckBytesParsed(decoder, env->ofs());
+  bool ret = env->ParseBuffer(bytes);
   if (ret) {
-    CheckBytesParsed(*decoder, *ofs);
+    CheckBytesParsed(decoder, env->ofs());
   }
 
   return ret;
 }
 
-#define LINE(x) x "\n"
+void do_run_decoder(VerboseParserEnvironment* env, upb::pb::Decoder* decoder,
+                    const string& proto, const string* expected_output,
+                    size_t i, size_t j, bool may_skip) {
+  env->Reset(proto.c_str(), proto.size(), may_skip);
+  decoder->Reset();
+
+  testhash = Hash(proto, expected_output, i, j, may_skip);
+  if (filter_hash && testhash != filter_hash) return;
+  if (test_mode != COUNT_ONLY) {
+    output.clear();
+
+    if (filter_hash) {
+      fprintf(stderr, "RUNNING TEST CASE, hash=%x\n", testhash);
+      fprintf(stderr, "JIT on: %s\n",
+              global_method->is_native() ? "true" : "false");
+      fprintf(stderr, "Input (len=%u): ", (unsigned)proto.size());
+      PrintBinary(proto);
+      fprintf(stderr, "\n");
+      if (expected_output) {
+        fprintf(stderr, "Expected output: %s\n", expected_output->c_str());
+      } else {
+        fprintf(stderr, "Expected to FAIL\n");
+      }
+      fprintf(stderr, "Calling start()\n");
+    }
+
+    bool ok = env->Start() &&
+              parse(env, *decoder, i) &&
+              parse(env, *decoder, j - i) &&
+              parse(env, *decoder, -1) &&
+              env->End();
+
+    ASSERT(ok == env->status().ok());
+
+    if (test_mode == ALL_HANDLERS) {
+      if (expected_output) {
+        if (output != *expected_output) {
+          fprintf(stderr, "Text mismatch: '%s' vs '%s'\n",
+                  output.c_str(), expected_output->c_str());
+        }
+        if (!ok) {
+          fprintf(stderr, "Failed: %s\n", env->status().error_message());
+        }
+        ASSERT(ok);
+        ASSERT(output == *expected_output);
+      } else {
+        if (ok) {
+          fprintf(stderr, "Didn't expect ok result, but got output: '%s'\n",
+                  output.c_str());
+        } else if (filter_hash) {
+          fprintf(stderr, "Failed as we expected, with message: %s\n",
+                  env->status().error_message());
+        }
+        ASSERT(!ok);
+      }
+    }
+  }
+  (*count)++;
+}
+
 void run_decoder(const string& proto, const string* expected_output) {
-  upb::Status status;
+  VerboseParserEnvironment env(filter_hash != 0);
   upb::Sink sink(global_handlers, &closures[0]);
+  upb::pb::Decoder *decoder = CreateDecoder(env.env(), global_method, &sink);
+  env.ResetBytesSink(decoder->input());
   for (size_t i = 0; i < proto.size(); i++) {
     for (size_t j = i; j < UPB_MIN(proto.size(), i + 5); j++) {
-      // TODO(haberman): hoist this again once the environment supports reset.
-      upb::Environment env;
-      env.ReportErrorsTo(&status);
-      upb::pb::Decoder *decoder = CreateDecoder(&env, global_method, &sink);
-
-      testhash = Hash(proto, expected_output, i, j);
-      if (filter_hash && testhash != filter_hash) continue;
-      if (test_mode != COUNT_ONLY) {
-        output.clear();
-        status.Clear();
-        size_t ofs = 0;
-        upb::BytesSink* input = decoder->input();
-        void *sub;
-
-        if (filter_hash) {
-          fprintf(stderr, "RUNNING TEST CASE, hash=%x\n", testhash);
-          fprintf(stderr, "JIT on: %s\n",
-                  global_method->is_native() ? "true" : "false");
-          fprintf(stderr, "Input (len=%u): ", (unsigned)proto.size());
-          PrintBinary(proto);
-          fprintf(stderr, "\n");
-          if (expected_output) {
-            fprintf(stderr, "Expected output: %s\n", expected_output->c_str());
-          } else {
-            fprintf(stderr, "Expected to FAIL\n");
-          }
-          fprintf(stderr, "Calling start()\n");
-        }
-
-        bool ok = input->Start(proto.size(), &sub) &&
-                  parse(decoder, sub, proto.c_str(), 0, i, &ofs, &status) &&
-                  parse(decoder, sub, proto.c_str(), i, j, &ofs, &status) &&
-                  parse(decoder, sub, proto.c_str(), j, proto.size(), &ofs,
-                        &status) &&
-                  ofs == proto.size();
-
-        if (ok) {
-          if (filter_hash) {
-            fprintf(stderr, "calling end()\n");
-          }
-          ok = input->End();
-        }
-
-        if (test_mode == ALL_HANDLERS) {
-          if (expected_output) {
-            if (output != *expected_output) {
-              fprintf(stderr, "Text mismatch: '%s' vs '%s'\n",
-                      output.c_str(), expected_output->c_str());
-            }
-            if (!ok) {
-              fprintf(stderr, "Failed: %s\n", status.error_message());
-            }
-            ASSERT(ok);
-            ASSERT(output == *expected_output);
-          } else {
-            if (ok) {
-              fprintf(stderr, "Didn't expect ok result, but got output: '%s'\n",
-                      output.c_str());
-            } else if (filter_hash) {
-              fprintf(stderr, "Failed as we expected, with message: %s\n",
-                      status.error_message());
-            }
-            ASSERT(!ok);
-          }
-        }
+      do_run_decoder(&env, decoder, proto, expected_output, i, j, true);
+      if (env.SkippedWithNull()) {
+        do_run_decoder(&env, decoder, proto, expected_output, i, j, false);
       }
-      (*count)++;
     }
   }
   testhash = 0;
@@ -1146,20 +1146,14 @@ upb::reffed_ptr<const upb::pb::DecoderMethod> method =
     { NULL, 0 },
   };
   for (int i = 0; testdata[i].data; i++) {
-    upb::Environment env;
-    upb::Status status;
-    env.ReportErrorsTo(&status);
+    VerboseParserEnvironment env(filter_hash != 0);
     upb::Sink sink(method->dest_handlers(), &closures[0]);
-    upb::pb::Decoder* decoder = CreateDecoder(&env, method.get(), &sink);
-    upb::BytesSink* input = decoder->input();
-    void* subc;
-    ASSERT(input->Start(0, &subc));
-    size_t ofs = 0;
-    ASSERT(parse_buffer(input, subc,
-                        testdata[i].data, 0, testdata[i].length,
-                        &ofs, &status, false));
-    ASSERT(ofs == testdata[i].length);
-    ASSERT(input->End());
+    upb::pb::Decoder* decoder = CreateDecoder(env.env(), method.get(), &sink);
+    env.ResetBytesSink(decoder->input());
+    env.Reset(testdata[i].data, testdata[i].length, true);
+    ASSERT(env.Start());
+    ASSERT(env.ParseBuffer(-1));
+    ASSERT(env.End());
   }
 }
 

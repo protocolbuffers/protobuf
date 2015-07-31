@@ -92,7 +92,7 @@ class upb::pb::DecoderMethod {
  * constructed.  This hint may be an overestimate for some build configurations.
  * But if the decoder library is upgraded without recompiling the application,
  * it may be an underestimate. */
-#define UPB_PB_DECODER_SIZE 4400
+#define UPB_PB_DECODER_SIZE 4408
 
 #ifdef __cplusplus
 

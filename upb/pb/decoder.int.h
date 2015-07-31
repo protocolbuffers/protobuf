@@ -225,6 +225,12 @@ struct upb_pbdecoder {
   char residual[12];
   char *residual_end;
 
+  /* Bytes of data that should be discarded from the input beore we start
+   * parsing again.  We set this when we internally determine that we can
+   * safely skip the next N bytes, but this region extends past the current
+   * user buffer. */
+  size_t skip;
+
   /* Stores the user buffer passed to our decode function. */
   const char *buf_param;
   size_t size_param;
