@@ -115,3 +115,52 @@ static int32_t SecondsAndNanosFromTimeIntervalSince1970(NSTimeInterval time,
 }
 
 @end
+
+NSString *const GPBTypeGoogleApisComPrefix = @"type.googleapis.com/";
+
+@implementation GPBAny (GBPWellKnownTypes)
+
+- (instancetype)initWithMessage:(GPBMessage*)message {
+  self = [super init];
+  if (self) {
+    [self setMessage:message];
+  }
+  return self;
+}
+
+- (NSString*)typeName {
+  NSAssert([self.typeURL hasPrefix:GPBTypeGoogleApisComPrefix],
+           @"Invalid any type url (%@).", self.typeURL);
+  if (![self.typeURL hasPrefix:GPBTypeGoogleApisComPrefix]) {
+    return nil;
+  }
+  return [self.typeURL substringFromIndex:[GPBTypeGoogleApisComPrefix length]];
+}
+
+- (void)setMessage:(GPBMessage*)message {
+  self.typeURL = [GPBTypeGoogleApisComPrefix stringByAppendingString:message.descriptor.name];
+  self.value = message.data;
+}
+
+- (GPBMessage*)messageOfClass:(Class)messageClass {
+  if ([self wrapsMessageOfClass:messageClass]) {
+    GPBMessage* message = [messageClass message];
+    [message mergeFromData:self.value extensionRegistry:nil];
+    return message;
+  } else {
+    return nil;
+  }
+}
+
+- (BOOL)wrapsMessageOfClass:(Class)messageClass {
+  NSAssert([messageClass isSubclassofClass:[GPBMessage class]],
+           @"Given class (%@) is not a subclass of GPBMessage",
+           [messageClass name]);
+  if (![messageClass isSubclassOfClass:[GPBMessage class]]) {
+    return NO;
+  }
+  return [[self typeName] isEqualToString:messageClass.descriptor.name];
+}
+
+@end
+

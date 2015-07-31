@@ -33,7 +33,6 @@ fi
 
 # Make sure the compiler is current.
 cd src
-make $@ google/protobuf/stubs/pbconfig.h
 make $@ protoc
 
 declare -a RUNTIME_PROTO_FILES=(\
