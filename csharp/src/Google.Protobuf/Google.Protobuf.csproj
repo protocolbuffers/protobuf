@@ -100,11 +100,14 @@
     <Compile Include="WellKnownTypes\Any.cs" />
     <Compile Include="WellKnownTypes\Api.cs" />
     <Compile Include="WellKnownTypes\Duration.cs" />
+    <Compile Include="WellKnownTypes\DurationPartial.cs" />
     <Compile Include="WellKnownTypes\Empty.cs" />
     <Compile Include="WellKnownTypes\FieldMask.cs" />
     <Compile Include="WellKnownTypes\SourceContext.cs" />
     <Compile Include="WellKnownTypes\Struct.cs" />
+    <Compile Include="WellKnownTypes\TimeExtensions.cs" />
     <Compile Include="WellKnownTypes\Timestamp.cs" />
+    <Compile Include="WellKnownTypes\TimestampPartial.cs" />
     <Compile Include="WellKnownTypes\Type.cs" />
     <Compile Include="WellKnownTypes\Wrappers.cs" />
     <Compile Include="WireFormat.cs" />
