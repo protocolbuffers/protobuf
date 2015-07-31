@@ -913,10 +913,11 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   d->top->end_ofs = end;
 
 #ifdef UPB_USE_JIT_X64
-  if (method->group->jit_code) {
+  if (method->is_native_) {
+    const mgroup *group = (const mgroup*)method->group;
     if (d->top != d->stack)
       d->stack->end_ofs = 0;
-    method->group->jit_code(closure, method->code_base.ptr, &dummy, 0, NULL);
+    group->jit_code(closure, method->code_base.ptr, &dummy, 0, NULL);
   } else
 #endif
   {

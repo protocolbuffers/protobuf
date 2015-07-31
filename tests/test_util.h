@@ -13,8 +13,21 @@
 
 upb::BufferHandle global_handle;
 
+// A convenience class for parser tests.  Provides some useful features:
+//
+//   - can support multiple calls to parse, to test the parser's handling
+//     of buffer seams.
+//
+//   - can output verbose output about each parse call when requested, for
+//     ease of debugging.
+//
+//   - can pass NULL for skipped regions of the input if requested.
+//
+//   - allocates and passes a separate buffer for each parsed region, to
+//     ensure that the parser is not erroneously overreading its buffer.
 class VerboseParserEnvironment {
  public:
+  // Pass verbose=true to print detailed diagnostics to stderr.
   VerboseParserEnvironment(bool verbose) : verbose_(verbose) {
     env_.ReportErrorsTo(&status_);
   }
@@ -24,8 +37,20 @@ class VerboseParserEnvironment {
     len_ = len;
     ofs_ = 0;
     skip_until_ = may_skip ? 0 : -1;
+    skipped_with_null_ = false;
     status_.Clear();
   }
+
+  // The user should call a series of:
+  //
+  // Reset(buf, len, may_skip);
+  // Start()
+  // ParseBuffer(X);
+  // ParseBuffer(Y);
+  // // Repeat ParseBuffer as desired, but last call should pass -1.
+  // ParseBuffer(-1);
+  // End();
+
 
   bool Start() {
     return sink_->Start(len_, &subc_);
@@ -35,12 +60,6 @@ class VerboseParserEnvironment {
     return sink_->End();
   }
 
-  // Puts a region of the given buffer [start, end) into the given sink (which
-  // probably represents a parser.  Can gracefully handle the case where the
-  // parser returns a "parsed" length that is less or greater than the input
-  // buffer length, and tracks the overall parse offset in *ofs.
-  //
-  // Pass verbose=true to print detailed diagnostics to stderr.
   bool ParseBuffer(int bytes) {
     if (bytes < 0) {
       bytes = len_ - ofs_;
@@ -53,7 +72,9 @@ class VerboseParserEnvironment {
     // reading outside the specified bounds.
     char *buf2 = NULL;
 
-    if ((int)(ofs_ + bytes) > skip_until_) {
+    if ((int)(ofs_ + bytes) <= skip_until_) {
+      skipped_with_null_ = true;
+    } else {
       buf2 = (char*)malloc(bytes);
       assert(buf2);
       memcpy(buf2, buf_ + ofs_, bytes);
@@ -126,7 +147,7 @@ class VerboseParserEnvironment {
   size_t ofs() { return ofs_; }
   upb::Environment* env() { return &env_; }
 
-  bool SkippedWithNull() { return skip_until_ > 0; }
+  bool SkippedWithNull() { return skipped_with_null_; }
 
  private:
   upb::Environment env_;
@@ -149,6 +170,7 @@ class VerboseParserEnvironment {
   // stream offset where we can skip until.  The user can then test whether
   // this happened by testing SkippedWithNull().
   int skip_until_;
+  bool skipped_with_null_;
 };
 
 #endif
