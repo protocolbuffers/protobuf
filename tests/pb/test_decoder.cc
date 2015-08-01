@@ -138,7 +138,7 @@ void PrintBinary(const string& str) {
     if (isprint(str[i])) {
       fprintf(stderr, "%c", str[i]);
     } else {
-      fprintf(stderr, "\\x%02x", str[i]);
+      fprintf(stderr, "\\x%02x", (int)(uint8_t)str[i]);
     }
   }
 }
@@ -575,7 +575,6 @@ void do_run_decoder(VerboseParserEnvironment* env, upb::pb::Decoder* decoder,
       } else {
         fprintf(stderr, "Expected to FAIL\n");
       }
-      fprintf(stderr, "Calling start()\n");
     }
 
     bool ok = env->Start() &&
@@ -940,6 +939,20 @@ void test_valid() {
   assert_successful_parse(
       submsg(12345, string("                ")),
       "<\n>\n");
+
+  // Unknown field inside a known submessage.
+  assert_successful_parse(
+      cat (submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, 
+             submsg(12345, string("   "))),
+           tag(UPB_DESCRIPTOR_TYPE_INT32, UPB_WIRE_TYPE_VARINT),
+           varint(5)),
+      LINE("<")
+      LINE("%u:{")
+      LINE("  <")
+      LINE("  >")
+      LINE("}")
+      LINE("%u:5")
+      LINE(">"), UPB_DESCRIPTOR_TYPE_MESSAGE, UPB_DESCRIPTOR_TYPE_INT32);
 
   // This triggered a previous bug in the decoder.
   assert_successful_parse(

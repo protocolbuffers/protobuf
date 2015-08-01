@@ -53,10 +53,16 @@ class VerboseParserEnvironment {
 
 
   bool Start() {
+    if (verbose_) {
+      fprintf(stderr, "Calling start()\n");
+    }
     return sink_->Start(len_, &subc_);
   }
 
   bool End() {
+    if (verbose_) {
+      fprintf(stderr, "Calling end()\n");
+    }
     return sink_->End();
   }
 

@@ -114,9 +114,19 @@ static size_t curbufleft(const upb_pbdecoder *d) {
   return d->data_end - d->ptr;
 }
 
+/* How many bytes are available before end-of-buffer. */
+static size_t bufleft(const upb_pbdecoder *d) {
+  return d->end - d->ptr;
+}
+
 /* Overall stream offset of d->ptr. */
 uint64_t offset(const upb_pbdecoder *d) {
   return d->bufstart_ofs + (d->ptr - d->buf);
+}
+
+/* How many bytes are available before the end of this delimited region. */
+size_t delim_remaining(const upb_pbdecoder *d) {
+  return d->top->end_ofs - offset(d);
 }
 
 /* Advances d->ptr. */
@@ -175,7 +185,8 @@ static void checkpoint(upb_pbdecoder *d) {
  */
 static int32_t skip(upb_pbdecoder *d, size_t bytes) {
   assert(!in_residual_buf(d, d->ptr) || d->size_param == 0);
-  if (curbufleft(d) > bytes) {
+  assert(bytes <= delim_remaining(d));
+  if (bufleft(d) > bytes) {
     /* Skipped data is all in current buffer, and more is still available. */
     advance(d, bytes);
     d->skip = 0;
@@ -605,7 +616,7 @@ static int32_t dispatch(upb_pbdecoder *d) {
   uint8_t wire_type;
   uint32_t fieldnum;
   upb_value val;
-  int32_t ret;
+  int32_t retval;
 
   /* Decode tag. */
   CHECK_RETURN(decode_v32(d, &tag));
@@ -629,23 +640,25 @@ static int32_t dispatch(upb_pbdecoder *d) {
     }
   }
 
-  /* Unknown field or ENDGROUP. */
-  ret = upb_pbdecoder_skipunknown(d, fieldnum, wire_type);
+  /* We have some unknown fields (or ENDGROUP) to parse.  The DISPATCH or TAG
+   * bytecode that triggered this is preceded by a CHECKDELIM bytecode which
+   * we need to back up to, so that when we're done skipping unknown data we
+   * can re-check the delimited end. */
+  d->last--;  /* Necessary if we get suspended */
+  d->pc = d->last;
+  assert(getop(*d->last) == OP_CHECKDELIM);
 
-  if (ret == DECODE_ENDGROUP) {
+  /* Unknown field or ENDGROUP. */
+  retval = upb_pbdecoder_skipunknown(d, fieldnum, wire_type);
+
+  CHECK_RETURN(retval);
+
+  if (retval == DECODE_ENDGROUP) {
     goto_endmsg(d);
-    return DECODE_OK;
-  } else if (ret == DECODE_OK) {
-    /* We just consumed some input, so we might now have consumed all the data
-     * in the delmited region.  Since every opcode that can trigger dispatch is
-     * directly preceded by OP_CHECKDELIM, rewind to it now to re-check the
-     * delimited end. */
-    d->pc = d->last - 1;
-    assert(getop(*d->pc) == OP_CHECKDELIM);
     return DECODE_OK;
   }
 
-  return ret;
+  return DECODE_OK;
 }
 
 /* Callers know that the stack is more than one deep because the opcodes that
@@ -741,7 +754,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         CHECK_SUSPEND(upb_sink_endsubmsg(&d->top->sink, arg));
       )
       VMCASE(OP_STARTSTR,
-        uint32_t len = d->top->end_ofs - offset(d);
+        uint32_t len = delim_remaining(d);
         upb_pbdecoder_frame *outer = outer_frame(d);
         CHECK_SUSPEND(upb_sink_startstr(&outer->sink, arg, len, &d->top->sink));
         if (len == 0) {
@@ -752,7 +765,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         uint32_t len = curbufleft(d);
         size_t n = upb_sink_putstring(&d->top->sink, arg, d->ptr, len, handle);
         if (n > len) {
-          if (n > d->top->end_ofs - offset(d)) {
+          if (n > delim_remaining(d)) {
             seterr(d, "Tried to skip past end of string.");
             return upb_pbdecoder_suspend(d);
           } else {
@@ -900,6 +913,11 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
 
   if (d->residual_end > d->residual) {
     seterr(d, "Unexpected EOF: decoder still has buffered unparsed data");
+    return false;
+  }
+
+  if (d->skip) {
+    seterr(d, "Unexpected EOF inside skipped data");
     return false;
   }
 
