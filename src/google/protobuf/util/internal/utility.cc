@@ -30,10 +30,6 @@
 
 #include <google/protobuf/util/internal/utility.h>
 
-#include <cmath>
-#include <algorithm>
-#include <utility>
-
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/wrappers.pb.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -301,8 +297,8 @@ bool IsMap(const google::protobuf::Field& field,
 }
 
 string DoubleAsString(double value) {
-  if (value == std::numeric_limits<double>::infinity()) return "Infinity";
-  if (value == -std::numeric_limits<double>::infinity()) return "-Infinity";
+  if (google::protobuf::MathLimits<double>::IsPosInf(value)) return "Infinity";
+  if (google::protobuf::MathLimits<double>::IsNegInf(value)) return "-Infinity";
   if (google::protobuf::MathLimits<double>::IsNaN(value)) return "NaN";
 
   return SimpleDtoa(value);
@@ -320,8 +316,7 @@ bool SafeStrToFloat(StringPiece str, float *value) {
   }
   *value = static_cast<float>(double_value);
 
-  if ((*value ==  numeric_limits<float>::infinity()) ||
-      (*value == -numeric_limits<float>::infinity())) {
+  if (google::protobuf::MathLimits<float>::IsInf(*value)) {
     return false;
   }
   return true;
