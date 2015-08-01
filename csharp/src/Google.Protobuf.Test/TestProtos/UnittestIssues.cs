@@ -36,11 +36,14 @@ namespace UnitTest.Issues.TestProtos {
             "NgoJRW51bUFycmF5GAYgAygOMh8udW5pdHRlc3RfaXNzdWVzLkRlcHJlY2F0", 
             "ZWRFbnVtQgIYASIZCglJdGVtRmllbGQSDAoEaXRlbRgBIAEoBSJECg1SZXNl", 
             "cnZlZE5hbWVzEg0KBXR5cGVzGAEgASgFEhIKCmRlc2NyaXB0b3IYAiABKAUa", 
-            "EAoOU29tZU5lc3RlZFR5cGUqVQoMTmVnYXRpdmVFbnVtEhYKEk5FR0FUSVZF", 
-            "X0VOVU1fWkVSTxAAEhYKCUZpdmVCZWxvdxD7//////////8BEhUKCE1pbnVz", 
-            "T25lEP///////////wEqLgoORGVwcmVjYXRlZEVudW0SEwoPREVQUkVDQVRF", 
-            "RF9aRVJPEAASBwoDb25lEAFCH0gBqgIaVW5pdFRlc3QuSXNzdWVzLlRlc3RQ", 
-            "cm90b3NiBnByb3RvMw=="));
+            "EAoOU29tZU5lc3RlZFR5cGUioAEKFVRlc3RKc29uRmllbGRPcmRlcmluZxIT", 
+            "CgtwbGFpbl9pbnQzMhgEIAEoBRITCglvMV9zdHJpbmcYAiABKAlIABISCghv", 
+            "MV9pbnQzMhgFIAEoBUgAEhQKDHBsYWluX3N0cmluZxgBIAEoCRISCghvMl9p", 
+            "bnQzMhgGIAEoBUgBEhMKCW8yX3N0cmluZxgDIAEoCUgBQgQKAm8xQgQKAm8y", 
+            "KlUKDE5lZ2F0aXZlRW51bRIWChJORUdBVElWRV9FTlVNX1pFUk8QABIWCglG", 
+            "aXZlQmVsb3cQ+///////////ARIVCghNaW51c09uZRD///////////8BKi4K", 
+            "DkRlcHJlY2F0ZWRFbnVtEhMKD0RFUFJFQ0FURURfWkVSTxAAEgcKA29uZRAB", 
+            "Qh9IAaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedCodeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, new pbr::GeneratedCodeInfo[] {
@@ -49,7 +52,8 @@ namespace UnitTest.Issues.TestProtos {
             new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.DeprecatedChild), null, null, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage), new[]{ "PrimitiveValue", "PrimitiveArray", "MessageValue", "MessageArray", "EnumValue", "EnumArray" }, null, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ItemField), new[]{ "Item" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames), new[]{ "Types_", "Descriptor_" }, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType), null, null, null, null)})
+            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames), new[]{ "Types_", "Descriptor_" }, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType), null, null, null, null)}),
+            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering), new[]{ "PlainInt32", "O1String", "O1Int32", "PlainString", "O2Int32", "O2String" }, new[]{ "O1", "O2" }, null, null)
           }));
     }
     #endregion
@@ -1093,6 +1097,294 @@ namespace UnitTest.Issues.TestProtos {
 
     }
     #endregion
+
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  public sealed partial class TestJsonFieldOrdering : pb::IMessage<TestJsonFieldOrdering> {
+    private static readonly pb::MessageParser<TestJsonFieldOrdering> _parser = new pb::MessageParser<TestJsonFieldOrdering>(() => new TestJsonFieldOrdering());
+    public static pb::MessageParser<TestJsonFieldOrdering> Parser { get { return _parser; } }
+
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[6]; }
+    }
+
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    public TestJsonFieldOrdering() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    public TestJsonFieldOrdering(TestJsonFieldOrdering other) : this() {
+      plainInt32_ = other.plainInt32_;
+      plainString_ = other.plainString_;
+      switch (other.O1Case) {
+        case O1OneofCase.O1String:
+          O1String = other.O1String;
+          break;
+        case O1OneofCase.O1Int32:
+          O1Int32 = other.O1Int32;
+          break;
+      }
+
+      switch (other.O2Case) {
+        case O2OneofCase.O2Int32:
+          O2Int32 = other.O2Int32;
+          break;
+        case O2OneofCase.O2String:
+          O2String = other.O2String;
+          break;
+      }
+
+    }
+
+    public TestJsonFieldOrdering Clone() {
+      return new TestJsonFieldOrdering(this);
+    }
+
+    public const int PlainInt32FieldNumber = 4;
+    private int plainInt32_;
+    public int PlainInt32 {
+      get { return plainInt32_; }
+      set {
+        plainInt32_ = value;
+      }
+    }
+
+    public const int O1StringFieldNumber = 2;
+    public string O1String {
+      get { return o1Case_ == O1OneofCase.O1String ? (string) o1_ : ""; }
+      set {
+        o1_ = pb::Preconditions.CheckNotNull(value, "value");
+        o1Case_ = O1OneofCase.O1String;
+      }
+    }
+
+    public const int O1Int32FieldNumber = 5;
+    public int O1Int32 {
+      get { return o1Case_ == O1OneofCase.O1Int32 ? (int) o1_ : 0; }
+      set {
+        o1_ = value;
+        o1Case_ = O1OneofCase.O1Int32;
+      }
+    }
+
+    public const int PlainStringFieldNumber = 1;
+    private string plainString_ = "";
+    public string PlainString {
+      get { return plainString_; }
+      set {
+        plainString_ = pb::Preconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    public const int O2Int32FieldNumber = 6;
+    public int O2Int32 {
+      get { return o2Case_ == O2OneofCase.O2Int32 ? (int) o2_ : 0; }
+      set {
+        o2_ = value;
+        o2Case_ = O2OneofCase.O2Int32;
+      }
+    }
+
+    public const int O2StringFieldNumber = 3;
+    public string O2String {
+      get { return o2Case_ == O2OneofCase.O2String ? (string) o2_ : ""; }
+      set {
+        o2_ = pb::Preconditions.CheckNotNull(value, "value");
+        o2Case_ = O2OneofCase.O2String;
+      }
+    }
+
+    private object o1_;
+    public enum O1OneofCase {
+      None = 0,
+      O1String = 2,
+      O1Int32 = 5,
+    }
+    private O1OneofCase o1Case_ = O1OneofCase.None;
+    public O1OneofCase O1Case {
+      get { return o1Case_; }
+    }
+
+    public void ClearO1() {
+      o1Case_ = O1OneofCase.None;
+      o1_ = null;
+    }
+
+    private object o2_;
+    public enum O2OneofCase {
+      None = 0,
+      O2Int32 = 6,
+      O2String = 3,
+    }
+    private O2OneofCase o2Case_ = O2OneofCase.None;
+    public O2OneofCase O2Case {
+      get { return o2Case_; }
+    }
+
+    public void ClearO2() {
+      o2Case_ = O2OneofCase.None;
+      o2_ = null;
+    }
+
+    public override bool Equals(object other) {
+      return Equals(other as TestJsonFieldOrdering);
+    }
+
+    public bool Equals(TestJsonFieldOrdering other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (PlainInt32 != other.PlainInt32) return false;
+      if (O1String != other.O1String) return false;
+      if (O1Int32 != other.O1Int32) return false;
+      if (PlainString != other.PlainString) return false;
+      if (O2Int32 != other.O2Int32) return false;
+      if (O2String != other.O2String) return false;
+      return true;
+    }
+
+    public override int GetHashCode() {
+      int hash = 1;
+      if (PlainInt32 != 0) hash ^= PlainInt32.GetHashCode();
+      if (o1Case_ == O1OneofCase.O1String) hash ^= O1String.GetHashCode();
+      if (o1Case_ == O1OneofCase.O1Int32) hash ^= O1Int32.GetHashCode();
+      if (PlainString.Length != 0) hash ^= PlainString.GetHashCode();
+      if (o2Case_ == O2OneofCase.O2Int32) hash ^= O2Int32.GetHashCode();
+      if (o2Case_ == O2OneofCase.O2String) hash ^= O2String.GetHashCode();
+      return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.Default.Format(this);
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (PlainString.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(PlainString);
+      }
+      if (o1Case_ == O1OneofCase.O1String) {
+        output.WriteRawTag(18);
+        output.WriteString(O1String);
+      }
+      if (o2Case_ == O2OneofCase.O2String) {
+        output.WriteRawTag(26);
+        output.WriteString(O2String);
+      }
+      if (PlainInt32 != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(PlainInt32);
+      }
+      if (o1Case_ == O1OneofCase.O1Int32) {
+        output.WriteRawTag(40);
+        output.WriteInt32(O1Int32);
+      }
+      if (o2Case_ == O2OneofCase.O2Int32) {
+        output.WriteRawTag(48);
+        output.WriteInt32(O2Int32);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (PlainInt32 != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(PlainInt32);
+      }
+      if (o1Case_ == O1OneofCase.O1String) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(O1String);
+      }
+      if (o1Case_ == O1OneofCase.O1Int32) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(O1Int32);
+      }
+      if (PlainString.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(PlainString);
+      }
+      if (o2Case_ == O2OneofCase.O2Int32) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(O2Int32);
+      }
+      if (o2Case_ == O2OneofCase.O2String) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(O2String);
+      }
+      return size;
+    }
+
+    public void MergeFrom(TestJsonFieldOrdering other) {
+      if (other == null) {
+        return;
+      }
+      if (other.PlainInt32 != 0) {
+        PlainInt32 = other.PlainInt32;
+      }
+      if (other.PlainString.Length != 0) {
+        PlainString = other.PlainString;
+      }
+      switch (other.O1Case) {
+        case O1OneofCase.O1String:
+          O1String = other.O1String;
+          break;
+        case O1OneofCase.O1Int32:
+          O1Int32 = other.O1Int32;
+          break;
+      }
+
+      switch (other.O2Case) {
+        case O2OneofCase.O2Int32:
+          O2Int32 = other.O2Int32;
+          break;
+        case O2OneofCase.O2String:
+          O2String = other.O2String;
+          break;
+      }
+
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while (input.ReadTag(out tag)) {
+        switch(tag) {
+          case 0:
+            throw pb::InvalidProtocolBufferException.InvalidTag();
+          default:
+            if (pb::WireFormat.IsEndGroupTag(tag)) {
+              return;
+            }
+            break;
+          case 10: {
+            PlainString = input.ReadString();
+            break;
+          }
+          case 18: {
+            O1String = input.ReadString();
+            break;
+          }
+          case 26: {
+            O2String = input.ReadString();
+            break;
+          }
+          case 32: {
+            PlainInt32 = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            O1Int32 = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            O2Int32 = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
 
   }
 

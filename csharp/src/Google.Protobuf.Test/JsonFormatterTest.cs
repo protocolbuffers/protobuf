@@ -37,6 +37,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf
 {
@@ -283,6 +284,30 @@ namespace Google.Protobuf
             var actualJson = formatter.Format(message);
             Assert.IsTrue(actualJson.Contains("\"int64Field\": null"));
             Assert.IsFalse(actualJson.Contains("\"int32Field\": null"));
+        }
+
+        [Test]
+        public void OutputIsInNumericFieldOrder_NoDefaults()
+        {
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false));
+            var message = new TestJsonFieldOrdering { PlainString = "p1", PlainInt32 = 2 };
+            Assert.AreEqual("{ \"plainString\": \"p1\", \"plainInt32\": 2 }", formatter.Format(message));
+            message = new TestJsonFieldOrdering { O1Int32 = 5, O2String = "o2", PlainInt32 = 10, PlainString = "plain" };
+            Assert.AreEqual("{ \"plainString\": \"plain\", \"o2String\": \"o2\", \"plainInt32\": 10, \"o1Int32\": 5 }", formatter.Format(message));
+            message = new TestJsonFieldOrdering { O1String = "", O2Int32 = 0, PlainInt32 = 10, PlainString = "plain" };
+            Assert.AreEqual("{ \"plainString\": \"plain\", \"o1String\": \"\", \"plainInt32\": 10, \"o2Int32\": 0 }", formatter.Format(message));
+        }
+
+        [Test]
+        public void OutputIsInNumericFieldOrder_WithDefaults()
+        {
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(true));
+            var message = new TestJsonFieldOrdering();
+            Assert.AreEqual("{ \"plainString\": \"\", \"plainInt32\": 0 }", formatter.Format(message));
+            message = new TestJsonFieldOrdering { O1Int32 = 5, O2String = "o2", PlainInt32 = 10, PlainString = "plain" };
+            Assert.AreEqual("{ \"plainString\": \"plain\", \"o2String\": \"o2\", \"plainInt32\": 10, \"o1Int32\": 5 }", formatter.Format(message));
+            message = new TestJsonFieldOrdering { O1String = "", O2Int32 = 0, PlainInt32 = 10, PlainString = "plain" };
+            Assert.AreEqual("{ \"plainString\": \"plain\", \"o1String\": \"\", \"plainInt32\": 10, \"o2Int32\": 0 }", formatter.Format(message));
         }
     }
 }

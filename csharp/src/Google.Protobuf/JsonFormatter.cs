@@ -145,13 +145,14 @@ namespace Google.Protobuf
                 var accessor = field.Accessor;
                 // Oneofs are written later
                 // TODO: Change to write out fields in order, interleaving oneofs appropriately (as per binary format)
-                if (field.ContainingOneof != null)
+                if (field.ContainingOneof != null && field.ContainingOneof.Accessor.GetCaseFieldDescriptor(message) != field)
                 {
                     continue;
                 }
-                // Omit default values unless we're asked to format them
+                // Omit default values unless we're asked to format them, or they're oneofs (where the default
+                // value is still formatted regardless, because that's how we preserve the oneof case).
                 object value = accessor.GetValue(message);
-                if (!settings.FormatDefaultValues && IsDefaultValue(accessor, value))
+                if (field.ContainingOneof == null && !settings.FormatDefaultValues && IsDefaultValue(accessor, value))
                 {
                     continue;
                 }
@@ -170,33 +171,7 @@ namespace Google.Protobuf
                 builder.Append(": ");
                 WriteValue(builder, accessor, value);
                 first = false;
-            }
-
-            // Now oneofs
-            foreach (var oneof in message.Descriptor.Oneofs)
-            {
-                var accessor = oneof.Accessor;
-                var fieldDescriptor = accessor.GetCaseFieldDescriptor(message);
-                if (fieldDescriptor == null)
-                {
-                    continue;
-                }
-                object value = fieldDescriptor.Accessor.GetValue(message);
-                // Omit awkward (single) values such as unknown enum values
-                if (!fieldDescriptor.IsRepeated && !fieldDescriptor.IsMap && !CanWriteSingleValue(fieldDescriptor, value))
-                {
-                    continue;
-                }
-
-                if (!first)
-                {
-                    builder.Append(", ");
-                }
-                WriteString(builder, ToCamelCase(fieldDescriptor.Name));
-                builder.Append(": ");
-                WriteValue(builder, fieldDescriptor.Accessor, value);
-                first = false;
-            }
+            }            
             builder.Append(first ? "}" : " }");
         }
 
