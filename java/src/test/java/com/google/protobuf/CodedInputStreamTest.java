@@ -751,6 +751,28 @@ public class CodedInputStreamTest extends TestCase {
     assertEquals((byte) 67, result.get());
     result.position(bytesLength - 1);
     assertEquals((byte) 89, result.get());
+
+    // Enable aliasing when read from ByteString
+    inputStream = ByteString.copyFrom(data).newCodedInput();
+    inputStream.enableAliasing(true);
+    result = inputStream.readByteBuffer();
+    assertEquals(0, result.capacity());
+    result = inputStream.readByteBuffer();
+    // ByteBuffer is readonly, because it shares content with ByteString.
+    // Readonly ByteBuffer does not expose the array.
+    assertFalse(result.hasArray());
+    assertEquals(1, result.capacity());
+    assertEquals((byte) 23, result.get());
+    result = inputStream.readByteBuffer();
+    assertFalse(result.hasArray());
+    assertEquals(1, result.capacity());
+    assertEquals((byte) 45, result.get());
+    result = inputStream.readByteBuffer();
+    assertFalse(result.hasArray());
+    assertEquals(bytesLength, result.capacity());
+    assertEquals((byte) 67, result.get());
+    result.position(bytesLength - 1);
+    assertEquals((byte) 89, result.get());
   }
 
   public void testCompatibleTypes() throws Exception {
