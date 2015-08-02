@@ -54,5 +54,6 @@ configure_file(protobuf-config-version.cmake.in
 install(FILES
   "${protobuf_BINARY_DIR}/protobuf-config.cmake"
   "${protobuf_BINARY_DIR}/protobuf-config-version.cmake"
+  "${protobuf_SOURCE_DIR}/protobuf-module.cmake"
   DESTINATION "lib/cmake/protobuf"
   COMPONENT protobuf-export)
