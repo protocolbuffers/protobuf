@@ -46,19 +46,6 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("2.4.1.555")]
-
-[assembly: AssemblyVersion("2.4.1.555")]
-
 #if SIGNED
 [assembly: InternalsVisibleTo("Google.Protobuf.Test, PublicKey=" +
     "002400000480000094000000060200000024000052534131000400000100010025800fbcfc63a1" +
@@ -70,7 +57,6 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Google.Protobuf.Test")]
 #endif
 
-#if !NOFILEVERSION
-[assembly: AssemblyFileVersion("3.0.0.1")]
-#endif
-
+[assembly: AssemblyVersion("3.0.0.0")]
+[assembly: AssemblyFileVersion("3.0.0.0")]
+[assembly: AssemblyInformationalVersion("3.0.0-alpha4")]

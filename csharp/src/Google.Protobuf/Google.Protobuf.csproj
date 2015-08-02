@@ -14,8 +14,6 @@
     <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\keys\Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <OldToolsVersion>3.5</OldToolsVersion>
     <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
   </PropertyGroup>
@@ -27,7 +25,7 @@
     <IntermediateOutputPath>obj\Debug\</IntermediateOutputPath>
     <DocumentationFile>bin\Debug\Google.Protobuf.xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>DEBUG;TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate)</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -40,7 +38,7 @@
     <IntermediateOutputPath>obj\Release\</IntermediateOutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate)</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
@@ -53,7 +51,7 @@
     <IntermediateOutputPath>obj\ReleaseSigned\</IntermediateOutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
-    <DefineConstants>TRACE;$(EnvironmentFlavor);$(EnvironmentTemplate);SIGNED</DefineConstants>
+    <DefineConstants>TRACE;SIGNED</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
