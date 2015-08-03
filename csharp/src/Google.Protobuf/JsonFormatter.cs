@@ -380,21 +380,42 @@ namespace Google.Protobuf
         /// </summary>
         private void WriteWellKnownTypeValue(StringBuilder builder, MessageDescriptor descriptor, object value, bool inField)
         {
+            if (value == null)
+            {
+                WriteNull(builder);
+                return;
+            }
             // For wrapper types, the value will be the (possibly boxed) "native" value,
             // so we can write it as if we were unconditionally writing the Value field for the wrapper type.
-            if (descriptor.File == Int32Value.Descriptor.File && value != null)
+            if (descriptor.File == Int32Value.Descriptor.File)
             {
                 WriteSingleValue(builder, descriptor.FindFieldByNumber(1), value);
                 return;
             }
-            if (descriptor.FullName == Timestamp.Descriptor.FullName && value != null)
+            if (descriptor.FullName == Timestamp.Descriptor.FullName)
             {
                 MaybeWrapInString(builder, value, WriteTimestamp, inField);
                 return;
             }
-            if (descriptor.FullName == Duration.Descriptor.FullName && value != null)
+            if (descriptor.FullName == Duration.Descriptor.FullName)
             {
                 MaybeWrapInString(builder, value, WriteDuration, inField);
+                return;
+            }
+            if (descriptor.FullName == Struct.Descriptor.FullName)
+            {
+                WriteStruct(builder, (IMessage) value);
+                return;
+            }
+            if (descriptor.FullName == ListValue.Descriptor.FullName)
+            {
+                var fieldAccessor = descriptor.Fields[ListValue.ValuesFieldNumber].Accessor;
+                WriteList(builder, fieldAccessor, (IList) fieldAccessor.GetValue(value));
+                return;
+            }
+            if (descriptor.FullName == Value.Descriptor.FullName)
+            {
+                WriteStructFieldValue(builder, (IMessage) value);
                 return;
             }
             WriteMessage(builder, (IMessage) value);
@@ -480,6 +501,63 @@ namespace Google.Protobuf
                 {
                     builder.Append(nanos.ToString("d", CultureInfo.InvariantCulture));
                 }
+            }
+        }
+
+        private void WriteStruct(StringBuilder builder, IMessage message)
+        {
+            builder.Append("{ ");
+            IDictionary fields = (IDictionary) message.Descriptor.Fields[Struct.FieldsFieldNumber].Accessor.GetValue(message);
+            bool first = true;
+            foreach (DictionaryEntry entry in fields)
+            {
+                string key = (string) entry.Key;
+                IMessage value = (IMessage) entry.Value;
+                if (string.IsNullOrEmpty(key) || value == null)
+                {
+                    throw new InvalidOperationException("Struct fields cannot have an empty key or a null value.");
+                }
+
+                if (!first)
+                {
+                    builder.Append(", ");
+                }
+                WriteString(builder, key);
+                builder.Append(": ");
+                WriteStructFieldValue(builder, value);
+                first = false;
+            }
+            builder.Append(first ? "}" : " }");
+        }
+
+        private void WriteStructFieldValue(StringBuilder builder, IMessage message)
+        {
+            var specifiedField = message.Descriptor.Oneofs[0].Accessor.GetCaseFieldDescriptor(message);
+            if (specifiedField == null)
+            {
+                throw new InvalidOperationException("Value message must contain a value for the oneof.");
+            }
+
+            object value = specifiedField.Accessor.GetValue(message);
+            
+            switch (specifiedField.FieldNumber)
+            {
+                case Value.BoolValueFieldNumber:
+                case Value.StringValueFieldNumber:
+                case Value.NumberValueFieldNumber:
+                    WriteSingleValue(builder, specifiedField, value);
+                    return;
+                case Value.StructValueFieldNumber:
+                case Value.ListValueFieldNumber:
+                    // Structs and ListValues are nested messages, and already well-known types.
+                    var nestedMessage = (IMessage) specifiedField.Accessor.GetValue(message);
+                    WriteWellKnownTypeValue(builder, nestedMessage.Descriptor, nestedMessage, true);
+                    return;
+                case Value.NullValueFieldNumber:
+                    WriteNull(builder);
+                    return;
+                default:
+                    throw new InvalidOperationException("Unexpected case in struct field: " + specifiedField.FieldNumber);
             }
         }
 

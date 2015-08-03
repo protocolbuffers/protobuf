@@ -368,7 +368,24 @@ namespace Google.Protobuf
         {
             var message = new TestWellKnownTypes { DurationField = new Duration() };
             AssertJson("{ 'durationField': '0s' }", JsonFormatter.Default.Format(message));
+        }
 
+        [Test]
+        public void StructSample()
+        {
+            var message = new Struct
+            {
+                Fields =
+                {
+                    { "a", new Value { NullValue = new NullValue() } },
+                    { "b", new Value { BoolValue = false } },
+                    { "c", new Value { NumberValue = 10.5 } },
+                    { "d", new Value { StringValue = "text" } },
+                    { "e", new Value { ListValue = new ListValue { Values = { new Value { StringValue = "t1" }, new Value { NumberValue = 5 } } } } },
+                    { "f", new Value { StructValue = new Struct { Fields = { { "nested", new Value { StringValue = "value" } } } } } }
+                }
+            };
+            AssertJson("{ 'a': null, 'b': false, 'c': 10.5, 'd': 'text', 'e': [ 't1', 5 ], 'f': { 'nested': 'value' } }", message.ToString());
         }
 
         /// <summary>
