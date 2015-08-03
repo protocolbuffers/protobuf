@@ -23,7 +23,7 @@ function(PROTOBUF_GENERATE_CPP SRCS HDRS)
     set(_protobuf_include_path -I ${CMAKE_CURRENT_SOURCE_DIR})
   endif()
 
-  # Add well-nkown type protos include path
+  # Add well-known type protos include path
   list(APPEND _protobuf_include_path
     -I "${_PROTOBUF_IMPORT_PREFIX}/@CMAKE_INSTALL_INCLUDEDIR@")
 
