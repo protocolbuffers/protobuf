@@ -122,10 +122,14 @@ namespace Google.Protobuf
         {
             Preconditions.CheckNotNull(message, "message");
             StringBuilder builder = new StringBuilder();
-            // TODO(jonskeet): Handle well-known types here.
-            // Our reflection support needs improving so that we can get at the descriptor
-            // to find out whether *this* message is a well-known type.
-            WriteMessage(builder, message);
+            if (message.Descriptor.IsWellKnownType)
+            {
+                WriteWellKnownTypeValue(builder, message.Descriptor, message, false);
+            }
+            else
+            {
+                WriteMessage(builder, message);
+            }
             return builder.ToString();
         }
 
@@ -356,7 +360,7 @@ namespace Google.Protobuf
                 case FieldType.Group: // Never expect to get this, but...
                     if (descriptor.MessageType.IsWellKnownType)
                     {
-                        WriteWellKnownTypeValue(builder, descriptor, value);
+                        WriteWellKnownTypeValue(builder, descriptor.MessageType, value, true);
                     }
                     else
                     {
@@ -370,18 +374,113 @@ namespace Google.Protobuf
 
         /// <summary>
         /// Central interception point for well-known type formatting. Any well-known types which
-        /// don't need special handling can fall back to WriteMessage.
+        /// don't need special handling can fall back to WriteMessage. We avoid assuming that the
+        /// values are using the embedded well-known types, in order to allow for dynamic messages
+        /// in the future.
         /// </summary>
-        private void WriteWellKnownTypeValue(StringBuilder builder, FieldDescriptor descriptor, object value)
+        private void WriteWellKnownTypeValue(StringBuilder builder, MessageDescriptor descriptor, object value, bool inField)
         {
             // For wrapper types, the value will be the (possibly boxed) "native" value,
             // so we can write it as if we were unconditionally writing the Value field for the wrapper type.
-            if (descriptor.MessageType.File == Int32Value.Descriptor.File && value != null)
+            if (descriptor.File == Int32Value.Descriptor.File && value != null)
             {
-                WriteSingleValue(builder, descriptor.MessageType.FindFieldByNumber(1), value);
+                WriteSingleValue(builder, descriptor.FindFieldByNumber(1), value);
+                return;
+            }
+            if (descriptor.FullName == Timestamp.Descriptor.FullName && value != null)
+            {
+                MaybeWrapInString(builder, value, WriteTimestamp, inField);
+                return;
+            }
+            if (descriptor.FullName == Duration.Descriptor.FullName && value != null)
+            {
+                MaybeWrapInString(builder, value, WriteDuration, inField);
                 return;
             }
             WriteMessage(builder, (IMessage) value);
+        }
+
+        /// <summary>
+        /// Some well-known types end up as string values... so they need wrapping in quotes, but only
+        /// when they're being used as fields within another message.
+        /// </summary>
+        private void MaybeWrapInString(StringBuilder builder, object value, Action<StringBuilder, IMessage> action, bool inField)
+        {
+            if (inField)
+            {
+                builder.Append('"');
+                action(builder, (IMessage) value);
+                builder.Append('"');
+            }
+            else
+            {
+                action(builder, (IMessage) value);
+            }
+        }
+
+        private void WriteTimestamp(StringBuilder builder, IMessage value)
+        {
+            // TODO: In the common case where this *is* using the built-in Timestamp type, we could
+            // avoid all the reflection at this point, by casting to Timestamp. In the interests of
+            // avoiding subtle bugs, don't do that until we've implemented DynamicMessage so that we can prove
+            // it still works in that case.
+            int nanos = (int) value.Descriptor.Fields[Timestamp.NanosFieldNumber].Accessor.GetValue(value);
+            long seconds = (long) value.Descriptor.Fields[Timestamp.SecondsFieldNumber].Accessor.GetValue(value);
+
+            // Even if the original message isn't using the built-in classes, we can still build one... and then
+            // rely on it being normalized.
+            Timestamp normalized = Timestamp.Normalize(seconds, nanos);
+            // Use .NET's formatting for the value down to the second, including an opening double quote (as it's a string value)
+            DateTime dateTime = normalized.ToDateTime();
+            builder.Append(dateTime.ToString("yyyy'-'MM'-'dd'T'HH:mm:ss", CultureInfo.InvariantCulture));
+            AppendNanoseconds(builder, Math.Abs(normalized.Nanos));
+            builder.Append('Z');
+        }
+
+        private void WriteDuration(StringBuilder builder, IMessage value)
+        {
+            // TODO: Same as for WriteTimestamp
+            int nanos = (int) value.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.GetValue(value);
+            long seconds = (long) value.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.GetValue(value);
+
+            // Even if the original message isn't using the built-in classes, we can still build one... and then
+            // rely on it being normalized.
+            Duration normalized = Duration.Normalize(seconds, nanos);
+
+            // The seconds part will normally provide the minus sign if we need it, but not if it's 0...
+            if (normalized.Seconds == 0 && normalized.Nanos < 0)
+            {
+                builder.Append('-');
+            }
+
+            builder.Append(normalized.Seconds.ToString("d", CultureInfo.InvariantCulture));
+            AppendNanoseconds(builder, Math.Abs(normalized.Nanos));
+            builder.Append('s');
+        }
+
+        /// <summary>
+        /// Appends a number of nanoseconds to a StringBuilder. Either 0 digits are added (in which
+        /// case no "." is appended), or 3 6 or 9 digits.
+        /// </summary>
+        private static void AppendNanoseconds(StringBuilder builder, int nanos)
+        {
+            if (nanos != 0)
+            {
+                builder.Append('.');
+                // Output to 3, 6 or 9 digits.
+                if (nanos % 1000000 == 0)
+                {
+                    builder.Append((nanos / 1000000).ToString("d", CultureInfo.InvariantCulture));
+                }
+                else if (nanos % 1000 == 0)
+                {
+                    builder.Append((nanos / 1000).ToString("d", CultureInfo.InvariantCulture));
+                }
+                else
+                {
+                    builder.Append(nanos.ToString("d", CultureInfo.InvariantCulture));
+                }
+            }
         }
 
         private void WriteList(StringBuilder builder, IFieldAccessor accessor, IList list)
