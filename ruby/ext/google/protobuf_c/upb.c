@@ -7478,6 +7478,8 @@ void upb_pbdecodermethodopts_setlazy(upb_pbdecodermethodopts *opts, bool lazy) {
 
 /* Error messages that are shared between the bytecode and JIT decoders. */
 const char *kPbDecoderStackOverflow = "Nesting too deep.";
+const char *kPbDecoderSubmessageTooLong =
+    "Submessage end extends past enclosing submessage.";
 
 /* Error messages shared within this file. */
 static const char *kUnterminatedVarint = "Unterminated varint.";
@@ -7512,6 +7514,28 @@ static bool consumes_input(opcode op) {
   }
 }
 
+static size_t stacksize(upb_pbdecoder *d, size_t entries) {
+  UPB_UNUSED(d);
+  return entries * sizeof(upb_pbdecoder_frame);
+}
+
+static size_t callstacksize(upb_pbdecoder *d, size_t entries) {
+  UPB_UNUSED(d);
+
+#ifdef UPB_USE_JIT_X64
+  if (d->method_->is_native_) {
+    /* Each native stack frame needs two pointers, plus we need a few frames for
+     * the enter/exit trampolines. */
+    size_t ret = entries * sizeof(void*) * 2;
+    ret += sizeof(void*) * 10;
+    return ret;
+  }
+#endif
+
+  return entries * sizeof(uint32_t*);
+}
+
+
 static bool in_residual_buf(const upb_pbdecoder *d, const char *p);
 
 /* It's unfortunate that we have to micro-manage the compiler with
@@ -7544,9 +7568,19 @@ static size_t curbufleft(const upb_pbdecoder *d) {
   return d->data_end - d->ptr;
 }
 
+/* How many bytes are available before end-of-buffer. */
+static size_t bufleft(const upb_pbdecoder *d) {
+  return d->end - d->ptr;
+}
+
 /* Overall stream offset of d->ptr. */
 uint64_t offset(const upb_pbdecoder *d) {
   return d->bufstart_ofs + (d->ptr - d->buf);
+}
+
+/* How many bytes are available before the end of this delimited region. */
+size_t delim_remaining(const upb_pbdecoder *d) {
+  return d->top->end_ofs - offset(d);
 }
 
 /* Advances d->ptr. */
@@ -7597,24 +7631,72 @@ static void checkpoint(upb_pbdecoder *d) {
   d->checkpoint = d->ptr;
 }
 
+/* Skips "bytes" bytes in the stream, which may be more than available.  If we
+ * skip more bytes than are available, we return a long read count to the caller
+ * indicating how many bytes can be skipped over before passing actual data
+ * again.  Skipped bytes can pass a NULL buffer and the decoder guarantees they
+ * won't actually be read.
+ */
+static int32_t skip(upb_pbdecoder *d, size_t bytes) {
+  assert(!in_residual_buf(d, d->ptr) || d->size_param == 0);
+  assert(d->skip == 0);
+  if (bytes > delim_remaining(d)) {
+    seterr(d, "Skipped value extended beyond enclosing submessage.");
+    return upb_pbdecoder_suspend(d);
+  } else if (bufleft(d) > bytes) {
+    /* Skipped data is all in current buffer, and more is still available. */
+    advance(d, bytes);
+    d->skip = 0;
+    return DECODE_OK;
+  } else {
+    /* Skipped data extends beyond currently available buffers. */
+    d->pc = d->last;
+    d->skip = bytes - curbufleft(d);
+    d->bufstart_ofs += (d->end - d->buf);
+    d->residual_end = d->residual;
+    switchtobuf(d, d->residual, d->residual_end);
+    return d->size_param + d->skip;
+  }
+}
+
+
 /* Resumes the decoder from an initial state or from a previous suspend. */
 int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
                              size_t size, const upb_bufhandle *handle) {
   UPB_UNUSED(p);  /* Useless; just for the benefit of the JIT. */
+
   d->buf_param = buf;
   d->size_param = size;
   d->handle = handle;
+
   if (d->residual_end > d->residual) {
     /* We have residual bytes from the last buffer. */
     assert(d->ptr == d->residual);
   } else {
     switchtobuf(d, buf, buf + size);
   }
+
   d->checkpoint = d->ptr;
+
+  if (d->skip) {
+    size_t skip_bytes = d->skip;
+    d->skip = 0;
+    CHECK_RETURN(skip(d, skip_bytes));
+    d->checkpoint = d->ptr;
+  }
+
+  if (!buf) {
+    /* NULL buf is ok if its entire span is covered by the "skip" above, but
+     * by this point we know that "skip" doesn't cover the buffer. */
+    seterr(d, "Passed NULL buffer over non-skippable region.");
+    return upb_pbdecoder_suspend(d);
+  }
+
   if (d->top->groupnum < 0) {
     CHECK_RETURN(upb_pbdecoder_skipunknown(d, -1, 0));
     d->checkpoint = d->ptr;
   }
+
   return DECODE_OK;
 }
 
@@ -7672,28 +7754,6 @@ static size_t suspend_save(upb_pbdecoder *d) {
 
   switchtobuf(d, d->residual, d->residual_end);
   return d->size_param;
-}
-
-/* Skips "bytes" bytes in the stream, which may be more than available.  If we
- * skip more bytes than are available, we return a long read count to the caller
- * indicating how many bytes the caller should skip before passing a new buffer.
- */
-static int32_t skip(upb_pbdecoder *d, size_t bytes) {
-  assert(!in_residual_buf(d, d->ptr) || d->size_param == 0);
-  if (curbufleft(d) >= bytes) {
-    /* Skipped data is all in current buffer. */
-    advance(d, bytes);
-    return DECODE_OK;
-  } else {
-    /* Skipped data extends beyond currently available buffers. */
-    size_t skip;
-    d->pc = d->last;
-    skip = bytes - curbufleft(d);
-    d->bufstart_ofs += (d->end - d->buf) + skip;
-    d->residual_end = d->residual;
-    switchtobuf(d, d->residual, d->residual_end);
-    return d->size_param + skip;
-  }
 }
 
 /* Copies the next "bytes" bytes into "buf" and advances the stream.
@@ -7860,7 +7920,7 @@ static bool decoder_push(upb_pbdecoder *d, uint64_t end) {
   upb_pbdecoder_frame *fr = d->top;
 
   if (end > fr->end_ofs) {
-    seterr(d, "Submessage end extends past enclosing submessage.");
+    seterr(d, kPbDecoderSubmessageTooLong);
     return false;
   } else if (fr == d->limit) {
     seterr(d, kPbDecoderStackOverflow);
@@ -7964,34 +8024,7 @@ have_tag:
       return DECODE_OK;
     }
 
-    if (d->ptr == d->delim_end) {
-      seterr(d, "Enclosing submessage ended in the middle of value or group");
-      /* Unlike most errors we notice during parsing, right now we have consumed
-       * all of the user's input.
-       *
-       * There are three different options for how to handle this case:
-       *
-       *   1. decode() = short count, error = set
-       *   2. decode() = full count, error = set
-       *   3. decode() = full count, error NOT set, short count and error will
-       *      be reported on next call to decode() (or end())
-       *
-       * (1) and (3) have the advantage that they preserve the invariant that an
-       * error occurs iff decode() returns a short count.
-       *
-       * (2) and (3) have the advantage of reflecting the fact that all of the
-       * bytes were in fact parsed (and possibly delivered to the unknown field
-       * handler, in the future when that is supported).
-       *
-       * (3) requires extra state in the decode (a place to store the "permanent
-       * error" that we should return for all subsequent attempts to decode).
-       * But we likely want this anyway.
-       *
-       * Right now we do (1), thanks to the fact that we checkpoint *after* this
-       * check.  (3) may be a better choice long term; unclear at the moment. */
-      return upb_pbdecoder_suspend(d);
-    }
-
+    /* Unknown group -- continue looping over unknown fields. */
     checkpoint(d);
   }
 }
@@ -8015,7 +8048,7 @@ static int32_t dispatch(upb_pbdecoder *d) {
   uint8_t wire_type;
   uint32_t fieldnum;
   upb_value val;
-  int32_t ret;
+  int32_t retval;
 
   /* Decode tag. */
   CHECK_RETURN(decode_v32(d, &tag));
@@ -8039,23 +8072,25 @@ static int32_t dispatch(upb_pbdecoder *d) {
     }
   }
 
-  /* Unknown field or ENDGROUP. */
-  ret = upb_pbdecoder_skipunknown(d, fieldnum, wire_type);
+  /* We have some unknown fields (or ENDGROUP) to parse.  The DISPATCH or TAG
+   * bytecode that triggered this is preceded by a CHECKDELIM bytecode which
+   * we need to back up to, so that when we're done skipping unknown data we
+   * can re-check the delimited end. */
+  d->last--;  /* Necessary if we get suspended */
+  d->pc = d->last;
+  assert(getop(*d->last) == OP_CHECKDELIM);
 
-  if (ret == DECODE_ENDGROUP) {
+  /* Unknown field or ENDGROUP. */
+  retval = upb_pbdecoder_skipunknown(d, fieldnum, wire_type);
+
+  CHECK_RETURN(retval);
+
+  if (retval == DECODE_ENDGROUP) {
     goto_endmsg(d);
-    return DECODE_OK;
-  } else if (ret == DECODE_OK) {
-    /* We just consumed some input, so we might now have consumed all the data
-     * in the delmited region.  Since every opcode that can trigger dispatch is
-     * directly preceded by OP_CHECKDELIM, rewind to it now to re-check the
-     * delimited end. */
-    d->pc = d->last - 1;
-    assert(getop(*d->pc) == OP_CHECKDELIM);
     return DECODE_OK;
   }
 
-  return ret;
+  return DECODE_OK;
 }
 
 /* Callers know that the stack is more than one deep because the opcodes that
@@ -8070,18 +8105,8 @@ upb_pbdecoder_frame *outer_frame(upb_pbdecoder *d) {
 
 /* The main decoder VM function.  Uses traditional bytecode dispatch loop with a
  * switch() statement. */
-size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
-                            size_t size, const upb_bufhandle *handle) {
-  upb_pbdecoder *d = closure;
-  const mgroup *group = hd;
-  int32_t result;
-  assert(buf);
-  result = upb_pbdecoder_resume(d, NULL, buf, size, handle);
-  if (result == DECODE_ENDGROUP) {
-    goto_endmsg(d);
-  }
-  CHECK_RETURN(result);
-  UPB_UNUSED(group);
+size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
+                      const upb_bufhandle* handle) {
 
 #define VMCASE(op, code) \
   case op: { code; if (consumes_input(op)) checkpoint(d); break; }
@@ -8104,6 +8129,7 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
     arg = instruction >> 8;
     longofs = arg;
     assert(d->ptr != d->residual_end);
+    UPB_UNUSED(group);
 #ifdef UPB_DUMP_BYTECODE
     fprintf(stderr, "s_ofs=%d buf_ofs=%d data_rem=%d buf_rem=%d delim_rem=%d "
                     "%x %s (%d)\n",
@@ -8160,7 +8186,7 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
         CHECK_SUSPEND(upb_sink_endsubmsg(&d->top->sink, arg));
       )
       VMCASE(OP_STARTSTR,
-        uint32_t len = d->top->end_ofs - offset(d);
+        uint32_t len = delim_remaining(d);
         upb_pbdecoder_frame *outer = outer_frame(d);
         CHECK_SUSPEND(upb_sink_startstr(&outer->sink, arg, len, &d->top->sink));
         if (len == 0) {
@@ -8171,7 +8197,7 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
         uint32_t len = curbufleft(d);
         size_t n = upb_sink_putstring(&d->top->sink, arg, d->ptr, len, handle);
         if (n > len) {
-          if (n > d->top->end_ofs - offset(d)) {
+          if (n > delim_remaining(d)) {
             seterr(d, "Tried to skip past end of string.");
             return upb_pbdecoder_suspend(d);
           } else {
@@ -8279,11 +8305,14 @@ size_t upb_pbdecoder_decode(void *closure, const void *hd, const char *buf,
         CHECK_RETURN(dispatch(d));
       })
       VMCASE(OP_HALT, {
-        return size;
+        return d->size_param;
       })
     }
   }
 }
+
+
+/* BytesHandler handlers ******************************************************/
 
 void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint) {
   upb_pbdecoder *d = closure;
@@ -8293,6 +8322,7 @@ void *upb_pbdecoder_startbc(void *closure, const void *pc, size_t size_hint) {
   d->call_len = 1;
   d->callstack[0] = &halt;
   d->pc = pc;
+  d->skip = 0;
   return d;
 }
 
@@ -8303,6 +8333,7 @@ void *upb_pbdecoder_startjit(void *closure, const void *hd, size_t size_hint) {
   d->top->end_ofs = UINT64_MAX;
   d->bufstart_ofs = 0;
   d->call_len = 0;
+  d->skip = 0;
   return d;
 }
 
@@ -8311,12 +8342,14 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   const upb_pbdecodermethod *method = handler_data;
   uint64_t end;
   char dummy;
-#ifdef UPB_USE_JIT_X64
-  const mgroup *group = (const mgroup*)method->group;
-#endif
 
   if (d->residual_end > d->residual) {
-    seterr(d, "Unexpected EOF");
+    seterr(d, "Unexpected EOF: decoder still has buffered unparsed data");
+    return false;
+  }
+
+  if (d->skip) {
+    seterr(d, "Unexpected EOF inside skipped data");
     return false;
   }
 
@@ -8325,12 +8358,13 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
     return false;
   }
 
-  /* Message ends here. */
+  /* The user's end() call indicates that the message ends here. */
   end = offset(d);
   d->top->end_ofs = end;
 
 #ifdef UPB_USE_JIT_X64
-  if (group->jit_code) {
+  if (method->is_native_) {
+    const mgroup *group = (const mgroup*)method->group;
     if (d->top != d->stack)
       d->stack->end_ofs = 0;
     group->jit_code(closure, method->code_base.ptr, &dummy, 0, NULL);
@@ -8353,12 +8387,25 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
   }
 
   if (d->call_len != 0) {
-    seterr(d, "Unexpected EOF");
+    seterr(d, "Unexpected EOF inside submessage or group");
     return false;
   }
 
   return true;
 }
+
+size_t upb_pbdecoder_decode(void *decoder, const void *group, const char *buf,
+                            size_t size, const upb_bufhandle *handle) {
+  int32_t result = upb_pbdecoder_resume(decoder, NULL, buf, size, handle);
+
+  if (result == DECODE_ENDGROUP) goto_endmsg(decoder);
+  CHECK_RETURN(result);
+
+  return run_decoder_vm(decoder, group, handle);
+}
+
+
+/* Public API *****************************************************************/
 
 void upb_pbdecoder_reset(upb_pbdecoder *d) {
   d->top = d->stack;
@@ -8367,27 +8414,6 @@ void upb_pbdecoder_reset(upb_pbdecoder *d) {
   d->buf = d->residual;
   d->end = d->residual;
   d->residual_end = d->residual;
-}
-
-static size_t stacksize(upb_pbdecoder *d, size_t entries) {
-  UPB_UNUSED(d);
-  return entries * sizeof(upb_pbdecoder_frame);
-}
-
-static size_t callstacksize(upb_pbdecoder *d, size_t entries) {
-  UPB_UNUSED(d);
-
-#ifdef UPB_USE_JIT_X64
-  if (d->method_->is_native_) {
-    /* Each native stack frame needs two pointers, plus we need a few frames for
-     * the enter/exit trampolines. */
-    size_t ret = entries * sizeof(void*) * 2;
-    ret += sizeof(void*) * 10;
-    return ret;
-  }
-#endif
-
-  return entries * sizeof(uint32_t*);
 }
 
 upb_pbdecoder *upb_pbdecoder_create(upb_env *e, const upb_pbdecodermethod *m,
