@@ -433,32 +433,13 @@ namespace Google.Protobuf
             // Use .NET's formatting for the value down to the second, including an opening double quote (as it's a string value)
             DateTime dateTime = normalized.ToDateTime();
             builder.Append(dateTime.ToString("yyyy'-'MM'-'dd'T'HH:mm:ss", CultureInfo.InvariantCulture));
-            if (normalized.Nanos != 0)
-            {
-                builder.Append('.');
-                // Output to 3, 6 or 9 digits.
-                if (normalized.Nanos % 1000000 == 0)
-                {
-                    builder.Append((normalized.Nanos / 1000000).ToString("d", CultureInfo.InvariantCulture));
-                }
-                else if (normalized.Nanos % 1000 == 0)
-                {
-                    builder.Append((normalized.Nanos / 1000).ToString("d", CultureInfo.InvariantCulture));
-                }
-                else
-                {
-                    builder.Append((normalized.Nanos).ToString("d", CultureInfo.InvariantCulture));
-                }
-            }
+            AppendNanoseconds(builder, Math.Abs(normalized.Nanos));
             builder.Append('Z');
         }
 
         private void WriteDuration(StringBuilder builder, IMessage value)
         {
-            // TODO: In the common case where this *is* using the built-in Timestamp type, we could
-            // avoid all the reflection at this point, by casting to Timestamp. In the interests of
-            // avoiding subtle bugs, don't do that until we've implemented DynamicMessage so that we can prove
-            // it still works in that case.
+            // TODO: Same as for WriteTimestamp
             int nanos = (int) value.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.GetValue(value);
             long seconds = (long) value.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.GetValue(value);
 
@@ -473,7 +454,16 @@ namespace Google.Protobuf
             }
 
             builder.Append(normalized.Seconds.ToString("d", CultureInfo.InvariantCulture));
-            nanos = Math.Abs(normalized.Nanos);
+            AppendNanoseconds(builder, Math.Abs(normalized.Nanos));
+            builder.Append('s');
+        }
+
+        /// <summary>
+        /// Appends a number of nanoseconds to a StringBuilder. Either 0 digits are added (in which
+        /// case no "." is appended), or 3 6 or 9 digits.
+        /// </summary>
+        private static void AppendNanoseconds(StringBuilder builder, int nanos)
+        {
             if (nanos != 0)
             {
                 builder.Append('.');
@@ -482,7 +472,7 @@ namespace Google.Protobuf
                 {
                     builder.Append((nanos / 1000000).ToString("d", CultureInfo.InvariantCulture));
                 }
-                else if (normalized.Nanos % 1000 == 0)
+                else if (nanos % 1000 == 0)
                 {
                     builder.Append((nanos / 1000).ToString("d", CultureInfo.InvariantCulture));
                 }
@@ -491,7 +481,6 @@ namespace Google.Protobuf
                     builder.Append(nanos.ToString("d", CultureInfo.InvariantCulture));
                 }
             }
-            builder.Append('s');
         }
 
         private void WriteList(StringBuilder builder, IFieldAccessor accessor, IList list)
@@ -647,7 +636,7 @@ namespace Google.Protobuf
                 }
             }
             builder.Append('"');
-        }        
+        }
 
         private const string Hex = "0123456789abcdef";
         private static void HexEncodeUtf16CodeUnit(StringBuilder builder, char c)

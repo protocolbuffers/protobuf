@@ -97,7 +97,10 @@ message TestJsonFieldOrdering {
   // ordering.
   // TestFieldOrderings in unittest_proto3.proto is similar,
   // but doesn't include oneofs.
-  // TODO: Consider adding 
+  // TODO: Consider adding oneofs to TestFieldOrderings, although
+  // that will require fixing other tests in multiple platforms.
+  // Alternatively, consider just adding this to
+  // unittest_proto3.proto if multiple platforms want it.
   
   int32 plain_int32 = 4;
 
