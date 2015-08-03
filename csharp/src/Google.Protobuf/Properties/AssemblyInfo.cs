@@ -42,31 +42,21 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Google.Protobuf")]
-[assembly: AssemblyCopyright("Copyright ©  2008")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("2.4.1.555")]
-
-[assembly: AssemblyVersion("2.4.1.555")]
-
+#if SIGNED
 [assembly: InternalsVisibleTo("Google.Protobuf.Test, PublicKey=" +
-    "00240000048000009400000006020000002400005253413100040000110000003b4611704c5379" +
-    "39c3e0fbe9447dd6fa5462507f9dd4fd9fbf0712457e415b037da6d2c4eb5d2c7d29c86380af68" +
-    "7cf400401bb183f2a70bd3b631c1fcb7db8aa66c766694a9fb53fa765df6303104da8c978f3b6d" +
-    "53909cd30685b8bc9922c726cd82b5995e9e2cfca6df7a2d189d851492e49f4b76f269ce6dfd08" +
-    "c34a7d98")]
-
-#if !NOFILEVERSION
-[assembly: AssemblyFileVersion("2.4.1.555")]
+    "002400000480000094000000060200000024000052534131000400000100010025800fbcfc63a1" +
+    "7c66b303aae80b03a6beaa176bb6bef883be436f2a1579edd80ce23edf151a1f4ced97af83abcd" +
+    "981207041fd5b2da3b498346fcfcd94910d52f25537c4a43ce3fbe17dc7d43e6cbdb4d8f1242dc" +
+    "b6bd9b5906be74da8daa7d7280f97130f318a16c07baf118839b156299a48522f9fae2371c9665" +
+    "c5ae9cb6")]
+#else
+[assembly: InternalsVisibleTo("Google.Protobuf.Test")]
 #endif
 
+[assembly: AssemblyVersion("3.0.0.0")]
+[assembly: AssemblyFileVersion("3.0.0.0")]
+[assembly: AssemblyInformationalVersion("3.0.0-alpha4")]
