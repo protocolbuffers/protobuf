@@ -62,8 +62,8 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
     src/google/protobuf/unittest_well_known_types.proto
 
 
-$PROTOC -Icsharp/protos/extest --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
-    csharp/protos/extest/unittest_issues.proto
+$PROTOC -Icsharp/protos --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
+    csharp/protos/unittest_issues.proto
 
 # AddressBook sample protos
 $PROTOC -Iexamples --csharp_out=csharp/src/AddressBook \
