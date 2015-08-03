@@ -148,6 +148,10 @@ build_jruby() {
   cd ruby && bash travis-test.sh jruby && cd ..
 }
 
+build_objectivec() {
+  cd objectivec/DevTools && bash full_mac_build.sh && cd ..
+}
+
 # -------- main --------
 
 if [ "$#" -ne 1 ]; then

@@ -60,7 +60,11 @@ wrapped_make() {
   set -e
 }
 
-NUM_MAKE_JOBS=$(/usr/sbin/sysctl -n hw.ncpu)
+if [ -e /usr/sbin/sysctl ]; then
+  NUM_MAKE_JOBS=$(/usr/sbin/sysctl -n hw.ncpu)
+else
+  NUM_MAKE_JOBS=4
+fi
 if [[ "${NUM_MAKE_JOBS}" -lt 4 ]] ; then
   NUM_MAKE_JOBS=4
 fi
