@@ -253,7 +253,7 @@ namespace Google.Protobuf
         {
             // Hand-craft the stream to contain a single entry with just a value.
             var memoryStream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(memoryStream);
+            var output = new CodedOutputStream(memoryStream);
             output.WriteTag(TestMap.MapInt32ForeignMessageFieldNumber, WireFormat.WireType.LengthDelimited);
             var nestedMessage = new ForeignMessage { C = 20 };
             // Size of the entry (tag, size written by WriteMessage, data written by WriteMessage)
@@ -271,7 +271,7 @@ namespace Google.Protobuf
         {
             // Hand-craft the stream to contain a single entry with three fields
             var memoryStream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(memoryStream);
+            var output = new CodedOutputStream(memoryStream);
 
             output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
 
@@ -298,7 +298,7 @@ namespace Google.Protobuf
         public void MapFieldOrderIsIrrelevant()
         {
             var memoryStream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(memoryStream);
+            var output = new CodedOutputStream(memoryStream);
 
             output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
 
@@ -322,7 +322,7 @@ namespace Google.Protobuf
         public void MapNonContiguousEntries()
         {
             var memoryStream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(memoryStream);
+            var output = new CodedOutputStream(memoryStream);
 
             // Message structure:
             // Entry for MapInt32Int32
@@ -373,7 +373,7 @@ namespace Google.Protobuf
         public void DuplicateKeys_LastEntryWins()
         {
             var memoryStream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(memoryStream);
+            var output = new CodedOutputStream(memoryStream);
 
             var key = 10;
             var value1 = 20;

@@ -221,7 +221,7 @@ namespace Google.Protobuf.Collections
         {
             uint packedTag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
             var stream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(stream);
+            var output = new CodedOutputStream(stream);
             var length = CodedOutputStream.ComputeInt32Size(10)
                 + CodedOutputStream.ComputeInt32Size(999)
                 + CodedOutputStream.ComputeInt32Size(-1000);
@@ -237,7 +237,7 @@ namespace Google.Protobuf.Collections
             // actually packed.
             uint nonPackedTag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
             var field = new RepeatedField<int>();
-            var input = CodedInputStream.CreateInstance(stream);
+            var input = new CodedInputStream(stream);
             input.AssertNextTag(packedTag);
             field.AddEntriesFrom(input, FieldCodec.ForInt32(nonPackedTag));
             CollectionAssert.AreEqual(new[] { 10, 999, -1000 }, field);
@@ -249,7 +249,7 @@ namespace Google.Protobuf.Collections
         {
             uint nonPackedTag = WireFormat.MakeTag(10, WireFormat.WireType.Varint);
             var stream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(stream);
+            var output = new CodedOutputStream(stream);
             output.WriteTag(nonPackedTag);
             output.WriteInt32(10);
             output.WriteTag(nonPackedTag);
@@ -263,7 +263,7 @@ namespace Google.Protobuf.Collections
             // actually not packed.
             uint packedTag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
             var field = new RepeatedField<int>();
-            var input = CodedInputStream.CreateInstance(stream);
+            var input = new CodedInputStream(stream);
             input.AssertNextTag(nonPackedTag);
             field.AddEntriesFrom(input, FieldCodec.ForInt32(packedTag));
             CollectionAssert.AreEqual(new[] { 10, 999, -1000 }, field);
@@ -275,7 +275,7 @@ namespace Google.Protobuf.Collections
         {
             uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
             var stream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(stream);
+            var output = new CodedOutputStream(stream);
             output.WriteTag(tag);
             output.WriteString("Foo");
             output.WriteTag(tag);
@@ -286,7 +286,7 @@ namespace Google.Protobuf.Collections
             stream.Position = 0;
 
             var field = new RepeatedField<string>();
-            var input = CodedInputStream.CreateInstance(stream);
+            var input = new CodedInputStream(stream);
             input.AssertNextTag(tag);
             field.AddEntriesFrom(input, FieldCodec.ForString(tag));
             CollectionAssert.AreEqual(new[] { "Foo", "", "Bar" }, field);
@@ -301,7 +301,7 @@ namespace Google.Protobuf.Collections
 
             uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
             var stream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(stream);
+            var output = new CodedOutputStream(stream);
             output.WriteTag(tag);
             output.WriteMessage(message1);
             output.WriteTag(tag);
@@ -310,7 +310,7 @@ namespace Google.Protobuf.Collections
             stream.Position = 0;
 
             var field = new RepeatedField<ForeignMessage>();
-            var input = CodedInputStream.CreateInstance(stream);
+            var input = new CodedInputStream(stream);
             input.AssertNextTag(tag);
             field.AddEntriesFrom(input, FieldCodec.ForMessage(tag, ForeignMessage.Parser));
             CollectionAssert.AreEqual(new[] { message1, message2}, field);
@@ -323,12 +323,12 @@ namespace Google.Protobuf.Collections
             uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
             var field = new RepeatedField<int> { 10, 1000, 1000000 };
             var stream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(stream);
+            var output = new CodedOutputStream(stream);
             field.WriteTo(output, FieldCodec.ForInt32(tag));
             output.Flush();
             stream.Position = 0;
 
-            var input = CodedInputStream.CreateInstance(stream);
+            var input = new CodedInputStream(stream);
             input.AssertNextTag(tag);
             var length = input.ReadLength();
             Assert.AreEqual(10, input.ReadInt32());
@@ -344,12 +344,12 @@ namespace Google.Protobuf.Collections
             uint tag = WireFormat.MakeTag(10, WireFormat.WireType.Varint);
             var field = new RepeatedField<int> { 10, 1000, 1000000};
             var stream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(stream);
+            var output = new CodedOutputStream(stream);
             field.WriteTo(output, FieldCodec.ForInt32(tag));
             output.Flush();
             stream.Position = 0;
 
-            var input = CodedInputStream.CreateInstance(stream);
+            var input = new CodedInputStream(stream);
             input.AssertNextTag(tag);
             Assert.AreEqual(10, input.ReadInt32());
             input.AssertNextTag(tag);
@@ -365,12 +365,12 @@ namespace Google.Protobuf.Collections
             uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
             var field = new RepeatedField<string> { "Foo", "", "Bar" };
             var stream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(stream);
+            var output = new CodedOutputStream(stream);
             field.WriteTo(output, FieldCodec.ForString(tag));
             output.Flush();
             stream.Position = 0;
 
-            var input = CodedInputStream.CreateInstance(stream);
+            var input = new CodedInputStream(stream);
             input.AssertNextTag(tag);
             Assert.AreEqual("Foo", input.ReadString());
             input.AssertNextTag(tag);
@@ -388,12 +388,12 @@ namespace Google.Protobuf.Collections
             uint tag = WireFormat.MakeTag(10, WireFormat.WireType.LengthDelimited);
             var field = new RepeatedField<ForeignMessage> { message1, message2 };
             var stream = new MemoryStream();
-            var output = CodedOutputStream.CreateInstance(stream);
+            var output = new CodedOutputStream(stream);
             field.WriteTo(output, FieldCodec.ForMessage(tag, ForeignMessage.Parser));
             output.Flush();
             stream.Position = 0;
 
-            var input = CodedInputStream.CreateInstance(stream);
+            var input = new CodedInputStream(stream);
             input.AssertNextTag(tag);
             Assert.AreEqual(message1, input.ReadMessage(ForeignMessage.Parser));
             input.AssertNextTag(tag);
@@ -444,7 +444,7 @@ namespace Google.Protobuf.Collections
             int arraySize = 1 + 1 + (11 * 5);
             int msgSize = arraySize;
             byte[] bytes = new byte[msgSize];
-            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
+            CodedOutputStream output = new CodedOutputStream(bytes);
             uint tag = WireFormat.MakeTag(8, WireFormat.WireType.Varint);
             for (int i = 0; i >= -5; i--)
             {
@@ -454,7 +454,7 @@ namespace Google.Protobuf.Collections
 
             Assert.AreEqual(0, output.SpaceLeft);
 
-            CodedInputStream input = CodedInputStream.CreateInstance(bytes);
+            CodedInputStream input = new CodedInputStream(bytes);
             Assert.IsTrue(input.ReadTag(out tag));
 
             RepeatedField<SampleEnum> values = new RepeatedField<SampleEnum>();
@@ -476,7 +476,7 @@ namespace Google.Protobuf.Collections
             int arraySize = 1 + (10 * 5);
             int msgSize = 1 + 1 + arraySize;
             byte[] bytes = new byte[msgSize];
-            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
+            CodedOutputStream output = new CodedOutputStream(bytes);
             // Length-delimited to show we want the packed representation
             uint tag = WireFormat.MakeTag(8, WireFormat.WireType.LengthDelimited);
             output.WriteTag(tag);
@@ -492,7 +492,7 @@ namespace Google.Protobuf.Collections
             }
             Assert.AreEqual(0, output.SpaceLeft);
 
-            CodedInputStream input = CodedInputStream.CreateInstance(bytes);
+            CodedInputStream input = new CodedInputStream(bytes);
             Assert.IsTrue(input.ReadTag(out tag));
 
             RepeatedField<SampleEnum> values = new RepeatedField<SampleEnum>();

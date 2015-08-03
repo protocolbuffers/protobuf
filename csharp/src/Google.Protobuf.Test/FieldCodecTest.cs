@@ -120,11 +120,11 @@ namespace Google.Protobuf
             public void TestRoundTripRaw()
             {
                 var stream = new MemoryStream();
-                var codedOutput = CodedOutputStream.CreateInstance(stream);
+                var codedOutput = new CodedOutputStream(stream);
                 codec.ValueWriter(codedOutput, sampleValue);
                 codedOutput.Flush();
                 stream.Position = 0;
-                var codedInput = CodedInputStream.CreateInstance(stream);
+                var codedInput = new CodedInputStream(stream);
                 Assert.AreEqual(sampleValue, codec.ValueReader(codedInput));
                 Assert.IsTrue(codedInput.IsAtEnd);
             }
@@ -132,11 +132,11 @@ namespace Google.Protobuf
             public void TestRoundTripWithTag()
             {
                 var stream = new MemoryStream();
-                var codedOutput = CodedOutputStream.CreateInstance(stream);
+                var codedOutput = new CodedOutputStream(stream);
                 codec.WriteTagAndValue(codedOutput, sampleValue);
                 codedOutput.Flush();
                 stream.Position = 0;
-                var codedInput = CodedInputStream.CreateInstance(stream);
+                var codedInput = new CodedInputStream(stream);
                 codedInput.AssertNextTag(codec.Tag);
                 Assert.AreEqual(sampleValue, codec.Read(codedInput));
                 Assert.IsTrue(codedInput.IsAtEnd);
@@ -145,7 +145,7 @@ namespace Google.Protobuf
             public void TestCalculateSizeWithTag()
             {
                 var stream = new MemoryStream();
-                var codedOutput = CodedOutputStream.CreateInstance(stream);
+                var codedOutput = new CodedOutputStream(stream);
                 codec.WriteTagAndValue(codedOutput, sampleValue);
                 codedOutput.Flush();
                 Assert.AreEqual(stream.Position, codec.CalculateSizeWithTag(sampleValue));
@@ -155,7 +155,7 @@ namespace Google.Protobuf
             {
                 // WriteTagAndValue ignores default values
                 var stream = new MemoryStream();
-                var codedOutput = CodedOutputStream.CreateInstance(stream);
+                var codedOutput = new CodedOutputStream(stream);
                 codec.WriteTagAndValue(codedOutput, codec.DefaultValue);
                 codedOutput.Flush();
                 Assert.AreEqual(0, stream.Position);
@@ -168,13 +168,13 @@ namespace Google.Protobuf
                 // The plain ValueWriter/ValueReader delegates don't.
                 if (codec.DefaultValue != null) // This part isn't appropriate for message types.
                 {
-                    codedOutput = CodedOutputStream.CreateInstance(stream);
+                    codedOutput = new CodedOutputStream(stream);
                     codec.ValueWriter(codedOutput, codec.DefaultValue);
                     codedOutput.Flush();
                     Assert.AreNotEqual(0, stream.Position);
                     Assert.AreEqual(stream.Position, codec.ValueSizeCalculator(codec.DefaultValue));
                     stream.Position = 0;
-                    var codedInput = CodedInputStream.CreateInstance(stream);
+                    var codedInput = new CodedInputStream(stream);
                     Assert.AreEqual(codec.DefaultValue, codec.ValueReader(codedInput));
                 }
             }

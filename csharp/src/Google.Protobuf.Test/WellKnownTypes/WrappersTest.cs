@@ -309,7 +309,7 @@ namespace Google.Protobuf.WellKnownTypes
             var valueTag = WireFormat.MakeTag(Int32Value.ValueFieldNumber, WireFormat.WireType.Varint);
             using (var stream = new MemoryStream())
             {
-                var coded = CodedOutputStream.CreateInstance(stream);
+                var coded = new CodedOutputStream(stream);
                 coded.WriteTag(wrapperTag);
                 coded.WriteLength(2); // valueTag + a value 0, each one byte
                 coded.WriteTag(valueTag);
