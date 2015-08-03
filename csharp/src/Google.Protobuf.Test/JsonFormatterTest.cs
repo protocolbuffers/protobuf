@@ -388,6 +388,24 @@ namespace Google.Protobuf
             AssertJson("{ 'a': null, 'b': false, 'c': 10.5, 'd': 'text', 'e': [ 't1', 5 ], 'f': { 'nested': 'value' } }", message.ToString());
         }
 
+        [Test]
+        public void FieldMaskStandalone()
+        {
+            var fieldMask = new FieldMask { Paths = { "", "single", "with_underscore", "nested.field.name", "nested..double_dot" } };
+            Assert.AreEqual(",single,withUnderscore,nested.field.name,nested..doubleDot", fieldMask.ToString());
+
+            // Invalid, but we shouldn't create broken JSON...
+            fieldMask = new FieldMask { Paths = { "x\\y" } };
+            Assert.AreEqual(@"x\\y", fieldMask.ToString());
+        }
+
+        [Test]
+        public void FieldMaskField()
+        {
+            var message = new TestWellKnownTypes { FieldMaskField = new FieldMask { Paths = { "user.display_name", "photo" } } };
+            AssertJson("{ 'fieldMaskField': 'user.displayName,photo' }", JsonFormatter.Default.Format(message));
+        }
+
         /// <summary>
         /// Checks that the actual JSON is the same as the expected JSON - but after replacing
         /// all apostrophes in the expected JSON with double quotes. This basically makes the tests easier

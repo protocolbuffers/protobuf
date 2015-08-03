@@ -36,6 +36,7 @@ using System.Globalization;
 using System.Text;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
+using System.Linq;
 
 namespace Google.Protobuf
 {
@@ -402,6 +403,11 @@ namespace Google.Protobuf
                 MaybeWrapInString(builder, value, WriteDuration, inField);
                 return;
             }
+            if (descriptor.FullName == FieldMask.Descriptor.FullName)
+            {
+                MaybeWrapInString(builder, value, WriteFieldMask, inField);
+                return;
+            }
             if (descriptor.FullName == Struct.Descriptor.FullName)
             {
                 WriteStruct(builder, (IMessage) value);
@@ -477,6 +483,12 @@ namespace Google.Protobuf
             builder.Append(normalized.Seconds.ToString("d", CultureInfo.InvariantCulture));
             AppendNanoseconds(builder, Math.Abs(normalized.Nanos));
             builder.Append('s');
+        }
+
+        private void WriteFieldMask(StringBuilder builder, IMessage value)
+        {
+            IList paths = (IList) value.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor.GetValue(value);
+            AppendEscapedString(builder, string.Join(",", paths.Cast<string>().Select(ToCamelCase)));
         }
 
         /// <summary>
@@ -654,6 +666,15 @@ namespace Google.Protobuf
         private void WriteString(StringBuilder builder, string text)
         {
             builder.Append('"');
+            AppendEscapedString(builder, text);
+            builder.Append('"');
+        }
+
+        /// <summary>
+        /// Appends the given text to the string builder, escaping as required.
+        /// </summary>
+        private void AppendEscapedString(StringBuilder builder, string text)
+        {
             for (int i = 0; i < text.Length; i++)
             {
                 char c = text[i];
@@ -713,7 +734,6 @@ namespace Google.Protobuf
                         break;
                 }
             }
-            builder.Append('"');
         }
 
         private const string Hex = "0123456789abcdef";
