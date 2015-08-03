@@ -43,7 +43,7 @@ namespace Google.Protobuf
         {
             Preconditions.CheckNotNull(message, "message");
             Preconditions.CheckNotNull(data, "data");
-            CodedInputStream input = CodedInputStream.CreateInstance(data);
+            CodedInputStream input = new CodedInputStream(data);
             message.MergeFrom(input);
             input.CheckLastTagWas(0);
         }
@@ -61,7 +61,7 @@ namespace Google.Protobuf
         {
             Preconditions.CheckNotNull(message, "message");
             Preconditions.CheckNotNull(input, "input");
-            CodedInputStream codedInput = CodedInputStream.CreateInstance(input);
+            CodedInputStream codedInput = new CodedInputStream(input);
             message.MergeFrom(codedInput);
             codedInput.CheckLastTagWas(0);
         }
@@ -79,7 +79,7 @@ namespace Google.Protobuf
         {
             Preconditions.CheckNotNull(message, "message");
             byte[] result = new byte[message.CalculateSize()];
-            CodedOutputStream output = CodedOutputStream.CreateInstance(result);
+            CodedOutputStream output = new CodedOutputStream(result);
             message.WriteTo(output);
             output.CheckNoSpaceLeft();
             return result;
@@ -89,7 +89,7 @@ namespace Google.Protobuf
         {
             Preconditions.CheckNotNull(message, "message");
             Preconditions.CheckNotNull(output, "output");
-            CodedOutputStream codedOutput = CodedOutputStream.CreateInstance(output);
+            CodedOutputStream codedOutput = new CodedOutputStream(output);
             message.WriteTo(codedOutput);
             codedOutput.Flush();
         }
@@ -98,7 +98,7 @@ namespace Google.Protobuf
         {
             Preconditions.CheckNotNull(message, "message");
             Preconditions.CheckNotNull(output, "output");
-            CodedOutputStream codedOutput = CodedOutputStream.CreateInstance(output);
+            CodedOutputStream codedOutput = new CodedOutputStream(output);
             codedOutput.WriteRawVarint32((uint)message.CalculateSize());
             message.WriteTo(codedOutput);
             codedOutput.Flush();

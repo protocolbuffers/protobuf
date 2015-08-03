@@ -59,20 +59,20 @@ namespace Google.Protobuf
         /// </summary>
         private static void AssertReadVarint(byte[] data, ulong value)
         {
-            CodedInputStream input = CodedInputStream.CreateInstance(data);
+            CodedInputStream input = new CodedInputStream(data);
             Assert.AreEqual((uint) value, input.ReadRawVarint32());
 
-            input = CodedInputStream.CreateInstance(data);
+            input = new CodedInputStream(data);
             Assert.AreEqual(value, input.ReadRawVarint64());
             Assert.IsTrue(input.IsAtEnd);
 
             // Try different block sizes.
             for (int bufferSize = 1; bufferSize <= 16; bufferSize *= 2)
             {
-                input = CodedInputStream.CreateInstance(new SmallBlockInputStream(data, bufferSize));
+                input = new CodedInputStream(new SmallBlockInputStream(data, bufferSize));
                 Assert.AreEqual((uint) value, input.ReadRawVarint32());
 
-                input = CodedInputStream.CreateInstance(new SmallBlockInputStream(data, bufferSize));
+                input = new CodedInputStream(new SmallBlockInputStream(data, bufferSize));
                 Assert.AreEqual(value, input.ReadRawVarint64());
                 Assert.IsTrue(input.IsAtEnd);
             }
@@ -95,11 +95,11 @@ namespace Google.Protobuf
         /// </summary>
         private static void AssertReadVarintFailure(InvalidProtocolBufferException expected, byte[] data)
         {
-            CodedInputStream input = CodedInputStream.CreateInstance(data);
+            CodedInputStream input = new CodedInputStream(data);
             var exception = Assert.Throws<InvalidProtocolBufferException>(() => input.ReadRawVarint32());
             Assert.AreEqual(expected.Message, exception.Message);
 
-            input = CodedInputStream.CreateInstance(data);
+            input = new CodedInputStream(data);
             exception = Assert.Throws<InvalidProtocolBufferException>(() => input.ReadRawVarint64());
             Assert.AreEqual(expected.Message, exception.Message);
 
@@ -152,14 +152,14 @@ namespace Google.Protobuf
         /// </summary>
         private static void AssertReadLittleEndian32(byte[] data, uint value)
         {
-            CodedInputStream input = CodedInputStream.CreateInstance(data);
+            CodedInputStream input = new CodedInputStream(data);
             Assert.AreEqual(value, input.ReadRawLittleEndian32());
             Assert.IsTrue(input.IsAtEnd);
 
             // Try different block sizes.
             for (int blockSize = 1; blockSize <= 16; blockSize *= 2)
             {
-                input = CodedInputStream.CreateInstance(
+                input = new CodedInputStream(
                     new SmallBlockInputStream(data, blockSize));
                 Assert.AreEqual(value, input.ReadRawLittleEndian32());
                 Assert.IsTrue(input.IsAtEnd);
@@ -172,14 +172,14 @@ namespace Google.Protobuf
         /// </summary>
         private static void AssertReadLittleEndian64(byte[] data, ulong value)
         {
-            CodedInputStream input = CodedInputStream.CreateInstance(data);
+            CodedInputStream input = new CodedInputStream(data);
             Assert.AreEqual(value, input.ReadRawLittleEndian64());
             Assert.IsTrue(input.IsAtEnd);
 
             // Try different block sizes.
             for (int blockSize = 1; blockSize <= 16; blockSize *= 2)
             {
-                input = CodedInputStream.CreateInstance(
+                input = new CodedInputStream(
                     new SmallBlockInputStream(data, blockSize));
                 Assert.AreEqual(value, input.ReadRawLittleEndian64());
                 Assert.IsTrue(input.IsAtEnd);
@@ -269,7 +269,7 @@ namespace Google.Protobuf
         public void ReadMaliciouslyLargeBlob()
         {
             MemoryStream ms = new MemoryStream();
-            CodedOutputStream output = CodedOutputStream.CreateInstance(ms);
+            CodedOutputStream output = new CodedOutputStream(ms);
 
             uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
             output.WriteRawVarint32(tag);
@@ -278,7 +278,7 @@ namespace Google.Protobuf
             output.Flush();
             ms.Position = 0;
 
-            CodedInputStream input = CodedInputStream.CreateInstance(ms);
+            CodedInputStream input = new CodedInputStream(ms);
             uint testtag;
             Assert.IsTrue(input.ReadTag(out testtag));
             Assert.AreEqual(tag, testtag);
@@ -335,7 +335,7 @@ namespace Google.Protobuf
             // Have to use a Stream rather than ByteString.CreateCodedInput as SizeLimit doesn't
             // apply to the latter case.
             MemoryStream ms = new MemoryStream(TestUtil.GetAllSet().ToByteString().ToByteArray());
-            CodedInputStream input = CodedInputStream.CreateInstance(ms);
+            CodedInputStream input = new CodedInputStream(ms);
             input.SetSizeLimit(16);
 
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.ParseFrom(input));
@@ -344,7 +344,7 @@ namespace Google.Protobuf
         [Test]
         public void ResetSizeCounter()
         {
-            CodedInputStream input = CodedInputStream.CreateInstance(
+            CodedInputStream input = new CodedInputStream(
                 new SmallBlockInputStream(new byte[256], 8));
             input.SetSizeLimit(16);
             input.ReadRawBytes(16);
@@ -366,7 +366,7 @@ namespace Google.Protobuf
         public void ReadInvalidUtf8()
         {
             MemoryStream ms = new MemoryStream();
-            CodedOutputStream output = CodedOutputStream.CreateInstance(ms);
+            CodedOutputStream output = new CodedOutputStream(ms);
 
             uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
             output.WriteRawVarint32(tag);
@@ -375,7 +375,7 @@ namespace Google.Protobuf
             output.Flush();
             ms.Position = 0;
 
-            CodedInputStream input = CodedInputStream.CreateInstance(ms);
+            CodedInputStream input = new CodedInputStream(ms);
 
             uint actualTag;
             Assert.IsTrue(input.ReadTag(out actualTag));
@@ -409,7 +409,7 @@ namespace Google.Protobuf
         public void TestNegativeEnum()
         {
             byte[] bytes = { 0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 };
-            CodedInputStream input = CodedInputStream.CreateInstance(bytes);
+            CodedInputStream input = new CodedInputStream(bytes);
             Assert.AreEqual((int)SampleEnum.NegativeValue, input.ReadEnum());
             Assert.IsTrue(input.IsAtEnd);
         }
@@ -420,7 +420,7 @@ namespace Google.Protobuf
         {
             using (var ms = new MemoryStream())
             {
-                CodedOutputStream output = CodedOutputStream.CreateInstance(ms);
+                CodedOutputStream output = new CodedOutputStream(ms);
                 output.WriteTag(1, WireFormat.WireType.LengthDelimited);
                 output.WriteBytes(ByteString.CopyFrom(new byte[100]));
                 output.WriteTag(2, WireFormat.WireType.LengthDelimited);
@@ -428,7 +428,7 @@ namespace Google.Protobuf
                 output.Flush();
 
                 ms.Position = 0;
-                CodedInputStream input = CodedInputStream.CreateInstance(ms, new byte[ms.Length / 2]);
+                CodedInputStream input = new CodedInputStream(ms, new byte[ms.Length / 2]);
 
                 uint tag;
                 Assert.IsTrue(input.ReadTag(out tag));

@@ -49,7 +49,7 @@ namespace Google.Protobuf
             if ((value >> 32) == 0)
             {
                 MemoryStream rawOutput = new MemoryStream();
-                CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput);
+                CodedOutputStream output = new CodedOutputStream(rawOutput);
                 output.WriteRawVarint32((uint) value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
@@ -59,7 +59,7 @@ namespace Google.Protobuf
 
             {
                 MemoryStream rawOutput = new MemoryStream();
-                CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput);
+                CodedOutputStream output = new CodedOutputStream(rawOutput);
                 output.WriteRawVarint64(value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
@@ -76,7 +76,7 @@ namespace Google.Protobuf
                 {
                     MemoryStream rawOutput = new MemoryStream();
                     CodedOutputStream output =
-                        CodedOutputStream.CreateInstance(rawOutput, bufferSize);
+                        new CodedOutputStream(rawOutput, bufferSize);
                     output.WriteRawVarint32((uint) value);
                     output.Flush();
                     Assert.AreEqual(data, rawOutput.ToArray());
@@ -84,7 +84,7 @@ namespace Google.Protobuf
 
                 {
                     MemoryStream rawOutput = new MemoryStream();
-                    CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput, bufferSize);
+                    CodedOutputStream output = new CodedOutputStream(rawOutput, bufferSize);
                     output.WriteRawVarint64(value);
                     output.Flush();
                     Assert.AreEqual(data, rawOutput.ToArray());
@@ -134,7 +134,7 @@ namespace Google.Protobuf
         private static void AssertWriteLittleEndian32(byte[] data, uint value)
         {
             MemoryStream rawOutput = new MemoryStream();
-            CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput);
+            CodedOutputStream output = new CodedOutputStream(rawOutput);
             output.WriteRawLittleEndian32(value);
             output.Flush();
             Assert.AreEqual(data, rawOutput.ToArray());
@@ -143,7 +143,7 @@ namespace Google.Protobuf
             for (int bufferSize = 1; bufferSize <= 16; bufferSize *= 2)
             {
                 rawOutput = new MemoryStream();
-                output = CodedOutputStream.CreateInstance(rawOutput, bufferSize);
+                output = new CodedOutputStream(rawOutput, bufferSize);
                 output.WriteRawLittleEndian32(value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
@@ -157,7 +157,7 @@ namespace Google.Protobuf
         private static void AssertWriteLittleEndian64(byte[] data, ulong value)
         {
             MemoryStream rawOutput = new MemoryStream();
-            CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput);
+            CodedOutputStream output = new CodedOutputStream(rawOutput);
             output.WriteRawLittleEndian64(value);
             output.Flush();
             Assert.AreEqual(data, rawOutput.ToArray());
@@ -166,7 +166,7 @@ namespace Google.Protobuf
             for (int blockSize = 1; blockSize <= 16; blockSize *= 2)
             {
                 rawOutput = new MemoryStream();
-                output = CodedOutputStream.CreateInstance(rawOutput, blockSize);
+                output = new CodedOutputStream(rawOutput, blockSize);
                 output.WriteRawLittleEndian64(value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
@@ -201,7 +201,7 @@ namespace Google.Protobuf
             for (int blockSize = 1; blockSize < 256; blockSize *= 2)
             {
                 MemoryStream rawOutput = new MemoryStream();
-                CodedOutputStream output = CodedOutputStream.CreateInstance(rawOutput, blockSize);
+                CodedOutputStream output = new CodedOutputStream(rawOutput, blockSize);
                 message.WriteTo(output);
                 output.Flush();
                 Assert.AreEqual(rawBytes, rawOutput.ToArray());
@@ -276,7 +276,7 @@ namespace Google.Protobuf
             Assert.AreEqual(10, CodedOutputStream.ComputeEnumSize((int) SampleEnum.NegativeValue));
 
             byte[] bytes = new byte[10];
-            CodedOutputStream output = CodedOutputStream.CreateInstance(bytes);
+            CodedOutputStream output = new CodedOutputStream(bytes);
             output.WriteEnum((int) SampleEnum.NegativeValue);
 
             Assert.AreEqual(0, output.SpaceLeft);
@@ -293,7 +293,7 @@ namespace Google.Protobuf
             byte[] child = new byte[120];
             {
                 MemoryStream ms = new MemoryStream(child);
-                CodedOutputStream cout = CodedOutputStream.CreateInstance(ms, 20);
+                CodedOutputStream cout = new CodedOutputStream(ms, 20);
                 // Field 11: numeric value: 500
                 cout.WriteTag(11, WireFormat.WireType.Varint);
                 Assert.AreEqual(1, cout.Position);
@@ -314,7 +314,7 @@ namespace Google.Protobuf
 
             byte[] bytes = new byte[130];
             {
-                CodedOutputStream cout = CodedOutputStream.CreateInstance(bytes);
+                CodedOutputStream cout = new CodedOutputStream(bytes);
                 // Field 1: numeric value: 500
                 cout.WriteTag(1, WireFormat.WireType.Varint);
                 Assert.AreEqual(1, cout.Position);
@@ -334,7 +334,7 @@ namespace Google.Protobuf
             }
             // Now test Input stream:
             {
-                CodedInputStream cin = CodedInputStream.CreateInstance(new MemoryStream(bytes), new byte[50]);
+                CodedInputStream cin = new CodedInputStream(new MemoryStream(bytes), new byte[50]);
                 uint tag;
                 Assert.AreEqual(0, cin.Position);
                 // Field 1:

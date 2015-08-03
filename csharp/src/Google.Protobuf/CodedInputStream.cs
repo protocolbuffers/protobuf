@@ -93,43 +93,19 @@ namespace Google.Protobuf
         private int sizeLimit = DefaultSizeLimit;
 
         #region Construction
-
-        /// <summary>
-        /// Creates a new CodedInputStream reading data from the given
-        /// stream.
-        /// </summary>
-        public static CodedInputStream CreateInstance(Stream input)
-        {
-            return new CodedInputStream(input);
-        }
-        /// <summary>
-        /// Creates a new CodedInputStream reading data from the given
-        /// stream and a pre-allocated memory buffer.
-        /// </summary>
-        public static CodedInputStream CreateInstance(Stream input, byte[] buffer)
-        {
-            return new CodedInputStream(input, buffer);
-        }
-
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given
         /// byte array.
         /// </summary>
-        public static CodedInputStream CreateInstance(byte[] buf)
+        public CodedInputStream(byte[] buf) : this(buf, 0, buf.Length)
         {
-            return new CodedInputStream(buf, 0, buf.Length);
         }
 
         /// <summary>
         /// Creates a new CodedInputStream that reads from the given
         /// byte array slice.
         /// </summary>
-        public static CodedInputStream CreateInstance(byte[] buf, int offset, int length)
-        {
-            return new CodedInputStream(buf, offset, length);
-        }
-
-        private CodedInputStream(byte[] buffer, int offset, int length)
+        public CodedInputStream(byte[] buffer, int offset, int length)
         {
             this.buffer = buffer;
             this.bufferPos = offset;
@@ -137,14 +113,21 @@ namespace Google.Protobuf
             this.input = null;
         }
 
-        private CodedInputStream(Stream input)
+        /// <summary>
+        /// Creates a new CodedInputStream reading data from the given stream.
+        /// </summary>
+        public CodedInputStream(Stream input)
         {
             this.buffer = new byte[BufferSize];
             this.bufferSize = 0;
             this.input = input;
         }
 
-        private CodedInputStream(Stream input, byte[] buffer)
+        /// <summary>
+        /// Creates a new CodedInputStream reading data from the given
+        /// stream, with a pre-allocated buffer.
+        /// </summary>
+        internal CodedInputStream(Stream input, byte[] buffer)
         {
             this.buffer = buffer;
             this.bufferSize = 0;
