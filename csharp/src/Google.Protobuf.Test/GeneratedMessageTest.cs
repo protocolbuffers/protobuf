@@ -36,6 +36,8 @@ using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Google.Protobuf
 {
@@ -589,6 +591,33 @@ namespace Google.Protobuf
             var message2 = TestAllTypes.Parser.ParseFrom(bytes);
             Assert.AreEqual(message, message2);
             Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofUint32, message2.OneofFieldCase);
+        }
+
+        [Test]
+        public void IgnoreUnknownFields_RealDataStillRead()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            var unusedFieldNumber = 23456;
+            Assert.IsFalse(TestAllTypes.Descriptor.Fields.InDeclarationOrder().Select(x => x.FieldNumber).Contains(unusedFieldNumber));
+            output.WriteTag(unusedFieldNumber, WireFormat.WireType.LengthDelimited);
+            output.WriteString("ignore me");
+            message.WriteTo(output);
+            output.Flush();
+
+            stream.Position = 0;
+            var parsed = TestAllTypes.Parser.ParseFrom(stream);
+            Assert.AreEqual(message, parsed);
+        }
+
+        [Test]
+        public void IgnoreUnknownFields_AllTypes()
+        {
+            // Simple way of ensuring we can skip all kinds of fields.
+            var data = SampleMessages.CreateFullTestAllTypes().ToByteArray();
+            var empty = Empty.Parser.ParseFrom(data);
+            Assert.AreEqual(new Empty(), empty);
         }
     }
 }
