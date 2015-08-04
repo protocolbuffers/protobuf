@@ -54,13 +54,37 @@ namespace Google.Protobuf
     /// </remarks>
     public sealed class CodedInputStream
     {
+        /// <summary>
+        /// Buffer of data read from the stream or provided at construction time.
+        /// </summary>
         private readonly byte[] buffer;
+
+        /// <summary>
+        /// The number of valid bytes in the buffer.
+        /// </summary>
         private int bufferSize;
+
         private int bufferSizeAfterLimit = 0;
+        /// <summary>
+        /// The position within the current buffer (i.e. the next byte to read)
+        /// </summary>
         private int bufferPos = 0;
+
+        /// <summary>
+        /// The stream to read further input from, or null if the byte array buffer was provided
+        /// directly on construction, with no further data available.
+        /// </summary>
         private readonly Stream input;
+
+        /// <summary>
+        /// The last tag we read. 0 indicates we've read to the end of the stream
+        /// (or haven't read anything yet).
+        /// </summary>
         private uint lastTag = 0;
 
+        /// <summary>
+        /// The next tag, used to store the value read by PeekTag.
+        /// </summary>
         private uint nextTag = 0;
         private bool hasNextTag = false;
 
@@ -456,6 +480,11 @@ namespace Google.Protobuf
             ++recursionDepth;
             builder.MergeFrom(this);
             CheckLastTagWas(0);
+            // Check that we've read exactly as much data as expected.
+            if (!ReachedLimit)
+            {
+                throw InvalidProtocolBufferException.TruncatedMessage();
+            }
             --recursionDepth;
             PopLimit(oldLimit);
         }

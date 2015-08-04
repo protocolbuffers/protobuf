@@ -259,7 +259,7 @@ namespace Google.Protobuf
             output.WriteTag(TestMap.MapInt32ForeignMessageFieldNumber, WireFormat.WireType.LengthDelimited);
             var nestedMessage = new ForeignMessage { C = 20 };
             // Size of the entry (tag, size written by WriteMessage, data written by WriteMessage)
-            output.WriteRawVarint32((uint)(nestedMessage.CalculateSize() + 3));
+            output.WriteLength(2 + nestedMessage.CalculateSize());
             output.WriteTag(2, WireFormat.WireType.LengthDelimited);
             output.WriteMessage(nestedMessage);
             output.Flush();
@@ -283,7 +283,7 @@ namespace Google.Protobuf
 
             // Each field can be represented in a single byte, with a single byte tag.
             // Total message size: 6 bytes.
-            output.WriteRawVarint32(6);
+            output.WriteLength(6);
             output.WriteTag(1, WireFormat.WireType.Varint);
             output.WriteInt32(key);
             output.WriteTag(2, WireFormat.WireType.Varint);
@@ -309,7 +309,7 @@ namespace Google.Protobuf
 
             // Each field can be represented in a single byte, with a single byte tag.
             // Total message size: 4 bytes.
-            output.WriteRawVarint32(4);
+            output.WriteLength(4);
             output.WriteTag(2, WireFormat.WireType.Varint);
             output.WriteInt32(value);
             output.WriteTag(1, WireFormat.WireType.Varint);
@@ -335,7 +335,7 @@ namespace Google.Protobuf
             var key1 = 10;
             var value1 = 20;
             output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
-            output.WriteRawVarint32(4);
+            output.WriteLength(4);
             output.WriteTag(1, WireFormat.WireType.Varint);
             output.WriteInt32(key1);
             output.WriteTag(2, WireFormat.WireType.Varint);
@@ -345,7 +345,7 @@ namespace Google.Protobuf
             var key2 = "a";
             var value2 = "b";
             output.WriteTag(TestMap.MapStringStringFieldNumber, WireFormat.WireType.LengthDelimited);
-            output.WriteRawVarint32(6); // 3 bytes per entry: tag, size, character
+            output.WriteLength(6); // 3 bytes per entry: tag, size, character
             output.WriteTag(1, WireFormat.WireType.LengthDelimited);
             output.WriteString(key2);
             output.WriteTag(2, WireFormat.WireType.LengthDelimited);
@@ -355,7 +355,7 @@ namespace Google.Protobuf
             var key3 = 15;
             var value3 = 25;
             output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
-            output.WriteRawVarint32(4);
+            output.WriteLength(4);
             output.WriteTag(1, WireFormat.WireType.Varint);
             output.WriteInt32(key3);
             output.WriteTag(2, WireFormat.WireType.Varint);
@@ -383,7 +383,7 @@ namespace Google.Protobuf
 
             // First entry
             output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
-            output.WriteRawVarint32(4);
+            output.WriteLength(4);
             output.WriteTag(1, WireFormat.WireType.Varint);
             output.WriteInt32(key);
             output.WriteTag(2, WireFormat.WireType.Varint);
@@ -391,7 +391,7 @@ namespace Google.Protobuf
 
             // Second entry - same key, different value
             output.WriteTag(TestMap.MapInt32Int32FieldNumber, WireFormat.WireType.LengthDelimited);
-            output.WriteRawVarint32(4);
+            output.WriteLength(4);
             output.WriteTag(1, WireFormat.WireType.Varint);
             output.WriteInt32(key);
             output.WriteTag(2, WireFormat.WireType.Varint);
@@ -618,6 +618,16 @@ namespace Google.Protobuf
             var data = SampleMessages.CreateFullTestAllTypes().ToByteArray();
             var empty = Empty.Parser.ParseFrom(data);
             Assert.AreEqual(new Empty(), empty);
+        }
+
+        // This was originally seen as a conformance test failure.
+        [Test]
+        public void TruncatedMessageFieldThrows()
+        {
+            // 130, 3 is the message tag
+            // 1 is the data length - but there's no data.
+            var data = new byte[] { 130, 3, 1 };            
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseFrom(data));
         }
     }
 }
