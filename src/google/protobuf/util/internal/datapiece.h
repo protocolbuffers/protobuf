@@ -193,6 +193,15 @@ class LIBPROTOBUF_EXPORT DataPiece {
 
   // Stored piece of data.
   union {
+#if defined(__GNUC__) && (__GNUC__ < 4 ||(__GNUC__ == 4 && __GNUC_MINOR__ < 9))
+    int32 i32_;
+    int64 i64_;
+    uint32 u32_;
+    uint64 u64_;
+    double double_;
+    float float_;
+    bool bool_;
+#else
     const int32 i32_;
     const int64 i64_;
     const uint32 u32_;
@@ -200,6 +209,7 @@ class LIBPROTOBUF_EXPORT DataPiece {
     const double double_;
     const float float_;
     const bool bool_;
+#endif
     StringPiecePod str_;
   };
 };
