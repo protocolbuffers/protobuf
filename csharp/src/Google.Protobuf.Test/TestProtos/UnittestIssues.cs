@@ -147,6 +147,7 @@ namespace UnitTest.Issues.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
         }
       }
@@ -228,6 +229,7 @@ namespace UnitTest.Issues.TestProtos {
                 if (pb::WireFormat.IsEndGroupTag(tag)) {
                   return;
                 }
+                input.ConsumeLastField();
                 break;
             }
           }
@@ -309,6 +311,7 @@ namespace UnitTest.Issues.TestProtos {
                     if (pb::WireFormat.IsEndGroupTag(tag)) {
                       return;
                     }
+                    input.ConsumeLastField();
                     break;
                 }
               }
@@ -449,6 +452,7 @@ namespace UnitTest.Issues.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             value_ = (global::UnitTest.Issues.TestProtos.NegativeEnum) input.ReadEnum();
@@ -543,6 +547,7 @@ namespace UnitTest.Issues.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
         }
       }
@@ -740,6 +745,7 @@ namespace UnitTest.Issues.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             PrimitiveValue = input.ReadInt32();
@@ -871,6 +877,7 @@ namespace UnitTest.Issues.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             Item = input.ReadInt32();
@@ -999,6 +1006,7 @@ namespace UnitTest.Issues.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             Types_ = input.ReadInt32();
@@ -1088,6 +1096,7 @@ namespace UnitTest.Issues.TestProtos {
                 if (pb::WireFormat.IsEndGroupTag(tag)) {
                   return;
                 }
+                input.ConsumeLastField();
                 break;
             }
           }
@@ -1357,6 +1366,7 @@ namespace UnitTest.Issues.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             PlainString = input.ReadString();
