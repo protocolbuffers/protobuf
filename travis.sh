@@ -39,6 +39,7 @@ build_csharp() {
 
   (cd csharp/src; mono ../../nuget.exe restore)
   csharp/buildall.sh
+  cd conformance && make test_csharp && cd ..
 }
 
 use_java() {
