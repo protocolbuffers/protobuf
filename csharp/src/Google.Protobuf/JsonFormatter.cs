@@ -739,7 +739,6 @@ namespace Google.Protobuf
         private const string Hex = "0123456789abcdef";
         private static void HexEncodeUtf16CodeUnit(StringBuilder builder, char c)
         {
-            uint utf16 = c;
             builder.Append("\\u");
             builder.Append(Hex[(c >> 12) & 0xf]);
             builder.Append(Hex[(c >> 8) & 0xf]);
