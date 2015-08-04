@@ -16,7 +16,7 @@ endforeach()
 install(TARGETS protoc EXPORT protobuf-targets
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
 
-if(MSVC)
+if(TRUE)
   file(STRINGS extract_includes.bat.in _extract_strings
     REGEX "^copy")
   foreach(_extract_string ${_extract_strings})
