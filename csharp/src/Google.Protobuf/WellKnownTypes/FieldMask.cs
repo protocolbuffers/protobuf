@@ -125,6 +125,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             paths_.AddEntriesFrom(input, _repeated_paths_codec);
