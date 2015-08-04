@@ -45,7 +45,7 @@ namespace Google.Protobuf
         {
         }
 
-        public static InvalidProtocolBufferException TruncatedMessage()
+        internal static InvalidProtocolBufferException TruncatedMessage()
         {
             return new InvalidProtocolBufferException(
                 "While parsing a protocol message, the input ended unexpectedly " +
@@ -61,12 +61,15 @@ namespace Google.Protobuf
                 "which claimed to have negative size.");
         }
 
-        public static InvalidProtocolBufferException MalformedVarint()
+        internal static InvalidProtocolBufferException MalformedVarint()
         {
             return new InvalidProtocolBufferException(
                 "CodedInputStream encountered a malformed varint.");
         }
 
+        /// <summary>
+        /// Creates an exception for an error condition of an invalid tag being encountered.
+        /// </summary>
         public static InvalidProtocolBufferException InvalidTag()
         {
             return new InvalidProtocolBufferException(

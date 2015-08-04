@@ -91,8 +91,9 @@ namespace Google.Protobuf
 
     /// <summary>
     /// Generic interface for a deeply cloneable type.
-    /// <summary>
+    /// </summary>
     /// <remarks>
+    /// <para>
     /// All generated messages implement this interface, but so do some non-message types.
     /// Additionally, due to the type constraint on <c>T</c> in <see cref="IMessage{T}"/>,
     /// it is simpler to keep this as a separate interface.

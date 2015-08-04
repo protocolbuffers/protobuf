@@ -43,16 +43,35 @@ namespace Google.Protobuf.WellKnownTypes
     /// </summary>
     public static class TimeExtensions
     {
+        /// <summary>
+        /// Converts the given <see cref="DateTime"/> to a <see cref="Timestamp"/>.
+        /// </summary>
+        /// <param name="dateTime">The date and time to convert to a timestamp.</param>
+        /// <exception cref="ArgumentException">The <paramref name="dateTime"/> value has a <see cref="DateTime.Kind"/>other than <c>Utc</c>.</exception>
+        /// <returns>The converted timestamp.</returns>
         public static Timestamp ToTimestamp(this DateTime dateTime)
         {
             return Timestamp.FromDateTime(dateTime);
         }
 
+        /// <summary>
+        /// Converts the given <see cref="DateTimeOffset"/> to a <see cref="Timestamp"/>
+        /// </summary>
+        /// <remarks>The offset is taken into consideration when converting the value (so the same instant in time
+        /// is represented) but is not a separate part of the resulting value. In other words, there is no
+        /// roundtrip operation to retrieve the original <c>DateTimeOffset</c>.</remarks>
+        /// <param name="dateTimeOffset">The date and time (with UTC offset) to convert to a timestamp.</param>
+        /// <returns>The converted timestamp.</returns>
         public static Timestamp ToTimestamp(this DateTimeOffset dateTimeOffset)
         {
             return Timestamp.FromDateTimeOffset(dateTimeOffset);
         }
 
+        /// <summary>
+        /// Converts the given <see cref="TimeSpan"/> to a <see cref="Duration"/>.
+        /// </summary>
+        /// <param name="timeSpan">The time span to convert.</param>
+        /// <returns>The converted duration.</returns>
         public static Duration ToDuration(this TimeSpan timeSpan)
         {
             return Duration.FromTimeSpan(timeSpan);

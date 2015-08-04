@@ -38,7 +38,13 @@ namespace Google.Protobuf.WellKnownTypes
     // providing a conversion to TimeSpan and convenience operators.
     public partial class Duration
     {
+        /// <summary>
+        /// The number of nanoseconds in a second.
+        /// </summary>
         public const int NanosecondsPerSecond = 1000000000;
+        /// <summary>
+        /// The number of nanoseconds in a BCL tick (as used by <see cref="TimeSpan"/> and <see cref="DateTime"/>).
+        /// </summary>
         public const int NanosecondsPerTick = 100;
 
         /// <summary>

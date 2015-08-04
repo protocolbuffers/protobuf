@@ -58,6 +58,12 @@ namespace Google.Protobuf.Reflection
             clearDelegate = ReflectionUtil.CreateActionObject(clearMethod);
         }
 
+        /// <summary>
+        /// Gets the descriptor for this oneof.
+        /// </summary>
+        /// <value>
+        /// The descriptor of the oneof.
+        /// </value>
         public OneofDescriptor Descriptor { get { return descriptor; } }
 
         /// <summary>

@@ -105,23 +105,35 @@ namespace Google.Protobuf
             get { return bytes.Length; }
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if this byte string is empty, <c>false</c> otherwise.
+        /// </summary>
         public bool IsEmpty
         {
             get { return Length == 0; }
         }
 
+        /// <summary>
+        /// Converts this <see cref="ByteString"/> into a byte array.
+        /// </summary>
+        /// <remarks>The data is copied - changes to the returned array will not be reflected in this <c>ByteString</c>.</remarks>
+        /// <returns>A byte array with the same data as this <c>ByteString</c>.</returns>
         public byte[] ToByteArray()
         {
             return (byte[]) bytes.Clone();
         }
 
+        /// <summary>
+        /// Converts this <see cref="ByteString"/> into a standard base64 representation.
+        /// </summary>
+        /// <returns>A base64 representation of this <c>ByteString</c>.</returns>
         public string ToBase64()
         {
             return Convert.ToBase64String(bytes);
         }
 
         /// <summary>
-        /// Constructs a ByteString from the Base64 Encoded String.
+        /// Constructs a <see cref="ByteString" /> from the Base64 Encoded String.
         /// </summary>
         public static ByteString FromBase64(string bytes)
         {
@@ -131,7 +143,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Constructs a ByteString from the given array. The contents
+        /// Constructs a <see cref="ByteString" /> from the given array. The contents
         /// are copied, so further modifications to the array will not
         /// be reflected in the returned ByteString.
         /// This method can also be invoked in <c>ByteString.CopyFrom(0xaa, 0xbb, ...)</c> form
@@ -143,7 +155,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Constructs a ByteString from a portion of a byte array.
+        /// Constructs a <see cref="ByteString" /> from a portion of a byte array.
         /// </summary>
         public static ByteString CopyFrom(byte[] bytes, int offset, int count)
         {
@@ -153,7 +165,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Creates a new ByteString by encoding the specified text with
+        /// Creates a new <see cref="ByteString" /> by encoding the specified text with
         /// the given encoding.
         /// </summary>
         public static ByteString CopyFrom(string text, Encoding encoding)
@@ -162,7 +174,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Creates a new ByteString by encoding the specified text in UTF-8.
+        /// Creates a new <see cref="ByteString" /> by encoding the specified text in UTF-8.
         /// </summary>
         public static ByteString CopyFromUtf8(string text)
         {
@@ -177,21 +189,46 @@ namespace Google.Protobuf
             get { return bytes[index]; }
         }
 
+        /// <summary>
+        /// Converts this <see cref="ByteString"/> into a string by applying the given encoding.
+        /// </summary>
+        /// <remarks>
+        /// This method should only be used to convert binary data which was the result of encoding
+        /// text with the given encoding.
+        /// </remarks>
+        /// <param name="encoding">The encoding to use to decode the binary data into text.</param>
+        /// <returns>The result of decoding the binary data with the given decoding.</returns>
         public string ToString(Encoding encoding)
         {
             return encoding.GetString(bytes, 0, bytes.Length);
         }
 
+        /// <summary>
+        /// Converts this <see cref="ByteString"/> into a string by applying the UTF-8 encoding.
+        /// </summary>
+        /// <remarks>
+        /// This method should only be used to convert binary data which was the result of encoding
+        /// text with UTF-8.
+        /// </remarks>
+        /// <returns>The result of decoding the binary data with the given decoding.</returns>
         public string ToStringUtf8()
         {
             return ToString(Encoding.UTF8);
         }
 
+        /// <summary>
+        /// Returns an iterator over the bytes in this <see cref="ByteString"/>.
+        /// </summary>
+        /// <returns>An iterator over the bytes in this object.</returns>
         public IEnumerator<byte> GetEnumerator()
         {
             return ((IEnumerable<byte>) bytes).GetEnumerator();
         }
 
+        /// <summary>
+        /// Returns an iterator over the bytes in this <see cref="ByteString"/>.
+        /// </summary>
+        /// <returns>An iterator over the bytes in this object.</returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
@@ -206,6 +243,12 @@ namespace Google.Protobuf
             return new CodedInputStream(bytes);
         }
 
+        /// <summary>
+        /// Compares two byte strings for equality.
+        /// </summary>
+        /// <param name="lhs">The first byte string to compare.</param>
+        /// <param name="rhs">The second byte string to compare.</param>
+        /// <returns><c>true</c> if the byte strings are equal; false otherwise.</returns>
         public static bool operator ==(ByteString lhs, ByteString rhs)
         {
             if (ReferenceEquals(lhs, rhs))
@@ -230,6 +273,12 @@ namespace Google.Protobuf
             return true;
         }
 
+        /// <summary>
+        /// Compares two byte strings for inequality.
+        /// </summary>
+        /// <param name="lhs">The first byte string to compare.</param>
+        /// <param name="rhs">The second byte string to compare.</param>
+        /// <returns><c>false</c> if the byte strings are equal; true otherwise.</returns>
         public static bool operator !=(ByteString lhs, ByteString rhs)
         {
             return !(lhs == rhs);
@@ -237,11 +286,21 @@ namespace Google.Protobuf
 
         // TODO(jonskeet): CopyTo if it turns out to be required
 
+        /// <summary>
+        /// Compares this byte string with another object.
+        /// </summary>
+        /// <param name="obj">The object to compare this with.</param>
+        /// <returns><c>true</c> if <paramref name="obj"/> refers to an equal <see cref="ByteString"/>; <c>false</c> otherwise.</returns>
         public override bool Equals(object obj)
         {
             return this == (obj as ByteString);
         }
 
+        /// <summary>
+        /// Returns a hash code for this object. Two equal byte strings
+        /// will return the same hash code.
+        /// </summary>
+        /// <returns>A hash code for this object.</returns>
         public override int GetHashCode()
         {
             int ret = 23;
@@ -252,6 +311,11 @@ namespace Google.Protobuf
             return ret;
         }
 
+        /// <summary>
+        /// Compares this byte string with another.
+        /// </summary>
+        /// <param name="other">The <see cref="ByteString"/> to compare this with.</param>
+        /// <returns><c>true</c> if <paramref name="other"/> refers to an equal byte string; <c>false</c> otherwise.</returns>
         public bool Equals(ByteString other)
         {
             return this == other;

@@ -51,18 +51,7 @@ namespace Google.Protobuf.Reflection
         private readonly IList<FileDescriptor> dependencies;
         private readonly IList<FileDescriptor> publicDependencies;
         private readonly DescriptorPool pool;
-
-        public enum ProtoSyntax
-        {
-            Proto2,
-            Proto3
-        }
-
-        public ProtoSyntax Syntax
-        {
-            get { return proto.Syntax == "proto3" ? ProtoSyntax.Proto3 : ProtoSyntax.Proto2; }
-        }
-
+        
         private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
         {
             this.descriptorData = descriptorData;
@@ -368,7 +357,13 @@ namespace Google.Protobuf.Reflection
                 throw new ArgumentException("Invalid embedded descriptor for \"" + proto.Name + "\".", e);
             }
         }
-        
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
             return "FileDescriptor for " + proto.Name;

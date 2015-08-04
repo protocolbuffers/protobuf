@@ -61,6 +61,9 @@ namespace Google.Protobuf.Reflection
             get { return index; }
         }
 
+        /// <summary>
+        /// Returns the name of the entity (field, message etc) being described.
+        /// </summary>
         public abstract string Name { get; }
 
         /// <summary>

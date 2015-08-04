@@ -66,7 +66,7 @@ namespace Google.Protobuf
 
         internal const int DefaultRecursionLimit = 64;
         internal const int DefaultSizeLimit = 64 << 20; // 64MB
-        public const int BufferSize = 4096;
+        internal const int BufferSize = 4096;
 
         /// <summary>
         /// The total number of bytes read before the current buffer. The

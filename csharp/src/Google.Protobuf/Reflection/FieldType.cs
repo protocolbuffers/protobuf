@@ -33,28 +33,81 @@
 namespace Google.Protobuf.Reflection
 {
     /// <summary>
-    /// Enumeration of all the possible field types. The odd formatting is to make it very clear
-    /// which attribute applies to which value, while maintaining a compact format.
+    /// Enumeration of all the possible field types.
     /// </summary>
     public enum FieldType
     {
+        /// <summary>
+        /// The <c>double</c> field type.
+        /// </summary>
         Double,
+        /// <summary>
+        /// The <c>float</c> field type.
+        /// </summary>
         Float,
+        /// <summary>
+        /// The <c>int64</c> field type.
+        /// </summary>
         Int64,
+        /// <summary>
+        /// The <c>uint64</c> field type.
+        /// </summary>
         UInt64,
+        /// <summary>
+        /// The <c>int32</c> field type.
+        /// </summary>
         Int32,
+        /// <summary>
+        /// The <c>fixed64</c> field type.
+        /// </summary>
         Fixed64,
+        /// <summary>
+        /// The <c>fixed32</c> field type.
+        /// </summary>
         Fixed32,
+        /// <summary>
+        /// The <c>bool</c> field type.
+        /// </summary>
         Bool,
+        /// <summary>
+        /// The <c>string</c> field type.
+        /// </summary>
         String,
+        /// <summary>
+        /// The field type used for groups (not supported in this implementation).
+        /// </summary>
         Group,
+        /// <summary>
+        /// The field type used for message fields.
+        /// </summary>
         Message,
+        /// <summary>
+        /// The <c>bytes</c> field type.
+        /// </summary>
         Bytes,
+        /// <summary>
+        /// The <c>uint32</c> field type.
+        /// </summary>
         UInt32,
+        /// <summary>
+        /// The <c>sfixed32</c> field type.
+        /// </summary>
         SFixed32,
+        /// <summary>
+        /// The <c>sfixed64</c> field type.
+        /// </summary>
         SFixed64,
+        /// <summary>
+        /// The <c>sint32</c> field type.
+        /// </summary>
         SInt32,
+        /// <summary>
+        /// The <c>sint64</c> field type.
+        /// </summary>
         SInt64,
+        /// <summary>
+        /// The field type used for enum fields.
+        /// </summary>
         Enum
     }
 }

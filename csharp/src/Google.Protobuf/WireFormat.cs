@@ -30,9 +30,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System;
-using Google.Protobuf.Reflection;
-
 namespace Google.Protobuf
 {
     /// <summary>
@@ -59,13 +56,34 @@ namespace Google.Protobuf
 
         #endregion
 
+        /// <summary>
+        /// Wire types within protobuf encoding.
+        /// </summary>
         public enum WireType : uint
         {
+            /// <summary>
+            /// Variable-length integer.
+            /// </summary>
             Varint = 0,
+            /// <summary>
+            /// A fixed-length 64-bit value.
+            /// </summary>
             Fixed64 = 1,
+            /// <summary>
+            /// A length-delimited value, i.e. a length followed by that many bytes of data.
+            /// </summary>
             LengthDelimited = 2,
+            /// <summary>
+            /// A "start group" value - not supported by this implementation.
+            /// </summary>
             StartGroup = 3,
+            /// <summary>
+            /// An "end group" value - not supported by this implementation.
+            /// </summary>
             EndGroup = 4,
+            /// <summary>
+            /// A fixed-length 32-bit value.
+            /// </summary>
             Fixed32 = 5
         }
         
@@ -80,6 +98,11 @@ namespace Google.Protobuf
             return (WireType) (tag & TagTypeMask);
         }
 
+        /// <summary>
+        /// Determines whether the given tag is an end group tag.
+        /// </summary>
+        /// <param name="tag">The tag to check.</param>
+        /// <returns><c>true</c> if the given tag is an end group tag; <c>false</c> otherwise.</returns>
         public static bool IsEndGroupTag(uint tag)
         {
             return (WireType) (tag & TagTypeMask) == WireType.EndGroup;
@@ -99,64 +122,6 @@ namespace Google.Protobuf
         public static uint MakeTag(int fieldNumber, WireType wireType)
         {
             return (uint) (fieldNumber << TagTypeBits) | (uint) wireType;
-        }
-
-        public static uint MakeTag(FieldDescriptor field)
-        {
-            return MakeTag(field.FieldNumber, GetWireType(field));
-        }
-
-        /// <summary>
-        /// Returns the wire type for the given field descriptor. This differs
-        /// from GetWireType(FieldType) for packed repeated fields.
-        /// </summary>
-        internal static WireType GetWireType(FieldDescriptor descriptor)
-        {
-            return descriptor.IsPacked ? WireType.LengthDelimited : GetWireType(descriptor.FieldType);
-        }
-
-        /// <summary>
-        /// Converts a field type to its wire type. Done with a switch for the sake
-        /// of speed - this is significantly faster than a dictionary lookup.
-        /// </summary>
-        public static WireType GetWireType(FieldType fieldType)
-        {
-            switch (fieldType)
-            {
-                case FieldType.Double:
-                    return WireType.Fixed64;
-                case FieldType.Float:
-                    return WireType.Fixed32;
-                case FieldType.Int64:
-                case FieldType.UInt64:
-                case FieldType.Int32:
-                    return WireType.Varint;
-                case FieldType.Fixed64:
-                    return WireType.Fixed64;
-                case FieldType.Fixed32:
-                    return WireType.Fixed32;
-                case FieldType.Bool:
-                    return WireType.Varint;
-                case FieldType.String:
-                    return WireType.LengthDelimited;
-                case FieldType.Group:
-                    return WireType.StartGroup;
-                case FieldType.Message:
-                case FieldType.Bytes:
-                    return WireType.LengthDelimited;
-                case FieldType.UInt32:
-                    return WireType.Varint;
-                case FieldType.SFixed32:
-                    return WireType.Fixed32;
-                case FieldType.SFixed64:
-                    return WireType.Fixed64;
-                case FieldType.SInt32:
-                case FieldType.SInt64:
-                case FieldType.Enum:
-                    return WireType.Varint;
-                default:
-                    throw new ArgumentOutOfRangeException("fieldType", "No such field type");
-            }
-        }
+        }        
     }
 }

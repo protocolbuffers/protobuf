@@ -297,6 +297,10 @@ namespace Google.Protobuf
             WriteInt32(value);
         }
 
+        /// <summary>
+        /// Writes an sfixed32 value, without a tag, to the stream.
+        /// </summary>
+        /// <param name="value">The value to write.</param>
         public void WriteSFixed32(int value)
         {
             WriteRawLittleEndian32((uint) value);
@@ -649,6 +653,9 @@ namespace Google.Protobuf
             }
         }
 
+        /// <summary>
+        /// Flushes any buffered data to the underlying stream (if there is one).
+        /// </summary>
         public void Flush()
         {
             if (output != null)
