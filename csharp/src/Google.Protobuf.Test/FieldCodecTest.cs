@@ -39,6 +39,7 @@ namespace Google.Protobuf
 {
     public class FieldCodecTest
     {
+#pragma warning disable 0414 // Used by tests via reflection - do not remove!
         private static readonly List<ICodecTestData> Codecs = new List<ICodecTestData>
         {
             new FieldCodecTestData<bool>(FieldCodec.ForBool(100), true, "Bool"),
@@ -61,6 +62,7 @@ namespace Google.Protobuf
             new FieldCodecTestData<ForeignMessage>(
                 FieldCodec.ForMessage(100, ForeignMessage.Parser), new ForeignMessage { C = 10 }, "Message"),
         };
+#pragma warning restore 0414
 
         [Test, TestCaseSource("Codecs")]
         public void RoundTripWithTag(ICodecTestData codec)
