@@ -143,6 +143,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 9: {
             Value = input.ReadDouble();
@@ -249,6 +250,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 13: {
             Value = input.ReadFloat();
@@ -355,6 +357,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             Value = input.ReadInt64();
@@ -461,6 +464,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             Value = input.ReadUInt64();
@@ -567,6 +571,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             Value = input.ReadInt32();
@@ -673,6 +678,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             Value = input.ReadUInt32();
@@ -779,6 +785,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             Value = input.ReadBool();
@@ -885,6 +892,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             Value = input.ReadString();
@@ -991,6 +999,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             Value = input.ReadBytes();

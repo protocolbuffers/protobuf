@@ -309,6 +309,39 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Consumes the data for the field with the tag we've just read.
+        /// This should be called directly after <see cref="ReadTag"/>, when
+        /// the caller wishes to skip an unknown field.
+        /// </summary>
+        public void ConsumeLastField()
+        {
+            if (lastTag == 0)
+            {
+                throw new InvalidOperationException("ConsumeLastField cannot be called at the end of a stream");
+            }
+            switch (WireFormat.GetTagWireType(lastTag))
+            {
+                case WireFormat.WireType.StartGroup:
+                case WireFormat.WireType.EndGroup:
+                    // TODO: Work out how to skip them instead? See issue 688.
+                    throw new InvalidProtocolBufferException("Group tags not supported by proto3 C# implementation");
+                case WireFormat.WireType.Fixed32:
+                    ReadFixed32();
+                    break;
+                case WireFormat.WireType.Fixed64:
+                    ReadFixed64();
+                    break;
+                case WireFormat.WireType.LengthDelimited:
+                    var length = ReadLength();
+                    SkipRawBytes(length);
+                    break;
+                case WireFormat.WireType.Varint:
+                    ReadRawVarint32();
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Reads a double field from the stream.
         /// </summary>
         public double ReadDouble()

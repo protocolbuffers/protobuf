@@ -68,3 +68,6 @@ $PROTOC -Icsharp/protos --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos 
 # AddressBook sample protos
 $PROTOC -Iexamples --csharp_out=csharp/src/AddressBook \
     examples/addressbook.proto
+
+$PROTOC -Iconformance --csharp_out=csharp/src/Google.Protobuf.Conformance \
+    conformance/conformance.proto

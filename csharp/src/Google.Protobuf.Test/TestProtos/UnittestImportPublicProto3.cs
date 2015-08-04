@@ -130,6 +130,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             E = input.ReadInt32();

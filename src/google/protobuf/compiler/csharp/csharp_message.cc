@@ -428,7 +428,8 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     "  if (pb::WireFormat.IsEndGroupTag(tag)) {\n"
     "    return;\n"
     "  }\n"
-    "  break;\n"); // Note: we're ignoring unknown fields here.
+    "  input.ConsumeLastField();\n" // We're not storing the data, but we still need to consume it.
+    "  break;\n");
   for (int i = 0; i < fields_by_number().size(); i++) {
     const FieldDescriptor* field = fields_by_number()[i];
     internal::WireFormatLite::WireType wt =

@@ -29,6 +29,11 @@ build_cpp_distcheck() {
 }
 
 build_csharp() {
+  # Just for the conformance tests. We don't currently
+  # need to really build protoc, but it's simplest to keep with the
+  # conventions of the other builds.
+  internal_build_cpp
+
   # Install latest version of Mono
   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
   echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
@@ -39,6 +44,7 @@ build_csharp() {
 
   (cd csharp/src; mono ../../nuget.exe restore)
   csharp/buildall.sh
+  cd conformance && make test_csharp && cd ..
 }
 
 use_java() {
