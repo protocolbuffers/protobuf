@@ -172,7 +172,7 @@ class Map {
     !defined(GOOGLE_PROTOBUF_OS_NACL) && !defined(GOOGLE_PROTOBUF_OS_ANDROID)
     template<class NodeType, class... Args>
     void construct(NodeType* p, Args&&... args) {
-      new (p) NodeType(std::forward<Args>(args)...);
+      new ((void*)p) NodeType(std::forward<Args>(args)...);
     }
 
     template<class NodeType>

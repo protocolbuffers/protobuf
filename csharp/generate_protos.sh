@@ -23,10 +23,10 @@ cd $(dirname $0)/..
 # Windows and Unix.
 if [ -z "$PROTOC" ]; then
   # TODO(jonskeet): Use an array and a for loop instead?
-  if [ -x vsprojects/Debug/protoc.exe ]; then
-    PROTOC=vsprojects/Debug/protoc.exe
-  elif [ -x vsprojects/Release/protoc.exe ]; then
-    PROTOC=vsprojects/Release/protoc.exe
+  if [ -x cmake/build/Debug/protoc.exe ]; then
+    PROTOC=cmake/build/Debug/protoc.exe
+  elif [ -x cmake/build/Release/protoc.exe ]; then
+    PROTOC=cmake/build/Release/protoc.exe
   elif [ -x src/protoc ]; then
     PROTOC=src/protoc
   else
@@ -38,55 +38,32 @@ fi
 # Descriptor proto
 # TODO(jonskeet): Remove fixup
 cp src/google/protobuf/descriptor.proto src/google/protobuf/descriptor_proto_file.proto
-$PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers/DescriptorProtos \
+$PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf/Reflection \
     src/google/protobuf/descriptor_proto_file.proto
 rm src/google/protobuf/descriptor_proto_file.proto
 
+$PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf/WellKnownTypes \
+    src/google/protobuf/any.proto \
+    src/google/protobuf/api.proto \
+    src/google/protobuf/duration.proto \
+    src/google/protobuf/empty.proto \
+    src/google/protobuf/field_mask.proto \
+    src/google/protobuf/source_context.proto \
+    src/google/protobuf/struct.proto \
+    src/google/protobuf/timestamp.proto \
+    src/google/protobuf/type.proto \
+    src/google/protobuf/wrappers.proto
 
-# ProtocolBuffers.Test protos
-$PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
-    src/google/protobuf/unittest.proto \
-    src/google/protobuf/unittest_custom_options.proto \
-    src/google/protobuf/unittest_drop_unknown_fields.proto \
-    src/google/protobuf/unittest_enormous_descriptor.proto \
-    src/google/protobuf/unittest_import.proto \
-    src/google/protobuf/unittest_import_public.proto \
-    src/google/protobuf/unittest_mset.proto \
-    src/google/protobuf/unittest_optimize_for.proto \
-    src/google/protobuf/unittest_no_field_presence.proto \
-    src/google/protobuf/unknown_enum_test.proto
+$PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
+    src/google/protobuf/map_unittest_proto3.proto \
+    src/google/protobuf/unittest_proto3.proto \
+    src/google/protobuf/unittest_import_proto3.proto \
+    src/google/protobuf/unittest_import_public_proto3.proto \
+    src/google/protobuf/unittest_well_known_types.proto
 
-$PROTOC -Icsharp/protos/extest --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
-    csharp/protos/extest/unittest_extras_xmltest.proto \
-    csharp/protos/extest/unittest_issues.proto
 
-$PROTOC -Ibenchmarks --csharp_out=csharp/src/ProtocolBuffers.Test/TestProtos \
-    benchmarks/google_size.proto \
-    benchmarks/google_speed.proto
-
-# ProtocolBuffersLite.Test protos
-$PROTOC -Isrc --csharp_out=csharp/src/ProtocolBuffersLite.Test/TestProtos \
-    src/google/protobuf/unittest.proto \
-    src/google/protobuf/unittest_import.proto \
-    src/google/protobuf/unittest_import_lite.proto \
-    src/google/protobuf/unittest_import_public.proto \
-    src/google/protobuf/unittest_import_public_lite.proto \
-    src/google/protobuf/unittest_lite.proto \
-    src/google/protobuf/unittest_lite_imports_nonlite.proto
-
-$PROTOC -Icsharp/protos/extest --csharp_out=csharp/src/ProtocolBuffersLite.Test/TestProtos \
-    csharp/protos/extest/unittest_extras_full.proto \
-    csharp/protos/extest/unittest_extras_lite.proto
-
-# TODO(jonskeet): Remove fixup; see issue #307
-sed -i -e 's/RepeatedFieldsGenerator\.Group/RepeatedFieldsGenerator.Types.Group/g' \
-    csharp/src/ProtocolBuffers.Test/TestProtos/Unittest.cs \
-    csharp/src/ProtocolBuffersLite.Test/TestProtos/Unittest.cs \
-    csharp/src/ProtocolBuffersLite.Test/TestProtos/UnittestLite.cs
-
-# TODO(jonskeet): Remove fixup
-sed -i -e 's/DescriptorProtos\.Descriptor\./DescriptorProtos.DescriptorProtoFile./g' \
-    csharp/src/ProtocolBuffers.Test/TestProtos/UnittestCustomOptions.cs
+$PROTOC -Icsharp/protos --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
+    csharp/protos/unittest_issues.proto
 
 # AddressBook sample protos
 $PROTOC -Iexamples --csharp_out=csharp/src/AddressBook \

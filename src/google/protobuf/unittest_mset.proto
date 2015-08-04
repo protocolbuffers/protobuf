@@ -39,7 +39,6 @@ package protobuf_unittest;
 
 option cc_enable_arenas = true;
 option optimize_for = SPEED;
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 // A message with message_set_wire_format.
 message TestMessageSet {

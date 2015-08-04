@@ -221,9 +221,9 @@ void protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto() {
     "ntext\"S\n\tEnumValue\022\014\n\004name\030\001 \001(\t\022\016\n\006numb"
     "er\030\002 \001(\005\022(\n\007options\030\003 \003(\0132\027.google.proto"
     "buf.Option\";\n\006Option\022\014\n\004name\030\001 \001(\t\022#\n\005va"
-    "lue\030\002 \001(\0132\024.google.protobuf.AnyB(\n\023com.g"
-    "oogle.protobufB\tTypeProtoP\001\242\002\003GPBb\006proto"
-    "3", 1321);
+    "lue\030\002 \001(\0132\024.google.protobuf.AnyBI\n\023com.g"
+    "oogle.protobufB\tTypeProtoP\001\242\002\003GPB\252\002\036Goog"
+    "le.Protobuf.WellKnownTypesb\006proto3", 1354);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/type.proto", &protobuf_RegisterTypes);
   Type::default_instance_ = new Type();

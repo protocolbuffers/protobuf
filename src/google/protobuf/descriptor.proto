@@ -44,7 +44,7 @@ option go_package = "descriptor";
 option java_package = "com.google.protobuf";
 option javanano_use_deprecated_package = true;
 option java_outer_classname = "DescriptorProtos";
-option csharp_namespace = "Google.ProtocolBuffers.DescriptorProtos";
+option csharp_namespace = "Google.Protobuf.Reflection";
 option objc_class_prefix = "GPB";
 
 // descriptor.proto must be optimized for speed because reflection-based

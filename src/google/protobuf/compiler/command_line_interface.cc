@@ -189,7 +189,7 @@ bool TryCreateParentDirectory(const string& prefix, const string& filename) {
 bool GetProtocAbsolutePath(string* path) {
 #ifdef _WIN32
   char buffer[MAX_PATH];
-  int len = GetModuleFileName(NULL, buffer, MAX_PATH);
+  int len = GetModuleFileNameA(NULL, buffer, MAX_PATH);
 #elif __APPLE__
   char buffer[PATH_MAX];
   int len = 0;

@@ -9,7 +9,10 @@ configuration:
 
 environment:
   matrix:
-    - BUILD_DLL: ON
+    - language: cpp
+      BUILD_DLL: ON
+
+    - language: csharp
 
 install:
   - ps: Start-FileDownload https://googlemock.googlecode.com/files/gmock-1.7.0.zip
@@ -23,12 +26,7 @@ before_build:
   - if %platform%==Win64 set vcplatform=x64
 
 build_script:
-  - mkdir build_msvc
-  - cd build_msvc
-  - cmake -G "%generator%" -DBUILD_SHARED_LIBS=%BUILD_DLL% ../cmake
-  - msbuild protobuf.sln /p:Platform=%vcplatform% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-  - cd %configuration%
-  - tests.exe
+  - CALL appveyor.bat
 
 skip_commits:
   message: /.*\[skip appveyor\].*/

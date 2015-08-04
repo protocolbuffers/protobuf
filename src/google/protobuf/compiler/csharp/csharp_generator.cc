@@ -50,7 +50,7 @@ namespace csharp {
 
 std::string GetOutputFile(const google::protobuf::FileDescriptor* file, const std::string file_extension)
 {
-  return GetFileUmbrellaClassname(file) + file_extension;
+  return GetUmbrellaClassUnqualifiedName(file) + file_extension;
 }
 
 void GenerateFile(const google::protobuf::FileDescriptor* file,
@@ -67,6 +67,12 @@ bool Generator::Generate(
 
   vector<pair<string, string> > options;
   ParseGeneratorParameter(parameter, &options);
+
+  // We only support proto3 - but we make an exception for descriptor.proto.
+  if (file->syntax() != FileDescriptor::SYNTAX_PROTO3 && !IsDescriptorProto(file)) {
+    *error = "C# code generation only supports proto3 syntax";
+    return false;
+  }
 
   std::string file_extension = ".cs";
   for (int i = 0; i < options.size(); i++) {

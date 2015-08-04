@@ -47,7 +47,6 @@ option cc_enable_arenas = true;
 
 // Exercise the java_package option.
 option java_package = "com.google.protobuf.test";
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 // Do not set a java_outer_classname here to verify that Proto2 works without
 // one.

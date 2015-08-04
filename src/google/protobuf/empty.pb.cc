@@ -79,8 +79,9 @@ void protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\033google/protobuf/empty.proto\022\017google.pr"
-    "otobuf\"\007\n\005EmptyB)\n\023com.google.protobufB\n"
-    "EmptyProtoP\001\242\002\003GPBb\006proto3", 106);
+    "otobuf\"\007\n\005EmptyBJ\n\023com.google.protobufB\n"
+    "EmptyProtoP\001\242\002\003GPB\252\002\036Google.Protobuf.Wel"
+    "lKnownTypesb\006proto3", 139);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/empty.proto", &protobuf_RegisterTypes);
   Empty::default_instance_ = new Empty();
