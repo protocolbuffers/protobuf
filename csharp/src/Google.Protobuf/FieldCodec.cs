@@ -298,12 +298,8 @@ namespace Google.Protobuf
 
                 uint tag;
                 T value = codec.DefaultValue;
-                while (input.ReadTag(out tag))
+                while ((tag = input.ReadTag()) != 0)
                 {
-                    if (tag == 0)
-                    {
-                        throw InvalidProtocolBufferException.InvalidTag();
-                    }
                     if (tag == codec.Tag)
                     {
                         value = codec.Read(input);

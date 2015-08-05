@@ -279,9 +279,7 @@ namespace Google.Protobuf
             ms.Position = 0;
 
             CodedInputStream input = new CodedInputStream(ms);
-            uint testtag;
-            Assert.IsTrue(input.ReadTag(out testtag));
-            Assert.AreEqual(tag, testtag);
+            Assert.AreEqual(tag, input.ReadTag());
 
             // TODO(jonskeet): Should this be ArgumentNullException instead?
             Assert.Throws<InvalidProtocolBufferException>(() => input.ReadBytes());
@@ -377,9 +375,7 @@ namespace Google.Protobuf
 
             CodedInputStream input = new CodedInputStream(ms);
 
-            uint actualTag;
-            Assert.IsTrue(input.ReadTag(out actualTag));
-            Assert.AreEqual(tag, actualTag);
+            Assert.AreEqual(tag, input.ReadTag());
             string text = input.ReadString();
             Assert.AreEqual('\ufffd', text[0]);
         }
@@ -430,15 +426,21 @@ namespace Google.Protobuf
                 ms.Position = 0;
                 CodedInputStream input = new CodedInputStream(ms, new byte[ms.Length / 2]);
 
-                uint tag;
-                Assert.IsTrue(input.ReadTag(out tag));
+                uint tag = input.ReadTag();
                 Assert.AreEqual(1, WireFormat.GetTagFieldNumber(tag));
                 Assert.AreEqual(100, input.ReadBytes().Length);
 
-                Assert.IsTrue(input.ReadTag(out tag));
+                tag = input.ReadTag();
                 Assert.AreEqual(2, WireFormat.GetTagFieldNumber(tag));
                 Assert.AreEqual(100, input.ReadBytes().Length);
             }
+        }
+
+        [Test]
+        public void Tag0Throws()
+        {
+            var input = new CodedInputStream(new byte[] { 0 });
+            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadTag());
         }
     }
 }

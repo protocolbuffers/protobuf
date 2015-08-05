@@ -627,12 +627,8 @@ namespace Google.Protobuf.Collections
                 public void MergeFrom(CodedInputStream input)
                 {
                     uint tag;
-                    while (input.ReadTag(out tag))
+                    while ((tag = input.ReadTag()) != 0)
                     {
-                        if (tag == 0)
-                        {
-                            throw InvalidProtocolBufferException.InvalidTag();
-                        }
                         if (tag == codec.keyCodec.Tag)
                         {
                             Key = codec.keyCodec.Read(input);

@@ -417,13 +417,11 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Indent();
   printer->Print(
     "uint tag;\n"
-    "while (input.ReadTag(out tag)) {\n"
+    "while ((tag = input.ReadTag()) != 0) {\n"
     "  switch(tag) {\n");
   printer->Indent();
   printer->Indent();
   printer->Print(
-    "case 0:\n"  // 0 signals EOF / limit reached
-    "  throw pb::InvalidProtocolBufferException.InvalidTag();\n"
     "default:\n"
     "  if (pb::WireFormat.IsEndGroupTag(tag)) {\n"
     "    return;\n"

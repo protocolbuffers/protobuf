@@ -455,7 +455,7 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(0, output.SpaceLeft);
 
             CodedInputStream input = new CodedInputStream(bytes);
-            Assert.IsTrue(input.ReadTag(out tag));
+            tag = input.ReadTag();
 
             RepeatedField<SampleEnum> values = new RepeatedField<SampleEnum>();
             values.AddEntriesFrom(input, FieldCodec.ForEnum(tag, x => (int)x, x => (SampleEnum)x));
@@ -493,7 +493,7 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(0, output.SpaceLeft);
 
             CodedInputStream input = new CodedInputStream(bytes);
-            Assert.IsTrue(input.ReadTag(out tag));
+            tag = input.ReadTag();
 
             RepeatedField<SampleEnum> values = new RepeatedField<SampleEnum>();
             values.AddEntriesFrom(input, FieldCodec.ForEnum(tag, x => (int)x, x => (SampleEnum)x));
