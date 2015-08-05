@@ -30,6 +30,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using System;
+using System.Collections;
+
 namespace Google.Protobuf.Reflection
 {
     /// <summary>
@@ -64,7 +67,7 @@ namespace Google.Protobuf.Reflection
         /// Repeated fields are mutated by fetching the value and manipulating it as a list.
         /// Map fields are mutated by fetching the value and manipulating it as a dictionary.
         /// </remarks>
-        /// <exception cref="InvalidOperationException">The field is not a "simple" field, or the message is frozen.</exception>
+        /// <exception cref="InvalidOperationException">The field is not a "simple" field.</exception>
         void SetValue(object message, object value);
     }
 }

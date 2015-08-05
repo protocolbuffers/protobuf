@@ -136,9 +136,12 @@ namespace Google.Protobuf.WellKnownTypes
         }
 
         /// <summary>
-        /// Converts the specified <see cref="DateTimeOffset"/> to a <see cref="Timestamp"/>.
+        /// Converts the given <see cref="DateTimeOffset"/> to a <see cref="Timestamp"/>
         /// </summary>
-        /// <param name="dateTime"></param>
+        /// <remarks>The offset is taken into consideration when converting the value (so the same instant in time
+        /// is represented) but is not a separate part of the resulting value. In other words, there is no
+        /// roundtrip operation to retrieve the original <c>DateTimeOffset</c>.</remarks>
+        /// <param name="dateTimeOffset">The date and time (with UTC offset) to convert to a timestamp.</param>
         /// <returns>The converted timestamp.</returns>
         public static Timestamp FromDateTimeOffset(DateTimeOffset dateTimeOffset)
         {

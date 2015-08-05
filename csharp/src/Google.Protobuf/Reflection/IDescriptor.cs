@@ -37,8 +37,19 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public interface IDescriptor
     {
+        /// <summary>
+        /// Returns the name of the entity (message, field etc) being described.
+        /// </summary>
         string Name { get; }
+
+        /// <summary>
+        /// Returns the fully-qualified name of the entity being described.
+        /// </summary>
         string FullName { get; }
+
+        /// <summary>
+        /// Returns the descriptor for the .proto file that this entity is part of.
+        /// </summary>
         FileDescriptor File { get; }
     }    
 }

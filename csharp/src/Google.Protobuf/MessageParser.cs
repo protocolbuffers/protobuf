@@ -90,6 +90,11 @@ namespace Google.Protobuf
             return message;
         }
 
+        /// <summary>
+        /// Parses a message from the given byte string.
+        /// </summary>
+        /// <param name="data">The data to parse.</param>
+        /// <returns>The parsed message.</returns>
         public T ParseFrom(ByteString data)
         {
             Preconditions.CheckNotNull(data, "data");
@@ -98,6 +103,11 @@ namespace Google.Protobuf
             return message;
         }
 
+        /// <summary>
+        /// Parses a message from the given stream.
+        /// </summary>
+        /// <param name="input">The stream to parse.</param>
+        /// <returns>The parsed message.</returns>
         public T ParseFrom(Stream input)
         {
             T message = factory();
@@ -105,6 +115,15 @@ namespace Google.Protobuf
             return message;
         }
 
+        /// <summary>
+        /// Parses a length-delimited message from the given stream.
+        /// </summary>
+        /// <remarks>
+        /// The stream is expected to contain a length and then the data. Only the amount of data
+        /// specified by the length will be consumed.
+        /// </remarks>
+        /// <param name="input">The stream to parse.</param>
+        /// <returns>The parsed message.</returns>
         public T ParseDelimitedFrom(Stream input)
         {
             T message = factory();
@@ -112,6 +131,11 @@ namespace Google.Protobuf
             return message;
         }
 
+        /// <summary>
+        /// Parses a message from the given coded input stream.
+        /// </summary>
+        /// <param name="input">The stream to parse.</param>
+        /// <returns>The parsed message.</returns>
         public T ParseFrom(CodedInputStream input)
         {
             T message = factory();

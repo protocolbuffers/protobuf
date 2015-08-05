@@ -114,11 +114,20 @@ namespace Google.Protobuf
 
         private readonly Settings settings;
 
+        /// <summary>
+        /// Creates a new formatted with the given settings.
+        /// </summary>
+        /// <param name="settings">The settings.</param>
         public JsonFormatter(Settings settings)
         {
             this.settings = settings;
         }
 
+        /// <summary>
+        /// Formats the specified message as JSON.
+        /// </summary>
+        /// <param name="message">The message to format.</param>
+        /// <returns>The formatted message.</returns>
         public string Format(IMessage message)
         {
             Preconditions.CheckNotNull(message, "message");
@@ -767,6 +776,10 @@ namespace Google.Protobuf
             /// </summary>
             public bool FormatDefaultValues { get { return formatDefaultValues; } }
 
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified formatting of default values.
+            /// </summary>
+            /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc) should be formatted; <c>false</c> otherwise.</param>
             public Settings(bool formatDefaultValues)
             {
                 this.formatDefaultValues = formatDefaultValues;

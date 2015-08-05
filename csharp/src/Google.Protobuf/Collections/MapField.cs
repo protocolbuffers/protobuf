@@ -42,14 +42,14 @@ namespace Google.Protobuf.Collections
     /// <summary>
     /// Representation of a map field in a Protocol Buffer message.
     /// </summary>
+    /// <typeparam name="TKey">Key type in the map. Must be a type supported by Protocol Buffer map keys.</typeparam>
+    /// <typeparam name="TValue">Value type in the map. Must be a type supported by Protocol Buffers.</typeparam>
     /// <remarks>
     /// This implementation preserves insertion order for simplicity of testing
     /// code using maps fields. Overwriting an existing entry does not change the
     /// position of that entry within the map. Equality is not order-sensitive.
-    /// For string keys, the equality comparison is provided by <see cref="StringComparer.Ordinal"/>.
+    /// For string keys, the equality comparison is provided by <see cref="StringComparer.Ordinal" />.
     /// </remarks>
-    /// <typeparam name="TKey">Key type in the map. Must be a type supported by Protocol Buffer map keys.</typeparam>
-    /// <typeparam name="TValue">Value type in the map. Must be a type supported by Protocol Buffers.</typeparam>
     public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary
     {
         // TODO: Don't create the map/list until we have an entry. (Assume many maps will be empty.)
@@ -81,6 +81,12 @@ namespace Google.Protobuf.Collections
             this.allowNullValues = allowNullValues;
         }
 
+        /// <summary>
+        /// Creates a deep clone of this object.
+        /// </summary>
+        /// <returns>
+        /// A deep clone of this object.
+        /// </returns>
         public MapField<TKey, TValue> Clone()
         {
             var clone = new MapField<TKey, TValue>(allowNullValues);
@@ -100,6 +106,15 @@ namespace Google.Protobuf.Collections
             return clone;
         }
 
+        /// <summary>
+        /// Adds the specified key/value pair to the map.
+        /// </summary>
+        /// <remarks>
+        /// This operation fails if the key already exists in the map. To replace an existing entry, use the indexer.
+        /// </remarks>
+        /// <param name="key">The key to add</param>
+        /// <param name="value">The value to add.</param>
+        /// <exception cref="System.ArgumentException">The given key already exists in map.</exception>
         public void Add(TKey key, TValue value)
         {
             // Validation of arguments happens in ContainsKey and the indexer
@@ -110,12 +125,22 @@ namespace Google.Protobuf.Collections
             this[key] = value;
         }
 
+        /// <summary>
+        /// Determines whether the specified key is present in the map.
+        /// </summary>
+        /// <param name="key">The key to check.</param>
+        /// <returns><c>true</c> if the map contains the given key; <c>false</c> otherwise.</returns>
         public bool ContainsKey(TKey key)
         {
             Preconditions.CheckNotNullUnconstrained(key, "key");
             return map.ContainsKey(key);
         }
 
+        /// <summary>
+        /// Removes the entry identified by the given key from the map.
+        /// </summary>
+        /// <param name="key">The key indicating the entry to remove from the map.</param>
+        /// <returns><c>true</c> if the map contained the given key before the entry was removed; <c>false</c> otherwise.</returns>
         public bool Remove(TKey key)
         {
             Preconditions.CheckNotNullUnconstrained(key, "key");
@@ -132,6 +157,14 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        /// <summary>
+        /// Gets the value associated with the specified key.
+        /// </summary>
+        /// <param name="key">The key whose value to get.</param>
+        /// <param name="value">When this method returns, the value associated with the specified key, if the key is found;
+        /// otherwise, the default value for the type of the <paramref name="value"/> parameter.
+        /// This parameter is passed uninitialized.</param>
+        /// <returns><c>true</c> if the map contains an element with the specified key; otherwise, <c>false</c>.</returns>
         public bool TryGetValue(TKey key, out TValue value)
         {
             LinkedListNode<KeyValuePair<TKey, TValue>> node;
@@ -147,6 +180,13 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        /// <summary>
+        /// Gets or sets the value associated with the specified key.
+        /// </summary>
+        /// <param name="key">The key of the value to get or set.</param>
+        /// <exception cref="KeyNotFoundException">The property is retrieved and key does not exist in the collection.</exception>
+        /// <returns>The value associated with the specified key. If the specified key is not found,
+        /// a get operation throws a <see cref="KeyNotFoundException"/>, and a set operation creates a new element with the specified key.</returns>
         public TValue this[TKey key]
         {
             get
@@ -182,9 +222,21 @@ namespace Google.Protobuf.Collections
         }
 
         // TODO: Make these views?
+
+        /// <summary>
+        /// Gets a collection containing the keys in the map.
+        /// </summary>
         public ICollection<TKey> Keys { get { return list.Select(t => t.Key).ToList(); } }
+
+        /// <summary>
+        /// Gets a collection containing the values in the map.
+        /// </summary>
         public ICollection<TValue> Values { get { return list.Select(t => t.Value).ToList(); } }
 
+        /// <summary>
+        /// Adds the specified entries to the map.
+        /// </summary>
+        /// <param name="entries">The entries to add to the map.</param>
         public void Add(IDictionary<TKey, TValue> entries)
         {
             Preconditions.CheckNotNull(entries, "entries");
@@ -194,27 +246,51 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>
+        /// An enumerator that can be used to iterate through the collection.
+        /// </returns>
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             return list.GetEnumerator();
         }
 
+        /// <summary>
+        /// Returns an enumerator that iterates through a collection.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
+        /// </returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
 
+        /// <summary>
+        /// Adds the specified item to the map.
+        /// </summary>
+        /// <param name="item">The item to add to the map.</param>
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
         {
             Add(item.Key, item.Value);
         }
 
+        /// <summary>
+        /// Removes all items from the map.
+        /// </summary>
         public void Clear()
         {
             list.Clear();
             map.Clear();
         }
 
+        /// <summary>
+        /// Determines whether map contains an entry equivalent to the given key/value pair.
+        /// </summary>
+        /// <param name="item">The key/value pair to find.</param>
+        /// <returns></returns>
         bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
             TValue value;
@@ -222,11 +298,22 @@ namespace Google.Protobuf.Collections
                 && EqualityComparer<TValue>.Default.Equals(item.Value, value);
         }
 
+        /// <summary>
+        /// Copies the key/value pairs in this map to an array.
+        /// </summary>
+        /// <param name="array">The array to copy the entries into.</param>
+        /// <param name="arrayIndex">The index of the array at which to start copying values.</param>
         void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             list.CopyTo(array, arrayIndex);
         }
 
+        /// <summary>
+        /// Removes the specified key/value pair from the map.
+        /// </summary>
+        /// <remarks>Both the key and the value must be found for the entry to be removed.</remarks>
+        /// <param name="item">The key/value pair to remove.</param>
+        /// <returns><c>true</c> if the key/value pair was found and removed; <c>false</c> otherwise.</returns>
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
             if (item.Key == null)
@@ -252,14 +339,34 @@ namespace Google.Protobuf.Collections
         /// </summary>
         public bool AllowsNullValues { get { return allowNullValues; } }
 
+        /// <summary>
+        /// Gets the number of elements contained in the map.
+        /// </summary>
         public int Count { get { return list.Count; } }
+
+        /// <summary>
+        /// Gets a value indicating whether the map is read-only.
+        /// </summary>
         public bool IsReadOnly { get { return false; } }
 
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="other">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
         public override bool Equals(object other)
         {
             return Equals(other as MapField<TKey, TValue>);
         }
 
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
         public override int GetHashCode()
         {
             var valueComparer = EqualityComparer<TValue>.Default;
@@ -271,6 +378,14 @@ namespace Google.Protobuf.Collections
             return hash;
         }
 
+        /// <summary>
+        /// Compares this map with another for equality.
+        /// </summary>
+        /// <remarks>
+        /// The order of the key/value pairs in the maps is not deemed significant in this comparison.
+        /// </remarks>
+        /// <param name="other">The map to compare this with.</param>
+        /// <returns><c>true</c> if <paramref name="other"/> refers to an equal map; <c>false</c> otherwise.</returns>
         public bool Equals(MapField<TKey, TValue> other)
         {
             if (other == null)
@@ -322,6 +437,12 @@ namespace Google.Protobuf.Collections
             } while (input.MaybeConsumeTag(codec.MapTag));
         }
 
+        /// <summary>
+        /// Writes the contents of this map to the given coded output stream, using the specified codec
+        /// to encode each entry.
+        /// </summary>
+        /// <param name="output">The output stream to write to.</param>
+        /// <param name="codec">The codec to use for each entry.</param>
         public void WriteTo(CodedOutputStream output, Codec codec)
         {
             var message = new Codec.MessageAdapter(codec);
@@ -334,6 +455,11 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        /// <summary>
+        /// Calculates the size of this map based on the given entry codec.
+        /// </summary>
+        /// <param name="codec">The codec to use to encode each entry.</param>
+        /// <returns></returns>
         public int CalculateSize(Codec codec)
         {
             if (Count == 0)
@@ -446,7 +572,7 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
-        /// A codec for a specific map field. This contains all the information required to encoded and
+        /// A codec for a specific map field. This contains all the information required to encode and
         /// decode the nested messages.
         /// </summary>
         public sealed class Codec
@@ -455,6 +581,13 @@ namespace Google.Protobuf.Collections
             private readonly FieldCodec<TValue> valueCodec;
             private readonly uint mapTag;
 
+            /// <summary>
+            /// Creates a new entry codec based on a separate key codec and value codec,
+            /// and the tag to use for each map entry.
+            /// </summary>
+            /// <param name="keyCodec">The key codec.</param>
+            /// <param name="valueCodec">The value codec.</param>
+            /// <param name="mapTag">The map tag to use to introduce each map entry.</param>
             public Codec(FieldCodec<TKey> keyCodec, FieldCodec<TValue> valueCodec, uint mapTag)
             {
                 this.keyCodec = keyCodec;

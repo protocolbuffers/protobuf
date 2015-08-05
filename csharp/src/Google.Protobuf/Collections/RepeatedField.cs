@@ -30,7 +30,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using Google.Protobuf.Reflection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -81,6 +80,11 @@ namespace Google.Protobuf.Collections
             return clone;
         }
 
+        /// <summary>
+        /// Adds the entries from the given input stream, decoding them with the specified codec.
+        /// </summary>
+        /// <param name="input">The input stream to read from.</param>
+        /// <param name="codec">The codec to use in order to read each entry.</param>
         public void AddEntriesFrom(CodedInputStream input, FieldCodec<T> codec)
         {
             // TODO: Inline some of the Add code, so we can avoid checking the size on every
@@ -112,6 +116,12 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        /// <summary>
+        /// Calculates the size of this collection based on the given codec.
+        /// </summary>
+        /// <param name="codec">The codec to use when encoding each field.</param>
+        /// <returns>The number of bytes that would be written to a <see cref="CodedOutputStream"/> by <see cref="WriteTo"/>,
+        /// using the same codec.</returns>
         public int CalculateSize(FieldCodec<T> codec)
         {
             if (count == 0)
@@ -157,6 +167,12 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        /// <summary>
+        /// Writes the contents of this collection to the given <see cref="CodedOutputStream"/>,
+        /// encoding each value using the specified codec.
+        /// </summary>
+        /// <param name="output">The output stream to write to.</param>
+        /// <param name="codec">The codec to use when encoding each value.</param>
         public void WriteTo(CodedOutputStream output, FieldCodec<T> codec)
         {
             if (count == 0)
@@ -200,6 +216,10 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        /// <summary>
+        /// Adds the specified item to the collection.
+        /// </summary>
+        /// <param name="item">The item to add.</param>
         public void Add(T item)
         {
             if (item == null)
@@ -210,22 +230,40 @@ namespace Google.Protobuf.Collections
             array[count++] = item;
         }
 
+        /// <summary>
+        /// Removes all items from the collection.
+        /// </summary>
         public void Clear()
         {
             array = EmptyArray;
             count = 0;
         }
 
+        /// <summary>
+        /// Determines whether this collection contains the given item.
+        /// </summary>
+        /// <param name="item">The item to find.</param>
+        /// <returns><c>true</c> if this collection contains the given item; <c>false</c> otherwise.</returns>
         public bool Contains(T item)
         {
             return IndexOf(item) != -1;
         }
 
+        /// <summary>
+        /// Copies this collection to the given array.
+        /// </summary>
+        /// <param name="array">The array to copy to.</param>
+        /// <param name="arrayIndex">The first index of the array to copy to.</param>
         public void CopyTo(T[] array, int arrayIndex)
         {
             Array.Copy(this.array, 0, array, arrayIndex, count);
         }
 
+        /// <summary>
+        /// Removes the specified item from the collection
+        /// </summary>
+        /// <param name="item">The item to remove.</param>
+        /// <returns><c>true</c> if the item was found and removed; <c>false</c> otherwise.</returns>
         public bool Remove(T item)
         {
             int index = IndexOf(item);
@@ -239,10 +277,22 @@ namespace Google.Protobuf.Collections
             return true;
         }
 
+        /// <summary>
+        /// Gets the number of elements contained in the collection.
+        /// </summary>
         public int Count { get { return count; } }
 
+        /// <summary>
+        /// Gets a value indicating whether the collection is read-only.
+        /// </summary>
         public bool IsReadOnly { get { return false; } }
 
+        // TODO: Remove this overload and just handle it in the one below, at execution time?
+
+        /// <summary>
+        /// Adds all of the specified values into this collection.
+        /// </summary>
+        /// <param name="values">The values to add to this collection.</param>
         public void Add(RepeatedField<T> values)
         {
             if (values == null)
@@ -255,6 +305,10 @@ namespace Google.Protobuf.Collections
             count += values.count;
         }
 
+        /// <summary>
+        /// Adds all of the specified values into this collection.
+        /// </summary>
+        /// <param name="values">The values to add to this collection.</param>
         public void Add(IEnumerable<T> values)
         {
             if (values == null)
@@ -268,6 +322,12 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>
+        /// An enumerator that can be used to iterate through the collection.
+        /// </returns>
         public IEnumerator<T> GetEnumerator()
         {
             for (int i = 0; i < count; i++)
@@ -276,16 +336,35 @@ namespace Google.Protobuf.Collections
             }
         }
 
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
         public override bool Equals(object obj)
         {
             return Equals(obj as RepeatedField<T>);
         }
 
+        /// <summary>
+        /// Returns an enumerator that iterates through a collection.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
+        /// </returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }        
+        }
 
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
         public override int GetHashCode()
         {
             int hash = 0;
@@ -296,6 +375,11 @@ namespace Google.Protobuf.Collections
             return hash;
         }
 
+        /// <summary>
+        /// Compares this repeated field with another for equality.
+        /// </summary>
+        /// <param name="other">The repeated field to compare this with.</param>
+        /// <returns><c>true</c> if <paramref name="other"/> refers to an equal repeated field; <c>false</c> otherwise.</returns>
         public bool Equals(RepeatedField<T> other)
         {
             if (ReferenceEquals(other, null))
@@ -322,6 +406,12 @@ namespace Google.Protobuf.Collections
             return true;
         }
 
+        /// <summary>
+        /// Returns the index of the given item within the collection, or -1 if the item is not
+        /// present.
+        /// </summary>
+        /// <param name="item">The item to find in the collection.</param>
+        /// <returns>The zero-based index of the item, or -1 if it is not found.</returns>
         public int IndexOf(T item)
         {
             if (item == null)
@@ -340,6 +430,11 @@ namespace Google.Protobuf.Collections
             return -1;
         }
 
+        /// <summary>
+        /// Inserts the given item at the specified index.
+        /// </summary>
+        /// <param name="index">The index at which to insert the item.</param>
+        /// <param name="item">The item to insert.</param>
         public void Insert(int index, T item)
         {
             if (item == null)
@@ -356,6 +451,10 @@ namespace Google.Protobuf.Collections
             count++;
         }
 
+        /// <summary>
+        /// Removes the item at the given index.
+        /// </summary>
+        /// <param name="index">The zero-based index of the item to remove.</param>
         public void RemoveAt(int index)
         {
             if (index < 0 || index >= count)
@@ -367,6 +466,14 @@ namespace Google.Protobuf.Collections
             array[count] = default(T);
         }
 
+        /// <summary>
+        /// Gets or sets the item at the specified index.
+        /// </summary>
+        /// <value>
+        /// The element at the specified index.
+        /// </value>
+        /// <param name="index">The zero-based index of the element to get or set.</param>
+        /// <returns>The item at the specified index.</returns>
         public T this[int index]
         {
             get

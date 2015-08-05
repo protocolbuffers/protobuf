@@ -32,11 +32,14 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Google.Protobuf.Compatibility;
 
 namespace Google.Protobuf.Reflection
 {
+    /// <summary>
+    /// Describes a "oneof" field collection in a message type: a set of
+    /// fields of which at most one can be set in any particular message.
+    /// </summary>
     public sealed class OneofDescriptor : DescriptorBase
     {
         private readonly OneofDescriptorProto proto;
@@ -59,13 +62,33 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public override string Name { get { return proto.Name; } }
 
+        /// <summary>
+        /// Gets the message type containing this oneof.
+        /// </summary>
+        /// <value>
+        /// The message type containing this oneof.
+        /// </value>
         public MessageDescriptor ContainingType
         {
             get { return containingType; }
         }
 
+        /// <summary>
+        /// Gets the fields within this oneof, in declaration order.
+        /// </summary>
+        /// <value>
+        /// The fields within this oneof, in declaration order.
+        /// </value>
         public IList<FieldDescriptor> Fields { get { return fields; } }
 
+        /// <summary>
+        /// Gets an accessor for reflective access to the values associated with the oneof
+        /// in a particular message.
+        /// </summary>
+        /// <value>
+        /// The accessor used for reflective access, or <c>null</c> if reflection is not
+        /// supported by this descriptor.
+        /// </value>
         public OneofAccessor Accessor { get { return accessor; } }
 
         internal void CrossLink()

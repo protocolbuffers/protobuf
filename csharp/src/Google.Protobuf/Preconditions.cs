@@ -57,7 +57,7 @@ namespace Google.Protobuf
         /// return the value to the caller.
         /// </summary>
         /// <remarks>
-        /// This is equivalent to <see cref="CheckNotNull"/> but without the type parameter
+        /// This is equivalent to <see cref="CheckNotNull{T}(T, string)"/> but without the type parameter
         /// constraint. In most cases, the constraint is useful to prevent you from calling CheckNotNull
         /// with a value type - but it gets in the way if either you want to use it with a nullable
         /// value type, or you want to use it with an unconstrained type parameter.

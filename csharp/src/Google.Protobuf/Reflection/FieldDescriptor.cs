@@ -93,6 +93,15 @@ namespace Google.Protobuf.Reflection
 
         internal FieldDescriptorProto Proto { get { return proto; } }
 
+        /// <summary>
+        /// Returns the accessor for this field, or <c>null</c> if this descriptor does
+        /// not support reflective access.
+        /// </summary>
+        /// <remarks>
+        /// While a <see cref="FieldDescriptor"/> describes the field, it does not provide
+        /// any way of obtaining or changing the value of the field within a specific message;
+        /// that is the responsibility of the accessor.
+        /// </remarks>
         public IFieldAccessor Accessor { get { return accessor; } }
         
         /// <summary>
@@ -141,43 +150,61 @@ namespace Google.Protobuf.Reflection
                 default:
                     throw new ArgumentException("Invalid type specified");
             }
-        }        
+        }
 
+        /// <summary>
+        /// Returns <c>true</c> if this field is a repeated field; <c>false</c> otherwise.
+        /// </summary>
         public bool IsRepeated
         {
             get { return Proto.Label == FieldDescriptorProto.Types.Label.LABEL_REPEATED; }
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if this field is a map field; <c>false</c> otherwise.
+        /// </summary>
         public bool IsMap
         {
             get { return fieldType == FieldType.Message && messageType.Proto.Options != null && messageType.Proto.Options.MapEntry; }
         }
 
+        // TODO(jonskeet): Check whether this is correct with proto3, where we default to packed...
+
+        /// <summary>
+        /// Returns <c>true</c> if this field is a packed, repeated field; <c>false</c> otherwise.
+        /// </summary>
         public bool IsPacked
         {
             get { return Proto.Options != null && Proto.Options.Packed; }
         }        
 
         /// <summary>
-        /// Get the field's containing type. For extensions, this is the type being
-        /// extended, not the location where the extension was defined. See
-        /// <see cref="ExtensionScope" />.
+        /// Get the field's containing message type.
         /// </summary>
         public MessageDescriptor ContainingType
         {
             get { return containingType; }
         }
 
+        /// <summary>
+        /// Returns the oneof containing this field, or <c>null</c> if it is not part of a oneof.
+        /// </summary>
         public OneofDescriptor ContainingOneof
         {
             get { return containingOneof; }
-        }        
+        }
 
+        /// <summary>
+        /// Returns  the type of the field.
+        /// </summary>
         public FieldType FieldType
         {
             get { return fieldType; }
         }
 
+        /// <summary>
+        /// Returns the field number declared in the proto file.
+        /// </summary>
         public int FieldNumber
         {
             get { return Proto.Number; }

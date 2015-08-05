@@ -39,6 +39,11 @@ namespace Google.Protobuf
     /// </summary>
     public static class MessageExtensions
     {
+        /// <summary>
+        /// Merges data from the given byte array into an existing message.
+        /// </summary>
+        /// <param name="message">The message to merge the data into.</param>
+        /// <param name="data">The data to merge, which must be protobuf-encoded binary data.</param>
         public static void MergeFrom(this IMessage message, byte[] data)
         {
             Preconditions.CheckNotNull(message, "message");
@@ -48,6 +53,11 @@ namespace Google.Protobuf
             input.CheckLastTagWas(0);
         }
 
+        /// <summary>
+        /// Merges data from the given byte string into an existing message.
+        /// </summary>
+        /// <param name="message">The message to merge the data into.</param>
+        /// <param name="data">The data to merge, which must be protobuf-encoded binary data.</param>
         public static void MergeFrom(this IMessage message, ByteString data)
         {
             Preconditions.CheckNotNull(message, "message");
@@ -57,6 +67,11 @@ namespace Google.Protobuf
             input.CheckLastTagWas(0);
         }
 
+        /// <summary>
+        /// Merges data from the given stream into an existing message.
+        /// </summary>
+        /// <param name="message">The message to merge the data into.</param>
+        /// <param name="input">Stream containing the data to merge, which must be protobuf-encoded binary data.</param>
         public static void MergeFrom(this IMessage message, Stream input)
         {
             Preconditions.CheckNotNull(message, "message");
@@ -66,6 +81,15 @@ namespace Google.Protobuf
             codedInput.CheckLastTagWas(0);
         }
 
+        /// <summary>
+        /// Merges length-delimited data from the given stream into an existing message.
+        /// </summary>
+        /// <remarks>
+        /// The stream is expected to contain a length and then the data. Only the amount of data
+        /// specified by the length will be consumed.
+        /// </remarks>
+        /// <param name="message">The message to merge the data into.</param>
+        /// <param name="input">Stream containing the data to merge, which must be protobuf-encoded binary data.</param>
         public static void MergeDelimitedFrom(this IMessage message, Stream input)
         {
             Preconditions.CheckNotNull(message, "message");
@@ -75,6 +99,11 @@ namespace Google.Protobuf
             message.MergeFrom(limitedStream);
         }
 
+        /// <summary>
+        /// Converts the given message into a byte array in protobuf encoding.
+        /// </summary>
+        /// <param name="message">The message to convert.</param>
+        /// <returns>The message data as a byte array.</returns>
         public static byte[] ToByteArray(this IMessage message)
         {
             Preconditions.CheckNotNull(message, "message");
@@ -85,6 +114,11 @@ namespace Google.Protobuf
             return result;
         }
 
+        /// <summary>
+        /// Writes the given message data to the given stream in protobuf encoding.
+        /// </summary>
+        /// <param name="message">The message to write to the stream.</param>
+        /// <param name="output">The stream to write to.</param>
         public static void WriteTo(this IMessage message, Stream output)
         {
             Preconditions.CheckNotNull(message, "message");
@@ -94,6 +128,11 @@ namespace Google.Protobuf
             codedOutput.Flush();
         }
 
+        /// <summary>
+        /// Writes the length and then data of the given message to a stream.
+        /// </summary>
+        /// <param name="message">The message to write.</param>
+        /// <param name="output">The output stream to write to.</param>
         public static void WriteDelimitedTo(this IMessage message, Stream output)
         {
             Preconditions.CheckNotNull(message, "message");
@@ -104,6 +143,11 @@ namespace Google.Protobuf
             codedOutput.Flush();
         }
 
+        /// <summary>
+        /// Converts the given message into a byte string in protobuf encoding.
+        /// </summary>
+        /// <param name="message">The message to convert.</param>
+        /// <returns>The message data as a byte string.</returns>
         public static ByteString ToByteString(this IMessage message)
         {
             Preconditions.CheckNotNull(message, "message");

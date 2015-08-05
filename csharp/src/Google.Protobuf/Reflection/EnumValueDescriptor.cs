@@ -51,11 +51,20 @@ namespace Google.Protobuf.Reflection
         }
 
         internal EnumValueDescriptorProto Proto { get { return proto; } }
-        
+
+        /// <summary>
+        /// Returns the name of the enum value described by this object.
+        /// </summary>
         public override string Name { get { return proto.Name; } }
 
+        /// <summary>
+        /// Returns the number associated with this enum value.
+        /// </summary>
         public int Number { get { return Proto.Number; } }
 
+        /// <summary>
+        /// Returns the enum descriptor that this value is part of.
+        /// </summary>
         public EnumDescriptor EnumDescriptor { get { return enumDescriptor; } }
     }
 }

@@ -30,7 +30,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -163,6 +162,9 @@ namespace Google.Protobuf.Reflection
             get { return enumTypes; }
         }
 
+        /// <value>
+        /// An unmodifiable list of the "oneof" field collections in this message type.
+        /// </value>
         public IList<OneofDescriptor> Oneofs
         {
             get { return oneofs; }
@@ -276,7 +278,7 @@ namespace Google.Protobuf.Reflection
             /// <summary>
             /// Retrieves the descriptor for the field with the given name.
             /// </summary>
-            /// <param name="number">Number of the field to retrieve the descriptor for</param>
+            /// <param name="name">Name of the field to retrieve the descriptor for</param>
             /// <returns>The descriptor for the given field</returns>
             /// <exception cref="KeyNotFoundException">The message descriptor does not contain a field
             /// with the given name</exception>

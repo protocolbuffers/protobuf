@@ -24,12 +24,14 @@
     <OutputPath>bin\Debug</OutputPath>
     <IntermediateOutputPath>obj\Debug\</IntermediateOutputPath>
     <DocumentationFile>bin\Debug\Google.Protobuf.xml</DocumentationFile>
-    <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
+    <NoWarn>
+    </NoWarn>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -37,12 +39,14 @@
     <OutputPath>bin\Release</OutputPath>
     <IntermediateOutputPath>obj\Release\</IntermediateOutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
-    <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
+    <NoWarn>
+    </NoWarn>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseSigned|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -50,7 +54,8 @@
     <OutputPath>bin\ReleaseSigned</OutputPath>
     <IntermediateOutputPath>obj\ReleaseSigned\</IntermediateOutputPath>
     <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
-    <NoWarn>1591, 1570, 1571, 1572, 1573, 1574</NoWarn>
+    <NoWarn>
+    </NoWarn>
     <DefineConstants>TRACE;SIGNED</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -58,6 +63,7 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>C:\keys\Google.Protobuf.snk</AssemblyOriginatorKeyFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
