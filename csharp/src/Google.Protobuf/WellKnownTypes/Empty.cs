@@ -111,6 +111,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
         }
       }

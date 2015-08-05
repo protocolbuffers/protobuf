@@ -1216,6 +1216,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             SingleInt32 = input.ReadInt32();
@@ -1552,6 +1553,7 @@ namespace Google.Protobuf.TestProtos {
                 if (pb::WireFormat.IsEndGroupTag(tag)) {
                   return;
                 }
+                input.ConsumeLastField();
                 break;
               case 8: {
                 Bb = input.ReadInt32();
@@ -1705,6 +1707,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             if (child_ == null) {
@@ -1826,6 +1829,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             DeprecatedInt32 = input.ReadInt32();
@@ -1932,6 +1936,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             C = input.ReadInt32();
@@ -2016,6 +2021,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
         }
       }
@@ -2121,6 +2127,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             if (foreignNested_ == null) {
@@ -2252,6 +2259,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             A = input.ReadInt32();
@@ -2387,6 +2395,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             if (a_ == null) {
@@ -2503,6 +2512,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             if (bb_ == null) {
@@ -2637,6 +2647,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             if (a_ == null) {
@@ -2875,6 +2886,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             PrimitiveField = input.ReadInt32();
@@ -3083,6 +3095,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             MyInt = input.ReadInt64();
@@ -3227,6 +3240,7 @@ namespace Google.Protobuf.TestProtos {
                 if (pb::WireFormat.IsEndGroupTag(tag)) {
                   return;
                 }
+                input.ConsumeLastField();
                 break;
               case 8: {
                 Bb = input.ReadInt32();
@@ -3342,6 +3356,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             sparseEnum_ = (global::Google.Protobuf.TestProtos.TestSparseEnum) input.ReadEnum();
@@ -3448,6 +3463,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             Data = input.ReadString();
@@ -3546,6 +3562,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             data_.AddEntriesFrom(input, _repeated_data_codec);
@@ -3652,6 +3669,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             Data = input.ReadBytes();
@@ -3758,6 +3776,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             Data = input.ReadBytes();
@@ -3864,6 +3883,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             Data = input.ReadInt32();
@@ -3970,6 +3990,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             Data = input.ReadUInt32();
@@ -4076,6 +4097,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             Data = input.ReadInt64();
@@ -4182,6 +4204,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             Data = input.ReadUInt64();
@@ -4288,6 +4311,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             Data = input.ReadBool();
@@ -4467,6 +4491,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             FooInt = input.ReadInt32();
@@ -4760,6 +4785,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 722:
           case 720: {
@@ -5106,6 +5132,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 722:
           case 720: {
@@ -5340,6 +5367,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 98:
           case 101: {
@@ -5472,6 +5500,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             A = input.ReadString();
@@ -5556,6 +5585,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
         }
       }
@@ -5636,6 +5666,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
         }
       }
@@ -5716,6 +5747,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
         }
       }
@@ -5796,6 +5828,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
         }
       }
@@ -5876,6 +5909,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
         }
       }
@@ -5956,6 +5990,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
         }
       }

@@ -194,6 +194,7 @@ namespace Google.Protobuf.Examples.AddressBook {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -341,6 +342,7 @@ namespace Google.Protobuf.Examples.AddressBook {
                 if (pb::WireFormat.IsEndGroupTag(tag)) {
                   return;
                 }
+                input.ConsumeLastField();
                 break;
               case 10: {
                 Number = input.ReadString();
@@ -448,6 +450,7 @@ namespace Google.Protobuf.Examples.AddressBook {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             people_.AddEntriesFrom(input, _repeated_people_codec);

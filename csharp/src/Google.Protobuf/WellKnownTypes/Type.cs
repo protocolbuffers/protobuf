@@ -231,6 +231,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -502,6 +503,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 8: {
             kind_ = (global::Google.Protobuf.WellKnownTypes.Field.Types.Kind) input.ReadEnum();
@@ -723,6 +725,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -880,6 +883,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -1019,6 +1023,7 @@ namespace Google.Protobuf.WellKnownTypes {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             Name = input.ReadString();

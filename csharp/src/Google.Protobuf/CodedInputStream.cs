@@ -54,13 +54,37 @@ namespace Google.Protobuf
     /// </remarks>
     public sealed class CodedInputStream
     {
+        /// <summary>
+        /// Buffer of data read from the stream or provided at construction time.
+        /// </summary>
         private readonly byte[] buffer;
+
+        /// <summary>
+        /// The number of valid bytes in the buffer.
+        /// </summary>
         private int bufferSize;
+
         private int bufferSizeAfterLimit = 0;
+        /// <summary>
+        /// The position within the current buffer (i.e. the next byte to read)
+        /// </summary>
         private int bufferPos = 0;
+
+        /// <summary>
+        /// The stream to read further input from, or null if the byte array buffer was provided
+        /// directly on construction, with no further data available.
+        /// </summary>
         private readonly Stream input;
+
+        /// <summary>
+        /// The last tag we read. 0 indicates we've read to the end of the stream
+        /// (or haven't read anything yet).
+        /// </summary>
         private uint lastTag = 0;
 
+        /// <summary>
+        /// The next tag, used to store the value read by PeekTag.
+        /// </summary>
         private uint nextTag = 0;
         private bool hasNextTag = false;
 
@@ -309,6 +333,39 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Consumes the data for the field with the tag we've just read.
+        /// This should be called directly after <see cref="ReadTag"/>, when
+        /// the caller wishes to skip an unknown field.
+        /// </summary>
+        public void ConsumeLastField()
+        {
+            if (lastTag == 0)
+            {
+                throw new InvalidOperationException("ConsumeLastField cannot be called at the end of a stream");
+            }
+            switch (WireFormat.GetTagWireType(lastTag))
+            {
+                case WireFormat.WireType.StartGroup:
+                case WireFormat.WireType.EndGroup:
+                    // TODO: Work out how to skip them instead? See issue 688.
+                    throw new InvalidProtocolBufferException("Group tags not supported by proto3 C# implementation");
+                case WireFormat.WireType.Fixed32:
+                    ReadFixed32();
+                    break;
+                case WireFormat.WireType.Fixed64:
+                    ReadFixed64();
+                    break;
+                case WireFormat.WireType.LengthDelimited:
+                    var length = ReadLength();
+                    SkipRawBytes(length);
+                    break;
+                case WireFormat.WireType.Varint:
+                    ReadRawVarint32();
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Reads a double field from the stream.
         /// </summary>
         public double ReadDouble()
@@ -423,6 +480,11 @@ namespace Google.Protobuf
             ++recursionDepth;
             builder.MergeFrom(this);
             CheckLastTagWas(0);
+            // Check that we've read exactly as much data as expected.
+            if (!ReachedLimit)
+            {
+                throw InvalidProtocolBufferException.TruncatedMessage();
+            }
             --recursionDepth;
             PopLimit(oldLimit);
         }

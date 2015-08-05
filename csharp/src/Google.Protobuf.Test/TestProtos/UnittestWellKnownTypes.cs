@@ -684,6 +684,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             if (anyField_ == null) {
@@ -1142,6 +1143,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             anyField_.AddEntriesFrom(input, _repeated_anyField_codec);
@@ -1764,6 +1766,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             global::Google.Protobuf.WellKnownTypes.Any subBuilder = new global::Google.Protobuf.WellKnownTypes.Any();
@@ -2213,6 +2216,7 @@ namespace Google.Protobuf.TestProtos {
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
             }
+            input.ConsumeLastField();
             break;
           case 10: {
             anyField_.AddEntriesFrom(input, _map_anyField_codec);
