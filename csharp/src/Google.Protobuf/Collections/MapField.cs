@@ -637,10 +637,9 @@ namespace Google.Protobuf.Collections
                         {
                             Value = codec.valueCodec.Read(input);
                         }
-                        else if (WireFormat.IsEndGroupTag(tag))
+                        else 
                         {
-                            // TODO(jonskeet): Do we need this? (Given that we don't support groups...)
-                            return;
+                            input.SkipLastField();
                         }
                     }
                 }
