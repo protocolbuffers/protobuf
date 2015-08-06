@@ -322,5 +322,28 @@ namespace Google.Protobuf.WellKnownTypes
             // A normal implementation would have 0 now, as the explicit default would have been overwritten the 5.
             Assert.AreEqual(5, message.Int32Field);
         }
+
+        [Test]
+        public void UnknownFieldInWrapper()
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            var wrapperTag = WireFormat.MakeTag(TestWellKnownTypes.Int32FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            var unknownTag = WireFormat.MakeTag(15, WireFormat.WireType.Varint);
+            var valueTag = WireFormat.MakeTag(Int32Value.ValueFieldNumber, WireFormat.WireType.Varint);
+
+            output.WriteTag(wrapperTag);
+            output.WriteLength(4); // unknownTag + value 5 + valueType + value 6, each 1 byte
+            output.WriteTag(unknownTag);
+            output.WriteInt32((int) valueTag); // Sneakily "pretend" it's a tag when it's really a value
+            output.WriteTag(valueTag);
+            output.WriteInt32(6);
+
+            output.Flush();
+            stream.Position = 0;
+            
+            var message = TestWellKnownTypes.Parser.ParseFrom(stream);
+            Assert.AreEqual(6, message.Int32Field);
+        }
     }
 }

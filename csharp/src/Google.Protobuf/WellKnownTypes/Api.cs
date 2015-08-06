@@ -213,10 +213,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -439,10 +436,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             Name = input.ReadString();

@@ -138,10 +138,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 9: {
             Value = input.ReadDouble();
@@ -243,10 +240,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 13: {
             Value = input.ReadFloat();
@@ -348,10 +342,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 8: {
             Value = input.ReadInt64();
@@ -453,10 +444,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 8: {
             Value = input.ReadUInt64();
@@ -558,10 +546,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 8: {
             Value = input.ReadInt32();
@@ -663,10 +648,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 8: {
             Value = input.ReadUInt32();
@@ -768,10 +750,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 8: {
             Value = input.ReadBool();
@@ -873,10 +852,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             Value = input.ReadString();
@@ -978,10 +954,7 @@ namespace Google.Protobuf.WellKnownTypes {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             Value = input.ReadBytes();

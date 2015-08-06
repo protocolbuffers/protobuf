@@ -242,10 +242,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             file_.AddEntriesFrom(input, _repeated_file_codec);
@@ -539,10 +536,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -833,10 +827,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -1000,10 +991,7 @@ namespace Google.Protobuf.Reflection {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                if (pb::WireFormat.IsEndGroupTag(tag)) {
-                  return;
-                }
-                input.ConsumeLastField();
+                input.SkipLastField();
                 break;
               case 8: {
                 Start = input.ReadInt32();
@@ -1131,10 +1119,7 @@ namespace Google.Protobuf.Reflection {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                if (pb::WireFormat.IsEndGroupTag(tag)) {
-                  return;
-                }
-                input.ConsumeLastField();
+                input.SkipLastField();
                 break;
               case 8: {
                 Start = input.ReadInt32();
@@ -1424,10 +1409,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -1597,10 +1579,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -1741,10 +1720,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -1904,10 +1880,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -2059,10 +2032,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -2288,10 +2258,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             Name = input.ReadString();
@@ -2716,10 +2683,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             JavaPackage = input.ReadString();
@@ -2969,10 +2933,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 8: {
             MessageSetWireFormat = input.ReadBool();
@@ -3214,10 +3175,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 8: {
             ctype_ = (global::Google.Protobuf.Reflection.FieldOptions.Types.CType) input.ReadEnum();
@@ -3397,10 +3355,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 16: {
             AllowAlias = input.ReadBool();
@@ -3524,10 +3479,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 8: {
             Deprecated = input.ReadBool();
@@ -3647,10 +3599,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 264: {
             Deprecated = input.ReadBool();
@@ -3770,10 +3719,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 264: {
             Deprecated = input.ReadBool();
@@ -4003,10 +3949,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 18: {
             name_.AddEntriesFrom(input, _repeated_name_codec);
@@ -4155,10 +4098,7 @@ namespace Google.Protobuf.Reflection {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                if (pb::WireFormat.IsEndGroupTag(tag)) {
-                  return;
-                }
-                input.ConsumeLastField();
+                input.SkipLastField();
                 break;
               case 10: {
                 NamePart_ = input.ReadString();
@@ -4261,10 +4201,7 @@ namespace Google.Protobuf.Reflection {
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            if (pb::WireFormat.IsEndGroupTag(tag)) {
-              return;
-            }
-            input.ConsumeLastField();
+            input.SkipLastField();
             break;
           case 10: {
             location_.AddEntriesFrom(input, _repeated_location_codec);
@@ -4431,10 +4368,7 @@ namespace Google.Protobuf.Reflection {
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                if (pb::WireFormat.IsEndGroupTag(tag)) {
-                  return;
-                }
-                input.ConsumeLastField();
+                input.SkipLastField();
                 break;
               case 10:
               case 8: {
