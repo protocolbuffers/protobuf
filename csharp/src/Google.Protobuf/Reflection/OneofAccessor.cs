@@ -41,8 +41,8 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class OneofAccessor
     {
-        private readonly Func<object, int> caseDelegate;
-        private readonly Action<object> clearDelegate;
+        private readonly Func<IMessage, int> caseDelegate;
+        private readonly Action<IMessage> clearDelegate;
         private OneofDescriptor descriptor;
 
         internal OneofAccessor(PropertyInfo caseProperty, MethodInfo clearMethod, OneofDescriptor descriptor) 
@@ -52,10 +52,10 @@ namespace Google.Protobuf.Reflection
                 throw new ArgumentException("Cannot read from property");
             }
             this.descriptor = descriptor;
-            caseDelegate = ReflectionUtil.CreateFuncObjectT<int>(caseProperty.GetGetMethod());
+            caseDelegate = ReflectionUtil.CreateFuncIMessageT<int>(caseProperty.GetGetMethod());
 
             this.descriptor = descriptor;
-            clearDelegate = ReflectionUtil.CreateActionObject(clearMethod);
+            clearDelegate = ReflectionUtil.CreateActionIMessage(clearMethod);
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Clears the oneof in the specified message.
         /// </summary>
-        public void Clear(object message)
+        public void Clear(IMessage message)
         {
             clearDelegate(message);
         }
@@ -77,7 +77,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Indicates which field in the oneof is set for specified message
         /// </summary>
-        public FieldDescriptor GetCaseFieldDescriptor(object message)
+        public FieldDescriptor GetCaseFieldDescriptor(IMessage message)
         {
             int fieldNumber = caseDelegate(message);
             if (fieldNumber > 0)

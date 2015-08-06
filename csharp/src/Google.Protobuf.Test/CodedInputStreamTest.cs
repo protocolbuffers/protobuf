@@ -281,7 +281,6 @@ namespace Google.Protobuf
             CodedInputStream input = new CodedInputStream(ms);
             Assert.AreEqual(tag, input.ReadTag());
 
-            // TODO(jonskeet): Should this be ArgumentNullException instead?
             Assert.Throws<InvalidProtocolBufferException>(() => input.ReadBytes());
         }
 

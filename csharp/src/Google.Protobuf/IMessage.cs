@@ -35,8 +35,6 @@ using Google.Protobuf.Reflection;
 
 namespace Google.Protobuf
 {
-
-    // TODO(jonskeet): Do we want a "weak" (non-generic) version of IReflectedMessage?
     // TODO(jonskeet): Split these interfaces into separate files when we're happy with them.
 
     /// <summary>

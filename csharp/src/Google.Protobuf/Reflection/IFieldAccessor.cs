@@ -45,20 +45,20 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         FieldDescriptor Descriptor { get; }
 
-        // TODO: Should the argument type for these messages be IReflectedMessage?
+        // TODO: Should the argument type for these messages be IMessage?
 
         /// <summary>
         /// Clears the field in the specified message. (For repeated fields,
         /// this clears the list.)
         /// </summary>
-        void Clear(object message);
+        void Clear(IMessage message);
 
         /// <summary>
         /// Fetches the field value. For repeated values, this will be an
         /// <see cref="IList"/> implementation. For map values, this will be an
         /// <see cref="IDictionary"/> implementation.
         /// </summary>
-        object GetValue(object message);
+        object GetValue(IMessage message);
 
         /// <summary>
         /// Mutator for single "simple" fields only.
@@ -68,6 +68,6 @@ namespace Google.Protobuf.Reflection
         /// Map fields are mutated by fetching the value and manipulating it as a dictionary.
         /// </remarks>
         /// <exception cref="InvalidOperationException">The field is not a "simple" field.</exception>
-        void SetValue(object message, object value);
+        void SetValue(IMessage message, object value);
     }
 }

@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,20 +41,21 @@ namespace Google.Protobuf
     /// Readings and decodes protocol message fields.
     /// </summary>
     /// <remarks>
-    /// This class contains two kinds of methods:  methods that read specific
-    /// protocol message constructs and field types (e.g. ReadTag and
-    /// ReadInt32) and methods that read low-level values (e.g.
-    /// ReadRawVarint32 and ReadRawBytes).  If you are reading encoded protocol
-    /// messages, you should use the former methods, but if you are reading some
-    /// other format of your own design, use the latter. The names of the former
-    /// methods are taken from the protocol buffer type names, not .NET types.
-    /// (Hence ReadFloat instead of ReadSingle, and ReadBool instead of ReadBoolean.)
-    /// 
-    /// TODO(jonskeet): Consider whether recursion and size limits shouldn't be readonly,
-    /// set at construction time.
+    /// <para>
+    /// This class is generally used by generated code to read appropriate
+    /// primitives from the stream. It effectively encapsulates the lowest
+    /// levels of protocol buffer format.
+    /// </para>
+    /// <para>
+    /// Repeated fields and map fields are not handled by this class; use <see cref="RepeatedField{T}"/>
+    /// and <see cref="MapField{TKey, TValue}"/> to serialize such fields.
+    /// </para>
     /// </remarks>
     public sealed class CodedInputStream
     {
+        // TODO(jonskeet): Consider whether recursion and size limits shouldn't be readonly,
+        // set at construction time.
+
         /// <summary>
         /// Buffer of data read from the stream or provided at construction time.
         /// </summary>
@@ -1022,7 +1024,6 @@ namespace Google.Protobuf
             if (totalBytesRetired + bufferPos + size > currentLimit)
             {
                 // Read to the end of the stream (up to the current limit) anyway.
-                // TODO(jonskeet): This is the only usage of SkipRawBytes. Do we really need to do it?
                 SkipRawBytes(currentLimit - totalBytesRetired - bufferPos);
                 // Then fail.
                 throw InvalidProtocolBufferException.TruncatedMessage();

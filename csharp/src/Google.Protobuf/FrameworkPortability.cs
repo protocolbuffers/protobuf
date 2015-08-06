@@ -40,10 +40,9 @@ namespace Google.Protobuf
     /// </summary>
     internal static class FrameworkPortability
     {
-        // TODO(jtattermusch): is this still a thing?
         // The value of RegexOptions.Compiled is 8. We can test for the presence at
         // execution time using Enum.IsDefined, so a single build will do the right thing
-        // on each platform.
+        // on each platform. (RegexOptions.Compiled isn't supported by PCLs.)
         internal static readonly RegexOptions CompiledRegexWhereAvailable =
             Enum.IsDefined(typeof(RegexOptions), 8) ? (RegexOptions)8 : RegexOptions.None;
     }

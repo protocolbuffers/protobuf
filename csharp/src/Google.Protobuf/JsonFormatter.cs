@@ -158,7 +158,6 @@ namespace Google.Protobuf
             {
                 var accessor = field.Accessor;
                 // Oneofs are written later
-                // TODO: Change to write out fields in order, interleaving oneofs appropriately (as per binary format)
                 if (field.ContainingOneof != null && field.ContainingOneof.Accessor.GetCaseFieldDescriptor(message) != field)
                 {
                     continue;
@@ -425,7 +424,7 @@ namespace Google.Protobuf
             if (descriptor.FullName == ListValue.Descriptor.FullName)
             {
                 var fieldAccessor = descriptor.Fields[ListValue.ValuesFieldNumber].Accessor;
-                WriteList(builder, fieldAccessor, (IList) fieldAccessor.GetValue(value));
+                WriteList(builder, fieldAccessor, (IList) fieldAccessor.GetValue((IMessage) value));
                 return;
             }
             if (descriptor.FullName == Value.Descriptor.FullName)

@@ -56,52 +56,52 @@ namespace Google.Protobuf.Reflection
         /// Creates a delegate which will cast the argument to the appropriate method target type,
         /// call the method on it, then convert the result to object.
         /// </summary>
-        internal static Func<object, object> CreateFuncObjectObject(MethodInfo method)
+        internal static Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method)
         {
-            ParameterExpression parameter = Expression.Parameter(typeof(object), "p");
+            ParameterExpression parameter = Expression.Parameter(typeof(IMessage), "p");
             Expression downcast = Expression.Convert(parameter, method.DeclaringType);
             Expression call = Expression.Call(downcast, method);
             Expression upcast = Expression.Convert(call, typeof(object));
-            return Expression.Lambda<Func<object, object>>(upcast, parameter).Compile();
+            return Expression.Lambda<Func<IMessage, object>>(upcast, parameter).Compile();
         }
 
         /// <summary>
         /// Creates a delegate which will cast the argument to the appropriate method target type,
         /// call the method on it, then convert the result to the specified type.
         /// </summary>
-        internal static Func<object, T> CreateFuncObjectT<T>(MethodInfo method)
+        internal static Func<IMessage, T> CreateFuncIMessageT<T>(MethodInfo method)
         {
-            ParameterExpression parameter = Expression.Parameter(typeof(object), "p");
+            ParameterExpression parameter = Expression.Parameter(typeof(IMessage), "p");
             Expression downcast = Expression.Convert(parameter, method.DeclaringType);
             Expression call = Expression.Call(downcast, method);
             Expression upcast = Expression.Convert(call, typeof(T));
-            return Expression.Lambda<Func<object, T>>(upcast, parameter).Compile();
+            return Expression.Lambda<Func<IMessage, T>>(upcast, parameter).Compile();
         }
 
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
         /// the target type of the method, and the second argument to the first parameter type of the method.
         /// </summary>
-        internal static Action<object, object> CreateActionObjectObject(MethodInfo method)
+        internal static Action<IMessage, object> CreateActionIMessageObject(MethodInfo method)
         {
-            ParameterExpression targetParameter = Expression.Parameter(typeof(object), "target");
+            ParameterExpression targetParameter = Expression.Parameter(typeof(IMessage), "target");
             ParameterExpression argParameter = Expression.Parameter(typeof(object), "arg");
             Expression castTarget = Expression.Convert(targetParameter, method.DeclaringType);
             Expression castArgument = Expression.Convert(argParameter, method.GetParameters()[0].ParameterType);
             Expression call = Expression.Call(castTarget, method, castArgument);
-            return Expression.Lambda<Action<object, object>>(call, targetParameter, argParameter).Compile();
+            return Expression.Lambda<Action<IMessage, object>>(call, targetParameter, argParameter).Compile();
         }
 
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
         /// the target type of the method.
         /// </summary>
-        internal static Action<object> CreateActionObject(MethodInfo method)
+        internal static Action<IMessage> CreateActionIMessage(MethodInfo method)
         {
-            ParameterExpression targetParameter = Expression.Parameter(typeof(object), "target");
+            ParameterExpression targetParameter = Expression.Parameter(typeof(IMessage), "target");
             Expression castTarget = Expression.Convert(targetParameter, method.DeclaringType);
             Expression call = Expression.Call(castTarget, method);
-            return Expression.Lambda<Action<object>>(call, targetParameter).Compile();
+            return Expression.Lambda<Action<IMessage>>(call, targetParameter).Compile();
         }        
     }
 }

@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Collections;
 using System;
 using System.IO;
 using System.Text;
@@ -40,14 +41,19 @@ namespace Google.Protobuf
     /// Encodes and writes protocol message fields.
     /// </summary>
     /// <remarks>
-    /// This class contains two kinds of methods:  methods that write specific
-    /// protocol message constructs and field types (e.g. WriteTag and
-    /// WriteInt32) and methods that write low-level values (e.g.
-    /// WriteRawVarint32 and WriteRawBytes).  If you are writing encoded protocol
-    /// messages, you should use the former methods, but if you are writing some
-    /// other format of your own design, use the latter. The names of the former
-    /// methods are taken from the protocol buffer type names, not .NET types.
-    /// (Hence WriteFloat instead of WriteSingle, and WriteBool instead of WriteBoolean.)
+    /// <para>
+    /// This class is generally used by generated code to write appropriate
+    /// primitives to the stream. It effectively encapsulates the lowest
+    /// levels of protocol buffer format. Unlike some other implementations,
+    /// this does not include combined "write tag and value" methods. Generated
+    /// code knows the exact byte representations of the tags they're going to write,
+    /// so there's no need to re-encode them each time. Manually-written code calling
+    /// this class should just call one of the <c>WriteTag</c> overloads before each value.
+    /// </para>
+    /// <para>
+    /// Repeated fields and map fields are not handled by this class; use <see cref="RepeatedField{T}"/>
+    /// and <see cref="MapField{TKey, TValue}"/> to serialize such fields.
+    /// </para>
     /// </remarks>
     public sealed partial class CodedOutputStream
     {
