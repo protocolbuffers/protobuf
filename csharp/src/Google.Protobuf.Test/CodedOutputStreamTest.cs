@@ -335,15 +335,16 @@ namespace Google.Protobuf
             // Now test Input stream:
             {
                 CodedInputStream cin = new CodedInputStream(new MemoryStream(bytes), new byte[50]);
-                uint tag;
                 Assert.AreEqual(0, cin.Position);
                 // Field 1:
-                Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 1);
+                uint tag = cin.ReadTag();
+                Assert.AreEqual(1, tag >> 3);
                 Assert.AreEqual(1, cin.Position);
                 Assert.AreEqual(500, cin.ReadInt32());
                 Assert.AreEqual(3, cin.Position);
                 //Field 2:
-                Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 2);
+                tag = cin.ReadTag();
+                Assert.AreEqual(2, tag >> 3);
                 Assert.AreEqual(4, cin.Position);
                 int childlen = cin.ReadLength();
                 Assert.AreEqual(120, childlen);
@@ -353,19 +354,22 @@ namespace Google.Protobuf
                 // Now we are reading child message
                 {
                     // Field 11: numeric value: 500
-                    Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 11);
+                    tag = cin.ReadTag();
+                    Assert.AreEqual(11, tag >> 3);
                     Assert.AreEqual(6, cin.Position);
                     Assert.AreEqual(500, cin.ReadInt32());
                     Assert.AreEqual(8, cin.Position);
                     //Field 12: length delimited 120 bytes
-                    Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 12);
+                    tag = cin.ReadTag();
+                    Assert.AreEqual(12, tag >> 3);
                     Assert.AreEqual(9, cin.Position);
                     ByteString bstr = cin.ReadBytes();
                     Assert.AreEqual(110, bstr.Length);
                     Assert.AreEqual((byte) 109, bstr[109]);
                     Assert.AreEqual(120, cin.Position);
                     // Field 13: fixed numeric value: 501
-                    Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 13);
+                    tag = cin.ReadTag();
+                    Assert.AreEqual(13, tag >> 3);
                     // ROK - Previously broken here, this returned 126 failing to account for bufferSizeAfterLimit
                     Assert.AreEqual(121, cin.Position);
                     Assert.AreEqual(501, cin.ReadSFixed32());
@@ -375,7 +379,8 @@ namespace Google.Protobuf
                 cin.PopLimit(oldlimit);
                 Assert.AreEqual(125, cin.Position);
                 // Field 3: fixed numeric value: 501
-                Assert.IsTrue(cin.ReadTag(out tag) && tag >> 3 == 3);
+                tag = cin.ReadTag();
+                Assert.AreEqual(3, tag >> 3);
                 Assert.AreEqual(126, cin.Position);
                 Assert.AreEqual(501, cin.ReadSFixed32());
                 Assert.AreEqual(130, cin.Position);

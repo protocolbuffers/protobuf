@@ -239,10 +239,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -538,10 +536,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -834,10 +830,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -1003,10 +997,8 @@ namespace Google.Protobuf.Reflection {
 
         public void MergeFrom(pb::CodedInputStream input) {
           uint tag;
-          while (input.ReadTag(out tag)) {
+          while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
-              case 0:
-                throw pb::InvalidProtocolBufferException.InvalidTag();
               default:
                 if (pb::WireFormat.IsEndGroupTag(tag)) {
                   return;
@@ -1136,10 +1128,8 @@ namespace Google.Protobuf.Reflection {
 
         public void MergeFrom(pb::CodedInputStream input) {
           uint tag;
-          while (input.ReadTag(out tag)) {
+          while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
-              case 0:
-                throw pb::InvalidProtocolBufferException.InvalidTag();
               default:
                 if (pb::WireFormat.IsEndGroupTag(tag)) {
                   return;
@@ -1431,10 +1421,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -1606,10 +1594,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -1752,10 +1738,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -1917,10 +1901,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -2074,10 +2056,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -2305,10 +2285,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -2735,10 +2713,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -2990,10 +2966,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -3237,10 +3211,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -3422,10 +3394,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -3551,10 +3521,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -3676,10 +3644,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -3801,10 +3767,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -4036,10 +4000,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -4190,10 +4152,8 @@ namespace Google.Protobuf.Reflection {
 
         public void MergeFrom(pb::CodedInputStream input) {
           uint tag;
-          while (input.ReadTag(out tag)) {
+          while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
-              case 0:
-                throw pb::InvalidProtocolBufferException.InvalidTag();
               default:
                 if (pb::WireFormat.IsEndGroupTag(tag)) {
                   return;
@@ -4298,10 +4258,8 @@ namespace Google.Protobuf.Reflection {
 
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
-      while (input.ReadTag(out tag)) {
+      while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
-          case 0:
-            throw pb::InvalidProtocolBufferException.InvalidTag();
           default:
             if (pb::WireFormat.IsEndGroupTag(tag)) {
               return;
@@ -4470,10 +4428,8 @@ namespace Google.Protobuf.Reflection {
 
         public void MergeFrom(pb::CodedInputStream input) {
           uint tag;
-          while (input.ReadTag(out tag)) {
+          while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
-              case 0:
-                throw pb::InvalidProtocolBufferException.InvalidTag();
               default:
                 if (pb::WireFormat.IsEndGroupTag(tag)) {
                   return;

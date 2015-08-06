@@ -70,7 +70,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Creates an exception for an error condition of an invalid tag being encountered.
         /// </summary>
-        public static InvalidProtocolBufferException InvalidTag()
+        internal static InvalidProtocolBufferException InvalidTag()
         {
             return new InvalidProtocolBufferException(
                 "Protocol message contained an invalid tag (zero).");

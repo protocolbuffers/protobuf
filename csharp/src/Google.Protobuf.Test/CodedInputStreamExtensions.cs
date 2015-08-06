@@ -38,8 +38,7 @@ namespace Google.Protobuf
     {
         public static void AssertNextTag(this CodedInputStream input, uint expectedTag)
         {
-            uint tag;
-            Assert.IsTrue(input.ReadTag(out tag));
+            uint tag = input.ReadTag();
             Assert.AreEqual(expectedTag, tag);
         }
 

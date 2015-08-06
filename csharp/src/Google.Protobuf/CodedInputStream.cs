@@ -254,37 +254,35 @@ namespace Google.Protobuf
         #region Reading of tags etc
 
         /// <summary>
-        /// Attempts to peek at the next field tag.
+        /// Peeks at the next field tag. This is like calling <see cref="ReadTag"/>, but the
+        /// tag is not consumed. (So a subsequent call to <see cref="ReadTag"/> will return the
+        /// same value.)
         /// </summary>
-        public bool PeekNextTag(out uint fieldTag)
+        public uint PeekTag()
         {
             if (hasNextTag)
             {
-                fieldTag = nextTag;
-                return true;
+                return nextTag;
             }
 
             uint savedLast = lastTag;
-            hasNextTag = ReadTag(out nextTag);
-            lastTag = savedLast;
-            fieldTag = nextTag;
-            return hasNextTag;
+            nextTag = ReadTag();
+            hasNextTag = true;
+            lastTag = savedLast; // Undo the side effect of ReadTag
+            return nextTag;
         }
 
         /// <summary>
-        /// Attempts to read a field tag, returning false if we have reached the end
-        /// of the input data.
+        /// Reads a field tag, returning the tag of 0 for "end of stream".
         /// </summary>
-        /// <param name="fieldTag">The 'tag' of the field (id * 8 + wire-format)</param>
-        /// <returns>true if the next fieldTag was read</returns>
-        public bool ReadTag(out uint fieldTag)
+        /// <returns>The next field tag, or 0 for end of stream. (0 is never a valid tag.)</returns>
+        public uint ReadTag()
         {
             if (hasNextTag)
             {
-                fieldTag = nextTag;
-                lastTag = fieldTag;
+                lastTag = nextTag;
                 hasNextTag = false;
-                return true;
+                return lastTag;
             }
 
             // Optimize for the incredibly common case of having at least two bytes left in the buffer,
@@ -294,7 +292,7 @@ namespace Google.Protobuf
                 int tmp = buffer[bufferPos++];
                 if (tmp < 128)
                 {
-                    fieldTag = (uint)tmp;
+                    lastTag = (uint)tmp;
                 }
                 else
                 {
@@ -302,13 +300,13 @@ namespace Google.Protobuf
                     if ((tmp = buffer[bufferPos++]) < 128)
                     {
                         result |= tmp << 7;
-                        fieldTag = (uint) result;
+                        lastTag = (uint) result;
                     }
                     else
                     {
                         // Nope, rewind and go the potentially slow route.
                         bufferPos -= 2;
-                        fieldTag = ReadRawVarint32();
+                        lastTag = ReadRawVarint32();
                     }
                 }
             }
@@ -316,20 +314,18 @@ namespace Google.Protobuf
             {
                 if (IsAtEnd)
                 {
-                    fieldTag = 0;
-                    lastTag = fieldTag;
-                    return false;
+                    lastTag = 0;
+                    return 0; // This is the only case in which we return 0.
                 }
 
-                fieldTag = ReadRawVarint32();
+                lastTag = ReadRawVarint32();
             }
-            lastTag = fieldTag;
             if (lastTag == 0)
             {
                 // If we actually read zero, that's not a valid tag.
                 throw InvalidProtocolBufferException.InvalidTag();
             }
-            return true;
+            return lastTag;
         }
 
         /// <summary>
@@ -580,14 +576,10 @@ namespace Google.Protobuf
         /// </summary>
         public bool MaybeConsumeTag(uint tag)
         {
-            uint next;
-            if (PeekNextTag(out next))
+            if (PeekTag() == tag)
             {
-                if (next == tag)
-                {
-                    hasNextTag = false;
-                    return true;
-                }
+                hasNextTag = false;
+                return true;
             }
             return false;
         }
