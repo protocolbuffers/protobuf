@@ -34,7 +34,6 @@
 #include <google/protobuf/compiler/objectivec/objectivec_enum.h>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/io/printer.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
