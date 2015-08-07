@@ -123,8 +123,9 @@ void protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto() {
     "quest_type_url\030\002 \001(\t\022\031\n\021request_streamin"
     "g\030\003 \001(\010\022\031\n\021response_type_url\030\004 \001(\t\022\032\n\022re"
     "sponse_streaming\030\005 \001(\010\022(\n\007options\030\006 \003(\0132"
-    "\027.google.protobuf.OptionB\'\n\023com.google.p"
-    "rotobufB\010ApiProtoP\001\242\002\003GPBb\006proto3", 513);
+    "\027.google.protobuf.OptionBH\n\023com.google.p"
+    "rotobufB\010ApiProtoP\001\242\002\003GPB\252\002\036Google.Proto"
+    "buf.WellKnownTypesb\006proto3", 546);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/api.proto", &protobuf_RegisterTypes);
   Api::default_instance_ = new Api();

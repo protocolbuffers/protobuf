@@ -42,6 +42,7 @@ syntax = "proto2";
 package google.protobuf;
 option go_package = "descriptor";
 option java_package = "com.google.protobuf";
+option javanano_use_deprecated_package = true;
 option java_outer_classname = "DescriptorProtos";
 option csharp_namespace = "Google.Protobuf.Reflection";
 option objc_class_prefix = "GPB";
@@ -368,6 +369,10 @@ message FileOptions {
 
   // Namespace for generated classes; defaults to the package.
   optional string csharp_namespace = 37;
+
+  // Whether the nano proto compiler should generate in the deprecated non-nano
+  // suffixed package.
+  optional bool javanano_use_deprecated_package = 38;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

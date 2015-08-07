@@ -2000,6 +2000,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   ::std::string* release_csharp_namespace();
   void set_allocated_csharp_namespace(::std::string* csharp_namespace);
 
+  // optional bool javanano_use_deprecated_package = 38;
+  bool has_javanano_use_deprecated_package() const;
+  void clear_javanano_use_deprecated_package();
+  static const int kJavananoUseDeprecatedPackageFieldNumber = 38;
+  bool javanano_use_deprecated_package() const;
+  void set_javanano_use_deprecated_package(bool value);
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
   void clear_uninterpreted_option();
@@ -2043,6 +2050,8 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline void clear_has_objc_class_prefix();
   inline void set_has_csharp_namespace();
   inline void clear_has_csharp_namespace();
+  inline void set_has_javanano_use_deprecated_package();
+  inline void clear_has_javanano_use_deprecated_package();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -2057,13 +2066,14 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   bool cc_generic_services_;
   int optimize_for_;
   ::google::protobuf::internal::ArenaStringPtr go_package_;
-  ::google::protobuf::internal::ArenaStringPtr objc_class_prefix_;
-  ::google::protobuf::internal::ArenaStringPtr csharp_namespace_;
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   bool java_generic_services_;
   bool py_generic_services_;
   bool deprecated_;
   bool cc_enable_arenas_;
+  bool javanano_use_deprecated_package_;
+  ::google::protobuf::internal::ArenaStringPtr objc_class_prefix_;
+  ::google::protobuf::internal::ArenaStringPtr csharp_namespace_;
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
@@ -5890,6 +5900,30 @@ inline void FileOptions::set_allocated_csharp_namespace(::std::string* csharp_na
   }
   csharp_namespace_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), csharp_namespace);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_namespace)
+}
+
+// optional bool javanano_use_deprecated_package = 38;
+inline bool FileOptions::has_javanano_use_deprecated_package() const {
+  return (_has_bits_[0] & 0x00004000u) != 0;
+}
+inline void FileOptions::set_has_javanano_use_deprecated_package() {
+  _has_bits_[0] |= 0x00004000u;
+}
+inline void FileOptions::clear_has_javanano_use_deprecated_package() {
+  _has_bits_[0] &= ~0x00004000u;
+}
+inline void FileOptions::clear_javanano_use_deprecated_package() {
+  javanano_use_deprecated_package_ = false;
+  clear_has_javanano_use_deprecated_package();
+}
+inline bool FileOptions::javanano_use_deprecated_package() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.javanano_use_deprecated_package)
+  return javanano_use_deprecated_package_;
+}
+inline void FileOptions::set_javanano_use_deprecated_package(bool value) {
+  set_has_javanano_use_deprecated_package();
+  javanano_use_deprecated_package_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.javanano_use_deprecated_package)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
