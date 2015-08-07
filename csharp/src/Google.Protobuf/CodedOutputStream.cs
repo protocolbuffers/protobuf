@@ -51,8 +51,8 @@ namespace Google.Protobuf
     /// this class should just call one of the <c>WriteTag</c> overloads before each value.
     /// </para>
     /// <para>
-    /// Repeated fields and map fields are not handled by this class; use <see cref="RepeatedField{T}"/>
-    /// and <see cref="MapField{TKey, TValue}"/> to serialize such fields.
+    /// Repeated fields and map fields are not handled by this class; use <c>RepeatedField&lt;T&gt;</c>
+    /// and <c>MapField&lt;TKey, TValue&gt;</c> to serialize such fields.
     /// </para>
     /// </remarks>
     public sealed partial class CodedOutputStream
