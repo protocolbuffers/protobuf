@@ -338,17 +338,6 @@ std::string FileDescriptorToBase64(const FileDescriptor* descriptor) {
   return StringToBase64(fdp_bytes);
 }
 
-// TODO(jonskeet): Remove this when internal::WireFormat::MakeTag works
-// properly...
-// Workaround for issue #493
-uint FixedMakeTag(const FieldDescriptor* field) {
-  internal::WireFormatLite::WireType field_type = field->is_packed()
-      ? internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED
-      : internal::WireFormat::WireTypeForFieldType(field->type());
-
-  return internal::WireFormatLite::MakeTag(field->number(), field_type);
-}
-
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
                                          int fieldOrdinal) {
   switch (descriptor->type()) {
