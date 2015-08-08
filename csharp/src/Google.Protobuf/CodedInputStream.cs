@@ -346,7 +346,7 @@ namespace Google.Protobuf
             switch (WireFormat.GetTagWireType(lastTag))
             {
                 case WireFormat.WireType.StartGroup:
-                    ConsumeGroup();
+                    SkipGroup();
                     break;
                 case WireFormat.WireType.EndGroup:
                     // Just ignore; there's no data following the tag.
@@ -367,7 +367,7 @@ namespace Google.Protobuf
             }
         }
 
-        private void ConsumeGroup()
+        private void SkipGroup()
         {
             // Note: Currently we expect this to be the way that groups are read. We could put the recursion
             // depth changes into the ReadTag method instead, potentially...
