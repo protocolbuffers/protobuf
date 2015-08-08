@@ -99,16 +99,6 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Determines whether the given tag is an end group tag.
-        /// </summary>
-        /// <param name="tag">The tag to check.</param>
-        /// <returns><c>true</c> if the given tag is an end group tag; <c>false</c> otherwise.</returns>
-        public static bool IsEndGroupTag(uint tag)
-        {
-            return (WireType) (tag & TagTypeMask) == WireType.EndGroup;
-        }
-
-        /// <summary>
         /// Given a tag value, determines the field number (the upper 29 bits).
         /// </summary>
         public static int GetTagFieldNumber(uint tag)

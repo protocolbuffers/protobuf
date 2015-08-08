@@ -423,10 +423,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Indent();
   printer->Print(
     "default:\n"
-    "  if (pb::WireFormat.IsEndGroupTag(tag)) {\n"
-    "    return;\n"
-    "  }\n"
-    "  input.ConsumeLastField();\n" // We're not storing the data, but we still need to consume it.
+    "  input.SkipLastField();\n" // We're not storing the data, but we still need to consume it.
     "  break;\n");
   for (int i = 0; i < fields_by_number().size(); i++) {
     const FieldDescriptor* field = fields_by_number()[i];

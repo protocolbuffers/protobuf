@@ -304,12 +304,13 @@ namespace Google.Protobuf
                     {
                         value = codec.Read(input);
                     }
-                    if (WireFormat.IsEndGroupTag(tag))
+                    else
                     {
-                        break;
+                        input.SkipLastField();
                     }
+
                 }
-                input.CheckLastTagWas(0);
+                input.CheckReadEndOfStreamTag();
                 input.PopLimit(oldLimit);
 
                 return value;

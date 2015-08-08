@@ -629,5 +629,27 @@ namespace Google.Protobuf
             var data = new byte[] { 130, 3, 1 };            
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseFrom(data));
         }
+
+        /// <summary>
+        /// Demonstrates current behaviour with an extraneous end group tag - see issue 688
+        /// for details; we may want to change this.
+        /// </summary>
+        [Test]
+        public void ExtraEndGroupSkipped()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+
+            output.WriteTag(100, WireFormat.WireType.EndGroup);
+            output.WriteTag(TestAllTypes.SingleFixed32FieldNumber, WireFormat.WireType.Fixed32);
+            output.WriteFixed32(123);
+
+            output.Flush();
+
+            stream.Position = 0;
+            var parsed = TestAllTypes.Parser.ParseFrom(stream);
+            Assert.AreEqual(new TestAllTypes { SingleFixed32 = 123 }, parsed);
+        }
     }
 }

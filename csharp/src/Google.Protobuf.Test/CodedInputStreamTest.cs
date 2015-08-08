@@ -442,5 +442,92 @@ namespace Google.Protobuf
             var input = new CodedInputStream(new byte[] { 0 });
             Assert.Throws<InvalidProtocolBufferException>(() => input.ReadTag());
         }
+
+        [Test]
+        public void SkipGroup()
+        {
+            // Create an output stream with a group in:
+            // Field 1: string "field 1"
+            // Field 2: group containing:
+            //   Field 1: fixed int32 value 100
+            //   Field 2: string "ignore me"
+            //   Field 3: nested group containing
+            //      Field 1: fixed int64 value 1000
+            // Field 3: string "field 3"
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(1, WireFormat.WireType.LengthDelimited);
+            output.WriteString("field 1");
+            
+            // The outer group...
+            output.WriteTag(2, WireFormat.WireType.StartGroup);
+            output.WriteTag(1, WireFormat.WireType.Fixed32);
+            output.WriteFixed32(100);
+            output.WriteTag(2, WireFormat.WireType.LengthDelimited);
+            output.WriteString("ignore me");
+            // The nested group...
+            output.WriteTag(3, WireFormat.WireType.StartGroup);
+            output.WriteTag(1, WireFormat.WireType.Fixed64);
+            output.WriteFixed64(1000);
+            // Note: Not sure the field number is relevant for end group...
+            output.WriteTag(3, WireFormat.WireType.EndGroup);
+
+            // End the outer group
+            output.WriteTag(2, WireFormat.WireType.EndGroup);
+
+            output.WriteTag(3, WireFormat.WireType.LengthDelimited);
+            output.WriteString("field 3");
+            output.Flush();
+            stream.Position = 0;
+
+            // Now act like a generated client
+            var input = new CodedInputStream(stream);
+            Assert.AreEqual(WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited), input.ReadTag());
+            Assert.AreEqual("field 1", input.ReadString());
+            Assert.AreEqual(WireFormat.MakeTag(2, WireFormat.WireType.StartGroup), input.ReadTag());
+            input.SkipLastField(); // Should consume the whole group, including the nested one.
+            Assert.AreEqual(WireFormat.MakeTag(3, WireFormat.WireType.LengthDelimited), input.ReadTag());
+            Assert.AreEqual("field 3", input.ReadString());
+        }
+
+        [Test]
+        public void EndOfStreamReachedWhileSkippingGroup()
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(1, WireFormat.WireType.StartGroup);
+            output.WriteTag(2, WireFormat.WireType.StartGroup);
+            output.WriteTag(2, WireFormat.WireType.EndGroup);
+
+            output.Flush();
+            stream.Position = 0;
+
+            // Now act like a generated client
+            var input = new CodedInputStream(stream);
+            input.ReadTag();
+            Assert.Throws<InvalidProtocolBufferException>(() => input.SkipLastField());
+        }
+
+        [Test]
+        public void RecursionLimitAppliedWhileSkippingGroup()
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            for (int i = 0; i < CodedInputStream.DefaultRecursionLimit + 1; i++)
+            {
+                output.WriteTag(1, WireFormat.WireType.StartGroup);
+            }
+            for (int i = 0; i < CodedInputStream.DefaultRecursionLimit + 1; i++)
+            {
+                output.WriteTag(1, WireFormat.WireType.EndGroup);
+            }
+            output.Flush();
+            stream.Position = 0;
+
+            // Now act like a generated client
+            var input = new CodedInputStream(stream);
+            Assert.AreEqual(WireFormat.MakeTag(1, WireFormat.WireType.StartGroup), input.ReadTag());
+            Assert.Throws<InvalidProtocolBufferException>(() => input.SkipLastField());
+        }
     }
 }
