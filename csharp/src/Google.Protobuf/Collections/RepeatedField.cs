@@ -88,7 +88,7 @@ namespace Google.Protobuf.Collections
         public void AddEntriesFrom(CodedInputStream input, FieldCodec<T> codec)
         {
             // TODO: Inline some of the Add code, so we can avoid checking the size on every
-            // iteration and the mutability.
+            // iteration.
             uint tag = input.LastTag;
             var reader = codec.ValueReader;
             // Value types can be packed or not.
@@ -315,7 +315,7 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentNullException("values");
             }
-            // TODO: Check for ICollection and get the Count?
+            // TODO: Check for ICollection and get the Count, to optimize?
             foreach (T item in values)
             {
                 Add(item);
@@ -394,7 +394,6 @@ namespace Google.Protobuf.Collections
             {
                 return false;
             }
-            // TODO(jonskeet): Does this box for enums?
             EqualityComparer<T> comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < count; i++)
             {
@@ -418,7 +417,6 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentNullException("item");
             }
-            // TODO(jonskeet): Does this box for enums?
             EqualityComparer<T> comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < count; i++)
             {

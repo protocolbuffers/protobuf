@@ -40,7 +40,6 @@ namespace Google.Protobuf
 {
     /// <summary>
     /// Immutable array of bytes.
-    /// TODO(jonskeet): Implement the common collection interfaces?
     /// </summary>
     public sealed class ByteString : IEnumerable<byte>, IEquatable<ByteString>
     {
@@ -283,8 +282,6 @@ namespace Google.Protobuf
         {
             return !(lhs == rhs);
         }
-
-        // TODO(jonskeet): CopyTo if it turns out to be required
 
         /// <summary>
         /// Compares this byte string with another object.

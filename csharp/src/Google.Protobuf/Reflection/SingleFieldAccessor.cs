@@ -46,8 +46,8 @@ namespace Google.Protobuf.Reflection
         // and proto2 vs proto3 for non-message types, as proto3 doesn't support "full" presence detection or default
         // values.
 
-        private readonly Action<object, object> setValueDelegate;
-        private readonly Action<object> clearDelegate;
+        private readonly Action<IMessage, object> setValueDelegate;
+        private readonly Action<IMessage> clearDelegate;
 
         internal SingleFieldAccessor(PropertyInfo property, FieldDescriptor descriptor) : base(property, descriptor)
         {
@@ -55,12 +55,10 @@ namespace Google.Protobuf.Reflection
             {
                 throw new ArgumentException("Not all required properties/methods available");
             }
-            setValueDelegate = ReflectionUtil.CreateActionObjectObject(property.GetSetMethod());
+            setValueDelegate = ReflectionUtil.CreateActionIMessageObject(property.GetSetMethod());
 
             var clrType = property.PropertyType;
             
-            // TODO: What should clear on a oneof member do? Clear the oneof?
-
             // TODO: Validate that this is a reasonable single field? (Should be a value type, a message type, or string/ByteString.)
             object defaultValue =
                 typeof(IMessage).IsAssignableFrom(clrType) ? null
@@ -70,12 +68,12 @@ namespace Google.Protobuf.Reflection
             clearDelegate = message => SetValue(message, defaultValue);
         }
 
-        public override void Clear(object message)
+        public override void Clear(IMessage message)
         {
             clearDelegate(message);
         }
 
-        public override void SetValue(object message, object value)
+        public override void SetValue(IMessage message, object value)
         {
             setValueDelegate(message, value);
         }

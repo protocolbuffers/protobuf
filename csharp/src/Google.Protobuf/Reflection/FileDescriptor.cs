@@ -287,23 +287,23 @@ namespace Google.Protobuf.Reflection
             DescriptorPool pool = new DescriptorPool(dependencies);
             FileDescriptor result = new FileDescriptor(descriptorData, proto, dependencies, pool, allowUnknownDependencies, generatedCodeInfo);
 
-            // TODO(jonskeet): Reinstate these checks, or get rid of them entirely. They aren't in the Java code,
-            // and fail for the CustomOptions test right now. (We get "descriptor.proto" vs "google/protobuf/descriptor.proto".)
-            //if (dependencies.Length != proto.DependencyCount)
-            //{
-            //    throw new DescriptorValidationException(result,
-            //                                            "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
-            //                                            "those listed in the FileDescriptorProto.");
-            //}
-            //for (int i = 0; i < proto.DependencyCount; i++)
-            //{
-            //    if (dependencies[i].Name != proto.DependencyList[i])
-            //    {
-            //        throw new DescriptorValidationException(result,
-            //                                                "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
-            //                                                "those listed in the FileDescriptorProto.");
-            //    }
-            //}
+            // Validate that the dependencies we've been passed (as FileDescriptors) are actually the ones we
+            // need.
+            if (dependencies.Length != proto.Dependency.Count)
+            {
+                throw new DescriptorValidationException(result,
+                                                        "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
+                                                        "those listed in the FileDescriptorProto.");
+            }
+            for (int i = 0; i < proto.Dependency.Count; i++)
+            {
+                if (dependencies[i].Name != proto.Dependency[i])
+                {
+                    throw new DescriptorValidationException(result,
+                                                            "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
+                                                            "those listed in the FileDescriptorProto.");
+                }
+            }
 
             result.CrossLink();
             return result;

@@ -41,23 +41,23 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     internal abstract class FieldAccessorBase : IFieldAccessor
     {
-        private readonly Func<object, object> getValueDelegate;
+        private readonly Func<IMessage, object> getValueDelegate;
         private readonly FieldDescriptor descriptor;
 
         internal FieldAccessorBase(PropertyInfo property, FieldDescriptor descriptor)
         {
             this.descriptor = descriptor;
-            getValueDelegate = ReflectionUtil.CreateFuncObjectObject(property.GetGetMethod());
+            getValueDelegate = ReflectionUtil.CreateFuncIMessageObject(property.GetGetMethod());
         }
 
         public FieldDescriptor Descriptor { get { return descriptor; } }
 
-        public object GetValue(object message)
+        public object GetValue(IMessage message)
         {
             return getValueDelegate(message);
         }
 
-        public abstract void Clear(object message);
-        public abstract void SetValue(object message, object value);
+        public abstract void Clear(IMessage message);
+        public abstract void SetValue(IMessage message, object value);
     }
 }

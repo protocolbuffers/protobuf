@@ -45,13 +45,13 @@ namespace Google.Protobuf.Reflection
         {
         }
 
-        public override void Clear(object message)
+        public override void Clear(IMessage message)
         {
             IList list = (IList) GetValue(message);
             list.Clear();
         }
 
-        public override void SetValue(object message, object value)
+        public override void SetValue(IMessage message, object value)
         {
             throw new InvalidOperationException("SetValue is not implemented for repeated fields");
         }
