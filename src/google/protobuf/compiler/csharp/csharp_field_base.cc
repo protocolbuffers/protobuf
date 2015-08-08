@@ -59,7 +59,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   // repeated fields varies by wire format. The wire format is encoded in the bottom 3 bits, which
   // never effects the tag size.
   int tag_size = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
-  uint tag = FixedMakeTag(descriptor_);
+  uint tag = internal::WireFormat::MakeTag(descriptor_);
   uint8 tag_array[5];
   io::CodedOutputStream::WriteTagToArray(tag, tag_array);
   string tag_bytes = SimpleItoa(tag_array[0]);
