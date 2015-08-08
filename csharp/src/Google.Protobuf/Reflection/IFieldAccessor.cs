@@ -45,8 +45,6 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         FieldDescriptor Descriptor { get; }
 
-        // TODO: Should the argument type for these messages be IMessage?
-
         /// <summary>
         /// Clears the field in the specified message. (For repeated fields,
         /// this clears the list.)
