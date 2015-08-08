@@ -136,6 +136,12 @@ namespace Google.Protobuf.Collections
             return map.ContainsKey(key);
         }
 
+        private bool ContainsValue(TValue value)
+        {
+            var comparer = EqualityComparer<TValue>.Default;
+            return list.Any(pair => comparer.Equals(pair.Value, value));
+        }
+
         /// <summary>
         /// Removes the entry identified by the given key from the map.
         /// </summary>
@@ -221,17 +227,15 @@ namespace Google.Protobuf.Collections
             }
         }
 
-        // TODO: Make these views?
-
         /// <summary>
         /// Gets a collection containing the keys in the map.
         /// </summary>
-        public ICollection<TKey> Keys { get { return list.Select(t => t.Key).ToList(); } }
+        public ICollection<TKey> Keys { get { return new MapView<TKey>(this, pair => pair.Key, ContainsKey); } }
 
         /// <summary>
         /// Gets a collection containing the values in the map.
         /// </summary>
-        public ICollection<TValue> Values { get { return list.Select(t => t.Value).ToList(); } }
+        public ICollection<TValue> Values { get { return new MapView<TValue>(this, pair => pair.Value, ContainsValue); } }
 
         /// <summary>
         /// Adds the specified entries to the map.
@@ -656,6 +660,82 @@ namespace Google.Protobuf.Collections
                 }
 
                 MessageDescriptor IMessage.Descriptor { get { return null; } }
+            }
+        }
+
+        private class MapView<T> : ICollection<T>, ICollection
+        {
+            private readonly MapField<TKey, TValue> parent;
+            private readonly Func<KeyValuePair<TKey, TValue>, T> projection;
+            private readonly Func<T, bool> containsCheck;
+
+            internal MapView(
+                MapField<TKey, TValue> parent,
+                Func<KeyValuePair<TKey, TValue>, T> projection,
+                Func<T, bool> containsCheck)
+            {
+                this.parent = parent;
+                this.projection = projection;
+                this.containsCheck = containsCheck;
+            }
+
+            public int Count { get { return parent.Count; } }
+
+            public bool IsReadOnly { get { return true; } }
+
+            public bool IsSynchronized { get { return false; } }
+
+            public object SyncRoot { get { return parent; } }
+
+            public void Add(T item)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void Clear()
+            {
+                throw new NotSupportedException();
+            }
+
+            public bool Contains(T item)
+            {
+                return containsCheck(item);
+            }
+
+            public void CopyTo(T[] array, int arrayIndex)
+            {
+                if (arrayIndex < 0)
+                {
+                    throw new ArgumentOutOfRangeException("arrayIndex");
+                }
+                if (arrayIndex + Count  >= array.Length)
+                {
+                    throw new ArgumentException("Not enough space in the array", "array");
+                }
+                foreach (var item in this)
+                {
+                    array[arrayIndex++] = item;
+                }
+            }
+
+            public IEnumerator<T> GetEnumerator()
+            {
+                return parent.list.Select(projection).GetEnumerator();
+            }
+
+            public bool Remove(T item)
+            {
+                throw new NotSupportedException();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            public void CopyTo(Array array, int index)
+            {
+                throw new NotImplementedException();
             }
         }
     }
