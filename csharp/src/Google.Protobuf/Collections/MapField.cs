@@ -737,7 +737,7 @@ namespace Google.Protobuf.Collections
             {
                 if (index < 0)
                 {
-                    throw new ArgumentOutOfRangeException("arrayIndex");
+                    throw new ArgumentOutOfRangeException("index");
                 }
                 if (index + Count >= array.Length)
                 {
