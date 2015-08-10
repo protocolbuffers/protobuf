@@ -523,6 +523,20 @@ namespace Google.Protobuf.Collections
             keys.CopyTo(array, 1);
             CollectionAssert.AreEqual(new[] { null, "foo", "x", null }, array);
         }
+        
+        // Just test keys - we know the implementation is the same for values
+        [Test]
+        public void NonGenericViewCopyTo()
+        {
+            IDictionary map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            ICollection keys = map.Keys;
+            // Note the use of the Array type here rather than string[]
+            Array array = new string[4];
+            Assert.Throws<ArgumentException>(() => keys.CopyTo(array, 3));
+            Assert.Throws<ArgumentOutOfRangeException>(() => keys.CopyTo(array, -1));
+            keys.CopyTo(array, 1);
+            CollectionAssert.AreEqual(new[] { null, "foo", "x", null }, array);
+        }
 
         [Test]
         public void KeysContains()

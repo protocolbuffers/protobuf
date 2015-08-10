@@ -735,7 +735,18 @@ namespace Google.Protobuf.Collections
 
             public void CopyTo(Array array, int index)
             {
-                throw new NotImplementedException();
+                if (index < 0)
+                {
+                    throw new ArgumentOutOfRangeException("arrayIndex");
+                }
+                if (index + Count >= array.Length)
+                {
+                    throw new ArgumentException("Not enough space in the array", "array");
+                }
+                foreach (var item in this)
+                {
+                    array.SetValue(item, index++);
+                }
             }
         }
     }
