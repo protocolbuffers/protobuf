@@ -477,6 +477,91 @@ namespace Google.Protobuf.Collections
             Assert.IsTrue(new MapField<int, int?>(true).AllowsNullValues);
         }
 
+        [Test]
+        public void KeysReturnsLiveView()
+        {
+            var map = new MapField<string, string>();
+            var keys = map.Keys;
+            CollectionAssert.AreEqual(new string[0], keys);
+            map["foo"] = "bar";
+            map["x"] = "y";
+            CollectionAssert.AreEqual(new[] { "foo", "x" }, keys);
+        }
+
+        [Test]
+        public void ValuesReturnsLiveView()
+        {
+            var map = new MapField<string, string>();
+            var values = map.Values;
+            CollectionAssert.AreEqual(new string[0], values);
+            map["foo"] = "bar";
+            map["x"] = "y";
+            CollectionAssert.AreEqual(new[] { "bar", "y" }, values);
+        }
+
+        // Just test keys - we know the implementation is the same for values
+        [Test]
+        public void ViewsAreReadOnly()
+        {
+            var map = new MapField<string, string>();
+            var keys = map.Keys;
+            Assert.IsTrue(keys.IsReadOnly);
+            Assert.Throws<NotSupportedException>(() => keys.Clear());
+            Assert.Throws<NotSupportedException>(() => keys.Remove("a"));
+            Assert.Throws<NotSupportedException>(() => keys.Add("a"));
+        }
+
+        // Just test keys - we know the implementation is the same for values
+        [Test]
+        public void ViewCopyTo()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            var keys = map.Keys;
+            var array = new string[4];
+            Assert.Throws<ArgumentException>(() => keys.CopyTo(array, 3));
+            Assert.Throws<ArgumentOutOfRangeException>(() => keys.CopyTo(array, -1));
+            keys.CopyTo(array, 1);
+            CollectionAssert.AreEqual(new[] { null, "foo", "x", null }, array);
+        }
+        
+        // Just test keys - we know the implementation is the same for values
+        [Test]
+        public void NonGenericViewCopyTo()
+        {
+            IDictionary map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            ICollection keys = map.Keys;
+            // Note the use of the Array type here rather than string[]
+            Array array = new string[4];
+            Assert.Throws<ArgumentException>(() => keys.CopyTo(array, 3));
+            Assert.Throws<ArgumentOutOfRangeException>(() => keys.CopyTo(array, -1));
+            keys.CopyTo(array, 1);
+            CollectionAssert.AreEqual(new[] { null, "foo", "x", null }, array);
+        }
+
+        [Test]
+        public void KeysContains()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            var keys = map.Keys;
+            Assert.IsTrue(keys.Contains("foo"));
+            Assert.IsFalse(keys.Contains("bar")); // It's a value!
+            Assert.IsFalse(keys.Contains("1"));
+            // Keys can't be null, so we should prevent contains check
+            Assert.Throws<ArgumentNullException>(() => keys.Contains(null));
+        }
+
+        [Test]
+        public void ValuesContains()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            var values = map.Values;
+            Assert.IsTrue(values.Contains("bar"));
+            Assert.IsFalse(values.Contains("foo")); // It's a key!
+            Assert.IsFalse(values.Contains("1"));
+            // Values can be null, so this makes sense
+            Assert.IsFalse(values.Contains(null));
+        }
+
         private static KeyValuePair<TKey, TValue> NewKeyValuePair<TKey, TValue>(TKey key, TValue value)
         {
             return new KeyValuePair<TKey, TValue>(key, value);
