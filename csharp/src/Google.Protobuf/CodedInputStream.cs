@@ -53,16 +53,13 @@ namespace Google.Protobuf
     /// </remarks>
     public sealed class CodedInputStream
     {
-        // TODO(jonskeet): Consider whether recursion and size limits shouldn't be readonly,
-        // set at construction time.
-
         /// <summary>
         /// Buffer of data read from the stream or provided at construction time.
         /// </summary>
         private readonly byte[] buffer;
 
         /// <summary>
-        /// The number of valid bytes in the buffer.
+        /// The index of the buffer at which we need to refill from the stream (if there is one).
         /// </summary>
         private int bufferSize;
 
@@ -106,60 +103,102 @@ namespace Google.Protobuf
         /// </summary> 
         private int currentLimit = int.MaxValue;
 
-        /// <summary>
-        /// <see cref="SetRecursionLimit"/>
-        /// </summary>
         private int recursionDepth = 0;
 
-        private int recursionLimit = DefaultRecursionLimit;
-
-        /// <summary>
-        /// <see cref="SetSizeLimit"/>
-        /// </summary>
-        private int sizeLimit = DefaultSizeLimit;
+        private readonly int recursionLimit;
+        private readonly int sizeLimit;
 
         #region Construction
+        // Note that the checks are performed such that we don't end up checking obviously-valid things
+        // like non-null references for arrays we've just created.
+
         /// <summary>
-        /// Creates a new CodedInputStream reading data from the given
-        /// byte array.
+        /// Creates a new CodedInputStream reading data from the given byte array.
         /// </summary>
-        public CodedInputStream(byte[] buf) : this(buf, 0, buf.Length)
-        {
+        public CodedInputStream(byte[] buffer) : this(null, Preconditions.CheckNotNull(buffer, "buffer"), 0, buffer.Length)
+        {            
         }
 
         /// <summary>
-        /// Creates a new CodedInputStream that reads from the given
-        /// byte array slice.
+        /// Creates a new CodedInputStream that reads from the given byte array slice.
         /// </summary>
         public CodedInputStream(byte[] buffer, int offset, int length)
-        {
-            this.buffer = buffer;
-            this.bufferPos = offset;
-            this.bufferSize = offset + length;
-            this.input = null;
+            : this(null, Preconditions.CheckNotNull(buffer, "buffer"), offset, offset + length)
+        {            
+            if (offset < 0 || offset > buffer.Length)
+            {
+                throw new ArgumentOutOfRangeException("offset", "Offset must be within the buffer");
+            }
+            if (length < 0 || offset + length > buffer.Length)
+            {
+                throw new ArgumentOutOfRangeException("length", "Length must be non-negative and within the buffer");
+            }
         }
 
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given stream.
         /// </summary>
-        public CodedInputStream(Stream input)
+        public CodedInputStream(Stream input) : this(input, new byte[BufferSize], 0, 0)
         {
-            this.buffer = new byte[BufferSize];
-            this.bufferSize = 0;
-            this.input = input;
+            Preconditions.CheckNotNull(input, "input");
         }
 
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given
-        /// stream, with a pre-allocated buffer.
+        /// stream and buffer, using the default limits.
         /// </summary>
-        internal CodedInputStream(Stream input, byte[] buffer)
+        internal CodedInputStream(Stream input, byte[] buffer, int bufferPos, int bufferSize)
         {
-            this.buffer = buffer;
-            this.bufferSize = 0;
             this.input = input;
+            this.buffer = buffer;
+            this.bufferPos = bufferPos;
+            this.bufferSize = bufferSize;
+            this.sizeLimit = DefaultSizeLimit;
+            this.recursionLimit = DefaultRecursionLimit;
+        }
+
+        /// <summary>
+        /// Creates a new CodedInputStream reading data from the given
+        /// stream and buffer, using the specified limits.
+        /// </summary>
+        /// <remarks>
+        /// This chains to the version with the default limits instead of vice versa to avoid
+        /// having to check that the default values are valid every time.
+        /// </remarks>
+        internal CodedInputStream(Stream input, byte[] buffer, int bufferPos, int bufferSize, int sizeLimit, int recursionLimit)
+            : this(input, buffer, bufferPos, bufferSize)
+        {
+            if (sizeLimit <= 0)
+            {
+                throw new ArgumentOutOfRangeException("sizeLimit", "Size limit must be positive");
+            }
+            if (recursionLimit <= 0)
+            {
+                throw new ArgumentOutOfRangeException("recursionLimit!", "Recursion limit must be positive");
+            }
+            this.sizeLimit = sizeLimit;
+            this.recursionLimit = recursionLimit;
         }
         #endregion
+
+        /// <summary>
+        /// Creates a <see cref="CodedInputStream"/> with the specified size and recursion limits, reading
+        /// from an input stream.
+        /// </summary>
+        /// <remarks>
+        /// This method exists separately from the constructor to reduce the number of constructor overloads.
+        /// It is likely to be used considerably less frequently than the constructors, as the default limits
+        /// are suitable for most use cases.
+        /// </remarks>
+        /// <param name="input">The input stream to read from</param>
+        /// <param name="sizeLimit">The total limit of data to read from the stream.</param>
+        /// <param name="recursionLimit">The maximum recursion depth to allow while reading.</param>
+        /// <returns>A <c>CodedInputStream</c> reading from <paramref name="input"/> with the specified size
+        /// and recursion limits.</returns>
+        public static CodedInputStream CreateWithLimits(Stream input, int sizeLimit, int recursionLimit)
+        {
+            return new CodedInputStream(input, new byte[BufferSize], 0, 0, sizeLimit, recursionLimit);
+        }
 
         /// <summary>
         /// Returns the current position in the input stream, or the position in the input buffer
@@ -182,59 +221,30 @@ namespace Google.Protobuf
         /// </summary>
         internal uint LastTag { get { return lastTag; } }
 
-        #region Limits for recursion and length
         /// <summary>
-        /// Set the maximum message recursion depth.
+        /// Returns the size limit for this stream.
         /// </summary>
         /// <remarks>
-        /// In order to prevent malicious
-        /// messages from causing stack overflows, CodedInputStream limits
-        /// how deeply messages may be nested.  The default limit is 64.
+        /// This limit is applied when reading from the underlying stream, as a sanity check. It is
+        /// not applied when reading from a byte array data source without an underlying stream.
+        /// The default value is 64MB.
         /// </remarks>
-        public int SetRecursionLimit(int limit)
-        {
-            if (limit < 0)
-            {
-                throw new ArgumentOutOfRangeException("Recursion limit cannot be negative: " + limit);
-            }
-            int oldLimit = recursionLimit;
-            recursionLimit = limit;
-            return oldLimit;
-        }
+        /// <value>
+        /// The size limit.
+        /// </value>
+        public int SizeLimit { get { return sizeLimit; } }
 
         /// <summary>
-        /// Set the maximum message size.
+        /// Returns the recursion limit for this stream. This limit is applied whilst reading messages,
+        /// to avoid maliciously-recursive data.
         /// </summary>
         /// <remarks>
-        /// In order to prevent malicious messages from exhausting memory or
-        /// causing integer overflows, CodedInputStream limits how large a message may be.
-        /// The default limit is 64MB.  You should set this limit as small
-        /// as you can without harming your app's functionality.  Note that
-        /// size limits only apply when reading from an InputStream, not
-        /// when constructed around a raw byte array (nor with ByteString.NewCodedInput).
-        /// If you want to read several messages from a single CodedInputStream, you
-        /// can call ResetSizeCounter() after each message to avoid hitting the
-        /// size limit.
+        /// The default limit is 64.
         /// </remarks>
-        public int SetSizeLimit(int limit)
-        {
-            if (limit < 0)
-            {
-                throw new ArgumentOutOfRangeException("Size limit cannot be negative: " + limit);
-            }
-            int oldLimit = sizeLimit;
-            sizeLimit = limit;
-            return oldLimit;
-        }
-
-        /// <summary>
-        /// Resets the current size counter to zero (see <see cref="SetSizeLimit"/>).
-        /// </summary>
-        public void ResetSizeCounter()
-        {
-            totalBytesRetired = 0;
-        }
-        #endregion
+        /// <value>
+        /// The recursion limit for this stream.
+        /// </value>
+        public int RecursionLimit { get { return recursionLimit; } }
 
         #region Validation
         /// <summary>

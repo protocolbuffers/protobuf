@@ -320,38 +320,18 @@ namespace Google.Protobuf
 
             Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(data65));
 
-            CodedInputStream input = data64.CreateCodedInput();
-            input.SetRecursionLimit(8);
+            CodedInputStream input = CodedInputStream.CreateWithLimits(new MemoryStream(data64.ToByteArray()), 1000000, 63);
             Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(input));
         }
 
-        /*
         [Test]
         public void SizeLimit()
         {
             // Have to use a Stream rather than ByteString.CreateCodedInput as SizeLimit doesn't
             // apply to the latter case.
-            MemoryStream ms = new MemoryStream(TestUtil.GetAllSet().ToByteString().ToByteArray());
-            CodedInputStream input = new CodedInputStream(ms);
-            input.SetSizeLimit(16);
-
-            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.ParseFrom(input));
-        }*/
-
-        [Test]
-        public void ResetSizeCounter()
-        {
-            CodedInputStream input = new CodedInputStream(
-                new SmallBlockInputStream(new byte[256], 8));
-            input.SetSizeLimit(16);
-            input.ReadRawBytes(16);
-
-            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadRawByte());
-
-            input.ResetSizeCounter();
-            input.ReadRawByte(); // No exception thrown.
-
-            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadRawBytes(16));
+            MemoryStream ms = new MemoryStream(SampleMessages.CreateFullTestAllTypes().ToByteArray());
+            CodedInputStream input = CodedInputStream.CreateWithLimits(ms, 16, 100);
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseFrom(input));
         }
 
         /// <summary>
@@ -423,7 +403,7 @@ namespace Google.Protobuf
                 output.Flush();
 
                 ms.Position = 0;
-                CodedInputStream input = new CodedInputStream(ms, new byte[ms.Length / 2]);
+                CodedInputStream input = new CodedInputStream(ms, new byte[ms.Length / 2], 0, 0);
 
                 uint tag = input.ReadTag();
                 Assert.AreEqual(1, WireFormat.GetTagFieldNumber(tag));
@@ -527,6 +507,24 @@ namespace Google.Protobuf
             var input = new CodedInputStream(stream);
             Assert.AreEqual(WireFormat.MakeTag(1, WireFormat.WireType.StartGroup), input.ReadTag());
             Assert.Throws<InvalidProtocolBufferException>(() => input.SkipLastField());
+        }
+
+        [Test]
+        public void Construction_Invalid()
+        {
+            Assert.Throws<ArgumentNullException>(() => new CodedInputStream((byte[]) null));
+            Assert.Throws<ArgumentNullException>(() => new CodedInputStream(null, 0, 0));
+            Assert.Throws<ArgumentNullException>(() => new CodedInputStream((Stream) null));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new CodedInputStream(new byte[10], 100, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new CodedInputStream(new byte[10], 5, 10));
+        }
+
+        [Test]
+        public void CreateWithLimits_InvalidLimits()
+        {
+            var stream = new MemoryStream();
+            Assert.Throws<ArgumentOutOfRangeException>(() => CodedInputStream.CreateWithLimits(stream, 0, 1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => CodedInputStream.CreateWithLimits(stream, 1, 0));
         }
     }
 }

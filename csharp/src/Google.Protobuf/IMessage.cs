@@ -35,8 +35,6 @@ using Google.Protobuf.Reflection;
 
 namespace Google.Protobuf
 {
-    // TODO(jonskeet): Split these interfaces into separate files when we're happy with them.
-
     /// <summary>
     /// Interface for a Protocol Buffers message, supporting
     /// basic operations required for serialization.
@@ -85,25 +83,5 @@ namespace Google.Protobuf
         /// <remarks>See the user guide for precise merge semantics.</remarks>
         /// <param name="message">The message to merge with this one. Must not be null.</param>
         void MergeFrom(T message);
-    }
-
-    /// <summary>
-    /// Generic interface for a deeply cloneable type.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// All generated messages implement this interface, but so do some non-message types.
-    /// Additionally, due to the type constraint on <c>T</c> in <see cref="IMessage{T}"/>,
-    /// it is simpler to keep this as a separate interface.
-    /// </para>
-    /// </remarks>
-    /// <typeparam name="T">The type itself, returned by the <see cref="Clone"/> method.</typeparam>
-    public interface IDeepCloneable<T>
-    {
-        /// <summary>
-        /// Creates a deep clone of this object.
-        /// </summary>
-        /// <returns>A deep clone of this object.</returns>
-        T Clone();
     }
 }
