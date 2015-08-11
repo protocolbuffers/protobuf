@@ -47,6 +47,7 @@ namespace {
 using proto3::FOO;
 using proto3::BAR;
 using proto3::TestMessage;
+using proto3::TestMap;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
 
@@ -144,6 +145,16 @@ TEST_F(JsonUtilTest, ParseMessage) {
   ASSERT_EQ(2, m.repeated_message_value_size());
   EXPECT_EQ(40, m.repeated_message_value(0).value());
   EXPECT_EQ(96, m.repeated_message_value(1).value());
+}
+
+TEST_F(JsonUtilTest, ParseMap) {
+  TestMap message;
+  (*message.mutable_string_map())["hello"] = 1234;
+  JsonOptions options;
+  EXPECT_EQ("{\"stringMap\":{\"hello\":1234}}", ToJson(message, options));
+  TestMap other;
+  ASSERT_TRUE(FromJson(ToJson(message, options), &other));
+  EXPECT_EQ(message.DebugString(), other.DebugString());
 }
 
 typedef pair<char*, int> Segment;
