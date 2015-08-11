@@ -153,7 +153,7 @@ NSString *const GPBTypeGoogleApisComPrefix = @"type.googleapis.com/";
 }
 
 - (BOOL)wrapsMessageOfClass:(Class)messageClass {
-  NSAssert([messageClass isSubclassofClass:[GPBMessage class]],
+  NSAssert([messageClass isSubclassOfClass:[GPBMessage class]],
            @"Given class (%@) is not a subclass of GPBMessage",
            [messageClass name]);
   if (![messageClass isSubclassOfClass:[GPBMessage class]]) {
