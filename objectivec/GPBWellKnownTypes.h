@@ -30,10 +30,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "google/protobuf/Any.pbobjc.h"
 #import "google/protobuf/Duration.pbobjc.h"
 #import "google/protobuf/Timestamp.pbobjc.h"
-
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -50,23 +48,5 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readwrite) NSTimeInterval timeIntervalSince1970;
 - (instancetype)initWithTimeIntervalSince1970:(NSTimeInterval)timeIntervalSince1970;
 @end
-
-// Extension to GPBAny to support packing and unpacking for arbitrary messages.
-@interface GPBAny (GPBWellKnownTypes)
-// Initialize GPBAny instance with the given message. e.g., for google.protobuf.foo, type
-// url will be "type.googleapis.com/google.protobuf.foo" and value will be serialized foo.
-- (instancetype)initWithMessage:(GPBMessage*)message;
-// Serialize the given message to the value in GPBAny. Type url will also be updated.
-- (void)setMessage:(GPBMessage*)message;
-// Parse the value in GPBAny to the given message. If messageClass message doesn't match the
-// type url in GPBAny, nil is returned.
-- (GPBMessage*)messageOfClass:(Class)messageClass;
-// True if the given type matches the type url in GPBAny.
-- (BOOL)wrapsMessageOfClass:(Class)messageClass;
-@end
-
-// Common prefix of type url in GPBAny, which is @"type.googleapis.com/". All valid
-// type urls in any should start with this prefix.
-extern NSString *const GPBTypeGoogleApisComPrefix;
 
 NS_ASSUME_NONNULL_END
