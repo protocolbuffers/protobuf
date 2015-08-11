@@ -28,9 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#import "google/protobuf/Unittest.pbobjc.h"
 #import "GPBWellKnownTypes.h"
-#import "GPBTestUtilities.h"
 
 #import <XCTest/XCTest.h>
 
@@ -40,7 +38,7 @@ static const NSTimeInterval kFutureOffsetInterval = 15000;
 // Nanosecond time accuracy
 static const NSTimeInterval kTimeAccuracy = 1e-9;
 
-@interface WellKnownTypesTest : GPBTestCase
+@interface WellKnownTypesTest : XCTestCase
 @end
 
 @implementation WellKnownTypesTest
@@ -99,55 +97,6 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
   durationTime = duration2.timeIntervalSince1970;
   XCTAssertEqualWithAccuracy(time, durationTime, kTimeAccuracy);
   [duration2 release];
-}
-
-- (void)testAnyPackingAndUnpacking {
-  TestAllTypes *from = [TestAllTypes message];
-  [self setAllFields:from repeatedCount:1];
-  NSData *data = from.data;
-
-  // Test initWithMessage
-  GPBAny *anyInited = [[GPBAny alloc] initWithMessage:from];
-  XCTAssertEqualObjects(
-      [GPBTypeGoogleApisComPrefix stringByAppendingString:from.descriptor.name],
-      anyInited.typeURL);
-  XCTAssertEqualObjects(data, anyInited.value);
-  [anyInited release];
-
-  // Test setMessage.
-  GPBAny *any = [GPBAny message];
-  [any setMessage:from];
-  XCTAssertEqualObjects(
-      [GPBTypeGoogleApisComPrefix stringByAppendingString:from.descriptor.name],
-      any.typeURL);
-  XCTAssertEqualObjects(data, any.value);
-
-  // Test messageOfClass
-  TestAllTypes *to = (TestAllTypes*)[any messageOfClass:[TestAllTypes class]];
-  XCTAssertEqualObjects(from, to);
-  XCTAssertEqual([any messageOfClass:[ForeignMessage class]], nil);
-  XCTAssertEqual([[GPBAny message] messageOfClass:[TestAllTypes class]], nil);
-
-  // Test setMessage with another type.
-  ForeignMessage *from2 = [ForeignMessage message];
-  [any setMessage:from2];
-  XCTAssertEqualObjects(
-      [GPBTypeGoogleApisComPrefix stringByAppendingString:from2.descriptor.name],
-      any.typeURL);
-  XCTAssertEqual(0UL, [any.value length]);
-
-  // Test wrapsMessageOfClass
-  XCTAssertTrue([any wrapsMessageOfClass:[from2 class]]);
-  XCTAssertFalse([any wrapsMessageOfClass:[from class]]);
-#if !defined(NS_BLOCK_ASSERTIONS)
-  // If assert is enabled, throw exception when the passed message class to
-  // wrapsMessageOfClass is not a child of GPBMessage.
-  XCTAssertThrows([any wrapsMessageOfClass:[NSString class]]);
-#else
-  // If assert is disabled, return false when the passed message class to
-  // wrapsMessageOfClass is not a child of GPBMessage.
-  XCTAssertFalse([any wrapsMessageOfClass:[NSString class]]);
-#endif
 }
 
 @end
