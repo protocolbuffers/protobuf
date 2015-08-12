@@ -287,6 +287,25 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // Like SerializeToOstream(), but allows missing required fields.
   bool SerializePartialToOstream(ostream* output) const;
 
+  // Write a single size-delimited message from the given stream. Delimited
+  // format allows a single file or stream to contain multiple messages,
+  // whereas normally writing multiple non-delimited messages to the same
+  // stream would cause them to be merged. A delimited message is a varint
+  // encoding the message size followed by a message of exactly that size.
+  //
+  // Note that if you want to *read* a delimited message from a file descriptor
+  // or istream, you will need to construct an io::FileInputStream or
+  // io::OstreamInputStream (implementations of io::ZeroCopyStream) and use the
+  // MessageLite method ParseDelimitedFromZeroCopyStream(). You must then
+  // continue to use the same ZeroCopyInputStream to read all further data from
+  // the stream until EOF. This is because these ZeroCopyInputStream
+  // implementations are buffered: they read a big chunk of data at a time,
+  // then parse it. As a result, they may read past the end of the delimited
+  // message. There is no way for them to push the extra data back into the
+  // underlying source, so instead you must keep using the same stream object.
+  bool SerializeDelimitedToFileDescriptor(int file_descriptor) const;
+  bool SerializeDelimitedToOstream(ostream* output) const;
+
 
   // Reflection-based methods ----------------------------------------
   // These methods are pure-virtual in MessageLite, but Message provides

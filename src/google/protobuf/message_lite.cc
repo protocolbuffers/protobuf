@@ -216,6 +216,38 @@ bool MessageLite::ParsePartialFromArray(const void* data, int size) {
   return InlineParsePartialFromArray(data, size, this);
 }
 
+bool MessageLite::ParseDelimitedFromZeroCopyStream(
+    google::protobuf::io::ZeroCopyInputStream* input,
+    bool* clean_eof) {
+  google::protobuf::io::CodedInputStream coded_input(input);
+  return ParseDelimitedFromCodedStream(&coded_input, clean_eof);
+}
+
+bool MessageLite::ParseDelimitedFromCodedStream(
+    io::CodedInputStream* input, bool* clean_eof) {
+  if (clean_eof != NULL) *clean_eof = false;
+  int start = input->CurrentPosition();
+
+  // Read the size.
+  uint32 size;
+  if (!input->ReadVarint32(&size)) {
+    if (clean_eof != NULL) *clean_eof = input->CurrentPosition() == start;
+    return false;
+  }
+
+  // Tell the stream not to read beyond that size.
+  google::protobuf::io::CodedInputStream::Limit limit = input->PushLimit(size);
+
+  // Parse the message.
+  if (!MergeFromCodedStream(input)) return false;
+  if (!input->ConsumedEntireMessage()) return false;
+
+  // Release the limit.
+  input->PopLimit(limit);
+
+  return true;
+}
+
 
 // ===================================================================
 
@@ -360,6 +392,33 @@ void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
   to->CheckTypeAndMergeFrom(from);
 }
 }  // namespace internal
+
+bool MessageLite::SerializeDelimitedToZeroCopyStream(
+    io::ZeroCopyOutputStream* output) const {
+  google::protobuf::io::CodedOutputStream coded_output(output);
+  return SerializeDelimitedToCodedStream(&coded_output);
+}
+
+bool MessageLite::SerializeDelimitedToCodedStream(
+    io::CodedOutputStream* output) const {
+  // Write the size.
+  int size = ByteSize();
+  output->WriteVarint32(size);
+
+  // Write the content.
+  uint8* buffer = output->GetDirectBufferForNBytesAndAdvance(size);
+  if (buffer != NULL) {
+    // Optimization:  The message fits in one buffer, so use the faster
+    // direct-to-array serialization path.
+    SerializeWithCachedSizesToArray(buffer);
+  } else {
+    // Slightly-slower path when the message is multiple buffers.
+    SerializeWithCachedSizes(output);
+    if (output->HadError()) return false;
+  }
+
+  return true;
+}
 
 }  // namespace protobuf
 }  // namespace google

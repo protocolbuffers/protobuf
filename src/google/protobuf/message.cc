@@ -188,6 +188,19 @@ bool Message::SerializePartialToOstream(ostream* output) const {
   return SerializePartialToZeroCopyStream(&zero_copy_output);
 }
 
+bool Message::SerializeDelimitedToFileDescriptor(int file_descriptor) const {
+  io::FileOutputStream output(file_descriptor);
+  return SerializeDelimitedToZeroCopyStream(&output);
+}
+
+bool Message::SerializeDelimitedToOstream(ostream* output) const {
+  {
+    io::OstreamOutputStream zero_copy_output(output);
+    if (!SerializeDelimitedToZeroCopyStream(&zero_copy_output)) return false;
+  }
+  return output->good();
+}
+
 
 // =============================================================================
 // Reflection and associated Template Specializations

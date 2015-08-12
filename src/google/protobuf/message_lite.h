@@ -171,6 +171,23 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // required fields.
   bool ParsePartialFromArray(const void* data, int size);
 
+  // Read a single size-delimited message from the given stream. Delimited
+  // format allows a single file or stream to contain multiple messages,
+  // whereas normally parsing consumes the entire input. A delimited message
+  // is a varint encoding the message size followed by a message of exactly
+  // that size.
+  //
+  // If |clean_eof| is not NULL, then it will be set to indicate whether the
+  // stream ended cleanly. That is, if the stream ends without this method
+  // having read any data at all from it, then *clean_eof will be set true,
+  // otherwise it will be set false. Note that these methods return false
+  // on EOF, but they also return false on other errors, so |clean_eof| is
+  // needed to distinguish a clean end from errors.
+  bool ParseDelimitedFromZeroCopyStream(io::ZeroCopyInputStream* input,
+                                        bool* clean_eof);
+  bool ParseDelimitedFromCodedStream(io::CodedInputStream* input,
+                                     bool* clean_eof);
+
 
   // Reads a protocol buffer from the stream and merges it into this
   // Message.  Singular fields read from the input overwrite what is
@@ -234,6 +251,15 @@ class LIBPROTOBUF_EXPORT MessageLite {
   bool AppendToString(string* output) const;
   // Like AppendToString(), but allows missing required fields.
   bool AppendPartialToString(string* output) const;
+
+  // Write a single size-delimited message from the given stream. Delimited
+  // format allows a single file or stream to contain multiple messages,
+  // whereas normally writing multiple non-delimited messages to the same
+  // stream would cause them to be merged. A delimited message is a varint
+  // encoding the message size followed by a message of exactly that size.
+  bool SerializeDelimitedToZeroCopyStream(
+      io::ZeroCopyOutputStream* output) const;
+  bool SerializeDelimitedToCodedStream(io::CodedOutputStream* output) const;
 
   // Computes the serialized size of the message.  This recursively calls
   // ByteSize() on all embedded messages.  If a subclass does not override

@@ -179,6 +179,44 @@ TEST(MessageTest, ParseHelpers) {
   }
 }
 
+TEST(MessageTest, DelimitedMessages) {
+  stringstream stream;
+
+  {
+    protobuf_unittest::TestAllTypes message1;
+    TestUtil::SetAllFields(&message1);
+    EXPECT_TRUE(message1.SerializeDelimitedToOstream(&stream));
+
+    protobuf_unittest::TestPackedTypes message2;
+    TestUtil::SetPackedFields(&message2);
+    EXPECT_TRUE(message2.SerializeDelimitedToOstream(&stream));
+  }
+
+  {
+    bool clean_eof;
+    io::IstreamInputStream zstream(&stream);
+
+    protobuf_unittest::TestAllTypes message1;
+    clean_eof = true;
+    EXPECT_TRUE(message1.ParseDelimitedFromZeroCopyStream(
+        &zstream, &clean_eof));
+    EXPECT_FALSE(clean_eof);
+    TestUtil::ExpectAllFieldsSet(message1);
+
+    protobuf_unittest::TestPackedTypes message2;
+    clean_eof = true;
+    EXPECT_TRUE(message2.ParseDelimitedFromZeroCopyStream(
+        &zstream, &clean_eof));
+    EXPECT_FALSE(clean_eof);
+    TestUtil::ExpectPackedFieldsSet(message2);
+
+    clean_eof = false;
+    EXPECT_FALSE(message2.ParseDelimitedFromZeroCopyStream(
+        &zstream, &clean_eof));
+    EXPECT_TRUE(clean_eof);
+  }
+}
+
 TEST(MessageTest, ParseFailsIfNotInitialized) {
   unittest::TestRequired message;
   vector<string> errors;
