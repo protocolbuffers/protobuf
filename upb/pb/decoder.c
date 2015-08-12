@@ -26,6 +26,8 @@
 
 /* Error messages that are shared between the bytecode and JIT decoders. */
 const char *kPbDecoderStackOverflow = "Nesting too deep.";
+const char *kPbDecoderSubmessageTooLong =
+    "Submessage end extends past enclosing submessage.";
 
 /* Error messages shared within this file. */
 static const char *kUnterminatedVarint = "Unterminated varint.";
@@ -185,8 +187,11 @@ static void checkpoint(upb_pbdecoder *d) {
  */
 static int32_t skip(upb_pbdecoder *d, size_t bytes) {
   assert(!in_residual_buf(d, d->ptr) || d->size_param == 0);
-  assert(bytes <= delim_remaining(d));
-  if (bufleft(d) > bytes) {
+  assert(d->skip == 0);
+  if (bytes > delim_remaining(d)) {
+    seterr(d, "Skipped value extended beyond enclosing submessage.");
+    return upb_pbdecoder_suspend(d);
+  } else if (bufleft(d) > bytes) {
     /* Skipped data is all in current buffer, and more is still available. */
     advance(d, bytes);
     d->skip = 0;
@@ -222,7 +227,9 @@ int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
   d->checkpoint = d->ptr;
 
   if (d->skip) {
-    CHECK_RETURN(skip(d, d->skip));
+    size_t skip_bytes = d->skip;
+    d->skip = 0;
+    CHECK_RETURN(skip(d, skip_bytes));
     d->checkpoint = d->ptr;
   }
 
@@ -461,7 +468,7 @@ static bool decoder_push(upb_pbdecoder *d, uint64_t end) {
   upb_pbdecoder_frame *fr = d->top;
 
   if (end > fr->end_ofs) {
-    seterr(d, "Submessage end extends past enclosing submessage.");
+    seterr(d, kPbDecoderSubmessageTooLong);
     return false;
   } else if (fr == d->limit) {
     seterr(d, kPbDecoderStackOverflow);
@@ -565,34 +572,7 @@ have_tag:
       return DECODE_OK;
     }
 
-    if (d->ptr == d->delim_end) {
-      seterr(d, "Enclosing submessage ended in the middle of value or group");
-      /* Unlike most errors we notice during parsing, right now we have consumed
-       * all of the user's input.
-       *
-       * There are three different options for how to handle this case:
-       *
-       *   1. decode() = short count, error = set
-       *   2. decode() = full count, error = set
-       *   3. decode() = full count, error NOT set, short count and error will
-       *      be reported on next call to decode() (or end())
-       *
-       * (1) and (3) have the advantage that they preserve the invariant that an
-       * error occurs iff decode() returns a short count.
-       *
-       * (2) and (3) have the advantage of reflecting the fact that all of the
-       * bytes were in fact parsed (and possibly delivered to the unknown field
-       * handler, in the future when that is supported).
-       *
-       * (3) requires extra state in the decode (a place to store the "permanent
-       * error" that we should return for all subsequent attempts to decode).
-       * But we likely want this anyway.
-       *
-       * Right now we do (1), thanks to the fact that we checkpoint *after* this
-       * check.  (3) may be a better choice long term; unclear at the moment. */
-      return upb_pbdecoder_suspend(d);
-    }
-
+    /* Unknown group -- continue looping over unknown fields. */
     checkpoint(d);
   }
 }

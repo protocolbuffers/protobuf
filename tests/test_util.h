@@ -117,21 +117,6 @@ class VerboseParserEnvironment {
       }
     }
 
-    if (status_.ok() != (parsed >= bytes)) {
-      if (status_.ok()) {
-        fprintf(stderr,
-                "Error: decode function returned short byte count but set no "
-                "error status\n");
-      } else {
-        fprintf(stderr,
-                "Error: decode function returned complete byte count but set "
-                "error status\n");
-      }
-      fprintf(stderr, "Status: %s, parsed=%u, bytes=%u\n",
-              status_.error_message(), (unsigned)parsed, (unsigned)bytes);
-      ASSERT(false);
-    }
-
     if (!status_.ok())
       return false;
 

@@ -273,6 +273,7 @@ void upb_pbdecoder_seterr(upb_pbdecoder *d, const char *msg);
 
 /* Error messages that are shared between the bytecode and JIT decoders. */
 extern const char *kPbDecoderStackOverflow;
+extern const char *kPbDecoderSubmessageTooLong;
 
 /* Access to decoderplan members needed by the decoder. */
 const char *upb_pbdecoder_getopname(unsigned int op);
