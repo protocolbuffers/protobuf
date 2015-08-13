@@ -52,6 +52,11 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/wrappers.pb.cc
 )
 
+# Disable inlining in message.cc to solve link error missing NewFromPrototype
+if(MSVC)
+	set_source_files_properties(${protobuf_source_dir}/src/google/protobuf/message.cc PROPERTIES COMPILE_FLAGS /Ob0)
+endif()
+
 add_library(libprotobuf ${libprotobuf_lite_files} ${libprotobuf_files})
 target_link_libraries(libprotobuf ${CMAKE_THREAD_LIBS_INIT} ${ZLIB_LIBRARIES})
 target_include_directories(libprotobuf PUBLIC ${protobuf_source_dir}/src)
