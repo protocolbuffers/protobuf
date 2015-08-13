@@ -88,41 +88,27 @@ def generate_proto(source, require = True):
       sys.exit(-1)
 
 def GenerateUnittestProtos():
-  generate_proto("../src/google/protobuf/unittest.proto")
-  generate_proto("../src/google/protobuf/unittest_custom_options.proto")
-  generate_proto("../src/google/protobuf/unittest_import.proto")
-  generate_proto("../src/google/protobuf/unittest_import_public.proto")
-  generate_proto("../src/google/protobuf/unittest_mset.proto")
-  generate_proto("../src/google/protobuf/unittest_no_generic_services.proto")
-  generate_proto("google/protobuf/internal/descriptor_pool_test1.proto")
-  generate_proto("google/protobuf/internal/descriptor_pool_test2.proto")
-  generate_proto("google/protobuf/internal/test_bad_identifiers.proto")
-  generate_proto("google/protobuf/internal/missing_enum_values.proto")
-  generate_proto("google/protobuf/internal/more_extensions.proto")
-  generate_proto("google/protobuf/internal/more_extensions_dynamic.proto")
-  generate_proto("google/protobuf/internal/more_messages.proto")
-  generate_proto("google/protobuf/internal/factory_test1.proto")
-  generate_proto("google/protobuf/internal/factory_test2.proto")
-  generate_proto("google/protobuf/internal/import_test_package/inner.proto")
-  generate_proto("google/protobuf/internal/import_test_package/outer.proto")
-  generate_proto("google/protobuf/pyext/python.proto")
+  generate_proto("../src/google/protobuf/map_unittest.proto", False)
+  generate_proto("../src/google/protobuf/unittest.proto", False)
+  generate_proto("../src/google/protobuf/unittest_custom_options.proto", False)
+  generate_proto("../src/google/protobuf/unittest_import.proto", False)
+  generate_proto("../src/google/protobuf/unittest_import_public.proto", False)
+  generate_proto("../src/google/protobuf/unittest_mset.proto", False)
+  generate_proto("../src/google/protobuf/unittest_no_generic_services.proto", False)
+  generate_proto("../src/google/protobuf/unittest_proto3_arena.proto", False)
+  generate_proto("google/protobuf/internal/descriptor_pool_test1.proto", False)
+  generate_proto("google/protobuf/internal/descriptor_pool_test2.proto", False)
+  generate_proto("google/protobuf/internal/factory_test1.proto", False)
+  generate_proto("google/protobuf/internal/factory_test2.proto", False)
+  generate_proto("google/protobuf/internal/import_test_package/inner.proto", False)
+  generate_proto("google/protobuf/internal/import_test_package/outer.proto", False)
+  generate_proto("google/protobuf/internal/missing_enum_values.proto", False)
+  generate_proto("google/protobuf/internal/more_extensions.proto", False)
+  generate_proto("google/protobuf/internal/more_extensions_dynamic.proto", False)
+  generate_proto("google/protobuf/internal/more_messages.proto", False)
+  generate_proto("google/protobuf/internal/test_bad_identifiers.proto", False)
+  generate_proto("google/protobuf/pyext/python.proto", False)
 
-def MakeTestSuite():
-  # Test C++ implementation
-  import unittest
-  import google.protobuf.pyext.descriptor_cpp2_test as descriptor_cpp2_test
-  import google.protobuf.pyext.message_factory_cpp2_test \
-      as message_factory_cpp2_test
-  import google.protobuf.pyext.reflection_cpp2_generated_test \
-      as reflection_cpp2_generated_test
-
-  loader = unittest.defaultTestLoader
-  suite = unittest.TestSuite()
-  for test in [  descriptor_cpp2_test,
-                 message_factory_cpp2_test,
-                 reflection_cpp2_generated_test]:
-    suite.addTest(loader.loadTestsFromModule(test))
-  return suite
 
 class clean(_clean):
   def run(self):
@@ -152,6 +138,7 @@ class build_py(_build_py):
         pass
     # _build_py is an old-style class, so super() doesn't work.
     _build_py.run(self)
+
 
 if __name__ == '__main__':
   ext_module_list = []

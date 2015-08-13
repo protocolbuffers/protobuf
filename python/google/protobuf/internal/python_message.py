@@ -59,7 +59,6 @@ import weakref
 
 import six
 import six.moves.copyreg as copyreg
-import six.string_types
 
 # We use "as" to avoid name collisions with variables.
 from google.protobuf.internal import containers
@@ -1120,7 +1119,7 @@ def _AddIsInitializedMethod(message_descriptor, cls):
             # ScalarMaps can't have any initialization errors.
             pass
         elif field.label == _FieldDescriptor.LABEL_REPEATED:
-          for i in xrange(len(value)):
+          for i in range(len(value)):
             element = value[i]
             prefix = "%s[%d]." % (name, i)
             sub_errors = element.FindInitializationErrors()
