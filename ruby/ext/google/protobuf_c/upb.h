@@ -5635,7 +5635,7 @@ UPB_INLINE bool upb_bufsrc_putbuf(const char *buf, size_t len,
   upb_bufhandle_setbuf(&handle, buf, 0);
   ret = upb_bytessink_start(sink, len, &subc);
   if (ret && len != 0) {
-    ret = (upb_bytessink_putbuf(sink, subc, buf, len, &handle) == len);
+    ret = (upb_bytessink_putbuf(sink, subc, buf, len, &handle) >= len);
   }
   if (ret) {
     ret = upb_bytessink_end(sink);
@@ -7123,7 +7123,7 @@ class upb::pb::DecoderMethod {
  * constructed.  This hint may be an overestimate for some build configurations.
  * But if the decoder library is upgraded without recompiling the application,
  * it may be an underestimate. */
-#define UPB_PB_DECODER_SIZE 4400
+#define UPB_PB_DECODER_SIZE 4408
 
 #ifdef __cplusplus
 
@@ -7548,6 +7548,12 @@ struct upb_pbdecoder {
   char residual[12];
   char *residual_end;
 
+  /* Bytes of data that should be discarded from the input beore we start
+   * parsing again.  We set this when we internally determine that we can
+   * safely skip the next N bytes, but this region extends past the current
+   * user buffer. */
+  size_t skip;
+
   /* Stores the user buffer passed to our decode function. */
   const char *buf_param;
   size_t size_param;
@@ -7590,6 +7596,7 @@ void upb_pbdecoder_seterr(upb_pbdecoder *d, const char *msg);
 
 /* Error messages that are shared between the bytecode and JIT decoders. */
 extern const char *kPbDecoderStackOverflow;
+extern const char *kPbDecoderSubmessageTooLong;
 
 /* Access to decoderplan members needed by the decoder. */
 const char *upb_pbdecoder_getopname(unsigned int op);
