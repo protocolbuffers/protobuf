@@ -45,12 +45,13 @@
 #include <sstream>
 #include <fstream>
 
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/test_util.h>
+#include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/generated_message_reflection.h>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
@@ -203,6 +204,28 @@ TEST(MessageTest, BypassInitializationCheckOnParse) {
 TEST(MessageTest, InitializationErrorString) {
   unittest::TestRequired message;
   EXPECT_EQ("a, b, c", message.InitializationErrorString());
+}
+
+TEST(MessageTest, DynamicCastToGenerated) {
+  unittest::TestAllTypes test_all_types;
+
+  google::protobuf::Message* test_all_types_pointer = &test_all_types;
+  EXPECT_EQ(&test_all_types,
+            google::protobuf::internal::DynamicCastToGenerated<unittest::TestAllTypes>(
+                test_all_types_pointer));
+  EXPECT_EQ(NULL,
+            google::protobuf::internal::DynamicCastToGenerated<unittest::TestRequired>(
+                test_all_types_pointer));
+
+  const google::protobuf::Message* test_all_types_pointer_const = &test_all_types;
+  EXPECT_EQ(
+      &test_all_types,
+      google::protobuf::internal::DynamicCastToGenerated<const unittest::TestAllTypes>(
+          test_all_types_pointer_const));
+  EXPECT_EQ(
+      NULL,
+      google::protobuf::internal::DynamicCastToGenerated<const unittest::TestRequired>(
+          test_all_types_pointer_const));
 }
 
 #ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet.

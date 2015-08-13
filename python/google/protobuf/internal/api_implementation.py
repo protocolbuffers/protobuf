@@ -40,14 +40,33 @@ try:
   # The compile-time constants in the _api_implementation module can be used to
   # switch to a certain implementation of the Python API at build time.
   _api_version = _api_implementation.api_version
-  del _api_implementation
+  _proto_extension_modules_exist_in_build = True
 except ImportError:
-  _api_version = 0
+  _api_version = -1  # Unspecified by compiler flags.
+  _proto_extension_modules_exist_in_build = False
+
+if _api_version == 1:
+  raise ValueError('api_version=1 is no longer supported.')
+if _api_version < 0:  # Still unspecified?
+  try:
+    # The presence of this module in a build allows the proto implementation to
+    # be upgraded merely via build deps rather than a compiler flag or the
+    # runtime environment variable.
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf import _use_fast_cpp_protos
+    # Work around a known issue in the classic bootstrap .par import hook.
+    if not _use_fast_cpp_protos:
+      raise ImportError('_use_fast_cpp_protos import succeeded but was None')
+    del _use_fast_cpp_protos
+    _api_version = 2
+  except ImportError:
+    if _proto_extension_modules_exist_in_build:
+      if sys.version_info[0] >= 3:  # Python 3 defaults to C++ impl v2.
+        _api_version = 2
+      # TODO(b/17427486): Make Python 2 default to C++ impl v2.
 
 _default_implementation_type = (
-    'python' if _api_version == 0 else 'cpp')
-_default_version_str = (
-    '1' if _api_version <= 1 else '2')
+    'python' if _api_version <= 0 else 'cpp')
 
 # This environment variable can be used to switch to a certain implementation
 # of the Python API, overriding the compile-time constants in the
@@ -61,16 +80,15 @@ if _implementation_type != 'python':
 
 # This environment variable can be used to switch between the two
 # 'cpp' implementations, overriding the compile-time constants in the
-# _api_implementation module. Right now only 1 and 2 are valid values. Any other
-# value will be ignored.
+# _api_implementation module. Right now only '2' is supported. Any other
+# value will cause an error to be raised.
 _implementation_version_str = os.getenv(
-    'PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION',
-    _default_version_str)
+    'PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION', '2')
 
-if _implementation_version_str not in ('1', '2'):
+if _implementation_version_str != '2':
   raise ValueError(
-      "unsupported PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION: '" +
-      _implementation_version_str + "' (supported versions: 1, 2)"
+      'unsupported PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION: "' +
+      _implementation_version_str + '" (supported versions: 2)'
       )
 
 _implementation_version = int(_implementation_version_str)

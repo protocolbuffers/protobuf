@@ -43,160 +43,183 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-MapField<Key, T, KeyProto, ValueProto, default_enum_value>::MapField()
-    : default_entry_(NULL) {
-  MapFieldBase::base_map_ = new Map<Key, T>;
-  SetDefaultEnumValue();
-}
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+MapField<Key, T, kKeyFieldType, kValueFieldType, default_enum_value>::MapField()
+    : default_entry_(NULL) {}
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-MapField<Key, T, KeyProto, ValueProto, default_enum_value>::MapField(
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+MapField<Key, T, kKeyFieldType, kValueFieldType, default_enum_value>::MapField(
+    Arena* arena)
+    : MapFieldBase(arena),
+      MapFieldLite<Key, T, kKeyFieldType, kValueFieldType, default_enum_value>(
+          arena),
+      default_entry_(NULL) {}
+
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+MapField<Key, T, kKeyFieldType, kValueFieldType, default_enum_value>::MapField(
     const Message* default_entry)
-    : default_entry_(down_cast<const EntryType*>(default_entry)) {
-  MapFieldBase::base_map_ = new Map<Key, T>;
-  SetDefaultEnumValue();
-}
+    : default_entry_(down_cast<const EntryType*>(default_entry)) {}
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-MapField<Key, T, KeyProto, ValueProto, default_enum_value>::~MapField() {
-  delete reinterpret_cast<Map<Key, T>*>(MapFieldBase::base_map_);
-}
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+MapField<Key, T, kKeyFieldType, kValueFieldType, default_enum_value>::MapField(
+    Arena* arena, const Message* default_entry)
+    : MapFieldBase(arena),
+      MapFieldLite<Key, T, kKeyFieldType, kValueFieldType, default_enum_value>(
+          arena),
+      default_entry_(down_cast<const EntryType*>(default_entry)) {}
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-int MapField<Key, T, KeyProto, ValueProto, default_enum_value>::size() const {
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::~MapField() {}
+
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+int
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::size() const {
   SyncMapWithRepeatedField();
-  return GetInternalMap().size();
+  return MapFieldLiteType::GetInternalMap().size();
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-void MapField<Key, T, KeyProto, ValueProto, default_enum_value>::Clear() {
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+void
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::Clear() {
   SyncMapWithRepeatedField();
-  MutableInternalMap()->clear();
+  MapFieldLiteType::MutableInternalMap()->clear();
   SetMapDirty();
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
 const Map<Key, T>&
-MapField<Key, T, KeyProto, ValueProto, default_enum_value>::GetMap() const {
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::GetMap() const {
   SyncMapWithRepeatedField();
-  return GetInternalMap();
+  return MapFieldLiteType::GetInternalMap();
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
 Map<Key, T>*
-MapField<Key, T, KeyProto, ValueProto, default_enum_value>::MutableMap() {
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::MutableMap() {
   SyncMapWithRepeatedField();
-  Map<Key, T>* result = MutableInternalMap();
+  Map<Key, T>* result = MapFieldLiteType::MutableInternalMap();
   SetMapDirty();
   return result;
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-void MapField<Key, T, KeyProto, ValueProto, default_enum_value>::MergeFrom(
-    const MapField& other) {
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+void
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::MergeFrom(
+    const MapFieldLiteType& other) {
+  const MapField& down_other = down_cast<const MapField&>(other);
   SyncMapWithRepeatedField();
-  other.SyncMapWithRepeatedField();
-
-  Map<Key, T>* map = MutableInternalMap();
-  const Map<Key, T>& other_map = other.GetInternalMap();
-  for (typename Map<Key, T>::const_iterator it = other_map.begin();
-       it != other_map.end(); ++it) {
-    (*map)[it->first] = it->second;
-  }
+  down_other.SyncMapWithRepeatedField();
+  MapFieldLiteType::MergeFrom(other);
   SetMapDirty();
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-void MapField<Key, T, KeyProto, ValueProto, default_enum_value>::Swap(
-    MapField* other) {
-  std::swap(repeated_field_, other->repeated_field_);
-  std::swap(base_map_, other->base_map_);
-  std::swap(state_, other->state_);
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+void
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::Swap(
+    MapFieldLiteType* other) {
+  MapField* down_other = down_cast<MapField*>(other);
+  std::swap(repeated_field_, down_other->repeated_field_);
+  MapFieldLiteType::Swap(other);
+  std::swap(state_, down_other->state_);
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
 void
-MapField<Key, T, KeyProto, ValueProto, default_enum_value>::SetEntryDescriptor(
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::SetEntryDescriptor(
     const Descriptor** descriptor) {
   entry_descriptor_ = descriptor;
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
 void
-MapField<Key, T, KeyProto, ValueProto,
+MapField<Key, T, kKeyFieldType, kValueFieldType,
          default_enum_value>::SetAssignDescriptorCallback(void (*callback)()) {
   assign_descriptor_callback_ = callback;
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-void MapField<Key, T, KeyProto, ValueProto,
-              default_enum_value>::SetDefaultEnumValue() {
-  MutableInternalMap()->SetDefaultEnumValue(default_enum_value);
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+const Map<Key, T>&
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::GetInternalMap() const {
+  return MapFieldLiteType::GetInternalMap();
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-MapEntry<Key, T, KeyProto, ValueProto, default_enum_value>*
-MapField<Key, T, KeyProto, ValueProto, default_enum_value>::NewEntry() const {
-  // The MapEntry instance created here is only used in generated code for
-  // parsing. It doesn't have default instance, descriptor or reflection,
-  // because these are not needed in parsing and will prevent us from using it
-  // for parsing MessageLite.
-  return new EntryType();
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+Map<Key, T>*
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::MutableInternalMap() {
+  return MapFieldLiteType::MutableInternalMap();
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-MapEntry<Key, T, KeyProto, ValueProto, default_enum_value>*
-MapField<Key, T, KeyProto, ValueProto, default_enum_value>::NewEntryWrapper(
-    const Key& key, const T& t) const {
-  return EntryType::Wrap(key, t);
-}
-
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-MapEntry<Key, T, KeyProto, ValueProto, default_enum_value>*
-MapField<Key, T, KeyProto, ValueProto, default_enum_value>::NewEnumEntryWrapper(
-    const Key& key, const T t) const {
-  return EntryType::EnumWrap(key, t);
-}
-
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-const Map<Key, T>& MapField<Key, T, KeyProto, ValueProto,
-                            default_enum_value>::GetInternalMap() const {
-  return *reinterpret_cast<Map<Key, T>*>(MapFieldBase::base_map_);
-}
-
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-Map<Key, T>* MapField<Key, T, KeyProto, ValueProto,
-                      default_enum_value>::MutableInternalMap() {
-  return reinterpret_cast<Map<Key, T>*>(MapFieldBase::base_map_);
-}
-
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-void MapField<Key, T, KeyProto, ValueProto,
-              default_enum_value>::SyncRepeatedFieldWithMapNoLock() const {
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+void
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::SyncRepeatedFieldWithMapNoLock() const {
   if (repeated_field_ == NULL) {
-    repeated_field_ = new RepeatedPtrField<Message>();
+    if (MapFieldBase::arena_ == NULL) {
+      repeated_field_ = new RepeatedPtrField<Message>();
+    } else {
+      repeated_field_ = Arena::CreateMessage<RepeatedPtrField<Message> >(
+          MapFieldBase::arena_);
+    }
   }
-  const Map<Key, T>& map =
-      *static_cast<const Map<Key, T>*>(MapFieldBase::base_map_);
+  const Map<Key, T>& map = GetInternalMap();
   RepeatedPtrField<EntryType>* repeated_field =
       reinterpret_cast<RepeatedPtrField<EntryType>*>(repeated_field_);
 
@@ -206,18 +229,22 @@ void MapField<Key, T, KeyProto, ValueProto,
        it != map.end(); ++it) {
     InitDefaultEntryOnce();
     GOOGLE_CHECK(default_entry_ != NULL);
-    EntryType* new_entry = down_cast<EntryType*>(default_entry_->New());
+    EntryType* new_entry =
+        down_cast<EntryType*>(default_entry_->New(MapFieldBase::arena_));
     repeated_field->AddAllocated(new_entry);
-    new_entry->set_key(it->first);
-    new_entry->set_value(it->second);
+    (*new_entry->mutable_key()) = it->first;
+    (*new_entry->mutable_value()) = it->second;
   }
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-void MapField<Key, T, KeyProto, ValueProto,
-              default_enum_value>::SyncMapWithRepeatedFieldNoLock() const {
-  Map<Key, T>* map = reinterpret_cast<Map<Key, T>*>(MapFieldBase::base_map_);
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+void
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::SyncMapWithRepeatedFieldNoLock() const {
+  Map<Key, T>* map = const_cast<MapField*>(this)->MutableInternalMap();
   RepeatedPtrField<EntryType>* repeated_field =
       reinterpret_cast<RepeatedPtrField<EntryType>*>(repeated_field_);
   map->clear();
@@ -232,15 +259,18 @@ void MapField<Key, T, KeyProto, ValueProto,
   }
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-int MapField<Key, T, KeyProto, ValueProto,
-             default_enum_value>::SpaceUsedExcludingSelfNoLock() const {
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+int
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::SpaceUsedExcludingSelfNoLock() const {
   int size = 0;
   if (repeated_field_ != NULL) {
     size += repeated_field_->SpaceUsedExcludingSelf();
   }
-  Map<Key, T>* map = reinterpret_cast<Map<Key, T>*>(MapFieldBase::base_map_);
+  Map<Key, T>* map = const_cast<MapField*>(this)->MutableInternalMap();
   size += sizeof(*map);
   for (typename Map<Key, T>::iterator it = map->begin();
        it != map->end(); ++it) {
@@ -250,25 +280,20 @@ int MapField<Key, T, KeyProto, ValueProto,
   return size;
 }
 
-template <typename Key, typename T, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-void MapField<Key, T, KeyProto, ValueProto,
-              default_enum_value>::InitDefaultEntryOnce() const {
+template <typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType,
+          int default_enum_value>
+void
+MapField<Key, T, kKeyFieldType, kValueFieldType,
+         default_enum_value>::InitDefaultEntryOnce()
+    const {
   if (default_entry_ == NULL) {
     InitMetadataOnce();
     GOOGLE_CHECK(*entry_descriptor_ != NULL);
     default_entry_ = down_cast<const EntryType*>(
         MessageFactory::generated_factory()->GetPrototype(*entry_descriptor_));
   }
-}
-
-template <typename Key, typename T>
-bool AllAreInitialized(const Map<Key, T>& t) {
-  for (typename Map<Key, T>::const_iterator it = t.begin(); it != t.end();
-       ++it) {
-    if (!it->second.IsInitialized()) return false;
-  }
-  return true;
 }
 
 }  // namespace internal

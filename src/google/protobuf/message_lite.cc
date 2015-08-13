@@ -337,7 +337,7 @@ bool MessageLite::SerializePartialToArray(void* data, int size) const {
 
 string MessageLite::SerializeAsString() const {
   // If the compiler implements the (Named) Return Value Optimization,
-  // the local variable 'result' will not actually reside on the stack
+  // the local variable 'output' will not actually reside on the stack
   // of this function, but will be overlaid with the object that the
   // caller supplied for the return value to be constructed in.
   string output;

@@ -1,0 +1,391 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2011 Google Inc.  All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+syntax = "proto2";
+
+import "google/protobuf/unittest.proto";
+
+package protobuf_unittest;
+
+// Using the messages in unittest.proto, setup for recursive cases for testing
+// extensions at various depths.
+extend TestAllExtensions {
+  optional TestAllExtensions recursive_extension = 86;
+}
+
+// Recursive message to for testing autocreators at different depths.
+message TestRecursiveMessageWithRepeatedField {
+  optional TestRecursiveMessageWithRepeatedField a = 1;
+  repeated int32 i = 2;
+  repeated string str = 3;
+  map<int32, int32> i_to_i = 4;
+  map<string, string> str_to_str = 5;
+}
+
+// Recursive message and extension to for testing autocreators at different
+// depths.
+message TestRecursiveExtension {
+  optional TestRecursiveExtension recursive_sub_message = 1;
+  repeated int32 repeated_value = 2;
+  extensions 1000 to max;
+}
+
+extend TestRecursiveExtension {
+  optional TestRecursiveExtension recursive_message_extension = 1000;
+}
+
+message self {
+  message super {
+    optional int32 description = 1;
+  }
+
+  enum autorelease {
+    retain      = 1;
+    release     = 2;
+    retainCount = 3;
+  }
+
+  // Singular
+  optional   bool id                =  1;
+  optional   bool _cmd              =  2;
+  optional   bool in                =  3;
+  optional   bool out               =  4;
+  optional   bool inout             =  5;
+  optional   bool bycopy            =  6;
+  optional   bool byref             =  7;
+  optional   bool oneway            =  8;
+  optional   bool dealloc           =  9;
+  optional   bool zone              = 10;
+  optional   bool isProxy           = 11;
+  optional   bool copy              = 12;
+  optional   bool readonly          = 13;
+  optional   bool default           = 14;
+  optional   bool assign            = 15;
+  optional   bool getter            = 16;
+  optional   bool setter            = 17;
+  optional   bool weak              = 18;
+  optional   bool public            = 19;
+  optional   bool case              = 20;
+
+  optional   autorelease SubEnum    = 25;
+
+ optional group New = 50 {
+   optional string copy = 51;
+ }
+  optional group MutableCopy = 60 {
+    optional int32 extensionRegistry = 61;
+  }
+
+  extensions 90 to 94;
+
+}
+
+enum retain {
+  count          = 4;
+  initialized    = 5;
+  serializedSize = 6;
+}
+
+// EnumValueShortName: The short names shouldn't get suffixes/prefixes.
+enum Foo {
+  SERIALIZED_SIZE = 1;
+  SIZE            = 2;
+  OTHER           = 3;
+}
+
+// EnumValueShortName: The enum name gets a prefix.
+enum Category {
+  RED  = 1;
+  BLUE = 2;
+}
+
+// EnumValueShortName: Twist case, full name gets PB, but the short names
+// should still end up correct.
+enum Time {
+  BASE            = 1;
+  RECORD          = 2;
+  SOMETHING_ELSE  = 3;
+}
+
+extend self {
+  repeated    int32 debugDescription    =  90 [packed = true];
+  repeated    int64 finalize            =  91 [packed = true];
+  repeated   uint32 hash                =  92 [packed = true];
+  repeated   uint64 classForCoder       =  93 [packed = true];
+  repeated   sint32 byref               =  94 [packed = true];
+}
+
+// Test handing of fields that start with init* since Xcode 5's ARC support
+// doesn't like messages that look like initializers but aren't.
+message ObjCInitFoo {
+  optional string init_val = 11;
+  optional int32 init_size = 12;
+  optional self init_self = 13;
+
+  repeated string init_vals = 21;
+  repeated int32 init_sizes = 22;
+  repeated self init_selfs = 23;
+}
+
+// Test handling of fields that start with retained names.
+message ObjCRetainedFoo {
+  optional string new_val_lower_complex = 11;
+  optional string new_Val_upper_complex = 12;
+  optional string newvalue_lower_no_underscore_complex = 13;
+  optional string newValue_upper_no_underscore_complex = 14;
+
+  optional int32 new_val_lower_primitive = 15;
+  optional int32 new_Val_upper_primitive = 16;
+  optional int32 newvalue_lower_no_underscore_primitive = 17;
+  optional int32 newValue_upper_no_underscore_primitive = 18;
+
+  optional self new_val_lower_message = 19;
+  optional self new_Val_upper_message = 20;
+  optional self newvalue_lower_no_underscore_message = 21;
+  optional self newValue_upper_no_underscore_message = 22;
+
+  optional Foo new_val_lower_enum = 23;
+  optional Foo new_Val_upper_enum = 24;
+  optional Foo newvalue_lower_no_underscore_enum = 25;
+  optional Foo newValue_upper_no_underscore_enum = 26;
+
+  repeated string new_val_lower_complex_repeated = 111;
+  repeated string new_Val_upper_complex_repeated = 112;
+  repeated string newvalue_lower_no_underscore_complex_repeated = 113;
+  repeated string newValue_upper_no_underscore_complex_repeated = 114;
+
+  repeated int32 new_val_lower_primitive_repeated = 115;
+  repeated int32 new_Val_upper_primitive_repeated = 116;
+  repeated int32 newvalue_lower_no_underscore_primitive_repeated = 117;
+  repeated int32 newValue_upper_no_underscore_primitive_repeated = 118;
+
+  repeated self new_val_lower_message_repeated = 119;
+  repeated self new_Val_upper_message_repeated = 120;
+  repeated self newvalue_lower_no_underscore_message_repeated = 121;
+  repeated self newValue_upper_no_underscore_message_repeated = 122;
+
+  repeated Foo new_val_lower_enum_repeated = 123;
+  repeated Foo new_Val_upper_enum_repeated = 124;
+  repeated Foo newvalue_lower_no_underscore_enum_repeated = 125;
+  repeated Foo newValue_upper_no_underscore_enum_repeated = 126;
+
+  optional string alloc_val_lower_complex = 211;
+  optional string alloc_Val_upper_complex = 212;
+  optional string allocvalue_lower_no_underscore_complex = 213;
+  optional string allocValue_upper_no_underscore_complex = 214;
+
+  optional int32 alloc_val_lower_primitive = 215;
+  optional int32 alloc_Val_upper_primitive = 216;
+  optional int32 allocvalue_lower_no_underscore_primitive = 217;
+  optional int32 allocValue_upper_no_underscore_primitive = 218;
+
+  optional self alloc_val_lower_message = 219;
+  optional self alloc_Val_upper_message = 220;
+  optional self allocvalue_lower_no_underscore_message = 221;
+  optional self allocValue_upper_no_underscore_message = 222;
+
+  optional Foo alloc_val_lower_enum = 223;
+  optional Foo alloc_Val_upper_enum = 224;
+  optional Foo allocvalue_lower_no_underscore_enum = 225;
+  optional Foo allocValue_upper_no_underscore_enum = 226;
+
+  repeated string alloc_val_lower_complex_repeated = 311;
+  repeated string alloc_Val_upper_complex_repeated = 312;
+  repeated string allocvalue_lower_no_underscore_complex_repeated = 313;
+  repeated string allocValue_upper_no_underscore_complex_repeated = 314;
+
+  repeated int32 alloc_val_lower_primitive_repeated = 315;
+  repeated int32 alloc_Val_upper_primitive_repeated = 316;
+  repeated int32 allocvalue_lower_no_underscore_primitive_repeated = 317;
+  repeated int32 allocValue_upper_no_underscore_primitive_repeated = 318;
+
+  repeated self alloc_val_lower_message_repeated = 319;
+  repeated self alloc_Val_upper_message_repeated = 320;
+  repeated self allocvalue_lower_no_underscore_message_repeated = 321;
+  repeated self allocValue_upper_no_underscore_message_repeated = 322;
+
+  repeated Foo alloc_val_lower_enum_repeated = 323;
+  repeated Foo alloc_Val_upper_enum_repeated = 324;
+  repeated Foo allocvalue_lower_no_underscore_enum_repeated = 325;
+  repeated Foo allocValue_upper_no_underscore_enum_repeated = 326;
+
+  optional string copy_val_lower_complex = 411;
+  optional string copy_Val_upper_complex = 412;
+  optional string copyvalue_lower_no_underscore_complex = 413;
+  optional string copyValue_upper_no_underscore_complex = 414;
+
+  optional int32 copy_val_lower_primitive = 415;
+  optional int32 copy_Val_upper_primitive = 416;
+  optional int32 copyvalue_lower_no_underscore_primitive = 417;
+  optional int32 copyValue_upper_no_underscore_primitive = 418;
+
+  optional self copy_val_lower_message = 419;
+  optional self copy_Val_upper_message = 420;
+  optional self copyvalue_lower_no_underscore_message = 421;
+  optional self copyValue_upper_no_underscore_message = 422;
+
+  optional Foo copy_val_lower_enum = 423;
+  optional Foo copy_Val_upper_enum = 424;
+  optional Foo copyvalue_lower_no_underscore_enum = 425;
+  optional Foo copyValue_upper_no_underscore_enum = 426;
+
+  repeated string copy_val_lower_complex_repeated = 511;
+  repeated string copy_Val_upper_complex_repeated = 512;
+  repeated string copyvalue_lower_no_underscore_complex_repeated = 513;
+  repeated string copyValue_upper_no_underscore_complex_repeated = 514;
+
+  repeated int32 copy_val_lower_primitive_repeated = 515;
+  repeated int32 copy_Val_upper_primitive_repeated = 516;
+  repeated int32 copyvalue_lower_no_underscore_primitive_repeated = 517;
+  repeated int32 copyValue_upper_no_underscore_primitive_repeated = 518;
+
+  repeated self copy_val_lower_message_repeated = 519;
+  repeated self copy_Val_upper_message_repeated = 520;
+  repeated self copyvalue_lower_no_underscore_message_repeated = 521;
+  repeated self copyValue_upper_no_underscore_message_repeated = 522;
+
+  repeated Foo copy_val_lower_enum_repeated = 523;
+  repeated Foo copy_Val_upper_enum_repeated = 524;
+  repeated Foo copyvalue_lower_no_underscore_enum_repeated = 525;
+  repeated Foo copyValue_upper_no_underscore_enum_repeated = 526;
+
+  optional string mutableCopy_val_lower_complex = 611;
+  optional string mutableCopy_Val_upper_complex = 612;
+  optional string mutableCopyvalue_lower_no_underscore_complex = 613;
+  optional string mutableCopyValue_upper_no_underscore_complex = 614;
+
+  optional int32 mutableCopy_val_lower_primitive = 615;
+  optional int32 mutableCopy_Val_upper_primitive = 616;
+  optional int32 mutableCopyvalue_lower_no_underscore_primitive = 617;
+  optional int32 mutableCopyValue_upper_no_underscore_primitive = 618;
+
+  optional self mutableCopy_val_lower_message = 619;
+  optional self mutableCopy_Val_upper_message = 620;
+  optional self mutableCopyvalue_lower_no_underscore_message = 621;
+  optional self mutableCopyValue_upper_no_underscore_message = 622;
+
+  optional Foo mutableCopy_val_lower_enum = 623;
+  optional Foo mutableCopy_Val_upper_enum = 624;
+  optional Foo mutableCopyvalue_lower_no_underscore_enum = 625;
+  optional Foo mutableCopyValue_upper_no_underscore_enum = 626;
+
+  repeated string mutableCopy_val_lower_complex_repeated = 711;
+  repeated string mutableCopy_Val_upper_complex_repeated = 712;
+  repeated string mutableCopyvalue_lower_no_underscore_complex_repeated = 713;
+  repeated string mutableCopyValue_upper_no_underscore_complex_repeated = 714;
+
+  repeated int32 mutableCopy_val_lower_primitive_repeated = 715;
+  repeated int32 mutableCopy_Val_upper_primitive_repeated = 716;
+  repeated int32 mutableCopyvalue_lower_no_underscore_primitive_repeated = 717;
+  repeated int32 mutableCopyValue_upper_no_underscore_primitive_repeated = 718;
+
+  repeated self mutableCopy_val_lower_message_repeated = 719;
+  repeated self mutableCopy_Val_upper_message_repeated = 720;
+  repeated self mutableCopyvalue_lower_no_underscore_message_repeated = 721;
+  repeated self mutableCopyValue_upper_no_underscore_message_repeated = 722;
+
+  repeated Foo mutableCopy_val_lower_enum_repeated = 723;
+  repeated Foo mutableCopy_Val_upper_enum_repeated = 724;
+  repeated Foo mutableCopyvalue_lower_no_underscore_enum_repeated = 725;
+  repeated Foo mutableCopyValue_upper_no_underscore_enum_repeated = 726;
+}
+
+// Test handling of fields that are the retained names.
+message ObjCRetainedComplex {
+  optional string new = 1;
+  optional string alloc = 2;
+  optional string copy = 3;
+  optional string mutableCopy = 4;
+}
+
+message ObjCRetainedComplexRepeated {
+  repeated string new = 1;
+  repeated string alloc = 2;
+  repeated string copy = 3;
+  repeated string mutableCopy = 4;
+}
+
+message ObjCRetainedPrimitive {
+  optional int32 new = 1;
+  optional int32 alloc = 2;
+  optional int32 copy = 3;
+  optional int32 mutableCopy = 4;
+}
+
+message ObjCRetainedPrimitiveRepeated {
+  repeated int32 new = 1;
+  repeated int32 alloc = 2;
+  repeated int32 copy = 3;
+  repeated int32 mutableCopy = 4;
+}
+
+message ObjCRetainedMessage {
+  optional self new = 1;
+  optional self alloc = 2;
+  optional self copy = 3;
+  optional self mutableCopy = 4;
+}
+
+message ObjCRetainedMessageRepeated {
+  repeated self new = 1;
+  repeated self alloc = 2;
+  repeated self copy = 3;
+  repeated self mutableCopy = 4;
+}
+
+// Test Handling some MacTypes
+message Point {
+  message Rect {
+    optional int32 TimeValue = 1;
+  }
+}
+
+// Test some weird defaults that we see in protos.
+message ObjcWeirdDefaults {
+  // Set default values that match the protocol buffer defined defaults to
+  // confirm hasDefault and the default values are set correctly.
+  optional string foo = 1 [default = ""];
+  optional bytes bar = 2 [default = ""];
+}
+
+// Used to confirm negative enum values work as expected.
+message EnumTestMsg {
+  enum MyEnum {
+    ZERO    = 0;
+    ONE     = 1;
+    TWO     = 2;
+    NEG_ONE = -1;
+    NEG_TWO = -2;
+  }
+  optional MyEnum foo = 1;
+  optional MyEnum bar = 2 [default = ONE];
+  optional MyEnum baz = 3 [default = NEG_ONE];
+
+  repeated MyEnum mumble = 4;
+}

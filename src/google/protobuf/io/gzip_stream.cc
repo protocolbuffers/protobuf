@@ -33,8 +33,6 @@
 // This file contains the implementation of classes GzipInputStream and
 // GzipOutputStream.
 
-#include "config.h"
-
 #if HAVE_ZLIB
 #include <google/protobuf/io/gzip_stream.h>
 
@@ -49,6 +47,7 @@ static const int kDefaultBufferSize = 65536;
 GzipInputStream::GzipInputStream(
     ZeroCopyInputStream* sub_stream, Format format, int buffer_size)
     : format_(format), sub_stream_(sub_stream), zerror_(Z_OK), byte_count_(0) {
+  zcontext_.state = Z_NULL;
   zcontext_.zalloc = Z_NULL;
   zcontext_.zfree = Z_NULL;
   zcontext_.opaque = Z_NULL;

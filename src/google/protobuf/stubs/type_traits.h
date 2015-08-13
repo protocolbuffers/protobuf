@@ -59,9 +59,9 @@
 #ifndef GOOGLE_PROTOBUF_TYPE_TRAITS_H_
 #define GOOGLE_PROTOBUF_TYPE_TRAITS_H_
 
+#include <cstddef>                  // for NULL
 #include <utility>                  // For pair
 
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/template_util.h>  // For true_type and false_type
 
 namespace google {
@@ -72,6 +72,10 @@ template<typename B, typename D>
 struct is_base_of {
   typedef char (&yes)[1];
   typedef char (&no)[2];
+
+  // BEGIN GOOGLE LOCAL MODIFICATION -- check is a #define on Mac.
+  #undef check
+  // END GOOGLE LOCAL MODIFICATION
 
   static yes check(const B*);
   static no check(const void*);

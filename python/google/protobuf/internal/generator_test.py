@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
@@ -42,7 +42,6 @@ further ensures that we can use Python protocol message objects as we expect.
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import unittest
-
 from google.protobuf.internal import test_bad_identifiers_pb2
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
@@ -154,7 +153,7 @@ class GeneratorTest(unittest.TestCase):
     # extension and for its value to be set to -789.
 
   def testNestedTypes(self):
-    self.assertEqual(
+    self.assertEquals(
         set(unittest_pb2.TestAllTypes.DESCRIPTOR.nested_types),
         set([
             unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR,
@@ -292,7 +291,7 @@ class GeneratorTest(unittest.TestCase):
     self.assertIs(desc.oneofs[0], desc.oneofs_by_name['oneof_field'])
     nested_names = set(['oneof_uint32', 'oneof_nested_message',
                         'oneof_string', 'oneof_bytes'])
-    self.assertSameElements(
+    self.assertItemsEqual(
         nested_names,
         [field.name for field in desc.oneofs[0].fields])
     for field_name, field_desc in desc.fields_by_name.items():

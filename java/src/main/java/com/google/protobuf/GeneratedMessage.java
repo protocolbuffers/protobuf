@@ -73,7 +73,7 @@ public abstract class GeneratedMessage extends AbstractMessage
 
   /** For use by generated code only.  */
   protected UnknownFieldSet unknownFields;
-  
+
   protected GeneratedMessage() {
     unknownFields = UnknownFieldSet.getDefaultInstance();
   }
@@ -109,8 +109,15 @@ public abstract class GeneratedMessage extends AbstractMessage
     return internalGetFieldAccessorTable().descriptor;
   }
 
-  /** Internal helper which returns a mutable map. */
-  private Map<FieldDescriptor, Object> getAllFieldsMutable() {
+  /**
+   * Internal helper to return a modifiable map containing all the fields.
+   * The returned Map is modifialbe so that the caller can add additional
+   * extension fields to implement {@link #getAllFields()}.
+   *
+   * @param getBytesForString whether to generate ByteString for string fields
+   */
+  private Map<FieldDescriptor, Object> getAllFieldsMutable(
+      boolean getBytesForString) {
     final TreeMap<FieldDescriptor, Object> result =
       new TreeMap<FieldDescriptor, Object>();
     final Descriptor descriptor = internalGetFieldAccessorTable().descriptor;
@@ -122,7 +129,12 @@ public abstract class GeneratedMessage extends AbstractMessage
         }
       } else {
         if (hasField(field)) {
-          result.put(field, getField(field));
+          if (getBytesForString
+              && field.getJavaType() == FieldDescriptor.JavaType.STRING) {
+            result.put(field, getFieldRaw(field));
+          } else {
+            result.put(field, getField(field));
+          }
         }
       }
     }
@@ -161,7 +173,23 @@ public abstract class GeneratedMessage extends AbstractMessage
 
   //@Override (Java 1.6 override semantics, but we must support 1.5)
   public Map<FieldDescriptor, Object> getAllFields() {
-    return Collections.unmodifiableMap(getAllFieldsMutable());
+    return Collections.unmodifiableMap(
+        getAllFieldsMutable(/* getBytesForString = */ false));
+  }
+
+  /**
+   * Returns a collection of all the fields in this message which are set
+   * and their corresponding values.  A singular ("required" or "optional")
+   * field is set iff hasField() returns true for that field.  A "repeated"
+   * field is set iff getRepeatedFieldCount() is greater than zero.  The
+   * values are exactly what would be returned by calling
+   * {@link #getFieldRaw(Descriptors.FieldDescriptor)} for each field.  The map
+   * is guaranteed to be a sorted map, so iterating over it will return fields
+   * in order by field number.
+   */
+  Map<FieldDescriptor, Object> getAllFieldsRaw() {
+    return Collections.unmodifiableMap(
+        getAllFieldsMutable(/* getBytesForString = */ true));
   }
 
   //@Override (Java 1.6 override semantics, but we must support 1.5)
@@ -182,6 +210,18 @@ public abstract class GeneratedMessage extends AbstractMessage
   //@Override (Java 1.6 override semantics, but we must support 1.5)
   public Object getField(final FieldDescriptor field) {
     return internalGetFieldAccessorTable().getField(field).get(this);
+  }
+
+  /**
+   * Obtains the value of the given field, or the default value if it is
+   * not set.  For primitive fields, the boxed primitive value is returned.
+   * For enum fields, the EnumValueDescriptor for the value is returned. For
+   * embedded message fields, the sub-message is returned.  For repeated
+   * fields, a java.util.List is returned. For present string fields, a
+   * ByteString is returned representing the bytes that the field contains.
+   */
+  Object getFieldRaw(final FieldDescriptor field) {
+    return internalGetFieldAccessorTable().getField(field).getRaw(this);
   }
 
   //@Override (Java 1.6 override semantics, but we must support 1.5)
@@ -213,6 +253,24 @@ public abstract class GeneratedMessage extends AbstractMessage
       int tag) throws IOException {
     return unknownFields.mergeFieldFrom(tag, input);
   }
+
+  @Override
+  public void writeTo(final CodedOutputStream output) throws IOException {
+    MessageReflection.writeMessageTo(this, getAllFieldsRaw(), output, false);
+  }
+
+  @Override
+  public int getSerializedSize() {
+    int size = memoizedSize;
+    if (size != -1) {
+      return size;
+    }
+
+    memoizedSize = MessageReflection.getSerializedSize(
+        this, getAllFieldsRaw());
+    return memoizedSize;
+  }
+
 
 
   /**
@@ -549,15 +607,24 @@ public abstract class GeneratedMessage extends AbstractMessage
      * Gets the map field with the given field number. This method should be
      * overridden in the generated message class if the message contains map
      * fields.
-     * 
+     *
      * Unlike other field types, reflection support for map fields can't be
      * implemented based on generated public API because we need to access a
      * map field as a list in reflection API but the generated API only allows
      * us to access it as a map. This method returns the underlying map field
-     * directly and thus enables us to access the map field as a list. 
+     * directly and thus enables us to access the map field as a list.
      */
     @SuppressWarnings({"unused", "rawtypes"})
     protected MapField internalGetMapField(int fieldNumber) {
+      // Note that we can't use descriptor names here because this method will
+      // be called when descriptor is being initialized.
+      throw new RuntimeException(
+          "No map fields found in " + getClass().getName());
+    }
+
+    /** Like {@link internalGetMapField} but return a mutable version. */
+    @SuppressWarnings({"unused", "rawtypes"})
+    protected MapField internalGetMutableMapField(int fieldNumber) {
       // Note that we can't use descriptor names here because this method will
       // be called when descriptor is being initialized.
       throw new RuntimeException(
@@ -683,7 +750,7 @@ public abstract class GeneratedMessage extends AbstractMessage
     public final <Type> Type getExtension(
         final ExtensionLite<MessageType, Type> extensionLite) {
       Extension<MessageType, Type> extension = checkNotLite(extensionLite);
-      
+
       verifyExtensionContainingType(extension);
       FieldDescriptor descriptor = extension.getDescriptor();
       final Object value = extensions.getField(descriptor);
@@ -825,7 +892,16 @@ public abstract class GeneratedMessage extends AbstractMessage
 
     @Override
     public Map<FieldDescriptor, Object> getAllFields() {
-      final Map<FieldDescriptor, Object> result = super.getAllFieldsMutable();
+      final Map<FieldDescriptor, Object> result =
+          super.getAllFieldsMutable(/* getBytesForString = */ false);
+      result.putAll(getExtensionFields());
+      return Collections.unmodifiableMap(result);
+    }
+
+    @Override
+    public Map<FieldDescriptor, Object> getAllFieldsRaw() {
+      final Map<FieldDescriptor, Object> result =
+          super.getAllFieldsMutable(/* getBytesForString = */ false);
       result.putAll(getExtensionFields());
       return Collections.unmodifiableMap(result);
     }
@@ -1313,7 +1389,7 @@ public abstract class GeneratedMessage extends AbstractMessage
       implements ExtensionDescriptorRetriever {
     private volatile FieldDescriptor descriptor;
     protected abstract FieldDescriptor loadDescriptor();
-    
+
     public FieldDescriptor getDescriptor() {
       if (descriptor == null) {
         synchronized (this) {
@@ -1651,17 +1727,17 @@ public abstract class GeneratedMessage extends AbstractMessage
       }
     }
   }
-  
+
   /**
    * Gets the map field with the given field number. This method should be
    * overridden in the generated message class if the message contains map
    * fields.
-   * 
+   *
    * Unlike other field types, reflection support for map fields can't be
    * implemented based on generated public API because we need to access a
    * map field as a list in reflection API but the generated API only allows
    * us to access it as a map. This method returns the underlying map field
-   * directly and thus enables us to access the map field as a list. 
+   * directly and thus enables us to access the map field as a list.
    */
   @SuppressWarnings({"rawtypes", "unused"})
   protected MapField internalGetMapField(int fieldNumber) {
@@ -1709,7 +1785,7 @@ public abstract class GeneratedMessage extends AbstractMessage
       oneofs = new OneofAccessor[descriptor.getOneofs().size()];
       initialized = false;
     }
-    
+
     private boolean isMapFieldEnabled(FieldDescriptor field) {
       boolean result = true;
       return result;
@@ -1759,6 +1835,10 @@ public abstract class GeneratedMessage extends AbstractMessage
                   containingOneofCamelCaseName);
             } else if (field.getJavaType() == FieldDescriptor.JavaType.ENUM) {
               fields[i] = new SingularEnumFieldAccessor(
+                  field, camelCaseNames[i], messageClass, builderClass,
+                  containingOneofCamelCaseName);
+            } else if (field.getJavaType() == FieldDescriptor.JavaType.STRING) {
+              fields[i] = new SingularStringFieldAccessor(
                   field, camelCaseNames[i], messageClass, builderClass,
                   containingOneofCamelCaseName);
             } else {
@@ -1817,9 +1897,13 @@ public abstract class GeneratedMessage extends AbstractMessage
     private interface FieldAccessor {
       Object get(GeneratedMessage message);
       Object get(GeneratedMessage.Builder builder);
+      Object getRaw(GeneratedMessage message);
+      Object getRaw(GeneratedMessage.Builder builder);
       void set(Builder builder, Object value);
       Object getRepeated(GeneratedMessage message, int index);
       Object getRepeated(GeneratedMessage.Builder builder, int index);
+      Object getRepeatedRaw(GeneratedMessage message, int index);
+      Object getRepeatedRaw(GeneratedMessage.Builder builder, int index);
       void setRepeated(Builder builder,
                        int index, Object value);
       void addRepeated(Builder builder, Object value);
@@ -1934,11 +2018,11 @@ public abstract class GeneratedMessage extends AbstractMessage
       protected final FieldDescriptor field;
       protected final boolean isOneofField;
       protected final boolean hasHasMethod;
-      
+
       private int getOneofFieldNumber(final GeneratedMessage message) {
         return ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber();
       }
-      
+
       private int getOneofFieldNumber(final GeneratedMessage.Builder builder) {
         return ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber();
       }
@@ -1949,6 +2033,12 @@ public abstract class GeneratedMessage extends AbstractMessage
       public Object get(GeneratedMessage.Builder builder) {
         return invokeOrDie(getMethodBuilder, builder);
       }
+      public Object getRaw(final GeneratedMessage message) {
+        return get(message);
+      }
+      public Object getRaw(GeneratedMessage.Builder builder) {
+        return get(builder);
+      }
       public void set(final Builder builder, final Object value) {
         invokeOrDie(setMethod, builder, value);
       }
@@ -1957,12 +2047,22 @@ public abstract class GeneratedMessage extends AbstractMessage
         throw new UnsupportedOperationException(
           "getRepeatedField() called on a singular field.");
       }
+      public Object getRepeatedRaw(final GeneratedMessage message,
+                                final int index) {
+        throw new UnsupportedOperationException(
+          "getRepeatedFieldRaw() called on a singular field.");
+      }
       public Object getRepeated(GeneratedMessage.Builder builder, int index) {
         throw new UnsupportedOperationException(
           "getRepeatedField() called on a singular field.");
       }
-      public void setRepeated(final Builder builder,
-                              final int index, final Object value) {
+      public Object getRepeatedRaw(GeneratedMessage.Builder builder,
+          int index) {
+        throw new UnsupportedOperationException(
+          "getRepeatedFieldRaw() called on a singular field.");
+      }
+      public void setRepeated(final Builder builder, final int index,
+          final Object value) {
         throw new UnsupportedOperationException(
           "setRepeatedField() called on a singular field.");
       }
@@ -2058,6 +2158,12 @@ public abstract class GeneratedMessage extends AbstractMessage
       public Object get(GeneratedMessage.Builder builder) {
         return invokeOrDie(getMethodBuilder, builder);
       }
+      public Object getRaw(final GeneratedMessage message) {
+        return get(message);
+      }
+      public Object getRaw(GeneratedMessage.Builder builder) {
+        return get(builder);
+      }
       public void set(final Builder builder, final Object value) {
         // Add all the elements individually.  This serves two purposes:
         // 1) Verifies that each element has the correct type.
@@ -2074,6 +2180,13 @@ public abstract class GeneratedMessage extends AbstractMessage
       }
       public Object getRepeated(GeneratedMessage.Builder builder, int index) {
         return invokeOrDie(getRepeatedMethodBuilder, builder, index);
+      }
+      public Object getRepeatedRaw(GeneratedMessage message, int index) {
+        return getRepeated(message, index);
+      }
+      public Object getRepeatedRaw(GeneratedMessage.Builder builder,
+          int index) {
+        return getRepeated(builder, index);
       }
       public void setRepeated(final Builder builder,
                               final int index, final Object value) {
@@ -2130,15 +2243,21 @@ public abstract class GeneratedMessage extends AbstractMessage
 
       private final FieldDescriptor field;
       private final Message mapEntryMessageDefaultInstance;
-      
+
       private MapField<?, ?> getMapField(GeneratedMessage message) {
         return (MapField<?, ?>) message.internalGetMapField(field.getNumber());
       }
-      
+
       private MapField<?, ?> getMapField(GeneratedMessage.Builder builder) {
         return (MapField<?, ?>) builder.internalGetMapField(field.getNumber());
       }
-      
+
+      private MapField<?, ?> getMutableMapField(
+          GeneratedMessage.Builder builder) {
+        return (MapField<?, ?>) builder.internalGetMutableMapField(
+            field.getNumber());
+      }
+
       public Object get(GeneratedMessage message) {
         List result = new ArrayList();
         for (int i = 0; i < getRepeatedCount(message); i++) {
@@ -2153,6 +2272,14 @@ public abstract class GeneratedMessage extends AbstractMessage
           result.add(getRepeated(builder, i));
         }
         return Collections.unmodifiableList(result);
+      }
+
+      public Object getRaw(GeneratedMessage message) {
+        return get(message);
+      }
+
+      public Object getRaw(GeneratedMessage.Builder builder) {
+        return get(builder);
       }
 
       public void set(Builder builder, Object value) {
@@ -2170,12 +2297,20 @@ public abstract class GeneratedMessage extends AbstractMessage
         return getMapField(builder).getList().get(index);
       }
 
+      public Object getRepeatedRaw(GeneratedMessage message, int index) {
+        return getRepeated(message, index);
+      }
+
+      public Object getRepeatedRaw(Builder builder, int index) {
+        return getRepeated(builder, index);
+      }
+
       public void setRepeated(Builder builder, int index, Object value) {
-        getMapField(builder).getMutableList().set(index, (Message) value);
+        getMutableMapField(builder).getMutableList().set(index, (Message) value);
       }
 
       public void addRepeated(Builder builder, Object value) {
-        getMapField(builder).getMutableList().add((Message) value);
+        getMutableMapField(builder).getMutableList().add((Message) value);
       }
 
       public boolean has(GeneratedMessage message) {
@@ -2197,7 +2332,7 @@ public abstract class GeneratedMessage extends AbstractMessage
       }
 
       public void clear(Builder builder) {
-        getMapField(builder).getMutableList().clear();
+        getMutableMapField(builder).getMutableList().clear();
       }
 
       public com.google.protobuf.Message.Builder newBuilder() {
@@ -2208,7 +2343,7 @@ public abstract class GeneratedMessage extends AbstractMessage
         throw new UnsupportedOperationException(
             "Nested builder not supported for map fields.");
       }
-      
+
       public com.google.protobuf.Message.Builder getRepeatedBuilder(
           Builder builder, int index) {
         throw new UnsupportedOperationException(
@@ -2226,7 +2361,7 @@ public abstract class GeneratedMessage extends AbstractMessage
           final Class<? extends Builder> builderClass,
           final String containingOneofCamelCaseName) {
         super(descriptor, camelCaseName, messageClass, builderClass, containingOneofCamelCaseName);
-        
+
         enumDescriptor = descriptor.getEnumType();
 
         valueOfMethod = getMethodOrDie(type, "valueOf",
@@ -2244,12 +2379,12 @@ public abstract class GeneratedMessage extends AbstractMessage
               getMethodOrDie(builderClass, "set" + camelCaseName + "Value", int.class);
         }
       }
-      
+
       private EnumDescriptor enumDescriptor;
 
       private Method valueOfMethod;
       private Method getValueDescriptorMethod;
-      
+
       private boolean supportUnknownEnumValue;
       private Method getValueMethod;
       private Method getValueMethodBuilder;
@@ -2291,7 +2426,7 @@ public abstract class GeneratedMessage extends AbstractMessage
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder> builderClass) {
         super(descriptor, camelCaseName, messageClass, builderClass);
-        
+
         enumDescriptor = descriptor.getEnumType();
 
         valueOfMethod = getMethodOrDie(type, "valueOf",
@@ -2315,7 +2450,7 @@ public abstract class GeneratedMessage extends AbstractMessage
 
       private final Method valueOfMethod;
       private final Method getValueDescriptorMethod;
-      
+
       private boolean supportUnknownEnumValue;
       private Method getRepeatedValueMethod;
       private Method getRepeatedValueMethodBuilder;
@@ -2388,6 +2523,60 @@ public abstract class GeneratedMessage extends AbstractMessage
 
     // ---------------------------------------------------------------
 
+    /**
+     * Field accessor for string fields.
+     *
+     * <p>This class makes getFooBytes() and setFooBytes() available for
+     * reflection API so that reflection based serialize/parse functions can
+     * access the raw bytes of the field to preserve non-UTF8 bytes in the
+     * string.
+     *
+     * <p>This ensures the serialize/parse round-trip safety, which is important
+     * for servers which forward messages.
+     */
+    private static final class SingularStringFieldAccessor
+        extends SingularFieldAccessor {
+      SingularStringFieldAccessor(
+          final FieldDescriptor descriptor, final String camelCaseName,
+          final Class<? extends GeneratedMessage> messageClass,
+          final Class<? extends Builder> builderClass,
+          final String containingOneofCamelCaseName) {
+        super(descriptor, camelCaseName, messageClass, builderClass,
+            containingOneofCamelCaseName);
+        getBytesMethod = getMethodOrDie(messageClass,
+            "get" + camelCaseName + "Bytes");
+        getBytesMethodBuilder = getMethodOrDie(builderClass,
+            "get" + camelCaseName + "Bytes");
+        setBytesMethodBuilder = getMethodOrDie(builderClass,
+            "set" + camelCaseName + "Bytes", ByteString.class);
+      }
+
+      private final Method getBytesMethod;
+      private final Method getBytesMethodBuilder;
+      private final Method setBytesMethodBuilder;
+
+      @Override
+      public Object getRaw(final GeneratedMessage message) {
+        return invokeOrDie(getBytesMethod, message);
+      }
+
+      @Override
+      public Object getRaw(GeneratedMessage.Builder builder) {
+        return invokeOrDie(getBytesMethodBuilder, builder);
+      }
+
+      @Override
+      public void set(GeneratedMessage.Builder builder, Object value) {
+        if (value instanceof ByteString) {
+          invokeOrDie(setBytesMethodBuilder, builder, value);
+        } else {
+          super.set(builder, value);
+        }
+      }
+    }
+
+    // ---------------------------------------------------------------
+
     private static final class SingularMessageFieldAccessor
         extends SingularFieldAccessor {
       SingularMessageFieldAccessor(
@@ -2395,7 +2584,8 @@ public abstract class GeneratedMessage extends AbstractMessage
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder> builderClass,
           final String containingOneofCamelCaseName) {
-        super(descriptor, camelCaseName, messageClass, builderClass, containingOneofCamelCaseName);
+        super(descriptor, camelCaseName, messageClass, builderClass,
+            containingOneofCamelCaseName);
 
         newBuilderMethod = getMethodOrDie(type, "newBuilder");
         getBuilderMethodBuilder =
@@ -2492,7 +2682,7 @@ public abstract class GeneratedMessage extends AbstractMessage
   protected Object writeReplace() throws ObjectStreamException {
     return new GeneratedMessageLite.SerializedForm(this);
   }
-  
+
   /**
    * Checks that the {@link Extension} is non-Lite and returns it as a
    * {@link GeneratedExtension}.
@@ -2503,7 +2693,7 @@ public abstract class GeneratedMessage extends AbstractMessage
     if (extension.isLite()) {
       throw new IllegalArgumentException("Expected non-lite extension.");
     }
-    
+
     return (Extension<MessageType, T>) extension;
   }
 }

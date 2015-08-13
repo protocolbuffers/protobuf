@@ -30,8 +30,13 @@
 
 package com.google.protobuf.nano;
 
-import java.io.UnsupportedEncodingException;
+import com.google.protobuf.nano.MapFactories.MapFactory;
+
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * The classes contained within are used internally by the Protocol Buffer
@@ -42,6 +47,28 @@ import java.util.Arrays;
  * @author kenton@google.com (Kenton Varda)
  */
 public final class InternalNano {
+
+  public static final int TYPE_DOUBLE   = 1;
+  public static final int TYPE_FLOAT    = 2;
+  public static final int TYPE_INT64    = 3;
+  public static final int TYPE_UINT64   = 4;
+  public static final int TYPE_INT32    = 5;
+  public static final int TYPE_FIXED64  = 6;
+  public static final int TYPE_FIXED32  = 7;
+  public static final int TYPE_BOOL     = 8;
+  public static final int TYPE_STRING   = 9;
+  public static final int TYPE_GROUP    = 10;
+  public static final int TYPE_MESSAGE  = 11;
+  public static final int TYPE_BYTES    = 12;
+  public static final int TYPE_UINT32   = 13;
+  public static final int TYPE_ENUM     = 14;
+  public static final int TYPE_SFIXED32 = 15;
+  public static final int TYPE_SFIXED64 = 16;
+  public static final int TYPE_SINT32   = 17;
+  public static final int TYPE_SINT64   = 18;
+
+  protected static final Charset UTF_8 = Charset.forName("UTF-8");
+  protected static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 
   private InternalNano() {}
 
@@ -86,14 +113,7 @@ public final class InternalNano {
    * generated code calls this automatically.
    */
   public static String stringDefaultValue(String bytes) {
-    try {
-      return new String(bytes.getBytes("ISO-8859-1"), "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      // This should never happen since all JVMs are required to implement
-      // both of the above character sets.
-      throw new IllegalStateException(
-          "Java VM does not support a standard character set.", e);
-    }
+    return new String(bytes.getBytes(ISO_8859_1), InternalNano.UTF_8);
   }
 
   /**
@@ -105,14 +125,7 @@ public final class InternalNano {
    * embed raw bytes as a string literal with ISO-8859-1 encoding.
    */
   public static byte[] bytesDefaultValue(String bytes) {
-    try {
-      return bytes.getBytes("ISO-8859-1");
-    } catch (UnsupportedEncodingException e) {
-      // This should never happen since all JVMs are required to implement
-      // ISO-8859-1.
-      throw new IllegalStateException(
-          "Java VM does not support a standard character set.", e);
-    }
+    return bytes.getBytes(ISO_8859_1);
   }
 
   /**
@@ -120,11 +133,7 @@ public final class InternalNano {
    * UnsupportedEncodingException to a RuntimeException.
    */
   public static byte[] copyFromUtf8(final String text) {
-    try {
-      return text.getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("UTF-8 not supported?");
-    }
+    return text.getBytes(InternalNano.UTF_8);
   }
 
   /**
@@ -329,5 +338,210 @@ public final class InternalNano {
     }
     return result;
   }
+  private static Object primitiveDefaultValue(int type) {
+    switch (type) {
+      case TYPE_BOOL:
+        return Boolean.FALSE;
+      case TYPE_BYTES:
+        return WireFormatNano.EMPTY_BYTES;
+      case TYPE_STRING:
+        return "";
+      case TYPE_FLOAT:
+        return Float.valueOf(0);
+      case TYPE_DOUBLE:
+        return Double.valueOf(0);
+      case TYPE_ENUM:
+      case TYPE_FIXED32:
+      case TYPE_INT32:
+      case TYPE_UINT32:
+      case TYPE_SINT32:
+      case TYPE_SFIXED32:
+        return Integer.valueOf(0);
+      case TYPE_INT64:
+      case TYPE_UINT64:
+      case TYPE_SINT64:
+      case TYPE_FIXED64:
+      case TYPE_SFIXED64:
+        return Long.valueOf(0L);
+      case TYPE_MESSAGE:
+      case TYPE_GROUP:
+      default:
+        throw new IllegalArgumentException(
+            "Type: " + type + " is not a primitive type.");
+    }
+  }
 
+  /**
+   * Merges the map entry into the map field. Note this is only supposed to
+   * be called by generated messages.
+   *
+   * @param map the map field; may be null, in which case a map will be
+   *        instantiated using the {@link MapFactories.MapFactory}
+   * @param input the input byte buffer
+   * @param keyType key type, as defined in InternalNano.TYPE_*
+   * @param valueType value type, as defined in InternalNano.TYPE_*
+   * @param value an new instance of the value, if the value is a TYPE_MESSAGE;
+   *        otherwise this parameter can be null and will be ignored.
+   * @param keyTag wire tag for the key
+   * @param valueTag wire tag for the value
+   * @return the map field
+   * @throws IOException
+   */
+  @SuppressWarnings("unchecked")
+  public static final <K, V> Map<K, V> mergeMapEntry(
+      CodedInputByteBufferNano input,
+      Map<K, V> map,
+      MapFactory mapFactory,
+      int keyType,
+      int valueType,
+      V value,
+      int keyTag,
+      int valueTag) throws IOException {
+    map = mapFactory.forMap(map);
+    final int length = input.readRawVarint32();
+    final int oldLimit = input.pushLimit(length);
+    K key = null;
+    while (true) {
+      int tag = input.readTag();
+      if (tag == 0) {
+        break;
+      }
+      if (tag == keyTag) {
+        key = (K) input.readPrimitiveField(keyType);
+      } else if (tag == valueTag) {
+        if (valueType == TYPE_MESSAGE) {
+          input.readMessage((MessageNano) value);
+        } else {
+          value = (V) input.readPrimitiveField(valueType);
+        }
+      } else {
+        if (!input.skipField(tag)) {
+          break;
+        }
+      }
+    }
+    input.checkLastTagWas(0);
+    input.popLimit(oldLimit);
+
+    if (key == null) {
+      // key can only be primitive types.
+      key = (K) primitiveDefaultValue(keyType);
+    }
+
+    if (value == null) {
+      // message type value will be initialized by code-gen.
+      value = (V) primitiveDefaultValue(valueType);
+    }
+
+    map.put(key, value);
+    return map;
+  }
+
+  public static <K, V> void serializeMapField(
+      CodedOutputByteBufferNano output,
+      Map<K, V> map, int number, int keyType, int valueType)
+          throws IOException {
+    for (Entry<K, V> entry: map.entrySet()) {
+      K key = entry.getKey();
+      V value = entry.getValue();
+      if (key == null || value == null) {
+        throw new IllegalStateException(
+            "keys and values in maps cannot be null");
+      }
+      int entrySize =
+          CodedOutputByteBufferNano.computeFieldSize(1, keyType, key) +
+          CodedOutputByteBufferNano.computeFieldSize(2, valueType, value);
+      output.writeTag(number, WireFormatNano.WIRETYPE_LENGTH_DELIMITED);
+      output.writeRawVarint32(entrySize);
+      output.writeField(1, keyType, key);
+      output.writeField(2, valueType, value);
+    }
+  }
+
+  public static <K, V> int computeMapFieldSize(
+      Map<K, V> map, int number, int keyType, int valueType) {
+    int size = 0;
+    int tagSize = CodedOutputByteBufferNano.computeTagSize(number);
+    for (Entry<K, V> entry: map.entrySet()) {
+      K key = entry.getKey();
+      V value = entry.getValue();
+      if (key == null || value == null) {
+        throw new IllegalStateException(
+            "keys and values in maps cannot be null");
+      }
+      int entrySize =
+          CodedOutputByteBufferNano.computeFieldSize(1, keyType, key) +
+          CodedOutputByteBufferNano.computeFieldSize(2, valueType, value);
+      size += tagSize + entrySize
+          + CodedOutputByteBufferNano.computeRawVarint32Size(entrySize);
+    }
+    return size;
+  }
+
+  /**
+   * Checks whether two {@link Map} are equal. We don't use the default equals
+   * method of {@link Map} because it compares by identity not by content for
+   * byte arrays.
+   */
+  public static <K, V> boolean equals(Map<K, V> a, Map<K, V> b) {
+    if (a == b) {
+      return true;
+    }
+    if (a == null) {
+      return b.size() == 0;
+    }
+    if (b == null) {
+      return a.size() == 0;
+    }
+    if (a.size() != b.size()) {
+      return false;
+    }
+    for (Entry<K, V> entry : a.entrySet()) {
+      if (!b.containsKey(entry.getKey())) {
+        return false;
+      }
+      if (!equalsMapValue(entry.getValue(), b.get(entry.getKey()))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean equalsMapValue(Object a, Object b) {
+    if (a == null || b == null) {
+      throw new IllegalStateException(
+          "keys and values in maps cannot be null");
+    }
+    if (a instanceof byte[] && b instanceof byte[]) {
+      return Arrays.equals((byte[]) a, (byte[]) b);
+    }
+    return a.equals(b);
+  }
+
+  public static <K, V> int hashCode(Map<K, V> map) {
+    if (map == null) {
+      return 0;
+    }
+    int result = 0;
+    for (Entry<K, V> entry : map.entrySet()) {
+      result += hashCodeForMap(entry.getKey())
+          ^ hashCodeForMap(entry.getValue());
+    }
+    return result;
+  }
+
+  private static int hashCodeForMap(Object o) {
+    if (o instanceof byte[]) {
+      return Arrays.hashCode((byte[]) o);
+    }
+    return o.hashCode();
+  }
+
+  // This avoids having to make FieldArray public.
+  public static void cloneUnknownFieldData(ExtendableMessageNano original,
+      ExtendableMessageNano cloned) {
+    if (original.unknownFieldData != null) {
+      cloned.unknownFieldData = (FieldArray) original.unknownFieldData.clone();
+    }
+  }
 }

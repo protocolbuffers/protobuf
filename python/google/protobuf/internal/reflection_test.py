@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Protocol Buffers - Google's data interchange format
@@ -1634,7 +1634,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertFalse(proto.IsInitialized(errors))
     self.assertEqual(errors, ['a', 'b', 'c'])
 
-  @skipIf(
+  @basetest.unittest.skipIf(
       api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
       'Errors are only available from the most recent C++ implementation.')
   def testFileDescriptorErrors(self):
@@ -1665,6 +1665,7 @@ class ReflectionTest(unittest.TestCase):
     else:
       self.fail("Did not raise TypeError")
 
+    self.assertTrue('test_file_descriptor_errors.msg1' in message)
     self.assertTrue('test_file_descriptor_errors.proto' in message)
 
   def testStringUTF8Encoding(self):

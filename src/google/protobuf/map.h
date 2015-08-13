@@ -33,7 +33,10 @@
 
 #include <iterator>
 #include <google/protobuf/stubs/hash.h>
+#include <limits>  // To support Visual Studio 2008
 
+#include <google/protobuf/arena.h>
+#include <google/protobuf/generated_enum_util.h>
 #include <google/protobuf/map_type_handler.h>
 
 namespace google {
@@ -45,10 +48,12 @@ class Map;
 template <typename Enum> struct is_proto_enum;
 
 namespace internal {
-template <typename K, typename V, FieldDescriptor::Type KeyProto,
-          FieldDescriptor::Type ValueProto, int default_enum_value>
-class MapField;
-}  // namespace internal
+template <typename Key, typename T,
+          WireFormatLite::FieldType key_wire_type,
+          WireFormatLite::FieldType value_wire_type,
+          int default_enum_value>
+class MapFieldLite;
+}
 
 // This is the class for google::protobuf::Map's internal value_type. Instead of using
 // std::pair as value_type, we use this class which provides us more control of
@@ -61,23 +66,24 @@ class MapPair {
 
   MapPair(const Key& other_first, const T& other_second)
       : first(other_first), second(other_second) {}
-
   explicit MapPair(const Key& other_first) : first(other_first), second() {}
-
   MapPair(const MapPair& other)
       : first(other.first), second(other.second) {}
 
   ~MapPair() {}
 
-  // Implicitly convertible to std::pair.
-  operator std::pair<const Key, T>() const {
-    return std::pair<const Key, T>(first, second);
+  // Implicitly convertible to std::pair of compatible types.
+  template <typename T1, typename T2>
+  operator std::pair<T1, T2>() const {
+    return std::pair<T1, T2>(first, second);
   }
 
   const Key first;
   T second;
 
  private:
+  typedef void DestructorSkippable_;
+  friend class ::google::protobuf::Arena;
   friend class Map<Key, T>;
 };
 
@@ -86,6 +92,7 @@ class MapPair {
 // interface directly to visit or change map fields.
 template <typename Key, typename T>
 class Map {
+  typedef internal::MapCppTypeHandler<Key> KeyTypeHandler;
   typedef internal::MapCppTypeHandler<T> ValueTypeHandler;
 
  public:
@@ -100,20 +107,120 @@ class Map {
 
   typedef size_t size_type;
   typedef hash<Key> hasher;
+  typedef equal_to<Key> key_equal;
 
-  Map() : default_enum_value_(0) {}
+  Map()
+      : arena_(NULL),
+        allocator_(arena_),
+        elements_(0, hasher(), key_equal(), allocator_),
+        default_enum_value_(0) {}
+  explicit Map(Arena* arena)
+      : arena_(arena),
+        allocator_(arena_),
+        elements_(0, hasher(), key_equal(), allocator_),
+        default_enum_value_(0) {}
 
-  Map(const Map& other) {
+  Map(const Map& other)
+      : arena_(NULL),
+        allocator_(arena_),
+        elements_(0, hasher(), key_equal(), allocator_),
+        default_enum_value_(other.default_enum_value_) {
     insert(other.begin(), other.end());
   }
 
   ~Map() { clear(); }
 
+ private:
+  // re-implement std::allocator to use arena allocator for memory allocation.
+  // Used for google::protobuf::Map implementation. Users should not use this class
+  // directly.
+  template <typename U>
+  class MapAllocator {
+   public:
+    typedef U value_type;
+    typedef value_type* pointer;
+    typedef const value_type* const_pointer;
+    typedef value_type& reference;
+    typedef const value_type& const_reference;
+    typedef size_t size_type;
+    typedef ptrdiff_t difference_type;
+
+    MapAllocator() : arena_(NULL) {}
+    explicit MapAllocator(Arena* arena) : arena_(arena) {}
+    template <typename X>
+    MapAllocator(const MapAllocator<X>& allocator)
+        : arena_(allocator.arena_) {}
+
+    pointer allocate(size_type n, const_pointer hint = 0) {
+      // If arena is not given, malloc needs to be called which doesn't
+      // construct element object.
+      if (arena_ == NULL) {
+        return reinterpret_cast<pointer>(malloc(n * sizeof(value_type)));
+      } else {
+        return reinterpret_cast<pointer>(
+            Arena::CreateArray<uint8>(arena_, n * sizeof(value_type)));
+      }
+    }
+
+    void deallocate(pointer p, size_type n) {
+      if (arena_ == NULL) {
+        free(p);
+      }
+    }
+
+#if __cplusplus >= 201103L && !defined(GOOGLE_PROTOBUF_OS_APPLE) && \
+    !defined(GOOGLE_PROTOBUF_OS_NACL) && !defined(GOOGLE_PROTOBUF_OS_ANDROID)
+    template<class NodeType, class... Args>
+    void construct(NodeType* p, Args&&... args) {
+      new ((void*)p) NodeType(std::forward<Args>(args)...);
+    }
+
+    template<class NodeType>
+    void destroy(NodeType* p) {
+      p->~NodeType();
+    }
+#else
+    void construct(pointer p, const_reference t) { new (p) value_type(t); }
+
+    void destroy(pointer p) { p->~value_type(); }
+#endif
+
+    template <typename X>
+    struct rebind {
+      typedef MapAllocator<X> other;
+    };
+
+    template <typename X>
+    bool operator==(const MapAllocator<X>& other) const {
+      return arena_ == other.arena_;
+    }
+
+    template <typename X>
+    bool operator!=(const MapAllocator<X>& other) const {
+      return arena_ != other.arena_;
+    }
+
+    // To support Visual Studio 2008
+    size_type max_size() const {
+      return std::numeric_limits<size_type>::max();
+    }
+
+   private:
+    Arena* arena_;
+
+    template <typename X>
+    friend class MapAllocator;
+  };
+
+ public:
+  typedef MapAllocator<std::pair<const Key, MapPair<Key, T>*> > Allocator;
+
   // Iterators
   class const_iterator
       : public std::iterator<std::forward_iterator_tag, value_type, ptrdiff_t,
                              const value_type*, const value_type&> {
-    typedef typename hash_map<Key, value_type*>::const_iterator InnerIt;
+    typedef typename hash_map<Key, value_type*, hash<Key>, equal_to<Key>,
+                              Allocator>::const_iterator InnerIt;
 
    public:
     const_iterator() {}
@@ -140,7 +247,8 @@ class Map {
   };
 
   class iterator : public std::iterator<std::forward_iterator_tag, value_type> {
-    typedef typename hash_map<Key, value_type*>::iterator InnerIt;
+    typedef typename hash_map<Key, value_type*, hasher, equal_to<Key>,
+                              Allocator>::iterator InnerIt;
 
    public:
     iterator() {}
@@ -185,7 +293,7 @@ class Map {
   T& operator[](const key_type& key) {
     value_type** value = &elements_[key];
     if (*value == NULL) {
-      *value = new value_type(key);
+      *value = CreateValueTypeInternal(key);
       internal::MapValueInitializer<google::protobuf::is_proto_enum<T>::value,
                                     T>::Initialize((*value)->second,
                                                    default_enum_value_);
@@ -241,7 +349,7 @@ class Map {
     } else {
       return std::pair<iterator, bool>(
           iterator(elements_.insert(std::pair<Key, value_type*>(
-              value.first, new value_type(value))).first), true);
+              value.first, CreateValueTypeInternal(value))).first), true);
     }
   }
   template <class InputIt>
@@ -256,28 +364,29 @@ class Map {
 
   // Erase
   size_type erase(const key_type& key) {
-    typename hash_map<Key, value_type*>::iterator it = elements_.find(key);
+    typename hash_map<Key, value_type*, hash<Key>, equal_to<Key>,
+                      Allocator>::iterator it = elements_.find(key);
     if (it == elements_.end()) {
       return 0;
     } else {
-      delete it->second;
+      if (arena_ == NULL) delete it->second;
       elements_.erase(it);
       return 1;
     }
   }
   void erase(iterator pos) {
-    delete pos.it_->second;
+    if (arena_ == NULL) delete pos.it_->second;
     elements_.erase(pos.it_);
   }
   void erase(iterator first, iterator last) {
     for (iterator it = first; it != last;) {
-      delete it.it_->second;
+      if (arena_ == NULL) delete it.it_->second;
       elements_.erase((it++).it_);
     }
   }
   void clear() {
     for (iterator it = begin(); it != end(); ++it) {
-      delete it.it_->second;
+      if (arena_ == NULL) delete it.it_->second;
     }
     elements_.clear();
   }
@@ -297,12 +406,46 @@ class Map {
     default_enum_value_ = default_enum_value;
   }
 
-  hash_map<Key, value_type*> elements_;
+  value_type* CreateValueTypeInternal(const Key& key) {
+    if (arena_ == NULL) {
+      return new value_type(key);
+    } else {
+      value_type* value = reinterpret_cast<value_type*>(
+          Arena::CreateArray<uint8>(arena_, sizeof(value_type)));
+      Arena::CreateInArenaStorage(const_cast<Key*>(&value->first), arena_);
+      Arena::CreateInArenaStorage(&value->second, arena_);
+      const_cast<Key&>(value->first) = key;
+      return value;
+    }
+  }
+
+  value_type* CreateValueTypeInternal(const value_type& value) {
+    if (arena_ == NULL) {
+      return new value_type(value);
+    } else {
+      value_type* p = reinterpret_cast<value_type*>(
+          Arena::CreateArray<uint8>(arena_, sizeof(value_type)));
+      Arena::CreateInArenaStorage(const_cast<Key*>(&p->first), arena_);
+      Arena::CreateInArenaStorage(&p->second, arena_);
+      const_cast<Key&>(p->first) = value.first;
+      p->second = value.second;
+      return p;
+    }
+  }
+
+  Arena* arena_;
+  Allocator allocator_;
+  hash_map<Key, value_type*, hash<Key>, equal_to<Key>, Allocator> elements_;
   int default_enum_value_;
 
-  template <typename K, typename V, FieldDescriptor::Type KeyProto,
-            FieldDescriptor::Type ValueProto, int default_enum>
-  friend class internal::MapField;
+  friend class ::google::protobuf::Arena;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  template <typename K, typename V,
+            internal::WireFormatLite::FieldType key_wire_type,
+            internal::WireFormatLite::FieldType value_wire_type,
+            int default_enum_value>
+  friend class internal::MapFieldLite;
 };
 
 }  // namespace protobuf

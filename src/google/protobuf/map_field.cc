@@ -55,14 +55,14 @@ void InitMapEntryDefaultInstances() {
 }
 
 void RegisterMapEntryDefaultInstance(MessageLite* default_instance) {
-  GoogleOnceInit(&map_entry_default_instances_once_,
+  ::google::protobuf::GoogleOnceInit(&map_entry_default_instances_once_,
                  &InitMapEntryDefaultInstances);
   MutexLock lock(map_entry_default_instances_mutex_);
   map_entry_default_instances_->push_back(default_instance);
 }
 
 MapFieldBase::~MapFieldBase() {
-  if (repeated_field_ != NULL) delete repeated_field_;
+  if (repeated_field_ != NULL && arena_ == NULL) delete repeated_field_;
 }
 
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
@@ -104,32 +104,42 @@ void MapFieldBase::SetRepeatedDirty() { state_ = STATE_MODIFIED_REPEATED; }
 void* MapFieldBase::MutableRepeatedPtrField() const { return repeated_field_; }
 
 void MapFieldBase::SyncRepeatedFieldWithMap() const {
-  Atomic32 state = google::protobuf::internal::NoBarrier_Load(&state_);
+  // "Acquire" insures the operation after SyncRepeatedFieldWithMap won't get
+  // executed before state_ is checked.
+  Atomic32 state = google::protobuf::internal::Acquire_Load(&state_);
   if (state == STATE_MODIFIED_MAP) {
     mutex_.Lock();
     // Double check state, because another thread may have seen the same state
     // and done the synchronization before the current thread.
     if (state_ == STATE_MODIFIED_MAP) {
       SyncRepeatedFieldWithMapNoLock();
-      google::protobuf::internal::NoBarrier_Store(&state_, CLEAN);
+      // "Release" insures state_ can only be changed "after"
+      // SyncRepeatedFieldWithMapNoLock is finished.
+      google::protobuf::internal::Release_Store(&state_, CLEAN);
     }
     mutex_.Unlock();
   }
 }
 
 void MapFieldBase::SyncRepeatedFieldWithMapNoLock() const {
-  if (repeated_field_ == NULL) repeated_field_ = new RepeatedPtrField<Message>;
+  if (repeated_field_ == NULL) {
+    repeated_field_ = Arena::CreateMessage<RepeatedPtrField<Message> >(arena_);
+  }
 }
 
 void MapFieldBase::SyncMapWithRepeatedField() const {
-  Atomic32 state = google::protobuf::internal::NoBarrier_Load(&state_);
+  // "Acquire" insures the operation after SyncMapWithRepeatedField won't get
+  // executed before state_ is checked.
+  Atomic32 state = google::protobuf::internal::Acquire_Load(&state_);
   if (state == STATE_MODIFIED_REPEATED) {
     mutex_.Lock();
     // Double check state, because another thread may have seen the same state
     // and done the synchronization before the current thread.
     if (state_ == STATE_MODIFIED_REPEATED) {
       SyncMapWithRepeatedFieldNoLock();
-      google::protobuf::internal::NoBarrier_Store(&state_, CLEAN);
+      // "Release" insures state_ can only be changed "after"
+      // SyncRepeatedFieldWithMapNoLock is finished.
+      google::protobuf::internal::Release_Store(&state_, CLEAN);
     }
     mutex_.Unlock();
   }

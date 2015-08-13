@@ -91,9 +91,10 @@ class DescriptorPoolExtensionFinder : public ExtensionFinder {
   const Descriptor* containing_type_;
 };
 
-void ExtensionSet::AppendToList(const Descriptor* containing_type,
-                                const DescriptorPool* pool,
-                                vector<const FieldDescriptor*>* output) const {
+void ExtensionSet::AppendToList(
+    const Descriptor* containing_type,
+    const DescriptorPool* pool,
+    std::vector<const FieldDescriptor*>* output) const {
   for (map<int, Extension>::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     bool has = false;
@@ -220,7 +221,7 @@ MessageLite* ExtensionSet::AddMessage(const FieldDescriptor* descriptor,
     GOOGLE_DCHECK_EQ(cpp_type(extension->type), FieldDescriptor::CPPTYPE_MESSAGE);
     extension->is_repeated = true;
     extension->repeated_message_value =
-        ::google::protobuf::Arena::Create<RepeatedPtrField<MessageLite> >(arena_, arena_);
+        ::google::protobuf::Arena::CreateMessage<RepeatedPtrField<MessageLite> >(arena_);
   } else {
     GOOGLE_DCHECK_TYPE(*extension, REPEATED, MESSAGE);
   }

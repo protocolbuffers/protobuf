@@ -50,10 +50,7 @@ namespace python {
 // and
 //   PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION=2
 #ifdef PYTHON_PROTO2_CPP_IMPL_V1
-#if PY_MAJOR_VERSION >= 3
-#error "PYTHON_PROTO2_CPP_IMPL_V1 is not supported under Python 3."
-#endif
-static int kImplVersion = 1;
+#error "PYTHON_PROTO2_CPP_IMPL_V1 is no longer supported."
 #else
 #ifdef PYTHON_PROTO2_CPP_IMPL_V2
 static int kImplVersion = 2;
@@ -62,14 +59,7 @@ static int kImplVersion = 2;
 static int kImplVersion = 0;
 #else
 
-// The defaults are set here.  Python 3 uses the fast C++ APIv2 by default.
-// Python 2 still uses the Python version by default until some compatibility
-// issues can be worked around.
-#if PY_MAJOR_VERSION >= 3
-static int kImplVersion = 2;
-#else
-static int kImplVersion = 0;
-#endif
+static int kImplVersion = -1;  // -1 means "Unspecified by compiler flags".
 
 #endif  // PYTHON_PROTO2_PYTHON_IMPL
 #endif  // PYTHON_PROTO2_CPP_IMPL_V2

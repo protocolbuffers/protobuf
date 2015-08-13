@@ -56,8 +56,6 @@ namespace google {
 namespace protobuf {
 namespace python {
 
-extern google::protobuf::DynamicMessageFactory* global_message_factory;
-
 namespace repeated_composite_container {
 
 // TODO(tibell): We might also want to check:
@@ -120,9 +118,9 @@ static int InternalQuickSort(RepeatedCompositeContainer* self,
 
   GOOGLE_CHECK_ATTACHED(self);
 
-  google::protobuf::Message* message = self->message;
-  const google::protobuf::Reflection* reflection = message->GetReflection();
-  const google::protobuf::FieldDescriptor* descriptor = self->parent_field_descriptor;
+  Message* message = self->message;
+  const Reflection* reflection = message->GetReflection();
+  const FieldDescriptor* descriptor = self->parent_field_descriptor;
   Py_ssize_t left;
   Py_ssize_t right;
 
@@ -199,7 +197,7 @@ static int InternalQuickSort(RepeatedCompositeContainer* self,
 // len()
 
 static Py_ssize_t Length(RepeatedCompositeContainer* self) {
-  google::protobuf::Message* message = self->message;
+  Message* message = self->message;
   if (message != NULL) {
     return message->GetReflection()->FieldSize(*message,
                                                self->parent_field_descriptor);
@@ -221,8 +219,8 @@ static int UpdateChildMessages(RepeatedCompositeContainer* self) {
   // be removed in such a way so there's no need to worry about that.
   Py_ssize_t message_length = Length(self);
   Py_ssize_t child_length = PyList_GET_SIZE(self->child_messages);
-  google::protobuf::Message* message = self->message;
-  const google::protobuf::Reflection* reflection = message->GetReflection();
+  Message* message = self->message;
+  const Reflection* reflection = message->GetReflection();
   for (Py_ssize_t i = child_length; i < message_length; ++i) {
     const Message& sub_message = reflection->GetRepeatedMessage(
         *(self->message), self->parent_field_descriptor, i);
@@ -233,7 +231,7 @@ static int UpdateChildMessages(RepeatedCompositeContainer* self) {
       return -1;
     }
     cmsg->owner = self->owner;
-    cmsg->message = const_cast<google::protobuf::Message*>(&sub_message);
+    cmsg->message = const_cast<Message*>(&sub_message);
     cmsg->parent = self->parent;
     if (PyList_Append(self->child_messages, py_cmsg) < 0) {
       return -1;
@@ -255,8 +253,8 @@ static PyObject* AddToAttached(RepeatedCompositeContainer* self,
   }
   if (cmessage::AssureWritable(self->parent) == -1)
     return NULL;
-  google::protobuf::Message* message = self->message;
-  google::protobuf::Message* sub_message =
+  Message* message = self->message;
+  Message* sub_message =
       message->GetReflection()->AddMessage(message,
                                            self->parent_field_descriptor);
   CMessage* cmsg = cmessage::NewEmptyMessage(self->subclass_init,
@@ -369,8 +367,8 @@ int AssignSubscript(RepeatedCompositeContainer* self,
   }
 
   // Delete from the underlying Message, if any.
-  if (self->message != NULL) {
-    if (cmessage::InternalDeleteRepeatedField(self->message,
+  if (self->parent != NULL) {
+    if (cmessage::InternalDeleteRepeatedField(self->parent,
                                               self->parent_field_descriptor,
                                               slice,
                                               self->child_messages) < 0) {
@@ -482,9 +480,9 @@ static PyObject* SortAttached(RepeatedCompositeContainer* self,
 
   // Finally reverse the result if requested.
   if (reverse) {
-    google::protobuf::Message* message = self->message;
-    const google::protobuf::Reflection* reflection = message->GetReflection();
-    const google::protobuf::FieldDescriptor* descriptor = self->parent_field_descriptor;
+    Message* message = self->message;
+    const Reflection* reflection = message->GetReflection();
+    const FieldDescriptor* descriptor = self->parent_field_descriptor;
 
     // Reverse the Message array.
     for (int i = 0; i < length / 2; ++i)
@@ -554,46 +552,55 @@ static PyObject* Item(RepeatedCompositeContainer* self, Py_ssize_t index) {
   return item;
 }
 
-// The caller takes ownership of the returned Message.
-Message* ReleaseLast(const FieldDescriptor* field,
-                     const Descriptor* type,
-                     Message* message) {
-  GOOGLE_CHECK_NOTNULL(field);
-  GOOGLE_CHECK_NOTNULL(type);
-  GOOGLE_CHECK_NOTNULL(message);
+static PyObject* Pop(RepeatedCompositeContainer* self,
+                     PyObject* args) {
+  Py_ssize_t index = -1;
+  if (!PyArg_ParseTuple(args, "|n", &index)) {
+    return NULL;
+  }
+  PyObject* item = Item(self, index);
+  if (item == NULL) {
+    PyErr_Format(PyExc_IndexError,
+                 "list index (%zd) out of range",
+                 index);
+    return NULL;
+  }
+  ScopedPyObjectPtr py_index(PyLong_FromSsize_t(index));
+  if (AssignSubscript(self, py_index, NULL) < 0) {
+    return NULL;
+  }
+  return item;
+}
 
-  Message* released_message = message->GetReflection()->ReleaseLast(
-      message, field);
+// Release field of parent message and transfer the ownership to target.
+void ReleaseLastTo(CMessage* parent,
+                   const FieldDescriptor* field,
+                   CMessage* target) {
+  GOOGLE_CHECK_NOTNULL(parent);
+  GOOGLE_CHECK_NOTNULL(field);
+  GOOGLE_CHECK_NOTNULL(target);
+
+  shared_ptr<Message> released_message(
+      parent->message->GetReflection()->ReleaseLast(parent->message, field));
   // TODO(tibell): Deal with proto1.
 
   // ReleaseMessage will return NULL which differs from
   // child_cmessage->message, if the field does not exist.  In this case,
   // the latter points to the default instance via a const_cast<>, so we
   // have to reset it to a new mutable object since we are taking ownership.
-  if (released_message == NULL) {
-    const Message* prototype = global_message_factory->GetPrototype(type);
+  if (released_message.get() == NULL) {
+    const Message* prototype =
+        cmessage::GetMessageFactory()->GetPrototype(
+            target->message->GetDescriptor());
     GOOGLE_CHECK_NOTNULL(prototype);
-    return prototype->New();
-  } else {
-    return released_message;
+    released_message.reset(prototype->New());
   }
-}
 
-// Release field of message and transfer the ownership to cmessage.
-void ReleaseLastTo(const FieldDescriptor* field,
-                   Message* message,
-                   CMessage* cmessage) {
-  GOOGLE_CHECK_NOTNULL(field);
-  GOOGLE_CHECK_NOTNULL(message);
-  GOOGLE_CHECK_NOTNULL(cmessage);
-
-  shared_ptr<Message> released_message(
-      ReleaseLast(field, cmessage->message->GetDescriptor(), message));
-  cmessage->parent = NULL;
-  cmessage->parent_field_descriptor = NULL;
-  cmessage->message = released_message.get();
-  cmessage->read_only = false;
-  cmessage::SetOwner(cmessage, released_message);
+  target->parent = NULL;
+  target->parent_field_descriptor = NULL;
+  target->message = released_message.get();
+  target->read_only = false;
+  cmessage::SetOwner(target, released_message);
 }
 
 // Called to release a container using
@@ -616,7 +623,7 @@ int Release(RepeatedCompositeContainer* self) {
   for (Py_ssize_t i = size - 1; i >= 0; --i) {
     CMessage* child_cmessage = reinterpret_cast<CMessage*>(
         PyList_GET_ITEM(self->child_messages, i));
-    ReleaseLastTo(field, message, child_cmessage);
+    ReleaseLastTo(self->parent, field, child_cmessage);
   }
 
   // Detach from containing message.
@@ -646,7 +653,7 @@ int SetOwner(RepeatedCompositeContainer* self,
 // The private constructor of RepeatedCompositeContainer objects.
 PyObject *NewContainer(
     CMessage* parent,
-    const google::protobuf::FieldDescriptor* parent_field_descriptor,
+    const FieldDescriptor* parent_field_descriptor,
     PyObject *concrete_class) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return NULL;
@@ -698,6 +705,8 @@ static PyMethodDef Methods[] = {
     "Adds an object to the repeated container." },
   { "extend", (PyCFunction) Extend, METH_O,
     "Adds objects to the repeated container." },
+  { "pop", (PyCFunction)Pop, METH_VARARGS,
+    "Removes an object from the repeated container and returns it." },
   { "remove", (PyCFunction) Remove, METH_O,
     "Removes an object from the repeated container." },
   { "sort", (PyCFunction) Sort, METH_VARARGS | METH_KEYWORDS,
@@ -711,9 +720,8 @@ static PyMethodDef Methods[] = {
 
 PyTypeObject RepeatedCompositeContainer_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  "google.protobuf.internal."
-  "cpp._message.RepeatedCompositeContainer",  // tp_name
-  sizeof(RepeatedCompositeContainer),     // tp_basicsize
+  FULL_MODULE_NAME ".RepeatedCompositeContainer",  // tp_name
+  sizeof(RepeatedCompositeContainer),  // tp_basicsize
   0,                                   //  tp_itemsize
   (destructor)repeated_composite_container::Dealloc,  //  tp_dealloc
   0,                                   //  tp_print

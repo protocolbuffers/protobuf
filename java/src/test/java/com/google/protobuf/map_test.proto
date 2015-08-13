@@ -36,9 +36,10 @@ option java_package = "map_test";
 option java_outer_classname = "MapTestProto";
 option java_generate_equals_and_hash = true;
 
+
 message TestMap {
   message MessageValue {
-    optional int32 value = 1;
+    int32 value = 1;
   }
   enum EnumValue {
     FOO = 0;
@@ -59,5 +60,5 @@ message TestMap {
 // propagate the onChange event and mark its parent dirty when a change
 // is made to a map field.
 message TestOnChangeEventPropagation {
-  optional TestMap optional_message = 1;
+  TestMap optional_message = 1;
 }

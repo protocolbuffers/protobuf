@@ -77,6 +77,9 @@ class File {
   static void DeleteRecursively(const string& name,
                                 void* dummy1, void* dummy2);
 
+  // Change working directory to given directory.
+  static bool ChangeWorkingDirectory(const string& new_working_directory);
+
   static bool GetContents(
       const string& name, string* output, bool /*is_default*/) {
     return ReadFileToString(name, output);

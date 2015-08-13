@@ -53,7 +53,7 @@ rb_data_type_t Message_type = {
 };
 
 VALUE Message_alloc(VALUE klass) {
-  VALUE descriptor = rb_iv_get(klass, kDescriptorInstanceVar);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
   MessageHeader* msg = (MessageHeader*)ALLOC_N(
       uint8_t, sizeof(MessageHeader) + desc->layout->size);
@@ -63,11 +63,40 @@ VALUE Message_alloc(VALUE klass) {
   // a collection happens during object creation in layout_init().
   VALUE ret = TypedData_Wrap_Struct(klass, &Message_type, msg);
   msg->descriptor = desc;
-  rb_iv_set(ret, kDescriptorInstanceVar, descriptor);
+  rb_ivar_set(ret, descriptor_instancevar_interned, descriptor);
 
   layout_init(desc->layout, Message_data(msg));
 
   return ret;
+}
+
+static VALUE which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
+  // If no fields in the oneof, always nil.
+  if (upb_oneofdef_numfields(o) == 0) {
+    return Qnil;
+  }
+  // Grab the first field in the oneof so we can get its layout info to find the
+  // oneof_case field.
+  upb_oneof_iter it;
+  upb_oneof_begin(&it, o);
+  assert(!upb_oneof_done(&it));
+  const upb_fielddef* first_field = upb_oneof_iter_field(&it);
+  assert(upb_fielddef_containingoneof(first_field) != NULL);
+
+  size_t case_ofs =
+      self->descriptor->layout->
+      fields[upb_fielddef_index(first_field)].case_offset;
+  uint32_t oneof_case = *((uint32_t*)((char*)Message_data(self) + case_ofs));
+
+  if (oneof_case == ONEOF_CASE_NONE) {
+    return Qnil;
+  }
+
+  // oneof_case is a field index, so find that field.
+  const upb_fielddef* f = upb_oneofdef_itof(o, oneof_case);
+  assert(f != NULL);
+
+  return ID2SYM(rb_intern(upb_fielddef_name(f)));
 }
 
 /*
@@ -82,6 +111,10 @@ VALUE Message_alloc(VALUE klass) {
  *
  *     msg.foo = 42
  *     puts msg.foo
+ *
+ * This method also provides read-only accessors for oneofs. If a oneof exists
+ * with name 'my_oneof', then msg.my_oneof will return a Ruby symbol equal to
+ * the name of the field in that oneof that is currently set, or nil if none.
  */
 VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   MessageHeader* self;
@@ -104,6 +137,17 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     name_len--;
   }
 
+  // Check for a oneof name first.
+  const upb_oneofdef* o = upb_msgdef_ntoo(self->descriptor->msgdef,
+                                          name, name_len);
+  if (o != NULL) {
+    if (setter) {
+      rb_raise(rb_eRuntimeError, "Oneof accessors are read-only.");
+    }
+    return which_oneof_field(self, o);
+  }
+
+  // Otherwise, check for a field with that name.
   const upb_fielddef* f = upb_msgdef_ntof(self->descriptor->msgdef,
                                           name, name_len);
 
@@ -139,7 +183,14 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
              "Unknown field name in initialization map entry.");
   }
 
-  if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
+  if (is_map_field(f)) {
+    if (TYPE(val) != T_HASH) {
+      rb_raise(rb_eArgError,
+               "Expected Hash object as initializer value for map field.");
+    }
+    VALUE map = layout_get(self->descriptor->layout, Message_data(self), f);
+    Map_merge_into_self(map, val);
+  } else if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
     if (TYPE(val) != T_ARRAY) {
       rb_raise(rb_eArgError,
                "Expected array as initializer value for repeated field.");
@@ -278,6 +329,31 @@ VALUE Message_inspect(VALUE _self) {
   return str;
 }
 
+
+VALUE Message_to_h(VALUE _self) {
+  MessageHeader* self;
+  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+
+  VALUE hash = rb_hash_new();
+
+  upb_msg_field_iter it;
+  for (upb_msg_field_begin(&it, self->descriptor->msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    const upb_fielddef* field = upb_msg_iter_field(&it);
+    VALUE msg_value = layout_get(self->descriptor->layout, Message_data(self),
+                                 field);
+    VALUE msg_key   = ID2SYM(rb_intern(upb_fielddef_name(field)));
+    if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+      msg_value = RepeatedField_to_ary(msg_value);
+    }
+    rb_hash_aset(hash, msg_key, msg_value);
+  }
+  return hash;
+}
+
+
+
 /*
  * call-seq:
  *     Message.[](index) => value
@@ -325,7 +401,7 @@ VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
  * message class's type.
  */
 VALUE Message_descriptor(VALUE klass) {
-  return rb_iv_get(klass, kDescriptorInstanceVar);
+  return rb_ivar_get(klass, descriptor_instancevar_interned);
 }
 
 VALUE build_class_from_descriptor(Descriptor* desc) {
@@ -346,8 +422,14 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
       // their own toplevel constant class name.
       rb_intern("Message"),
       rb_cObject);
-  rb_iv_set(klass, kDescriptorInstanceVar, get_def_obj(desc->msgdef));
+  rb_ivar_set(klass, descriptor_instancevar_interned,
+              get_def_obj(desc->msgdef));
   rb_define_alloc_func(klass, Message_alloc);
+  rb_require("google/protobuf/message_exts");
+  rb_include_module(klass, rb_eval_string("Google::Protobuf::MessageExts"));
+  rb_extend_object(
+      klass, rb_eval_string("Google::Protobuf::MessageExts::ClassMethods"));
+
   rb_define_method(klass, "method_missing",
                    Message_method_missing, -1);
   rb_define_method(klass, "initialize", Message_initialize, -1);
@@ -356,6 +438,8 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
   rb_define_method(klass, "clone", Message_dup, 0);
   rb_define_method(klass, "==", Message_eq, 1);
   rb_define_method(klass, "hash", Message_hash, 0);
+  rb_define_method(klass, "to_h", Message_to_h, 0);
+  rb_define_method(klass, "to_hash", Message_to_h, 0);
   rb_define_method(klass, "inspect", Message_inspect, 0);
   rb_define_method(klass, "[]", Message_index, 1);
   rb_define_method(klass, "[]=", Message_index_set, 2);
@@ -364,6 +448,7 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
   rb_define_singleton_method(klass, "decode_json", Message_decode_json, 1);
   rb_define_singleton_method(klass, "encode_json", Message_encode_json, 1);
   rb_define_singleton_method(klass, "descriptor", Message_descriptor, 0);
+
   return klass;
 }
 
@@ -376,7 +461,7 @@ VALUE build_class_from_descriptor(Descriptor* desc) {
  */
 VALUE enum_lookup(VALUE self, VALUE number) {
   int32_t num = NUM2INT(number);
-  VALUE desc = rb_iv_get(self, kDescriptorInstanceVar);
+  VALUE desc = rb_ivar_get(self, descriptor_instancevar_interned);
   EnumDescriptor* enumdesc = ruby_to_EnumDescriptor(desc);
 
   const char* name = upb_enumdef_iton(enumdesc->enumdef, num);
@@ -396,7 +481,7 @@ VALUE enum_lookup(VALUE self, VALUE number) {
  */
 VALUE enum_resolve(VALUE self, VALUE sym) {
   const char* name = rb_id2name(SYM2ID(sym));
-  VALUE desc = rb_iv_get(self, kDescriptorInstanceVar);
+  VALUE desc = rb_ivar_get(self, descriptor_instancevar_interned);
   EnumDescriptor* enumdesc = ruby_to_EnumDescriptor(desc);
 
   int32_t num = 0;
@@ -416,7 +501,7 @@ VALUE enum_resolve(VALUE self, VALUE sym) {
  * EnumDescriptor corresponding to this enum type.
  */
 VALUE enum_descriptor(VALUE self) {
-  return rb_iv_get(self, kDescriptorInstanceVar);
+  return rb_ivar_get(self, descriptor_instancevar_interned);
 }
 
 VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
@@ -441,7 +526,8 @@ VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
   rb_define_singleton_method(mod, "lookup", enum_lookup, 1);
   rb_define_singleton_method(mod, "resolve", enum_resolve, 1);
   rb_define_singleton_method(mod, "descriptor", enum_descriptor, 0);
-  rb_iv_set(mod, kDescriptorInstanceVar, get_def_obj(enumdesc->enumdef));
+  rb_ivar_set(mod, descriptor_instancevar_interned,
+              get_def_obj(enumdesc->enumdef));
 
   return mod;
 }
@@ -450,13 +536,15 @@ VALUE build_module_from_enumdesc(EnumDescriptor* enumdesc) {
  * call-seq:
  *     Google::Protobuf.deep_copy(obj) => copy_of_obj
  *
- * Performs a deep copy of either a RepeatedField instance or a message object,
- * recursively copying its members.
+ * Performs a deep copy of a RepeatedField instance, a Map instance, or a
+ * message object, recursively copying its members.
  */
 VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj) {
   VALUE klass = CLASS_OF(obj);
   if (klass == cRepeatedField) {
     return RepeatedField_deep_copy(obj);
+  } else if (klass == cMap) {
+    return Map_deep_copy(obj);
   } else {
     return Message_deep_copy(obj);
   }

@@ -30,6 +30,18 @@
 
 #include "protobuf.h"
 
+// This function is equivalent to rb_str_cat(), but unlike the real
+// rb_str_cat(), it doesn't leak memory in some versions of Ruby.
+// For more information, see:
+//   https://bugs.ruby-lang.org/issues/11328
+VALUE noleak_rb_str_cat(VALUE rb_str, const char *str, long len) {
+  size_t oldlen = RSTRING_LEN(rb_str);
+  rb_str_modify_expand(rb_str, len);
+  char *p = RSTRING_PTR(rb_str);
+  memcpy(p + oldlen, str, len);
+  rb_str_set_len(rb_str, oldlen + len);
+}
+
 // -----------------------------------------------------------------------------
 // Parsing.
 // -----------------------------------------------------------------------------
@@ -59,16 +71,45 @@ static const void *newsubmsghandlerdata(upb_handlers* h, uint32_t ofs,
   return hd;
 }
 
+typedef struct {
+  size_t ofs;              // union data slot
+  size_t case_ofs;         // oneof_case field
+  uint32_t oneof_case_num; // oneof-case number to place in oneof_case field
+  const upb_msgdef *md;    // msgdef, for oneof submessage handler
+} oneof_handlerdata_t;
+
+static const void *newoneofhandlerdata(upb_handlers *h,
+                                       uint32_t ofs,
+                                       uint32_t case_ofs,
+                                       const upb_fielddef *f) {
+  oneof_handlerdata_t *hd = ALLOC(oneof_handlerdata_t);
+  hd->ofs = ofs;
+  hd->case_ofs = case_ofs;
+  // We reuse the field tag number as a oneof union discriminant tag. Note that
+  // we don't expose these numbers to the user, so the only requirement is that
+  // we have some unique ID for each union case/possibility. The field tag
+  // numbers are already present and are easy to use so there's no reason to
+  // create a separate ID space. In addition, using the field tag number here
+  // lets us easily look up the field in the oneof accessor.
+  hd->oneof_case_num = upb_fielddef_number(f);
+  if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
+    hd->md = upb_fielddef_msgsubdef(f);
+  } else {
+    hd->md = NULL;
+  }
+  upb_handlers_addcleanup(h, hd, free);
+  return hd;
+}
+
 // A handler that starts a repeated field.  Gets the Repeated*Field instance for
 // this field (such an instance always exists even in an empty message).
 static void *startseq_handler(void* closure, const void* hd) {
   MessageHeader* msg = closure;
   const size_t *ofs = hd;
-  return (void*)DEREF(Message_data(msg), *ofs, VALUE);
+  return (void*)DEREF(msg, *ofs, VALUE);
 }
 
-// Handlers that append primitive values to a repeated field (a regular Ruby
-// array for now).
+// Handlers that append primitive values to a repeated field.
 #define DEFINE_APPEND_HANDLER(type, ctype)                 \
   static bool append##type##_handler(void *closure, const void *hd, \
                                      ctype val) {                   \
@@ -85,7 +126,7 @@ DEFINE_APPEND_HANDLER(int64,  int64_t)
 DEFINE_APPEND_HANDLER(uint64, uint64_t)
 DEFINE_APPEND_HANDLER(double, double)
 
-// Appends a string to a repeated field (a regular Ruby array for now).
+// Appends a string to a repeated field.
 static void* appendstr_handler(void *closure,
                                const void *hd,
                                size_t size_hint) {
@@ -96,7 +137,7 @@ static void* appendstr_handler(void *closure,
   return (void*)str;
 }
 
-// Appends a 'bytes' string to a repeated field (a regular Ruby array for now).
+// Appends a 'bytes' string to a repeated field.
 static void* appendbytes_handler(void *closure,
                                  const void *hd,
                                  size_t size_hint) {
@@ -115,7 +156,7 @@ static void* str_handler(void *closure,
   const size_t *ofs = hd;
   VALUE str = rb_str_new2("");
   rb_enc_associate(str, kRubyStringUtf8Encoding);
-  DEREF(Message_data(msg), *ofs, VALUE) = str;
+  DEREF(msg, *ofs, VALUE) = str;
   return (void*)str;
 }
 
@@ -127,7 +168,7 @@ static void* bytes_handler(void *closure,
   const size_t *ofs = hd;
   VALUE str = rb_str_new2("");
   rb_enc_associate(str, kRubyString8bitEncoding);
-  DEREF(Message_data(msg), *ofs, VALUE) = str;
+  DEREF(msg, *ofs, VALUE) = str;
   return (void*)str;
 }
 
@@ -135,7 +176,7 @@ static size_t stringdata_handler(void* closure, const void* hd,
                                  const char* str, size_t len,
                                  const upb_bufhandle* handle) {
   VALUE rb_str = (VALUE)closure;
-  rb_str_cat(rb_str, str, len);
+  noleak_rb_str_cat(rb_str, str, len);
   return len;
 }
 
@@ -163,20 +204,364 @@ static void *submsg_handler(void *closure, const void *hd) {
       get_def_obj((void*)submsgdata->md);
   VALUE subklass = Descriptor_msgclass(subdesc);
 
-  if (DEREF(Message_data(msg), submsgdata->ofs, VALUE) == Qnil) {
-    DEREF(Message_data(msg), submsgdata->ofs, VALUE) =
+  if (DEREF(msg, submsgdata->ofs, VALUE) == Qnil) {
+    DEREF(msg, submsgdata->ofs, VALUE) =
         rb_class_new_instance(0, NULL, subklass);
   }
 
-  VALUE submsg_rb = DEREF(Message_data(msg), submsgdata->ofs, VALUE);
+  VALUE submsg_rb = DEREF(msg, submsgdata->ofs, VALUE);
   MessageHeader* submsg;
   TypedData_Get_Struct(submsg_rb, MessageHeader, &Message_type, submsg);
   return submsg;
 }
 
+// Handler data for startmap/endmap handlers.
+typedef struct {
+  size_t ofs;
+  upb_fieldtype_t key_field_type;
+  upb_fieldtype_t value_field_type;
+
+  // We know that we can hold this reference because the handlerdata has the
+  // same lifetime as the upb_handlers struct, and the upb_handlers struct holds
+  // a reference to the upb_msgdef, which in turn has references to its subdefs.
+  const upb_def* value_field_subdef;
+} map_handlerdata_t;
+
+// Temporary frame for map parsing: at the beginning of a map entry message, a
+// submsg handler allocates a frame to hold (i) a reference to the Map object
+// into which this message will be inserted and (ii) storage slots to
+// temporarily hold the key and value for this map entry until the end of the
+// submessage. When the submessage ends, another handler is called to insert the
+// value into the map.
+typedef struct {
+  VALUE map;
+  char key_storage[NATIVE_SLOT_MAX_SIZE];
+  char value_storage[NATIVE_SLOT_MAX_SIZE];
+} map_parse_frame_t;
+
+// Handler to begin a map entry: allocates a temporary frame. This is the
+// 'startsubmsg' handler on the msgdef that contains the map field.
+static void *startmapentry_handler(void *closure, const void *hd) {
+  MessageHeader* msg = closure;
+  const map_handlerdata_t* mapdata = hd;
+  VALUE map_rb = DEREF(msg, mapdata->ofs, VALUE);
+
+  map_parse_frame_t* frame = ALLOC(map_parse_frame_t);
+  frame->map = map_rb;
+
+  native_slot_init(mapdata->key_field_type, &frame->key_storage);
+  native_slot_init(mapdata->value_field_type, &frame->value_storage);
+
+  return frame;
+}
+
+// Handler to end a map entry: inserts the value defined during the message into
+// the map. This is the 'endmsg' handler on the map entry msgdef.
+static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
+  map_parse_frame_t* frame = closure;
+  const map_handlerdata_t* mapdata = hd;
+
+  VALUE key = native_slot_get(
+      mapdata->key_field_type, Qnil,
+      &frame->key_storage);
+
+  VALUE value_field_typeclass = Qnil;
+  if (mapdata->value_field_type == UPB_TYPE_MESSAGE ||
+      mapdata->value_field_type == UPB_TYPE_ENUM) {
+    value_field_typeclass = get_def_obj(mapdata->value_field_subdef);
+  }
+
+  VALUE value = native_slot_get(
+      mapdata->value_field_type, value_field_typeclass,
+      &frame->value_storage);
+
+  Map_index_set(frame->map, key, value);
+  free(frame);
+
+  return true;
+}
+
+// Allocates a new map_handlerdata_t given the map entry message definition. If
+// the offset of the field within the parent message is also given, that is
+// added to the handler data as well. Note that this is called *twice* per map
+// field: once in the parent message handler setup when setting the startsubmsg
+// handler and once in the map entry message handler setup when setting the
+// key/value and endmsg handlers. The reason is that there is no easy way to
+// pass the handlerdata down to the sub-message handler setup.
+static map_handlerdata_t* new_map_handlerdata(
+    size_t ofs,
+    const upb_msgdef* mapentry_def,
+    Descriptor* desc) {
+
+  map_handlerdata_t* hd = ALLOC(map_handlerdata_t);
+  hd->ofs = ofs;
+  const upb_fielddef* key_field = upb_msgdef_itof(mapentry_def,
+                                                  MAP_KEY_FIELD);
+  assert(key_field != NULL);
+  hd->key_field_type = upb_fielddef_type(key_field);
+  const upb_fielddef* value_field = upb_msgdef_itof(mapentry_def,
+                                                    MAP_VALUE_FIELD);
+  assert(value_field != NULL);
+  hd->value_field_type = upb_fielddef_type(value_field);
+  hd->value_field_subdef = upb_fielddef_subdef(value_field);
+
+  return hd;
+}
+
+// Handlers that set primitive values in oneofs.
+#define DEFINE_ONEOF_HANDLER(type, ctype)                           \
+  static bool oneof##type##_handler(void *closure, const void *hd,  \
+                                     ctype val) {                   \
+    const oneof_handlerdata_t *oneofdata = hd;                      \
+    DEREF(closure, oneofdata->case_ofs, uint32_t) =                 \
+        oneofdata->oneof_case_num;                                  \
+    DEREF(closure, oneofdata->ofs, ctype) = val;                    \
+    return true;                                                    \
+  }
+
+DEFINE_ONEOF_HANDLER(bool,   bool)
+DEFINE_ONEOF_HANDLER(int32,  int32_t)
+DEFINE_ONEOF_HANDLER(uint32, uint32_t)
+DEFINE_ONEOF_HANDLER(float,  float)
+DEFINE_ONEOF_HANDLER(int64,  int64_t)
+DEFINE_ONEOF_HANDLER(uint64, uint64_t)
+DEFINE_ONEOF_HANDLER(double, double)
+
+#undef DEFINE_ONEOF_HANDLER
+
+// Handlers for strings in a oneof.
+static void *oneofstr_handler(void *closure,
+                              const void *hd,
+                              size_t size_hint) {
+  MessageHeader* msg = closure;
+  const oneof_handlerdata_t *oneofdata = hd;
+  VALUE str = rb_str_new2("");
+  rb_enc_associate(str, kRubyStringUtf8Encoding);
+  DEREF(msg, oneofdata->case_ofs, uint32_t) =
+      oneofdata->oneof_case_num;
+  DEREF(msg, oneofdata->ofs, VALUE) = str;
+  return (void*)str;
+}
+
+static void *oneofbytes_handler(void *closure,
+                                const void *hd,
+                                size_t size_hint) {
+  MessageHeader* msg = closure;
+  const oneof_handlerdata_t *oneofdata = hd;
+  VALUE str = rb_str_new2("");
+  rb_enc_associate(str, kRubyString8bitEncoding);
+  DEREF(msg, oneofdata->case_ofs, uint32_t) =
+      oneofdata->oneof_case_num;
+  DEREF(msg, oneofdata->ofs, VALUE) = str;
+  return (void*)str;
+}
+
+// Handler for a submessage field in a oneof.
+static void *oneofsubmsg_handler(void *closure,
+                                 const void *hd) {
+  MessageHeader* msg = closure;
+  const oneof_handlerdata_t *oneofdata = hd;
+  uint32_t oldcase = DEREF(msg, oneofdata->case_ofs, uint32_t);
+
+  VALUE subdesc =
+      get_def_obj((void*)oneofdata->md);
+  VALUE subklass = Descriptor_msgclass(subdesc);
+
+  if (oldcase != oneofdata->oneof_case_num ||
+      DEREF(msg, oneofdata->ofs, VALUE) == Qnil) {
+    DEREF(msg, oneofdata->ofs, VALUE) =
+        rb_class_new_instance(0, NULL, subklass);
+  }
+  // Set the oneof case *after* allocating the new class instance -- otherwise,
+  // if the Ruby GC is invoked as part of a call into the VM, it might invoke
+  // our mark routines, and our mark routines might see the case value
+  // indicating a VALUE is present and expect a valid VALUE. See comment in
+  // layout_set() for more detail: basically, the change to the value and the
+  // case must be atomic w.r.t. the Ruby VM.
+  DEREF(msg, oneofdata->case_ofs, uint32_t) =
+      oneofdata->oneof_case_num;
+
+  VALUE submsg_rb = DEREF(msg, oneofdata->ofs, VALUE);
+  MessageHeader* submsg;
+  TypedData_Get_Struct(submsg_rb, MessageHeader, &Message_type, submsg);
+  return submsg;
+}
+
+// Set up handlers for a repeated field.
+static void add_handlers_for_repeated_field(upb_handlers *h,
+                                            const upb_fielddef *f,
+                                            size_t offset) {
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr_sethandlerdata(&attr, newhandlerdata(h, offset));
+  upb_handlers_setstartseq(h, f, startseq_handler, &attr);
+  upb_handlerattr_uninit(&attr);
+
+  switch (upb_fielddef_type(f)) {
+
+#define SET_HANDLER(utype, ltype)                                 \
+  case utype:                                                     \
+    upb_handlers_set##ltype(h, f, append##ltype##_handler, NULL); \
+    break;
+
+    SET_HANDLER(UPB_TYPE_BOOL,   bool);
+    SET_HANDLER(UPB_TYPE_INT32,  int32);
+    SET_HANDLER(UPB_TYPE_UINT32, uint32);
+    SET_HANDLER(UPB_TYPE_ENUM,   int32);
+    SET_HANDLER(UPB_TYPE_FLOAT,  float);
+    SET_HANDLER(UPB_TYPE_INT64,  int64);
+    SET_HANDLER(UPB_TYPE_UINT64, uint64);
+    SET_HANDLER(UPB_TYPE_DOUBLE, double);
+
+#undef SET_HANDLER
+
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      bool is_bytes = upb_fielddef_type(f) == UPB_TYPE_BYTES;
+      upb_handlers_setstartstr(h, f, is_bytes ?
+                               appendbytes_handler : appendstr_handler,
+                               NULL);
+      upb_handlers_setstring(h, f, stringdata_handler, NULL);
+      break;
+    }
+    case UPB_TYPE_MESSAGE: {
+      upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+      upb_handlerattr_sethandlerdata(&attr, newsubmsghandlerdata(h, 0, f));
+      upb_handlers_setstartsubmsg(h, f, appendsubmsg_handler, &attr);
+      upb_handlerattr_uninit(&attr);
+      break;
+    }
+  }
+}
+
+// Set up handlers for a singular field.
+static void add_handlers_for_singular_field(upb_handlers *h,
+                                            const upb_fielddef *f,
+                                            size_t offset) {
+  switch (upb_fielddef_type(f)) {
+    case UPB_TYPE_BOOL:
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_UINT32:
+    case UPB_TYPE_ENUM:
+    case UPB_TYPE_FLOAT:
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_UINT64:
+    case UPB_TYPE_DOUBLE:
+      upb_shim_set(h, f, offset, -1);
+      break;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      bool is_bytes = upb_fielddef_type(f) == UPB_TYPE_BYTES;
+      upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+      upb_handlerattr_sethandlerdata(&attr, newhandlerdata(h, offset));
+      upb_handlers_setstartstr(h, f,
+                               is_bytes ? bytes_handler : str_handler,
+                               &attr);
+      upb_handlers_setstring(h, f, stringdata_handler, &attr);
+      upb_handlerattr_uninit(&attr);
+      break;
+    }
+    case UPB_TYPE_MESSAGE: {
+      upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+      upb_handlerattr_sethandlerdata(&attr, newsubmsghandlerdata(h, offset, f));
+      upb_handlers_setstartsubmsg(h, f, submsg_handler, &attr);
+      upb_handlerattr_uninit(&attr);
+      break;
+    }
+  }
+}
+
+// Adds handlers to a map field.
+static void add_handlers_for_mapfield(upb_handlers* h,
+                                      const upb_fielddef* fielddef,
+                                      size_t offset,
+                                      Descriptor* desc) {
+  const upb_msgdef* map_msgdef = upb_fielddef_msgsubdef(fielddef);
+  map_handlerdata_t* hd = new_map_handlerdata(offset, map_msgdef, desc);
+  upb_handlers_addcleanup(h, hd, free);
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr_sethandlerdata(&attr, hd);
+  upb_handlers_setstartsubmsg(h, fielddef, startmapentry_handler, &attr);
+  upb_handlerattr_uninit(&attr);
+}
+
+// Adds handlers to a map-entry msgdef.
+static void add_handlers_for_mapentry(const upb_msgdef* msgdef,
+                                      upb_handlers* h,
+                                      Descriptor* desc) {
+  const upb_fielddef* key_field = map_entry_key(msgdef);
+  const upb_fielddef* value_field = map_entry_value(msgdef);
+  map_handlerdata_t* hd = new_map_handlerdata(0, msgdef, desc);
+  upb_handlers_addcleanup(h, hd, free);
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr_sethandlerdata(&attr, hd);
+  upb_handlers_setendmsg(h, endmap_handler, &attr);
+
+  add_handlers_for_singular_field(
+      h, key_field,
+      offsetof(map_parse_frame_t, key_storage));
+  add_handlers_for_singular_field(
+      h, value_field,
+      offsetof(map_parse_frame_t, value_storage));
+}
+
+// Set up handlers for a oneof field.
+static void add_handlers_for_oneof_field(upb_handlers *h,
+                                         const upb_fielddef *f,
+                                         size_t offset,
+                                         size_t oneof_case_offset) {
+
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr_sethandlerdata(
+      &attr, newoneofhandlerdata(h, offset, oneof_case_offset, f));
+
+  switch (upb_fielddef_type(f)) {
+
+#define SET_HANDLER(utype, ltype)                                 \
+  case utype:                                                     \
+    upb_handlers_set##ltype(h, f, oneof##ltype##_handler, &attr); \
+    break;
+
+    SET_HANDLER(UPB_TYPE_BOOL,   bool);
+    SET_HANDLER(UPB_TYPE_INT32,  int32);
+    SET_HANDLER(UPB_TYPE_UINT32, uint32);
+    SET_HANDLER(UPB_TYPE_ENUM,   int32);
+    SET_HANDLER(UPB_TYPE_FLOAT,  float);
+    SET_HANDLER(UPB_TYPE_INT64,  int64);
+    SET_HANDLER(UPB_TYPE_UINT64, uint64);
+    SET_HANDLER(UPB_TYPE_DOUBLE, double);
+
+#undef SET_HANDLER
+
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      bool is_bytes = upb_fielddef_type(f) == UPB_TYPE_BYTES;
+      upb_handlers_setstartstr(h, f, is_bytes ?
+                               oneofbytes_handler : oneofstr_handler,
+                               &attr);
+      upb_handlers_setstring(h, f, stringdata_handler, NULL);
+      break;
+    }
+    case UPB_TYPE_MESSAGE: {
+      upb_handlers_setstartsubmsg(h, f, oneofsubmsg_handler, &attr);
+      break;
+    }
+  }
+
+  upb_handlerattr_uninit(&attr);
+}
+
+
 static void add_handlers_for_message(const void *closure, upb_handlers *h) {
-  Descriptor* desc = ruby_to_Descriptor(
-      get_def_obj((void*)upb_handlers_msgdef(h)));
+  const upb_msgdef* msgdef = upb_handlers_msgdef(h);
+  Descriptor* desc = ruby_to_Descriptor(get_def_obj((void*)msgdef));
+
+  // If this is a mapentry message type, set up a special set of handlers and
+  // bail out of the normal (user-defined) message type handling.
+  if (upb_msgdef_mapentry(msgdef)) {
+    add_handlers_for_mapentry(msgdef, h, desc);
+    return;
+  }
+
   // Ensure layout exists. We may be invoked to create handlers for a given
   // message if we are included as a submsg of another message type before our
   // class is actually built, so to work around this, we just create the layout
@@ -185,88 +570,25 @@ static void add_handlers_for_message(const void *closure, upb_handlers *h) {
     desc->layout = create_layout(desc->msgdef);
   }
 
-  upb_msg_iter i;
-
-  for (upb_msg_begin(&i, desc->msgdef);
-       !upb_msg_done(&i);
-       upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for (upb_msg_field_begin(&i, desc->msgdef);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
-    size_t offset = desc->layout->offsets[upb_fielddef_index(f)];
+    size_t offset = desc->layout->fields[upb_fielddef_index(f)].offset +
+        sizeof(MessageHeader);
 
-    if (upb_fielddef_isseq(f)) {
-      upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-      upb_handlerattr_sethandlerdata(&attr, newhandlerdata(h, offset));
-      upb_handlers_setstartseq(h, f, startseq_handler, &attr);
-      upb_handlerattr_uninit(&attr);
-
-      switch (upb_fielddef_type(f)) {
-
-#define SET_HANDLER(utype, ltype)                                 \
-  case utype:                                                     \
-    upb_handlers_set##ltype(h, f, append##ltype##_handler, NULL); \
-    break;
-
-        SET_HANDLER(UPB_TYPE_BOOL,   bool);
-        SET_HANDLER(UPB_TYPE_INT32,  int32);
-        SET_HANDLER(UPB_TYPE_UINT32, uint32);
-        SET_HANDLER(UPB_TYPE_ENUM,   int32);
-        SET_HANDLER(UPB_TYPE_FLOAT,  float);
-        SET_HANDLER(UPB_TYPE_INT64,  int64);
-        SET_HANDLER(UPB_TYPE_UINT64, uint64);
-        SET_HANDLER(UPB_TYPE_DOUBLE, double);
-
-#undef SET_HANDLER
-
-        case UPB_TYPE_STRING:
-        case UPB_TYPE_BYTES: {
-          bool is_bytes = upb_fielddef_type(f) == UPB_TYPE_BYTES;
-          upb_handlers_setstartstr(h, f, is_bytes ?
-                                   appendbytes_handler : appendstr_handler,
-                                   NULL);
-          upb_handlers_setstring(h, f, stringdata_handler, NULL);
-        }
-        case UPB_TYPE_MESSAGE: {
-          upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-          upb_handlerattr_sethandlerdata(&attr, newsubmsghandlerdata(h, 0, f));
-          upb_handlers_setstartsubmsg(h, f, appendsubmsg_handler, &attr);
-          upb_handlerattr_uninit(&attr);
-          break;
-        }
-      }
-    }
-
-    switch (upb_fielddef_type(f)) {
-      case UPB_TYPE_BOOL:
-      case UPB_TYPE_INT32:
-      case UPB_TYPE_UINT32:
-      case UPB_TYPE_ENUM:
-      case UPB_TYPE_FLOAT:
-      case UPB_TYPE_INT64:
-      case UPB_TYPE_UINT64:
-      case UPB_TYPE_DOUBLE:
-        // The shim writes directly at the given offset (instead of using
-        // DEREF()) so we need to add the msg overhead.
-        upb_shim_set(h, f, offset + sizeof(MessageHeader), -1);
-        break;
-      case UPB_TYPE_STRING:
-      case UPB_TYPE_BYTES: {
-        bool is_bytes = upb_fielddef_type(f) == UPB_TYPE_BYTES;
-        upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-        upb_handlerattr_sethandlerdata(&attr, newhandlerdata(h, offset));
-        upb_handlers_setstartstr(h, f,
-                                 is_bytes ? bytes_handler : str_handler,
-                                 &attr);
-        upb_handlers_setstring(h, f, stringdata_handler, &attr);
-        upb_handlerattr_uninit(&attr);
-        break;
-      }
-      case UPB_TYPE_MESSAGE: {
-        upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
-        upb_handlerattr_sethandlerdata(&attr, newsubmsghandlerdata(h, offset, f));
-        upb_handlers_setstartsubmsg(h, f, submsg_handler, &attr);
-        upb_handlerattr_uninit(&attr);
-        break;
-      }
+    if (upb_fielddef_containingoneof(f)) {
+      size_t oneof_case_offset =
+          desc->layout->fields[upb_fielddef_index(f)].case_offset +
+          sizeof(MessageHeader);
+      add_handlers_for_oneof_field(h, f, offset, oneof_case_offset);
+    } else if (is_map_field(f)) {
+      add_handlers_for_mapfield(h, f, offset, desc);
+    } else if (upb_fielddef_isseq(f)) {
+      add_handlers_for_repeated_field(h, f, offset);
+    } else {
+      add_handlers_for_singular_field(h, f, offset);
     }
   }
 }
@@ -312,6 +634,51 @@ static const upb_pbdecodermethod *msgdef_decodermethod(Descriptor* desc) {
   return desc->fill_method;
 }
 
+
+// Stack-allocated context during an encode/decode operation. Contains the upb
+// environment and its stack-based allocator, an initial buffer for allocations
+// to avoid malloc() when possible, and a template for Ruby exception messages
+// if any error occurs.
+#define STACK_ENV_STACKBYTES 4096
+typedef struct {
+  upb_env env;
+  upb_seededalloc alloc;
+  const char* ruby_error_template;
+  char allocbuf[STACK_ENV_STACKBYTES];
+} stackenv;
+
+static void stackenv_init(stackenv* se, const char* errmsg);
+static void stackenv_uninit(stackenv* se);
+
+// Callback invoked by upb if any error occurs during parsing or serialization.
+static bool env_error_func(void* ud, const upb_status* status) {
+  stackenv* se = ud;
+  // Free the env -- rb_raise will longjmp up the stack past the encode/decode
+  // function so it would not otherwise have been freed.
+  stackenv_uninit(se);
+
+  // TODO(haberman): have a way to verify that this is actually a parse error,
+  // instead of just throwing "parse error" unconditionally.
+  rb_raise(cParseError, se->ruby_error_template, upb_status_errmsg(status));
+  // Never reached: rb_raise() always longjmp()s up the stack, past all of our
+  // code, back to Ruby.
+  return false;
+}
+
+static void stackenv_init(stackenv* se, const char* errmsg) {
+  se->ruby_error_template = errmsg;
+  upb_env_init(&se->env);
+  upb_seededalloc_init(&se->alloc, &se->allocbuf, STACK_ENV_STACKBYTES);
+  upb_env_setallocfunc(
+      &se->env, upb_seededalloc_getallocfunc(&se->alloc), &se->alloc);
+  upb_env_seterrorfunc(&se->env, env_error_func, se);
+}
+
+static void stackenv_uninit(stackenv* se) {
+  upb_env_uninit(&se->env);
+  upb_seededalloc_uninit(&se->alloc);
+}
+
 /*
  * call-seq:
  *     MessageClass.decode(data) => message
@@ -321,7 +688,7 @@ static const upb_pbdecodermethod *msgdef_decodermethod(Descriptor* desc) {
  * and returns a message object with the corresponding field values.
  */
 VALUE Message_decode(VALUE klass, VALUE data) {
-  VALUE descriptor = rb_iv_get(klass, kDescriptorInstanceVar);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
   VALUE msgklass = Descriptor_msgclass(descriptor);
 
@@ -335,21 +702,17 @@ VALUE Message_decode(VALUE klass, VALUE data) {
 
   const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
   const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
-  upb_pbdecoder decoder;
+  stackenv se;
+  stackenv_init(&se, "Error occurred during parsing: %s");
+
   upb_sink sink;
-  upb_status status = UPB_STATUS_INIT;
-
-  upb_pbdecoder_init(&decoder, method, &status);
   upb_sink_reset(&sink, h, msg);
-  upb_pbdecoder_resetoutput(&decoder, &sink);
+  upb_pbdecoder* decoder =
+      upb_pbdecoder_create(&se.env, method, &sink);
   upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
-                    upb_pbdecoder_input(&decoder));
+                    upb_pbdecoder_input(decoder));
 
-  upb_pbdecoder_uninit(&decoder);
-  if (!upb_ok(&status)) {
-    rb_raise(rb_eRuntimeError, "Error occurred during parsing: %s.",
-             upb_status_errmsg(&status));
-  }
+  stackenv_uninit(&se);
 
   return msg_rb;
 }
@@ -363,7 +726,7 @@ VALUE Message_decode(VALUE klass, VALUE data) {
  * and returns a message object with the corresponding field values.
  */
 VALUE Message_decode_json(VALUE klass, VALUE data) {
-  VALUE descriptor = rb_iv_get(klass, kDescriptorInstanceVar);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
   VALUE msgklass = Descriptor_msgclass(descriptor);
 
@@ -378,21 +741,16 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
   MessageHeader* msg;
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
-  upb_status status = UPB_STATUS_INIT;
-  upb_json_parser parser;
-  upb_json_parser_init(&parser, &status);
+  stackenv se;
+  stackenv_init(&se, "Error occurred during parsing: %s");
 
   upb_sink sink;
   upb_sink_reset(&sink, get_fill_handlers(desc), msg);
-  upb_json_parser_resetoutput(&parser, &sink);
+  upb_json_parser* parser = upb_json_parser_create(&se.env, &sink);
   upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
-                    upb_json_parser_input(&parser));
+                    upb_json_parser_input(parser));
 
-  upb_json_parser_uninit(&parser);
-  if (!upb_ok(&status)) {
-    rb_raise(rb_eRuntimeError, "Error occurred during parsing: %s.",
-             upb_status_errmsg(&status));
-  }
+  stackenv_uninit(&se);
 
   return msg_rb;
 }
@@ -503,7 +861,7 @@ static void putsubmsg(VALUE submsg, const upb_fielddef *f, upb_sink *sink,
   if (submsg == Qnil) return;
 
   upb_sink subsink;
-  VALUE descriptor = rb_iv_get(submsg, kDescriptorInstanceVar);
+  VALUE descriptor = rb_ivar_get(submsg, descriptor_instancevar_interned);
   Descriptor* subdesc = ruby_to_Descriptor(descriptor);
 
   upb_sink_startsubmsg(sink, getsel(f, UPB_HANDLER_STARTSUBMSG), &subsink);
@@ -558,46 +916,149 @@ static void putary(VALUE ary, const upb_fielddef *f, upb_sink *sink,
   upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
 }
 
+static void put_ruby_value(VALUE value,
+                           const upb_fielddef *f,
+                           VALUE type_class,
+                           int depth,
+                           upb_sink *sink) {
+  upb_selector_t sel = 0;
+  if (upb_fielddef_isprimitive(f)) {
+    sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
+  }
+
+  switch (upb_fielddef_type(f)) {
+    case UPB_TYPE_INT32:
+      upb_sink_putint32(sink, sel, NUM2INT(value));
+      break;
+    case UPB_TYPE_INT64:
+      upb_sink_putint64(sink, sel, NUM2LL(value));
+      break;
+    case UPB_TYPE_UINT32:
+      upb_sink_putuint32(sink, sel, NUM2UINT(value));
+      break;
+    case UPB_TYPE_UINT64:
+      upb_sink_putuint64(sink, sel, NUM2ULL(value));
+      break;
+    case UPB_TYPE_FLOAT:
+      upb_sink_putfloat(sink, sel, NUM2DBL(value));
+      break;
+    case UPB_TYPE_DOUBLE:
+      upb_sink_putdouble(sink, sel, NUM2DBL(value));
+      break;
+    case UPB_TYPE_ENUM: {
+      if (TYPE(value) == T_SYMBOL) {
+        value = rb_funcall(type_class, rb_intern("resolve"), 1, value);
+      }
+      upb_sink_putint32(sink, sel, NUM2INT(value));
+      break;
+    }
+    case UPB_TYPE_BOOL:
+      upb_sink_putbool(sink, sel, value == Qtrue);
+      break;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+      putstr(value, f, sink);
+      break;
+    case UPB_TYPE_MESSAGE:
+      putsubmsg(value, f, sink, depth);
+  }
+}
+
+static void putmap(VALUE map, const upb_fielddef *f, upb_sink *sink,
+                   int depth) {
+  if (map == Qnil) return;
+  Map* self = ruby_to_Map(map);
+
+  upb_sink subsink;
+
+  upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
+
+  assert(upb_fielddef_type(f) == UPB_TYPE_MESSAGE);
+  const upb_fielddef* key_field = map_field_key(f);
+  const upb_fielddef* value_field = map_field_value(f);
+
+  Map_iter it;
+  for (Map_begin(map, &it); !Map_done(&it); Map_next(&it)) {
+    VALUE key = Map_iter_key(&it);
+    VALUE value = Map_iter_value(&it);
+
+    upb_sink entry_sink;
+    upb_sink_startsubmsg(&subsink, getsel(f, UPB_HANDLER_STARTSUBMSG),
+                         &entry_sink);
+    upb_sink_startmsg(&entry_sink);
+
+    put_ruby_value(key, key_field, Qnil, depth + 1, &entry_sink);
+    put_ruby_value(value, value_field, self->value_type_class, depth + 1,
+                   &entry_sink);
+
+    upb_status status;
+    upb_sink_endmsg(&entry_sink, &status);
+    upb_sink_endsubmsg(&subsink, getsel(f, UPB_HANDLER_ENDSUBMSG));
+  }
+
+  upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));
+}
+
 static void putmsg(VALUE msg_rb, const Descriptor* desc,
                    upb_sink *sink, int depth) {
   upb_sink_startmsg(sink);
 
   // Protect against cycles (possible because users may freely reassign message
   // and repeated fields) by imposing a maximum recursion depth.
-  if (depth > UPB_SINK_MAX_NESTING) {
+  if (depth > ENCODE_MAX_NESTING) {
     rb_raise(rb_eRuntimeError,
              "Maximum recursion depth exceeded during encoding.");
   }
 
   MessageHeader* msg;
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
-  void* msg_data = Message_data(msg);
 
-  upb_msg_iter i;
-  for (upb_msg_begin(&i, desc->msgdef);
-       !upb_msg_done(&i);
-       upb_msg_next(&i)) {
+  upb_msg_field_iter i;
+  for (upb_msg_field_begin(&i, desc->msgdef);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
-    uint32_t offset = desc->layout->offsets[upb_fielddef_index(f)];
+    uint32_t offset =
+        desc->layout->fields[upb_fielddef_index(f)].offset +
+        sizeof(MessageHeader);
 
-    if (upb_fielddef_isseq(f)) {
-      VALUE ary = DEREF(msg_data, offset, VALUE);
+    if (upb_fielddef_containingoneof(f)) {
+      uint32_t oneof_case_offset =
+          desc->layout->fields[upb_fielddef_index(f)].case_offset +
+          sizeof(MessageHeader);
+      // For a oneof, check that this field is actually present -- skip all the
+      // below if not.
+      if (DEREF(msg, oneof_case_offset, uint32_t) !=
+          upb_fielddef_number(f)) {
+        continue;
+      }
+      // Otherwise, fall through to the appropriate singular-field handler
+      // below.
+    }
+
+    if (is_map_field(f)) {
+      VALUE map = DEREF(msg, offset, VALUE);
+      if (map != Qnil) {
+        putmap(map, f, sink, depth);
+      }
+    } else if (upb_fielddef_isseq(f)) {
+      VALUE ary = DEREF(msg, offset, VALUE);
       if (ary != Qnil) {
         putary(ary, f, sink, depth);
       }
     } else if (upb_fielddef_isstring(f)) {
-      VALUE str = DEREF(msg_data, offset, VALUE);
+      VALUE str = DEREF(msg, offset, VALUE);
       if (RSTRING_LEN(str) > 0) {
         putstr(str, f, sink);
       }
     } else if (upb_fielddef_issubmsg(f)) {
-      putsubmsg(DEREF(msg_data, offset, VALUE), f, sink, depth);
+      putsubmsg(DEREF(msg, offset, VALUE), f, sink, depth);
     } else {
       upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
 
 #define T(upbtypeconst, upbtype, ctype, default_value)                \
   case upbtypeconst: {                                                \
-      ctype value = DEREF(msg_data, offset, ctype);                   \
+      ctype value = DEREF(msg, offset, ctype);                        \
       if (value != default_value) {                                   \
         upb_sink_put##upbtype(sink, sel, value);                      \
       }                                                               \
@@ -653,7 +1114,7 @@ static const upb_handlers* msgdef_json_serialize_handlers(Descriptor* desc) {
  * wire format.
  */
 VALUE Message_encode(VALUE klass, VALUE msg_rb) {
-  VALUE descriptor = rb_iv_get(klass, kDescriptorInstanceVar);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
 
   stringsink sink;
@@ -662,15 +1123,16 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
   const upb_handlers* serialize_handlers =
       msgdef_pb_serialize_handlers(desc);
 
-  upb_pb_encoder encoder;
-  upb_pb_encoder_init(&encoder, serialize_handlers);
-  upb_pb_encoder_resetoutput(&encoder, &sink.sink);
+  stackenv se;
+  stackenv_init(&se, "Error occurred during encoding: %s");
+  upb_pb_encoder* encoder =
+      upb_pb_encoder_create(&se.env, serialize_handlers, &sink.sink);
 
-  putmsg(msg_rb, desc, upb_pb_encoder_input(&encoder), 0);
+  putmsg(msg_rb, desc, upb_pb_encoder_input(encoder), 0);
 
   VALUE ret = rb_str_new(sink.ptr, sink.len);
 
-  upb_pb_encoder_uninit(&encoder);
+  stackenv_uninit(&se);
   stringsink_uninit(&sink);
 
   return ret;
@@ -683,7 +1145,7 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
  * Encodes the given message object into its serialized JSON representation.
  */
 VALUE Message_encode_json(VALUE klass, VALUE msg_rb) {
-  VALUE descriptor = rb_iv_get(klass, kDescriptorInstanceVar);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
 
   stringsink sink;
@@ -692,64 +1154,18 @@ VALUE Message_encode_json(VALUE klass, VALUE msg_rb) {
   const upb_handlers* serialize_handlers =
       msgdef_json_serialize_handlers(desc);
 
-  upb_json_printer printer;
-  upb_json_printer_init(&printer, serialize_handlers);
-  upb_json_printer_resetoutput(&printer, &sink.sink);
+  stackenv se;
+  stackenv_init(&se, "Error occurred during encoding: %s");
+  upb_json_printer* printer =
+      upb_json_printer_create(&se.env, serialize_handlers, &sink.sink);
 
-  putmsg(msg_rb, desc, upb_json_printer_input(&printer), 0);
+  putmsg(msg_rb, desc, upb_json_printer_input(printer), 0);
 
   VALUE ret = rb_str_new(sink.ptr, sink.len);
 
-  upb_json_printer_uninit(&printer);
+  stackenv_uninit(&se);
   stringsink_uninit(&sink);
 
   return ret;
 }
 
-/*
- * call-seq:
- *     Google::Protobuf.encode(msg) => bytes
- *
- * Encodes the given message object to protocol buffers wire format. This is an
- * alternative to the #encode method on msg's class.
- */
-VALUE Google_Protobuf_encode(VALUE self, VALUE msg_rb) {
-  VALUE klass = CLASS_OF(msg_rb);
-  return Message_encode(klass, msg_rb);
-}
-
-/*
- * call-seq:
- *     Google::Protobuf.encode_json(msg) => json_string
- *
- * Encodes the given message object to its JSON representation. This is an
- * alternative to the #encode_json method on msg's class.
- */
-VALUE Google_Protobuf_encode_json(VALUE self, VALUE msg_rb) {
-  VALUE klass = CLASS_OF(msg_rb);
-  return Message_encode_json(klass, msg_rb);
-}
-
-/*
- * call-seq:
- *     Google::Protobuf.decode(class, bytes) => msg
- *
- * Decodes the given bytes as protocol buffers wire format under the
- * interpretation given by the given class's message definition. This is an
- * alternative to the #decode method on the given class.
- */
-VALUE Google_Protobuf_decode(VALUE self, VALUE klass, VALUE msg_rb) {
-  return Message_decode(klass, msg_rb);
-}
-
-/*
- * call-seq:
- *     Google::Protobuf.decode_json(class, json_string) => msg
- *
- * Decodes the given JSON string under the interpretation given by the given
- * class's message definition. This is an alternative to the #decode_json method
- * on the given class.
- */
-VALUE Google_Protobuf_decode_json(VALUE self, VALUE klass, VALUE msg_rb) {
-  return Message_decode_json(klass, msg_rb);
-}

@@ -82,6 +82,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   //   }
   // FOO_EXPORT is a macro which should expand to __declspec(dllexport) or
   // __declspec(dllimport) depending on what is being compiled.
+  //
   Options file_options;
 
   for (int i = 0; i < options.size(); i++) {

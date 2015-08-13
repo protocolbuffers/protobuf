@@ -34,7 +34,7 @@ package protobuf_unittest;
 
 import "google/protobuf/nano/unittest_nano.proto";
 
-option java_package = "com.google.protobuf.nano";
+option java_package = "com.google.protobuf";
 option java_multiple_files = true;
 
 // A container message for testing the merging of repeated fields at a

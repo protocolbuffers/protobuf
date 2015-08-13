@@ -154,6 +154,14 @@ string UnderscoresToCamelCase(const MethodDescriptor* method) {
   return UnderscoresToCamelCaseImpl(method->name(), false);
 }
 
+string UnderscoresToCamelCase(const OneofDescriptor* oneof) {
+  return UnderscoresToCamelCaseImpl(oneof->name(), false);
+}
+
+string UnderscoresToCapitalizedCamelCase(const OneofDescriptor* oneof) {
+  return UnderscoresToCamelCaseImpl(oneof->name(), true);
+}
+
 string RenameJavaKeywords(const string& input) {
   return sRenameKeywords.RenameJavaKeywordsImpl(input);
 }
@@ -192,6 +200,14 @@ string FileJavaPackage(const Params& params, const FileDescriptor* file) {
       if (!result.empty()) result += '.';
       result += file->package();
     }
+
+    if (!file->options().javanano_use_deprecated_package()) {
+      if (!result.empty()) {
+        result += ".";
+      }
+      result += "nano";
+    }
+
     return result;
   }
 }
@@ -558,6 +574,17 @@ void SetBitOperationVariables(const string name,
   (*variables)["set_" + name] = GenerateSetBit(bitIndex);
   (*variables)["clear_" + name] = GenerateClearBit(bitIndex);
   (*variables)["different_" + name] = GenerateDifferentBit(bitIndex);
+}
+
+bool HasMapField(const Descriptor* descriptor) {
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    const FieldDescriptor* field = descriptor->field(i);
+    if (field->type() == FieldDescriptor::TYPE_MESSAGE &&
+        IsMapEntry(field->message_type())) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace javanano

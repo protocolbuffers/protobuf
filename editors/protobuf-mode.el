@@ -106,7 +106,7 @@
 ;; cc-mode.  So, we approximate as best we can.
 
 (c-lang-defconst c-type-list-kwds
-  protobuf '("extensions" "to"))
+  protobuf '("extensions" "to" "reserved"))
 
 (c-lang-defconst c-typeless-decl-kwds
   protobuf '("extend" "rpc" "option" "returns"))

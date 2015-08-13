@@ -36,7 +36,6 @@ syntax = "proto2";
 
 package google.protobuf.util;
 
-
 message DownRevision {
   enum Enum {
     DEFAULT_VALUE = 2;

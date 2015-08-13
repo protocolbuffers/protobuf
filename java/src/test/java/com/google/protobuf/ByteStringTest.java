@@ -41,6 +41,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -56,7 +57,7 @@ import java.util.Random;
  */
 public class ByteStringTest extends TestCase {
 
-  private static final String UTF_16 = "UTF-16";
+  private static final Charset UTF_16 = Charset.forName("UTF-16");
 
   static byte[] getTestBytes(int size, long seed) {
     Random random = new Random(seed);
@@ -139,7 +140,7 @@ public class ByteStringTest extends TestCase {
   public void testCopyFrom_Utf8() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString byteString = ByteString.copyFromUtf8(testString);
-    byte[] testBytes = testString.getBytes("UTF-8");
+    byte[] testBytes = testString.getBytes(Internal.UTF_8);
     assertTrue("copyFromUtf8 string must respect the charset",
         isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length));
   }
@@ -380,7 +381,7 @@ public class ByteStringTest extends TestCase {
       return -1;
     }
   }
-  
+
   // A stream which exposes the byte array passed into write(byte[], int, int).
   private static class EvilOutputStream extends OutputStream {
     public byte[] capturedArray = null;
@@ -400,7 +401,7 @@ public class ByteStringTest extends TestCase {
 
   public void testToStringUtf8() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
-    byte[] testBytes = testString.getBytes("UTF-8");
+    byte[] testBytes = testString.getBytes(Internal.UTF_8);
     ByteString byteString = ByteString.copyFrom(testBytes);
     assertEquals("copyToStringUtf8 must respect the charset",
         testString, byteString.toStringUtf8());
@@ -492,13 +493,13 @@ public class ByteStringTest extends TestCase {
           isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));
     }
   }
-  
+
   public void testNewOutputEmpty() throws IOException {
     // Make sure newOutput() correctly builds empty byte strings
     ByteString byteString = ByteString.newOutput().toByteString();
     assertEquals(ByteString.EMPTY, byteString);
   }
-  
+
   public void testNewOutput_Mutating() throws IOException {
     Output os = ByteString.newOutput(5);
     os.write(new byte[] {1, 2, 3, 4, 5});
@@ -705,14 +706,14 @@ public class ByteStringTest extends TestCase {
     }
     return pieces;
   }
-  
+
   private byte[] substringUsingWriteTo(
       ByteString data, int offset, int length) throws IOException {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     data.writeTo(output, offset, length);
     return output.toByteArray();
   }
-  
+
   public void testWriteToOutputStream() throws Exception {
     // Choose a size large enough so when two ByteStrings are concatenated they
     // won't be merged into one byte array due to some optimizations.
@@ -727,7 +728,7 @@ public class ByteStringTest extends TestCase {
     byte[] result = substringUsingWriteTo(left, 1, 1);
     assertEquals(1, result.length);
     assertEquals((byte) 11, result[0]);
-    
+
     byte[] data2 = new byte[dataSize];
     for (int i = 0; i < data1.length; i++) {
       data2[i] = (byte) 2;

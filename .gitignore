@@ -16,14 +16,15 @@ m4/ltoptions.m4
 m4/ltsugar.m4
 m4/ltversion.m4
 m4/lt~obsolete.m4
+autom4te.cache
 
 # downloaded files
-gtest
+gmock
 
 # in-tree configure-generated files
 Makefile
 src/Makefile
-config.h
+/config.h
 config.log
 config.status
 
@@ -38,17 +39,22 @@ stamp-h1
 *.lo
 *.la
 src/.libs
+*.so
 
 .dirstamp
 
+any_test.pb.*
 map*unittest.pb.*
 unittest*.pb.*
 cpp_test*.pb.*
+src/google/protobuf/util/**/*.pb.cc
+src/google/protobuf/util/**/*.pb.h
 
 *.pyc
 *.so
 *.egg-info
 *_pb2.py
+python/*.egg
 python/.eggs/
 python/.tox
 python/build/
@@ -63,3 +69,39 @@ src/test_plugin
 src/testzip.*
 src/zcg*zip
 ar-lib
+
+test-driver
+compile
+
+src/**/*.log
+src/**/*.trs
+
+# JavaBuild output.
+java/target
+javanano/target
+
+# Windows native output.
+cmake/build
+
+# NuGet packages: we want the repository configuration, but not the
+# packages themselves.
+/csharp/src/packages/*/
+
+# Directories created by opening the Objective C Xcode projects.
+objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcuserdata/
+objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_OSX.xccheckout
+objectivec/ProtocolBuffers_OSX.xcodeproj/xcuserdata/
+objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcuserdata/
+objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_iOS.xccheckout
+objectivec/ProtocolBuffers_iOS.xcodeproj/xcuserdata/
+# OS X's Finder creates these for state about opened windows/etc.
+**/.DS_Store
+
+# Comformance test output
+conformance/.libs/
+conformance/com/
+conformance/conformance-cpp
+conformance/conformance-test-runner
+conformance/conformance.pb.cc
+conformance/conformance.pb.h
+conformance/protoc_middleman

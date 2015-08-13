@@ -208,6 +208,17 @@ class LIBPROTOBUF_EXPORT TextFormat {
           print_message_fields_in_index_order;
     }
 
+    // If expand==true, expand google.protobuf.Any payloads. The output
+    // will be of form
+    //    [type_url] { <value_printed_in_text> }
+    //
+    // If expand==false, print Any using the default printer. The output will
+    // look like
+    //    type_url: "<type_url>"  value: "serialized_content"
+    void SetExpandAny(bool expand) {
+      expand_any_ = expand;
+    }
+
     // Register a custom field-specific FieldValuePrinter for fields
     // with a particular FieldDescriptor.
     // Returns "true" if the registration succeeded, or "false", if there is
@@ -259,6 +270,8 @@ class LIBPROTOBUF_EXPORT TextFormat {
     void PrintUnknownFields(const UnknownFieldSet& unknown_fields,
                             TextGenerator& generator) const;
 
+    bool PrintAny(const Message& message, TextGenerator& generator) const;
+
     int initial_indent_level_;
 
     bool single_line_mode_;
@@ -271,6 +284,8 @@ class LIBPROTOBUF_EXPORT TextFormat {
 
     bool print_message_fields_in_index_order_;
 
+    bool expand_any_;
+
     google::protobuf::scoped_ptr<const FieldValuePrinter> default_field_value_printer_;
     typedef map<const FieldDescriptor*,
                 const FieldValuePrinter*> CustomPrinterMap;
@@ -278,8 +293,20 @@ class LIBPROTOBUF_EXPORT TextFormat {
   };
 
   // Parses a text-format protocol message from the given input stream to
-  // the given message object.  This function parses the format written
-  // by Print().
+  // the given message object. This function parses the human-readable format
+  // written by Print(). Returns true on success. The message is cleared first,
+  // even if the function fails -- See Merge() to avoid this behavior.
+  //
+  // Example input: "user {\n id: 123 extra { gender: MALE language: 'en' }\n}"
+  //
+  // One use for this function is parsing handwritten strings in test code.
+  // Another use is to parse the output from google::protobuf::Message::DebugString()
+  // (or ShortDebugString()), because these functions output using
+  // google::protobuf::TextFormat::Print().
+  //
+  // If you would like to read a protocol buffer serialized in the
+  // (non-human-readable) binary wire format, see
+  // google::protobuf::MessageLite::ParseFromString().
   static bool Parse(io::ZeroCopyInputStream* input, Message* output);
   // Like Parse(), but reads directly from a string.
   static bool ParseFromString(const string& input, Message* output);

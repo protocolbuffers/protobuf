@@ -184,6 +184,7 @@ message TestAllTypes {
 message NestedTestAllTypes {
   optional NestedTestAllTypes child = 1;
   optional TestAllTypes payload = 2;
+  repeated NestedTestAllTypes repeated_child = 3;
 }
 
 message TestDeprecatedFields {
@@ -200,6 +201,11 @@ enum ForeignEnum {
   FOREIGN_FOO = 4;
   FOREIGN_BAR = 5;
   FOREIGN_BAZ = 6;
+}
+
+message TestReservedFields {
+  reserved 2, 15, 9 to 11;
+  reserved "bar", "baz";
 }
 
 message TestAllExtensions {

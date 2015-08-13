@@ -30,7 +30,7 @@ module StressTest
       100_000.times do
         mnew = TestMessage.decode(data)
         mnew = mnew.dup
-        assert mnew.inspect == m.inspect
+        assert_equal mnew.inspect, m.inspect
         assert TestMessage.encode(mnew) == data
       end
     end

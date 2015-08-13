@@ -42,7 +42,7 @@ import java.util.Iterator;
 /**
  * This class tests {@link RopeByteString} by inheriting the tests from
  * {@link LiteralByteStringTest}.  Only a couple of methods are overridden.
- * 
+ *
  * <p>A full test of the result of {@link RopeByteString#substring(int, int)} is found in the
  * separate class {@link RopeByteStringSubstringTest}.
  *
@@ -116,6 +116,60 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     assertEquals(classUnderTest + " string must equal the flat string", flatString, unicode);
     assertEquals(classUnderTest + " string must must have same hashCode as the flat string",
         flatString.hashCode(), unicode.hashCode());
+  }
+
+  @Override
+  public void testCharsetToString() throws UnsupportedEncodingException {
+    String sourceString = "I love unicode \u1234\u5678 characters";
+    ByteString sourceByteString = ByteString.copyFromUtf8(sourceString);
+    int copies = 250;
+
+    // By building the RopeByteString by concatenating, this is actually a fairly strenuous test.
+    StringBuilder builder = new StringBuilder(copies * sourceString.length());
+    ByteString unicode = ByteString.EMPTY;
+    for (int i = 0; i < copies; ++i) {
+      builder.append(sourceString);
+      unicode = RopeByteString.concatenate(unicode, sourceByteString);
+    }
+    String testString = builder.toString();
+
+    assertEquals(classUnderTest + " from string must have the expected type",
+        classUnderTest, getActualClassName(unicode));
+    String roundTripString = unicode.toString(Internal.UTF_8);
+    assertEquals(classUnderTest + " unicode bytes must match",
+        testString, roundTripString);
+    ByteString flatString = ByteString.copyFromUtf8(testString);
+    assertEquals(classUnderTest + " string must equal the flat string", flatString, unicode);
+    assertEquals(classUnderTest + " string must must have same hashCode as the flat string",
+        flatString.hashCode(), unicode.hashCode());
+  }
+
+  @Override
+  public void testToString_returnsCanonicalEmptyString() throws UnsupportedEncodingException {
+    RopeByteString ropeByteString =
+        RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
+    assertSame(classUnderTest + " must be the same string references",
+        ByteString.EMPTY.toString(Internal.UTF_8), ropeByteString.toString(Internal.UTF_8));
+  }
+
+  public void testToString_raisesException() throws UnsupportedEncodingException{
+    try {
+      ByteString byteString =
+          RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
+      byteString.toString("invalid");
+      fail("Should have thrown an exception.");
+    } catch (UnsupportedEncodingException expected) {
+      // This is success
+    }
+
+    try {
+      ByteString byteString = RopeByteString.concatenate(ByteString.copyFromUtf8("foo"),
+          ByteString.copyFromUtf8("bar"));
+      byteString.toString("invalid");
+      fail("Should have thrown an exception.");
+    } catch (UnsupportedEncodingException expected) {
+      // This is success
+    }
   }
 
   public void testJavaSerialization() throws Exception {

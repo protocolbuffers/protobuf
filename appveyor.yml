@@ -1,0 +1,32 @@
+# Only test one combination: "Visual Studio 12 + Win64 + Debug + DLL". We can
+# test more combinations but AppVeyor just takes too long to finish (each
+# combination takes ~15mins).
+platform:
+  - Win64
+
+configuration:
+  - Debug
+
+environment:
+  matrix:
+    - language: cpp
+      BUILD_DLL: ON
+
+    - language: csharp
+
+install:
+  - ps: Start-FileDownload https://googlemock.googlecode.com/files/gmock-1.7.0.zip
+  - 7z x gmock-1.7.0.zip
+  - rename gmock-1.7.0 gmock
+
+before_build:
+  - if %platform%==Win32 set generator=Visual Studio 12
+  - if %platform%==Win64 set generator=Visual Studio 12 Win64
+  - if %platform%==Win32 set vcplatform=Win32
+  - if %platform%==Win64 set vcplatform=x64
+
+build_script:
+  - CALL appveyor.bat
+
+skip_commits:
+  message: /.*\[skip appveyor\].*/

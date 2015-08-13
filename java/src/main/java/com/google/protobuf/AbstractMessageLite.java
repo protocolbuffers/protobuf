@@ -31,8 +31,8 @@
 package com.google.protobuf;
 
 import java.io.FilterInputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 
@@ -109,6 +109,11 @@ public abstract class AbstractMessageLite implements MessageLite {
     }
   }
 
+  protected static <T> void addAll(final Iterable<T> values,
+      final Collection<? super T> list) {
+    Builder.addAll(values, list);
+  }
+  
   /**
    * A partial implementation of the {@link Message.Builder} interface which
    * implements as many methods of that interface as possible in terms of
@@ -320,12 +325,15 @@ public abstract class AbstractMessageLite implements MessageLite {
      * Adds the {@code values} to the {@code list}.  This is a helper method
      * used by generated code.  Users should ignore it.
      *
-     * @throws NullPointerException if any of the elements of {@code values} is
-     * null. When that happens, some elements of {@code values} may have already
-     * been added to the result {@code list}.
+     * @throws NullPointerException if {@code values} or any of the elements of
+     * {@code values} is null. When that happens, some elements of
+     * {@code values} may have already been added to the result {@code list}.
      */
     protected static <T> void addAll(final Iterable<T> values,
                                      final Collection<? super T> list) {
+      if (values == null) {
+        throw new NullPointerException();
+      }
       if (values instanceof LazyStringList) {
         // For StringOrByteStringLists, check the underlying elements to avoid
         // forcing conversions of ByteStrings to Strings.

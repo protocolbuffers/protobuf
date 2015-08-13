@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
@@ -35,7 +35,6 @@
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import unittest
-
 from google.protobuf import message
 from google.protobuf.internal import wire_format
 

@@ -59,6 +59,10 @@
 #include <vector>
 #include <google/protobuf/stubs/common.h>
 
+// TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
+#ifdef TYPE_BOOL
+#undef TYPE_BOOL
+#endif  // TYPE_BOOL
 
 namespace google {
 namespace protobuf {
@@ -117,8 +121,10 @@ struct SourceLocation {
   int end_column;
 
   // Doc comments found at the source location.
+  // See the comments in SourceCodeInfo.Location (descriptor.proto) for details.
   string leading_comments;
   string trailing_comments;
+  vector<string> leading_detached_comments;
 };
 
 // Options when generating machine-parsable output from a descriptor with
@@ -129,10 +135,14 @@ struct DebugStringOptions {
   // example, the C++ code generation for fields in the proto compiler) rely on
   // DebugString() output being unobstructed by user comments.
   bool include_comments;
+  // If true, elide the braced body in the debug string.
+  bool elide_group_body;
+  bool elide_oneof_body;
 
   DebugStringOptions()
-      : include_comments(false)
-  {}
+      : include_comments(false),
+        elide_group_body(false),
+        elide_oneof_body(false) {}
 };
 
 // Describes a type of protocol message, or a particular group within a
@@ -292,6 +302,36 @@ class LIBPROTOBUF_EXPORT Descriptor {
   // this message type's scope.
   const FieldDescriptor* FindExtensionByCamelcaseName(const string& name) const;
 
+  // Reserved fields -------------------------------------------------
+
+  // A range of reserved field numbers.
+  struct ReservedRange {
+    int start;  // inclusive
+    int end;    // exclusive
+  };
+
+  // The number of reserved ranges in this message type.
+  int reserved_range_count() const;
+  // Gets an reserved range by index, where 0 <= index <
+  // reserved_range_count(). These are returned in the order they were defined
+  // in the .proto file.
+  const ReservedRange* reserved_range(int index) const;
+
+  // Returns true if the number is in one of the reserved ranges.
+  bool IsReservedNumber(int number) const;
+
+  // Returns NULL if no reserved range contains the given number.
+  const ReservedRange* FindReservedRangeContainingNumber(int number) const;
+
+  // The number of reserved field names in this message type.
+  int reserved_name_count() const;
+
+  // Gets a reserved name by index, where 0 <= index < reserved_name_count().
+  const string& reserved_name(int index) const;
+
+  // Returns true if the field name is reserved.
+  bool IsReservedName(const string& name) const;
+
   // Source Location ---------------------------------------------------
 
   // Updates |*out_location| to the source location of the complete
@@ -312,7 +352,7 @@ class LIBPROTOBUF_EXPORT Descriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -337,6 +377,10 @@ class LIBPROTOBUF_EXPORT Descriptor {
   ExtensionRange* extension_ranges_;
   int extension_count_;
   FieldDescriptor* extensions_;
+  int reserved_range_count_;
+  ReservedRange* reserved_ranges_;
+  int reserved_name_count_;
+  const string** reserved_names_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<Descriptor>() and AllocateArray<Descriptor>() in descriptor.cc
   // and update them to initialize the field.
@@ -594,7 +638,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -688,7 +732,7 @@ class LIBPROTOBUF_EXPORT OneofDescriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -790,7 +834,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -874,7 +918,7 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -949,7 +993,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -1028,7 +1072,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptor {
 
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
-  void GetLocationPath(vector<int>* output) const;
+  void GetLocationPath(std::vector<int>* output) const;
 
   const string* name_;
   const string* full_name_;
@@ -1173,17 +1217,15 @@ class LIBPROTOBUF_EXPORT FileDescriptor {
   // this file declaration (namely, the empty path).
   bool GetSourceLocation(SourceLocation* out_location) const;
 
- private:
-  // Source Location ---------------------------------------------------
-
   // Updates |*out_location| to the source location of the complete
   // extent of the declaration or declaration-part denoted by |path|.
   // Returns false and leaves |*out_location| unchanged iff location
   // information was not available.  (See SourceCodeInfo for
   // description of path encoding.)
-  bool GetSourceLocation(const vector<int>& path,
+  bool GetSourceLocation(const std::vector<int>& path,
                          SourceLocation* out_location) const;
 
+ private:
   typedef FileOptions OptionsType;
 
   const string* name_;
@@ -1326,7 +1368,7 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
   // found: extensions defined in the fallback database might not be found
   // depending on the database implementation.
   void FindAllExtensions(const Descriptor* extendee,
-                         vector<const FieldDescriptor*>* out) const;
+                         std::vector<const FieldDescriptor*>* out) const;
 
   // Building descriptors --------------------------------------------
 
@@ -1563,6 +1605,12 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, extension_range,
                                const Descriptor::ExtensionRange*)
 PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, extension,
                                const FieldDescriptor*)
+
+PROTOBUF_DEFINE_ACCESSOR(Descriptor, reserved_range_count, int)
+PROTOBUF_DEFINE_ARRAY_ACCESSOR(Descriptor, reserved_range,
+                               const Descriptor::ReservedRange*)
+PROTOBUF_DEFINE_ACCESSOR(Descriptor, reserved_name_count, int)
+
 PROTOBUF_DEFINE_OPTIONS_ACCESSOR(Descriptor, MessageOptions);
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, is_placeholder, bool)
 
@@ -1661,6 +1709,25 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(FileDescriptor, extension,
 
 inline bool Descriptor::IsExtensionNumber(int number) const {
   return FindExtensionRangeContainingNumber(number) != NULL;
+}
+
+inline bool Descriptor::IsReservedNumber(int number) const {
+  return FindReservedRangeContainingNumber(number) != NULL;
+}
+
+inline bool Descriptor::IsReservedName(const string& name) const {
+  for (int i = 0; i < reserved_name_count(); i++) {
+    if (name == reserved_name(i)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because reserved_names_ is actually
+// an array of pointers rather than the usual array of objects.
+inline const string& Descriptor::reserved_name(int index) const {
+  return *reserved_names_[index];
 }
 
 inline bool FieldDescriptor::is_required() const {

@@ -127,7 +127,11 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   // files that applied the ctype.  The field can still be accessed via the
   // reflection interface since the reflection interface is independent of
   // the string's underlying representation.
-  if (descriptor_->options().ctype() != FieldOptions::STRING) {
+
+  bool unknown_ctype =
+      descriptor_->options().ctype() != EffectiveStringCType(descriptor_);
+
+  if (unknown_ctype) {
     printer->Outdent();
     printer->Print(
       " private:\n"
@@ -136,23 +140,23 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   }
 
   printer->Print(variables_,
-    "inline const ::std::string& $name$() const$deprecation$;\n"
-    "inline void set_$name$(const ::std::string& value)$deprecation$;\n"
-    "inline void set_$name$(const char* value)$deprecation$;\n"
-    "inline void set_$name$(const $pointer_type$* value, size_t size)"
+    "const ::std::string& $name$() const$deprecation$;\n"
+    "void set_$name$(const ::std::string& value)$deprecation$;\n"
+    "void set_$name$(const char* value)$deprecation$;\n"
+    "void set_$name$(const $pointer_type$* value, size_t size)"
                  "$deprecation$;\n"
-    "inline ::std::string* mutable_$name$()$deprecation$;\n"
-    "inline ::std::string* $release_name$()$deprecation$;\n"
-    "inline void set_allocated_$name$(::std::string* $name$)$deprecation$;\n");
+    "::std::string* mutable_$name$()$deprecation$;\n"
+    "::std::string* $release_name$()$deprecation$;\n"
+    "void set_allocated_$name$(::std::string* $name$)$deprecation$;\n");
   if (SupportsArenas(descriptor_)) {
     printer->Print(variables_,
-      "inline ::std::string* unsafe_arena_release_$name$()$deprecation$;\n"
-      "inline void unsafe_arena_set_allocated_$name$(\n"
+      "::std::string* unsafe_arena_release_$name$()$deprecation$;\n"
+      "void unsafe_arena_set_allocated_$name$(\n"
       "    ::std::string* $name$)$deprecation$;\n");
   }
 
 
-  if (descriptor_->options().ctype() != FieldOptions::STRING) {
+  if (unknown_ctype) {
     printer->Outdent();
     printer->Print(" public:\n");
     printer->Indent();
@@ -160,25 +164,28 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 }
 
 void StringFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+GenerateInlineAccessorDefinitions(io::Printer* printer,
+                                  bool is_inline) const {
+  map<string, string> variables(variables_);
+  variables["inline"] = is_inline ? "inline" : "";
   if (SupportsArenas(descriptor_)) {
-    printer->Print(variables_,
-      "inline const ::std::string& $classname$::$name$() const {\n"
+    printer->Print(variables,
+      "$inline$ const ::std::string& $classname$::$name$() const {\n"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  return $name$_.Get($default_variable$);\n"
       "}\n"
-      "inline void $classname$::set_$name$(const ::std::string& value) {\n"
+      "$inline$ void $classname$::set_$name$(const ::std::string& value) {\n"
       "  $set_hasbit$\n"
       "  $name$_.Set($default_variable$, value, GetArenaNoVirtual());\n"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
-      "inline void $classname$::set_$name$(const char* value) {\n"
+      "$inline$ void $classname$::set_$name$(const char* value) {\n"
       "  $set_hasbit$\n"
       "  $name$_.Set($default_variable$, $string_piece$(value),\n"
       "              GetArenaNoVirtual());\n"
       "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
       "}\n"
-      "inline "
+      "$inline$ "
       "void $classname$::set_$name$(const $pointer_type$* value,\n"
       "    size_t size) {\n"
       "  $set_hasbit$\n"
@@ -186,22 +193,22 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "      reinterpret_cast<const char*>(value), size), GetArenaNoVirtual());\n"
       "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
       "}\n"
-      "inline ::std::string* $classname$::mutable_$name$() {\n"
+      "$inline$ ::std::string* $classname$::mutable_$name$() {\n"
       "  $set_hasbit$\n"
       "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
       "  return $name$_.Mutable($default_variable$, GetArenaNoVirtual());\n"
       "}\n"
-      "inline ::std::string* $classname$::$release_name$() {\n"
+      "$inline$ ::std::string* $classname$::$release_name$() {\n"
       "  $clear_hasbit$\n"
       "  return $name$_.Release($default_variable$, GetArenaNoVirtual());\n"
       "}\n"
-      "inline ::std::string* $classname$::unsafe_arena_release_$name$() {\n"
+      "$inline$ ::std::string* $classname$::unsafe_arena_release_$name$() {\n"
       "  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);\n"
       "  $clear_hasbit$\n"
       "  return $name$_.UnsafeArenaRelease($default_variable$,\n"
       "      GetArenaNoVirtual());\n"
       "}\n"
-      "inline void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
+      "$inline$ void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
       "  if ($name$ != NULL) {\n"
       "    $set_hasbit$\n"
       "  } else {\n"
@@ -211,7 +218,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "      GetArenaNoVirtual());\n"
       "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
       "}\n"
-      "inline void $classname$::unsafe_arena_set_allocated_$name$(\n"
+      "$inline$ void $classname$::unsafe_arena_set_allocated_$name$(\n"
       "    ::std::string* $name$) {\n"
       "  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);\n"
       "  if ($name$ != NULL) {\n"
@@ -219,29 +226,28 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "  } else {\n"
       "    $clear_hasbit$\n"
       "  }\n"
-      "  $set_hasbit$\n"
       "  $name$_.UnsafeArenaSetAllocated($default_variable$,\n"
       "      $name$, GetArenaNoVirtual());\n"
       "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
       "}\n");
   } else {
     // No-arena case.
-    printer->Print(variables_,
-      "inline const ::std::string& $classname$::$name$() const {\n"
+    printer->Print(variables,
+      "$inline$ const ::std::string& $classname$::$name$() const {\n"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  return $name$_.GetNoArena($default_variable$);\n"
       "}\n"
-      "inline void $classname$::set_$name$(const ::std::string& value) {\n"
+      "$inline$ void $classname$::set_$name$(const ::std::string& value) {\n"
       "  $set_hasbit$\n"
       "  $name$_.SetNoArena($default_variable$, value);\n"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
-      "inline void $classname$::set_$name$(const char* value) {\n"
+      "$inline$ void $classname$::set_$name$(const char* value) {\n"
       "  $set_hasbit$\n"
       "  $name$_.SetNoArena($default_variable$, $string_piece$(value));\n"
       "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
       "}\n"
-      "inline "
+      "$inline$ "
       "void $classname$::set_$name$(const $pointer_type$* value, "
       "size_t size) {\n"
       "  $set_hasbit$\n"
@@ -249,16 +255,16 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "      $string_piece$(reinterpret_cast<const char*>(value), size));\n"
       "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
       "}\n"
-      "inline ::std::string* $classname$::mutable_$name$() {\n"
+      "$inline$ ::std::string* $classname$::mutable_$name$() {\n"
       "  $set_hasbit$\n"
       "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
       "  return $name$_.MutableNoArena($default_variable$);\n"
       "}\n"
-      "inline ::std::string* $classname$::$release_name$() {\n"
+      "$inline$ ::std::string* $classname$::$release_name$() {\n"
       "  $clear_hasbit$\n"
       "  return $name$_.ReleaseNoArena($default_variable$);\n"
       "}\n"
-      "inline void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
+      "$inline$ void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
       "  if ($name$ != NULL) {\n"
       "    $set_hasbit$\n"
       "  } else {\n"
@@ -422,17 +428,20 @@ StringOneofFieldGenerator(const FieldDescriptor* descriptor,
 StringOneofFieldGenerator::~StringOneofFieldGenerator() {}
 
 void StringOneofFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer) const {
+GenerateInlineAccessorDefinitions(io::Printer* printer,
+                                  bool is_inline) const {
+  map<string, string> variables(variables_);
+  variables["inline"] = is_inline ? "inline" : "";
   if (SupportsArenas(descriptor_)) {
-    printer->Print(variables_,
-      "inline const ::std::string& $classname$::$name$() const {\n"
+    printer->Print(variables,
+      "$inline$ const ::std::string& $classname$::$name$() const {\n"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  if (has_$name$()) {\n"
       "    return $oneof_prefix$$name$_.Get($default_variable$);\n"
       "  }\n"
       "  return *$default_variable$;\n"
       "}\n"
-      "inline void $classname$::set_$name$(const ::std::string& value) {\n"
+      "$inline$ void $classname$::set_$name$(const ::std::string& value) {\n"
       "  if (!has_$name$()) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
@@ -442,7 +451,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "      GetArenaNoVirtual());\n"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
-      "inline void $classname$::set_$name$(const char* value) {\n"
+      "$inline$ void $classname$::set_$name$(const char* value) {\n"
       "  if (!has_$name$()) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
@@ -452,7 +461,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "      $string_piece$(value), GetArenaNoVirtual());\n"
       "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
       "}\n"
-      "inline "
+      "$inline$ "
       "void $classname$::set_$name$(const $pointer_type$* value,\n"
       "                             size_t size) {\n"
       "  if (!has_$name$()) {\n"
@@ -465,7 +474,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "      GetArenaNoVirtual());\n"
       "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
       "}\n"
-      "inline ::std::string* $classname$::mutable_$name$() {\n"
+      "$inline$ ::std::string* $classname$::mutable_$name$() {\n"
       "  if (!has_$name$()) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
@@ -475,7 +484,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "      GetArenaNoVirtual());\n"
       "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
       "}\n"
-      "inline ::std::string* $classname$::$release_name$() {\n"
+      "$inline$ ::std::string* $classname$::$release_name$() {\n"
       "  if (has_$name$()) {\n"
       "    clear_has_$oneof_name$();\n"
       "    return $oneof_prefix$$name$_.Release($default_variable$,\n"
@@ -484,7 +493,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "    return NULL;\n"
       "  }\n"
       "}\n"
-      "inline ::std::string* $classname$::unsafe_arena_release_$name$() {\n"
+      "$inline$ ::std::string* $classname$::unsafe_arena_release_$name$() {\n"
       "  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);\n"
       "  if (has_$name$()) {\n"
       "    clear_has_$oneof_name$();\n"
@@ -494,7 +503,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "    return NULL;\n"
       "  }\n"
       "}\n"
-      "inline void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
+      "$inline$ void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
       "  if (!has_$name$()) {\n"
       "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
       "  }\n"
@@ -506,7 +515,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "  }\n"
       "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
       "}\n"
-      "inline void $classname$::unsafe_arena_set_allocated_$name$("
+      "$inline$ void $classname$::unsafe_arena_set_allocated_$name$("
       "::std::string* $name$) {\n"
       "  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);\n"
       "  if (!has_$name$()) {\n"
@@ -522,15 +531,15 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "}\n");
   } else {
     // No-arena case.
-    printer->Print(variables_,
-      "inline const ::std::string& $classname$::$name$() const {\n"
+    printer->Print(variables,
+      "$inline$ const ::std::string& $classname$::$name$() const {\n"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  if (has_$name$()) {\n"
       "    return $oneof_prefix$$name$_.GetNoArena($default_variable$);\n"
       "  }\n"
       "  return *$default_variable$;\n"
       "}\n"
-      "inline void $classname$::set_$name$(const ::std::string& value) {\n"
+      "$inline$ void $classname$::set_$name$(const ::std::string& value) {\n"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "  if (!has_$name$()) {\n"
       "    clear_$oneof_name$();\n"
@@ -540,7 +549,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "  $oneof_prefix$$name$_.SetNoArena($default_variable$, value);\n"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
-      "inline void $classname$::set_$name$(const char* value) {\n"
+      "$inline$ void $classname$::set_$name$(const char* value) {\n"
       "  if (!has_$name$()) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
@@ -550,7 +559,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "      $string_piece$(value));\n"
       "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
       "}\n"
-      "inline "
+      "$inline$ "
       "void $classname$::set_$name$(const $pointer_type$* value, size_t size) {\n"
       "  if (!has_$name$()) {\n"
       "    clear_$oneof_name$();\n"
@@ -561,7 +570,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "      reinterpret_cast<const char*>(value), size));\n"
       "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
       "}\n"
-      "inline ::std::string* $classname$::mutable_$name$() {\n"
+      "$inline$ ::std::string* $classname$::mutable_$name$() {\n"
       "  if (!has_$name$()) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
@@ -570,7 +579,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
       "  return $oneof_prefix$$name$_.MutableNoArena($default_variable$);\n"
       "}\n"
-      "inline ::std::string* $classname$::$release_name$() {\n"
+      "$inline$ ::std::string* $classname$::$release_name$() {\n"
       "  if (has_$name$()) {\n"
       "    clear_has_$oneof_name$();\n"
       "    return $oneof_prefix$$name$_.ReleaseNoArena($default_variable$);\n"
@@ -578,7 +587,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer) const {
       "    return NULL;\n"
       "  }\n"
       "}\n"
-      "inline void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
+      "$inline$ void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
       "  if (!has_$name$()) {\n"
       "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
       "  }\n"
@@ -670,7 +679,10 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void RepeatedStringFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   // See comment above about unknown ctypes.
-  if (descriptor_->options().ctype() != FieldOptions::STRING) {
+  bool unknown_ctype =
+      descriptor_->options().ctype() != EffectiveStringCType(descriptor_);
+
+  if (unknown_ctype) {
     printer->Outdent();
     printer->Print(
       " private:\n"
@@ -679,26 +691,26 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   }
 
   printer->Print(variables_,
-    "inline const ::std::string& $name$(int index) const$deprecation$;\n"
-    "inline ::std::string* mutable_$name$(int index)$deprecation$;\n"
-    "inline void set_$name$(int index, const ::std::string& value)$deprecation$;\n"
-    "inline void set_$name$(int index, const char* value)$deprecation$;\n"
-    "inline "
+    "const ::std::string& $name$(int index) const$deprecation$;\n"
+    "::std::string* mutable_$name$(int index)$deprecation$;\n"
+    "void set_$name$(int index, const ::std::string& value)$deprecation$;\n"
+    "void set_$name$(int index, const char* value)$deprecation$;\n"
+    ""
     "void set_$name$(int index, const $pointer_type$* value, size_t size)"
                  "$deprecation$;\n"
-    "inline ::std::string* add_$name$()$deprecation$;\n"
-    "inline void add_$name$(const ::std::string& value)$deprecation$;\n"
-    "inline void add_$name$(const char* value)$deprecation$;\n"
-    "inline void add_$name$(const $pointer_type$* value, size_t size)"
+    "::std::string* add_$name$()$deprecation$;\n"
+    "void add_$name$(const ::std::string& value)$deprecation$;\n"
+    "void add_$name$(const char* value)$deprecation$;\n"
+    "void add_$name$(const $pointer_type$* value, size_t size)"
                  "$deprecation$;\n");
 
   printer->Print(variables_,
-    "inline const ::google::protobuf::RepeatedPtrField< ::std::string>& $name$() const"
+    "const ::google::protobuf::RepeatedPtrField< ::std::string>& $name$() const"
                  "$deprecation$;\n"
-    "inline ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_$name$()"
+    "::google::protobuf::RepeatedPtrField< ::std::string>* mutable_$name$()"
                  "$deprecation$;\n");
 
-  if (descriptor_->options().ctype() != FieldOptions::STRING) {
+  if (unknown_ctype) {
     printer->Outdent();
     printer->Print(" public:\n");
     printer->Indent();
@@ -706,54 +718,57 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 }
 
 void RepeatedStringFieldGenerator::
-GenerateInlineAccessorDefinitions(io::Printer* printer) const {
-  printer->Print(variables_,
-    "inline const ::std::string& $classname$::$name$(int index) const {\n"
+GenerateInlineAccessorDefinitions(io::Printer* printer,
+                                  bool is_inline) const {
+  map<string, string> variables(variables_);
+  variables["inline"] = is_inline ? "inline" : "";
+  printer->Print(variables,
+    "$inline$ const ::std::string& $classname$::$name$(int index) const {\n"
     "  // @@protoc_insertion_point(field_get:$full_name$)\n"
     "  return $name$_.$cppget$(index);\n"
     "}\n"
-    "inline ::std::string* $classname$::mutable_$name$(int index) {\n"
+    "$inline$ ::std::string* $classname$::mutable_$name$(int index) {\n"
     "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
     "  return $name$_.Mutable(index);\n"
     "}\n"
-    "inline void $classname$::set_$name$(int index, const ::std::string& value) {\n"
+    "$inline$ void $classname$::set_$name$(int index, const ::std::string& value) {\n"
     "  // @@protoc_insertion_point(field_set:$full_name$)\n"
     "  $name$_.Mutable(index)->assign(value);\n"
     "}\n"
-    "inline void $classname$::set_$name$(int index, const char* value) {\n"
+    "$inline$ void $classname$::set_$name$(int index, const char* value) {\n"
     "  $name$_.Mutable(index)->assign(value);\n"
     "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
     "}\n"
-    "inline void "
+    "$inline$ void "
     "$classname$::set_$name$"
     "(int index, const $pointer_type$* value, size_t size) {\n"
     "  $name$_.Mutable(index)->assign(\n"
     "    reinterpret_cast<const char*>(value), size);\n"
     "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
     "}\n"
-    "inline ::std::string* $classname$::add_$name$() {\n"
+    "$inline$ ::std::string* $classname$::add_$name$() {\n"
     "  return $name$_.Add();\n"
     "}\n"
-    "inline void $classname$::add_$name$(const ::std::string& value) {\n"
+    "$inline$ void $classname$::add_$name$(const ::std::string& value) {\n"
     "  $name$_.Add()->assign(value);\n"
     "  // @@protoc_insertion_point(field_add:$full_name$)\n"
     "}\n"
-    "inline void $classname$::add_$name$(const char* value) {\n"
+    "$inline$ void $classname$::add_$name$(const char* value) {\n"
     "  $name$_.Add()->assign(value);\n"
     "  // @@protoc_insertion_point(field_add_char:$full_name$)\n"
     "}\n"
-    "inline void "
+    "$inline$ void "
     "$classname$::add_$name$(const $pointer_type$* value, size_t size) {\n"
     "  $name$_.Add()->assign(reinterpret_cast<const char*>(value), size);\n"
     "  // @@protoc_insertion_point(field_add_pointer:$full_name$)\n"
     "}\n");
-  printer->Print(variables_,
-    "inline const ::google::protobuf::RepeatedPtrField< ::std::string>&\n"
+  printer->Print(variables,
+    "$inline$ const ::google::protobuf::RepeatedPtrField< ::std::string>&\n"
     "$classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_list:$full_name$)\n"
     "  return $name$_;\n"
     "}\n"
-    "inline ::google::protobuf::RepeatedPtrField< ::std::string>*\n"
+    "$inline$ ::google::protobuf::RepeatedPtrField< ::std::string>*\n"
     "$classname$::mutable_$name$() {\n"
     "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
     "  return &$name$_;\n"

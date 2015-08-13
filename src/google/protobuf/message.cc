@@ -441,10 +441,45 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
 }
 
 namespace internal {
-// Macro defined in repeated_field.h. We can only define the Message-specific
-// GenericTypeHandler specializations here because we depend on Message, which
-// is not part of proto2-lite hence is not available in repeated_field.h.
-DEFINE_SPECIALIZATIONS_FOR_BASE_PROTO_TYPES_NOINLINE(Message);
+namespace {
+void ShutdownRepeatedFieldAccessor() {
+  internal::Singleton<internal::RepeatedFieldPrimitiveAccessor<int32> >::ShutDown();
+  internal::Singleton<internal::RepeatedFieldPrimitiveAccessor<uint32> >::ShutDown();
+  internal::Singleton<internal::RepeatedFieldPrimitiveAccessor<int64> >::ShutDown();
+  internal::Singleton<internal::RepeatedFieldPrimitiveAccessor<uint64> >::ShutDown();
+  internal::Singleton<internal::RepeatedFieldPrimitiveAccessor<float> >::ShutDown();
+  internal::Singleton<internal::RepeatedFieldPrimitiveAccessor<double> >::ShutDown();
+  internal::Singleton<internal::RepeatedFieldPrimitiveAccessor<bool> >::ShutDown();
+  internal::Singleton<internal::RepeatedPtrFieldStringAccessor>::ShutDown();
+  internal::Singleton<internal::RepeatedPtrFieldMessageAccessor>::ShutDown();
+  internal::Singleton<internal::MapFieldAccessor>::ShutDown();
+}
+
+struct ShutdownRepeatedFieldRegister {
+  ShutdownRepeatedFieldRegister() {
+    OnShutdown(&ShutdownRepeatedFieldAccessor);
+  }
+} shutdown_;
+
+}  // namespace
+}  // namespace internal
+
+namespace internal {
+template<>
+Message* GenericTypeHandler<Message>::NewFromPrototype(
+    const Message* prototype, google::protobuf::Arena* arena) {
+  return prototype->New(arena);
+}
+template<>
+google::protobuf::Arena* GenericTypeHandler<Message>::GetArena(
+    Message* value) {
+  return value->GetArena();
+}
+template<>
+void* GenericTypeHandler<Message>::GetMaybeArenaPointer(
+    Message* value) {
+  return value->GetMaybeArenaPointer();
+}
 }  // namespace internal
 
 }  // namespace protobuf

@@ -45,15 +45,15 @@ message TestAllTypes {
     BAZ = 2;
   }
   message NestedMessage {
-    optional int32 value = 1;
+    int32 value = 1;
   }
 
-  optional int32 optional_int32 = 1;
-  optional string optional_string = 2;
-  optional bytes optional_bytes = 3;
-  optional NestedEnum optional_nested_enum = 4;
-  optional NestedMessage optional_nested_message = 5;
-  optional protobuf_unittest.TestRequired optional_proto2_message = 6;
+  int32 optional_int32 = 1;
+  string optional_string = 2;
+  bytes optional_bytes = 3;
+  NestedEnum optional_nested_enum = 4;
+  NestedMessage optional_nested_message = 5;
+  protobuf_unittest.TestRequired optional_proto2_message = 6;
 
   oneof oneof_field {
     int32 oneof_int32 = 11;
@@ -75,12 +75,12 @@ message TestAllTypes {
 }
 
 message TestOptionalFieldsOnly {
-  optional int32 optional_int32 = 1;
-  optional string optional_string = 2;
-  optional bytes optional_bytes = 3;
-  optional TestAllTypes.NestedEnum optional_nested_enum = 4;
-  optional TestAllTypes.NestedMessage optional_nested_message = 5;
-  optional protobuf_unittest.TestRequired optional_proto2_message = 6;
+  int32 optional_int32 = 1;
+  string optional_string = 2;
+  bytes optional_bytes = 3;
+  TestAllTypes.NestedEnum optional_nested_enum = 4;
+  TestAllTypes.NestedMessage optional_nested_message = 5;
+  protobuf_unittest.TestRequired optional_proto2_message = 6;
 }
 
 message TestRepeatedFieldsOnly {

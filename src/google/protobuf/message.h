@@ -98,11 +98,11 @@
 //
 //     // Use the reflection interface to examine the contents.
 //     const Reflection* reflection = foo->GetReflection();
-//     assert(reflection->GetString(foo, text_field) == "Hello World!");
-//     assert(reflection->FieldSize(foo, numbers_field) == 3);
-//     assert(reflection->GetRepeatedInt32(foo, numbers_field, 0) == 1);
-//     assert(reflection->GetRepeatedInt32(foo, numbers_field, 1) == 5);
-//     assert(reflection->GetRepeatedInt32(foo, numbers_field, 2) == 42);
+//     assert(reflection->GetString(*foo, text_field) == "Hello World!");
+//     assert(reflection->FieldSize(*foo, numbers_field) == 3);
+//     assert(reflection->GetRepeatedInt32(*foo, numbers_field, 0) == 1);
+//     assert(reflection->GetRepeatedInt32(*foo, numbers_field, 1) == 5);
+//     assert(reflection->GetRepeatedInt32(*foo, numbers_field, 2) == 42);
 //
 //     delete foo;
 //   }
@@ -208,7 +208,7 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // This is much, much slower than IsInitialized() as it is implemented
   // purely via reflection.  Generally, you should not call this unless you
   // have already determined that an error exists by calling IsInitialized().
-  void FindInitializationErrors(vector<string>* errors) const;
+  void FindInitializationErrors(std::vector<string>* errors) const;
 
   // Like FindInitializationErrors, but joins all the strings, delimited by
   // commas, and returns them.
@@ -229,6 +229,11 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // Computes (an estimate of) the total number of bytes currently used for
   // storing the message in memory.  The default implementation calls the
   // Reflection object's SpaceUsed() method.
+  //
+  // SpaceUsed() is noticeably slower than ByteSize(), as it is implemented
+  // using reflection (rather than the generated code implementation for
+  // ByteSize()). Like ByteSize(), its CPU time is linear in the number of
+  // fields defined for the proto.
   virtual int SpaceUsed() const;
 
   // Debugging & Testing----------------------------------------------
@@ -456,7 +461,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // Swap fields listed in fields vector of two messages.
   virtual void SwapFields(Message* message1,
                           Message* message2,
-                          const vector<const FieldDescriptor*>& fields)
+                          const std::vector<const FieldDescriptor*>& fields)
       const = 0;
 
   // Swap two elements of a repeated field.
@@ -470,8 +475,9 @@ class LIBPROTOBUF_EXPORT Reflection {
   // return true and repeated fields will only be listed if FieldSize(field)
   // would return non-zero.  Fields (both normal fields and extension fields)
   // will be listed ordered by field number.
-  virtual void ListFields(const Message& message,
-                          vector<const FieldDescriptor*>* output) const = 0;
+  virtual void ListFields(
+      const Message& message,
+      std::vector<const FieldDescriptor*>* output) const = 0;
 
   // Singular field getters ------------------------------------------
   // These get the value of a non-repeated field.  They return the default
@@ -523,7 +529,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   //   regardless of the field's underlying representation.  When initializing
   //   a newly-constructed string, though, it's just as fast and more readable
   //   to use code like:
-  //     string str = reflection->GetString(field);
+  //     string str = reflection->GetString(message, field);
   virtual const string& GetStringReference(const Message& message,
                                            const FieldDescriptor* field,
                                            string* scratch) const = 0;
@@ -842,6 +848,19 @@ class LIBPROTOBUF_EXPORT Reflection {
   // }
   virtual bool SupportsUnknownEnumValues() const { return false; }
 
+  // Returns the MessageFactory associated with this message.  This can be
+  // useful for determining if a message is a generated message or not, for
+  // example:
+  //
+  // if (message->GetReflection()->GetMessageFactory() ==
+  //     google::protobuf::MessageFactory::generated_factory()) {
+  //   // This is a generated message.
+  // }
+  //
+  // It can also be used to create more messages of this type, though
+  // Message::New() is an easier way to accomplish this.
+  virtual MessageFactory* GetMessageFactory() const;
+
   // ---------------------------------------------------------------------------
 
  protected:
@@ -853,8 +872,6 @@ class LIBPROTOBUF_EXPORT Reflection {
   virtual void* MutableRawRepeatedField(
       Message* message, const FieldDescriptor* field, FieldDescriptor::CppType,
       int ctype, const Descriptor* message_type) const = 0;
-
-  virtual MessageFactory* GetMessageFactory() const;
 
   // The following methods are used to implement (Mutable)RepeatedFieldRef.
   // A Ref object will store a raw pointer to the repeated field data (obtained

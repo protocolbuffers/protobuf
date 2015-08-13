@@ -30,43 +30,27 @@
 
 package com.google.protobuf.nano;
 
-import com.google.protobuf.nano.CodedInputByteBufferNano;
-import com.google.protobuf.nano.EnumClassNanoMultiple;
-import com.google.protobuf.nano.EnumClassNanos;
-import com.google.protobuf.nano.EnumValidity;
-import com.google.protobuf.nano.EnumValidityAccessors;
-import com.google.protobuf.nano.FileScopeEnumMultiple;
-import com.google.protobuf.nano.FileScopeEnumRefNano;
-import com.google.protobuf.nano.InternalNano;
-import com.google.protobuf.nano.InvalidProtocolBufferNanoException;
-import com.google.protobuf.nano.MessageNano;
-import com.google.protobuf.nano.MessageScopeEnumRefNano;
-import com.google.protobuf.nano.MultipleImportingNonMultipleNano1;
-import com.google.protobuf.nano.MultipleImportingNonMultipleNano2;
-import com.google.protobuf.nano.MultipleNameClashNano;
+import com.google.protobuf.nano.MapTestProto.TestMap;
+import com.google.protobuf.nano.CodedOutputByteBufferNano;
+import com.google.protobuf.nano.MapTestProto.TestMap.MessageValue;
 import com.google.protobuf.nano.NanoAccessorsOuterClass.TestNanoAccessors;
 import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;
-import com.google.protobuf.nano.NanoOuterClass;
 import com.google.protobuf.nano.NanoOuterClass.TestAllTypesNano;
-import com.google.protobuf.nano.NanoReferenceTypes;
-import com.google.protobuf.nano.NanoRepeatedPackables;
-import com.google.protobuf.nano.PackedExtensions;
-import com.google.protobuf.nano.RepeatedExtensions;
-import com.google.protobuf.nano.SingularExtensions;
-import com.google.protobuf.nano.TestRepeatedMergeNano;
-import com.google.protobuf.nano.UnittestMultipleNano;
 import com.google.protobuf.nano.UnittestRecursiveNano.RecursiveMessageNano;
+import com.google.protobuf.nano.NanoReferenceTypesCompat;
 import com.google.protobuf.nano.UnittestSimpleNano.SimpleMessageNano;
 import com.google.protobuf.nano.UnittestSingleNano.SingleMessageNano;
-import com.google.protobuf.nano.testext.Extensions;
-import com.google.protobuf.nano.testext.Extensions.AnotherMessage;
-import com.google.protobuf.nano.testext.Extensions.MessageWithGroup;
-import com.google.protobuf.nano.testimport.UnittestImportNano;
+import com.google.protobuf.nano.testext.nano.Extensions;
+import com.google.protobuf.nano.testext.nano.Extensions.AnotherMessage;
+import com.google.protobuf.nano.testext.nano.Extensions.MessageWithGroup;
+import com.google.protobuf.nano.testimport.nano.UnittestImportNano;
 
 import junit.framework.TestCase;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Test nano runtime.
@@ -476,7 +460,7 @@ public class NanoTest extends TestCase {
     assertFalse(msg.optionalBytes.length > 0);
     msg.optionalBytes = InternalNano.copyFromUtf8("hello");
     assertTrue(msg.optionalBytes.length > 0);
-    assertEquals("hello", new String(msg.optionalBytes, "UTF-8"));
+    assertEquals("hello", new String(msg.optionalBytes, InternalNano.UTF_8));
     msg.clear();
     assertFalse(msg.optionalBytes.length > 0);
     msg.clear()
@@ -494,7 +478,7 @@ public class NanoTest extends TestCase {
 
     TestAllTypesNano newMsg = TestAllTypesNano.parseFrom(result);
     assertTrue(newMsg.optionalBytes.length > 0);
-    assertEquals("bye", new String(newMsg.optionalBytes, "UTF-8"));
+    assertEquals("bye", new String(newMsg.optionalBytes, InternalNano.UTF_8));
   }
 
   public void testNanoOptionalGroup() throws Exception {
@@ -1364,14 +1348,14 @@ public class NanoTest extends TestCase {
         InternalNano.copyFromUtf8("bye"),
         InternalNano.copyFromUtf8("boo")
     };
-    assertEquals("bye", new String(msg.repeatedBytes[1], "UTF-8"));
-    assertEquals("boo", new String(msg.repeatedBytes[2], "UTF-8"));
+    assertEquals("bye", new String(msg.repeatedBytes[1], InternalNano.UTF_8));
+    assertEquals("boo", new String(msg.repeatedBytes[2], InternalNano.UTF_8));
     msg.clear();
     assertEquals(0, msg.repeatedBytes.length);
     msg.clear()
        .repeatedBytes = new byte[][] { InternalNano.copyFromUtf8("boo") };
     assertEquals(1, msg.repeatedBytes.length);
-    assertEquals("boo", new String(msg.repeatedBytes[0], "UTF-8"));
+    assertEquals("boo", new String(msg.repeatedBytes[0], InternalNano.UTF_8));
     msg.clear();
     assertEquals(0, msg.repeatedBytes.length);
 
@@ -1403,8 +1387,8 @@ public class NanoTest extends TestCase {
 
     newMsg = TestAllTypesNano.parseFrom(result);
     assertEquals(2, newMsg.repeatedBytes.length);
-    assertEquals("hello", new String(newMsg.repeatedBytes[0], "UTF-8"));
-    assertEquals("world", new String(newMsg.repeatedBytes[1], "UTF-8"));
+    assertEquals("hello", new String(newMsg.repeatedBytes[0], InternalNano.UTF_8));
+    assertEquals("world", new String(newMsg.repeatedBytes[1], InternalNano.UTF_8));
   }
 
   public void testNanoRepeatedGroup() throws Exception {
@@ -2295,9 +2279,9 @@ public class NanoTest extends TestCase {
       assertTrue(52.0e3 == msg.defaultDouble);
       assertEquals(true, msg.defaultBool);
       assertEquals("hello", msg.defaultString);
-      assertEquals("world", new String(msg.defaultBytes, "UTF-8"));
+      assertEquals("world", new String(msg.defaultBytes, InternalNano.UTF_8));
       assertEquals("dünya", msg.defaultStringNonascii);
-      assertEquals("dünyab", new String(msg.defaultBytesNonascii, "UTF-8"));
+      assertEquals("dünyab", new String(msg.defaultBytesNonascii, InternalNano.UTF_8));
       assertEquals(TestAllTypesNano.BAR, msg.defaultNestedEnum);
       assertEquals(NanoOuterClass.FOREIGN_NANO_BAR, msg.defaultForeignEnum);
       assertEquals(UnittestImportNano.IMPORT_NANO_BAR, msg.defaultImportEnum);
@@ -2316,6 +2300,59 @@ public class NanoTest extends TestCase {
       assertEquals(result.length, msgSerializedSize);
       msg.clear();
     }
+  }
+
+  public void testDifferentStringLengthsNano() throws Exception {
+    // Test string serialization roundtrip using strings of the following lengths,
+    // with ASCII and Unicode characters requiring different UTF-8 byte counts per
+    // char, hence causing the length delimiter varint to sometimes require more
+    // bytes for the Unicode strings than the ASCII string of the same length.
+    int[] lengths = new int[] {
+            0,
+            1,
+            (1 << 4) - 1,  // 1 byte for ASCII and Unicode
+            (1 << 7) - 1,  // 1 byte for ASCII, 2 bytes for Unicode
+            (1 << 11) - 1, // 2 bytes for ASCII and Unicode
+            (1 << 14) - 1, // 2 bytes for ASCII, 3 bytes for Unicode
+            (1 << 17) - 1, // 3 bytes for ASCII and Unicode
+    };
+    for (int i : lengths) {
+      testEncodingOfString('q', i);      // 1 byte per char
+      testEncodingOfString('\u07FF', i); // 2 bytes per char
+      testEncodingOfString('\u0981', i); // 3 bytes per char
+    }
+  }
+
+  /** Regression test for https://github.com/google/protobuf/issues/292 */
+  public void testCorrectExceptionThrowWhenEncodingStringsWithoutEnoughSpace() throws Exception {
+    String testCase = "Foooooooo";
+    assertEquals(CodedOutputByteBufferNano.computeRawVarint32Size(testCase.length()),
+            CodedOutputByteBufferNano.computeRawVarint32Size(testCase.length() * 3));
+    assertEquals(11, CodedOutputByteBufferNano.computeStringSize(1, testCase));
+    // Tag is one byte, varint describing string length is 1 byte, string length is 9 bytes.
+    // An array of size 1 will cause a failure when trying to write the varint.
+    for (int i = 0; i < 11; i++) {
+      CodedOutputByteBufferNano bufferNano = CodedOutputByteBufferNano.newInstance(new byte[i]);
+      try {
+        bufferNano.writeString(1, testCase);
+        fail("Should have thrown an out of space exception");
+      } catch (CodedOutputByteBufferNano.OutOfSpaceException expected) {}
+    }
+  }
+
+  private void testEncodingOfString(char c, int length) throws InvalidProtocolBufferNanoException {
+    TestAllTypesNano testAllTypesNano = new TestAllTypesNano();
+    final String fullString = fullString(c, length);
+    testAllTypesNano.optionalString = fullString;
+    final TestAllTypesNano resultNano = new TestAllTypesNano();
+    MessageNano.mergeFrom(resultNano, MessageNano.toByteArray(testAllTypesNano));
+    assertEquals(fullString, resultNano.optionalString);
+  }
+
+  private String fullString(char c, int length) {
+    char[] result = new char[length];
+    Arrays.fill(result, c);
+    return new String(result);
   }
 
   public void testNanoWithHasParseFrom() throws Exception {
@@ -2403,7 +2440,7 @@ public class NanoTest extends TestCase {
     assertEquals(TestAllTypesNanoHas.FOO, newMsg.optionalNestedEnum);
     assertEquals(41, newMsg.defaultInt32);
     assertEquals("hello", newMsg.defaultString);
-    assertEquals("world", new String(newMsg.defaultBytes, "UTF-8"));
+    assertEquals("world", new String(newMsg.defaultBytes, InternalNano.UTF_8));
     assertEquals(TestAllTypesNanoHas.BAR, newMsg.defaultNestedEnum);
     assertEquals(Float.NaN, newMsg.defaultFloatNan);
     assertEquals(0, newMsg.id);
@@ -2585,7 +2622,7 @@ public class NanoTest extends TestCase {
     assertEquals(TestNanoAccessors.FOO, newMsg.getOptionalNestedEnum());
     assertEquals(41, newMsg.getDefaultInt32());
     assertEquals("hello", newMsg.getDefaultString());
-    assertEquals("world", new String(newMsg.getDefaultBytes(), "UTF-8"));
+    assertEquals("world", new String(newMsg.getDefaultBytes(), InternalNano.UTF_8));
     assertEquals(TestNanoAccessors.BAR, newMsg.getDefaultNestedEnum());
     assertEquals(Float.NaN, newMsg.getDefaultFloatNan());
     assertEquals(0, newMsg.id);
@@ -2688,6 +2725,7 @@ public class NanoTest extends TestCase {
     msg.repeatedNestedEnum[0] = TestAllTypesNano.BAR;
     msg.repeatedNestedEnum[1] = TestAllTypesNano.FOO;
     msg.repeatedStringPiece = new String[] {null, "world"};
+    msg.setOneofString("hello");
 
     String protoPrint = msg.toString();
     assertTrue(protoPrint.contains("optional_int32: 14"));
@@ -2711,6 +2749,7 @@ public class NanoTest extends TestCase {
     assertTrue(protoPrint.contains("default_string: \"hello\""));
     assertFalse(protoPrint.contains("repeated_string_piece: \"\""));  // null should be dropped
     assertTrue(protoPrint.contains("repeated_string_piece: \"world\""));
+    assertTrue(protoPrint.contains("oneof_string: \"hello\""));
   }
 
   public void testMessageNanoPrinterAccessors() throws Exception {
@@ -2747,6 +2786,45 @@ public class NanoTest extends TestCase {
             + "repeated_nested_message <\n  bb: 6\n>"));
     assertTrue(protoPrint.contains("repeated_nested_enum: 1\nrepeated_nested_enum: 2"));
     assertTrue(protoPrint.contains("id: 33"));
+  }
+
+  public void testMessageNanoPrinterForMaps() throws Exception {
+    TestMap msg = new TestMap();
+    MessageValue msgValues[] = new MessageValue[] {
+      new MessageValue(), new MessageValue()
+    };
+    msgValues[0].value = 1;
+    msgValues[1].value = 2;
+    msg.int32ToBytesField = new HashMap<Integer, byte[]>();
+    msg.int32ToBytesField.put(1, new byte[] {'"', '\0'});
+    msg.int32ToBytesField.put(2, new byte[] {1, 8});
+    msg.stringToInt32Field = new HashMap<String, Integer>();
+    msg.stringToInt32Field.put("hello", 1);
+    msg.stringToInt32Field.put("world", 2);
+    msg.int32ToMessageField = new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    msg.int32ToMessageField.put(0, msgValues[0]);
+    msg.int32ToMessageField.put(1, msgValues[1]);
+    msg.int32ToEnumField = new HashMap<Integer, Integer>();
+    msg.int32ToEnumField.put(1, 2);
+    msg.int32ToEnumField.put(2, 3);
+    String protoPrint = msg.toString();
+
+    assertTrue(protoPrint.contains(
+        "int32_to_bytes_field <\n  key: 1\n  value: \"\\\"\\000\"\n>"));
+    assertTrue(protoPrint.contains(
+        "int32_to_bytes_field <\n  key: 2\n  value: \"\\001\\010\"\n>"));
+    assertTrue(protoPrint.contains(
+        "string_to_int32_field <\n  key: \"hello\"\n  value: 1\n>"));
+    assertTrue(protoPrint.contains(
+        "string_to_int32_field <\n  key: \"world\"\n  value: 2\n>"));
+    assertTrue(protoPrint.contains(
+        "int32_to_message_field <\n  key: 0\n  value <\n    value: 1\n"));
+    assertTrue(protoPrint.contains(
+        "int32_to_message_field <\n  key: 1\n  value <\n    value: 2\n"));
+    assertTrue(protoPrint.contains(
+        "int32_to_enum_field <\n  key: 1\n  value: 2\n>"));
+    assertTrue(protoPrint.contains(
+        "int32_to_enum_field <\n  key: 2\n  value: 3\n>"));
   }
 
   public void testExtensions() throws Exception {
@@ -2963,6 +3041,10 @@ public class NanoTest extends TestCase {
     assertTrue(Arrays.equals(floats, message.getExtension(RepeatedExtensions.repeatedFloat)));
     assertTrue(Arrays.equals(doubles, message.getExtension(RepeatedExtensions.repeatedDouble)));
     assertTrue(Arrays.equals(enums, message.getExtension(RepeatedExtensions.repeatedEnum)));
+
+    // Clone the message and ensure it's still equal.
+    Extensions.ExtendableMessage clone = message.clone();
+    assertEquals(clone, message);
   }
 
   public void testNullExtensions() throws Exception {
@@ -3340,6 +3422,7 @@ public class NanoTest extends TestCase {
       TestAllTypesNano.BAR,
       TestAllTypesNano.BAZ
     };
+    message.setOneofUint32(3);
     return message;
   }
 
@@ -3536,6 +3619,259 @@ public class NanoTest extends TestCase {
     assertFalse(m7.equals(new NanoReferenceTypes.TestAllTypesNano()));
     assertTrue(m7.equals(MessageNano.mergeFrom(
         new NanoReferenceTypes.TestAllTypesNano(), MessageNano.toByteArray(m7))));
+  }
+
+  private static TestAllTypesNano generateMessageForOneof(int caseNumber) {
+    TestAllTypesNano result = new TestAllTypesNano();
+    TestAllTypesNano.NestedMessage nested =
+        new TestAllTypesNano.NestedMessage();
+    nested.bb = 2;
+    switch (caseNumber) {
+      case TestAllTypesNano.ONEOF_UINT32_FIELD_NUMBER:
+        result.setOneofUint32(1);
+        break;
+      case TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER:
+        result.setOneofEnum(TestAllTypesNano.BAR);
+        break;
+      case TestAllTypesNano.ONEOF_NESTED_MESSAGE_FIELD_NUMBER:
+        result.setOneofNestedMessage(nested);
+        break;
+      case TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER:
+        result.setOneofBytes(new byte[] {1, 2});
+        break;
+      case TestAllTypesNano.ONEOF_STRING_FIELD_NUMBER:
+        result.setOneofString("hello");
+        break;
+      case TestAllTypesNano.ONEOF_FIXED64_FIELD_NUMBER:
+        result.setOneofFixed64(-1L);
+        break;
+      default:
+        throw new RuntimeException("unexpected case number: " + caseNumber);
+    }
+    return result;
+  }
+
+  public void testOneofHashCodeEquals() throws Exception {
+    TestAllTypesNano m1 = generateMessageForOneof(
+        TestAllTypesNano.ONEOF_UINT32_FIELD_NUMBER);
+    assertEquals(m1, generateMessageForOneof(
+        TestAllTypesNano.ONEOF_UINT32_FIELD_NUMBER));
+    assertFalse(m1.equals(new TestAllTypesNano()));
+
+    TestAllTypesNano m2 = generateMessageForOneof(
+        TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER);
+    assertEquals(m2, generateMessageForOneof(
+        TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER));
+    assertFalse(m2.equals(new TestAllTypesNano()));
+
+    TestAllTypesNano m3 = generateMessageForOneof(
+        TestAllTypesNano.ONEOF_NESTED_MESSAGE_FIELD_NUMBER);
+    assertEquals(m3, generateMessageForOneof(
+        TestAllTypesNano.ONEOF_NESTED_MESSAGE_FIELD_NUMBER));
+    assertFalse(m3.equals(new TestAllTypesNano()));
+
+    TestAllTypesNano m4 = generateMessageForOneof(
+        TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER);
+    assertEquals(m4, generateMessageForOneof(
+        TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER));
+    assertFalse(m4.equals(new TestAllTypesNano()));
+
+    TestAllTypesNano m5 = generateMessageForOneof(
+        TestAllTypesNano.ONEOF_STRING_FIELD_NUMBER);
+    assertEquals(m5, generateMessageForOneof(
+        TestAllTypesNano.ONEOF_STRING_FIELD_NUMBER));
+    assertFalse(m5.equals(new TestAllTypesNano()));
+
+    TestAllTypesNano m6 = generateMessageForOneof(
+        TestAllTypesNano.ONEOF_FIXED64_FIELD_NUMBER);
+    assertEquals(m6, generateMessageForOneof(
+        TestAllTypesNano.ONEOF_FIXED64_FIELD_NUMBER));
+    assertFalse(m6.equals(new TestAllTypesNano()));
+
+    Map<TestAllTypesNano, Integer> map =
+        new HashMap<TestAllTypesNano, Integer>();
+    map.put(m1, 1);
+    map.put(m2, 2);
+    map.put(m3, 3);
+    map.put(m4, 4);
+    map.put(m5, 5);
+    map.put(m6, 6);
+
+    assertEquals(6, map.size());
+  }
+
+  private void checkOneofCase(TestAllTypesNano nano, int field)
+      throws Exception {
+    assertEquals(field, nano.getOneofFieldCase());
+    assertEquals(
+        field == TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER,
+        nano.hasOneofBytes());
+    assertEquals(
+        field == TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER,
+        nano.hasOneofEnum());
+    assertEquals(
+        field == TestAllTypesNano.ONEOF_FIXED64_FIELD_NUMBER,
+        nano.hasOneofFixed64());
+    assertEquals(
+        field == TestAllTypesNano.ONEOF_NESTED_MESSAGE_FIELD_NUMBER,
+        nano.hasOneofNestedMessage());
+    assertEquals(
+        field == TestAllTypesNano.ONEOF_STRING_FIELD_NUMBER,
+        nano.hasOneofString());
+    assertEquals(
+        field == TestAllTypesNano.ONEOF_UINT32_FIELD_NUMBER,
+        nano.hasOneofUint32());
+
+  }
+
+  public void testOneofDefault() throws Exception {
+    TestAllTypesNano m1 = new TestAllTypesNano();
+    checkOneofCase(m1, 0);
+    assertEquals(WireFormatNano.EMPTY_BYTES, m1.getOneofBytes());
+    assertEquals(TestAllTypesNano.FOO, m1.getOneofEnum());
+    assertEquals(0L, m1.getOneofFixed64());
+    assertEquals(null, m1.getOneofNestedMessage());
+    assertEquals("", m1.getOneofString());
+    assertEquals(0, m1.getOneofUint32());
+  }
+
+  public void testOneofExclusiveness() throws Exception {
+    TestAllTypesNano m = new TestAllTypesNano();
+    checkOneofCase(m, 0);
+
+    m.setOneofBytes(new byte[]{0, 1});
+    checkOneofCase(m, TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER);
+    assertTrue(Arrays.equals(new byte[]{0,  1}, m.getOneofBytes()));
+
+    m.setOneofEnum(TestAllTypesNano.BAZ);
+    checkOneofCase(m, TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER);
+    assertEquals(TestAllTypesNano.BAZ, m.getOneofEnum());
+    assertEquals(WireFormatNano.EMPTY_BYTES, m.getOneofBytes());
+
+    m.setOneofFixed64(-1L);
+    checkOneofCase(m, TestAllTypesNano.ONEOF_FIXED64_FIELD_NUMBER);
+    assertEquals(-1L, m.getOneofFixed64());
+    assertEquals(TestAllTypesNano.FOO, m.getOneofEnum());
+
+    m.setOneofNestedMessage(new TestAllTypesNano.NestedMessage());
+    checkOneofCase(m, TestAllTypesNano.ONEOF_NESTED_MESSAGE_FIELD_NUMBER);
+    assertEquals(
+        new TestAllTypesNano.NestedMessage(), m.getOneofNestedMessage());
+    assertEquals(0L, m.getOneofFixed64());
+
+    m.setOneofString("hello");
+    checkOneofCase(m, TestAllTypesNano.ONEOF_STRING_FIELD_NUMBER);
+    assertEquals("hello", m.getOneofString());
+    assertNull(m.getOneofNestedMessage());
+
+    m.setOneofUint32(10);
+    checkOneofCase(m, TestAllTypesNano.ONEOF_UINT32_FIELD_NUMBER);
+    assertEquals(10, m.getOneofUint32());
+    assertEquals("", m.getOneofString());
+
+    m.setOneofBytes(new byte[]{0, 1});
+    checkOneofCase(m, TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER);
+    assertTrue(Arrays.equals(new byte[]{0,  1}, m.getOneofBytes()));
+    assertEquals(0, m.getOneofUint32());
+  }
+
+  public void testOneofClear() throws Exception {
+    TestAllTypesNano m = new TestAllTypesNano();
+    m.setOneofBytes(new byte[]{0, 1});
+    m.clearOneofField();
+    checkOneofCase(m, 0);
+
+    m.setOneofEnum(TestAllTypesNano.BAZ);
+    m.clearOneofField();
+    checkOneofCase(m, 0);
+
+    m.setOneofFixed64(-1L);
+    m.clearOneofField();
+    checkOneofCase(m, 0);
+
+    m.setOneofNestedMessage(new TestAllTypesNano.NestedMessage());
+    m.clearOneofField();
+    checkOneofCase(m, 0);
+
+    m.setOneofString("hello");
+    m.clearOneofField();
+    checkOneofCase(m, 0);
+
+    m.setOneofUint32(10);
+    m.clearOneofField();
+    checkOneofCase(m, 0);
+  }
+
+  public void testOneofMarshaling() throws Exception {
+    TestAllTypesNano m = new TestAllTypesNano();
+    TestAllTypesNano parsed = new TestAllTypesNano();
+    {
+      m.setOneofBytes(new byte[]{0, 1});
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      checkOneofCase(parsed, TestAllTypesNano.ONEOF_BYTES_FIELD_NUMBER);
+      assertTrue(Arrays.equals(new byte[]{0, 1}, parsed.getOneofBytes()));
+    }
+    {
+      m.setOneofEnum(TestAllTypesNano.BAZ);
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      checkOneofCase(m, TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER);
+      assertEquals(TestAllTypesNano.BAZ, m.getOneofEnum());
+    }
+    {
+      m.setOneofEnum(TestAllTypesNano.BAZ);
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      checkOneofCase(m, TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER);
+      assertEquals(TestAllTypesNano.BAZ, m.getOneofEnum());
+    }
+    {
+      m.setOneofFixed64(-1L);
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      checkOneofCase(m, TestAllTypesNano.ONEOF_FIXED64_FIELD_NUMBER);
+      assertEquals(-1L, m.getOneofFixed64());
+    }
+    {
+      m.setOneofNestedMessage(new TestAllTypesNano.NestedMessage());
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      checkOneofCase(m, TestAllTypesNano.ONEOF_NESTED_MESSAGE_FIELD_NUMBER);
+      assertEquals(
+          new TestAllTypesNano.NestedMessage(), m.getOneofNestedMessage());
+    }
+    {
+      m.setOneofString("hello");
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      assertEquals("hello", m.getOneofString());
+      assertNull(m.getOneofNestedMessage());
+    }
+    {
+      m.setOneofUint32(10);
+      byte[] serialized = MessageNano.toByteArray(m);
+      MessageNano.mergeFrom(parsed, serialized);
+      checkOneofCase(m, TestAllTypesNano.ONEOF_UINT32_FIELD_NUMBER);
+      assertEquals(10, m.getOneofUint32());
+    }
+  }
+
+  public void testOneofSerializedConcat() throws Exception {
+    TestAllTypesNano m1 = new TestAllTypesNano();
+    m1.setOneofBytes(new byte[] {0, 1});
+    byte[] b1 = MessageNano.toByteArray(m1);
+    TestAllTypesNano m2 = new TestAllTypesNano();
+    m2.setOneofEnum(TestAllTypesNano.BAZ);
+    byte[] b2 = MessageNano.toByteArray(m2);
+    byte[] b3 = new byte[b1.length + b2.length];
+    System.arraycopy(b1, 0, b3, 0, b1.length);
+    System.arraycopy(b2, 0, b3, b1.length, b2.length);
+    TestAllTypesNano parsed = new TestAllTypesNano();
+    MessageNano.mergeFrom(parsed, b3);
+    // the last on the wire wins.
+    checkOneofCase(parsed, TestAllTypesNano.ONEOF_ENUM_FIELD_NUMBER);
+    assertEquals(TestAllTypesNano.BAZ, parsed.getOneofEnum());
   }
 
   public void testNullRepeatedFields() throws Exception {
@@ -3754,6 +4090,325 @@ public class NanoTest extends TestCase {
     assertTrue(Arrays.equals(new boolean[] {false, true, false, true}, nonPacked.bools));
   }
 
+  public void testMapsSerializeAndParse() throws Exception {
+    TestMap origin = new TestMap();
+    setMapMessage(origin);
+    assertMapMessageSet(origin);
+
+    byte[] output = MessageNano.toByteArray(origin);
+    TestMap parsed = new TestMap();
+    MessageNano.mergeFrom(parsed, output);
+  }
+
+  public void testMapSerializeRejectNull() throws Exception {
+    TestMap primitiveMap = new TestMap();
+    primitiveMap.int32ToInt32Field = new HashMap<Integer, Integer>();
+    primitiveMap.int32ToInt32Field.put(null, 1);
+    try {
+      MessageNano.toByteArray(primitiveMap);
+      fail("should reject null keys");
+    } catch (IllegalStateException e) {
+      // pass.
+    }
+
+    TestMap messageMap = new TestMap();
+    messageMap.int32ToMessageField =
+        new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    messageMap.int32ToMessageField.put(0, null);
+    try {
+      MessageNano.toByteArray(messageMap);
+      fail("should reject null values");
+    } catch (IllegalStateException e) {
+      // pass.
+    }
+  }
+
+  /**
+   * Tests that merging bytes containing conflicting keys with override the
+   * message value instead of merging the message value into the existing entry.
+   */
+  public void testMapMergeOverrideMessageValues() throws Exception {
+    TestMap.MessageValue origValue = new TestMap.MessageValue();
+    origValue.value = 1;
+    origValue.value2 = 2;
+    TestMap.MessageValue newValue = new TestMap.MessageValue();
+    newValue.value = 3;
+
+    TestMap origMessage = new TestMap();
+    origMessage.int32ToMessageField =
+        new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    origMessage.int32ToMessageField.put(1, origValue);
+
+    TestMap newMessage = new TestMap();
+    newMessage.int32ToMessageField =
+        new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    newMessage.int32ToMessageField.put(1, newValue);
+    MessageNano.mergeFrom(origMessage,
+        MessageNano.toByteArray(newMessage));
+    TestMap.MessageValue mergedValue = origMessage.int32ToMessageField.get(1);
+    assertEquals(3, mergedValue.value);
+    assertEquals(0, mergedValue.value2);
+  }
+
+  /**
+   * Tests that when merging with empty entries,
+   * we will use default for the key and value, instead of null.
+   */
+  public void testMapMergeEmptyEntry() throws Exception {
+    TestMap testMap = new TestMap();
+    byte[] buffer = new byte[1024];
+    CodedOutputByteBufferNano output =
+        CodedOutputByteBufferNano.newInstance(buffer);
+    // An empty entry for int32_to_int32 map.
+    output.writeTag(1, WireFormatNano.WIRETYPE_LENGTH_DELIMITED);
+    output.writeRawVarint32(0);
+    // An empty entry for int32_to_message map.
+    output.writeTag(5, WireFormatNano.WIRETYPE_LENGTH_DELIMITED);
+    output.writeRawVarint32(0);
+
+    CodedInputByteBufferNano input = CodedInputByteBufferNano.newInstance(
+        buffer, 0, buffer.length - output.spaceLeft());
+    testMap.mergeFrom(input);
+    assertNotNull(testMap.int32ToInt32Field);;
+    assertEquals(1, testMap.int32ToInt32Field.size());
+    assertEquals(Integer.valueOf(0), testMap.int32ToInt32Field.get(0));
+    assertNotNull(testMap.int32ToMessageField);
+    assertEquals(1, testMap.int32ToMessageField.size());
+    TestMap.MessageValue messageValue = testMap.int32ToMessageField.get(0);
+    assertNotNull(messageValue);
+    assertEquals(0, messageValue.value);
+    assertEquals(0, messageValue.value2);
+  }
+
+  public void testMapEquals() throws Exception {
+    TestMap a = new TestMap();
+    TestMap b = new TestMap();
+
+    // empty and null map fields are equal.
+    assertTestMapEqual(a, b);
+    a.int32ToBytesField = new HashMap<Integer, byte[]>();
+    assertTestMapEqual(a, b);
+
+    a.int32ToInt32Field = new HashMap<Integer, Integer>();
+    b.int32ToInt32Field = new HashMap<Integer, Integer>();
+    setMap(a.int32ToInt32Field, deepCopy(int32Values), deepCopy(int32Values));
+    setMap(b.int32ToInt32Field, deepCopy(int32Values), deepCopy(int32Values));
+    assertTestMapEqual(a, b);
+
+    a.int32ToMessageField =
+        new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    b.int32ToMessageField =
+        new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    setMap(a.int32ToMessageField,
+        deepCopy(int32Values), deepCopy(messageValues));
+    setMap(b.int32ToMessageField,
+        deepCopy(int32Values), deepCopy(messageValues));
+    assertTestMapEqual(a, b);
+
+    a.stringToInt32Field = new HashMap<String, Integer>();
+    b.stringToInt32Field = new HashMap<String, Integer>();
+    setMap(a.stringToInt32Field, deepCopy(stringValues), deepCopy(int32Values));
+    setMap(b.stringToInt32Field, deepCopy(stringValues), deepCopy(int32Values));
+    assertTestMapEqual(a, b);
+
+    a.int32ToBytesField = new HashMap<Integer, byte[]>();
+    b.int32ToBytesField = new HashMap<Integer, byte[]>();
+    setMap(a.int32ToBytesField, deepCopy(int32Values), deepCopy(bytesValues));
+    setMap(b.int32ToBytesField, deepCopy(int32Values), deepCopy(bytesValues));
+    assertTestMapEqual(a, b);
+
+    // Make sure the map implementation does not matter.
+    a.int32ToStringField = new TreeMap<Integer, String>();
+    b.int32ToStringField = new HashMap<Integer, String>();
+    setMap(a.int32ToStringField, deepCopy(int32Values), deepCopy(stringValues));
+    setMap(b.int32ToStringField, deepCopy(int32Values), deepCopy(stringValues));
+    assertTestMapEqual(a, b);
+
+    a.clear();
+    b.clear();
+
+    // unequal cases: different value
+    a.int32ToInt32Field = new HashMap<Integer, Integer>();
+    b.int32ToInt32Field = new HashMap<Integer, Integer>();
+    a.int32ToInt32Field.put(1, 1);
+    b.int32ToInt32Field.put(1, 2);
+    assertTestMapUnequal(a, b);
+    // unequal case: additional entry
+    b.int32ToInt32Field.put(1, 1);
+    b.int32ToInt32Field.put(2, 1);
+    assertTestMapUnequal(a, b);
+    a.int32ToInt32Field.put(2, 1);
+    assertTestMapEqual(a, b);
+
+    // unequal case: different message value.
+    a.int32ToMessageField =
+        new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    b.int32ToMessageField =
+        new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    MessageValue va = new MessageValue();
+    va.value = 1;
+    MessageValue vb = new MessageValue();
+    vb.value = 1;
+    a.int32ToMessageField.put(1, va);
+    b.int32ToMessageField.put(1, vb);
+    assertTestMapEqual(a, b);
+    vb.value = 2;
+    assertTestMapUnequal(a, b);
+  }
+
+  private static void assertTestMapEqual(TestMap a, TestMap b)
+      throws Exception {
+    assertEquals(a.hashCode(), b.hashCode());
+    assertTrue(a.equals(b));
+    assertTrue(b.equals(a));
+  }
+
+  private static void assertTestMapUnequal(TestMap a, TestMap b)
+      throws Exception {
+    assertFalse(a.equals(b));
+    assertFalse(b.equals(a));
+  }
+
+  private static final Integer[] int32Values = new Integer[] {
+    0, 1, -1, Integer.MAX_VALUE, Integer.MIN_VALUE,
+  };
+
+  private static final Long[] int64Values = new Long[] {
+    0L, 1L, -1L, Long.MAX_VALUE, Long.MIN_VALUE,
+  };
+
+  private static final String[] stringValues = new String[] {
+    "", "hello", "world", "foo", "bar",
+  };
+
+  private static final byte[][] bytesValues = new byte[][] {
+    new byte[] {},
+    new byte[] {0},
+    new byte[] {1, -1},
+    new byte[] {127, -128},
+    new byte[] {'a', 'b', '0', '1'},
+  };
+
+  private static final Boolean[] boolValues = new Boolean[] {
+    false, true,
+  };
+
+  private static final Integer[] enumValues = new Integer[] {
+    TestMap.FOO, TestMap.BAR, TestMap.BAZ, TestMap.QUX,
+    Integer.MAX_VALUE /* unknown */,
+  };
+
+  private static final TestMap.MessageValue[] messageValues =
+      new TestMap.MessageValue[] {
+    newMapValueMessage(0),
+    newMapValueMessage(1),
+    newMapValueMessage(-1),
+    newMapValueMessage(Integer.MAX_VALUE),
+    newMapValueMessage(Integer.MIN_VALUE),
+  };
+
+  private static TestMap.MessageValue newMapValueMessage(int value) {
+    TestMap.MessageValue result = new TestMap.MessageValue();
+    result.value = value;
+    return result;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> T[] deepCopy(T[] orig) throws Exception {
+    if (orig instanceof MessageValue[]) {
+      MessageValue[] result = new MessageValue[orig.length];
+      for (int i = 0; i < orig.length; i++) {
+        result[i] = new MessageValue();
+        MessageNano.mergeFrom(
+            result[i], MessageNano.toByteArray((MessageValue) orig[i]));
+      }
+      return (T[]) result;
+    }
+    if (orig instanceof byte[][]) {
+      byte[][] result = new byte[orig.length][];
+      for (int i = 0; i < orig.length; i++) {
+        byte[] origBytes = (byte[]) orig[i];
+        result[i] = Arrays.copyOf(origBytes, origBytes.length);
+      }
+    }
+    return Arrays.copyOf(orig, orig.length);
+  }
+
+  private <K, V> void setMap(Map<K, V> map, K[] keys, V[] values) {
+    assert(keys.length == values.length);
+    for (int i = 0; i < keys.length; i++) {
+      map.put(keys[i], values[i]);
+    }
+  }
+
+  private <K, V> void assertMapSet(
+      Map<K, V> map, K[] keys, V[] values) throws Exception {
+    assert(keys.length == values.length);
+    for (int i = 0; i < values.length; i++) {
+      assertEquals(values[i], map.get(keys[i]));
+    }
+    assertEquals(keys.length, map.size());
+  }
+
+  private void setMapMessage(TestMap testMap) {
+    testMap.int32ToInt32Field = new HashMap<Integer, Integer>();
+    testMap.int32ToBytesField = new HashMap<Integer, byte[]>();
+    testMap.int32ToEnumField = new HashMap<Integer, Integer>();
+    testMap.int32ToMessageField =
+        new HashMap<Integer, MapTestProto.TestMap.MessageValue>();
+    testMap.int32ToStringField = new HashMap<Integer, String>();
+    testMap.stringToInt32Field = new HashMap<String, Integer>();
+    testMap.boolToBoolField = new HashMap<Boolean, Boolean>();
+    testMap.uint32ToUint32Field = new HashMap<Integer, Integer>();
+    testMap.sint32ToSint32Field = new HashMap<Integer, Integer>();
+    testMap.fixed32ToFixed32Field = new HashMap<Integer, Integer>();
+    testMap.sfixed32ToSfixed32Field = new HashMap<Integer, Integer>();
+    testMap.int64ToInt64Field = new HashMap<Long, Long>();
+    testMap.uint64ToUint64Field = new HashMap<Long, Long>();
+    testMap.sint64ToSint64Field = new HashMap<Long, Long>();
+    testMap.fixed64ToFixed64Field = new HashMap<Long, Long>();
+    testMap.sfixed64ToSfixed64Field = new HashMap<Long, Long>();
+    setMap(testMap.int32ToInt32Field, int32Values, int32Values);
+    setMap(testMap.int32ToBytesField, int32Values, bytesValues);
+    setMap(testMap.int32ToEnumField, int32Values, enumValues);
+    setMap(testMap.int32ToMessageField, int32Values, messageValues);
+    setMap(testMap.int32ToStringField, int32Values, stringValues);
+    setMap(testMap.stringToInt32Field, stringValues, int32Values);
+    setMap(testMap.boolToBoolField, boolValues, boolValues);
+    setMap(testMap.uint32ToUint32Field, int32Values, int32Values);
+    setMap(testMap.sint32ToSint32Field, int32Values, int32Values);
+    setMap(testMap.fixed32ToFixed32Field, int32Values, int32Values);
+    setMap(testMap.sfixed32ToSfixed32Field, int32Values, int32Values);
+    setMap(testMap.int64ToInt64Field, int64Values, int64Values);
+    setMap(testMap.uint64ToUint64Field, int64Values, int64Values);
+    setMap(testMap.sint64ToSint64Field, int64Values, int64Values);
+    setMap(testMap.fixed64ToFixed64Field, int64Values, int64Values);
+    setMap(testMap.sfixed64ToSfixed64Field, int64Values, int64Values);
+  }
+  private void assertMapMessageSet(TestMap testMap) throws Exception {
+    assertMapSet(testMap.int32ToInt32Field, int32Values, int32Values);
+    assertMapSet(testMap.int32ToBytesField, int32Values, bytesValues);
+    assertMapSet(testMap.int32ToEnumField, int32Values, enumValues);
+    assertMapSet(testMap.int32ToMessageField, int32Values, messageValues);
+    assertMapSet(testMap.int32ToStringField, int32Values, stringValues);
+    assertMapSet(testMap.stringToInt32Field, stringValues, int32Values);
+    assertMapSet(testMap.boolToBoolField, boolValues, boolValues);
+    assertMapSet(testMap.uint32ToUint32Field, int32Values, int32Values);
+    assertMapSet(testMap.sint32ToSint32Field, int32Values, int32Values);
+    assertMapSet(testMap.fixed32ToFixed32Field, int32Values, int32Values);
+    assertMapSet(testMap.sfixed32ToSfixed32Field, int32Values, int32Values);
+    assertMapSet(testMap.int64ToInt64Field, int64Values, int64Values);
+    assertMapSet(testMap.uint64ToUint64Field, int64Values, int64Values);
+    assertMapSet(testMap.sint64ToSint64Field, int64Values, int64Values);
+    assertMapSet(testMap.fixed64ToFixed64Field, int64Values, int64Values);
+    assertMapSet(testMap.sfixed64ToSfixed64Field, int64Values, int64Values);
+  }
+
+  public void testRepeatedFieldInitializedInReftypesCompatMode() {
+    NanoReferenceTypesCompat.TestAllTypesNano proto = new NanoReferenceTypesCompat.TestAllTypesNano();
+    assertNotNull(proto.repeatedString);
+  }
+
   private void assertRepeatedPackablesEqual(
       NanoRepeatedPackables.NonPacked nonPacked, NanoRepeatedPackables.Packed packed) {
     // Not using MessageNano.equals() -- that belongs to a separate test.
@@ -3771,6 +4426,22 @@ public class NanoTest extends TestCase {
     assertTrue(Arrays.equals(nonPacked.doubles, packed.doubles));
     assertTrue(Arrays.equals(nonPacked.bools, packed.bools));
     assertTrue(Arrays.equals(nonPacked.enums, packed.enums));
+  }
+
+  public void testClone() throws Exception {
+    // A simple message.
+    AnotherMessage anotherMessage = new AnotherMessage();
+    anotherMessage.string = "Hello";
+    anotherMessage.value = true;
+    anotherMessage.integers = new int[] { 1, 2, 3 };
+
+    AnotherMessage clone = anotherMessage.clone();
+    assertEquals(clone, anotherMessage);
+
+    // Verify it was a deep clone - changes to the clone shouldn't affect the
+    // original.
+    clone.integers[1] = 100;
+    assertFalse(clone.equals(anotherMessage));
   }
 
   private void assertHasWireData(MessageNano message, boolean expected) {

@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Logger;
-import java.io.UnsupportedEncodingException;
 
 /**
  * Contains a collection of classes which describe protocol message types.
@@ -256,7 +255,7 @@ public final class Descriptors {
                                     throws DescriptorValidationException {
       return buildFrom(proto, dependencies, false);
     }
-    
+
 
     /**
      * Construct a {@code FileDescriptor}.
@@ -319,12 +318,7 @@ public final class Descriptors {
       }
 
       final byte[] descriptorBytes;
-      try {
-        descriptorBytes = descriptorData.toString().getBytes("ISO-8859-1");
-      } catch (UnsupportedEncodingException e) {
-        throw new RuntimeException(
-          "Standard encoding ISO-8859-1 not supported by JVM.", e);
-      }
+      descriptorBytes = descriptorData.toString().getBytes(Internal.ISO_8859_1);
 
       FileDescriptorProto proto;
       try {
@@ -495,9 +489,9 @@ public final class Descriptors {
           proto.getExtension(i), this, null, i, true);
       }
     }
-    
+
     /**
-     * Create a placeholder FileDescriptor for a message Descriptor. 
+     * Create a placeholder FileDescriptor for a message Descriptor.
      */
     FileDescriptor(String packageName, Descriptor message)
         throws DescriptorValidationException {
@@ -561,7 +555,7 @@ public final class Descriptors {
         extensions[i].setProto(proto.getExtension(i));
       }
     }
-    
+
     boolean supportsUnknownEnumValue() {
       return getSyntax() == Syntax.PROTO3;
     }
@@ -644,6 +638,30 @@ public final class Descriptors {
       for (final DescriptorProto.ExtensionRange range :
           proto.getExtensionRangeList()) {
         if (range.getStart() <= number && number < range.getEnd()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /** Determines if the given field number is reserved. */
+    public boolean isReservedNumber(final int number) {
+      for (final DescriptorProto.ReservedRange range :
+          proto.getReservedRangeList()) {
+        if (range.getStart() <= number && number < range.getEnd()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /** Determines if the given field name is reserved. */
+    public boolean isReservedName(final String name) {
+      if (name == null) {
+        throw new NullPointerException();
+      }
+      for (final String reservedName : proto.getReservedNameList()) {
+        if (reservedName.equals(name)) {
           return true;
         }
       }
@@ -745,7 +763,7 @@ public final class Descriptors {
       this.fields = new FieldDescriptor[0];
       this.extensions = new FieldDescriptor[0];
       this.oneofs = new OneofDescriptor[0];
-      
+
       // Create a placeholder FileDescriptor to hold this message.
       this.file = new FileDescriptor(packageName, this);
     }
@@ -897,7 +915,7 @@ public final class Descriptors {
       return (type == Type.STRING) && (getFile().getOptions().getJavaStringCheckUtf8());
     }
 
-    boolean isMapField() {
+    public boolean isMapField() {
       return getType() == Type.MESSAGE && isRepeated()
           && getMessageType().getOptions().getMapEntry();
     }
@@ -923,9 +941,18 @@ public final class Descriptors {
       return proto.getLabel() == FieldDescriptorProto.Label.LABEL_REPEATED;
     }
 
-    /** Does this field have the {@code [packed = true]} option? */
+    /** Does this field have the {@code [packed = true]} option or is this field
+     *  packable in proto3 and not explicitly setted to unpacked?
+     */
     public boolean isPacked() {
-      return getOptions().getPacked();
+      if (!isPackable()) {
+        return false;
+      }
+      if (getFile().getSyntax() == FileDescriptor.Syntax.PROTO2) {
+        return getOptions().getPacked();
+      } else {
+        return !getOptions().hasPacked() || getOptions().getPacked();
+      }
     }
 
     /** Can this field be packed? i.e. is it a repeated primitive field? */
@@ -1333,8 +1360,8 @@ public final class Descriptors {
                 "Message type had default value.");
           }
         } catch (NumberFormatException e) {
-          throw new DescriptorValidationException(this, 
-              "Could not parse default value: \"" + 
+          throw new DescriptorValidationException(this,
+              "Could not parse default value: \"" +
               proto.getDefaultValue() + '\"', e);
         }
       } else {
@@ -1456,7 +1483,7 @@ public final class Descriptors {
       return file.pool.enumValuesByNumber.get(
         new DescriptorPool.DescriptorIntPair(this, number));
     }
-    
+
     /**
      * Get the enum value for a number. If no enum value has this number,
      * construct an EnumValueDescriptor for it.
@@ -1494,7 +1521,7 @@ public final class Descriptors {
         //     then remove the whole entry. This way unknown descriptors will
         //     be freed automatically and we don't need to do anything to
         //     clean-up unused map entries.
-        
+
         // Note: We must use "new Integer(number)" here because we don't want
         // these Integer objects to be cached.
         Integer key = new Integer(number);
@@ -1509,7 +1536,7 @@ public final class Descriptors {
       }
       return result;
     }
-    
+
     // Used in tests only.
     int getUnknownEnumValueDescriptorCount() {
       return unknownValues.size();
@@ -1585,7 +1612,7 @@ public final class Descriptors {
 
     /** Get the value's number. */
     public int getNumber() { return proto.getNumber(); }
-    
+
     @Override
     public String toString() { return proto.getName(); }
 
@@ -1627,7 +1654,7 @@ public final class Descriptors {
       file.pool.addSymbol(this);
       file.pool.addEnumValueByNumber(this);
     }
-    
+
     private Integer number;
     // Create an unknown enum value.
     private EnumValueDescriptor(
@@ -1643,7 +1670,7 @@ public final class Descriptors {
       this.type = parent;
       this.fullName = parent.getFullName() + '.' + proto.getName();
       this.number = number;
-      
+
       // Don't add this descriptor into pool.
     }
 
@@ -1930,13 +1957,13 @@ public final class Descriptors {
    * descriptors defined in a particular file.
    */
   private static final class DescriptorPool {
-    
-    /** Defines what subclass of descriptors to search in the descriptor pool. 
+
+    /** Defines what subclass of descriptors to search in the descriptor pool.
      */
     enum SearchFilter {
       TYPES_ONLY, AGGREGATES_ONLY, ALL_SYMBOLS
     }
-    
+
     DescriptorPool(final FileDescriptor[] dependencies,
         boolean allowUnknownDependencies) {
       this.dependencies = new HashSet<FileDescriptor>();
@@ -1982,9 +2009,9 @@ public final class Descriptors {
     GenericDescriptor findSymbol(final String fullName) {
       return findSymbol(fullName, SearchFilter.ALL_SYMBOLS);
     }
-    
-    /** Find a descriptor by fully-qualified name and given option to only 
-     * search valid field type descriptors. 
+
+    /** Find a descriptor by fully-qualified name and given option to only
+     * search valid field type descriptors.
      */
     GenericDescriptor findSymbol(final String fullName,
                                  final SearchFilter filter) {
@@ -2013,18 +2040,18 @@ public final class Descriptors {
 
     /** Checks if the descriptor is a valid type for a message field. */
     boolean isType(GenericDescriptor descriptor) {
-      return (descriptor instanceof Descriptor) || 
+      return (descriptor instanceof Descriptor) ||
         (descriptor instanceof EnumDescriptor);
     }
-    
+
     /** Checks if the descriptor is a valid namespace type. */
     boolean isAggregate(GenericDescriptor descriptor) {
-      return (descriptor instanceof Descriptor) || 
-        (descriptor instanceof EnumDescriptor) || 
-        (descriptor instanceof PackageDescriptor) || 
+      return (descriptor instanceof Descriptor) ||
+        (descriptor instanceof EnumDescriptor) ||
+        (descriptor instanceof PackageDescriptor) ||
         (descriptor instanceof ServiceDescriptor);
     }
-       
+
     /**
      * Look up a type descriptor by name, relative to some other descriptor.
      * The name may be fully-qualified (with a leading '.'),
@@ -2082,7 +2109,7 @@ public final class Descriptors {
 
             // Append firstPart and try to find
             scopeToTry.append(firstPart);
-            result = findSymbol(scopeToTry.toString(), 
+            result = findSymbol(scopeToTry.toString(),
                 DescriptorPool.SearchFilter.AGGREGATES_ONLY);
 
             if (result != null) {
@@ -2322,6 +2349,11 @@ public final class Descriptors {
     public Descriptor getContainingType() { return containingType; }
 
     public int getFieldCount() { return fieldCount; }
+
+    /** Get a list of this message type's fields. */
+    public List<FieldDescriptor> getFields() {
+      return Collections.unmodifiableList(Arrays.asList(fields));
+    }
 
     public FieldDescriptor getField(int index) {
       return fields[index];

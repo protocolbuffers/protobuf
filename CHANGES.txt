@@ -1,3 +1,185 @@
+2015-05-25 version 3.0.0-alpha-3 (Objective-C/C#):
+  General
+  * Introduced two new language implementations (Objective-C, C#) to proto3.
+  * Explicit "optional" keyword are disallowed in proto3 syntax, as fields are
+    optional by default.
+  * Group fields are no longer supported in proto3 syntax.
+  * Changed repeated primitive fields to use packed serialization by default in
+    proto3 (implemented for C++, Java, Python in this release).  The user can
+    still disable packed serialization by setting packed to false for now.
+  * Added well-known type protos (any.proto, empty.proto, timestamp.proto,
+    duration.proto, etc.). Users can import and use these protos just like
+    regular proto files. Addtional runtime support will be added for them in
+    future releases (in the form of utility helper functions, or having them
+    replaced by language specific types in generated code).
+  * Added a "reserved" keyword in both proto2 and proto3 syntax. User can use
+    this keyword to declare reserved field numbers and names to prevent them
+    from being reused by other fields in the same message.
+
+    To reserve field numbers, add a reserved declaration in your message:
+
+      message TestMessage {
+        reserved 2, 15, 9 to 11, 3;
+      }
+
+    This reserves field numbers 2, 3, 9, 10, 11 and 15. If a user uses any of
+    these as field numbers, the protocol buffer compiler will report an error.
+
+    Field names can also be reserved:
+
+      message TestMessage {
+        reserved "foo", "bar";
+      }
+
+  * Various bug fixes since 3.0.0-alpha-2
+
+  Objective-C
+    Objective-C includes a code generator and a native objective-c runtime
+    library.  By adding “--objc_out” to protoc, the code generator will generate
+    a header(*.pbobjc.h) and an implementation file(*.pbobjc.m) for each proto
+    file.
+
+    In this first release, the generated interface provides: enums, messages,
+    field support(single, repeated, map, oneof), proto2 and proto3 syntax
+    support, parsing and serialization. It’s  compatible with ARC and non-ARC
+    usage. Besides, user can also access it via the swift bridging header.
+
+    See objectivec/README.md for details.
+
+  C#
+    * C# protobufs are based on project
+      https://github.com/jskeet/protobuf-csharp-port. The original project was
+      frozen and all the new development will happen here.
+    * Codegen plugin for C# was completely rewritten to C++ and is now an
+      intergral part of protoc.
+    * Some refactorings and cleanup has been applied to the C# runtime library.
+    * Only proto2 is supported in C# at the moment, proto3 support is in
+      progress and will likely bring significant breaking changes to the API.
+
+    See csharp/README.md for details.
+
+  C++
+    * Added runtime support for Any type. To use Any in your proto file, first
+      import the definition of Any:
+
+        // foo.proto
+        import "google/protobuf/any.proto";
+        message Foo {
+          google.protobuf.Any any_field = 1;
+        }
+        message Bar {
+          int32 value = 1;
+        }
+
+      Then in C++ you can access the Any field using PackFrom()/UnpackTo()
+      methods:
+
+        Foo foo;
+        Bar bar = ...;
+        foo.mutable_any_field()->PackFrom(bar);
+        ...
+        if (foo.any_field().IsType<Bar>()) {
+          foo.any_field().UnpackTo(&bar);
+          ...
+        }
+    * In text format, entries of a map field will be sorted by key.
+
+  Java
+    * Continued optimizations on the lite runtime to improve performance for
+      Android.
+
+  Python
+    * Added map support.
+      - maps now have a dict-like interface (msg.map_field[key] = value)
+      - existing code that modifies maps via the repeated field interface
+        will need to be updated.
+
+  Ruby
+    * Improvements to RepeatedField's emulation of the Ruby Array API.
+    * Various speedups and internal cleanups.
+
+2015-02-26 version 3.0.0-alpha-2 (Python/Ruby/JavaNano):
+  General
+  * Introduced three new language implementations (Ruby, JavaNano, and
+    Python) to proto3.
+  * Various bug fixes since 3.0.0-alpha-1
+
+  Python:
+    Python has received several updates, most notably support for proto3
+    semantics in any .proto file that declares syntax="proto3".
+    Messages declared in proto3 files no longer represent field presence
+    for scalar fields (number, enums, booleans, or strings).  You can
+    no longer call HasField() for such fields, and they are serialized
+    based on whether they have a non-zero/empty/false value.
+
+    One other notable change is in the C++-accelerated implementation.
+    Descriptor objects (which describe the protobuf schema and allow
+    reflection over it) are no longer duplicated between the Python
+    and C++ layers.  The Python descriptors are now simple wrappers
+    around the C++ descriptors.  This change should significantly
+    reduce the memory usage of programs that use a lot of message
+    types.
+
+  Ruby:
+    We have added proto3 support for Ruby via a native C extension.
+
+    The Ruby extension itself is included in the ruby/ directory, and details on
+    building and installing the extension are in ruby/README.md. The extension
+    will also be published as a Ruby gem. Code generator support is included as
+    part of `protoc` with the `--ruby_out` flag.
+
+    The Ruby extension implements a user-friendly DSL to define message types
+    (also generated by the code generator from `.proto` files).  Once a message
+    type is defined, the user may create instances of the message that behave in
+    ways idiomatic to Ruby. For example:
+
+    - Message fields are present as ordinary Ruby properties (getter method
+      `foo` and setter method `foo=`).
+    - Repeated field elements are stored in a container that acts like a native
+      Ruby array, and map elements are stored in a container that acts like a
+      native Ruby hashmap.
+    - The usual well-known methods, such as `#to_s`, `#dup`, and the like, are
+      present.
+
+    Unlike several existing third-party Ruby extensions for protobuf, this
+    extension is built on a "strongly-typed" philosophy: message fields and
+    array/map containers will throw exceptions eagerly when values of the
+    incorrect type are inserted.
+
+    See ruby/README.md for details.
+
+  JavaNano:
+    JavaNano is a special code generator and runtime library designed especially
+    for resource-restricted systems, like Android. It is very resource-friendly
+    in both the amount of code and the runtime overhead. Here is an an overview
+    of JavaNano features compared with the official Java protobuf:
+
+    - No descriptors or message builders.
+    - All messages are mutable; fields are public Java fields.
+    - For optional fields only, encapsulation behind setter/getter/hazzer/
+      clearer functions is opt-in, which provide proper 'has' state support.
+    - For proto2, if not opted in, has state (field presence) is not available.
+      Serialization outputs all fields not equal to their defaults.
+      The behavior is consistent with proto3 semantics.
+    - Required fields (proto2 only) are always serialized.
+    - Enum constants are integers; protection against invalid values only
+      when parsing from the wire.
+    - Enum constants can be generated into container interfaces bearing
+      the enum's name (so the referencing code is in Java style).
+    - CodedInputByteBufferNano can only take byte[] (not InputStream).
+    - Similarly CodedOutputByteBufferNano can only write to byte[].
+    - Repeated fields are in arrays, not ArrayList or Vector. Null array
+      elements are allowed and silently ignored.
+    - Full support for serializing/deserializing repeated packed fields.
+    - Support  extensions (in proto2).
+    - Unset messages/groups are null, not an immutable empty default
+      instance.
+    - toByteArray(...) and mergeFrom(...) are now static functions of
+      MessageNano.
+    - The 'bytes' type translates to the Java type byte[].
+
+    See javanano/README.txt for details.
+
 2014-12-01 version 3.0.0-alpha-1 (C++/Java):
 
   General

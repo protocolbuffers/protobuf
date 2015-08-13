@@ -31,8 +31,8 @@
 #ifndef GOOGLE_PROTOBUF_TYPE_HANDLER_H__
 #define GOOGLE_PROTOBUF_TYPE_HANDLER_H__
 
+#include <google/protobuf/arena.h>
 #include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/message.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 
 namespace google {
@@ -92,6 +92,28 @@ class MapValueInitializer<false, Type> {
   static inline void Initialize(Type& value, int default_enum_value) {}
 };
 
+template <typename Type, bool is_arena_constructable>
+class MapArenaMessageCreator {
+ public:
+  // Use arena to create message if Type is arena constructable. Otherwise,
+  // create the message on heap.
+  static inline Type* CreateMessage(Arena* arena);
+};
+template <typename Type>
+class MapArenaMessageCreator<Type, true> {
+ public:
+  static inline Type* CreateMessage(Arena* arena) {
+    return Arena::CreateMessage<Type>(arena);
+  }
+};
+template <typename Type>
+class MapArenaMessageCreator<Type, false> {
+ public:
+  static inline Type* CreateMessage(Arena* arena) {
+    return new Type;
+  }
+};
+
 // Handlers for key/value stored type in MapField. ==================
 
 // Handler for message
@@ -107,11 +129,11 @@ class MapCppTypeHandler : public MapCommonTypeHandler<Type> {
   // Return bytes used by value in Map.
   static int SpaceUsedInMap(const Type& value) { return value.SpaceUsed(); }
   static inline void Clear(Type** value) {
-    if (*value != NULL) (*value)->Type::Clear();
+    if (*value != NULL) (*value)->Clear();
   }
   static inline void ClearMaybeByDefaultEnum(Type** value,
                                              int default_enum_value) {
-    if (*value != NULL) (*value)->Type::Clear();
+    if (*value != NULL) (*value)->Clear();
   }
   static inline void Merge(const Type& from, Type** to) {
     (*to)->MergeFrom(from);
@@ -124,20 +146,24 @@ class MapCppTypeHandler : public MapCommonTypeHandler<Type> {
     *value = const_cast<Type*>(&Type::default_instance());
   }
   // Initialize value when constructing MapEntry
-  static inline void Initialize(Type** x) { *x = NULL; }
+  static inline void Initialize(Type** x, Arena* arena) { *x = NULL; }
   // Same as above, but use default_enum_value to initialize enum type value.
   static inline void InitializeMaybeByDefaultEnum(
-      Type** x, int default_enum_value) {
+      Type** x, int default_enum_value, Arena* arena) {
     *x = NULL;
   }
   // Initialize value for the first time mutable accessor is called.
-  static inline void EnsureMutable(Type** value) {
-    if (*value == NULL) *value = new Type;
+  static inline void EnsureMutable(Type** value, Arena* arena) {
+    if (*value == NULL) {
+      *value =
+          MapArenaMessageCreator<Type, Arena::is_arena_constructable<Type>::
+                                           type::value>::CreateMessage(arena);
+    }
   }
   // Return default instance if value is not initialized when calling const
   // reference accessor.
-  static inline const Type& DefaultIfNotInitialized(Type* value,
-                                                    Type* default_value) {
+  static inline const Type& DefaultIfNotInitialized(const Type* value,
+                                                    const Type* default_value) {
     return value != NULL ? *value : *default_value;
   }
   // Check if all required fields have values set.
@@ -166,18 +192,23 @@ class MapCppTypeHandler<string> : public MapCommonTypeHandler<string> {
     if (ptr != &::google::protobuf::internal::GetEmptyString()) delete ptr;
   }
   static inline void AssignDefaultValue(string** value) {}
-  static inline void Initialize(string** value) {
+  static inline void Initialize(string** value, Arena* arena) {
     *value = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    if (arena != NULL) arena->Own(*value);
   }
   static inline void InitializeMaybeByDefaultEnum(
-      string** value, int default_enum_value) {
+      string** value, int default_enum_value, Arena* arena) {
     *value = const_cast< ::std::string*>(&::google::protobuf::internal::GetEmptyString());
+    if (arena != NULL) arena->Own(*value);
   }
-  static inline void EnsureMutable(string** value) {
-    if (*value == &::google::protobuf::internal::GetEmptyString()) *value = new string;
+  static inline void EnsureMutable(string** value, Arena* arena) {
+    if (*value == &::google::protobuf::internal::GetEmptyString()) {
+      *value = Arena::Create<string>(arena);
+    }
   }
-  static inline const string& DefaultIfNotInitialized(string* value,
-                                                      string* default_value) {
+  static inline const string& DefaultIfNotInitialized(
+      const string* value,
+      const string* default_value) {
     return value != default_value ? *value : *default_value;
   }
   static inline bool IsInitialized(string* value) { return true; }
@@ -210,12 +241,13 @@ class MapPrimitiveTypeHandler : public MapCommonTypeHandler<Type> {
                                                int default_enum_value) {      \
       *value = static_cast<CType>(default_enum_value);                        \
     }                                                                         \
-    static inline void Initialize(CType* value) { *value = 0; }               \
+    static inline void Initialize(CType* value, Arena* arena) { *value = 0; } \
     static inline void InitializeMaybeByDefaultEnum(CType* value,             \
-                                                    int default_enum_value) { \
+                                                    int default_enum_value,   \
+                                                    Arena* arena) {           \
       *value = static_cast<CType>(default_enum_value);                        \
     }                                                                         \
-    static inline void EnsureMutable(CType* value) {}                         \
+    static inline void EnsureMutable(CType* value, Arena* arena) {}           \
   };
 
 PRIMITIVE_HANDLER(int32 )
@@ -228,13 +260,13 @@ PRIMITIVE_HANDLER(bool  )
 
 #undef PRIMITIVE_HANDLER
 
-// Define constants for given proto field type
-template <FieldDescriptor::Type Type>
-class MapFieldTypeTraits {};
+// Define constants for given wire field type
+template <WireFormatLite::FieldType field_type>
+class MapWireFieldTypeTraits {};
 
 #define TYPE_TRAITS(FieldType, CType, WireFormatType, IsMessage, IsEnum) \
   template <>                                                            \
-  class MapFieldTypeTraits<FieldDescriptor::TYPE_##FieldType> {          \
+  class MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType> {       \
    public:                                                               \
     typedef CType CppType;                                               \
     static const bool kIsMessage = IsMessage;                            \
@@ -243,7 +275,7 @@ class MapFieldTypeTraits {};
         WireFormatLite::WIRETYPE_##WireFormatType;                       \
   };
 
-TYPE_TRAITS(MESSAGE , Message,  LENGTH_DELIMITED, true, false)
+TYPE_TRAITS(MESSAGE , MessageLite, LENGTH_DELIMITED, true, false)
 TYPE_TRAITS(STRING  , string ,  LENGTH_DELIMITED, false, false)
 TYPE_TRAITS(BYTES   , string ,  LENGTH_DELIMITED, false, false)
 TYPE_TRAITS(INT64   , int64  ,  VARINT , false, false)
@@ -263,51 +295,46 @@ TYPE_TRAITS(BOOL    , bool   ,  VARINT , false, false)
 
 #undef TYPE_TRAITS
 
-// Handler for proto field type. Define types and constants used in compile
-// time. Also define functions used in parsing and serializing.
-template <FieldDescriptor::Type Type>
-class MapProtoTypeHandler {
+template <WireFormatLite::FieldType field_type>
+class MapWireFieldTypeHandler {
  public:
-  // Internal stored type in MapEntry for given proto field type.
-  typedef typename MapFieldTypeTraits<Type>::CppType CppType;
-
-  // Whether given type is a message.
-  static const bool kIsMessage = MapFieldTypeTraits<Type>::kIsMessage;
-
-  // Whether given type is an enum.
-  static const bool kIsEnum = MapFieldTypeTraits<Type>::kIsEnum;
-
-  // The wire type of given proto field type.
+  // Internal stored type in MapEntryLite for given wire field type.
+  typedef typename MapWireFieldTypeTraits<field_type>::CppType CppType;
+  // Corresponding wire type for field type.
   static const WireFormatLite::WireType kWireType =
-      MapFieldTypeTraits<Type>::kWireType;
+      MapWireFieldTypeTraits<field_type>::kWireType;
+  // Whether wire type is for message.
+  static const bool kIsMessage = MapWireFieldTypeTraits<field_type>::kIsMessage;
+  // Whether wire type is for enum.
+  static const bool kIsEnum = MapWireFieldTypeTraits<field_type>::kIsEnum;
 
   // Functions used in parsing and serialization. ===================
-
   template <typename ValueType>
   static inline int ByteSize(const ValueType& value);
   template <typename ValueType>
   static inline int GetCachedSize(const ValueType& value);
+  template <typename ValueType>
+  static inline bool Read(io::CodedInputStream* input, ValueType* value);
   static inline void Write(int field, const CppType& value,
                            io::CodedOutputStream* output);
   static inline uint8* WriteToArray(int field, const CppType& value,
                                     uint8* output);
-  template <typename ValueType>
-  static inline bool Read(io::CodedInputStream* input, ValueType* value);
 };
 
 template <>
 template <typename ValueType>
-inline int MapProtoTypeHandler<FieldDescriptor::TYPE_MESSAGE>::ByteSize(
+inline int MapWireFieldTypeHandler<WireFormatLite::TYPE_MESSAGE>::ByteSize(
     const ValueType& value) {
   return WireFormatLite::MessageSizeNoVirtual(value);
 }
 
-#define BYTE_SIZE(FieldType, DeclaredType)                                     \
-  template <>                                                                  \
-  template <typename ValueType>                                                \
-  inline int MapProtoTypeHandler<FieldDescriptor::TYPE_##FieldType>::ByteSize( \
-      const ValueType& value) {                                                \
-    return WireFormatLite::DeclaredType##Size(value);                          \
+#define BYTE_SIZE(FieldType, DeclaredType)                             \
+  template <>                                                          \
+  template <typename ValueType>                                        \
+  inline int                                                           \
+  MapWireFieldTypeHandler<WireFormatLite::TYPE_##FieldType>::ByteSize( \
+      const ValueType& value) {                                        \
+    return WireFormatLite::DeclaredType##Size(value);                  \
   }
 
 BYTE_SIZE(STRING, String)
@@ -322,12 +349,13 @@ BYTE_SIZE(ENUM  , Enum)
 
 #undef BYTE_SIZE
 
-#define FIXED_BYTE_SIZE(FieldType, DeclaredType)                               \
-  template <>                                                                  \
-  template <typename ValueType>                                                \
-  inline int MapProtoTypeHandler<FieldDescriptor::TYPE_##FieldType>::ByteSize( \
-      const ValueType& value) {                                                \
-    return WireFormatLite::k##DeclaredType##Size;                              \
+#define FIXED_BYTE_SIZE(FieldType, DeclaredType)                       \
+  template <>                                                          \
+  template <typename ValueType>                                        \
+  inline int                                                           \
+  MapWireFieldTypeHandler<WireFormatLite::TYPE_##FieldType>::ByteSize( \
+      const ValueType& value) {                                        \
+    return WireFormatLite::k##DeclaredType##Size;                      \
   }
 
 FIXED_BYTE_SIZE(DOUBLE  , Double)
@@ -342,18 +370,18 @@ FIXED_BYTE_SIZE(BOOL    , Bool)
 
 template <>
 template <typename ValueType>
-inline int MapProtoTypeHandler<FieldDescriptor::TYPE_MESSAGE>::GetCachedSize(
-    const ValueType& value) {
+inline int MapWireFieldTypeHandler<
+    WireFormatLite::TYPE_MESSAGE>::GetCachedSize(const ValueType& value) {
   return WireFormatLite::LengthDelimitedSize(value.GetCachedSize());
 }
 
-#define GET_CACHED_SIZE(FieldType, DeclaredType)                         \
-  template <>                                                            \
-  template <typename ValueType>                                          \
-  inline int                                                             \
-  MapProtoTypeHandler<FieldDescriptor::TYPE_##FieldType>::GetCachedSize( \
-      const ValueType& value) {                                          \
-    return WireFormatLite::DeclaredType##Size(value);                    \
+#define GET_CACHED_SIZE(FieldType, DeclaredType)                            \
+  template <>                                                               \
+  template <typename ValueType>                                             \
+  inline int                                                                \
+  MapWireFieldTypeHandler<WireFormatLite::TYPE_##FieldType>::GetCachedSize( \
+      const ValueType& value) {                                             \
+    return WireFormatLite::DeclaredType##Size(value);                       \
   }
 
 GET_CACHED_SIZE(STRING, String)
@@ -368,13 +396,13 @@ GET_CACHED_SIZE(ENUM  , Enum)
 
 #undef GET_CACHED_SIZE
 
-#define GET_FIXED_CACHED_SIZE(FieldType, DeclaredType)                   \
-  template <>                                                            \
-  template <typename ValueType>                                          \
-  inline int                                                             \
-  MapProtoTypeHandler<FieldDescriptor::TYPE_##FieldType>::GetCachedSize( \
-      const ValueType& value) {                                          \
-    return WireFormatLite::k##DeclaredType##Size;                        \
+#define GET_FIXED_CACHED_SIZE(FieldType, DeclaredType)                      \
+  template <>                                                               \
+  template <typename ValueType>                                             \
+  inline int                                                                \
+  MapWireFieldTypeHandler<WireFormatLite::TYPE_##FieldType>::GetCachedSize( \
+      const ValueType& value) {                                             \
+    return WireFormatLite::k##DeclaredType##Size;                           \
   }
 
 GET_FIXED_CACHED_SIZE(DOUBLE  , Double)
@@ -388,26 +416,28 @@ GET_FIXED_CACHED_SIZE(BOOL    , Bool)
 #undef GET_FIXED_CACHED_SIZE
 
 template <>
-inline void MapProtoTypeHandler<FieldDescriptor::TYPE_MESSAGE>::Write(
-    int field, const Message& value, io::CodedOutputStream* output) {
+inline void MapWireFieldTypeHandler<WireFormatLite::TYPE_MESSAGE>::Write(
+    int field, const MessageLite& value, io::CodedOutputStream* output) {
   WireFormatLite::WriteMessageMaybeToArray(field, value, output);
 }
 
 template <>
-inline uint8* MapProtoTypeHandler<FieldDescriptor::TYPE_MESSAGE>::WriteToArray(
-    int field, const Message& value, uint8* output) {
+inline uint8*
+MapWireFieldTypeHandler<WireFormatLite::TYPE_MESSAGE>::WriteToArray(
+    int field, const MessageLite& value, uint8* output) {
   return WireFormatLite::WriteMessageToArray(field, value, output);
 }
 
 #define WRITE_METHOD(FieldType, DeclaredType)                                  \
   template <>                                                                  \
-  inline void MapProtoTypeHandler<FieldDescriptor::TYPE_##FieldType>::Write(   \
+  inline void                                                                  \
+  MapWireFieldTypeHandler<WireFormatLite::TYPE_##FieldType>::Write(            \
       int field, const CppType& value, io::CodedOutputStream* output) {        \
     return WireFormatLite::Write##DeclaredType(field, value, output);          \
   }                                                                            \
   template <>                                                                  \
   inline uint8*                                                                \
-  MapProtoTypeHandler<FieldDescriptor::TYPE_##FieldType>::WriteToArray(        \
+  MapWireFieldTypeHandler<WireFormatLite::TYPE_##FieldType>::WriteToArray(     \
       int field, const CppType& value, uint8* output) {                        \
     return WireFormatLite::Write##DeclaredType##ToArray(field, value, output); \
   }
@@ -433,33 +463,33 @@ WRITE_METHOD(BOOL    , Bool)
 
 template <>
 template <typename ValueType>
-inline bool MapProtoTypeHandler<FieldDescriptor::TYPE_MESSAGE>::Read(
+inline bool MapWireFieldTypeHandler<WireFormatLite::TYPE_MESSAGE>::Read(
     io::CodedInputStream* input, ValueType* value) {
   return WireFormatLite::ReadMessageNoVirtual(input, value);
 }
 
 template <>
 template <typename ValueType>
-inline bool MapProtoTypeHandler<FieldDescriptor::TYPE_STRING>::Read(
+inline bool MapWireFieldTypeHandler<WireFormatLite::TYPE_STRING>::Read(
     io::CodedInputStream* input, ValueType* value) {
   return WireFormatLite::ReadString(input, value);
 }
 
 template <>
 template <typename ValueType>
-inline bool MapProtoTypeHandler<FieldDescriptor::TYPE_BYTES>::Read(
+inline bool MapWireFieldTypeHandler<WireFormatLite::TYPE_BYTES>::Read(
     io::CodedInputStream* input, ValueType* value) {
   return WireFormatLite::ReadBytes(input, value);
 }
 
-#define READ_METHOD(FieldType)                                              \
-  template <>                                                               \
-  template <typename ValueType>                                             \
-  inline bool MapProtoTypeHandler<FieldDescriptor::TYPE_##FieldType>::Read( \
-      io::CodedInputStream* input, ValueType* value) {                      \
-    return WireFormatLite::ReadPrimitive<CppType,                           \
-                                         WireFormatLite::TYPE_##FieldType>( \
-        input, value);                                                      \
+#define READ_METHOD(FieldType)                                                 \
+  template <>                                                                  \
+  template <typename ValueType>                                                \
+  inline bool MapWireFieldTypeHandler<WireFormatLite::TYPE_##FieldType>::Read( \
+      io::CodedInputStream* input, ValueType* value) {                         \
+    return WireFormatLite::ReadPrimitive<CppType,                              \
+                                         WireFormatLite::TYPE_##FieldType>(    \
+        input, value);                                                         \
   }
 
 READ_METHOD(INT64)

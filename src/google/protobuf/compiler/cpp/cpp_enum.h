@@ -60,6 +60,12 @@ class EnumGenerator {
 
   // Header stuff.
 
+  // Generate header code to forward-declare the enum. This is for use when
+  // generating other .proto.h files. This code should be placed within the
+  // enum's package namespace, but NOT within any class, even for nested
+  // enums.
+  void GenerateForwardDeclaration(io::Printer* printer);
+
   // Generate header code defining the enum.  This code should be placed
   // within the enum's package namespace, but NOT within any class, even for
   // nested enums.

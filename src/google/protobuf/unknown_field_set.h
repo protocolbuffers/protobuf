@@ -216,19 +216,18 @@ class LIBPROTOBUF_EXPORT UnknownField {
   void Reset();
 
   // Make a deep copy of any pointers in this UnknownField.
-  void DeepCopy();
+  void DeepCopy(const UnknownField& other);
 
   // Set the wire type of this UnknownField. Should only be used when this
   // UnknownField is being created.
   inline void SetType(Type type);
 
-  uint32 number_;
-  uint32 type_;
-
   union LengthDelimited {
     string* string_value_;
   };
 
+  uint32 number_;
+  uint32 type_;
   union {
     uint64 varint_;
     uint32 fixed32_;

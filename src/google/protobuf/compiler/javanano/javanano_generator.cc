@@ -67,8 +67,15 @@ void UpdateParamsRecursively(Params& params,
       file->name(), file->options().java_outer_classname());
   }
   if (file->options().has_java_package()) {
+    string result = file->options().java_package();
+    if (!file->options().javanano_use_deprecated_package()) {
+      if (!result.empty()) {
+        result += ".";
+      }
+      result += "nano";
+    }
     params.set_java_package(
-      file->name(), file->options().java_package());
+      file->name(), result);
   }
   if (file->options().has_java_multiple_files()) {
     params.set_java_multiple_files(
@@ -152,6 +159,12 @@ bool JavaNanoGenerator::Generate(const FileDescriptor* file,
       params.set_ignore_services(option_value == "true");
     } else if (option_name == "parcelable_messages") {
       params.set_parcelable_messages(option_value == "true");
+    } else if (option_name == "generate_clone") {
+      params.set_generate_clone(option_value == "true");
+    } else if (option_name == "generate_intdefs") {
+      params.set_generate_intdefs(option_value == "true");
+    } else if (option_name == "generate_clear") {
+      params.set_generate_clear(option_value == "true");
     } else {
       *error = "Ignore unknown javanano generator option: " + option_name;
     }

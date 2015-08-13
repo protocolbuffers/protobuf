@@ -54,7 +54,9 @@ extern const char kThinSeparator[];
 // Converts the field's name to camel-case, e.g. "foo_bar_baz" becomes
 // "fooBarBaz" or "FooBarBaz", respectively.
 string UnderscoresToCamelCase(const FieldDescriptor* field);
+string UnderscoresToCamelCase(const OneofDescriptor* oneof);
 string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field);
+string UnderscoresToCapitalizedCamelCase(const OneofDescriptor* oneof);
 
 // Appends an "_" to the end of a field where the name is a reserved java
 // keyword.  For example int32 public = 1 will generate int public_.
@@ -180,6 +182,14 @@ string GenerateDifferentBit(int bit_index);
 // bit index.
 void SetBitOperationVariables(const string name,
     int bitIndex, map<string, string>* variables);
+
+inline bool IsMapEntry(const Descriptor* descriptor) {
+  // TODO(liujisi): Add an option to turn on maps for proto2 syntax as well.
+  return descriptor->options().map_entry() &&
+      descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
+
+bool HasMapField(const Descriptor* descriptor);
 
 }  // namespace javanano
 }  // namespace compiler

@@ -4,17 +4,25 @@ if HAVE_ZLIB
 GZCHECKPROGRAMS = zcgzip zcgunzip
 GZHEADERS = google/protobuf/io/gzip_stream.h
 GZTESTS = google/protobuf/io/gzip_stream_unittest.sh
+ZLIB_DEF = -DHAVE_ZLIB=1
 else
 GZCHECKPROGRAMS =
 GZHEADERS =
 GZTESTS =
+ZLIB_DEF =
+endif
+
+if HAVE_PTHREAD
+PTHREAD_DEF = -DHAVE_PTHREAD=1
+else
+PTHREAD_DEF =
 endif
 
 if GCC
 # These are good warnings to turn on by default
-NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
+NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
 else
-NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS)
+NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF)
 endif
 
 AM_CXXFLAGS = $(NO_OPT_CXXFLAGS) $(PROTOBUF_OPT_FLAG)
@@ -24,7 +32,17 @@ AM_LDFLAGS = $(PTHREAD_CFLAGS)
 # If I say "dist_include_DATA", automake complains that $(includedir) is not
 # a "legitimate" directory for DATA.  Screw you, automake.
 protodir = $(includedir)
-nobase_dist_proto_DATA = google/protobuf/descriptor.proto \
+nobase_dist_proto_DATA = google/protobuf/descriptor.proto     \
+                         google/protobuf/any.proto            \
+                         google/protobuf/api.proto            \
+                         google/protobuf/duration.proto       \
+                         google/protobuf/empty.proto          \
+                         google/protobuf/field_mask.proto     \
+                         google/protobuf/source_context.proto \
+                         google/protobuf/struct.proto         \
+                         google/protobuf/timestamp.proto      \
+                         google/protobuf/type.proto           \
+                         google/protobuf/wrappers.proto       \
                          google/protobuf/compiler/plugin.proto
 
 # Not sure why these don't get cleaned automatically.
@@ -53,28 +71,48 @@ nobase_include_HEADERS =                                        \
   google/protobuf/stubs/atomicops_internals_tsan.h              \
   google/protobuf/stubs/atomicops_internals_x86_gcc.h           \
   google/protobuf/stubs/atomicops_internals_x86_msvc.h          \
+  google/protobuf/stubs/callback.h                              \
+  google/protobuf/stubs/bytestream.h                            \
   google/protobuf/stubs/casts.h                                 \
-  google/protobuf/stubs/singleton.h                             \
   google/protobuf/stubs/common.h                                \
   google/protobuf/stubs/fastmem.h                               \
+  google/protobuf/stubs/hash.h                                  \
+  google/protobuf/stubs/logging.h                               \
+  google/protobuf/stubs/macros.h                                \
+  google/protobuf/stubs/mutex.h                                 \
   google/protobuf/stubs/once.h                                  \
   google/protobuf/stubs/platform_macros.h                       \
+  google/protobuf/stubs/port.h                                  \
+  google/protobuf/stubs/scoped_ptr.h                            \
+  google/protobuf/stubs/shared_ptr.h                            \
+  google/protobuf/stubs/singleton.h                             \
+  google/protobuf/stubs/status.h                                \
   google/protobuf/stubs/stl_util.h                              \
+  google/protobuf/stubs/stringpiece.h                           \
   google/protobuf/stubs/template_util.h                         \
   google/protobuf/stubs/type_traits.h                           \
+  google/protobuf/any.pb.h                                      \
+  google/protobuf/api.pb.h                                      \
+  google/protobuf/any.h                                         \
   google/protobuf/arena.h                                       \
   google/protobuf/arenastring.h                                 \
   google/protobuf/descriptor_database.h                         \
   google/protobuf/descriptor.h                                  \
   google/protobuf/descriptor.pb.h                               \
+  google/protobuf/duration.pb.h                                 \
   google/protobuf/dynamic_message.h                             \
+  google/protobuf/empty.pb.h                                    \
   google/protobuf/extension_set.h                               \
+  google/protobuf/field_mask.pb.h                               \
   google/protobuf/generated_enum_reflection.h                   \
+  google/protobuf/generated_enum_util.h                         \
   google/protobuf/generated_message_reflection.h                \
   google/protobuf/generated_message_util.h                      \
   google/protobuf/map_entry.h                                   \
+  google/protobuf/map_entry_lite.h                              \
   google/protobuf/map_field.h                                   \
   google/protobuf/map_field_inl.h                               \
+  google/protobuf/map_field_lite.h                              \
   google/protobuf/map.h                                         \
   google/protobuf/map_type_handler.h                            \
   google/protobuf/message.h                                     \
@@ -85,11 +123,16 @@ nobase_include_HEADERS =                                        \
   google/protobuf/repeated_field.h                              \
   google/protobuf/repeated_field_reflection.h                   \
   google/protobuf/service.h                                     \
+  google/protobuf/source_context.pb.h                           \
+  google/protobuf/struct.pb.h                                   \
   google/protobuf/text_format.h                                 \
+  google/protobuf/timestamp.pb.h                                \
+  google/protobuf/type.pb.h                                     \
   google/protobuf/unknown_field_set.h                           \
   google/protobuf/wire_format.h                                 \
   google/protobuf/wire_format_lite.h                            \
   google/protobuf/wire_format_lite_inl.h                        \
+  google/protobuf/wrappers.pb.h                                 \
   google/protobuf/io/coded_stream.h                             \
   $(GZHEADERS)                                                  \
   google/protobuf/io/printer.h                                  \
@@ -108,8 +151,17 @@ nobase_include_HEADERS =                                        \
   google/protobuf/compiler/java/java_generator.h                \
   google/protobuf/compiler/java/java_names.h                    \
   google/protobuf/compiler/javanano/javanano_generator.h        \
+  google/protobuf/compiler/objectivec/objectivec_generator.h    \
+  google/protobuf/compiler/objectivec/objectivec_helpers.h      \
   google/protobuf/compiler/python/python_generator.h            \
-  google/protobuf/compiler/ruby/ruby_generator.h
+  google/protobuf/compiler/ruby/ruby_generator.h                \
+  google/protobuf/compiler/csharp/csharp_generator.h            \
+  google/protobuf/compiler/csharp/csharp_names.h                \
+  google/protobuf/util/type_resolver.h                          \
+  google/protobuf/util/type_resolver_util.h                     \
+  google/protobuf/util/json_util.h                              \
+  google/protobuf/util/field_comparator.h                       \
+  google/protobuf/util/message_differencer.h
 
 lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
@@ -118,13 +170,27 @@ libprotobuf_lite_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
 libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/atomicops_internals_x86_gcc.cc         \
   google/protobuf/stubs/atomicops_internals_x86_msvc.cc        \
+  google/protobuf/stubs/bytestream.cc                          \
+  google/protobuf/stubs/bytestream.h                           \
   google/protobuf/stubs/common.cc                              \
-  google/protobuf/stubs/once.cc                                \
   google/protobuf/stubs/hash.h                                 \
   google/protobuf/stubs/map_util.h                             \
+  google/protobuf/stubs/mathutil.h                             \
+  google/protobuf/stubs/once.cc                                \
   google/protobuf/stubs/shared_ptr.h                           \
+  google/protobuf/stubs/status.cc                              \
+  google/protobuf/stubs/status.h                               \
+  google/protobuf/stubs/status_macros.h                        \
+  google/protobuf/stubs/statusor.cc                            \
+  google/protobuf/stubs/statusor.h                             \
+  google/protobuf/stubs/stringpiece.cc                         \
+  google/protobuf/stubs/stringpiece.h                          \
   google/protobuf/stubs/stringprintf.cc                        \
   google/protobuf/stubs/stringprintf.h                         \
+  google/protobuf/stubs/strutil.cc                             \
+  google/protobuf/stubs/strutil.h                              \
+  google/protobuf/stubs/time.cc                                \
+  google/protobuf/stubs/time.h                                 \
   google/protobuf/arena.cc                                     \
   google/protobuf/arenastring.cc                               \
   google/protobuf/extension_set.cc                             \
@@ -141,32 +207,83 @@ libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
 libprotobuf_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
 libprotobuf_la_SOURCES =                                       \
   $(libprotobuf_lite_la_SOURCES)                               \
-  google/protobuf/stubs/strutil.cc                             \
-  google/protobuf/stubs/strutil.h                              \
-  google/protobuf/stubs/substitute.cc                          \
-  google/protobuf/stubs/substitute.h                           \
-  google/protobuf/stubs/structurally_valid.cc                  \
+  google/protobuf/any.pb.cc                                    \
+  google/protobuf/api.pb.cc                                    \
+  google/protobuf/stubs/mathlimits.h                           \
+  google/protobuf/stubs/mathlimits.cc                          \
+  google/protobuf/any.cc                                       \
   google/protobuf/descriptor.cc                                \
   google/protobuf/descriptor_database.cc                       \
   google/protobuf/descriptor.pb.cc                             \
+  google/protobuf/duration.pb.cc                               \
   google/protobuf/dynamic_message.cc                           \
+  google/protobuf/empty.pb.cc                                  \
   google/protobuf/extension_set_heavy.cc                       \
+  google/protobuf/field_mask.pb.cc                             \
   google/protobuf/generated_message_reflection.cc              \
   google/protobuf/map_field.cc                                 \
   google/protobuf/message.cc                                   \
   google/protobuf/reflection_internal.h                        \
   google/protobuf/reflection_ops.cc                            \
   google/protobuf/service.cc                                   \
+  google/protobuf/source_context.pb.cc                         \
+  google/protobuf/struct.pb.cc                                 \
+  google/protobuf/stubs/structurally_valid.cc                  \
+  google/protobuf/stubs/substitute.cc                          \
+  google/protobuf/stubs/substitute.h                           \
   google/protobuf/text_format.cc                               \
+  google/protobuf/timestamp.pb.cc                              \
+  google/protobuf/type.pb.cc                                   \
   google/protobuf/unknown_field_set.cc                         \
   google/protobuf/wire_format.cc                               \
+  google/protobuf/wrappers.pb.cc                               \
   google/protobuf/io/gzip_stream.cc                            \
   google/protobuf/io/printer.cc                                \
   google/protobuf/io/strtod.cc                                 \
   google/protobuf/io/tokenizer.cc                              \
   google/protobuf/io/zero_copy_stream_impl.cc                  \
   google/protobuf/compiler/importer.cc                         \
-  google/protobuf/compiler/parser.cc
+  google/protobuf/compiler/parser.cc                           \
+  google/protobuf/util/field_comparator.cc                     \
+  google/protobuf/util/internal/constants.h                    \
+  google/protobuf/util/internal/datapiece.cc                   \
+  google/protobuf/util/internal/datapiece.h                    \
+  google/protobuf/util/internal/default_value_objectwriter.cc  \
+  google/protobuf/util/internal/default_value_objectwriter.h   \
+  google/protobuf/util/internal/error_listener.cc              \
+  google/protobuf/util/internal/error_listener.h               \
+  google/protobuf/util/internal/expecting_objectwriter.h       \
+  google/protobuf/util/internal/field_mask_utility.cc          \
+  google/protobuf/util/internal/field_mask_utility.h           \
+  google/protobuf/util/internal/json_escaping.cc               \
+  google/protobuf/util/internal/json_escaping.h                \
+  google/protobuf/util/internal/json_objectwriter.cc           \
+  google/protobuf/util/internal/json_objectwriter.h            \
+  google/protobuf/util/internal/json_stream_parser.cc          \
+  google/protobuf/util/internal/json_stream_parser.h           \
+  google/protobuf/util/internal/location_tracker.h             \
+  google/protobuf/util/internal/mock_error_listener.h          \
+  google/protobuf/util/internal/object_location_tracker.h      \
+  google/protobuf/util/internal/object_source.h                \
+  google/protobuf/util/internal/object_writer.cc               \
+  google/protobuf/util/internal/object_writer.h                \
+  google/protobuf/util/internal/protostream_objectsource.cc    \
+  google/protobuf/util/internal/protostream_objectsource.h     \
+  google/protobuf/util/internal/protostream_objectwriter.cc    \
+  google/protobuf/util/internal/protostream_objectwriter.h     \
+  google/protobuf/util/internal/snake2camel_objectwriter.h     \
+  google/protobuf/util/internal/structured_objectwriter.h      \
+  google/protobuf/util/internal/testdata                       \
+  google/protobuf/util/internal/type_info.cc                   \
+  google/protobuf/util/internal/type_info.h                    \
+  google/protobuf/util/internal/type_info_test_helper.cc       \
+  google/protobuf/util/internal/type_info_test_helper.h        \
+  google/protobuf/util/internal/utility.cc                     \
+  google/protobuf/util/internal/utility.h                      \
+  google/protobuf/util/json_util.cc                            \
+  google/protobuf/util/type_resolver_util.cc                   \
+  google/protobuf/util/message_differencer.cc
+nodist_libprotobuf_la_SOURCES = $(nodist_libprotobuf_lite_la_SOURCES)
 
 libprotoc_la_LIBADD = $(PTHREAD_LIBS) libprotobuf.la
 libprotoc_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
@@ -210,6 +327,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_enum.cc                   \
   google/protobuf/compiler/java/java_enum_field.cc             \
   google/protobuf/compiler/java/java_enum_field.h              \
+  google/protobuf/compiler/java/java_enum_field_lite.cc        \
+  google/protobuf/compiler/java/java_enum_field_lite.h         \
   google/protobuf/compiler/java/java_enum.h                    \
   google/protobuf/compiler/java/java_extension.cc              \
   google/protobuf/compiler/java/java_extension.h               \
@@ -224,47 +343,117 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_helpers.h                 \
   google/protobuf/compiler/java/java_lazy_message_field.cc     \
   google/protobuf/compiler/java/java_lazy_message_field.h      \
+  google/protobuf/compiler/java/java_lazy_message_field_lite.cc\
+  google/protobuf/compiler/java/java_lazy_message_field_lite.h \
   google/protobuf/compiler/java/java_map_field.cc              \
   google/protobuf/compiler/java/java_map_field.h               \
+  google/protobuf/compiler/java/java_map_field_lite.cc         \
+  google/protobuf/compiler/java/java_map_field_lite.h          \
   google/protobuf/compiler/java/java_message.cc                \
+  google/protobuf/compiler/java/java_message_lite.cc           \
+  google/protobuf/compiler/java/java_message_builder.cc        \
+  google/protobuf/compiler/java/java_message_builder_lite.cc   \
   google/protobuf/compiler/java/java_message_field.cc          \
   google/protobuf/compiler/java/java_message_field.h           \
+  google/protobuf/compiler/java/java_message_field_lite.cc     \
+  google/protobuf/compiler/java/java_message_field_lite.h      \
   google/protobuf/compiler/java/java_message.h                 \
+  google/protobuf/compiler/java/java_message_lite.h            \
+  google/protobuf/compiler/java/java_message_builder.h         \
+  google/protobuf/compiler/java/java_message_builder_lite.h    \
   google/protobuf/compiler/java/java_name_resolver.cc          \
   google/protobuf/compiler/java/java_name_resolver.h           \
   google/protobuf/compiler/java/java_primitive_field.cc        \
   google/protobuf/compiler/java/java_primitive_field.h         \
+  google/protobuf/compiler/java/java_primitive_field_lite.cc   \
+  google/protobuf/compiler/java/java_primitive_field_lite.h    \
   google/protobuf/compiler/java/java_shared_code_generator.cc  \
   google/protobuf/compiler/java/java_shared_code_generator.h   \
   google/protobuf/compiler/java/java_service.cc                \
   google/protobuf/compiler/java/java_service.h                 \
   google/protobuf/compiler/java/java_string_field.cc           \
   google/protobuf/compiler/java/java_string_field.h            \
+  google/protobuf/compiler/java/java_string_field_lite.cc      \
+  google/protobuf/compiler/java/java_string_field_lite.h       \
   google/protobuf/compiler/java/java_doc_comment.cc            \
   google/protobuf/compiler/java/java_doc_comment.h             \
   google/protobuf/compiler/javanano/javanano_enum.cc           \
+  google/protobuf/compiler/javanano/javanano_enum.h            \
+  google/protobuf/compiler/javanano/javanano_enum_field.cc     \
   google/protobuf/compiler/javanano/javanano_enum_field.h      \
   google/protobuf/compiler/javanano/javanano_extension.cc      \
+  google/protobuf/compiler/javanano/javanano_extension.h       \
   google/protobuf/compiler/javanano/javanano_field.cc          \
+  google/protobuf/compiler/javanano/javanano_field.h           \
   google/protobuf/compiler/javanano/javanano_file.cc           \
+  google/protobuf/compiler/javanano/javanano_file.h            \
   google/protobuf/compiler/javanano/javanano_generator.cc      \
+  google/protobuf/compiler/javanano/javanano_generator.h       \
   google/protobuf/compiler/javanano/javanano_helpers.cc        \
+  google/protobuf/compiler/javanano/javanano_helpers.h         \
+  google/protobuf/compiler/javanano/javanano_map_field.cc      \
+  google/protobuf/compiler/javanano/javanano_map_field.h       \
   google/protobuf/compiler/javanano/javanano_message.cc        \
+  google/protobuf/compiler/javanano/javanano_message.h         \
+  google/protobuf/compiler/javanano/javanano_message_field.cc  \
   google/protobuf/compiler/javanano/javanano_message_field.h   \
   google/protobuf/compiler/javanano/javanano_params.h          \
-  google/protobuf/compiler/javanano/javanano_primitive_field.h \
-  google/protobuf/compiler/javanano/javanano_enum_field.cc     \
-  google/protobuf/compiler/javanano/javanano_enum.h            \
-  google/protobuf/compiler/javanano/javanano_extension.h       \
-  google/protobuf/compiler/javanano/javanano_field.h           \
-  google/protobuf/compiler/javanano/javanano_file.h            \
-  google/protobuf/compiler/javanano/javanano_generator.h       \
-  google/protobuf/compiler/javanano/javanano_helpers.h         \
-  google/protobuf/compiler/javanano/javanano_message_field.cc  \
-  google/protobuf/compiler/javanano/javanano_message.h         \
   google/protobuf/compiler/javanano/javanano_primitive_field.cc \
+  google/protobuf/compiler/javanano/javanano_primitive_field.h \
+  google/protobuf/compiler/objectivec/objectivec_enum.cc       \
+  google/protobuf/compiler/objectivec/objectivec_enum.h        \
+  google/protobuf/compiler/objectivec/objectivec_enum_field.cc \
+  google/protobuf/compiler/objectivec/objectivec_enum_field.h  \
+  google/protobuf/compiler/objectivec/objectivec_extension.cc  \
+  google/protobuf/compiler/objectivec/objectivec_extension.h   \
+  google/protobuf/compiler/objectivec/objectivec_field.cc      \
+  google/protobuf/compiler/objectivec/objectivec_field.h       \
+  google/protobuf/compiler/objectivec/objectivec_file.cc       \
+  google/protobuf/compiler/objectivec/objectivec_file.h        \
+  google/protobuf/compiler/objectivec/objectivec_generator.cc  \
+  google/protobuf/compiler/objectivec/objectivec_helpers.cc    \
+  google/protobuf/compiler/objectivec/objectivec_helpers.h     \
+  google/protobuf/compiler/objectivec/objectivec_map_field.cc  \
+  google/protobuf/compiler/objectivec/objectivec_map_field.h   \
+  google/protobuf/compiler/objectivec/objectivec_message.cc    \
+  google/protobuf/compiler/objectivec/objectivec_message.h     \
+  google/protobuf/compiler/objectivec/objectivec_message_field.cc \
+  google/protobuf/compiler/objectivec/objectivec_message_field.h \
+  google/protobuf/compiler/objectivec/objectivec_oneof.cc      \
+  google/protobuf/compiler/objectivec/objectivec_oneof.h       \
+  google/protobuf/compiler/objectivec/objectivec_primitive_field.cc \
+  google/protobuf/compiler/objectivec/objectivec_primitive_field.h \
   google/protobuf/compiler/python/python_generator.cc          \
-  google/protobuf/compiler/ruby/ruby_generator.cc
+  google/protobuf/compiler/ruby/ruby_generator.cc              \
+  google/protobuf/compiler/csharp/csharp_enum.cc               \
+  google/protobuf/compiler/csharp/csharp_enum.h                \
+  google/protobuf/compiler/csharp/csharp_enum_field.cc         \
+  google/protobuf/compiler/csharp/csharp_enum_field.h          \
+  google/protobuf/compiler/csharp/csharp_field_base.cc         \
+  google/protobuf/compiler/csharp/csharp_field_base.h          \
+  google/protobuf/compiler/csharp/csharp_generator.cc          \
+  google/protobuf/compiler/csharp/csharp_helpers.cc            \
+  google/protobuf/compiler/csharp/csharp_helpers.h             \
+  google/protobuf/compiler/csharp/csharp_map_field.cc          \
+  google/protobuf/compiler/csharp/csharp_map_field.h           \
+  google/protobuf/compiler/csharp/csharp_message.cc            \
+  google/protobuf/compiler/csharp/csharp_message.h             \
+  google/protobuf/compiler/csharp/csharp_message_field.cc      \
+  google/protobuf/compiler/csharp/csharp_message_field.h       \
+  google/protobuf/compiler/csharp/csharp_primitive_field.cc    \
+  google/protobuf/compiler/csharp/csharp_primitive_field.h     \
+  google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc \
+  google/protobuf/compiler/csharp/csharp_repeated_enum_field.h \
+  google/protobuf/compiler/csharp/csharp_repeated_message_field.cc \
+  google/protobuf/compiler/csharp/csharp_repeated_message_field.h \
+  google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc \
+  google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h \
+  google/protobuf/compiler/csharp/csharp_source_generator_base.cc \
+  google/protobuf/compiler/csharp/csharp_source_generator_base.h \
+  google/protobuf/compiler/csharp/csharp_umbrella_class.cc     \
+  google/protobuf/compiler/csharp/csharp_umbrella_class.h      \
+  google/protobuf/compiler/csharp/csharp_wrapper_field.cc      \
+  google/protobuf/compiler/csharp/csharp_wrapper_field.h
 
 bin_PROGRAMS = protoc
 protoc_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
@@ -272,31 +461,45 @@ protoc_SOURCES = google/protobuf/compiler/main.cc
 
 # Tests ==============================================================
 
-protoc_inputs =                                                \
-  google/protobuf/map_lite_unittest.proto                      \
-  google/protobuf/map_proto2_unittest.proto                    \
-  google/protobuf/map_unittest.proto                           \
-  google/protobuf/unittest.proto                               \
-  google/protobuf/unittest_arena.proto                         \
-  google/protobuf/unittest_custom_options.proto                \
-  google/protobuf/unittest_drop_unknown_fields.proto           \
-  google/protobuf/unittest_embed_optimize_for.proto            \
-  google/protobuf/unittest_empty.proto                         \
-  google/protobuf/unittest_import_lite.proto                   \
-  google/protobuf/unittest_import.proto                        \
-  google/protobuf/unittest_import_public_lite.proto            \
-  google/protobuf/unittest_import_public.proto                 \
-  google/protobuf/unittest_lite_imports_nonlite.proto          \
-  google/protobuf/unittest_lite.proto                          \
-  google/protobuf/unittest_mset.proto                          \
-  google/protobuf/unittest_no_arena_import.proto               \
-  google/protobuf/unittest_no_arena.proto                      \
-  google/protobuf/unittest_no_field_presence.proto             \
-  google/protobuf/unittest_no_generic_services.proto           \
-  google/protobuf/unittest_optimize_for.proto                  \
-  google/protobuf/unittest_preserve_unknown_enum.proto         \
-  google/protobuf/unittest_proto3_arena.proto                  \
-  google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto
+protoc_inputs =                                                   \
+  google/protobuf/any_test.proto                                  \
+  google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto     \
+  google/protobuf/map_lite_unittest.proto                         \
+  google/protobuf/map_proto2_unittest.proto                       \
+  google/protobuf/map_unittest.proto                              \
+  google/protobuf/unittest_arena.proto                            \
+  google/protobuf/unittest_custom_options.proto                   \
+  google/protobuf/unittest_drop_unknown_fields.proto              \
+  google/protobuf/unittest_embed_optimize_for.proto               \
+  google/protobuf/unittest_empty.proto                            \
+  google/protobuf/unittest_enormous_descriptor.proto              \
+  google/protobuf/unittest_import_lite.proto                      \
+  google/protobuf/unittest_import.proto                           \
+  google/protobuf/unittest_import_public_lite.proto               \
+  google/protobuf/unittest_import_public.proto                    \
+  google/protobuf/unittest_lite_imports_nonlite.proto             \
+  google/protobuf/unittest_lite.proto                             \
+  google/protobuf/unittest_mset.proto                             \
+  google/protobuf/unittest_no_arena_import.proto                  \
+  google/protobuf/unittest_no_arena.proto                         \
+  google/protobuf/unittest_no_field_presence.proto                \
+  google/protobuf/unittest_no_generic_services.proto              \
+  google/protobuf/unittest_optimize_for.proto                     \
+  google/protobuf/unittest_preserve_unknown_enum2.proto           \
+  google/protobuf/unittest_preserve_unknown_enum.proto            \
+  google/protobuf/unittest.proto                                  \
+  google/protobuf/unittest_proto3_arena.proto                     \
+  google/protobuf/unittest_well_known_types.proto                 \
+  google/protobuf/util/internal/testdata/anys.proto               \
+  google/protobuf/util/internal/testdata/books.proto              \
+  google/protobuf/util/internal/testdata/default_value.proto      \
+  google/protobuf/util/internal/testdata/default_value_test.proto \
+  google/protobuf/util/internal/testdata/field_mask.proto         \
+  google/protobuf/util/internal/testdata/maps.proto               \
+  google/protobuf/util/internal/testdata/struct.proto             \
+  google/protobuf/util/internal/testdata/timestamp_duration.proto \
+  google/protobuf/util/json_format_proto3.proto                   \
+  google/protobuf/compiler/cpp/cpp_test_large_enum_value.proto
 
 EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
@@ -305,8 +508,10 @@ EXTRA_DIST =                                                   \
   google/protobuf/io/gzip_stream_unittest.sh                   \
   google/protobuf/testdata/golden_message                      \
   google/protobuf/testdata/golden_message_oneof_implemented    \
+  google/protobuf/testdata/golden_message_proto3               \
   google/protobuf/testdata/golden_packed_fields_message        \
   google/protobuf/testdata/bad_utf8_string                     \
+  google/protobuf/testdata/map_test_data.txt                   \
   google/protobuf/testdata/text_format_unittest_data.txt       \
   google/protobuf/testdata/text_format_unittest_data_oneof_implemented.txt  \
   google/protobuf/testdata/text_format_unittest_data_pointy.txt             \
@@ -315,11 +520,14 @@ EXTRA_DIST =                                                   \
   google/protobuf/testdata/text_format_unittest_extensions_data_pointy.txt  \
   google/protobuf/package_info.h                               \
   google/protobuf/io/package_info.h                            \
+  google/protobuf/compiler/ruby/ruby_generated_code.proto      \
+  google/protobuf/compiler/ruby/ruby_generated_code.rb         \
   google/protobuf/compiler/package_info.h                      \
-  google/protobuf/compiler/zip_output_unittest.sh              \
-  google/protobuf/unittest_enormous_descriptor.proto
+  google/protobuf/compiler/zip_output_unittest.sh
 
 protoc_lite_outputs =                                          \
+  google/protobuf/map_lite_unittest.pb.cc                      \
+  google/protobuf/map_lite_unittest.pb.h                       \
   google/protobuf/unittest_lite.pb.cc                          \
   google/protobuf/unittest_lite.pb.h                           \
   google/protobuf/unittest_import_lite.pb.cc                   \
@@ -327,50 +535,76 @@ protoc_lite_outputs =                                          \
   google/protobuf/unittest_import_public_lite.pb.cc            \
   google/protobuf/unittest_import_public_lite.pb.h
 
-protoc_outputs =                                               \
-  $(protoc_lite_outputs)                                       \
-  google/protobuf/map_lite_unittest.pb.cc                      \
-  google/protobuf/map_lite_unittest.pb.h                       \
-  google/protobuf/map_proto2_unittest.pb.cc                    \
-  google/protobuf/map_proto2_unittest.pb.h                     \
-  google/protobuf/map_unittest.pb.cc                           \
-  google/protobuf/map_unittest.pb.h                            \
-  google/protobuf/unittest.pb.cc                               \
-  google/protobuf/unittest.pb.h                                \
-  google/protobuf/unittest_arena.pb.cc                         \
-  google/protobuf/unittest_arena.pb.h                          \
-  google/protobuf/unittest_custom_options.pb.cc                \
-  google/protobuf/unittest_custom_options.pb.h                 \
-  google/protobuf/unittest_drop_unknown_fields.pb.cc           \
-  google/protobuf/unittest_drop_unknown_fields.pb.h            \
-  google/protobuf/unittest_embed_optimize_for.pb.cc            \
-  google/protobuf/unittest_embed_optimize_for.pb.h             \
-  google/protobuf/unittest_empty.pb.cc                         \
-  google/protobuf/unittest_empty.pb.h                          \
-  google/protobuf/unittest_import.pb.cc                        \
-  google/protobuf/unittest_import.pb.h                         \
-  google/protobuf/unittest_import_public.pb.cc                 \
-  google/protobuf/unittest_import_public.pb.h                  \
-  google/protobuf/unittest_lite_imports_nonlite.pb.cc          \
-  google/protobuf/unittest_lite_imports_nonlite.pb.h           \
-  google/protobuf/unittest_mset.pb.cc                          \
-  google/protobuf/unittest_mset.pb.h                           \
-  google/protobuf/unittest_no_arena.pb.cc                      \
-  google/protobuf/unittest_no_arena.pb.h                       \
-  google/protobuf/unittest_no_arena_import.pb.cc               \
-  google/protobuf/unittest_no_arena_import.pb.h                \
-  google/protobuf/unittest_no_field_presence.pb.cc             \
-  google/protobuf/unittest_no_field_presence.pb.h              \
-  google/protobuf/unittest_no_generic_services.pb.cc           \
-  google/protobuf/unittest_no_generic_services.pb.h            \
-  google/protobuf/unittest_optimize_for.pb.cc                  \
-  google/protobuf/unittest_optimize_for.pb.h                   \
-  google/protobuf/unittest_preserve_unknown_enum.pb.cc         \
-  google/protobuf/unittest_preserve_unknown_enum.pb.h          \
-  google/protobuf/unittest_proto3_arena.pb.cc                  \
-  google/protobuf/unittest_proto3_arena.pb.h                   \
-  google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.cc  \
-  google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h
+protoc_outputs =                                                  \
+  $(protoc_lite_outputs)                                          \
+  google/protobuf/any_test.pb.cc                                  \
+  google/protobuf/any_test.pb.h                                   \
+  google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.cc     \
+  google/protobuf/compiler/cpp/cpp_test_bad_identifiers.pb.h      \
+  google/protobuf/compiler/cpp/cpp_test_large_enum_value.pb.cc    \
+  google/protobuf/compiler/cpp/cpp_test_large_enum_value.pb.h     \
+  google/protobuf/map_proto2_unittest.pb.cc                       \
+  google/protobuf/map_proto2_unittest.pb.h                        \
+  google/protobuf/map_unittest.pb.cc                              \
+  google/protobuf/map_unittest.pb.h                               \
+  google/protobuf/unittest_arena.pb.cc                            \
+  google/protobuf/unittest_arena.pb.h                             \
+  google/protobuf/unittest_custom_options.pb.cc                   \
+  google/protobuf/unittest_custom_options.pb.h                    \
+  google/protobuf/unittest_drop_unknown_fields.pb.cc              \
+  google/protobuf/unittest_drop_unknown_fields.pb.h               \
+  google/protobuf/unittest_embed_optimize_for.pb.cc               \
+  google/protobuf/unittest_embed_optimize_for.pb.h                \
+  google/protobuf/unittest_empty.pb.cc                            \
+  google/protobuf/unittest_empty.pb.h                             \
+  google/protobuf/unittest_enormous_descriptor.pb.cc              \
+  google/protobuf/unittest_enormous_descriptor.pb.h               \
+  google/protobuf/unittest_import.pb.cc                           \
+  google/protobuf/unittest_import.pb.h                            \
+  google/protobuf/unittest_import_public.pb.cc                    \
+  google/protobuf/unittest_import_public.pb.h                     \
+  google/protobuf/unittest_lite_imports_nonlite.pb.cc             \
+  google/protobuf/unittest_lite_imports_nonlite.pb.h              \
+  google/protobuf/unittest_mset.pb.cc                             \
+  google/protobuf/unittest_mset.pb.h                              \
+  google/protobuf/unittest_no_arena_import.pb.cc                  \
+  google/protobuf/unittest_no_arena_import.pb.h                   \
+  google/protobuf/unittest_no_arena.pb.cc                         \
+  google/protobuf/unittest_no_arena.pb.h                          \
+  google/protobuf/unittest_no_field_presence.pb.cc                \
+  google/protobuf/unittest_no_field_presence.pb.h                 \
+  google/protobuf/unittest_no_generic_services.pb.cc              \
+  google/protobuf/unittest_no_generic_services.pb.h               \
+  google/protobuf/unittest_optimize_for.pb.cc                     \
+  google/protobuf/unittest_optimize_for.pb.h                      \
+  google/protobuf/unittest.pb.cc                                  \
+  google/protobuf/unittest.pb.h                                   \
+  google/protobuf/unittest_preserve_unknown_enum2.pb.cc           \
+  google/protobuf/unittest_preserve_unknown_enum2.pb.h            \
+  google/protobuf/unittest_preserve_unknown_enum.pb.cc            \
+  google/protobuf/unittest_preserve_unknown_enum.pb.h             \
+  google/protobuf/unittest_proto3_arena.pb.cc                     \
+  google/protobuf/unittest_proto3_arena.pb.h                      \
+  google/protobuf/unittest_well_known_types.pb.cc                 \
+  google/protobuf/unittest_well_known_types.pb.h                  \
+  google/protobuf/util/internal/testdata/anys.pb.cc               \
+  google/protobuf/util/internal/testdata/anys.pb.h                \
+  google/protobuf/util/internal/testdata/books.pb.cc              \
+  google/protobuf/util/internal/testdata/books.pb.h               \
+  google/protobuf/util/internal/testdata/default_value.pb.cc      \
+  google/protobuf/util/internal/testdata/default_value.pb.h       \
+  google/protobuf/util/internal/testdata/default_value_test.pb.cc \
+  google/protobuf/util/internal/testdata/default_value_test.pb.h  \
+  google/protobuf/util/internal/testdata/field_mask.pb.cc         \
+  google/protobuf/util/internal/testdata/field_mask.pb.h          \
+  google/protobuf/util/internal/testdata/maps.pb.cc               \
+  google/protobuf/util/internal/testdata/maps.pb.h                \
+  google/protobuf/util/internal/testdata/struct.pb.cc             \
+  google/protobuf/util/internal/testdata/struct.pb.h              \
+  google/protobuf/util/internal/testdata/timestamp_duration.pb.cc \
+  google/protobuf/util/internal/testdata/timestamp_duration.pb.h  \
+  google/protobuf/util/json_format_proto3.pb.cc                   \
+  google/protobuf/util/json_format_proto3.pb.h
 
 BUILT_SOURCES = $(protoc_outputs)
 
@@ -394,8 +628,11 @@ endif
 $(protoc_outputs): unittest_proto_middleman
 
 COMMON_TEST_SOURCES =                                          \
+  google/protobuf/arena_test_util.cc                           \
+  google/protobuf/arena_test_util.h                            \
   google/protobuf/map_test_util.cc                             \
   google/protobuf/map_test_util.h                              \
+  google/protobuf/map_test_util_impl.h                         \
   google/protobuf/test_util.cc                                 \
   google/protobuf/test_util.h                                  \
   google/protobuf/testing/googletest.cc                        \
@@ -406,22 +643,29 @@ COMMON_TEST_SOURCES =                                          \
 check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
                  protobuf-lite-test test_plugin $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
-                      $(top_builddir)/gtest/lib/libgtest.la       \
-                      $(top_builddir)/gtest/lib/libgtest_main.la
-protobuf_test_CPPFLAGS = -I$(top_srcdir)/gtest/include         \
-                         -I$(top_builddir)/gtest/include
+                      ../gmock/gtest/lib/libgtest.la              \
+                      ../gmock/lib/libgmock.la                    \
+                      ../gmock/lib/libgmock_main.la
+protobuf_test_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include \
+                         -I$(srcdir)/../gmock/include
 # Disable optimization for tests unless the user explicitly asked for it,
 # since test_util.cc takes forever to compile with optimization (with GCC).
 # See configure.ac for more info.
 protobuf_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_test_SOURCES =                                        \
+  google/protobuf/stubs/bytestream_unittest.cc                 \
   google/protobuf/stubs/common_unittest.cc                     \
   google/protobuf/stubs/once_unittest.cc                       \
-  google/protobuf/stubs/strutil_unittest.cc                    \
-  google/protobuf/stubs/structurally_valid_unittest.cc         \
+  google/protobuf/stubs/statusor_test.cc                       \
+  google/protobuf/stubs/status_test.cc                         \
+  google/protobuf/stubs/stringpiece_unittest.cc                \
   google/protobuf/stubs/stringprintf_unittest.cc               \
+  google/protobuf/stubs/structurally_valid_unittest.cc         \
+  google/protobuf/stubs/strutil_unittest.cc                    \
   google/protobuf/stubs/template_util_unittest.cc              \
+  google/protobuf/stubs/time_test.cc                           \
   google/protobuf/stubs/type_traits_unittest.cc                \
+  google/protobuf/any_test.cc                                  \
   google/protobuf/arenastring_unittest.cc                      \
   google/protobuf/arena_unittest.cc                            \
   google/protobuf/descriptor_database_unittest.cc              \
@@ -441,6 +685,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/repeated_field_unittest.cc                   \
   google/protobuf/text_format_unittest.cc                      \
   google/protobuf/unknown_field_set_unittest.cc                \
+  google/protobuf/well_known_types_unittest.cc                 \
   google/protobuf/wire_format_unittest.cc                      \
   google/protobuf/io/coded_stream_unittest.cc                  \
   google/protobuf/io/printer_unittest.cc                       \
@@ -457,17 +702,32 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/cpp/cpp_plugin_unittest.cc          \
   google/protobuf/compiler/java/java_plugin_unittest.cc        \
   google/protobuf/compiler/java/java_doc_comment_unittest.cc   \
+  google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc \
   google/protobuf/compiler/python/python_plugin_unittest.cc    \
+  google/protobuf/compiler/ruby/ruby_generator_unittest.cc     \
+  google/protobuf/compiler/csharp/csharp_generator_unittest.cc \
+  google/protobuf/util/field_comparator_test.cc                \
+  google/protobuf/util/internal/default_value_objectwriter_test.cc \
+  google/protobuf/util/internal/json_objectwriter_test.cc      \
+  google/protobuf/util/internal/json_stream_parser_test.cc     \
+  google/protobuf/util/internal/protostream_objectsource_test.cc \
+  google/protobuf/util/internal/protostream_objectwriter_test.cc \
+  google/protobuf/util/internal/type_info_test_helper.cc       \
+  google/protobuf/util/json_util_test.cc                       \
+  google/protobuf/util/type_resolver_util_test.cc              \
   $(COMMON_TEST_SOURCES)
+
+
 nodist_protobuf_test_SOURCES = $(protoc_outputs)
 
 # Run cpp_unittest again with PROTOBUF_TEST_NO_DESCRIPTORS defined.
 protobuf_lazy_descriptor_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la \
                       libprotoc.la                                   \
-                      $(top_builddir)/gtest/lib/libgtest.la          \
-                      $(top_builddir)/gtest/lib/libgtest_main.la
-protobuf_lazy_descriptor_test_CPPFLAGS = -I$(top_srcdir)/gtest/include    \
-                                         -I$(top_builddir)/gtest/include  \
+                      ../gmock/gtest/lib/libgtest.la                 \
+                      ../gmock/lib/libgmock.la                       \
+                      ../gmock/lib/libgmock_main.la
+protobuf_lazy_descriptor_test_CPPFLAGS = -I$(srcdir)/../gmock/include       \
+                                         -I$(srcdir)/../gmock/gtest/include \
                                          -DPROTOBUF_TEST_NO_DESCRIPTORS
 protobuf_lazy_descriptor_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lazy_descriptor_test_SOURCES =                        \
@@ -479,16 +739,21 @@ nodist_protobuf_lazy_descriptor_test_SOURCES = $(protoc_outputs)
 protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la
 protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_test_SOURCES =                                           \
+  google/protobuf/arena_test_util.cc                                   \
+  google/protobuf/arena_test_util.h                                    \
   google/protobuf/lite_unittest.cc                                     \
+  google/protobuf/map_lite_test_util.cc                                \
+  google/protobuf/map_lite_test_util.h                                 \
   google/protobuf/test_util_lite.cc                                    \
   google/protobuf/test_util_lite.h
+  # TODO(teboring) add the file back and make the test build.
+  # google/protobuf/map_lite_test.cc
 nodist_protobuf_lite_test_SOURCES = $(protoc_lite_outputs)
 
 # Test plugin binary.
 test_plugin_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
-                    $(top_builddir)/gtest/lib/libgtest.la
-test_plugin_CPPFLAGS = -I$(top_srcdir)/gtest/include         \
-                       -I$(top_builddir)/gtest/include
+                    ../gmock/gtest/lib/libgtest.la
+test_plugin_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include
 test_plugin_SOURCES =                                          \
   google/protobuf/compiler/mock_code_generator.cc              \
   google/protobuf/testing/file.cc                              \

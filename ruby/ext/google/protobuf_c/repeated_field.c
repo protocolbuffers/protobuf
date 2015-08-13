@@ -47,6 +47,30 @@ RepeatedField* ruby_to_RepeatedField(VALUE _self) {
   return self;
 }
 
+static int index_position(VALUE _index, RepeatedField* repeated_field) {
+  int index = NUM2INT(_index);
+  if (index < 0 && repeated_field->size > 0) {
+    index = repeated_field->size + index;
+  }
+  return index;
+}
+
+VALUE RepeatedField_subarray(VALUE _self, long beg, long len) {
+  RepeatedField* self = ruby_to_RepeatedField(_self);
+  int element_size = native_slot_size(self->field_type);
+  upb_fieldtype_t field_type = self->field_type;
+  VALUE field_type_class = self->field_type_class;
+
+  size_t off = beg * element_size;
+  VALUE ary = rb_ary_new2(len);
+  for (int i = beg; i < beg + len; i++, off += element_size) {
+    void* mem = ((uint8_t *)self->elements) + off;
+    VALUE elem = native_slot_get(field_type, field_type_class, mem);
+    rb_ary_push(ary, elem);
+  }
+  return ary;
+}
+
 /*
  * call-seq:
  *     RepeatedField.each(&block)
@@ -67,29 +91,58 @@ VALUE RepeatedField_each(VALUE _self) {
     VALUE val = native_slot_get(field_type, field_type_class, memory);
     rb_yield(val);
   }
-  return Qnil;
+  return _self;
 }
+
 
 /*
  * call-seq:
  *     RepeatedField.[](index) => value
  *
- * Accesses the element at the given index. Throws an exception on out-of-bounds
- * errors.
+ * Accesses the element at the given index. Returns nil on out-of-bounds
  */
-VALUE RepeatedField_index(VALUE _self, VALUE _index) {
+VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   int element_size = native_slot_size(self->field_type);
   upb_fieldtype_t field_type = self->field_type;
   VALUE field_type_class = self->field_type_class;
 
-  int index = NUM2INT(_index);
-  if (index < 0 || index >= self->size) {
-    rb_raise(rb_eRangeError, "Index out of range");
-  }
+  VALUE arg = argv[0];
+  long beg, len;
 
-  void* memory = (void *) (((uint8_t *)self->elements) + index * element_size);
-  return native_slot_get(field_type, field_type_class, memory);
+  if (argc == 1){
+    if (FIXNUM_P(arg)) {
+      /* standard case */
+      int index = index_position(argv[0], self);
+      if (index < 0 || index >= self->size) {
+        return Qnil;
+      }
+      void* memory = (void *) (((uint8_t *)self->elements) +
+                               index * element_size);
+      return native_slot_get(field_type, field_type_class, memory);
+    }else{
+      /* check if idx is Range */
+      size_t off;
+      switch (rb_range_beg_len(arg, &beg, &len, self->size, 0)) {
+        case Qfalse:
+          break;
+        case Qnil:
+          return Qnil;
+        default:
+          return RepeatedField_subarray(_self, beg, len);
+      }
+    }
+  }
+  /* assume 2 arguments */
+  beg = NUM2LONG(argv[0]);
+  len = NUM2LONG(argv[1]);
+  if (beg < 0) {
+    beg += self->size;
+  }
+  if (beg >= self->size) {
+    return Qnil;
+  }
+  return RepeatedField_subarray(_self, beg, len);
 }
 
 /*
@@ -105,9 +158,9 @@ VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   VALUE field_type_class = self->field_type_class;
   int element_size = native_slot_size(field_type);
 
-  int index = NUM2INT(_index);
+  int index = index_position(_index, self);
   if (index < 0 || index >= (INT_MAX - 1)) {
-    rb_raise(rb_eRangeError, "Index out of range");
+    return Qnil;
   }
   if (index >= self->size) {
     RepeatedField_reserve(self, index + 1);
@@ -165,6 +218,7 @@ VALUE RepeatedField_push(VALUE _self, VALUE val) {
   return _self;
 }
 
+
 // Used by parsing handlers.
 void RepeatedField_push_native(VALUE _self, void* data) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -185,38 +239,21 @@ void* RepeatedField_index_native(VALUE _self, int index) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.pop => value
- *
- * Removes the last element and returns it. Throws an exception if the repeated
- * field is empty.
+ * Private ruby method, used by RepeatedField.pop
  */
-VALUE RepeatedField_pop(VALUE _self) {
+VALUE RepeatedField_pop_one(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_fieldtype_t field_type = self->field_type;
   VALUE field_type_class = self->field_type_class;
   int element_size = native_slot_size(field_type);
   if (self->size == 0) {
-    rb_raise(rb_eRangeError, "Pop from empty repeated field is not allowed.");
+    return Qnil;
   }
   int index = self->size - 1;
   void* memory = (void *) (((uint8_t *)self->elements) + index * element_size);
   VALUE ret = native_slot_get(field_type, field_type_class, memory);
   self->size--;
   return ret;
-}
-
-/*
- * call-seq:
- *     RepeatedField.insert(*args)
- *
- * Pushes each arg in turn onto the end of the repeated field.
- */
-VALUE RepeatedField_insert(int argc, VALUE* argv, VALUE _self) {
-  for (int i = 0; i < argc; i++) {
-    RepeatedField_push(_self, argv[i]);
-  }
-  return Qnil;
 }
 
 /*
@@ -232,7 +269,7 @@ VALUE RepeatedField_replace(VALUE _self, VALUE list) {
   for (int i = 0; i < RARRAY_LEN(list); i++) {
     RepeatedField_push(_self, rb_ary_entry(list, i));
   }
-  return Qnil;
+  return list;
 }
 
 /*
@@ -244,7 +281,7 @@ VALUE RepeatedField_replace(VALUE _self, VALUE list) {
 VALUE RepeatedField_clear(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   self->size = 0;
-  return Qnil;
+  return _self;
 }
 
 /*
@@ -318,12 +355,38 @@ VALUE RepeatedField_deep_copy(VALUE _self) {
 
 /*
  * call-seq:
+ *     RepeatedField.to_ary => array
+ *
+ * Used when converted implicitly into array, e.g. compared to an Array.
+ * Also called as a fallback of Object#to_a
+ */
+VALUE RepeatedField_to_ary(VALUE _self) {
+  RepeatedField* self = ruby_to_RepeatedField(_self);
+  upb_fieldtype_t field_type = self->field_type;
+
+  size_t elem_size = native_slot_size(field_type);
+  size_t off = 0;
+  VALUE ary = rb_ary_new2(self->size);
+  for (int i = 0; i < self->size; i++, off += elem_size) {
+    void* mem = ((uint8_t *)self->elements) + off;
+    VALUE elem = native_slot_get(field_type, self->field_type_class, mem);
+    rb_ary_push(ary, elem);
+  }
+  return ary;
+}
+
+/*
+ * call-seq:
  *     RepeatedField.==(other) => boolean
  *
  * Compares this repeated field to another. Repeated fields are equal if their
  * element types are equal, their lengths are equal, and each element is equal.
  * Elements are compared as per normal Ruby semantics, by calling their :==
  * methods (or performing a more efficient comparison for primitive types).
+ *
+ * Repeated fields with dissimilar element types are never equal, even if value
+ * comparison (for example, between integers and floats) would have otherwise
+ * indicated that every element has equal value.
  */
 VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
   if (_self == _other) {
@@ -331,15 +394,9 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
   }
   RepeatedField* self = ruby_to_RepeatedField(_self);
 
-  // Inefficient but workable: to support comparison to a generic array, we
-  // build a temporary RepeatedField of our type.
   if (TYPE(_other) == T_ARRAY) {
-    VALUE new_rptfield = RepeatedField_new_this_type(_self);
-    for (int i = 0; i < RARRAY_LEN(_other); i++) {
-      VALUE elem = rb_ary_entry(_other, i);
-      RepeatedField_push(new_rptfield, elem);
-    }
-    _other = new_rptfield;
+    VALUE self_ary = RepeatedField_to_ary(_self);
+    return rb_equal(self_ary, _other);
   }
 
   RepeatedField* other = ruby_to_RepeatedField(_other);
@@ -390,40 +447,6 @@ VALUE RepeatedField_hash(VALUE _self) {
 
 /*
  * call-seq:
- *     RepeatedField.inspect => string
- *
- * Returns a string representing this repeated field's elements. It will be
- * formated as "[<element>, <element>, ...]", with each element's string
- * representation computed by its own #inspect method.
- */
-VALUE RepeatedField_inspect(VALUE _self) {
-  RepeatedField* self = ruby_to_RepeatedField(_self);
-
-  VALUE str = rb_str_new2("[");
-
-  bool first = true;
-
-  upb_fieldtype_t field_type = self->field_type;
-  VALUE field_type_class = self->field_type_class;
-  size_t elem_size = native_slot_size(field_type);
-  size_t off = 0;
-  for (int i = 0; i < self->size; i++, off += elem_size) {
-    void* mem = ((uint8_t *)self->elements) + off;
-    VALUE elem = native_slot_get(field_type, field_type_class, mem);
-    if (!first) {
-      str = rb_str_cat2(str, ", ");
-    } else {
-      first = false;
-    }
-    str = rb_str_append(str, rb_funcall(elem, rb_intern("inspect"), 0));
-  }
-
-  str = rb_str_cat2(str, "]");
-  return str;
-}
-
-/*
- * call-seq:
  *     RepeatedField.+(other) => repeated field
  *
  * Returns a new repeated field that contains the concatenated list of this
@@ -458,14 +481,30 @@ VALUE RepeatedField_plus(VALUE _self, VALUE list) {
   return dupped;
 }
 
-static void validate_type_class(upb_fieldtype_t type, VALUE klass) {
-  if (rb_iv_get(klass, kDescriptorInstanceVar) == Qnil) {
+/*
+ * call-seq:
+ *     RepeatedField.concat(other) => self
+ *
+ * concats the passed in array to self.  Returns a Ruby array.
+ */
+VALUE RepeatedField_concat(VALUE _self, VALUE list) {
+  RepeatedField* self = ruby_to_RepeatedField(_self);
+  Check_Type(list, T_ARRAY);
+  for (int i = 0; i < RARRAY_LEN(list); i++) {
+    RepeatedField_push(_self, rb_ary_entry(list, i));
+  }
+  return _self;
+}
+
+
+void validate_type_class(upb_fieldtype_t type, VALUE klass) {
+  if (rb_ivar_get(klass, descriptor_instancevar_interned) == Qnil) {
     rb_raise(rb_eArgError,
              "Type class has no descriptor. Please pass a "
              "class or enum as returned by the DescriptorPool.");
   }
   if (type == UPB_TYPE_MESSAGE) {
-    VALUE desc = rb_iv_get(klass, kDescriptorInstanceVar);
+    VALUE desc = rb_ivar_get(klass, descriptor_instancevar_interned);
     if (!RB_TYPE_P(desc, T_DATA) || !RTYPEDDATA_P(desc) ||
         RTYPEDDATA_TYPE(desc) != &_Descriptor_type) {
       rb_raise(rb_eArgError, "Descriptor has an incorrect type.");
@@ -475,7 +514,7 @@ static void validate_type_class(upb_fieldtype_t type, VALUE klass) {
                "Message class was not returned by the DescriptorPool.");
     }
   } else if (type == UPB_TYPE_ENUM) {
-    VALUE enumdesc = rb_iv_get(klass, kDescriptorInstanceVar);
+    VALUE enumdesc = rb_ivar_get(klass, descriptor_instancevar_interned);
     if (!RB_TYPE_P(enumdesc, T_DATA) || !RTYPEDDATA_P(enumdesc) ||
         RTYPEDDATA_TYPE(enumdesc) != &_EnumDescriptor_type) {
       rb_raise(rb_eArgError, "Descriptor has an incorrect type.");
@@ -577,21 +616,23 @@ void RepeatedField_register(VALUE module) {
   rb_define_method(klass, "initialize",
                    RepeatedField_init, -1);
   rb_define_method(klass, "each", RepeatedField_each, 0);
-  rb_define_method(klass, "[]", RepeatedField_index, 1);
+  rb_define_method(klass, "[]", RepeatedField_index, -1);
+  rb_define_method(klass, "at", RepeatedField_index, -1);
   rb_define_method(klass, "[]=", RepeatedField_index_set, 2);
   rb_define_method(klass, "push", RepeatedField_push, 1);
   rb_define_method(klass, "<<", RepeatedField_push, 1);
-  rb_define_method(klass, "pop", RepeatedField_pop, 0);
-  rb_define_method(klass, "insert", RepeatedField_insert, -1);
+  rb_define_private_method(klass, "pop_one", RepeatedField_pop_one, 0);
   rb_define_method(klass, "replace", RepeatedField_replace, 1);
   rb_define_method(klass, "clear", RepeatedField_clear, 0);
   rb_define_method(klass, "length", RepeatedField_length, 0);
+  rb_define_method(klass, "size", RepeatedField_length, 0);
   rb_define_method(klass, "dup", RepeatedField_dup, 0);
   // Also define #clone so that we don't inherit Object#clone.
   rb_define_method(klass, "clone", RepeatedField_dup, 0);
   rb_define_method(klass, "==", RepeatedField_eq, 1);
+  rb_define_method(klass, "to_ary", RepeatedField_to_ary, 0);
   rb_define_method(klass, "hash", RepeatedField_hash, 0);
-  rb_define_method(klass, "inspect", RepeatedField_inspect, 0);
   rb_define_method(klass, "+", RepeatedField_plus, 1);
+  rb_define_method(klass, "concat", RepeatedField_concat, 1);
   rb_include_module(klass, rb_mEnumerable);
 }

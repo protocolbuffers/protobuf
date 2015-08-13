@@ -33,7 +33,8 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
 // A proto file that has an extremely large descriptor.  Used to test that
-// descriptors over 64k don't break the string literal length limit in Java.
+// descriptors over 64k don't break language-specific limits in generated code,
+// such as the string literal length limit in Java.
 
 syntax = "proto2";
 

@@ -139,6 +139,14 @@ DescriptorProto::ExtensionRange* AddExtensionRange(DescriptorProto* parent,
   return result;
 }
 
+DescriptorProto::ReservedRange* AddReservedRange(DescriptorProto* parent,
+                                                 int start, int end) {
+  DescriptorProto::ReservedRange* result = parent->add_reserved_range();
+  result->set_start(start);
+  result->set_end(end);
+  return result;
+}
+
 EnumValueDescriptorProto* AddEnumValue(EnumDescriptorProto* enum_proto,
                                        const string& name, int number) {
   EnumValueDescriptorProto* result = enum_proto->add_value();
@@ -1720,6 +1728,84 @@ TEST_F(ExtensionDescriptorTest, DuplicateFieldNumber) {
 
 // ===================================================================
 
+// Test reserved fields.
+class ReservedDescriptorTest : public testing::Test {
+ protected:
+  virtual void SetUp() {
+    // Build descriptors for the following definitions:
+    //
+    //   message Foo {
+    //     reserved 2, 9 to 11, 15;
+    //     reserved "foo", "bar";
+    //   }
+
+    FileDescriptorProto foo_file;
+    foo_file.set_name("foo.proto");
+
+    DescriptorProto* foo = AddMessage(&foo_file, "Foo");
+    AddReservedRange(foo, 2, 3);
+    AddReservedRange(foo, 9, 12);
+    AddReservedRange(foo, 15, 16);
+
+    foo->add_reserved_name("foo");
+    foo->add_reserved_name("bar");
+
+    // Build the descriptors and get the pointers.
+    foo_file_ = pool_.BuildFile(foo_file);
+    ASSERT_TRUE(foo_file_ != NULL);
+
+    ASSERT_EQ(1, foo_file_->message_type_count());
+    foo_ = foo_file_->message_type(0);
+  }
+
+  DescriptorPool pool_;
+  const FileDescriptor* foo_file_;
+  const Descriptor* foo_;
+};
+
+TEST_F(ReservedDescriptorTest, ReservedRanges) {
+  ASSERT_EQ(3, foo_->reserved_range_count());
+
+  EXPECT_EQ(2, foo_->reserved_range(0)->start);
+  EXPECT_EQ(3, foo_->reserved_range(0)->end);
+
+  EXPECT_EQ(9, foo_->reserved_range(1)->start);
+  EXPECT_EQ(12, foo_->reserved_range(1)->end);
+
+  EXPECT_EQ(15, foo_->reserved_range(2)->start);
+  EXPECT_EQ(16, foo_->reserved_range(2)->end);
+};
+
+TEST_F(ReservedDescriptorTest, IsReservedNumber) {
+  EXPECT_FALSE(foo_->IsReservedNumber(1));
+  EXPECT_TRUE (foo_->IsReservedNumber(2));
+  EXPECT_FALSE(foo_->IsReservedNumber(3));
+  EXPECT_FALSE(foo_->IsReservedNumber(8));
+  EXPECT_TRUE (foo_->IsReservedNumber(9));
+  EXPECT_TRUE (foo_->IsReservedNumber(10));
+  EXPECT_TRUE (foo_->IsReservedNumber(11));
+  EXPECT_FALSE(foo_->IsReservedNumber(12));
+  EXPECT_FALSE(foo_->IsReservedNumber(13));
+  EXPECT_FALSE(foo_->IsReservedNumber(14));
+  EXPECT_TRUE (foo_->IsReservedNumber(15));
+  EXPECT_FALSE(foo_->IsReservedNumber(16));
+};
+
+TEST_F(ReservedDescriptorTest, ReservedNames) {
+  ASSERT_EQ(2, foo_->reserved_name_count());
+
+  EXPECT_EQ("foo", foo_->reserved_name(0));
+  EXPECT_EQ("bar", foo_->reserved_name(1));
+};
+
+TEST_F(ReservedDescriptorTest, IsReservedName) {
+  EXPECT_TRUE (foo_->IsReservedName("foo"));
+  EXPECT_TRUE (foo_->IsReservedName("bar"));
+  EXPECT_FALSE(foo_->IsReservedName("baz"));
+};
+
+// ===================================================================
+
 class MiscTest : public testing::Test {
  protected:
   // Function which makes a field descriptor of the given type.
@@ -2997,10 +3083,10 @@ class ValidationErrorTest : public testing::Test {
  protected:
   // Parse file_text as a FileDescriptorProto in text format and add it
   // to the DescriptorPool.  Expect no errors.
-  void BuildFile(const string& file_text) {
+  const FileDescriptor* BuildFile(const string& file_text) {
     FileDescriptorProto file_proto;
-    ASSERT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
-    ASSERT_TRUE(pool_.BuildFile(file_proto) != NULL);
+    EXPECT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
+    return GOOGLE_CHECK_NOTNULL(pool_.BuildFile(file_proto));
   }
 
   // Parse file_text as a FileDescriptorProto in text format and add it
@@ -3251,6 +3337,102 @@ TEST_F(ValidationErrorTest, OverlappingExtensionRanges) {
       "already-defined range 20 to 29.\n");
 }
 
+TEST_F(ValidationErrorTest, ReservedFieldError) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "message_type {"
+    "  name: \"Foo\""
+    "  field { name: \"foo\" number: 15 label:LABEL_OPTIONAL type:TYPE_INT32 }"
+    "  reserved_range { start: 10 end: 20 }"
+    "}",
+
+    "foo.proto: Foo.foo: NUMBER: Field \"foo\" uses reserved number 15.\n");
+}
+
+TEST_F(ValidationErrorTest, ReservedExtensionRangeError) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "message_type {"
+    "  name: \"Foo\""
+    "  extension_range { start: 10 end: 20 }"
+    "  reserved_range { start: 5 end: 15 }"
+    "}",
+
+    "foo.proto: Foo: NUMBER: Extension range 10 to 19"
+    " overlaps with reserved range 5 to 14.\n");
+}
+
+TEST_F(ValidationErrorTest, ReservedExtensionRangeAdjacent) {
+  BuildFile(
+    "name: \"foo.proto\" "
+    "message_type {"
+    "  name: \"Foo\""
+    "  extension_range { start: 10 end: 20 }"
+    "  reserved_range { start: 5 end: 10 }"
+    "}");
+}
+
+TEST_F(ValidationErrorTest, ReservedRangeOverlap) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "message_type {"
+    "  name: \"Foo\""
+    "  reserved_range { start: 10 end: 20 }"
+    "  reserved_range { start: 5 end: 15 }"
+    "}",
+
+    "foo.proto: Foo: NUMBER: Reserved range 5 to 14"
+    " overlaps with already-defined range 10 to 19.\n");
+}
+
+TEST_F(ValidationErrorTest, ReservedNameError) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "message_type {"
+    "  name: \"Foo\""
+    "  field { name: \"foo\" number: 15 label:LABEL_OPTIONAL type:TYPE_INT32 }"
+    "  field { name: \"bar\" number: 16 label:LABEL_OPTIONAL type:TYPE_INT32 }"
+    "  field { name: \"baz\" number: 17 label:LABEL_OPTIONAL type:TYPE_INT32 }"
+    "  reserved_name: \"foo\""
+    "  reserved_name: \"bar\""
+    "}",
+
+    "foo.proto: Foo.foo: NAME: Field name \"foo\" is reserved.\n"
+    "foo.proto: Foo.bar: NAME: Field name \"bar\" is reserved.\n");
+}
+
+TEST_F(ValidationErrorTest, ReservedNameRedundant) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "message_type {"
+    "  name: \"Foo\""
+    "  reserved_name: \"foo\""
+    "  reserved_name: \"foo\""
+    "}",
+
+    "foo.proto: foo: NAME: Field name \"foo\" is reserved multiple times.\n");
+}
+
+TEST_F(ValidationErrorTest, ReservedFieldsDebugString) {
+  const FileDescriptor* file = BuildFile(
+    "name: \"foo.proto\" "
+    "message_type {"
+    "  name: \"Foo\""
+    "  reserved_name: \"foo\""
+    "  reserved_name: \"bar\""
+    "  reserved_range { start: 5 end: 6 }"
+    "  reserved_range { start: 10 end: 20 }"
+    "}");
+
+  ASSERT_EQ(
+    "syntax = \"proto2\";\n\n"
+    "message Foo {\n"
+    "  reserved 5, 10 to 19;\n"
+    "  reserved \"foo\", \"bar\";\n"
+    "}\n\n",
+    file->DebugString());
+}
+
 TEST_F(ValidationErrorTest, InvalidDefaults) {
   BuildFileWithErrors(
     "name: \"foo.proto\" "
@@ -3397,6 +3579,48 @@ TEST_F(ValidationErrorTest, FieldOneofIndexNegative) {
 
     "foo.proto: Foo.foo: OTHER: FieldDescriptorProto.oneof_index -1 is out of "
       "range for type \"Foo\".\n");
+}
+
+TEST_F(ValidationErrorTest, OneofFieldsConsecutiveDefinition) {
+  // Fields belonging to the same oneof must be defined consecutively.
+  BuildFileWithWarnings(
+      "name: \"foo.proto\" "
+      "message_type {"
+      "  name: \"Foo\""
+      "  field { name:\"foo1\" number: 1 label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "          oneof_index: 0 }"
+      "  field { name:\"bar\" number: 2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
+      "  field { name:\"foo2\" number: 3 label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "          oneof_index: 0 }"
+      "  oneof_decl { name:\"foos\" }"
+      "}",
+
+      "foo.proto: Foo.bar: OTHER: Fields in the same oneof must be defined "
+      "consecutively. \"bar\" cannot be defined before the completion of the "
+      "\"foos\" oneof definition.\n");
+
+  // Prevent interleaved fields, which belong to different oneofs.
+  BuildFileWithWarnings(
+      "name: \"foo2.proto\" "
+      "message_type {"
+      "  name: \"Foo2\""
+      "  field { name:\"foo1\" number: 1 label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "          oneof_index: 0 }"
+      "  field { name:\"bar1\" number: 2 label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "          oneof_index: 1 }"
+      "  field { name:\"foo2\" number: 3 label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "          oneof_index: 0 }"
+      "  field { name:\"bar2\" number: 4 label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "          oneof_index: 1 }"
+      "  oneof_decl { name:\"foos\" }"
+      "  oneof_decl { name:\"bars\" }"
+      "}",
+      "foo2.proto: Foo2.bar1: OTHER: Fields in the same oneof must be defined "
+      "consecutively. \"bar1\" cannot be defined before the completion of the "
+      "\"foos\" oneof definition.\n"
+      "foo2.proto: Foo2.foo2: OTHER: Fields in the same oneof must be defined "
+      "consecutively. \"foo2\" cannot be defined before the completion of the "
+      "\"bars\" oneof definition.\n");
 }
 
 TEST_F(ValidationErrorTest, FieldNumberConflict) {
@@ -5293,6 +5517,22 @@ TEST_F(ValidationErrorTest, ValidateProto3LiteRuntime) {
       "in proto3.\n");
 }
 
+TEST_F(ValidationErrorTest, ValidateProto3Group) {
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type { "
+      "  name: 'Foo' "
+      "  nested_type { "
+      "    name: 'FooGroup' "
+      "  } "
+      "  field { name:'foo_group' number: 1 label:LABEL_OPTIONAL "
+      "          type: TYPE_GROUP type_name:'FooGroup' } "
+      "}",
+      "foo.proto: Foo.foo_group: TYPE: Groups are not supported in proto3 "
+      "syntax.\n");
+}
+
 
 TEST_F(ValidationErrorTest, ValidateProto3EnumFromProto2) {
   // Define an enum in a proto2 file.
@@ -6104,9 +6344,9 @@ TEST_F(CopySourceCodeInfoToTest, CopySourceCodeInfoTo) {
 
   file_desc->CopySourceCodeInfoTo(&file_desc_proto);
   const SourceCodeInfo& info = file_desc_proto.source_code_info();
-  ASSERT_EQ(3, info.location_size());
+  ASSERT_EQ(4, info.location_size());
   // Get the Foo message location
-  const SourceCodeInfo_Location& foo_location = info.location(1);
+  const SourceCodeInfo_Location& foo_location = info.location(2);
   ASSERT_EQ(2, foo_location.path_size());
   EXPECT_EQ(FileDescriptorProto::kMessageTypeFieldNumber, foo_location.path(0));
   EXPECT_EQ(0, foo_location.path(1));      // Foo is the first message defined

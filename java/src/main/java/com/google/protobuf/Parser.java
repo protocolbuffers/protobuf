@@ -227,8 +227,8 @@ public interface Parser<MessageType> {
    * {@link MessageLite#writeDelimitedTo(java.io.OutputStream)} to write
    * messages in this format.
    *
-   * @return True if successful, or false if the stream is at EOF when the
-   *         method starts. Any other error (including reaching EOF during
+   * @return Parsed message if successful, or null if the stream is at EOF when
+   *         the method starts. Any other error (including reaching EOF during
    *         parsing) will cause an exception to be thrown.
    */
   public MessageType parseDelimitedFrom(InputStream input)

@@ -1,0 +1,35 @@
+#
+# 	Untracked directories
+#
+src/AddressBook/bin
+src/AddressBook/obj
+src/Google.Protobuf/bin/
+src/Google.Protobuf/obj/
+src/Google.Protobuf.Conformance/bin/
+src/Google.Protobuf.Conformance/obj/
+src/Google.Protobuf.Test/bin/
+src/Google.Protobuf.Test/obj/
+src/Google.Protobuf.JsonDump/bin/
+src/Google.Protobuf.JsonDump/obj/
+mono/bin
+mono/tmp
+mono/protoc
+build_output
+build_temp
+build/msbuild*.log
+lib/Microsoft.Silverlight.Testing
+lib/NUnit
+
+#
+# 	Untracked files
+#
+*.user
+*.suo
+*.nupkg
+_ReSharper.*
+*.sln.cache
+mono/TestResult.xml
+mono/.libs
+mono/*.exe
+mono/*.dll
+lib/protoc.exe

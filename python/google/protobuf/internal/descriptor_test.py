@@ -34,13 +34,16 @@
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-import unittest
+import sys
 
+import unittest
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
+from google.protobuf.internal import api_implementation
 from google.protobuf import descriptor
+from google.protobuf import symbol_database
 from google.protobuf import text_format
 
 
@@ -52,41 +55,28 @@ name: 'TestEmptyMessage'
 class DescriptorTest(unittest.TestCase):
 
   def setUp(self):
-    self.my_file = descriptor.FileDescriptor(
+    file_proto = descriptor_pb2.FileDescriptorProto(
         name='some/filename/some.proto',
-        package='protobuf_unittest'
-        )
-    self.my_enum = descriptor.EnumDescriptor(
-        name='ForeignEnum',
-        full_name='protobuf_unittest.ForeignEnum',
-        filename=None,
-        file=self.my_file,
-        values=[
-          descriptor.EnumValueDescriptor(name='FOREIGN_FOO', index=0, number=4),
-          descriptor.EnumValueDescriptor(name='FOREIGN_BAR', index=1, number=5),
-          descriptor.EnumValueDescriptor(name='FOREIGN_BAZ', index=2, number=6),
-        ])
-    self.my_message = descriptor.Descriptor(
-        name='NestedMessage',
-        full_name='protobuf_unittest.TestAllTypes.NestedMessage',
-        filename=None,
-        file=self.my_file,
-        containing_type=None,
-        fields=[
-          descriptor.FieldDescriptor(
-            name='bb',
-            full_name='protobuf_unittest.TestAllTypes.NestedMessage.bb',
-            index=0, number=1,
-            type=5, cpp_type=1, label=1,
-            has_default_value=False, default_value=0,
-            message_type=None, enum_type=None, containing_type=None,
-            is_extension=False, extension_scope=None),
-        ],
-        nested_types=[],
-        enum_types=[
-          self.my_enum,
-        ],
-        extensions=[])
+        package='protobuf_unittest')
+    message_proto = file_proto.message_type.add(
+        name='NestedMessage')
+    message_proto.field.add(
+        name='bb',
+        number=1,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
+        label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL)
+    enum_proto = message_proto.enum_type.add(
+        name='ForeignEnum')
+    enum_proto.value.add(name='FOREIGN_FOO', number=4)
+    enum_proto.value.add(name='FOREIGN_BAR', number=5)
+    enum_proto.value.add(name='FOREIGN_BAZ', number=6)
+
+    descriptor_pool = symbol_database.Default().pool
+    descriptor_pool.Add(file_proto)
+    self.my_file = descriptor_pool.FindFileByName(file_proto.name)
+    self.my_message = self.my_file.message_types_by_name[message_proto.name]
+    self.my_enum = self.my_message.enum_types_by_name[enum_proto.name]
+
     self.my_method = descriptor.MethodDescriptor(
         name='Bar',
         full_name='protobuf_unittest.TestService.Bar',
@@ -173,6 +163,11 @@ class DescriptorTest(unittest.TestCase):
     method_opt1 = unittest_custom_options_pb2.method_opt1
     self.assertEqual(unittest_custom_options_pb2.METHODOPT1_VAL2,
                      method_options.Extensions[method_opt1])
+
+    message_descriptor = (
+        unittest_custom_options_pb2.DummyMessageContainingEnum.DESCRIPTOR)
+    self.assertTrue(file_descriptor.has_options)
+    self.assertFalse(message_descriptor.has_options)
 
   def testDifferentCustomOptionTypes(self):
     kint32min = -2**31
@@ -395,6 +390,108 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual(self.my_file.name, 'some/filename/some.proto')
     self.assertEqual(self.my_file.package, 'protobuf_unittest')
 
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
+      'Immutability of descriptors is only enforced in v2 implementation')
+  def testImmutableCppDescriptor(self):
+    message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
+    with self.assertRaises(AttributeError):
+      message_descriptor.fields_by_name = None
+    with self.assertRaises(TypeError):
+      message_descriptor.fields_by_name['Another'] = None
+    with self.assertRaises(TypeError):
+      message_descriptor.fields.append(None)
+
+
+class GeneratedDescriptorTest(unittest.TestCase):
+  """Tests for the properties of descriptors in generated code."""
+
+  def CheckMessageDescriptor(self, message_descriptor):
+    # Basic properties
+    self.assertEqual(message_descriptor.name, 'TestAllTypes')
+    self.assertEqual(message_descriptor.full_name,
+                     'protobuf_unittest.TestAllTypes')
+    # Test equality and hashability
+    self.assertEqual(message_descriptor, message_descriptor)
+    self.assertEqual(message_descriptor.fields[0].containing_type,
+                     message_descriptor)
+    self.assertIn(message_descriptor, [message_descriptor])
+    self.assertIn(message_descriptor, {message_descriptor: None})
+    # Test field containers
+    self.CheckDescriptorSequence(message_descriptor.fields)
+    self.CheckDescriptorMapping(message_descriptor.fields_by_name)
+    self.CheckDescriptorMapping(message_descriptor.fields_by_number)
+
+  def CheckFieldDescriptor(self, field_descriptor):
+    # Basic properties
+    self.assertEqual(field_descriptor.name, 'optional_int32')
+    self.assertEqual(field_descriptor.full_name,
+                     'protobuf_unittest.TestAllTypes.optional_int32')
+    self.assertEqual(field_descriptor.containing_type.name, 'TestAllTypes')
+    # Test equality and hashability
+    self.assertEqual(field_descriptor, field_descriptor)
+    self.assertEqual(
+        field_descriptor.containing_type.fields_by_name['optional_int32'],
+        field_descriptor)
+    self.assertIn(field_descriptor, [field_descriptor])
+    self.assertIn(field_descriptor, {field_descriptor: None})
+
+  def CheckDescriptorSequence(self, sequence):
+    # Verifies that a property like 'messageDescriptor.fields' has all the
+    # properties of an immutable abc.Sequence.
+    self.assertGreater(len(sequence), 0)  # Sized
+    self.assertEqual(len(sequence), len(list(sequence)))  # Iterable
+    item = sequence[0]
+    self.assertEqual(item, sequence[0])
+    self.assertIn(item, sequence)  # Container
+    self.assertEqual(sequence.index(item), 0)
+    self.assertEqual(sequence.count(item), 1)
+    reversed_iterator = reversed(sequence)
+    self.assertEqual(list(reversed_iterator), list(sequence)[::-1])
+    self.assertRaises(StopIteration, next, reversed_iterator)
+
+  def CheckDescriptorMapping(self, mapping):
+    # Verifies that a property like 'messageDescriptor.fields' has all the
+    # properties of an immutable abc.Mapping.
+    self.assertGreater(len(mapping), 0)  # Sized
+    self.assertEqual(len(mapping), len(list(mapping)))  # Iterable
+    if sys.version_info.major >= 3:
+      key, item = next(iter(mapping.items()))
+    else:
+      key, item = mapping.items()[0]
+    self.assertIn(key, mapping)  # Container
+    self.assertEqual(mapping.get(key), item)
+    # keys(), iterkeys() &co
+    item = (next(iter(mapping.keys())), next(iter(mapping.values())))
+    self.assertEqual(item, next(iter(mapping.items())))
+    if sys.version_info.major < 3:
+      def CheckItems(seq, iterator):
+        self.assertEqual(next(iterator), seq[0])
+        self.assertEqual(list(iterator), seq[1:])
+      CheckItems(mapping.keys(), mapping.iterkeys())
+      CheckItems(mapping.values(), mapping.itervalues())
+      CheckItems(mapping.items(), mapping.iteritems())
+
+  def testDescriptor(self):
+    message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
+    self.CheckMessageDescriptor(message_descriptor)
+    field_descriptor = message_descriptor.fields_by_name['optional_int32']
+    self.CheckFieldDescriptor(field_descriptor)
+
+  def testCppDescriptorContainer(self):
+    # Check that the collection is still valid even if the parent disappeared.
+    enum = unittest_pb2.TestAllTypes.DESCRIPTOR.enum_types_by_name['NestedEnum']
+    values = enum.values
+    del enum
+    self.assertEqual('FOO', values[0].name)
+
+  def testCppDescriptorContainer_Iterator(self):
+    # Same test with the iterator
+    enum = unittest_pb2.TestAllTypes.DESCRIPTOR.enum_types_by_name['NestedEnum']
+    values_iter = iter(enum.values)
+    del enum
+    self.assertEqual('FOO', next(values_iter).name)
+
 
 class DescriptorCopyToProtoTest(unittest.TestCase):
   """Tests for CopyTo functions of Descriptor."""
@@ -589,10 +686,12 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
         output_type: '.protobuf_unittest.BarResponse'
       >
       """
-    self._InternalTestCopyToProto(
-        unittest_pb2.TestService.DESCRIPTOR,
-        descriptor_pb2.ServiceDescriptorProto,
-        TEST_SERVICE_ASCII)
+    # TODO(rocking): enable this test after the proto descriptor change is
+    # checked in.
+    #self._InternalTestCopyToProto(
+    #    unittest_pb2.TestService.DESCRIPTOR,
+    #    descriptor_pb2.ServiceDescriptorProto,
+    #    TEST_SERVICE_ASCII)
 
 
 class MakeDescriptorTest(unittest.TestCase):

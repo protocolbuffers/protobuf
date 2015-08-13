@@ -10,7 +10,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
-  <version>3.0.0-pre</version>
+  <version>3.0.0-alpha-4-pre</version>
   <packaging>bundle</packaging>
   <name>Protocol Buffer Java API</name>
   <description>
@@ -81,7 +81,17 @@
                 <exec executable="../src/protoc">
                   <arg value="--java_out=target/generated-sources" />
                   <arg value="--proto_path=../src" />
+                  <arg value="../src/google/protobuf/any.proto" />
+                  <arg value="../src/google/protobuf/api.proto" />
                   <arg value="../src/google/protobuf/descriptor.proto" />
+                  <arg value="../src/google/protobuf/duration.proto" />
+                  <arg value="../src/google/protobuf/empty.proto" />
+                  <arg value="../src/google/protobuf/field_mask.proto" />
+                  <arg value="../src/google/protobuf/source_context.proto" />
+                  <arg value="../src/google/protobuf/struct.proto" />
+                  <arg value="../src/google/protobuf/timestamp.proto" />
+                  <arg value="../src/google/protobuf/type.proto" />
+                  <arg value="../src/google/protobuf/wrappers.proto" />
                 </exec>
               </tasks>
               <sourceRoot>target/generated-sources</sourceRoot>
@@ -130,10 +140,12 @@
                   <arg value="../src/google/protobuf/unittest_lite_imports_nonlite.proto" />
                   <arg value="../src/google/protobuf/unittest_enormous_descriptor.proto" />
                   <arg value="../src/google/protobuf/unittest_no_generic_services.proto" />
+                  <arg value="../src/google/protobuf/unittest_well_known_types.proto" />
                   <arg value="src/test/java/com/google/protobuf/field_presence_test.proto" />
                   <arg value="src/test/java/com/google/protobuf/map_for_proto2_lite_test.proto" />
                   <arg value="src/test/java/com/google/protobuf/map_for_proto2_test.proto" />
                   <arg value="src/test/java/com/google/protobuf/map_test.proto" />
+                  <arg value="src/test/java/com/google/protobuf/map_initialization_order_test.proto" />
                 </exec>
               </tasks>
               <testSourceRoot>target/generated-test-sources</testSourceRoot>
@@ -152,13 +164,99 @@
           <instructions>
             <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
             <Bundle-SymbolicName>com.google.protobuf</Bundle-SymbolicName>
-            <Export-Package>com.google.protobuf;version=3.0.0-pre</Export-Package>
+            <Export-Package>com.google.protobuf;version=3.0.0-alpha-3</Export-Package>
           </instructions>
         </configuration>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>../src</directory>
+        <includes>
+          <include>google/protobuf/any.proto</include>
+          <include>google/protobuf/api.proto</include>
+          <include>google/protobuf/descriptor.proto</include>
+          <include>google/protobuf/duration.proto</include>
+          <include>google/protobuf/empty.proto</include>
+          <include>google/protobuf/field_mask.proto</include>
+          <include>google/protobuf/source_context.proto</include>
+          <include>google/protobuf/struct.proto</include>
+          <include>google/protobuf/timestamp.proto</include>
+          <include>google/protobuf/type.proto</include>
+          <include>google/protobuf/wrappers.proto</include>
+        </includes>
+      </resource>
+    </resources>
   </build>
   <profiles>
+    <profile>
+      <id>release</id>
+      <distributionManagement>
+        <snapshotRepository>
+          <id>sonatype-nexus-staging</id>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+          <id>sonatype-nexus-staging</id>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+      </distributionManagement>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.2.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.5</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.3</version>
+            <extensions>true</extensions>
+            <configuration>
+               <serverId>sonatype-nexus-staging</serverId>
+               <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+               <autoReleaseAfterClose>false</autoReleaseAfterClose>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>lite</id>
       <build>
@@ -169,25 +267,33 @@
               <includes>
                 <include>**/AbstractMessageLite.java</include>
                 <include>**/AbstractParser.java</include>
+                <include>**/AbstractProtobufList.java</include>
                 <include>**/BoundedByteString.java</include>
+                <include>**/BooleanArrayList.java</include>
                 <include>**/ByteString.java</include>
                 <include>**/CodedInputStream.java</include>
                 <include>**/CodedOutputStream.java</include>
+                <include>**/DoublerrayList.java</include>
                 <include>**/ExtensionLite.java</include>
                 <include>**/ExtensionRegistryLite.java</include>
                 <include>**/FieldSet.java</include>
+                <include>**/FloatArrayList.java</include>
                 <include>**/GeneratedMessageLite.java</include>
+                <include>**/IntArrayList.java</include>
                 <include>**/Internal.java</include>
                 <include>**/InvalidProtocolBufferException.java</include>
                 <include>**/LazyFieldLite.java</include>
                 <include>**/LazyStringArrayList.java</include>
                 <include>**/LazyStringList.java</include>
                 <include>**/LiteralByteString.java</include>
+                <include>**/LongArrayList.java</include>
                 <include>**/MapEntryLite.java</include>
                 <include>**/MapFieldLite.java</include>
                 <include>**/MessageLite.java</include>
                 <include>**/MessageLiteOrBuilder.java</include>
+                <include>**/MutabilityOracle.java</include>
                 <include>**/Parser.java</include>
+                <include>**/ProtobufArrayList.java</include>
                 <include>**/ProtocolStringList.java</include>
                 <include>**/RopeByteString.java</include>
                 <include>**/SmallSortedMap.java</include>
@@ -199,8 +305,14 @@
               </includes>
               <testIncludes>
                 <testInclude>**/*Lite.java</testInclude>
+                <testInclude>**/BooleanArrayListTest.java</testInclude>
+                <testInclude>**/DoubleArrayListTest.java</testInclude>
+                <testInclude>**/FloatArrayListTest.java</testInclude>
+                <testInclude>**/IntArrayListTest.java</testInclude>
                 <testInclude>**/LazyMessageLiteTest.java</testInclude>
                 <testInclude>**/LiteTest.java</testInclude>
+                <testInclude>**/LongArrayListTest.java</testInclude>
+                <testInclude>**/ProtobufArrayListTest.java</testInclude>
                 <testInclude>**/UnknownFieldSetLiteTest.java</testInclude>
               </testIncludes>
             </configuration>

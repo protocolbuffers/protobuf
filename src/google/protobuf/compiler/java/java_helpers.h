@@ -196,12 +196,6 @@ inline bool HasDescriptorMethods(const FileDescriptor* descriptor) {
            FileOptions::LITE_RUNTIME;
 }
 
-inline bool HasNestedBuilders(const Descriptor* descriptor) {
-  // The proto-lite version doesn't support nested builders.
-  return descriptor->file()->options().optimize_for() !=
-           FileOptions::LITE_RUNTIME;
-}
-
 // Should we generate generic services for this file?
 inline bool HasGenericServices(const FileDescriptor *file) {
   return file->service_count() > 0 &&
@@ -297,6 +291,16 @@ struct ExtensionRangeOrdering {
 // and return it. The caller should delete the returned array.
 const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor);
 
+// Does this message class have any packed fields?
+inline bool HasPackedFields(const Descriptor* descriptor) {
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    if (descriptor->field(i)->is_packed()) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // Check a message type and its sub-message types recursively to see if any of
 // them has a required field. Return true if a required field is found.
 bool HasRequiredFields(const Descriptor* descriptor);
@@ -318,6 +322,10 @@ bool HasRepeatedFields(const Descriptor* descriptor);
 
 inline bool IsMapEntry(const Descriptor* descriptor) {
   return descriptor->options().map_entry();
+}
+
+inline bool IsMapField(const FieldDescriptor* descriptor) {
+  return descriptor->is_map();
 }
 
 inline bool PreserveUnknownFields(const Descriptor* descriptor) {

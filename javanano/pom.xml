@@ -10,7 +10,7 @@
   </parent>
   <groupId>com.google.protobuf.nano</groupId>
   <artifactId>protobuf-javanano</artifactId>
-  <version>2.6.2-pre</version>
+  <version>3.0.0-alpha-4-pre</version>
   <packaging>bundle</packaging>
   <name>Protocol Buffer JavaNano API</name>
   <description>
@@ -94,21 +94,22 @@
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_multiple_nameclash_nano.proto" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_enum_class_nano.proto" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_repeated_merge_nano.proto" />
+                  <arg value="src/test/java/com/google/protobuf/nano/map_test.proto" />
                 </exec>
                 <exec executable="../src/protoc">
-                  <arg value="--javanano_out=store_unknown_fields=true,generate_equals=true:target/generated-test-sources" />
+                  <arg value="--javanano_out=store_unknown_fields=true,generate_equals=true,generate_clone=true:target/generated-test-sources" />
                   <arg value="--proto_path=src/test/java/com" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_extension_nano.proto" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_extension_singular_nano.proto" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_extension_repeated_nano.proto" />
                 </exec>
                 <exec executable="../src/protoc">
-                  <arg value="--javanano_out=store_unknown_fields=true:target/generated-test-sources" />
+                  <arg value="--javanano_out=store_unknown_fields=true,generate_clone=true:target/generated-test-sources" />
                   <arg value="--proto_path=src/test/java/com" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_extension_packed_nano.proto" />
                 </exec>
                 <exec executable="../src/protoc">
-                  <arg value="--javanano_out=java_nano_generate_has=true,generate_equals=true:target/generated-test-sources" />
+                  <arg value="--javanano_out=java_nano_generate_has=true,generate_equals=true,generate_clone=true:target/generated-test-sources" />
                   <arg value="--proto_path=src/test/java/com" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_has_nano.proto" />
                 </exec>
@@ -138,6 +139,15 @@
                   <arg value="--proto_path=src/test/java/com" />
                   <arg value="src/test/java/com/google/protobuf/nano/unittest_reference_types_nano.proto" />
                 </exec>
+                <exec executable="../src/protoc">
+                  <arg value="--javanano_out=
+                                  optional_field_style=reftypes_compat_mode,
+                                  generate_equals=true,
+                                  java_outer_classname=google/protobuf/nano/unittest_reference_types_nano.proto|NanoReferenceTypesCompat
+                                  :target/generated-test-sources" />
+                  <arg value="--proto_path=src/test/java/com" />
+                  <arg value="src/test/java/com/google/protobuf/nano/unittest_reference_types_nano.proto" />
+                </exec>
               </tasks>
               <testSourceRoot>target/generated-test-sources</testSourceRoot>
             </configuration>
@@ -155,10 +165,80 @@
           <instructions>
             <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
             <Bundle-SymbolicName>com.google.protobuf</Bundle-SymbolicName>
-            <Export-Package>com.google.protobuf;version=2.6.2-pre</Export-Package>
+            <Export-Package>com.google.protobuf;version=3.0.0-alpha-3</Export-Package>
           </instructions>
         </configuration>
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>release</id>
+      <distributionManagement>
+        <snapshotRepository>
+          <id>sonatype-nexus-staging</id>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+          <id>sonatype-nexus-staging</id>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+      </distributionManagement>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.2.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.5</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.3</version>
+            <extensions>true</extensions>
+            <configuration>
+               <serverId>sonatype-nexus-staging</serverId>
+               <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+               <autoReleaseAfterClose>false</autoReleaseAfterClose>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

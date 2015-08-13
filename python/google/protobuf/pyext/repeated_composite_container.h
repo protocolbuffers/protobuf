@@ -43,7 +43,6 @@
 #include <string>
 #include <vector>
 
-
 namespace google {
 namespace protobuf {
 
@@ -82,7 +81,7 @@ typedef struct RepeatedCompositeContainer {
 
   // A descriptor used to modify the underlying 'message'.
   // The pointer is owned by the global DescriptorPool.
-  const google::protobuf::FieldDescriptor* parent_field_descriptor;
+  const FieldDescriptor* parent_field_descriptor;
 
   // Pointer to the C++ Message that contains this container.  The
   // RepeatedCompositeContainer does not own this pointer.
@@ -106,7 +105,7 @@ namespace repeated_composite_container {
 // field descriptor.
 PyObject *NewContainer(
     CMessage* parent,
-    const google::protobuf::FieldDescriptor* parent_field_descriptor,
+    const FieldDescriptor* parent_field_descriptor,
     PyObject *concrete_class);
 
 // Returns the number of items in this repeated composite container.
@@ -150,8 +149,7 @@ int AssignSubscript(RepeatedCompositeContainer* self,
 // Releases the messages in the container to the given message.
 //
 // Returns 0 on success, -1 on failure.
-int ReleaseToMessage(RepeatedCompositeContainer* self,
-                     google::protobuf::Message* new_message);
+int ReleaseToMessage(RepeatedCompositeContainer* self, Message* new_message);
 
 // Releases the messages in the container to a new message.
 //
@@ -163,13 +161,13 @@ int SetOwner(RepeatedCompositeContainer* self,
              const shared_ptr<Message>& new_owner);
 
 // Removes the last element of the repeated message field 'field' on
-// the Message 'message', and transfers the ownership of the released
-// Message to 'cmessage'.
+// the Message 'parent', and transfers the ownership of the released
+// Message to 'target'.
 //
 // Corresponds to reflection api method ReleaseMessage.
-void ReleaseLastTo(const FieldDescriptor* field,
-                   Message* message,
-                   CMessage* cmessage);
+void ReleaseLastTo(CMessage* parent,
+                   const FieldDescriptor* field,
+                   CMessage* target);
 
 }  // namespace repeated_composite_container
 }  // namespace python

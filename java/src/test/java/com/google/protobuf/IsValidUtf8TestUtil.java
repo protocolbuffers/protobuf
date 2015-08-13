@@ -33,18 +33,17 @@ package com.google.protobuf;
 import static junit.framework.Assert.*;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
+import java.nio.charset.CodingErrorAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Logger;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.Charset;
-import java.nio.charset.CodingErrorAction;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 
 /**
  * Shared testing code for {@link IsValidUtf8Test} and
@@ -220,8 +219,8 @@ class IsValidUtf8TestUtil {
       }
       ByteString bs = ByteString.copyFrom(bytes);
       boolean isRoundTrippable = bs.isValidUtf8();
-      String s = new String(bytes, "UTF-8");
-      byte[] bytesReencoded = s.getBytes("UTF-8");
+      String s = new String(bytes, Internal.UTF_8);
+      byte[] bytesReencoded = s.getBytes(Internal.UTF_8);
       boolean bytesEqual = Arrays.equals(bytes, bytesReencoded);
 
       if (bytesEqual != isRoundTrippable) {
@@ -313,10 +312,10 @@ class IsValidUtf8TestUtil {
   void testBytesUsingByteBuffers(
       int numBytes, long expectedCount, long start, long lim)
       throws UnsupportedEncodingException {
-    CharsetDecoder decoder = Charset.forName("UTF-8").newDecoder()
+    CharsetDecoder decoder = Internal.UTF_8.newDecoder()
         .onMalformedInput(CodingErrorAction.REPLACE)
         .onUnmappableCharacter(CodingErrorAction.REPLACE);
-    CharsetEncoder encoder = Charset.forName("UTF-8").newEncoder()
+    CharsetEncoder encoder = Internal.UTF_8.newEncoder()
         .onMalformedInput(CodingErrorAction.REPLACE)
         .onUnmappableCharacter(CodingErrorAction.REPLACE);
     byte[] bytes = new byte[numBytes];

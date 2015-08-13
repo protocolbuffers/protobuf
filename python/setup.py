@@ -1,9 +1,10 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 #
 # See README for usage instructions.
-import sys
+import glob
 import os
 import subprocess
+import sys
 
 # We must use setuptools, not distutils, because we need to use the
 # namespace_packages option for the "google" package.
@@ -17,18 +18,19 @@ except ImportError:
   except ImportError:
     sys.stderr.write(
         "Could not import setuptools; make sure you have setuptools or "
-        "ez_setup installed.\n")
+        "ez_setup installed.\n"
+    )
     raise
-from distutils.command.clean import clean as _clean
-if sys.version_info[0] >= 3:
-    # Python 3
-    from distutils.command.build_py import build_py_2to3 as _build_py
-else:
-    # Python 2
-    from distutils.command.build_py import build_py as _build_py
-from distutils.spawn import find_executable
 
-maintainer_email = "protobuf@googlegroups.com"
+from distutils.command.clean import clean as _clean
+
+if sys.version_info[0] == 3:
+  # Python 3
+  from distutils.command.build_py import build_py_2to3 as _build_py
+else:
+  # Python 2
+  from distutils.command.build_py import build_py as _build_py
+from distutils.spawn import find_executable
 
 # Find the Protocol Compiler.
 if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
@@ -44,23 +46,38 @@ elif os.path.exists("../vsprojects/Release/protoc.exe"):
 else:
   protoc = find_executable("protoc")
 
-def generate_proto(source):
+
+def GetVersion():
+  """Gets the version from google/protobuf/__init__.py
+
+  Do not import google.protobuf.__init__ directly, because an installed
+  protobuf library may be loaded instead."""
+
+  with open(os.path.join('google', 'protobuf', '__init__.py')) as version_file:
+    exec(version_file.read(), globals())
+    return __version__
+
+
+def generate_proto(source, require = True):
   """Invokes the Protocol Compiler to generate a _pb2.py from the given
   .proto file.  Does nothing if the output already exists and is newer than
   the input."""
+
+  if not require and not os.path.exists(source):
+    return
 
   output = source.replace(".proto", "_pb2.py").replace("../src/", "")
 
   if (not os.path.exists(output) or
       (os.path.exists(source) and
        os.path.getmtime(source) > os.path.getmtime(output))):
-    print ("Generating %s..." % output)
+    print("Generating %s..." % output)
 
     if not os.path.exists(source):
       sys.stderr.write("Can't find required file: %s\n" % source)
       sys.exit(-1)
 
-    if protoc == None:
+    if protoc is None:
       sys.stderr.write(
           "protoc is not installed nor found in ../src.  Please compile it "
           "or install the binary package.\n")
@@ -142,45 +159,47 @@ if __name__ == '__main__':
   if cpp_impl in sys.argv:
     sys.argv.remove(cpp_impl)
     # C++ implementation extension
-    ext_module_list.append(Extension(
-        "google.protobuf.pyext._message",
-        [ "google/protobuf/pyext/descriptor.cc",
-          "google/protobuf/pyext/message.cc",
-          "google/protobuf/pyext/extension_dict.cc",
-          "google/protobuf/pyext/repeated_scalar_container.cc",
-          "google/protobuf/pyext/repeated_composite_container.cc" ],
-        define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
-        include_dirs = [ ".", "..", "../src"],
-        libraries = [ "protobuf" ],
-        library_dirs = [ '../src/.libs' ],
-        ))
-
-  setup(name = 'protobuf',
-        version = '3.0.0-pre',
-        description = 'Protocol Buffers',
-        long_description =
-          "Protocol Buffers are Google's data interchange format.",
-        url = 'https://developers.google.com/protocol-buffers/',
-        maintainer = maintainer_email,
-        maintainer_email = 'protobuf@googlegroups.com',
-        license = 'New BSD License',
-        classifiers=[
-          "Programming Language :: Python",
-          "Programming Language :: Python :: 2",
-          "Programming Language :: Python :: 2.6",
-          "Programming Language :: Python :: 2.7",
-          "Programming Language :: Python :: 3",
-          "Programming Language :: Python :: 3.3",
-          "Programming Language :: Python :: 3.4",
-          ],
-        namespace_packages = [ 'google' ],
-        packages = find_packages(
-         exclude=[
-           "import_test_package",
-           ]),
-        test_suite = 'setup.MakeTestSuite',
-        google_test_dir = "google/protobuf/internal",
-        cmdclass = { 'clean': clean, 'build_py': build_py },
-        install_requires = ['setuptools', 'six'],
-        ext_modules = ext_module_list,
+    ext_module_list.append(
+        Extension(
+            "google.protobuf.pyext._message",
+            glob.glob('google/protobuf/pyext/*.cc'),
+            define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
+            include_dirs=[".", "../src"],
+            libraries=['protobuf'],
+            library_dirs=['../src/.libs'],
         )
+    )
+    os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
+
+  setup(
+      name='protobuf',
+      version=GetVersion(),
+      description='Protocol Buffers',
+      long_description="Protocol Buffers are Google's data interchange format",
+      url='https://developers.google.com/protocol-buffers/',
+      maintainer='protobuf@googlegroups.com',
+      maintainer_email='protobuf@googlegroups.com',
+      license='New BSD License',
+      classifiers=[
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        ],
+      namespace_packages=['google'],
+      packages=find_packages(
+          exclude=[
+              'import_test_package',
+          ],
+      ),
+      test_suite='google.protobuf.internal',
+      cmdclass={
+          'clean': clean,
+          'build_py': build_py,
+      },
+      install_requires=['setuptools', 'six'],
+      ext_modules=ext_module_list,
+  )

@@ -47,6 +47,10 @@
 namespace google {
 
 namespace protobuf {
+
+class Arena;
+namespace io { class CodedInputStream; }
+
 namespace internal {
 
 
@@ -105,6 +109,15 @@ template <class Type> bool AllAreInitialized(const Type& t) {
   }
   return true;
 }
+
+class ArenaString;
+
+// Read a length (varint32), followed by a string, from *input.  Return a
+// pointer to a copy of the string that resides in *arena.  Requires both
+// args to be non-NULL.  If something goes wrong while reading the data
+// then NULL is returned (e.g., input does not start with a valid varint).
+ArenaString* ReadArenaString(::google::protobuf::io::CodedInputStream* input,
+                             ::google::protobuf::Arena* arena);
 
 }  // namespace internal
 }  // namespace protobuf

@@ -127,6 +127,14 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::
+GenerateFixClonedCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (this.$name$ != null) {\n"
+    "  cloned.$name$ = this.$name$.clone();\n"
+    "}\n");
+}
+
+void MessageFieldGenerator::
 GenerateEqualsCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if (this.$name$ == null) { \n"
@@ -146,12 +154,95 @@ GenerateHashCodeCode(io::Printer* printer) const {
     "result = 31 * result +\n"
     "    (this.$name$ == null ? 0 : this.$name$.hashCode());\n");
 }
+// ===================================================================
+
+MessageOneofFieldGenerator::MessageOneofFieldGenerator(
+    const FieldDescriptor* descriptor, const Params& params)
+    : FieldGenerator(params), descriptor_(descriptor) {
+    SetMessageVariables(params, descriptor, &variables_);
+    SetCommonOneofVariables(descriptor, &variables_);
+}
+
+MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {}
+
+void MessageOneofFieldGenerator::
+GenerateMembers(io::Printer* printer, bool /* unused lazy_init */) const {
+  printer->Print(variables_,
+    "public boolean has$capitalized_name$() {\n"
+    "  return $has_oneof_case$;\n"
+    "}\n"
+    "public $type$ get$capitalized_name$() {\n"
+    "  if ($has_oneof_case$) {\n"
+    "    return ($type$) this.$oneof_name$_;\n"
+    "  }\n"
+    "  return null;\n"
+    "}\n"
+    "public $message_name$ set$capitalized_name$($type$ value) {\n"
+    "  if (value == null) { throw new java.lang.NullPointerException(); }\n"
+    "  $set_oneof_case$;\n"
+    "  this.$oneof_name$_ = value;\n"
+    "  return this;\n"
+    "}\n");
+}
+
+void MessageOneofFieldGenerator::
+GenerateClearCode(io::Printer* printer) const {
+  // No clear method for oneof fields.
+}
+
+void MessageOneofFieldGenerator::
+GenerateMergingCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (!($has_oneof_case$)) {\n"
+    "  this.$oneof_name$_ = new $type$();\n"
+    "}\n"
+    "input.readMessage(\n"
+    "    (com.google.protobuf.nano.MessageNano) this.$oneof_name$_);\n"
+    "$set_oneof_case$;\n");
+}
+
+void MessageOneofFieldGenerator::
+GenerateSerializationCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($has_oneof_case$) {\n"
+    "  output.writeMessage($number$,\n"
+    "      (com.google.protobuf.nano.MessageNano) this.$oneof_name$_);\n"
+    "}\n");
+}
+
+void MessageOneofFieldGenerator::
+GenerateSerializedSizeCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if ($has_oneof_case$) {\n"
+    "  size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
+    "    .computeMessageSize($number$,\n"
+    "        (com.google.protobuf.nano.MessageNano) this.$oneof_name$_);\n"
+    "}\n");
+}
+
+void MessageOneofFieldGenerator::
+GenerateFixClonedCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (this.$oneof_name$ != null) {\n"
+    "  cloned.$oneof_name$ = this.$oneof_name$.clone();\n"
+    "}\n");
+}
+
+void MessageOneofFieldGenerator::
+GenerateEqualsCode(io::Printer* printer) const {
+  GenerateOneofFieldEquals(descriptor_, variables_, printer);
+}
+
+void MessageOneofFieldGenerator::
+GenerateHashCodeCode(io::Printer* printer) const {
+  GenerateOneofFieldHashCode(descriptor_, variables_, printer);
+}
 
 // ===================================================================
 
-RepeatedMessageFieldGenerator::
-RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor, const Params& params)
-  : FieldGenerator(params), descriptor_(descriptor) {
+RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
+    const FieldDescriptor* descriptor, const Params& params)
+    : FieldGenerator(params), descriptor_(descriptor) {
   SetMessageVariables(params, descriptor, &variables_);
 }
 
@@ -232,6 +323,19 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "    if (element != null) {\n"
     "      size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
     "        .compute$group_or_message$Size($number$, element);\n"
+    "    }\n"
+    "  }\n"
+    "}\n");
+}
+
+void RepeatedMessageFieldGenerator::
+GenerateFixClonedCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "if (this.$name$ != null && this.$name$.length > 0) {\n"
+    "  cloned.$name$ = new $type$[this.$name$.length];\n"
+    "  for (int i = 0; i < this.$name$.length; i++) {\n"
+    "    if (this.$name$[i] != null) {\n"
+    "      cloned.$name$[i] = this.$name$[i].clone();\n"
     "    }\n"
     "  }\n"
     "}\n");

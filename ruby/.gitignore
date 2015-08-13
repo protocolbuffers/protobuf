@@ -1,0 +1,8 @@
+*.bundle
+tags
+.idea/
+lib/google/protobuf_java.jar
+protobuf-jruby.iml
+target/
+pkg/
+tmp/

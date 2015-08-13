@@ -38,6 +38,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_proto3_arena.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
 #include <google/protobuf/test_util.h>
 
@@ -767,7 +768,7 @@ TEST(WireFormatTest, RepeatedScalarsDifferentTagSizes) {
 }
 
 TEST(WireFormatTest, CompatibleTypes) {
-  const int64 data = 0x100000000;
+  const int64 data = 0x100000000LL;
   unittest::Int64Message msg1;
   msg1.set_data(data);
   string serialized;
@@ -792,6 +793,169 @@ TEST(WireFormatTest, CompatibleTypes) {
   unittest::Uint32Message msg5;
   ASSERT_TRUE(msg5.ParseFromString(serialized));
   ASSERT_EQ(static_cast<uint32>(data), msg5.data());
+}
+
+class Proto3PrimitiveRepeatedWireFormatTest : public ::testing::Test {
+ protected:
+  Proto3PrimitiveRepeatedWireFormatTest()
+      : packedTestAllTypes_(
+            "\xFA\x01\x01\x01"
+            "\x82\x02\x01\x01"
+            "\x8A\x02\x01\x01"
+            "\x92\x02\x01\x01"
+            "\x9A\x02\x01\x02"
+            "\xA2\x02\x01\x02"
+            "\xAA\x02\x04\x01\x00\x00\x00"
+            "\xB2\x02\x08\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\xBA\x02\x04\x01\x00\x00\x00"
+            "\xC2\x02\x08\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\xCA\x02\x04\x00\x00\x80\x3f"
+            "\xD2\x02\x08\x00\x00\x00\x00\x00\x00\xf0\x3f"
+            "\xDA\x02\x01\x01"
+            "\x9A\x03\x01\x01",
+            86),
+        packedTestUnpackedTypes_(
+            "\x0A\x01\x01"
+            "\x12\x01\x01"
+            "\x1A\x01\x01"
+            "\x22\x01\x01"
+            "\x2A\x01\x02"
+            "\x32\x01\x02"
+            "\x3A\x04\x01\x00\x00\x00"
+            "\x42\x08\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\x4A\x04\x01\x00\x00\x00"
+            "\x52\x08\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\x5A\x04\x00\x00\x80\x3f"
+            "\x62\x08\x00\x00\x00\x00\x00\x00\xf0\x3f"
+            "\x6A\x01\x01"
+            "\x72\x01\x01",
+            72),
+        unpackedTestAllTypes_(
+            "\xF8\x01\x01"
+            "\x80\x02\x01"
+            "\x88\x02\x01"
+            "\x90\x02\x01"
+            "\x98\x02\x02"
+            "\xA0\x02\x02"
+            "\xAD\x02\x01\x00\x00\x00"
+            "\xB1\x02\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\xBD\x02\x01\x00\x00\x00"
+            "\xC1\x02\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\xCD\x02\x00\x00\x80\x3f"
+            "\xD1\x02\x00\x00\x00\x00\x00\x00\xf0\x3f"
+            "\xD8\x02\x01"
+            "\x98\x03\x01",
+            72),
+        unpackedTestUnpackedTypes_(
+            "\x08\x01"
+            "\x10\x01"
+            "\x18\x01"
+            "\x20\x01"
+            "\x28\x02"
+            "\x30\x02"
+            "\x3D\x01\x00\x00\x00"
+            "\x41\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\x4D\x01\x00\x00\x00"
+            "\x51\x01\x00\x00\x00\x00\x00\x00\x00"
+            "\x5D\x00\x00\x80\x3f"
+            "\x61\x00\x00\x00\x00\x00\x00\xf0\x3f"
+            "\x68\x01"
+            "\x70\x01",
+            58) {}
+  template <class Proto>
+  void SetProto3PrimitiveRepeatedFields(Proto* message) {
+    message->add_repeated_int32(1);
+    message->add_repeated_int64(1);
+    message->add_repeated_uint32(1);
+    message->add_repeated_uint64(1);
+    message->add_repeated_sint32(1);
+    message->add_repeated_sint64(1);
+    message->add_repeated_fixed32(1);
+    message->add_repeated_fixed64(1);
+    message->add_repeated_sfixed32(1);
+    message->add_repeated_sfixed64(1);
+    message->add_repeated_float(1.0);
+    message->add_repeated_double(1.0);
+    message->add_repeated_bool(true);
+    message->add_repeated_nested_enum(
+        proto3_arena_unittest::TestAllTypes_NestedEnum_FOO);
+  }
+
+  template <class Proto>
+  void ExpectProto3PrimitiveRepeatedFieldsSet(const Proto& message) {
+    EXPECT_EQ(1, message.repeated_int32(0));
+    EXPECT_EQ(1, message.repeated_int64(0));
+    EXPECT_EQ(1, message.repeated_uint32(0));
+    EXPECT_EQ(1, message.repeated_uint64(0));
+    EXPECT_EQ(1, message.repeated_sint32(0));
+    EXPECT_EQ(1, message.repeated_sint64(0));
+    EXPECT_EQ(1, message.repeated_fixed32(0));
+    EXPECT_EQ(1, message.repeated_fixed64(0));
+    EXPECT_EQ(1, message.repeated_sfixed32(0));
+    EXPECT_EQ(1, message.repeated_sfixed64(0));
+    EXPECT_EQ(1.0, message.repeated_float(0));
+    EXPECT_EQ(1.0, message.repeated_double(0));
+    EXPECT_EQ(true, message.repeated_bool(0));
+    EXPECT_EQ(proto3_arena_unittest::TestAllTypes_NestedEnum_FOO,
+              message.repeated_nested_enum(0));
+  }
+
+  template <class Proto>
+  void TestSerialization(Proto* message, const string& expected) {
+    SetProto3PrimitiveRepeatedFields(message);
+
+    int size = message->ByteSize();
+
+    // Serialize using the generated code.
+    string generated_data;
+    {
+      io::StringOutputStream raw_output(&generated_data);
+      io::CodedOutputStream output(&raw_output);
+      message->SerializeWithCachedSizes(&output);
+      ASSERT_FALSE(output.HadError());
+    }
+    EXPECT_TRUE(expected == generated_data);
+
+    // Serialize using the dynamic code.
+    string dynamic_data;
+    {
+      io::StringOutputStream raw_output(&dynamic_data);
+      io::CodedOutputStream output(&raw_output);
+      WireFormat::SerializeWithCachedSizes(*message, size, &output);
+      ASSERT_FALSE(output.HadError());
+    }
+    EXPECT_TRUE(expected == dynamic_data);
+  }
+
+  template <class Proto>
+  void TestParsing(Proto* message, const string& compatible_data) {
+    message->Clear();
+    message->ParseFromString(compatible_data);
+    ExpectProto3PrimitiveRepeatedFieldsSet(*message);
+
+    message->Clear();
+    io::CodedInputStream input(
+        reinterpret_cast<const uint8*>(compatible_data.data()),
+        compatible_data.size());
+    WireFormat::ParseAndMergePartial(&input, message);
+    ExpectProto3PrimitiveRepeatedFieldsSet(*message);
+  }
+
+  const string packedTestAllTypes_;
+  const string packedTestUnpackedTypes_;
+  const string unpackedTestAllTypes_;
+  const string unpackedTestUnpackedTypes_;
+};
+
+TEST_F(Proto3PrimitiveRepeatedWireFormatTest, Proto3PrimitiveRepeated) {
+  proto3_arena_unittest::TestAllTypes packed_message;
+  proto3_arena_unittest::TestUnpackedTypes unpacked_message;
+  TestSerialization(&packed_message, packedTestAllTypes_);
+  TestParsing(&packed_message, packedTestAllTypes_);
+  TestParsing(&packed_message, unpackedTestAllTypes_);
+  TestSerialization(&unpacked_message, unpackedTestUnpackedTypes_);
+  TestParsing(&unpacked_message, packedTestUnpackedTypes_);
+  TestParsing(&unpacked_message, unpackedTestUnpackedTypes_);
 }
 
 class WireFormatInvalidInputTest : public testing::Test {

@@ -90,6 +90,7 @@ void MessageGenerator::GenerateStaticVariables(io::Printer* printer) {
   // Generate static members for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     // TODO(kenton):  Reuse MessageGenerator objects?
+    if (IsMapEntry(descriptor_->nested_type(i))) continue;
     MessageGenerator(descriptor_->nested_type(i), params_)
       .GenerateStaticVariables(printer);
   }
@@ -100,6 +101,7 @@ void MessageGenerator::GenerateStaticVariableInitializers(
   // Generate static member initializers for all nested types.
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
    // TODO(kenton):  Reuse MessageGenerator objects?
+    if (IsMapEntry(descriptor_->nested_type(i))) continue;
     MessageGenerator(descriptor_->nested_type(i), params_)
       .GenerateStaticVariableInitializers(printer);
   }
@@ -134,20 +136,36 @@ void MessageGenerator::Generate(io::Printer* printer) {
   }
   if (params_.store_unknown_fields() && params_.parcelable_messages()) {
     printer->Print(
-      "    com.google.protobuf.nano.android.ParcelableExtendableMessageNano<$classname$> {\n",
+      "    com.google.protobuf.nano.android.ParcelableExtendableMessageNano<$classname$>",
       "classname", descriptor_->name());
   } else if (params_.store_unknown_fields()) {
     printer->Print(
-      "    com.google.protobuf.nano.ExtendableMessageNano<$classname$> {\n",
+      "    com.google.protobuf.nano.ExtendableMessageNano<$classname$>",
       "classname", descriptor_->name());
   } else if (params_.parcelable_messages()) {
     printer->Print(
-      "    com.google.protobuf.nano.android.ParcelableMessageNano {\n");
+      "    com.google.protobuf.nano.android.ParcelableMessageNano");
   } else {
     printer->Print(
-      "    com.google.protobuf.nano.MessageNano {\n");
+      "    com.google.protobuf.nano.MessageNano");
+  }
+  if (params_.generate_clone()) {
+    printer->Print(" implements java.lang.Cloneable {\n");
+  } else {
+    printer->Print(" {\n");
   }
   printer->Indent();
+
+  if (params_.parcelable_messages()) {
+    printer->Print(
+      "\n"
+      "// Used by Parcelable\n"
+      "@SuppressWarnings({\"unused\"})\n"
+      "public static final android.os.Parcelable.Creator<$classname$> CREATOR =\n"
+      "    new com.google.protobuf.nano.android.ParcelableMessageNanoCreator<\n"
+      "        $classname$>($classname$.class);\n",
+      "classname", descriptor_->name());
+  }
 
   // Nested types and extensions
   for (int i = 0; i < descriptor_->extension_count(); i++) {
@@ -159,7 +177,42 @@ void MessageGenerator::Generate(io::Printer* printer) {
   }
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    if (IsMapEntry(descriptor_->nested_type(i))) continue;
     MessageGenerator(descriptor_->nested_type(i), params_).Generate(printer);
+  }
+
+  // oneof
+  map<string, string> vars;
+  vars["message_name"] = descriptor_->name();
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    const OneofDescriptor* oneof_desc = descriptor_->oneof_decl(i);
+    vars["oneof_name"] = UnderscoresToCamelCase(oneof_desc);
+    vars["oneof_capitalized_name"] =
+        UnderscoresToCapitalizedCamelCase(oneof_desc);
+    vars["oneof_index"] = SimpleItoa(oneof_desc->index());
+    // Oneof Constants
+    for (int j = 0; j < oneof_desc->field_count(); j++) {
+      const FieldDescriptor* field = oneof_desc->field(j);
+      vars["number"] = SimpleItoa(field->number());
+      vars["cap_field_name"] = ToUpper(field->name());
+      printer->Print(vars,
+        "public static final int $cap_field_name$_FIELD_NUMBER = $number$;\n");
+    }
+    // oneofCase_ and oneof_
+    printer->Print(vars,
+      "private int $oneof_name$Case_ = 0;\n"
+      "private java.lang.Object $oneof_name$_;\n");
+    printer->Print(vars,
+      "public int get$oneof_capitalized_name$Case() {\n"
+      "  return this.$oneof_name$Case_;\n"
+      "}\n");
+    // Oneof clear
+    printer->Print(vars,
+      "public $message_name$ clear$oneof_capitalized_name$() {\n"
+      "  this.$oneof_name$Case_ = 0;\n"
+      "  this.$oneof_name$_ = null;\n"
+      "  return this;\n"
+      "}\n");
   }
 
   // Lazy initialization of otherwise static final fields can help prevent the
@@ -251,19 +304,27 @@ void MessageGenerator::Generate(io::Printer* printer) {
     }
     printer->Print("}\n");
   } else {
+    printer->Print(
+      "\n"
+      "public $classname$() {\n",
+      "classname", descriptor_->name());
     if (params_.generate_clear()) {
-      printer->Print(
-        "\n"
-        "public $classname$() {\n"
-        "  clear();\n"
-        "}\n",
-        "classname", descriptor_->name());
+      printer->Print("  clear();\n");
+    } else {
+      printer->Indent();
+      GenerateFieldInitializers(printer);
+      printer->Outdent();
     }
+    printer->Print("}\n");
   }
 
   // Other methods in this class
 
   GenerateClear(printer);
+
+  if (params_.generate_clone()) {
+    GenerateClone(printer);
+  }
 
   if (params_.generate_equals()) {
     GenerateEquals(printer);
@@ -342,6 +403,11 @@ void MessageGenerator::GenerateMergeFromMethods(io::Printer* printer) {
     "classname", descriptor_->name());
 
   printer->Indent();
+  if (HasMapField(descriptor_)) {
+    printer->Print(
+      "com.google.protobuf.nano.MapFactories.MapFactory mapFactory =\n"
+      "  com.google.protobuf.nano.MapFactories.getMapFactory();\n");
+  }
 
   printer->Print(
     "while (true) {\n");
@@ -453,6 +519,15 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
     "classname", descriptor_->name());
   printer->Indent();
 
+  GenerateFieldInitializers(printer);
+
+  printer->Outdent();
+  printer->Print(
+    "  return this;\n"
+    "}\n");
+}
+
+void MessageGenerator::GenerateFieldInitializers(io::Printer* printer) {
   // Clear bit fields.
   int totalInts = (field_generators_.total_bits() + 31) / 32;
   for (int i = 0; i < totalInts; i++) {
@@ -466,16 +541,46 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
     field_generators_.get(field).GenerateClearCode(printer);
   }
 
+  // Clear oneofs.
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    printer->Print(
+      "clear$oneof_capitalized_name$();\n",
+      "oneof_capitalized_name", UnderscoresToCapitalizedCamelCase(
+          descriptor_->oneof_decl(i)));
+  }
+
   // Clear unknown fields.
   if (params_.store_unknown_fields()) {
     printer->Print("unknownFieldData = null;\n");
   }
+  printer->Print("cachedSize = -1;\n");
+}
+
+void MessageGenerator::GenerateClone(io::Printer* printer) {
+  printer->Print(
+    "@Override\n"
+    "public $classname$ clone() {\n",
+    "classname", descriptor_->name());
+  printer->Indent();
+
+  printer->Print(
+    "$classname$ cloned;\n"
+    "try {\n"
+    "  cloned = ($classname$) super.clone();\n"
+    "} catch (java.lang.CloneNotSupportedException e) {\n"
+    "  throw new java.lang.AssertionError(e);\n"
+    "}\n",
+    "classname", descriptor_->name());
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    field_generators_.get(descriptor_->field(i)).GenerateFixClonedCode(printer);
+  }
 
   printer->Outdent();
   printer->Print(
-    "  cachedSize = -1;\n"
-    "  return this;\n"
-    "}\n");
+    "  return cloned;\n"
+    "}\n"
+    "\n");
 }
 
 void MessageGenerator::GenerateEquals(io::Printer* printer) {
@@ -501,6 +606,16 @@ void MessageGenerator::GenerateEquals(io::Printer* printer) {
     "$classname$ other = ($classname$) o;\n",
     "classname", descriptor_->name());
 
+  // Checking oneof case before checking each oneof field.
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    const OneofDescriptor* oneof_desc = descriptor_->oneof_decl(i);
+    printer->Print(
+      "if (this.$oneof_name$Case_ != other.$oneof_name$Case_) {\n"
+      "  return false;\n"
+      "}\n",
+      "oneof_name", UnderscoresToCamelCase(oneof_desc));
+  }
+
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     field_generators_.get(field).GenerateEqualsCode(printer);
@@ -508,7 +623,11 @@ void MessageGenerator::GenerateEquals(io::Printer* printer) {
 
   if (params_.store_unknown_fields()) {
     printer->Print(
-      "return unknownFieldDataEquals(other);\n");
+      "if (unknownFieldData == null || unknownFieldData.isEmpty()) {\n"
+      "  return other.unknownFieldData == null || other.unknownFieldData.isEmpty();\n"
+      "} else {\n"
+      "  return unknownFieldData.equals(other.unknownFieldData);\n"
+      "}");
   } else {
     printer->Print(
       "return true;\n");
@@ -538,7 +657,9 @@ void MessageGenerator::GenerateHashCode(io::Printer* printer) {
 
   if (params_.store_unknown_fields()) {
     printer->Print(
-      "result = 31 * result + unknownFieldDataHashCode();\n");
+      "result = 31 * result + \n"
+      "  (unknownFieldData == null || unknownFieldData.isEmpty() ? 0 : \n"
+      "  unknownFieldData.hashCode());\n");
   }
 
   printer->Print("return result;\n");

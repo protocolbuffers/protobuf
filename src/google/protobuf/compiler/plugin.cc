@@ -95,7 +95,7 @@ class GeneratorResponseContext : public GeneratorContext {
 int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
 
   if (argc > 1) {
-    cerr << argv[0] << ": Unknown option: " << argv[1] << endl;
+    std::cerr << argv[0] << ": Unknown option: " << argv[1] << std::endl;
     return 1;
   }
 
@@ -106,7 +106,8 @@ int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
 
   CodeGeneratorRequest request;
   if (!request.ParseFromFileDescriptor(STDIN_FILENO)) {
-    cerr << argv[0] << ": protoc sent unparseable request to plugin." << endl;
+    std::cerr << argv[0] << ": protoc sent unparseable request to plugin."
+              << std::endl;
     return 1;
   }
 
@@ -123,9 +124,9 @@ int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
   for (int i = 0; i < request.file_to_generate_size(); i++) {
     parsed_files.push_back(pool.FindFileByName(request.file_to_generate(i)));
     if (parsed_files.back() == NULL) {
-      cerr << argv[0] << ": protoc asked plugin to generate a file but "
-              "did not provide a descriptor for the file: "
-           << request.file_to_generate(i) << endl;
+      std::cerr << argv[0] << ": protoc asked plugin to generate a file but "
+                              "did not provide a descriptor for the file: "
+                << request.file_to_generate(i) << std::endl;
       return 1;
     }
   }
@@ -133,25 +134,39 @@ int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
   CodeGeneratorResponse response;
   GeneratorResponseContext context(&response, parsed_files);
 
-  for (int i = 0; i < parsed_files.size(); i++) {
-    const FileDescriptor* file = parsed_files[i];
-
+  if (generator->HasGenerateAll()) {
     string error;
-    bool succeeded = generator->Generate(
-        file, request.parameter(), &context, &error);
+    bool succeeded = generator->GenerateAll(
+        parsed_files, request.parameter(), &context, &error);
 
     if (!succeeded && error.empty()) {
       error = "Code generator returned false but provided no error "
               "description.";
     }
     if (!error.empty()) {
-      response.set_error(file->name() + ": " + error);
-      break;
+      response.set_error(error);
+    }
+  } else {
+    for (int i = 0; i < parsed_files.size(); i++) {
+      const FileDescriptor* file = parsed_files[i];
+
+      string error;
+      bool succeeded = generator->Generate(
+          file, request.parameter(), &context, &error);
+
+      if (!succeeded && error.empty()) {
+        error = "Code generator returned false but provided no error "
+                "description.";
+      }
+      if (!error.empty()) {
+        response.set_error(file->name() + ": " + error);
+        break;
+      }
     }
   }
 
   if (!response.SerializeToFileDescriptor(STDOUT_FILENO)) {
-    cerr << argv[0] << ": Error writing to stdout." << endl;
+    std::cerr << argv[0] << ": Error writing to stdout." << std::endl;
     return 1;
   }
 

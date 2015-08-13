@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
@@ -37,6 +37,7 @@ __author__ = 'matthewtoia@google.com (Matt Toia)'
 import os
 import unittest
 
+import unittest
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import api_implementation
@@ -224,6 +225,13 @@ class DescriptorPoolTest(unittest.TestCase):
     self.pool = descriptor_pool.DescriptorPool(db)
     db.Add(self.factory_test1_fd)
     db.Add(self.factory_test2_fd)
+    self.testFindMessageTypeByName()
+
+  def testAddSerializedFile(self):
+    db = descriptor_database.DescriptorDatabase()
+    self.pool = descriptor_pool.DescriptorPool(db)
+    self.pool.AddSerializedFile(self.factory_test1_fd.SerializeToString())
+    self.pool.AddSerializedFile(self.factory_test2_fd.SerializeToString())
     self.testFindMessageTypeByName()
 
   def testComplexNesting(self):
