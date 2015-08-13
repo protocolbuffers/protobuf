@@ -368,5 +368,20 @@ namespace Google.Protobuf.Reflection
         {
             return "FileDescriptor for " + proto.Name;
         }
+
+        /// <summary>
+        /// Returns the file descriptor for descriptor.proto.
+        /// </summary>
+        /// <remarks>
+        /// This is used for protos which take a direct dependency on <c>descriptor.proto</c>, typically for
+        /// annotations. While <c>descriptor.proto</c> is a proto2 file, it is built into the Google.Protobuf
+        /// runtime for reflection purposes. The messages are internal to the runtime as they would require
+        /// proto2 semantics for full support, but the file descriptor is available via this property. The
+        /// C# codegen in protoc automatically uses this property when it detects a dependency on <c>descriptor.proto</c>.
+        /// </remarks>
+        /// <value>
+        /// The file descriptor for <c>descriptor.proto</c>.
+        /// </value>
+        public static FileDescriptor DescriptorProtoFileDescriptor { get { return DescriptorProtoFile.Descriptor; } }
     }
 }

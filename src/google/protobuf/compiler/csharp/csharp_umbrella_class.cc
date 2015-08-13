@@ -180,10 +180,17 @@ void UmbrellaClassGenerator::WriteDescriptor(io::Printer* printer) {
       "descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,\n");
   printer->Print("    new pbr::FileDescriptor[] { ");
   for (int i = 0; i < file_->dependency_count(); i++) {
-    printer->Print(
+    // descriptor.proto is special: we don't allow access to the generated code, but there's
+    // a separately-exposed property to get at the file descriptor, specifically to allow this
+    // kind of dependency.
+    if (IsDescriptorProto(file_->dependency(i))) {
+      printer->Print("pbr::FileDescriptor.DescriptorProtoFileDescriptor, ");
+    } else {
+      printer->Print(
       "$full_umbrella_class_name$.Descriptor, ",
       "full_umbrella_class_name",
       GetUmbrellaClassName(file_->dependency(i)));
+    }
   }
   printer->Print("},\n"
       "    new pbr::GeneratedCodeInfo(");
