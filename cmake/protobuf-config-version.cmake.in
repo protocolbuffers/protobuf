@@ -1,0 +1,1 @@
+set(PACKAGE_VERSION @protobuf_VERSION@)
