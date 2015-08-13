@@ -138,7 +138,7 @@ void PrintBinary(const string& str) {
     if (isprint(str[i])) {
       fprintf(stderr, "%c", str[i]);
     } else {
-      fprintf(stderr, "\\x%02x", str[i]);
+      fprintf(stderr, "\\x%02x", (int)(uint8_t)str[i]);
     }
   }
 }
@@ -200,6 +200,16 @@ string tag(uint32_t fieldnum, char wire_type) {
 
 string submsg(uint32_t fn, const string& buf) {
   return cat( tag(fn, UPB_WIRE_TYPE_DELIMITED), delim(buf) );
+}
+
+// Like delim()/submsg(), but intentionally encodes an incorrect length.
+// These help test when a delimited boundary doesn't land in the right place.
+string badlen_delim(int err, const string& buf) {
+  return cat(varint(buf.size() + err), buf);
+}
+
+string badlen_submsg(int err, uint32_t fn, const string& buf) {
+  return cat( tag(fn, UPB_WIRE_TYPE_DELIMITED), badlen_delim(err, buf) );
 }
 
 
@@ -436,6 +446,21 @@ upb::reffed_ptr<const upb::MessageDef> NewMessageDef() {
   ASSERT(f->set_message_subdef(md.get(), NULL));
   ASSERT(md->AddField(f.get(), NULL));
 
+  f = upb::FieldDef::New();
+  ASSERT(f->set_name("f_group", NULL));
+  ASSERT(f->set_number(UPB_DESCRIPTOR_TYPE_GROUP, NULL));
+  f->set_descriptor_type(UPB_DESCRIPTOR_TYPE_GROUP);
+  ASSERT(f->set_message_subdef(md.get(), NULL));
+  ASSERT(md->AddField(f.get(), NULL));
+
+  f = upb::FieldDef::New();
+  ASSERT(f->set_name("r_group", NULL));
+  ASSERT(f->set_number(rep_fn(UPB_DESCRIPTOR_TYPE_GROUP), NULL));
+  f->set_label(UPB_LABEL_REPEATED);
+  f->set_descriptor_type(UPB_DESCRIPTOR_TYPE_GROUP);
+  ASSERT(f->set_message_subdef(md.get(), NULL));
+  ASSERT(md->AddField(f.get(), NULL));
+
   upb::reffed_ptr<upb::EnumDef> e = upb::EnumDef::New();
   ASSERT(e->AddValue("FOO", 1, NULL));
   ASSERT(e->Freeze(NULL));
@@ -492,6 +517,8 @@ upb::reffed_ptr<const upb::Handlers> NewHandlers(TestMode mode) {
     // to this type, eg: message M { optional M m = 1; }
     reg_subm(h.get(), UPB_DESCRIPTOR_TYPE_MESSAGE);
     reg_subm(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_MESSAGE));
+    reg_subm(h.get(), UPB_DESCRIPTOR_TYPE_GROUP);
+    reg_subm(h.get(), rep_fn(UPB_DESCRIPTOR_TYPE_GROUP));
 
     // For NOP_FIELD we register no handlers, so we can pad a proto freely without
     // changing the output.
@@ -575,7 +602,6 @@ void do_run_decoder(VerboseParserEnvironment* env, upb::pb::Decoder* decoder,
       } else {
         fprintf(stderr, "Expected to FAIL\n");
       }
-      fprintf(stderr, "Calling start()\n");
     }
 
     bool ok = env->Start() &&
@@ -646,6 +672,12 @@ void assert_successful_parse(const string& proto,
 
 void assert_does_not_parse_at_eof(const string& proto) {
   run_decoder(proto, NULL);
+
+  // Also test that we fail to parse at end-of-submessage, not just
+  // end-of-message.
+  run_decoder(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, proto), NULL);
+  run_decoder(cat(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, proto), thirty_byte_nop),
+              NULL);
 }
 
 void assert_does_not_parse(const string& proto) {
@@ -860,6 +892,18 @@ void test_invalid() {
                    tag(UPB_DESCRIPTOR_TYPE_GROUP, UPB_WIRE_TYPE_START_GROUP)),
             tag(UPB_DESCRIPTOR_TYPE_GROUP, UPB_WIRE_TYPE_END_GROUP)));
 
+  // Unknown string extends past enclosing submessage.
+  assert_does_not_parse(
+      cat (badlen_submsg(-1, UPB_DESCRIPTOR_TYPE_MESSAGE,
+                         submsg(12345, string("   "))),
+           submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, string("     "))));
+
+  // Unknown fixed-length field extends past enclosing submessage.
+  assert_does_not_parse(
+      cat (badlen_submsg(-1, UPB_DESCRIPTOR_TYPE_MESSAGE,
+                         cat( tag(12345, UPB_WIRE_TYPE_64BIT), uint64(0))),
+           submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, string("     "))));
+
   // Test exceeding the resource limit of stack depth.
   string buf;
   for (int i = 0; i <= MAX_NESTING; i++) {
@@ -940,6 +984,19 @@ void test_valid() {
   assert_successful_parse(
       submsg(12345, string("                ")),
       "<\n>\n");
+
+  // Unknown field inside a known submessage.
+  assert_successful_parse(
+      cat (submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, submsg(12345, string("   "))),
+           tag(UPB_DESCRIPTOR_TYPE_INT32, UPB_WIRE_TYPE_VARINT),
+           varint(5)),
+      LINE("<")
+      LINE("%u:{")
+      LINE("  <")
+      LINE("  >")
+      LINE("}")
+      LINE("%u:5")
+      LINE(">"), UPB_DESCRIPTOR_TYPE_MESSAGE, UPB_DESCRIPTOR_TYPE_INT32);
 
   // This triggered a previous bug in the decoder.
   assert_successful_parse(

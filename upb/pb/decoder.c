@@ -26,6 +26,8 @@
 
 /* Error messages that are shared between the bytecode and JIT decoders. */
 const char *kPbDecoderStackOverflow = "Nesting too deep.";
+const char *kPbDecoderSubmessageTooLong =
+    "Submessage end extends past enclosing submessage.";
 
 /* Error messages shared within this file. */
 static const char *kUnterminatedVarint = "Unterminated varint.";
@@ -114,9 +116,19 @@ static size_t curbufleft(const upb_pbdecoder *d) {
   return d->data_end - d->ptr;
 }
 
+/* How many bytes are available before end-of-buffer. */
+static size_t bufleft(const upb_pbdecoder *d) {
+  return d->end - d->ptr;
+}
+
 /* Overall stream offset of d->ptr. */
 uint64_t offset(const upb_pbdecoder *d) {
   return d->bufstart_ofs + (d->ptr - d->buf);
+}
+
+/* How many bytes are available before the end of this delimited region. */
+size_t delim_remaining(const upb_pbdecoder *d) {
+  return d->top->end_ofs - offset(d);
 }
 
 /* Advances d->ptr. */
@@ -175,7 +187,11 @@ static void checkpoint(upb_pbdecoder *d) {
  */
 static int32_t skip(upb_pbdecoder *d, size_t bytes) {
   assert(!in_residual_buf(d, d->ptr) || d->size_param == 0);
-  if (curbufleft(d) > bytes) {
+  assert(d->skip == 0);
+  if (bytes > delim_remaining(d)) {
+    seterr(d, "Skipped value extended beyond enclosing submessage.");
+    return upb_pbdecoder_suspend(d);
+  } else if (bufleft(d) > bytes) {
     /* Skipped data is all in current buffer, and more is still available. */
     advance(d, bytes);
     d->skip = 0;
@@ -211,7 +227,9 @@ int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
   d->checkpoint = d->ptr;
 
   if (d->skip) {
-    CHECK_RETURN(skip(d, d->skip));
+    size_t skip_bytes = d->skip;
+    d->skip = 0;
+    CHECK_RETURN(skip(d, skip_bytes));
     d->checkpoint = d->ptr;
   }
 
@@ -450,7 +468,7 @@ static bool decoder_push(upb_pbdecoder *d, uint64_t end) {
   upb_pbdecoder_frame *fr = d->top;
 
   if (end > fr->end_ofs) {
-    seterr(d, "Submessage end extends past enclosing submessage.");
+    seterr(d, kPbDecoderSubmessageTooLong);
     return false;
   } else if (fr == d->limit) {
     seterr(d, kPbDecoderStackOverflow);
@@ -554,34 +572,7 @@ have_tag:
       return DECODE_OK;
     }
 
-    if (d->ptr == d->delim_end) {
-      seterr(d, "Enclosing submessage ended in the middle of value or group");
-      /* Unlike most errors we notice during parsing, right now we have consumed
-       * all of the user's input.
-       *
-       * There are three different options for how to handle this case:
-       *
-       *   1. decode() = short count, error = set
-       *   2. decode() = full count, error = set
-       *   3. decode() = full count, error NOT set, short count and error will
-       *      be reported on next call to decode() (or end())
-       *
-       * (1) and (3) have the advantage that they preserve the invariant that an
-       * error occurs iff decode() returns a short count.
-       *
-       * (2) and (3) have the advantage of reflecting the fact that all of the
-       * bytes were in fact parsed (and possibly delivered to the unknown field
-       * handler, in the future when that is supported).
-       *
-       * (3) requires extra state in the decode (a place to store the "permanent
-       * error" that we should return for all subsequent attempts to decode).
-       * But we likely want this anyway.
-       *
-       * Right now we do (1), thanks to the fact that we checkpoint *after* this
-       * check.  (3) may be a better choice long term; unclear at the moment. */
-      return upb_pbdecoder_suspend(d);
-    }
-
+    /* Unknown group -- continue looping over unknown fields. */
     checkpoint(d);
   }
 }
@@ -605,7 +596,7 @@ static int32_t dispatch(upb_pbdecoder *d) {
   uint8_t wire_type;
   uint32_t fieldnum;
   upb_value val;
-  int32_t ret;
+  int32_t retval;
 
   /* Decode tag. */
   CHECK_RETURN(decode_v32(d, &tag));
@@ -629,23 +620,25 @@ static int32_t dispatch(upb_pbdecoder *d) {
     }
   }
 
-  /* Unknown field or ENDGROUP. */
-  ret = upb_pbdecoder_skipunknown(d, fieldnum, wire_type);
+  /* We have some unknown fields (or ENDGROUP) to parse.  The DISPATCH or TAG
+   * bytecode that triggered this is preceded by a CHECKDELIM bytecode which
+   * we need to back up to, so that when we're done skipping unknown data we
+   * can re-check the delimited end. */
+  d->last--;  /* Necessary if we get suspended */
+  d->pc = d->last;
+  assert(getop(*d->last) == OP_CHECKDELIM);
 
-  if (ret == DECODE_ENDGROUP) {
+  /* Unknown field or ENDGROUP. */
+  retval = upb_pbdecoder_skipunknown(d, fieldnum, wire_type);
+
+  CHECK_RETURN(retval);
+
+  if (retval == DECODE_ENDGROUP) {
     goto_endmsg(d);
-    return DECODE_OK;
-  } else if (ret == DECODE_OK) {
-    /* We just consumed some input, so we might now have consumed all the data
-     * in the delmited region.  Since every opcode that can trigger dispatch is
-     * directly preceded by OP_CHECKDELIM, rewind to it now to re-check the
-     * delimited end. */
-    d->pc = d->last - 1;
-    assert(getop(*d->pc) == OP_CHECKDELIM);
     return DECODE_OK;
   }
 
-  return ret;
+  return DECODE_OK;
 }
 
 /* Callers know that the stack is more than one deep because the opcodes that
@@ -741,7 +734,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         CHECK_SUSPEND(upb_sink_endsubmsg(&d->top->sink, arg));
       )
       VMCASE(OP_STARTSTR,
-        uint32_t len = d->top->end_ofs - offset(d);
+        uint32_t len = delim_remaining(d);
         upb_pbdecoder_frame *outer = outer_frame(d);
         CHECK_SUSPEND(upb_sink_startstr(&outer->sink, arg, len, &d->top->sink));
         if (len == 0) {
@@ -752,7 +745,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         uint32_t len = curbufleft(d);
         size_t n = upb_sink_putstring(&d->top->sink, arg, d->ptr, len, handle);
         if (n > len) {
-          if (n > d->top->end_ofs - offset(d)) {
+          if (n > delim_remaining(d)) {
             seterr(d, "Tried to skip past end of string.");
             return upb_pbdecoder_suspend(d);
           } else {
@@ -900,6 +893,11 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
 
   if (d->residual_end > d->residual) {
     seterr(d, "Unexpected EOF: decoder still has buffered unparsed data");
+    return false;
+  }
+
+  if (d->skip) {
+    seterr(d, "Unexpected EOF inside skipped data");
     return false;
   }
 

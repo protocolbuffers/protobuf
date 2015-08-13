@@ -300,7 +300,7 @@ static void emit_static_asm(jitcompiler *jc) {
   |  mov   rcx, DELIMEND
   |  sub   rcx, PTR
   |  sub   rcx, rdx
-  |  jb    ->err  // Len is greater than enclosing message.
+  |  jb    >4   // Len is greater than enclosing message.
   |  mov   FRAME->end_ofs, rcx
   |  cmp   FRAME, DECODER->limit
   |  je    >3   // Stack overflow
@@ -319,11 +319,20 @@ static void emit_static_asm(jitcompiler *jc) {
   |2:
   |  ret
   |3:
-  |  // Error -- call seterr.
+  |  // Stack overflow error.
   |  mov   PTR, DECODER->checkpoint  // Rollback to before the delim len.
   |  // Prepare seterr args.
   |  mov   ARG1_64, DECODER
   |  ld64  kPbDecoderStackOverflow
+  |  callp upb_pbdecoder_seterr
+  |  call  ->suspend
+  |  jmp   <1
+  |4:
+  |  // Overextended len.
+  |  mov   PTR, DECODER->checkpoint  // Rollback to before the delim len.
+  |  // Prepare seterr args.
+  |  mov   ARG1_64, DECODER
+  |  ld64  kPbDecoderSubmessageTooLong
   |  callp upb_pbdecoder_seterr
   |  call  ->suspend
   |  jmp   <1
