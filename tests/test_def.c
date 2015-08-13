@@ -252,6 +252,7 @@ static void test_cycles_in_replacement() {
                       &s, NULL);
   ASSERT_STATUS(upb_symtab_add(s, (upb_def**)&m, 1, &s, &status), &status);
   ASSERT_STATUS(upb_symtab_add(s, NULL, 0, &s, &status), &status);
+  upb_symtab_unref(s, &s);
 }
 
 static void test_freeze_free() {
