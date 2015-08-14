@@ -244,7 +244,6 @@ namespace Google.Protobuf
         [TestCase(null, "{ }")]
         [TestCase("x", "{ 'fooString': 'x' }")]
         [TestCase("", "{ 'fooString': '' }")]
-        [TestCase(null, "{ }")]
         public void Oneof(string fooStringValue, string expectedJson)
         {
             var message = new TestOneof();
