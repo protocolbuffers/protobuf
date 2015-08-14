@@ -251,5 +251,12 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual(new[] { 11, 1, 101, 200 }, fields.InDeclarationOrder().Select(x => x.FieldNumber));
             Assert.AreEqual(new[] { 1, 11, 101, 200 }, fields.InFieldNumberOrder().Select(x => x.FieldNumber));
         }
+
+
+        [Test]
+        public void DescriptorProtoFileDescriptor()
+        {
+            var descriptor = Google.Protobuf.Reflection.FileDescriptor.DescriptorProtoFileDescriptor;
+        }
     }
 }
