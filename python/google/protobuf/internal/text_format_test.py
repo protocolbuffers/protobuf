@@ -101,7 +101,7 @@ class TextFormatTest(TextFormatBase):
         'repeated_string: "\\303\\274\\352\\234\\237"\n')
 
   def testPrintExoticUnicodeSubclass(self, message_module):
-    class UnicodeSub(unicode):
+    class UnicodeSub(six.text_type):
       pass
     message = message_module.TestAllTypes()
     message.repeated_string.append(UnicodeSub(u'\u00fc\ua71f'))

@@ -92,7 +92,10 @@ def MessageToString(message, as_utf8=False, as_one_line=False,
   Returns:
     A string of the text formatted protocol buffer message.
   """
-  out = io.BytesIO()
+  if as_utf8:
+    out = io.BytesIO()
+  else:
+    out = io.BytesIO()
   PrintMessage(message, out, as_utf8=as_utf8, as_one_line=as_one_line,
                pointy_brackets=pointy_brackets,
                use_index_order=use_index_order,
@@ -139,7 +142,6 @@ def PrintMessage(message, out, indent=0, as_utf8=False, as_one_line=False,
                  use_index_order=use_index_order,
                  float_format=float_format)
 
-
 def PrintField(field, value, out, indent=0, as_utf8=False, as_one_line=False,
                pointy_brackets=False, use_index_order=False, float_format=None):
   """Print a single field name/value pair.  For repeated fields, the value
@@ -160,7 +162,11 @@ def PrintField(field, value, out, indent=0, as_utf8=False, as_one_line=False,
     # For groups, use the capitalized name.
     out.write(field.message_type.name)
   else:
-    out.write(field.name)
+    if isinstance(field.name, six.text_type):
+      name = field.name.encode('utf-8')
+    else:
+      name = field.name
+    out.write(name)
 
   if field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
     # The colon is optional in this case, but our cross-language golden files
