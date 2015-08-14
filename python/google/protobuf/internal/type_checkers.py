@@ -49,6 +49,9 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import six
 
+if six.PY3:
+  long = int
+
 from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
 from google.protobuf.internal import wire_format
@@ -195,13 +198,13 @@ class Uint32ValueChecker(IntValueChecker):
 class Int64ValueChecker(IntValueChecker):
   _MIN = -(1 << 63)
   _MAX = (1 << 63) - 1
-  _TYPE = int
+  _TYPE = long
 
 
 class Uint64ValueChecker(IntValueChecker):
   _MIN = 0
   _MAX = (1 << 64) - 1
-  _TYPE = int
+  _TYPE = long
 
 
 # Type-checkers for all scalar CPPTYPEs.
@@ -211,9 +214,9 @@ _VALUE_CHECKERS = {
     _FieldDescriptor.CPPTYPE_UINT32: Uint32ValueChecker(),
     _FieldDescriptor.CPPTYPE_UINT64: Uint64ValueChecker(),
     _FieldDescriptor.CPPTYPE_DOUBLE: TypeChecker(
-        float, int, int),
+        float, int, long),
     _FieldDescriptor.CPPTYPE_FLOAT: TypeChecker(
-        float, int, int),
+        float, int, long),
     _FieldDescriptor.CPPTYPE_BOOL: TypeChecker(bool, int),
     _FieldDescriptor.CPPTYPE_STRING: TypeChecker(bytes),
     }

@@ -630,17 +630,17 @@ class ReflectionTest(unittest.TestCase):
     TestGetAndDeserialize('optional_int32', 1, int)
     TestGetAndDeserialize('optional_int32', 1 << 30, int)
     TestGetAndDeserialize('optional_uint32', 1 << 30, int)
-    if struct.calcsize('L') == 4:
-      # Python only has signed ints, so 32-bit python can't fit an uint32
-      # in an int.
-      TestGetAndDeserialize('optional_uint32', 1 << 31, int)
-    else:
-      # 64-bit python can fit uint32 inside an int
-      TestGetAndDeserialize('optional_uint32', 1 << 31, int)
     try:
       integer_64 = long
     except NameError: # Python3
       integer_64 = int
+    if struct.calcsize('L') == 4:
+      # Python only has signed ints, so 32-bit python can't fit an uint32
+      # in an int.
+      TestGetAndDeserialize('optional_uint32', 1 << 31, long)
+    else:
+      # 64-bit python can fit uint32 inside an int
+      TestGetAndDeserialize('optional_uint32', 1 << 31, int)
     TestGetAndDeserialize('optional_int64', 1 << 30, integer_64)
     TestGetAndDeserialize('optional_int64', 1 << 60, integer_64)
     TestGetAndDeserialize('optional_uint64', 1 << 30, integer_64)

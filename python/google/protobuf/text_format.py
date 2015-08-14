@@ -39,6 +39,9 @@ import re
 
 import six
 
+if six.PY3:
+  long = int
+
 from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
 from google.protobuf import text_encoding
@@ -813,7 +816,7 @@ def ParseInteger(text, is_signed=False, is_long=False):
     # alternate implementations where the distinction is more significant
     # (e.g. the C++ implementation) simpler.
     if is_long:
-      result = int(text, 0)
+      result = long(text, 0)
     else:
       result = int(text, 0)
   except ValueError:

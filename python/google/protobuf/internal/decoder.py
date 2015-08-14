@@ -86,6 +86,9 @@ import struct
 
 import six
 
+if six.PY3:
+  long = int
+
 from google.protobuf.internal import encoder
 from google.protobuf.internal import wire_format
 from google.protobuf import message
@@ -157,8 +160,8 @@ def _SignedVarintDecoder(mask, result_type):
 # alternate implementations where the distinction is more significant
 # (e.g. the C++ implementation) simpler.
 
-_DecodeVarint = _VarintDecoder((1 << 64) - 1, int)
-_DecodeSignedVarint = _SignedVarintDecoder((1 << 64) - 1, int)
+_DecodeVarint = _VarintDecoder((1 << 64) - 1, long)
+_DecodeSignedVarint = _SignedVarintDecoder((1 << 64) - 1, long)
 
 # Use these versions for values which must be limited to 32 bits.
 _DecodeVarint32 = _VarintDecoder((1 << 32) - 1, int)
