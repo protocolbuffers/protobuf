@@ -1647,18 +1647,18 @@ class ReflectionTest(unittest.TestCase):
     file_descriptor_proto.name = another_file_name
     m2 = file_descriptor_proto.message_type.add()
     m2.name = 'msg2'
-    try:
+    with self.assertRaises(TypeError) as cm:
       descriptor.FileDescriptor(
           another_file_name,
           package_name,
           serialized_pb=file_descriptor_proto.SerializeToString())
-    except TypeError as e:
-      message = str(e)
-    else:
-      self.fail("Did not raise TypeError")
-
-    self.assertTrue('test_file_descriptor_errors.msg1' in message)
-    self.assertTrue('test_file_descriptor_errors.proto' in message)
+      self.assertTrue(hasattr(cm, 'exception'), '%s not raised' %
+                      getattr(cm.expected, '__name__', cm.expected))
+      self.assertIn('test_file_descriptor_errors.proto', str(cm.exception))
+      # Error message will say something about this definition being a
+      # duplicate, though we don't check the message exactly to avoid a
+      # dependency on the C++ logging code.
+      self.assertIn('test_file_descriptor_errors.msg1', str(cm.exception))
 
   def testStringUTF8Encoding(self):
     proto = unittest_pb2.TestAllTypes()
