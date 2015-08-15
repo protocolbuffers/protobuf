@@ -29,16 +29,35 @@ class VerboseParserEnvironment {
  public:
   // Pass verbose=true to print detailed diagnostics to stderr.
   VerboseParserEnvironment(bool verbose) : verbose_(verbose) {
-    env_.ReportErrorsTo(&status_);
+    env_.SetErrorFunction(&VerboseParserEnvironment::OnError, this);
   }
 
-  void Reset(const char *buf, size_t len, bool may_skip) {
+  static bool OnError(void *ud, const upb::Status* status) {
+    VerboseParserEnvironment* env = static_cast<VerboseParserEnvironment*>(ud);
+
+    env->saw_error_ = true;
+
+    if (env->expect_error_ && env->verbose_) {
+      fprintf(stderr, "Encountered error, as expected: ");
+    } else if (!env->expect_error_) {
+      fprintf(stderr, "Encountered unexpected error: ");
+    } else {
+      return false;
+    }
+
+    fprintf(stderr, "%s\n", status->error_message());
+    return false;
+  }
+
+  void Reset(const char *buf, size_t len, bool may_skip, bool expect_error) {
     buf_ = buf;
     len_ = len;
     ofs_ = 0;
+    expect_error_ = expect_error;
+    saw_error_ = false;
+    end_ok_set_ = false;
     skip_until_ = may_skip ? 0 : -1;
     skipped_with_null_ = false;
-    status_.Clear();
   }
 
   // The user should call a series of:
@@ -63,7 +82,26 @@ class VerboseParserEnvironment {
     if (verbose_) {
       fprintf(stderr, "Calling end()\n");
     }
-    return sink_->End();
+    end_ok_ = sink_->End();
+    end_ok_set_ = true;
+
+    return end_ok_;
+  }
+
+  bool CheckConsistency() {
+    /* If we called end (which we should only do when previous bytes are fully
+     * accepted), then end() should return true iff there were no errors. */
+    if (end_ok_set_ && end_ok_ != !saw_error_) {
+      fprintf(stderr, "End() status and saw_error didn't match.\n");
+      return false;
+    }
+
+    if (expect_error_ && !saw_error_) {
+      fprintf(stderr, "Expected error but saw none.\n");
+      return false;
+    }
+
+    return true;
   }
 
   bool ParseBuffer(int bytes) {
@@ -117,7 +155,7 @@ class VerboseParserEnvironment {
       }
     }
 
-    if (!status_.ok())
+    if (saw_error_)
       return false;
 
     if (parsed > bytes && skip_until_ >= 0) {
@@ -133,8 +171,6 @@ class VerboseParserEnvironment {
     sink_ = sink;
   }
 
-  const upb::Status& status() { return status_; }
-
   size_t ofs() { return ofs_; }
   upb::Environment* env() { return &env_; }
 
@@ -142,13 +178,16 @@ class VerboseParserEnvironment {
 
  private:
   upb::Environment env_;
-  upb::Status status_;
   upb::BytesSink* sink_;
   const char* buf_;
   size_t len_;
   bool verbose_;
   size_t ofs_;
   void *subc_;
+  bool expect_error_;
+  bool saw_error_;
+  bool end_ok_;
+  bool end_ok_set_;
 
   // When our parse call returns a value greater than the number of bytes
   // we passed in, the decoder is indicating to us that the next N bytes

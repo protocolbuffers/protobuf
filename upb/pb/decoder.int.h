@@ -220,9 +220,9 @@ struct upb_pbdecoder {
 
   /* Buffer for residual bytes not parsed from the previous buffer.
    * The maximum number of residual bytes we require is 12; a five-byte
-   * unknown tag plus an eight-byte value, less one because the value
+   * unknown tag plus a ten-byte value, less one because the value
    * is only a partial value. */
-  char residual[12];
+  char residual[14];
   char *residual_end;
 
   /* Bytes of data that should be discarded from the input beore we start
