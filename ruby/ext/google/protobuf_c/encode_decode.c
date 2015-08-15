@@ -180,7 +180,7 @@ static size_t stringdata_handler(void* closure, const void* hd,
   return len;
 }
 
-// Appends a submessage to a repeated field (a regular Ruby array for now).
+// Appends a submessage to a repeated field.
 static void *appendsubmsg_handler(void *closure, const void *hd) {
   VALUE ary = (VALUE)closure;
   const submsg_handlerdata_t *submsgdata = hd;
@@ -189,7 +189,7 @@ static void *appendsubmsg_handler(void *closure, const void *hd) {
   VALUE subklass = Descriptor_msgclass(subdesc);
 
   VALUE submsg_rb = rb_class_new_instance(0, NULL, subklass);
-  RepeatedField_push(ary, submsg_rb);
+  RepeatedField_push_native(ary, &submsg_rb);
 
   MessageHeader* submsg;
   TypedData_Get_Struct(submsg_rb, MessageHeader, &Message_type, submsg);
@@ -225,6 +225,8 @@ typedef struct {
   // same lifetime as the upb_handlers struct, and the upb_handlers struct holds
   // a reference to the upb_msgdef, which in turn has references to its subdefs.
   const upb_def* value_field_subdef;
+  // If value field is a message, this is a cached poitner to its Descriptor.
+  Descriptor* value_subdesc;
 } map_handlerdata_t;
 
 // Temporary frame for map parsing: at the beginning of a map entry message, a
@@ -262,8 +264,11 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
   const map_handlerdata_t* mapdata = hd;
 
   VALUE key = native_slot_get(
-      mapdata->key_field_type, Qnil,
-      &frame->key_storage);
+      mapdata->key_field_type,
+      Qnil,
+      NULL,
+      &frame->key_storage,
+      false);
 
   VALUE value_field_typeclass = Qnil;
   if (mapdata->value_field_type == UPB_TYPE_MESSAGE ||
@@ -272,8 +277,11 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
   }
 
   VALUE value = native_slot_get(
-      mapdata->value_field_type, value_field_typeclass,
-      &frame->value_storage);
+      mapdata->value_field_type,
+      value_field_typeclass,
+      mapdata->value_subdesc,
+      &frame->value_storage,
+      NULL);
 
   Map_index_set(frame->map, key, value);
   free(frame);
@@ -304,6 +312,11 @@ static map_handlerdata_t* new_map_handlerdata(
   assert(value_field != NULL);
   hd->value_field_type = upb_fielddef_type(value_field);
   hd->value_field_subdef = upb_fielddef_subdef(value_field);
+  if (hd->value_field_type == UPB_TYPE_MESSAGE) {
+    hd->value_subdesc = ruby_to_Descriptor(get_def_obj(hd->value_field_subdef));
+  } else {
+    hd->value_subdesc = NULL;
+  }
 
   return hd;
 }
@@ -634,6 +647,64 @@ static const upb_pbdecodermethod *msgdef_decodermethod(Descriptor* desc) {
   return desc->fill_method;
 }
 
+// Converts any fields that are UDTs from wire types to user types, then
+// converts this message from wire type to user type if applicable.
+VALUE udt_parse_convert(Descriptor* desc, VALUE msg_rb) {
+  MessageHeader* msg;
+  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+
+  upb_msg_field_iter i;
+  for (upb_msg_field_begin(&i, desc->msgdef);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
+    const upb_fielddef* f = upb_msg_iter_field(&i);
+    size_t offset = desc->layout->fields[upb_fielddef_index(f)].offset +
+        sizeof(MessageHeader);
+    size_t oneof_case_offset =
+        desc->layout->fields[upb_fielddef_index(f)].case_offset +
+        sizeof(MessageHeader);
+
+    if (upb_fielddef_containingoneof(f) != NULL &&
+        DEREF(msg, oneof_case_offset, uint32_t) != upb_fielddef_number(f)) {
+      continue;
+    }
+    if (is_map_field(f)) {
+      // Map value-field UDT conversion is handled separately.
+      continue;
+    }
+
+    if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
+      if (DEREF(msg, offset, VALUE) == Qnil) {
+        continue;
+      }
+
+      const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(f);
+      Descriptor* subdesc = ruby_to_Descriptor(get_def_obj(submsgdef));
+
+      if (upb_fielddef_isseq(f)) {
+        VALUE rptfield_rb = DEREF(msg, offset, VALUE);
+        RepeatedField* rptfield = ruby_to_RepeatedField(rptfield_rb);
+        VALUE* elemslot = (VALUE *)rptfield->elements;
+        for (int i = 0; i < rptfield->size; i++) {
+          VALUE elem = *elemslot;
+          elem = udt_parse_convert(subdesc, elem);
+          *elemslot++ = elem;
+        }
+      } else {
+        VALUE submsg = DEREF(msg, offset, VALUE);
+        submsg = udt_parse_convert(subdesc, submsg);
+        DEREF(msg, offset, VALUE) = submsg;
+      }
+    }
+  }
+
+  if (Descriptor_is_udt(desc) && msg_rb != Qnil) {
+    msg_rb = rb_funcall(desc->udt_parse_hook, rb_intern("call"),
+                        1, msg_rb);
+  }
+
+  return msg_rb;
+}
 
 // Stack-allocated context during an encode/decode operation. Contains the upb
 // environment and its stack-based allocator, an initial buffer for allocations
@@ -714,6 +785,12 @@ VALUE Message_decode(VALUE klass, VALUE data) {
 
   stackenv_uninit(&se);
 
+  if (desc->has_udts_transitively) {
+    // Convert any user-defined types (UDTs) to their user types in this message
+    // and (recursively) its submessages.
+    msg_rb = udt_parse_convert(desc, msg_rb);
+  }
+
   return msg_rb;
 }
 
@@ -751,6 +828,12 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
                     upb_json_parser_input(parser));
 
   stackenv_uninit(&se);
+
+  if (desc->has_udts_transitively) {
+    // Convert any user-defined types (UDTs) to their user types in this message
+    // and (recursively) its submessages.
+    msg_rb = udt_parse_convert(desc, msg_rb);
+  }
 
   return msg_rb;
 }
@@ -980,7 +1063,7 @@ static void putmap(VALUE map, const upb_fielddef *f, upb_sink *sink,
   Map_iter it;
   for (Map_begin(map, &it); !Map_done(&it); Map_next(&it)) {
     VALUE key = Map_iter_key(&it);
-    VALUE value = Map_iter_value(&it);
+    VALUE value = Map_iter_value_for_serialize(&it);
 
     upb_sink entry_sink;
     upb_sink_startsubmsg(&subsink, getsel(f, UPB_HANDLER_STARTSUBMSG),
@@ -1106,6 +1189,73 @@ static const upb_handlers* msgdef_json_serialize_handlers(Descriptor* desc) {
   return desc->json_serialize_handlers;
 }
 
+// Converts this message from user type to wire type, if it is a UDT, then
+// recursively performs the same transform on submessage fields.
+VALUE udt_serialize_convert(Descriptor* desc, VALUE msg_rb, int depth) {
+  if (depth > ENCODE_MAX_NESTING) {
+    // Just return the original -- the error will be reported during the actual
+    // serialization pass.
+    return msg_rb;
+  }
+
+  if (Descriptor_is_udt(desc)) {
+    if (msg_rb != Qnil) {
+      msg_rb = rb_funcall(desc->udt_serialize_hook, rb_intern("call"),
+                          2, msg_rb, desc->klass);
+    }
+  }
+
+  MessageHeader* msg;
+  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+
+  upb_msg_field_iter i;
+  for (upb_msg_field_begin(&i, desc->msgdef);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
+    const upb_fielddef* f = upb_msg_iter_field(&i);
+    size_t offset = desc->layout->fields[upb_fielddef_index(f)].offset +
+        sizeof(MessageHeader);
+    size_t oneof_case_offset =
+        desc->layout->fields[upb_fielddef_index(f)].case_offset +
+        sizeof(MessageHeader);
+
+    if (upb_fielddef_containingoneof(f) != NULL &&
+        DEREF(msg, oneof_case_offset, uint32_t) != upb_fielddef_number(f)) {
+      continue;
+    }
+    if (is_map_field(f)) {
+      // Map-value UDT conversion is handled separately in `putmap()`.
+      continue;
+    }
+
+    if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
+      if (DEREF(msg, offset, VALUE) == Qnil) {
+        continue;
+      }
+
+      const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(f);
+      Descriptor* subdesc = ruby_to_Descriptor(get_def_obj(submsgdef));
+
+      if (upb_fielddef_isseq(f)) {
+        VALUE rptfield_rb = DEREF(msg, offset, VALUE);
+        RepeatedField* rptfield = ruby_to_RepeatedField(rptfield_rb);
+        VALUE* elemslot = (VALUE *)rptfield->elements;
+        for (int i = 0; i < rptfield->size; i++) {
+          VALUE elem = *elemslot;
+          elem = udt_serialize_convert(subdesc, elem, depth + 1);
+          *elemslot++ = elem;
+        }
+      } else {
+        VALUE submsg = DEREF(msg, offset, VALUE);
+        submsg = udt_serialize_convert(subdesc, submsg, depth + 1);
+        DEREF(msg, offset, VALUE) = submsg;
+      }
+    }
+  }
+
+  return msg_rb;
+}
+
 /*
  * call-seq:
  *     MessageClass.encode(msg) => bytes
@@ -1116,6 +1266,12 @@ static const upb_handlers* msgdef_json_serialize_handlers(Descriptor* desc) {
 VALUE Message_encode(VALUE klass, VALUE msg_rb) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
+
+  if (desc->has_udts_transitively) {
+    // We need to do a deep copy because `udt_serialize_convert` mutates VALUE
+    // pointers.
+    msg_rb = udt_serialize_convert(desc, Message_deep_copy(msg_rb), 0);
+  }
 
   stringsink sink;
   stringsink_init(&sink);
@@ -1147,6 +1303,12 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
 VALUE Message_encode_json(VALUE klass, VALUE msg_rb) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
+
+  if (desc->has_udts_transitively) {
+    // We need to do a deep copy because `udt_serialize_convert` mutates VALUE
+    // pointers.
+    msg_rb = udt_serialize_convert(desc, Message_deep_copy(msg_rb), 0);
+  }
 
   stringsink sink;
   stringsink_init(&sink);

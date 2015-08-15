@@ -60,12 +60,17 @@ VALUE RepeatedField_subarray(VALUE _self, long beg, long len) {
   int element_size = native_slot_size(self->field_type);
   upb_fieldtype_t field_type = self->field_type;
   VALUE field_type_class = self->field_type_class;
+  Descriptor* subdesc = self->subdesc;
 
   size_t off = beg * element_size;
   VALUE ary = rb_ary_new2(len);
   for (int i = beg; i < beg + len; i++, off += element_size) {
     void* mem = ((uint8_t *)self->elements) + off;
-    VALUE elem = native_slot_get(field_type, field_type_class, mem);
+    VALUE elem = native_slot_get(field_type,
+                                 field_type_class,
+                                 subdesc,
+                                 mem,
+                                 /* is_from_serialize = */ false);
     rb_ary_push(ary, elem);
   }
   return ary;
@@ -83,12 +88,17 @@ VALUE RepeatedField_each(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_fieldtype_t field_type = self->field_type;
   VALUE field_type_class = self->field_type_class;
+  Descriptor* subdesc = self->subdesc;
   int element_size = native_slot_size(field_type);
 
   size_t off = 0;
   for (int i = 0; i < self->size; i++, off += element_size) {
     void* memory = (void *) (((uint8_t *)self->elements) + off);
-    VALUE val = native_slot_get(field_type, field_type_class, memory);
+    VALUE val = native_slot_get(field_type,
+                                field_type_class,
+                                subdesc,
+                                memory,
+                                false);
     rb_yield(val);
   }
   return _self;
@@ -106,6 +116,7 @@ VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
   int element_size = native_slot_size(self->field_type);
   upb_fieldtype_t field_type = self->field_type;
   VALUE field_type_class = self->field_type_class;
+  Descriptor* subdesc = self->subdesc;
 
   VALUE arg = argv[0];
   long beg, len;
@@ -119,8 +130,12 @@ VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
       }
       void* memory = (void *) (((uint8_t *)self->elements) +
                                index * element_size);
-      return native_slot_get(field_type, field_type_class, memory);
-    }else{
+      return native_slot_get(field_type,
+                             field_type_class,
+                             subdesc,
+                             memory,
+                             false);
+    } else {
       /* check if idx is Range */
       size_t off;
       switch (rb_range_beg_len(arg, &beg, &len, self->size, 0)) {
@@ -156,7 +171,12 @@ VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_fieldtype_t field_type = self->field_type;
   VALUE field_type_class = self->field_type_class;
+  Descriptor* subdesc = self->subdesc;
   int element_size = native_slot_size(field_type);
+
+  if (val == Qnil) {
+    rb_raise(rb_eTypeError, "Cannot set a repeated field element to nil");
+  }
 
   int index = index_position(_index, self);
   if (index < 0 || index >= (INT_MAX - 1)) {
@@ -174,7 +194,7 @@ VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   }
 
   void* memory = (void *) (((uint8_t *)self->elements) + index * element_size);
-  native_slot_set(field_type, field_type_class, memory, val);
+  native_slot_set(field_type, field_type_class, subdesc, memory, val, false);
   return Qnil;
 }
 
@@ -207,17 +227,22 @@ void RepeatedField_reserve(RepeatedField* self, int new_size) {
  */
 VALUE RepeatedField_push(VALUE _self, VALUE val) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
+
+  if (val == Qnil) {
+    rb_raise(rb_eTypeError, "Cannot set a repeated field element to nil");
+  }
+
   upb_fieldtype_t field_type = self->field_type;
   int element_size = native_slot_size(field_type);
   RepeatedField_reserve(self, self->size + 1);
   int index = self->size;
   void* memory = (void *) (((uint8_t *)self->elements) + index * element_size);
-  native_slot_set(field_type, self->field_type_class, memory, val);
+  native_slot_set(field_type, self->field_type_class, self->subdesc, memory,
+                  val, /* from_parse = */ false);
   // native_slot_set may raise an error; bump index only after set.
   self->size++;
   return _self;
 }
-
 
 // Used by parsing handlers.
 void RepeatedField_push_native(VALUE _self, void* data) {
@@ -245,13 +270,18 @@ VALUE RepeatedField_pop_one(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_fieldtype_t field_type = self->field_type;
   VALUE field_type_class = self->field_type_class;
+  Descriptor* subdesc = self->subdesc;
   int element_size = native_slot_size(field_type);
   if (self->size == 0) {
     return Qnil;
   }
   int index = self->size - 1;
   void* memory = (void *) (((uint8_t *)self->elements) + index * element_size);
-  VALUE ret = native_slot_get(field_type, field_type_class, memory);
+  VALUE ret = native_slot_get(field_type,
+                              field_type_class,
+                              subdesc,
+                              memory,
+                              false);
   self->size--;
   return ret;
 }
@@ -341,12 +371,13 @@ VALUE RepeatedField_deep_copy(VALUE _self) {
   RepeatedField* new_rptfield_self = ruby_to_RepeatedField(new_rptfield);
   RepeatedField_reserve(new_rptfield_self, self->size);
   upb_fieldtype_t field_type = self->field_type;
+  Descriptor* subdesc = self->subdesc;
   size_t elem_size = native_slot_size(field_type);
   size_t off = 0;
   for (int i = 0; i < self->size; i++, off += elem_size) {
     void* to_mem = (uint8_t *)new_rptfield_self->elements + off;
     void* from_mem = (uint8_t *)self->elements + off;
-    native_slot_deep_copy(field_type, to_mem, from_mem);
+    native_slot_deep_copy(field_type, subdesc, to_mem, from_mem);
     new_rptfield_self->size++;
   }
 
@@ -369,7 +400,11 @@ VALUE RepeatedField_to_ary(VALUE _self) {
   VALUE ary = rb_ary_new2(self->size);
   for (int i = 0; i < self->size; i++, off += elem_size) {
     void* mem = ((uint8_t *)self->elements) + off;
-    VALUE elem = native_slot_get(field_type, self->field_type_class, mem);
+    VALUE elem = native_slot_get(field_type,
+                                 self->field_type_class,
+                                 self->subdesc,
+                                 mem,
+                                 false);
     rb_ary_push(ary, elem);
   }
   return ary;
@@ -432,11 +467,16 @@ VALUE RepeatedField_hash(VALUE _self) {
 
   upb_fieldtype_t field_type = self->field_type;
   VALUE field_type_class = self->field_type_class;
+  Descriptor* subdesc = self->subdesc;
   size_t elem_size = native_slot_size(field_type);
   size_t off = 0;
   for (int i = 0; i < self->size; i++, off += elem_size) {
     void* mem = ((uint8_t *)self->elements) + off;
-    VALUE elem = native_slot_get(field_type, field_type_class, mem);
+    VALUE elem = native_slot_get(field_type,
+                                 field_type_class,
+                                 subdesc,
+                                 mem,
+                                 false);
     hash = rb_funcall(hash, rb_intern("<<"), 1, INT2NUM(2));
     hash = rb_funcall(hash, rb_intern("^"), 1,
                       rb_funcall(elem, rb_intern("hash"), 0));
@@ -497,7 +537,7 @@ VALUE RepeatedField_concat(VALUE _self, VALUE list) {
 }
 
 
-void validate_type_class(upb_fieldtype_t type, VALUE klass) {
+VALUE validate_type_class(upb_fieldtype_t type, VALUE klass) {
   if (rb_ivar_get(klass, descriptor_instancevar_interned) == Qnil) {
     rb_raise(rb_eArgError,
              "Type class has no descriptor. Please pass a "
@@ -513,13 +553,16 @@ void validate_type_class(upb_fieldtype_t type, VALUE klass) {
       rb_raise(rb_eArgError,
                "Message class was not returned by the DescriptorPool.");
     }
+    return desc;
   } else if (type == UPB_TYPE_ENUM) {
     VALUE enumdesc = rb_ivar_get(klass, descriptor_instancevar_interned);
     if (!RB_TYPE_P(enumdesc, T_DATA) || !RTYPEDDATA_P(enumdesc) ||
         RTYPEDDATA_TYPE(enumdesc) != &_EnumDescriptor_type) {
       rb_raise(rb_eArgError, "Descriptor has an incorrect type.");
     }
+    return enumdesc;
   }
+  return Qnil;
 }
 
 void RepeatedField_init_args(int argc, VALUE* argv,
@@ -530,6 +573,7 @@ void RepeatedField_init_args(int argc, VALUE* argv,
     rb_raise(rb_eArgError, "Expected at least 1 argument.");
   }
   self->field_type = ruby_to_fieldtype(argv[0]);
+  self->subdesc = NULL;
 
   if (self->field_type == UPB_TYPE_MESSAGE ||
       self->field_type == UPB_TYPE_ENUM) {
@@ -540,7 +584,11 @@ void RepeatedField_init_args(int argc, VALUE* argv,
     if (argc > 2) {
       ary = argv[2];
     }
-    validate_type_class(self->field_type, self->field_type_class);
+    VALUE rb_subdesc =
+        validate_type_class(self->field_type, self->field_type_class);
+    if (self->field_type == UPB_TYPE_MESSAGE) {
+      self->subdesc = ruby_to_Descriptor(rb_subdesc);
+    }
   } else {
     if (argc > 2) {
       rb_raise(rb_eArgError, "Too many arguments: expected 1 or 2.");

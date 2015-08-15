@@ -114,10 +114,16 @@ struct Descriptor {
   const upb_pbdecodermethod* fill_method;
   const upb_handlers* pb_serialize_handlers;
   const upb_handlers* json_serialize_handlers;
-  // Handlers hold type class references for sub-message fields directly in some
-  // cases. We need to keep these rooted because they might otherwise be
-  // collected.
-  VALUE typeclass_references;
+
+  // user-defined type handlers.
+  VALUE udt_parse_hook;      // Convert to user type on parse
+  VALUE udt_serialize_hook;  // Convert to wire type on serialize
+  VALUE udt_verify_hook;     // Verify a newly-assigned value
+
+  // Computed at the same time as `layout`: does a Message of this type have any
+  // user-defined types in itself or submessages? This determines whether an
+  // additional pre/postpass is required at serialize/parse time (respectively).
+  bool has_udts_transitively;
 };
 
 struct FieldDescriptor {
@@ -194,6 +200,11 @@ VALUE Descriptor_add_oneof(VALUE _self, VALUE obj);
 VALUE Descriptor_each_oneof(VALUE _self);
 VALUE Descriptor_lookup_oneof(VALUE _self, VALUE name);
 VALUE Descriptor_msgclass(VALUE _self);
+VALUE Descriptor_udt_parse_hook(VALUE _self);
+VALUE Descriptor_udt_serialize_hook(VALUE _self);
+VALUE Descriptor_udt_verify_hook(VALUE _self);
+bool Descriptor_is_udt(Descriptor* desc);
+bool Descriptor_recursively_has_udts(Descriptor* desc);
 extern const rb_data_type_t _Descriptor_type;
 
 void FieldDescriptor_mark(void* _self);
@@ -254,6 +265,9 @@ VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name);
+VALUE MessageBuilderContext_udt_parse_hook(VALUE _self);
+VALUE MessageBuilderContext_udt_serialize_hook(VALUE _self);
+VALUE MessageBuilderContext_udt_verify_hook(VALUE _self);
 
 void OneofBuilderContext_mark(void* _self);
 void OneofBuilderContext_free(void* _self);
@@ -288,27 +302,47 @@ VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb);
 
 #define NATIVE_SLOT_MAX_SIZE sizeof(uint64_t)
 
+// The native-slot abstraction requires |subdesc| to be passed to most of these
+// functions because the field being stored might be a "UDT", or user-defined
+// type. A UDT is defined by from-wire-submessage and to-wire-submessage
+// converter functions provided by the user that convert between a message type
+// on the wire and an arbitrary Ruby value as seen by the user. (In addition,
+// validator and default-value hooks are supported.)
+//
+// When a native slot holds a UDT, the value stored is always the user type, and
+// native_slot_get() and native_slot_set() convert to/from the submessage type
+// as necessary when called from parse/serialize paths.
+
 size_t native_slot_size(upb_fieldtype_t type);
 void native_slot_set(upb_fieldtype_t type,
                      VALUE type_class,
+                     Descriptor* subdesc,
                      void* memory,
-                     VALUE value);
+                     VALUE value,
+                     bool is_from_parse);
 // Atomically (with respect to Ruby VM calls) either update the value and set a
 // oneof case, or do neither. If |case_memory| is null, then no case value is
 // set.
 void native_slot_set_value_and_case(upb_fieldtype_t type,
                                     VALUE type_class,
+                                    Descriptor* subdesc,
                                     void* memory,
                                     VALUE value,
                                     uint32_t* case_memory,
-                                    uint32_t case_number);
+                                    uint32_t case_number,
+                                    bool is_from_parse);
 VALUE native_slot_get(upb_fieldtype_t type,
                       VALUE type_class,
-                      const void* memory);
+                      Descriptor* subdesc,
+                      const void* memory,
+                      bool is_from_serialize);
 void native_slot_init(upb_fieldtype_t type, void* memory);
 void native_slot_mark(upb_fieldtype_t type, void* memory);
-void native_slot_dup(upb_fieldtype_t type, void* to, void* from);
-void native_slot_deep_copy(upb_fieldtype_t type, void* to, void* from);
+void native_slot_dup(upb_fieldtype_t type,
+                     void* to, void* from);
+void native_slot_deep_copy(upb_fieldtype_t type,
+                           Descriptor* subdesc,
+                           void* to, void* from);
 bool native_slot_eq(upb_fieldtype_t type, void* mem1, void* mem2);
 
 void native_slot_validate_string_encoding(upb_fieldtype_t type, VALUE value);
@@ -319,6 +353,7 @@ extern rb_encoding* kRubyStringASCIIEncoding;
 extern rb_encoding* kRubyString8bitEncoding;
 
 VALUE field_type_class(const upb_fielddef* field);
+Descriptor* field_subdesc(const upb_fielddef* field);
 
 #define MAP_KEY_FIELD 1
 #define MAP_VALUE_FIELD 2
@@ -345,6 +380,7 @@ const upb_fielddef* map_entry_value(const upb_msgdef* msgdef);
 typedef struct {
   upb_fieldtype_t field_type;
   VALUE field_type_class;
+  Descriptor* subdesc;
   void* elements;
   int size;
   int capacity;
@@ -382,7 +418,7 @@ VALUE RepeatedField_inspect(VALUE _self);
 VALUE RepeatedField_plus(VALUE _self, VALUE list);
 
 // Defined in repeated_field.c; also used by Map.
-void validate_type_class(upb_fieldtype_t type, VALUE klass);
+VALUE validate_type_class(upb_fieldtype_t type, VALUE klass);
 
 // -----------------------------------------------------------------------------
 // Map container type.
@@ -392,6 +428,7 @@ typedef struct {
   upb_fieldtype_t key_type;
   upb_fieldtype_t value_type;
   VALUE value_type_class;
+  Descriptor* value_subdesc;
   upb_strtable table;
 } Map;
 
@@ -433,12 +470,14 @@ void Map_next(Map_iter* iter);
 bool Map_done(Map_iter* iter);
 VALUE Map_iter_key(Map_iter* iter);
 VALUE Map_iter_value(Map_iter* iter);
+VALUE Map_iter_value_for_serialize(Map_iter* iter);
 
 // -----------------------------------------------------------------------------
 // Message layout / storage.
 // -----------------------------------------------------------------------------
 
 #define MESSAGE_FIELD_NO_CASE ((size_t)-1)
+#define MESSAGE_FIELD_NO_UDT  ((size_t)-1)
 
 struct MessageField {
   size_t offset;
@@ -455,11 +494,13 @@ MessageLayout* create_layout(const upb_msgdef* msgdef);
 void free_layout(MessageLayout* layout);
 VALUE layout_get(MessageLayout* layout,
                  const void* storage,
-                 const upb_fielddef* field);
+                 const upb_fielddef* field,
+                 bool is_from_serialize);
 void layout_set(MessageLayout* layout,
                 void* storage,
                 const upb_fielddef* field,
-                VALUE val);
+                VALUE val,
+                bool is_from_parse);
 void layout_init(MessageLayout* layout, void* storage);
 void layout_mark(MessageLayout* layout, void* storage);
 void layout_dup(MessageLayout* layout, void* to, void* from);
@@ -511,6 +552,32 @@ const upb_pbdecodermethod *new_fillmsg_decodermethod(
 // Maximum depth allowed during encoding, to avoid stack overflows due to
 // cycles.
 #define ENCODE_MAX_NESTING 63
+
+// -----------------------------------------------------------------------------
+// Encode/decode utility functions to support User-Defined Types (UDTs).
+// -----------------------------------------------------------------------------
+
+// After parsing, recursively convert any fields of this message which are
+// user-defined types to their user values, then convert this message to its
+// user value if it is a UDT.
+//
+// Assumes that parsing has directly stored VALUE pointers in the storage slots
+// for UDTs, which will be corrected by use of `native_slot_set` in this
+// function.
+//
+// Converted message value is returned.
+VALUE udt_parse_convert(Descriptor* desc, VALUE msg);
+
+// Before serializing, convert this message to its wire type if it is a UDT,
+// then recurisvely convert any fields of this message which are user-defined
+// types to their wire types.
+//
+// Assumes that the message tree has VALUEs in user-type form, as they are at
+// rest when in memory, and returns a message tree with VALUEs set to raw
+// message objects as they will go on the wire.
+//
+// Converted message value is returned.
+VALUE udt_serialize_convert(Descriptor* desc, VALUE msg, int depth);
 
 // -----------------------------------------------------------------------------
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor

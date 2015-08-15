@@ -148,6 +148,9 @@ public class RubyMap extends RubyObject {
      */
     @JRubyMethod(name = "[]=")
     public IRubyObject indexSet(ThreadContext context, IRubyObject key, IRubyObject value) {
+        if (value == context.runtime.getNil()) {
+            throw context.runtime.newTypeError("Cannot set Map entry to nil");
+        }
         Utils.checkType(context, keyType, key, (RubyModule) valueTypeClass);
         Utils.checkType(context, valueType, value, (RubyModule) valueTypeClass);
         IRubyObject symbol;
