@@ -32,7 +32,10 @@
 
 """Tests for google.protobuf.symbol_database."""
 
-import unittest
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 from google.protobuf import unittest_pb2
 from google.protobuf import symbol_database
 

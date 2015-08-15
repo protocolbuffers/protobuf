@@ -54,7 +54,10 @@ import six
 if six.PY3:
   long = int
 
-import unittest
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 from google.protobuf.internal import _parameterized
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
@@ -324,7 +327,7 @@ class MessageTest(unittest.TestCase):
   def testHighPrecisionFloatPrinting(self, message_module):
     message = message_module.TestAllTypes()
     message.optional_double = 0.12345678912345678
-    if sys.version_info.major >= 3:
+    if sys.version_info >= (3,):
       self.assertEqual(str(message), 'optional_double: 0.12345678912345678\n')
     else:
       self.assertEqual(str(message), 'optional_double: 0.123456789123\n')
@@ -443,7 +446,7 @@ class MessageTest(unittest.TestCase):
     message.repeated_nested_message.sort(key=get_bb, reverse=True)
     self.assertEqual([k.bb for k in message.repeated_nested_message],
                      [6, 5, 4, 3, 2, 1])
-    if sys.version_info.major >= 3: return  # No cmp sorting in PY3.
+    if sys.version_info >= (3,): return  # No cmp sorting in PY3.
     message.repeated_nested_message.sort(sort_function=cmp_bb)
     self.assertEqual([k.bb for k in message.repeated_nested_message],
                      [1, 2, 3, 4, 5, 6])
@@ -462,7 +465,7 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(list(message.repeated_int32), [-1, -2, -3])
     message.repeated_int32.sort(key=abs, reverse=True)
     self.assertEqual(list(message.repeated_int32), [-3, -2, -1])
-    if sys.version_info.major < 3:  # No cmp sorting in PY3.
+    if sys.version_info < (3,):  # No cmp sorting in PY3.
       abs_cmp = lambda a, b: cmp(abs(a), abs(b))
       message.repeated_int32.sort(sort_function=abs_cmp)
       self.assertEqual(list(message.repeated_int32), [-1, -2, -3])
@@ -476,7 +479,7 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(list(message.repeated_string), ['c', 'bb', 'aaa'])
     message.repeated_string.sort(key=len, reverse=True)
     self.assertEqual(list(message.repeated_string), ['aaa', 'bb', 'c'])
-    if sys.version_info.major < 3:  # No cmp sorting in PY3.
+    if sys.version_info < (3,):  # No cmp sorting in PY3.
       len_cmp = lambda a, b: cmp(len(a), len(b))
       message.repeated_string.sort(sort_function=len_cmp)
       self.assertEqual(list(message.repeated_string), ['c', 'bb', 'aaa'])
@@ -499,7 +502,7 @@ class MessageTest(unittest.TestCase):
     m2.repeated_nested_message.add().bb = 2
     m2.repeated_nested_message.add().bb = 3
 
-    if sys.version_info.major >= 3: return  # No cmp() in PY3.
+    if sys.version_info >= (3,): return  # No cmp() in PY3.
 
     # These comparisons should not raise errors.
     _ = m1 < m2
@@ -1248,14 +1251,14 @@ class Proto3Test(unittest.TestCase):
     msg = map_unittest_pb2.TestMap()
 
     self.assertIsNone(msg.map_int32_int32.get(5))
-    self.assertEquals(10, msg.map_int32_int32.get(5, 10))
+    self.assertEqual(10, msg.map_int32_int32.get(5, 10))
     self.assertIsNone(msg.map_int32_int32.get(5))
 
     msg.map_int32_int32[5] = 15
-    self.assertEquals(15, msg.map_int32_int32.get(5))
+    self.assertEqual(15, msg.map_int32_int32.get(5))
 
     self.assertIsNone(msg.map_int32_foreign_message.get(5))
-    self.assertEquals(10, msg.map_int32_foreign_message.get(5, 10))
+    self.assertEqual(10, msg.map_int32_foreign_message.get(5, 10))
 
     submsg = msg.map_int32_foreign_message[5]
     self.assertIs(submsg, msg.map_int32_foreign_message.get(5))

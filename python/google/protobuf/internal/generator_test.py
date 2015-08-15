@@ -41,7 +41,10 @@ further ensures that we can use Python protocol message objects as we expect.
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-import unittest
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 from google.protobuf.internal import test_bad_identifiers_pb2
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
@@ -153,7 +156,7 @@ class GeneratorTest(unittest.TestCase):
     # extension and for its value to be set to -789.
 
   def testNestedTypes(self):
-    self.assertEquals(
+    self.assertEqual(
         set(unittest_pb2.TestAllTypes.DESCRIPTOR.nested_types),
         set([
             unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR,

@@ -158,6 +158,11 @@ if __name__ == '__main__':
     )
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
 
+  install_requires = ['six', 'setuptools']
+  if sys.version_info <= (2,7):
+    install_requires.append('ordereddict')
+    install_requires.append('unittest2')
+
   setup(
       name='protobuf',
       version=GetVersion(),
@@ -187,6 +192,6 @@ if __name__ == '__main__':
           'clean': clean,
           'build_py': build_py,
       },
-      install_requires=['setuptools', 'six'],
+      install_requires=install_requires,
       ext_modules=ext_module_list,
   )

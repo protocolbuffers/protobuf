@@ -39,18 +39,10 @@ import copy
 import gc
 import operator
 import struct
-import unittest
 try:
-    from unittest import skipIf
+  import unittest2 as unittest
 except ImportError:
-    def skipIf(predicate, message):
-        def decorator(wrapped):
-            if predicate:
-                def _noop(*args, **kw):
-                    pass
-                return _noop
-            return wrapped
-        return decorator
+  import unittest
 
 import six
 
@@ -1634,7 +1626,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertFalse(proto.IsInitialized(errors))
     self.assertEqual(errors, ['a', 'b', 'c'])
 
-  @skipIf(
+  @unittest.skipIf(
       api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
       'Errors are only available from the most recent C++ implementation.')
   def testFileDescriptorErrors(self):
@@ -2835,7 +2827,7 @@ class OptionsTest(unittest.TestCase):
 
 class ClassAPITest(unittest.TestCase):
 
-  @skipIf(
+  @unittest.skipIf(
       api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
       'C++ implementation requires a call to MakeDescriptor()')
   def testMakeClassWithNestedDescriptor(self):

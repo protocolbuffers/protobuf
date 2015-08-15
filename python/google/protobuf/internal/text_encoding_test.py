@@ -32,7 +32,10 @@
 
 """Tests for google.protobuf.text_encoding."""
 
-import unittest
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 from google.protobuf import text_encoding
 
 TEST_VALUES = [
