@@ -54,9 +54,6 @@ FileGenerator::FileGenerator(const FileDescriptor *file)
     : file_(file),
       root_class_name_(FileClassName(file)),
       is_public_dep_(false) {
-  // Validate the objc prefix.
-  ValidateObjCClassPrefix(file_);
-
   for (int i = 0; i < file_->enum_type_count(); i++) {
     EnumGenerator *generator = new EnumGenerator(file_->enum_type(i));
     enum_generators_.push_back(generator);

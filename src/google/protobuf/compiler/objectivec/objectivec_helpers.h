@@ -62,9 +62,6 @@ string FileName(const FileDescriptor* file);
 // declared in the proto package.
 string FilePath(const FileDescriptor* file);
 
-// Checks the prefix for a given file and outputs any warnings/errors needed.
-void ValidateObjCClassPrefix(const FileDescriptor* file);
-
 // Gets the name of the root class we'll generate in the file.  This class
 // is not meant for external consumption, but instead contains helpers that
 // the rest of the the classes need
@@ -144,6 +141,11 @@ string DefaultValue(const FieldDescriptor* field);
 string BuildFlagsString(const vector<string>& strings);
 
 string BuildCommentsString(const SourceLocation& location);
+
+// Checks the prefix for a given file and outputs any warnings needed, if
+// there are flat out errors, then out_error is filled in and the result is
+// false.
+bool ValidateObjCClassPrefix(const FileDescriptor* file, string *out_error);
 
 // Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform
 // the input into the the expected output.

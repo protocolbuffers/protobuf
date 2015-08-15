@@ -57,8 +57,13 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
     return false;
   }
 
-  FileGenerator file_generator(file);
+  // Validate the objc prefix/package pairing.
+  if (!ValidateObjCClassPrefix(file, error)) {
+    // *error will have been filled in.
+    return false;
+  }
 
+  FileGenerator file_generator(file);
   string filepath = FilePath(file);
 
   // Generate header.

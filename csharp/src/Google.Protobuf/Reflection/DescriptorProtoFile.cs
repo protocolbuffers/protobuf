@@ -77,7 +77,7 @@ namespace Google.Protobuf.Reflection {
             "b3RvEgwKBG5hbWUYASABKAkSEgoKaW5wdXRfdHlwZRgCIAEoCRITCgtvdXRw", 
             "dXRfdHlwZRgDIAEoCRIvCgdvcHRpb25zGAQgASgLMh4uZ29vZ2xlLnByb3Rv", 
             "YnVmLk1ldGhvZE9wdGlvbnMSHwoQY2xpZW50X3N0cmVhbWluZxgFIAEoCDoF", 
-            "ZmFsc2USHwoQc2VydmVyX3N0cmVhbWluZxgGIAEoCDoFZmFsc2UigQUKC0Zp", 
+            "ZmFsc2USHwoQc2VydmVyX3N0cmVhbWluZxgGIAEoCDoFZmFsc2UiqgUKC0Zp", 
             "bGVPcHRpb25zEhQKDGphdmFfcGFja2FnZRgBIAEoCRIcChRqYXZhX291dGVy", 
             "X2NsYXNzbmFtZRgIIAEoCRIiChNqYXZhX211bHRpcGxlX2ZpbGVzGAogASgI", 
             "OgVmYWxzZRIsCh1qYXZhX2dlbmVyYXRlX2VxdWFsc19hbmRfaGFzaBgUIAEo", 
@@ -89,49 +89,50 @@ namespace Google.Protobuf.Reflection {
             "aWNfc2VydmljZXMYEiABKAg6BWZhbHNlEhkKCmRlcHJlY2F0ZWQYFyABKAg6", 
             "BWZhbHNlEh8KEGNjX2VuYWJsZV9hcmVuYXMYHyABKAg6BWZhbHNlEhkKEW9i", 
             "amNfY2xhc3NfcHJlZml4GCQgASgJEhgKEGNzaGFycF9uYW1lc3BhY2UYJSAB", 
-            "KAkSQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnBy", 
-            "b3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24iOgoMT3B0aW1pemVNb2RlEgkK", 
-            "BVNQRUVEEAESDQoJQ09ERV9TSVpFEAISEAoMTElURV9SVU5USU1FEAMqCQjo", 
-            "BxCAgICAAiLmAQoOTWVzc2FnZU9wdGlvbnMSJgoXbWVzc2FnZV9zZXRfd2ly", 
-            "ZV9mb3JtYXQYASABKAg6BWZhbHNlEi4KH25vX3N0YW5kYXJkX2Rlc2NyaXB0", 
-            "b3JfYWNjZXNzb3IYAiABKAg6BWZhbHNlEhkKCmRlcHJlY2F0ZWQYAyABKAg6", 
-            "BWZhbHNlEhEKCW1hcF9lbnRyeRgHIAEoCBJDChR1bmludGVycHJldGVkX29w", 
-            "dGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9w", 
-            "dGlvbioJCOgHEICAgIACIpgDCgxGaWVsZE9wdGlvbnMSOgoFY3R5cGUYASAB", 
-            "KA4yIy5nb29nbGUucHJvdG9idWYuRmllbGRPcHRpb25zLkNUeXBlOgZTVFJJ", 
-            "TkcSDgoGcGFja2VkGAIgASgIEj8KBmpzdHlwZRgGIAEoDjIkLmdvb2dsZS5w", 
-            "cm90b2J1Zi5GaWVsZE9wdGlvbnMuSlNUeXBlOglKU19OT1JNQUwSEwoEbGF6", 
-            "eRgFIAEoCDoFZmFsc2USGQoKZGVwcmVjYXRlZBgDIAEoCDoFZmFsc2USEwoE", 
-            "d2VhaxgKIAEoCDoFZmFsc2USQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcg", 
-            "AygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24iLwoF", 
-            "Q1R5cGUSCgoGU1RSSU5HEAASCAoEQ09SRBABEhAKDFNUUklOR19QSUVDRRAC", 
-            "IjUKBkpTVHlwZRINCglKU19OT1JNQUwQABINCglKU19TVFJJTkcQARINCglK", 
-            "U19OVU1CRVIQAioJCOgHEICAgIACIo0BCgtFbnVtT3B0aW9ucxITCgthbGxv", 
-            "d19hbGlhcxgCIAEoCBIZCgpkZXByZWNhdGVkGAMgASgIOgVmYWxzZRJDChR1", 
-            "bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYu", 
-            "VW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIACIn0KEEVudW1WYWx1ZU9w", 
-            "dGlvbnMSGQoKZGVwcmVjYXRlZBgBIAEoCDoFZmFsc2USQwoUdW5pbnRlcnBy", 
-            "ZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJw", 
-            "cmV0ZWRPcHRpb24qCQjoBxCAgICAAiJ7Cg5TZXJ2aWNlT3B0aW9ucxIZCgpk", 
-            "ZXByZWNhdGVkGCEgASgIOgVmYWxzZRJDChR1bmludGVycHJldGVkX29wdGlv", 
-            "bhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlv", 
-            "bioJCOgHEICAgIACInoKDU1ldGhvZE9wdGlvbnMSGQoKZGVwcmVjYXRlZBgh", 
-            "IAEoCDoFZmFsc2USQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygLMiQu", 
-            "Z29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjoBxCAgICA", 
-            "AiKeAgoTVW5pbnRlcnByZXRlZE9wdGlvbhI7CgRuYW1lGAIgAygLMi0uZ29v", 
-            "Z2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24uTmFtZVBhcnQSGAoQ", 
-            "aWRlbnRpZmllcl92YWx1ZRgDIAEoCRIaChJwb3NpdGl2ZV9pbnRfdmFsdWUY", 
-            "BCABKAQSGgoSbmVnYXRpdmVfaW50X3ZhbHVlGAUgASgDEhQKDGRvdWJsZV92", 
-            "YWx1ZRgGIAEoARIUCgxzdHJpbmdfdmFsdWUYByABKAwSFwoPYWdncmVnYXRl", 
-            "X3ZhbHVlGAggASgJGjMKCE5hbWVQYXJ0EhEKCW5hbWVfcGFydBgBIAIoCRIU", 
-            "Cgxpc19leHRlbnNpb24YAiACKAgi1QEKDlNvdXJjZUNvZGVJbmZvEjoKCGxv", 
-            "Y2F0aW9uGAEgAygLMiguZ29vZ2xlLnByb3RvYnVmLlNvdXJjZUNvZGVJbmZv", 
-            "LkxvY2F0aW9uGoYBCghMb2NhdGlvbhIQCgRwYXRoGAEgAygFQgIQARIQCgRz", 
-            "cGFuGAIgAygFQgIQARIYChBsZWFkaW5nX2NvbW1lbnRzGAMgASgJEhkKEXRy", 
-            "YWlsaW5nX2NvbW1lbnRzGAQgASgJEiEKGWxlYWRpbmdfZGV0YWNoZWRfY29t", 
-            "bWVudHMYBiADKAlCWAoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRv", 
-            "clByb3Rvc0gBWgpkZXNjcmlwdG9yogIDR1BCqgIaR29vZ2xlLlByb3RvYnVm", 
-            "LlJlZmxlY3Rpb24="));
+            "KAkSJwofamF2YW5hbm9fdXNlX2RlcHJlY2F0ZWRfcGFja2FnZRgmIAEoCBJD", 
+            "ChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9i", 
+            "dWYuVW5pbnRlcnByZXRlZE9wdGlvbiI6CgxPcHRpbWl6ZU1vZGUSCQoFU1BF", 
+            "RUQQARINCglDT0RFX1NJWkUQAhIQCgxMSVRFX1JVTlRJTUUQAyoJCOgHEICA", 
+            "gIACIuYBCg5NZXNzYWdlT3B0aW9ucxImChdtZXNzYWdlX3NldF93aXJlX2Zv", 
+            "cm1hdBgBIAEoCDoFZmFsc2USLgofbm9fc3RhbmRhcmRfZGVzY3JpcHRvcl9h", 
+            "Y2Nlc3NvchgCIAEoCDoFZmFsc2USGQoKZGVwcmVjYXRlZBgDIAEoCDoFZmFs", 
+            "c2USEQoJbWFwX2VudHJ5GAcgASgIEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9u", 
+            "GOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9u", 
+            "KgkI6AcQgICAgAIimAMKDEZpZWxkT3B0aW9ucxI6CgVjdHlwZRgBIAEoDjIj", 
+            "Lmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMuQ1R5cGU6BlNUUklORxIO", 
+            "CgZwYWNrZWQYAiABKAgSPwoGanN0eXBlGAYgASgOMiQuZ29vZ2xlLnByb3Rv", 
+            "YnVmLkZpZWxkT3B0aW9ucy5KU1R5cGU6CUpTX05PUk1BTBITCgRsYXp5GAUg", 
+            "ASgIOgVmYWxzZRIZCgpkZXByZWNhdGVkGAMgASgIOgVmYWxzZRITCgR3ZWFr", 
+            "GAogASgIOgVmYWxzZRJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsy", 
+            "JC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbiIvCgVDVHlw", 
+            "ZRIKCgZTVFJJTkcQABIICgRDT1JEEAESEAoMU1RSSU5HX1BJRUNFEAIiNQoG", 
+            "SlNUeXBlEg0KCUpTX05PUk1BTBAAEg0KCUpTX1NUUklORxABEg0KCUpTX05V", 
+            "TUJFUhACKgkI6AcQgICAgAIijQEKC0VudW1PcHRpb25zEhMKC2FsbG93X2Fs", 
+            "aWFzGAIgASgIEhkKCmRlcHJlY2F0ZWQYAyABKAg6BWZhbHNlEkMKFHVuaW50", 
+            "ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5Vbmlu", 
+            "dGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIifQoQRW51bVZhbHVlT3B0aW9u", 
+            "cxIZCgpkZXByZWNhdGVkGAEgASgIOgVmYWxzZRJDChR1bmludGVycHJldGVk", 
+            "X29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRl", 
+            "ZE9wdGlvbioJCOgHEICAgIACInsKDlNlcnZpY2VPcHRpb25zEhkKCmRlcHJl", 
+            "Y2F0ZWQYISABKAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcH", 
+            "IAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI", 
+            "6AcQgICAgAIiegoNTWV0aG9kT3B0aW9ucxIZCgpkZXByZWNhdGVkGCEgASgI", 
+            "OgVmYWxzZRJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29n", 
+            "bGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIACIp4C", 
+            "ChNVbmludGVycHJldGVkT3B0aW9uEjsKBG5hbWUYAiADKAsyLS5nb29nbGUu", 
+            "cHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbi5OYW1lUGFydBIYChBpZGVu", 
+            "dGlmaWVyX3ZhbHVlGAMgASgJEhoKEnBvc2l0aXZlX2ludF92YWx1ZRgEIAEo", 
+            "BBIaChJuZWdhdGl2ZV9pbnRfdmFsdWUYBSABKAMSFAoMZG91YmxlX3ZhbHVl", 
+            "GAYgASgBEhQKDHN0cmluZ192YWx1ZRgHIAEoDBIXCg9hZ2dyZWdhdGVfdmFs", 
+            "dWUYCCABKAkaMwoITmFtZVBhcnQSEQoJbmFtZV9wYXJ0GAEgAigJEhQKDGlz", 
+            "X2V4dGVuc2lvbhgCIAIoCCLVAQoOU291cmNlQ29kZUluZm8SOgoIbG9jYXRp", 
+            "b24YASADKAsyKC5nb29nbGUucHJvdG9idWYuU291cmNlQ29kZUluZm8uTG9j", 
+            "YXRpb24ahgEKCExvY2F0aW9uEhAKBHBhdGgYASADKAVCAhABEhAKBHNwYW4Y", 
+            "AiADKAVCAhABEhgKEGxlYWRpbmdfY29tbWVudHMYAyABKAkSGQoRdHJhaWxp", 
+            "bmdfY29tbWVudHMYBCABKAkSIQoZbGVhZGluZ19kZXRhY2hlZF9jb21tZW50", 
+            "cxgGIAMoCUJbChNjb20uZ29vZ2xlLnByb3RvYnVmQhBEZXNjcmlwdG9yUHJv", 
+            "dG9zSAFaCmRlc2NyaXB0b3KiAgNHUEKqAhpHb29nbGUuUHJvdG9idWYuUmVm", 
+            "bGVjdGlvbrACAQ=="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
@@ -145,7 +146,7 @@ namespace Google.Protobuf.Reflection {
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Reflection.EnumValueDescriptorProto), new[]{ "Name", "Number", "Options" }, null, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Reflection.ServiceDescriptorProto), new[]{ "Name", "Method", "Options" }, null, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Reflection.MethodDescriptorProto), new[]{ "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Reflection.FileOptions), new[]{ "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) }, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Reflection.FileOptions), new[]{ "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "JavananoUseDeprecatedPackage", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) }, null),
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Reflection.MessageOptions), new[]{ "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "UninterpretedOption" }, null, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions), new[]{ "Ctype", "Packed", "Jstype", "Lazy", "Deprecated", "Weak", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.CType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.JSType) }, null),
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Reflection.EnumOptions), new[]{ "AllowAlias", "Deprecated", "UninterpretedOption" }, null, null, null),
@@ -191,7 +192,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FileDescriptorProto> _repeated_file_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Reflection.FileDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> file_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> File {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> File {
       get { return file_; }
     }
 
@@ -294,7 +295,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    internal string Name {
+    public string Name {
       get { return name_; }
       set {
         name_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -303,7 +304,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int PackageFieldNumber = 2;
     private string package_ = "";
-    internal string Package {
+    public string Package {
       get { return package_; }
       set {
         package_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -314,7 +315,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<string> _repeated_dependency_codec
         = pb::FieldCodec.ForString(26);
     private readonly pbc::RepeatedField<string> dependency_ = new pbc::RepeatedField<string>();
-    internal pbc::RepeatedField<string> Dependency {
+    public pbc::RepeatedField<string> Dependency {
       get { return dependency_; }
     }
 
@@ -322,7 +323,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<int> _repeated_publicDependency_codec
         = pb::FieldCodec.ForInt32(80);
     private readonly pbc::RepeatedField<int> publicDependency_ = new pbc::RepeatedField<int>();
-    internal pbc::RepeatedField<int> PublicDependency {
+    public pbc::RepeatedField<int> PublicDependency {
       get { return publicDependency_; }
     }
 
@@ -330,7 +331,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<int> _repeated_weakDependency_codec
         = pb::FieldCodec.ForInt32(88);
     private readonly pbc::RepeatedField<int> weakDependency_ = new pbc::RepeatedField<int>();
-    internal pbc::RepeatedField<int> WeakDependency {
+    public pbc::RepeatedField<int> WeakDependency {
       get { return weakDependency_; }
     }
 
@@ -338,7 +339,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.DescriptorProto> _repeated_messageType_codec
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Reflection.DescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> messageType_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> MessageType {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> MessageType {
       get { return messageType_; }
     }
 
@@ -346,7 +347,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.EnumDescriptorProto> _repeated_enumType_codec
         = pb::FieldCodec.ForMessage(42, global::Google.Protobuf.Reflection.EnumDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto> enumType_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto> EnumType {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto> EnumType {
       get { return enumType_; }
     }
 
@@ -354,7 +355,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.ServiceDescriptorProto> _repeated_service_codec
         = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.Reflection.ServiceDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.ServiceDescriptorProto> service_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.ServiceDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.ServiceDescriptorProto> Service {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.ServiceDescriptorProto> Service {
       get { return service_; }
     }
 
@@ -362,13 +363,13 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FieldDescriptorProto> _repeated_extension_codec
         = pb::FieldCodec.ForMessage(58, global::Google.Protobuf.Reflection.FieldDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> extension_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> Extension {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> Extension {
       get { return extension_; }
     }
 
     public const int OptionsFieldNumber = 8;
     private global::Google.Protobuf.Reflection.FileOptions options_;
-    internal global::Google.Protobuf.Reflection.FileOptions Options {
+    public global::Google.Protobuf.Reflection.FileOptions Options {
       get { return options_; }
       set {
         options_ = value;
@@ -377,7 +378,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int SourceCodeInfoFieldNumber = 9;
     private global::Google.Protobuf.Reflection.SourceCodeInfo sourceCodeInfo_;
-    internal global::Google.Protobuf.Reflection.SourceCodeInfo SourceCodeInfo {
+    public global::Google.Protobuf.Reflection.SourceCodeInfo SourceCodeInfo {
       get { return sourceCodeInfo_; }
       set {
         sourceCodeInfo_ = value;
@@ -386,7 +387,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int SyntaxFieldNumber = 12;
     private string syntax_ = "";
-    internal string Syntax {
+    public string Syntax {
       get { return syntax_; }
       set {
         syntax_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -638,7 +639,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    internal string Name {
+    public string Name {
       get { return name_; }
       set {
         name_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -649,7 +650,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FieldDescriptorProto> _repeated_field_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.Reflection.FieldDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> field_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> Field {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> Field {
       get { return field_; }
     }
 
@@ -657,7 +658,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FieldDescriptorProto> _repeated_extension_codec
         = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.Reflection.FieldDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> extension_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> Extension {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.FieldDescriptorProto> Extension {
       get { return extension_; }
     }
 
@@ -665,7 +666,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.DescriptorProto> _repeated_nestedType_codec
         = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.Reflection.DescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> nestedType_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> NestedType {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> NestedType {
       get { return nestedType_; }
     }
 
@@ -673,7 +674,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.EnumDescriptorProto> _repeated_enumType_codec
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Reflection.EnumDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto> enumType_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto> EnumType {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto> EnumType {
       get { return enumType_; }
     }
 
@@ -681,7 +682,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange> _repeated_extensionRange_codec
         = pb::FieldCodec.ForMessage(42, global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange> extensionRange_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange> ExtensionRange {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ExtensionRange> ExtensionRange {
       get { return extensionRange_; }
     }
 
@@ -689,13 +690,13 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.OneofDescriptorProto> _repeated_oneofDecl_codec
         = pb::FieldCodec.ForMessage(66, global::Google.Protobuf.Reflection.OneofDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.OneofDescriptorProto> oneofDecl_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.OneofDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.OneofDescriptorProto> OneofDecl {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.OneofDescriptorProto> OneofDecl {
       get { return oneofDecl_; }
     }
 
     public const int OptionsFieldNumber = 7;
     private global::Google.Protobuf.Reflection.MessageOptions options_;
-    internal global::Google.Protobuf.Reflection.MessageOptions Options {
+    public global::Google.Protobuf.Reflection.MessageOptions Options {
       get { return options_; }
       set {
         options_ = value;
@@ -706,7 +707,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange> _repeated_reservedRange_codec
         = pb::FieldCodec.ForMessage(74, global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange> reservedRange_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange> ReservedRange {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto.Types.ReservedRange> ReservedRange {
       get { return reservedRange_; }
     }
 
@@ -714,7 +715,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<string> _repeated_reservedName_codec
         = pb::FieldCodec.ForString(82);
     private readonly pbc::RepeatedField<string> reservedName_ = new pbc::RepeatedField<string>();
-    internal pbc::RepeatedField<string> ReservedName {
+    public pbc::RepeatedField<string> ReservedName {
       get { return reservedName_; }
     }
 
@@ -909,7 +910,7 @@ namespace Google.Protobuf.Reflection {
 
         public const int StartFieldNumber = 1;
         private int start_;
-        internal int Start {
+        public int Start {
           get { return start_; }
           set {
             start_ = value;
@@ -918,7 +919,7 @@ namespace Google.Protobuf.Reflection {
 
         public const int EndFieldNumber = 2;
         private int end_;
-        internal int End {
+        public int End {
           get { return end_; }
           set {
             end_ = value;
@@ -1037,7 +1038,7 @@ namespace Google.Protobuf.Reflection {
 
         public const int StartFieldNumber = 1;
         private int start_;
-        internal int Start {
+        public int Start {
           get { return start_; }
           set {
             start_ = value;
@@ -1046,7 +1047,7 @@ namespace Google.Protobuf.Reflection {
 
         public const int EndFieldNumber = 2;
         private int end_;
-        internal int End {
+        public int End {
           get { return end_; }
           set {
             end_ = value;
@@ -1177,7 +1178,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    internal string Name {
+    public string Name {
       get { return name_; }
       set {
         name_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -1186,7 +1187,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int NumberFieldNumber = 3;
     private int number_;
-    internal int Number {
+    public int Number {
       get { return number_; }
       set {
         number_ = value;
@@ -1195,7 +1196,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int LabelFieldNumber = 4;
     private global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label label_ = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label.LABEL_OPTIONAL;
-    internal global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label Label {
+    public global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Label Label {
       get { return label_; }
       set {
         label_ = value;
@@ -1204,7 +1205,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int TypeFieldNumber = 5;
     private global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type type_ = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type.TYPE_DOUBLE;
-    internal global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type Type {
+    public global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type Type {
       get { return type_; }
       set {
         type_ = value;
@@ -1213,7 +1214,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int TypeNameFieldNumber = 6;
     private string typeName_ = "";
-    internal string TypeName {
+    public string TypeName {
       get { return typeName_; }
       set {
         typeName_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -1222,7 +1223,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int ExtendeeFieldNumber = 2;
     private string extendee_ = "";
-    internal string Extendee {
+    public string Extendee {
       get { return extendee_; }
       set {
         extendee_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -1231,7 +1232,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int DefaultValueFieldNumber = 7;
     private string defaultValue_ = "";
-    internal string DefaultValue {
+    public string DefaultValue {
       get { return defaultValue_; }
       set {
         defaultValue_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -1240,7 +1241,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int OneofIndexFieldNumber = 9;
     private int oneofIndex_;
-    internal int OneofIndex {
+    public int OneofIndex {
       get { return oneofIndex_; }
       set {
         oneofIndex_ = value;
@@ -1249,7 +1250,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int OptionsFieldNumber = 8;
     private global::Google.Protobuf.Reflection.FieldOptions options_;
-    internal global::Google.Protobuf.Reflection.FieldOptions Options {
+    public global::Google.Protobuf.Reflection.FieldOptions Options {
       get { return options_; }
       set {
         options_ = value;
@@ -1518,7 +1519,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    internal string Name {
+    public string Name {
       get { return name_; }
       set {
         name_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -1622,7 +1623,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    internal string Name {
+    public string Name {
       get { return name_; }
       set {
         name_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -1633,13 +1634,13 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.EnumValueDescriptorProto> _repeated_value_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.Reflection.EnumValueDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumValueDescriptorProto> value_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumValueDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumValueDescriptorProto> Value {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumValueDescriptorProto> Value {
       get { return value_; }
     }
 
     public const int OptionsFieldNumber = 3;
     private global::Google.Protobuf.Reflection.EnumOptions options_;
-    internal global::Google.Protobuf.Reflection.EnumOptions Options {
+    public global::Google.Protobuf.Reflection.EnumOptions Options {
       get { return options_; }
       set {
         options_ = value;
@@ -1774,7 +1775,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    internal string Name {
+    public string Name {
       get { return name_; }
       set {
         name_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -1783,7 +1784,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int NumberFieldNumber = 2;
     private int number_;
-    internal int Number {
+    public int Number {
       get { return number_; }
       set {
         number_ = value;
@@ -1792,7 +1793,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int OptionsFieldNumber = 3;
     private global::Google.Protobuf.Reflection.EnumValueOptions options_;
-    internal global::Google.Protobuf.Reflection.EnumValueOptions Options {
+    public global::Google.Protobuf.Reflection.EnumValueOptions Options {
       get { return options_; }
       set {
         options_ = value;
@@ -1934,7 +1935,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    internal string Name {
+    public string Name {
       get { return name_; }
       set {
         name_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -1945,13 +1946,13 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.MethodDescriptorProto> _repeated_method_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.Reflection.MethodDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.MethodDescriptorProto> method_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.MethodDescriptorProto>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.MethodDescriptorProto> Method {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.MethodDescriptorProto> Method {
       get { return method_; }
     }
 
     public const int OptionsFieldNumber = 3;
     private global::Google.Protobuf.Reflection.ServiceOptions options_;
-    internal global::Google.Protobuf.Reflection.ServiceOptions Options {
+    public global::Google.Protobuf.Reflection.ServiceOptions Options {
       get { return options_; }
       set {
         options_ = value;
@@ -2089,7 +2090,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    internal string Name {
+    public string Name {
       get { return name_; }
       set {
         name_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -2098,7 +2099,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int InputTypeFieldNumber = 2;
     private string inputType_ = "";
-    internal string InputType {
+    public string InputType {
       get { return inputType_; }
       set {
         inputType_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -2107,7 +2108,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int OutputTypeFieldNumber = 3;
     private string outputType_ = "";
-    internal string OutputType {
+    public string OutputType {
       get { return outputType_; }
       set {
         outputType_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -2116,7 +2117,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int OptionsFieldNumber = 4;
     private global::Google.Protobuf.Reflection.MethodOptions options_;
-    internal global::Google.Protobuf.Reflection.MethodOptions Options {
+    public global::Google.Protobuf.Reflection.MethodOptions Options {
       get { return options_; }
       set {
         options_ = value;
@@ -2125,7 +2126,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int ClientStreamingFieldNumber = 5;
     private bool clientStreaming_;
-    internal bool ClientStreaming {
+    public bool ClientStreaming {
       get { return clientStreaming_; }
       set {
         clientStreaming_ = value;
@@ -2134,7 +2135,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int ServerStreamingFieldNumber = 6;
     private bool serverStreaming_;
-    internal bool ServerStreaming {
+    public bool ServerStreaming {
       get { return serverStreaming_; }
       set {
         serverStreaming_ = value;
@@ -2327,6 +2328,7 @@ namespace Google.Protobuf.Reflection {
       ccEnableArenas_ = other.ccEnableArenas_;
       objcClassPrefix_ = other.objcClassPrefix_;
       csharpNamespace_ = other.csharpNamespace_;
+      javananoUseDeprecatedPackage_ = other.javananoUseDeprecatedPackage_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
 
@@ -2336,7 +2338,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int JavaPackageFieldNumber = 1;
     private string javaPackage_ = "";
-    internal string JavaPackage {
+    public string JavaPackage {
       get { return javaPackage_; }
       set {
         javaPackage_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -2345,7 +2347,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int JavaOuterClassnameFieldNumber = 8;
     private string javaOuterClassname_ = "";
-    internal string JavaOuterClassname {
+    public string JavaOuterClassname {
       get { return javaOuterClassname_; }
       set {
         javaOuterClassname_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -2354,7 +2356,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int JavaMultipleFilesFieldNumber = 10;
     private bool javaMultipleFiles_;
-    internal bool JavaMultipleFiles {
+    public bool JavaMultipleFiles {
       get { return javaMultipleFiles_; }
       set {
         javaMultipleFiles_ = value;
@@ -2363,7 +2365,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int JavaGenerateEqualsAndHashFieldNumber = 20;
     private bool javaGenerateEqualsAndHash_;
-    internal bool JavaGenerateEqualsAndHash {
+    public bool JavaGenerateEqualsAndHash {
       get { return javaGenerateEqualsAndHash_; }
       set {
         javaGenerateEqualsAndHash_ = value;
@@ -2372,7 +2374,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int JavaStringCheckUtf8FieldNumber = 27;
     private bool javaStringCheckUtf8_;
-    internal bool JavaStringCheckUtf8 {
+    public bool JavaStringCheckUtf8 {
       get { return javaStringCheckUtf8_; }
       set {
         javaStringCheckUtf8_ = value;
@@ -2381,7 +2383,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int OptimizeForFieldNumber = 9;
     private global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode optimizeFor_ = global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode.SPEED;
-    internal global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode OptimizeFor {
+    public global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode OptimizeFor {
       get { return optimizeFor_; }
       set {
         optimizeFor_ = value;
@@ -2390,7 +2392,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int GoPackageFieldNumber = 11;
     private string goPackage_ = "";
-    internal string GoPackage {
+    public string GoPackage {
       get { return goPackage_; }
       set {
         goPackage_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -2399,7 +2401,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int CcGenericServicesFieldNumber = 16;
     private bool ccGenericServices_;
-    internal bool CcGenericServices {
+    public bool CcGenericServices {
       get { return ccGenericServices_; }
       set {
         ccGenericServices_ = value;
@@ -2408,7 +2410,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int JavaGenericServicesFieldNumber = 17;
     private bool javaGenericServices_;
-    internal bool JavaGenericServices {
+    public bool JavaGenericServices {
       get { return javaGenericServices_; }
       set {
         javaGenericServices_ = value;
@@ -2417,7 +2419,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int PyGenericServicesFieldNumber = 18;
     private bool pyGenericServices_;
-    internal bool PyGenericServices {
+    public bool PyGenericServices {
       get { return pyGenericServices_; }
       set {
         pyGenericServices_ = value;
@@ -2426,7 +2428,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int DeprecatedFieldNumber = 23;
     private bool deprecated_;
-    internal bool Deprecated {
+    public bool Deprecated {
       get { return deprecated_; }
       set {
         deprecated_ = value;
@@ -2435,7 +2437,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int CcEnableArenasFieldNumber = 31;
     private bool ccEnableArenas_;
-    internal bool CcEnableArenas {
+    public bool CcEnableArenas {
       get { return ccEnableArenas_; }
       set {
         ccEnableArenas_ = value;
@@ -2444,7 +2446,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int ObjcClassPrefixFieldNumber = 36;
     private string objcClassPrefix_ = "";
-    internal string ObjcClassPrefix {
+    public string ObjcClassPrefix {
       get { return objcClassPrefix_; }
       set {
         objcClassPrefix_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -2453,10 +2455,19 @@ namespace Google.Protobuf.Reflection {
 
     public const int CsharpNamespaceFieldNumber = 37;
     private string csharpNamespace_ = "";
-    internal string CsharpNamespace {
+    public string CsharpNamespace {
       get { return csharpNamespace_; }
       set {
         csharpNamespace_ = pb::Preconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    public const int JavananoUseDeprecatedPackageFieldNumber = 38;
+    private bool javananoUseDeprecatedPackage_;
+    public bool JavananoUseDeprecatedPackage {
+      get { return javananoUseDeprecatedPackage_; }
+      set {
+        javananoUseDeprecatedPackage_ = value;
       }
     }
 
@@ -2464,7 +2475,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -2493,6 +2504,7 @@ namespace Google.Protobuf.Reflection {
       if (CcEnableArenas != other.CcEnableArenas) return false;
       if (ObjcClassPrefix != other.ObjcClassPrefix) return false;
       if (CsharpNamespace != other.CsharpNamespace) return false;
+      if (JavananoUseDeprecatedPackage != other.JavananoUseDeprecatedPackage) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
       return true;
     }
@@ -2513,6 +2525,7 @@ namespace Google.Protobuf.Reflection {
       if (CcEnableArenas != false) hash ^= CcEnableArenas.GetHashCode();
       if (ObjcClassPrefix.Length != 0) hash ^= ObjcClassPrefix.GetHashCode();
       if (CsharpNamespace.Length != 0) hash ^= CsharpNamespace.GetHashCode();
+      if (JavananoUseDeprecatedPackage != false) hash ^= JavananoUseDeprecatedPackage.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
       return hash;
     }
@@ -2578,6 +2591,10 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(170, 2);
         output.WriteString(CsharpNamespace);
       }
+      if (JavananoUseDeprecatedPackage != false) {
+        output.WriteRawTag(176, 2);
+        output.WriteBool(JavananoUseDeprecatedPackage);
+      }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
     }
 
@@ -2624,6 +2641,9 @@ namespace Google.Protobuf.Reflection {
       }
       if (CsharpNamespace.Length != 0) {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(CsharpNamespace);
+      }
+      if (JavananoUseDeprecatedPackage != false) {
+        size += 2 + 1;
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
       return size;
@@ -2674,6 +2694,9 @@ namespace Google.Protobuf.Reflection {
       }
       if (other.CsharpNamespace.Length != 0) {
         CsharpNamespace = other.CsharpNamespace;
+      }
+      if (other.JavananoUseDeprecatedPackage != false) {
+        JavananoUseDeprecatedPackage = other.JavananoUseDeprecatedPackage;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
     }
@@ -2741,6 +2764,10 @@ namespace Google.Protobuf.Reflection {
             CsharpNamespace = input.ReadString();
             break;
           }
+          case 304: {
+            JavananoUseDeprecatedPackage = input.ReadBool();
+            break;
+          }
           case 7994: {
             uninterpretedOption_.AddEntriesFrom(input, _repeated_uninterpretedOption_codec);
             break;
@@ -2796,7 +2823,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int MessageSetWireFormatFieldNumber = 1;
     private bool messageSetWireFormat_;
-    internal bool MessageSetWireFormat {
+    public bool MessageSetWireFormat {
       get { return messageSetWireFormat_; }
       set {
         messageSetWireFormat_ = value;
@@ -2805,7 +2832,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int NoStandardDescriptorAccessorFieldNumber = 2;
     private bool noStandardDescriptorAccessor_;
-    internal bool NoStandardDescriptorAccessor {
+    public bool NoStandardDescriptorAccessor {
       get { return noStandardDescriptorAccessor_; }
       set {
         noStandardDescriptorAccessor_ = value;
@@ -2814,7 +2841,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int DeprecatedFieldNumber = 3;
     private bool deprecated_;
-    internal bool Deprecated {
+    public bool Deprecated {
       get { return deprecated_; }
       set {
         deprecated_ = value;
@@ -2823,7 +2850,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int MapEntryFieldNumber = 7;
     private bool mapEntry_;
-    internal bool MapEntry {
+    public bool MapEntry {
       get { return mapEntry_; }
       set {
         mapEntry_ = value;
@@ -2834,7 +2861,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -2996,7 +3023,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int CtypeFieldNumber = 1;
     private global::Google.Protobuf.Reflection.FieldOptions.Types.CType ctype_ = global::Google.Protobuf.Reflection.FieldOptions.Types.CType.STRING;
-    internal global::Google.Protobuf.Reflection.FieldOptions.Types.CType Ctype {
+    public global::Google.Protobuf.Reflection.FieldOptions.Types.CType Ctype {
       get { return ctype_; }
       set {
         ctype_ = value;
@@ -3005,7 +3032,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int PackedFieldNumber = 2;
     private bool packed_;
-    internal bool Packed {
+    public bool Packed {
       get { return packed_; }
       set {
         packed_ = value;
@@ -3014,7 +3041,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int JstypeFieldNumber = 6;
     private global::Google.Protobuf.Reflection.FieldOptions.Types.JSType jstype_ = global::Google.Protobuf.Reflection.FieldOptions.Types.JSType.JS_NORMAL;
-    internal global::Google.Protobuf.Reflection.FieldOptions.Types.JSType Jstype {
+    public global::Google.Protobuf.Reflection.FieldOptions.Types.JSType Jstype {
       get { return jstype_; }
       set {
         jstype_ = value;
@@ -3023,7 +3050,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int LazyFieldNumber = 5;
     private bool lazy_;
-    internal bool Lazy {
+    public bool Lazy {
       get { return lazy_; }
       set {
         lazy_ = value;
@@ -3032,7 +3059,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int DeprecatedFieldNumber = 3;
     private bool deprecated_;
-    internal bool Deprecated {
+    public bool Deprecated {
       get { return deprecated_; }
       set {
         deprecated_ = value;
@@ -3041,7 +3068,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int WeakFieldNumber = 10;
     private bool weak_;
-    internal bool Weak {
+    public bool Weak {
       get { return weak_; }
       set {
         weak_ = value;
@@ -3052,7 +3079,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3260,7 +3287,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int AllowAliasFieldNumber = 2;
     private bool allowAlias_;
-    internal bool AllowAlias {
+    public bool AllowAlias {
       get { return allowAlias_; }
       set {
         allowAlias_ = value;
@@ -3269,7 +3296,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int DeprecatedFieldNumber = 3;
     private bool deprecated_;
-    internal bool Deprecated {
+    public bool Deprecated {
       get { return deprecated_; }
       set {
         deprecated_ = value;
@@ -3280,7 +3307,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3405,7 +3432,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int DeprecatedFieldNumber = 1;
     private bool deprecated_;
-    internal bool Deprecated {
+    public bool Deprecated {
       get { return deprecated_; }
       set {
         deprecated_ = value;
@@ -3416,7 +3443,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3525,7 +3552,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int DeprecatedFieldNumber = 33;
     private bool deprecated_;
-    internal bool Deprecated {
+    public bool Deprecated {
       get { return deprecated_; }
       set {
         deprecated_ = value;
@@ -3536,7 +3563,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3645,7 +3672,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int DeprecatedFieldNumber = 33;
     private bool deprecated_;
-    internal bool Deprecated {
+    public bool Deprecated {
       get { return deprecated_; }
       set {
         deprecated_ = value;
@@ -3656,7 +3683,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
       get { return uninterpretedOption_; }
     }
 
@@ -3772,13 +3799,13 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart> _repeated_name_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart> name_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart> Name {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart> Name {
       get { return name_; }
     }
 
     public const int IdentifierValueFieldNumber = 3;
     private string identifierValue_ = "";
-    internal string IdentifierValue {
+    public string IdentifierValue {
       get { return identifierValue_; }
       set {
         identifierValue_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -3787,7 +3814,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int PositiveIntValueFieldNumber = 4;
     private ulong positiveIntValue_;
-    internal ulong PositiveIntValue {
+    public ulong PositiveIntValue {
       get { return positiveIntValue_; }
       set {
         positiveIntValue_ = value;
@@ -3796,7 +3823,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int NegativeIntValueFieldNumber = 5;
     private long negativeIntValue_;
-    internal long NegativeIntValue {
+    public long NegativeIntValue {
       get { return negativeIntValue_; }
       set {
         negativeIntValue_ = value;
@@ -3805,7 +3832,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int DoubleValueFieldNumber = 6;
     private double doubleValue_;
-    internal double DoubleValue {
+    public double DoubleValue {
       get { return doubleValue_; }
       set {
         doubleValue_ = value;
@@ -3814,7 +3841,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int StringValueFieldNumber = 7;
     private pb::ByteString stringValue_ = pb::ByteString.Empty;
-    internal pb::ByteString StringValue {
+    public pb::ByteString StringValue {
       get { return stringValue_; }
       set {
         stringValue_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -3823,7 +3850,7 @@ namespace Google.Protobuf.Reflection {
 
     public const int AggregateValueFieldNumber = 8;
     private string aggregateValue_ = "";
-    internal string AggregateValue {
+    public string AggregateValue {
       get { return aggregateValue_; }
       set {
         aggregateValue_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -4016,7 +4043,7 @@ namespace Google.Protobuf.Reflection {
 
         public const int NamePart_FieldNumber = 1;
         private string namePart_ = "";
-        internal string NamePart_ {
+        public string NamePart_ {
           get { return namePart_; }
           set {
             namePart_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -4025,7 +4052,7 @@ namespace Google.Protobuf.Reflection {
 
         public const int IsExtensionFieldNumber = 2;
         private bool isExtension_;
-        internal bool IsExtension {
+        public bool IsExtension {
           get { return isExtension_; }
           set {
             isExtension_ = value;
@@ -4150,7 +4177,7 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> _repeated_location_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> location_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location>();
-    internal pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> Location {
+    public pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> Location {
       get { return location_; }
     }
 
@@ -4249,7 +4276,7 @@ namespace Google.Protobuf.Reflection {
         private static readonly pb::FieldCodec<int> _repeated_path_codec
             = pb::FieldCodec.ForInt32(10);
         private readonly pbc::RepeatedField<int> path_ = new pbc::RepeatedField<int>();
-        internal pbc::RepeatedField<int> Path {
+        public pbc::RepeatedField<int> Path {
           get { return path_; }
         }
 
@@ -4257,13 +4284,13 @@ namespace Google.Protobuf.Reflection {
         private static readonly pb::FieldCodec<int> _repeated_span_codec
             = pb::FieldCodec.ForInt32(18);
         private readonly pbc::RepeatedField<int> span_ = new pbc::RepeatedField<int>();
-        internal pbc::RepeatedField<int> Span {
+        public pbc::RepeatedField<int> Span {
           get { return span_; }
         }
 
         public const int LeadingCommentsFieldNumber = 3;
         private string leadingComments_ = "";
-        internal string LeadingComments {
+        public string LeadingComments {
           get { return leadingComments_; }
           set {
             leadingComments_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -4272,7 +4299,7 @@ namespace Google.Protobuf.Reflection {
 
         public const int TrailingCommentsFieldNumber = 4;
         private string trailingComments_ = "";
-        internal string TrailingComments {
+        public string TrailingComments {
           get { return trailingComments_; }
           set {
             trailingComments_ = pb::Preconditions.CheckNotNull(value, "value");
@@ -4283,7 +4310,7 @@ namespace Google.Protobuf.Reflection {
         private static readonly pb::FieldCodec<string> _repeated_leadingDetachedComments_codec
             = pb::FieldCodec.ForString(50);
         private readonly pbc::RepeatedField<string> leadingDetachedComments_ = new pbc::RepeatedField<string>();
-        internal pbc::RepeatedField<string> LeadingDetachedComments {
+        public pbc::RepeatedField<string> LeadingDetachedComments {
           get { return leadingDetachedComments_; }
         }
 
