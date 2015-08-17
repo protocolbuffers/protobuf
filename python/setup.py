@@ -144,6 +144,11 @@ class build_py(_build_py):
     # _build_py is an old-style class, so super() doesn't work.
     _build_py.run(self)
 
+class test_conformance(_build_py):
+  target = 'test_python'
+  def run(self):
+    os.system('cd ../conformance && make %s' % (test_conformance.target))
+
 
 if __name__ == '__main__':
   ext_module_list = []
@@ -152,6 +157,7 @@ if __name__ == '__main__':
   if cpp_impl in sys.argv:
     sys.argv.remove(cpp_impl)
     extra_compile_args = ['-Wno-write-strings', '-Wno-invalid-offsetof']
+    test_conformance.target = 'test_python_cpp'
 
     if "clang" in os.popen('$CC --version').read():
       extra_compile_args.append('-Wno-shorten-64-to-32')
@@ -207,6 +213,7 @@ if __name__ == '__main__':
       cmdclass={
           'clean': clean,
           'build_py': build_py,
+          'test_conformance': test_conformance,
       },
       install_requires=install_requires,
       ext_modules=ext_module_list,
