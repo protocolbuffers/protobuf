@@ -36,6 +36,13 @@ UPB_DECLARE_TYPE(upb::pb::DecoderMethodOptions, upb_pbdecodermethodopts)
 UPB_DECLARE_DERIVED_TYPE(upb::pb::DecoderMethod, upb::RefCounted,
                          upb_pbdecodermethod, upb_refcounted)
 
+/* The maximum number of bytes we are required to buffer internally between
+ * calls to the decoder.  The value is 14: a 5 byte unknown tag plus ten-byte
+ * varint, less one because we are buffering an incomplete value.
+ *
+ * Should only be used by unit tests. */
+#define UPB_DECODER_MAX_RESIDUAL_BYTES 14
+
 #ifdef __cplusplus
 
 /* The parameters one uses to construct a DecoderMethod.

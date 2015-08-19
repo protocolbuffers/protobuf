@@ -570,15 +570,14 @@ uint32_t Hash(const string& proto, const string* expected_output, size_t seam1,
 }
 
 void CheckBytesParsed(const upb::pb::Decoder& decoder, size_t ofs) {
-  // We could have parsed as many as 10 bytes fewer than what the decoder
-  // previously accepted, since we can buffer up to 12 partial bytes internally
-  // before accumulating an entire value.
-  const int MAX_BUFFERED = 14;
-
   // We can't have parsed more data than the decoder callback is telling us it
   // parsed.
   ASSERT(decoder.BytesParsed() <= ofs);
-  ASSERT(ofs <= (decoder.BytesParsed() + MAX_BUFFERED));
+
+  // The difference between what we've decoded and what the decoder has accepted
+  // represents the internally buffered amount.  This amount should not exceed
+  // this value which comes from decoder.int.h.
+  ASSERT(ofs <= (decoder.BytesParsed() + UPB_DECODER_MAX_RESIDUAL_BYTES));
 }
 
 static bool parse(VerboseParserEnvironment* env,
