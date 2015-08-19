@@ -32,6 +32,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sstream>
 
 #include "tests/test_util.h"
 #include "tests/upb_test.h"
@@ -176,6 +177,13 @@ string cat(const string& a, const string& b,
   return ret;
 }
 
+template <typename T>
+string num2string(T num) {
+  std::ostringstream ss;
+  ss << num;
+  return ss.str();
+}
+
 string varint(uint64_t x) {
   char buf[UPB_PB_VARINT_MAX_LEN];
   size_t len = upb_vencode64(x, buf);
@@ -200,6 +208,11 @@ string tag(uint32_t fieldnum, char wire_type) {
 
 string submsg(uint32_t fn, const string& buf) {
   return cat( tag(fn, UPB_WIRE_TYPE_DELIMITED), delim(buf) );
+}
+
+string group(uint32_t fn, const string& buf) {
+  return cat(tag(fn, UPB_WIRE_TYPE_START_GROUP), buf,
+             tag(fn, UPB_WIRE_TYPE_END_GROUP));
 }
 
 // Like delim()/submsg(), but intentionally encodes an incorrect length.
@@ -557,15 +570,14 @@ uint32_t Hash(const string& proto, const string* expected_output, size_t seam1,
 }
 
 void CheckBytesParsed(const upb::pb::Decoder& decoder, size_t ofs) {
-  // We could have parsed as many as 10 bytes fewer than what the decoder
-  // previously accepted, since we can buffer up to 10 partial bytes internally
-  // before accumulating an entire value.
-  const int MAX_BUFFERED = 10;
-
   // We can't have parsed more data than the decoder callback is telling us it
   // parsed.
   ASSERT(decoder.BytesParsed() <= ofs);
-  ASSERT(ofs <= (decoder.BytesParsed() + MAX_BUFFERED));
+
+  // The difference between what we've decoded and what the decoder has accepted
+  // represents the internally buffered amount.  This amount should not exceed
+  // this value which comes from decoder.int.h.
+  ASSERT(ofs <= (decoder.BytesParsed() + UPB_DECODER_MAX_RESIDUAL_BYTES));
 }
 
 static bool parse(VerboseParserEnvironment* env,
@@ -582,7 +594,7 @@ static bool parse(VerboseParserEnvironment* env,
 void do_run_decoder(VerboseParserEnvironment* env, upb::pb::Decoder* decoder,
                     const string& proto, const string* expected_output,
                     size_t i, size_t j, bool may_skip) {
-  env->Reset(proto.c_str(), proto.size(), may_skip);
+  env->Reset(proto.c_str(), proto.size(), may_skip, expected_output == NULL);
   decoder->Reset();
 
   testhash = Hash(proto, expected_output, i, j, may_skip);
@@ -598,7 +610,14 @@ void do_run_decoder(VerboseParserEnvironment* env, upb::pb::Decoder* decoder,
       PrintBinary(proto);
       fprintf(stderr, "\n");
       if (expected_output) {
-        fprintf(stderr, "Expected output: %s\n", expected_output->c_str());
+        if (test_mode == ALL_HANDLERS) {
+          fprintf(stderr, "Expected output: %s\n", expected_output->c_str());
+        } else if (test_mode == NO_HANDLERS) {
+          fprintf(stderr,
+                  "No handlers are registered, BUT if they were "
+                  "the expected output would be: %s\n",
+                  expected_output->c_str());
+        }
       } else {
         fprintf(stderr, "Expected to FAIL\n");
       }
@@ -610,7 +629,7 @@ void do_run_decoder(VerboseParserEnvironment* env, upb::pb::Decoder* decoder,
               parse(env, *decoder, -1) &&
               env->End();
 
-    ASSERT(ok == env->status().ok());
+    ASSERT(env->CheckConsistency());
 
     if (test_mode == ALL_HANDLERS) {
       if (expected_output) {
@@ -618,18 +637,12 @@ void do_run_decoder(VerboseParserEnvironment* env, upb::pb::Decoder* decoder,
           fprintf(stderr, "Text mismatch: '%s' vs '%s'\n",
                   output.c_str(), expected_output->c_str());
         }
-        if (!ok) {
-          fprintf(stderr, "Failed: %s\n", env->status().error_message());
-        }
         ASSERT(ok);
         ASSERT(output == *expected_output);
       } else {
         if (ok) {
           fprintf(stderr, "Didn't expect ok result, but got output: '%s'\n",
                   output.c_str());
-        } else if (filter_hash) {
-          fprintf(stderr, "Failed as we expected, with message: %s\n",
-                  env->status().error_message());
         }
         ASSERT(!ok);
       }
@@ -657,6 +670,25 @@ void run_decoder(const string& proto, const string* expected_output) {
 const static string thirty_byte_nop = cat(
     tag(NOP_FIELD, UPB_WIRE_TYPE_DELIMITED), delim(string(30, 'X')) );
 
+// Indents and wraps text as if it were a submessage with this field number
+string wrap_text(int32_t fn, const string& text) {
+  string wrapped_text = text;
+  size_t pos = 0;
+  string replace_with = "\n  ";
+  while ((pos = wrapped_text.find("\n", pos)) != string::npos &&
+         pos != wrapped_text.size() - 1) {
+    wrapped_text.replace(pos, 1, replace_with);
+    pos += replace_with.size();
+  }
+  wrapped_text = cat(
+      LINE("<"),
+      num2string(fn), LINE(":{")
+      "  ", wrapped_text,
+      LINE("}")
+      LINE(">"));
+  return wrapped_text;
+}
+
 void assert_successful_parse(const string& proto,
                              const char *expected_fmt, ...) {
   string expected_text;
@@ -668,16 +700,27 @@ void assert_successful_parse(const string& proto,
   // repeat once with no-op padding data at the end of buffer.
   run_decoder(proto, &expected_text);
   run_decoder(cat( proto, thirty_byte_nop ), &expected_text);
+
+  // Test that this also works when wrapped in a submessage or group.
+  // Indent the expected text one level and wrap it.
+  string wrapped_text1 = wrap_text(UPB_DESCRIPTOR_TYPE_MESSAGE, expected_text);
+  string wrapped_text2 = wrap_text(UPB_DESCRIPTOR_TYPE_GROUP, expected_text);
+
+  run_decoder(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, proto), &wrapped_text1);
+  run_decoder(group(UPB_DESCRIPTOR_TYPE_GROUP, proto), &wrapped_text2);
 }
 
 void assert_does_not_parse_at_eof(const string& proto) {
   run_decoder(proto, NULL);
 
   // Also test that we fail to parse at end-of-submessage, not just
-  // end-of-message.
-  run_decoder(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, proto), NULL);
-  run_decoder(cat(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, proto), thirty_byte_nop),
-              NULL);
+  // end-of-message.  But skip this if we have no handlers, because in that
+  // case we won't descend into the submessage.
+  if (test_mode != NO_HANDLERS) {
+    run_decoder(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, proto), NULL);
+    run_decoder(cat(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, proto),
+                    thirty_byte_nop), NULL);
+  }
 }
 
 void assert_does_not_parse(const string& proto) {
@@ -905,11 +948,13 @@ void test_invalid() {
            submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, string("     "))));
 
   // Test exceeding the resource limit of stack depth.
-  string buf;
-  for (int i = 0; i <= MAX_NESTING; i++) {
-    buf.assign(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, buf));
+  if (test_mode != NO_HANDLERS) {
+    string buf;
+    for (int i = 0; i <= MAX_NESTING; i++) {
+      buf.assign(submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, buf));
+    }
+    assert_does_not_parse(buf);
   }
-  assert_does_not_parse(buf);
 }
 
 void test_valid() {
@@ -986,6 +1031,15 @@ void test_valid() {
       "<\n>\n");
 
   // Unknown field inside a known submessage.
+  assert_successful_parse(
+      submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, submsg(12345, string("   "))),
+      LINE("<")
+      LINE("%u:{")
+      LINE("  <")
+      LINE("  >")
+      LINE("}")
+      LINE(">"), UPB_DESCRIPTOR_TYPE_MESSAGE);
+
   assert_successful_parse(
       cat (submsg(UPB_DESCRIPTOR_TYPE_MESSAGE, submsg(12345, string("   "))),
            tag(UPB_DESCRIPTOR_TYPE_INT32, UPB_WIRE_TYPE_VARINT),
@@ -1162,7 +1216,9 @@ void test_valid() {
     indentbuf(&textbuf, total - i - 1);
     textbuf.append(">\n");
   }
-  assert_successful_parse(buf, "%s", textbuf.c_str());
+  // Have to use run_decoder directly, because we are at max nesting and can't
+  // afford the extra nesting that assert_successful_parse() will do.
+  run_decoder(buf, &textbuf);
 }
 
 upb::reffed_ptr<const upb::pb::DecoderMethod> NewMethod(
@@ -1207,10 +1263,11 @@ upb::reffed_ptr<const upb::pb::DecoderMethod> method =
     upb::Sink sink(method->dest_handlers(), &closures[0]);
     upb::pb::Decoder* decoder = CreateDecoder(env.env(), method.get(), &sink);
     env.ResetBytesSink(decoder->input());
-    env.Reset(testdata[i].data, testdata[i].length, true);
+    env.Reset(testdata[i].data, testdata[i].length, true, false);
     ASSERT(env.Start());
     ASSERT(env.ParseBuffer(-1));
     ASSERT(env.End());
+    ASSERT(env.CheckConsistency());
   }
 }
 

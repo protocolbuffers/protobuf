@@ -596,7 +596,12 @@ static void generate_msgfield(compiler *c, const upb_fielddef *f,
 
   if (!sub_m) {
     /* Don't emit any code for this field at all; it will be parsed as an
-     * unknown field. */
+     * unknown field.
+     *
+     * TODO(haberman): we should change this to parse it as a string field
+     * instead.  It will probably be faster, but more importantly, once we
+     * start vending unknown fields, a field shouldn't be treated as unknown
+     * just because it doesn't have subhandlers registered. */
     return;
   }
 

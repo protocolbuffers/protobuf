@@ -36,6 +36,11 @@ static const char *kUnterminatedVarint = "Unterminated varint.";
 
 static opcode halt = OP_HALT;
 
+/* A dummy character we can point to when the user passes us a NULL buffer.
+ * We need this because in C (NULL + 0) and (NULL - NULL) are undefined
+ * behavior, which would invalidate functions like curbufleft(). */
+static const char dummy_char;
+
 /* Whether an op consumes any of the input buffer. */
 static bool consumes_input(opcode op) {
   switch (op) {
@@ -191,7 +196,7 @@ static int32_t skip(upb_pbdecoder *d, size_t bytes) {
   if (bytes > delim_remaining(d)) {
     seterr(d, "Skipped value extended beyond enclosing submessage.");
     return upb_pbdecoder_suspend(d);
-  } else if (bufleft(d) > bytes) {
+  } else if (bufleft(d) >= bytes) {
     /* Skipped data is all in current buffer, and more is still available. */
     advance(d, bytes);
     d->skip = 0;
@@ -213,9 +218,38 @@ int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
                              size_t size, const upb_bufhandle *handle) {
   UPB_UNUSED(p);  /* Useless; just for the benefit of the JIT. */
 
-  d->buf_param = buf;
+  /* d->skip and d->residual_end could probably elegantly be represented
+   * as a single variable, to more easily represent this invariant. */
+  assert(!(d->skip && d->residual_end > d->residual));
+
+  /* We need to remember the original size_param, so that the value we return
+   * is relative to it, even if we do some skipping first. */
   d->size_param = size;
   d->handle = handle;
+
+  /* Have to handle this case specially (ie. not with skip()) because the user
+   * is allowed to pass a NULL buffer here, which won't allow us to safely
+   * calculate a d->end or use our normal functions like curbufleft(). */
+  if (d->skip && d->skip >= size) {
+    d->skip -= size;
+    d->bufstart_ofs += size;
+    buf = &dummy_char;
+    size = 0;
+
+    /* We can't just return now, because we might need to execute some ops
+     * like CHECKDELIM, which could call some callbacks and pop the stack. */
+  }
+
+  /* We need to pretend that this was the actual buffer param, since some of the
+   * calculations assume that d->ptr/d->buf is relative to this. */
+  d->buf_param = buf;
+
+  if (!buf) {
+    /* NULL buf is ok if its entire span is covered by the "skip" above, but
+     * by this point we know that "skip" doesn't cover the buffer. */
+    seterr(d, "Passed NULL buffer over non-skippable region.");
+    return upb_pbdecoder_suspend(d);
+  }
 
   if (d->residual_end > d->residual) {
     /* We have residual bytes from the last buffer. */
@@ -226,23 +260,18 @@ int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
 
   d->checkpoint = d->ptr;
 
+  /* Handle skips that don't cover the whole buffer (as above). */
   if (d->skip) {
     size_t skip_bytes = d->skip;
     d->skip = 0;
     CHECK_RETURN(skip(d, skip_bytes));
-    d->checkpoint = d->ptr;
+    checkpoint(d);
   }
 
-  if (!buf) {
-    /* NULL buf is ok if its entire span is covered by the "skip" above, but
-     * by this point we know that "skip" doesn't cover the buffer. */
-    seterr(d, "Passed NULL buffer over non-skippable region.");
-    return upb_pbdecoder_suspend(d);
-  }
-
+  /* If we're inside an unknown group, continue to parse unknown values. */
   if (d->top->groupnum < 0) {
     CHECK_RETURN(upb_pbdecoder_skipunknown(d, -1, 0));
-    d->checkpoint = d->ptr;
+    checkpoint(d);
   }
 
   return DECODE_OK;
@@ -257,15 +286,14 @@ size_t upb_pbdecoder_suspend(upb_pbdecoder *d) {
     d->ptr = d->residual;
     return 0;
   } else {
-    size_t consumed;
+    size_t ret = d->size_param - (d->end - d->checkpoint);
     assert(!in_residual_buf(d, d->checkpoint));
-    assert(d->buf == d->buf_param);
+    assert(d->buf == d->buf_param || d->buf == &dummy_char);
 
-    consumed = d->checkpoint - d->buf;
-    d->bufstart_ofs += consumed;
+    d->bufstart_ofs += (d->checkpoint - d->buf);
     d->residual_end = d->residual;
     switchtobuf(d, d->residual, d->residual_end);
-    return consumed;
+    return ret;
   }
 }
 
@@ -383,8 +411,7 @@ UPB_NOINLINE int32_t upb_pbdecoder_decode_varint_slow(upb_pbdecoder *d,
   int bitpos;
   *u64 = 0;
   for(bitpos = 0; bitpos < 70 && (byte & 0x80); bitpos += 7) {
-    int32_t ret = getbytes(d, &byte, 1);
-    if (ret >= 0) return ret;
+    CHECK_RETURN(getbytes(d, &byte, 1));
     *u64 |= (uint64_t)(byte & 0x7F) << bitpos;
   }
   if(bitpos == 70 && (byte & 0x80)) {

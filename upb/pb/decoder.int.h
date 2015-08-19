@@ -218,11 +218,8 @@ struct upb_pbdecoder {
   /* Overall stream offset of "buf." */
   uint64_t bufstart_ofs;
 
-  /* Buffer for residual bytes not parsed from the previous buffer.
-   * The maximum number of residual bytes we require is 12; a five-byte
-   * unknown tag plus an eight-byte value, less one because the value
-   * is only a partial value. */
-  char residual[12];
+  /* Buffer for residual bytes not parsed from the previous buffer. */
+  char residual[UPB_DECODER_MAX_RESIDUAL_BYTES];
   char *residual_end;
 
   /* Bytes of data that should be discarded from the input beore we start

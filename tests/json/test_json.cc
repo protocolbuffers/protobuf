@@ -295,17 +295,15 @@ void test_json_roundtrip_message(const char* json_src,
   upb::json::Parser* parser =
       upb::json::Parser::Create(env.env(), printer->input());
   env.ResetBytesSink(parser->input());
-  env.Reset(json_src, strlen(json_src), false);
+  env.Reset(json_src, strlen(json_src), false, false);
 
   bool ok = env.Start() &&
             env.ParseBuffer(seam) &&
             env.ParseBuffer(-1) &&
             env.End();
 
-  if (!ok) {
-    fprintf(stderr, "upb parse error: %s\n", env.status().error_message());
-  }
   ASSERT(ok);
+  ASSERT(env.CheckConsistency());
 
   if (memcmp(json_expected,
              data_sink.Data().data(),
