@@ -114,10 +114,7 @@ build_javanano_oracle7() {
 build_python() {
   internal_build_cpp
   cd python
-  python setup.py build
-  python setup.py test
-  python setup.py sdist
-  sudo pip install virtualenv && virtualenv /tmp/protoenv && /tmp/protoenv/bin/pip install dist/*
+  tox
   cd ..
 }
 
@@ -126,10 +123,7 @@ build_python_cpp() {
   export   LD_LIBRARY_PATH=../src/.libs # for Linux
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
-  python setup.py build --cpp_implementation
-  python setup.py test --cpp_implementation
-  python setup.py sdist --cpp_implementation
-  sudo pip install virtualenv && virtualenv /tmp/protoenv && /tmp/protoenv/bin/pip install dist/*
+  tox -- --cpp_implementation
   cd ..
 }
 
