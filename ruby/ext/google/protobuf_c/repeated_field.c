@@ -606,13 +606,12 @@ void RepeatedField_free(void* _self) {
  */
 VALUE RepeatedField_alloc(VALUE klass) {
   RepeatedField* self = ALLOC(RepeatedField);
-  VALUE ret = TypedData_Wrap_Struct(klass, &RepeatedField_type, self);
   self->elements = NULL;
   self->size = 0;
   self->capacity = 0;
   self->field_type = -1;
   self->field_type_class = Qnil;
-  return ret;
+  return TypedData_Wrap_Struct(klass, &RepeatedField_type, self);
 }
 
 VALUE RepeatedField_init(int argc, VALUE* argv, VALUE self) {

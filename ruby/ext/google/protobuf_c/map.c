@@ -167,10 +167,9 @@ void Map_free(void* _self) {
 
 VALUE Map_alloc(VALUE klass) {
   Map* self = ALLOC(Map);
-  VALUE ret = TypedData_Wrap_Struct(klass, &Map_type, self);
   memset(self, 0, sizeof(Map));
   self->value_type_class = Qnil;
-  return ret;
+  return TypedData_Wrap_Struct(klass, &Map_type, self);
 }
 
 static bool needs_typeclass(upb_fieldtype_t type) {
