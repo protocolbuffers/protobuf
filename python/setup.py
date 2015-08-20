@@ -8,19 +8,7 @@ import sys
 
 # We must use setuptools, not distutils, because we need to use the
 # namespace_packages option for the "google" package.
-try:
-  from setuptools import setup, Extension, find_packages
-except ImportError:
-  try:
-    from ez_setup import use_setuptools
-    use_setuptools()
-    from setuptools import setup, Extension, find_packages
-  except ImportError:
-    sys.stderr.write(
-        "Could not import setuptools; make sure you have setuptools or "
-        "ez_setup installed.\n"
-    )
-    raise
+from setuptools import setup, Extension, find_packages
 
 from distutils.command.clean import clean as _clean
 
