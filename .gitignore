@@ -51,7 +51,6 @@ src/google/protobuf/util/**/*.pb.cc
 src/google/protobuf/util/**/*.pb.h
 
 *.pyc
-*.so
 *.egg-info
 *_pb2.py
 python/*.egg
