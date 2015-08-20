@@ -538,7 +538,6 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/text_format.py                                      \
   python/google/protobuf/__init__.py                                         \
   python/google/__init__.py                                                  \
-  python/ez_setup.py                                                         \
   python/setup.py                                                            \
   python/mox.py                                                              \
   python/stubout.py                                                          \
