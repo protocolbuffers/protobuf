@@ -132,7 +132,6 @@ if __name__ == '__main__':
   ext_module_list = []
   cpp_impl = '--cpp_implementation'
   if cpp_impl in sys.argv:
-    print("YYYYYYYYYYYYYYYYYYYYYYYY")
     sys.argv.remove(cpp_impl)
     # C++ implementation extension
     ext_module_list.append(
