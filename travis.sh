@@ -113,6 +113,7 @@ build_javanano_oracle7() {
 
 build_python() {
   internal_build_cpp
+  sudo pip install tox
   cd python
   tox
   cd ..
@@ -120,6 +121,7 @@ build_python() {
 
 build_python_cpp() {
   internal_build_cpp
+  sudo pip install tox
   export   LD_LIBRARY_PATH=../src/.libs # for Linux
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
