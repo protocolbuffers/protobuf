@@ -47,6 +47,10 @@ RepeatedField* ruby_to_RepeatedField(VALUE _self) {
   return self;
 }
 
+void* RepeatedField_memoryat(RepeatedField* self, int index, int element_size) {
+  return ((uint8_t *)self->elements) + index * element_size;
+}
+
 static int index_position(VALUE _index, RepeatedField* repeated_field) {
   int index = NUM2INT(_index);
   if (index < 0 && repeated_field->size > 0) {
@@ -113,16 +117,15 @@ VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
   if (argc == 1){
     if (FIXNUM_P(arg)) {
       /* standard case */
+      void* memory;
       int index = index_position(argv[0], self);
       if (index < 0 || index >= self->size) {
         return Qnil;
       }
-      void* memory = (void *) (((uint8_t *)self->elements) +
-                               index * element_size);
+      memory = RepeatedField_memoryat(self, index, element_size);
       return native_slot_get(field_type, field_type_class, memory);
     }else{
       /* check if idx is Range */
-      size_t off;
       switch (rb_range_beg_len(arg, &beg, &len, self->size, 0)) {
         case Qfalse:
           break;
@@ -157,23 +160,24 @@ VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   upb_fieldtype_t field_type = self->field_type;
   VALUE field_type_class = self->field_type_class;
   int element_size = native_slot_size(field_type);
+  void* memory;
 
   int index = index_position(_index, self);
   if (index < 0 || index >= (INT_MAX - 1)) {
     return Qnil;
   }
   if (index >= self->size) {
-    RepeatedField_reserve(self, index + 1);
     upb_fieldtype_t field_type = self->field_type;
     int element_size = native_slot_size(field_type);
+    RepeatedField_reserve(self, index + 1);
     for (int i = self->size; i <= index; i++) {
-      void* elem = (void *)(((uint8_t *)self->elements) + i * element_size);
+      void* elem = RepeatedField_memoryat(self, i, element_size);
       native_slot_init(field_type, elem);
     }
     self->size = index + 1;
   }
 
-  void* memory = (void *) (((uint8_t *)self->elements) + index * element_size);
+  memory = RepeatedField_memoryat(self, index, element_size);
   native_slot_set(field_type, field_type_class, memory, val);
   return Qnil;
 }
@@ -181,6 +185,8 @@ VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
 static int kInitialSize = 8;
 
 void RepeatedField_reserve(RepeatedField* self, int new_size) {
+  void* old_elems = self->elements;
+  int elem_size = native_slot_size(self->field_type);
   if (new_size <= self->capacity) {
     return;
   }
@@ -190,8 +196,6 @@ void RepeatedField_reserve(RepeatedField* self, int new_size) {
   while (self->capacity < new_size) {
     self->capacity *= 2;
   }
-  void* old_elems = self->elements;
-  int elem_size = native_slot_size(self->field_type);
   self->elements = ALLOC_N(uint8_t, elem_size * self->capacity);
   if (old_elems != NULL) {
     memcpy(self->elements, old_elems, self->size * elem_size);
@@ -209,11 +213,12 @@ VALUE RepeatedField_push(VALUE _self, VALUE val) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_fieldtype_t field_type = self->field_type;
   int element_size = native_slot_size(field_type);
+  void* memory;
+
   RepeatedField_reserve(self, self->size + 1);
-  int index = self->size;
-  void* memory = (void *) (((uint8_t *)self->elements) + index * element_size);
+  memory = (void *) (((uint8_t *)self->elements) + self->size * element_size);
   native_slot_set(field_type, self->field_type_class, memory, val);
-  // native_slot_set may raise an error; bump index only after set.
+  // native_slot_set may raise an error; bump size only after set.
   self->size++;
   return _self;
 }
@@ -224,9 +229,10 @@ void RepeatedField_push_native(VALUE _self, void* data) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_fieldtype_t field_type = self->field_type;
   int element_size = native_slot_size(field_type);
+  void* memory;
+
   RepeatedField_reserve(self, self->size + 1);
-  int index = self->size;
-  void* memory = (void *) (((uint8_t *)self->elements) + index * element_size);
+  memory = (void *) (((uint8_t *)self->elements) + self->size * element_size);
   memcpy(memory, data, element_size);
   self->size++;
 }
@@ -235,7 +241,7 @@ void* RepeatedField_index_native(VALUE _self, int index) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_fieldtype_t field_type = self->field_type;
   int element_size = native_slot_size(field_type);
-  return ((uint8_t *)self->elements) + index * element_size;
+  return RepeatedField_memoryat(self, index, element_size);
 }
 
 /*
@@ -246,12 +252,16 @@ VALUE RepeatedField_pop_one(VALUE _self) {
   upb_fieldtype_t field_type = self->field_type;
   VALUE field_type_class = self->field_type_class;
   int element_size = native_slot_size(field_type);
+  int index;
+  void* memory;
+  VALUE ret;
+
   if (self->size == 0) {
     return Qnil;
   }
-  int index = self->size - 1;
-  void* memory = (void *) (((uint8_t *)self->elements) + index * element_size);
-  VALUE ret = native_slot_get(field_type, field_type_class, memory);
+  index = self->size - 1;
+  memory = RepeatedField_memoryat(self, index, element_size);
+  ret = native_slot_get(field_type, field_type_class, memory);
   self->size--;
   return ret;
 }
@@ -320,10 +330,10 @@ VALUE RepeatedField_dup(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   VALUE new_rptfield = RepeatedField_new_this_type(_self);
   RepeatedField* new_rptfield_self = ruby_to_RepeatedField(new_rptfield);
-  RepeatedField_reserve(new_rptfield_self, self->size);
   upb_fieldtype_t field_type = self->field_type;
   size_t elem_size = native_slot_size(field_type);
   size_t off = 0;
+  RepeatedField_reserve(new_rptfield_self, self->size);
   for (int i = 0; i < self->size; i++, off += elem_size) {
     void* to_mem = (uint8_t *)new_rptfield_self->elements + off;
     void* from_mem = (uint8_t *)self->elements + off;
@@ -339,10 +349,10 @@ VALUE RepeatedField_deep_copy(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   VALUE new_rptfield = RepeatedField_new_this_type(_self);
   RepeatedField* new_rptfield_self = ruby_to_RepeatedField(new_rptfield);
-  RepeatedField_reserve(new_rptfield_self, self->size);
   upb_fieldtype_t field_type = self->field_type;
   size_t elem_size = native_slot_size(field_type);
   size_t off = 0;
+  RepeatedField_reserve(new_rptfield_self, self->size);
   for (int i = 0; i < self->size; i++, off += elem_size) {
     void* to_mem = (uint8_t *)new_rptfield_self->elements + off;
     void* from_mem = (uint8_t *)self->elements + off;
@@ -389,34 +399,39 @@ VALUE RepeatedField_to_ary(VALUE _self) {
  * indicated that every element has equal value.
  */
 VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
+  RepeatedField* self;
+  RepeatedField* other;
+
   if (_self == _other) {
     return Qtrue;
   }
-  RepeatedField* self = ruby_to_RepeatedField(_self);
 
   if (TYPE(_other) == T_ARRAY) {
     VALUE self_ary = RepeatedField_to_ary(_self);
     return rb_equal(self_ary, _other);
   }
 
-  RepeatedField* other = ruby_to_RepeatedField(_other);
+  self = ruby_to_RepeatedField(_self);
+  other = ruby_to_RepeatedField(_other);
   if (self->field_type != other->field_type ||
       self->field_type_class != other->field_type_class ||
       self->size != other->size) {
     return Qfalse;
   }
 
-  upb_fieldtype_t field_type = self->field_type;
-  size_t elem_size = native_slot_size(field_type);
-  size_t off = 0;
-  for (int i = 0; i < self->size; i++, off += elem_size) {
-    void* self_mem = ((uint8_t *)self->elements) + off;
-    void* other_mem = ((uint8_t *)other->elements) + off;
-    if (!native_slot_eq(field_type, self_mem, other_mem)) {
-      return Qfalse;
+  {
+    upb_fieldtype_t field_type = self->field_type;
+    size_t elem_size = native_slot_size(field_type);
+    size_t off = 0;
+    for (int i = 0; i < self->size; i++, off += elem_size) {
+      void* self_mem = ((uint8_t *)self->elements) + off;
+      void* other_mem = ((uint8_t *)other->elements) + off;
+      if (!native_slot_eq(field_type, self_mem, other_mem)) {
+        return Qfalse;
+      }
     }
+    return Qtrue;
   }
-  return Qtrue;
 }
 
 /*
@@ -488,7 +503,6 @@ VALUE RepeatedField_plus(VALUE _self, VALUE list) {
  * concats the passed in array to self.  Returns a Ruby array.
  */
 VALUE RepeatedField_concat(VALUE _self, VALUE list) {
-  RepeatedField* self = ruby_to_RepeatedField(_self);
   Check_Type(list, T_ARRAY);
   for (int i = 0; i < RARRAY_LEN(list); i++) {
     RepeatedField_push(_self, rb_ary_entry(list, i));
@@ -564,9 +578,9 @@ void RepeatedField_init_args(int argc, VALUE* argv,
 
 void RepeatedField_mark(void* _self) {
   RepeatedField* self = (RepeatedField*)_self;
-  rb_gc_mark(self->field_type_class);
   upb_fieldtype_t field_type = self->field_type;
   int element_size = native_slot_size(field_type);
+  rb_gc_mark(self->field_type_class);
   for (int i = 0; i < self->size; i++) {
     void* memory = (((uint8_t *)self->elements) + i * element_size);
     native_slot_mark(self->field_type, memory);
@@ -597,8 +611,7 @@ VALUE RepeatedField_alloc(VALUE klass) {
   self->capacity = 0;
   self->field_type = -1;
   self->field_type_class = Qnil;
-  VALUE ret = TypedData_Wrap_Struct(klass, &RepeatedField_type, self);
-  return ret;
+  return TypedData_Wrap_Struct(klass, &RepeatedField_type, self);
 }
 
 VALUE RepeatedField_init(int argc, VALUE* argv, VALUE self) {
