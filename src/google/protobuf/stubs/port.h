@@ -161,6 +161,9 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 // For functions we want to force not inline.
 // Introduced in gcc 3.1.
 #define GOOGLE_ATTRIBUTE_NOINLINE __attribute__ ((noinline))
+#elif defined(_MSC_VER) && (_MSC_VER >= 1400)
+// Seems to have been around since at least Visual Studio 2005
+#define GOOGLE_ATTRIBUTE_NOINLINE __declspec(noinline)
 #else
 // Other compilers will have to figure it out for themselves.
 #define GOOGLE_ATTRIBUTE_NOINLINE
