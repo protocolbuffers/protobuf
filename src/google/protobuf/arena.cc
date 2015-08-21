@@ -61,6 +61,9 @@ void Arena::Init() {
   cleanup_list_ = 0;
 
   if (options_.initial_block != NULL && options_.initial_block_size > 0) {
+    GOOGLE_CHECK_GE(options_.initial_block_size, sizeof(Block))
+        << ": Initial block size too small for header.";
+
     // Add first unowned block to list.
     Block* first_block = reinterpret_cast<Block*>(options_.initial_block);
     first_block->size = options_.initial_block_size;
