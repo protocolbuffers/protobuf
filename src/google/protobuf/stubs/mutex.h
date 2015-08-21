@@ -30,6 +30,10 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_MUTEX_H_
 #define GOOGLE_PROTOBUF_STUBS_MUTEX_H_
 
+#ifdef GOOGLE_PROTOBUF_NO_THREADLOCAL
+#include <pthread.h>
+#endif
+
 #include <google/protobuf/stubs/macros.h>
 
 // ===================================================================

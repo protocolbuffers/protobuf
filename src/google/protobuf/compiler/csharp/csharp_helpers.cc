@@ -46,11 +46,13 @@
 
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
 #include <google/protobuf/compiler/csharp/csharp_enum_field.h>
+#include <google/protobuf/compiler/csharp/csharp_map_field.h>
 #include <google/protobuf/compiler/csharp/csharp_message_field.h>
 #include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_enum_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_message_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h>
+#include <google/protobuf/compiler/csharp/csharp_wrapper_field.h>
 
 namespace google {
 namespace protobuf {
@@ -112,24 +114,21 @@ std::string GetFileNamespace(const FileDescriptor* descriptor) {
   if (descriptor->options().has_csharp_namespace()) {
     return descriptor->options().csharp_namespace();
   }
-  return descriptor->package();
+  return UnderscoresToCamelCase(descriptor->package(), true, true);
 }
 
-std::string GetUmbrellaClassNameInternal(const std::string& proto_file) {
+std::string GetUmbrellaClassUnqualifiedName(const FileDescriptor* descriptor) {
+  // umbrella_classname can no longer be set using message option.
+  std::string proto_file = descriptor->name();
   int lastslash = proto_file.find_last_of("/");
   std::string base = proto_file.substr(lastslash + 1);
   return UnderscoresToPascalCase(StripDotProto(base));
 }
 
-std::string GetFileUmbrellaClassname(const FileDescriptor* descriptor) {
-  // umbrella_classname can no longer be set using message option.
-  return GetUmbrellaClassNameInternal(descriptor->name());
-}
-
-std::string GetFileUmbrellaNamespace(const FileDescriptor* descriptor) {
+std::string GetUmbrellaClassNestedNamespace(const FileDescriptor* descriptor) {
   // TODO(jtattermusch): reintroduce csharp_umbrella_namespace option
   bool collision = false;
-  std::string umbrella_classname = GetFileUmbrellaClassname(descriptor);
+  std::string umbrella_classname = GetUmbrellaClassUnqualifiedName(descriptor);
   for(int i = 0; i < descriptor->message_type_count(); i++) {
     if (descriptor->message_type(i)->name() == umbrella_classname) {
       collision = true;
@@ -153,7 +152,8 @@ std::string GetFileUmbrellaNamespace(const FileDescriptor* descriptor) {
 
 // TODO(jtattermusch): can we reuse a utility function?
 std::string UnderscoresToCamelCase(const std::string& input,
-                                   bool cap_next_letter) {
+                                   bool cap_next_letter,
+                                   bool preserve_period) {
   string result;
   // Note:  I distrust ctype.h due to locales.
   for (int i = 0; i < input.size(); i++) {
@@ -179,6 +179,9 @@ std::string UnderscoresToCamelCase(const std::string& input,
       cap_next_letter = true;
     } else {
       cap_next_letter = true;
+      if (input[i] == '.' && preserve_period) {
+        result += '.';
+      }
     }
   }
   // Add a trailing "_" if the name should be altered.
@@ -205,30 +208,21 @@ std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
     // the C# namespace.
     classname = name.substr(file->package().size() + 1);
   }
-  result += StringReplace(classname, ".", ".Types.", false);
+  result += StringReplace(classname, ".", ".Types.", true);
   return "global::" + result;
 }
 
-
-
-std::string GetFullUmbrellaClassName(const FileDescriptor* descriptor) {
+std::string GetUmbrellaClassName(const FileDescriptor* descriptor) {
   std::string result = GetFileNamespace(descriptor);
   if (!result.empty()) {
     result += '.';
   }
-  result += GetQualifiedUmbrellaClassName(descriptor);
-  return "global::" + result;
-}
-
-std::string GetQualifiedUmbrellaClassName(const FileDescriptor* descriptor) {
-  std::string umbrellaNamespace = GetFileUmbrellaNamespace(descriptor);
-  std::string umbrellaClassname = GetFileUmbrellaClassname(descriptor);
-
-  std::string fullName = umbrellaClassname;
+  std::string umbrellaNamespace = GetUmbrellaClassNestedNamespace(descriptor);
   if (!umbrellaNamespace.empty()) {
-    fullName = umbrellaNamespace + "." + umbrellaClassname;
+      result += umbrellaNamespace + ".";
   }
-  return fullName;
+  result += GetUmbrellaClassUnqualifiedName(descriptor);
+  return "global::" + result;
 }
 
 std::string GetClassName(const Descriptor* descriptor) {
@@ -257,7 +251,13 @@ std::string GetFieldConstantName(const FieldDescriptor* field) {
 std::string GetPropertyName(const FieldDescriptor* descriptor) {
   // TODO(jtattermusch): consider introducing csharp_property_name field option
   std::string property_name = UnderscoresToPascalCase(GetFieldName(descriptor));
-  if (property_name == descriptor->containing_type()->name()) {
+  // Avoid either our own type name or reserved names. Note that not all names
+  // are reserved - a field called to_string, write_to etc would still cause a problem.
+  // There are various ways of ending up with naming collisions, but we try to avoid obvious
+  // ones.
+  if (property_name == descriptor->containing_type()->name()
+      || property_name == "Types"
+      || property_name == "Descriptor") {
     property_name += "_";
   }
   return property_name;
@@ -344,78 +344,50 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
     case FieldDescriptor::TYPE_GROUP:
     case FieldDescriptor::TYPE_MESSAGE:
       if (descriptor->is_repeated()) {
-        return new RepeatedMessageFieldGenerator(descriptor, fieldOrdinal);
+        if (descriptor->is_map()) {
+          return new MapFieldGenerator(descriptor, fieldOrdinal);
+        } else {
+          return new RepeatedMessageFieldGenerator(descriptor, fieldOrdinal);
+        }
       } else {
-	if (descriptor->containing_oneof()) {
-	  return new MessageOneofFieldGenerator(descriptor, fieldOrdinal);
-	} else {
-	  return new MessageFieldGenerator(descriptor, fieldOrdinal);
-	}
+        if (IsWrapperType(descriptor)) {
+          if (descriptor->containing_oneof()) {
+            return new WrapperOneofFieldGenerator(descriptor, fieldOrdinal);
+          } else {
+            return new WrapperFieldGenerator(descriptor, fieldOrdinal);
+          }
+        } else {
+          if (descriptor->containing_oneof()) {
+            return new MessageOneofFieldGenerator(descriptor, fieldOrdinal);
+          } else {
+            return new MessageFieldGenerator(descriptor, fieldOrdinal);
+          }
+        }
       }
     case FieldDescriptor::TYPE_ENUM:
       if (descriptor->is_repeated()) {
         return new RepeatedEnumFieldGenerator(descriptor, fieldOrdinal);
       } else {
-	if (descriptor->containing_oneof()) {
-	  return new EnumOneofFieldGenerator(descriptor, fieldOrdinal);
-	} else {
-	  return new EnumFieldGenerator(descriptor, fieldOrdinal);
-	}
+        if (descriptor->containing_oneof()) {
+          return new EnumOneofFieldGenerator(descriptor, fieldOrdinal);
+        } else {
+          return new EnumFieldGenerator(descriptor, fieldOrdinal);
+        }
       }
     default:
       if (descriptor->is_repeated()) {
         return new RepeatedPrimitiveFieldGenerator(descriptor, fieldOrdinal);
       } else {
-	if (descriptor->containing_oneof()) {
-	  return new PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal);
-	} else {
-	  return new PrimitiveFieldGenerator(descriptor, fieldOrdinal);
-	}
+        if (descriptor->containing_oneof()) {
+          return new PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal);
+        } else {
+          return new PrimitiveFieldGenerator(descriptor, fieldOrdinal);
+        }
       }
   }
 }
 
-bool HasRequiredFields(const Descriptor* descriptor, std::set<const Descriptor*>* already_seen) {
-  if (already_seen->find(descriptor) != already_seen->end()) {
-    // The type is already in cache.  This means that either:
-    // a. The type has no required fields.
-    // b. We are in the midst of checking if the type has required fields,
-    //    somewhere up the stack.  In this case, we know that if the type
-    //    has any required fields, they'll be found when we return to it,
-    //    and the whole call to HasRequiredFields() will return true.
-    //    Therefore, we don't have to check if this type has required fields
-    //    here.
-    return false;
-  }
-  already_seen->insert(descriptor);
-
-  // If the type has extensions, an extension with message type could contain
-  // required fields, so we have to be conservative and assume such an
-  // extension exists.
-  if (descriptor->extension_count() > 0) {
-    return true;
-  }
-
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    const FieldDescriptor* field = descriptor->field(i);
-    if (field->is_required()) {
-      return true;
-    }
-    if (GetCSharpType(field->type()) == CSHARPTYPE_MESSAGE) {
-      if (HasRequiredFields(field->message_type(), already_seen)) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-bool HasRequiredFields(const Descriptor* descriptor) {
-  std::set<const Descriptor*> already_seen;
-  return HasRequiredFields(descriptor, &already_seen);
-}
-
-}  // namespace java
+}  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

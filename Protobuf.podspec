@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
                      'objectivec/google/protobuf/*.pbobjc.{h,m}'
   s.header_mappings_dir = 'objectivec'
 
-  s.ios.deployment_target = '6.0'
-  s.osx.deployment_target = '10.8'
+  s.ios.deployment_target = '7.1'
+  s.osx.deployment_target = '10.9'
   s.requires_arc = false
 end

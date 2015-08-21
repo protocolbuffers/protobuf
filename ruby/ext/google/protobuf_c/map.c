@@ -169,8 +169,7 @@ VALUE Map_alloc(VALUE klass) {
   Map* self = ALLOC(Map);
   memset(self, 0, sizeof(Map));
   self->value_type_class = Qnil;
-  VALUE ret = TypedData_Wrap_Struct(klass, &Map_type, self);
-  return ret;
+  return TypedData_Wrap_Struct(klass, &Map_type, self);
 }
 
 static bool needs_typeclass(upb_fieldtype_t type) {
@@ -215,6 +214,7 @@ static bool needs_typeclass(upb_fieldtype_t type) {
  */
 VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
   Map* self = ruby_to_Map(_self);
+  int init_value_arg;
 
   // We take either two args (:key_type, :value_type), three args (:key_type,
   // :value_type, "ValueMessageType"), or four args (the above plus an initial
@@ -241,7 +241,7 @@ VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
       rb_raise(rb_eArgError, "Invalid key type for map.");
   }
 
-  int init_value_arg = 2;
+  init_value_arg = 2;
   if (needs_typeclass(self->value_type) && argc > 2) {
     self->value_type_class = argv[2];
     validate_type_class(self->value_type, self->value_type_class);
@@ -356,9 +356,9 @@ VALUE Map_index(VALUE _self, VALUE key) {
   char keybuf[TABLE_KEY_BUF_LENGTH];
   const char* keyval = NULL;
   size_t length = 0;
+  upb_value v;
   table_key(self, key, keybuf, &keyval, &length);
 
-  upb_value v;
   if (upb_strtable_lookup2(&self->table, keyval, length, &v)) {
     void* mem = value_memory(&v);
     return native_slot_get(self->value_type, self->value_type_class, mem);
@@ -381,10 +381,11 @@ VALUE Map_index_set(VALUE _self, VALUE key, VALUE value) {
   char keybuf[TABLE_KEY_BUF_LENGTH];
   const char* keyval = NULL;
   size_t length = 0;
+  upb_value v;
+  void* mem;
   table_key(self, key, keybuf, &keyval, &length);
 
-  upb_value v;
-  void* mem = value_memory(&v);
+  mem = value_memory(&v);
   native_slot_set(self->value_type, self->value_type_class, mem, value);
 
   // Replace any existing value by issuing a 'remove' operation first.
@@ -432,9 +433,9 @@ VALUE Map_delete(VALUE _self, VALUE key) {
   char keybuf[TABLE_KEY_BUF_LENGTH];
   const char* keyval = NULL;
   size_t length = 0;
+  upb_value v;
   table_key(self, key, keybuf, &keyval, &length);
 
-  upb_value v;
   if (upb_strtable_remove2(&self->table, keyval, length, &v)) {
     void* mem = value_memory(&v);
     return native_slot_get(self->value_type, self->value_type_class, mem);
@@ -564,6 +565,8 @@ VALUE Map_deep_copy(VALUE _self) {
  */
 VALUE Map_eq(VALUE _self, VALUE _other) {
   Map* self = ruby_to_Map(_self);
+  Map* other;
+  upb_strtable_iter it;
 
   // Allow comparisons to Ruby hashmaps by converting to a temporary Map
   // instance. Slow, but workable.
@@ -573,7 +576,7 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
     _other = other_map;
   }
 
-  Map* other = ruby_to_Map(_other);
+  other = ruby_to_Map(_other);
 
   if (self == other) {
     return Qtrue;
@@ -589,7 +592,6 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
 
   // For each member of self, check that an equal member exists at the same key
   // in other.
-  upb_strtable_iter it;
   for (upb_strtable_begin(&it, &self->table);
        !upb_strtable_done(&it);
        upb_strtable_next(&it)) {
@@ -719,6 +721,7 @@ VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
 
     Map* self = ruby_to_Map(_self);
     Map* other = ruby_to_Map(hashmap);
+    upb_strtable_iter it;
 
     if (self->key_type != other->key_type ||
         self->value_type != other->value_type ||
@@ -726,19 +729,19 @@ VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
       rb_raise(rb_eArgError, "Attempt to merge Map with mismatching types");
     }
 
-    upb_strtable_iter it;
     for (upb_strtable_begin(&it, &other->table);
          !upb_strtable_done(&it);
          upb_strtable_next(&it)) {
 
       // Replace any existing value by issuing a 'remove' operation first.
+      upb_value v;
       upb_value oldv;
       upb_strtable_remove2(&self->table,
                            upb_strtable_iter_key(&it),
                            upb_strtable_iter_keylength(&it),
                            &oldv);
 
-      upb_value v = upb_strtable_iter_value(&it);
+      v = upb_strtable_iter_value(&it);
       upb_strtable_insert2(&self->table,
                            upb_strtable_iter_key(&it),
                            upb_strtable_iter_keylength(&it),

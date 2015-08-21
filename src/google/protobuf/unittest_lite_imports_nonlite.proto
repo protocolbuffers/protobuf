@@ -38,7 +38,6 @@ package protobuf_unittest;
 import "google/protobuf/unittest.proto";
 
 option optimize_for = LITE_RUNTIME;
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 message TestLiteImportsNonlite {
   optional TestAllTypes message = 1;

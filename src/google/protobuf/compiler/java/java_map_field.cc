@@ -156,9 +156,7 @@ ImmutableMapFieldGenerator(const FieldDescriptor* descriptor,
                                        int messageBitIndex,
                                        int builderBitIndex,
                                        Context* context)
-  : descriptor_(descriptor), messageBitIndex_(messageBitIndex),
-    builderBitIndex_(builderBitIndex), context_(context),
-    name_resolver_(context->GetNameResolver())  {
+  : descriptor_(descriptor), name_resolver_(context->GetNameResolver())  {
   SetMessageVariables(descriptor, messageBitIndex, builderBitIndex,
                       context->GetFieldGeneratorInfo(descriptor),
                       name_resolver_, &variables_);

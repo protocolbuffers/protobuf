@@ -30,8 +30,8 @@
 
 #import <Foundation/Foundation.h>
 
-#import "google/protobuf/Timestamp.pbobjc.h"
 #import "google/protobuf/Duration.pbobjc.h"
+#import "google/protobuf/Timestamp.pbobjc.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

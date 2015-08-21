@@ -35,7 +35,6 @@
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <sstream>
@@ -55,9 +54,6 @@ FileGenerator::FileGenerator(const FileDescriptor *file)
     : file_(file),
       root_class_name_(FileClassName(file)),
       is_public_dep_(false) {
-  // Validate the objc prefix.
-  ValidateObjCClassPrefix(file_);
-
   for (int i = 0; i < file_->enum_type_count(); i++) {
     EnumGenerator *generator = new EnumGenerator(file_->enum_type(i));
     enum_generators_.push_back(generator);

@@ -69,15 +69,15 @@ CSharpType GetCSharpType(FieldDescriptor::Type type);
 
 std::string StripDotProto(const std::string& proto_file);
 
-std::string GetFileNamespace(const FileDescriptor* descriptor);
-std::string GetFileUmbrellaClassname(const FileDescriptor* descriptor);
-std::string GetFileUmbrellaNamespace(const FileDescriptor* descriptor);
+// Gets unqualified name of the umbrella class
+std::string GetUmbrellaClassUnqualifiedName(const FileDescriptor* descriptor);
 
-std::string GetFullUmbrellaClassName(const FileDescriptor* descriptor);
-
-std::string GetQualifiedUmbrellaClassName(const FileDescriptor* descriptor);
+// Gets name of the nested for umbrella class (just the nested part,
+// not including the GetFileNamespace part).
+std::string GetUmbrellaClassNestedNamespace(const FileDescriptor* descriptor);
 
 std::string GetClassName(const Descriptor* descriptor);
+
 std::string GetClassName(const EnumDescriptor* descriptor);
 
 std::string GetFieldName(const FieldDescriptor* descriptor);
@@ -88,7 +88,11 @@ std::string GetPropertyName(const FieldDescriptor* descriptor);
 
 int GetFixedSize(FieldDescriptor::Type type);
 
-std::string UnderscoresToCamelCase(const std::string& input, bool cap_next_letter);
+std::string UnderscoresToCamelCase(const std::string& input, bool cap_next_letter, bool preserve_period);
+
+inline std::string UnderscoresToCamelCase(const std::string& input, bool cap_next_letter) {
+  return UnderscoresToCamelCase(input, cap_next_letter, false);
+}
 
 std::string UnderscoresToPascalCase(const std::string& input);
 
@@ -97,12 +101,31 @@ std::string StringToBase64(const std::string& input);
 
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor);
 
+uint FixedMakeTag(const FieldDescriptor* descriptor);
+
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
 
-bool HasRequiredFields(const Descriptor* descriptor);
+// Determines whether the given message is a map entry message, i.e. one implicitly created
+// by protoc due to a map<key, value> field.
+inline bool IsMapEntryMessage(const Descriptor* descriptor) {
+  return descriptor->options().map_entry();
+}
 
-inline bool SupportFieldPresence(const FileDescriptor* file) {
-  return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
+// Determines whether we're generating code for the proto representation of descriptors etc,
+// for use in the runtime. This is the only type which is allowed to use proto2 syntax,
+// and it generates internal classes.
+inline bool IsDescriptorProto(const FileDescriptor* descriptor) {
+  // TODO: Do this better! (Currently this depends on a hack in generate_protos.sh to rename
+  // the file...)
+  // We need to be able to detect the "normal" name as well, for times that we're just
+  // depending on descriptor.proto instead of generating it.
+  return descriptor->name() == "google/protobuf/descriptor_proto_file.proto"
+      || descriptor->name() == "google/protobuf/descriptor.proto";
+}
+
+inline bool IsWrapperType(const FieldDescriptor* descriptor) {
+  return descriptor->type() == FieldDescriptor::TYPE_MESSAGE &&
+      descriptor->message_type()->file()->name() == "google/protobuf/wrappers.proto";
 }
 
 }  // namespace csharp

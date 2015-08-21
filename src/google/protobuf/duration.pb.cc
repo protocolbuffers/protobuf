@@ -82,9 +82,9 @@ void protobuf_AddDesc_google_2fprotobuf_2fduration_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\036google/protobuf/duration.proto\022\017google"
     ".protobuf\"*\n\010Duration\022\017\n\007seconds\030\001 \001(\003\022\r"
-    "\n\005nanos\030\002 \001(\005BH\n\023com.google.protobufB\rDu"
-    "rationProtoP\001\240\001\001\242\002\003GPB\252\002\026Google.Protocol"
-    "Buffersb\006proto3", 175);
+    "\n\005nanos\030\002 \001(\005BP\n\023com.google.protobufB\rDu"
+    "rationProtoP\001\240\001\001\242\002\003GPB\252\002\036Google.Protobuf"
+    ".WellKnownTypesb\006proto3", 183);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/duration.proto", &protobuf_RegisterTypes);
   Duration::default_instance_ = new Duration();

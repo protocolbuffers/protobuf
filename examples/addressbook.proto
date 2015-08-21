@@ -1,17 +1,17 @@
 // See README.txt for information and build instructions.
 
-syntax = "proto2";
+syntax = "proto3";
 
 package tutorial;
 
 option java_package = "com.example.tutorial";
 option java_outer_classname = "AddressBookProtos";
-option csharp_namespace = "Google.ProtocolBuffers.Examples.AddressBook";
+option csharp_namespace = "Google.Protobuf.Examples.AddressBook";
 
 message Person {
-  required string name = 1;
-  required int32 id = 2;        // Unique ID number for this person.
-  optional string email = 3;
+  string name = 1;
+  int32 id = 2;        // Unique ID number for this person.
+  string email = 3;
 
   enum PhoneType {
     MOBILE = 0;
@@ -20,14 +20,14 @@ message Person {
   }
 
   message PhoneNumber {
-    required string number = 1;
-    optional PhoneType type = 2 [default = HOME];
+    string number = 1;
+    PhoneType type = 2;
   }
 
-  repeated PhoneNumber phone = 4;
+  repeated PhoneNumber phones = 4;
 }
 
 // Our address book file is just one of these.
 message AddressBook {
-  repeated Person person = 1;
+  repeated Person people = 1;
 }

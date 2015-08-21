@@ -153,8 +153,9 @@ void protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto() {
     "esponse_streaming\030\005 \001(\010\022(\n\007options\030\006 \003(\013"
     "2\027.google.protobuf.Option\022\'\n\006syntax\030\007 \001("
     "\0162\027.google.protobuf.Syntax\"#\n\005Mixin\022\014\n\004n"
-    "ame\030\001 \001(\t\022\014\n\004root\030\002 \001(\tB*\n\023com.google.pr"
-    "otobufB\010ApiProtoP\001\240\001\001\242\002\003GPBb\006proto3", 675);
+    "ame\030\001 \001(\t\022\014\n\004root\030\002 \001(\tBK\n\023com.google.pr"
+    "otobufB\010ApiProtoP\001\240\001\001\242\002\003GPB\252\002\036Google.Pro"
+    "tobuf.WellKnownTypesb\006proto3", 708);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/api.proto", &protobuf_RegisterTypes);
   Api::default_instance_ = new Api();

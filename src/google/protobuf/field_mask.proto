@@ -31,11 +31,11 @@ syntax = "proto3";
 
 package google.protobuf;
 
-option csharp_namespace = "Google.ProtocolBuffers";
 option java_generate_equals_and_hash = true;
 option java_multiple_files = true;
 option java_outer_classname = "FieldMaskProto";
 option java_package = "com.google.protobuf";
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option objc_class_prefix = "GPB";
 
 // `FieldMask` represents a set of symbolic field paths, for example:

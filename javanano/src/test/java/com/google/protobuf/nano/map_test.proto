@@ -32,7 +32,7 @@ syntax = "proto3";
 
 package map_test;
 
-option java_package = "com.google.protobuf.nano";
+option java_package = "com.google.protobuf";
 option java_outer_classname = "MapTestProto";
 
 message TestMap {

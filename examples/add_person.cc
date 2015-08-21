@@ -32,7 +32,7 @@ void PromptForAddress(tutorial::Person* person) {
       break;
     }
 
-    tutorial::Person::PhoneNumber* phone_number = person->add_phone();
+    tutorial::Person::PhoneNumber* phone_number = person->add_phones();
     phone_number->set_number(number);
 
     cout << "Is this a mobile, home, or work phone? ";
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Add an address.
-  PromptForAddress(address_book.add_person());
+  PromptForAddress(address_book.add_people());
 
   {
     // Write the new address book back to disk.

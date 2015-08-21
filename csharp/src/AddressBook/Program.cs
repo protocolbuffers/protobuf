@@ -1,10 +1,7 @@
 ﻿#region Copyright notice and license
-
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// http://github.com/jskeet/dotnet-protobufs/
-// Original C++/Java/Python code:
-// http://code.google.com/p/protobuf/
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -31,12 +28,11 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 #endregion
 
 using System;
 
-namespace Google.ProtocolBuffers.Examples.AddressBook
+namespace Google.Protobuf.Examples.AddressBook
 {
     /// <summary>
     /// Entry point. Repeatedly prompts user for an action to take, delegating actual behaviour
