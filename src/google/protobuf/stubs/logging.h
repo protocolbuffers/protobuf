@@ -65,6 +65,7 @@ class StringPiece;
 namespace util {
 class Status;
 }
+class uint128;
 namespace internal {
 
 class LogFinisher;
@@ -78,7 +79,7 @@ class LIBPROTOBUF_EXPORT LogMessage {
   LogMessage& operator<<(const char* value);
   LogMessage& operator<<(char value);
   LogMessage& operator<<(int value);
-  LogMessage& operator<<(unsigned int value);
+  LogMessage& operator<<(uint value);
   LogMessage& operator<<(long value);
   LogMessage& operator<<(unsigned long value);
   LogMessage& operator<<(long long value);
@@ -87,6 +88,7 @@ class LIBPROTOBUF_EXPORT LogMessage {
   LogMessage& operator<<(void* value);
   LogMessage& operator<<(const StringPiece& value);
   LogMessage& operator<<(const ::google::protobuf::util::Status& status);
+  LogMessage& operator<<(const uint128& value);
 
  private:
   friend class LogFinisher;

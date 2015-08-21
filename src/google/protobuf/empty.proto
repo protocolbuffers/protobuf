@@ -31,11 +31,11 @@ syntax = "proto3";
 
 package google.protobuf;
 
-option java_multiple_files = true;
-option java_outer_classname = "EmptyProto";
 option java_package = "com.google.protobuf";
+option java_outer_classname = "EmptyProto";
+option java_multiple_files = true;
+option java_generate_equals_and_hash = true;
 option objc_class_prefix = "GPB";
-
 
 // A generic empty message that you can re-use to avoid defining duplicated
 // empty messages in your APIs. A typical example is to use it as the request
@@ -45,6 +45,5 @@ option objc_class_prefix = "GPB";
 //       rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);
 //     }
 //
-message Empty {
-
-}
+// The JSON representation for `Empty` is empty JSON object `{}`.
+message Empty {}

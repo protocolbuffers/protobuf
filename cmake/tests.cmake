@@ -21,6 +21,7 @@ set(lite_test_protos
   google/protobuf/unittest_import_lite.proto
   google/protobuf/unittest_import_public_lite.proto
   google/protobuf/unittest_lite.proto
+  google/protobuf/unittest_no_arena_lite.proto
 )
 
 set(tests_protos
@@ -40,6 +41,7 @@ set(tests_protos
   google/protobuf/unittest_import_public.proto
   google/protobuf/unittest_lite_imports_nonlite.proto
   google/protobuf/unittest_mset.proto
+  google/protobuf/unittest_mset_wire_format.proto
   google/protobuf/unittest_no_arena.proto
   google/protobuf/unittest_no_arena_import.proto
   google/protobuf/unittest_no_field_presence.proto
@@ -55,6 +57,7 @@ set(tests_protos
   google/protobuf/util/internal/testdata/default_value_test.proto
   google/protobuf/util/internal/testdata/field_mask.proto
   google/protobuf/util/internal/testdata/maps.proto
+  google/protobuf/util/internal/testdata/oneofs.proto
   google/protobuf/util/internal/testdata/struct.proto
   google/protobuf/util/internal/testdata/timestamp_duration.proto
   google/protobuf/util/json_format_proto3.proto
@@ -134,6 +137,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/repeated_field_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/common_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/stubs/int128_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/once_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/status_test.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/statusor_test.cc
@@ -147,6 +151,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/text_format_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/unknown_field_set_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/util/field_comparator_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/field_mask_util_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/default_value_objectwriter_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/json_objectwriter_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/json_stream_parser_test.cc
@@ -154,6 +159,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectwriter_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/type_info_test_helper.cc
   ${protobuf_source_dir}/src/google/protobuf/util/json_util_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/time_util_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/type_resolver_util_test.cc
   ${protobuf_source_dir}/src/google/protobuf/well_known_types_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/wire_format_unittest.cc

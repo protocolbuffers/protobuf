@@ -34,6 +34,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum_field_lite.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_extension.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_file.cc

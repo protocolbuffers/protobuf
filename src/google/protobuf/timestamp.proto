@@ -38,7 +38,6 @@ option java_package = "com.google.protobuf";
 option csharp_namespace = "Google.ProtocolBuffers";
 option objc_class_prefix = "GPB";
 
-
 // A Timestamp represents a point in time independent of any time zone
 // or calendar, represented as seconds and fractions of seconds at
 // nanosecond resolution in UTC Epoch time. It is encoded using the
@@ -85,14 +84,16 @@ option objc_class_prefix = "GPB";
 //     Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
 //         .setNanos((int) ((millis % 1000) * 1000000)).build();
 //
-// Example 5: Compute Timestamp from Python `datetime.datetime`.
 //
-//     now = datetime.datetime.utcnow()
-//     seconds = int(time.mktime(now.timetuple()))
-//     nanos = now.microsecond * 1000
+// Example 5: Compute Timestamp from current time in Python.
+//
+//     now = time.time()
+//     seconds = int(now)
+//     nanos = int((now - seconds) * 10**9)
 //     timestamp = Timestamp(seconds=seconds, nanos=nanos)
 //
 message Timestamp {
+
   // Represents seconds of UTC time since Unix epoch
   // 1970-01-01T00:00:00Z. Must be from from 0001-01-01T00:00:00Z to
   // 9999-12-31T23:59:59Z inclusive.

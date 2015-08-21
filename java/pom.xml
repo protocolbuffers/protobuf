@@ -114,6 +114,7 @@
                   <arg value="../src/google/protobuf/unittest_import.proto" />
                   <arg value="../src/google/protobuf/unittest_import_public.proto" />
                   <arg value="../src/google/protobuf/unittest_mset.proto" />
+                  <arg value="../src/google/protobuf/unittest_mset_wire_format.proto" />
                   <arg value="src/test/java/com/google/protobuf/lazy_fields_lite.proto" />
                   <arg value="src/test/java/com/google/protobuf/lite_equals_and_hash.proto" />
                   <arg

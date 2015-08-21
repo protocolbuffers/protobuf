@@ -133,11 +133,6 @@ done
 # Update bazel BUILD files.
 ################################################################################
 
-BAZEL_BUILD=./BUILD
-[ -f "$BAZEL_BUILD" ] || {
-  echo "Cannot find: $BAZEL_BUILD"
-  exit 1
-}
 set_bazel_value() {
   local FILENAME=$1
   local VARNAME=$2
@@ -169,14 +164,19 @@ set_bazel_value() {
 }
 
 
+BAZEL_BUILD=./BUILD
 BAZEL_PREFIX="src/"
-set_bazel_value $BAZEL_BUILD protobuf_lite_srcs $BAZEL_PREFIX $LIBPROTOBUF_LITE_SOURCES
-set_bazel_value $BAZEL_BUILD protobuf_srcs $BAZEL_PREFIX $LIBPROTOBUF_SOURCES
-set_bazel_value $BAZEL_BUILD protoc_lib_srcs $BAZEL_PREFIX $LIBPROTOC_SOURCES
-set_bazel_value $BAZEL_BUILD lite_test_protos "" $LITE_PROTOS
-set_bazel_value $BAZEL_BUILD well_known_protos "" $WKT_PROTOS
-set_bazel_value $BAZEL_BUILD test_protos "" $PROTOS
-set_bazel_value $BAZEL_BUILD common_test_srcs $BAZEL_PREFIX $COMMON_TEST_SOURCES
-set_bazel_value $BAZEL_BUILD test_srcs $BAZEL_PREFIX $TEST_SOURCES
-set_bazel_value $BAZEL_BUILD test_plugin_srcs $BAZEL_PREFIX $TEST_PLUGIN_SOURCES
+if [ -f "$BAZEL_BUILD" ]; then
+  set_bazel_value $BAZEL_BUILD protobuf_lite_srcs $BAZEL_PREFIX $LIBPROTOBUF_LITE_SOURCES
+  set_bazel_value $BAZEL_BUILD protobuf_srcs $BAZEL_PREFIX $LIBPROTOBUF_SOURCES
+  set_bazel_value $BAZEL_BUILD protoc_lib_srcs $BAZEL_PREFIX $LIBPROTOC_SOURCES
+  set_bazel_value $BAZEL_BUILD lite_test_protos "" $LITE_PROTOS
+  set_bazel_value $BAZEL_BUILD well_known_protos "" $WKT_PROTOS
+  set_bazel_value $BAZEL_BUILD test_protos "" $PROTOS
+  set_bazel_value $BAZEL_BUILD common_test_srcs $BAZEL_PREFIX $COMMON_TEST_SOURCES
+  set_bazel_value $BAZEL_BUILD test_srcs $BAZEL_PREFIX $TEST_SOURCES
+  set_bazel_value $BAZEL_BUILD test_plugin_srcs $BAZEL_PREFIX $TEST_PLUGIN_SOURCES
+else
+  echo "Skipped BUILD file update."
+fi
 

@@ -27,20 +27,40 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-syntax = "proto3";
 
-package google.protobuf;
+// This file contains messages that extend MessageSet.
 
-option java_package = "com.google.protobuf";
-option java_outer_classname = "SourceContextProto";
-option java_multiple_files = true;
-option java_generate_equals_and_hash = true;
-option objc_class_prefix = "GPB";
+syntax = "proto2";
+package google.protobuf.internal;
 
-// `SourceContext` represents information about the source of a
-// protobuf element, like the file in which it is defined.
-message SourceContext {
-  // The path-qualified name of the .proto file that contained the associated
-  // protobuf element.  For example: `"google/protobuf/source.proto"`.
-  string file_name = 1;
+
+// A message with message_set_wire_format.
+message TestMessageSet {
+  option message_set_wire_format = true;
+  extensions 4 to max;
 }
+
+message TestMessageSetExtension1 {
+  extend TestMessageSet {
+    optional TestMessageSetExtension1 message_set_extension = 98418603;
+  }
+  optional int32 i = 15;
+}
+
+message TestMessageSetExtension2 {
+  extend TestMessageSet {
+    optional TestMessageSetExtension2 message_set_extension = 98418634;
+  }
+  optional string str = 25;
+}
+
+// This message was used to generate
+// //net/proto2/python/internal/testdata/message_set_message, but is commented
+// out since it must not actually exist in code, to simulate an "unknown"
+// extension.
+// message TestMessageSetUnknownExtension {
+//   extend TestMessageSet {
+//     optional TestMessageSetUnknownExtension message_set_extension = 56141421;
+//   }
+//   optional int64 a = 1;
+// }

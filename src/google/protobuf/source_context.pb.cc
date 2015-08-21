@@ -81,8 +81,8 @@ void protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n$google/protobuf/source_context.proto\022\017"
     "google.protobuf\"\"\n\rSourceContext\022\021\n\tfile"
-    "_name\030\001 \001(\tB1\n\023com.google.protobufB\022Sour"
-    "ceContextProtoP\001\242\002\003GPBb\006proto3", 150);
+    "_name\030\001 \001(\tB4\n\023com.google.protobufB\022Sour"
+    "ceContextProtoP\001\240\001\001\242\002\003GPBb\006proto3", 153);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/source_context.proto", &protobuf_RegisterTypes);
   SourceContext::default_instance_ = new SourceContext();
