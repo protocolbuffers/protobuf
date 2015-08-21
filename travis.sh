@@ -113,10 +113,13 @@ build_javanano_oracle7() {
 
 internal_install_python_deps() {
   sudo pip install tox
-  sudo apt-get install -y python-software-properties # for apt-add-repository
-  sudo apt-add-repository -y ppa:fkrull/deadsnakes
-  sudo apt-get update -qq
-  sudo apt-get install -y python2.6 python2.6-dev
+  # Only install Python2.6 on Linux.
+  if [ $(uname -s) == "Linux" ]; then
+    sudo apt-get install -y python-software-properties # for apt-add-repository
+    sudo apt-add-repository -y ppa:fkrull/deadsnakes
+    sudo apt-get update -qq
+    sudo apt-get install -y python2.6 python2.6-dev
+  fi
 }
 
 
@@ -124,7 +127,13 @@ build_python() {
   internal_build_cpp
   internal_install_python_deps
   cd python
-  tox -e py26-python,py27-python
+  # Only test Python 2.6 on Linux
+  if [ $(uname -s) == "Linux" ]; then
+    envlist=py26-python,py27-python
+  else
+    envlist=py27-python
+  fi
+  tox -e $envlist
   cd ..
 }
 
@@ -134,7 +143,13 @@ build_python_cpp() {
   export LD_LIBRARY_PATH=../src/.libs # for Linux
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
-  tox -e py26-cpp,py27-cpp
+  # Only test Python 2.6 on Linux
+  if [ $(uname -s) == "Linux" ]; then
+    envlist=py26-cpp,py27-cpp
+  else
+    envlist=py27-cpp
+  fi
+  tox -e $envlist
   cd ..
 }
 
