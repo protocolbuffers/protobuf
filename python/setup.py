@@ -32,6 +32,8 @@ else:
   from distutils.command.build_py import build_py as _build_py
 from distutils.spawn import find_executable
 
+CPP_IMPL = '--cpp_implementation'
+
 # Find the Protocol Compiler.
 if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
   protoc = os.environ['PROTOC']
@@ -126,6 +128,26 @@ class clean(_clean):
     _clean.run(self)
 
 
+def add_cpp_extension(ext_module_list, include_dir, library_dir):
+  """Adds an extension to extension module list.
+
+  This extension enables a native C++ extension (assumes libprotobuf.so
+  is installed on the system).
+  """
+  # C++ implementation extension
+  ext_module_list.append(
+      Extension(
+          "google.protobuf.pyext._message",
+          glob.glob('google/protobuf/pyext/*.cc'),
+          define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
+          include_dirs=[".", include_dir],
+          libraries=['protobuf'],
+          library_dirs=[library_dir],
+      )
+  )
+  os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
+
+
 class build_py(_build_py):
   def run(self):
     # Generate necessary .proto file if it doesn't exist.
@@ -151,21 +173,24 @@ class build_py(_build_py):
 
 if __name__ == '__main__':
   ext_module_list = []
-  cpp_impl = '--cpp_implementation'
-  if cpp_impl in sys.argv:
-    sys.argv.remove(cpp_impl)
-    # C++ implementation extension
-    ext_module_list.append(
-        Extension(
-            "google.protobuf.pyext._message",
-            glob.glob('google/protobuf/pyext/*.cc'),
-            define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
-            include_dirs=[".", "../src"],
-            libraries=['protobuf'],
-            library_dirs=['../src/.libs'],
-        )
-    )
-    os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
+  include_dir = library_dir = None
+  if CPP_IMPL in sys.argv:
+    sys.argv.remove(CPP_IMPL)
+    include_dir = '../src'
+    library_dir = '../src/.libs'
+  elif (find_executable('pkg-config') is not None and
+        subprocess.call(['pkg-config', 'protobuf']) == 0):
+    # If the CPP_IMPL flag is not provided, check if the necessary
+    # system library is installed locally. We need to make sure pkg-config
+    # exists on the system than use it to check for system libraries.
+    include_dir = subprocess.check_output([
+        'pkg-config', 'protobuf', '--cflags-only-I']).strip()
+    library_dir = subprocess.check_output([
+        'pkg-config', 'protobuf', '--libs-only-L']).strip()
+
+  # If either check above works, we add the extension.
+  if include_dir is not None and library_dir is not None:
+    add_cpp_extension(ext_module_list, include_dir, library_dir)
 
   setup(
       name='protobuf',
