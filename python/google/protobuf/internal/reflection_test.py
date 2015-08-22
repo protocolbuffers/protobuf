@@ -614,10 +614,10 @@ class ReflectionTest(unittest.TestCase):
     def TestGetAndDeserialize(field_name, value, expected_type):
       proto = unittest_pb2.TestAllTypes()
       setattr(proto, field_name, value)
-      self.assertTrue(isinstance(getattr(proto, field_name), expected_type))
+      self.assertIsInstance(getattr(proto, field_name), expected_type)
       proto2 = unittest_pb2.TestAllTypes()
       proto2.ParseFromString(proto.SerializeToString())
-      self.assertTrue(isinstance(getattr(proto2, field_name), expected_type))
+      self.assertIsInstance(getattr(proto2, field_name), expected_type)
 
     TestGetAndDeserialize('optional_int32', 1, int)
     TestGetAndDeserialize('optional_int32', 1 << 30, int)
@@ -903,7 +903,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertTrue(proto.repeated_nested_message)
     self.assertEqual(2, len(proto.repeated_nested_message))
     self.assertListsEqual([m0, m1], proto.repeated_nested_message)
-    self.assertTrue(isinstance(m0, unittest_pb2.TestAllTypes.NestedMessage))
+    self.assertIsInstance(m0, unittest_pb2.TestAllTypes.NestedMessage)
 
     # Test out-of-bounds indices.
     self.assertRaises(IndexError, proto.repeated_nested_message.__getitem__,

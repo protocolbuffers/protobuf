@@ -43,7 +43,7 @@ A simple example:
        (4, 5, 9),
        (1, 1, 3))
     def testAddition(self, op1, op2, result):
-      self.assertEquals(result, op1 + op2)
+      self.assertEqual(result, op1 + op2)
 
 
 Each invocation is a separate test case and properly isolated just
@@ -60,7 +60,7 @@ or dictionaries (with named parameters):
        {'op1': 4, 'op2': 5, 'result': 9},
     )
     def testAddition(self, op1, op2, result):
-      self.assertEquals(result, op1 + op2)
+      self.assertEqual(result, op1 + op2)
 
 If a parameterized test fails, the error message will show the
 original test name (which is modified internally) and the arguments
@@ -88,7 +88,7 @@ str()):
        ('EmptyPrefix', '', 'abc', True),
        ('BothEmpty', '', '', True))
     def testStartsWith(self, prefix, string, result):
-      self.assertEquals(result, strings.startswith(prefix))
+      self.assertEqual(result, strings.startswith(prefix))
 
 Named tests also have the benefit that they can be run individually
 from the command line:
@@ -127,7 +127,7 @@ the decorator. This iterable will be used to obtain the test cases:
       c.op1, c.op2, c.result for c in testcases
     )
     def testAddition(self, op1, op2, result):
-      self.assertEquals(result, op1 + op2)
+      self.assertEqual(result, op1 + op2)
 
 
 Single-Argument Test Methods

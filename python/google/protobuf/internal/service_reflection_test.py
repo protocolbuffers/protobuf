@@ -83,7 +83,7 @@ class FooUnitTest(unittest.TestCase):
     self.assertEqual('Method Bar not implemented.',
                      rpc_controller.failure_message)
     self.assertEqual(None, self.callback_response)
-    
+
     class MyServiceImpl(unittest_pb2.TestService):
       def Foo(self, rpc_controller, request, done):
         self.foo_called = True
@@ -128,8 +128,7 @@ class FooUnitTest(unittest.TestCase):
     # Invoke method.
     stub.Foo(rpc_controller, request, MyCallback)
 
-    self.assertTrue(isinstance(self.callback_response,
-                               unittest_pb2.FooResponse))
+    self.assertIsInstance(self.callback_response, unittest_pb2.FooResponse)
     self.assertEqual(request, channel.request)
     self.assertEqual(rpc_controller, channel.controller)
     self.assertEqual(stub.GetDescriptor().methods[0], channel.method)
