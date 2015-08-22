@@ -34,7 +34,10 @@
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-import unittest
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 from google.protobuf import message
 from google.protobuf.internal import wire_format
 

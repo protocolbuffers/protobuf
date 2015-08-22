@@ -35,7 +35,11 @@
 
 __author__ = 'bohdank@google.com (Bohdan Koval)'
 
-import unittest
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
+
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2

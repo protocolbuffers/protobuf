@@ -28,8 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Needs to stay compatible with Python 2.5 due to GAE.
-#
 # Copyright 2007 Google Inc. All Rights Reserved.
 
 """Descriptors essentially contain exactly the information found in a .proto
@@ -918,5 +916,5 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
 
   desc_name = '.'.join(full_message_name)
   return Descriptor(desc_proto.name, desc_name, None, None, fields,
-                    nested_types.values(), enum_types.values(), [],
+                    list(nested_types.values()), list(enum_types.values()), [],
                     options=desc_proto.options)
