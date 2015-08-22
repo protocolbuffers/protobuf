@@ -69,19 +69,15 @@ class ParseError(Error):
 
 class TextWriter(object):
   def __init__(self, as_utf8):
-    self._utf8 = as_utf8
-    if as_utf8:
+    if six.PY2:
       self._writer = io.BytesIO()
     else:
       self._writer = io.StringIO()
 
   def write(self, val):
-    if self._utf8:
+    if six.PY2:
       if isinstance(val, six.text_type):
         val = val.encode('utf-8')
-    else:
-      if isinstance(val, bytes):
-        val = val.decode('utf-8')
     return self._writer.write(val)
 
   def close(self):
@@ -245,8 +241,7 @@ def PrintFieldValue(field, value, out, indent=0, as_utf8=False,
       out_as_utf8 = False
     else:
       out_as_utf8 = as_utf8
-    out_text = text_encoding.CEscape(out_value, out_as_utf8)
-    out.write(out_text)
+    out.write(text_encoding.CEscape(out_value, out_as_utf8))
     out.write('\"')
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
     if value:

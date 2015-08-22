@@ -36,6 +36,8 @@ file, in types that make this information accessible in Python.
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+import six
+
 from google.protobuf.internal import api_implementation
 
 
@@ -73,7 +75,7 @@ else:
   DescriptorMetaclass = type
 
 
-class DescriptorBase(object):
+class DescriptorBase(six.with_metaclass(DescriptorMetaclass)):
 
   """Descriptors base class.
 
@@ -88,7 +90,6 @@ class DescriptorBase(object):
         avoid some bootstrapping issues.
   """
 
-  __metaclass__ = DescriptorMetaclass
   if _USE_C_DESCRIPTORS:
     # The class, or tuple of classes, that are considered as "virtual
     # subclasses" of this descriptor class.
