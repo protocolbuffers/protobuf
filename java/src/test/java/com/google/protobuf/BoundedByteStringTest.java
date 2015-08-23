@@ -85,6 +85,7 @@ public class BoundedByteStringTest extends LiteralByteStringTest {
         testString.substring(2, testString.length() - 6), roundTripString);
   }
 
+  @Override
   public void testJavaSerialization() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(out);

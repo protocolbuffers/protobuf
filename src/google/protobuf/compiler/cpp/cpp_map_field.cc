@@ -100,8 +100,9 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
 
 MapFieldGenerator::
 MapFieldGenerator(const FieldDescriptor* descriptor,
-                              const Options& options)
-    : descriptor_(descriptor) {
+                  const Options& options)
+    : descriptor_(descriptor),
+      dependent_field_(options.proto_h && IsFieldDependent(descriptor)) {
   SetMessageVariables(descriptor, &variables_, options);
 }
 
@@ -152,7 +153,9 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
 
 void MapFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_.Clear();\n");
+  map<string, string> variables(variables_);
+  variables["this_message"] = dependent_field_ ? DependentBaseDownCast() : "";
+  printer->Print(variables, "$this_message$$name$_.Clear();\n");
 }
 
 void MapFieldGenerator::

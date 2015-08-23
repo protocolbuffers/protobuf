@@ -133,8 +133,7 @@ TEST(BootstrapTest, GeneratedDescriptorMatches) {
   CppGenerator generator;
   MockGeneratorContext context;
   string error;
-  string parameter;
-  parameter = "dllexport_decl=LIBPROTOBUF_EXPORT";
+  string parameter = "dllexport_decl=LIBPROTOBUF_EXPORT";
   ASSERT_TRUE(generator.Generate(proto_file, parameter,
                                  &context, &error));
   parameter = "dllexport_decl=LIBPROTOC_EXPORT";

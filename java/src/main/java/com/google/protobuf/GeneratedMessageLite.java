@@ -48,7 +48,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Lite version of {@link GeneratedMessage}.
@@ -60,24 +59,6 @@ public abstract class GeneratedMessageLite<
     BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>> 
         extends AbstractMessageLite
         implements Serializable {
-  
-  /**
-   * Holds all the {@link PrototypeHolder}s for loaded classes.
-   */
-  // TODO(dweis): Consider different concurrency values.
-  // TODO(dweis): This will prevent garbage collection of the class loader.
-  //     Ideally we'd use something like ClassValue but that's Java 7 only.
-  private static final Map<Class<?>, PrototypeHolder<?, ?>> PROTOTYPE_MAP =
-      new ConcurrentHashMap<Class<?>, PrototypeHolder<?, ?>>();
-  
-  // For use by generated code only.
-  protected static <
-      MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
-      BuilderType extends GeneratedMessageLite.Builder<
-          MessageType, BuilderType>> void onLoad(Class<MessageType> clazz,
-              PrototypeHolder<MessageType, BuilderType> protoTypeHolder) {
-    PROTOTYPE_MAP.put(clazz, protoTypeHolder);
-  }
 
   private static final long serialVersionUID = 1L;
 
@@ -90,20 +71,17 @@ public abstract class GeneratedMessageLite<
   
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final Parser<MessageType> getParserForType() {
-    return (Parser<MessageType>) PROTOTYPE_MAP
-        .get(getClass()).getParserForType();
+    return (Parser<MessageType>) dynamicMethod(MethodToInvoke.GET_PARSER);
   }
 
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final MessageType getDefaultInstanceForType() {
-    return (MessageType) PROTOTYPE_MAP
-        .get(getClass()).getDefaultInstanceForType();
+    return (MessageType) dynamicMethod(MethodToInvoke.GET_DEFAULT_INSTANCE);
   }
 
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final BuilderType newBuilderForType() {
-    return (BuilderType) PROTOTYPE_MAP
-        .get(getClass()).newBuilderForType();
+    return (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER);
   }
 
   /**
@@ -141,7 +119,9 @@ public abstract class GeneratedMessageLite<
     MERGE_FROM,
     MAKE_IMMUTABLE,
     NEW_INSTANCE,
-    NEW_BUILDER;
+    NEW_BUILDER,
+    GET_DEFAULT_INSTANCE,
+    GET_PARSER;
   }
 
   /**
@@ -168,9 +148,21 @@ public abstract class GeneratedMessageLite<
    * <p>
    * For use by generated code only.
    */
-  protected abstract Object dynamicMethod(
-      MethodToInvoke method,
-      Object... args);
+  protected abstract Object dynamicMethod(MethodToInvoke method, Object arg0, Object arg1);
+
+  /**
+   * Same as {@link #dynamicMethod(MethodToInvoke, Object, Object)} with {@code null} padding.
+   */
+  protected Object dynamicMethod(MethodToInvoke method, Object arg0) {
+    return dynamicMethod(method, arg0, null);
+  }
+
+  /**
+   * Same as {@link #dynamicMethod(MethodToInvoke, Object, Object)} with {@code null} padding.
+   */
+  protected Object dynamicMethod(MethodToInvoke method) {
+    return dynamicMethod(method, null, null);
+  }
 
   /**
    * Merge some unknown fields into the {@link UnknownFieldSetLite} for this
@@ -1059,18 +1051,22 @@ public abstract class GeneratedMessageLite<
     @SuppressWarnings("unchecked")
     protected Object readResolve() throws ObjectStreamException {
       try {
-        Class messageClass = Class.forName(messageClassName);
-        Parser<?> parser =
-            (Parser<?>) messageClass.getField("PARSER").get(null);
-        return parser.parsePartialFrom(asBytes);
+        Class<?> messageClass = Class.forName(messageClassName);
+        java.lang.reflect.Field defaultInstanceField =
+            messageClass.getDeclaredField("DEFAULT_INSTANCE");
+        defaultInstanceField.setAccessible(true);
+        MessageLite defaultInstance = (MessageLite) defaultInstanceField.get(null);
+        return defaultInstance.newBuilderForType()
+            .mergeFrom(asBytes)
+            .buildPartial();
       } catch (ClassNotFoundException e) {
-        throw new RuntimeException("Unable to find proto buffer class", e);
+        throw new RuntimeException("Unable to find proto buffer class: " + messageClassName, e);
       } catch (NoSuchFieldException e) {
-        throw new RuntimeException("Unable to find PARSER", e);
+        throw new RuntimeException("Unable to find DEFAULT_INSTANCE in " + messageClassName, e);
       } catch (SecurityException e) {
-        throw new RuntimeException("Unable to call PARSER", e);
+        throw new RuntimeException("Unable to call DEFAULT_INSTANCE in " + messageClassName, e);
       } catch (IllegalAccessException e) {
-        throw new RuntimeException("Unable to call parseFrom method", e);
+        throw new RuntimeException("Unable to call parsePartialFrom", e);
       } catch (InvalidProtocolBufferException e) {
         throw new RuntimeException("Unable to understand proto buffer", e);
       }
@@ -1102,45 +1098,6 @@ public abstract class GeneratedMessageLite<
     }
     
     return (GeneratedExtension<MessageType, T>) extension;
-  }
-  
-  /**
-   * Represents the state needed to implement *ForType methods. Generated code
-   * must provide a static singleton instance by adding it with
-   * {@link GeneratedMessageLite#onLoad(Class, PrototypeHolder)} on class load.
-   * <ul>
-   * <li>{@link #getDefaultInstanceForType()}
-   * <li>{@link #getParserForType()}
-   * <li>{@link #newBuilderForType()}
-   * </ul>
-   * This allows us to trade three generated methods for a static Map.
-   */
-  protected static class PrototypeHolder<
-      MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
-      BuilderType extends GeneratedMessageLite.Builder<
-          MessageType, BuilderType>> {
-    
-    private final MessageType defaultInstance;
-    private final Parser<MessageType> parser;
-    
-    public PrototypeHolder(
-        MessageType defaultInstance, Parser<MessageType> parser) {
-      this.defaultInstance = defaultInstance;
-      this.parser = parser;
-    }
-    
-    public MessageType getDefaultInstanceForType() {
-      return defaultInstance;
-    }
-
-    public Parser<MessageType> getParserForType() {
-      return parser;
-    }
-
-    @SuppressWarnings("unchecked") // Guaranteed by runtime.
-    public BuilderType newBuilderForType() {
-      return (BuilderType) defaultInstance.toBuilder();
-    }
   }
 
   /**

@@ -38,6 +38,8 @@
 
 namespace google {
 namespace protobuf {
+class MessageFactory;
+
 namespace python {
 
 // Wraps operations to the global DescriptorPool which contains information
@@ -54,6 +56,14 @@ typedef struct PyDescriptorPool {
   PyObject_HEAD
 
   DescriptorPool* pool;
+
+  // DynamicMessageFactory used to create C++ instances of messages.
+  // This object cache the descriptors that were used, so the DescriptorPool
+  // needs to get rid of it before it can delete itself.
+  //
+  // Note: A C++ MessageFactory is different from the Python MessageFactory.
+  // The C++ one creates messages, when the Python one creates classes.
+  MessageFactory* message_factory;
 
   // Make our own mapping to retrieve Python classes from C++ descriptors.
   //

@@ -323,7 +323,7 @@ class LIBPROTOBUF_EXPORT Parser {
                          const LocationRecorder& service_location,
                          const FileDescriptorProto* containing_file);
 
-  // Parse one statement within a message, enum, or service block, inclunding
+  // Parse one statement within a message, enum, or service block, including
   // final semicolon.
   bool ParseMessageStatement(DescriptorProto* message,
                              const LocationRecorder& message_location,
@@ -364,7 +364,7 @@ class LIBPROTOBUF_EXPORT Parser {
                        const LocationRecorder& extensions_location,
                        const FileDescriptorProto* containing_file);
 
-  // Parse an "reserved" declaration.
+  // Parse a "reserved" declaration.
   bool ParseReserved(DescriptorProto* message,
                      const LocationRecorder& message_location);
   bool ParseReservedNames(DescriptorProto* message,
@@ -415,7 +415,7 @@ class LIBPROTOBUF_EXPORT Parser {
                           Message* mutable_options);
 
   // Parse "required", "optional", or "repeated" and fill in "label"
-  // with the value. Returns true if shuch a label is consumed.
+  // with the value. Returns true if such a label is consumed.
   bool ParseLabel(FieldDescriptorProto::Label* label,
                   const FileDescriptorProto* containing_file);
 

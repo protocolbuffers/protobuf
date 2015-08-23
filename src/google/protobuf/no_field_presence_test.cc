@@ -341,6 +341,46 @@ TEST(NoFieldPresenceTest, ReflectionHasFieldTest) {
   EXPECT_EQ(false, r->HasField(message, field_string));
 }
 
+TEST(NoFieldPresenceTest, ReflectionClearFieldTest) {
+  proto2_nofieldpresence_unittest::TestAllTypes message;
+
+  const google::protobuf::Reflection* r = message.GetReflection();
+  const google::protobuf::Descriptor* desc = message.GetDescriptor();
+
+  const google::protobuf::FieldDescriptor* field_int32 = desc->FindFieldByName(
+      "optional_int32");
+  const google::protobuf::FieldDescriptor* field_double = desc->FindFieldByName(
+      "optional_double");
+  const google::protobuf::FieldDescriptor* field_string = desc->FindFieldByName(
+      "optional_string");
+  const google::protobuf::FieldDescriptor* field_message = desc->FindFieldByName(
+      "optional_nested_message");
+  const google::protobuf::FieldDescriptor* field_lazy = desc->FindFieldByName(
+      "optional_lazy_message");
+
+  message.set_optional_int32(42);
+  r->ClearField(&message, field_int32);
+  EXPECT_EQ(0, message.optional_int32());
+
+  message.set_optional_double(42.0);
+  r->ClearField(&message, field_double);
+  EXPECT_EQ(0.0, message.optional_double());
+
+  message.set_optional_string("test");
+  r->ClearField(&message, field_string);
+  EXPECT_EQ("", message.optional_string());
+
+  message.mutable_optional_nested_message()->set_bb(1234);
+  r->ClearField(&message, field_message);
+  EXPECT_FALSE(message.has_optional_nested_message());
+  EXPECT_EQ(0, message.optional_nested_message().bb());
+
+  message.mutable_optional_lazy_message()->set_bb(42);
+  r->ClearField(&message, field_lazy);
+  EXPECT_FALSE(message.has_optional_lazy_message());
+  EXPECT_EQ(0, message.optional_lazy_message().bb());
+}
+
 TEST(NoFieldPresenceTest, HasFieldOneofsTest) {
   // check that HasField behaves properly for oneofs.
   proto2_nofieldpresence_unittest::TestAllTypes message;

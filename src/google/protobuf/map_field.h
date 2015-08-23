@@ -32,6 +32,7 @@
 #define GOOGLE_PROTOBUF_MAP_FIELD_H__
 
 #include <google/protobuf/stubs/atomicops.h>
+#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/arena.h>
@@ -45,7 +46,8 @@
 
 namespace google {
 namespace protobuf {
-
+class DynamicMessage;
+class MapKey;
 namespace internal {
 
 class ContendedMapCleanTest;
@@ -82,6 +84,17 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
 
   // Like above. Returns mutable pointer to the internal repeated field.
   RepeatedPtrFieldBase* MutableRepeatedField();
+
+  // Pure virtual map APIs for Map Reflection.
+  virtual bool ContainsMapKey(const MapKey& map_key) const = 0;
+  virtual bool InsertMapValue(const MapKey& map_key, MapValueRef* val) = 0;
+  virtual bool DeleteMapValue(const MapKey& map_key) = 0;
+  virtual bool EqualIterator(const MapIterator& a,
+                             const MapIterator& b) const = 0;
+  virtual void MapBegin(MapIterator* map_iter) const = 0;
+  virtual void MapEnd(MapIterator* map_iter) const = 0;
+  // Sync Map with repeated field and returns the size of map.
+  virtual int size() const = 0;
 
   // Returns the number of bytes used by the repeated field, excluding
   // sizeof(*this)
@@ -141,6 +154,57 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
   friend class ContendedMapCleanTest;
   friend class GeneratedMessageReflection;
   friend class MapFieldAccessor;
+  friend class ::google::protobuf::DynamicMessage;
+
+  // Virtual helper methods for MapIterator. MapIterator doesn't have the
+  // type helper for key and value. Call these help methods to deal with
+  // different types. Real helper methods are implemented in
+  // TypeDefinedMapFieldBase.
+  friend class ::google::protobuf::MapIterator;
+  // Allocate map<...>::iterator for MapIterator.
+  virtual void InitializeIterator(MapIterator* map_iter) const = 0;
+
+  // DeleteIterator() is called by the destructor of MapIterator only.
+  // It deletes map<...>::iterator for MapIterator.
+  virtual void DeleteIterator(MapIterator* map_iter) const = 0;
+
+  // Copy the map<...>::iterator from other_iterator to
+  // this_iterator.
+  virtual void CopyIterator(MapIterator* this_iterator,
+                            const MapIterator& other_iterator) const = 0;
+
+  // IncreaseIterator() is called by operator++() of MapIterator only.
+  // It implements the ++ operator of MapIterator.
+  virtual void IncreaseIterator(MapIterator* map_iter) const = 0;
+};
+
+// This class provides common Map Reflection implementations for generated
+// message and dynamic message.
+template<typename Key, typename T>
+class TypeDefinedMapFieldBase : public MapFieldBase {
+ public:
+  TypeDefinedMapFieldBase() {}
+  explicit TypeDefinedMapFieldBase(Arena* arena) : MapFieldBase(arena) {}
+  ~TypeDefinedMapFieldBase() {}
+  void MapBegin(MapIterator* map_iter) const;
+  void MapEnd(MapIterator* map_iter) const;
+  bool EqualIterator(const MapIterator& a, const MapIterator& b) const;
+
+  virtual const Map<Key, T>& GetMap() const = 0;
+  virtual Map<Key, T>* MutableMap() = 0;
+
+ protected:
+  typename Map<Key, T>::const_iterator& InternalGetIterator(
+      const MapIterator* map_iter) const;
+
+ private:
+  void InitializeIterator(MapIterator* map_iter) const;
+  void DeleteIterator(MapIterator* map_iter) const;
+  void CopyIterator(MapIterator* this_iteratorm,
+                    const MapIterator& that_iterator) const;
+  void IncreaseIterator(MapIterator* map_iter) const;
+
+  virtual void SetMapIteratorValue(MapIterator* map_iter) const = 0;
 };
 
 // This class provides accesss to map field using generated api. It is used for
@@ -150,25 +214,13 @@ template <typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType,
           int default_enum_value = 0>
-class MapField : public MapFieldBase,
+class MapField : public TypeDefinedMapFieldBase<Key, T>,
                  public MapFieldLite<Key, T, kKeyFieldType, kValueFieldType,
                                      default_enum_value> {
-  // Handlers for key/value wire type. Provide utilities to parse/serialize
-  // key/value.
-  typedef MapWireFieldTypeHandler<kKeyFieldType> KeyWireHandler;
-  typedef MapWireFieldTypeHandler<kValueFieldType> ValueWireHandler;
-
-  // Define key/value's internal stored type.
-  static const bool kIsKeyMessage = KeyWireHandler::kIsMessage;
-  static const bool kIsValMessage = ValueWireHandler::kIsMessage;
-  typedef typename KeyWireHandler::CppType KeyInternalType;
-  typedef typename ValueWireHandler::CppType ValueInternalType;
-  typedef typename MapIf<kIsKeyMessage, Key, KeyInternalType>::type KeyCpp;
-  typedef typename MapIf<kIsValMessage, T  , ValueInternalType>::type ValCpp;
-
-  // Handlers for key/value's internal stored type.
-  typedef MapCppTypeHandler<KeyCpp> KeyHandler;
-  typedef MapCppTypeHandler<ValCpp> ValHandler;
+  // Provide utilities to parse/serialize key/value.  Provide utilities to
+  // manipulate internal stored type.
+  typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
+  typedef MapTypeHandler<kValueFieldType, T> ValueTypeHandler;
 
   // Define message type for internal repeated field.
   typedef MapEntry<Key, T, kKeyFieldType, kValueFieldType, default_enum_value>
@@ -183,8 +235,8 @@ class MapField : public MapFieldBase,
   // Enum needs to be handled differently from other types because it has
   // different exposed type in google::protobuf::Map's api and repeated field's api. For
   // details see the comment in the implementation of
-  // SyncMapWithRepeatedFieldNoLocki.
-  static const bool kIsValueEnum = ValueWireHandler::kIsEnum;
+  // SyncMapWithRepeatedFieldNoLock.
+  static const bool kIsValueEnum = ValueTypeHandler::kIsEnum;
   typedef typename MapIf<kIsValueEnum, T, const T&>::type CastValueType;
 
  public:
@@ -196,6 +248,11 @@ class MapField : public MapFieldBase,
   // For tests only.
   MapField(Arena* arena, const Message* default_entry);
   ~MapField();
+
+  // Implement MapFieldBase
+  bool ContainsMapKey(const MapKey& map_key) const;
+  bool InsertMapValue(const MapKey& map_key, MapValueRef* val);
+  bool DeleteMapValue(const MapKey& map_key);
 
   // Accessors
   const Map<Key, T>& GetMap() const;
@@ -230,12 +287,109 @@ class MapField : public MapFieldBase,
   void SyncMapWithRepeatedFieldNoLock() const;
   int SpaceUsedExcludingSelfNoLock() const;
 
+  void SetMapIteratorValue(MapIterator* map_iter) const;
+
   mutable const EntryType* default_entry_;
 
   friend class ::google::protobuf::Arena;
 };
 
+class LIBPROTOBUF_EXPORT DynamicMapField: public TypeDefinedMapFieldBase<MapKey, MapValueRef> {
+ public:
+  explicit DynamicMapField(const Message* default_entry);
+  DynamicMapField(const Message* default_entry, Arena* arena);
+  ~DynamicMapField();
+
+  // Implement MapFieldBase
+  bool ContainsMapKey(const MapKey& map_key) const;
+  bool InsertMapValue(const MapKey& map_key, MapValueRef* val);
+  bool DeleteMapValue(const MapKey& map_key);
+
+  const Map<MapKey, MapValueRef>& GetMap() const;
+  Map<MapKey, MapValueRef>* MutableMap();
+
+  int size() const;
+
+ private:
+  Map<MapKey, MapValueRef> map_;
+  const Message* default_entry_;
+
+  // Implements MapFieldBase
+  void SyncRepeatedFieldWithMapNoLock() const;
+  void SyncMapWithRepeatedFieldNoLock() const;
+  int SpaceUsedExcludingSelfNoLock() const;
+  void SetMapIteratorValue(MapIterator* map_iter) const;
+};
+
 }  // namespace internal
+
+class LIBPROTOBUF_EXPORT MapIterator {
+ public:
+  MapIterator(Message* message, const FieldDescriptor* field) {
+    const Reflection* reflection = message->GetReflection();
+    map_ = reflection->MapData(message, field);
+    key_.SetType(field->message_type()->FindFieldByName("key")->cpp_type());
+    value_.SetType(field->message_type()->FindFieldByName("value")->cpp_type());
+    map_->InitializeIterator(this);
+  }
+  MapIterator(const MapIterator& other) {
+    map_ = other.map_;
+    map_->InitializeIterator(this);
+    map_->CopyIterator(this, other);
+  }
+  ~MapIterator() {
+    map_->DeleteIterator(this);
+  }
+  friend bool operator==(const MapIterator& a, const MapIterator& b) {
+    return a.map_->EqualIterator(a, b);
+  }
+  friend bool operator!=(const MapIterator& a, const MapIterator& b) {
+    return !a.map_->EqualIterator(a, b);
+  }
+  MapIterator& operator++() {
+    map_->IncreaseIterator(this);
+    return *this;
+  }
+  MapIterator operator++(int) {
+    // iter_ is copied from Map<...>::iterator, no need to
+    // copy from its self again. Use the same implementation
+    // with operator++()
+    map_->IncreaseIterator(this);
+    return *this;
+  }
+  const MapKey& GetKey() {
+    return key_;
+  }
+  const MapValueRef& GetValueRef() {
+    return value_;
+  }
+  MapValueRef* MutableValueRef() {
+    map_->SetMapDirty();
+    return &value_;
+  }
+
+ private:
+  template <typename Key, typename T>
+  friend class internal::TypeDefinedMapFieldBase;
+  friend class internal::DynamicMapField;
+  template <typename Key, typename T,
+            internal::WireFormatLite::FieldType kKeyFieldType,
+            internal::WireFormatLite::FieldType kValueFieldType,
+            int default_enum_value>
+  friend class internal::MapField;
+
+  // reinterpret_cast from heap-allocated Map<...>::iterator*. MapIterator owns
+  // the iterator. It is allocated by MapField<...>::InitializeIterator() called
+  // in constructor and deleted by MapField<...>::DeleteIterator() called in
+  // destructor.
+  void* iter_;
+  // Point to a MapField to call helper methods implemented in MapField.
+  // MapIterator does not own this object.
+  internal::MapFieldBase* map_;
+  MapKey key_;
+  MapValueRef value_;
+};
+
 }  // namespace protobuf
 
 }  // namespace google

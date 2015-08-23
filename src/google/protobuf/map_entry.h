@@ -34,6 +34,7 @@
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/map_entry_lite.h>
 #include <google/protobuf/map_type_handler.h>
+#include <google/protobuf/metadata.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -79,40 +80,46 @@ class LIBPROTOBUF_EXPORT MapEntryBase : public Message {
 
 // MapEntry is the returned google::protobuf::Message when calling AddMessage of
 // google::protobuf::Reflection. In order to let it work with generated message
-// reflection, its internal layout is the same as generated message with the
-// same fields. However, in order to decide the internal layout of key/value, we
-// need to know both their cpp type in generated api and proto type.
+// reflection, its in-memory type is the same as generated message with the same
+// fields. However, in order to decide the in-memory type of key/value, we need
+// to know both their cpp type in generated api and proto type. In
+// implmentation, all in-memory types have related wire format functions to
+// support except ArenaStringPtr. Therefore, we need to define another type with
+// supporting wire format functions. Since this type is only used as return type
+// of MapEntry accessors, it's named MapEntry accessor type.
 //
-// cpp type | proto type  | internal layout
-// int32      TYPE_INT32    int32
-// int32      TYPE_FIXED32  int32
-// FooEnum    TYPE_ENUM     int
-// FooMessage TYPE_MESSAGE  FooMessage*
+// cpp type:               the type visible to users in public API.
+// proto type:             WireFormatLite::FieldType of the field.
+// in-memory type:         type of the data member used to stored this field.
+// MapEntry accessor type: type used in MapEntry getters/mutators to access the
+//                         field.
 //
-// The internal layouts of primitive types can be inferred from its proto type,
-// while we need to explicitly tell cpp type if proto type is TYPE_MESSAGE to
-// get internal layout.
-// Moreover, default_enum_value is used to initialize enum field in proto2.
+// cpp type | proto type  | in-memory type | MapEntry accessor type
+// int32      TYPE_INT32    int32            int32
+// int32      TYPE_FIXED32  int32            int32
+// string     TYPE_STRING   ArenaStringPtr   string
+// FooEnum    TYPE_ENUM     int              int
+// FooMessage TYPE_MESSAGE  FooMessage*      FooMessage
+//
+// The in-memory types of primitive types can be inferred from its proto type,
+// while we need to explicitly specify the cpp type if proto type is
+// TYPE_MESSAGE to infer the in-memory type.  Moreover, default_enum_value is
+// used to initialize enum field in proto2.
 template <typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType,
           int default_enum_value>
 class MapEntry : public MapEntryBase {
-  // Handlers for key/value wire type. Provide utilities to parse/serialize
-  // key/value.
-  typedef MapWireFieldTypeHandler<kKeyFieldType> KeyWireHandler;
-  typedef MapWireFieldTypeHandler<kValueFieldType> ValueWireHandler;
+  // Provide utilities to parse/serialize key/value.  Provide utilities to
+  // manipulate internal stored type.
+  typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
+  typedef MapTypeHandler<kValueFieldType, Value> ValueTypeHandler;
 
-  // Define key/value's internal stored type. Message is the only one whose
-  // internal stored type cannot be inferred from its proto type.
-  static const bool kIsKeyMessage = KeyWireHandler::kIsMessage;
-  static const bool kIsValueMessage = ValueWireHandler::kIsMessage;
-  typedef typename KeyWireHandler::CppType KeyInternalType;
-  typedef typename ValueWireHandler::CppType ValueInternalType;
-  typedef typename MapIf<kIsKeyMessage, Key, KeyInternalType>::type
-      KeyCppType;
-  typedef typename MapIf<kIsValueMessage, Value, ValueInternalType>::type
-      ValCppType;
+  // Enum type cannot be used for MapTypeHandler::Read. Define a type
+  // which will replace Enum with int.
+  typedef typename KeyTypeHandler::MapEntryAccessorType KeyMapEntryAccessorType;
+  typedef typename ValueTypeHandler::MapEntryAccessorType
+      ValueMapEntryAccessorType;
 
   // Abbreviation for MapEntry
   typedef typename google::protobuf::internal::MapEntry<
@@ -132,16 +139,16 @@ class MapEntry : public MapEntryBase {
 
   // accessors ======================================================
 
-  virtual inline const KeyCppType& key() const {
+  virtual inline const KeyMapEntryAccessorType& key() const {
     return entry_lite_.key();
   }
-  inline KeyCppType* mutable_key() {
+  inline KeyMapEntryAccessorType* mutable_key() {
     return entry_lite_.mutable_key();
   }
-  virtual inline const ValCppType& value() const {
+  virtual inline const ValueMapEntryAccessorType& value() const {
     return entry_lite_.value();
   }
-  inline ValCppType* mutable_value() {
+  inline ValueMapEntryAccessorType* mutable_value() {
     return entry_lite_.mutable_value();
   }
 
@@ -240,7 +247,9 @@ class MapEntry : public MapEntryBase {
         GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, entry_lite_._has_bits_),
         GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, _unknown_fields_), -1,
         DescriptorPool::generated_pool(),
-        ::google::protobuf::MessageFactory::generated_factory(), sizeof(MapEntry), -1);
+        ::google::protobuf::MessageFactory::generated_factory(),
+        sizeof(MapEntry),
+        GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, _internal_metadata_));
     entry->descriptor_ = descriptor;
     entry->reflection_ = reflection;
     entry->set_default_instance(entry);
@@ -250,10 +259,13 @@ class MapEntry : public MapEntryBase {
   }
 
  private:
-  MapEntry() : default_instance_(NULL), entry_lite_() {}
+  MapEntry()
+      : _internal_metadata_(NULL), default_instance_(NULL), entry_lite_() {}
 
   explicit MapEntry(Arena* arena)
-      : default_instance_(NULL), entry_lite_(arena) {}
+      : _internal_metadata_(arena),
+        default_instance_(NULL),
+        entry_lite_(arena) {}
 
   inline Arena* GetArenaNoVirtual() const {
     return entry_lite_.GetArenaNoVirtual();
@@ -266,6 +278,7 @@ class MapEntry : public MapEntryBase {
 
   static int offsets_[2];
   UnknownFieldSet _unknown_fields_;
+  InternalMetadataWithArena _internal_metadata_;
   MapEntry* default_instance_;
   EntryLiteType entry_lite_;
 

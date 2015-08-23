@@ -42,6 +42,7 @@
 
 #include <google/protobuf/repeated_field.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -1429,7 +1430,6 @@ class RepeatedFieldInsertionIteratorsTest : public testing::Test {
     std::copy(nested_ptrs.begin(), nested_ptrs.end(),
               RepeatedFieldBackInserter(
                   protobuffer.mutable_repeated_nested_message()));
-
   }
 
   virtual void TearDown() {

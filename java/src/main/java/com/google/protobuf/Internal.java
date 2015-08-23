@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.AbstractList;
@@ -355,6 +356,17 @@ public class Internal {
         h = LiteralByteString.hashCode(h, buffer, 0, length);
       }
       return h == 0 ? 1 : h;
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T extends MessageLite> T getDefaultInstance(Class<T> clazz) {
+    try {
+      Method method = clazz.getMethod("getDefaultInstance");
+      return (T) method.invoke(method);
+    } catch (Exception e) {
+      throw new RuntimeException(
+          "Failed to get default instance for " + clazz, e);
     }
   }
 

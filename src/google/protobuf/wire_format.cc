@@ -38,6 +38,7 @@
 
 #include <google/protobuf/wire_format.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/descriptor.h>

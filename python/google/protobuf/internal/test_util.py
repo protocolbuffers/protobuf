@@ -604,7 +604,8 @@ def GoldenFile(filename):
 
   # Search internally.
   path = '.'
-  full_path = os.path.join(path, 'third_party/py/google/protobuf/testdata', filename)
+  full_path = os.path.join(path, 'third_party/py/google/protobuf/testdata',
+                           filename)
   if os.path.exists(full_path):
     # Found it.  Load the golden file from the testdata directory.
     return open(full_path, 'rb')

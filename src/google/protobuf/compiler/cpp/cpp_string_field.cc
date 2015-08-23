@@ -421,7 +421,8 @@ GenerateByteSize(io::Printer* printer) const {
 StringOneofFieldGenerator::
 StringOneofFieldGenerator(const FieldDescriptor* descriptor,
                           const Options& options)
-  : StringFieldGenerator(descriptor, options) {
+    : StringFieldGenerator(descriptor, options),
+      dependent_field_(options.proto_h) {
   SetCommonOneofFieldVariables(descriptor, &variables_);
 }
 
@@ -604,13 +605,29 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
 
 void StringOneofFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  if (SupportsArenas(descriptor_)) {
-    printer->Print(variables_,
-      "$oneof_prefix$$name$_.Destroy($default_variable$,\n"
-      "    GetArenaNoVirtual());\n");
+  map<string, string> variables(variables_);
+  if (dependent_field_) {
+    variables["this_message"] = DependentBaseDownCast();
+    // This clearing code may be in the dependent base class. If the default
+    // value is an empty string, then the $default_variable$ is a global
+    // singleton. If the default is not empty, we need to down-cast to get the
+    // default value's global singleton instance. See SetStringVariables() for
+    // possible values of default_variable.
+    if (!descriptor_->default_value_string().empty()) {
+      variables["default_variable"] =
+          DependentBaseDownCast() + variables["default_variable"];
+    }
   } else {
-    printer->Print(variables_,
-      "$oneof_prefix$$name$_.DestroyNoArena($default_variable$);\n");
+    variables["this_message"] = "";
+  }
+  if (SupportsArenas(descriptor_)) {
+    printer->Print(variables,
+      "$this_message$$oneof_prefix$$name$_.Destroy($default_variable$,\n"
+      "    $this_message$GetArenaNoVirtual());\n");
+  } else {
+    printer->Print(variables,
+      "$this_message$$oneof_prefix$$name$_."
+      "DestroyNoArena($default_variable$);\n");
   }
 }
 
@@ -664,7 +681,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
 RepeatedStringFieldGenerator::
 RepeatedStringFieldGenerator(const FieldDescriptor* descriptor,
                              const Options& options)
-  : descriptor_(descriptor) {
+    : descriptor_(descriptor) {
   SetStringVariables(descriptor, &variables_, options);
 }
 

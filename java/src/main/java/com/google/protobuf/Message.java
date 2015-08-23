@@ -121,6 +121,9 @@ public interface Message extends MessageLite, MessageOrBuilder {
      *   using the same merging rules.<br>
      * * For repeated fields, the elements in {@code other} are concatenated
      *   with the elements in this message.
+     * * For oneof groups, if the other message has one of the fields set,
+     *   the group of this message is cleared and replaced by the field
+     *   of the other message, so that the oneof constraint is preserved.
      *
      * This is equivalent to the {@code Message::MergeFrom} method in C++.
      */

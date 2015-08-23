@@ -33,6 +33,7 @@
 #include <string>
 #include <iostream>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/map_lite_unittest.pb.h>
@@ -377,13 +378,6 @@ int main(int argc, char* argv[]) {
   }
 
   {
-    // Proto2SetMapFieldsInitialized
-    protobuf_unittest::TestEnumStartWithNonZeroMapLite message;
-    EXPECT_EQ(protobuf_unittest::PROTO2_NON_ZERO_MAP_ENUM_FOO_LITE,
-              (*message.mutable_map_field())[0]);
-  }
-
-  {
     // Clear
     protobuf_unittest::TestMapLite message;
 
@@ -690,37 +684,6 @@ int main(int argc, char* argv[]) {
     (*map_message.mutable_map_field())[0].set_b(0);
     (*map_message.mutable_map_field())[0].set_c(0);
     EXPECT_TRUE(map_message.IsInitialized());
-  }
-
-  // arena support for map  =========================================
-
-  {
-    // ParsingAndSerializingNoHeapAllocation
-
-    // Allocate a large initial block to avoid mallocs during hooked test.
-    std::vector<char> arena_block(128 * 1024);
-    google::protobuf::ArenaOptions options;
-    options.initial_block = &arena_block[0];
-    options.initial_block_size = arena_block.size();
-    google::protobuf::Arena arena(options);
-    string data;
-    data.reserve(128 * 1024);
-
-    {
-      google::protobuf::internal::NoHeapChecker no_heap;
-
-      protobuf_unittest::TestArenaMapLite* from =
-          google::protobuf::Arena::CreateMessage<protobuf_unittest::TestArenaMapLite>(
-              &arena);
-      google::protobuf::MapLiteTestUtil::SetArenaMapFields(from);
-      from->SerializeToString(&data);
-
-      protobuf_unittest::TestArenaMapLite* to =
-          google::protobuf::Arena::CreateMessage<protobuf_unittest::TestArenaMapLite>(
-              &arena);
-      to->ParseFromString(data);
-      google::protobuf::MapLiteTestUtil::ExpectArenaMapFieldsSet(*to);
-    }
   }
 
   std::cout << "PASS" << std::endl;

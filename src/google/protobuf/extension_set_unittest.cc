@@ -44,6 +44,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/testing/googletest.h>
@@ -173,7 +174,7 @@ TEST(ExtensionSetTest, SetAllocatedExtension) {
 }
 
 TEST(ExtensionSetTest, ReleaseExtension) {
-  unittest::TestMessageSet message;
+  proto2_wireformat_unittest::TestMessageSet message;
   EXPECT_FALSE(message.HasExtension(
       unittest::TestMessageSetExtension1::message_set_extension));
   // Add a extension using SetAllocatedExtension

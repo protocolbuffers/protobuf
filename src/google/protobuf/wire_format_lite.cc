@@ -37,6 +37,7 @@
 #include <stack>
 #include <string>
 #include <vector>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream_inl.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -484,9 +485,9 @@ void WireFormatLite::WriteMessageMaybeToArray(int field_number,
   }
 }
 
-static inline bool ReadBytesToString(io::CodedInputStream* input,
-                                     string* value) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
-static inline bool ReadBytesToString(io::CodedInputStream* input,
+GOOGLE_ATTRIBUTE_ALWAYS_INLINE static bool ReadBytesToString(
+    io::CodedInputStream* input, string* value);
+inline static bool ReadBytesToString(io::CodedInputStream* input,
                                      string* value) {
   uint32 length;
   return input->ReadVarint32(&length) &&

@@ -33,6 +33,7 @@
 
 #include <string>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/fastmem.h>
 
@@ -145,7 +146,7 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
   // Swaps internal pointers. Arena-safety semantics: this is guarded by the
   // logic in Swap()/UnsafeArenaSwap() at the message level, so this method is
   // 'unsafe' if called directly.
-  inline void Swap(ArenaStringPtr* other) GOOGLE_ATTRIBUTE_ALWAYS_INLINE {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE void Swap(ArenaStringPtr* other) {
     std::swap(ptr_, other->ptr_);
   }
 
@@ -283,9 +284,8 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
  private:
   ::std::string* ptr_;
 
-  inline void CreateInstance(::google::protobuf::Arena* arena,
-                             const ::std::string* initial_value)
-      GOOGLE_ATTRIBUTE_NOINLINE {
+  GOOGLE_ATTRIBUTE_NOINLINE void CreateInstance(::google::protobuf::Arena* arena,
+                                         const ::std::string* initial_value) {
     // Assumes ptr_ is not NULL.
     if (initial_value != NULL) {
       ptr_ = new ::std::string(*initial_value);
@@ -296,8 +296,7 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
       arena->Own(ptr_);
     }
   }
-  inline void CreateInstanceNoArena(const ::std::string* initial_value)
-      GOOGLE_ATTRIBUTE_NOINLINE {
+  GOOGLE_ATTRIBUTE_NOINLINE void CreateInstanceNoArena(const ::std::string* initial_value) {
     if (initial_value != NULL) {
       ptr_ = new ::std::string(*initial_value);
     } else {

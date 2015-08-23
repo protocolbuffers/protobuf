@@ -41,6 +41,7 @@ are:
 
 __author__ = 'petar@google.com (Petar Petrov)'
 
+import collections
 import sys
 
 if sys.version_info[0] < 3:
@@ -63,7 +64,6 @@ if sys.version_info[0] < 3:
   # Note: deriving from object is critical.  It is the only thing that makes
   # this a true type, allowing us to derive from it in C++ cleanly and making
   # __slots__ properly disallow arbitrary element assignment.
-  from collections import Mapping as _Mapping
 
   class Mapping(object):
     __slots__ = ()
@@ -106,7 +106,7 @@ if sys.version_info[0] < 3:
     __hash__ = None
 
     def __eq__(self, other):
-      if not isinstance(other, _Mapping):
+      if not isinstance(other, collections.Mapping):
         return NotImplemented
       return dict(self.items()) == dict(other.items())
 
@@ -173,12 +173,13 @@ if sys.version_info[0] < 3:
         self[key] = default
       return default
 
-  _Mapping.register(Mapping)
+  collections.Mapping.register(Mapping)
+  collections.MutableMapping.register(MutableMapping)
 
 else:
   # In Python 3 we can just use MutableMapping directly, because it defines
   # __slots__.
-  from collections import MutableMapping
+  MutableMapping = collections.MutableMapping
 
 
 class BaseContainer(object):
@@ -335,6 +336,8 @@ class RepeatedScalarFieldContainer(BaseContainer):
       return other._values == self._values
     # We are presumably comparing against some other sequence type.
     return other == self._values
+
+collections.MutableSequence.register(BaseContainer)
 
 
 class RepeatedCompositeFieldContainer(BaseContainer):

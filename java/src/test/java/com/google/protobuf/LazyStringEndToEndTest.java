@@ -89,7 +89,7 @@ public class LazyStringEndToEndTest extends TestCase {
         TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8,
         ByteString.copyFrom(sink));
   }
-
+  
   public void testCaching() {
     String a = "a";
     String b = "b";
@@ -106,24 +106,13 @@ public class LazyStringEndToEndTest extends TestCase {
     assertSame(c, proto.getRepeatedString(1));
 
 
-    // There's no way to directly observe that the ByteString is cached
-    // correctly on serialization, but we can observe that it had to recompute
-    // the string after serialization.
+    // Ensure serialization keeps strings cached.
     proto.toByteString();
-    String aPrime = proto.getOptionalString();
-    assertNotSame(a, aPrime);
-    assertEquals(a, aPrime);
-    String bPrime = proto.getRepeatedString(0);
-    assertNotSame(b, bPrime);
-    assertEquals(b, bPrime);
-    String cPrime = proto.getRepeatedString(1);
-    assertNotSame(c, cPrime);
-    assertEquals(c, cPrime);
 
     // And now the string should stay cached.
-    assertSame(aPrime, proto.getOptionalString());
-    assertSame(bPrime, proto.getRepeatedString(0));
-    assertSame(cPrime, proto.getRepeatedString(1));
+    assertSame(a, proto.getOptionalString());
+    assertSame(b, proto.getRepeatedString(0));
+    assertSame(c, proto.getRepeatedString(1));
   }
 
   public void testNoStringCachingIfOnlyBytesAccessed() throws Exception {

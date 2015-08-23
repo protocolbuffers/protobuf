@@ -35,6 +35,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/type_resolver.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status.h>
 
 namespace google {
@@ -64,6 +65,47 @@ bool SplitTypeUrl(const string& type_url,
   return true;
 }
 
+// This code is originally defined in
+// //google/protobuf/util/converter/utility.h. Copied here due to component
+// dependency.
+// TODO(xiaofeng): Remove this when converter code is in components.
+string ToCamelCase(const StringPiece input) {
+  bool capitalize_next = false;
+  bool was_cap = true;
+  bool is_cap = false;
+  bool first_word = true;
+  string result;
+  result.reserve(input.size());
+
+  for (size_t i = 0; i < input.size(); ++i, was_cap = is_cap) {
+    is_cap = ascii_isupper(input[i]);
+    if (input[i] == '_') {
+      capitalize_next = true;
+      if (!result.empty()) first_word = false;
+      continue;
+    } else if (first_word) {
+      // Consider when the current character B is capitalized,
+      // first word ends when:
+      // 1) following a lowercase:   "...aB..."
+      // 2) followed by a lowercase: "...ABc..."
+      if (!result.empty() && is_cap &&
+          (!was_cap || (i + 1 < input.size() && ascii_islower(input[i + 1])))) {
+        first_word = false;
+      } else {
+        result.push_back(ascii_tolower(input[i]));
+        continue;
+      }
+    } else if (capitalize_next) {
+      capitalize_next = false;
+      if (ascii_islower(input[i])) {
+        result.push_back(ascii_toupper(input[i]));
+        continue;
+      }
+    }
+    result.push_back(input[i]);
+  }
+  return result;
+}
 
 class DescriptorPoolTypeResolver : public TypeResolver {
  public:
@@ -155,6 +197,7 @@ class DescriptorPoolTypeResolver : public TypeResolver {
     }
     field->set_number(descriptor->number());
     field->set_name(descriptor->name());
+    field->set_json_name(ToCamelCase(descriptor->name()));
     if (descriptor->type() == FieldDescriptor::TYPE_MESSAGE) {
       field->set_type_url(GetTypeUrl(descriptor->message_type()));
     } else if (descriptor->type() == FieldDescriptor::TYPE_ENUM) {

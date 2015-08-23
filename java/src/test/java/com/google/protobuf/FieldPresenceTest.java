@@ -142,6 +142,16 @@ public class FieldPresenceTest extends TestCase {
         "OneofNestedMessage"));
   }
 
+  public void testOneofEquals() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    TestAllTypes message1 = builder.build();
+    // Set message2's oneof_uint32 field to defalut value. The two
+    // messages should be different when check with oneof case.
+    builder.setOneofUint32(0);
+    TestAllTypes message2 = builder.build();
+    assertFalse(message1.equals(message2));
+  }
+
   public void testFieldPresence() {
     // Optional non-message fields set to their default value are treated the
     // same way as not set.

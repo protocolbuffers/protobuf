@@ -79,6 +79,16 @@ public class MapTest extends TestCase {
     builder.getMutableStringToInt32Field().put("3", 33);
   }
 
+  private void copyMapValues(TestMap source, TestMap.Builder destination) {
+    destination
+        .putAllInt32ToInt32Field(source.getInt32ToInt32Field())
+        .putAllInt32ToStringField(source.getInt32ToStringField())
+        .putAllInt32ToBytesField(source.getInt32ToBytesField())
+        .putAllInt32ToEnumField(source.getInt32ToEnumField())
+        .putAllInt32ToMessageField(source.getInt32ToMessageField())
+        .putAllStringToInt32Field(source.getStringToInt32Field());
+  }
+
   private void assertMapValuesSet(TestMap message) {
     assertEquals(3, message.getInt32ToInt32Field().size());
     assertEquals(11, message.getInt32ToInt32Field().get(1).intValue());
@@ -311,26 +321,52 @@ public class MapTest extends TestCase {
     assertMapValuesCleared(message);
   }
 
+  public void testPutAll() throws Exception {
+    TestMap.Builder sourceBuilder = TestMap.newBuilder();
+    setMapValues(sourceBuilder);
+    TestMap source = sourceBuilder.build();
+
+    TestMap.Builder destination = TestMap.newBuilder();
+    copyMapValues(source, destination);
+    assertMapValuesSet(destination.build());
+  }
+
+  public void testPutAllForUnknownEnumValues() throws Exception {
+    TestMap.Builder sourceBuilder = TestMap.newBuilder();
+    sourceBuilder.getMutableInt32ToEnumFieldValue().put(0, 0);
+    sourceBuilder.getMutableInt32ToEnumFieldValue().put(1, 1);
+    sourceBuilder.getMutableInt32ToEnumFieldValue().put(2, 1000);  // unknown value.
+    TestMap source = sourceBuilder.build();
+
+    TestMap.Builder destinationBuilder = TestMap.newBuilder();
+    destinationBuilder.putAllInt32ToEnumFieldValue(source.getInt32ToEnumFieldValue());
+    TestMap destination = destinationBuilder.build();
+
+    assertEquals(0, destination.getInt32ToEnumFieldValue().get(0).intValue());
+    assertEquals(1, destination.getInt32ToEnumFieldValue().get(1).intValue());
+    assertEquals(1000, destination.getInt32ToEnumFieldValue().get(2).intValue());
+  }
+
   public void testSerializeAndParse() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
     TestMap message = builder.build();
     assertEquals(message.getSerializedSize(), message.toByteString().size());
-    message = TestMap.PARSER.parseFrom(message.toByteString());
+    message = TestMap.parser().parseFrom(message.toByteString());
     assertMapValuesSet(message);
 
     builder = message.toBuilder();
     updateMapValues(builder);
     message = builder.build();
     assertEquals(message.getSerializedSize(), message.toByteString().size());
-    message = TestMap.PARSER.parseFrom(message.toByteString());
+    message = TestMap.parser().parseFrom(message.toByteString());
     assertMapValuesUpdated(message);
 
     builder = message.toBuilder();
     builder.clear();
     message = builder.build();
     assertEquals(message.getSerializedSize(), message.toByteString().size());
-    message = TestMap.PARSER.parseFrom(message.toByteString());
+    message = TestMap.parser().parseFrom(message.toByteString());
     assertMapValuesCleared(message);
   }
 

@@ -74,7 +74,7 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
       tracker_(new ObjectLocationTracker()) {}
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
-    TypeInfo* typeinfo, const google::protobuf::Type& type,
+    const TypeInfo* typeinfo, const google::protobuf::Type& type,
     strings::ByteSink* output, ErrorListener* listener)
     : master_type_(type),
       typeinfo_(typeinfo),
@@ -91,13 +91,18 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
       tracker_(new ObjectLocationTracker()) {}
 
 ProtoStreamObjectWriter::~ProtoStreamObjectWriter() {
-  // Cleanup explicitly in order to avoid destructor stack overflow when input
-  // is deeply nested.
-  while (element_ != NULL) {
-    element_.reset(element_->pop());
-  }
   if (own_typeinfo_) {
     delete typeinfo_;
+  }
+  if (element_ == NULL) return;
+  // Cleanup explicitly in order to avoid destructor stack overflow when input
+  // is deeply nested.
+  // Cast to BaseElement to avoid doing additional checks (like missing fields)
+  // during pop().
+  google::protobuf::scoped_ptr<BaseElement> element(
+      static_cast<BaseElement*>(element_.get())->pop<BaseElement>());
+  while (element != NULL) {
+    element.reset(element->pop<BaseElement>());
   }
 }
 
@@ -454,7 +459,7 @@ void ProtoStreamObjectWriter::AnyWriter::WriteAny() {
 }
 
 ProtoStreamObjectWriter::ProtoElement::ProtoElement(
-    TypeInfo* typeinfo, const google::protobuf::Type& type,
+    const TypeInfo* typeinfo, const google::protobuf::Type& type,
     ProtoStreamObjectWriter* enclosing)
     : BaseElement(NULL),
       ow_(enclosing),
@@ -586,6 +591,14 @@ string ProtoStreamObjectWriter::ProtoElement::ToString() const {
   return loc.empty() ? "." : loc;
 }
 
+bool ProtoStreamObjectWriter::ProtoElement::OneofIndexTaken(int32 index) {
+  return ContainsKey(oneof_indices_, index);
+}
+
+void ProtoStreamObjectWriter::ProtoElement::TakeOneofIndex(int32 index) {
+  InsertIfNotPresent(&oneof_indices_, index);
+}
+
 inline void ProtoStreamObjectWriter::InvalidName(StringPiece unknown_name,
                                                  StringPiece message) {
   listener_->InvalidName(location(), ToSnakeCase(unknown_name), message);
@@ -652,6 +665,13 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     ++invalid_depth_;
     InvalidName(name,
                 StrCat("Missing descriptor for field: ", field->type_url()));
+    return this;
+  }
+
+  // Check to see if this field is a oneof and that no oneof in that group has
+  // already been set.
+  if (!ValidOneof(*field, name)) {
+    ++invalid_depth_;
     return this;
   }
 
@@ -932,6 +952,14 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(StringPiece name) {
     // Also we ignore if the field is not found here as it is caught later.
     field = typeinfo_->FindField(&element_->type(), name);
 
+    // Only check for oneof collisions on the first StartList call. We identify
+    // the first call with !name.empty() check. Subsequent list element calls
+    // will not have the name filled.
+    if (!name.empty() && field && !ValidOneof(*field, name)) {
+      ++invalid_depth_;
+      return this;
+    }
+
     // It is an error to try to bind to map, which behind the scenes is a list.
     if (field && IsMap(*field)) {
       // Push field to stack for error location tracking & reporting.
@@ -1080,9 +1108,9 @@ Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
                          data.ValueAsStringOrDefault("")));
   }
 
-  // TODO(tsun): figure out how to do proto descriptor based snake case
-  // conversions as much as possible. Because ToSnakeCase sometimes returns the
-  // wrong value.
+// TODO(tsun): figure out how to do proto descriptor based snake case
+// conversions as much as possible. Because ToSnakeCase sometimes returns the
+// wrong value.
   google::protobuf::scoped_ptr<ResultCallback1<util::Status, StringPiece> > callback(
       NewPermanentCallback(&RenderOneFieldPath, ow));
   return DecodeCompactFieldMaskPaths(data.str(), callback.get());
@@ -1154,6 +1182,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
   const google::protobuf::Field* field = NULL;
   string type_url;
   bool is_map_entry = false;
+  // We are at the root when element_ == NULL.
   if (element_ == NULL) {
     type_url = GetFullTypeWithUrl(master_type_.name());
   } else {
@@ -1166,6 +1195,11 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
     if (field == NULL) {
       return this;
     }
+
+    // Check to see if this field is a oneof and that no oneof in that group has
+    // already been set.
+    if (!ValidOneof(*field, name)) return this;
+
     type_url = field->type_url();
   }
 
@@ -1314,7 +1348,8 @@ void ProtoStreamObjectWriter::RenderSimpleDataPiece(
     }
     case google::protobuf::Field_Kind_TYPE_ENUM: {
       status = WriteEnum(field.number(), data,
-                         typeinfo_->GetEnum(field.type_url()), stream_.get());
+                         typeinfo_->GetEnumByTypeUrl(field.type_url()),
+                         stream_.get());
       break;
     }
     default:  // TYPE_GROUP or TYPE_MESSAGE
@@ -1401,6 +1436,24 @@ ProtoStreamObjectWriter::GetElementType(const google::protobuf::Type& type) {
   }
 }
 
+bool ProtoStreamObjectWriter::ValidOneof(const google::protobuf::Field& field,
+                                         StringPiece unnormalized_name) {
+  if (element_ == NULL) return true;
+
+  if (field.oneof_index() > 0) {
+    if (element_->OneofIndexTaken(field.oneof_index())) {
+      InvalidValue(
+          "oneof",
+          StrCat("oneof field '",
+                 element_->type().oneofs(field.oneof_index() - 1),
+                 "' is already set. Cannot set '", unnormalized_name, "'"));
+      return false;
+    }
+    element_->TakeOneofIndex(field.oneof_index());
+  }
+  return true;
+}
+
 const google::protobuf::Field* ProtoStreamObjectWriter::BeginNamed(
     StringPiece name, bool is_list) {
   if (invalid_depth_ > 0) {
@@ -1450,7 +1503,7 @@ const google::protobuf::Field* ProtoStreamObjectWriter::Lookup(
 const google::protobuf::Type* ProtoStreamObjectWriter::LookupType(
     const google::protobuf::Field* field) {
   return (field->kind() == google::protobuf::Field_Kind_TYPE_MESSAGE
-              ? typeinfo_->GetType(field->type_url())
+              ? typeinfo_->GetTypeByTypeUrl(field->type_url())
               : &element_->type());
 }
 
@@ -1539,7 +1592,7 @@ bool ProtoStreamObjectWriter::IsMap(const google::protobuf::Field& field) {
     return false;
   }
   const google::protobuf::Type* field_type =
-      typeinfo_->GetType(field.type_url());
+      typeinfo_->GetTypeByTypeUrl(field.type_url());
 
   return GetBoolOptionOrDefault(field_type->options(),
                                 "google.protobuf.MessageOptions.map_entry", false);

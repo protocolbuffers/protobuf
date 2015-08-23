@@ -33,6 +33,7 @@
 #include <utility>
 
 #include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/time.h>
@@ -96,7 +97,7 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
 }
 
 ProtoStreamObjectSource::ProtoStreamObjectSource(
-    google::protobuf::io::CodedInputStream* stream, TypeInfo* typeinfo,
+    google::protobuf::io::CodedInputStream* stream, const TypeInfo* typeinfo,
     const google::protobuf::Type& type)
     : stream_(stream), typeinfo_(typeinfo), own_typeinfo_(false), type_(type) {
   GOOGLE_LOG_IF(DFATAL, stream == NULL) << "Input stream is NULL.";
@@ -156,7 +157,7 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
       last_tag = tag;
       field = FindAndVerifyField(type, tag);
       if (field != NULL) {
-        field_name = field->name();
+        field_name = field->json_name();
       }
     }
     if (field == NULL) {
@@ -214,7 +215,7 @@ StatusOr<uint32> ProtoStreamObjectSource::RenderMap(
     const google::protobuf::Field* field, StringPiece name, uint32 list_tag,
     ObjectWriter* ow) const {
   const google::protobuf::Type* field_type =
-      typeinfo_->GetType(field->type_url());
+      typeinfo_->GetTypeByTypeUrl(field->type_url());
   uint32 tag_to_return = 0;
   if (IsPackable(*field) &&
       list_tag ==
@@ -784,7 +785,8 @@ Status ProtoStreamObjectSource::RenderField(
       // Get the nested enum type for this field.
       // TODO(skarvaje): Avoid string manipulation. Find ways to speed this
       // up.
-      const google::protobuf::Enum* en = typeinfo_->GetEnum(field->type_url());
+      const google::protobuf::Enum* en =
+          typeinfo_->GetEnumByTypeUrl(field->type_url());
       // Lookup the name of the enum, and render that. Skips unknown enums.
       if (en != NULL) {
         const google::protobuf::EnumValue* enum_value =
@@ -819,7 +821,7 @@ Status ProtoStreamObjectSource::RenderField(
       int old_limit = stream_->PushLimit(buffer32);
       // Get the nested message type for this field.
       const google::protobuf::Type* type =
-          typeinfo_->GetType(field->type_url());
+          typeinfo_->GetTypeByTypeUrl(field->type_url());
       if (type == NULL) {
         return Status(util::error::INTERNAL,
                       StrCat("Invalid configuration. Could not find the type: ",
@@ -928,7 +930,8 @@ const string ProtoStreamObjectSource::ReadFieldValueAsString(
       // Get the nested enum type for this field.
       // TODO(skarvaje): Avoid string manipulation. Find ways to speed this
       // up.
-      const google::protobuf::Enum* en = typeinfo_->GetEnum(field.type_url());
+      const google::protobuf::Enum* en =
+          typeinfo_->GetEnumByTypeUrl(field.type_url());
       // Lookup the name of the enum, and render that. Skips unknown enums.
       if (en != NULL) {
         const google::protobuf::EnumValue* enum_value =
@@ -962,7 +965,7 @@ const string ProtoStreamObjectSource::ReadFieldValueAsString(
 bool ProtoStreamObjectSource::IsMap(
     const google::protobuf::Field& field) const {
   const google::protobuf::Type* field_type =
-      typeinfo_->GetType(field.type_url());
+      typeinfo_->GetTypeByTypeUrl(field.type_url());
 
   // TODO(xiaofeng): Unify option names.
   return field.kind() == google::protobuf::Field_Kind_TYPE_MESSAGE &&

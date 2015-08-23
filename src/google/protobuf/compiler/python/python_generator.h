@@ -38,6 +38,7 @@
 #include <string>
 
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/common.h>
 
 namespace google {

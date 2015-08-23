@@ -119,7 +119,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
-  public void testCharsetToString() throws UnsupportedEncodingException {
+  public void testCharsetToString() {
     String sourceString = "I love unicode \u1234\u5678 characters";
     ByteString sourceByteString = ByteString.copyFromUtf8(sourceString);
     int copies = 250;
@@ -145,14 +145,15 @@ public class RopeByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
-  public void testToString_returnsCanonicalEmptyString() throws UnsupportedEncodingException {
+  public void testToString_returnsCanonicalEmptyString() {
     RopeByteString ropeByteString =
         RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
     assertSame(classUnderTest + " must be the same string references",
         ByteString.EMPTY.toString(Internal.UTF_8), ropeByteString.toString(Internal.UTF_8));
   }
 
-  public void testToString_raisesException() throws UnsupportedEncodingException{
+  @Override
+  public void testToString_raisesException() {
     try {
       ByteString byteString =
           RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
@@ -172,6 +173,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
     }
   }
 
+  @Override
   public void testJavaSerialization() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(out);

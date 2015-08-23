@@ -73,15 +73,15 @@ INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
 TEST_P(DefaultValueObjectWriterTest, Empty) {
   // Set expectation
   expects_.StartObject("")
-      ->RenderDouble("double_value", 0.0)
-      ->RenderFloat("float_value", 0.0)
-      ->RenderInt64("int64_value", 0)
-      ->RenderUint64("uint64_value", 0)
-      ->RenderInt32("int32_value", 0)
-      ->RenderUint32("uint32_value", 0)
-      ->RenderBool("bool_value", false)
-      ->RenderString("string_value", "")
-      ->RenderBytes("bytes_value", "")
+      ->RenderDouble("doubleValue", 0.0)
+      ->RenderFloat("floatValue", 0.0)
+      ->RenderInt64("int64Value", 0)
+      ->RenderUint64("uint64Value", 0)
+      ->RenderInt32("int32Value", 0)
+      ->RenderUint32("uint32Value", 0)
+      ->RenderBool("boolValue", false)
+      ->RenderString("stringValue", "")
+      ->RenderBytes("bytesValue", "")
       ->EndObject();
 
   // Actual testing
@@ -91,42 +91,42 @@ TEST_P(DefaultValueObjectWriterTest, Empty) {
 TEST_P(DefaultValueObjectWriterTest, NonDefaultDouble) {
   // Set expectation
   expects_.StartObject("")
-      ->RenderDouble("double_value", 1.0)
-      ->RenderFloat("float_value", 0.0)
-      ->RenderInt64("int64_value", 0)
-      ->RenderUint64("uint64_value", 0)
-      ->RenderInt32("int32_value", 0)
-      ->RenderUint32("uint32_value", 0)
-      ->RenderBool("bool_value", false)
-      ->RenderString("string_value", "")
+      ->RenderDouble("doubleValue", 1.0)
+      ->RenderFloat("floatValue", 0.0)
+      ->RenderInt64("int64Value", 0)
+      ->RenderUint64("uint64Value", 0)
+      ->RenderInt32("int32Value", 0)
+      ->RenderUint32("uint32Value", 0)
+      ->RenderBool("boolValue", false)
+      ->RenderString("stringValue", "")
       ->EndObject();
 
   // Actual testing
-  testing_->StartObject("")->RenderDouble("double_value", 1.0)->EndObject();
+  testing_->StartObject("")->RenderDouble("doubleValue", 1.0)->EndObject();
 }
 
 TEST_P(DefaultValueObjectWriterTest, ShouldRetainUnknownField) {
   // Set expectation
   expects_.StartObject("")
-      ->RenderDouble("double_value", 1.0)
-      ->RenderFloat("float_value", 0.0)
-      ->RenderInt64("int64_value", 0)
-      ->RenderUint64("uint64_value", 0)
-      ->RenderInt32("int32_value", 0)
-      ->RenderUint32("uint32_value", 0)
-      ->RenderBool("bool_value", false)
-      ->RenderString("string_value", "")
+      ->RenderDouble("doubleValue", 1.0)
+      ->RenderFloat("floatValue", 0.0)
+      ->RenderInt64("int64Value", 0)
+      ->RenderUint64("uint64Value", 0)
+      ->RenderInt32("int32Value", 0)
+      ->RenderUint32("uint32Value", 0)
+      ->RenderBool("boolValue", false)
+      ->RenderString("stringValue", "")
       ->RenderString("unknown", "abc")
-      ->StartObject("unknown_object")
+      ->StartObject("unknownObject")
       ->RenderString("unknown", "def")
       ->EndObject()
       ->EndObject();
 
   // Actual testing
   testing_->StartObject("")
-      ->RenderDouble("double_value", 1.0)
+      ->RenderDouble("doubleValue", 1.0)
       ->RenderString("unknown", "abc")
-      ->StartObject("unknown_object")
+      ->StartObject("unknownObject")
       ->RenderString("unknown", "def")
       ->EndObject()
       ->EndObject();

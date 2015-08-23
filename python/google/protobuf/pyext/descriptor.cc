@@ -193,7 +193,7 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
     io::CodedInputStream input(
         reinterpret_cast<const uint8*>(serialized.c_str()), serialized.size());
     input.SetExtensionRegistry(GetDescriptorPool()->pool,
-                               cmessage::GetMessageFactory());
+                               GetDescriptorPool()->message_factory);
     bool success = cmsg->message->MergePartialFromCodedStream(&input);
     if (!success) {
       PyErr_Format(PyExc_ValueError, "Error parsing Options message");

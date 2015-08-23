@@ -332,6 +332,10 @@ inline bool PreserveUnknownFields(const Descriptor* descriptor) {
   return descriptor->file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
 }
 
+inline bool IsAnyMessage(const Descriptor* descriptor) {
+  return descriptor->full_name() == "google.protobuf.Any";
+}
+
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

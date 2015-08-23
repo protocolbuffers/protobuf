@@ -44,10 +44,10 @@ import protobuf_unittest.UnittestProto.TestOneof2;
 import protobuf_unittest.UnittestProto.TestOneofBackwardsCompatible;
 import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
-import protobuf_unittest.UnittestMset.TestMessageSet;
 import protobuf_unittest.UnittestMset.RawMessageSet;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
+import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
 

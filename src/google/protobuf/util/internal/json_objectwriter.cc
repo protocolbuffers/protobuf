@@ -33,6 +33,7 @@
 #include <math.h>
 
 #include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/util/internal/json_escaping.h>
@@ -142,7 +143,7 @@ JsonObjectWriter* JsonObjectWriter::RenderBytes(StringPiece name,
                                                 StringPiece value) {
   WritePrefix(name);
   string base64;
-  WebSafeBase64EscapeWithPadding(value, &base64);
+  Base64Escape(value, &base64);
   WriteChar('"');
   // TODO(wpoon): Consider a ByteSink solution that writes the base64 bytes
   //              directly to the stream, rather than first putting them

@@ -58,8 +58,7 @@ public class CheckUtf8Test extends TestCase {
   public void testParseRequiredStringWithGoodUtf8() throws Exception {
     ByteString serialized =
         BytesWrapper.newBuilder().setReq(UTF8_BYTE_STRING).build().toByteString();
-    assertEquals(UTF8_BYTE_STRING_TEXT,
-                 StringWrapper.PARSER.parseFrom(serialized).getReq());
+    assertEquals(UTF8_BYTE_STRING_TEXT, StringWrapper.parser().parseFrom(serialized).getReq());
   }
 
   public void testBuildRequiredStringWithBadUtf8() throws Exception {
@@ -93,7 +92,7 @@ public class CheckUtf8Test extends TestCase {
     ByteString serialized =
         BytesWrapper.newBuilder().setReq(NON_UTF8_BYTE_STRING).build().toByteString();
     try {
-      StringWrapper.PARSER.parseFrom(serialized);
+      StringWrapper.parser().parseFrom(serialized);
       fail("Expected InvalidProtocolBufferException for non UTF-8 byte string.");
     } catch (InvalidProtocolBufferException exception) {
       assertEquals("Protocol message had invalid UTF-8.", exception.getMessage());
@@ -131,7 +130,7 @@ public class CheckUtf8Test extends TestCase {
     ByteString serialized =
         BytesWrapperSize.newBuilder().setReq(NON_UTF8_BYTE_STRING).build().toByteString();
     try {
-      StringWrapperSize.PARSER.parseFrom(serialized);
+      StringWrapperSize.parser().parseFrom(serialized);
       fail("Expected InvalidProtocolBufferException for non UTF-8 byte string.");
     } catch (InvalidProtocolBufferException exception) {
       assertEquals("Protocol message had invalid UTF-8.", exception.getMessage());

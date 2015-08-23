@@ -35,11 +35,11 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/type.pb.h>
+#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/stringpiece.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
-#include <google/protobuf/util/internal/utility.h>
 
 namespace google {
 namespace protobuf {
@@ -47,7 +47,6 @@ namespace util {
 namespace converter {
 
 namespace {
-
 // A TypeInfo that looks up information provided by a TypeResolver.
 class TypeInfoForTypeResolver : public TypeInfo {
  public:
@@ -60,7 +59,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
   }
 
   virtual util::StatusOr<const google::protobuf::Type*> ResolveTypeUrl(
-      StringPiece type_url) {
+      StringPiece type_url) const {
     map<StringPiece, StatusOrType>::iterator it = cached_types_.find(type_url);
     if (it != cached_types_.end()) {
       return it->second;
@@ -78,12 +77,14 @@ class TypeInfoForTypeResolver : public TypeInfo {
     return result;
   }
 
-  virtual const google::protobuf::Type* GetType(StringPiece type_url) {
+  virtual const google::protobuf::Type* GetTypeByTypeUrl(
+      StringPiece type_url) const {
     StatusOrType result = ResolveTypeUrl(type_url);
     return result.ok() ? result.ValueOrDie() : NULL;
   }
 
-  virtual const google::protobuf::Enum* GetEnum(StringPiece type_url) {
+  virtual const google::protobuf::Enum* GetEnumByTypeUrl(
+      StringPiece type_url) const {
     map<StringPiece, StatusOrEnum>::iterator it = cached_enums_.find(type_url);
     if (it != cached_enums_.end()) {
       return it->second.ok() ? it->second.ValueOrDie() : NULL;
@@ -103,7 +104,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
   }
 
   virtual const google::protobuf::Field* FindField(
-      const google::protobuf::Type* type, StringPiece camel_case_name) {
+      const google::protobuf::Type* type, StringPiece camel_case_name) const {
     if (indexed_types_.find(type) == indexed_types_.end()) {
       PopulateNameLookupTable(type);
       indexed_types_.insert(type);
@@ -131,7 +132,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
     }
   }
 
-  void PopulateNameLookupTable(const google::protobuf::Type* type) {
+  void PopulateNameLookupTable(const google::protobuf::Type* type) const {
     for (int i = 0; i < type->fields_size(); ++i) {
       const google::protobuf::Field& field = type->fields(i);
       StringPiece name = field.name();
@@ -151,13 +152,13 @@ class TypeInfoForTypeResolver : public TypeInfo {
 
   // Stores string values that will be referenced by StringPieces in
   // cached_types_, cached_enums_ and camel_case_name_table_.
-  set<string> string_storage_;
+  mutable set<string> string_storage_;
 
-  map<StringPiece, StatusOrType> cached_types_;
-  map<StringPiece, StatusOrEnum> cached_enums_;
+  mutable map<StringPiece, StatusOrType> cached_types_;
+  mutable map<StringPiece, StatusOrEnum> cached_enums_;
 
-  set<const google::protobuf::Type*> indexed_types_;
-  map<StringPiece, StringPiece> camel_case_name_table_;
+  mutable set<const google::protobuf::Type*> indexed_types_;
+  mutable map<StringPiece, StringPiece> camel_case_name_table_;
 };
 }  // namespace
 

@@ -113,7 +113,7 @@ def PrintMessage(message, out, indent=0, as_utf8=False, as_one_line=False,
     fields.sort(key=lambda x: x[0].index)
   for field, value in fields:
     if _IsMapEntry(field):
-      for key in value:
+      for key in sorted(value):
         # This is slow for maps with submessage entires because it copies the
         # entire tree.  Unfortunately this would take significant refactoring
         # of this file to work around.

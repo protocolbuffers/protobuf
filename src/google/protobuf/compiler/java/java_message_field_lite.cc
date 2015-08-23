@@ -310,11 +310,11 @@ GenerateParsingCode(io::Printer* printer) const {
 
     if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
       printer->Print(variables_,
-        "$name$_ = input.readGroup($number$, $type$.PARSER,\n"
+        "$name$_ = input.readGroup($number$, $type$.parser(),\n"
         "    extensionRegistry);\n");
     } else {
       printer->Print(variables_,
-        "$name$_ = input.readMessage($type$.PARSER, extensionRegistry);\n");
+        "$name$_ = input.readMessage($type$.parser(), extensionRegistry);\n");
     }
 
   printer->Print(variables_,
@@ -521,11 +521,12 @@ GenerateParsingCode(io::Printer* printer) const {
 
     if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
       printer->Print(variables_,
-        "$oneof_name$_ = input.readGroup($number$, $type$.PARSER,\n"
+        "$oneof_name$_ = input.readGroup($number$, $type$.parser(),\n"
         "    extensionRegistry);\n");
     } else {
       printer->Print(variables_,
-        "$oneof_name$_ = input.readMessage($type$.PARSER, extensionRegistry);\n");
+        "$oneof_name$_ =\n"
+        "     input.readMessage($type$.parser(), extensionRegistry);\n");
     }
 
   printer->Print(variables_,
@@ -885,11 +886,12 @@ GenerateParsingCode(io::Printer* printer) const {
 
     if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
       printer->Print(variables_,
-        "$name$_.add(input.readGroup($number$, $type$.PARSER,\n"
+        "$name$_.add(input.readGroup($number$, $type$.parser(),\n"
         "    extensionRegistry));\n");
     } else {
       printer->Print(variables_,
-        "$name$_.add(input.readMessage($type$.PARSER, extensionRegistry));\n");
+        "$name$_.add(\n"
+        "    input.readMessage($type$.parser(), extensionRegistry));\n");
     }
 }
 

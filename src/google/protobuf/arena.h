@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_H__
 #define GOOGLE_PROTOBUF_ARENA_H__
 
+#include <limits>
 #if __cplusplus >= 201103L
 #include <google/protobuf/stubs/type_traits.h>
 #endif
@@ -39,7 +40,8 @@
 #include <google/protobuf/stubs/atomic_sequence_num.h>
 #include <google/protobuf/stubs/atomicops.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/platform_macros.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/type_traits.h>
 
 namespace google {
@@ -414,6 +416,9 @@ class LIBPROTOBUF_EXPORT Arena {
   // trivially destructible.
   template <typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
   static T* CreateArray(::google::protobuf::Arena* arena, size_t num_elements) {
+    GOOGLE_CHECK_LE(num_elements,
+             std::numeric_limits<size_t>::max() / sizeof(T))
+        << "Requested size is too large to fit into size_t.";
     if (arena == NULL) {
       return static_cast<T*>(::operator new[](num_elements * sizeof(T)));
     } else {
@@ -425,16 +430,16 @@ class LIBPROTOBUF_EXPORT Arena {
   // of the underlying blocks. The total space used may not include the new
   // blocks that are allocated by this arena from other threads concurrently
   // with the call to this method.
-  uint64 SpaceAllocated() const GOOGLE_ATTRIBUTE_NOINLINE;
+  GOOGLE_ATTRIBUTE_NOINLINE uint64 SpaceAllocated() const;
   // As above, but does not include any free space in underlying blocks.
-  uint64 SpaceUsed() const GOOGLE_ATTRIBUTE_NOINLINE;
+  GOOGLE_ATTRIBUTE_NOINLINE uint64 SpaceUsed() const;
 
   // Frees all storage allocated by this arena after calling destructors
   // registered with OwnDestructor() and freeing objects registered with Own().
   // Any objects allocated on this arena are unusable after this call. It also
   // returns the total space used by the arena which is the sums of the sizes
   // of the allocated blocks. This method is not thread-safe.
-  uint64 Reset() GOOGLE_ATTRIBUTE_NOINLINE;
+  GOOGLE_ATTRIBUTE_NOINLINE uint64 Reset();
 
   // Adds |object| to a list of heap-allocated objects to be freed with |delete|
   // when the arena is destroyed or reset.
@@ -459,8 +464,8 @@ class LIBPROTOBUF_EXPORT Arena {
   // will be manually called when the arena is destroyed or reset. This differs
   // from OwnDestructor() in that any member function may be specified, not only
   // the class destructor.
-  void OwnCustomDestructor(void* object, void (*destruct)(void*))
-      GOOGLE_ATTRIBUTE_NOINLINE {
+  GOOGLE_ATTRIBUTE_NOINLINE void OwnCustomDestructor(void* object,
+                                              void (*destruct)(void*)) {
     AddListNode(object, destruct);
   }
 
@@ -469,7 +474,7 @@ class LIBPROTOBUF_EXPORT Arena {
   // latter is a virtual call, while this method is a templated call that
   // resolves at compile-time.
   template<typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  static inline ::google::protobuf::Arena* GetArena(const T* value) {
+  static ::google::protobuf::Arena* GetArena(const T* value) {
     return GetArenaInternal(value, static_cast<T*>(0));
   }
 
@@ -507,7 +512,7 @@ class LIBPROTOBUF_EXPORT Arena {
     // aligned at a multiple of 8 bytes.
     size_t pos;
     size_t size;  // total size of the block.
-    size_t avail() const GOOGLE_ATTRIBUTE_ALWAYS_INLINE { return size - pos; }
+    GOOGLE_ATTRIBUTE_ALWAYS_INLINE size_t avail() const { return size - pos; }
     // data follows
   };
 
@@ -555,6 +560,33 @@ class LIBPROTOBUF_EXPORT Arena {
     return google::protobuf::internal::has_trivial_destructor<T>::value;
   }
 
+  // Helper typetrait that indicates whether the desctructor of type T should be
+  // called when arena is destroyed at compile time. This is only to allow
+  // construction of higher-level templated utilities.
+  // is_destructor_skippable<T>::value is an instance of google::protobuf::internal::true_type if the
+  // destructor of the message type T should not be called when arena is
+  // destroyed or google::protobuf::internal::has_trivial_destructor<T>::value == true, and
+  // google::protobuf::internal::false_type otherwise.
+  //
+  // This is inside Arena because only Arena has the friend relationships
+  // necessary to see the underlying generated code traits.
+  template<typename T>
+  struct is_destructor_skippable {
+    template<typename U>
+    static char DestructorSkippable(
+        const typename U::DestructorSkippable_*);
+    template<typename U>
+    static double DestructorSkippable(...);
+
+    // This will resolve to either google::protobuf::internal::true_type or google::protobuf::internal::false_type.
+    typedef google::protobuf::internal::integral_constant<bool,
+              sizeof(DestructorSkippable<const T>(static_cast<const T*>(0))) ==
+              sizeof(char) || google::protobuf::internal::has_trivial_destructor<T>::value == true>
+              type;
+    static const type value;
+  };
+
+
   // CreateMessage<T> requires that T supports arenas, but this private method
   // works whether or not T supports arenas. These are not exposed to user code
   // as it can cause confusing API usages, and end up having double free in
@@ -574,14 +606,16 @@ class LIBPROTOBUF_EXPORT Arena {
   // Just allocate the required size for the given type assuming the
   // type has a trivial constructor.
   template<typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  inline T* CreateInternalRawArray(size_t num_elements) {
+  T* CreateInternalRawArray(size_t num_elements) {
+    GOOGLE_CHECK_LE(num_elements,
+             std::numeric_limits<size_t>::max() / sizeof(T))
+        << "Requested size is too large to fit into size_t.";
     return static_cast<T*>(
         AllocateAligned(RTTI_TYPE_ID(T), sizeof(T) * num_elements));
   }
 
   template <typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  inline T* CreateInternal(
-      bool skip_explicit_ownership) {
+  T* CreateInternal(bool skip_explicit_ownership) {
     T* t = new (AllocateAligned(RTTI_TYPE_ID(T), sizeof(T))) T();
     if (!skip_explicit_ownership) {
       AddListNode(t, &internal::arena_destruct_object<T>);
@@ -590,8 +624,7 @@ class LIBPROTOBUF_EXPORT Arena {
   }
 
   template <typename T, typename Arg> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  inline T* CreateInternal(
-      bool skip_explicit_ownership, const Arg& arg) {
+  T* CreateInternal(bool skip_explicit_ownership, const Arg& arg) {
     T* t = new (AllocateAligned(RTTI_TYPE_ID(T), sizeof(T))) T(arg);
     if (!skip_explicit_ownership) {
       AddListNode(t, &internal::arena_destruct_object<T>);
@@ -600,7 +633,7 @@ class LIBPROTOBUF_EXPORT Arena {
   }
 
   template <typename T, typename Arg1, typename Arg2> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  inline T* CreateInternal(
+  T* CreateInternal(
       bool skip_explicit_ownership, const Arg1& arg1, const Arg2& arg2) {
     T* t = new (AllocateAligned(RTTI_TYPE_ID(T), sizeof(T))) T(arg1, arg2);
     if (!skip_explicit_ownership) {
@@ -610,10 +643,10 @@ class LIBPROTOBUF_EXPORT Arena {
   }
 
   template <typename T, typename Arg1, typename Arg2, typename Arg3>
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE inline T* CreateInternal(bool skip_explicit_ownership,
-                                                   const Arg1& arg1,
-                                                   const Arg2& arg2,
-                                                   const Arg3& arg3) {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE T* CreateInternal(bool skip_explicit_ownership,
+                                            const Arg1& arg1,
+                                            const Arg2& arg2,
+                                            const Arg3& arg3) {
     T* t = new (AllocateAligned(RTTI_TYPE_ID(T), sizeof(T)))
         T(arg1, arg2, arg3);
     if (!skip_explicit_ownership) {
@@ -624,11 +657,11 @@ class LIBPROTOBUF_EXPORT Arena {
 
   template <typename T, typename Arg1, typename Arg2, typename Arg3,
             typename Arg4>
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE inline T* CreateInternal(bool skip_explicit_ownership,
-                                                   const Arg1& arg1,
-                                                   const Arg2& arg2,
-                                                   const Arg3& arg3,
-                                                   const Arg4& arg4) {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE T* CreateInternal(bool skip_explicit_ownership,
+                                            const Arg1& arg1,
+                                            const Arg2& arg2,
+                                            const Arg3& arg3,
+                                            const Arg4& arg4) {
     T* t = new (AllocateAligned(RTTI_TYPE_ID(T), sizeof(T)))
         T(arg1, arg2, arg3, arg4);
     if (!skip_explicit_ownership) {
@@ -639,12 +672,12 @@ class LIBPROTOBUF_EXPORT Arena {
 
   template <typename T, typename Arg1, typename Arg2, typename Arg3,
             typename Arg4, typename Arg5>
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE inline T* CreateInternal(bool skip_explicit_ownership,
-                                                   const Arg1& arg1,
-                                                   const Arg2& arg2,
-                                                   const Arg3& arg3,
-                                                   const Arg4& arg4,
-                                                   const Arg5& arg5) {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE T* CreateInternal(bool skip_explicit_ownership,
+                                            const Arg1& arg1,
+                                            const Arg2& arg2,
+                                            const Arg3& arg3,
+                                            const Arg4& arg4,
+                                            const Arg5& arg5) {
     T* t = new (AllocateAligned(RTTI_TYPE_ID(T), sizeof(T)))
         T(arg1, arg2, arg3, arg4, arg5);
     if (!skip_explicit_ownership) {
@@ -655,13 +688,13 @@ class LIBPROTOBUF_EXPORT Arena {
 
   template <typename T, typename Arg1, typename Arg2, typename Arg3,
             typename Arg4, typename Arg5, typename Arg6>
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE inline T* CreateInternal(bool skip_explicit_ownership,
-                                                   const Arg1& arg1,
-                                                   const Arg2& arg2,
-                                                   const Arg3& arg3,
-                                                   const Arg4& arg4,
-                                                   const Arg5& arg5,
-                                                   const Arg6& arg6) {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE T* CreateInternal(bool skip_explicit_ownership,
+                                            const Arg1& arg1,
+                                            const Arg2& arg2,
+                                            const Arg3& arg3,
+                                            const Arg4& arg4,
+                                            const Arg5& arg5,
+                                            const Arg6& arg6) {
     T* t = new (AllocateAligned(RTTI_TYPE_ID(T), sizeof(T)))
         T(arg1, arg2, arg3, arg4, arg5, arg6);
     if (!skip_explicit_ownership) {
@@ -672,14 +705,14 @@ class LIBPROTOBUF_EXPORT Arena {
 
   template <typename T, typename Arg1, typename Arg2, typename Arg3,
             typename Arg4, typename Arg5, typename Arg6, typename Arg7>
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE inline T* CreateInternal(bool skip_explicit_ownership,
-                                                   const Arg1& arg1,
-                                                   const Arg2& arg2,
-                                                   const Arg3& arg3,
-                                                   const Arg4& arg4,
-                                                   const Arg5& arg5,
-                                                   const Arg6& arg6,
-                                                   const Arg7& arg7) {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE T* CreateInternal(bool skip_explicit_ownership,
+                                            const Arg1& arg1,
+                                            const Arg2& arg2,
+                                            const Arg3& arg3,
+                                            const Arg4& arg4,
+                                            const Arg5& arg5,
+                                            const Arg6& arg6,
+                                            const Arg7& arg7) {
     T* t = new (AllocateAligned(RTTI_TYPE_ID(T), sizeof(T)))
         T(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     if (!skip_explicit_ownership) {
@@ -691,15 +724,15 @@ class LIBPROTOBUF_EXPORT Arena {
   template <typename T, typename Arg1, typename Arg2, typename Arg3,
             typename Arg4, typename Arg5, typename Arg6, typename Arg7,
             typename Arg8>
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE inline T* CreateInternal(bool skip_explicit_ownership,
-                                                   const Arg1& arg1,
-                                                   const Arg2& arg2,
-                                                   const Arg3& arg3,
-                                                   const Arg4& arg4,
-                                                   const Arg5& arg5,
-                                                   const Arg6& arg6,
-                                                   const Arg7& arg7,
-                                                   const Arg8& arg8) {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE T* CreateInternal(bool skip_explicit_ownership,
+                                            const Arg1& arg1,
+                                            const Arg2& arg2,
+                                            const Arg3& arg3,
+                                            const Arg4& arg4,
+                                            const Arg5& arg5,
+                                            const Arg6& arg6,
+                                            const Arg7& arg7,
+                                            const Arg8& arg8) {
     T* t = new (AllocateAligned(RTTI_TYPE_ID(T), sizeof(T)))
         T(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     if (!skip_explicit_ownership) {
@@ -709,21 +742,21 @@ class LIBPROTOBUF_EXPORT Arena {
   }
 
   template <typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  inline T* CreateMessageInternal(typename T::InternalArenaConstructable_*) {
+  T* CreateMessageInternal(typename T::InternalArenaConstructable_*) {
     return CreateInternal<T, Arena*>(SkipDeleteList<T>(static_cast<T*>(0)),
                                      this);
   }
 
   template <typename T, typename Arg> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  inline T* CreateMessageInternal(typename T::InternalArenaConstructable_*,
-                                  const Arg& arg) {
+  T* CreateMessageInternal(typename T::InternalArenaConstructable_*,
+                           const Arg& arg) {
     return CreateInternal<T, Arena*>(SkipDeleteList<T>(static_cast<T*>(0)),
                                      this, arg);
   }
 
   template <typename T, typename Arg1, typename Arg2> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  inline T* CreateMessageInternal(typename T::InternalArenaConstructable_*,
-                                  const Arg1& arg1, const Arg2& arg2) {
+  T* CreateMessageInternal(typename T::InternalArenaConstructable_*,
+                           const Arg1& arg1, const Arg2& arg2) {
     return CreateInternal<T, Arena*>(SkipDeleteList<T>(static_cast<T*>(0)),
                                      this, arg1, arg2);
   }
@@ -734,17 +767,27 @@ class LIBPROTOBUF_EXPORT Arena {
   template <typename T>
   static void CreateInArenaStorage(T* ptr, Arena* arena) {
     CreateInArenaStorageInternal(ptr, arena, is_arena_constructable<T>::value);
+    RegisterDestructorInternal(ptr, arena, is_destructor_skippable<T>::value);
   }
+
   template <typename T>
   static void CreateInArenaStorageInternal(
       T* ptr, Arena* arena, google::protobuf::internal::true_type) {
     new (ptr) T(arena);
   }
-
   template <typename T>
   static void CreateInArenaStorageInternal(
       T* ptr, Arena* arena, google::protobuf::internal::false_type) {
     new (ptr) T;
+  }
+
+  template <typename T>
+  static void RegisterDestructorInternal(
+      T* ptr, Arena* arena, google::protobuf::internal::true_type) {}
+  template <typename T>
+  static void RegisterDestructorInternal(
+      T* ptr, Arena* arena, google::protobuf::internal::false_type) {
+    arena->OwnDestructor(ptr);
   }
 
   // These implement Own(), which registers an object for deletion (destructor
@@ -769,13 +812,13 @@ class LIBPROTOBUF_EXPORT Arena {
   // InternalArenaConstructable_ tags can be associated with an arena, and such
   // objects must implement a GetArenaNoVirtual() method.
   template<typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  static inline ::google::protobuf::Arena* GetArenaInternal(const T* value,
-      typename T::InternalArenaConstructable_*) {
+  static ::google::protobuf::Arena* GetArenaInternal(
+      const T* value, typename T::InternalArenaConstructable_*) {
     return value->GetArenaNoVirtual();
   }
 
   template<typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  static inline ::google::protobuf::Arena* GetArenaInternal(const T* value, ...) {
+  static ::google::protobuf::Arena* GetArenaInternal(const T* value, ...) {
     return NULL;
   }
 
@@ -785,7 +828,7 @@ class LIBPROTOBUF_EXPORT Arena {
   void* AllocateAligned(const std::type_info* allocated, size_t n);
 
   // Allocate an internal allocation, avoiding optional typed monitoring.
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE inline void* AllocateAligned(size_t n) {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE void* AllocateAligned(size_t n) {
     return AllocateAligned(NULL, n);
   }
 
@@ -803,6 +846,7 @@ class LIBPROTOBUF_EXPORT Arena {
   void AddListNode(void* elem, void (*cleanup)(void*));
   // Delete or Destruct all objects owned by the arena.
   void CleanupList();
+  uint64 ResetInternal();
 
   inline void SetThreadCacheBlock(Block* block) {
     thread_cache().last_block_used_ = block;
@@ -829,6 +873,9 @@ class LIBPROTOBUF_EXPORT Arena {
   Mutex blocks_lock_;
 
   void AddBlock(Block* b);
+  // Access must be synchronized, either by blocks_lock_ or by being called from
+  // Init()/Reset().
+  void AddBlockInternal(Block* b);
   void* SlowAlloc(size_t n);
   Block* FindBlock(void* me);
   Block* NewBlock(void* me, Block* my_last_block, size_t n,
@@ -853,6 +900,11 @@ template<typename T>
 const typename Arena::is_arena_constructable<T>::type
     Arena::is_arena_constructable<T>::value =
         typename Arena::is_arena_constructable<T>::type();
+
+template<typename T>
+const typename Arena::is_destructor_skippable<T>::type
+    Arena::is_destructor_skippable<T>::value =
+        typename Arena::is_destructor_skippable<T>::type();
 
 }  // namespace protobuf
 

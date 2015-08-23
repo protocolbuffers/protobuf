@@ -33,6 +33,7 @@
 #include <Python.h>
 
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/descriptor.h>
 #include <google/protobuf/pyext/message.h>
@@ -67,6 +68,11 @@ PyDescriptorPool* NewDescriptorPool() {
   // as underlay.
   cdescriptor_pool->pool = new DescriptorPool(DescriptorPool::generated_pool());
 
+  DynamicMessageFactory* message_factory = new DynamicMessageFactory();
+  // This option might be the default some day.
+  message_factory->SetDelegateToGeneratedFactory(true);
+  cdescriptor_pool->message_factory = message_factory;
+
   // TODO(amauryfa): Rewrite the SymbolDatabase in C so that it uses the same
   // storage.
   cdescriptor_pool->classes_by_descriptor =
@@ -93,6 +99,7 @@ static void Dealloc(PyDescriptorPool* self) {
     Py_DECREF(it->second);
   }
   delete self->descriptor_options;
+  delete self->message_factory;
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }
 

@@ -732,6 +732,7 @@ public final class TestUtil {
     Assert.assertEquals("424", message.getDefaultStringPiece());
     Assert.assertEquals("425", message.getDefaultCord());
 
+    Assert.assertEquals(TestAllTypes.OneofFieldCase.ONEOF_BYTES, message.getOneofFieldCase());
     Assert.assertFalse(message.hasOneofUint32());
     Assert.assertFalse(message.hasOneofNestedMessage());
     Assert.assertFalse(message.hasOneofString());

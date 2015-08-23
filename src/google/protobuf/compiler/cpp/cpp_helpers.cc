@@ -39,6 +39,7 @@
 
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
@@ -68,7 +69,7 @@ const char* const kKeywordList[] = {
   "constexpr", "const_cast", "continue", "decltype", "default", "delete", "do",
   "double", "dynamic_cast", "else", "enum", "explicit", "extern", "false",
   "float", "for", "friend", "goto", "if", "inline", "int", "long", "mutable",
-  "namespace", "new", "noexcept", "not", "not_eq", "nullptr", "operator", "or",
+  "namespace", "new", "noexcept", "not", "not_eq", "NULL", "operator", "or",
   "or_eq", "private", "protected", "public", "register", "reinterpret_cast",
   "return", "short", "signed", "sizeof", "static", "static_assert",
   "static_cast", "struct", "switch", "template", "this", "thread_local",
@@ -174,6 +175,14 @@ string SuperClassName(const Descriptor* descriptor) {
       "::google::protobuf::Message" : "::google::protobuf::MessageLite";
 }
 
+string DependentBaseDownCast() {
+  return "reinterpret_cast<T*>(this)->";
+}
+
+string DependentBaseConstDownCast() {
+  return "reinterpret_cast<const T*>(this)->";
+}
+
 string FieldName(const FieldDescriptor* field) {
   string result = field->name();
   LowerString(&result);
@@ -208,6 +217,19 @@ string FieldConstantName(const FieldDescriptor *field) {
 }
 
 bool IsFieldDependent(const FieldDescriptor* field) {
+  if (field->containing_oneof() != NULL &&
+      field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+    return true;
+  }
+  if (field->is_map()) {
+    const Descriptor* map_descriptor = field->message_type();
+    for (int i = 0; i < map_descriptor->field_count(); i++) {
+      if (IsFieldDependent(map_descriptor->field(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
   if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
     return false;
   }

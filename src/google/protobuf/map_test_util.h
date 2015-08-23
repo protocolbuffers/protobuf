@@ -83,71 +83,74 @@ class MapTestUtil {
   // Get pointers of map entries from release.
   static std::vector<const Message*> GetMapEntriesFromRelease(
       unittest::TestMap* message);
+};
 
-  // Like above, but use the reflection interface.
-  class MapReflectionTester {
-   public:
-    // base_descriptor must be a descriptor for TestMap, which is used for
-    // MapReflectionTester to fetch the FieldDescriptors needed to use the
-    // reflection interface.
-    explicit MapReflectionTester(const Descriptor* base_descriptor);
+// Like above, but use the reflection interface.
+class MapReflectionTester {
+ public:
+  // base_descriptor must be a descriptor for TestMap, which is used for
+  // MapReflectionTester to fetch the FieldDescriptors needed to use the
+  // reflection interface.
+  explicit MapReflectionTester(const Descriptor* base_descriptor);
 
-    void SetMapFieldsViaReflection(Message* message);
-    void ClearMapFieldsViaReflection(Message* message);
-    void ModifyMapFieldsViaReflection(Message* message);
-    void RemoveLastMapsViaReflection(Message* message);
-    void ReleaseLastMapsViaReflection(Message* message);
-    void SwapMapsViaReflection(Message* message);
-    void MutableUnknownFieldsOfMapFieldsViaReflection(Message* message);
-    void ExpectMapFieldsSetViaReflection(const Message& message);
-    void ExpectClearViaReflection(const Message& message);
-    void ExpectMapEntryClearViaReflection(Message* message);
+  void SetMapFieldsViaReflection(Message* message);
+  void SetMapFieldsViaMapReflection(Message* message);
+  void ClearMapFieldsViaReflection(Message* message);
+  void ModifyMapFieldsViaReflection(Message* message);
+  void RemoveLastMapsViaReflection(Message* message);
+  void ReleaseLastMapsViaReflection(Message* message);
+  void SwapMapsViaReflection(Message* message);
+  void MutableUnknownFieldsOfMapFieldsViaReflection(Message* message);
+  void ExpectMapFieldsSetViaReflection(const Message& message);
+  void ExpectMapFieldsSetViaReflectionIterator(Message* message);
+  void ExpectClearViaReflection(const Message& message);
+  void ExpectClearViaReflectionIterator(Message* message);
+  void ExpectMapEntryClearViaReflection(Message* message);
 
-   private:
-    const FieldDescriptor* F(const string& name);
+ private:
+  const FieldDescriptor* F(const string& name);
 
-    const Descriptor* base_descriptor_;
+  const Descriptor* base_descriptor_;
 
-    const EnumValueDescriptor* map_enum_bar_;
-    const EnumValueDescriptor* map_enum_baz_;
-    const EnumValueDescriptor* map_enum_foo_;
+  const EnumValueDescriptor* map_enum_bar_;
+  const EnumValueDescriptor* map_enum_baz_;
+  const EnumValueDescriptor* map_enum_foo_;
 
-    const FieldDescriptor* foreign_c_;
-    const FieldDescriptor* map_int32_int32_key_;
-    const FieldDescriptor* map_int32_int32_val_;
-    const FieldDescriptor* map_int64_int64_key_;
-    const FieldDescriptor* map_int64_int64_val_;
-    const FieldDescriptor* map_uint32_uint32_key_;
-    const FieldDescriptor* map_uint32_uint32_val_;
-    const FieldDescriptor* map_uint64_uint64_key_;
-    const FieldDescriptor* map_uint64_uint64_val_;
-    const FieldDescriptor* map_sint32_sint32_key_;
-    const FieldDescriptor* map_sint32_sint32_val_;
-    const FieldDescriptor* map_sint64_sint64_key_;
-    const FieldDescriptor* map_sint64_sint64_val_;
-    const FieldDescriptor* map_fixed32_fixed32_key_;
-    const FieldDescriptor* map_fixed32_fixed32_val_;
-    const FieldDescriptor* map_fixed64_fixed64_key_;
-    const FieldDescriptor* map_fixed64_fixed64_val_;
-    const FieldDescriptor* map_sfixed32_sfixed32_key_;
-    const FieldDescriptor* map_sfixed32_sfixed32_val_;
-    const FieldDescriptor* map_sfixed64_sfixed64_key_;
-    const FieldDescriptor* map_sfixed64_sfixed64_val_;
-    const FieldDescriptor* map_int32_float_key_;
-    const FieldDescriptor* map_int32_float_val_;
-    const FieldDescriptor* map_int32_double_key_;
-    const FieldDescriptor* map_int32_double_val_;
-    const FieldDescriptor* map_bool_bool_key_;
-    const FieldDescriptor* map_bool_bool_val_;
-    const FieldDescriptor* map_string_string_key_;
-    const FieldDescriptor* map_string_string_val_;
-    const FieldDescriptor* map_int32_bytes_key_;
-    const FieldDescriptor* map_int32_bytes_val_;
-    const FieldDescriptor* map_int32_enum_key_;
-    const FieldDescriptor* map_int32_enum_val_;
-    const FieldDescriptor* map_int32_foreign_message_key_;
-    const FieldDescriptor* map_int32_foreign_message_val_;
-  };
+  const FieldDescriptor* foreign_c_;
+  const FieldDescriptor* map_int32_int32_key_;
+  const FieldDescriptor* map_int32_int32_val_;
+  const FieldDescriptor* map_int64_int64_key_;
+  const FieldDescriptor* map_int64_int64_val_;
+  const FieldDescriptor* map_uint32_uint32_key_;
+  const FieldDescriptor* map_uint32_uint32_val_;
+  const FieldDescriptor* map_uint64_uint64_key_;
+  const FieldDescriptor* map_uint64_uint64_val_;
+  const FieldDescriptor* map_sint32_sint32_key_;
+  const FieldDescriptor* map_sint32_sint32_val_;
+  const FieldDescriptor* map_sint64_sint64_key_;
+  const FieldDescriptor* map_sint64_sint64_val_;
+  const FieldDescriptor* map_fixed32_fixed32_key_;
+  const FieldDescriptor* map_fixed32_fixed32_val_;
+  const FieldDescriptor* map_fixed64_fixed64_key_;
+  const FieldDescriptor* map_fixed64_fixed64_val_;
+  const FieldDescriptor* map_sfixed32_sfixed32_key_;
+  const FieldDescriptor* map_sfixed32_sfixed32_val_;
+  const FieldDescriptor* map_sfixed64_sfixed64_key_;
+  const FieldDescriptor* map_sfixed64_sfixed64_val_;
+  const FieldDescriptor* map_int32_float_key_;
+  const FieldDescriptor* map_int32_float_val_;
+  const FieldDescriptor* map_int32_double_key_;
+  const FieldDescriptor* map_int32_double_val_;
+  const FieldDescriptor* map_bool_bool_key_;
+  const FieldDescriptor* map_bool_bool_val_;
+  const FieldDescriptor* map_string_string_key_;
+  const FieldDescriptor* map_string_string_val_;
+  const FieldDescriptor* map_int32_bytes_key_;
+  const FieldDescriptor* map_int32_bytes_val_;
+  const FieldDescriptor* map_int32_enum_key_;
+  const FieldDescriptor* map_int32_enum_val_;
+  const FieldDescriptor* map_int32_foreign_message_key_;
+  const FieldDescriptor* map_int32_foreign_message_val_;
 };
 
 }  // namespace protobuf

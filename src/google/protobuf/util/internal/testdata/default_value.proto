@@ -43,6 +43,7 @@ message DefaultValueTestCases {
   DoubleMessage repeated_double = 4;
   DoubleMessage nested_message = 5;
   DoubleMessage repeated_nested_message = 6;
+  DoubleMessage double_message_with_oneof = 7;
   StructMessage empty_struct = 201;
   StructMessage empty_struct2 = 202;
   StructMessage struct_with_null_value = 203;
@@ -75,6 +76,8 @@ message DefaultValueTestCases {
   MixedMap mixed1 = 404;
   MixedMap2 mixed2 = 405;
   MessageMap map_of_objects = 406;
+  MixedMap mixed_empty = 407;
+  MessageMap message_map_empty = 408;
   DoubleValueMessage double_value = 501;
   DoubleValueMessage double_value_default = 502;
 }
@@ -85,6 +88,10 @@ message DoubleMessage {
   DoubleMessage nested_message = 3;
   repeated DoubleMessage repeated_nested_message = 4;
   google.protobuf.DoubleValue double_wrapper = 100;
+  oneof value {
+    string str_value = 112;
+    int64 num_value = 113;
+  }
 }
 
 message StructMessage {

@@ -70,7 +70,14 @@ string ClassName(const EnumDescriptor* enum_descriptor, bool qualified);
 // This is a class name, like "ProtoName_InternalBase".
 string DependentBaseClassTemplateName(const Descriptor* descriptor);
 
+// Name of the base class: either the dependent base class (for use with
+// proto_h) or google::protobuf::Message.
 string SuperClassName(const Descriptor* descriptor);
+
+// Returns a string that down-casts from the dependent base class to the
+// derived class.
+string DependentBaseDownCast();
+string DependentBaseConstDownCast();
 
 // Get the (unqualified) name that should be used for this field in C++ code.
 // The name is coerced to lower-case to emulate proto1 behavior.  People

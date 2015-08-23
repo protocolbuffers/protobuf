@@ -34,6 +34,7 @@
 #include <cstring>
 #include <string>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 
 namespace google {

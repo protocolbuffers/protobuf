@@ -75,11 +75,13 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
   explicit JsonStreamParser(ObjectWriter* ow);
   virtual ~JsonStreamParser();
 
-  // Parse a JSON string (UTF-8 encoded).
+  // Parses a UTF-8 encoded JSON string from a StringPiece.
   util::Status Parse(StringPiece json);
+
 
   // Finish parsing the JSON string.
   util::Status FinishParse();
+
 
  private:
   enum TokenType {
@@ -239,11 +241,11 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
   // A value of 0 indicates that string parsing is not in process.
   char string_open_;
 
-  // Storage for utf8-coerced bytes.
-  google::protobuf::scoped_array<char> utf8_storage_;
+  // Storage for the chunk that are being parsed in ParseChunk().
+  string chunk_storage_;
 
-  // Length of the storage for utf8-coerced bytes.
-  int utf8_length_;
+  // Whether to allow non UTF-8 encoded input and replace invalid code points.
+  bool coerce_to_utf8_;
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(JsonStreamParser);
 };

@@ -44,6 +44,7 @@
 #include <limits.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -338,9 +339,9 @@ namespace {
 // The first part of the pair is true iff the read was successful.  The second
 // part is buffer + (number of bytes read).  This function is always inlined,
 // so returning a pair is costless.
-inline ::std::pair<bool, const uint8*> ReadVarint32FromArray(
+GOOGLE_ATTRIBUTE_ALWAYS_INLINE ::std::pair<bool, const uint8*> ReadVarint32FromArray(
     uint32 first_byte, const uint8* buffer,
-    uint32* value) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+    uint32* value);
 inline ::std::pair<bool, const uint8*> ReadVarint32FromArray(
     uint32 first_byte, const uint8* buffer, uint32* value) {
   // Fast path:  We have enough bytes left in the buffer to guarantee that

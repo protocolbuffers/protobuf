@@ -314,6 +314,14 @@ GenerateBuilderMembers(io::Printer* printer) const {
         "          internalGetMutable$capitalized_name$().getMutableMap(),\n"
         "          $name$ValueConverter);\n"
         "}\n");
+    WriteFieldDocComment(printer, descriptor_);
+    printer->Print(
+        variables_,
+        "$deprecation$public Builder putAll$capitalized_name$(\n"
+        "    java.util.Map<$boxed_key_type$, $value_enum_type$> values) {\n"
+        "  getMutable$capitalized_name$().putAll(values);\n"
+        "  return this;\n"
+        "}\n");
     if (SupportUnknownEnumValue(descriptor_->file())) {
       WriteFieldDocComment(printer, descriptor_);
       printer->Print(
@@ -331,6 +339,14 @@ GenerateBuilderMembers(io::Printer* printer) const {
           "getMutable$capitalized_name$Value() {\n"
           "  return internalGetMutable$capitalized_name$().getMutableMap();\n"
           "}\n");
+      WriteFieldDocComment(printer, descriptor_);
+      printer->Print(
+          variables_,
+          "$deprecation$public Builder putAll$capitalized_name$Value(\n"
+          "    java.util.Map<$boxed_key_type$, $boxed_value_type$> values) {\n"
+          "  getMutable$capitalized_name$Value().putAll(values);\n"
+          "  return this;\n"
+          "}\n");
     }
   } else {
     WriteFieldDocComment(printer, descriptor_);
@@ -345,6 +361,14 @@ GenerateBuilderMembers(io::Printer* printer) const {
         "public java.util.Map<$type_parameters$>\n"
         "getMutable$capitalized_name$() {\n"
         "  return internalGetMutable$capitalized_name$().getMutableMap();\n"
+        "}\n");
+    WriteFieldDocComment(printer, descriptor_);
+    printer->Print(
+        variables_,
+        "$deprecation$public Builder putAll$capitalized_name$(\n"
+        "    java.util.Map<$type_parameters$> values) {\n"
+        "  getMutable$capitalized_name$().putAll(values);\n"
+        "  return this;\n"
         "}\n");
   }
 }

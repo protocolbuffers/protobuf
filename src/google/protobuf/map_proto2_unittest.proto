@@ -49,10 +49,6 @@ enum Proto2MapEnumPlusExtra {
   E_PROTO2_MAP_ENUM_EXTRA = 3;
 }
 
-enum Proto2MapEnumStartWithNonZero {
-  PROTO2_NON_ZERO_MAP_ENUM_FOO = 1;
-}
-
 message TestEnumMap {
   map<int32, Proto2MapEnum> known_map_field = 101;
   map<int32, Proto2MapEnum> unknown_map_field = 102;
@@ -61,8 +57,4 @@ message TestEnumMap {
 message TestEnumMapPlusExtra {
   map<int32, Proto2MapEnumPlusExtra> known_map_field = 101;
   map<int32, Proto2MapEnumPlusExtra> unknown_map_field = 102;
-}
-
-message TestEnumStartWithNonZeroMap {
-  map<int32, Proto2MapEnumStartWithNonZero> map_field = 101;
 }
