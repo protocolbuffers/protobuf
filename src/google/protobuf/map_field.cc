@@ -160,7 +160,7 @@ DynamicMapField::DynamicMapField(const Message* default_entry,
 DynamicMapField::~DynamicMapField() {
   // DynamicMapField owns map values. Need to delete them before clearing
   // the map.
-  for (typename Map<MapKey, MapValueRef>::iterator iter = map_.begin();
+  for (Map<MapKey, MapValueRef>::iterator iter = map_.begin();
        iter != map_.end(); ++iter) {
     iter->second.DeleteData();
   }
@@ -174,7 +174,7 @@ int DynamicMapField::size() const {
 bool DynamicMapField::ContainsMapKey(
     const MapKey& map_key) const {
   const Map<MapKey, MapValueRef>& map = GetMap();
-  typename Map<MapKey, MapValueRef>::const_iterator iter = map.find(map_key);
+  Map<MapKey, MapValueRef>::const_iterator iter = map.find(map_key);
   return iter != map.end();
 }
 
@@ -246,7 +246,7 @@ Map<MapKey, MapValueRef>* DynamicMapField::MutableMap() {
 }
 
 void DynamicMapField::SetMapIteratorValue(MapIterator* map_iter) const {
-  typename Map<MapKey, MapValueRef>::const_iterator iter =
+  Map<MapKey, MapValueRef>::const_iterator iter =
       TypeDefinedMapFieldBase<MapKey, MapValueRef>::InternalGetIterator(
           map_iter);
   if (iter == map_.end()) return;
@@ -272,7 +272,7 @@ void DynamicMapField::SyncRepeatedFieldWithMapNoLock() const {
 
   MapFieldBase::repeated_field_->Clear();
 
-  for (typename Map<MapKey, MapValueRef>::const_iterator it = map_.begin();
+  for (Map<MapKey, MapValueRef>::const_iterator it = map_.begin();
        it != map_.end(); ++it) {
     Message* new_entry = default_entry_->New();
     MapFieldBase::repeated_field_->AddAllocated(new_entry);
@@ -350,12 +350,12 @@ void DynamicMapField::SyncMapWithRepeatedFieldNoLock() const {
       default_entry_->GetDescriptor()->FindFieldByName("value");
   // DynamicMapField owns map values. Need to delete them before clearing
   // the map.
-  for (typename Map<MapKey, MapValueRef>::iterator iter = map->begin();
+  for (Map<MapKey, MapValueRef>::iterator iter = map->begin();
        iter != map->end(); ++iter) {
     iter->second.DeleteData();
   }
   map->clear();
-  for (typename RepeatedPtrField<Message>::iterator it =
+  for (RepeatedPtrField<Message>::iterator it =
            MapFieldBase::repeated_field_->begin();
        it != MapFieldBase::repeated_field_->end(); ++it) {
     MapKey map_key;
@@ -424,7 +424,7 @@ int DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
   size += sizeof(map_);
   int map_size = map_.size();
   if (map_size) {
-    typename Map<MapKey, MapValueRef>::const_iterator it = map_.begin();
+    Map<MapKey, MapValueRef>::const_iterator it = map_.begin();
     size += sizeof(it->first) * map_size;
     size += sizeof(it->second) * map_size;
     // If key is string, add the allocated space.

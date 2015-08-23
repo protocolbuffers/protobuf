@@ -194,10 +194,10 @@ bool SourceContext::MergePartialFromCodedStream(
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_file_name()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->file_name().data(), this->file_name().length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.SourceContext.file_name");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.SourceContext.file_name"));
         } else {
           goto handle_unusual;
         }
@@ -231,9 +231,9 @@ void SourceContext::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_start:google.protobuf.SourceContext)
   // optional string file_name = 1;
   if (this->file_name().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->file_name().data(), this->file_name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.SourceContext.file_name");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       1, this->file_name(), output);
@@ -247,9 +247,9 @@ void SourceContext::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.SourceContext)
   // optional string file_name = 1;
   if (this->file_name().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->file_name().data(), this->file_name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.SourceContext.file_name");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(

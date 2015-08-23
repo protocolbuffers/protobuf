@@ -417,12 +417,12 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
  protected:
   void* MutableRawRepeatedField(
       Message* message, const FieldDescriptor* field, FieldDescriptor::CppType,
-      int ctype, const Descriptor* desc) const override;
+      int ctype, const Descriptor* desc) const;
 
   const void* GetRawRepeatedField(
       const Message& message, const FieldDescriptor* field,
       FieldDescriptor::CppType, int ctype,
-      const Descriptor* desc) const override;
+      const Descriptor* desc) const;
 
   virtual MessageFactory* GetMessageFactory() const;
 

@@ -292,7 +292,7 @@ class MapEntryLite : public MessageLite {
   // only takes references of given key and value.
   template <typename K, typename V, WireFormatLite::FieldType k_wire_type,
             WireFormatLite::FieldType v_wire_type, int default_enum>
-  class LIBPROTOBUF_EXPORT MapEntryWrapper
+  class MapEntryWrapper
       : public MapEntryLite<K, V, k_wire_type, v_wire_type, default_enum> {
     typedef MapEntryLite<K, V, k_wire_type, v_wire_type, default_enum> Base;
     typedef typename Base::KeyMapEntryAccessorType KeyMapEntryAccessorType;
@@ -326,7 +326,7 @@ class MapEntryLite : public MessageLite {
   // the temporary.
   template <typename K, typename V, WireFormatLite::FieldType k_wire_type,
             WireFormatLite::FieldType v_wire_type, int default_enum>
-  class LIBPROTOBUF_EXPORT MapEnumEntryWrapper
+  class MapEnumEntryWrapper
       : public MapEntryLite<K, V, k_wire_type, v_wire_type, default_enum> {
     typedef MapEntryLite<K, V, k_wire_type, v_wire_type, default_enum> Base;
     typedef typename Base::KeyMapEntryAccessorType KeyMapEntryAccessorType;

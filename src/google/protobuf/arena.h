@@ -32,6 +32,9 @@
 #define GOOGLE_PROTOBUF_ARENA_H__
 
 #include <limits>
+#ifdef max
+#undef max  // Visual Studio defines this macro
+#endif
 #if __cplusplus >= 201103L
 #include <google/protobuf/stubs/type_traits.h>
 #endif

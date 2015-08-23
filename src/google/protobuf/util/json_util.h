@@ -80,7 +80,7 @@ inline util::Status BinaryToJsonStream(
                             JsonOptions());
 }
 
-util::Status BinaryToJsonString(
+LIBPROTOBUF_EXPORT util::Status BinaryToJsonString(
     TypeResolver* resolver,
     const string& type_url,
     const string& binary_input,
@@ -107,7 +107,7 @@ util::Status JsonToBinaryStream(
     io::ZeroCopyInputStream* json_input,
     io::ZeroCopyOutputStream* binary_output);
 
-util::Status JsonToBinaryString(
+LIBPROTOBUF_EXPORT util::Status JsonToBinaryString(
     TypeResolver* resolver,
     const string& type_url,
     const string& json_input,

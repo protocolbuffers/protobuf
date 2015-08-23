@@ -37,6 +37,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/util/internal/json_escaping.h>
+#include <google/protobuf/stubs/mathlimits.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -115,7 +116,9 @@ JsonObjectWriter* JsonObjectWriter::RenderUint64(StringPiece name,
 
 JsonObjectWriter* JsonObjectWriter::RenderDouble(StringPiece name,
                                                  double value) {
-  if (isfinite(value)) return RenderSimple(name, SimpleDtoa(value));
+  if (google::protobuf::MathLimits<double>::IsFinite(value)) {
+    return RenderSimple(name, SimpleDtoa(value));
+  }
 
   // Render quoted with NaN/Infinity-aware DoubleAsString.
   return RenderString(name, DoubleAsString(value));
@@ -123,7 +126,9 @@ JsonObjectWriter* JsonObjectWriter::RenderDouble(StringPiece name,
 
 JsonObjectWriter* JsonObjectWriter::RenderFloat(StringPiece name,
                                                 float value) {
-  if (isfinite(value)) return RenderSimple(name, SimpleFtoa(value));
+  if (google::protobuf::MathLimits<float>::IsFinite(value)) {
+    return RenderSimple(name, SimpleFtoa(value));
+  }
 
   // Render quoted with NaN/Infinity-aware FloatAsString.
   return RenderString(name, FloatAsString(value));
