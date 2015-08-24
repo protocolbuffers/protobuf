@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import com.google.protobuf.DescriptorProtos.*;
+import com.google.protobuf.Descriptors.FileDescriptor.Syntax;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -912,7 +913,17 @@ public final class Descriptors {
 
     /** For internal use only. */
     public boolean needsUtf8Check() {
-      return (type == Type.STRING) && (getFile().getOptions().getJavaStringCheckUtf8());
+      if (type != Type.STRING) {
+        return false;
+      }
+      if (getContainingType().getOptions().getMapEntry()) {
+        // Always enforce strict UTF-8 checking for map fields.
+        return true;
+      }
+      if (getFile().getSyntax() == Syntax.PROTO3) {
+        return true;
+      }
+      return getFile().getOptions().getJavaStringCheckUtf8();
     }
 
     public boolean isMapField() {

@@ -115,10 +115,6 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       GenerateSetBitToLocal(messageBitIndex);
 }
 
-bool CheckUtf8(const FieldDescriptor* descriptor) {
-  return descriptor->file()->options().java_string_check_utf8();
-}
-
 }  // namespace
 
 // ===================================================================
