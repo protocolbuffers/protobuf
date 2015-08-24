@@ -600,6 +600,94 @@ bool IsAnyMessage(const Descriptor* descriptor) {
          descriptor->file()->name() == kAnyProtoFile;
 }
 
+enum Utf8CheckMode {
+  STRICT = 0,  // Parsing will fail if non UTF-8 data is in string fields.
+  VERIFY = 1,  // Only log an error but parsing will succeed.
+  NONE = 2,  // No UTF-8 check.
+};
+
+// Which level of UTF-8 enforcemant is placed on this file.
+static Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field) {
+  if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+    return STRICT;
+  } else if (field->file()->options().optimize_for() !=
+             FileOptions::LITE_RUNTIME) {
+    return VERIFY;
+  } else {
+    return NONE;
+  }
+}
+
+static void GenerateUtf8CheckCode(const FieldDescriptor* field,
+                                  bool for_parse,
+                                  const map<string, string>& variables,
+                                  const char* parameters,
+                                  const char* strict_function,
+                                  const char* verify_function,
+                                  io::Printer* printer) {
+  switch (GetUtf8CheckMode(field)) {
+    case STRICT: {
+      if (for_parse) {
+        printer->Print("DO_(");
+      }
+      printer->Print(
+          "::google::protobuf::internal::WireFormatLite::$function$(\n",
+          "function", strict_function);
+      printer->Indent();
+      printer->Print(variables, parameters);
+      if (for_parse) {
+        printer->Print("::google::protobuf::internal::WireFormatLite::PARSE,\n");
+      } else {
+        printer->Print("::google::protobuf::internal::WireFormatLite::SERIALIZE,\n");
+      }
+      printer->Print("\"$full_name$\")", "full_name", field->full_name());
+      if (for_parse) {
+        printer->Print(")");
+      }
+      printer->Print(";\n");
+      printer->Outdent();
+      break;
+    }
+    case VERIFY: {
+      printer->Print(
+          "::google::protobuf::internal::WireFormat::$function$(\n",
+          "function", verify_function);
+      printer->Indent();
+      printer->Print(variables, parameters);
+      if (for_parse) {
+        printer->Print("::google::protobuf::internal::WireFormat::PARSE,\n");
+      } else {
+        printer->Print("::google::protobuf::internal::WireFormat::SERIALIZE,\n");
+      }
+      printer->Print("\"$full_name$\");\n", "full_name", field->full_name());
+      printer->Outdent();
+      break;
+    }
+    case NONE:
+      break;
+  }
+}
+
+void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
+                                    bool for_parse,
+                                    const map<string, string>& variables,
+                                    const char* parameters,
+                                    io::Printer* printer) {
+  GenerateUtf8CheckCode(field, for_parse, variables, parameters,
+                        "VerifyUtf8String", "VerifyUTF8StringNamedField",
+                        printer);
+}
+
+void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
+                                  bool for_parse,
+                                  const map<string, string>& variables,
+                                  const char* parameters,
+                                  io::Printer* printer) {
+  GenerateUtf8CheckCode(field, for_parse, variables, parameters,
+                        "VerifyUtf8Cord", "VerifyUTF8CordNamedField",
+                        printer);
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

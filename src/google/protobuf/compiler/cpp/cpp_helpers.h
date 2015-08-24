@@ -202,11 +202,6 @@ inline bool HasGenericServices(const FileDescriptor* file) {
          file->options().cc_generic_services();
 }
 
-// Should string fields in this file verify that their contents are UTF-8?
-inline bool HasUtf8Verification(const FileDescriptor* file) {
-  return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
-}
-
 // Should we generate a separate, super-optimized code path for serializing to
 // flat arrays?  We don't do this in Lite mode because we'd rather reduce code
 // size.
@@ -269,6 +264,20 @@ inline bool SupportsArenas(const FieldDescriptor* field) {
 
 bool IsAnyMessage(const FileDescriptor* descriptor);
 bool IsAnyMessage(const Descriptor* descriptor);
+
+void GenerateUtf8CheckCodeForString(
+    const FieldDescriptor* field,
+    bool for_parse,
+    const map<string, string>& variables,
+    const char* parameters,
+    io::Printer* printer);
+
+void GenerateUtf8CheckCodeForCord(
+    const FieldDescriptor* field,
+    bool for_parse,
+    const map<string, string>& variables,
+    const char* parameters,
+    io::Printer* printer);
 
 }  // namespace cpp
 }  // namespace compiler

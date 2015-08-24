@@ -316,6 +316,16 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static bool ReadBytes(input, string** p);
 
 
+  enum Operation {
+    PARSE = 0,
+    SERIALIZE = 1,
+  };
+
+  // Returns true if the data is valid UTF-8.
+  static bool VerifyUtf8String(const char* data, int size,
+                               Operation op,
+                               const char* field_name);
+
   static inline bool ReadGroup  (field_number, input, MessageLite* value);
   static inline bool ReadMessage(input, MessageLite* value);
 

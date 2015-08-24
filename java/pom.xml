@@ -142,6 +142,7 @@
                   <arg value="../src/google/protobuf/unittest_enormous_descriptor.proto" />
                   <arg value="../src/google/protobuf/unittest_no_generic_services.proto" />
                   <arg value="../src/google/protobuf/unittest_well_known_types.proto" />
+                  <arg value="src/test/java/com/google/protobuf/any_test.proto" />
                   <arg value="src/test/java/com/google/protobuf/field_presence_test.proto" />
                   <arg value="src/test/java/com/google/protobuf/map_for_proto2_lite_test.proto" />
                   <arg value="src/test/java/com/google/protobuf/map_for_proto2_test.proto" />
