@@ -32,7 +32,6 @@ package com.google.protobuf;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.TextFormat.Parser.SingularOverwritePolicy;
-import protobuf_unittest.UnittestMset.TestMessageSet;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
 import protobuf_unittest.UnittestProto.OneString;
@@ -41,6 +40,7 @@ import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestOneof2;
+import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 
 import junit.framework.TestCase;
 

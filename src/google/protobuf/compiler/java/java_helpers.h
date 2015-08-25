@@ -332,6 +332,15 @@ inline bool PreserveUnknownFields(const Descriptor* descriptor) {
   return descriptor->file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
 }
 
+inline bool IsAnyMessage(const Descriptor* descriptor) {
+  return descriptor->full_name() == "google.protobuf.Any";
+}
+
+inline bool CheckUtf8(const FieldDescriptor* descriptor) {
+  return descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 ||
+      descriptor->file()->options().java_string_check_utf8();
+}
+
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

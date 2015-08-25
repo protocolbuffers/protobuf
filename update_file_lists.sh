@@ -55,8 +55,10 @@ LITE_PROTOS=$(get_proto_files $MAKEFILE protoc_lite_outputs)
 PROTOS=$(get_proto_files $MAKEFILE protoc_outputs)
 WKT_PROTOS=$(get_variable_value $MAKEFILE nobase_dist_proto_DATA)
 COMMON_TEST_SOURCES=$(get_source_files $MAKEFILE COMMON_TEST_SOURCES)
+COMMON_LITE_TEST_SOURCES=$(get_source_files $MAKEFILE COMMON_LITE_TEST_SOURCES)
 TEST_SOURCES=$(get_source_files $MAKEFILE protobuf_test_SOURCES)
 LITE_TEST_SOURCES=$(get_source_files $MAKEFILE protobuf_lite_test_SOURCES)
+LITE_ARENA_TEST_SOURCES=$(get_source_files $MAKEFILE protobuf_lite_arena_test_SOURCES)
 TEST_PLUGIN_SOURCES=$(get_source_files $MAKEFILE test_plugin_SOURCES)
 
 ################################################################################
@@ -112,8 +114,10 @@ set_cmake_value $CMAKE_DIR/libprotoc.cmake libprotoc_files $CMAKE_PREFIX $LIBPRO
 set_cmake_value $CMAKE_DIR/tests.cmake lite_test_protos "" $LITE_PROTOS
 set_cmake_value $CMAKE_DIR/tests.cmake tests_protos "" $PROTOS
 set_cmake_value $CMAKE_DIR/tests.cmake common_test_files $CMAKE_PREFIX $COMMON_TEST_SOURCES
+set_cmake_value $CMAKE_DIR/tests.cmake common_lite_test_files $CMAKE_PREFIX $COMMON_LITE_TEST_SOURCES
 set_cmake_value $CMAKE_DIR/tests.cmake tests_files $CMAKE_PREFIX $TEST_SOURCES
 set_cmake_value $CMAKE_DIR/tests.cmake lite_test_files $CMAKE_PREFIX $LITE_TEST_SOURCES
+set_cmake_value $CMAKE_DIR/tests.cmake lite_arena_test_files $CMAKE_PREFIX $LITE_ARENA_TEST_SOURCES
 
 # Generate extract_includes.bat
 echo "mkdir include" > $EXTRACT_INCLUDES_BAT

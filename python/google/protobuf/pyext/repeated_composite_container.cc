@@ -38,11 +38,13 @@
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/pyext/descriptor.h>
+#include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
@@ -73,125 +75,6 @@ namespace repeated_composite_container {
     GOOGLE_CHECK((self)->parent_field_descriptor == NULL); \
     GOOGLE_CHECK((self)->parent == NULL);       \
   } while (0);
-
-// Returns a new reference.
-static PyObject* GetKey(PyObject* x) {
-  // Just the identity function.
-  Py_INCREF(x);
-  return x;
-}
-
-#define GET_KEY(keyfunc, value)                                         \
-  ((keyfunc) == NULL ?                                                  \
-  GetKey((value)) :                                                     \
-  PyObject_CallFunctionObjArgs((keyfunc), (value), NULL))
-
-// Converts a comparison function that returns -1, 0, or 1 into a
-// less-than predicate.
-//
-// Returns -1 on error, 1 if x < y, 0 if x >= y.
-static int islt(PyObject *x, PyObject *y, PyObject *compare) {
-  if (compare == NULL)
-    return PyObject_RichCompareBool(x, y, Py_LT);
-
-  ScopedPyObjectPtr res(PyObject_CallFunctionObjArgs(compare, x, y, NULL));
-  if (res == NULL)
-    return -1;
-  if (!PyInt_Check(res)) {
-    PyErr_Format(PyExc_TypeError,
-                 "comparison function must return int, not %.200s",
-                 Py_TYPE(res)->tp_name);
-    return -1;
-  }
-  return PyInt_AsLong(res) < 0;
-}
-
-// Copied from uarrsort.c but swaps memcpy swaps with protobuf/python swaps
-// TODO(anuraag): Is there a better way to do this then reinventing the wheel?
-static int InternalQuickSort(RepeatedCompositeContainer* self,
-                             Py_ssize_t start,
-                             Py_ssize_t limit,
-                             PyObject* cmp,
-                             PyObject* keyfunc) {
-  if (limit - start <= 1)
-    return 0;  // Nothing to sort.
-
-  GOOGLE_CHECK_ATTACHED(self);
-
-  Message* message = self->message;
-  const Reflection* reflection = message->GetReflection();
-  const FieldDescriptor* descriptor = self->parent_field_descriptor;
-  Py_ssize_t left;
-  Py_ssize_t right;
-
-  PyObject* children = self->child_messages;
-
-  do {
-    left = start;
-    right = limit;
-    ScopedPyObjectPtr mid(
-        GET_KEY(keyfunc, PyList_GET_ITEM(children, (start + limit) / 2)));
-    do {
-      ScopedPyObjectPtr key(GET_KEY(keyfunc, PyList_GET_ITEM(children, left)));
-      int is_lt = islt(key, mid, cmp);
-      if (is_lt == -1)
-        return -1;
-      /* array[left]<x */
-      while (is_lt) {
-        ++left;
-        ScopedPyObjectPtr key(GET_KEY(keyfunc,
-                                      PyList_GET_ITEM(children, left)));
-        is_lt = islt(key, mid, cmp);
-        if (is_lt == -1)
-          return -1;
-      }
-      key.reset(GET_KEY(keyfunc, PyList_GET_ITEM(children, right - 1)));
-      is_lt = islt(mid, key, cmp);
-      if (is_lt == -1)
-        return -1;
-      while (is_lt) {
-        --right;
-        ScopedPyObjectPtr key(GET_KEY(keyfunc,
-                                      PyList_GET_ITEM(children, right - 1)));
-        is_lt = islt(mid, key, cmp);
-        if (is_lt == -1)
-          return -1;
-      }
-      if (left < right) {
-        --right;
-        if (left < right) {
-          reflection->SwapElements(message, descriptor, left, right);
-          PyObject* tmp = PyList_GET_ITEM(children, left);
-          PyList_SET_ITEM(children, left, PyList_GET_ITEM(children, right));
-          PyList_SET_ITEM(children, right, tmp);
-        }
-        ++left;
-      }
-    } while (left < right);
-
-    if ((right - start) < (limit - left)) {
-      /* sort [start..right[ */
-      if (start < (right - 1)) {
-        InternalQuickSort(self, start, right, cmp, keyfunc);
-      }
-
-      /* sort [left..limit[ */
-      start = left;
-    } else {
-      /* sort [left..limit[ */
-      if (left < (limit - 1)) {
-        InternalQuickSort(self, left, limit, cmp, keyfunc);
-      }
-
-      /* sort [start..right[ */
-      limit = right;
-    }
-  } while (start < (limit - 1));
-
-  return 0;
-}
-
-#undef GET_KEY
 
 // ---------------------------------------------------------------------
 // len()
@@ -329,7 +212,7 @@ PyObject* Extend(RepeatedCompositeContainer* self, PyObject* value) {
       return NULL;
     }
     CMessage* new_cmessage = reinterpret_cast<CMessage*>(new_message.get());
-    if (cmessage::MergeFrom(new_cmessage, next) == NULL) {
+    if (ScopedPyObjectPtr(cmessage::MergeFrom(new_cmessage, next)) == NULL) {
       return NULL;
     }
   }
@@ -455,58 +338,39 @@ static PyObject* RichCompare(RepeatedCompositeContainer* self,
 // ---------------------------------------------------------------------
 // sort()
 
-static PyObject* SortAttached(RepeatedCompositeContainer* self,
-                              PyObject* args,
-                              PyObject* kwds) {
-  // Sort the underlying Message array.
-  PyObject *compare = NULL;
-  int reverse = 0;
-  PyObject *keyfunc = NULL;
-  static char *kwlist[] = {"cmp", "key", "reverse", 0};
-
-  if (args != NULL) {
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|OOi:sort",
-                                     kwlist, &compare, &keyfunc, &reverse))
-      return NULL;
-  }
-  if (compare == Py_None)
-    compare = NULL;
-  if (keyfunc == Py_None)
-    keyfunc = NULL;
-
+static void ReorderAttached(RepeatedCompositeContainer* self) {
+  Message* message = self->message;
+  const Reflection* reflection = message->GetReflection();
+  const FieldDescriptor* descriptor = self->parent_field_descriptor;
   const Py_ssize_t length = Length(self);
-  if (InternalQuickSort(self, 0, length, compare, keyfunc) < 0)
-    return NULL;
 
-  // Finally reverse the result if requested.
-  if (reverse) {
-    Message* message = self->message;
-    const Reflection* reflection = message->GetReflection();
-    const FieldDescriptor* descriptor = self->parent_field_descriptor;
+  // Since Python protobuf objects are never arena-allocated, adding and
+  // removing message pointers to the underlying array is just updating
+  // pointers.
+  for (Py_ssize_t i = 0; i < length; ++i)
+    reflection->ReleaseLast(message, descriptor);
 
-    // Reverse the Message array.
-    for (int i = 0; i < length / 2; ++i)
-      reflection->SwapElements(message, descriptor, i, length - i - 1);
-
-    // Reverse the Python list.
-    ScopedPyObjectPtr res(PyObject_CallMethod(self->child_messages,
-                                              "reverse", NULL));
-    if (res == NULL)
-      return NULL;
+  for (Py_ssize_t i = 0; i < length; ++i) {
+    CMessage* py_cmsg = reinterpret_cast<CMessage*>(
+        PyList_GET_ITEM(self->child_messages, i));
+    reflection->AddAllocatedMessage(message, descriptor, py_cmsg->message);
   }
-
-  Py_RETURN_NONE;
 }
 
-static PyObject* SortReleased(RepeatedCompositeContainer* self,
-                              PyObject* args,
-                              PyObject* kwds) {
+// Returns 0 if successful; returns -1 and sets an exception if
+// unsuccessful.
+static int SortPythonMessages(RepeatedCompositeContainer* self,
+                               PyObject* args,
+                               PyObject* kwds) {
   ScopedPyObjectPtr m(PyObject_GetAttrString(self->child_messages, "sort"));
   if (m == NULL)
-    return NULL;
+    return -1;
   if (PyObject_Call(m, args, kwds) == NULL)
-    return NULL;
-  Py_RETURN_NONE;
+    return -1;
+  if (self->message != NULL) {
+    ReorderAttached(self);
+  }
+  return 0;
 }
 
 static PyObject* Sort(RepeatedCompositeContainer* self,
@@ -527,11 +391,10 @@ static PyObject* Sort(RepeatedCompositeContainer* self,
   if (UpdateChildMessages(self) < 0) {
     return NULL;
   }
-  if (self->message == NULL) {
-    return SortReleased(self, args, kwds);
-  } else {
-    return SortAttached(self, args, kwds);
+  if (SortPythonMessages(self, args, kwds) < 0) {
+    return NULL;
   }
+  Py_RETURN_NONE;
 }
 
 // ---------------------------------------------------------------------
@@ -583,18 +446,6 @@ void ReleaseLastTo(CMessage* parent,
   shared_ptr<Message> released_message(
       parent->message->GetReflection()->ReleaseLast(parent->message, field));
   // TODO(tibell): Deal with proto1.
-
-  // ReleaseMessage will return NULL which differs from
-  // child_cmessage->message, if the field does not exist.  In this case,
-  // the latter points to the default instance via a const_cast<>, so we
-  // have to reset it to a new mutable object since we are taking ownership.
-  if (released_message.get() == NULL) {
-    const Message* prototype =
-        cmessage::GetMessageFactory()->GetPrototype(
-            target->message->GetDescriptor());
-    GOOGLE_CHECK_NOTNULL(prototype);
-    released_message.reset(prototype->New());
-  }
 
   target->parent = NULL;
   target->parent_field_descriptor = NULL;
@@ -732,7 +583,7 @@ PyTypeObject RepeatedCompositeContainer_Type = {
   0,                                   //  tp_as_number
   &repeated_composite_container::SqMethods,   //  tp_as_sequence
   &repeated_composite_container::MpMethods,   //  tp_as_mapping
-  0,                                   //  tp_hash
+  PyObject_HashNotImplemented,         //  tp_hash
   0,                                   //  tp_call
   0,                                   //  tp_str
   0,                                   //  tp_getattro

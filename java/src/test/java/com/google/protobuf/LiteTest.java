@@ -42,6 +42,7 @@ import com.google.protobuf.UnittestLite.TestAllTypesLite.NestedMessage;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.OneofFieldCase;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.OptionalGroup;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.RepeatedGroup;
+import com.google.protobuf.UnittestLite.TestAllTypesLiteOrBuilder;
 import com.google.protobuf.UnittestLite.TestNestedExtensionLite;
 
 import junit.framework.TestCase;
@@ -1400,6 +1401,8 @@ public class LiteTest extends TestCase {
     assertEquals("hi", messageAfterBuild.getOneofString());
     assertEquals(OneofFieldCase.ONEOF_UINT32, builder.getOneofFieldCase());
     assertEquals(1, builder.getOneofUint32());
+    TestAllTypesLiteOrBuilder messageOrBuilder = builder;
+    assertEquals(OneofFieldCase.ONEOF_UINT32, messageOrBuilder.getOneofFieldCase());
     
     TestAllExtensionsLite.Builder extendableMessageBuilder =
         TestAllExtensionsLite.newBuilder();

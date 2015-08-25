@@ -47,6 +47,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 

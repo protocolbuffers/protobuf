@@ -215,6 +215,11 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     modCount++;
   }
 
+  @Override
+  public Object getRaw(int index) {
+    return list.get(index);
+  }
+  
   // @Override
   public ByteString getByteString(int index) {
     Object o = list.get(index);

@@ -66,6 +66,12 @@ package com.google.protobuf;
  */
 final class Utf8 {
   private Utf8() {}
+  
+  /**
+   * Maximum number of bytes per Java UTF-16 char in UTF-8.
+   * @see java.nio.charset.CharsetEncoder#maxBytesPerChar()
+   */
+  static final int MAX_BYTES_PER_CHAR = 3;
 
   /**
    * State value indicating that the byte sequence is well-formed and
@@ -346,4 +352,130 @@ final class Utf8 {
       default: throw new AssertionError();
     }
   }
+  
+
+  // These UTF-8 handling methods are copied from Guava's Utf8 class with a modification to throw
+  // a protocol buffer local exception. This exception is then caught in CodedOutputStream so it can
+  // fallback to more lenient behavior.
+  
+  static class UnpairedSurrogateException extends IllegalArgumentException {
+    
+    private UnpairedSurrogateException(int index) {
+      super("Unpaired surrogate at index " + index);
+    }
+  }
+  
+  /**
+   * Returns the number of bytes in the UTF-8-encoded form of {@code sequence}. For a string,
+   * this method is equivalent to {@code string.getBytes(UTF_8).length}, but is more efficient in
+   * both time and space.
+   *
+   * @throws IllegalArgumentException if {@code sequence} contains ill-formed UTF-16 (unpaired
+   *     surrogates)
+   */
+  static int encodedLength(CharSequence sequence) {
+    // Warning to maintainers: this implementation is highly optimized.
+    int utf16Length = sequence.length();
+    int utf8Length = utf16Length;
+    int i = 0;
+
+    // This loop optimizes for pure ASCII.
+    while (i < utf16Length && sequence.charAt(i) < 0x80) {
+      i++;
+    }
+
+    // This loop optimizes for chars less than 0x800.
+    for (; i < utf16Length; i++) {
+      char c = sequence.charAt(i);
+      if (c < 0x800) {
+        utf8Length += ((0x7f - c) >>> 31);  // branch free!
+      } else {
+        utf8Length += encodedLengthGeneral(sequence, i);
+        break;
+      }
+    }
+
+    if (utf8Length < utf16Length) {
+      // Necessary and sufficient condition for overflow because of maximum 3x expansion
+      throw new IllegalArgumentException("UTF-8 length does not fit in int: "
+              + (utf8Length + (1L << 32)));
+    }
+    return utf8Length;
+  }
+
+  private static int encodedLengthGeneral(CharSequence sequence, int start) {
+    int utf16Length = sequence.length();
+    int utf8Length = 0;
+    for (int i = start; i < utf16Length; i++) {
+      char c = sequence.charAt(i);
+      if (c < 0x800) {
+        utf8Length += (0x7f - c) >>> 31; // branch free!
+      } else {
+        utf8Length += 2;
+        // jdk7+: if (Character.isSurrogate(c)) {
+        if (Character.MIN_SURROGATE <= c && c <= Character.MAX_SURROGATE) {
+          // Check that we have a well-formed surrogate pair.
+          int cp = Character.codePointAt(sequence, i);
+          if (cp < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
+            throw new UnpairedSurrogateException(i);
+          }
+          i++;
+        }
+      }
+    }
+    return utf8Length;
+  }
+
+  static int encode(CharSequence sequence, byte[] bytes, int offset, int length) {
+    int utf16Length = sequence.length();
+    int j = offset;
+    int i = 0;
+    int limit = offset + length;
+    // Designed to take advantage of
+    // https://wikis.oracle.com/display/HotSpotInternals/RangeCheckElimination
+    for (char c; i < utf16Length && i + j < limit && (c = sequence.charAt(i)) < 0x80; i++) {
+      bytes[j + i] = (byte) c;
+    }
+    if (i == utf16Length) {
+      return j + utf16Length;
+    }
+    j += i;
+    for (char c; i < utf16Length; i++) {
+      c = sequence.charAt(i);
+      if (c < 0x80 && j < limit) {
+        bytes[j++] = (byte) c;
+      } else if (c < 0x800 && j <= limit - 2) { // 11 bits, two UTF-8 bytes
+        bytes[j++] = (byte) ((0xF << 6) | (c >>> 6));
+        bytes[j++] = (byte) (0x80 | (0x3F & c));
+      } else if ((c < Character.MIN_SURROGATE || Character.MAX_SURROGATE < c) && j <= limit - 3) {
+        // Maximum single-char code point is 0xFFFF, 16 bits, three UTF-8 bytes
+        bytes[j++] = (byte) ((0xF << 5) | (c >>> 12));
+        bytes[j++] = (byte) (0x80 | (0x3F & (c >>> 6)));
+        bytes[j++] = (byte) (0x80 | (0x3F & c));
+      } else if (j <= limit - 4) {
+        // Minimum code point represented by a surrogate pair is 0x10000, 17 bits, four UTF-8 bytes
+        final char low;
+        if (i + 1 == sequence.length()
+                || !Character.isSurrogatePair(c, (low = sequence.charAt(++i)))) {
+          throw new UnpairedSurrogateException((i - 1));
+        }
+        int codePoint = Character.toCodePoint(c, low);
+        bytes[j++] = (byte) ((0xF << 4) | (codePoint >>> 18));
+        bytes[j++] = (byte) (0x80 | (0x3F & (codePoint >>> 12)));
+        bytes[j++] = (byte) (0x80 | (0x3F & (codePoint >>> 6)));
+        bytes[j++] = (byte) (0x80 | (0x3F & codePoint));
+      } else {
+        // If we are surrogates and we're not a surrogate pair, always throw an
+        // IllegalArgumentException instead of an ArrayOutOfBoundsException.
+        if ((Character.MIN_SURROGATE <= c && c <= Character.MAX_SURROGATE)
+            && (i + 1 == sequence.length()
+                || !Character.isSurrogatePair(c, sequence.charAt(i + 1)))) {
+          throw new UnpairedSurrogateException(i);
+        }
+        throw new ArrayIndexOutOfBoundsException("Failed writing " + c + " at index " + j);
+      }
+    }
+    return j;
+  }
+  // End Guava UTF-8 methods.
 }

@@ -58,7 +58,7 @@ public final class WireFormat {
   static final int TAG_TYPE_MASK = (1 << TAG_TYPE_BITS) - 1;
 
   /** Given a tag value, determines the wire type (the lower 3 bits). */
-  static int getTagWireType(final int tag) {
+  public static int getTagWireType(final int tag) {
     return tag & TAG_TYPE_MASK;
   }
 

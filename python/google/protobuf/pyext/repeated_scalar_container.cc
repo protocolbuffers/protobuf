@@ -39,10 +39,12 @@
 #endif
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/pyext/descriptor.h>
+#include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
@@ -68,7 +70,7 @@ static int InternalAssignRepeatedField(
                                              self->parent_field_descriptor);
   for (Py_ssize_t i = 0; i < PyList_GET_SIZE(list); ++i) {
     PyObject* value = PyList_GET_ITEM(list, i);
-    if (Append(self, value) == NULL) {
+    if (ScopedPyObjectPtr(Append(self, value)) == NULL) {
       return -1;
     }
   }
@@ -510,7 +512,7 @@ PyObject* Extend(RepeatedScalarContainer* self, PyObject* value) {
   }
   ScopedPyObjectPtr next;
   while ((next.reset(PyIter_Next(iter))) != NULL) {
-    if (Append(self, next) == NULL) {
+    if (ScopedPyObjectPtr(Append(self, next)) == NULL) {
       return NULL;
     }
   }
@@ -690,8 +692,7 @@ static int InitializeAndCopyToParentContainer(
   if (values == NULL) {
     return -1;
   }
-  Message* new_message = cmessage::GetMessageFactory()->GetPrototype(
-      from->message->GetDescriptor())->New();
+  Message* new_message = from->message->New();
   to->parent = NULL;
   to->parent_field_descriptor = from->parent_field_descriptor;
   to->message = new_message;
@@ -781,7 +782,7 @@ PyTypeObject RepeatedScalarContainer_Type = {
   0,                                   //  tp_as_number
   &repeated_scalar_container::SqMethods,   //  tp_as_sequence
   &repeated_scalar_container::MpMethods,   //  tp_as_mapping
-  0,                                   //  tp_hash
+  PyObject_HashNotImplemented,         //  tp_hash
   0,                                   //  tp_call
   0,                                   //  tp_str
   0,                                   //  tp_getattro

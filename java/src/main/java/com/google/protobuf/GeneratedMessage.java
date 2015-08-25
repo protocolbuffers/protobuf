@@ -121,21 +121,43 @@ public abstract class GeneratedMessage extends AbstractMessage
     final TreeMap<FieldDescriptor, Object> result =
       new TreeMap<FieldDescriptor, Object>();
     final Descriptor descriptor = internalGetFieldAccessorTable().descriptor;
-    for (final FieldDescriptor field : descriptor.getFields()) {
-      if (field.isRepeated()) {
-        final List<?> value = (List<?>) getField(field);
-        if (!value.isEmpty()) {
-          result.put(field, value);
+    final List<FieldDescriptor> fields = descriptor.getFields();
+
+    for (int i = 0; i < fields.size(); i++) {
+      FieldDescriptor field = fields.get(i);
+      final OneofDescriptor oneofDescriptor = field.getContainingOneof();
+
+      /*
+       * If the field is part of a Oneof, then at maximum one field in the Oneof is set
+       * and it is not repeated. There is no need to iterate through the others.
+       */
+      if (oneofDescriptor != null) {
+        // Skip other fields in the Oneof we know are not set
+        i += oneofDescriptor.getFieldCount() - 1;
+        if (!hasOneof(oneofDescriptor)) {
+          // If no field is set in the Oneof, skip all the fields in the Oneof
+          continue;
         }
+        // Get the pointer to the only field which is set in the Oneof
+        field = getOneofFieldDescriptor(oneofDescriptor);
       } else {
-        if (hasField(field)) {
-          if (getBytesForString
-              && field.getJavaType() == FieldDescriptor.JavaType.STRING) {
-            result.put(field, getFieldRaw(field));
-          } else {
-            result.put(field, getField(field));
+        // If we are not in a Oneof, we need to check if the field is set and if it is repeated
+        if (field.isRepeated()) {
+          final List<?> value = (List<?>) getField(field);
+          if (!value.isEmpty()) {
+            result.put(field, value);
           }
+          continue;
         }
+        if (!hasField(field)) {
+          continue;
+        }
+      }
+      // Add the field to the map
+      if (getBytesForString && field.getJavaType() == FieldDescriptor.JavaType.STRING) {
+        result.put(field, getFieldRaw(field));
+      } else {
+        result.put(field, getField(field));
       }
     }
     return result;
@@ -398,17 +420,40 @@ public abstract class GeneratedMessage extends AbstractMessage
       final TreeMap<FieldDescriptor, Object> result =
         new TreeMap<FieldDescriptor, Object>();
       final Descriptor descriptor = internalGetFieldAccessorTable().descriptor;
-      for (final FieldDescriptor field : descriptor.getFields()) {
-        if (field.isRepeated()) {
-          final List value = (List) getField(field);
-          if (!value.isEmpty()) {
-            result.put(field, value);
+      final List<FieldDescriptor> fields = descriptor.getFields();
+
+      for (int i = 0; i < fields.size(); i++) {
+        FieldDescriptor field = fields.get(i);
+        final OneofDescriptor oneofDescriptor = field.getContainingOneof();
+
+        /*
+         * If the field is part of a Oneof, then at maximum one field in the Oneof is set
+         * and it is not repeated. There is no need to iterate through the others.
+         */
+        if (oneofDescriptor != null) {
+          // Skip other fields in the Oneof we know are not set
+          i += oneofDescriptor.getFieldCount() - 1;
+          if (!hasOneof(oneofDescriptor)) {
+            // If no field is set in the Oneof, skip all the fields in the Oneof
+            continue;
           }
+          // Get the pointer to the only field which is set in the Oneof
+          field = getOneofFieldDescriptor(oneofDescriptor);
         } else {
-          if (hasField(field)) {
-            result.put(field, getField(field));
+          // If we are not in a Oneof, we need to check if the field is set and if it is repeated
+          if (field.isRepeated()) {
+            final List<?> value = (List<?>) getField(field);
+            if (!value.isEmpty()) {
+              result.put(field, value);
+            }
+            continue;
+          }
+          if (!hasField(field)) {
+            continue;
           }
         }
+        // Add the field to the map
+        result.put(field, getField(field));
       }
       return result;
     }
@@ -2695,5 +2740,39 @@ public abstract class GeneratedMessage extends AbstractMessage
     }
 
     return (Extension<MessageType, T>) extension;
+  }
+  
+  protected static int computeStringSize(final int fieldNumber, final Object value) {
+    if (value instanceof String) {
+      return CodedOutputStream.computeStringSize(fieldNumber, (String) value);
+    } else {
+      return CodedOutputStream.computeBytesSize(fieldNumber, (ByteString) value);
+    }
+  }
+  
+  protected static int computeStringSizeNoTag(final Object value) {
+    if (value instanceof String) {
+      return CodedOutputStream.computeStringSizeNoTag((String) value);
+    } else {
+      return CodedOutputStream.computeBytesSizeNoTag((ByteString) value);
+    }
+  }
+  
+  protected static void writeString(
+      CodedOutputStream output, final int fieldNumber, final Object value) throws IOException {
+    if (value instanceof String) {
+      output.writeString(fieldNumber, (String) value);
+    } else {
+      output.writeBytes(fieldNumber, (ByteString) value);
+    }
+  }
+  
+  protected static void writeStringNoTag(
+      CodedOutputStream output, final Object value) throws IOException {
+    if (value instanceof String) {
+      output.writeStringNoTag((String) value);
+    } else {
+      output.writeBytesNoTag((ByteString) value);
+    }
   }
 }

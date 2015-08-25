@@ -41,9 +41,16 @@ from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import encoder
+from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import missing_enum_values_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import type_checkers
+
+
+def SkipIfCppImplementation(func):
+  return unittest.skipIf(
+      api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
+      'C++ implementation does not expose unknown fields to Python')(func)
 
 
 class UnknownFieldsTest(unittest.TestCase):
@@ -83,15 +90,15 @@ class UnknownFieldsTest(unittest.TestCase):
 
     # Add an unknown extension.
     item = raw.item.add()
-    item.type_id = 1545009
-    message1 = unittest_mset_pb2.TestMessageSetExtension1()
+    item.type_id = 98418603
+    message1 = message_set_extensions_pb2.TestMessageSetExtension1()
     message1.i = 12345
     item.message = message1.SerializeToString()
 
     serialized = raw.SerializeToString()
 
     # Parse message using the message set wire format.
-    proto = unittest_mset_pb2.TestMessageSet()
+    proto = message_set_extensions_pb2.TestMessageSet()
     proto.MergeFromString(serialized)
 
     # Verify that the unknown extension is serialized unchanged
@@ -100,13 +107,6 @@ class UnknownFieldsTest(unittest.TestCase):
     new_raw.MergeFromString(reserialized)
     self.assertEqual(raw, new_raw)
 
-  # C++ implementation for proto2 does not currently take into account unknown
-  # fields when checking equality.
-  #
-  # TODO(haberman): fix this.
-  @unittest.skipIf(
-      api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
-      'C++ implementation does not expose unknown fields to Python')
   def testEquals(self):
     message = unittest_pb2.TestEmptyMessage()
     message.ParseFromString(self.all_fields_data)
@@ -117,9 +117,6 @@ class UnknownFieldsTest(unittest.TestCase):
     self.assertNotEqual(self.empty_message, message)
 
 
-@unittest.skipIf(
-    api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
-    'C++ implementation does not expose unknown fields to Python')
 class UnknownFieldsAccessorsTest(unittest.TestCase):
 
   def setUp(self):
@@ -129,7 +126,14 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     self.all_fields_data = self.all_fields.SerializeToString()
     self.empty_message = unittest_pb2.TestEmptyMessage()
     self.empty_message.ParseFromString(self.all_fields_data)
-    self.unknown_fields = self.empty_message._unknown_fields
+    if api_implementation.Type() != 'cpp':
+      # _unknown_fields is an implementation detail.
+      self.unknown_fields = self.empty_message._unknown_fields
+
+  # All the tests that use GetField() check an implementation detail of the
+  # Python implementation, which stores unknown fields as serialized strings.
+  # These tests are skipped by the C++ implementation: it's enough to check that
+  # the message is correctly serialized.
 
   def GetField(self, name):
     field_descriptor = self.descriptor.fields_by_name[name]
@@ -142,30 +146,37 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
         decoder(value, 0, len(value), self.all_fields, result_dict)
     return result_dict[field_descriptor]
 
+  @SkipIfCppImplementation
   def testEnum(self):
     value = self.GetField('optional_nested_enum')
     self.assertEqual(self.all_fields.optional_nested_enum, value)
 
+  @SkipIfCppImplementation
   def testRepeatedEnum(self):
     value = self.GetField('repeated_nested_enum')
     self.assertEqual(self.all_fields.repeated_nested_enum, value)
 
+  @SkipIfCppImplementation
   def testVarint(self):
     value = self.GetField('optional_int32')
     self.assertEqual(self.all_fields.optional_int32, value)
 
+  @SkipIfCppImplementation
   def testFixed32(self):
     value = self.GetField('optional_fixed32')
     self.assertEqual(self.all_fields.optional_fixed32, value)
 
+  @SkipIfCppImplementation
   def testFixed64(self):
     value = self.GetField('optional_fixed64')
     self.assertEqual(self.all_fields.optional_fixed64, value)
 
+  @SkipIfCppImplementation
   def testLengthDelimited(self):
     value = self.GetField('optional_string')
     self.assertEqual(self.all_fields.optional_string, value)
 
+  @SkipIfCppImplementation
   def testGroup(self):
     value = self.GetField('optionalgroup')
     self.assertEqual(self.all_fields.optionalgroup, value)
@@ -173,7 +184,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
   def testCopyFrom(self):
     message = unittest_pb2.TestEmptyMessage()
     message.CopyFrom(self.empty_message)
-    self.assertEqual(self.unknown_fields, message._unknown_fields)
+    self.assertEqual(message.SerializeToString(), self.all_fields_data)
 
   def testMergeFrom(self):
     message = unittest_pb2.TestAllTypes()
@@ -187,27 +198,26 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     message.optional_uint32 = 4
     destination = unittest_pb2.TestEmptyMessage()
     destination.ParseFromString(message.SerializeToString())
-    unknown_fields = destination._unknown_fields[:]
 
     destination.MergeFrom(source)
-    self.assertEqual(unknown_fields + source._unknown_fields,
-                     destination._unknown_fields)
+    # Check that the fields where correctly merged, even stored in the unknown
+    # fields set.
+    message.ParseFromString(destination.SerializeToString())
+    self.assertEqual(message.optional_int32, 1)
+    self.assertEqual(message.optional_uint32, 2)
+    self.assertEqual(message.optional_int64, 3)
 
   def testClear(self):
     self.empty_message.Clear()
-    self.assertEqual(0, len(self.empty_message._unknown_fields))
+    # All cleared, even unknown fields.
+    self.assertEqual(self.empty_message.SerializeToString(), b'')
 
   def testUnknownExtensions(self):
     message = unittest_pb2.TestEmptyMessageWithExtensions()
     message.ParseFromString(self.all_fields_data)
-    self.assertEqual(self.empty_message._unknown_fields,
-                     message._unknown_fields)
+    self.assertEqual(message.SerializeToString(), self.all_fields_data)
 
 
-
-@unittest.skipIf(
-    api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
-    'C++ implementation does not expose unknown fields to Python')
 class UnknownEnumValuesTest(unittest.TestCase):
 
   def setUp(self):
@@ -227,7 +237,14 @@ class UnknownEnumValuesTest(unittest.TestCase):
     self.message_data = self.message.SerializeToString()
     self.missing_message = missing_enum_values_pb2.TestMissingEnumValues()
     self.missing_message.ParseFromString(self.message_data)
-    self.unknown_fields = self.missing_message._unknown_fields
+    if api_implementation.Type() != 'cpp':
+      # _unknown_fields is an implementation detail.
+      self.unknown_fields = self.missing_message._unknown_fields
+
+  # All the tests that use GetField() check an implementation detail of the
+  # Python implementation, which stores unknown fields as serialized strings.
+  # These tests are skipped by the C++ implementation: it's enough to check that
+  # the message is correctly serialized.
 
   def GetField(self, name):
     field_descriptor = self.descriptor.fields_by_name[name]
@@ -241,15 +258,18 @@ class UnknownEnumValuesTest(unittest.TestCase):
         decoder(value, 0, len(value), self.message, result_dict)
     return result_dict[field_descriptor]
 
+  @SkipIfCppImplementation
   def testUnknownEnumValue(self):
     self.assertFalse(self.missing_message.HasField('optional_nested_enum'))
     value = self.GetField('optional_nested_enum')
     self.assertEqual(self.message.optional_nested_enum, value)
 
+  @SkipIfCppImplementation
   def testUnknownRepeatedEnumValue(self):
     value = self.GetField('repeated_nested_enum')
     self.assertEqual(self.message.repeated_nested_enum, value)
 
+  @SkipIfCppImplementation
   def testUnknownPackedEnumValue(self):
     value = self.GetField('packed_nested_enum')
     self.assertEqual(self.message.packed_nested_enum, value)

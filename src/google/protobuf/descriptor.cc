@@ -53,6 +53,8 @@
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -1091,6 +1093,7 @@ const DescriptorPool* DescriptorPool::generated_pool() {
   InitGeneratedPoolOnce();
   return generated_pool_;
 }
+
 
 DescriptorPool* DescriptorPool::internal_generated_pool() {
   InitGeneratedPoolOnce();
@@ -3699,6 +3702,14 @@ static bool ExistingFileMatchesProto(const FileDescriptor* existing_file,
                                      const FileDescriptorProto& proto) {
   FileDescriptorProto existing_proto;
   existing_file->CopyTo(&existing_proto);
+  // TODO(liujisi): Remove it when CopyTo supports copying syntax params when
+  // syntax="proto2".
+  if (existing_file->syntax() == FileDescriptor::SYNTAX_PROTO2 &&
+      proto.has_syntax()) {
+    existing_proto.set_syntax(
+        existing_file->SyntaxName(existing_file->syntax()));
+  }
+
   return existing_proto.SerializeAsString() == proto.SerializeAsString();
 }
 
@@ -4649,7 +4660,7 @@ void DescriptorBuilder::CrossLinkMessage(
       // safe.
       if (oneof_decl->field_count() > 0 &&
           message->field(i - 1)->containing_oneof() != oneof_decl) {
-        AddWarning(
+        AddError(
             message->full_name() + "." + message->field(i - 1)->name(),
             proto.field(i - 1), DescriptorPool::ErrorCollector::OTHER,
             strings::Substitute(
@@ -5088,8 +5099,7 @@ void DescriptorBuilder::ValidateProto3Field(
              field->containing_type()->full_name() +
              "\" which is a proto3 message type.");
   }
-  bool allow_groups = false;
-  if (field->type() == FieldDescriptor::TYPE_GROUP && !allow_groups) {
+  if (field->type() == FieldDescriptor::TYPE_GROUP) {
     AddError(field->full_name(), proto,
              DescriptorPool::ErrorCollector::TYPE,
              "Groups are not supported in proto3 syntax.");
@@ -5305,6 +5315,14 @@ bool DescriptorBuilder::ValidateMapEntry(FieldDescriptor* field,
       break;
     // Do not add a default, so that the compiler will complain when new types
     // are added.
+  }
+
+  if (value->type() == FieldDescriptor::TYPE_ENUM) {
+    if (value->enum_type()->value(0)->number() != 0) {
+      AddError(
+          field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
+          "Enum value in map must define 0 as the first value.");
+    }
   }
 
   return true;

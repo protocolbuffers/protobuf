@@ -34,6 +34,7 @@
 
 #include <google/protobuf/unknown_field_set.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>

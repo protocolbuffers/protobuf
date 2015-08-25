@@ -36,6 +36,7 @@
 #endif
 #include <vector>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/internal/default_value_objectwriter.h>
@@ -89,7 +90,7 @@ TypeInfo* TypeInfoTestHelper::GetTypeInfo() { return typeinfo_.get(); }
 
 ProtoStreamObjectSource* TypeInfoTestHelper::NewProtoSource(
     io::CodedInputStream* coded_input, const string& type_url) {
-  const google::protobuf::Type* type = typeinfo_->GetType(type_url);
+  const google::protobuf::Type* type = typeinfo_->GetTypeByTypeUrl(type_url);
   switch (type_) {
     case USE_TYPE_RESOLVER: {
       return new ProtoStreamObjectSource(coded_input, type_resolver_.get(),
@@ -103,7 +104,7 @@ ProtoStreamObjectSource* TypeInfoTestHelper::NewProtoSource(
 ProtoStreamObjectWriter* TypeInfoTestHelper::NewProtoWriter(
     const string& type_url, strings::ByteSink* output,
     ErrorListener* listener) {
-  const google::protobuf::Type* type = typeinfo_->GetType(type_url);
+  const google::protobuf::Type* type = typeinfo_->GetTypeByTypeUrl(type_url);
   switch (type_) {
     case USE_TYPE_RESOLVER: {
       return new ProtoStreamObjectWriter(type_resolver_.get(), *type, output,
@@ -116,7 +117,7 @@ ProtoStreamObjectWriter* TypeInfoTestHelper::NewProtoWriter(
 
 DefaultValueObjectWriter* TypeInfoTestHelper::NewDefaultValueWriter(
     const string& type_url, ObjectWriter* writer) {
-  const google::protobuf::Type* type = typeinfo_->GetType(type_url);
+  const google::protobuf::Type* type = typeinfo_->GetTypeByTypeUrl(type_url);
   switch (type_) {
     case USE_TYPE_RESOLVER: {
       return new DefaultValueObjectWriter(type_resolver_.get(), *type, writer);

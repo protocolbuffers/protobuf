@@ -34,6 +34,7 @@
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/map.h>
@@ -74,6 +75,28 @@ class MapFieldBaseStub : public MapFieldBase {
   bool IsRepeatedClean() { return state_ != 1; }
   void SetMapDirty() { state_ = 0; }
   void SetRepeatedDirty() { state_ = 1; }
+  bool ContainsMapKey(const MapKey& map_key) const {
+    return false;
+  }
+  bool InsertMapValue(const MapKey& map_key, MapValueRef* val) {
+    return false;
+  }
+  bool DeleteMapValue(const MapKey& map_key) {
+    return false;
+  }
+  bool EqualIterator(const MapIterator& a, const MapIterator& b) const {
+    return false;
+  }
+  int size() const { return 0; }
+  void MapBegin(MapIterator* map_iter) const {}
+  void MapEnd(MapIterator* map_iter) const {}
+  void InitializeIterator(MapIterator* map_iter) const {}
+  void DeleteIterator(MapIterator* map_iter) const {}
+  void CopyIterator(MapIterator* this_iterator,
+                    const MapIterator& other_iterator) const {}
+  void IncreaseIterator(MapIterator* map_iter) const {}
+  void SetDefaultMessageEntry(const Message* message) const {}
+  const Message* GetDefaultMessageEntry() const { return NULL; }
 };
 
 class MapFieldBasePrimitiveTest : public ::testing::Test {

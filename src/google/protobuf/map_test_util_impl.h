@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_MAP_TEST_UTIL_IMPL_H__
 #define GOOGLE_PROTOBUF_MAP_TEST_UTIL_IMPL_H__
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 
 
@@ -167,8 +168,11 @@ void MapTestUtilImpl::SetArenaMapFields(MapMessage* message) {
   (*message->mutable_map_int32_float())[0] = 0.0;
   (*message->mutable_map_int32_double())[0] = 0.0;
   (*message->mutable_map_bool_bool())[0] = false;
+  (*message->mutable_map_string_string())["0"] = "0";
+  (*message->mutable_map_int32_bytes())[0] = "0";
   (*message->mutable_map_int32_enum())[0] = enum_value0;
   (*message->mutable_map_int32_foreign_message())[0].set_c(0);
+  (*message->mutable_map_int32_foreign_message_no_arena())[0].set_c(0);
 
   // Add second element
   (*message->mutable_map_int32_int32())[1] = 1;
@@ -184,8 +188,11 @@ void MapTestUtilImpl::SetArenaMapFields(MapMessage* message) {
   (*message->mutable_map_int32_float())[1] = 1.0;
   (*message->mutable_map_int32_double())[1] = 1.0;
   (*message->mutable_map_bool_bool())[1] = true;
+  (*message->mutable_map_string_string())["1"] = "1";
+  (*message->mutable_map_int32_bytes())[1] = "1";
   (*message->mutable_map_int32_enum())[1] = enum_value1;
   (*message->mutable_map_int32_foreign_message())[1].set_c(1);
+  (*message->mutable_map_int32_foreign_message_no_arena())[1].set_c(1);
 }
 
 template <typename MapMessage>
@@ -329,8 +336,11 @@ void MapTestUtilImpl::ExpectArenaMapFieldsSet(const MapMessage& message) {
   EXPECT_EQ(2, message.map_int32_float().size());
   EXPECT_EQ(2, message.map_int32_double().size());
   EXPECT_EQ(2, message.map_bool_bool().size());
+  EXPECT_EQ(2, message.map_string_string().size());
+  EXPECT_EQ(2, message.map_int32_bytes().size());
   EXPECT_EQ(2, message.map_int32_enum().size());
   EXPECT_EQ(2, message.map_int32_foreign_message().size());
+  EXPECT_EQ(2, message.map_int32_foreign_message_no_arena().size());
 
   EXPECT_EQ(0, message.map_int32_int32().at(0));
   EXPECT_EQ(0, message.map_int64_int64().at(0));
@@ -345,8 +355,11 @@ void MapTestUtilImpl::ExpectArenaMapFieldsSet(const MapMessage& message) {
   EXPECT_EQ(0, message.map_int32_float().at(0));
   EXPECT_EQ(0, message.map_int32_double().at(0));
   EXPECT_EQ(false, message.map_bool_bool().at(0));
+  EXPECT_EQ("0", message.map_string_string().at("0"));
+  EXPECT_EQ("0", message.map_int32_bytes().at(0));
   EXPECT_EQ(enum_value0, message.map_int32_enum().at(0));
   EXPECT_EQ(0, message.map_int32_foreign_message().at(0).c());
+  EXPECT_EQ(0, message.map_int32_foreign_message_no_arena().at(0).c());
 
   EXPECT_EQ(1, message.map_int32_int32().at(1));
   EXPECT_EQ(1, message.map_int64_int64().at(1));
@@ -361,8 +374,11 @@ void MapTestUtilImpl::ExpectArenaMapFieldsSet(const MapMessage& message) {
   EXPECT_EQ(1, message.map_int32_float().at(1));
   EXPECT_EQ(1, message.map_int32_double().at(1));
   EXPECT_EQ(true, message.map_bool_bool().at(1));
+  EXPECT_EQ("1", message.map_string_string().at("1"));
+  EXPECT_EQ("1", message.map_int32_bytes().at(1));
   EXPECT_EQ(enum_value1, message.map_int32_enum().at(1));
   EXPECT_EQ(1, message.map_int32_foreign_message().at(1).c());
+  EXPECT_EQ(1, message.map_int32_foreign_message_no_arena().at(1).c());
 }
 
 template <typename EnumType, EnumType enum_value, typename MapMessage>

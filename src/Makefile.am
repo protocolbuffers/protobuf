@@ -191,6 +191,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/stringpiece.h                          \
   google/protobuf/stubs/stringprintf.cc                        \
   google/protobuf/stubs/stringprintf.h                         \
+  google/protobuf/stubs/structurally_valid.cc                  \
   google/protobuf/stubs/strutil.cc                             \
   google/protobuf/stubs/strutil.h                              \
   google/protobuf/stubs/time.cc                                \
@@ -232,7 +233,6 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/service.cc                                   \
   google/protobuf/source_context.pb.cc                         \
   google/protobuf/struct.pb.cc                                 \
-  google/protobuf/stubs/structurally_valid.cc                  \
   google/protobuf/stubs/substitute.cc                          \
   google/protobuf/stubs/substitute.h                           \
   google/protobuf/text_format.cc                               \
@@ -659,7 +659,8 @@ COMMON_TEST_SOURCES =                                          \
   google/protobuf/testing/file.h
 
 check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
-                 protobuf-lite-test test_plugin $(GZCHECKPROGRAMS)
+                 protobuf-lite-test test_plugin protobuf-lite-arena-test \
+                 $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
                       ../gmock/gtest/lib/libgtest.la              \
                       ../gmock/lib/libgmock.la                    \
@@ -756,20 +757,39 @@ protobuf_lazy_descriptor_test_SOURCES =                        \
   $(COMMON_TEST_SOURCES)
 nodist_protobuf_lazy_descriptor_test_SOURCES = $(protoc_outputs)
 
-# Build lite_unittest separately, since it doesn't use gtest.
-protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la
-protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
-protobuf_lite_test_SOURCES =                                           \
+COMMON_LITE_TEST_SOURCES =                                             \
   google/protobuf/arena_test_util.cc                                   \
   google/protobuf/arena_test_util.h                                    \
-  google/protobuf/lite_unittest.cc                                     \
   google/protobuf/map_lite_test_util.cc                                \
   google/protobuf/map_lite_test_util.h                                 \
   google/protobuf/test_util_lite.cc                                    \
   google/protobuf/test_util_lite.h
-  # TODO(teboring) add the file back and make the test build.
-  # google/protobuf/map_lite_test.cc
+
+# Build lite_unittest separately, since it doesn't use gtest. It can't
+# depend on gtest because our internal version of gtest depend on proto
+# full runtime and we want to make sure this test builds without full
+# runtime.
+protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la
+protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
+protobuf_lite_test_SOURCES =                                           \
+  google/protobuf/lite_unittest.cc                                     \
+  $(COMMON_LITE_TEST_SOURCES)
 nodist_protobuf_lite_test_SOURCES = $(protoc_lite_outputs)
+
+# lite_arena_unittest depends on gtest because teboring@ found that without
+# gtest when building the test internally our memory sanitizer doesn't detect
+# memory leaks (don't know why).
+protobuf_lite_arena_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la \
+                      ../gmock/gtest/lib/libgtest.la                 \
+                      ../gmock/lib/libgmock.la                       \
+                      ../gmock/lib/libgmock_main.la
+protobuf_lite_arena_test_CPPFLAGS = -I$(srcdir)/../gmock/include       \
+                                    -I$(srcdir)/../gmock/gtest/include
+protobuf_lite_arena_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
+protobuf_lite_arena_test_SOURCES =       \
+  google/protobuf/lite_arena_unittest.cc \
+  $(COMMON_LITE_TEST_SOURCES)
+nodist_protobuf_lite_arena_test_SOURCES = $(protoc_lite_outputs)
 
 # Test plugin binary.
 test_plugin_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
@@ -790,4 +810,5 @@ zcgunzip_SOURCES = google/protobuf/testing/zcgunzip.cc
 endif
 
 TESTS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test \
-        google/protobuf/compiler/zip_output_unittest.sh $(GZTESTS)
+        google/protobuf/compiler/zip_output_unittest.sh $(GZTESTS)     \
+        protobuf-lite-arena-test

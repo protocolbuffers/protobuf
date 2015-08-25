@@ -39,8 +39,8 @@
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
+#include <set>
 #include <string>
-#include <vector>
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
 
@@ -66,9 +66,10 @@ class MessageGenerator {
 
   // Header stuff.
 
-  // Generate foward declarations for this class and all its nested types.
-  void GenerateMessageForwardDeclaration(io::Printer* printer);
-  void GenerateEnumForwardDeclaration(io::Printer* printer);
+  // Return names for foward declarations of this class and all its nested
+  // types.
+  void FillMessageForwardDeclarations(set<string>* class_names);
+  void FillEnumForwardDeclarations(set<string>* enum_names);
 
   // Generate definitions of all nested enums (must come before class
   // definitions because those classes use the enums definitions).

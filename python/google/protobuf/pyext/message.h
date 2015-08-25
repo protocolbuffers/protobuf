@@ -49,7 +49,6 @@ class Message;
 class Reflection;
 class FieldDescriptor;
 class Descriptor;
-class DynamicMessageFactory;
 
 using internal::shared_ptr;
 
@@ -221,9 +220,6 @@ PyObject* FindInitializationErrors(CMessage* self);
 int SetOwner(CMessage* self, const shared_ptr<Message>& new_owner);
 
 int AssureWritable(CMessage* self);
-
-DynamicMessageFactory* GetMessageFactory();
-
 }  // namespace cmessage
 
 

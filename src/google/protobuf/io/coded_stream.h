@@ -191,16 +191,15 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
 
   // Like GetDirectBufferPointer, but this method is inlined, and does not
   // attempt to Refresh() if the buffer is currently empty.
-  inline void GetDirectBufferPointerInline(const void** data,
-                                           int* size) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE void GetDirectBufferPointerInline(const void** data,
+                                                            int* size);
 
   // Read raw bytes, copying them into the given buffer.
   bool ReadRaw(void* buffer, int size);
 
   // Like the above, with inlined optimizations. This should only be used
   // by the protobuf implementation.
-  inline bool InternalReadRawInline(void* buffer,
-                                    int size) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InternalReadRawInline(void* buffer, int size);
 
   // Like ReadRaw, but reads into a string.
   //
@@ -212,8 +211,8 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   bool ReadString(string* buffer, int size);
   // Like the above, with inlined optimizations. This should only be used
   // by the protobuf implementation.
-  inline bool InternalReadStringInline(string* buffer,
-                                       int size) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InternalReadStringInline(string* buffer,
+                                                        int size);
 
 
   // Read a 32-bit little-endian integer.
@@ -243,7 +242,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // Always inline because this is only called in one place per parse loop
   // but it is called for every iteration of said loop, so it should be fast.
   // GCC doesn't want to inline this by default.
-  uint32 ReadTag() GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE uint32 ReadTag();
 
   // This usually a faster alternative to ReadTag() when cutoff is a manifest
   // constant.  It does particularly well for cutoff >= 127.  The first part
@@ -253,8 +252,8 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // above cutoff or is 0.  (There's intentional wiggle room when tag is 0,
   // because that can arise in several ways, and for best performance we want
   // to avoid an extra "is tag == 0?" check here.)
-  inline std::pair<uint32, bool> ReadTagWithCutoff(uint32 cutoff)
-      GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE std::pair<uint32, bool> ReadTagWithCutoff(
+      uint32 cutoff);
 
   // Usually returns true if calling ReadVarint32() now would produce the given
   // value.  Will always return false if ReadVarint32() would not return the
@@ -263,7 +262,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // parameter.
   // Always inline because this collapses to a small number of instructions
   // when given a constant parameter, but GCC doesn't want to inline by default.
-  bool ExpectTag(uint32 expected) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool ExpectTag(uint32 expected);
 
   // Like above, except this reads from the specified buffer. The caller is
   // responsible for ensuring that the buffer is large enough to read a varint
@@ -272,9 +271,9 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   //
   // Returns a pointer beyond the expected tag if it was found, or NULL if it
   // was not.
-  static const uint8* ExpectTagFromArray(
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE static const uint8* ExpectTagFromArray(
       const uint8* buffer,
-      uint32 expected) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+      uint32 expected);
 
   // Usually returns true if no more bytes can be read.  Always returns false
   // if more bytes can be read.  If ExpectAtEnd() returns true, a subsequent
@@ -766,8 +765,8 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // but GCC by default doesn't want to inline this.
   void WriteTag(uint32 value);
   // Like WriteTag()  but writing directly to the target array.
-  static uint8* WriteTagToArray(
-      uint32 value, uint8* target) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE static uint8* WriteTagToArray(uint32 value,
+                                                        uint8* target);
 
   // Returns the number of bytes needed to encode the given value as a varint.
   static int VarintSize32(uint32 value);
@@ -831,8 +830,8 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // WriteVarint32FallbackToArray.  Meanwhile, WriteVarint32() is already
   // out-of-line, so it should just invoke this directly to avoid any extra
   // function call overhead.
-  static uint8* WriteVarint64ToArrayInline(
-      uint64 value, uint8* target) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE static uint8* WriteVarint64ToArrayInline(
+      uint64 value, uint8* target);
 
   static int VarintSize32Fallback(uint32 value);
 };

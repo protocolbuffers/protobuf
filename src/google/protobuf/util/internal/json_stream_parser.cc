@@ -40,6 +40,7 @@
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/util/internal/object_writer.h>
@@ -104,16 +105,42 @@ JsonStreamParser::JsonStreamParser(ObjectWriter* ow)
       parsed_(),
       parsed_storage_(),
       string_open_(0),
-      utf8_storage_(),
-      utf8_length_(0) {
+      chunk_storage_(),
+      coerce_to_utf8_(false) {
   // Initialize the stack with a single value to be parsed.
   stack_.push(VALUE);
 }
 
 JsonStreamParser::~JsonStreamParser() {}
 
+
 util::Status JsonStreamParser::Parse(StringPiece json) {
-  return ParseChunk(json);
+  StringPiece chunk = json;
+  // If we have leftovers from a previous chunk, append the new chunk to it
+  // and create a new StringPiece pointing at the string's data. This could
+  // be large but we rely on the chunks to be small, assuming they are
+  // fragments of a Cord.
+  if (!leftover_.empty()) {
+    // Don't point chunk to leftover_ because leftover_ will be updated in
+    // ParseChunk(chunk).
+    chunk_storage_.swap(leftover_);
+    json.AppendToString(&chunk_storage_);
+    chunk = StringPiece(chunk_storage_);
+  }
+
+  // Find the structurally valid UTF8 prefix and parse only that.
+  int n = internal::UTF8SpnStructurallyValid(chunk);
+  if (n > 0) {
+    util::Status status = ParseChunk(chunk.substr(0, n));
+
+    // Any leftover characters are stashed in leftover_ for later parsing when
+    // there is more data available.
+    chunk.substr(n).AppendToString(&leftover_);
+    return status;
+  } else {
+    chunk.CopyToString(&leftover_);
+    return util::Status::OK;
+  }
 }
 
 util::Status JsonStreamParser::FinishParse() {
@@ -122,9 +149,22 @@ util::Status JsonStreamParser::FinishParse() {
   if (stack_.empty() && leftover_.empty()) {
     return util::Status::OK;
   }
+
+  // Storage for UTF8-coerced string.
+  google::protobuf::scoped_array<char> utf8;
+  if (coerce_to_utf8_) {
+    utf8.reset(new char[leftover_.size()]);
+    char* coerced = internal::UTF8CoerceToStructurallyValid(leftover_, utf8.get(), ' ');
+    p_ = json_ = StringPiece(coerced, leftover_.size());
+  } else {
+    if (!internal::IsStructurallyValidUTF8(leftover_)) {
+      return ReportFailure("Encountered non UTF-8 code points.");
+    }
+    p_ = json_ = leftover_;
+  }
+
   // Parse the remainder in finishing mode, which reports errors for things like
   // unterminated strings or unknown tokens that would normally be retried.
-  p_ = json_ = StringPiece(leftover_);
   finishing_ = true;
   util::Status result = RunParser();
   if (result.ok()) {
@@ -137,16 +177,10 @@ util::Status JsonStreamParser::FinishParse() {
 }
 
 util::Status JsonStreamParser::ParseChunk(StringPiece chunk) {
-  // If we have leftovers from a previous chunk, append the new chunk to it and
-  // create a new StringPiece pointing at the string's data. This could be
-  // large but we rely on the chunks to be small, assuming they are fragments
-  // of a Cord.
-  if (!leftover_.empty()) {
-    chunk.AppendToString(&leftover_);
-    p_ = json_ = StringPiece(leftover_);
-  } else {
-    p_ = json_ = chunk;
-  }
+  // Do not do any work if the chunk is empty.
+  if (chunk.empty()) return util::Status::OK;
+
+  p_ = json_ = chunk;
 
   finishing_ = false;
   util::Status result = RunParser();

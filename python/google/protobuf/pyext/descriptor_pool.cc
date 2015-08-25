@@ -33,6 +33,7 @@
 #include <Python.h>
 
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/descriptor.h>
 #include <google/protobuf/pyext/message.h>
@@ -53,9 +54,13 @@ namespace google {
 namespace protobuf {
 namespace python {
 
+// A map to cache Python Pools per C++ pointer.
+// Pointers are not owned here, and belong to the PyDescriptorPool.
+static hash_map<const DescriptorPool*, PyDescriptorPool*> descriptor_pool_map;
+
 namespace cdescriptor_pool {
 
-PyDescriptorPool* NewDescriptorPool() {
+static PyDescriptorPool* NewDescriptorPool() {
   PyDescriptorPool* cdescriptor_pool = PyObject_New(
       PyDescriptorPool, &PyDescriptorPool_Type);
   if (cdescriptor_pool == NULL) {
@@ -67,32 +72,43 @@ PyDescriptorPool* NewDescriptorPool() {
   // as underlay.
   cdescriptor_pool->pool = new DescriptorPool(DescriptorPool::generated_pool());
 
+  DynamicMessageFactory* message_factory = new DynamicMessageFactory();
+  // This option might be the default some day.
+  message_factory->SetDelegateToGeneratedFactory(true);
+  cdescriptor_pool->message_factory = message_factory;
+
   // TODO(amauryfa): Rewrite the SymbolDatabase in C so that it uses the same
   // storage.
   cdescriptor_pool->classes_by_descriptor =
       new PyDescriptorPool::ClassesByMessageMap();
-  cdescriptor_pool->interned_descriptors =
-      new hash_map<const void*, PyObject *>();
   cdescriptor_pool->descriptor_options =
       new hash_map<const void*, PyObject *>();
+
+  if (!descriptor_pool_map.insert(
+      std::make_pair(cdescriptor_pool->pool, cdescriptor_pool)).second) {
+    // Should never happen -- would indicate an internal error / bug.
+    PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
+    return NULL;
+  }
 
   return cdescriptor_pool;
 }
 
 static void Dealloc(PyDescriptorPool* self) {
   typedef PyDescriptorPool::ClassesByMessageMap::iterator iterator;
+  descriptor_pool_map.erase(self->pool);
   for (iterator it = self->classes_by_descriptor->begin();
        it != self->classes_by_descriptor->end(); ++it) {
     Py_DECREF(it->second);
   }
   delete self->classes_by_descriptor;
-  delete self->interned_descriptors;  // its references were borrowed.
   for (hash_map<const void*, PyObject*>::iterator it =
            self->descriptor_options->begin();
        it != self->descriptor_options->end(); ++it) {
     Py_DECREF(it->second);
   }
   delete self->descriptor_options;
+  delete self->message_factory;
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }
 
@@ -384,22 +400,43 @@ PyTypeObject PyDescriptorPool_Type = {
   PyObject_Del,                        // tp_free
 };
 
-static PyDescriptorPool* global_cdescriptor_pool = NULL;
+// This is the DescriptorPool which contains all the definitions from the
+// generated _pb2.py modules.
+static PyDescriptorPool* python_generated_pool = NULL;
 
 bool InitDescriptorPool() {
   if (PyType_Ready(&PyDescriptorPool_Type) < 0)
     return false;
 
-  global_cdescriptor_pool = cdescriptor_pool::NewDescriptorPool();
-  if (global_cdescriptor_pool == NULL) {
+  python_generated_pool = cdescriptor_pool::NewDescriptorPool();
+  if (python_generated_pool == NULL) {
     return false;
   }
+  // Register this pool to be found for C++-generated descriptors.
+  descriptor_pool_map.insert(
+      std::make_pair(DescriptorPool::generated_pool(),
+                     python_generated_pool));
 
   return true;
 }
 
 PyDescriptorPool* GetDescriptorPool() {
-  return global_cdescriptor_pool;
+  return python_generated_pool;
+}
+
+PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool) {
+  // Fast path for standard descriptors.
+  if (pool == python_generated_pool->pool ||
+      pool == DescriptorPool::generated_pool()) {
+    return python_generated_pool;
+  }
+  hash_map<const DescriptorPool*, PyDescriptorPool*>::iterator it =
+      descriptor_pool_map.find(pool);
+  if (it != descriptor_pool_map.end()) {
+    PyErr_SetString(PyExc_KeyError, "Unknown descriptor pool");
+    return NULL;
+  }
+  return it->second;
 }
 
 }  // namespace python

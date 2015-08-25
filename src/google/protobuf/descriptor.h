@@ -58,6 +58,7 @@
 #include <string>
 #include <vector>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/scoped_ptr.h>
 
 // TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
 #ifdef TYPE_BOOL
@@ -860,7 +861,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptor {
   friend class FieldDescriptor;
   friend class EnumValueDescriptor;
   friend class FileDescriptor;
-  friend class LIBPROTOBUF_EXPORT internal::GeneratedMessageReflection;
+  friend class internal::GeneratedMessageReflection;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumDescriptor);
 };
 
@@ -1331,6 +1332,7 @@ class LIBPROTOBUF_EXPORT DescriptorPool {
   // which are compiled into the binary will allocate their descriptors in
   // this pool.  Do not add your own descriptors to this pool.
   static const DescriptorPool* generated_pool();
+
 
   // Find a FileDescriptor in the pool by file name.  Returns NULL if not
   // found.

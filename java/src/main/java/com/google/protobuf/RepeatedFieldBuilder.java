@@ -73,7 +73,7 @@ public class RepeatedFieldBuilder
   private GeneratedMessage.BuilderParent parent;
 
   // List of messages. Never null. It may be immutable, in which case
-  // isMessagesListImmutable will be true. See note below.
+  // isMessagesListMutable will be false. See note below.
   private List<MType> messages;
 
   // Whether messages is an mutable array that can be modified.

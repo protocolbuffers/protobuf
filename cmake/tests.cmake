@@ -99,6 +99,12 @@ set(common_test_files
   ${protobuf_source_dir}/src/google/protobuf/testing/googletest.cc
 )
 
+set(common_lite_test_files
+  ${protobuf_source_dir}/src/google/protobuf/arena_test_util.cc
+  ${protobuf_source_dir}/src/google/protobuf/map_lite_test_util.cc
+  ${protobuf_source_dir}/src/google/protobuf/test_util_lite.cc
+)
+
 set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/any_test.cc
   ${protobuf_source_dir}/src/google/protobuf/arena_unittest.cc
@@ -179,10 +185,13 @@ add_executable(test_plugin ${test_plugin_files})
 target_link_libraries(test_plugin libprotoc libprotobuf gmock)
 
 set(lite_test_files
-  ${protobuf_source_dir}/src/google/protobuf/arena_test_util.cc
   ${protobuf_source_dir}/src/google/protobuf/lite_unittest.cc
-  ${protobuf_source_dir}/src/google/protobuf/map_lite_test_util.cc
-  ${protobuf_source_dir}/src/google/protobuf/test_util_lite.cc
 )
-add_executable(lite-test ${lite_test_files} ${lite_test_proto_files})
+add_executable(lite-test ${lite_test_files} ${common_lite_test_files} ${lite_test_proto_files})
 target_link_libraries(lite-test libprotobuf-lite)
+
+set(lite_arena_test_files
+  ${protobuf_source_dir}/src/google/protobuf/lite_arena_unittest.cc
+)
+add_executable(lite-arena-test ${lite_arena_test_files} ${common_lite_test_files} ${lite_test_proto_files})
+target_link_libraries(lite-arena-test libprotobuf-lite gmock_main)

@@ -42,9 +42,9 @@ syntax = "proto2";
 package google.protobuf;
 option go_package = "descriptor";
 option java_package = "com.google.protobuf";
-option javanano_use_deprecated_package = true;
 option java_outer_classname = "DescriptorProtos";
-option csharp_namespace = "Google.Protobuf.Reflection";
+// Re-enable this once the tools have picked up the csharp_namespace option.
+// option csharp_namespace = "Google.ProtocolBuffers.DescriptorProtos";
 option objc_class_prefix = "GPB";
 
 // descriptor.proto must be optimized for speed because reflection-based
@@ -301,10 +301,12 @@ message FileOptions {
 
   // If set true, then the Java code generator will generate equals() and
   // hashCode() methods for all messages defined in the .proto file.
-  // - In the full runtime, this is purely a speed optimization, as the
+  // This increases generated code size, potentially substantially for large
+  // protos, which may harm a memory-constrained application.
+  // - In the full runtime this is a speed optimization, as the
   // AbstractMessage base class includes reflection-based implementations of
   // these methods.
-  //- In the lite runtime, setting this option changes the semantics of
+  // - In the lite runtime, setting this option changes the semantics of
   // equals() and hashCode() to more closely match those of the full runtime;
   // the generated methods compute their results based on field values rather
   // than object identity. (Implementations should not assume that hashcodes
@@ -524,6 +526,7 @@ message FieldOptions {
 
   // For Google-internal migration only. Do not use.
   optional bool weak = 10 [default=false];
+
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

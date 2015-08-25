@@ -35,9 +35,12 @@
 #include <google/protobuf/stubs/hash.h>
 #include <limits>  // To support Visual Studio 2008
 
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_enum_util.h>
 #include <google/protobuf/map_type_handler.h>
+#include <google/protobuf/message.h>
+#include <google/protobuf/descriptor.h>
 
 namespace google {
 namespace protobuf {
@@ -47,13 +50,379 @@ class Map;
 
 template <typename Enum> struct is_proto_enum;
 
+class MapIterator;
+
 namespace internal {
 template <typename Key, typename T,
           WireFormatLite::FieldType key_wire_type,
           WireFormatLite::FieldType value_wire_type,
           int default_enum_value>
 class MapFieldLite;
-}
+
+template <typename Key, typename T,
+          WireFormatLite::FieldType key_wire_type,
+          WireFormatLite::FieldType value_wire_type,
+          int default_enum_value>
+class MapField;
+
+template <typename Key, typename T>
+class TypeDefinedMapFieldBase;
+
+class DynamicMapField;
+
+class GeneratedMessageReflection;
+}  // namespace internal
+
+#define TYPE_CHECK(EXPECTEDTYPE, METHOD)                                \
+  if (type() != EXPECTEDTYPE) {                                         \
+    GOOGLE_LOG(FATAL)                                                          \
+        << "Protocol Buffer map usage error:\n"                         \
+        << METHOD << " type does not match\n"                           \
+        << "  Expected : "                                              \
+        << FieldDescriptor::CppTypeName(EXPECTEDTYPE) << "\n"           \
+        << "  Actual   : "                                              \
+        << FieldDescriptor::CppTypeName(type());                        \
+  }
+
+// MapKey is an union type for representing any possible
+// map key.
+class LIBPROTOBUF_EXPORT MapKey {
+ public:
+  MapKey() : type_(0) {
+  }
+  MapKey(const MapKey& other) : type_(0) {
+    CopyFrom(other);
+  }
+
+  ~MapKey() {
+    if (type_ == FieldDescriptor::CPPTYPE_STRING) {
+      delete val_.string_value_;
+    }
+  }
+
+  FieldDescriptor::CppType type() const {
+    if (type_ == 0) {
+      GOOGLE_LOG(FATAL)
+          << "Protocol Buffer map usage error:\n"
+          << "MapKey::type MapKey is not initialized. "
+          << "Call set methods to initialize MapKey.";
+    }
+    return (FieldDescriptor::CppType)type_;
+  }
+
+  void SetInt64Value(int64 value) {
+    SetType(FieldDescriptor::CPPTYPE_INT64);
+    val_.int64_value_ = value;
+  }
+  void SetUInt64Value(uint64 value) {
+    SetType(FieldDescriptor::CPPTYPE_UINT64);
+    val_.uint64_value_ = value;
+  }
+  void SetInt32Value(int32 value) {
+    SetType(FieldDescriptor::CPPTYPE_INT32);
+    val_.int32_value_ = value;
+  }
+  void SetUInt32Value(uint32 value) {
+    SetType(FieldDescriptor::CPPTYPE_UINT32);
+    val_.uint32_value_ = value;
+  }
+  void SetBoolValue(bool value) {
+    SetType(FieldDescriptor::CPPTYPE_BOOL);
+    val_.bool_value_ = value;
+  }
+  void SetStringValue(const string& val) {
+    SetType(FieldDescriptor::CPPTYPE_STRING);
+    *val_.string_value_ = val;
+  }
+
+  int64 GetInt64Value() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_INT64,
+               "MapKey::GetInt64Value");
+    return val_.int64_value_;
+  }
+  uint64 GetUInt64Value() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT64,
+               "MapKey::GetUInt64Value");
+    return val_.uint64_value_;
+  }
+  int32 GetInt32Value() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_INT32,
+               "MapKey::GetInt32Value");
+    return val_.int32_value_;
+  }
+  uint32 GetUInt32Value() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT32,
+               "MapKey::GetUInt32Value");
+    return val_.uint32_value_;
+  }
+  int32 GetBoolValue() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_BOOL,
+               "MapKey::GetBoolValue");
+    return val_.bool_value_;
+  }
+  const string& GetStringValue() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_STRING,
+               "MapKey::GetStringValue");
+    return *val_.string_value_;
+  }
+
+  bool operator==(const MapKey& other) const {
+    if (type_ != other.type_) {
+      return false;
+    }
+    switch (type()) {
+      case FieldDescriptor::CPPTYPE_STRING:
+        return *val_.string_value_ == *other.val_.string_value_;
+      case FieldDescriptor::CPPTYPE_INT64:
+        return val_.int64_value_ == other.val_.int64_value_;
+      case FieldDescriptor::CPPTYPE_INT32:
+        return val_.int32_value_ == other.val_.int32_value_;
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return val_.uint64_value_ == other.val_.uint64_value_;
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return val_.uint32_value_ == other.val_.uint32_value_;
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return val_.bool_value_ == other.val_.bool_value_;
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+      case FieldDescriptor::CPPTYPE_FLOAT:
+      case FieldDescriptor::CPPTYPE_ENUM:
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        GOOGLE_LOG(FATAL) << "Can't get here.";
+        return false;
+    }
+  }
+
+  void CopyFrom(const MapKey& other) {
+    SetType(other.type());
+    switch (type_) {
+      case FieldDescriptor::CPPTYPE_STRING:
+        *val_.string_value_ = *other.val_.string_value_;
+        break;
+      case FieldDescriptor::CPPTYPE_INT64:
+        val_.int64_value_ = other.val_.int64_value_;
+        break;
+      case FieldDescriptor::CPPTYPE_INT32:
+        val_.int32_value_ = other.val_.int32_value_;
+        break;
+      case FieldDescriptor::CPPTYPE_UINT64:
+        val_.uint64_value_ = other.val_.uint64_value_;
+        break;
+      case FieldDescriptor::CPPTYPE_UINT32:
+        val_.uint32_value_ = other.val_.uint32_value_;
+        break;
+      case FieldDescriptor::CPPTYPE_BOOL:
+        val_.bool_value_ = other.val_.bool_value_;
+        break;
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+      case FieldDescriptor::CPPTYPE_FLOAT:
+      case FieldDescriptor::CPPTYPE_ENUM:
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        GOOGLE_LOG(FATAL) << "Can't get here.";
+        break;
+    }
+  }
+
+ private:
+  template <typename K, typename V>
+  friend class internal::TypeDefinedMapFieldBase;
+  friend class MapIterator;
+  friend class internal::DynamicMapField;
+
+  union KeyValue {
+    KeyValue() {}
+    string* string_value_;
+    int64 int64_value_;
+    int32 int32_value_;
+    uint64 uint64_value_;
+    uint32 uint32_value_;
+    bool bool_value_;
+  } val_;
+
+  void SetType(FieldDescriptor::CppType type) {
+    if (type_ == type) return;
+    if (type_ == FieldDescriptor::CPPTYPE_STRING) {
+      delete val_.string_value_;
+    }
+    type_ = type;
+    if (type_ == FieldDescriptor::CPPTYPE_STRING) {
+      val_.string_value_ = new string;
+    }
+  }
+
+  // type_ is 0 or a valid FieldDescriptor::CppType.
+  int type_;
+};
+
+// MapValueRef points to a map value.
+class LIBPROTOBUF_EXPORT MapValueRef {
+ public:
+  MapValueRef() : data_(NULL), type_(0) {}
+
+  void SetInt64Value(int64 value) {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_INT64,
+               "MapValueRef::SetInt64Value");
+    *reinterpret_cast<int64*>(data_) = value;
+  }
+  void SetUInt64Value(uint64 value) {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT64,
+               "MapValueRef::SetUInt64Value");
+    *reinterpret_cast<uint64*>(data_) = value;
+  }
+  void SetInt32Value(int32 value) {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_INT32,
+               "MapValueRef::SetInt32Value");
+    *reinterpret_cast<int32*>(data_) = value;
+  }
+  void SetUInt32Value(uint64 value) {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT32,
+               "MapValueRef::SetUInt32Value");
+    *reinterpret_cast<uint32*>(data_) = value;
+  }
+  void SetBoolValue(bool value) {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_BOOL,
+               "MapValueRef::SetBoolValue");
+    *reinterpret_cast<bool*>(data_) = value;
+  }
+  // TODO(jieluo) - Checks that enum is member.
+  void SetEnumValue(int value) {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_ENUM,
+               "MapValueRef::SetEnumValue");
+    *reinterpret_cast<int*>(data_) = value;
+  }
+  void SetStringValue(const string& value) {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_STRING,
+               "MapValueRef::SetStringValue");
+    *reinterpret_cast<string*>(data_) = value;
+  }
+  void SetFloatValue(float value) {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_FLOAT,
+               "MapValueRef::SetFloatValue");
+    *reinterpret_cast<float*>(data_) = value;
+  }
+  void SetDoubleValue(double value) {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_DOUBLE,
+               "MapValueRef::SetDoubleValue");
+    *reinterpret_cast<double*>(data_) = value;
+  }
+
+  int64 GetInt64Value() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_INT64,
+               "MapValueRef::GetInt64Value");
+    return *reinterpret_cast<int64*>(data_);
+  }
+  uint64 GetUInt64Value() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT64,
+               "MapValueRef::GetUInt64Value");
+    return *reinterpret_cast<uint64*>(data_);
+  }
+  int32 GetInt32Value() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_INT32,
+               "MapValueRef::GetInt32Value");
+    return *reinterpret_cast<int32*>(data_);
+  }
+  uint32 GetUInt32Value() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT32,
+               "MapValueRef::GetUInt32Value");
+    return *reinterpret_cast<uint32*>(data_);
+  }
+  bool GetBoolValue() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_BOOL,
+               "MapValueRef::GetBoolValue");
+    return *reinterpret_cast<bool*>(data_);
+  }
+  int GetEnumValue() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_ENUM,
+               "MapValueRef::GetEnumValue");
+    return *reinterpret_cast<int*>(data_);
+  }
+  const string& GetStringValue() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_STRING,
+               "MapValueRef::GetStringValue");
+    return *reinterpret_cast<string*>(data_);
+  }
+  float GetFloatValue() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_FLOAT,
+               "MapValueRef::GetFloatValue");
+    return *reinterpret_cast<float*>(data_);
+  }
+  double GetDoubleValue() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_DOUBLE,
+               "MapValueRef::GetDoubleValue");
+    return *reinterpret_cast<double*>(data_);
+  }
+
+  const Message& GetMessageValue() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_MESSAGE,
+               "MapValueRef::GetMessageValue");
+    return *reinterpret_cast<Message*>(data_);
+  }
+
+  Message* MutableMessageValue() {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_MESSAGE,
+               "MapValueRef::MutableMessageValue");
+    return reinterpret_cast<Message*>(data_);
+  }
+
+ private:
+  template <typename K, typename V,
+            internal::WireFormatLite::FieldType key_wire_type,
+            internal::WireFormatLite::FieldType value_wire_type,
+            int default_enum_value>
+  friend class internal::MapField;
+  template <typename K, typename V>
+  friend class internal::TypeDefinedMapFieldBase;
+  friend class MapIterator;
+  friend class internal::GeneratedMessageReflection;
+  friend class internal::DynamicMapField;
+
+  void SetType(FieldDescriptor::CppType type) {
+    type_ = type;
+  }
+
+  FieldDescriptor::CppType type() const {
+    if (type_ == 0 || data_ == NULL) {
+      GOOGLE_LOG(FATAL)
+          << "Protocol Buffer map usage error:\n"
+          << "MapValueRef::type MapValueRef is not initialized.";
+    }
+    return (FieldDescriptor::CppType)type_;
+  }
+  void SetValue(const void* val) {
+    data_ = const_cast<void*>(val);
+  }
+  void CopyFrom(const MapValueRef& other) {
+    type_ = other.type_;
+    data_ = other.data_;
+  }
+  // Only used in DynamicMapField
+  void DeleteData() {
+    switch (type_) {
+#define HANDLE_TYPE(CPPTYPE, TYPE)                              \
+      case google::protobuf::FieldDescriptor::CPPTYPE_##CPPTYPE: {        \
+        delete reinterpret_cast<TYPE*>(data_);                  \
+        break;                                                  \
+      }
+      HANDLE_TYPE(INT32, int32);
+      HANDLE_TYPE(INT64, int64);
+      HANDLE_TYPE(UINT32, uint32);
+      HANDLE_TYPE(UINT64, uint64);
+      HANDLE_TYPE(DOUBLE, double);
+      HANDLE_TYPE(FLOAT, float);
+      HANDLE_TYPE(BOOL, bool);
+      HANDLE_TYPE(STRING, string);
+      HANDLE_TYPE(ENUM, int32);
+      HANDLE_TYPE(MESSAGE, Message);
+#undef HANDLE_TYPE
+    }
+  }
+  // data_ point to a map value. MapValueRef does not
+  // own this value.
+  void* data_;
+  // type_ is 0 or a valid FieldDescriptor::CppType.
+  int type_;
+};
+
+#undef TYPE_CHECK
 
 // This is the class for google::protobuf::Map's internal value_type. Instead of using
 // std::pair as value_type, we use this class which provides us more control of
@@ -82,7 +451,6 @@ class MapPair {
   T second;
 
  private:
-  typedef void DestructorSkippable_;
   friend class ::google::protobuf::Arena;
   friend class Map<Key, T>;
 };
@@ -92,9 +460,6 @@ class MapPair {
 // interface directly to visit or change map fields.
 template <typename Key, typename T>
 class Map {
-  typedef internal::MapCppTypeHandler<Key> KeyTypeHandler;
-  typedef internal::MapCppTypeHandler<T> ValueTypeHandler;
-
  public:
   typedef Key key_type;
   typedef T mapped_type;
@@ -118,7 +483,9 @@ class Map {
       : arena_(arena),
         allocator_(arena_),
         elements_(0, hasher(), key_equal(), allocator_),
-        default_enum_value_(0) {}
+        default_enum_value_(0) {
+    arena_->OwnDestructor(&elements_);
+  }
 
   Map(const Map& other)
       : arena_(NULL),
@@ -126,6 +493,14 @@ class Map {
         elements_(0, hasher(), key_equal(), allocator_),
         default_enum_value_(other.default_enum_value_) {
     insert(other.begin(), other.end());
+  }
+  template <class InputIt>
+  explicit Map(const InputIt& first, const InputIt& last)
+      : arena_(NULL),
+        allocator_(arena_),
+        elements_(0, hasher(), key_equal(), allocator_),
+        default_enum_value_(0) {
+    insert(first, last);
   }
 
   ~Map() { clear(); }
@@ -172,7 +547,7 @@ class Map {
     !defined(GOOGLE_PROTOBUF_OS_NACL) && !defined(GOOGLE_PROTOBUF_OS_ANDROID)
     template<class NodeType, class... Args>
     void construct(NodeType* p, Args&&... args) {
-      new ((void*)p) NodeType(std::forward<Args>(args)...);
+      new (static_cast<void*>(p)) NodeType(std::forward<Args>(args)...);
     }
 
     template<class NodeType>
@@ -206,6 +581,7 @@ class Map {
     }
 
    private:
+    typedef void DestructorSkippable_;
     Arena* arena_;
 
     template <typename X>
@@ -216,7 +592,7 @@ class Map {
   typedef MapAllocator<std::pair<const Key, MapPair<Key, T>*> > Allocator;
 
   // Iterators
-  class const_iterator
+  class LIBPROTOBUF_EXPORT const_iterator
       : public std::iterator<std::forward_iterator_tag, value_type, ptrdiff_t,
                              const value_type*, const value_type&> {
     typedef typename hash_map<Key, value_type*, hash<Key>, equal_to<Key>,
@@ -449,6 +825,35 @@ class Map {
 };
 
 }  // namespace protobuf
-
 }  // namespace google
+
+GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START
+template<>
+struct hash<google::protobuf::MapKey> {
+  size_t
+  operator()(const google::protobuf::MapKey& map_key) const {
+    switch (map_key.type()) {
+      case google::protobuf::FieldDescriptor::CPPTYPE_STRING:
+        return hash<string>()(map_key.GetStringValue());
+      case google::protobuf::FieldDescriptor::CPPTYPE_INT64:
+        return hash< ::google::protobuf::int64>()(map_key.GetInt64Value());
+      case google::protobuf::FieldDescriptor::CPPTYPE_INT32:
+        return hash< ::google::protobuf::int32>()(map_key.GetInt32Value());
+      case google::protobuf::FieldDescriptor::CPPTYPE_UINT64:
+        return hash< ::google::protobuf::uint64>()(map_key.GetUInt64Value());
+      case google::protobuf::FieldDescriptor::CPPTYPE_UINT32:
+        return hash< ::google::protobuf::uint32>()(map_key.GetUInt32Value());
+      case google::protobuf::FieldDescriptor::CPPTYPE_BOOL:
+        return hash<bool>()(map_key.GetBoolValue());
+      case google::protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
+      case google::protobuf::FieldDescriptor::CPPTYPE_FLOAT:
+      case google::protobuf::FieldDescriptor::CPPTYPE_ENUM:
+      case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
+        GOOGLE_LOG(FATAL) << "Can't get here.";
+        return 0;
+    }
+  }
+};
+GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END
+
 #endif  // GOOGLE_PROTOBUF_MAP_H__

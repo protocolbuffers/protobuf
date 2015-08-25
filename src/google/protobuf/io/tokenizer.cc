@@ -90,6 +90,7 @@
 
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/io/strtod.h>
 #include <google/protobuf/io/zero_copy_stream.h>

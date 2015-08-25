@@ -629,27 +629,27 @@ int CodeGeneratorRequest::proto_file_size() const {
 void CodeGeneratorRequest::clear_proto_file() {
   proto_file_.Clear();
 }
- const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::proto_file(int index) const {
+const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::proto_file(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return proto_file_.Get(index);
 }
- ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::mutable_proto_file(int index) {
+::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::mutable_proto_file(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return proto_file_.Mutable(index);
 }
- ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::add_proto_file() {
+::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::add_proto_file() {
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return proto_file_.Add();
 }
- const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
-CodeGeneratorRequest::proto_file() const {
-  // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-  return proto_file_;
-}
- ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
+::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
 CodeGeneratorRequest::mutable_proto_file() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return &proto_file_;
+}
+const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
+CodeGeneratorRequest::proto_file() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
+  return proto_file_;
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
@@ -1535,27 +1535,27 @@ int CodeGeneratorResponse::file_size() const {
 void CodeGeneratorResponse::clear_file() {
   file_.Clear();
 }
- const ::google::protobuf::compiler::CodeGeneratorResponse_File& CodeGeneratorResponse::file(int index) const {
+const ::google::protobuf::compiler::CodeGeneratorResponse_File& CodeGeneratorResponse::file(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.file)
   return file_.Get(index);
 }
- ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::mutable_file(int index) {
+::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::mutable_file(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.file)
   return file_.Mutable(index);
 }
- ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::add_file() {
+::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::add_file() {
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorResponse.file)
   return file_.Add();
 }
- const ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
-CodeGeneratorResponse::file() const {
-  // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorResponse.file)
-  return file_;
-}
- ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >*
+::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >*
 CodeGeneratorResponse::mutable_file() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorResponse.file)
   return &file_;
+}
+const ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
+CodeGeneratorResponse::file() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorResponse.file)
+  return file_;
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS

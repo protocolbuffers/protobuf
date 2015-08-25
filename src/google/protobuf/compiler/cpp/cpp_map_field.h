@@ -63,6 +63,7 @@ class MapFieldGenerator : public FieldGenerator {
 
  private:
   const FieldDescriptor* descriptor_;
+  const bool dependent_field_;
   map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldGenerator);

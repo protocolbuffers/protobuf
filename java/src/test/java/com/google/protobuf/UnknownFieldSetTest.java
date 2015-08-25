@@ -461,7 +461,7 @@ public class UnknownFieldSetTest extends TestCase {
     TestAllExtensions allExtensions = TestUtil.getAllExtensionsSet();
     ByteString allExtensionsData = allExtensions.toByteString();
     UnittestLite.TestEmptyMessageLite emptyMessageLite =
-        UnittestLite.TestEmptyMessageLite.PARSER.parseFrom(allExtensionsData);
+        UnittestLite.TestEmptyMessageLite.parser().parseFrom(allExtensionsData);
     ByteString data = emptyMessageLite.toByteString();
     TestAllExtensions message =
         TestAllExtensions.parseFrom(data, TestUtil.getExtensionRegistry());

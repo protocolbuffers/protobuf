@@ -39,6 +39,7 @@
 #include <utility>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/stringpiece.h>
@@ -117,23 +118,23 @@ LIBPROTOBUF_EXPORT const string GetFullTypeWithUrl(StringPiece simple_type);
 
 // Finds and returns option identified by name and option_name within the
 // provided map. Returns NULL if none found.
-LIBPROTOBUF_EXPORT const google::protobuf::Option* FindOptionOrNull(
+const google::protobuf::Option* FindOptionOrNull(
     const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name);
 
 // Finds and returns the field identified by field_name in the passed tech Type
 // object. Returns NULL if none found.
-LIBPROTOBUF_EXPORT const google::protobuf::Field* FindFieldInTypeOrNull(
+const google::protobuf::Field* FindFieldInTypeOrNull(
     const google::protobuf::Type* type, StringPiece field_name);
 
 // Finds and returns the EnumValue identified by enum_name in the passed tech
 // Enum object. Returns NULL if none found.
-LIBPROTOBUF_EXPORT const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
+const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
     const google::protobuf::Enum* enum_type, StringPiece enum_name);
 
 // Finds and returns the EnumValue identified by value in the passed tech
 // Enum object. Returns NULL if none found.
-LIBPROTOBUF_EXPORT const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
+const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
     const google::protobuf::Enum* enum_type, int32 value);
 
 // Converts input to camel-case and returns it.
@@ -153,7 +154,7 @@ LIBPROTOBUF_EXPORT bool IsWellKnownType(const string& type_name);
 LIBPROTOBUF_EXPORT bool IsValidBoolString(const string& bool_string);
 
 // Returns true if "field" is a protobuf map field based on its type.
-bool IsMap(const google::protobuf::Field& field,
+LIBPROTOBUF_EXPORT bool IsMap(const google::protobuf::Field& field,
            const google::protobuf::Type& type);
 
 // Infinity/NaN-aware conversion to string.

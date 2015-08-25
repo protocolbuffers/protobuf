@@ -39,6 +39,7 @@
 
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
@@ -68,7 +69,7 @@ const char* const kKeywordList[] = {
   "constexpr", "const_cast", "continue", "decltype", "default", "delete", "do",
   "double", "dynamic_cast", "else", "enum", "explicit", "extern", "false",
   "float", "for", "friend", "goto", "if", "inline", "int", "long", "mutable",
-  "namespace", "new", "noexcept", "not", "not_eq", "nullptr", "operator", "or",
+  "namespace", "new", "noexcept", "not", "not_eq", "NULL", "operator", "or",
   "or_eq", "private", "protected", "public", "register", "reinterpret_cast",
   "return", "short", "signed", "sizeof", "static", "static_assert",
   "static_cast", "struct", "switch", "template", "this", "thread_local",
@@ -174,6 +175,14 @@ string SuperClassName(const Descriptor* descriptor) {
       "::google::protobuf::Message" : "::google::protobuf::MessageLite";
 }
 
+string DependentBaseDownCast() {
+  return "reinterpret_cast<T*>(this)->";
+}
+
+string DependentBaseConstDownCast() {
+  return "reinterpret_cast<const T*>(this)->";
+}
+
 string FieldName(const FieldDescriptor* field) {
   string result = field->name();
   LowerString(&result);
@@ -208,6 +217,19 @@ string FieldConstantName(const FieldDescriptor *field) {
 }
 
 bool IsFieldDependent(const FieldDescriptor* field) {
+  if (field->containing_oneof() != NULL &&
+      field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+    return true;
+  }
+  if (field->is_map()) {
+    const Descriptor* map_descriptor = field->message_type();
+    for (int i = 0; i < map_descriptor->field_count(); i++) {
+      if (IsFieldDependent(map_descriptor->field(i))) {
+        return true;
+      }
+    }
+    return false;
+  }
   if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
     return false;
   }
@@ -576,6 +598,94 @@ bool IsAnyMessage(const FileDescriptor* descriptor) {
 bool IsAnyMessage(const Descriptor* descriptor) {
   return descriptor->name() == kAnyMessageName &&
          descriptor->file()->name() == kAnyProtoFile;
+}
+
+enum Utf8CheckMode {
+  STRICT = 0,  // Parsing will fail if non UTF-8 data is in string fields.
+  VERIFY = 1,  // Only log an error but parsing will succeed.
+  NONE = 2,  // No UTF-8 check.
+};
+
+// Which level of UTF-8 enforcemant is placed on this file.
+static Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field) {
+  if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+    return STRICT;
+  } else if (field->file()->options().optimize_for() !=
+             FileOptions::LITE_RUNTIME) {
+    return VERIFY;
+  } else {
+    return NONE;
+  }
+}
+
+static void GenerateUtf8CheckCode(const FieldDescriptor* field,
+                                  bool for_parse,
+                                  const map<string, string>& variables,
+                                  const char* parameters,
+                                  const char* strict_function,
+                                  const char* verify_function,
+                                  io::Printer* printer) {
+  switch (GetUtf8CheckMode(field)) {
+    case STRICT: {
+      if (for_parse) {
+        printer->Print("DO_(");
+      }
+      printer->Print(
+          "::google::protobuf::internal::WireFormatLite::$function$(\n",
+          "function", strict_function);
+      printer->Indent();
+      printer->Print(variables, parameters);
+      if (for_parse) {
+        printer->Print("::google::protobuf::internal::WireFormatLite::PARSE,\n");
+      } else {
+        printer->Print("::google::protobuf::internal::WireFormatLite::SERIALIZE,\n");
+      }
+      printer->Print("\"$full_name$\")", "full_name", field->full_name());
+      if (for_parse) {
+        printer->Print(")");
+      }
+      printer->Print(";\n");
+      printer->Outdent();
+      break;
+    }
+    case VERIFY: {
+      printer->Print(
+          "::google::protobuf::internal::WireFormat::$function$(\n",
+          "function", verify_function);
+      printer->Indent();
+      printer->Print(variables, parameters);
+      if (for_parse) {
+        printer->Print("::google::protobuf::internal::WireFormat::PARSE,\n");
+      } else {
+        printer->Print("::google::protobuf::internal::WireFormat::SERIALIZE,\n");
+      }
+      printer->Print("\"$full_name$\");\n", "full_name", field->full_name());
+      printer->Outdent();
+      break;
+    }
+    case NONE:
+      break;
+  }
+}
+
+void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
+                                    bool for_parse,
+                                    const map<string, string>& variables,
+                                    const char* parameters,
+                                    io::Printer* printer) {
+  GenerateUtf8CheckCode(field, for_parse, variables, parameters,
+                        "VerifyUtf8String", "VerifyUTF8StringNamedField",
+                        printer);
+}
+
+void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
+                                  bool for_parse,
+                                  const map<string, string>& variables,
+                                  const char* parameters,
+                                  io::Printer* printer) {
+  GenerateUtf8CheckCode(field, for_parse, variables, parameters,
+                        "VerifyUtf8Cord", "VerifyUTF8CordNamedField",
+                        printer);
 }
 
 }  // namespace cpp

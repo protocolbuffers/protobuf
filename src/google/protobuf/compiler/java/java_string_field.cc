@@ -36,6 +36,7 @@
 #include <map>
 #include <string>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_doc_comment.h>
@@ -77,6 +78,10 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       "  if (value == null) {\n"
       "    throw new NullPointerException();\n"
       "  }\n";
+  (*variables)["writeString"] =
+      "com.google.protobuf.GeneratedMessage.writeString";
+  (*variables)["computeStringSize"] =
+      "com.google.protobuf.GeneratedMessage.computeStringSize";
 
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
@@ -124,10 +129,6 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       GenerateGetBitFromLocal(builderBitIndex);
   (*variables)["set_has_field_bit_to_local"] =
       GenerateSetBitToLocal(messageBitIndex);
-}
-
-bool CheckUtf8(const FieldDescriptor* descriptor) {
-  return descriptor->file()->options().java_string_check_utf8();
 }
 
 }  // namespace
@@ -433,7 +434,7 @@ void ImmutableStringFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($is_field_present_message$) {\n"
-    "  output.writeBytes($number$, get$capitalized_name$Bytes());\n"
+    "  $writeString$(output, $number$, $name$_);\n"
     "}\n");
 }
 
@@ -441,8 +442,7 @@ void ImmutableStringFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($is_field_present_message$) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
-    "    .computeBytesSize($number$, get$capitalized_name$Bytes());\n"
+    "  size += $computeStringSize$($number$, $name$_);\n"
     "}\n");
 }
 
@@ -689,7 +689,7 @@ void ImmutableStringOneofFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($has_oneof_case_message$) {\n"
-    "  output.writeBytes($number$, get$capitalized_name$Bytes());\n"
+    "  $writeString$(output, $number$, $oneof_name$_);\n"
     "}\n");
 }
 
@@ -697,8 +697,7 @@ void ImmutableStringOneofFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($has_oneof_case_message$) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
-    "    .computeBytesSize($number$, get$capitalized_name$Bytes());\n"
+    "  size += $computeStringSize$($number$, $oneof_name$_);\n"
     "}\n");
 }
 
@@ -1007,12 +1006,12 @@ GenerateSerializationCode(io::Printer* printer) const {
       "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
       "}\n"
       "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  output.write$capitalized_type$NoTag($name$_.get(i));\n"
+      "  writeStringNoTag(output, $name$_.getRaw(i));\n"
       "}\n");
   } else {
     printer->Print(variables_,
       "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  output.writeBytes($number$, $name$_.getByteString(i));\n"
+      "  $writeString$(output, $number$, $name$_.getRaw(i));\n"
       "}\n");
   }
 }
@@ -1026,8 +1025,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 
   printer->Print(variables_,
     "for (int i = 0; i < $name$_.size(); i++) {\n"
-    "  dataSize += com.google.protobuf.CodedOutputStream\n"
-    "    .computeBytesSizeNoTag($name$_.getByteString(i));\n"
+    "  dataSize += computeStringSizeNoTag($name$_.getRaw(i));\n"
     "}\n");
 
   printer->Print(

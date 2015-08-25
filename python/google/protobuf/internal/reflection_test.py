@@ -52,6 +52,7 @@ from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal import more_messages_pb2
+from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import wire_format
 from google.protobuf.internal import test_util
 from google.protobuf.internal import decoder
@@ -1682,8 +1683,8 @@ class ReflectionTest(unittest.TestCase):
     proto.optional_string = 'abc'
 
   def testStringUTF8Serialization(self):
-    proto = unittest_mset_pb2.TestMessageSet()
-    extension_message = unittest_mset_pb2.TestMessageSetExtension2
+    proto = message_set_extensions_pb2.TestMessageSet()
+    extension_message = message_set_extensions_pb2.TestMessageSetExtension2
     extension = extension_message.message_set_extension
 
     test_utf8 = u'Тест'
@@ -1703,15 +1704,14 @@ class ReflectionTest(unittest.TestCase):
     bytes_read = raw.MergeFromString(serialized)
     self.assertEqual(len(serialized), bytes_read)
 
-    message2 = unittest_mset_pb2.TestMessageSetExtension2()
+    message2 = message_set_extensions_pb2.TestMessageSetExtension2()
 
     self.assertEqual(1, len(raw.item))
     # Check that the type_id is the same as the tag ID in the .proto file.
-    self.assertEqual(raw.item[0].type_id, 1547769)
+    self.assertEqual(raw.item[0].type_id, 98418634)
 
     # Check the actual bytes on the wire.
-    self.assertTrue(
-        raw.item[0].message.endswith(test_utf8_bytes))
+    self.assertTrue(raw.item[0].message.endswith(test_utf8_bytes))
     bytes_read = message2.MergeFromString(raw.item[0].message)
     self.assertEqual(len(raw.item[0].message), bytes_read)
 
@@ -2395,9 +2395,9 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual(42, second_proto.optional_nested_message.bb)
 
   def testMessageSetWireFormat(self):
-    proto = unittest_mset_pb2.TestMessageSet()
-    extension_message1 = unittest_mset_pb2.TestMessageSetExtension1
-    extension_message2 = unittest_mset_pb2.TestMessageSetExtension2
+    proto = message_set_extensions_pb2.TestMessageSet()
+    extension_message1 = message_set_extensions_pb2.TestMessageSetExtension1
+    extension_message2 = message_set_extensions_pb2.TestMessageSetExtension2
     extension1 = extension_message1.message_set_extension
     extension2 = extension_message2.message_set_extension
     proto.Extensions[extension1].i = 123
@@ -2415,20 +2415,20 @@ class SerializationTest(unittest.TestCase):
         raw.MergeFromString(serialized))
     self.assertEqual(2, len(raw.item))
 
-    message1 = unittest_mset_pb2.TestMessageSetExtension1()
+    message1 = message_set_extensions_pb2.TestMessageSetExtension1()
     self.assertEqual(
         len(raw.item[0].message),
         message1.MergeFromString(raw.item[0].message))
     self.assertEqual(123, message1.i)
 
-    message2 = unittest_mset_pb2.TestMessageSetExtension2()
+    message2 = message_set_extensions_pb2.TestMessageSetExtension2()
     self.assertEqual(
         len(raw.item[1].message),
         message2.MergeFromString(raw.item[1].message))
     self.assertEqual('foo', message2.str)
 
     # Deserialize using the MessageSet wire format.
-    proto2 = unittest_mset_pb2.TestMessageSet()
+    proto2 = message_set_extensions_pb2.TestMessageSet()
     self.assertEqual(
         len(serialized),
         proto2.MergeFromString(serialized))
@@ -2446,37 +2446,37 @@ class SerializationTest(unittest.TestCase):
 
     # Add an item.
     item = raw.item.add()
-    item.type_id = 1545008
-    extension_message1 = unittest_mset_pb2.TestMessageSetExtension1
-    message1 = unittest_mset_pb2.TestMessageSetExtension1()
+    item.type_id = 98418603
+    extension_message1 = message_set_extensions_pb2.TestMessageSetExtension1
+    message1 = message_set_extensions_pb2.TestMessageSetExtension1()
     message1.i = 12345
     item.message = message1.SerializeToString()
 
     # Add a second, unknown extension.
     item = raw.item.add()
-    item.type_id = 1545009
-    extension_message1 = unittest_mset_pb2.TestMessageSetExtension1
-    message1 = unittest_mset_pb2.TestMessageSetExtension1()
+    item.type_id = 98418604
+    extension_message1 = message_set_extensions_pb2.TestMessageSetExtension1
+    message1 = message_set_extensions_pb2.TestMessageSetExtension1()
     message1.i = 12346
     item.message = message1.SerializeToString()
 
     # Add another unknown extension.
     item = raw.item.add()
-    item.type_id = 1545010
-    message1 = unittest_mset_pb2.TestMessageSetExtension2()
+    item.type_id = 98418605
+    message1 = message_set_extensions_pb2.TestMessageSetExtension2()
     message1.str = 'foo'
     item.message = message1.SerializeToString()
 
     serialized = raw.SerializeToString()
 
     # Parse message using the message set wire format.
-    proto = unittest_mset_pb2.TestMessageSet()
+    proto = message_set_extensions_pb2.TestMessageSet()
     self.assertEqual(
         len(serialized),
         proto.MergeFromString(serialized))
 
     # Check that the message parsed well.
-    extension_message1 = unittest_mset_pb2.TestMessageSetExtension1
+    extension_message1 = message_set_extensions_pb2.TestMessageSetExtension1
     extension1 = extension_message1.message_set_extension
     self.assertEquals(12345, proto.Extensions[extension1].i)
 
@@ -2805,7 +2805,7 @@ class SerializationTest(unittest.TestCase):
 class OptionsTest(unittest.TestCase):
 
   def testMessageOptions(self):
-    proto = unittest_mset_pb2.TestMessageSet()
+    proto = message_set_extensions_pb2.TestMessageSet()
     self.assertEqual(True,
                      proto.DESCRIPTOR.GetOptions().message_set_wire_format)
     proto = unittest_pb2.TestAllTypes()
@@ -2824,7 +2824,7 @@ class OptionsTest(unittest.TestCase):
     proto.packed_double.append(3.0)
     for field_descriptor, _ in proto.ListFields():
       self.assertEqual(True, field_descriptor.GetOptions().packed)
-      self.assertEqual(reflection._FieldDescriptor.LABEL_REPEATED,
+      self.assertEqual(descriptor.FieldDescriptor.LABEL_REPEATED,
                        field_descriptor.label)
 
 

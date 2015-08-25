@@ -50,7 +50,7 @@ AnyMetadata::AnyMetadata(UrlType* type_url, ValueType* value)
 
 void AnyMetadata::PackFrom(const Message& message) {
   type_url_->SetNoArena(&::google::protobuf::internal::GetEmptyString(),
-      GetTypeUrl(message.GetDescriptor()));
+                        GetTypeUrl(message.GetDescriptor()));
   message.SerializeToString(value_->MutableNoArena(
       &::google::protobuf::internal::GetEmptyStringAlreadyInited()));
 }
@@ -76,7 +76,7 @@ bool ParseAnyTypeUrl(const string& type_url, string* full_type_name) {
                            type_url.size() - prefix_len);
     return true;
   }
-  return true;
+  return false;
 }
 
 

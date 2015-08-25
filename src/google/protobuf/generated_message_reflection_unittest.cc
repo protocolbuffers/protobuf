@@ -47,6 +47,7 @@
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -544,6 +545,57 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedExtensionMessageTest) {
       &to_message);
   reflection_tester.ExpectMessagesReleasedViaReflection(
       &to_message, TestUtil::ReflectionTester::IS_NULL);
+}
+
+TEST(GeneratedMessageReflectionTest, AddRepeatedMessage) {
+  unittest::TestAllTypes message;
+
+  const Reflection* reflection = message.GetReflection();
+  const Reflection* nested_reflection =
+      unittest::TestAllTypes::NestedMessage::default_instance().GetReflection();
+
+  const FieldDescriptor* nested_bb =
+      unittest::TestAllTypes::NestedMessage::descriptor()->FindFieldByName(
+          "bb");
+
+  Message* nested = reflection->AddMessage(
+      &message, F("repeated_nested_message"));
+  nested_reflection->SetInt32(nested, nested_bb, 11);
+
+  EXPECT_EQ(11, message.repeated_nested_message(0).bb());
+}
+
+TEST(GeneratedMessageReflectionTest, MutableRepeatedMessage) {
+  unittest::TestAllTypes message;
+
+  const Reflection* reflection = message.GetReflection();
+  const Reflection* nested_reflection =
+      unittest::TestAllTypes::NestedMessage::default_instance().GetReflection();
+
+  const FieldDescriptor* nested_bb =
+      unittest::TestAllTypes::NestedMessage::descriptor()->FindFieldByName(
+          "bb");
+
+  message.add_repeated_nested_message()->set_bb(12);
+
+  Message* nested = reflection->MutableRepeatedMessage(
+      &message, F("repeated_nested_message"), 0);
+  EXPECT_EQ(12, nested_reflection->GetInt32(*nested, nested_bb));
+  nested_reflection->SetInt32(nested, nested_bb, 13);
+  EXPECT_EQ(13, message.repeated_nested_message(0).bb());
+}
+
+TEST(GeneratedMessageReflectionTest, AddAllocatedMessage) {
+  unittest::TestAllTypes message;
+
+  const Reflection* reflection = message.GetReflection();
+
+  unittest::TestAllTypes::NestedMessage* nested =
+      new unittest::TestAllTypes::NestedMessage();
+  nested->set_bb(11);
+  reflection->AddAllocatedMessage(&message, F("repeated_nested_message"), nested);
+  EXPECT_EQ(1, message.repeated_nested_message_size());
+  EXPECT_EQ(11, message.repeated_nested_message(0).bb());
 }
 
 TEST(GeneratedMessageReflectionTest, ListFieldsOneOf) {

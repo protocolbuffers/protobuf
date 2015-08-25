@@ -30,9 +30,13 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Utf8.UnpairedSurrogateException;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Encodes and writes protocol message fields.
@@ -49,6 +53,10 @@ import java.nio.ByteBuffer;
  * @author kneton@google.com Kenton Varda
  */
 public final class CodedOutputStream {
+  
+  private static final Logger logger = Logger.getLogger(CodedOutputStream.class.getName());
+
+  // TODO(dweis): Consider migrating to a ByteBuffer.
   private final byte[] buffer;
   private final int limit;
   private int position;
@@ -415,13 +423,85 @@ public final class CodedOutputStream {
   }
 
   /** Write a {@code string} field to the stream. */
+  // TODO(dweis): Document behavior on ill-formed UTF-16 input.
   public void writeStringNoTag(final String value) throws IOException {
+    try {
+      efficientWriteStringNoTag(value);
+    } catch (UnpairedSurrogateException e) {
+      logger.log(Level.WARNING, 
+          "Converting ill-formed UTF-16. Your Protocol Buffer will not round trip correctly!", e);
+      inefficientWriteStringNoTag(value);
+    }
+  }
+
+  /** Write a {@code string} field to the stream. */
+  private void inefficientWriteStringNoTag(final String value) throws IOException {
     // Unfortunately there does not appear to be any way to tell Java to encode
     // UTF-8 directly into our buffer, so we have to let it create its own byte
     // array and then copy.
+    // TODO(dweis): Consider using nio Charset methods instead.
     final byte[] bytes = value.getBytes(Internal.UTF_8);
     writeRawVarint32(bytes.length);
     writeRawBytes(bytes);
+  }
+
+  /**
+   * Write a {@code string} field to the stream efficiently. If the {@code string} is malformed,
+   * this method rolls back its changes and throws an {@link UnpairedSurrogateException} with the
+   * intent that the caller will catch and retry with {@link #inefficientWriteStringNoTag(String)}.
+   * 
+   * @param value the string to write to the stream
+   * 
+   * @throws UnpairedSurrogateException when {@code value} is ill-formed UTF-16. 
+   */
+  private void efficientWriteStringNoTag(final String value) throws IOException {
+    // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
+    // and at most 3 times of it. We take advantage of this in both branches below.
+    final int maxLength = value.length() * Utf8.MAX_BYTES_PER_CHAR;
+    final int maxLengthVarIntSize = computeRawVarint32Size(maxLength);
+
+    // If we are streaming and the potential length is too big to fit in our buffer, we take the
+    // slower path. Otherwise, we're good to try the fast path.
+    if (output != null && maxLengthVarIntSize + maxLength > limit - position) {
+      // Allocate a byte[] that we know can fit the string and encode into it. String.getBytes()
+      // does the same internally and then does *another copy* to return a byte[] of exactly the
+      // right size. We can skip that copy and just writeRawBytes up to the actualLength of the
+      // UTF-8 encoded bytes.
+      final byte[] encodedBytes = new byte[maxLength];
+      int actualLength = Utf8.encode(value, encodedBytes, 0, maxLength);
+      writeRawVarint32(actualLength);
+      writeRawBytes(encodedBytes, 0, actualLength);
+    } else {
+      // Optimize for the case where we know this length results in a constant varint length as this
+      // saves a pass for measuring the length of the string.
+      final int minLengthVarIntSize = computeRawVarint32Size(value.length());
+      int oldPosition = position;
+      final int length;
+      try {
+        if (minLengthVarIntSize == maxLengthVarIntSize) {
+          position = oldPosition + minLengthVarIntSize;
+          int newPosition = Utf8.encode(value, buffer, position, limit - position);
+          // Since this class is stateful and tracks the position, we rewind and store the state,
+          // prepend the length, then reset it back to the end of the string.
+          position = oldPosition;
+          length = newPosition - oldPosition - minLengthVarIntSize;
+          writeRawVarint32(length);
+          position = newPosition;
+        } else {
+          length = Utf8.encodedLength(value);
+          writeRawVarint32(length);
+          position = Utf8.encode(value, buffer, position, limit - position);
+        }
+      } catch (UnpairedSurrogateException e) {
+        // Be extra careful and restore the original position for retrying the write with the less
+        // efficient path.
+        position = oldPosition;
+        throw e;
+      } catch (ArrayIndexOutOfBoundsException e) {
+        throw new OutOfSpaceException(e);
+      }
+      totalBytesWritten += length;
+    }
   }
 
   /** Write a {@code group} field to the stream. */
@@ -826,9 +906,16 @@ public final class CodedOutputStream {
    * {@code string} field.
    */
   public static int computeStringSizeNoTag(final String value) {
-    final byte[] bytes = value.getBytes(Internal.UTF_8);
-    return computeRawVarint32Size(bytes.length) +
-           bytes.length;
+    int length;
+    try {
+      length = Utf8.encodedLength(value);
+    } catch (UnpairedSurrogateException e) {
+      // TODO(dweis): Consider using nio Charset methods instead.
+      final byte[] bytes = value.getBytes(Internal.UTF_8);
+      length = bytes.length;
+    }
+
+    return computeRawVarint32Size(length) + length;
   }
 
   /**
@@ -1007,9 +1094,15 @@ public final class CodedOutputStream {
   public static class OutOfSpaceException extends IOException {
     private static final long serialVersionUID = -6947486886997889499L;
 
+    private static final String MESSAGE =
+        "CodedOutputStream was writing to a flat byte array and ran out of space.";
+
     OutOfSpaceException() {
-      super("CodedOutputStream was writing to a flat byte array and ran " +
-            "out of space.");
+      super(MESSAGE);
+    }
+
+    OutOfSpaceException(Throwable cause) {
+      super(MESSAGE, cause);
     }
   }
 

@@ -56,7 +56,18 @@ public interface LazyStringList extends ProtocolStringList {
    *         ({@code index < 0 || index >= size()})
    */
   ByteString getByteString(int index);
-  
+
+  /**
+   * Returns the element at the specified position in this list as an Object
+   * that will either be a String or a ByteString.
+   *
+   * @param index index of the element to return
+   * @return the element at the specified position in this list
+   * @throws IndexOutOfBoundsException if the index is out of range
+   *         ({@code index < 0 || index >= size()})
+   */
+  Object getRaw(int index);
+
   /**
    * Returns the element at the specified position in this list as byte[].
    *

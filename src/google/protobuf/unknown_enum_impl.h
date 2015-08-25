@@ -34,7 +34,6 @@
 #include <stdlib.h>
 
 #include <google/protobuf/stubs/common.h>
-#include "net/proto/tagmapper.h"
 #include <google/protobuf/bridge/compatibility_mode_support.h>
 
 namespace google {
@@ -59,10 +58,10 @@ namespace util {
 // In proto2, invalid enum values will be treated as unknown fields. This
 // function checks that case.
 bool HasUnknownEnum(const Message& message, int32 field_number,
-                    int32* unknown_value = nullptr);
+                    int32* unknown_value = NULL);
 // Same as above, but returns all unknown enums.
 bool GetRepeatedEnumUnknowns(const Message& message, int32 field_number,
-                             vector<int32>* unknown_values = nullptr);
+                             vector<int32>* unknown_values = NULL);
 // In proto1, invalue enum values are stored in the same way as valid enum
 // values.
 // TODO(karner): Delete this once the migration to proto2 is complete.
@@ -75,7 +74,7 @@ bool GetRepeatedEnumUnknownsProto1(const Message& message, int32 field_number,
 // or proto2.
 template <typename T>
 bool HasUnknownEnum_Template(const T& message, int32 field_number,
-                             int32* unknown_value = nullptr) {
+                             int32* unknown_value = NULL) {
   if (internal::is_base_of<bridge::internal::Proto1CompatibleMessage, T>::value ||
       !internal::is_base_of<ProtocolMessage, T>::value) {
     return HasUnknownEnum(message, field_number, unknown_value);
@@ -88,7 +87,7 @@ bool HasUnknownEnum_Template(const T& message, int32 field_number,
 template <typename T>
 bool GetRepeatedEnumUnknowns_Template(
     const T& message, int32 field_number,
-    vector<int32>* unknown_values = nullptr) {
+    vector<int32>* unknown_values = NULL) {
   if (internal::is_base_of<bridge::internal::Proto1CompatibleMessage, T>::value ||
       !internal::is_base_of<ProtocolMessage, T>::value) {
     return GetRepeatedEnumUnknowns(message, field_number, unknown_values);

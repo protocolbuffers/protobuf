@@ -44,6 +44,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
@@ -937,6 +938,42 @@ void Parser::GenerateMapEntry(const MapField& map_field,
     value_field->set_type(map_field.value_type);
   } else {
     value_field->set_type_name(map_field.value_type_name);
+  }
+  // Propagate the "enforce_utf8" option to key and value fields if they
+  // are strings. This helps simplify the implementation of code generators
+  // and also reflection-based parsing code.
+  //
+  // The following definition:
+  //   message Foo {
+  //     map<string, string> value = 1 [enforce_utf8 = false];
+  //   }
+  // will be interpreted as:
+  //   message Foo {
+  //     message ValueEntry {
+  //       option map_entry = true;
+  //       string key = 1 [enforce_utf8 = false];
+  //       string value = 2 [enforce_utf8 = false];
+  //     }
+  //     repeated ValueEntry value = 1 [enforce_utf8 = false];
+  //  }
+  //
+  // TODO(xiaofeng): Remove this when the "enforce_utf8" option is removed
+  // from protocol compiler.
+  for (int i = 0; i < field->options().uninterpreted_option_size(); ++i) {
+    const UninterpretedOption& option =
+        field->options().uninterpreted_option(i);
+    if (option.name_size() == 1 &&
+        option.name(0).name_part() == "enforce_utf8" &&
+        !option.name(0).is_extension()) {
+      if (key_field->type() == FieldDescriptorProto::TYPE_STRING) {
+        key_field->mutable_options()->add_uninterpreted_option()
+            ->CopyFrom(option);
+      }
+      if (value_field->type() == FieldDescriptorProto::TYPE_STRING) {
+        value_field->mutable_options()->add_uninterpreted_option()
+            ->CopyFrom(option);
+      }
+    }
   }
 }
 

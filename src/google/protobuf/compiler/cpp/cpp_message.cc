@@ -39,7 +39,6 @@
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
-#include <set>
 #include <utility>
 #include <vector>
 #include <google/protobuf/compiler/cpp/cpp_message.h>
@@ -415,31 +414,34 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
       use_dependent_base_ = true;
     }
   }
+  if (options.proto_h && descriptor->oneof_decl_count() > 0) {
+    // Always make oneofs dependent.
+    use_dependent_base_ = true;
+  }
 }
 
 MessageGenerator::~MessageGenerator() {}
 
 void MessageGenerator::
-GenerateMessageForwardDeclaration(io::Printer* printer) {
-  printer->Print("class $classname$;\n",
-                 "classname", classname_);
+FillMessageForwardDeclarations(set<string>* class_names) {
+  class_names->insert(classname_);
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     // map entry message doesn't need forward declaration. Since map entry
     // message cannot be a top level class, we just need to avoid calling
     // GenerateForwardDeclaration here.
     if (IsMapEntryMessage(descriptor_->nested_type(i))) continue;
-    nested_generators_[i]->GenerateMessageForwardDeclaration(printer);
+    nested_generators_[i]->FillMessageForwardDeclarations(class_names);
   }
 }
 
 void MessageGenerator::
-GenerateEnumForwardDeclaration(io::Printer* printer) {
+FillEnumForwardDeclarations(set<string>* enum_names) {
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    nested_generators_[i]->GenerateEnumForwardDeclaration(printer);
+    nested_generators_[i]->FillEnumForwardDeclarations(enum_names);
   }
   for (int i = 0; i < descriptor_->enum_type_count(); i++) {
-    enum_generators_[i]->GenerateForwardDeclaration(printer);
+    enum_generators_[i]->FillForwardDeclaration(enum_names);
   }
 }
 
@@ -484,13 +486,6 @@ GenerateDependentFieldAccessorDeclarations(io::Printer* printer) {
     field_generators_.get(field).GenerateDependentAccessorDeclarations(printer);
     printer->Print("\n");
   }
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
-    PrintFieldComment(printer, oneof);
-    printer->Print(
-      "void clear_$oneof_name$();\n",
-      "oneof_name", oneof->name());
-  }
 }
 
 void MessageGenerator::
@@ -505,7 +500,9 @@ GenerateFieldAccessorDeclarations(io::Printer* printer) {
     vars["constant_name"] = FieldConstantName(field);
 
     bool dependent_field = use_dependent_base_ && IsFieldDependent(field);
-    if (dependent_field) {
+    if (dependent_field &&
+        field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+        !field->is_map()) {
       // If this field is dependent, the dependent base class determines
       // the message type from the derived class (which is a template
       // parameter). This typedef is for that:
@@ -594,8 +591,8 @@ GenerateDependentFieldAccessorDefinitions(io::Printer* printer) {
       vars["tmpl"] = "template<class T>\n";
       vars["dependent_classname"] =
           DependentBaseClassTemplateName(descriptor_) + "<T>";
-      vars["this_message"] = "reinterpret_cast<T*>(this)->";
-      vars["this_const_message"] = "reinterpret_cast<const T*>(this)->";
+      vars["this_message"] = DependentBaseDownCast();
+      vars["this_const_message"] = DependentBaseConstDownCast();
       GenerateFieldClear(field, vars, printer);
     }
 
@@ -721,13 +718,15 @@ GenerateFieldClear(const FieldDescriptor* field,
     printer->Print(vars,
       "if ($this_message$has_$name$()) {\n");
     printer->Indent();
-    field_generators_.get(field).GenerateClearingCode(printer);
+    field_generators_.get(field)
+        .GenerateClearingCode(printer);
     printer->Print(vars,
       "$this_message$clear_has_$oneof_name$();\n");
     printer->Outdent();
     printer->Print("}\n");
   } else {
-    field_generators_.get(field).GenerateClearingCode(printer);
+    field_generators_.get(field)
+        .GenerateClearingCode(printer);
     if (HasFieldPresence(descriptor_->file())) {
       if (!field->is_repeated()) {
         printer->Print(vars,
@@ -752,6 +751,18 @@ GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline) {
     map<string, string> vars;
     SetCommonFieldVariables(field, &vars, options_);
     vars["inline"] = is_inline ? "inline " : "";
+    if (use_dependent_base_ && IsFieldDependent(field)) {
+      vars["tmpl"] = "template<class T>\n";
+      vars["dependent_classname"] =
+          DependentBaseClassTemplateName(descriptor_) + "<T>";
+      vars["this_message"] = "reinterpret_cast<T*>(this)->";
+      vars["this_const_message"] = "reinterpret_cast<const T*>(this)->";
+    } else {
+      vars["tmpl"] = "";
+      vars["dependent_classname"] = vars["classname"];
+      vars["this_message"] = "";
+      vars["this_const_message"] = "";
+    }
 
     // Generate has_$name$() or $name$_size().
     if (field->is_repeated()) {
@@ -775,10 +786,6 @@ GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline) {
     }
 
     if (!use_dependent_base_ || !IsFieldDependent(field)) {
-      vars["tmpl"] = "";
-      vars["dependent_classname"] = vars["classname"];
-      vars["this_message"] = "";
-      vars["this_const_message"] = "";
       GenerateFieldClear(field, vars, printer);
     }
 
@@ -915,15 +922,32 @@ GenerateClassDefinition(io::Printer* printer) {
         "}\n"
         "\n");
     } else {
-      printer->Print(
-        "inline const ::std::string& unknown_fields() const {\n"
-        "  return _unknown_fields_;\n"
-        "}\n"
-        "\n"
-        "inline ::std::string* mutable_unknown_fields() {\n"
-        "  return &_unknown_fields_;\n"
-        "}\n"
-        "\n");
+      if (SupportsArenas(descriptor_)) {
+        printer->Print(
+          "inline const ::std::string& unknown_fields() const {\n"
+          "  return _unknown_fields_.Get(\n"
+          "      &::google::protobuf::internal::GetEmptyStringAlreadyInited());\n"
+          "}\n"
+          "\n"
+          "inline ::std::string* mutable_unknown_fields() {\n"
+          "  return _unknown_fields_.Mutable(\n"
+          "      &::google::protobuf::internal::GetEmptyStringAlreadyInited(),\n"
+          "      GetArenaNoVirtual());\n"
+          "}\n"
+          "\n");
+      } else {
+        printer->Print(
+          "inline const ::std::string& unknown_fields() const {\n"
+          "  return _unknown_fields_.GetNoArena(\n"
+          "      &::google::protobuf::internal::GetEmptyStringAlreadyInited());\n"
+          "}\n"
+          "\n"
+          "inline ::std::string* mutable_unknown_fields() {\n"
+          "  return _unknown_fields_.MutableNoArena(\n"
+          "      &::google::protobuf::internal::GetEmptyStringAlreadyInited());\n"
+          "}\n"
+          "\n");
+      }
     }
   }
 
@@ -1068,6 +1092,10 @@ GenerateClassDefinition(io::Printer* printer) {
     }
   }
   uses_string_ = false;
+  if (PreserveUnknownFields(descriptor_) &&
+      !UseUnknownFieldSet(descriptor_->file())) {
+    uses_string_ = true;
+  }
   for (int i = 0; i < descriptors.size(); i++) {
     const FieldDescriptor* field = descriptors[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
@@ -1201,18 +1229,11 @@ GenerateClassDefinition(io::Printer* printer) {
 
   // Generate oneof function declarations
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    if (use_dependent_base_) {
-      printer->Print(
-          "inline bool has_$oneof_name$() const;\n"
-          "inline void clear_has_$oneof_name$();\n\n",
-          "oneof_name", descriptor_->oneof_decl(i)->name());
-    } else {
-      printer->Print(
-          "inline bool has_$oneof_name$() const;\n"
-          "void clear_$oneof_name$();\n"
-          "inline void clear_has_$oneof_name$();\n\n",
-          "oneof_name", descriptor_->oneof_decl(i)->name());
-    }
+    printer->Print(
+        "inline bool has_$oneof_name$() const;\n"
+        "void clear_$oneof_name$();\n"
+        "inline void clear_has_$oneof_name$();\n\n",
+        "oneof_name", descriptor_->oneof_decl(i)->name());
   }
 
   if (HasGeneratedMethods(descriptor_->file()) &&
@@ -1262,7 +1283,7 @@ GenerateClassDefinition(io::Printer* printer) {
       "::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;\n");
   } else {
     printer->Print(
-      "::std::string _unknown_fields_;\n"
+      "::google::protobuf::internal::ArenaStringPtr _unknown_fields_;\n"
       "::google::protobuf::Arena* _arena_ptr_;\n"
       "\n");
   }
@@ -1919,6 +1940,13 @@ GenerateSharedConstructorCode(io::Printer* printer) {
       uses_string_ ? "::google::protobuf::internal::GetEmptyString();\n" : "",
       "_cached_size_ = 0;\n").c_str());
 
+  if (PreserveUnknownFields(descriptor_) &&
+      !UseUnknownFieldSet(descriptor_->file())) {
+    printer->Print(
+        "_unknown_fields_.UnsafeSetDefault(\n"
+        "    &::google::protobuf::internal::GetEmptyStringAlreadyInited());\n");
+  }
+
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (!descriptor_->field(i)->containing_oneof()) {
       field_generators_.get(descriptor_->field(i))
@@ -1955,6 +1983,22 @@ GenerateSharedDestructorCode(io::Printer* printer) {
       "}\n"
       "\n");
   }
+
+  // Write the desctructor for _unknown_fields_ in lite runtime.
+  if (PreserveUnknownFields(descriptor_) &&
+      !UseUnknownFieldSet(descriptor_->file())) {
+    if (SupportsArenas(descriptor_)) {
+      printer->Print(
+          "_unknown_fields_.Destroy(\n"
+          "    &::google::protobuf::internal::GetEmptyStringAlreadyInited(),\n"
+          "    GetArenaNoVirtual());\n");
+    } else {
+      printer->Print(
+          "_unknown_fields_.DestroyNoArena(\n"
+          "    &::google::protobuf::internal::GetEmptyStringAlreadyInited());\n");
+    }
+  }
+
   // Write the destructors for each field except oneof members.
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (!descriptor_->field(i)->containing_oneof()) {
@@ -2463,8 +2507,16 @@ GenerateClear(io::Printer* printer) {
         "  mutable_unknown_fields()->Clear();\n"
         "}\n");
     } else {
-      printer->Print(
-        "mutable_unknown_fields()->clear();\n");
+      if (SupportsArenas(descriptor_)) {
+        printer->Print(
+          "_unknown_fields_.ClearToEmpty(\n"
+          "    &::google::protobuf::internal::GetEmptyStringAlreadyInited(),\n"
+          "    GetArenaNoVirtual());\n");
+      } else {
+        printer->Print(
+          "_unknown_fields_.ClearToEmptyNoArena(\n"
+          "    &::google::protobuf::internal::GetEmptyStringAlreadyInited());\n");
+      }
     }
   }
 
@@ -2481,33 +2533,22 @@ GenerateOneofClear(io::Printer* printer) {
     oneof_vars["oneofname"] = descriptor_->oneof_decl(i)->name();
     string message_class;
 
-    if (use_dependent_base_) {
-      oneof_vars["tmpl"] = "template<class T>\n";
-      oneof_vars["inline"] = "inline ";
-      oneof_vars["dependent_classname"] =
-          DependentBaseClassTemplateName(descriptor_) + "<T>";
-      oneof_vars["this_message"] = "reinterpret_cast<T*>(this)->";
-      message_class = "T::";
-    } else {
-      oneof_vars["tmpl"] = "";
-      oneof_vars["inline"] = "";
-      oneof_vars["dependent_classname"] = classname_;
-      oneof_vars["this_message"] = "";
-    }
-
     printer->Print(oneof_vars,
-        "$tmpl$"
-        "$inline$"
-        "void $dependent_classname$::clear_$oneofname$() {\n");
+        "void $classname$::clear_$oneofname$() {\n");
     printer->Indent();
+    // In .proto.h mode, fields with a dependent type will generate
+    // clearing code that down casts from the dependent base class.
+    // However, clear_oneof() methods are always in the .cc file, and thus
+    // must remain in the derived base. So, to make the clearing code work,
+    // we add a typedef so that the down cast works (it will be a no-op).
     printer->Print(oneof_vars,
-        "switch($this_message$$oneofname$_case()) {\n");
+        "typedef $classname$ T;\n"
+        "switch($oneofname$_case()) {\n");
     printer->Indent();
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
       printer->Print(
-          "case $message_class$k$field_name$: {\n",
-          "message_class", message_class,
+          "case k$field_name$: {\n",
           "field_name", UnderscoresToCamelCase(field->name(), true));
       printer->Indent();
       // We clear only allocated objects in oneofs
@@ -2524,20 +2565,16 @@ GenerateOneofClear(io::Printer* printer) {
           "}\n");
     }
     printer->Print(
-        "case $message_class$$cap_oneof_name$_NOT_SET: {\n"
+        "case $cap_oneof_name$_NOT_SET: {\n"
         "  break;\n"
         "}\n",
-        "message_class", message_class,
         "cap_oneof_name",
         ToUpper(descriptor_->oneof_decl(i)->name()));
     printer->Outdent();
     printer->Print(
         "}\n"
-        "$this_message$_oneof_case_[$oneof_index$] = "
-        "$message_class$$cap_oneof_name$_NOT_SET;\n",
-        "this_message", oneof_vars["this_message"],
+        "_oneof_case_[$oneof_index$] = $cap_oneof_name$_NOT_SET;\n",
         "oneof_index", SimpleItoa(i),
-        "message_class", message_class,
         "cap_oneof_name",
         ToUpper(descriptor_->oneof_decl(i)->name()));
     printer->Outdent();
@@ -2612,7 +2649,7 @@ GenerateSwap(io::Printer* printer) {
         printer->Print(
           "_internal_metadata_.Swap(&other->_internal_metadata_);\n");
       } else {
-        printer->Print("_unknown_fields_.swap(other->_unknown_fields_);\n");
+        printer->Print("_unknown_fields_.Swap(&other->_unknown_fields_);\n");
       }
     } else {
       // Still swap internal_metadata as it may contain more than just

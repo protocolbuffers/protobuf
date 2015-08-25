@@ -57,6 +57,11 @@ public class UnmodifiableLazyStringList extends AbstractList<String>
   public String get(int index) {
     return list.get(index);
   }
+  
+  @Override
+  public Object getRaw(int index) {
+    return list.getRaw(index);
+  }
 
   @Override
   public int size() {

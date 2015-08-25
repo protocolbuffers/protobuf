@@ -40,6 +40,7 @@ import junit.framework.TestCase;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -325,10 +326,41 @@ public class CodedOutputStreamTest extends TestCase {
     for (int i = 0; i < 1024; ++i) {
       codedStream.writeRawBytes(value, 0, value.length);
     }
+    String string =
+        "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz";
+    // Ensure we take the slower fast path.
+    assertTrue(CodedOutputStream.computeRawVarint32Size(string.length())
+        != CodedOutputStream.computeRawVarint32Size(string.length() * Utf8.MAX_BYTES_PER_CHAR));
+    
+    codedStream.writeStringNoTag(string);
+    int stringSize = CodedOutputStream.computeStringSizeNoTag(string);
+    
     // Make sure we have written more bytes than the buffer could hold. This is
     // to make the test complete.
     assertTrue(codedStream.getTotalBytesWritten() > BUFFER_SIZE);
-    assertEquals(value.length * 1024, codedStream.getTotalBytesWritten());
+    
+    // Verify that the total bytes written is correct
+    assertEquals((value.length * 1024) + stringSize, codedStream.getTotalBytesWritten());
+  }
+  
+  // TODO(dweis): Write a comprehensive test suite for CodedOutputStream that covers more than just
+  //    this case.
+  public void testWriteStringNoTag_fastpath() throws Exception {
+    int bufferSize = 153;
+    String threeBytesPer = "\u0981";
+    String string = threeBytesPer;
+    for (int i = 0; i < 50; i++) {
+      string += threeBytesPer;
+    }
+    // These checks ensure we will tickle the slower fast path.
+    assertEquals(1, CodedOutputStream.computeRawVarint32Size(string.length()));
+    assertEquals(
+        2, CodedOutputStream.computeRawVarint32Size(string.length() * Utf8.MAX_BYTES_PER_CHAR));
+    assertEquals(bufferSize, string.length() * Utf8.MAX_BYTES_PER_CHAR);
+    
+    CodedOutputStream output =
+        CodedOutputStream.newInstance(ByteBuffer.allocate(bufferSize), bufferSize);
+    output.writeStringNoTag(string);
   }
 
   public void testWriteToByteBuffer() throws Exception {
@@ -397,5 +429,81 @@ public class CodedOutputStreamTest extends TestCase {
     codedStream.writeByteArrayNoTag(fullArray, 2, 2);
     assertEqualBytes(bytes(0x02, 0x33, 0x44, 0x00), destination);
     assertEquals(3, codedStream.getTotalBytesWritten());
+  }
+  
+  public void testSerializeInvalidUtf8() throws Exception {
+    String[] invalidStrings = new String[] {
+        newString(Character.MIN_HIGH_SURROGATE),
+        "foobar" + newString(Character.MIN_HIGH_SURROGATE),
+        newString(Character.MIN_LOW_SURROGATE),
+        "foobar" + newString(Character.MIN_LOW_SURROGATE),
+        newString(Character.MIN_HIGH_SURROGATE, Character.MIN_HIGH_SURROGATE)
+    };
+    
+    CodedOutputStream outputWithStream = CodedOutputStream.newInstance(new ByteArrayOutputStream());
+    CodedOutputStream outputWithArray = CodedOutputStream.newInstance(new byte[10000]);
+    for (String s : invalidStrings) {
+      // TODO(dweis): These should all fail; instead they are corrupting data.
+      CodedOutputStream.computeStringSizeNoTag(s);
+      outputWithStream.writeStringNoTag(s);
+      outputWithArray.writeStringNoTag(s);
+    }
+  }
+  
+  private static String newString(char... chars) {
+    return new String(chars);
+  }
+
+  /** Regression test for https://github.com/google/protobuf/issues/292 */
+  public void testCorrectExceptionThrowWhenEncodingStringsWithoutEnoughSpace() throws Exception {
+    String testCase = "Foooooooo";
+    assertEquals(CodedOutputStream.computeRawVarint32Size(testCase.length()),
+        CodedOutputStream.computeRawVarint32Size(testCase.length() * 3));
+    assertEquals(11, CodedOutputStream.computeStringSize(1, testCase));
+    // Tag is one byte, varint describing string length is 1 byte, string length is 9 bytes.
+    // An array of size 1 will cause a failure when trying to write the varint.
+    for (int i = 0; i < 11; i++) {
+      CodedOutputStream output = CodedOutputStream.newInstance(new byte[i]);
+      try {
+        output.writeString(1, testCase);
+        fail("Should have thrown an out of space exception");
+      } catch (CodedOutputStream.OutOfSpaceException expected) {}
+    }
+  }
+  
+  public void testDifferentStringLengths() throws Exception {
+    // Test string serialization roundtrip using strings of the following lengths,
+    // with ASCII and Unicode characters requiring different UTF-8 byte counts per
+    // char, hence causing the length delimiter varint to sometimes require more
+    // bytes for the Unicode strings than the ASCII string of the same length.
+    int[] lengths = new int[] {
+            0,
+            1,
+            (1 << 4) - 1,  // 1 byte for ASCII and Unicode
+            (1 << 7) - 1,  // 1 byte for ASCII, 2 bytes for Unicode
+            (1 << 11) - 1, // 2 bytes for ASCII and Unicode
+            (1 << 14) - 1, // 2 bytes for ASCII, 3 bytes for Unicode
+            (1 << 17) - 1, // 3 bytes for ASCII and Unicode
+    };
+    for (int i : lengths) {
+      testEncodingOfString('q', i);      // 1 byte per char
+      testEncodingOfString('\u07FF', i); // 2 bytes per char
+      testEncodingOfString('\u0981', i); // 3 bytes per char
+    }
+  }
+
+  private void testEncodingOfString(char c, int length) throws Exception {
+    String fullString = fullString(c, length);
+    TestAllTypes testAllTypes = TestAllTypes.newBuilder()
+        .setOptionalString(fullString)
+        .build();
+    assertEquals(
+        fullString, TestAllTypes.parseFrom(testAllTypes.toByteArray()).getOptionalString());
+  }
+
+  private String fullString(char c, int length) {
+    char[] result = new char[length];
+    Arrays.fill(result, c);
+    return new String(result);
   }
 }

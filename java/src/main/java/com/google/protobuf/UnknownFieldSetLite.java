@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * {@code UnknownFieldSetLite} is used to keep track of fields which were seen
@@ -45,8 +46,11 @@ import java.io.IOException;
  */
 public final class UnknownFieldSetLite {
 
+  private static final int[] EMPTY_INT_ARRAY = new int[0];
+  private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+
   private static final UnknownFieldSetLite DEFAULT_INSTANCE =
-      new UnknownFieldSetLite(ByteString.EMPTY);
+      new UnknownFieldSetLite(0, EMPTY_INT_ARRAY, EMPTY_OBJECT_ARRAY);
 
   /**
    * Get an empty {@code UnknownFieldSetLite}.
@@ -71,19 +75,41 @@ public final class UnknownFieldSetLite {
    * {@code second}.
    */
   static UnknownFieldSetLite concat(UnknownFieldSetLite first, UnknownFieldSetLite second) {
-    return new UnknownFieldSetLite(first.byteString.concat(second.byteString));
+    int count = first.count + second.count;
+    int[] tags = Arrays.copyOf(first.tags, count);
+    System.arraycopy(second.tags, 0, tags, first.count, second.count);
+    Object[] objects = Arrays.copyOf(first.objects, count);
+    System.arraycopy(second.objects, 0, objects, first.count, second.count);
+    return new UnknownFieldSetLite(count, tags, objects);
   }
+  
+  /**
+   * The number of elements in the set.
+   */
+  private int count;
+  
+  /**
+   * The tag numbers for the elements in the set.
+   */
+  private int[] tags;
+  
+  /**
+   * The boxed values of the elements in the set.
+   */
+  private Object[] objects;
+  
+  /**
+   * The lazily computed serialized size of the set.
+   */
+  private int memoizedSerializedSize = -1;
 
   /**
-   * The internal representation of the unknown fields.
+   * Constructs the {@code UnknownFieldSetLite}.
    */
-  private final ByteString byteString;
-
-  /**
-   * Constructs the {@code UnknownFieldSetLite} as a thin wrapper around {@link ByteString}.
-   */
-  private UnknownFieldSetLite(ByteString byteString) {
-    this.byteString = byteString;
+  private UnknownFieldSetLite(int count, int[] tags, Object[] objects) {
+    this.count = count;
+    this.tags = tags;
+    this.objects = objects;
   }
 
   /**
@@ -92,9 +118,32 @@ public final class UnknownFieldSetLite {
    * <p>For use by generated code only.
    */
   public void writeTo(CodedOutputStream output) throws IOException {
-    output.writeRawBytes(byteString);
+    for (int i = 0; i < count; i++) {
+      int tag = tags[i];
+      int fieldNumber = WireFormat.getTagFieldNumber(tag);
+      switch (WireFormat.getTagWireType(tag)) {
+        case WireFormat.WIRETYPE_VARINT:
+          output.writeUInt64(fieldNumber, (Long) objects[i]);
+          break;
+        case WireFormat.WIRETYPE_FIXED32:
+          output.writeFixed32(fieldNumber, (Integer) objects[i]);
+          break;
+        case WireFormat.WIRETYPE_FIXED64:
+          output.writeFixed64(fieldNumber, (Long) objects[i]);
+          break;
+        case WireFormat.WIRETYPE_LENGTH_DELIMITED:
+          output.writeBytes(fieldNumber, (ByteString) objects[i]);
+          break;
+        case WireFormat.WIRETYPE_START_GROUP:
+          output.writeTag(fieldNumber, WireFormat.WIRETYPE_START_GROUP);
+          ((UnknownFieldSetLite) objects[i]).writeTo(output);
+          output.writeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP);
+          break;
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
   }
-
 
   /**
    * Get the number of bytes required to encode this set.
@@ -102,7 +151,40 @@ public final class UnknownFieldSetLite {
    * <p>For use by generated code only.
    */
   public int getSerializedSize() {
-    return byteString.size();
+    int size = memoizedSerializedSize;
+    if (size != -1) {
+      return size;
+    }
+    
+    size = 0;
+    for (int i = 0; i < count; i++) {
+      int tag = tags[i];
+      int fieldNumber = WireFormat.getTagFieldNumber(tag);
+      switch (WireFormat.getTagWireType(tag)) {
+        case WireFormat.WIRETYPE_VARINT:
+          size += CodedOutputStream.computeUInt64Size(fieldNumber, (Long) objects[i]);
+          break;
+        case WireFormat.WIRETYPE_FIXED32:
+          size += CodedOutputStream.computeFixed32Size(fieldNumber, (Integer) objects[i]);
+          break;
+        case WireFormat.WIRETYPE_FIXED64:
+          size += CodedOutputStream.computeFixed64Size(fieldNumber, (Long) objects[i]);
+          break;
+        case WireFormat.WIRETYPE_LENGTH_DELIMITED:
+          size += CodedOutputStream.computeBytesSize(fieldNumber, (ByteString) objects[i]);
+          break;
+        case WireFormat.WIRETYPE_START_GROUP:
+          size +=  CodedOutputStream.computeTagSize(fieldNumber) * 2
+              + ((UnknownFieldSetLite) objects[i]).getSerializedSize();
+          break;
+        default:
+          throw new IllegalStateException(InvalidProtocolBufferException.invalidWireType());
+      }
+    }
+    
+    memoizedSerializedSize = size;
+    
+    return size;
   }
 
   @Override
@@ -111,16 +193,34 @@ public final class UnknownFieldSetLite {
       return true;
     }
 
-    if (obj instanceof UnknownFieldSetLite) {
-      return byteString.equals(((UnknownFieldSetLite) obj).byteString);
+    if (obj == null) {
+      return false;
     }
 
-    return false;
+    if (!(obj instanceof UnknownFieldSetLite)) {
+      return false;
+    }
+    
+    UnknownFieldSetLite other = (UnknownFieldSetLite) obj;    
+    if (count != other.count
+        // TODO(dweis): Only have to compare up to count but at worst 2x worse than we need to do.
+        || !Arrays.equals(tags, other.tags)
+        || !Arrays.deepEquals(objects, other.objects)) {
+      return false;
+    }
+
+    return true;
   }
 
   @Override
   public int hashCode() {
-    return byteString.hashCode();
+    int hashCode = 17;
+    
+    hashCode = 31 * hashCode + count;
+    hashCode = 31 * hashCode + Arrays.hashCode(tags);
+    hashCode = 31 * hashCode + Arrays.deepHashCode(objects);
+    
+    return hashCode;
   }
 
   /**
@@ -131,28 +231,49 @@ public final class UnknownFieldSetLite {
    * <p>For use by generated code only.
    */
   public static final class Builder {
+    
+    // Arbitrarily chosen.
+    // TODO(dweis): Tune this number?
+    private static final int MIN_CAPACITY = 8;
+    
+    private int count = 0;
+    private int[] tags = EMPTY_INT_ARRAY;
+    private Object[] objects = EMPTY_OBJECT_ARRAY;
 
-    private ByteString.Output byteStringOutput;
-    private CodedOutputStream output;
     private boolean built;
 
     /**
-     * Constructs a {@code Builder}. Lazily initialized by
-     * {@link #ensureInitializedButNotBuilt()}.
+     * Constructs a {@code Builder}.
      */
     private Builder() {}
 
     /**
      * Ensures internal state is initialized for use.
      */
-    private void ensureInitializedButNotBuilt() {
+    private void ensureNotBuilt() {
       if (built) {
         throw new IllegalStateException("Do not reuse UnknownFieldSetLite Builders.");
       }
-
-      if (output == null && byteStringOutput == null) {
-          byteStringOutput = ByteString.newOutput(100 /* initialCapacity */);
-          output = CodedOutputStream.newInstance(byteStringOutput);
+    }
+    
+    private void storeField(int tag, Object value) {
+      ensureCapacity();
+      
+      tags[count] = tag;
+      objects[count] = value;
+      count++;
+    }
+    
+    /**
+     * Ensures that our arrays are long enough to store more metadata.
+     */
+    private void ensureCapacity() {
+      if (count == tags.length) {        
+        int increment = count < (MIN_CAPACITY / 2) ? MIN_CAPACITY : count >> 1;
+        int newLength = count + increment;
+          
+        tags = Arrays.copyOf(tags, newLength);
+        objects = Arrays.copyOf(objects, newLength);
       }
     }
 
@@ -166,31 +287,28 @@ public final class UnknownFieldSetLite {
      */
     public boolean mergeFieldFrom(final int tag, final CodedInputStream input)
                                   throws IOException {
-      ensureInitializedButNotBuilt();
+      ensureNotBuilt();
 
       final int fieldNumber = WireFormat.getTagFieldNumber(tag);
       switch (WireFormat.getTagWireType(tag)) {
         case WireFormat.WIRETYPE_VARINT:
-          output.writeUInt64(fieldNumber, input.readInt64());
+          storeField(tag, input.readInt64());
           return true;
         case WireFormat.WIRETYPE_FIXED32:
-          output.writeFixed32(fieldNumber, input.readFixed32());
+          storeField(tag, input.readFixed32());
           return true;
         case WireFormat.WIRETYPE_FIXED64:
-          output.writeFixed64(fieldNumber, input.readFixed64());
+          storeField(tag, input.readFixed64());
           return true;
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-          output.writeBytes(fieldNumber, input.readBytes());
+          storeField(tag, input.readBytes());
           return true;
         case WireFormat.WIRETYPE_START_GROUP:
           final Builder subBuilder = newBuilder();
           subBuilder.mergeFrom(input);
           input.checkLastTagWas(
               WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
-
-          output.writeTag(fieldNumber, WireFormat.WIRETYPE_START_GROUP);
-          subBuilder.build().writeTo(output);
-          output.writeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP);
+          storeField(tag, subBuilder.build());
           return true;
         case WireFormat.WIRETYPE_END_GROUP:
           return false;
@@ -210,12 +328,10 @@ public final class UnknownFieldSetLite {
       if (fieldNumber == 0) {
         throw new IllegalArgumentException("Zero is not a valid field number.");
       }
-      ensureInitializedButNotBuilt();
-      try {
-        output.writeUInt64(fieldNumber, value);
-      } catch (IOException e) {
-        // Should never happen.
-      }
+      ensureNotBuilt();
+
+      storeField(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_VARINT), (long) value);
+      
       return this;
     }
 
@@ -229,11 +345,24 @@ public final class UnknownFieldSetLite {
       if (fieldNumber == 0) {
         throw new IllegalArgumentException("Zero is not a valid field number.");
       }
-      ensureInitializedButNotBuilt();
-      try {
-        output.writeBytes(fieldNumber, value);
-      } catch (IOException e) {
-        // Should never happen.
+      ensureNotBuilt();
+
+      storeField(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED), value);
+      
+      return this;
+    }
+    
+    /**
+     * Parse an entire message from {@code input} and merge its fields into
+     * this set.
+     */
+    private Builder mergeFrom(final CodedInputStream input) throws IOException {
+      // Ensures initialization in mergeFieldFrom.
+      while (true) {
+        final int tag = input.readTag();
+        if (tag == 0 || !mergeFieldFrom(tag, input)) {
+          break;
+        }
       }
       return this;
     }
@@ -254,44 +383,12 @@ public final class UnknownFieldSetLite {
       }
 
       built = true;
-
-      final UnknownFieldSetLite result;
-      // If we were never initialized, no data was written.
-      if (output == null) {
-        result = getDefaultInstance();
-      } else {
-        try {
-          output.flush();
-        } catch (IOException e) {
-          // Should never happen.
-        }
-        ByteString byteString = byteStringOutput.toByteString();
-        if (byteString.isEmpty()) {
-          result = getDefaultInstance();
-        } else {
-          result = new UnknownFieldSetLite(byteString);
-        }
+      
+      if (count == 0) {
+        return DEFAULT_INSTANCE;
       }
 
-      // Allow for garbage collection.
-      output = null;
-      byteStringOutput = null;
-      return result;
-    }
-
-    /**
-     * Parse an entire message from {@code input} and merge its fields into
-     * this set.
-     */
-    private Builder mergeFrom(final CodedInputStream input) throws IOException {
-      // Ensures initialization in mergeFieldFrom.
-      while (true) {
-        final int tag = input.readTag();
-        if (tag == 0 || !mergeFieldFrom(tag, input)) {
-          break;
-        }
-      }
-      return this;
+      return new UnknownFieldSetLite(count, tags, objects);
     }
   }
 }

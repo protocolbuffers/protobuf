@@ -45,7 +45,7 @@
 
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_doc_comment.h>
-#include <google/protobuf/compiler/java/java_enum.h>
+#include <google/protobuf/compiler/java/java_enum_lite.h>
 #include <google/protobuf/compiler/java/java_extension.h>
 #include <google/protobuf/compiler/java/java_generator_factory.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
@@ -143,6 +143,17 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
       field_generators_.get(descriptor_->field(i))
                        .GenerateInterfaceMembers(printer);
     }
+    for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+      printer->Print(
+          "\n"
+          "public $classname$.$oneof_capitalized_name$Case "
+          "get$oneof_capitalized_name$Case();\n",
+          "oneof_capitalized_name",
+          context_->GetOneofGeneratorInfo(
+              descriptor_->oneof_decl(i))->capitalized_name,
+          "classname",
+          context_->GetNameResolver()->GetImmutableClassName(descriptor_));
+    }
   printer->Outdent();
 
   printer->Print("}\n");
@@ -190,7 +201,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
   // Nested types
   for (int i = 0; i < descriptor_->enum_type_count(); i++) {
-    EnumGenerator(descriptor_->enum_type(i), true, context_)
+    EnumLiteGenerator(descriptor_->enum_type(i), true, context_)
         .Generate(printer);
   }
 
@@ -321,12 +332,12 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   printer->Print(
     "protected final Object dynamicMethod(\n"
     "    com.google.protobuf.GeneratedMessageLite.MethodToInvoke method,\n"
-    "    Object... args) {\n"
+    "    Object arg0, Object arg1) {\n"
     "  switch (method) {\n"
     "    case PARSE_PARTIAL_FROM: {\n"
     "      return new $classname$("
-    "          (com.google.protobuf.CodedInputStream) args[0],\n"
-    "          (com.google.protobuf.ExtensionRegistryLite) args[1]);\n"
+    "          (com.google.protobuf.CodedInputStream) arg0,\n"
+    "          (com.google.protobuf.ExtensionRegistryLite) arg1);\n"
     "    }\n"
     "    case NEW_INSTANCE: {\n"
     "      return new $classname$(\n"
@@ -370,7 +381,25 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
 
   printer->Print(
-      "}\n");
+    "}\n"
+    "case GET_DEFAULT_INSTANCE: {\n"
+    "  return DEFAULT_INSTANCE;\n"
+    "}\n"
+    "case GET_PARSER: {\n"
+    // Generally one would use the lazy initialization holder pattern for
+    // manipulating static fields but that has exceptional cost on Android as
+    // it will generate an extra class for every message. Instead, use the
+    // double-check locking pattern which works just as well.
+    "  if (PARSER == null) {"
+    "    synchronized ($classname$.class) {\n"
+    "      if (PARSER == null) {\n"
+    "        PARSER = new DefaultInstanceBasedParser(DEFAULT_INSTANCE);\n"
+    "      }\n"
+    "    }\n"
+    "  }\n"
+    "  return PARSER;\n"
+    "}\n",
+    "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   printer->Outdent();
   printer->Outdent();
@@ -412,18 +441,6 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   GenerateParser(printer);
-
-  // LITE_RUNTIME uses this to implement the *ForType methods at the
-  // GeneratedMessageLite level.
-  printer->Print(
-    "static {\n"
-    "  com.google.protobuf.GeneratedMessageLite.onLoad(\n"
-    "      $classname$.class, new com.google.protobuf.GeneratedMessageLite\n"
-    "          .PrototypeHolder<$classname$, Builder>(\n"
-    "              DEFAULT_INSTANCE, PARSER));"
-    "}\n"
-    "\n",
-    "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   // Extensions must be declared after the DEFAULT_INSTANCE is initialized
   // because the DEFAULT_INSTANCE is used by the extension to lazily retrieve
@@ -554,54 +571,54 @@ GenerateParseFromMethods(io::Printer* printer) {
     "public static $classname$ parseFrom(\n"
     "    com.google.protobuf.ByteString data)\n"
     "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
-    "  return PARSER.parseFrom(data);\n"
+    "  return parser().parseFrom(data);\n"
     "}\n"
     "public static $classname$ parseFrom(\n"
     "    com.google.protobuf.ByteString data,\n"
     "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
     "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
-    "  return PARSER.parseFrom(data, extensionRegistry);\n"
+    "  return parser().parseFrom(data, extensionRegistry);\n"
     "}\n"
     "public static $classname$ parseFrom(byte[] data)\n"
     "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
-    "  return PARSER.parseFrom(data);\n"
+    "  return parser().parseFrom(data);\n"
     "}\n"
     "public static $classname$ parseFrom(\n"
     "    byte[] data,\n"
     "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
     "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
-    "  return PARSER.parseFrom(data, extensionRegistry);\n"
+    "  return parser().parseFrom(data, extensionRegistry);\n"
     "}\n"
     "public static $classname$ parseFrom(java.io.InputStream input)\n"
     "    throws java.io.IOException {\n"
-    "  return PARSER.parseFrom(input);\n"
+    "  return parser().parseFrom(input);\n"
     "}\n"
     "public static $classname$ parseFrom(\n"
     "    java.io.InputStream input,\n"
     "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
     "    throws java.io.IOException {\n"
-    "  return PARSER.parseFrom(input, extensionRegistry);\n"
+    "  return parser().parseFrom(input, extensionRegistry);\n"
     "}\n"
     "public static $classname$ parseDelimitedFrom(java.io.InputStream input)\n"
     "    throws java.io.IOException {\n"
-    "  return PARSER.parseDelimitedFrom(input);\n"
+    "  return parser().parseDelimitedFrom(input);\n"
     "}\n"
     "public static $classname$ parseDelimitedFrom(\n"
     "    java.io.InputStream input,\n"
     "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
     "    throws java.io.IOException {\n"
-    "  return PARSER.parseDelimitedFrom(input, extensionRegistry);\n"
+    "  return parser().parseDelimitedFrom(input, extensionRegistry);\n"
     "}\n"
     "public static $classname$ parseFrom(\n"
     "    com.google.protobuf.CodedInputStream input)\n"
     "    throws java.io.IOException {\n"
-    "  return PARSER.parseFrom(input);\n"
+    "  return parser().parseFrom(input);\n"
     "}\n"
     "public static $classname$ parseFrom(\n"
     "    com.google.protobuf.CodedInputStream input,\n"
     "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
     "    throws java.io.IOException {\n"
-    "  return PARSER.parseFrom(input, extensionRegistry);\n"
+    "  return parser().parseFrom(input, extensionRegistry);\n"
     "}\n"
     "\n",
     "classname", name_resolver_->GetImmutableClassName(descriptor_));
@@ -652,7 +669,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodIsInitialized(
     "if (isInitialized == 1) return DEFAULT_INSTANCE;\n"
     "if (isInitialized == 0) return null;\n"
     "\n"
-    "boolean shouldMemoize = ((Boolean) args[0]).booleanValue();\n");
+    "boolean shouldMemoize = ((Boolean) arg0).booleanValue();\n");
 
   // Check that all required fields in this message are set.
   // TODO(kenton):  We can optimize this when we switch to putting all the
@@ -778,7 +795,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodMakeImmutable(
         .GenerateDynamicMethodMakeImmutableCode(printer);
   }
   printer->Print(
-    "return null;");
+    "return null;\n");
 }
 
 // ===================================================================
@@ -786,7 +803,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodMakeImmutable(
 void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuilder(
     io::Printer* printer) {
   printer->Print(
-    "return new Builder();");
+    "return new Builder();\n");
 }
 
 // ===================================================================
@@ -796,9 +813,8 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodMergeFrom(
   printer->Print(
     // Optimization:  If other is the default instance, we know none of its
     //   fields are set so we can skip the merge.
-    "Object arg = args[0];\n"
-    "if (arg == $classname$.getDefaultInstance()) return this;\n"
-    "$classname$ other = ($classname$) arg;\n",
+    "if (arg0 == $classname$.getDefaultInstance()) return this;\n"
+    "$classname$ other = ($classname$) arg0;\n",
     "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -1151,9 +1167,11 @@ GenerateParsingConstructor(io::Printer* printer) {
 // ===================================================================
 void ImmutableMessageLiteGenerator::GenerateParser(io::Printer* printer) {
   printer->Print(
-      "public static final com.google.protobuf.Parser<$classname$> PARSER =\n"
-      "    new DefaultInstanceBasedParser(DEFAULT_INSTANCE);\n"
-      "\n",
+      "private static volatile com.google.protobuf.Parser<$classname$> PARSER;\n"
+      "\n"
+      "public static com.google.protobuf.Parser<$classname$> parser() {\n"
+      "  return DEFAULT_INSTANCE.getParserForType();\n"
+      "}\n",
       "classname", descriptor_->name());
 }
 

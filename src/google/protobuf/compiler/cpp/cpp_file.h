@@ -69,10 +69,14 @@ class FileGenerator {
                          const Options& options);
   ~FileGenerator();
 
-  void GenerateHeader(io::Printer* printer);
+  void GenerateProtoHeader(io::Printer* printer);
+  void GeneratePBHeader(io::Printer* printer);
   void GenerateSource(io::Printer* printer);
 
  private:
+  // Internal type used by GenerateForwardDeclarations (defined in file.cc).
+  class ForwardDeclarations;
+
   // Generate the BuildDescriptors() procedure, which builds all descriptors
   // for types defined in the file.
   void GenerateBuildDescriptors(io::Printer* printer);
@@ -80,9 +84,19 @@ class FileGenerator {
   void GenerateNamespaceOpeners(io::Printer* printer);
   void GenerateNamespaceClosers(io::Printer* printer);
 
+  // For other imports, generates their forward-declarations.
+  void GenerateForwardDeclarations(io::Printer* printer);
+
+  // Internal helper used by GenerateForwardDeclarations: fills 'decls'
+  // with all necessary forward-declarations for this file and its
+  // transient depednencies.
+  void FillForwardDeclarations(ForwardDeclarations* decls);
+
   // Generates top or bottom of a header file.
-  void GenerateTopHeaderGuard(io::Printer* printer);
-  void GenerateBottomHeaderGuard(io::Printer* printer);
+  void GenerateTopHeaderGuard(io::Printer* printer,
+                              const string& filename_identifier);
+  void GenerateBottomHeaderGuard(io::Printer* printer,
+                                 const string& filename_identifier);
 
   // Generates #include directives.
   void GenerateLibraryIncludes(io::Printer* printer);
@@ -92,10 +106,20 @@ class FileGenerator {
   void GenerateGlobalStateFunctionDeclarations(io::Printer* printer);
 
   // Generates types for classes.
-  void GenerateMessageForwardDeclarations(io::Printer* printer);
   void GenerateMessageDefinitions(io::Printer* printer);
 
+  // Generates forward-declarations for just this file's classes. This is
+  // used for .pb.h headers, but not in proto_h mode.
+  void GenerateMessageForwardDeclarations(io::Printer* printer);
+
+  // Fills in types for forward declarations. This is used internally, and
+  // also by other FileGenerators to determine imports' declarations.
+  void FillMessageForwardDeclarations(ForwardDeclarations* decls);
+  void FillMessageDefinitions(ForwardDeclarations* decls);
+
   // Generates enum definitions.
+  void GenerateEnumForwardDeclarations(io::Printer* printer);
+  void FillEnumForwardDeclarations(ForwardDeclarations* decls);
   void GenerateEnumDefinitions(io::Printer* printer);
 
   // Generates generic service definitions.

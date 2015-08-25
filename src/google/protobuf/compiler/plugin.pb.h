@@ -144,10 +144,10 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
   ::google::protobuf::FileDescriptorProto* mutable_proto_file(int index);
   ::google::protobuf::FileDescriptorProto* add_proto_file();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
-      proto_file() const;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
       mutable_proto_file();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
+      proto_file() const;
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
  private:
@@ -378,10 +378,10 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
   ::google::protobuf::compiler::CodeGeneratorResponse_File* mutable_file(int index);
   ::google::protobuf::compiler::CodeGeneratorResponse_File* add_file();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
-      file() const;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >*
       mutable_file();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
+      file() const;
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
  private:
@@ -534,15 +534,15 @@ inline ::google::protobuf::FileDescriptorProto* CodeGeneratorRequest::add_proto_
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return proto_file_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
-CodeGeneratorRequest::proto_file() const {
-  // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-  return proto_file_;
-}
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >*
 CodeGeneratorRequest::mutable_proto_file() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return &proto_file_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
+CodeGeneratorRequest::proto_file() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
+  return proto_file_;
 }
 
 // -------------------------------------------------------------------
@@ -784,15 +784,15 @@ inline ::google::protobuf::compiler::CodeGeneratorResponse_File* CodeGeneratorRe
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorResponse.file)
   return file_.Add();
 }
-inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
-CodeGeneratorResponse::file() const {
-  // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorResponse.file)
-  return file_;
-}
 inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >*
 CodeGeneratorResponse::mutable_file() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorResponse.file)
   return &file_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File >&
+CodeGeneratorResponse::file() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorResponse.file)
+  return file_;
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS

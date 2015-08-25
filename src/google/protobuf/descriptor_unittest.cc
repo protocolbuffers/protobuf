@@ -49,6 +49,8 @@
 #include <google/protobuf/stubs/substitute.h>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/scoped_ptr.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -366,6 +368,37 @@ TEST_F(FileDescriptorTest, BuildAgain) {
   // But if we change the file then it won't work.
   file.set_package("some.other.package");
   EXPECT_TRUE(pool_.BuildFile(file) == NULL);
+}
+
+TEST_F(FileDescriptorTest, BuildAgainWithSyntax) {
+  // Test that if te call BuildFile again on the same input we get the same
+  // FileDescriptor back even if syntax param is specified.
+  FileDescriptorProto proto_syntax2;
+  proto_syntax2.set_name("foo_syntax2");
+  proto_syntax2.set_syntax("proto2");
+
+  const FileDescriptor* proto2_descriptor = pool_.BuildFile(proto_syntax2);
+  EXPECT_TRUE(proto2_descriptor != NULL);
+  EXPECT_EQ(proto2_descriptor, pool_.BuildFile(proto_syntax2));
+
+  FileDescriptorProto implicit_proto2;
+  implicit_proto2.set_name("foo_implicit_syntax2");
+
+  const FileDescriptor* implicit_proto2_descriptor =
+      pool_.BuildFile(implicit_proto2);
+  EXPECT_TRUE(implicit_proto2_descriptor != NULL);
+  // We get the same FileDescriptor back if syntax param is explicitly
+  // specified.
+  implicit_proto2.set_syntax("proto2");
+  EXPECT_EQ(implicit_proto2_descriptor, pool_.BuildFile(implicit_proto2));
+
+  FileDescriptorProto proto_syntax3;
+  proto_syntax3.set_name("foo_syntax3");
+  proto_syntax3.set_syntax("proto3");
+
+  const FileDescriptor* proto3_descriptor = pool_.BuildFile(proto_syntax3);
+  EXPECT_TRUE(proto3_descriptor != NULL);
+  EXPECT_EQ(proto3_descriptor, pool_.BuildFile(proto_syntax3));
 }
 
 TEST_F(FileDescriptorTest, Syntax) {
@@ -3583,7 +3616,7 @@ TEST_F(ValidationErrorTest, FieldOneofIndexNegative) {
 
 TEST_F(ValidationErrorTest, OneofFieldsConsecutiveDefinition) {
   // Fields belonging to the same oneof must be defined consecutively.
-  BuildFileWithWarnings(
+  BuildFileWithErrors(
       "name: \"foo.proto\" "
       "message_type {"
       "  name: \"Foo\""
@@ -3600,7 +3633,7 @@ TEST_F(ValidationErrorTest, OneofFieldsConsecutiveDefinition) {
       "\"foos\" oneof definition.\n");
 
   // Prevent interleaved fields, which belong to different oneofs.
-  BuildFileWithWarnings(
+  BuildFileWithErrors(
       "name: \"foo2.proto\" "
       "message_type {"
       "  name: \"Foo2\""
@@ -3621,6 +3654,25 @@ TEST_F(ValidationErrorTest, OneofFieldsConsecutiveDefinition) {
       "foo2.proto: Foo2.foo2: OTHER: Fields in the same oneof must be defined "
       "consecutively. \"foo2\" cannot be defined before the completion of the "
       "\"bars\" oneof definition.\n");
+
+  // Another case for normal fields and different oneof fields interleave.
+  BuildFileWithErrors(
+      "name: \"foo3.proto\" "
+      "message_type {"
+      "  name: \"Foo3\""
+      "  field { name:\"foo1\" number: 1 label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "          oneof_index: 0 }"
+      "  field { name:\"bar1\" number: 2 label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "          oneof_index: 1 }"
+      "  field { name:\"baz\" number: 3 label:LABEL_OPTIONAL type:TYPE_INT32 }"
+      "  field { name:\"foo2\" number: 4 label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "          oneof_index: 0 }"
+      "  oneof_decl { name:\"foos\" }"
+      "  oneof_decl { name:\"bars\" }"
+      "}",
+      "foo3.proto: Foo3.baz: OTHER: Fields in the same oneof must be defined "
+      "consecutively. \"baz\" cannot be defined before the completion of the "
+      "\"foos\" oneof definition.\n");
 }
 
 TEST_F(ValidationErrorTest, FieldNumberConflict) {
@@ -5367,6 +5419,35 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithOneof) {
       "foo.proto: Foo.foo_map: TYPE: \"FooMapEntry\" is not defined.\n"
       "foo.proto: Foo: NAME: Expanded map entry type FooMapEntry conflicts "
       "with an existing oneof type.\n");
+}
+
+TEST_F(ValidationErrorTest, MapEntryUsesNoneZeroEnumDefaultValue) {
+  BuildFileWithErrors(
+    "name: \"foo.proto\" "
+    "enum_type {"
+    "  name: \"Bar\""
+    "  value { name:\"ENUM_A\" number:1 }"
+    "  value { name:\"ENUM_B\" number:2 }"
+    "}"
+    "message_type {"
+    "  name: 'Foo' "
+    "  field { "
+    "    name: 'foo_map' number: 1 label:LABEL_REPEATED "
+    "    type_name: 'FooMapEntry' "
+    "  } "
+    "  nested_type { "
+    "    name: 'FooMapEntry' "
+    "    options {  map_entry: true } "
+    "    field { "
+    "      name: 'key' number: 1 type:TYPE_INT32 label:LABEL_OPTIONAL "
+    "    } "
+    "    field { "
+    "      name: 'value' number: 2 type_name:\"Bar\" label:LABEL_OPTIONAL "
+    "    } "
+    "  } "
+    "}",
+    "foo.proto: Foo.foo_map: "
+    "TYPE: Enum value in map must define 0 as the first value.\n");
 }
 
 TEST_F(ValidationErrorTest, Proto3RequiredFields) {

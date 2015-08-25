@@ -38,11 +38,13 @@
 #include <stdlib.h>
 #include <limits>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
+#include <google/protobuf/unittest_mset_wire_format.pb.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>

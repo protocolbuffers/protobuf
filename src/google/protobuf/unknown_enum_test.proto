@@ -36,6 +36,8 @@ syntax = "proto2";
 
 package google.protobuf.util;
 
+option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
+
 message DownRevision {
   enum Enum {
     DEFAULT_VALUE = 2;

@@ -37,7 +37,9 @@
 #endif
 #include <string>
 
+#include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/util/internal/location_tracker.h>
 #include <google/protobuf/stubs/stringpiece.h>
 

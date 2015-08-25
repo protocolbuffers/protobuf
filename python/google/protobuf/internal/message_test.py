@@ -43,6 +43,7 @@ abstract interface.
 
 __author__ = 'gps@google.com (Gregory P. Smith)'
 
+import collections
 import copy
 import math
 import operator
@@ -56,6 +57,7 @@ from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf.internal import api_implementation
+from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import test_util
 from google.protobuf import message
 
@@ -421,6 +423,31 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(message.repeated_nested_message[4].bb, 5)
     self.assertEqual(message.repeated_nested_message[5].bb, 6)
 
+  def testSortingRepeatedCompositeFieldsStable(self, message_module):
+    """Check passing a custom comparator to sort a repeated composite field."""
+    message = message_module.TestAllTypes()
+
+    message.repeated_nested_message.add().bb = 21
+    message.repeated_nested_message.add().bb = 20
+    message.repeated_nested_message.add().bb = 13
+    message.repeated_nested_message.add().bb = 33
+    message.repeated_nested_message.add().bb = 11
+    message.repeated_nested_message.add().bb = 24
+    message.repeated_nested_message.add().bb = 10
+    message.repeated_nested_message.sort(key=lambda z: z.bb // 10)
+    self.assertEquals(
+        [13, 11, 10, 21, 20, 24, 33],
+        [n.bb for n in message.repeated_nested_message])
+
+    # Make sure that for the C++ implementation, the underlying fields
+    # are actually reordered.
+    pb = message.SerializeToString()
+    message.Clear()
+    message.MergeFromString(pb)
+    self.assertEquals(
+        [13, 11, 10, 21, 20, 24, 33],
+        [n.bb for n in message.repeated_nested_message])
+
   def testRepeatedCompositeFieldSortArguments(self, message_module):
     """Check sorting a repeated composite field using list.sort() arguments."""
     message = message_module.TestAllTypes()
@@ -514,6 +541,12 @@ class MessageTest(unittest.TestCase):
 
     # TODO(anuraag): Implement extensiondict comparison in C++ and then add test
 
+  def testRepeatedFieldsAreSequences(self, message_module):
+    m = message_module.TestAllTypes()
+    self.assertIsInstance(m.repeated_int32, collections.MutableSequence)
+    self.assertIsInstance(m.repeated_nested_message,
+                          collections.MutableSequence)
+
   def ensureNestedMessageExists(self, msg, attribute):
     """Make sure that a nested message object exists.
 
@@ -555,6 +588,18 @@ class MessageTest(unittest.TestCase):
     self.assertEqual('oneof_string', m.WhichOneof('oneof_field'))
     self.assertFalse(m.HasField('oneof_uint32'))
     self.assertTrue(m.HasField('oneof_string'))
+
+    # Read nested message accessor without accessing submessage.
+    m.oneof_nested_message
+    self.assertEqual('oneof_string', m.WhichOneof('oneof_field'))
+    self.assertTrue(m.HasField('oneof_string'))
+    self.assertFalse(m.HasField('oneof_nested_message'))
+
+    # Read accessor of nested message without accessing submessage.
+    m.oneof_nested_message.bb
+    self.assertEqual('oneof_string', m.WhichOneof('oneof_field'))
+    self.assertTrue(m.HasField('oneof_string'))
+    self.assertFalse(m.HasField('oneof_nested_message'))
 
     m.oneof_nested_message.bb = 11
     self.assertEqual('oneof_nested_message', m.WhichOneof('oneof_field'))
@@ -1583,6 +1628,21 @@ class Proto3Test(unittest.TestCase):
     del msg.map_int32_int32[4]
     self.assertEqual(0, len(msg.map_int32_int32))
 
+  def testMapsAreMapping(self):
+    msg = map_unittest_pb2.TestMap()
+    self.assertIsInstance(msg.map_int32_int32, collections.Mapping)
+    self.assertIsInstance(msg.map_int32_int32, collections.MutableMapping)
+    self.assertIsInstance(msg.map_int32_foreign_message, collections.Mapping)
+    self.assertIsInstance(msg.map_int32_foreign_message,
+                          collections.MutableMapping)
+
+  def testMapFindInitializationErrorsSmokeTest(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_string_string['abc'] = '123'
+    msg.map_int32_int32[35] = 64
+    msg.map_string_foreign_message['foo'].c = 5
+    self.assertEqual(0, len(msg.FindInitializationErrors()))
+
 
 
 class ValidTypeNamesTest(unittest.TestCase):
@@ -1606,6 +1666,61 @@ class ValidTypeNamesTest(unittest.TestCase):
     self.assertImportFromName(pb.repeated_int32, 'Scalar')
     self.assertImportFromName(pb.repeated_nested_message, 'Composite')
 
+class PackedFieldTest(unittest.TestCase):
+
+  def setMessage(self, message):
+    message.repeated_int32.append(1)
+    message.repeated_int64.append(1)
+    message.repeated_uint32.append(1)
+    message.repeated_uint64.append(1)
+    message.repeated_sint32.append(1)
+    message.repeated_sint64.append(1)
+    message.repeated_fixed32.append(1)
+    message.repeated_fixed64.append(1)
+    message.repeated_sfixed32.append(1)
+    message.repeated_sfixed64.append(1)
+    message.repeated_float.append(1.0)
+    message.repeated_double.append(1.0)
+    message.repeated_bool.append(True)
+    message.repeated_nested_enum.append(1)
+
+  def testPackedFields(self):
+    message = packed_field_test_pb2.TestPackedTypes()
+    self.setMessage(message)
+    golden_data = (b'\x0A\x01\x01'
+                   b'\x12\x01\x01'
+                   b'\x1A\x01\x01'
+                   b'\x22\x01\x01'
+                   b'\x2A\x01\x02'
+                   b'\x32\x01\x02'
+                   b'\x3A\x04\x01\x00\x00\x00'
+                   b'\x42\x08\x01\x00\x00\x00\x00\x00\x00\x00'
+                   b'\x4A\x04\x01\x00\x00\x00'
+                   b'\x52\x08\x01\x00\x00\x00\x00\x00\x00\x00'
+                   b'\x5A\x04\x00\x00\x80\x3f'
+                   b'\x62\x08\x00\x00\x00\x00\x00\x00\xf0\x3f'
+                   b'\x6A\x01\x01'
+                   b'\x72\x01\x01')
+    self.assertEqual(golden_data, message.SerializeToString())
+
+  def testUnpackedFields(self):
+    message = packed_field_test_pb2.TestUnpackedTypes()
+    self.setMessage(message)
+    golden_data = (b'\x08\x01'
+                   b'\x10\x01'
+                   b'\x18\x01'
+                   b'\x20\x01'
+                   b'\x28\x02'
+                   b'\x30\x02'
+                   b'\x3D\x01\x00\x00\x00'
+                   b'\x41\x01\x00\x00\x00\x00\x00\x00\x00'
+                   b'\x4D\x01\x00\x00\x00'
+                   b'\x51\x01\x00\x00\x00\x00\x00\x00\x00'
+                   b'\x5D\x00\x00\x80\x3f'
+                   b'\x61\x00\x00\x00\x00\x00\x00\xf0\x3f'
+                   b'\x68\x01'
+                   b'\x70\x01')
+    self.assertEqual(golden_data, message.SerializeToString())
 
 if __name__ == '__main__':
   unittest.main()

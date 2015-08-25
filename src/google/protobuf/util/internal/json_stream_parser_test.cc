@@ -30,6 +30,7 @@
 
 #include <google/protobuf/util/internal/json_stream_parser.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/time.h>
 #include <google/protobuf/util/internal/expecting_objectwriter.h>
@@ -85,7 +86,7 @@ class JsonStreamParserTest : public ::testing::Test {
   JsonStreamParserTest() : mock_(), ow_(&mock_) {}
   virtual ~JsonStreamParserTest() {}
 
-  util::Status RunTest(StringPiece json, int split) {
+  util::Status RunTest(StringPiece json, int split, bool coerce_utf8 = false) {
     JsonStreamParser parser(&mock_);
 
     // Special case for split == length, test parsing one character at a time.
@@ -115,8 +116,8 @@ class JsonStreamParserTest : public ::testing::Test {
     return result;
   }
 
-  void DoTest(StringPiece json, int split) {
-    util::Status result = RunTest(json, split);
+  void DoTest(StringPiece json, int split, bool coerce_utf8 = false) {
+    util::Status result = RunTest(json, split, coerce_utf8);
     if (!result.ok()) {
       GOOGLE_LOG(WARNING) << result;
     }
@@ -337,14 +338,26 @@ TEST_F(JsonStreamParserTest, ObjectValues) {
   }
 }
 
+
+TEST_F(JsonStreamParserTest, RejectNonUtf8WhenNotCoerced) {
+  StringPiece json = "{\"address\":\xFF\"חרושת 23, רעננה, ישראל\"}";
+  for (int i = 0; i <= json.length(); ++i) {
+    DoErrorTest(json, i, "Encountered non UTF-8 code points.");
+  }
+  json = "{\"address\": \"חרושת 23,\xFFרעננה, ישראל\"}";
+  for (int i = 0; i <= json.length(); ++i) {
+    DoErrorTest(json, i, "Encountered non UTF-8 code points.");
+  }
+}
+
 #ifndef _MSC_VER
 // - unicode handling in strings
 TEST_F(JsonStreamParserTest, UnicodeEscaping) {
   StringPiece str = "[\"\\u0639\\u0631\\u0628\\u0649\"]";
   for (int i = 0; i <= str.length(); ++i) {
     // TODO(xiaofeng): Figure out what default encoding to use for JSON strings.
-    // In protobuf we use UTF-8 for strings, but for JSON we probably should allow
-    // different encodings?
+    // In protobuf we use UTF-8 for strings, but for JSON we probably should
+    // allow different encodings?
     ow_.StartList("")->RenderString("", "\u0639\u0631\u0628\u0649")->EndList();
     DoTest(str, i);
   }

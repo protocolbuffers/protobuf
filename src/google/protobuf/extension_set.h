@@ -45,6 +45,7 @@
 
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 
 #include <google/protobuf/repeated_field.h>
 
@@ -330,6 +331,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
                           const MessageLite& prototype, desc);
   MessageLite* AddMessage(const FieldDescriptor* descriptor,
                           MessageFactory* factory);
+  void AddAllocatedMessage(const FieldDescriptor* descriptor,
+                           MessageLite* new_entry);
 #undef desc
 
   void RemoveLast(int number);
@@ -577,6 +580,10 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // already exist.  Returns true if the extension did not already exist.
   bool MaybeNewExtension(int number, const FieldDescriptor* descriptor,
                          Extension** result);
+
+  // Gets the repeated extension for the given descriptor, creating it if
+  // it does not exist.
+  Extension* MaybeNewRepeatedExtension(const FieldDescriptor* descriptor);
 
   // Parse a single MessageSet item -- called just after the item group start
   // tag has been read.

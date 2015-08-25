@@ -886,6 +886,39 @@ TEST_F(CommandLineInterfaceTest, WriteDescriptorSet) {
   EXPECT_FALSE(descriptor_set.file(0).has_source_code_info());
 }
 
+TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithDuplicates) {
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "message Foo {}\n");
+  CreateTempFile("bar.proto",
+    "syntax = \"proto2\";\n"
+    "import \"foo.proto\";\n"
+    "message Bar {\n"
+    "  optional Foo foo = 1;\n"
+    "}\n");
+  CreateTempFile("baz.proto",
+    "syntax = \"proto2\";\n"
+    "import \"foo.proto\";\n"
+    "message Baz {\n"
+    "  optional Foo foo = 1;\n"
+    "}\n");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--proto_path=$tmpdir bar.proto foo.proto bar.proto baz.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(3, descriptor_set.file_size());
+  EXPECT_EQ("bar.proto", descriptor_set.file(0).name());
+  EXPECT_EQ("foo.proto", descriptor_set.file(1).name());
+  EXPECT_EQ("baz.proto", descriptor_set.file(2).name());
+  // Descriptor set should not have source code info.
+  EXPECT_FALSE(descriptor_set.file(0).has_source_code_info());
+}
+
 TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithSourceInfo) {
   CreateTempFile("foo.proto",
     "syntax = \"proto2\";\n"

@@ -35,6 +35,7 @@
 __author__ = 'kenton@google.com (Kenton Varda)'
 
 import re
+import string
 import unittest
 
 import unittest
@@ -496,6 +497,36 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
         '    c: 5\n'
         '  }\n'
         '}\n')
+
+  def testMapOrderEnforcement(self):
+    message = map_unittest_pb2.TestMap()
+    for letter in string.ascii_uppercase[13:26]:
+      message.map_string_string[letter] = 'dummy'
+    for letter in reversed(string.ascii_uppercase[0:13]):
+      message.map_string_string[letter] = 'dummy'
+    golden = ''.join((
+        'map_string_string {\n  key: "%c"\n  value: "dummy"\n}\n' % (letter,)
+        for letter in string.ascii_uppercase))
+    self.CompareToGoldenText(text_format.MessageToString(message), golden)
+
+  def testMapOrderSemantics(self):
+    golden_lines = self.ReadGolden('map_test_data.txt')
+    # The C++ implementation emits defaulted-value fields, while the Python
+    # implementation does not.  Adjusting for this is awkward, but it is
+    # valuable to test against a common golden file.
+    line_blacklist = ('  key: 0\n',
+                      '  value: 0\n',
+                      '  key: false\n',
+                      '  value: false\n')
+    golden_lines = [line for line in golden_lines if line not in line_blacklist]
+
+    message = map_unittest_pb2.TestMap()
+    text_format.ParseLines(golden_lines, message)
+    candidate = text_format.MessageToString(message)
+    # The Python implementation emits "1.0" for the double value that the C++
+    # implementation emits as "1".
+    candidate = candidate.replace('1.0', '1', 2)
+    self.assertMultiLineEqual(candidate, ''.join(golden_lines))
 
 
 # Tests of proto2-only features (MessageSet, extensions, etc.).

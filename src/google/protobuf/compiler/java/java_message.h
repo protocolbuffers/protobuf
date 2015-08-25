@@ -122,6 +122,7 @@ class ImmutableMessageGenerator : public MessageGenerator {
   void GenerateEqualsAndHashCode(io::Printer* printer);
   void GenerateParser(io::Printer* printer);
   void GenerateParsingConstructor(io::Printer* printer);
+  void GenerateAnyMethods(io::Printer* printer);
 
   Context* context_;
   ClassNameResolver* name_resolver_;

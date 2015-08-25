@@ -78,6 +78,16 @@ public class MapForProto2Test extends TestCase {
     builder.getMutableStringToInt32Field().put("3", 33);
   }
 
+  private void copyMapValues(TestMap source, TestMap.Builder destination) {
+    destination
+        .putAllInt32ToInt32Field(source.getInt32ToInt32Field())
+        .putAllInt32ToStringField(source.getInt32ToStringField())
+        .putAllInt32ToBytesField(source.getInt32ToBytesField())
+        .putAllInt32ToEnumField(source.getInt32ToEnumField())
+        .putAllInt32ToMessageField(source.getInt32ToMessageField())
+        .putAllStringToInt32Field(source.getStringToInt32Field());
+  }
+
   private void assertMapValuesSet(TestMap message) {
     assertEquals(3, message.getInt32ToInt32Field().size());
     assertEquals(11, message.getInt32ToInt32Field().get(1).intValue());
@@ -310,26 +320,36 @@ public class MapForProto2Test extends TestCase {
     assertMapValuesCleared(message);
   }
 
+  public void testPutAll() throws Exception {
+    TestMap.Builder sourceBuilder = TestMap.newBuilder();
+    setMapValues(sourceBuilder);
+    TestMap source = sourceBuilder.build();
+
+    TestMap.Builder destination = TestMap.newBuilder();
+    copyMapValues(source, destination);
+    assertMapValuesSet(destination.build());
+  }
+
   public void testSerializeAndParse() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
     TestMap message = builder.build();
     assertEquals(message.getSerializedSize(), message.toByteString().size());
-    message = TestMap.PARSER.parseFrom(message.toByteString());
+    message = TestMap.parser().parseFrom(message.toByteString());
     assertMapValuesSet(message);
     
     builder = message.toBuilder();
     updateMapValues(builder);
     message = builder.build();
     assertEquals(message.getSerializedSize(), message.toByteString().size());
-    message = TestMap.PARSER.parseFrom(message.toByteString());
+    message = TestMap.parser().parseFrom(message.toByteString());
     assertMapValuesUpdated(message);
     
     builder = message.toBuilder();
     builder.clear();
     message = builder.build();
     assertEquals(message.getSerializedSize(), message.toByteString().size());
-    message = TestMap.PARSER.parseFrom(message.toByteString());
+    message = TestMap.parser().parseFrom(message.toByteString());
     assertMapValuesCleared(message);
   }
   

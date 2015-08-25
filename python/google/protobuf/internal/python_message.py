@@ -85,34 +85,108 @@ from google.protobuf import text_format
 _FieldDescriptor = descriptor_mod.FieldDescriptor
 
 
-def NewMessage(bases, descriptor, dictionary):
-  _AddClassAttributesForNestedExtensions(descriptor, dictionary)
-  _AddSlots(descriptor, dictionary)
-  return bases
+class GeneratedProtocolMessageType(type):
 
+  """Metaclass for protocol message classes created at runtime from Descriptors.
 
-def InitMessage(descriptor, cls):
-  cls._decoders_by_tag = {}
-  cls._extensions_by_name = {}
-  cls._extensions_by_number = {}
-  if (descriptor.has_options and
-      descriptor.GetOptions().message_set_wire_format):
-    cls._decoders_by_tag[decoder.MESSAGE_SET_ITEM_TAG] = (
-        decoder.MessageSetItemDecoder(cls._extensions_by_number), None)
+  We add implementations for all methods described in the Message class.  We
+  also create properties to allow getting/setting all fields in the protocol
+  message.  Finally, we create slots to prevent users from accidentally
+  "setting" nonexistent fields in the protocol message, which then wouldn't get
+  serialized / deserialized properly.
 
-  # Attach stuff to each FieldDescriptor for quick lookup later on.
-  for field in descriptor.fields:
-    _AttachFieldHelpers(cls, field)
+  The protocol compiler currently uses this metaclass to create protocol
+  message classes at runtime.  Clients can also manually create their own
+  classes at runtime, as in this example:
 
-  descriptor._concrete_class = cls  # pylint: disable=protected-access
-  _AddEnumValues(descriptor, cls)
-  _AddInitMethod(descriptor, cls)
-  _AddPropertiesForFields(descriptor, cls)
-  _AddPropertiesForExtensions(descriptor, cls)
-  _AddStaticMethods(cls)
-  _AddMessageMethods(descriptor, cls)
-  _AddPrivateHelperMethods(descriptor, cls)
-  copyreg.pickle(cls, lambda obj: (cls, (), obj.__getstate__()))
+  mydescriptor = Descriptor(.....)
+  class MyProtoClass(Message):
+    __metaclass__ = GeneratedProtocolMessageType
+    DESCRIPTOR = mydescriptor
+  myproto_instance = MyProtoClass()
+  myproto.foo_field = 23
+  ...
+
+  The above example will not work for nested types. If you wish to include them,
+  use reflection.MakeClass() instead of manually instantiating the class in
+  order to create the appropriate class structure.
+  """
+
+  # Must be consistent with the protocol-compiler code in
+  # proto2/compiler/internal/generator.*.
+  _DESCRIPTOR_KEY = 'DESCRIPTOR'
+
+  def __new__(cls, name, bases, dictionary):
+    """Custom allocation for runtime-generated class types.
+
+    We override __new__ because this is apparently the only place
+    where we can meaningfully set __slots__ on the class we're creating(?).
+    (The interplay between metaclasses and slots is not very well-documented).
+
+    Args:
+      name: Name of the class (ignored, but required by the
+        metaclass protocol).
+      bases: Base classes of the class we're constructing.
+        (Should be message.Message).  We ignore this field, but
+        it's required by the metaclass protocol
+      dictionary: The class dictionary of the class we're
+        constructing.  dictionary[_DESCRIPTOR_KEY] must contain
+        a Descriptor object describing this protocol message
+        type.
+
+    Returns:
+      Newly-allocated class.
+    """
+    descriptor = dictionary[GeneratedProtocolMessageType._DESCRIPTOR_KEY]
+    _AddClassAttributesForNestedExtensions(descriptor, dictionary)
+    _AddSlots(descriptor, dictionary)
+
+    superclass = super(GeneratedProtocolMessageType, cls)
+    new_class = superclass.__new__(cls, name, bases, dictionary)
+    return new_class
+
+  def __init__(cls, name, bases, dictionary):
+    """Here we perform the majority of our work on the class.
+    We add enum getters, an __init__ method, implementations
+    of all Message methods, and properties for all fields
+    in the protocol type.
+
+    Args:
+      name: Name of the class (ignored, but required by the
+        metaclass protocol).
+      bases: Base classes of the class we're constructing.
+        (Should be message.Message).  We ignore this field, but
+        it's required by the metaclass protocol
+      dictionary: The class dictionary of the class we're
+        constructing.  dictionary[_DESCRIPTOR_KEY] must contain
+        a Descriptor object describing this protocol message
+        type.
+    """
+    descriptor = dictionary[GeneratedProtocolMessageType._DESCRIPTOR_KEY]
+    cls._decoders_by_tag = {}
+    cls._extensions_by_name = {}
+    cls._extensions_by_number = {}
+    if (descriptor.has_options and
+        descriptor.GetOptions().message_set_wire_format):
+      cls._decoders_by_tag[decoder.MESSAGE_SET_ITEM_TAG] = (
+          decoder.MessageSetItemDecoder(cls._extensions_by_number), None)
+
+    # Attach stuff to each FieldDescriptor for quick lookup later on.
+    for field in descriptor.fields:
+      _AttachFieldHelpers(cls, field)
+
+    descriptor._concrete_class = cls  # pylint: disable=protected-access
+    _AddEnumValues(descriptor, cls)
+    _AddInitMethod(descriptor, cls)
+    _AddPropertiesForFields(descriptor, cls)
+    _AddPropertiesForExtensions(descriptor, cls)
+    _AddStaticMethods(cls)
+    _AddMessageMethods(descriptor, cls)
+    _AddPrivateHelperMethods(descriptor, cls)
+    copyreg.pickle(cls, lambda obj: (cls, (), obj.__getstate__()))
+
+    superclass = super(GeneratedProtocolMessageType, cls)
+    superclass.__init__(name, bases, dictionary)
 
 
 # Stateless helpers for GeneratedProtocolMessageType below.
@@ -362,9 +436,10 @@ def _DefaultValueConstructorForField(field):
     message_type = field.message_type
     def MakeSubMessageDefault(message):
       result = message_type._concrete_class()
-      result._SetListener(message._listener_for_children)
-      if field.containing_oneof:
-        message._UpdateOneofState(field)
+      result._SetListener(
+          _OneofListener(message, field)
+          if field.containing_oneof is not None
+          else message._listener_for_children)
       return result
     return MakeSubMessageDefault
 
@@ -634,21 +709,11 @@ def _AddPropertiesForNonRepeatedCompositeField(field, cls):
   proto_field_name = field.name
   property_name = _PropertyName(proto_field_name)
 
-  # TODO(komarek): Can anyone explain to me why we cache the message_type this
-  # way, instead of referring to field.message_type inside of getter(self)?
-  # What if someone sets message_type later on (which makes for simpler
-  # dyanmic proto descriptor and class creation code).
-  message_type = field.message_type
-
   def getter(self):
     field_value = self._fields.get(field)
     if field_value is None:
       # Construct a new object to represent this field.
-      field_value = message_type._concrete_class()  # use field.message_type?
-      field_value._SetListener(
-          _OneofListener(self, field)
-          if field.containing_oneof is not None
-          else self._listener_for_children)
+      field_value = field._default_constructor(self)
 
       # Atomically check if another thread has preempted us and, if not, swap
       # in the new object we just created.  If someone has preempted us, we
@@ -1121,7 +1186,7 @@ def _AddIsInitializedMethod(message_descriptor, cls):
           if _IsMessageMapField(field):
             for key in value:
               element = value[key]
-              prefix = "%s[%d]." % (name, key)
+              prefix = "%s[%s]." % (name, key)
               sub_errors = element.FindInitializationErrors()
               errors += [prefix + error for error in sub_errors]
           else:
@@ -1173,8 +1238,6 @@ def _AddMergeFromMethod(cls):
             # Construct a new object to represent this field.
             field_value = field._default_constructor(self)
             fields[field] = field_value
-            if field.containing_oneof:
-              self._UpdateOneofState(field)
           field_value.MergeFrom(value)
       else:
         self._fields[field] = value
