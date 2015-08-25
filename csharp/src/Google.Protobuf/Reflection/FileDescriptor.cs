@@ -300,8 +300,9 @@ namespace Google.Protobuf.Reflection
                 if (dependencies[i].Name != proto.Dependency[i])
                 {
                     throw new DescriptorValidationException(result,
-                                                            "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
-                                                            "those listed in the FileDescriptorProto.");
+                        "Dependencies passed to FileDescriptor.BuildFrom() don't match " +
+                        "those listed in the FileDescriptorProto. Expected: " +
+                        proto.Dependency[i] + " but was: " + dependencies[i].Name);
                 }
             }
 

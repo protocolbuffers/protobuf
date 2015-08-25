@@ -118,6 +118,12 @@ std::string GetFileNamespace(const FileDescriptor* descriptor) {
 }
 
 std::string GetUmbrellaClassUnqualifiedName(const FileDescriptor* descriptor) {
+  // We manually rename Descriptor to DescriptorProtoFile to avoid collisions with
+  // the static Descriptor property. It would be nice to be able to do this with an
+  // option, but it would be rarely used.
+  if (IsDescriptorProto(descriptor)) {
+    return "DescriptorProtoFile";
+  }
   // umbrella_classname can no longer be set using message option.
   std::string proto_file = descriptor->name();
   int lastslash = proto_file.find_last_of("/");
