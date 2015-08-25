@@ -36,7 +36,6 @@ if [ -z "$PROTOC" ]; then
 fi
 
 # Descriptor proto
-# TODO(jonskeet): Remove fixup
 $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf/Reflection \
     src/google/protobuf/descriptor.proto
 
