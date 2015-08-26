@@ -47,6 +47,9 @@
 #undef PROTOBUF_LITTLE_ENDIAN
 #ifdef _WIN32
   // Assuming windows is always little-endian.
+  // TODO(xiaofeng): The PROTOBUF_LITTLE_ENDIAN is not only used for
+  // optimization but also for correctness. We should define an
+  // different macro to test the big-endian code path in coded_stream.
   #if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
     #define PROTOBUF_LITTLE_ENDIAN 1
   #endif
