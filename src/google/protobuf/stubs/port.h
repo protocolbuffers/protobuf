@@ -184,7 +184,7 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 // Provided at least since GCC 3.0.
 #define GOOGLE_PREDICT_TRUE(x) (__builtin_expect(!!(x), 1))
 #else
-#define GOOGLE_PREDICT_TRUE
+#define GOOGLE_PREDICT_TRUE(x) (x)
 #endif
 #endif
 
@@ -193,7 +193,7 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 // Provided at least since GCC 3.0.
 #define GOOGLE_PREDICT_FALSE(x) (__builtin_expect(x, 0))
 #else
-#define GOOGLE_PREDICT_FALSE
+#define GOOGLE_PREDICT_FALSE(x) (x)
 #endif
 #endif
 
