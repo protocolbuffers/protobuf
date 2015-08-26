@@ -33,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 //     service Foo {
 //       rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);
 //     }
+//
+// The JSON representation for `Empty` is empty JSON object `{}`.
 @interface GPBEmpty : GPBMessage
 
 @end

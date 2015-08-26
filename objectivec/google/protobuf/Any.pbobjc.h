@@ -34,10 +34,8 @@ typedef GPB_ENUM(GPBAny_FieldNumber) {
 // `Any` contains an arbitrary serialized message along with a URL
 // that describes the type of the serialized message.
 //
-// The proto runtimes and/or compiler will eventually
-//  provide utilities to pack/unpack Any values (projected Q1/15).
-//
-// # JSON
+// JSON
+// ====
 // The JSON representation of an `Any` value uses the regular
 // representation of the deserialized, embedded message, with an
 // additional field `@type` which contains the type URL. Example:
@@ -84,11 +82,6 @@ typedef GPB_ENUM(GPBAny_FieldNumber) {
 //
 // Schemas other than `http`, `https` (or the empty schema) might be
 // used with implementation specific semantics.
-//
-// Types originating from the `google.*` package
-// namespace should use `type.googleapis.com/full.type.name` (without
-// schema and path). A type service will eventually become available which
-// serves those URLs (projected Q2/15).
 @property(nonatomic, readwrite, copy, null_resettable) NSString *typeURL;
 
 // Must be valid serialized data of the above specified type.

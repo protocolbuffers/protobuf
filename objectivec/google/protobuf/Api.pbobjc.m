@@ -49,14 +49,18 @@ static GPBFileDescriptor *GPBApiRoot_FileDescriptor(void) {
 @dynamic optionsArray, optionsArray_Count;
 @dynamic version;
 @dynamic hasSourceContext, sourceContext;
+@dynamic mixinsArray, mixinsArray_Count;
+@dynamic syntax;
 
 typedef struct GPBApi__storage_ {
   uint32_t _has_storage_[1];
+  GPBSyntax syntax;
   NSString *name;
   NSMutableArray *methodsArray;
   NSMutableArray *optionsArray;
   NSString *version;
   GPBSourceContext *sourceContext;
+  NSMutableArray *mixinsArray;
 } GPBApi__storage_;
 
 // This method is threadsafe because it is initially called
@@ -120,6 +124,28 @@ typedef struct GPBApi__storage_ {
         .dataTypeSpecific.className = GPBStringifySymbol(GPBSourceContext),
         .fieldOptions = NULL,
       },
+      {
+        .name = "mixinsArray",
+        .number = GPBApi_FieldNumber_MixinsArray,
+        .hasIndex = GPBNoHasBit,
+        .flags = GPBFieldRepeated,
+        .dataType = GPBDataTypeMessage,
+        .offset = offsetof(GPBApi__storage_, mixinsArray),
+        .defaultValue.valueMessage = nil,
+        .dataTypeSpecific.className = GPBStringifySymbol(GPBMixin),
+        .fieldOptions = NULL,
+      },
+      {
+        .name = "syntax",
+        .number = GPBApi_FieldNumber_Syntax,
+        .hasIndex = 6,
+        .flags = GPBFieldOptional | GPBFieldHasEnumDescriptor,
+        .dataType = GPBDataTypeEnum,
+        .offset = offsetof(GPBApi__storage_, syntax),
+        .defaultValue.valueEnum = GPBSyntax_SyntaxProto2,
+        .dataTypeSpecific.enumDescFunc = GPBSyntax_EnumDescriptor,
+        .fieldOptions = NULL,
+      },
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBApi class]
@@ -143,6 +169,18 @@ typedef struct GPBApi__storage_ {
 
 @end
 
+int32_t GPBApi_Syntax_RawValue(GPBApi *message) {
+  GPBDescriptor *descriptor = [GPBApi descriptor];
+  GPBFieldDescriptor *field = [descriptor fieldWithNumber:GPBApi_FieldNumber_Syntax];
+  return GPBGetMessageInt32Field(message, field);
+}
+
+void SetGPBApi_Syntax_RawValue(GPBApi *message, int32_t value) {
+  GPBDescriptor *descriptor = [GPBApi descriptor];
+  GPBFieldDescriptor *field = [descriptor fieldWithNumber:GPBApi_FieldNumber_Syntax];
+  GPBSetInt32IvarWithFieldInternal(message, field, value, descriptor.file.syntax);
+}
+
 #pragma mark - GPBMethod
 
 @implementation GPBMethod
@@ -153,11 +191,13 @@ typedef struct GPBApi__storage_ {
 @dynamic responseTypeURL;
 @dynamic responseStreaming;
 @dynamic optionsArray, optionsArray_Count;
+@dynamic syntax;
 
 typedef struct GPBMethod__storage_ {
   uint32_t _has_storage_[1];
   BOOL requestStreaming;
   BOOL responseStreaming;
+  GPBSyntax syntax;
   NSString *name;
   NSString *requestTypeURL;
   NSString *responseTypeURL;
@@ -236,6 +276,17 @@ typedef struct GPBMethod__storage_ {
         .dataTypeSpecific.className = GPBStringifySymbol(GPBOption),
         .fieldOptions = NULL,
       },
+      {
+        .name = "syntax",
+        .number = GPBMethod_FieldNumber_Syntax,
+        .hasIndex = 6,
+        .flags = GPBFieldOptional | GPBFieldHasEnumDescriptor,
+        .dataType = GPBDataTypeEnum,
+        .offset = offsetof(GPBMethod__storage_, syntax),
+        .defaultValue.valueEnum = GPBSyntax_SyntaxProto2,
+        .dataTypeSpecific.enumDescFunc = GPBSyntax_EnumDescriptor,
+        .fieldOptions = NULL,
+      },
     };
 #if GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
     const char *extraTextFormatInfo = NULL;
@@ -257,6 +308,82 @@ typedef struct GPBMethod__storage_ {
                                    storageSize:sizeof(GPBMethod__storage_)
                                     wireFormat:NO
                            extraTextFormatInfo:extraTextFormatInfo];
+    NSAssert(descriptor == nil, @"Startup recursed!");
+    descriptor = localDescriptor;
+  }
+  return descriptor;
+}
+
+@end
+
+int32_t GPBMethod_Syntax_RawValue(GPBMethod *message) {
+  GPBDescriptor *descriptor = [GPBMethod descriptor];
+  GPBFieldDescriptor *field = [descriptor fieldWithNumber:GPBMethod_FieldNumber_Syntax];
+  return GPBGetMessageInt32Field(message, field);
+}
+
+void SetGPBMethod_Syntax_RawValue(GPBMethod *message, int32_t value) {
+  GPBDescriptor *descriptor = [GPBMethod descriptor];
+  GPBFieldDescriptor *field = [descriptor fieldWithNumber:GPBMethod_FieldNumber_Syntax];
+  GPBSetInt32IvarWithFieldInternal(message, field, value, descriptor.file.syntax);
+}
+
+#pragma mark - GPBMixin
+
+@implementation GPBMixin
+
+@dynamic name;
+@dynamic root;
+
+typedef struct GPBMixin__storage_ {
+  uint32_t _has_storage_[1];
+  NSString *name;
+  NSString *root;
+} GPBMixin__storage_;
+
+// This method is threadsafe because it is initially called
+// in +initialize for each subclass.
++ (GPBDescriptor *)descriptor {
+  static GPBDescriptor *descriptor = nil;
+  if (!descriptor) {
+    static GPBMessageFieldDescription fields[] = {
+      {
+        .name = "name",
+        .number = GPBMixin_FieldNumber_Name,
+        .hasIndex = 0,
+        .flags = GPBFieldOptional,
+        .dataType = GPBDataTypeString,
+        .offset = offsetof(GPBMixin__storage_, name),
+        .defaultValue.valueString = nil,
+        .dataTypeSpecific.className = NULL,
+        .fieldOptions = NULL,
+      },
+      {
+        .name = "root",
+        .number = GPBMixin_FieldNumber_Root,
+        .hasIndex = 1,
+        .flags = GPBFieldOptional,
+        .dataType = GPBDataTypeString,
+        .offset = offsetof(GPBMixin__storage_, root),
+        .defaultValue.valueString = nil,
+        .dataTypeSpecific.className = NULL,
+        .fieldOptions = NULL,
+      },
+    };
+    GPBDescriptor *localDescriptor =
+        [GPBDescriptor allocDescriptorForClass:[GPBMixin class]
+                                     rootClass:[GPBApiRoot class]
+                                          file:GPBApiRoot_FileDescriptor()
+                                        fields:fields
+                                    fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
+                                        oneofs:NULL
+                                    oneofCount:0
+                                         enums:NULL
+                                     enumCount:0
+                                        ranges:NULL
+                                    rangeCount:0
+                                   storageSize:sizeof(GPBMixin__storage_)
+                                    wireFormat:NO];
     NSAssert(descriptor == nil, @"Startup recursed!");
     descriptor = localDescriptor;
   }
