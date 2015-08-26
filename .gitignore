@@ -55,6 +55,7 @@ src/google/protobuf/util/**/*.pb.h
 *_pb2.py
 python/*.egg
 python/.eggs/
+python/.tox
 python/build/
 python/google/protobuf/compiler/
 

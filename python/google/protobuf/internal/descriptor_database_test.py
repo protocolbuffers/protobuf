@@ -34,7 +34,10 @@
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
-import unittest
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import factory_test2_pb2
 from google.protobuf import descriptor_database
@@ -48,17 +51,17 @@ class DescriptorDatabaseTest(unittest.TestCase):
         factory_test2_pb2.DESCRIPTOR.serialized_pb)
     db.Add(file_desc_proto)
 
-    self.assertEquals(file_desc_proto, db.FindFileByName(
+    self.assertEqual(file_desc_proto, db.FindFileByName(
         'google/protobuf/internal/factory_test2.proto'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Message'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Message.NestedFactory2Message'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Enum'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Message.NestedFactory2Enum'))
-    self.assertEquals(file_desc_proto, db.FindFileContainingSymbol(
+    self.assertEqual(file_desc_proto, db.FindFileContainingSymbol(
         'google.protobuf.python.internal.MessageWithNestedEnumOnly.NestedEnum'))
 
 if __name__ == '__main__':

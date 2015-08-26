@@ -55,6 +55,7 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/singleton.h>
 #include <google/protobuf/stubs/stl_util.h>
+#include <google/protobuf/stubs/port.h>
 
 namespace google {
 namespace protobuf {
@@ -485,6 +486,10 @@ struct ShutdownRepeatedFieldRegister {
 
 namespace internal {
 template<>
+#if defined(_MSC_VER) && (_MSC_VER >= 1900)
+// Note: force noinline to workaround MSVC 2015 compiler bug, issue #240
+GOOGLE_ATTRIBUTE_NOINLINE
+#endif
 Message* GenericTypeHandler<Message>::NewFromPrototype(
     const Message* prototype, google::protobuf::Arena* arena) {
   return prototype->New(arena);

@@ -49,9 +49,16 @@ import math
 import operator
 import pickle
 import sys
-import unittest
 
-import unittest
+import six
+
+if six.PY3:
+  long = int
+
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 from google.protobuf.internal import _parameterized
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
@@ -322,7 +329,7 @@ class MessageTest(unittest.TestCase):
   def testHighPrecisionFloatPrinting(self, message_module):
     message = message_module.TestAllTypes()
     message.optional_double = 0.12345678912345678
-    if sys.version_info.major >= 3:
+    if sys.version_info >= (3,):
       self.assertEqual(str(message), 'optional_double: 0.12345678912345678\n')
     else:
       self.assertEqual(str(message), 'optional_double: 0.123456789123\n')
@@ -466,7 +473,7 @@ class MessageTest(unittest.TestCase):
     message.repeated_nested_message.sort(key=get_bb, reverse=True)
     self.assertEqual([k.bb for k in message.repeated_nested_message],
                      [6, 5, 4, 3, 2, 1])
-    if sys.version_info.major >= 3: return  # No cmp sorting in PY3.
+    if sys.version_info >= (3,): return  # No cmp sorting in PY3.
     message.repeated_nested_message.sort(sort_function=cmp_bb)
     self.assertEqual([k.bb for k in message.repeated_nested_message],
                      [1, 2, 3, 4, 5, 6])
@@ -485,7 +492,7 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(list(message.repeated_int32), [-1, -2, -3])
     message.repeated_int32.sort(key=abs, reverse=True)
     self.assertEqual(list(message.repeated_int32), [-3, -2, -1])
-    if sys.version_info.major < 3:  # No cmp sorting in PY3.
+    if sys.version_info < (3,):  # No cmp sorting in PY3.
       abs_cmp = lambda a, b: cmp(abs(a), abs(b))
       message.repeated_int32.sort(sort_function=abs_cmp)
       self.assertEqual(list(message.repeated_int32), [-1, -2, -3])
@@ -499,7 +506,7 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(list(message.repeated_string), ['c', 'bb', 'aaa'])
     message.repeated_string.sort(key=len, reverse=True)
     self.assertEqual(list(message.repeated_string), ['aaa', 'bb', 'c'])
-    if sys.version_info.major < 3:  # No cmp sorting in PY3.
+    if sys.version_info < (3,):  # No cmp sorting in PY3.
       len_cmp = lambda a, b: cmp(len(a), len(b))
       message.repeated_string.sort(sort_function=len_cmp)
       self.assertEqual(list(message.repeated_string), ['c', 'bb', 'aaa'])
@@ -522,7 +529,7 @@ class MessageTest(unittest.TestCase):
     m2.repeated_nested_message.add().bb = 2
     m2.repeated_nested_message.add().bb = 3
 
-    if sys.version_info.major >= 3: return  # No cmp() in PY3.
+    if sys.version_info >= (3,): return  # No cmp() in PY3.
 
     # These comparisons should not raise errors.
     _ = m1 < m2
@@ -721,9 +728,7 @@ class MessageTest(unittest.TestCase):
     in the value being converted to a Unicode string."""
     m = message_module.TestAllTypes()
     m.optional_string = str('')
-    self.assertTrue(isinstance(m.optional_string, unicode))
-
-# TODO(haberman): why are these tests Google-internal only?
+    self.assertIsInstance(m.optional_string, six.text_type)
 
   def testLongValuedSlice(self, message_module):
     """It should be possible to use long-valued indicies in slices
@@ -1109,14 +1114,13 @@ class Proto2Test(unittest.TestCase):
         repeated_nested_enum=['FOO', unittest_pb2.TestAllTypes.BAR],
         default_int32=800,
         oneof_string='y')
-    self.assertTrue(isinstance(message, unittest_pb2.TestAllTypes))
+    self.assertIsInstance(message, unittest_pb2.TestAllTypes)
     self.assertEqual(100, message.optional_int32)
     self.assertEqual(200, message.optional_fixed32)
     self.assertEqual(300.5, message.optional_float)
     self.assertEqual(b'x', message.optional_bytes)
     self.assertEqual(400, message.optionalgroup.a)
-    self.assertTrue(isinstance(message.optional_nested_message,
-                               unittest_pb2.TestAllTypes.NestedMessage))
+    self.assertIsInstance(message.optional_nested_message, unittest_pb2.TestAllTypes.NestedMessage)
     self.assertEqual(500, message.optional_nested_message.bb)
     self.assertEqual(unittest_pb2.TestAllTypes.BAZ,
                      message.optional_nested_enum)
@@ -1274,7 +1278,7 @@ class Proto3Test(unittest.TestCase):
     self.assertTrue('abc' in msg.map_string_string)
     self.assertTrue(888 in msg.map_int32_enum)
 
-    self.assertTrue(isinstance(msg.map_string_string['abc'], unicode))
+    self.assertIsInstance(msg.map_string_string['abc'], six.text_type)
 
     # Accessing an unset key still throws TypeError of the type of the key
     # is incorrect.
@@ -1289,14 +1293,14 @@ class Proto3Test(unittest.TestCase):
     msg = map_unittest_pb2.TestMap()
 
     self.assertIsNone(msg.map_int32_int32.get(5))
-    self.assertEquals(10, msg.map_int32_int32.get(5, 10))
+    self.assertEqual(10, msg.map_int32_int32.get(5, 10))
     self.assertIsNone(msg.map_int32_int32.get(5))
 
     msg.map_int32_int32[5] = 15
-    self.assertEquals(15, msg.map_int32_int32.get(5))
+    self.assertEqual(15, msg.map_int32_int32.get(5))
 
     self.assertIsNone(msg.map_int32_foreign_message.get(5))
-    self.assertEquals(10, msg.map_int32_foreign_message.get(5, 10))
+    self.assertEqual(10, msg.map_int32_foreign_message.get(5, 10))
 
     submsg = msg.map_int32_foreign_message[5]
     self.assertIs(submsg, msg.map_int32_foreign_message.get(5))
@@ -1353,17 +1357,17 @@ class Proto3Test(unittest.TestCase):
     msg = map_unittest_pb2.TestMap()
 
     unicode_obj = u'\u1234'
-    bytes_obj = unicode_obj.encode('utf8') 
+    bytes_obj = unicode_obj.encode('utf8')
 
     msg.map_string_string[bytes_obj] = bytes_obj
 
-    (key, value) = msg.map_string_string.items()[0]
+    (key, value) = list(msg.map_string_string.items())[0]
 
     self.assertEqual(key, unicode_obj)
     self.assertEqual(value, unicode_obj)
 
-    self.assertTrue(isinstance(key, unicode))
-    self.assertTrue(isinstance(value, unicode))
+    self.assertIsInstance(key, six.text_type)
+    self.assertIsInstance(value, six.text_type)
 
   def testMessageMap(self):
     msg = map_unittest_pb2.TestMap()
@@ -1531,7 +1535,7 @@ class Proto3Test(unittest.TestCase):
 
     submsg = msg.map_int32_foreign_message[111]
     self.assertIs(submsg, msg.map_int32_foreign_message[111])
-    self.assertTrue(isinstance(submsg, unittest_pb2.ForeignMessage))
+    self.assertIsInstance(submsg, unittest_pb2.ForeignMessage)
 
     submsg.c = 5
 
@@ -1548,7 +1552,7 @@ class Proto3Test(unittest.TestCase):
   def testMapIteration(self):
     msg = map_unittest_pb2.TestMap()
 
-    for k, v in msg.map_int32_int32.iteritems():
+    for k, v in msg.map_int32_int32.items():
       # Should not be reached.
       self.assertTrue(False)
 
@@ -1558,7 +1562,7 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual(3, len(msg.map_int32_int32))
 
     matching_dict = {2: 4, 3: 6, 4: 8}
-    self.assertMapIterEquals(msg.map_int32_int32.iteritems(), matching_dict)
+    self.assertMapIterEquals(msg.map_int32_int32.items(), matching_dict)
 
   def testMapIterationClearMessage(self):
     # Iterator needs to work even if message and map are deleted.
@@ -1568,7 +1572,7 @@ class Proto3Test(unittest.TestCase):
     msg.map_int32_int32[3] = 6
     msg.map_int32_int32[4] = 8
 
-    it = msg.map_int32_int32.iteritems()
+    it = msg.map_int32_int32.items()
     del msg
 
     matching_dict = {2: 4, 3: 6, 4: 8}
@@ -1596,7 +1600,7 @@ class Proto3Test(unittest.TestCase):
 
     msg.ClearField('map_int32_int32')
     matching_dict = {2: 4, 3: 6, 4: 8}
-    self.assertMapIterEquals(map.iteritems(), matching_dict)
+    self.assertMapIterEquals(map.items(), matching_dict)
 
   def testMapIterValidAfterFieldCleared(self):
     # Map iterator needs to work even if field is cleared.
@@ -1608,7 +1612,7 @@ class Proto3Test(unittest.TestCase):
     msg.map_int32_int32[3] = 6
     msg.map_int32_int32[4] = 8
 
-    it = msg.map_int32_int32.iteritems()
+    it = msg.map_int32_int32.items()
 
     msg.ClearField('map_int32_int32')
     matching_dict = {2: 4, 3: 6, 4: 8}

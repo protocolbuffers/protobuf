@@ -39,8 +39,13 @@ import copy
 import gc
 import operator
 import struct
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 
-import unittest
+import six
+
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -129,10 +134,10 @@ class ReflectionTest(unittest.TestCase):
         repeated_bool=[True, False, False],
         repeated_string=["optional_string"])
 
-    self.assertEquals([1, 2, 3, 4], list(proto.repeated_int32))
-    self.assertEquals([1.23, 54.321], list(proto.repeated_double))
-    self.assertEquals([True, False, False], list(proto.repeated_bool))
-    self.assertEquals(["optional_string"], list(proto.repeated_string))
+    self.assertEqual([1, 2, 3, 4], list(proto.repeated_int32))
+    self.assertEqual([1.23, 54.321], list(proto.repeated_double))
+    self.assertEqual([True, False, False], list(proto.repeated_bool))
+    self.assertEqual(["optional_string"], list(proto.repeated_string))
 
   def testRepeatedCompositeConstructor(self):
     # Constructor with only repeated composite types should succeed.
@@ -151,18 +156,18 @@ class ReflectionTest(unittest.TestCase):
             unittest_pb2.TestAllTypes.RepeatedGroup(a=1),
             unittest_pb2.TestAllTypes.RepeatedGroup(a=2)])
 
-    self.assertEquals(
+    self.assertEqual(
         [unittest_pb2.TestAllTypes.NestedMessage(
             bb=unittest_pb2.TestAllTypes.FOO),
          unittest_pb2.TestAllTypes.NestedMessage(
              bb=unittest_pb2.TestAllTypes.BAR)],
         list(proto.repeated_nested_message))
-    self.assertEquals(
+    self.assertEqual(
         [unittest_pb2.ForeignMessage(c=-43),
          unittest_pb2.ForeignMessage(c=45324),
          unittest_pb2.ForeignMessage(c=12)],
         list(proto.repeated_foreign_message))
-    self.assertEquals(
+    self.assertEqual(
         [unittest_pb2.TestAllTypes.RepeatedGroup(),
          unittest_pb2.TestAllTypes.RepeatedGroup(a=1),
          unittest_pb2.TestAllTypes.RepeatedGroup(a=2)],
@@ -187,15 +192,15 @@ class ReflectionTest(unittest.TestCase):
 
     self.assertEqual(24, proto.optional_int32)
     self.assertEqual('optional_string', proto.optional_string)
-    self.assertEquals([1.23, 54.321], list(proto.repeated_double))
-    self.assertEquals([True, False, False], list(proto.repeated_bool))
-    self.assertEquals(
+    self.assertEqual([1.23, 54.321], list(proto.repeated_double))
+    self.assertEqual([True, False, False], list(proto.repeated_bool))
+    self.assertEqual(
         [unittest_pb2.TestAllTypes.NestedMessage(
             bb=unittest_pb2.TestAllTypes.FOO),
          unittest_pb2.TestAllTypes.NestedMessage(
              bb=unittest_pb2.TestAllTypes.BAR)],
         list(proto.repeated_nested_message))
-    self.assertEquals(
+    self.assertEqual(
         [unittest_pb2.ForeignMessage(c=-43),
          unittest_pb2.ForeignMessage(c=45324),
          unittest_pb2.ForeignMessage(c=12)],
@@ -223,18 +228,18 @@ class ReflectionTest(unittest.TestCase):
 
   def testConstructorInvalidatesCachedByteSize(self):
     message = unittest_pb2.TestAllTypes(optional_int32 = 12)
-    self.assertEquals(2, message.ByteSize())
+    self.assertEqual(2, message.ByteSize())
 
     message = unittest_pb2.TestAllTypes(
         optional_nested_message = unittest_pb2.TestAllTypes.NestedMessage())
-    self.assertEquals(3, message.ByteSize())
+    self.assertEqual(3, message.ByteSize())
 
     message = unittest_pb2.TestAllTypes(repeated_int32 = [12])
-    self.assertEquals(3, message.ByteSize())
+    self.assertEqual(3, message.ByteSize())
 
     message = unittest_pb2.TestAllTypes(
         repeated_nested_message = [unittest_pb2.TestAllTypes.NestedMessage()])
-    self.assertEquals(3, message.ByteSize())
+    self.assertEqual(3, message.ByteSize())
 
   def testSimpleHasBits(self):
     # Test a scalar.
@@ -468,7 +473,7 @@ class ReflectionTest(unittest.TestCase):
     proto.repeated_string.extend(['foo', 'bar'])
     proto.repeated_string.extend([])
     proto.repeated_string.append('baz')
-    proto.repeated_string.extend(str(x) for x in xrange(2))
+    proto.repeated_string.extend(str(x) for x in range(2))
     proto.optional_int32 = 21
     proto.repeated_bool  # Access but don't set anything; should not be listed.
     self.assertEqual(
@@ -610,14 +615,18 @@ class ReflectionTest(unittest.TestCase):
     def TestGetAndDeserialize(field_name, value, expected_type):
       proto = unittest_pb2.TestAllTypes()
       setattr(proto, field_name, value)
-      self.assertTrue(isinstance(getattr(proto, field_name), expected_type))
+      self.assertIsInstance(getattr(proto, field_name), expected_type)
       proto2 = unittest_pb2.TestAllTypes()
       proto2.ParseFromString(proto.SerializeToString())
-      self.assertTrue(isinstance(getattr(proto2, field_name), expected_type))
+      self.assertIsInstance(getattr(proto2, field_name), expected_type)
 
     TestGetAndDeserialize('optional_int32', 1, int)
     TestGetAndDeserialize('optional_int32', 1 << 30, int)
     TestGetAndDeserialize('optional_uint32', 1 << 30, int)
+    try:
+      integer_64 = long
+    except NameError: # Python3
+      integer_64 = int
     if struct.calcsize('L') == 4:
       # Python only has signed ints, so 32-bit python can't fit an uint32
       # in an int.
@@ -625,10 +634,10 @@ class ReflectionTest(unittest.TestCase):
     else:
       # 64-bit python can fit uint32 inside an int
       TestGetAndDeserialize('optional_uint32', 1 << 31, int)
-    TestGetAndDeserialize('optional_int64', 1 << 30, long)
-    TestGetAndDeserialize('optional_int64', 1 << 60, long)
-    TestGetAndDeserialize('optional_uint64', 1 << 30, long)
-    TestGetAndDeserialize('optional_uint64', 1 << 60, long)
+    TestGetAndDeserialize('optional_int64', 1 << 30, integer_64)
+    TestGetAndDeserialize('optional_int64', 1 << 60, integer_64)
+    TestGetAndDeserialize('optional_uint64', 1 << 30, integer_64)
+    TestGetAndDeserialize('optional_uint64', 1 << 60, integer_64)
 
   def testSingleScalarBoundsChecking(self):
     def TestMinAndMaxIntegers(field_name, expected_min, expected_max):
@@ -754,18 +763,18 @@ class ReflectionTest(unittest.TestCase):
 
   def testEnum_KeysAndValues(self):
     self.assertEqual(['FOREIGN_FOO', 'FOREIGN_BAR', 'FOREIGN_BAZ'],
-                     unittest_pb2.ForeignEnum.keys())
+                     list(unittest_pb2.ForeignEnum.keys()))
     self.assertEqual([4, 5, 6],
-                     unittest_pb2.ForeignEnum.values())
+                     list(unittest_pb2.ForeignEnum.values()))
     self.assertEqual([('FOREIGN_FOO', 4), ('FOREIGN_BAR', 5),
                       ('FOREIGN_BAZ', 6)],
-                     unittest_pb2.ForeignEnum.items())
+                     list(unittest_pb2.ForeignEnum.items()))
 
     proto = unittest_pb2.TestAllTypes()
-    self.assertEqual(['FOO', 'BAR', 'BAZ', 'NEG'], proto.NestedEnum.keys())
-    self.assertEqual([1, 2, 3, -1], proto.NestedEnum.values())
+    self.assertEqual(['FOO', 'BAR', 'BAZ', 'NEG'], list(proto.NestedEnum.keys()))
+    self.assertEqual([1, 2, 3, -1], list(proto.NestedEnum.values()))
     self.assertEqual([('FOO', 1), ('BAR', 2), ('BAZ', 3), ('NEG', -1)],
-                     proto.NestedEnum.items())
+                     list(proto.NestedEnum.items()))
 
   def testRepeatedScalars(self):
     proto = unittest_pb2.TestAllTypes()
@@ -804,7 +813,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual([5, 25, 20, 15, 30], proto.repeated_int32[:])
 
     # Test slice assignment with an iterator
-    proto.repeated_int32[1:4] = (i for i in xrange(3))
+    proto.repeated_int32[1:4] = (i for i in range(3))
     self.assertEqual([5, 0, 1, 2, 30], proto.repeated_int32)
 
     # Test slice assignment.
@@ -895,7 +904,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertTrue(proto.repeated_nested_message)
     self.assertEqual(2, len(proto.repeated_nested_message))
     self.assertListsEqual([m0, m1], proto.repeated_nested_message)
-    self.assertTrue(isinstance(m0, unittest_pb2.TestAllTypes.NestedMessage))
+    self.assertIsInstance(m0, unittest_pb2.TestAllTypes.NestedMessage)
 
     # Test out-of-bounds indices.
     self.assertRaises(IndexError, proto.repeated_nested_message.__getitem__,
@@ -1007,9 +1016,8 @@ class ReflectionTest(unittest.TestCase):
         containing_type=None, nested_types=[], enum_types=[],
         fields=[foo_field_descriptor], extensions=[],
         options=descriptor_pb2.MessageOptions())
-    class MyProtoClass(message.Message):
+    class MyProtoClass(six.with_metaclass(reflection.GeneratedProtocolMessageType, message.Message)):
       DESCRIPTOR = mydescriptor
-      __metaclass__ = reflection.GeneratedProtocolMessageType
     myproto_instance = MyProtoClass()
     self.assertEqual(0, myproto_instance.foo_field)
     self.assertTrue(not myproto_instance.HasField('foo_field'))
@@ -1049,14 +1057,13 @@ class ReflectionTest(unittest.TestCase):
     new_field.label = descriptor_pb2.FieldDescriptorProto.LABEL_REPEATED
 
     desc = descriptor.MakeDescriptor(desc_proto)
-    self.assertTrue(desc.fields_by_name.has_key('name'))
-    self.assertTrue(desc.fields_by_name.has_key('year'))
-    self.assertTrue(desc.fields_by_name.has_key('automatic'))
-    self.assertTrue(desc.fields_by_name.has_key('price'))
-    self.assertTrue(desc.fields_by_name.has_key('owners'))
+    self.assertTrue('name' in desc.fields_by_name)
+    self.assertTrue('year' in desc.fields_by_name)
+    self.assertTrue('automatic' in desc.fields_by_name)
+    self.assertTrue('price' in desc.fields_by_name)
+    self.assertTrue('owners' in desc.fields_by_name)
 
-    class CarMessage(message.Message):
-      __metaclass__ = reflection.GeneratedProtocolMessageType
+    class CarMessage(six.with_metaclass(reflection.GeneratedProtocolMessageType, message.Message)):
       DESCRIPTOR = desc
 
     prius = CarMessage()
@@ -1174,7 +1181,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertTrue(1 in unittest_pb2.TestAllExtensions._extensions_by_number)
     # Make sure extensions haven't been registered into types that shouldn't
     # have any.
-    self.assertEquals(0, len(unittest_pb2.TestAllTypes._extensions_by_name))
+    self.assertEqual(0, len(unittest_pb2.TestAllTypes._extensions_by_name))
 
   # If message A directly contains message B, and
   # a.HasField('b') is currently False, then mutating any
@@ -1498,18 +1505,18 @@ class ReflectionTest(unittest.TestCase):
       test_util.SetAllNonLazyFields(proto)
     # Clear the message.
     proto.Clear()
-    self.assertEquals(proto.ByteSize(), 0)
+    self.assertEqual(proto.ByteSize(), 0)
     empty_proto = unittest_pb2.TestAllTypes()
-    self.assertEquals(proto, empty_proto)
+    self.assertEqual(proto, empty_proto)
 
     # Test if extensions which were set are cleared.
     proto = unittest_pb2.TestAllExtensions()
     test_util.SetAllExtensions(proto)
     # Clear the message.
     proto.Clear()
-    self.assertEquals(proto.ByteSize(), 0)
+    self.assertEqual(proto.ByteSize(), 0)
     empty_proto = unittest_pb2.TestAllExtensions()
-    self.assertEquals(proto, empty_proto)
+    self.assertEqual(proto, empty_proto)
 
   def testDisconnectingBeforeClear(self):
     proto = unittest_pb2.TestAllTypes()
@@ -1662,14 +1669,14 @@ class ReflectionTest(unittest.TestCase):
                       setattr, proto, 'optional_bytes', u'unicode object')
 
     # Check that the default value is of python's 'unicode' type.
-    self.assertEqual(type(proto.optional_string), unicode)
+    self.assertEqual(type(proto.optional_string), six.text_type)
 
-    proto.optional_string = unicode('Testing')
+    proto.optional_string = six.text_type('Testing')
     self.assertEqual(proto.optional_string, str('Testing'))
 
     # Assign a value of type 'str' which can be encoded in UTF-8.
     proto.optional_string = str('Testing')
-    self.assertEqual(proto.optional_string, unicode('Testing'))
+    self.assertEqual(proto.optional_string, six.text_type('Testing'))
 
     # Try to assign a 'bytes' object which contains non-UTF-8.
     self.assertRaises(ValueError,
@@ -1715,7 +1722,7 @@ class ReflectionTest(unittest.TestCase):
     bytes_read = message2.MergeFromString(raw.item[0].message)
     self.assertEqual(len(raw.item[0].message), bytes_read)
 
-    self.assertEqual(type(message2.str), unicode)
+    self.assertEqual(type(message2.str), six.text_type)
     self.assertEqual(message2.str, test_utf8)
 
     # The pure Python API throws an exception on MergeFromString(),
@@ -1739,7 +1746,7 @@ class ReflectionTest(unittest.TestCase):
   def testBytesInTextFormat(self):
     proto = unittest_pb2.TestAllTypes(optional_bytes=b'\x00\x7f\x80\xff')
     self.assertEqual(u'optional_bytes: "\\000\\177\\200\\377"\n',
-                     unicode(proto))
+                     six.text_type(proto))
 
   def testEmptyNestedMessage(self):
     proto = unittest_pb2.TestAllTypes()
@@ -1791,17 +1798,6 @@ class ReflectionTest(unittest.TestCase):
     msg = import_test_package.myproto.Outer()
     # Just check the default value.
     self.assertEqual(57, msg.inner.value)
-
-  @unittest.skipIf(
-      api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
-      'CPPv2-specific test')
-  def testBadArguments(self):
-    # Some of these assertions used to segfault.
-    from google.protobuf.pyext import _message
-    self.assertRaises(TypeError, _message.default_pool.FindFieldByName, 3)
-    self.assertRaises(TypeError, _message.default_pool.FindExtensionByName, 42)
-    self.assertRaises(TypeError,
-                      unittest_pb2.TestAllTypes().__getattribute__, 42)
 
 
 #  Since we had so many tests for protocol buffer equality, we broke these out
@@ -2318,7 +2314,7 @@ class SerializationTest(unittest.TestCase):
     test_util.SetAllFields(first_proto)
     serialized = first_proto.SerializeToString()
 
-    for truncation_point in xrange(len(serialized) + 1):
+    for truncation_point in range(len(serialized) + 1):
       try:
         second_proto = unittest_pb2.TestAllTypes()
         unknown_fields = unittest_pb2.TestEmptyMessage()
@@ -2478,7 +2474,7 @@ class SerializationTest(unittest.TestCase):
     # Check that the message parsed well.
     extension_message1 = message_set_extensions_pb2.TestMessageSetExtension1
     extension1 = extension_message1.message_set_extension
-    self.assertEquals(12345, proto.Extensions[extension1].i)
+    self.assertEqual(12345, proto.Extensions[extension1].i)
 
   def testUnknownFields(self):
     proto = unittest_pb2.TestAllTypes()
@@ -2919,8 +2915,7 @@ class ClassAPITest(unittest.TestCase):
     msg_descriptor = descriptor.MakeDescriptor(
         file_descriptor.message_type[0])
 
-    class MessageClass(message.Message):
-      __metaclass__ = reflection.GeneratedProtocolMessageType
+    class MessageClass(six.with_metaclass(reflection.GeneratedProtocolMessageType, message.Message)):
       DESCRIPTOR = msg_descriptor
     msg = MessageClass()
     msg_str = (

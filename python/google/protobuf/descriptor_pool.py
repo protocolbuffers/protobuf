@@ -57,8 +57,6 @@ directly instead of this class.
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
-import sys
-
 from google.protobuf import descriptor
 from google.protobuf import descriptor_database
 from google.protobuf import text_encoding
@@ -192,8 +190,7 @@ class DescriptorPool(object):
 
     try:
       file_proto = self._internal_db.FindFileByName(file_name)
-    except KeyError:
-      _, error, _ = sys.exc_info()  #PY25 compatible for GAE.
+    except KeyError as error:
       if self._descriptor_db:
         file_proto = self._descriptor_db.FindFileByName(file_name)
       else:
@@ -228,8 +225,7 @@ class DescriptorPool(object):
 
     try:
       file_proto = self._internal_db.FindFileContainingSymbol(symbol)
-    except KeyError:
-      _, error, _ = sys.exc_info()  #PY25 compatible for GAE.
+    except KeyError as error:
       if self._descriptor_db:
         file_proto = self._descriptor_db.FindFileContainingSymbol(symbol)
       else:
