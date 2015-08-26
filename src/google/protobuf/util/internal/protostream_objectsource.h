@@ -202,7 +202,9 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
                                         const google::protobuf::Type& type,
                                         StringPiece name, ObjectWriter* ow);
 
-  static hash_map<string, TypeRenderer>* CreateRendererMap();
+  static hash_map<string, TypeRenderer>* renderers_;
+  static void InitRendererMap();
+  static void DeleteRendererMap();
   static TypeRenderer* FindTypeRenderer(const string& type_url);
 
   // Renders a field value to the ObjectWriter.

@@ -407,7 +407,9 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter
 
   // Helper functions to create the map and find functions responsible for
   // rendering well known types, keyed by type URL.
-  static hash_map<string, TypeRenderer>* CreateRendererMap();
+  static hash_map<string, TypeRenderer>* renderers_;
+  static void InitRendererMap();
+  static void DeleteRendererMap();
   static TypeRenderer* FindTypeRenderer(const string& type_url);
 
   // Returns the ProtoElement::ElementType for the given Type.

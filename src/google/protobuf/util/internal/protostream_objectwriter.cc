@@ -39,6 +39,7 @@
 #include <google/protobuf/util/internal/object_location_tracker.h>
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/utility.h>
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/statusor.h>
@@ -1365,60 +1366,67 @@ void ProtoStreamObjectWriter::RenderSimpleDataPiece(
 // Map of functions that are responsible for rendering well known type
 // represented by the key.
 hash_map<string, ProtoStreamObjectWriter::TypeRenderer>*
-ProtoStreamObjectWriter::CreateRendererMap() {
-  google::protobuf::scoped_ptr<hash_map<string, ProtoStreamObjectWriter::TypeRenderer> >
-      result(new hash_map<string, ProtoStreamObjectWriter::TypeRenderer>());
-  (*result)["type.googleapis.com/google.protobuf.Timestamp"] =
+    ProtoStreamObjectWriter::renderers_ = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(writer_renderers_init_);
+
+void ProtoStreamObjectWriter::InitRendererMap() {
+  renderers_ = new hash_map<string, ProtoStreamObjectWriter::TypeRenderer>();
+  (*renderers_)["type.googleapis.com/google.protobuf.Timestamp"] =
       &ProtoStreamObjectWriter::RenderTimestamp;
-  (*result)["type.googleapis.com/google.protobuf.Duration"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.Duration"] =
       &ProtoStreamObjectWriter::RenderDuration;
-  (*result)["type.googleapis.com/google.protobuf.FieldMask"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.FieldMask"] =
       &ProtoStreamObjectWriter::RenderFieldMask;
-  (*result)["type.googleapis.com/google.protobuf.Double"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.Double"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.Float"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.Float"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.Int64"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.Int64"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.UInt64"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.UInt64"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.Int32"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.Int32"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.UInt32"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.UInt32"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.Bool"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.Bool"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.String"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.String"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.Bytes"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.Bytes"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.DoubleValue"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.DoubleValue"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.FloatValue"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.FloatValue"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.Int64Value"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.Int64Value"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.UInt64Value"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.UInt64Value"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.Int32Value"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.Int32Value"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.UInt32Value"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.UInt32Value"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.BoolValue"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.BoolValue"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.StringValue"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.StringValue"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.BytesValue"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.BytesValue"] =
       &ProtoStreamObjectWriter::RenderWrapperType;
-  (*result)["type.googleapis.com/google.protobuf.Value"] =
+  (*renderers_)["type.googleapis.com/google.protobuf.Value"] =
       &ProtoStreamObjectWriter::RenderStructValue;
-  return result.release();
+  ::google::protobuf::internal::OnShutdown(&DeleteRendererMap);
+}
+
+void ProtoStreamObjectWriter::DeleteRendererMap() {
+  delete ProtoStreamObjectWriter::renderers_;
+  renderers_ = NULL;
 }
 
 ProtoStreamObjectWriter::TypeRenderer*
 ProtoStreamObjectWriter::FindTypeRenderer(const string& type_url) {
-  static hash_map<string, TypeRenderer>* renderers = CreateRendererMap();
-  return FindOrNull(*renderers, type_url);
+  ::google::protobuf::GoogleOnceInit(&writer_renderers_init_, &InitRendererMap);
+  return FindOrNull(*renderers_, type_url);
 }
 
 ProtoStreamObjectWriter::ProtoElement::ElementType

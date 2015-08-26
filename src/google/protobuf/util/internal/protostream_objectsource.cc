@@ -47,6 +47,7 @@
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/status_macros.h>
 
 
@@ -648,46 +649,53 @@ Status ProtoStreamObjectSource::RenderFieldMask(
 }
 
 hash_map<string, ProtoStreamObjectSource::TypeRenderer>*
-ProtoStreamObjectSource::CreateRendererMap() {
-  hash_map<string, ProtoStreamObjectSource::TypeRenderer>* result =
-      new hash_map<string, ProtoStreamObjectSource::TypeRenderer>();
-  (*result)["google.protobuf.Timestamp"] =
+    ProtoStreamObjectSource::renderers_ = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(source_renderers_init_);
+
+void ProtoStreamObjectSource::InitRendererMap() {
+  renderers_ = new hash_map<string, ProtoStreamObjectSource::TypeRenderer>();
+  (*renderers_)["google.protobuf.Timestamp"] =
       &ProtoStreamObjectSource::RenderTimestamp;
-  (*result)["google.protobuf.Duration"] =
+  (*renderers_)["google.protobuf.Duration"] =
       &ProtoStreamObjectSource::RenderDuration;
-  (*result)["google.protobuf.DoubleValue"] =
+  (*renderers_)["google.protobuf.DoubleValue"] =
       &ProtoStreamObjectSource::RenderDouble;
-  (*result)["google.protobuf.FloatValue"] =
+  (*renderers_)["google.protobuf.FloatValue"] =
       &ProtoStreamObjectSource::RenderFloat;
-  (*result)["google.protobuf.Int64Value"] =
+  (*renderers_)["google.protobuf.Int64Value"] =
       &ProtoStreamObjectSource::RenderInt64;
-  (*result)["google.protobuf.UInt64Value"] =
+  (*renderers_)["google.protobuf.UInt64Value"] =
       &ProtoStreamObjectSource::RenderUInt64;
-  (*result)["google.protobuf.Int32Value"] =
+  (*renderers_)["google.protobuf.Int32Value"] =
       &ProtoStreamObjectSource::RenderInt32;
-  (*result)["google.protobuf.UInt32Value"] =
+  (*renderers_)["google.protobuf.UInt32Value"] =
       &ProtoStreamObjectSource::RenderUInt32;
-  (*result)["google.protobuf.BoolValue"] = &ProtoStreamObjectSource::RenderBool;
-  (*result)["google.protobuf.StringValue"] =
+  (*renderers_)["google.protobuf.BoolValue"] = &ProtoStreamObjectSource::RenderBool;
+  (*renderers_)["google.protobuf.StringValue"] =
       &ProtoStreamObjectSource::RenderString;
-  (*result)["google.protobuf.BytesValue"] =
+  (*renderers_)["google.protobuf.BytesValue"] =
       &ProtoStreamObjectSource::RenderBytes;
-  (*result)["google.protobuf.Any"] = &ProtoStreamObjectSource::RenderAny;
-  (*result)["google.protobuf.Struct"] = &ProtoStreamObjectSource::RenderStruct;
-  (*result)["google.protobuf.Value"] =
+  (*renderers_)["google.protobuf.Any"] = &ProtoStreamObjectSource::RenderAny;
+  (*renderers_)["google.protobuf.Struct"] = &ProtoStreamObjectSource::RenderStruct;
+  (*renderers_)["google.protobuf.Value"] =
       &ProtoStreamObjectSource::RenderStructValue;
-  (*result)["google.protobuf.ListValue"] =
+  (*renderers_)["google.protobuf.ListValue"] =
       &ProtoStreamObjectSource::RenderStructListValue;
-  (*result)["google.protobuf.FieldMask"] =
+  (*renderers_)["google.protobuf.FieldMask"] =
       &ProtoStreamObjectSource::RenderFieldMask;
-  return result;
+  ::google::protobuf::internal::OnShutdown(&DeleteRendererMap);
+}
+
+void ProtoStreamObjectSource::DeleteRendererMap() {
+  delete ProtoStreamObjectSource::renderers_;
+  renderers_ = NULL;
 }
 
 // static
 ProtoStreamObjectSource::TypeRenderer*
 ProtoStreamObjectSource::FindTypeRenderer(const string& type_url) {
-  static hash_map<string, TypeRenderer>* renderers = CreateRendererMap();
-  return FindOrNull(*renderers, type_url);
+  ::google::protobuf::GoogleOnceInit(&source_renderers_init_, &InitRendererMap);
+  return FindOrNull(*renderers_, type_url);
 }
 
 Status ProtoStreamObjectSource::RenderField(
