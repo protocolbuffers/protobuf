@@ -116,7 +116,7 @@ message MessageContainingEnumCalledType {
   enum Type {
     TYPE_FOO = 0;
   }
-  map<int32, MessageContainingEnumCalledType> type = 1;
+  map<string, MessageContainingEnumCalledType> type = 1;
 }
 
 // Previously, message cannot contain map field called "entry".
@@ -125,5 +125,5 @@ message MessageContainingMapCalledEntry {
 }
 
 message TestRecursiveMapMessage {
-  map<int32, TestRecursiveMapMessage> a = 1;
+  map<string, TestRecursiveMapMessage> a = 1;
 }

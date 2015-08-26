@@ -2188,7 +2188,7 @@ TEST_F(MapFieldInDynamicMessageTest, MapSpaceUsed) {
 
 TEST_F(MapFieldInDynamicMessageTest, RecursiveMap) {
   TestRecursiveMapMessage from;
-  (*from.mutable_a())[0];
+  (*from.mutable_a())[""];
   string data = from.SerializeAsString();
   google::protobuf::scoped_ptr<Message> to(
       factory_.GetPrototype(recursive_map_descriptor_)->New());
