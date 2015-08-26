@@ -143,7 +143,7 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
     Arena* arena_;
   };
 
-  UnknownFieldSet* mutable_unknown_fields_slow() GOOGLE_ATTRIBUTE_NOINLINE {
+  GOOGLE_ATTRIBUTE_NOINLINE UnknownFieldSet* mutable_unknown_fields_slow() {
     Arena* my_arena = arena();
     Container* container = Arena::Create<Container>(my_arena);
     ptr_ = reinterpret_cast<void*>(
