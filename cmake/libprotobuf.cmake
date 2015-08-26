@@ -25,7 +25,6 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/source_context.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/struct.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/mathlimits.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/structurally_valid.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/substitute.cc
   ${protobuf_source_dir}/src/google/protobuf/text_format.cc
   ${protobuf_source_dir}/src/google/protobuf/timestamp.pb.cc
