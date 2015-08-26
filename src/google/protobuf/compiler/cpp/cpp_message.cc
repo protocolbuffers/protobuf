@@ -2536,13 +2536,7 @@ GenerateOneofClear(io::Printer* printer) {
     printer->Print(oneof_vars,
         "void $classname$::clear_$oneofname$() {\n");
     printer->Indent();
-    // In .proto.h mode, fields with a dependent type will generate
-    // clearing code that down casts from the dependent base class.
-    // However, clear_oneof() methods are always in the .cc file, and thus
-    // must remain in the derived base. So, to make the clearing code work,
-    // we add a typedef so that the down cast works (it will be a no-op).
     printer->Print(oneof_vars,
-        "typedef $classname$ T;\n"
         "switch($oneofname$_case()) {\n");
     printer->Indent();
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
