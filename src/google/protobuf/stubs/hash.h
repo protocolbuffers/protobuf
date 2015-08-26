@@ -103,8 +103,8 @@
 #  define GOOGLE_PROTOBUF_HAS_CXX11_HASH
 #  define GOOGLE_PROTOBUF_HASH_COMPARE std::hash_compare
 # elif _MSC_VER >= 1500  // Since Visual Studio 2008
-#  define GOOGLE_PROTOBUF_HAS_TR1
-#  define GOOGLE_PROTOBUF_HASH_COMPARE stdext::hash_compare
+#  undef GOOGLE_PROTOBUF_HAVE_HASH_MAP
+#  undef GOOGLE_PROTOBUF_HAVE_HASH_SET
 # elif _MSC_VER >= 1310
 #  define GOOGLE_PROTOBUF_HASH_NAMESPACE stdext
 #  include <hash_map>
@@ -143,20 +143,10 @@
 # define GOOGLE_PROTOBUF_HASH_SET_CLASS unordered_set
 #endif
 
-#ifndef GOOGLE_PROTOBUF_HASH_NAMESPACE
-# define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START
-# define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END
-#elif !defined(GOOGLE_PROTOBUF_HAS_CXX11_HASH) &&       \
-  defined(GOOGLE_PROTOBUF_HAS_TR1)
-# define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START       \
-  namespace std {                                               \
-  namespace tr1 {
+# define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START \
+  namespace google {                                      \
+  namespace protobuf {
 # define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END }}
-#else
-# define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START       \
-  namespace GOOGLE_PROTOBUF_HASH_NAMESPACE {
-# define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END }
-#endif
 
 #undef GOOGLE_PROTOBUF_HAS_CXX11_HASH
 #undef GOOGLE_PROTOBUF_HAS_TR1

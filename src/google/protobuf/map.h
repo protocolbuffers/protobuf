@@ -592,7 +592,7 @@ class Map {
   typedef MapAllocator<std::pair<const Key, MapPair<Key, T>*> > Allocator;
 
   // Iterators
-  class LIBPROTOBUF_EXPORT const_iterator
+  class const_iterator
       : public std::iterator<std::forward_iterator_tag, value_type, ptrdiff_t,
                              const value_type*, const value_type&> {
     typedef typename hash_map<Key, value_type*, hash<Key>, equal_to<Key>,
@@ -851,6 +851,29 @@ struct hash<google::protobuf::MapKey> {
       case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
         GOOGLE_LOG(FATAL) << "Can't get here.";
         return 0;
+    }
+  }
+  bool
+  operator()(const google::protobuf::MapKey& map_key1,
+             const google::protobuf::MapKey& map_key2) const {
+    switch (map_key1.type()) {
+#define COMPARE_CPPTYPE(CPPTYPE, CPPTYPE_METHOD)             \
+      case google::protobuf::FieldDescriptor::CPPTYPE_##CPPTYPE: \
+        return map_key1.Get##CPPTYPE_METHOD##Value() <           \
+               map_key2.Get##CPPTYPE_METHOD##Value();
+      COMPARE_CPPTYPE(STRING, String)
+      COMPARE_CPPTYPE(INT64,  Int64)
+      COMPARE_CPPTYPE(INT32,  Int32)
+      COMPARE_CPPTYPE(UINT64, UInt64)
+      COMPARE_CPPTYPE(UINT32, UInt32)
+      COMPARE_CPPTYPE(BOOL,   Bool)
+#undef COMPARE_CPPTYPE
+      case google::protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
+      case google::protobuf::FieldDescriptor::CPPTYPE_FLOAT:
+      case google::protobuf::FieldDescriptor::CPPTYPE_ENUM:
+      case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
+        GOOGLE_LOG(FATAL) << "Can't get here.";
+        return true;
     }
   }
 };

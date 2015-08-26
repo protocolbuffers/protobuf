@@ -45,9 +45,21 @@ bool IsNan(T value) {
   return false;
 }
 template<>
-inline bool IsNan(float value) { return isnan(value); }
+inline bool IsNan(float value) {
+#ifdef _MSC_VER
+  return _isnan(value);
+#else
+  return isnan(value);
+#endif
+}
 template<>
-inline bool IsNan(double value) { return isnan(value); }
+inline bool IsNan(double value) {
+#ifdef _MSC_VER
+  return _isnan(value);
+#else
+  return isnan(value);
+#endif
+}
 
 template<typename T>
 bool AlmostEquals(T a, T b) {

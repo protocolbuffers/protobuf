@@ -307,7 +307,7 @@ string DoubleAsString(double value) {
 }
 
 string FloatAsString(float value) {
-  if (isfinite(value)) return SimpleFtoa(value);
+  if (google::protobuf::MathLimits<float>::IsFinite(value)) return SimpleFtoa(value);
   return DoubleAsString(value);
 }
 

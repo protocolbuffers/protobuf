@@ -44,7 +44,7 @@ namespace util {
 namespace converter {
 // Internal helper class for type resolving. Note that this class is not
 // thread-safe and should only be accessed in one thread.
-class TypeInfo {
+class LIBPROTOBUF_EXPORT TypeInfo {
  public:
   TypeInfo() {}
   virtual ~TypeInfo() {}

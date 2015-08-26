@@ -153,7 +153,9 @@ void TypeDefinedMapFieldBase<Key, T>::CopyIterator(
     const MapIterator& that_iter) const {
   InternalGetIterator(this_iter) = InternalGetIterator(&that_iter);
   this_iter->key_.SetType(that_iter.key_.type());
-  this_iter->value_.SetType(that_iter.value_.type());
+  // MapValueRef::type() fails when containing data is null. However, if
+  // this_iter points to MapEnd, data can be null.
+  this_iter->value_.SetType((FieldDescriptor::CppType)that_iter.value_.type_);
   SetMapIteratorValue(this_iter);
 }
 
