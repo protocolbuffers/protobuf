@@ -40,11 +40,7 @@ rm $BASENAME.tar.gz
 
 # Set the entire contents to be user-writable.
 chmod -R u+w $BASENAME
-
-# Convert the MSVC projects to MSVC 2005 format.
-cd $BASENAME/vsprojects
-./convert2008to2005.sh
-cd ..
+cd $BASENAME
 
 for LANG in $LANGUAGES; do
   # Build the dist again in .tar.gz
