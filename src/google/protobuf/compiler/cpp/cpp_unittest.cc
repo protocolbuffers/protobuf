@@ -55,7 +55,9 @@
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_optimize_for.pb.h>
 #include <google/protobuf/unittest_embed_optimize_for.pb.h>
-#if !defined(_MSC_VER)  // Too large for visual studio to compile
+#if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)
+// We exclude this large proto from cmake build because it's too large for
+// visual studio to compile (report internal errors).
 #include <google/protobuf/unittest_enormous_descriptor.pb.h>
 #endif
 #include <google/protobuf/unittest_no_generic_services.pb.h>
@@ -135,7 +137,7 @@ TEST(GeneratedDescriptorTest, IdenticalDescriptors) {
             generated_decsriptor_proto.DebugString());
 }
 
-#if !defined(_MSC_VER)
+#if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)
 // Test that generated code has proper descriptors:
 // Touch a descriptor generated from an enormous message to validate special
 // handling for descriptors exceeding the C++ standard's recommended minimum
