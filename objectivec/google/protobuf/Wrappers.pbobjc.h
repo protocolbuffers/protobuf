@@ -30,7 +30,9 @@ typedef GPB_ENUM(GPBDoubleValue_FieldNumber) {
   GPBDoubleValue_FieldNumber_Value = 1,
 };
 
-// Wrapper message for double.
+// Wrapper message for `double`.
+//
+// The JSON representation for `DoubleValue` is JSON number.
 @interface GPBDoubleValue : GPBMessage
 
 // The double value.
@@ -44,7 +46,9 @@ typedef GPB_ENUM(GPBFloatValue_FieldNumber) {
   GPBFloatValue_FieldNumber_Value = 1,
 };
 
-// Wrapper message for float.
+// Wrapper message for `float`.
+//
+// The JSON representation for `FloatValue` is JSON number.
 @interface GPBFloatValue : GPBMessage
 
 // The float value.
@@ -58,7 +62,9 @@ typedef GPB_ENUM(GPBInt64Value_FieldNumber) {
   GPBInt64Value_FieldNumber_Value = 1,
 };
 
-// Wrapper message for int64.
+// Wrapper message for `int64`.
+//
+// The JSON representation for `Int64Value` is JSON string.
 @interface GPBInt64Value : GPBMessage
 
 // The int64 value.
@@ -72,7 +78,9 @@ typedef GPB_ENUM(GPBUInt64Value_FieldNumber) {
   GPBUInt64Value_FieldNumber_Value = 1,
 };
 
-// Wrapper message for uint64.
+// Wrapper message for `uint64`.
+//
+// The JSON representation for `UInt64Value` is JSON string.
 @interface GPBUInt64Value : GPBMessage
 
 // The uint64 value.
@@ -86,7 +94,9 @@ typedef GPB_ENUM(GPBInt32Value_FieldNumber) {
   GPBInt32Value_FieldNumber_Value = 1,
 };
 
-// Wrapper message for int32.
+// Wrapper message for `int32`.
+//
+// The JSON representation for `Int32Value` is JSON number.
 @interface GPBInt32Value : GPBMessage
 
 // The int32 value.
@@ -100,7 +110,9 @@ typedef GPB_ENUM(GPBUInt32Value_FieldNumber) {
   GPBUInt32Value_FieldNumber_Value = 1,
 };
 
-// Wrapper message for uint32.
+// Wrapper message for `uint32`.
+//
+// The JSON representation for `UInt32Value` is JSON number.
 @interface GPBUInt32Value : GPBMessage
 
 // The uint32 value.
@@ -114,7 +126,9 @@ typedef GPB_ENUM(GPBBoolValue_FieldNumber) {
   GPBBoolValue_FieldNumber_Value = 1,
 };
 
-// Wrapper message for bool.
+// Wrapper message for `bool`.
+//
+// The JSON representation for `BoolValue` is JSON `true` and `false`.
 @interface GPBBoolValue : GPBMessage
 
 // The bool value.
@@ -128,7 +142,9 @@ typedef GPB_ENUM(GPBStringValue_FieldNumber) {
   GPBStringValue_FieldNumber_Value = 1,
 };
 
-// Wrapper message for string.
+// Wrapper message for `string`.
+//
+// The JSON representation for `StringValue` is JSON string.
 @interface GPBStringValue : GPBMessage
 
 // The string value.
@@ -142,7 +158,9 @@ typedef GPB_ENUM(GPBBytesValue_FieldNumber) {
   GPBBytesValue_FieldNumber_Value = 1,
 };
 
-// Wrapper message for bytes.
+// Wrapper message for `bytes`.
+//
+// The JSON representation for `BytesValue` is JSON string.
 @interface GPBBytesValue : GPBMessage
 
 // The bytes value.

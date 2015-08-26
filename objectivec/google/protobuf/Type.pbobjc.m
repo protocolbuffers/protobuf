@@ -40,6 +40,33 @@ static GPBFileDescriptor *GPBTypeRoot_FileDescriptor(void) {
   return descriptor;
 }
 
+#pragma mark - Enum GPBSyntax
+
+GPBEnumDescriptor *GPBSyntax_EnumDescriptor(void) {
+  static GPBEnumDescriptor *descriptor = NULL;
+  if (!descriptor) {
+    static GPBMessageEnumValueDescription values[] = {
+      { .name = "SyntaxProto2", .number = GPBSyntax_SyntaxProto2 },
+      { .name = "SyntaxProto3", .number = GPBSyntax_SyntaxProto3 },
+    };
+    descriptor = [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol(GPBSyntax)
+                                                   values:values
+                                               valueCount:sizeof(values) / sizeof(GPBMessageEnumValueDescription)
+                                             enumVerifier:GPBSyntax_IsValidValue];
+  }
+  return descriptor;
+}
+
+BOOL GPBSyntax_IsValidValue(int32_t value__) {
+  switch (value__) {
+    case GPBSyntax_SyntaxProto2:
+    case GPBSyntax_SyntaxProto3:
+      return YES;
+    default:
+      return NO;
+  }
+}
+
 #pragma mark - GPBType
 
 @implementation GPBType
@@ -49,9 +76,11 @@ static GPBFileDescriptor *GPBTypeRoot_FileDescriptor(void) {
 @dynamic oneofsArray, oneofsArray_Count;
 @dynamic optionsArray, optionsArray_Count;
 @dynamic hasSourceContext, sourceContext;
+@dynamic syntax;
 
 typedef struct GPBType__storage_ {
   uint32_t _has_storage_[1];
+  GPBSyntax syntax;
   NSString *name;
   NSMutableArray *fieldsArray;
   NSMutableArray *oneofsArray;
@@ -120,6 +149,17 @@ typedef struct GPBType__storage_ {
         .dataTypeSpecific.className = GPBStringifySymbol(GPBSourceContext),
         .fieldOptions = NULL,
       },
+      {
+        .name = "syntax",
+        .number = GPBType_FieldNumber_Syntax,
+        .hasIndex = 5,
+        .flags = GPBFieldOptional | GPBFieldHasEnumDescriptor,
+        .dataType = GPBDataTypeEnum,
+        .offset = offsetof(GPBType__storage_, syntax),
+        .defaultValue.valueEnum = GPBSyntax_SyntaxProto2,
+        .dataTypeSpecific.enumDescFunc = GPBSyntax_EnumDescriptor,
+        .fieldOptions = NULL,
+      },
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBType class]
@@ -143,6 +183,18 @@ typedef struct GPBType__storage_ {
 
 @end
 
+int32_t GPBType_Syntax_RawValue(GPBType *message) {
+  GPBDescriptor *descriptor = [GPBType descriptor];
+  GPBFieldDescriptor *field = [descriptor fieldWithNumber:GPBType_FieldNumber_Syntax];
+  return GPBGetMessageInt32Field(message, field);
+}
+
+void SetGPBType_Syntax_RawValue(GPBType *message, int32_t value) {
+  GPBDescriptor *descriptor = [GPBType descriptor];
+  GPBFieldDescriptor *field = [descriptor fieldWithNumber:GPBType_FieldNumber_Syntax];
+  GPBSetInt32IvarWithFieldInternal(message, field, value, descriptor.file.syntax);
+}
+
 #pragma mark - GPBField
 
 @implementation GPBField
@@ -155,6 +207,7 @@ typedef struct GPBType__storage_ {
 @dynamic oneofIndex;
 @dynamic packed;
 @dynamic optionsArray, optionsArray_Count;
+@dynamic jsonName;
 
 typedef struct GPBField__storage_ {
   uint32_t _has_storage_[1];
@@ -166,6 +219,7 @@ typedef struct GPBField__storage_ {
   NSString *name;
   NSString *typeURL;
   NSMutableArray *optionsArray;
+  NSString *jsonName;
 } GPBField__storage_;
 
 // This method is threadsafe because it is initially called
@@ -262,6 +316,17 @@ typedef struct GPBField__storage_ {
         .dataTypeSpecific.className = GPBStringifySymbol(GPBOption),
         .fieldOptions = NULL,
       },
+      {
+        .name = "jsonName",
+        .number = GPBField_FieldNumber_JsonName,
+        .hasIndex = 8,
+        .flags = GPBFieldOptional,
+        .dataType = GPBDataTypeString,
+        .offset = offsetof(GPBField__storage_, jsonName),
+        .defaultValue.valueString = nil,
+        .dataTypeSpecific.className = NULL,
+        .fieldOptions = NULL,
+      },
     };
     static GPBMessageEnumDescription enums[] = {
       { .enumDescriptorFunc = GPBField_Kind_EnumDescriptor },
@@ -335,6 +400,7 @@ GPBEnumDescriptor *GPBField_Kind_EnumDescriptor(void) {
       { .name = "TypeFixed32", .number = GPBField_Kind_TypeFixed32 },
       { .name = "TypeBool", .number = GPBField_Kind_TypeBool },
       { .name = "TypeString", .number = GPBField_Kind_TypeString },
+      { .name = "TypeGroup", .number = GPBField_Kind_TypeGroup },
       { .name = "TypeMessage", .number = GPBField_Kind_TypeMessage },
       { .name = "TypeBytes", .number = GPBField_Kind_TypeBytes },
       { .name = "TypeUint32", .number = GPBField_Kind_TypeUint32 },
@@ -364,6 +430,7 @@ BOOL GPBField_Kind_IsValidValue(int32_t value__) {
     case GPBField_Kind_TypeFixed32:
     case GPBField_Kind_TypeBool:
     case GPBField_Kind_TypeString:
+    case GPBField_Kind_TypeGroup:
     case GPBField_Kind_TypeMessage:
     case GPBField_Kind_TypeBytes:
     case GPBField_Kind_TypeUint32:
@@ -417,9 +484,11 @@ BOOL GPBField_Cardinality_IsValidValue(int32_t value__) {
 @dynamic enumvalueArray, enumvalueArray_Count;
 @dynamic optionsArray, optionsArray_Count;
 @dynamic hasSourceContext, sourceContext;
+@dynamic syntax;
 
 typedef struct GPBEnum__storage_ {
   uint32_t _has_storage_[1];
+  GPBSyntax syntax;
   NSString *name;
   NSMutableArray *enumvalueArray;
   NSMutableArray *optionsArray;
@@ -476,6 +545,17 @@ typedef struct GPBEnum__storage_ {
         .dataTypeSpecific.className = GPBStringifySymbol(GPBSourceContext),
         .fieldOptions = NULL,
       },
+      {
+        .name = "syntax",
+        .number = GPBEnum_FieldNumber_Syntax,
+        .hasIndex = 4,
+        .flags = GPBFieldOptional | GPBFieldHasEnumDescriptor,
+        .dataType = GPBDataTypeEnum,
+        .offset = offsetof(GPBEnum__storage_, syntax),
+        .defaultValue.valueEnum = GPBSyntax_SyntaxProto2,
+        .dataTypeSpecific.enumDescFunc = GPBSyntax_EnumDescriptor,
+        .fieldOptions = NULL,
+      },
     };
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBEnum class]
@@ -498,6 +578,18 @@ typedef struct GPBEnum__storage_ {
 }
 
 @end
+
+int32_t GPBEnum_Syntax_RawValue(GPBEnum *message) {
+  GPBDescriptor *descriptor = [GPBEnum descriptor];
+  GPBFieldDescriptor *field = [descriptor fieldWithNumber:GPBEnum_FieldNumber_Syntax];
+  return GPBGetMessageInt32Field(message, field);
+}
+
+void SetGPBEnum_Syntax_RawValue(GPBEnum *message, int32_t value) {
+  GPBDescriptor *descriptor = [GPBEnum descriptor];
+  GPBFieldDescriptor *field = [descriptor fieldWithNumber:GPBEnum_FieldNumber_Syntax];
+  GPBSetInt32IvarWithFieldInternal(message, field, value, descriptor.file.syntax);
+}
 
 #pragma mark - GPBEnumValue
 

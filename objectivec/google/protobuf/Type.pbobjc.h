@@ -16,6 +16,22 @@ CF_EXTERN_C_BEGIN
 
 NS_ASSUME_NONNULL_BEGIN
 
+#pragma mark - Enum GPBSyntax
+
+// Syntax specifies the syntax in which a service element was defined.
+typedef GPB_ENUM(GPBSyntax) {
+  GPBSyntax_GPBUnrecognizedEnumeratorValue = kGPBUnrecognizedEnumeratorValue,
+  // Syntax "proto2"
+  GPBSyntax_SyntaxProto2 = 0,
+
+  // Syntax "proto3"
+  GPBSyntax_SyntaxProto3 = 1,
+};
+
+GPBEnumDescriptor *GPBSyntax_EnumDescriptor(void);
+
+BOOL GPBSyntax_IsValidValue(int32_t value);
+
 #pragma mark - Enum GPBField_Kind
 
 // Kind represents a basic field type.
@@ -50,6 +66,9 @@ typedef GPB_ENUM(GPBField_Kind) {
 
   // Field type string.
   GPBField_Kind_TypeString = 9,
+
+  // Field type group (deprecated proto2 type)
+  GPBField_Kind_TypeGroup = 10,
 
   // Field type message.
   GPBField_Kind_TypeMessage = 11,
@@ -122,6 +141,7 @@ typedef GPB_ENUM(GPBType_FieldNumber) {
   GPBType_FieldNumber_OneofsArray = 3,
   GPBType_FieldNumber_OptionsArray = 4,
   GPBType_FieldNumber_SourceContext = 5,
+  GPBType_FieldNumber_Syntax = 6,
 };
 
 // A light-weight descriptor for a proto message type.
@@ -136,7 +156,6 @@ typedef GPB_ENUM(GPBType_FieldNumber) {
 @property(nonatomic, readonly) NSUInteger fieldsArray_Count;
 
 // The list of oneof definitions.
-// The list of oneofs declared in this Type
 // |oneofsArray| contains |NSString|
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *oneofsArray;
 @property(nonatomic, readonly) NSUInteger oneofsArray_Count;
@@ -150,7 +169,13 @@ typedef GPB_ENUM(GPBType_FieldNumber) {
 @property(nonatomic, readwrite) BOOL hasSourceContext;
 @property(nonatomic, readwrite, strong, null_resettable) GPBSourceContext *sourceContext;
 
+// The source syntax.
+@property(nonatomic, readwrite) GPBSyntax syntax;
+
 @end
+
+int32_t GPBType_Syntax_RawValue(GPBType *message);
+void SetGPBType_Syntax_RawValue(GPBType *message, int32_t value);
 
 #pragma mark - GPBField
 
@@ -163,6 +188,7 @@ typedef GPB_ENUM(GPBField_FieldNumber) {
   GPBField_FieldNumber_OneofIndex = 7,
   GPBField_FieldNumber_Packed = 8,
   GPBField_FieldNumber_OptionsArray = 9,
+  GPBField_FieldNumber_JsonName = 10,
 };
 
 // Field represents a single field of a message type.
@@ -195,6 +221,9 @@ typedef GPB_ENUM(GPBField_FieldNumber) {
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *optionsArray;
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
+// The JSON name for this field.
+@property(nonatomic, readwrite, copy, null_resettable) NSString *jsonName;
+
 @end
 
 int32_t GPBField_Kind_RawValue(GPBField *message);
@@ -210,6 +239,7 @@ typedef GPB_ENUM(GPBEnum_FieldNumber) {
   GPBEnum_FieldNumber_EnumvalueArray = 2,
   GPBEnum_FieldNumber_OptionsArray = 3,
   GPBEnum_FieldNumber_SourceContext = 4,
+  GPBEnum_FieldNumber_Syntax = 5,
 };
 
 // Enum type definition.
@@ -232,7 +262,13 @@ typedef GPB_ENUM(GPBEnum_FieldNumber) {
 @property(nonatomic, readwrite) BOOL hasSourceContext;
 @property(nonatomic, readwrite, strong, null_resettable) GPBSourceContext *sourceContext;
 
+// The source syntax.
+@property(nonatomic, readwrite) GPBSyntax syntax;
+
 @end
+
+int32_t GPBEnum_Syntax_RawValue(GPBEnum *message);
+void SetGPBEnum_Syntax_RawValue(GPBEnum *message, int32_t value);
 
 #pragma mark - GPBEnumValue
 

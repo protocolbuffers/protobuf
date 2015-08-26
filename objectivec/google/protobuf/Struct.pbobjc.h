@@ -18,8 +18,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Enum GPBNullValue
 
-// `NullValue` is a singleton enumeration to represent the null
-// value for the `Value` type union.
+// `NullValue` is a singleton enumeration to represent the null value for the
+// `Value` type union.
+//
+//  The JSON representation for `NullValue` is JSON `null`.
 typedef GPB_ENUM(GPBNullValue) {
   GPBNullValue_GPBUnrecognizedEnumeratorValue = kGPBUnrecognizedEnumeratorValue,
   // Null value.
@@ -53,6 +55,8 @@ typedef GPB_ENUM(GPBStruct_FieldNumber) {
 // scripting languages like JS a struct is represented as an
 // object. The details of that representation are described together
 // with the proto support for the language.
+//
+// The JSON representation for `Struct` is JSON object.
 @interface GPBStruct : GPBMessage
 
 // Map of dynamically typed values.
@@ -87,8 +91,11 @@ typedef GPB_ENUM(GPBValue_Kind_OneOfCase) {
 // null, a number, a string, a boolean, a recursive struct value, or a
 // list of values. A producer of value is expected to set one of that
 // variants, absence of any variant indicates an error.
+//
+// The JSON representation for `Value` is JSON value.
 @interface GPBValue : GPBMessage
 
+// The kind of value.
 @property(nonatomic, readonly) GPBValue_Kind_OneOfCase kindOneOfCase;
 
 // Represents a null value.
@@ -123,6 +130,8 @@ typedef GPB_ENUM(GPBListValue_FieldNumber) {
 };
 
 // `ListValue` is a wrapper around a repeated field of values.
+//
+// The JSON representation for `ListValue` is JSON array.
 @interface GPBListValue : GPBMessage
 
 // Repeated field of dynamically typed values.

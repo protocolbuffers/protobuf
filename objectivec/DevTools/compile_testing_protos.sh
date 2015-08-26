@@ -68,6 +68,7 @@ fi
 mkdir -p "${OUTPUT_DIR}/google/protobuf"
 
 CORE_PROTO_FILES=(                                         \
+  src/google/protobuf/unittest_arena.proto                 \
   src/google/protobuf/unittest_custom_options.proto        \
   src/google/protobuf/unittest_enormous_descriptor.proto   \
   src/google/protobuf/unittest_embed_optimize_for.proto    \
@@ -76,6 +77,9 @@ CORE_PROTO_FILES=(                                         \
   src/google/protobuf/unittest_import_lite.proto           \
   src/google/protobuf/unittest_lite.proto                  \
   src/google/protobuf/unittest_mset.proto                  \
+  src/google/protobuf/unittest_mset_wire_format.proto      \
+  src/google/protobuf/unittest_no_arena.proto              \
+  src/google/protobuf/unittest_no_arena_import.proto       \
   src/google/protobuf/unittest_no_generic_services.proto   \
   src/google/protobuf/unittest_optimize_for.proto          \
   src/google/protobuf/unittest.proto                       \

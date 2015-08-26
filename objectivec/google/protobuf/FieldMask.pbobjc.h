@@ -44,6 +44,7 @@ typedef GPB_ENUM(GPBFieldMask_FieldNumber) {
 // Field masks also have a custom JSON encoding (see below).
 //
 // # Field Masks in Projections
+//
 // When used in the context of a projection, a response message or
 // sub-message is filtered by the API to only contain those fields as
 // specified in the mask. For example, if the mask in the previous
@@ -89,6 +90,7 @@ typedef GPB_ENUM(GPBFieldMask_FieldNumber) {
 // behavior for APIs.
 //
 // # Field Masks in Update Operations
+//
 // A field mask in update operations specifies which fields of the
 // targeted resource are going to be updated. The API is required
 // to only change the values of the fields as specified in the mask
@@ -116,11 +118,13 @@ typedef GPB_ENUM(GPBFieldMask_FieldNumber) {
 // required to be honored by the API.
 //
 // ## Considerations for HTTP REST
+//
 // The HTTP kind of an update operation which uses a field mask must
 // be set to PATCH instead of PUT in order to satisfy HTTP semantics
 // (PUT must only be used for full updates).
 //
 // # JSON Encoding of Field Masks
+//
 // In JSON, a field mask is encoded as a single string where paths are
 // separated by a comma. Fields name in each path are converted
 // to/from lower-camel naming conventions.
