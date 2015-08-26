@@ -289,10 +289,10 @@ bool Api::MergePartialFromCodedStream(
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->name().data(), this->name().length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.Api.name");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.Api.name"));
         } else {
           goto handle_unusual;
         }
@@ -339,10 +339,10 @@ bool Api::MergePartialFromCodedStream(
          parse_version:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_version()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->version().data(), this->version().length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.Api.version");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.Api.version"));
         } else {
           goto handle_unusual;
         }
@@ -422,9 +422,9 @@ void Api::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_start:google.protobuf.Api)
   // optional string name = 1;
   if (this->name().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Api.name");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       1, this->name(), output);
@@ -444,9 +444,9 @@ void Api::SerializeWithCachedSizes(
 
   // optional string version = 4;
   if (this->version().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->version().data(), this->version().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Api.version");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       4, this->version(), output);
@@ -478,9 +478,9 @@ void Api::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Api)
   // optional string name = 1;
   if (this->name().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Api.name");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
@@ -503,9 +503,9 @@ void Api::SerializeWithCachedSizes(
 
   // optional string version = 4;
   if (this->version().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->version().data(), this->version().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Api.version");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
@@ -723,27 +723,27 @@ int Api::methods_size() const {
 void Api::clear_methods() {
   methods_.Clear();
 }
- const ::google::protobuf::Method& Api::methods(int index) const {
+const ::google::protobuf::Method& Api::methods(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.methods)
   return methods_.Get(index);
 }
- ::google::protobuf::Method* Api::mutable_methods(int index) {
+::google::protobuf::Method* Api::mutable_methods(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.methods)
   return methods_.Mutable(index);
 }
- ::google::protobuf::Method* Api::add_methods() {
+::google::protobuf::Method* Api::add_methods() {
   // @@protoc_insertion_point(field_add:google.protobuf.Api.methods)
   return methods_.Add();
 }
- const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >&
-Api::methods() const {
-  // @@protoc_insertion_point(field_list:google.protobuf.Api.methods)
-  return methods_;
-}
- ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >*
+::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >*
 Api::mutable_methods() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.methods)
   return &methods_;
+}
+const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method >&
+Api::methods() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.Api.methods)
+  return methods_;
 }
 
 // repeated .google.protobuf.Option options = 3;
@@ -753,27 +753,27 @@ int Api::options_size() const {
 void Api::clear_options() {
   options_.Clear();
 }
- const ::google::protobuf::Option& Api::options(int index) const {
+const ::google::protobuf::Option& Api::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.options)
   return options_.Get(index);
 }
- ::google::protobuf::Option* Api::mutable_options(int index) {
+::google::protobuf::Option* Api::mutable_options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.options)
   return options_.Mutable(index);
 }
- ::google::protobuf::Option* Api::add_options() {
+::google::protobuf::Option* Api::add_options() {
   // @@protoc_insertion_point(field_add:google.protobuf.Api.options)
   return options_.Add();
 }
- const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-Api::options() const {
-  // @@protoc_insertion_point(field_list:google.protobuf.Api.options)
-  return options_;
-}
- ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
+::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
 Api::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.options)
   return &options_;
+}
+const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+Api::options() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.Api.options)
+  return options_;
 }
 
 // optional string version = 4;
@@ -827,11 +827,11 @@ void Api::clear_source_context() {
   if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
   source_context_ = NULL;
 }
- const ::google::protobuf::SourceContext& Api::source_context() const {
+const ::google::protobuf::SourceContext& Api::source_context() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.source_context)
   return source_context_ != NULL ? *source_context_ : *default_instance_->source_context_;
 }
- ::google::protobuf::SourceContext* Api::mutable_source_context() {
+::google::protobuf::SourceContext* Api::mutable_source_context() {
   
   if (source_context_ == NULL) {
     source_context_ = new ::google::protobuf::SourceContext;
@@ -839,13 +839,13 @@ void Api::clear_source_context() {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.source_context)
   return source_context_;
 }
- ::google::protobuf::SourceContext* Api::release_source_context() {
+::google::protobuf::SourceContext* Api::release_source_context() {
   
   ::google::protobuf::SourceContext* temp = source_context_;
   source_context_ = NULL;
   return temp;
 }
- void Api::set_allocated_source_context(::google::protobuf::SourceContext* source_context) {
+void Api::set_allocated_source_context(::google::protobuf::SourceContext* source_context) {
   delete source_context_;
   source_context_ = source_context;
   if (source_context) {
@@ -863,27 +863,27 @@ int Api::mixins_size() const {
 void Api::clear_mixins() {
   mixins_.Clear();
 }
- const ::google::protobuf::Mixin& Api::mixins(int index) const {
+const ::google::protobuf::Mixin& Api::mixins(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.mixins)
   return mixins_.Get(index);
 }
- ::google::protobuf::Mixin* Api::mutable_mixins(int index) {
+::google::protobuf::Mixin* Api::mutable_mixins(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.mixins)
   return mixins_.Mutable(index);
 }
- ::google::protobuf::Mixin* Api::add_mixins() {
+::google::protobuf::Mixin* Api::add_mixins() {
   // @@protoc_insertion_point(field_add:google.protobuf.Api.mixins)
   return mixins_.Add();
 }
- const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >&
-Api::mixins() const {
-  // @@protoc_insertion_point(field_list:google.protobuf.Api.mixins)
-  return mixins_;
-}
- ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >*
+::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >*
 Api::mutable_mixins() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Api.mixins)
   return &mixins_;
+}
+const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >&
+Api::mixins() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.Api.mixins)
+  return mixins_;
 }
 
 // optional .google.protobuf.Syntax syntax = 7;
@@ -1017,10 +1017,10 @@ bool Method::MergePartialFromCodedStream(
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->name().data(), this->name().length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.Method.name");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.Method.name"));
         } else {
           goto handle_unusual;
         }
@@ -1034,10 +1034,10 @@ bool Method::MergePartialFromCodedStream(
          parse_request_type_url:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_request_type_url()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->request_type_url().data(), this->request_type_url().length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.Method.request_type_url");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.Method.request_type_url"));
         } else {
           goto handle_unusual;
         }
@@ -1066,10 +1066,10 @@ bool Method::MergePartialFromCodedStream(
          parse_response_type_url:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_response_type_url()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->response_type_url().data(), this->response_type_url().length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.Method.response_type_url");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.Method.response_type_url"));
         } else {
           goto handle_unusual;
         }
@@ -1151,9 +1151,9 @@ void Method::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_start:google.protobuf.Method)
   // optional string name = 1;
   if (this->name().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Method.name");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       1, this->name(), output);
@@ -1161,9 +1161,9 @@ void Method::SerializeWithCachedSizes(
 
   // optional string request_type_url = 2;
   if (this->request_type_url().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->request_type_url().data(), this->request_type_url().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Method.request_type_url");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       2, this->request_type_url(), output);
@@ -1176,9 +1176,9 @@ void Method::SerializeWithCachedSizes(
 
   // optional string response_type_url = 4;
   if (this->response_type_url().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->response_type_url().data(), this->response_type_url().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Method.response_type_url");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       4, this->response_type_url(), output);
@@ -1209,9 +1209,9 @@ void Method::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Method)
   // optional string name = 1;
   if (this->name().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Method.name");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
@@ -1220,9 +1220,9 @@ void Method::SerializeWithCachedSizes(
 
   // optional string request_type_url = 2;
   if (this->request_type_url().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->request_type_url().data(), this->request_type_url().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Method.request_type_url");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
@@ -1236,9 +1236,9 @@ void Method::SerializeWithCachedSizes(
 
   // optional string response_type_url = 4;
   if (this->response_type_url().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->response_type_url().data(), this->response_type_url().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Method.response_type_url");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
@@ -1567,27 +1567,27 @@ int Method::options_size() const {
 void Method::clear_options() {
   options_.Clear();
 }
- const ::google::protobuf::Option& Method::options(int index) const {
+const ::google::protobuf::Option& Method::options(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.options)
   return options_.Get(index);
 }
- ::google::protobuf::Option* Method::mutable_options(int index) {
+::google::protobuf::Option* Method::mutable_options(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.Method.options)
   return options_.Mutable(index);
 }
- ::google::protobuf::Option* Method::add_options() {
+::google::protobuf::Option* Method::add_options() {
   // @@protoc_insertion_point(field_add:google.protobuf.Method.options)
   return options_.Add();
 }
- const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
-Method::options() const {
-  // @@protoc_insertion_point(field_list:google.protobuf.Method.options)
-  return options_;
-}
- ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
+::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >*
 Method::mutable_options() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.Method.options)
   return &options_;
+}
+const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
+Method::options() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.Method.options)
+  return options_;
 }
 
 // optional .google.protobuf.Syntax syntax = 7;
@@ -1696,10 +1696,10 @@ bool Mixin::MergePartialFromCodedStream(
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->name().data(), this->name().length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.Mixin.name");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.Mixin.name"));
         } else {
           goto handle_unusual;
         }
@@ -1713,10 +1713,10 @@ bool Mixin::MergePartialFromCodedStream(
          parse_root:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_root()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->root().data(), this->root().length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.Mixin.root");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.Mixin.root"));
         } else {
           goto handle_unusual;
         }
@@ -1750,9 +1750,9 @@ void Mixin::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_start:google.protobuf.Mixin)
   // optional string name = 1;
   if (this->name().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Mixin.name");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       1, this->name(), output);
@@ -1760,9 +1760,9 @@ void Mixin::SerializeWithCachedSizes(
 
   // optional string root = 2;
   if (this->root().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->root().data(), this->root().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Mixin.root");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       2, this->root(), output);
@@ -1776,9 +1776,9 @@ void Mixin::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Mixin)
   // optional string name = 1;
   if (this->name().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->name().data(), this->name().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Mixin.name");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
@@ -1787,9 +1787,9 @@ void Mixin::SerializeWithCachedSizes(
 
   // optional string root = 2;
   if (this->root().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->root().data(), this->root().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Mixin.root");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(

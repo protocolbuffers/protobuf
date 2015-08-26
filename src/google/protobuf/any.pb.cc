@@ -208,10 +208,10 @@ bool Any::MergePartialFromCodedStream(
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_type_url()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->type_url().data(), this->type_url().length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.Any.type_url");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.Any.type_url"));
         } else {
           goto handle_unusual;
         }
@@ -258,9 +258,9 @@ void Any::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_start:google.protobuf.Any)
   // optional string type_url = 1;
   if (this->type_url().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->type_url().data(), this->type_url().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Any.type_url");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       1, this->type_url(), output);
@@ -280,9 +280,9 @@ void Any::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Any)
   // optional string type_url = 1;
   if (this->type_url().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->type_url().data(), this->type_url().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Any.type_url");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(

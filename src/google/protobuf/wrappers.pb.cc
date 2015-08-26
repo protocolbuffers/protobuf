@@ -1968,10 +1968,10 @@ bool StringValue::MergePartialFromCodedStream(
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_value()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->value().data(), this->value().length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.StringValue.value");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.StringValue.value"));
         } else {
           goto handle_unusual;
         }
@@ -2005,9 +2005,9 @@ void StringValue::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_start:google.protobuf.StringValue)
   // optional string value = 1;
   if (this->value().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->value().data(), this->value().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.StringValue.value");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       1, this->value(), output);
@@ -2021,9 +2021,9 @@ void StringValue::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.StringValue)
   // optional string value = 1;
   if (this->value().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->value().data(), this->value().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.StringValue.value");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(

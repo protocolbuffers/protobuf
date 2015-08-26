@@ -193,11 +193,11 @@ bool FieldMask::MergePartialFromCodedStream(
          parse_paths:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_paths()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->paths(this->paths_size() - 1).data(),
             this->paths(this->paths_size() - 1).length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.FieldMask.paths");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.FieldMask.paths"));
         } else {
           goto handle_unusual;
         }
@@ -232,10 +232,10 @@ void FieldMask::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_start:google.protobuf.FieldMask)
   // repeated string paths = 1;
   for (int i = 0; i < this->paths_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-    this->paths(i).data(), this->paths(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE,
-    "google.protobuf.FieldMask.paths");
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->paths(i).data(), this->paths(i).length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "google.protobuf.FieldMask.paths");
     ::google::protobuf::internal::WireFormatLite::WriteString(
       1, this->paths(i), output);
   }
@@ -248,9 +248,9 @@ void FieldMask::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldMask)
   // repeated string paths = 1;
   for (int i = 0; i < this->paths_size(); i++) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->paths(i).data(), this->paths(i).length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.FieldMask.paths");
     target = ::google::protobuf::internal::WireFormatLite::
       WriteStringToArray(1, this->paths(i), target);

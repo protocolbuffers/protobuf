@@ -1466,10 +1466,10 @@ void FileDescriptorProto::SerializeWithCachedSizes(
 
   // repeated string dependency = 3;
   for (int i = 0; i < this->dependency_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-    this->dependency(i).data(), this->dependency(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE,
-    "google.protobuf.FileDescriptorProto.dependency");
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->dependency(i).data(), this->dependency(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileDescriptorProto.dependency");
     ::google::protobuf::internal::WireFormatLite::WriteString(
       3, this->dependency(i), output);
   }
@@ -3269,10 +3269,10 @@ void DescriptorProto::SerializeWithCachedSizes(
 
   // repeated string reserved_name = 10;
   for (int i = 0; i < this->reserved_name_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-    this->reserved_name(i).data(), this->reserved_name(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE,
-    "google.protobuf.DescriptorProto.reserved_name");
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->reserved_name(i).data(), this->reserved_name(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.DescriptorProto.reserved_name");
     ::google::protobuf::internal::WireFormatLite::WriteString(
       10, this->reserved_name(i), output);
   }
@@ -13221,10 +13221,10 @@ void SourceCodeInfo_Location::SerializeWithCachedSizes(
 
   // repeated string leading_detached_comments = 6;
   for (int i = 0; i < this->leading_detached_comments_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-    this->leading_detached_comments(i).data(), this->leading_detached_comments(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE,
-    "google.protobuf.SourceCodeInfo.Location.leading_detached_comments");
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->leading_detached_comments(i).data(), this->leading_detached_comments(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.SourceCodeInfo.Location.leading_detached_comments");
     ::google::protobuf::internal::WireFormatLite::WriteString(
       6, this->leading_detached_comments(i), output);
   }

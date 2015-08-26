@@ -340,10 +340,10 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_start:google.protobuf.compiler.CodeGeneratorRequest)
   // repeated string file_to_generate = 1;
   for (int i = 0; i < this->file_to_generate_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-    this->file_to_generate(i).data(), this->file_to_generate(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE,
-    "google.protobuf.compiler.CodeGeneratorRequest.file_to_generate");
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->file_to_generate(i).data(), this->file_to_generate(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.compiler.CodeGeneratorRequest.file_to_generate");
     ::google::protobuf::internal::WireFormatLite::WriteString(
       1, this->file_to_generate(i), output);
   }
