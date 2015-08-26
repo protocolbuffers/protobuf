@@ -23,6 +23,7 @@
 	<file src="..\..\..\cmake\Release\protoc.exe" target="tools" />
 	<file src="..\..\..\src\google\protobuf\any.proto" target="tools\google\protobuf" />
 	<file src="..\..\..\src\google\protobuf\api.proto" target="tools\google\protobuf" />
+	<file src="..\..\..\src\google\protobuf\descriptor.proto" target="tools\google\protobuf" />
 	<file src="..\..\..\src\google\protobuf\duration.proto" target="tools\google\protobuf" />
 	<file src="..\..\..\src\google\protobuf\empty.proto" target="tools\google\protobuf" />
 	<file src="..\..\..\src\google\protobuf\field_mask.proto" target="tools\google\protobuf" />
