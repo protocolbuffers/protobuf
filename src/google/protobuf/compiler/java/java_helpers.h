@@ -310,6 +310,12 @@ inline bool SupportFieldPresence(const FileDescriptor* descriptor) {
   return descriptor->syntax() != FileDescriptor::SYNTAX_PROTO3;
 }
 
+// Whether generate classes expose public PARSER instances.
+inline bool ExposePublicParser(const FileDescriptor* descriptor) {
+  // TODO(liujisi): Mark the PARSER private in 3.1.x releases.
+  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
+}
+
 // Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
 // but in the message and can be queried using additional getters that return
 // ints.

@@ -1248,8 +1248,11 @@ GenerateParsingConstructor(io::Printer* printer) {
 // ===================================================================
 void ImmutableMessageGenerator::GenerateParser(io::Printer* printer) {
   printer->Print(
-      "private static final com.google.protobuf.Parser<$classname$> PARSER =\n"
-      "    new com.google.protobuf.AbstractParser<$classname$>() {\n",
+      "$visibility$ static final com.google.protobuf.Parser<$classname$>\n"
+      "    PARSER = new com.google.protobuf.AbstractParser<$classname$>() {\n",
+      "visibility",
+      ExposePublicParser(descriptor_->file()) ? "@java.lang.Deprecated public"
+                                              : "private",
       "classname", descriptor_->name());
   printer->Indent();
   printer->Print(
