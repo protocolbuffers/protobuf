@@ -1223,7 +1223,7 @@ void RepeatedField<Element>::Reserve(int new_size) {
   Arena* arena = GetArenaNoVirtual();
   new_size = max(google::protobuf::internal::kMinRepeatedFieldAllocationSize,
                  max(total_size_ * 2, new_size));
-  GOOGLE_CHECK_LE(new_size,
+  GOOGLE_CHECK_LE(static_cast<size_t>(new_size),
            (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
            sizeof(Element))
       << "Requested size is too large to fit into size_t.";
