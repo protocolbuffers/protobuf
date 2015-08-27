@@ -41,10 +41,10 @@
 #define GOOGLE_PROTOBUF_HAVE_HASH_MAP 1
 #define GOOGLE_PROTOBUF_HAVE_HASH_SET 1
 
-// Use C++11 unordered_{map|set} if available. Otherwise, libc++ always support
-// unordered_{map|set}
-#if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X) || \
-    defined(_LIBCPP_VERSION)
+// Use C++11 unordered_{map|set} if available.
+#if ((__cplusplus >= 201103L) &&                            \
+     ((defined(__GLIBCXX__) && (__GLIBCXX__ > 20090421)) || \
+      (defined(_LIBCPP_VERSION) && (_LIBCPP_STD_VER >= 11))))
 # define GOOGLE_PROTOBUF_HAS_CXX11_HASH
 
 // For XCode >= 4.6:  the compiler is clang with libc++.
