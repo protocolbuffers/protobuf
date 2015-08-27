@@ -324,6 +324,7 @@ javanano_EXTRA_DIST=                                                            
 
 objectivec_EXTRA_DIST=                                                       \
   objectivec/DevTools/check_version_stamps.sh                                \
+  objectivec/DevTools/compile_testing_protos.sh                              \
   objectivec/DevTools/full_mac_build.sh                                      \
   objectivec/DevTools/pddm.py                                                \
   objectivec/DevTools/pddm_tests.py                                          \
@@ -452,6 +453,7 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/text_format_unittest_data.txt                              \
   objectivec/Tests/unittest_cycle.proto                                       \
   objectivec/Tests/unittest_objc.proto                                        \
+  objectivec/Tests/unittest_objc_startup.proto                                \
   objectivec/Tests/unittest_runtime_proto2.proto                              \
   objectivec/Tests/unittest_runtime_proto3.proto                              \
   objectivec/Tests/UnitTests-Bridging-Header.h                                \
