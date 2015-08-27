@@ -1,3 +1,109 @@
+2015-08-26 version 3.0.0-beta-1 (C++/Java/Python/Ruby/Nano/Objective-C/C#)
+  About Beta
+  * This is the first beta release of protobuf v3.0.0. Not all languages
+    have reached beta stage. Languages not marked as beta are still in
+    alpha (i.e., be prepared for API breaking changes).
+
+  General
+  * Proto3 JSON is supported in several languages (fully supported in C++
+    and Java, partially supported in Ruby/C#). The JSON spec is defined in
+    the proto3 language guide:
+
+      https://developers.google.com/protocol-buffers/docs/proto3#json
+
+    We will publish a more detailed spec to define the exact behavior of
+    proto3-conformant JSON serializers and parsers. Until then, do not rely
+    on specific behaviors of the implementation if it’s not documented in
+    the above spec. More specifically, the behavior is not yet finalized for
+    the following:
+      - Parsing invalid JSON input (e.g., input with trailing commas).
+      - Non-camelCase names in JSON input.
+      - The same field appears multiple times in JSON input.
+      - JSON arrays contain “null” values.
+      - The message has unknown fields.
+
+  * Proto3 now enforces strict UTF-8 checking. Parsing will fail if a string
+    field contains non UTF-8 data.
+
+  C++ (Beta)
+  * Introduced new utility functions/classes in the google/protobuf/util
+    directory:
+      - MessageDifferencer: compare two proto messages and report their
+                            differences.
+      - JsonUtil: support converting protobuf binary format to/from JSON.
+      - TimeUtil: utility functions to work with well-known types Timestamp
+                  and Duration.
+      - FieldMaskUtil: utility functions to work with FieldMask.
+
+  * Performance optimization of arena construction and destruction.
+  * Bug fixes for arena and maps support.
+  * Changed to use cmake for Windows Visual Studio builds.
+  * Added Bazel support.
+
+  Java (Beta)
+  * Introduced a new util package that will be distributed as a separate
+    artifact in maven. It contains:
+      - JsonFormat: convert proto messages to/from JSON.
+      - TimeUtil: utility functions to work with Timestamp and Duration.
+      - FieldMaskUtil: utility functions to work with FieldMask.
+
+  * The static PARSER in each generated message is deprecated, and it will
+    be removed in a future release. A static parser() getter is generated
+    for each message type instead.
+  * Performance optimizations for String fields serialization.
+  * Performance optimizations for Lite runtime on Android:
+      - Reduced allocations
+      - Reduced method overhead after ProGuarding
+      - Reduced code size after ProGuarding
+
+  Python (Alpha)
+  * Removed legacy Python 2.5 support.
+  * Moved to a single Python 2.x/3.x-compatible codebase, instead of using 2to3.
+  * Fixed build/tests on Python 2.6, 2.7, 3.3, and 3.4.
+      - Pure-Python works on all four.
+      - Python/C++ implementation works on all but 3.4, due to changes in the
+        Python/C++ API in 3.4.
+  * Some preliminary work has been done to allow for multiple DescriptorPools
+    with Python/C++.
+
+  Ruby (Alpha)
+  * Many bugfixes:
+      - fixed parsing/serialization of bytes, sint, sfixed types
+      - other parser bugfixes
+      - fixed memory leak affecting Ruby 2.2
+
+  JavaNano (Alpha)
+  * JavaNano generated code now will be put in a nano package by default to
+    avoid conflicts with Java generated code.
+
+  Objective-C (Alpha)
+  * Added non-null markup to ObjC library. Requires SDK 8.4+ to build.
+  * Many bugfixes:
+      - Removed the class/enum filter.
+      - Renamed some internal types to avoid conflicts with the well-known types
+        protos.
+      - Added missing support for parsing repeated primitive fields in packed or
+        unpacked forms.
+      - Added *Count for repeated and map<> fields to avoid auto-create when
+        checking for them being set.
+
+  C# (Alpha)
+  * Namespace changed to Google.Protobuf (and NuGet package will be named
+    correspondingly).
+  * Target platforms now .NET 4.5 and selected portable subsets only.
+  * Removed lite runtime.
+  * Reimplementation to use mutable message types.
+  * Null references used to represent "no value" for message type fields.
+  * Proto3 semantics supported; proto2 files are prohibited for C# codegen.
+    Most proto3 features supported:
+      - JSON formatting (a.k.a. serialization to JSON), including well-known
+        types (except for Any).
+      - Wrapper types mapped to nullable value types (or string/ByteString
+        allowing nullability). JSON parsing is not supported yet.
+      - maps
+      - oneof
+      - enum unknown value preservation
+
 2015-05-25 version 3.0.0-alpha-3 (Objective-C/C#):
   General
   * Introduced two new language implementations (Objective-C, C#) to proto3.
