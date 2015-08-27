@@ -41,6 +41,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = protobuf.pc protobuf-lite.pc
 
 csharp_EXTRA_DIST=                                                           \
+  csharp/.gitignore                                                          \
   csharp/CHANGES.txt                                                         \
   csharp/README.md                                                           \
   csharp/build_packages.bat                                                  \
@@ -57,6 +58,11 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/AddressBook/Properties/AssemblyInfo.cs                          \
   csharp/src/AddressBook/SampleUsage.cs                                      \
   csharp/src/AddressBook/app.config                                          \
+  csharp/src/Google.Protobuf.Conformance/App.config                          \
+  csharp/src/Google.Protobuf.Conformance/Conformance.cs                      \
+  csharp/src/Google.Protobuf.Conformance/Google.Protobuf.Conformance.csproj  \
+  csharp/src/Google.Protobuf.Conformance/Program.cs                          \
+  csharp/src/Google.Protobuf.Conformance/Properties/AssemblyInfo.cs          \
   csharp/src/Google.Protobuf.JsonDump/Google.Protobuf.JsonDump.csproj        \
   csharp/src/Google.Protobuf.JsonDump/Program.cs                             \
   csharp/src/Google.Protobuf.JsonDump/Properties/AssemblyInfo.cs             \
@@ -67,6 +73,8 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/CodedOutputStreamTest.cs                   \
   csharp/src/Google.Protobuf.Test/Collections/MapFieldTest.cs                \
   csharp/src/Google.Protobuf.Test/Collections/RepeatedFieldTest.cs           \
+  csharp/src/Google.Protobuf.Test/Compatibility/PropertyInfoExtensionsTest.cs \
+  csharp/src/Google.Protobuf.Test/Compatibility/TypeExtensionsTest.cs        \
   csharp/src/Google.Protobuf.Test/DeprecatedMemberTest.cs                    \
   csharp/src/Google.Protobuf.Test/EqualityTester.cs                          \
   csharp/src/Google.Protobuf.Test/FieldCodecTest.cs                          \
@@ -77,6 +85,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/Properties/AppManifest.xml                 \
   csharp/src/Google.Protobuf.Test/Properties/AssemblyInfo.cs                 \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorsTest.cs              \
+  csharp/src/Google.Protobuf.Test/Reflection/FieldAccessTest.cs              \
   csharp/src/Google.Protobuf.Test/SampleEnum.cs                              \
   csharp/src/Google.Protobuf.Test/SampleMessages.cs                          \
   csharp/src/Google.Protobuf.Test/TestCornerCases.cs                         \
@@ -86,6 +95,8 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestIssues.cs               \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestProto3.cs               \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestWellKnownTypes.cs       \
+  csharp/src/Google.Protobuf.Test/WellKnownTypes/DurationTest.cs             \
+  csharp/src/Google.Protobuf.Test/WellKnownTypes/TimestampTest.cs            \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/WrappersTest.cs             \
   csharp/src/Google.Protobuf.Test/packages.config                            \
   csharp/src/Google.Protobuf.sln                                             \
@@ -97,10 +108,13 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Collections/MapField.cs                         \
   csharp/src/Google.Protobuf/Collections/ReadOnlyDictionary.cs               \
   csharp/src/Google.Protobuf/Collections/RepeatedField.cs                    \
+  csharp/src/Google.Protobuf/Compatibility/PropertyInfoExtensions.cs         \
+  csharp/src/Google.Protobuf/Compatibility/TypeExtensions.cs                 \
   csharp/src/Google.Protobuf/FieldCodec.cs                                   \
   csharp/src/Google.Protobuf/FrameworkPortability.cs                         \
   csharp/src/Google.Protobuf/Google.Protobuf.csproj                          \
   csharp/src/Google.Protobuf/Google.Protobuf.nuspec                          \
+  csharp/src/Google.Protobuf/IDeepCloneable.cs                               \
   csharp/src/Google.Protobuf/IMessage.cs                                     \
   csharp/src/Google.Protobuf/InvalidProtocolBufferException.cs               \
   csharp/src/Google.Protobuf/JsonFormatter.cs                                \
@@ -137,11 +151,14 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/WellKnownTypes/Any.cs                           \
   csharp/src/Google.Protobuf/WellKnownTypes/Api.cs                           \
   csharp/src/Google.Protobuf/WellKnownTypes/Duration.cs                      \
+  csharp/src/Google.Protobuf/WellKnownTypes/DurationPartial.cs               \
   csharp/src/Google.Protobuf/WellKnownTypes/Empty.cs                         \
   csharp/src/Google.Protobuf/WellKnownTypes/FieldMask.cs                     \
   csharp/src/Google.Protobuf/WellKnownTypes/SourceContext.cs                 \
   csharp/src/Google.Protobuf/WellKnownTypes/Struct.cs                        \
+  csharp/src/Google.Protobuf/WellKnownTypes/TimeExtensions.cs                \
   csharp/src/Google.Protobuf/WellKnownTypes/Timestamp.cs                     \
+  csharp/src/Google.Protobuf/WellKnownTypes/TimestampPartial.cs              \
   csharp/src/Google.Protobuf/WellKnownTypes/Type.cs                          \
   csharp/src/Google.Protobuf/WellKnownTypes/Wrappers.cs                      \
   csharp/src/Google.Protobuf/WireFormat.cs                                   \
@@ -324,6 +341,7 @@ javanano_EXTRA_DIST=                                                            
 
 objectivec_EXTRA_DIST=                                                       \
   objectivec/DevTools/check_version_stamps.sh                                \
+  objectivec/DevTools/compile_testing_protos.sh                              \
   objectivec/DevTools/full_mac_build.sh                                      \
   objectivec/DevTools/pddm.py                                                \
   objectivec/DevTools/pddm_tests.py                                          \
@@ -451,6 +469,7 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/text_format_map_unittest_data.txt                          \
   objectivec/Tests/text_format_unittest_data.txt                              \
   objectivec/Tests/unittest_cycle.proto                                       \
+  objectivec/Tests/unittest_objc_startup.proto                                \
   objectivec/Tests/unittest_objc.proto                                        \
   objectivec/Tests/unittest_runtime_proto2.proto                              \
   objectivec/Tests/unittest_runtime_proto3.proto                              \
@@ -538,9 +557,10 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/text_format.py                                      \
   python/google/protobuf/__init__.py                                         \
   python/google/__init__.py                                                  \
-  python/setup.py                                                            \
   python/mox.py                                                              \
+  python/setup.py                                                            \
   python/stubout.py                                                          \
+  python/tox.ini                                                             \
   python/README.md
 
 ruby_EXTRA_DIST=                                                             \
