@@ -156,8 +156,8 @@ public class Internal {
    * but currently (2011) still accepts 3-byte surrogate character
    * byte sequences.
    *
-   * <p>See the Unicode Standard,</br>
-   * Table 3-6. <em>UTF-8 Bit Distribution</em>,</br>
+   * <p>See the Unicode Standard,<br>
+   * Table 3-6. <em>UTF-8 Bit Distribution</em>,<br>
    * Table 3-7. <em>Well Formed UTF-8 Byte Sequences</em>.
    *
    * <p>As of 2011-02, this method simply returns the result of {@link
@@ -387,7 +387,7 @@ public class Internal {
 
 
   /**
-   * Provides an immutable view of List<T> around a List<F>.
+   * Provides an immutable view of {@code List<T>} around a {@code List<F>}.
    *
    * Protobuf internal. Used in protobuf generated code only.
    */
@@ -419,7 +419,8 @@ public class Internal {
   }
 
   /**
-   * Wrap around a Map<K, RealValue> and provide a Map<K, V> interface.
+   * Wrap around a {@code Map<K, RealValue>} and provide a {@code Map<K, V>}
+   * interface.
    */
   public static class MapAdapter<K, V, RealValue> extends AbstractMap<K, V> {
     /**
@@ -576,12 +577,12 @@ public class Internal {
     int getInt(int index);
 
     /**
-     * Like {@link #add(Integer)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
      */
     void addInt(int element);
 
     /**
-     * Like {@link #set(int, Integer)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
      */
     int setInt(int index, int element);
   }
@@ -598,12 +599,12 @@ public class Internal {
     boolean getBoolean(int index);
 
     /**
-     * Like {@link #add(Boolean)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
      */
     void addBoolean(boolean element);
 
     /**
-     * Like {@link #set(int, Boolean)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
      */
     boolean setBoolean(int index, boolean element);
   }
@@ -620,12 +621,12 @@ public class Internal {
     long getLong(int index);
 
     /**
-     * Like {@link #add(Long)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
      */
     void addLong(long element);
 
     /**
-     * Like {@link #set(int, Long)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
      */
     long setLong(int index, long element);
   }
@@ -642,12 +643,12 @@ public class Internal {
     double getDouble(int index);
 
     /**
-     * Like {@link #add(Double)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
      */
     void addDouble(double element);
 
     /**
-     * Like {@link #set(int, Double)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
      */
     double setDouble(int index, double element);
   }
@@ -664,12 +665,12 @@ public class Internal {
     float getFloat(int index);
 
     /**
-     * Like {@link #add(Float)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
      */
     void addFloat(float element);
 
     /**
-     * Like {@link #set(int, Float)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
      */
     float setFloat(int index, float element);
   }

@@ -56,7 +56,7 @@ import java.util.Stack;
  * michael plass
  *
  * <p>The algorithms described in the paper have been implemented for character
- * strings in {@link com.google.common.string.Rope} and in the c++ class {@code
+ * strings in {@code com.google.common.string.Rope} and in the c++ class {@code
  * cord.cc}.
  *
  * <p>Fundamentally the Rope algorithm represents the collection of pieces as a
