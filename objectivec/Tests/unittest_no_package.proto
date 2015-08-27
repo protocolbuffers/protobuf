@@ -1,6 +1,6 @@
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -28,39 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#import <Foundation/Foundation.h>
+syntax = "proto2";
 
-#import "google/protobuf/Any.pbobjc.h"
-#import "google/protobuf/Duration.pbobjc.h"
-#import "google/protobuf/Timestamp.pbobjc.h"
-
-NS_ASSUME_NONNULL_BEGIN
-
-// Extension to GPBTimestamp to work with standard Foundation time/date types.
-@interface GPBTimestamp (GBPWellKnownTypes)
-@property(nonatomic, readwrite, strong) NSDate *date;
-@property(nonatomic, readwrite) NSTimeInterval timeIntervalSince1970;
-- (instancetype)initWithDate:(NSDate *)date;
-- (instancetype)initWithTimeIntervalSince1970:(NSTimeInterval)timeIntervalSince1970;
-@end
-
-// Extension to GPBDuration to work with standard Foundation time type.
-@interface GPBDuration (GBPWellKnownTypes)
-@property(nonatomic, readwrite) NSTimeInterval timeIntervalSince1970;
-- (instancetype)initWithTimeIntervalSince1970:(NSTimeInterval)timeIntervalSince1970;
-@end
-
-// Extension to GPBAny to support packing and unpacking for arbitrary messages.
-@interface GPBAny (GPBWellKnownTypes)
-// Initialize GPBAny instance with the given message. e.g., for google.protobuf.foo, type
-// url will be "type.googleapis.com/google.protobuf.foo" and value will be serialized foo.
-// If serializing the message fails, error will be filled.
-- (instancetype)initWithMessage:(GPBMessage*)message
-                          error:(NSError**)errorPtr;
-// Parse the value in GPBAny to the message specified by the type url in GPBAny.
-// If there is a parsing error, nil is returned and error is filled.
-- (GPBMessage*)packedMessage:(NSError**)errorPtr;
-@end
-
-
-NS_ASSUME_NONNULL_END
+message MessageNoPackage {
+}

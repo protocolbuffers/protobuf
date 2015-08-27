@@ -42,6 +42,7 @@ typedef struct GPBEmpty__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBEmpty class]
                                      rootClass:[GPBEmptyRoot class]
+                                     protoName:@"Empty"
                                           file:GPBEmptyRoot_FileDescriptor()
                                         fields:NULL
                                     fieldCount:0

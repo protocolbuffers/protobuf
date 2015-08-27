@@ -124,6 +124,7 @@ typedef struct GPBApi__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBApi class]
                                      rootClass:[GPBApiRoot class]
+                                     protoName:@"Api"
                                           file:GPBApiRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -245,6 +246,7 @@ typedef struct GPBMethod__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBMethod class]
                                      rootClass:[GPBApiRoot class]
+                                     protoName:@"Method"
                                           file:GPBApiRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)

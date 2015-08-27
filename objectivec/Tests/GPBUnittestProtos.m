@@ -47,6 +47,7 @@
 #import "google/protobuf/UnittestLite.pbobjc.m"
 #import "google/protobuf/UnittestMset.pbobjc.m"
 #import "google/protobuf/UnittestNoGenericServices.pbobjc.m"
+#import "google/protobuf/UnittestNoPackage.pbobjc.m"
 #import "google/protobuf/UnittestObjc.pbobjc.m"
 #import "google/protobuf/UnittestObjcStartup.pbobjc.m"
 #import "google/protobuf/UnittestOptimizeFor.pbobjc.m"

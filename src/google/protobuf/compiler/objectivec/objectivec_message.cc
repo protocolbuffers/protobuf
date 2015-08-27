@@ -553,6 +553,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     map<string, string> vars;
     vars["classname"] = class_name_;
     vars["rootclassname"] = root_classname_;
+    vars["protoname"] = ProtoName(descriptor_);
     vars["fields"] = has_fields ? "fields" : "NULL";
     vars["fields_count"] =
         has_fields ? "sizeof(fields) / sizeof(GPBMessageFieldDescription)" : "0";
@@ -574,6 +575,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "    GPBDescriptor *localDescriptor =\n"
           "        [GPBDescriptor allocDescriptorForClass:[$classname$ class]\n"
           "                                     rootClass:[$rootclassname$ class]\n"
+          "                                     protoName:@\"$protoname$\"\n"
           "                                          file:$rootclassname$_FileDescriptor()\n"
           "                                        fields:$fields$\n"
           "                                    fieldCount:$fields_count$\n"
@@ -597,6 +599,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "    GPBDescriptor *localDescriptor =\n"
           "        [GPBDescriptor allocDescriptorForClass:[$classname$ class]\n"
           "                                     rootClass:[$rootclassname$ class]\n"
+          "                                     protoName:@\"$protoname$\"\n"
           "                                          file:$rootclassname$_FileDescriptor()\n"
           "                                        fields:$fields$\n"
           "                                    fieldCount:$fields_count$\n"

@@ -57,6 +57,7 @@ typedef struct GPBFieldMask__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBFieldMask class]
                                      rootClass:[GPBFieldMaskRoot class]
+                                     protoName:@"FieldMask"
                                           file:GPBFieldMaskRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)

@@ -35,6 +35,7 @@
 #import "google/protobuf/Timestamp.pbobjc.m"
 #import "google/protobuf/Duration.pbobjc.m"
 #import "GPBWellKnownTypes.h"
+#import <objc/runtime.h>
 
 static NSTimeInterval TimeIntervalSince1970FromSecondsAndNanos(int64_t seconds,
                                                                int32_t nanos) {
@@ -112,6 +113,86 @@ static int32_t SecondsAndNanosFromTimeIntervalSince1970(NSTimeInterval time,
       SecondsAndNanosFromTimeIntervalSince1970(timeIntervalSince1970, &seconds);
   self.seconds = seconds;
   self.nanos = nanos;
+}
+
+@end
+
+@implementation GPBAny (GBPWellKnownTypes)
+
+static NSString *const GPBTypeGoogleApisComPrefix = @"type.googleapis.com/";
+static NSMutableDictionary *messageClassPool;
+
+- (instancetype)initWithMessage:(GPBMessage*)message
+                          error:(NSError**)errorPtr {
+  self = [super init];
+  if (!(self.value = message.data)) {
+    if (errorPtr) {
+      *errorPtr = [NSError errorWithDomain:GPBMessageErrorDomain
+                                      code:GPBMessageErrorCodeMissingRequiredField
+                                  userInfo:nil];
+    }
+    return nil;
+  }
+
+  if (errorPtr) {
+    *errorPtr = nil;
+  }
+  self.typeURL = [GPBTypeGoogleApisComPrefix stringByAppendingString:message.descriptor.fullName];
+  return self;
+}
+
+- (GPBMessage*)packedMessage:(NSError**)errorPtr {
+  if (![self.typeURL hasPrefix:GPBTypeGoogleApisComPrefix]) {
+    if (errorPtr) {
+      *errorPtr = [NSError errorWithDomain:GPBMessageErrorDomain
+                                      code:GPBMessageErrorCodeMalformedData
+                                  userInfo:nil];
+    }
+    return nil;
+  }
+  OSSpinLockLock(&self->readOnlyMutex_);
+  if (messageClassPool == nil) {
+    messageClassPool = [[[NSMutableDictionary alloc] init] autorelease];
+    Class *messageClasses = nil;
+    int numMessageClasses = objc_getClassList(NULL, 0);
+    messageClasses = malloc(sizeof(Class) * numMessageClasses);
+    numMessageClasses = objc_getClassList(messageClasses, numMessageClasses);
+    for (NSInteger i = 0; i < numMessageClasses; i++) {
+      Class class = messageClasses[i];
+      Class superClass = class_getSuperclass(class);
+      if (superClass == [GPBMessage class]) {
+        [messageClassPool setValue:class forKey:[[class descriptor] fullName]];
+      }
+    }
+    free(messageClasses);
+  }
+  OSSpinLockUnlock(&self->readOnlyMutex_);
+  NSString *fullName = [self.typeURL substringFromIndex:[GPBTypeGoogleApisComPrefix length]];
+  Class messageClass = [messageClassPool valueForKey:fullName];
+  if (messageClass == nil) {
+    if (errorPtr) {
+      *errorPtr = [NSError errorWithDomain:GPBMessageErrorDomain
+                                      code:GPBMessageErrorCodeMalformedData
+                                  userInfo:nil];
+    }
+    return nil;
+  }
+  GPBMessage *message = [messageClass message];
+  @try {
+    [message mergeFromData:self.value extensionRegistry:nil];
+  }
+  @catch (NSException *exception) {
+    if (errorPtr) {
+      *errorPtr = [NSError errorWithDomain:GPBMessageErrorDomain
+                                      code:GPBMessageErrorCodeMalformedData
+                                  userInfo:nil];
+    }
+    return nil;
+  }
+  if (errorPtr) {
+    *errorPtr = nil;
+  }
+  return message;
 }
 
 @end

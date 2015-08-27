@@ -92,6 +92,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
 
 @implementation GPBDescriptor {
   Class messageClass_;
+  NSString *protoName_;
   NSArray *enums_;
   GPBFileDescriptor *file_;
   BOOL wireFormat_;
@@ -109,6 +110,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
 + (instancetype)
     allocDescriptorForClass:(Class)messageClass
                   rootClass:(Class)rootClass
+                  protoName:(NSString *)protoName
                        file:(GPBFileDescriptor *)file
                      fields:(GPBMessageFieldDescription *)fieldDescriptions
                  fieldCount:(NSUInteger)fieldCount
@@ -160,6 +162,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
   }
 
   GPBDescriptor *descriptor = [[self alloc] initWithClass:messageClass
+                                                protoName:protoName
                                                      file:file
                                                    fields:fields
                                                    oneofs:oneofs
@@ -178,6 +181,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
 + (instancetype)
     allocDescriptorForClass:(Class)messageClass
                   rootClass:(Class)rootClass
+                  protoName:(NSString *)protoName
                        file:(GPBFileDescriptor *)file
                      fields:(GPBMessageFieldDescription *)fieldDescriptions
                  fieldCount:(NSUInteger)fieldCount
@@ -192,6 +196,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
         extraTextFormatInfo:(const char *)extraTextFormatInfo {
   GPBDescriptor *descriptor = [self allocDescriptorForClass:messageClass
                                                   rootClass:rootClass
+                                                  protoName:protoName
                                                        file:file
                                                      fields:fieldDescriptions
                                                  fieldCount:fieldCount
@@ -218,6 +223,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
 }
 
 - (instancetype)initWithClass:(Class)messageClass
+                    protoName:(NSString *)protoName
                          file:(GPBFileDescriptor *)file
                        fields:(NSArray *)fields
                        oneofs:(NSArray *)oneofs
@@ -228,6 +234,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
                    wireFormat:(BOOL)wireFormat {
   if ((self = [super init])) {
     messageClass_ = messageClass;
+    protoName_ = [protoName copy];
     file_ = file;
     fields_ = [fields retain];
     oneofs_ = [oneofs retain];
@@ -241,6 +248,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
 }
 
 - (void)dealloc {
+  [protoName_ release];
   [fields_ release];
   [oneofs_ release];
   [enums_ release];
@@ -249,6 +257,14 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
 
 - (NSString *)name {
   return NSStringFromClass(messageClass_);
+}
+
+- (NSString *)fullName {
+  if (![self.file.package isEqualToString:@""]) {
+    return [NSString stringWithFormat:@"%@.%@", self.file.package, self->protoName_];
+  } else {
+    return self->protoName_;
+  }
 }
 
 - (id)copyWithZone:(NSZone *)zone {

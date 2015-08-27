@@ -531,6 +531,7 @@ typedef GPB_ENUM(GPBFileOptions_FieldNumber) {
   GPBFileOptions_FieldNumber_CcEnableArenas = 31,
   GPBFileOptions_FieldNumber_ObjcClassPrefix = 36,
   GPBFileOptions_FieldNumber_CsharpNamespace = 37,
+  GPBFileOptions_FieldNumber_JavananoUseDeprecatedPackage = 38,
   GPBFileOptions_FieldNumber_UninterpretedOptionArray = 999,
 };
 
@@ -632,6 +633,11 @@ typedef GPB_ENUM(GPBFileOptions_FieldNumber) {
 // Namespace for generated classes; defaults to the package.
 @property(nonatomic, readwrite) BOOL hasCsharpNamespace;
 @property(nonatomic, readwrite, copy, null_resettable) NSString *csharpNamespace;
+
+// Whether the nano proto compiler should generate in the deprecated non-nano
+// suffixed package.
+@property(nonatomic, readwrite) BOOL hasJavananoUseDeprecatedPackage;
+@property(nonatomic, readwrite) BOOL javananoUseDeprecatedPackage;
 
 // The parser stores options it doesn't recognize here. See above.
 // |uninterpretedOptionArray| contains |GPBUninterpretedOption|

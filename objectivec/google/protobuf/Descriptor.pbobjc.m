@@ -57,6 +57,7 @@ typedef struct GPBFileDescriptorSet__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBFileDescriptorSet class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"FileDescriptorSet"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -251,6 +252,7 @@ typedef struct GPBFileDescriptorProto__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBFileDescriptorProto class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"FileDescriptorProto"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -419,6 +421,7 @@ typedef struct GPBDescriptorProto__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBDescriptorProto class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"DescriptorProto"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -483,6 +486,7 @@ typedef struct GPBDescriptorProto_ExtensionRange__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBDescriptorProto_ExtensionRange class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"DescriptorProto.ExtensionRange"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -547,6 +551,7 @@ typedef struct GPBDescriptorProto_ReservedRange__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBDescriptorProto_ReservedRange class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"DescriptorProto.ReservedRange"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -706,6 +711,7 @@ typedef struct GPBFieldDescriptorProto__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBFieldDescriptorProto class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"FieldDescriptorProto"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -845,6 +851,7 @@ typedef struct GPBOneofDescriptorProto__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBOneofDescriptorProto class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"OneofDescriptorProto"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -922,6 +929,7 @@ typedef struct GPBEnumDescriptorProto__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBEnumDescriptorProto class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"EnumDescriptorProto"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -999,6 +1007,7 @@ typedef struct GPBEnumValueDescriptorProto__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBEnumValueDescriptorProto class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"EnumValueDescriptorProto"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -1076,6 +1085,7 @@ typedef struct GPBServiceDescriptorProto__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBServiceDescriptorProto class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"ServiceDescriptorProto"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -1192,6 +1202,7 @@ typedef struct GPBMethodDescriptorProto__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBMethodDescriptorProto class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"MethodDescriptorProto"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -1229,6 +1240,7 @@ typedef struct GPBMethodDescriptorProto__storage_ {
 @dynamic hasCcEnableArenas, ccEnableArenas;
 @dynamic hasObjcClassPrefix, objcClassPrefix;
 @dynamic hasCsharpNamespace, csharpNamespace;
+@dynamic hasJavananoUseDeprecatedPackage, javananoUseDeprecatedPackage;
 @dynamic uninterpretedOptionArray, uninterpretedOptionArray_Count;
 
 typedef struct GPBFileOptions__storage_ {
@@ -1241,6 +1253,7 @@ typedef struct GPBFileOptions__storage_ {
   BOOL deprecated;
   BOOL javaStringCheckUtf8;
   BOOL ccEnableArenas;
+  BOOL javananoUseDeprecatedPackage;
   GPBFileOptions_OptimizeMode optimizeFor;
   NSString *javaPackage;
   NSString *javaOuterClassname;
@@ -1411,6 +1424,17 @@ typedef struct GPBFileOptions__storage_ {
         .fieldOptions = NULL,
       },
       {
+        .name = "javananoUseDeprecatedPackage",
+        .number = GPBFileOptions_FieldNumber_JavananoUseDeprecatedPackage,
+        .hasIndex = 14,
+        .flags = GPBFieldOptional,
+        .dataType = GPBDataTypeBool,
+        .offset = offsetof(GPBFileOptions__storage_, javananoUseDeprecatedPackage),
+        .defaultValue.valueBool = NO,
+        .dataTypeSpecific.className = NULL,
+        .fieldOptions = NULL,
+      },
+      {
         .name = "uninterpretedOptionArray",
         .number = GPBFileOptions_FieldNumber_UninterpretedOptionArray,
         .hasIndex = GPBNoHasBit,
@@ -1431,6 +1455,7 @@ typedef struct GPBFileOptions__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBFileOptions class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"FileOptions"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -1566,6 +1591,7 @@ typedef struct GPBMessageOptions__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBMessageOptions class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"MessageOptions"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -1702,6 +1728,7 @@ typedef struct GPBFieldOptions__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBFieldOptions class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"FieldOptions"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -1840,6 +1867,7 @@ typedef struct GPBEnumOptions__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBEnumOptions class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"EnumOptions"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -1907,6 +1935,7 @@ typedef struct GPBEnumValueOptions__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBEnumValueOptions class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"EnumValueOptions"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -1974,6 +2003,7 @@ typedef struct GPBServiceOptions__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBServiceOptions class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"ServiceOptions"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -2041,6 +2071,7 @@ typedef struct GPBMethodOptions__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBMethodOptions class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"MethodOptions"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -2170,6 +2201,7 @@ typedef struct GPBUninterpretedOption__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBUninterpretedOption class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"UninterpretedOption"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -2234,6 +2266,7 @@ typedef struct GPBUninterpretedOption_NamePart__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBUninterpretedOption_NamePart class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"UninterpretedOption.NamePart"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -2285,6 +2318,7 @@ typedef struct GPBSourceCodeInfo__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBSourceCodeInfo class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"SourceCodeInfo"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -2396,6 +2430,7 @@ typedef struct GPBSourceCodeInfo_Location__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBSourceCodeInfo_Location class]
                                      rootClass:[GPBDescriptorRoot class]
+                                     protoName:@"SourceCodeInfo.Location"
                                           file:GPBDescriptorRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)

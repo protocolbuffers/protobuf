@@ -104,6 +104,7 @@ OBJC_PROTO_FILES=(                               \
   objectivec/Tests/unittest_cycle.proto          \
   objectivec/Tests/unittest_runtime_proto2.proto \
   objectivec/Tests/unittest_runtime_proto3.proto \
+  objectivec/Tests/unittest_no_package.proto     \
   objectivec/Tests/unittest_objc.proto           \
   objectivec/Tests/unittest_objc_startup.proto   \
 )

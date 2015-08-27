@@ -57,6 +57,7 @@ typedef struct GPBDoubleValue__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBDoubleValue class]
                                      rootClass:[GPBWrappersRoot class]
+                                     protoName:@"DoubleValue"
                                           file:GPBWrappersRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -108,6 +109,7 @@ typedef struct GPBFloatValue__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBFloatValue class]
                                      rootClass:[GPBWrappersRoot class]
+                                     protoName:@"FloatValue"
                                           file:GPBWrappersRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -159,6 +161,7 @@ typedef struct GPBInt64Value__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBInt64Value class]
                                      rootClass:[GPBWrappersRoot class]
+                                     protoName:@"Int64Value"
                                           file:GPBWrappersRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -210,6 +213,7 @@ typedef struct GPBUInt64Value__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBUInt64Value class]
                                      rootClass:[GPBWrappersRoot class]
+                                     protoName:@"UInt64Value"
                                           file:GPBWrappersRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -261,6 +265,7 @@ typedef struct GPBInt32Value__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBInt32Value class]
                                      rootClass:[GPBWrappersRoot class]
+                                     protoName:@"Int32Value"
                                           file:GPBWrappersRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -312,6 +317,7 @@ typedef struct GPBUInt32Value__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBUInt32Value class]
                                      rootClass:[GPBWrappersRoot class]
+                                     protoName:@"UInt32Value"
                                           file:GPBWrappersRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -363,6 +369,7 @@ typedef struct GPBBoolValue__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBBoolValue class]
                                      rootClass:[GPBWrappersRoot class]
+                                     protoName:@"BoolValue"
                                           file:GPBWrappersRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -414,6 +421,7 @@ typedef struct GPBStringValue__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBStringValue class]
                                      rootClass:[GPBWrappersRoot class]
+                                     protoName:@"StringValue"
                                           file:GPBWrappersRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
@@ -465,6 +473,7 @@ typedef struct GPBBytesValue__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBBytesValue class]
                                      rootClass:[GPBWrappersRoot class]
+                                     protoName:@"BytesValue"
                                           file:GPBWrappersRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
