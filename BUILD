@@ -30,6 +30,7 @@ cc_library(
         "src/google/protobuf/io/zero_copy_stream.cc",
         "src/google/protobuf/io/zero_copy_stream_impl_lite.cc",
         "src/google/protobuf/message_lite.cc",
+        "src/google/protobuf/metadata.cc",
         "src/google/protobuf/repeated_field.cc",
         "src/google/protobuf/stubs/atomicops_internals_x86_gcc.cc",
         "src/google/protobuf/stubs/atomicops_internals_x86_msvc.cc",
