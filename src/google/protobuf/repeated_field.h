@@ -647,7 +647,8 @@ inline const Message& GenericTypeHandler<Message>::default_instance() {
 //   StringTypeHandler is exported.  So, we factor out StringTypeHandlerBase,
 //   export that, then make StringTypeHandler be a subclass which is NOT
 //   exported.
-// TODO(kenton):  There has to be a better way.
+// TODO(kenton):  Now that StringSpaceUsedExcludingSelf() is in the lite
+//   library, this can be cleaned up.
 class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
  public:
   typedef string Type;
