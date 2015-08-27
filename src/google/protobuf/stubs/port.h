@@ -272,6 +272,9 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 #define GOOGLE_THREAD_LOCAL __thread
 #endif
 
+}  // namespace protobuf
+}  // namespace google
+
 // The following guarantees declaration of the byte swap functions, and
 // defines __BYTE_ORDER for MSVC
 #ifdef _MSC_VER
@@ -292,6 +295,13 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 #include <byteswap.h>  // IWYU pragma: export
 
 #else
+#define PROTOBUF_NEED_BSWAP
+#endif
+
+namespace google {
+namespace protobuf {
+
+#ifdef PROTOBUF_NEED_BSWAP
 
 static inline uint16 bswap_16(uint16 x) {
   return static_cast<uint16>(((x & 0xFF) << 8) | ((x & 0xFF00) >> 8));
