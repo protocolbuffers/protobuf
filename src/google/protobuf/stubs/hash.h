@@ -43,8 +43,7 @@
 
 // Use C++11 unordered_{map|set} if available.
 #if ((__cplusplus >= 201103L) &&                            \
-     ((defined(__GLIBCXX__) && (__GLIBCXX__ > 20090421)) || \
-      (defined(_LIBCPP_VERSION) && (_LIBCPP_STD_VER >= 11))))
+     ((__GLIBCXX__ > 20090421) || (_LIBCPP_STD_VER >= 11)))
 # define GOOGLE_PROTOBUF_HAS_CXX11_HASH
 
 // For XCode >= 4.6:  the compiler is clang with libc++.
