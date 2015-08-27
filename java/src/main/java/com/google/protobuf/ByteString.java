@@ -94,7 +94,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * @param index index of byte
    * @return the value
-   * @throws ArrayIndexOutOfBoundsException {@code index} is < 0 or >= size
+   * @throws ArrayIndexOutOfBoundsException {@code index < 0 or index >= size}
    */
   public abstract byte byteAt(int index);
 
@@ -679,8 +679,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * sequences, but (as of 2011) still accepts 3-byte surrogate
    * character byte sequences.
    *
-   * <p>See the Unicode Standard,</br>
-   * Table 3-6. <em>UTF-8 Bit Distribution</em>,</br>
+   * <p>See the Unicode Standard,<br>
+   * Table 3-6. <em>UTF-8 Bit Distribution</em>,<br>
    * Table 3-7. <em>Well Formed UTF-8 Byte Sequences</em>.
    *
    * @return whether the bytes in this {@code ByteString} are a
