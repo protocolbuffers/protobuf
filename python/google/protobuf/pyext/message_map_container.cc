@@ -84,7 +84,12 @@ PyObject* NewContainer(CMessage* parent,
     return NULL;
   }
 
+#if PY_MAJOR_VERSION >= 3
+  PyObject* obj = PyType_GenericAlloc(
+        reinterpret_cast<PyTypeObject *>(MessageMapContainer_Type), 0);
+#else
   PyObject* obj = PyType_GenericAlloc(&MessageMapContainer_Type, 0);
+#endif
   if (obj == NULL) {
     return PyErr_Format(PyExc_RuntimeError,
                         "Could not allocate new container.");
@@ -458,44 +463,67 @@ PyObject* IterNext(PyObject* _self) {
 
 }  // namespace message_map_iterator
 
-PyTypeObject MessageMapContainer_Type = {
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  FULL_MODULE_NAME ".MessageMapContainer",  //  tp_name
-  sizeof(MessageMapContainer),         //  tp_basicsize
-  0,                                   //  tp_itemsize
-  message_map_container::Dealloc,      //  tp_dealloc
-  0,                                   //  tp_print
-  0,                                   //  tp_getattr
-  0,                                   //  tp_setattr
-  0,                                   //  tp_compare
-  0,                                   //  tp_repr
-  0,                                   //  tp_as_number
-  0,                                   //  tp_as_sequence
-  &message_map_container::MpMethods,   //  tp_as_mapping
-  0,                                   //  tp_hash
-  0,                                   //  tp_call
-  0,                                   //  tp_str
-  0,                                   //  tp_getattro
-  0,                                   //  tp_setattro
-  0,                                   //  tp_as_buffer
-  Py_TPFLAGS_DEFAULT,                  //  tp_flags
-  "A map container for message",       //  tp_doc
-  0,                                   //  tp_traverse
-  0,                                   //  tp_clear
-  0,                                   //  tp_richcompare
-  0,                                   //  tp_weaklistoffset
-  message_map_container::GetIterator,  //  tp_iter
-  0,                                   //  tp_iternext
-  message_map_container::Methods,      //  tp_methods
-  0,                                   //  tp_members
-  0,                                   //  tp_getset
-  0,                                   //  tp_base
-  0,                                   //  tp_dict
-  0,                                   //  tp_descr_get
-  0,                                   //  tp_descr_set
-  0,                                   //  tp_dictoffset
-  0,                                   //  tp_init
-};
+#if PY_MAJOR_VERSION >= 3
+  static PyType_Slot MessageMapContainer_Type_slots[] = {
+      {Py_tp_dealloc, (void *)message_map_container::Dealloc},
+      {Py_mp_length, (void *)message_map_container::Length},
+      {Py_mp_subscript, (void *)message_map_container::GetItem},
+      {Py_mp_ass_subscript, (void *)message_map_container::SetItem},
+      {Py_tp_methods, (void *)message_map_container::Methods},
+      {Py_tp_iter, (void *)message_map_container::GetIterator},
+      {0, 0}
+  };
+
+  PyType_Spec MessageMapContainer_Type_spec = {
+      FULL_MODULE_NAME ".MessageMapContainer",
+      sizeof(MessageMapContainer),
+      0,
+      Py_TPFLAGS_DEFAULT,
+      MessageMapContainer_Type_slots
+  };
+
+  PyObject *MessageMapContainer_Type;
+
+#else
+  PyTypeObject MessageMapContainer_Type = {
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
+    FULL_MODULE_NAME ".MessageMapContainer",  //  tp_name
+    sizeof(MessageMapContainer),         //  tp_basicsize
+    0,                                   //  tp_itemsize
+    message_map_container::Dealloc,      //  tp_dealloc
+    0,                                   //  tp_print
+    0,                                   //  tp_getattr
+    0,                                   //  tp_setattr
+    0,                                   //  tp_compare
+    0,                                   //  tp_repr
+    0,                                   //  tp_as_number
+    0,                                   //  tp_as_sequence
+    &message_map_container::MpMethods,   //  tp_as_mapping
+    0,                                   //  tp_hash
+    0,                                   //  tp_call
+    0,                                   //  tp_str
+    0,                                   //  tp_getattro
+    0,                                   //  tp_setattro
+    0,                                   //  tp_as_buffer
+    Py_TPFLAGS_DEFAULT,                  //  tp_flags
+    "A map container for message",       //  tp_doc
+    0,                                   //  tp_traverse
+    0,                                   //  tp_clear
+    0,                                   //  tp_richcompare
+    0,                                   //  tp_weaklistoffset
+    message_map_container::GetIterator,  //  tp_iter
+    0,                                   //  tp_iternext
+    message_map_container::Methods,      //  tp_methods
+    0,                                   //  tp_members
+    0,                                   //  tp_getset
+    0,                                   //  tp_base
+    0,                                   //  tp_dict
+    0,                                   //  tp_descr_get
+    0,                                   //  tp_descr_set
+    0,                                   //  tp_dictoffset
+    0,                                   //  tp_init
+  };
+#endif
 
 PyTypeObject MessageMapIterator_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
