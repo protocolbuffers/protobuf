@@ -481,7 +481,6 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/text_format_map_unittest_data.txt                          \
   objectivec/Tests/text_format_unittest_data.txt                              \
   objectivec/Tests/unittest_cycle.proto                                       \
-  objectivec/Tests/unittest_objc_startup.proto                                \
   objectivec/Tests/unittest_objc.proto                                        \
   objectivec/Tests/unittest_objc_startup.proto                                \
   objectivec/Tests/unittest_runtime_proto2.proto                              \
