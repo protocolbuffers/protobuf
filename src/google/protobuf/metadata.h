@@ -56,10 +56,11 @@ namespace internal {
 // The tagged pointer uses the LSB to disambiguate cases, and uses bit 0 == 0 to
 // indicate an arena pointer and bit 0 == 1 to indicate a UFS+Arena-container
 // pointer.
-class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
+class InternalMetadataWithArena {
  public:
   InternalMetadataWithArena() : ptr_(NULL) {}
-  explicit InternalMetadataWithArena(Arena* arena);
+  explicit InternalMetadataWithArena(Arena* arena)
+      : ptr_ (arena) {}
 
   ~InternalMetadataWithArena() {
     if (have_unknown_fields() && arena() == NULL) {
