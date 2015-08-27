@@ -559,7 +559,6 @@ Value* Value::New(::google::protobuf::Arena* arena) const {
 }
 
 void Value::clear_kind() {
-  typedef Value T;
   switch(kind_case()) {
     case kNullValue: {
       // No need to clear
