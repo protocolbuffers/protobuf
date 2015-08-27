@@ -602,6 +602,9 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   CONTRIBUTORS.txt                       \
   CHANGES.txt                            \
   update_file_lists.sh                   \
+  BUILD                                  \
+  gmock.BUILD                            \
+  WORKSPACE                              \
   cmake/CMakeLists.txt                   \
   cmake/README.md                        \
   cmake/extract_includes.bat.in          \
