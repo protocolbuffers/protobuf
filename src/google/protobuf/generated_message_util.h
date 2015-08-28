@@ -89,12 +89,6 @@ LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
   return GetEmptyStringAlreadyInited();
 }
 
-// Defined in generated_message_reflection.cc -- not actually part of the lite
-// library.
-//
-// TODO(jasonh): The various callers get this declaration from a variety of
-// places: probably in most cases repeated_field.h. Clean these up so they all
-// get the declaration from this file.
 LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
 
 
