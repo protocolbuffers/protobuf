@@ -1776,22 +1776,25 @@ class PythonFieldValuePrinter : public TextFormat::FieldValuePrinter {
   // Python floats to ensure consistency.
   string PrintFloat(float value) const { return PrintDouble(value); }
   string PrintDouble(double value) const {
-    // Same as float.__str__()
-    char* buf = PyOS_double_to_string(
-        value,
-#if PY_MAJOR_VERSION < 3
-        'g', PyFloat_STR_PRECISION,  // Output is rounded to 12 digits.
-#else
-        'r', 0,
-#endif
-        Py_DTSF_ADD_DOT_0,  // Trailing .0 is always printed.
-        NULL);
-    if (!buf) {
+    // This implementation is not highly optimized (it allocates two temporary
+    // Python objects) but it is simple and portable.  If this is shown to be a
+    // performance bottleneck, we can optimize it, but the results will likely
+    // be more complicated to accommodate the differing behavior of double
+    // formatting between Python 2 and Python 3.
+    //
+    // (Though a valid question is: do we really want to make out output
+    // dependent on the Python version?)
+    ScopedPyObjectPtr py_value(PyFloat_FromDouble(value));
+    if (!py_value.get()) {
       return string();
     }
-    string result(buf);
-    PyMem_Free(buf);
-    return result;
+
+    ScopedPyObjectPtr py_str(PyObject_Str(py_value.get()));
+    if (!py_str.get()) {
+      return string();
+    }
+
+    return string(PyString_AsString(py_str.get()));
   }
 };
 
