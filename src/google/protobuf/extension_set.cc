@@ -34,7 +34,6 @@
 
 #include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -1747,65 +1746,67 @@ void ExtensionSet::Extension::Free() {
 // ==================================================================
 // Default repeated field instances for iterator-compatible accessors
 
+GOOGLE_PROTOBUF_DECLARE_ONCE(repeated_primitive_generic_type_traits_once_init_);
+GOOGLE_PROTOBUF_DECLARE_ONCE(repeated_string_type_traits_once_init_);
+GOOGLE_PROTOBUF_DECLARE_ONCE(repeated_message_generic_type_traits_once_init_);
+
+void RepeatedPrimitiveGenericTypeTraits::InitializeDefaultRepeatedFields() {
+  default_repeated_field_int32_ = new RepeatedField<int32>;
+  default_repeated_field_int64_ = new RepeatedField<int64>;
+  default_repeated_field_uint32_ = new RepeatedField<uint32>;
+  default_repeated_field_uint64_ = new RepeatedField<uint64>;
+  default_repeated_field_double_ = new RepeatedField<double>;
+  default_repeated_field_float_ = new RepeatedField<float>;
+  default_repeated_field_bool_ = new RepeatedField<bool>;
+  OnShutdown(&DestroyDefaultRepeatedFields);
+}
+
+void RepeatedPrimitiveGenericTypeTraits::DestroyDefaultRepeatedFields() {
+  delete default_repeated_field_int32_;
+  delete default_repeated_field_int64_;
+  delete default_repeated_field_uint32_;
+  delete default_repeated_field_uint64_;
+  delete default_repeated_field_double_;
+  delete default_repeated_field_float_;
+  delete default_repeated_field_bool_;
+}
+
+void RepeatedStringTypeTraits::InitializeDefaultRepeatedFields() {
+  default_repeated_field_ = new RepeatedFieldType;
+  OnShutdown(&DestroyDefaultRepeatedFields);
+}
+
+void RepeatedStringTypeTraits::DestroyDefaultRepeatedFields() {
+  delete default_repeated_field_;
+}
+
+void RepeatedMessageGenericTypeTraits::InitializeDefaultRepeatedFields() {
+  default_repeated_field_ = new RepeatedFieldType;
+  OnShutdown(&DestroyDefaultRepeatedFields);
+}
+
+void RepeatedMessageGenericTypeTraits::DestroyDefaultRepeatedFields() {
+  delete default_repeated_field_;
+}
+
+const RepeatedField<int32>*
+RepeatedPrimitiveGenericTypeTraits::default_repeated_field_int32_ = NULL;
+const RepeatedField<int64>*
+RepeatedPrimitiveGenericTypeTraits::default_repeated_field_int64_ = NULL;
+const RepeatedField<uint32>*
+RepeatedPrimitiveGenericTypeTraits::default_repeated_field_uint32_ = NULL;
+const RepeatedField<uint64>*
+RepeatedPrimitiveGenericTypeTraits::default_repeated_field_uint64_ = NULL;
+const RepeatedField<double>*
+RepeatedPrimitiveGenericTypeTraits::default_repeated_field_double_ = NULL;
+const RepeatedField<float>*
+RepeatedPrimitiveGenericTypeTraits::default_repeated_field_float_ = NULL;
+const RepeatedField<bool>*
+RepeatedPrimitiveGenericTypeTraits::default_repeated_field_bool_ = NULL;
 const RepeatedStringTypeTraits::RepeatedFieldType*
 RepeatedStringTypeTraits::default_repeated_field_ = NULL;
-
 const RepeatedMessageGenericTypeTraits::RepeatedFieldType*
 RepeatedMessageGenericTypeTraits::default_repeated_field_ = NULL;
-
-#define PROTOBUF_DEFINE_DEFAULT_REPEATED(TYPE)                                 \
-    const RepeatedField<TYPE>*                                                 \
-    RepeatedPrimitiveGenericTypeTraits::default_repeated_field_##TYPE##_ = NULL;
-
-PROTOBUF_DEFINE_DEFAULT_REPEATED(int32)
-PROTOBUF_DEFINE_DEFAULT_REPEATED(int64)
-PROTOBUF_DEFINE_DEFAULT_REPEATED(uint32)
-PROTOBUF_DEFINE_DEFAULT_REPEATED(uint64)
-PROTOBUF_DEFINE_DEFAULT_REPEATED(double)
-PROTOBUF_DEFINE_DEFAULT_REPEATED(float)
-PROTOBUF_DEFINE_DEFAULT_REPEATED(bool)
-
-#undef PROTOBUF_DEFINE_DEFAULT_REPEATED
-
-struct StaticDefaultRepeatedFieldsInitializer {
-  StaticDefaultRepeatedFieldsInitializer() {
-    InitializeDefaultRepeatedFields();
-    OnShutdown(&DestroyDefaultRepeatedFields);
-  }
-} static_repeated_fields_initializer;
-
-void InitializeDefaultRepeatedFields() {
-  RepeatedStringTypeTraits::default_repeated_field_ =
-      new RepeatedStringTypeTraits::RepeatedFieldType;
-  RepeatedMessageGenericTypeTraits::default_repeated_field_ =
-      new RepeatedMessageGenericTypeTraits::RepeatedFieldType;
-  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_int32_ =
-      new RepeatedField<int32>;
-  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_int64_ =
-      new RepeatedField<int64>;
-  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_uint32_ =
-      new RepeatedField<uint32>;
-  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_uint64_ =
-      new RepeatedField<uint64>;
-  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_double_ =
-      new RepeatedField<double>;
-  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_float_ =
-      new RepeatedField<float>;
-  RepeatedPrimitiveGenericTypeTraits::default_repeated_field_bool_ =
-      new RepeatedField<bool>;
-}
-
-void DestroyDefaultRepeatedFields() {
-  delete RepeatedStringTypeTraits::default_repeated_field_;
-  delete RepeatedMessageGenericTypeTraits::default_repeated_field_;
-  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_int32_;
-  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_int64_;
-  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_uint32_;
-  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_uint64_;
-  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_double_;
-  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_float_;
-  delete RepeatedPrimitiveGenericTypeTraits::default_repeated_field_bool_;
-}
 
 }  // namespace internal
 }  // namespace protobuf
