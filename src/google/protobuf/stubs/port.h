@@ -82,6 +82,15 @@
   #define LIBPROTOC_EXPORT
 #endif
 
+// These #includes are for the byte swap functions declared later on.
+#ifdef _MSC_VER
+#include <stdlib.h>  // NOLINT(build/include)
+#elif defined(__APPLE__)
+#include <libkern/OSByteOrder.h>
+#elif defined(__GLIBC__) || defined(__CYGWIN__)
+#include <byteswap.h>  // IWYU pragma: export
+#endif
+
 // ===================================================================
 // from google3/base/port.h
 namespace google {
@@ -179,7 +188,7 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 // Provided at least since GCC 3.0.
 #define GOOGLE_PREDICT_TRUE(x) (__builtin_expect(!!(x), 1))
 #else
-#define GOOGLE_PREDICT_TRUE
+#define GOOGLE_PREDICT_TRUE(x) (x)
 #endif
 #endif
 
@@ -188,7 +197,7 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 // Provided at least since GCC 3.0.
 #define GOOGLE_PREDICT_FALSE(x) (__builtin_expect(x, 0))
 #else
-#define GOOGLE_PREDICT_FALSE
+#define GOOGLE_PREDICT_FALSE(x) (x)
 #endif
 #endif
 
@@ -270,7 +279,6 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 // The following guarantees declaration of the byte swap functions, and
 // defines __BYTE_ORDER for MSVC
 #ifdef _MSC_VER
-#include <stdlib.h>  // NOLINT(build/include)
 #define __BYTE_ORDER __LITTLE_ENDIAN
 #define bswap_16(x) _byteswap_ushort(x)
 #define bswap_32(x) _byteswap_ulong(x)
@@ -278,15 +286,11 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 
 #elif defined(__APPLE__)
 // Mac OS X / Darwin features
-#include <libkern/OSByteOrder.h>
 #define bswap_16(x) OSSwapInt16(x)
 #define bswap_32(x) OSSwapInt32(x)
 #define bswap_64(x) OSSwapInt64(x)
 
-#elif defined(__GLIBC__) || defined(__CYGWIN__)
-#include <byteswap.h>  // IWYU pragma: export
-
-#else
+#elif !defined(__GLIBC__) && !defined(__CYGWIN__)
 
 static inline uint16 bswap_16(uint16 x) {
   return static_cast<uint16>(((x & 0xFF) << 8) | ((x & 0xFF00) >> 8));
