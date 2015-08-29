@@ -340,7 +340,7 @@ static int InsertEmptyWeakref(PyTypeObject *base_type) {
 
 }  // namespace message_meta
 
-PyTypeObject PyMessageMeta_Type {
+PyTypeObject PyMessageMeta_Type = {
   PyVarObject_HEAD_INIT(&PyType_Type, 0)
   FULL_MODULE_NAME ".MessageMeta",     // tp_name
   sizeof(PyMessageMeta),               // tp_basicsize
