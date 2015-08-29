@@ -476,75 +476,6 @@ module BasicTest
       assert m == {"a" => 1, "c" => 3, "b" => 2}
     end
 
-    def test_map_keytypes
-      m = Google::Protobuf::Map.new(:int32, :int32)
-      m[1] = 42
-      m[-1] = 42
-      assert_raise RangeError do
-        m[0x8000_0000] = 1
-      end
-      assert_raise TypeError do
-        m["asdf"] = 1
-      end
-
-      m = Google::Protobuf::Map.new(:int64, :int32)
-      m[0x1000_0000_0000_0000] = 1
-      assert_raise RangeError do
-        m[0x1_0000_0000_0000_0000] = 1
-      end
-      assert_raise TypeError do
-        m["asdf"] = 1
-      end
-
-      m = Google::Protobuf::Map.new(:uint32, :int32)
-      m[0x8000_0000] = 1
-      assert_raise RangeError do
-        m[0x1_0000_0000] = 1
-      end
-      assert_raise RangeError do
-        m[-1] = 1
-      end
-
-      m = Google::Protobuf::Map.new(:uint64, :int32)
-      m[0x8000_0000_0000_0000] = 1
-      assert_raise RangeError do
-        m[0x1_0000_0000_0000_0000] = 1
-      end
-      assert_raise RangeError do
-        m[-1] = 1
-      end
-
-      m = Google::Protobuf::Map.new(:bool, :int32)
-      m[true] = 1
-      m[false] = 2
-      assert_raise TypeError do
-        m[1] = 1
-      end
-      assert_raise TypeError do
-        m["asdf"] = 1
-      end
-
-      m = Google::Protobuf::Map.new(:string, :int32)
-      m["asdf"] = 1
-      assert_raise TypeError do
-        m[1] = 1
-      end
-      assert_raise TypeError do
-        bytestring = ["FFFF"].pack("H*")
-        m[bytestring] = 1
-      end
-
-      m = Google::Protobuf::Map.new(:bytes, :int32)
-      bytestring = ["FFFF"].pack("H*")
-      m[bytestring] = 1
-      assert_raise TypeError do
-        m["asdf"] = 1
-      end
-      assert_raise TypeError do
-        m[1] = 1
-      end
-    end
-
     def test_map_msg_enum_valuetypes
       m = Google::Protobuf::Map.new(:string, :message, TestMessage)
       m["asdf"] = TestMessage.new
@@ -852,36 +783,6 @@ module BasicTest
       decoded_msg = Google::Protobuf.decode_json(TestMessage, encoded_msg)
       assert_equal TestMessage.decode_json(m.to_json), decoded_msg
     end
-
-    def test_to_h
-      m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
-      expected_result = {
-        :optional_bool=>true,
-        :optional_bytes=>"",
-        :optional_double=>-10.100001,
-        :optional_enum=>:Default,
-        :optional_float=>0.0,
-        :optional_int32=>0,
-        :optional_int64=>0,
-        :optional_msg=>nil,
-        :optional_string=>"foo",
-        :optional_uint32=>0,
-        :optional_uint64=>0,
-        :repeated_bool=>[],
-        :repeated_bytes=>[],
-        :repeated_double=>[],
-        :repeated_enum=>[],
-        :repeated_float=>[],
-        :repeated_int32=>[],
-        :repeated_int64=>[],
-        :repeated_msg=>[],
-        :repeated_string=>["bar1", "bar2"],
-        :repeated_uint32=>[],
-        :repeated_uint64=>[]
-      }
-      assert_equal expected_result, m.to_h
-    end
-
 
     def test_def_errors
       s = Google::Protobuf::DescriptorPool.new

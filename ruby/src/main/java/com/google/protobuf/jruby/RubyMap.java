@@ -36,6 +36,7 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.MapEntry;
 import org.jruby.*;
+import org.jruby.runtime.Helpers;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
@@ -189,8 +190,29 @@ public class RubyMap extends RubyObject {
      */
     @JRubyMethod(name = "==")
     public IRubyObject eq(ThreadContext context, IRubyObject _other) {
-        if (_other instanceof RubyHash)
-            return toHash(context).op_equal(context, _other);
+        if (_other instanceof RubyHash){
+            RubyHash other = (RubyHash)_other;
+            // quick check to see if they are equivalent
+            RubyHash this_hash = toHash(context);
+            if(other.size() != this_hash.size()){
+                return context.runtime.getFalse();
+            }
+            IRubyObject matched = this_hash.op_equal(context, other);
+            if (matched == context.runtime.getTrue()) {
+                return context.runtime.getTrue();
+            }
+
+            // we have complex objects, such as a message
+            // lets check to see if they are equivalent
+            for (IRubyObject key : table.keySet()) {
+                if ( other.has_key_p(key) == context.runtime.getFalse())
+                    return context.runtime.getFalse();
+                if (! other.get(key).equals(table.get(key)))
+                    return context.runtime.getFalse();
+            }
+            return context.runtime.getTrue();
+        }
+
         RubyMap other = (RubyMap) _other;
         if (this == other) return context.runtime.getTrue();
         if (!typeCompatible(other) || this.table.size() != other.table.size())
@@ -214,7 +236,9 @@ public class RubyMap extends RubyObject {
      */
     @JRubyMethod
     public IRubyObject inspect() {
-        return toHash(getRuntime().getCurrentContext()).inspect();
+        ThreadContext context = getRuntime().getCurrentContext();
+        IRubyObject hash = toHash(getRuntime().getCurrentContext());
+        return Helpers.invoke(context, hash, "inspect");
     }
 
     /*
@@ -340,7 +364,19 @@ public class RubyMap extends RubyObject {
 
     @JRubyMethod(name = {"to_h", "to_hash"})
     public RubyHash toHash(ThreadContext context) {
-        return RubyHash.newHash(context.runtime, table, context.runtime.getNil());
+        Ruby runtime = context.runtime;
+        RubyHash ret = RubyHash.newHash(runtime);
+        for (Map.Entry<IRubyObject, IRubyObject> entry : table.entrySet()) {
+            IRubyObject value = entry.getValue();
+            IRubyObject key   = entry.getKey();
+            if (!value.isNil()) {
+                if (value.respondsTo("to_h")) {
+                    value = Helpers.invoke(context, value, "to_h");
+                }
+            }
+            ret.fastASet(key, value);
+        }
+        return ret;
     }
 
     // Used by Google::Protobuf.deep_copy but not exposed directly.

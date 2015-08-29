@@ -345,13 +345,18 @@ public class RubyMessage extends RubyObject {
         for (Descriptors.FieldDescriptor fdef : this.descriptor.getFields()) {
             IRubyObject value = getField(context, fdef);
             if (!value.isNil()) {
-                if (value.respondsTo("to_h")) {
+                // Order here matters!  Enumerable fields, such as RepeatedField,
+                // respond to both #to_h and #to_a.  in that case, we want the #to_a
+                // behavior
+                if (Utils.isMapEntry(fdef)) {
                     value = Helpers.invoke(context, value, "to_h");
                 } else if (value.respondsTo("to_a")) {
                     value = Helpers.invoke(context, value, "to_a");
+                }else if (value.respondsTo("to_h")) {
+                    value = Helpers.invoke(context, value, "to_h");
                 }
             }
-            ret.fastASet(runtime.newSymbol(fdef.getName()), value);
+            ret.fastASet(runtime.newString(fdef.getName()), value);
         }
         return ret;
     }
@@ -695,7 +700,7 @@ public class RubyMessage extends RubyObject {
         for (Descriptors.FieldDescriptor fdef : descriptor.getFields()) {
             sb.append(Utils.unescapeIdentifier(fdef.getName()));
             sb.append(": ");
-            sb.append(getField(context, fdef).inspect());
+            sb.append(Helpers.invoke(context, getField(context, fdef), "inspect"));
             sb.append(", ");
         }
         return sb.substring(0, sb.length() - 2);
