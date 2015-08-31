@@ -447,6 +447,14 @@ class LIBPROTOBUF_EXPORT TextFormat {
       allow_field_number_ = allow;
     }
 
+    void AllowUnknownField(bool allow) {
+      allow_unknown_field_ = allow;
+    }
+
+    void AllowUnknownEnum(bool allow) {
+      allow_unknown_enum_ = allow;
+    }
+
    private:
     // Forward declaration of an internal class used to parse text
     // representations (see text_format.cc for implementation).
