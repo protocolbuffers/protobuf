@@ -9,8 +9,11 @@ option(protobuf_VERBOSE "Enable for verbose output" OFF)
 option(BUILD_TESTING "Build tests" ON)
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 if (MSVC)
-  option(ZLIB "Build with zlib support" OFF)
+  set(ZLIB_DEFAULT OFF)
+else (MSVC)
+  set(ZLIB_DEFAULT ON)
 endif (MSVC)
+option(ZLIB "Build with zlib support" ${ZLIB_DEFAULT})
 
 # Path to main configure script
 set(protobuf_CONFIGURE_SCRIPT "../configure.ac")
@@ -56,18 +59,17 @@ if (CMAKE_USE_PTHREADS_INIT)
   add_definitions(-DHAVE_PTHREAD)
 endif (CMAKE_USE_PTHREADS_INIT)
 
-if (MSVC)
-  if (ZLIB)
-    set(HAVE_ZLIB 1)
-    find_path(ZLIB_INCLUDE_DIRECTORIES zlib.h ${protobuf_SOURCE_DIR})
-    find_library(ZLIB_LIBRARIES zdll ${protobuf_SOURCE_DIR})
-  else (ZLIB)
-    set(HAVE_ZLIB 0)
-  endif (ZLIB)
-else (MSVC)
+if (ZLIB)
   find_package(ZLIB)
   if (ZLIB_FOUND)
     set(HAVE_ZLIB 1)
+    # FindZLIB module define ZLIB_INCLUDE_DIRS variable
+    # Set ZLIB_INCLUDE_DIRECTORIES for compatible
+    set(ZLIB_INCLUDE_DIRECTORIES ${ZLIB_INCLUDE_DIRECTORIES} ${ZLIB_INCLUDE_DIRS})
+    # Using imported target if exists
+    if (TARGET ZLIB::ZLIB)
+      set(ZLIB_LIBRARIES ZLIB::ZLIB)
+    endif (TARGET ZLIB::ZLIB)
   else (ZLIB_FOUND)
     set(HAVE_ZLIB 0)
     # Explicitly set these to empty (override NOT_FOUND) so cmake doesn't
@@ -75,7 +77,7 @@ else (MSVC)
     set(ZLIB_INCLUDE_DIRECTORIES)
     set(ZLIB_LIBRARIES)
   endif (ZLIB_FOUND)
-endif (MSVC)
+endif (ZLIB)
 
 if (HAVE_ZLIB)
   add_definitions(-DHAVE_ZLIB)
@@ -86,7 +88,7 @@ if (MSVC)
     add_definitions(-DPROTOBUF_USE_DLLS)
   else (BUILD_SHARED_LIBS)
     # In case we are building static libraries, link also the runtime library statically
-	# so that MSVCR*.DLL is not required at runtime.
+    # so that MSVCR*.DLL is not required at runtime.
     # https://msdn.microsoft.com/en-us/library/2kzt1wy3.aspx
     # This is achieved by replacing msvc option /MD with /MT and /MDd with /MTd
     # http://www.cmake.org/Wiki/CMake_FAQ#How_can_I_build_my_MSVC_application_with_a_static_runtime.3F
