@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 2.8)
 project(protobuf C CXX)
 
 # Options
+option(protobuf_VERBOSE "Enable for verbose output" OFF)
 option(BUILD_TESTING "Build tests" ON)
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 if (MSVC)
@@ -14,28 +15,39 @@ endif (MSVC)
 # Path to main configure script
 set(protobuf_CONFIGURE_SCRIPT "../configure.ac")
 
-# Parse version from configure script
-file(STRINGS "${protobuf_CONFIGURE_SCRIPT}" protobuf_VERSION_LINE
-  LIMIT_COUNT 1
-  REGEX "^AC_INIT")
-# Replace special characters
-string(REPLACE "(" "_" protobuf_VERSION_LINE ${protobuf_VERSION_LINE})
-string(REPLACE ")" "_" protobuf_VERSION_LINE ${protobuf_VERSION_LINE})
-string(REPLACE "[" "_" protobuf_VERSION_LINE ${protobuf_VERSION_LINE})
-string(REPLACE "]" "_" protobuf_VERSION_LINE ${protobuf_VERSION_LINE})
-# Parse version string
-string(REGEX REPLACE "^AC_INIT__Protocol Buffers_,_([^_]+).*$" "\\1"
-    protobuf_VERSION_STRING "${protobuf_VERSION_LINE}")
+# Parse configure script
+set(protobuf_AC_INIT_REGEX
+  "^AC_INIT\\(\\[([^]]+)\\],\\[([^]]+)\\],\\[([^]]+)\\],\\[([^]]+)\\]\\)$")
+file(STRINGS "${protobuf_CONFIGURE_SCRIPT}" protobuf_AC_INIT_LINE
+  LIMIT_COUNT 1 REGEX "^AC_INIT")
+# Description
+string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\1"
+    protobuf_DESCRIPTION    "${protobuf_AC_INIT_LINE}")
+# Version
+string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\2"
+    protobuf_VERSION_STRING "${protobuf_AC_INIT_LINE}")
+# Contact
+string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\3"
+    protobuf_CONTACT        "${protobuf_AC_INIT_LINE}")
 # Parse version tweaks
-string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*$" "\\1"
+set(protobuf_VERSION_REGEX "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*$")
+string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\1"
   protobuf_VERSION_MAJOR "${protobuf_VERSION_STRING}")
-string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*$" "\\2"
+string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\2"
   protobuf_VERSION_MINOR "${protobuf_VERSION_STRING}")
-string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*$" "\\3"
+string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\3"
   protobuf_VERSION_PATCH "${protobuf_VERSION_STRING}")
 # Package version
 set(protobuf_VERSION
   "${protobuf_VERSION_MAJOR}.${protobuf_VERSION_MINOR}.${protobuf_VERSION_PATCH}")
+
+if(protobuf_VERBOSE)
+  message(STATUS "Configuration script parsing status [")
+  message(STATUS "  Description : ${protobuf_DESCRIPTION}")
+  message(STATUS "  Version     : ${protobuf_VERSION} (${protobuf_VERSION_STRING})")
+  message(STATUS "  Contact     : ${protobuf_CONTACT}")
+  message(STATUS "]")
+endif()
 
 add_definitions(-DGOOGLE_PROTOBUF_CMAKE_BUILD)
 
