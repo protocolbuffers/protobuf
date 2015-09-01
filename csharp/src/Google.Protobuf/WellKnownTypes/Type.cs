@@ -23,43 +23,46 @@ namespace Google.Protobuf.WellKnownTypes {
       static Type() {
         byte[] descriptorData = global::System.Convert.FromBase64String(
             string.Concat(
-              "Chpnb29nbGUvcHJvdG9idWYvdHlwZS5wcm90bxIPZ29vZ2xlLnByb3RvYnVm", 
-              "Ghlnb29nbGUvcHJvdG9idWYvYW55LnByb3RvGiRnb29nbGUvcHJvdG9idWYv", 
-              "c291cmNlX2NvbnRleHQucHJvdG8irgEKBFR5cGUSDAoEbmFtZRgBIAEoCRIm", 
-              "CgZmaWVsZHMYAiADKAsyFi5nb29nbGUucHJvdG9idWYuRmllbGQSDgoGb25l", 
-              "b2ZzGAMgAygJEigKB29wdGlvbnMYBCADKAsyFy5nb29nbGUucHJvdG9idWYu", 
-              "T3B0aW9uEjYKDnNvdXJjZV9jb250ZXh0GAUgASgLMh4uZ29vZ2xlLnByb3Rv", 
-              "YnVmLlNvdXJjZUNvbnRleHQimwUKBUZpZWxkEikKBGtpbmQYASABKA4yGy5n", 
-              "b29nbGUucHJvdG9idWYuRmllbGQuS2luZBI3CgtjYXJkaW5hbGl0eRgCIAEo", 
-              "DjIiLmdvb2dsZS5wcm90b2J1Zi5GaWVsZC5DYXJkaW5hbGl0eRIOCgZudW1i", 
-              "ZXIYAyABKAUSDAoEbmFtZRgEIAEoCRIQCgh0eXBlX3VybBgGIAEoCRITCgtv", 
-              "bmVvZl9pbmRleBgHIAEoBRIOCgZwYWNrZWQYCCABKAgSKAoHb3B0aW9ucxgJ", 
-              "IAMoCzIXLmdvb2dsZS5wcm90b2J1Zi5PcHRpb24iuAIKBEtpbmQSEAoMVFlQ", 
-              "RV9VTktOT1dOEAASDwoLVFlQRV9ET1VCTEUQARIOCgpUWVBFX0ZMT0FUEAIS", 
-              "DgoKVFlQRV9JTlQ2NBADEg8KC1RZUEVfVUlOVDY0EAQSDgoKVFlQRV9JTlQz", 
-              "MhAFEhAKDFRZUEVfRklYRUQ2NBAGEhAKDFRZUEVfRklYRUQzMhAHEg0KCVRZ", 
-              "UEVfQk9PTBAIEg8KC1RZUEVfU1RSSU5HEAkSEAoMVFlQRV9NRVNTQUdFEAsS", 
-              "DgoKVFlQRV9CWVRFUxAMEg8KC1RZUEVfVUlOVDMyEA0SDQoJVFlQRV9FTlVN", 
-              "EA4SEQoNVFlQRV9TRklYRUQzMhAPEhEKDVRZUEVfU0ZJWEVENjQQEBIPCgtU", 
-              "WVBFX1NJTlQzMhAREg8KC1RZUEVfU0lOVDY0EBIidAoLQ2FyZGluYWxpdHkS", 
-              "FwoTQ0FSRElOQUxJVFlfVU5LTk9XThAAEhgKFENBUkRJTkFMSVRZX09QVElP", 
-              "TkFMEAESGAoUQ0FSRElOQUxJVFlfUkVRVUlSRUQQAhIYChRDQVJESU5BTElU", 
-              "WV9SRVBFQVRFRBADIqUBCgRFbnVtEgwKBG5hbWUYASABKAkSLQoJZW51bXZh", 
-              "bHVlGAIgAygLMhouZ29vZ2xlLnByb3RvYnVmLkVudW1WYWx1ZRIoCgdvcHRp", 
-              "b25zGAMgAygLMhcuZ29vZ2xlLnByb3RvYnVmLk9wdGlvbhI2Cg5zb3VyY2Vf", 
-              "Y29udGV4dBgEIAEoCzIeLmdvb2dsZS5wcm90b2J1Zi5Tb3VyY2VDb250ZXh0", 
-              "IlMKCUVudW1WYWx1ZRIMCgRuYW1lGAEgASgJEg4KBm51bWJlchgCIAEoBRIo", 
-              "CgdvcHRpb25zGAMgAygLMhcuZ29vZ2xlLnByb3RvYnVmLk9wdGlvbiI7CgZP", 
-              "cHRpb24SDAoEbmFtZRgBIAEoCRIjCgV2YWx1ZRgCIAEoCzIULmdvb2dsZS5w", 
-              "cm90b2J1Zi5BbnlCSQoTY29tLmdvb2dsZS5wcm90b2J1ZkIJVHlwZVByb3Rv", 
-              "UAGiAgNHUEKqAh5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnBy", 
-              "b3RvMw=="));
+              "Chpnb29nbGUvcHJvdG9idWYvdHlwZS5wcm90bxIPZ29vZ2xlLnByb3RvYnVm",
+              "Ghlnb29nbGUvcHJvdG9idWYvYW55LnByb3RvGiRnb29nbGUvcHJvdG9idWYv",
+              "c291cmNlX2NvbnRleHQucHJvdG8i1wEKBFR5cGUSDAoEbmFtZRgBIAEoCRIm",
+              "CgZmaWVsZHMYAiADKAsyFi5nb29nbGUucHJvdG9idWYuRmllbGQSDgoGb25l",
+              "b2ZzGAMgAygJEigKB29wdGlvbnMYBCADKAsyFy5nb29nbGUucHJvdG9idWYu",
+              "T3B0aW9uEjYKDnNvdXJjZV9jb250ZXh0GAUgASgLMh4uZ29vZ2xlLnByb3Rv",
+              "YnVmLlNvdXJjZUNvbnRleHQSJwoGc3ludGF4GAYgASgOMhcuZ29vZ2xlLnBy",
+              "b3RvYnVmLlN5bnRheCK+BQoFRmllbGQSKQoEa2luZBgBIAEoDjIbLmdvb2ds",
+              "ZS5wcm90b2J1Zi5GaWVsZC5LaW5kEjcKC2NhcmRpbmFsaXR5GAIgASgOMiIu",
+              "Z29vZ2xlLnByb3RvYnVmLkZpZWxkLkNhcmRpbmFsaXR5Eg4KBm51bWJlchgD",
+              "IAEoBRIMCgRuYW1lGAQgASgJEhAKCHR5cGVfdXJsGAYgASgJEhMKC29uZW9m",
+              "X2luZGV4GAcgASgFEg4KBnBhY2tlZBgIIAEoCBIoCgdvcHRpb25zGAkgAygL",
+              "MhcuZ29vZ2xlLnByb3RvYnVmLk9wdGlvbhIRCglqc29uX25hbWUYCiABKAki",
+              "yAIKBEtpbmQSEAoMVFlQRV9VTktOT1dOEAASDwoLVFlQRV9ET1VCTEUQARIO",
+              "CgpUWVBFX0ZMT0FUEAISDgoKVFlQRV9JTlQ2NBADEg8KC1RZUEVfVUlOVDY0",
+              "EAQSDgoKVFlQRV9JTlQzMhAFEhAKDFRZUEVfRklYRUQ2NBAGEhAKDFRZUEVf",
+              "RklYRUQzMhAHEg0KCVRZUEVfQk9PTBAIEg8KC1RZUEVfU1RSSU5HEAkSDgoK",
+              "VFlQRV9HUk9VUBAKEhAKDFRZUEVfTUVTU0FHRRALEg4KClRZUEVfQllURVMQ",
+              "DBIPCgtUWVBFX1VJTlQzMhANEg0KCVRZUEVfRU5VTRAOEhEKDVRZUEVfU0ZJ",
+              "WEVEMzIQDxIRCg1UWVBFX1NGSVhFRDY0EBASDwoLVFlQRV9TSU5UMzIQERIP",
+              "CgtUWVBFX1NJTlQ2NBASInQKC0NhcmRpbmFsaXR5EhcKE0NBUkRJTkFMSVRZ",
+              "X1VOS05PV04QABIYChRDQVJESU5BTElUWV9PUFRJT05BTBABEhgKFENBUkRJ",
+              "TkFMSVRZX1JFUVVJUkVEEAISGAoUQ0FSRElOQUxJVFlfUkVQRUFURUQQAyLO",
+              "AQoERW51bRIMCgRuYW1lGAEgASgJEi0KCWVudW12YWx1ZRgCIAMoCzIaLmdv",
+              "b2dsZS5wcm90b2J1Zi5FbnVtVmFsdWUSKAoHb3B0aW9ucxgDIAMoCzIXLmdv",
+              "b2dsZS5wcm90b2J1Zi5PcHRpb24SNgoOc291cmNlX2NvbnRleHQYBCABKAsy",
+              "Hi5nb29nbGUucHJvdG9idWYuU291cmNlQ29udGV4dBInCgZzeW50YXgYBSAB",
+              "KA4yFy5nb29nbGUucHJvdG9idWYuU3ludGF4IlMKCUVudW1WYWx1ZRIMCgRu",
+              "YW1lGAEgASgJEg4KBm51bWJlchgCIAEoBRIoCgdvcHRpb25zGAMgAygLMhcu",
+              "Z29vZ2xlLnByb3RvYnVmLk9wdGlvbiI7CgZPcHRpb24SDAoEbmFtZRgBIAEo",
+              "CRIjCgV2YWx1ZRgCIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkqLgoGU3lu",
+              "dGF4EhEKDVNZTlRBWF9QUk9UTzIQABIRCg1TWU5UQVhfUFJPVE8zEAFCTAoT",
+              "Y29tLmdvb2dsZS5wcm90b2J1ZkIJVHlwZVByb3RvUAGgAQGiAgNHUEKqAh5H",
+              "b29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
             new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.Proto.Any.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.SourceContext.Descriptor, },
-            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Type), new[]{ "Name", "Fields", "Oneofs", "Options", "SourceContext" }, null, null, null),
-              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Field), new[]{ "Kind", "Cardinality", "Number", "Name", "TypeUrl", "OneofIndex", "Packed", "Options" }, null, new[]{ typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Kind), typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality) }, null),
-              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Enum), new[]{ "Name", "Enumvalue", "Options", "SourceContext" }, null, null, null),
+            new pbr::GeneratedCodeInfo(new[] {typeof(global::Google.Protobuf.WellKnownTypes.Syntax), }, new pbr::GeneratedCodeInfo[] {
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Type), new[]{ "Name", "Fields", "Oneofs", "Options", "SourceContext", "Syntax" }, null, null, null),
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Field), new[]{ "Kind", "Cardinality", "Number", "Name", "TypeUrl", "OneofIndex", "Packed", "Options", "JsonName" }, null, new[]{ typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Kind), typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality) }, null),
+              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Enum), new[]{ "Name", "Enumvalue", "Options", "SourceContext", "Syntax" }, null, null, null),
               new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.EnumValue), new[]{ "Name", "Number", "Options" }, null, null, null),
               new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Option), new[]{ "Name", "Value" }, null, null, null)
             }));
@@ -68,6 +71,14 @@ namespace Google.Protobuf.WellKnownTypes {
 
     }
   }
+  #region Enums
+  public enum Syntax {
+    SYNTAX_PROTO2 = 0,
+    SYNTAX_PROTO3 = 1,
+  }
+
+  #endregion
+
   #region Messages
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Type : pb::IMessage<Type> {
@@ -94,6 +105,7 @@ namespace Google.Protobuf.WellKnownTypes {
       oneofs_ = other.oneofs_.Clone();
       options_ = other.options_.Clone();
       SourceContext = other.sourceContext_ != null ? other.SourceContext.Clone() : null;
+      syntax_ = other.syntax_;
     }
 
     public Type Clone() {
@@ -142,6 +154,15 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    public const int SyntaxFieldNumber = 6;
+    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2;
+    public global::Google.Protobuf.WellKnownTypes.Syntax Syntax {
+      get { return syntax_; }
+      set {
+        syntax_ = value;
+      }
+    }
+
     public override bool Equals(object other) {
       return Equals(other as Type);
     }
@@ -158,6 +179,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if(!oneofs_.Equals(other.oneofs_)) return false;
       if(!options_.Equals(other.options_)) return false;
       if (!object.Equals(SourceContext, other.SourceContext)) return false;
+      if (Syntax != other.Syntax) return false;
       return true;
     }
 
@@ -168,6 +190,7 @@ namespace Google.Protobuf.WellKnownTypes {
       hash ^= oneofs_.GetHashCode();
       hash ^= options_.GetHashCode();
       if (sourceContext_ != null) hash ^= SourceContext.GetHashCode();
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) hash ^= Syntax.GetHashCode();
       return hash;
     }
 
@@ -187,6 +210,10 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(42);
         output.WriteMessage(SourceContext);
       }
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) Syntax);
+      }
     }
 
     public int CalculateSize() {
@@ -199,6 +226,9 @@ namespace Google.Protobuf.WellKnownTypes {
       size += options_.CalculateSize(_repeated_options_codec);
       if (sourceContext_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(SourceContext);
+      }
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Syntax);
       }
       return size;
     }
@@ -218,6 +248,9 @@ namespace Google.Protobuf.WellKnownTypes {
           sourceContext_ = new global::Google.Protobuf.WellKnownTypes.SourceContext();
         }
         SourceContext.MergeFrom(other.SourceContext);
+      }
+      if (other.Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+        Syntax = other.Syntax;
       }
     }
 
@@ -249,6 +282,10 @@ namespace Google.Protobuf.WellKnownTypes {
               sourceContext_ = new global::Google.Protobuf.WellKnownTypes.SourceContext();
             }
             input.ReadMessage(sourceContext_);
+            break;
+          }
+          case 48: {
+            syntax_ = (global::Google.Protobuf.WellKnownTypes.Syntax) input.ReadEnum();
             break;
           }
         }
@@ -285,6 +322,7 @@ namespace Google.Protobuf.WellKnownTypes {
       oneofIndex_ = other.oneofIndex_;
       packed_ = other.packed_;
       options_ = other.options_.Clone();
+      jsonName_ = other.jsonName_;
     }
 
     public Field Clone() {
@@ -362,6 +400,15 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return options_; }
     }
 
+    public const int JsonNameFieldNumber = 10;
+    private string jsonName_ = "";
+    public string JsonName {
+      get { return jsonName_; }
+      set {
+        jsonName_ = pb::Preconditions.CheckNotNull(value, "value");
+      }
+    }
+
     public override bool Equals(object other) {
       return Equals(other as Field);
     }
@@ -381,6 +428,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (OneofIndex != other.OneofIndex) return false;
       if (Packed != other.Packed) return false;
       if(!options_.Equals(other.options_)) return false;
+      if (JsonName != other.JsonName) return false;
       return true;
     }
 
@@ -394,6 +442,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (OneofIndex != 0) hash ^= OneofIndex.GetHashCode();
       if (Packed != false) hash ^= Packed.GetHashCode();
       hash ^= options_.GetHashCode();
+      if (JsonName.Length != 0) hash ^= JsonName.GetHashCode();
       return hash;
     }
 
@@ -431,6 +480,10 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteBool(Packed);
       }
       options_.WriteTo(output, _repeated_options_codec);
+      if (JsonName.Length != 0) {
+        output.WriteRawTag(82);
+        output.WriteString(JsonName);
+      }
     }
 
     public int CalculateSize() {
@@ -457,6 +510,9 @@ namespace Google.Protobuf.WellKnownTypes {
         size += 1 + 1;
       }
       size += options_.CalculateSize(_repeated_options_codec);
+      if (JsonName.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(JsonName);
+      }
       return size;
     }
 
@@ -486,6 +542,9 @@ namespace Google.Protobuf.WellKnownTypes {
         Packed = other.Packed;
       }
       options_.Add(other.options_);
+      if (other.JsonName.Length != 0) {
+        JsonName = other.JsonName;
+      }
     }
 
     public void MergeFrom(pb::CodedInputStream input) {
@@ -527,6 +586,10 @@ namespace Google.Protobuf.WellKnownTypes {
             options_.AddEntriesFrom(input, _repeated_options_codec);
             break;
           }
+          case 82: {
+            JsonName = input.ReadString();
+            break;
+          }
         }
       }
     }
@@ -545,6 +608,7 @@ namespace Google.Protobuf.WellKnownTypes {
         TYPE_FIXED32 = 7,
         TYPE_BOOL = 8,
         TYPE_STRING = 9,
+        TYPE_GROUP = 10,
         TYPE_MESSAGE = 11,
         TYPE_BYTES = 12,
         TYPE_UINT32 = 13,
@@ -591,6 +655,7 @@ namespace Google.Protobuf.WellKnownTypes {
       enumvalue_ = other.enumvalue_.Clone();
       options_ = other.options_.Clone();
       SourceContext = other.sourceContext_ != null ? other.SourceContext.Clone() : null;
+      syntax_ = other.syntax_;
     }
 
     public Enum Clone() {
@@ -631,6 +696,15 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    public const int SyntaxFieldNumber = 5;
+    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2;
+    public global::Google.Protobuf.WellKnownTypes.Syntax Syntax {
+      get { return syntax_; }
+      set {
+        syntax_ = value;
+      }
+    }
+
     public override bool Equals(object other) {
       return Equals(other as Enum);
     }
@@ -646,6 +720,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if(!enumvalue_.Equals(other.enumvalue_)) return false;
       if(!options_.Equals(other.options_)) return false;
       if (!object.Equals(SourceContext, other.SourceContext)) return false;
+      if (Syntax != other.Syntax) return false;
       return true;
     }
 
@@ -655,6 +730,7 @@ namespace Google.Protobuf.WellKnownTypes {
       hash ^= enumvalue_.GetHashCode();
       hash ^= options_.GetHashCode();
       if (sourceContext_ != null) hash ^= SourceContext.GetHashCode();
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) hash ^= Syntax.GetHashCode();
       return hash;
     }
 
@@ -673,6 +749,10 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(34);
         output.WriteMessage(SourceContext);
       }
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+        output.WriteRawTag(40);
+        output.WriteEnum((int) Syntax);
+      }
     }
 
     public int CalculateSize() {
@@ -684,6 +764,9 @@ namespace Google.Protobuf.WellKnownTypes {
       size += options_.CalculateSize(_repeated_options_codec);
       if (sourceContext_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(SourceContext);
+      }
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Syntax);
       }
       return size;
     }
@@ -702,6 +785,9 @@ namespace Google.Protobuf.WellKnownTypes {
           sourceContext_ = new global::Google.Protobuf.WellKnownTypes.SourceContext();
         }
         SourceContext.MergeFrom(other.SourceContext);
+      }
+      if (other.Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+        Syntax = other.Syntax;
       }
     }
 
@@ -729,6 +815,10 @@ namespace Google.Protobuf.WellKnownTypes {
               sourceContext_ = new global::Google.Protobuf.WellKnownTypes.SourceContext();
             }
             input.ReadMessage(sourceContext_);
+            break;
+          }
+          case 40: {
+            syntax_ = (global::Google.Protobuf.WellKnownTypes.Syntax) input.ReadEnum();
             break;
           }
         }

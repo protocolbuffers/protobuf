@@ -23,10 +23,10 @@ namespace Google.Protobuf.WellKnownTypes {
       static FieldMask() {
         byte[] descriptorData = global::System.Convert.FromBase64String(
             string.Concat(
-              "CiBnb29nbGUvcHJvdG9idWYvZmllbGRfbWFzay5wcm90bxIPZ29vZ2xlLnBy", 
-              "b3RvYnVmIhoKCUZpZWxkTWFzaxINCgVwYXRocxgBIAMoCUJOChNjb20uZ29v", 
-              "Z2xlLnByb3RvYnVmQg5GaWVsZE1hc2tQcm90b1ABogIDR1BCqgIeR29vZ2xl", 
-              "LlByb3RvYnVmLldlbGxLbm93blR5cGVzYgZwcm90bzM="));
+              "CiBnb29nbGUvcHJvdG9idWYvZmllbGRfbWFzay5wcm90bxIPZ29vZ2xlLnBy",
+              "b3RvYnVmIhoKCUZpZWxkTWFzaxINCgVwYXRocxgBIAMoCUJRChNjb20uZ29v",
+              "Z2xlLnByb3RvYnVmQg5GaWVsZE1hc2tQcm90b1ABoAEBogIDR1BCqgIeR29v",
+              "Z2xlLlByb3RvYnVmLldlbGxLbm93blR5cGVzYgZwcm90bzM="));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
             new pbr::FileDescriptor[] { },
             new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
