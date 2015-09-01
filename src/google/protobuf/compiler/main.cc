@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
 
   // CSharp
   google::protobuf::compiler::csharp::Generator csharp_generator;
-  cli.RegisterGenerator("--csharp_out", &csharp_generator,
+  cli.RegisterGenerator("--csharp_out", "--csharp_opt", &csharp_generator,
                         "Generate C# source file.");
 
   // Objective C
