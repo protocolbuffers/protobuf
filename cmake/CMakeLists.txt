@@ -4,6 +4,9 @@ cmake_minimum_required(VERSION 2.8)
 # Project
 project(protobuf C CXX)
 
+# CMake policies
+cmake_policy(SET CMP0022 NEW)
+
 # Options
 option(protobuf_VERBOSE "Enable for verbose output" OFF)
 option(BUILD_TESTING "Build tests" ON)
