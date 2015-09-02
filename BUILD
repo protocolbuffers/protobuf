@@ -418,7 +418,9 @@ cc_test(
     copts = COPTS,
     data = [
         ":test_plugin",
-    ],
+    ] + glob([
+        "src/google/protobuf/**/*",
+    ]),
     includes = [
         "src/",
     ],
