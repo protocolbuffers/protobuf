@@ -76,7 +76,7 @@ typedef int32 Atomic32;
 #ifdef GOOGLE_PROTOBUF_ARCH_64_BIT
 // We need to be able to go between Atomic64 and AtomicWord implicitly.  This
 // means Atomic64 and AtomicWord should be the same type on 64-bit.
-#if defined(__ILP32__) || defined(GOOGLE_PROTOBUF_OS_NACL) || defined(GOOGLE_PROTOBUF_ARCH_SPARC)
+#if defined(__ILP32__) || defined(GOOGLE_PROTOBUF_OS_NACL)
 // NaCl's intptr_t is not actually 64-bits on 64-bit!
 // http://code.google.com/p/nativeclient/issues/detail?id=1162
 // sparcv9's pointer type is 32bits
