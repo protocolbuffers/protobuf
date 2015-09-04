@@ -272,24 +272,24 @@ MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::ByteSize(
   return WireFormatLite::MessageSizeNoVirtual(value);
 }
 
-#define BYTE_SIZE(FieldType, DeclaredType)                                     \
+#define GOOGLE_PROTOBUF_BYTE_SIZE(FieldType, DeclaredType)                     \
   template <typename Type>                                                     \
   inline int MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::ByteSize( \
       const MapEntryAccessorType& value) {                                     \
     return WireFormatLite::DeclaredType##Size(value);                          \
   }
 
-BYTE_SIZE(STRING, String)
-BYTE_SIZE(BYTES , Bytes)
-BYTE_SIZE(INT64 , Int64)
-BYTE_SIZE(UINT64, UInt64)
-BYTE_SIZE(INT32 , Int32)
-BYTE_SIZE(UINT32, UInt32)
-BYTE_SIZE(SINT64, SInt64)
-BYTE_SIZE(SINT32, SInt32)
-BYTE_SIZE(ENUM  , Enum)
+GOOGLE_PROTOBUF_BYTE_SIZE(STRING, String)
+GOOGLE_PROTOBUF_BYTE_SIZE(BYTES , Bytes)
+GOOGLE_PROTOBUF_BYTE_SIZE(INT64 , Int64)
+GOOGLE_PROTOBUF_BYTE_SIZE(UINT64, UInt64)
+GOOGLE_PROTOBUF_BYTE_SIZE(INT32 , Int32)
+GOOGLE_PROTOBUF_BYTE_SIZE(UINT32, UInt32)
+GOOGLE_PROTOBUF_BYTE_SIZE(SINT64, SInt64)
+GOOGLE_PROTOBUF_BYTE_SIZE(SINT32, SInt32)
+GOOGLE_PROTOBUF_BYTE_SIZE(ENUM  , Enum)
 
-#undef BYTE_SIZE
+#undef GOOGLE_PROTOBUF_BYTE_SIZE
 
 #define FIXED_BYTE_SIZE(FieldType, DeclaredType)                               \
   template <typename Type>                                                     \
