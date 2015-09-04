@@ -38,6 +38,8 @@ namespace Google.Protobuf.WellKnownTypes
     {
         private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly long BclSecondsAtUnixEpoch = UnixEpoch.Ticks / TimeSpan.TicksPerSecond;
+        internal static readonly long UnixSecondsAtBclMinValue = -BclSecondsAtUnixEpoch;
+        internal static readonly long UnixSecondsAtBclMaxValue = (DateTime.MaxValue.Ticks / TimeSpan.TicksPerSecond) - BclSecondsAtUnixEpoch;
 
         /// <summary>
         /// Returns the difference between one <see cref="Timestamp"/> and another, as a <see cref="Duration"/>.

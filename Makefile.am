@@ -82,6 +82,8 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj                \
   csharp/src/Google.Protobuf.Test/IssuesTest.cs                              \
   csharp/src/Google.Protobuf.Test/JsonFormatterTest.cs                       \
+  csharp/src/Google.Protobuf.Test/JsonParserTest.cs                          \
+  csharp/src/Google.Protobuf.Test/JsonTokenizerTest.cs                       \
   csharp/src/Google.Protobuf.Test/Properties/AppManifest.xml                 \
   csharp/src/Google.Protobuf.Test/Properties/AssemblyInfo.cs                 \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorsTest.cs              \
@@ -119,6 +121,9 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/IMessage.cs                                     \
   csharp/src/Google.Protobuf/InvalidProtocolBufferException.cs               \
   csharp/src/Google.Protobuf/JsonFormatter.cs                                \
+  csharp/src/Google.Protobuf/JsonParser.cs                                   \
+  csharp/src/Google.Protobuf/JsonToken.cs                                    \
+  csharp/src/Google.Protobuf/JsonTokenizer.cs                                \
   csharp/src/Google.Protobuf/LimitedInputStream.cs                           \
   csharp/src/Google.Protobuf/MessageExtensions.cs                            \
   csharp/src/Google.Protobuf/MessageParser.cs                                \

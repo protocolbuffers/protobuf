@@ -142,5 +142,17 @@ namespace Google.Protobuf
             message.MergeFrom(input);
             return message;
         }
+
+        /// <summary>
+        /// Parses a message from the given JSON.
+        /// </summary>
+        /// <param name="json">The JSON to parse.</param>
+        /// <returns>The parsed message.</returns>
+        public T ParseJson(string json)
+        {
+            T message = factory();
+            JsonParser.Default.Merge(message, json);
+            return message;
+        }
     }
 }

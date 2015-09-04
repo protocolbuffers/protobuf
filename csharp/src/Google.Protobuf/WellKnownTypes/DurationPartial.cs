@@ -48,6 +48,16 @@ namespace Google.Protobuf.WellKnownTypes
         public const int NanosecondsPerTick = 100;
 
         /// <summary>
+        /// The maximum permitted number of seconds.
+        /// </summary>
+        public const long MaxSeconds = 315576000000L;
+
+        /// <summary>
+        /// The minimum permitted number of seconds.
+        /// </summary>
+        public const long MinSeconds = -315576000000L;
+
+        /// <summary>
         /// Converts this <see cref="Duration"/> to a <see cref="TimeSpan"/>.
         /// </summary>
         /// <remarks>If the duration is not a precise number of ticks, it is truncated towards 0.</remarks>
