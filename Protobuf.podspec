@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
                    'objectivec/google/protobuf/SourceContext.pbobjc.{h,m}',
                    'objectivec/google/protobuf/Struct.pbobjc.{h,m}',
                    'objectivec/google/protobuf/Timestamp.pbobjc.h',
-                   'objectivec/google/protobuf/Type.pbobjc.{h,m}'
+                   'objectivec/google/protobuf/Type.pbobjc.{h,m}',
                    'objectivec/google/protobuf/Wrappers.pbobjc.{h,m}'
   # Timestamp.pbobjc.m and Duration.pbobjc.m are #imported by GPBWellKnownTypes.m. So we can't
   # compile them (duplicate symbols), but we need them available for the importing:
