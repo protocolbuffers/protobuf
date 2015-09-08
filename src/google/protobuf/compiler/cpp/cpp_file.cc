@@ -598,8 +598,13 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
     // bytes in length". Declare a static array of characters rather than use a
     // string literal.
     if (breakdown_large_file && file_data.size() > 65535) {
+      // This has to be explicitly marked as a signed char because the generated
+      // code puts negative values in the array, and sometimes plain char is
+      // unsigned. That implicit narrowing conversion is not allowed in C++11.
+      // <http://stackoverflow.com/questions/4434140/narrowing-conversions-in-c0x-is-it-just-me-or-does-this-sound-like-a-breakin>
+      // has details on why.
       printer->Print(
-          "static const char descriptor[] = {\n");
+          "static const signed char descriptor[] = {\n");
       printer->Indent();
 
       // Only write 25 bytes per line.
