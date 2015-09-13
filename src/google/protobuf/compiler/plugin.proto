@@ -63,6 +63,9 @@ message CodeGeneratorRequest {
   // The generator parameter passed on the command-line.
   optional string parameter = 2;
 
+  // Search path used by protoc (-I command line option).
+  repeated string search_path = 3;
+
   // FileDescriptorProtos for all files in files_to_generate and everything
   // they import.  The files will appear in topological order, so each file
   // appears before any file that imports it.

@@ -1526,6 +1526,10 @@ bool CommandLineInterface::GeneratePluginOutput(
                               &already_seen, request.mutable_proto_file());
   }
 
+  for (int i = 0; i < proto_path_.size(); i++) {
+    request.add_search_path(proto_path_[i].second);
+  }
+
   // Invoke the plugin.
   Subprocess subprocess;
 
