@@ -314,12 +314,16 @@ void CommandLineInterfaceTest::Run(const string& command) {
 
     string plugin_path;
 
+#ifdef GOOGLE_PROTOBUF_TEST_PLUGIN_PATH
+    plugin_path = GOOGLE_PROTOBUF_TEST_PLUGIN_PATH;
+#else
     for (int i = 0; i < GOOGLE_ARRAYSIZE(possible_paths); i++) {
       if (access(possible_paths[i], F_OK) == 0) {
         plugin_path = possible_paths[i];
         break;
       }
     }
+#endif
 
     if (plugin_path.empty()) {
 #else
