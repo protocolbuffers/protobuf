@@ -10,7 +10,7 @@ cmake_policy(SET CMP0022 NEW)
 # Options
 option(protobuf_VERBOSE "Enable for verbose output" OFF)
 option(protobuf_BUILD_TESTS "Build tests" ON)
-option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
+option(protobuf_BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 option(protobuf_MSVC_STATIC_RUNTIME "Link static runtime libraries" ON)
 if (MSVC)
   set(protobuf_WITH_ZLIB_DEFAULT OFF)
@@ -88,9 +88,9 @@ if (HAVE_ZLIB)
 endif (HAVE_ZLIB)
 
 if (MSVC)
-  if (BUILD_SHARED_LIBS)
+  if (protobuf_BUILD_SHARED_LIBS)
     add_definitions(-DPROTOBUF_USE_DLLS)
-  else (BUILD_SHARED_LIBS)
+  else (protobuf_BUILD_SHARED_LIBS)
     # In case we are building static libraries, link also the runtime library statically
     # so that MSVCR*.DLL is not required at runtime.
     # https://msdn.microsoft.com/en-us/library/2kzt1wy3.aspx
@@ -105,7 +105,7 @@ if (MSVC)
         endif(${flag_var} MATCHES "/MD")
       endforeach(flag_var)
     endif (protobuf_MSVC_STATIC_RUNTIME)
-  endif (BUILD_SHARED_LIBS)
+  endif (protobuf_BUILD_SHARED_LIBS)
   add_definitions(/wd4244 /wd4267 /wd4018 /wd4355 /wd4800 /wd4251 /wd4996 /wd4146 /wd4305)
 endif (MSVC)
 
