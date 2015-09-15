@@ -9,7 +9,7 @@ cmake_policy(SET CMP0022 NEW)
 
 # Options
 option(protobuf_VERBOSE "Enable for verbose output" OFF)
-option(BUILD_TESTING "Build tests" ON)
+option(protobuf_BUILD_TESTS "Build tests" ON)
 option(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 option(protobuf_MSVC_STATIC_RUNTIME "Link static runtime libraries" ON)
 if (MSVC)
@@ -136,8 +136,8 @@ include(libprotobuf.cmake)
 include(libprotoc.cmake)
 include(protoc.cmake)
 
-if (BUILD_TESTING)
+if (protobuf_BUILD_TESTS)
   include(tests.cmake)
-endif (BUILD_TESTING)
+endif (protobuf_BUILD_TESTS)
 
 include(install.cmake)
