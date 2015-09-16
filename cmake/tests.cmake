@@ -170,8 +170,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/wire_format_unittest.cc
 )
 
-add_executable(tests ${tests_files} ${common_test_files} ${tests_proto_files} ${lite_test_proto_files})
-target_link_libraries(tests libprotoc libprotobuf gmock_main)
+enable_testing()
 
 set(test_plugin_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/mock_code_generator.cc
@@ -182,11 +181,15 @@ set(test_plugin_files
 add_executable(test_plugin ${test_plugin_files})
 target_link_libraries(test_plugin libprotoc libprotobuf gmock)
 
+add_compile_options(-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH="$<TARGET_FILE:test_plugin>")
+
 set(lite_test_files
   ${protobuf_source_dir}/src/google/protobuf/lite_unittest.cc
 )
 add_executable(lite-test ${lite_test_files} ${common_lite_test_files} ${lite_test_proto_files})
 target_link_libraries(lite-test libprotobuf-lite)
+add_test(NAME lite-test COMMAND lite-test
+  WORKING_DIRECTORY ${protobuf_source_dir})
 
 set(lite_arena_test_files
   ${protobuf_source_dir}/src/google/protobuf/lite_arena_unittest.cc
@@ -194,9 +197,13 @@ set(lite_arena_test_files
 add_executable(lite-arena-test ${lite_arena_test_files} ${common_lite_test_files} ${lite_test_proto_files})
 target_link_libraries(lite-arena-test libprotobuf-lite gmock_main)
 
-enable_testing()
-add_compile_options(-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH="$<TARGET_FILE:test_plugin>")
 add_library(libtests STATIC ${common_test_files} ${tests_proto_files} ${lite_test_proto_files})
+
+# Native single tests
+add_executable(tests ${tests_files})
+target_link_libraries(tests libtests libprotoc libprotobuf gmock_main)
+
+# Sparated tests for CTest
 foreach(file ${tests_files})
   get_filename_component(name ${file} NAME_WE)
   add_executable(${name} ${file})
