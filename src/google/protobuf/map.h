@@ -190,6 +190,8 @@ class LIBPROTOBUF_EXPORT MapKey {
         GOOGLE_LOG(FATAL) << "Can't get here.";
         return false;
     }
+    GOOGLE_LOG(FATAL) << "Can't get here.";
+    return false;
   }
 
   void CopyFrom(const MapKey& other) {
@@ -852,6 +854,8 @@ struct hash<google::protobuf::MapKey> {
         GOOGLE_LOG(FATAL) << "Can't get here.";
         return 0;
     }
+    GOOGLE_LOG(FATAL) << "Can't get here.";
+    return 0;
   }
   bool
   operator()(const google::protobuf::MapKey& map_key1,
@@ -875,6 +879,8 @@ struct hash<google::protobuf::MapKey> {
         GOOGLE_LOG(FATAL) << "Can't get here.";
         return true;
     }
+    GOOGLE_LOG(FATAL) << "Can't get here.";
+    return true;
   }
 };
 GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END
