@@ -18,6 +18,8 @@ else (MSVC)
   set(protobuf_WITH_ZLIB_DEFAULT ON)
 endif (MSVC)
 option(protobuf_WITH_ZLIB "Build with zlib support" ${protobuf_WITH_ZLIB_DEFAULT})
+set(protobuf_DEBUG_POSTFIX "d"
+  CACHE STRING "Default debug postfix")
 
 # Path to main configure script
 set(protobuf_CONFIGURE_SCRIPT "../configure.ac")
