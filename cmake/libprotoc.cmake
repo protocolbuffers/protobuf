@@ -93,4 +93,5 @@ add_library(libprotoc ${libprotoc_files})
 target_link_libraries(libprotoc libprotobuf)
 set_target_properties(libprotoc PROPERTIES
     COMPILE_DEFINITIONS LIBPROTOC_EXPORTS
-    OUTPUT_NAME ${LIB_PREFIX}protoc)
+    OUTPUT_NAME ${LIB_PREFIX}protoc
+    DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")

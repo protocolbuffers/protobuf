@@ -58,4 +58,5 @@ target_link_libraries(libprotobuf ${CMAKE_THREAD_LIBS_INIT} ${ZLIB_LIBRARIES})
 target_include_directories(libprotobuf PUBLIC ${protobuf_source_dir}/src)
 set_target_properties(libprotobuf PROPERTIES
     COMPILE_DEFINITIONS LIBPROTOBUF_EXPORTS
-    OUTPUT_NAME ${LIB_PREFIX}protobuf)
+    OUTPUT_NAME ${LIB_PREFIX}protobuf
+    DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
