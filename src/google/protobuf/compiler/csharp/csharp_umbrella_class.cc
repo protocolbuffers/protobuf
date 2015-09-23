@@ -166,7 +166,7 @@ void UmbrellaClassGenerator::WriteDescriptor(io::Printer* printer) {
   // TODO(jonskeet): Consider a C#-escaping format here instead of just Base64.
   std::string base64 = FileDescriptorToBase64(file_);
   while (base64.size() > 60) {
-    printer->Print("\"$base64$\", \n", "base64", base64.substr(0, 60));
+    printer->Print("\"$base64$\",\n", "base64", base64.substr(0, 60));
     base64 = base64.substr(60);
   }
   printer->Print("\"$base64$\"));\n", "base64", base64);

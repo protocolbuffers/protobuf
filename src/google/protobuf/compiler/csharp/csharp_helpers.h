@@ -101,8 +101,6 @@ std::string StringToBase64(const std::string& input);
 
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor);
 
-uint FixedMakeTag(const FieldDescriptor* descriptor);
-
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
 
 // Determines whether the given message is a map entry message, i.e. one implicitly created
