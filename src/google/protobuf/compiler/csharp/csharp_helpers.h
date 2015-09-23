@@ -76,8 +76,6 @@ std::string GetUmbrellaClassUnqualifiedName(const FileDescriptor* descriptor);
 // not including the GetFileNamespace part).
 std::string GetUmbrellaClassNestedNamespace(const FileDescriptor* descriptor);
 
-std::string GetClassName(const Descriptor* descriptor);
-
 std::string GetClassName(const EnumDescriptor* descriptor);
 
 std::string GetFieldName(const FieldDescriptor* descriptor);
