@@ -137,21 +137,21 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   ::std::string* release_parameter();
   void set_allocated_parameter(::std::string* parameter);
 
-  // repeated string search_path = 3;
-  int search_path_size() const;
-  void clear_search_path();
-  static const int kSearchPathFieldNumber = 3;
-  const ::std::string& search_path(int index) const;
-  ::std::string* mutable_search_path(int index);
-  void set_search_path(int index, const ::std::string& value);
-  void set_search_path(int index, const char* value);
-  void set_search_path(int index, const char* value, size_t size);
-  ::std::string* add_search_path();
-  void add_search_path(const ::std::string& value);
-  void add_search_path(const char* value);
-  void add_search_path(const char* value, size_t size);
-  const ::google::protobuf::RepeatedPtrField< ::std::string>& search_path() const;
-  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_search_path();
+  // repeated string proto_path = 3;
+  int proto_path_size() const;
+  void clear_proto_path();
+  static const int kProtoPathFieldNumber = 3;
+  const ::std::string& proto_path(int index) const;
+  ::std::string* mutable_proto_path(int index);
+  void set_proto_path(int index, const ::std::string& value);
+  void set_proto_path(int index, const char* value);
+  void set_proto_path(int index, const char* value, size_t size);
+  ::std::string* add_proto_path();
+  void add_proto_path(const ::std::string& value);
+  void add_proto_path(const char* value);
+  void add_proto_path(const char* value, size_t size);
+  const ::google::protobuf::RepeatedPtrField< ::std::string>& proto_path() const;
+  ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_proto_path();
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   int proto_file_size() const;
@@ -175,9 +175,9 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> file_to_generate_;
   ::google::protobuf::internal::ArenaStringPtr parameter_;
-  ::google::protobuf::RepeatedPtrField< ::std::string> search_path_;
+  ::google::protobuf::RepeatedPtrField< ::std::string> proto_path_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > proto_file_;
-  friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
@@ -532,58 +532,58 @@ inline void CodeGeneratorRequest::set_allocated_parameter(::std::string* paramet
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
 
-// repeated string search_path = 3;
-inline int CodeGeneratorRequest::search_path_size() const {
-  return search_path_.size();
+// repeated string proto_path = 3;
+inline int CodeGeneratorRequest::proto_path_size() const {
+  return proto_path_.size();
 }
-inline void CodeGeneratorRequest::clear_search_path() {
-  search_path_.Clear();
+inline void CodeGeneratorRequest::clear_proto_path() {
+  proto_path_.Clear();
 }
-inline const ::std::string& CodeGeneratorRequest::search_path(int index) const {
-  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.search_path)
-  return search_path_.Get(index);
+inline const ::std::string& CodeGeneratorRequest::proto_path(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+  return proto_path_.Get(index);
 }
-inline ::std::string* CodeGeneratorRequest::mutable_search_path(int index) {
-  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.search_path)
-  return search_path_.Mutable(index);
+inline ::std::string* CodeGeneratorRequest::mutable_proto_path(int index) {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+  return proto_path_.Mutable(index);
 }
-inline void CodeGeneratorRequest::set_search_path(int index, const ::std::string& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.search_path)
-  search_path_.Mutable(index)->assign(value);
+inline void CodeGeneratorRequest::set_proto_path(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+  proto_path_.Mutable(index)->assign(value);
 }
-inline void CodeGeneratorRequest::set_search_path(int index, const char* value) {
-  search_path_.Mutable(index)->assign(value);
-  // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorRequest.search_path)
+inline void CodeGeneratorRequest::set_proto_path(int index, const char* value) {
+  proto_path_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
 }
-inline void CodeGeneratorRequest::set_search_path(int index, const char* value, size_t size) {
-  search_path_.Mutable(index)->assign(
+inline void CodeGeneratorRequest::set_proto_path(int index, const char* value, size_t size) {
+  proto_path_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.search_path)
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
 }
-inline ::std::string* CodeGeneratorRequest::add_search_path() {
-  return search_path_.Add();
+inline ::std::string* CodeGeneratorRequest::add_proto_path() {
+  return proto_path_.Add();
 }
-inline void CodeGeneratorRequest::add_search_path(const ::std::string& value) {
-  search_path_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.search_path)
+inline void CodeGeneratorRequest::add_proto_path(const ::std::string& value) {
+  proto_path_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
 }
-inline void CodeGeneratorRequest::add_search_path(const char* value) {
-  search_path_.Add()->assign(value);
-  // @@protoc_insertion_point(field_add_char:google.protobuf.compiler.CodeGeneratorRequest.search_path)
+inline void CodeGeneratorRequest::add_proto_path(const char* value) {
+  proto_path_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
 }
-inline void CodeGeneratorRequest::add_search_path(const char* value, size_t size) {
-  search_path_.Add()->assign(reinterpret_cast<const char*>(value), size);
-  // @@protoc_insertion_point(field_add_pointer:google.protobuf.compiler.CodeGeneratorRequest.search_path)
+inline void CodeGeneratorRequest::add_proto_path(const char* value, size_t size) {
+  proto_path_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
 }
 inline const ::google::protobuf::RepeatedPtrField< ::std::string>&
-CodeGeneratorRequest::search_path() const {
-  // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.search_path)
-  return search_path_;
+CodeGeneratorRequest::proto_path() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+  return proto_path_;
 }
 inline ::google::protobuf::RepeatedPtrField< ::std::string>*
-CodeGeneratorRequest::mutable_search_path() {
-  // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.search_path)
-  return &search_path_;
+CodeGeneratorRequest::mutable_proto_path() {
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+  return &proto_path_;
 }
 
 // repeated .google.protobuf.FileDescriptorProto proto_file = 15;

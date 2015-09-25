@@ -1527,7 +1527,7 @@ bool CommandLineInterface::GeneratePluginOutput(
   }
 
   for (int i = 0; i < proto_path_.size(); i++) {
-    request.add_search_path(proto_path_[i].second);
+    request.add_proto_path(proto_path_[i].second);
   }
 
   // Invoke the plugin.
