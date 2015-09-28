@@ -562,6 +562,20 @@ namespace Google.Protobuf.Collections
             Assert.IsFalse(values.Contains(null));
         }
 
+        [Test]
+        public void ToString_StringToString()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            Assert.AreEqual("{ \"foo\": \"bar\", \"x\": \"y\" }", map.ToString());
+        }
+
+        [Test]
+        public void ToString_UnsupportedKeyType()
+        {
+            var map = new MapField<byte, string> { { 10, "foo" } };
+            Assert.Throws<ArgumentException>(() => map.ToString());
+        }
+
         private static KeyValuePair<TKey, TValue> NewKeyValuePair<TKey, TValue>(TKey key, TValue value)
         {
             return new KeyValuePair<TKey, TValue>(key, value);
