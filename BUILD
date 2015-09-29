@@ -253,6 +253,28 @@ cc_binary(
 )
 
 ################################################################################
+# Java support
+################################################################################
+genrule(
+    name = "generate_java_descriptor_proto",
+    tools = [":protoc"],
+    srcs = [ "src/google/protobuf/descriptor.proto", ],
+    outs = [ "com/google/protobuf/DescriptorProtos.java" ],
+    cmd = "$(location :protoc) --java_out=$(@D)/../../.. $<",
+)
+
+java_library(
+    name = "java_proto",
+    visibility = ["//visibility:public"],
+    srcs = glob([
+        "java/src/main/java/com/google/protobuf/*.java"
+    ]) + [
+      ":generate_java_descriptor_proto",
+    ]
+)
+
+
+################################################################################
 # Tests
 ################################################################################
 
@@ -429,4 +451,3 @@ cc_test(
         "//external:gtest_main",
     ],
 )
-
