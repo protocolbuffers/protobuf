@@ -200,13 +200,13 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   // Nested messages and enums
   if (HasNestedGeneratedTypes()) {
-    printer->Print("#region Nested types\n"
-		   "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n");
-    WriteGeneratedCodeAttributes(printer);
     printer->Print(
-        vars,
-        "/// <summary>Container for nested types declared in the $class_name$ message type.</summary>\n"
-        "public static partial class Types {\n");
+      vars,
+      "#region Nested types\n"
+      "/// <summary>Container for nested types declared in the $class_name$ message type.</summary>\n"
+      "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n");
+    WriteGeneratedCodeAttributes(printer);
+    printer->Print("public static partial class Types {\n");
     printer->Indent();
     for (int i = 0; i < descriptor_->enum_type_count(); i++) {
       EnumGenerator enumGenerator(descriptor_->enum_type(i));

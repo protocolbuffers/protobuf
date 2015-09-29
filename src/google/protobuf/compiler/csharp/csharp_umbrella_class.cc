@@ -135,13 +135,13 @@ void UmbrellaClassGenerator::WriteIntroduction(io::Printer* printer) {
   }
 
   printer->Print(
-    "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n");
+    "/// <summary>Holder for reflection information generated from $file_name$</summary>\n"
+    "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n",
+    "file_name", file_->name());
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
-    "/// <summary>Holder for reflection information generated from $file_name$</summary>\n"
     "$access_level$ static partial class $umbrella_class_name$ {\n"
     "\n",
-    "file_name", file_->name(),
     "access_level", class_access_level(),
     "umbrella_class_name", umbrellaClassname_);
   printer->Indent();
