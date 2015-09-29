@@ -2059,9 +2059,9 @@
 
   // Ensure the messages are unique per map.
   [msg1.mapInt32ForeignMessage
-      enumerateKeysAndValuesUsingBlock:^(int32_t key, id value, BOOL *stop) {
+      enumerateKeysAndObjectsUsingBlock:^(int32_t key, id value, BOOL *stop) {
 #pragma unused(stop)
-        ForeignMessage *subMsg2 = [msg2.mapInt32ForeignMessage valueForKey:key];
+        ForeignMessage *subMsg2 = [msg2.mapInt32ForeignMessage objectForKey:key];
         XCTAssertNotEqual(value, subMsg2);  // Ptr compare, new object.
       }];
 }
@@ -2075,7 +2075,7 @@
   // Add an uninitialized message.
   TestRequired *subMsg = [[TestRequired alloc] init];
   msg.mapField = [GPBInt32ObjectDictionary dictionary];
-  [msg.mapField setValue:subMsg forKey:0];
+  [msg.mapField setObject:subMsg forKey:0];
   XCTAssertFalse(msg.initialized);
 
   // Initialize uninitialized message

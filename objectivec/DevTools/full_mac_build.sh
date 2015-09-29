@@ -202,9 +202,9 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
       # Don't need to worry about form factors or retina/non retina;
       # just pick a mix of OS Versions and 32/64 bit.
       -destination "platform=iOS Simulator,name=iPhone 4s,OS=7.1" # 32bit
-      -destination "platform=iOS Simulator,name=iPhone 6,OS=8.3" # 64bit
+      -destination "platform=iOS Simulator,name=iPhone 6,OS=8.4" # 64bit
       -destination "platform=iOS Simulator,name=iPad 2,OS=7.1" # 32bit
-      -destination "platform=iOS Simulator,name=iPad Air,OS=8.3" # 64bit
+      -destination "platform=iOS Simulator,name=iPad Air,OS=8.4" # 64bit
   )
   header "Doing Xcode iOS build/tests - Debug"
   "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Debug test

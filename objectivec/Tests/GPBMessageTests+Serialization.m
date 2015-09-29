@@ -994,16 +994,16 @@ static NSData *DataFromCStr(const char *str) {
   val2.optionalInt32 = 129;
   [msg.mapStringMessage setValue:val1 forKey:@"228"];
   [msg.mapStringMessage setValue:val2 forKey:@"2029"];
-  [msg.mapInt32Bytes setValue:DataFromCStr("1030 bytes") forKey:230];
-  [msg.mapInt32Bytes setValue:DataFromCStr("131") forKey:2031];
+  [msg.mapInt32Bytes setObject:DataFromCStr("1030 bytes") forKey:230];
+  [msg.mapInt32Bytes setObject:DataFromCStr("131") forKey:2031];
   [msg.mapInt32Enum setValue:Message2_Enum_Bar forKey:232];
   [msg.mapInt32Enum setValue:Message2_Enum_Baz forKey:2033];
   Message2 *val3 = [[Message2 alloc] init];
   val3.optionalInt32 = 1034;
   Message2 *val4 = [[Message2 alloc] init];
   val4.optionalInt32 = 135;
-  [msg.mapInt32Message setValue:val3 forKey:234];
-  [msg.mapInt32Message setValue:val4 forKey:2035];
+  [msg.mapInt32Message setObject:val3 forKey:234];
+  [msg.mapInt32Message setObject:val4 forKey:2035];
 
   NSData *data = [msg data];
   Message2 *msg2 = [[Message2 alloc] initWithData:data error:NULL];
