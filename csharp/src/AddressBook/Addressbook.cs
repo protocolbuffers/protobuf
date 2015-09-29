@@ -9,8 +9,8 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.Examples.AddressBook {
 
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   /// <summary>Holder for reflection information generated from addressbook.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class Addressbook {
 
     #region Descriptor
@@ -214,8 +214,8 @@ namespace Google.Protobuf.Examples.AddressBook {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the Person message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       public enum PhoneType {
         MOBILE = 0,

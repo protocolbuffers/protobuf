@@ -9,8 +9,8 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Conformance {
 
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   /// <summary>Holder for reflection information generated from conformance.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class Conformance {
 
     #region Descriptor
@@ -2128,8 +2128,8 @@ namespace Conformance {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the TestAllTypes message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       public enum NestedEnum {
         FOO = 0,

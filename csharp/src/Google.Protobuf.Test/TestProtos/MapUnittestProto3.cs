@@ -9,8 +9,8 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.TestProtos {
 
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   /// <summary>Holder for reflection information generated from google/protobuf/map_unittest_proto3.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class MapUnittestProto3 {
 
     #region Descriptor
@@ -1307,8 +1307,8 @@ namespace Google.Protobuf.TestProtos {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the MessageContainingEnumCalledType message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       public enum Type {
         TYPE_FOO = 0,

@@ -9,8 +9,8 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace UnitTest.Issues.TestProtos {
 
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   /// <summary>Holder for reflection information generated from unittest_issues.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestIssues {
 
     #region Descriptor
@@ -151,8 +151,8 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the Issue307 message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
       public sealed partial class NestedOnce : pb::IMessage<NestedOnce> {
@@ -229,8 +229,8 @@ namespace UnitTest.Issues.TestProtos {
         }
 
         #region Nested types
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         /// <summary>Container for nested types declared in the NestedOnce message type.</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public static partial class Types {
           [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
           public sealed partial class NestedTwice : pb::IMessage<NestedTwice> {
@@ -985,8 +985,8 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the ReservedNames message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
       public sealed partial class SomeNestedType : pb::IMessage<SomeNestedType> {

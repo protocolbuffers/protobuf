@@ -9,8 +9,8 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.TestProtos {
 
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   /// <summary>Holder for reflection information generated from google/protobuf/unittest_proto3.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestProto3 {
 
     #region Descriptor
@@ -1446,8 +1446,8 @@ namespace Google.Protobuf.TestProtos {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the TestAllTypes message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       public enum NestedEnum {
         NESTED_ENUM_UNSPECIFIED = 0,
@@ -3060,8 +3060,8 @@ namespace Google.Protobuf.TestProtos {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the TestFieldOrderings message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {

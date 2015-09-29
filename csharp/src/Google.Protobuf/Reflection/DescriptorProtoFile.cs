@@ -9,8 +9,8 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.Reflection {
 
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   /// <summary>Holder for reflection information generated from google/protobuf/descriptor.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   internal static partial class DescriptorProtoFile {
 
     #region Descriptor
@@ -879,8 +879,8 @@ namespace Google.Protobuf.Reflection {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the DescriptorProto message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
       internal sealed partial class ExtensionRange : pb::IMessage<ExtensionRange> {
@@ -1458,8 +1458,8 @@ namespace Google.Protobuf.Reflection {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the FieldDescriptorProto message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       internal enum Type {
         TYPE_DOUBLE = 1,
@@ -2780,8 +2780,8 @@ namespace Google.Protobuf.Reflection {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the FileOptions message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       internal enum OptimizeMode {
         SPEED = 1,
@@ -3241,8 +3241,8 @@ namespace Google.Protobuf.Reflection {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the FieldOptions message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       internal enum CType {
         STRING = 0,
@@ -4016,8 +4016,8 @@ namespace Google.Protobuf.Reflection {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the UninterpretedOption message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
       internal sealed partial class NamePart : pb::IMessage<NamePart> {
@@ -4245,8 +4245,8 @@ namespace Google.Protobuf.Reflection {
     }
 
     #region Nested types
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     /// <summary>Container for nested types declared in the SourceCodeInfo message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
       internal sealed partial class Location : pb::IMessage<Location> {
