@@ -58,7 +58,7 @@ import struct
 import weakref
 
 import six
-import six.moves.copyreg as copyreg
+from six.moves import copyreg
 
 # We use "as" to avoid name collisions with variables.
 from google.protobuf.internal import containers
