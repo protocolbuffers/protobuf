@@ -12,9 +12,11 @@ namespace Google.Protobuf.WellKnownTypes {
   namespace Proto {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    /// <summary>Holder for reflection information generated from google/protobuf/field_mask.proto</summary>
     public static partial class FieldMask {
 
       #region Descriptor
+      /// <summary>File descriptor for google/protobuf/field_mask.proto</summary>
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
       }

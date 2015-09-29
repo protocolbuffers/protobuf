@@ -12,9 +12,11 @@ namespace Google.Protobuf.WellKnownTypes {
   namespace Proto {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    /// <summary>Holder for reflection information generated from google/protobuf/empty.proto</summary>
     public static partial class Empty {
 
       #region Descriptor
+      /// <summary>File descriptor for google/protobuf/empty.proto</summary>
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
       }

@@ -10,9 +10,11 @@ using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.WellKnownTypes {
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  /// <summary>Holder for reflection information generated from google/protobuf/wrappers.proto</summary>
   public static partial class Wrappers {
 
     #region Descriptor
+    /// <summary>File descriptor for google/protobuf/wrappers.proto</summary>
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }

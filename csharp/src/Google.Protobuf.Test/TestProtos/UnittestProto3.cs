@@ -10,9 +10,11 @@ using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.TestProtos {
 
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  /// <summary>Holder for reflection information generated from google/protobuf/unittest_proto3.proto</summary>
   public static partial class UnittestProto3 {
 
     #region Descriptor
+    /// <summary>File descriptor for google/protobuf/unittest_proto3.proto</summary>
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }
@@ -715,6 +717,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     private object oneofField_;
+    /// <summary>Enum of possibly cases for the "oneof_field" oneof.</summary>
     public enum OneofFieldOneofCase {
       None = 0,
       OneofUint32 = 111,
@@ -1444,6 +1447,7 @@ namespace Google.Protobuf.TestProtos {
 
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    /// <summary>Container for nested types declared in the TestAllTypes message type.</summary>
     public static partial class Types {
       public enum NestedEnum {
         NESTED_ENUM_UNSPECIFIED = 0,
@@ -3057,6 +3061,7 @@ namespace Google.Protobuf.TestProtos {
 
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    /// <summary>Container for nested types declared in the TestFieldOrderings message type.</summary>
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
@@ -4269,6 +4274,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     private object foo_;
+    /// <summary>Enum of possibly cases for the "foo" oneof.</summary>
     public enum FooOneofCase {
       None = 0,
       FooInt = 1,

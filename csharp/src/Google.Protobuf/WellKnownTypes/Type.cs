@@ -12,9 +12,11 @@ namespace Google.Protobuf.WellKnownTypes {
   namespace Proto {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    /// <summary>Holder for reflection information generated from google/protobuf/type.proto</summary>
     public static partial class Type {
 
       #region Descriptor
+      /// <summary>File descriptor for google/protobuf/type.proto</summary>
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
       }
@@ -596,6 +598,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     #region Nested types
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    /// <summary>Container for nested types declared in the Field message type.</summary>
     public static partial class Types {
       public enum Kind {
         TYPE_UNKNOWN = 0,
