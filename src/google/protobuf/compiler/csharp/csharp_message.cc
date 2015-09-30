@@ -169,6 +169,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print(
       vars,
       "private object $name$_;\n"
+      "/// <summary>Enum of possible cases for the \"$original_name$\" oneof.</summary>\n"
       "public enum $property_name$OneofCase {\n");
     printer->Indent();
     printer->Print("None = 0,\n");
@@ -199,8 +200,11 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   // Nested messages and enums
   if (HasNestedGeneratedTypes()) {
-    printer->Print("#region Nested types\n"
-		   "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n");
+    printer->Print(
+      vars,
+      "#region Nested types\n"
+      "/// <summary>Container for nested types declared in the $class_name$ message type.</summary>\n"
+      "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n");
     WriteGeneratedCodeAttributes(printer);
     printer->Print("public static partial class Types {\n");
     printer->Indent();

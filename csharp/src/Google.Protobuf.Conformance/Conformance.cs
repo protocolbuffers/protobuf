@@ -9,10 +9,12 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Conformance {
 
+  /// <summary>Holder for reflection information generated from conformance.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class Conformance {
 
     #region Descriptor
+    /// <summary>File descriptor for conformance.proto</summary>
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }
@@ -225,6 +227,7 @@ namespace Conformance {
     }
 
     private object payload_;
+    /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
       None = 0,
       ProtobufPayload = 1,
@@ -431,6 +434,7 @@ namespace Conformance {
     }
 
     private object result_;
+    /// <summary>Enum of possible cases for the "result" oneof.</summary>
     public enum ResultOneofCase {
       None = 0,
       ParseError = 1,
@@ -1240,6 +1244,7 @@ namespace Conformance {
     }
 
     private object oneofField_;
+    /// <summary>Enum of possible cases for the "oneof_field" oneof.</summary>
     public enum OneofFieldOneofCase {
       None = 0,
       OneofUint32 = 111,
@@ -2123,6 +2128,7 @@ namespace Conformance {
     }
 
     #region Nested types
+    /// <summary>Container for nested types declared in the TestAllTypes message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       public enum NestedEnum {

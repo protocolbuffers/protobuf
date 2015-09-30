@@ -11,10 +11,12 @@ namespace Google.Protobuf.WellKnownTypes {
 
   namespace Proto {
 
+    /// <summary>Holder for reflection information generated from google/protobuf/struct.proto</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Struct {
 
       #region Descriptor
+      /// <summary>File descriptor for google/protobuf/struct.proto</summary>
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
       }
@@ -253,6 +255,7 @@ namespace Google.Protobuf.WellKnownTypes {
     }
 
     private object kind_;
+    /// <summary>Enum of possible cases for the "kind" oneof.</summary>
     public enum KindOneofCase {
       None = 0,
       NullValue = 1,

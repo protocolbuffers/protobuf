@@ -9,10 +9,12 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.TestProtos {
 
+  /// <summary>Holder for reflection information generated from google/protobuf/unittest_proto3.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestProto3 {
 
     #region Descriptor
+    /// <summary>File descriptor for google/protobuf/unittest_proto3.proto</summary>
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }
@@ -715,6 +717,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     private object oneofField_;
+    /// <summary>Enum of possible cases for the "oneof_field" oneof.</summary>
     public enum OneofFieldOneofCase {
       None = 0,
       OneofUint32 = 111,
@@ -1443,6 +1446,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     #region Nested types
+    /// <summary>Container for nested types declared in the TestAllTypes message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       public enum NestedEnum {
@@ -3056,6 +3060,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     #region Nested types
+    /// <summary>Container for nested types declared in the TestFieldOrderings message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -4269,6 +4274,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     private object foo_;
+    /// <summary>Enum of possible cases for the "foo" oneof.</summary>
     public enum FooOneofCase {
       None = 0,
       FooInt = 1,

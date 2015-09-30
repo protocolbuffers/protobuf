@@ -9,10 +9,12 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.TestProtos {
 
+  /// <summary>Holder for reflection information generated from google/protobuf/unittest_import_public_proto3.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestImportPublicProto3 {
 
     #region Descriptor
+    /// <summary>File descriptor for google/protobuf/unittest_import_public_proto3.proto</summary>
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }

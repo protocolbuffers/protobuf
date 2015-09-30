@@ -9,10 +9,12 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace UnitTest.Issues.TestProtos {
 
+  /// <summary>Holder for reflection information generated from unittest_issues.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestIssues {
 
     #region Descriptor
+    /// <summary>File descriptor for unittest_issues.proto</summary>
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }
@@ -149,6 +151,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     #region Nested types
+    /// <summary>Container for nested types declared in the Issue307 message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -226,6 +229,7 @@ namespace UnitTest.Issues.TestProtos {
         }
 
         #region Nested types
+        /// <summary>Container for nested types declared in the NestedOnce message type.</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public static partial class Types {
           [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -981,6 +985,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     #region Nested types
+    /// <summary>Container for nested types declared in the ReservedNames message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1165,6 +1170,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     private object o1_;
+    /// <summary>Enum of possible cases for the "o1" oneof.</summary>
     public enum O1OneofCase {
       None = 0,
       O1String = 2,
@@ -1181,6 +1187,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     private object o2_;
+    /// <summary>Enum of possible cases for the "o2" oneof.</summary>
     public enum O2OneofCase {
       None = 0,
       O2Int32 = 6,

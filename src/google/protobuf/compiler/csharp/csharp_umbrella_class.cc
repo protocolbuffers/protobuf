@@ -135,7 +135,9 @@ void UmbrellaClassGenerator::WriteIntroduction(io::Printer* printer) {
   }
 
   printer->Print(
-    "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n");
+    "/// <summary>Holder for reflection information generated from $file_name$</summary>\n"
+    "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n",
+    "file_name", file_->name());
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
     "$access_level$ static partial class $umbrella_class_name$ {\n"
@@ -148,12 +150,14 @@ void UmbrellaClassGenerator::WriteIntroduction(io::Printer* printer) {
 void UmbrellaClassGenerator::WriteDescriptor(io::Printer* printer) {
   printer->Print(
     "#region Descriptor\n"
+    "/// <summary>File descriptor for $file_name$</summary>\n"
     "public static pbr::FileDescriptor Descriptor {\n"
     "  get { return descriptor; }\n"
     "}\n"
     "private static pbr::FileDescriptor descriptor;\n"
     "\n"
     "static $umbrella_class_name$() {\n",
+    "file_name", file_->name(),
     "umbrella_class_name", umbrellaClassname_);
   printer->Indent();
   printer->Print(

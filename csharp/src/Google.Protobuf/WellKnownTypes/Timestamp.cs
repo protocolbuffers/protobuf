@@ -11,10 +11,12 @@ namespace Google.Protobuf.WellKnownTypes {
 
   namespace Proto {
 
+    /// <summary>Holder for reflection information generated from google/protobuf/timestamp.proto</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Timestamp {
 
       #region Descriptor
+      /// <summary>File descriptor for google/protobuf/timestamp.proto</summary>
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
       }

@@ -9,10 +9,12 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.TestProtos {
 
+  /// <summary>Holder for reflection information generated from google/protobuf/unittest_well_known_types.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestWellKnownTypes {
 
     #region Descriptor
+    /// <summary>File descriptor for google/protobuf/unittest_well_known_types.proto</summary>
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }
@@ -1468,6 +1470,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     private object oneofField_;
+    /// <summary>Enum of possible cases for the "oneof_field" oneof.</summary>
     public enum OneofFieldOneofCase {
       None = 0,
       AnyField = 1,
