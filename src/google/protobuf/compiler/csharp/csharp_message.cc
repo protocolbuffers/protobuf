@@ -169,7 +169,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print(
       vars,
       "private object $name$_;\n"
-      "/// <summary>Enum of possibly cases for the \"$original_name$\" oneof.</summary>\n"
+      "/// <summary>Enum of possible cases for the \"$original_name$\" oneof.</summary>\n"
       "public enum $property_name$OneofCase {\n");
     printer->Indent();
     printer->Print("None = 0,\n");

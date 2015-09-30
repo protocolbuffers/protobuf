@@ -227,7 +227,7 @@ namespace Conformance {
     }
 
     private object payload_;
-    /// <summary>Enum of possibly cases for the "payload" oneof.</summary>
+    /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
       None = 0,
       ProtobufPayload = 1,
@@ -434,7 +434,7 @@ namespace Conformance {
     }
 
     private object result_;
-    /// <summary>Enum of possibly cases for the "result" oneof.</summary>
+    /// <summary>Enum of possible cases for the "result" oneof.</summary>
     public enum ResultOneofCase {
       None = 0,
       ParseError = 1,
@@ -1244,7 +1244,7 @@ namespace Conformance {
     }
 
     private object oneofField_;
-    /// <summary>Enum of possibly cases for the "oneof_field" oneof.</summary>
+    /// <summary>Enum of possible cases for the "oneof_field" oneof.</summary>
     public enum OneofFieldOneofCase {
       None = 0,
       OneofUint32 = 111,

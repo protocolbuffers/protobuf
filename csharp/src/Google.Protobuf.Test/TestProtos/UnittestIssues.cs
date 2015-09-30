@@ -1170,7 +1170,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     private object o1_;
-    /// <summary>Enum of possibly cases for the "o1" oneof.</summary>
+    /// <summary>Enum of possible cases for the "o1" oneof.</summary>
     public enum O1OneofCase {
       None = 0,
       O1String = 2,
@@ -1187,7 +1187,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     private object o2_;
-    /// <summary>Enum of possibly cases for the "o2" oneof.</summary>
+    /// <summary>Enum of possible cases for the "o2" oneof.</summary>
     public enum O2OneofCase {
       None = 0,
       O2Int32 = 6,

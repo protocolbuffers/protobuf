@@ -255,7 +255,7 @@ namespace Google.Protobuf.WellKnownTypes {
     }
 
     private object kind_;
-    /// <summary>Enum of possibly cases for the "kind" oneof.</summary>
+    /// <summary>Enum of possible cases for the "kind" oneof.</summary>
     public enum KindOneofCase {
       None = 0,
       NullValue = 1,

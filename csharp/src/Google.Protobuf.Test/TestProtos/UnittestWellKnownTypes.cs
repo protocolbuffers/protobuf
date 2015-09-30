@@ -1470,7 +1470,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     private object oneofField_;
-    /// <summary>Enum of possibly cases for the "oneof_field" oneof.</summary>
+    /// <summary>Enum of possible cases for the "oneof_field" oneof.</summary>
     public enum OneofFieldOneofCase {
       None = 0,
       AnyField = 1,

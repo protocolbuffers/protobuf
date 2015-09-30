@@ -717,7 +717,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     private object oneofField_;
-    /// <summary>Enum of possibly cases for the "oneof_field" oneof.</summary>
+    /// <summary>Enum of possible cases for the "oneof_field" oneof.</summary>
     public enum OneofFieldOneofCase {
       None = 0,
       OneofUint32 = 111,
@@ -4274,7 +4274,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     private object foo_;
-    /// <summary>Enum of possibly cases for the "foo" oneof.</summary>
+    /// <summary>Enum of possible cases for the "foo" oneof.</summary>
     public enum FooOneofCase {
       None = 0,
       FooInt = 1,
