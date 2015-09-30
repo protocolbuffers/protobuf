@@ -167,10 +167,10 @@
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 Fewer pairs; not equal
@@ -468,10 +468,10 @@
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 Fewer pairs; not equal
@@ -769,10 +769,10 @@
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 Fewer pairs; not equal
@@ -1070,10 +1070,10 @@
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 Fewer pairs; not equal
@@ -1371,10 +1371,10 @@
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 Fewer pairs; not equal
@@ -1672,10 +1672,10 @@
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 Fewer pairs; not equal
@@ -1973,10 +1973,10 @@
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 Fewer pairs; not equal
@@ -2161,46 +2161,46 @@
   GPBBoolObjectDictionary *dict = [[GPBBoolObjectDictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertNil([dict valueForKey:YES]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, id aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue, stop)
+  XCTAssertNil([dict objectForKey:YES]);
+  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, id aObject, BOOL *stop) {
+    #pragma unused(aKey, aObject, stop)
     XCTFail(@"Shouldn't get here!");
   }];
   [dict release];
 }
 
 - (void)testOne {
-  GPBBoolObjectDictionary *dict = [GPBBoolObjectDictionary dictionaryWithValue:@"abc" forKey:YES];
+  GPBBoolObjectDictionary *dict = [GPBBoolObjectDictionary dictionaryWithObject:@"abc" forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
-  XCTAssertEqualObjects([dict valueForKey:YES], @"abc");
-  XCTAssertNil([dict valueForKey:NO]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, id aValue, BOOL *stop) {
+  XCTAssertEqualObjects([dict objectForKey:YES], @"abc");
+  XCTAssertNil([dict objectForKey:NO]);
+  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, id aObject, BOOL *stop) {
     XCTAssertEqual(aKey, YES);
-    XCTAssertEqualObjects(aValue, @"abc");
+    XCTAssertEqualObjects(aObject, @"abc");
     XCTAssertNotEqual(stop, NULL);
   }];
 }
 
 - (void)testBasics {
   const BOOL kKeys[] = { YES, NO };
-  const id kValues[] = { @"abc", @"def" };
+  const id kObjects[] = { @"abc", @"def" };
   GPBBoolObjectDictionary *dict =
-      [[GPBBoolObjectDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertEqualObjects([dict valueForKey:YES], @"abc");
-  XCTAssertEqualObjects([dict valueForKey:NO], @"def");
+  XCTAssertEqualObjects([dict objectForKey:YES], @"abc");
+  XCTAssertEqualObjects([dict objectForKey:NO], @"def");
 
   __block NSUInteger idx = 0;
   BOOL *seenKeys = malloc(2 * sizeof(BOOL));
-  id *seenValues = malloc(2 * sizeof(id));
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, id aValue, BOOL *stop) {
+  id *seenObjects = malloc(2 * sizeof(id));
+  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, id aObject, BOOL *stop) {
     XCTAssertLessThan(idx, 2U);
     seenKeys[idx] = aKey;
-    seenValues[idx] = aValue;
+    seenObjects[idx] = aObject;
     XCTAssertNotEqual(stop, NULL);
     ++idx;
   }];
@@ -2209,18 +2209,18 @@
     for (int j = 0; (j < 2) && !foundKey; ++j) {
       if (kKeys[i] == seenKeys[j]) {
         foundKey = YES;
-        XCTAssertEqualObjects(kValues[i], seenValues[j], @"i = %d, j = %d", i, j);
+        XCTAssertEqualObjects(kObjects[i], seenObjects[j], @"i = %d, j = %d", i, j);
       }
     }
     XCTAssertTrue(foundKey, @"i = %d", i);
   }
   free(seenKeys);
-  free(seenValues);
+  free(seenObjects);
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, id aValue, BOOL *stop) {
-    #pragma unused(aKey, aValue)
+  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, id aObject, BOOL *stop) {
+    #pragma unused(aKey, aObject)
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
     ++idx;
@@ -2231,33 +2231,33 @@
 - (void)testEquality {
   const BOOL kKeys1[] = { YES, NO };
   const BOOL kKeys2[] = { NO, YES };
-  const id kValues1[] = { @"abc", @"def" };
-  const id kValues2[] = { @"def", @"abc" };
-  const id kValues3[] = { @"def" };
+  const id kObjects1[] = { @"abc", @"def" };
+  const id kObjects2[] = { @"def", @"abc" };
+  const id kObjects3[] = { @"def" };
   GPBBoolObjectDictionary *dict1 =
-      [[GPBBoolObjectDictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects1
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kObjects1)];
   XCTAssertNotNil(dict1);
   GPBBoolObjectDictionary *dict1prime =
-      [[GPBBoolObjectDictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects1
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kObjects1)];
   XCTAssertNotNil(dict1prime);
   GPBBoolObjectDictionary *dict2 =
-      [[GPBBoolObjectDictionary alloc] initWithValues:kValues2
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues2)];
+      [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects2
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kObjects2)];
   XCTAssertNotNil(dict2);
   GPBBoolObjectDictionary *dict3 =
-      [[GPBBoolObjectDictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys2
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects1
+                                               forKeys:kKeys2
+                                                 count:GPBARRAYSIZE(kObjects1)];
   XCTAssertNotNil(dict3);
   GPBBoolObjectDictionary *dict4 =
-      [[GPBBoolObjectDictionary alloc] initWithValues:kValues3
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues3)];
+      [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects3
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kObjects3)];
   XCTAssertNotNil(dict4);
 
   // 1/1Prime should be different objects, but equal.
@@ -2266,10 +2266,10 @@
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different objects; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same objects; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 Fewer pairs; not equal
@@ -2284,11 +2284,11 @@
 
 - (void)testCopy {
   const BOOL kKeys[] = { YES, NO };
-  const id kValues[] = { @"abc", @"def" };
+  const id kObjects[] = { @"abc", @"def" };
   GPBBoolObjectDictionary *dict =
-      [[GPBBoolObjectDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict);
 
   GPBBoolObjectDictionary *dict2 = [dict copy];
@@ -2305,11 +2305,11 @@
 
 - (void)testDictionaryFromDictionary {
   const BOOL kKeys[] = { YES, NO };
-  const id kValues[] = { @"abc", @"def" };
+  const id kObjects[] = { @"abc", @"def" };
   GPBBoolObjectDictionary *dict =
-      [[GPBBoolObjectDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict);
 
   GPBBoolObjectDictionary *dict2 =
@@ -2327,85 +2327,85 @@
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:@"abc" forKey:YES];
+  [dict setObject:@"abc" forKey:YES];
   XCTAssertEqual(dict.count, 1U);
 
   const BOOL kKeys[] = { NO };
-  const id kValues[] = { @"def" };
+  const id kObjects[] = { @"def" };
   GPBBoolObjectDictionary *dict2 =
-      [[GPBBoolObjectDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
 
-  XCTAssertEqualObjects([dict valueForKey:YES], @"abc");
-  XCTAssertEqualObjects([dict valueForKey:NO], @"def");
+  XCTAssertEqualObjects([dict objectForKey:YES], @"abc");
+  XCTAssertEqualObjects([dict objectForKey:NO], @"def");
   [dict2 release];
 }
 
 - (void)testRemove {
   const BOOL kKeys[] = { YES, NO};
-  const id kValues[] = { @"abc", @"def" };
+  const id kObjects[] = { @"abc", @"def" };
   GPBBoolObjectDictionary *dict =
-      [[GPBBoolObjectDictionary alloc] initWithValues:kValues
-                                       forKeys:kKeys
-                                         count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
+                                        forKeys:kKeys
+                                          count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
 
-  [dict removeValueForKey:NO];
+  [dict removeObjectForKey:NO];
   XCTAssertEqual(dict.count, 1U);
-  XCTAssertEqualObjects([dict valueForKey:YES], @"abc");
-  XCTAssertNil([dict valueForKey:NO]);
+  XCTAssertEqualObjects([dict objectForKey:YES], @"abc");
+  XCTAssertNil([dict objectForKey:NO]);
 
   // Remove again does nothing.
-  [dict removeValueForKey:NO];
+  [dict removeObjectForKey:NO];
   XCTAssertEqual(dict.count, 1U);
-  XCTAssertEqualObjects([dict valueForKey:YES], @"abc");
-  XCTAssertNil([dict valueForKey:NO]);
+  XCTAssertEqualObjects([dict objectForKey:YES], @"abc");
+  XCTAssertNil([dict objectForKey:NO]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertNil([dict valueForKey:YES]);
-  XCTAssertNil([dict valueForKey:NO]);
+  XCTAssertNil([dict objectForKey:YES]);
+  XCTAssertNil([dict objectForKey:NO]);
   [dict release];
 }
 
 - (void)testInplaceMutation {
   const BOOL kKeys[] = { YES, NO };
-  const id kValues[] = { @"abc", @"def" };
+  const id kObjects[] = { @"abc", @"def" };
   GPBBoolObjectDictionary *dict =
-      [[GPBBoolObjectDictionary alloc] initWithValues:kValues
-                                       forKeys:kKeys
-                                         count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
+                                        forKeys:kKeys
+                                          count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertEqualObjects([dict valueForKey:YES], @"abc");
-  XCTAssertEqualObjects([dict valueForKey:NO], @"def");
+  XCTAssertEqualObjects([dict objectForKey:YES], @"abc");
+  XCTAssertEqualObjects([dict objectForKey:NO], @"def");
 
-  [dict setValue:@"def" forKey:YES];
+  [dict setObject:@"def" forKey:YES];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertEqualObjects([dict valueForKey:YES], @"def");
-  XCTAssertEqualObjects([dict valueForKey:NO], @"def");
+  XCTAssertEqualObjects([dict objectForKey:YES], @"def");
+  XCTAssertEqualObjects([dict objectForKey:NO], @"def");
 
-  [dict setValue:@"abc" forKey:NO];
+  [dict setObject:@"abc" forKey:NO];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertEqualObjects([dict valueForKey:YES], @"def");
-  XCTAssertEqualObjects([dict valueForKey:NO], @"abc");
+  XCTAssertEqualObjects([dict objectForKey:YES], @"def");
+  XCTAssertEqualObjects([dict objectForKey:NO], @"abc");
 
   const BOOL kKeys2[] = { NO, YES };
-  const id kValues2[] = { @"def", @"abc" };
+  const id kObjects2[] = { @"def", @"abc" };
   GPBBoolObjectDictionary *dict2 =
-      [[GPBBoolObjectDictionary alloc] initWithValues:kValues2
-                                              forKeys:kKeys2
-                                                count:GPBARRAYSIZE(kValues2)];
+      [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects2
+                                               forKeys:kKeys2
+                                                 count:GPBARRAYSIZE(kObjects2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertEqualObjects([dict valueForKey:YES], @"abc");
-  XCTAssertEqualObjects([dict valueForKey:NO], @"def");
+  XCTAssertEqualObjects([dict objectForKey:YES], @"abc");
+  XCTAssertEqualObjects([dict objectForKey:NO], @"def");
 
   [dict2 release];
   [dict release];

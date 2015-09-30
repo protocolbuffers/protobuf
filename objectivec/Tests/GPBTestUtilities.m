@@ -1110,7 +1110,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     [dataStr release];
 
     NSData *data = [[NSData alloc] initWithUint32_gpbtu:i + 1];
-    [message.mapInt32Bytes setValue:data forKey:113 + i * 100];
+    [message.mapInt32Bytes setObject:data forKey:113 + i * 100];
     [data release];
 
     [message.mapInt32Enum
@@ -1119,7 +1119,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
     ForeignMessage *subMsg = [[ForeignMessage alloc] init];
     subMsg.c = i + 1;
-    [message.mapInt32ForeignMessage setValue:subMsg forKey:115 + i * 100];
+    [message.mapInt32ForeignMessage setObject:subMsg forKey:115 + i * 100];
     [subMsg release];
   }
 }

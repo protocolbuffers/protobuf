@@ -211,10 +211,10 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 extra pair; not equal
@@ -568,10 +568,10 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 extra pair; not equal
@@ -925,10 +925,10 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 extra pair; not equal
@@ -1282,10 +1282,10 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 extra pair; not equal
@@ -1639,10 +1639,10 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 extra pair; not equal
@@ -1996,10 +1996,10 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 extra pair; not equal
@@ -2353,10 +2353,10 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 extra pair; not equal
@@ -2710,10 +2710,10 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 extra pair; not equal
@@ -3071,10 +3071,10 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   // Equal, so they must have same hash.
   XCTAssertEqual([dict1 hash], [dict1prime hash]);
 
-  // 2 is save keys, different values; not equal.
+  // 2 is same keys, different values; not equal.
   XCTAssertNotEqualObjects(dict1, dict2);
 
-  // 3 is different keys, samae values; not equal.
+  // 3 is different keys, same values; not equal.
   XCTAssertNotEqualObjects(dict1, dict3);
 
   // 4 extra pair; not equal
