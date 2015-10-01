@@ -38,6 +38,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/wire_format.h>
 
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_enum_field.h>
 
@@ -62,6 +63,7 @@ void RepeatedEnumFieldGenerator::GenerateMembers(io::Printer* printer) {
     "    = pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x);\n");
   printer->Print(variables_,
     "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
+  WritePropertyDocComment(printer, descriptor_);
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
