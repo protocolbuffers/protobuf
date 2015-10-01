@@ -41,6 +41,10 @@ namespace Google.Protobuf.WellKnownTypes {
     }
   }
   #region Messages
+  /// <summary>
+  ///  `SourceContext` represents information about the source of a
+  ///  protobuf element, like the file in which it is defined.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class SourceContext : pb::IMessage<SourceContext> {
     private static readonly pb::MessageParser<SourceContext> _parser = new pb::MessageParser<SourceContext>(() => new SourceContext());
@@ -68,8 +72,13 @@ namespace Google.Protobuf.WellKnownTypes {
       return new SourceContext(this);
     }
 
+    /// <summary>Field number for the "file_name" field.</summary>
     public const int FileNameFieldNumber = 1;
     private string fileName_ = "";
+    /// <summary>
+    ///  The path-qualified name of the .proto file that contained the associated
+    ///  protobuf element.  For example: `"google/protobuf/source.proto"`.
+    /// </summary>
     public string FileName {
       get { return fileName_; }
       set {

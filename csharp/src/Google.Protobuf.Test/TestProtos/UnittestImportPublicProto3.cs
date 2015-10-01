@@ -64,6 +64,7 @@ namespace Google.Protobuf.TestProtos {
       return new PublicImportMessage(this);
     }
 
+    /// <summary>Field number for the "e" field.</summary>
     public const int EFieldNumber = 1;
     private int e_;
     public int E {

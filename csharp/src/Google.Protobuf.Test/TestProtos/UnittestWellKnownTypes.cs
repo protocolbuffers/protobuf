@@ -172,6 +172,11 @@ namespace Google.Protobuf.TestProtos {
 
   }
   #region Messages
+  /// <summary>
+  ///  Test that we can include all well-known types.
+  ///  Each wrapper type is included separately, as languages
+  ///  map handle different wrappers in different ways.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class TestWellKnownTypes : pb::IMessage<TestWellKnownTypes> {
     private static readonly pb::MessageParser<TestWellKnownTypes> _parser = new pb::MessageParser<TestWellKnownTypes>(() => new TestWellKnownTypes());
@@ -216,6 +221,7 @@ namespace Google.Protobuf.TestProtos {
       return new TestWellKnownTypes(this);
     }
 
+    /// <summary>Field number for the "any_field" field.</summary>
     public const int AnyFieldFieldNumber = 1;
     private global::Google.Protobuf.WellKnownTypes.Any anyField_;
     public global::Google.Protobuf.WellKnownTypes.Any AnyField {
@@ -225,6 +231,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "api_field" field.</summary>
     public const int ApiFieldFieldNumber = 2;
     private global::Google.Protobuf.WellKnownTypes.Api apiField_;
     public global::Google.Protobuf.WellKnownTypes.Api ApiField {
@@ -234,6 +241,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "duration_field" field.</summary>
     public const int DurationFieldFieldNumber = 3;
     private global::Google.Protobuf.WellKnownTypes.Duration durationField_;
     public global::Google.Protobuf.WellKnownTypes.Duration DurationField {
@@ -243,6 +251,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "empty_field" field.</summary>
     public const int EmptyFieldFieldNumber = 4;
     private global::Google.Protobuf.WellKnownTypes.Empty emptyField_;
     public global::Google.Protobuf.WellKnownTypes.Empty EmptyField {
@@ -252,6 +261,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "field_mask_field" field.</summary>
     public const int FieldMaskFieldFieldNumber = 5;
     private global::Google.Protobuf.WellKnownTypes.FieldMask fieldMaskField_;
     public global::Google.Protobuf.WellKnownTypes.FieldMask FieldMaskField {
@@ -261,6 +271,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "source_context_field" field.</summary>
     public const int SourceContextFieldFieldNumber = 6;
     private global::Google.Protobuf.WellKnownTypes.SourceContext sourceContextField_;
     public global::Google.Protobuf.WellKnownTypes.SourceContext SourceContextField {
@@ -270,6 +281,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "struct_field" field.</summary>
     public const int StructFieldFieldNumber = 7;
     private global::Google.Protobuf.WellKnownTypes.Struct structField_;
     public global::Google.Protobuf.WellKnownTypes.Struct StructField {
@@ -279,6 +291,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "timestamp_field" field.</summary>
     public const int TimestampFieldFieldNumber = 8;
     private global::Google.Protobuf.WellKnownTypes.Timestamp timestampField_;
     public global::Google.Protobuf.WellKnownTypes.Timestamp TimestampField {
@@ -288,6 +301,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "type_field" field.</summary>
     public const int TypeFieldFieldNumber = 9;
     private global::Google.Protobuf.WellKnownTypes.Type typeField_;
     public global::Google.Protobuf.WellKnownTypes.Type TypeField {
@@ -297,6 +311,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "double_field" field.</summary>
     public const int DoubleFieldFieldNumber = 10;
     private static readonly pb::FieldCodec<double?> _single_doubleField_codec = pb::FieldCodec.ForStructWrapper<double>(82);
     private double? doubleField_;
@@ -307,6 +322,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "float_field" field.</summary>
     public const int FloatFieldFieldNumber = 11;
     private static readonly pb::FieldCodec<float?> _single_floatField_codec = pb::FieldCodec.ForStructWrapper<float>(90);
     private float? floatField_;
@@ -317,6 +333,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "int64_field" field.</summary>
     public const int Int64FieldFieldNumber = 12;
     private static readonly pb::FieldCodec<long?> _single_int64Field_codec = pb::FieldCodec.ForStructWrapper<long>(98);
     private long? int64Field_;
@@ -327,6 +344,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "uint64_field" field.</summary>
     public const int Uint64FieldFieldNumber = 13;
     private static readonly pb::FieldCodec<ulong?> _single_uint64Field_codec = pb::FieldCodec.ForStructWrapper<ulong>(106);
     private ulong? uint64Field_;
@@ -337,6 +355,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "int32_field" field.</summary>
     public const int Int32FieldFieldNumber = 14;
     private static readonly pb::FieldCodec<int?> _single_int32Field_codec = pb::FieldCodec.ForStructWrapper<int>(114);
     private int? int32Field_;
@@ -347,6 +366,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "uint32_field" field.</summary>
     public const int Uint32FieldFieldNumber = 15;
     private static readonly pb::FieldCodec<uint?> _single_uint32Field_codec = pb::FieldCodec.ForStructWrapper<uint>(122);
     private uint? uint32Field_;
@@ -357,6 +377,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "bool_field" field.</summary>
     public const int BoolFieldFieldNumber = 16;
     private static readonly pb::FieldCodec<bool?> _single_boolField_codec = pb::FieldCodec.ForStructWrapper<bool>(130);
     private bool? boolField_;
@@ -367,6 +388,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "string_field" field.</summary>
     public const int StringFieldFieldNumber = 17;
     private static readonly pb::FieldCodec<string> _single_stringField_codec = pb::FieldCodec.ForClassWrapper<string>(138);
     private string stringField_;
@@ -377,6 +399,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "bytes_field" field.</summary>
     public const int BytesFieldFieldNumber = 18;
     private static readonly pb::FieldCodec<pb::ByteString> _single_bytesField_codec = pb::FieldCodec.ForClassWrapper<pb::ByteString>(146);
     private pb::ByteString bytesField_;
@@ -815,6 +838,9 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
+  /// <summary>
+  ///  A repeated field for each well-known type.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class RepeatedWellKnownTypes : pb::IMessage<RepeatedWellKnownTypes> {
     private static readonly pb::MessageParser<RepeatedWellKnownTypes> _parser = new pb::MessageParser<RepeatedWellKnownTypes>(() => new RepeatedWellKnownTypes());
@@ -859,6 +885,7 @@ namespace Google.Protobuf.TestProtos {
       return new RepeatedWellKnownTypes(this);
     }
 
+    /// <summary>Field number for the "any_field" field.</summary>
     public const int AnyFieldFieldNumber = 1;
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Any> _repeated_anyField_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.WellKnownTypes.Any.Parser);
@@ -867,6 +894,7 @@ namespace Google.Protobuf.TestProtos {
       get { return anyField_; }
     }
 
+    /// <summary>Field number for the "api_field" field.</summary>
     public const int ApiFieldFieldNumber = 2;
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Api> _repeated_apiField_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Api.Parser);
@@ -875,6 +903,7 @@ namespace Google.Protobuf.TestProtos {
       get { return apiField_; }
     }
 
+    /// <summary>Field number for the "duration_field" field.</summary>
     public const int DurationFieldFieldNumber = 3;
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Duration> _repeated_durationField_codec
         = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.WellKnownTypes.Duration.Parser);
@@ -883,6 +912,7 @@ namespace Google.Protobuf.TestProtos {
       get { return durationField_; }
     }
 
+    /// <summary>Field number for the "empty_field" field.</summary>
     public const int EmptyFieldFieldNumber = 4;
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Empty> _repeated_emptyField_codec
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.WellKnownTypes.Empty.Parser);
@@ -891,6 +921,7 @@ namespace Google.Protobuf.TestProtos {
       get { return emptyField_; }
     }
 
+    /// <summary>Field number for the "field_mask_field" field.</summary>
     public const int FieldMaskFieldFieldNumber = 5;
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.FieldMask> _repeated_fieldMaskField_codec
         = pb::FieldCodec.ForMessage(42, global::Google.Protobuf.WellKnownTypes.FieldMask.Parser);
@@ -899,6 +930,7 @@ namespace Google.Protobuf.TestProtos {
       get { return fieldMaskField_; }
     }
 
+    /// <summary>Field number for the "source_context_field" field.</summary>
     public const int SourceContextFieldFieldNumber = 6;
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.SourceContext> _repeated_sourceContextField_codec
         = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.WellKnownTypes.SourceContext.Parser);
@@ -907,6 +939,7 @@ namespace Google.Protobuf.TestProtos {
       get { return sourceContextField_; }
     }
 
+    /// <summary>Field number for the "struct_field" field.</summary>
     public const int StructFieldFieldNumber = 7;
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Struct> _repeated_structField_codec
         = pb::FieldCodec.ForMessage(58, global::Google.Protobuf.WellKnownTypes.Struct.Parser);
@@ -915,6 +948,7 @@ namespace Google.Protobuf.TestProtos {
       get { return structField_; }
     }
 
+    /// <summary>Field number for the "timestamp_field" field.</summary>
     public const int TimestampFieldFieldNumber = 8;
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Timestamp> _repeated_timestampField_codec
         = pb::FieldCodec.ForMessage(66, global::Google.Protobuf.WellKnownTypes.Timestamp.Parser);
@@ -923,6 +957,7 @@ namespace Google.Protobuf.TestProtos {
       get { return timestampField_; }
     }
 
+    /// <summary>Field number for the "type_field" field.</summary>
     public const int TypeFieldFieldNumber = 9;
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Type> _repeated_typeField_codec
         = pb::FieldCodec.ForMessage(74, global::Google.Protobuf.WellKnownTypes.Type.Parser);
@@ -931,14 +966,19 @@ namespace Google.Protobuf.TestProtos {
       get { return typeField_; }
     }
 
+    /// <summary>Field number for the "double_field" field.</summary>
     public const int DoubleFieldFieldNumber = 10;
     private static readonly pb::FieldCodec<double?> _repeated_doubleField_codec
         = pb::FieldCodec.ForStructWrapper<double>(82);
     private readonly pbc::RepeatedField<double?> doubleField_ = new pbc::RepeatedField<double?>();
+    /// <summary>
+    ///  These don't actually make a lot of sense, but they're not prohibited...
+    /// </summary>
     public pbc::RepeatedField<double?> DoubleField {
       get { return doubleField_; }
     }
 
+    /// <summary>Field number for the "float_field" field.</summary>
     public const int FloatFieldFieldNumber = 11;
     private static readonly pb::FieldCodec<float?> _repeated_floatField_codec
         = pb::FieldCodec.ForStructWrapper<float>(90);
@@ -947,6 +987,7 @@ namespace Google.Protobuf.TestProtos {
       get { return floatField_; }
     }
 
+    /// <summary>Field number for the "int64_field" field.</summary>
     public const int Int64FieldFieldNumber = 12;
     private static readonly pb::FieldCodec<long?> _repeated_int64Field_codec
         = pb::FieldCodec.ForStructWrapper<long>(98);
@@ -955,6 +996,7 @@ namespace Google.Protobuf.TestProtos {
       get { return int64Field_; }
     }
 
+    /// <summary>Field number for the "uint64_field" field.</summary>
     public const int Uint64FieldFieldNumber = 13;
     private static readonly pb::FieldCodec<ulong?> _repeated_uint64Field_codec
         = pb::FieldCodec.ForStructWrapper<ulong>(106);
@@ -963,6 +1005,7 @@ namespace Google.Protobuf.TestProtos {
       get { return uint64Field_; }
     }
 
+    /// <summary>Field number for the "int32_field" field.</summary>
     public const int Int32FieldFieldNumber = 14;
     private static readonly pb::FieldCodec<int?> _repeated_int32Field_codec
         = pb::FieldCodec.ForStructWrapper<int>(114);
@@ -971,6 +1014,7 @@ namespace Google.Protobuf.TestProtos {
       get { return int32Field_; }
     }
 
+    /// <summary>Field number for the "uint32_field" field.</summary>
     public const int Uint32FieldFieldNumber = 15;
     private static readonly pb::FieldCodec<uint?> _repeated_uint32Field_codec
         = pb::FieldCodec.ForStructWrapper<uint>(122);
@@ -979,6 +1023,7 @@ namespace Google.Protobuf.TestProtos {
       get { return uint32Field_; }
     }
 
+    /// <summary>Field number for the "bool_field" field.</summary>
     public const int BoolFieldFieldNumber = 16;
     private static readonly pb::FieldCodec<bool?> _repeated_boolField_codec
         = pb::FieldCodec.ForStructWrapper<bool>(130);
@@ -987,6 +1032,7 @@ namespace Google.Protobuf.TestProtos {
       get { return boolField_; }
     }
 
+    /// <summary>Field number for the "string_field" field.</summary>
     public const int StringFieldFieldNumber = 17;
     private static readonly pb::FieldCodec<string> _repeated_stringField_codec
         = pb::FieldCodec.ForClassWrapper<string>(138);
@@ -995,6 +1041,7 @@ namespace Google.Protobuf.TestProtos {
       get { return stringField_; }
     }
 
+    /// <summary>Field number for the "bytes_field" field.</summary>
     public const int BytesFieldFieldNumber = 18;
     private static readonly pb::FieldCodec<pb::ByteString> _repeated_bytesField_codec
         = pb::FieldCodec.ForClassWrapper<pb::ByteString>(146);
@@ -1298,6 +1345,7 @@ namespace Google.Protobuf.TestProtos {
       return new OneofWellKnownTypes(this);
     }
 
+    /// <summary>Field number for the "any_field" field.</summary>
     public const int AnyFieldFieldNumber = 1;
     public global::Google.Protobuf.WellKnownTypes.Any AnyField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.AnyField ? (global::Google.Protobuf.WellKnownTypes.Any) oneofField_ : null; }
@@ -1307,6 +1355,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "api_field" field.</summary>
     public const int ApiFieldFieldNumber = 2;
     public global::Google.Protobuf.WellKnownTypes.Api ApiField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.ApiField ? (global::Google.Protobuf.WellKnownTypes.Api) oneofField_ : null; }
@@ -1316,6 +1365,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "duration_field" field.</summary>
     public const int DurationFieldFieldNumber = 3;
     public global::Google.Protobuf.WellKnownTypes.Duration DurationField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.DurationField ? (global::Google.Protobuf.WellKnownTypes.Duration) oneofField_ : null; }
@@ -1325,6 +1375,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "empty_field" field.</summary>
     public const int EmptyFieldFieldNumber = 4;
     public global::Google.Protobuf.WellKnownTypes.Empty EmptyField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.EmptyField ? (global::Google.Protobuf.WellKnownTypes.Empty) oneofField_ : null; }
@@ -1334,6 +1385,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "field_mask_field" field.</summary>
     public const int FieldMaskFieldFieldNumber = 5;
     public global::Google.Protobuf.WellKnownTypes.FieldMask FieldMaskField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.FieldMaskField ? (global::Google.Protobuf.WellKnownTypes.FieldMask) oneofField_ : null; }
@@ -1343,6 +1395,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "source_context_field" field.</summary>
     public const int SourceContextFieldFieldNumber = 6;
     public global::Google.Protobuf.WellKnownTypes.SourceContext SourceContextField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.SourceContextField ? (global::Google.Protobuf.WellKnownTypes.SourceContext) oneofField_ : null; }
@@ -1352,6 +1405,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "struct_field" field.</summary>
     public const int StructFieldFieldNumber = 7;
     public global::Google.Protobuf.WellKnownTypes.Struct StructField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.StructField ? (global::Google.Protobuf.WellKnownTypes.Struct) oneofField_ : null; }
@@ -1361,6 +1415,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "timestamp_field" field.</summary>
     public const int TimestampFieldFieldNumber = 8;
     public global::Google.Protobuf.WellKnownTypes.Timestamp TimestampField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.TimestampField ? (global::Google.Protobuf.WellKnownTypes.Timestamp) oneofField_ : null; }
@@ -1370,6 +1425,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "type_field" field.</summary>
     public const int TypeFieldFieldNumber = 9;
     public global::Google.Protobuf.WellKnownTypes.Type TypeField {
       get { return oneofFieldCase_ == OneofFieldOneofCase.TypeField ? (global::Google.Protobuf.WellKnownTypes.Type) oneofField_ : null; }
@@ -1379,6 +1435,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "double_field" field.</summary>
     public const int DoubleFieldFieldNumber = 10;
     private static readonly pb::FieldCodec<double?> _oneof_doubleField_codec = pb::FieldCodec.ForStructWrapper<double>(82);
     public double? DoubleField {
@@ -1389,6 +1446,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "float_field" field.</summary>
     public const int FloatFieldFieldNumber = 11;
     private static readonly pb::FieldCodec<float?> _oneof_floatField_codec = pb::FieldCodec.ForStructWrapper<float>(90);
     public float? FloatField {
@@ -1399,6 +1457,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "int64_field" field.</summary>
     public const int Int64FieldFieldNumber = 12;
     private static readonly pb::FieldCodec<long?> _oneof_int64Field_codec = pb::FieldCodec.ForStructWrapper<long>(98);
     public long? Int64Field {
@@ -1409,6 +1468,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "uint64_field" field.</summary>
     public const int Uint64FieldFieldNumber = 13;
     private static readonly pb::FieldCodec<ulong?> _oneof_uint64Field_codec = pb::FieldCodec.ForStructWrapper<ulong>(106);
     public ulong? Uint64Field {
@@ -1419,6 +1479,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "int32_field" field.</summary>
     public const int Int32FieldFieldNumber = 14;
     private static readonly pb::FieldCodec<int?> _oneof_int32Field_codec = pb::FieldCodec.ForStructWrapper<int>(114);
     public int? Int32Field {
@@ -1429,6 +1490,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "uint32_field" field.</summary>
     public const int Uint32FieldFieldNumber = 15;
     private static readonly pb::FieldCodec<uint?> _oneof_uint32Field_codec = pb::FieldCodec.ForStructWrapper<uint>(122);
     public uint? Uint32Field {
@@ -1439,6 +1501,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "bool_field" field.</summary>
     public const int BoolFieldFieldNumber = 16;
     private static readonly pb::FieldCodec<bool?> _oneof_boolField_codec = pb::FieldCodec.ForStructWrapper<bool>(130);
     public bool? BoolField {
@@ -1449,6 +1512,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "string_field" field.</summary>
     public const int StringFieldFieldNumber = 17;
     private static readonly pb::FieldCodec<string> _oneof_stringField_codec = pb::FieldCodec.ForClassWrapper<string>(138);
     public string StringField {
@@ -1459,6 +1523,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "bytes_field" field.</summary>
     public const int BytesFieldFieldNumber = 18;
     private static readonly pb::FieldCodec<pb::ByteString> _oneof_bytesField_codec = pb::FieldCodec.ForClassWrapper<pb::ByteString>(146);
     public pb::ByteString BytesField {
@@ -1879,6 +1944,11 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
+  /// <summary>
+  ///  A map field for each well-known type. We only
+  ///  need to worry about the value part of the map being the
+  ///  well-known types, as messages can't be map keys.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class MapWellKnownTypes : pb::IMessage<MapWellKnownTypes> {
     private static readonly pb::MessageParser<MapWellKnownTypes> _parser = new pb::MessageParser<MapWellKnownTypes>(() => new MapWellKnownTypes());
@@ -1923,6 +1993,7 @@ namespace Google.Protobuf.TestProtos {
       return new MapWellKnownTypes(this);
     }
 
+    /// <summary>Field number for the "any_field" field.</summary>
     public const int AnyFieldFieldNumber = 1;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Any>.Codec _map_anyField_codec
         = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Any>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Any.Parser), 10);
@@ -1931,6 +2002,7 @@ namespace Google.Protobuf.TestProtos {
       get { return anyField_; }
     }
 
+    /// <summary>Field number for the "api_field" field.</summary>
     public const int ApiFieldFieldNumber = 2;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Api>.Codec _map_apiField_codec
         = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Api>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Api.Parser), 18);
@@ -1939,6 +2011,7 @@ namespace Google.Protobuf.TestProtos {
       get { return apiField_; }
     }
 
+    /// <summary>Field number for the "duration_field" field.</summary>
     public const int DurationFieldFieldNumber = 3;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Duration>.Codec _map_durationField_codec
         = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Duration>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Duration.Parser), 26);
@@ -1947,6 +2020,7 @@ namespace Google.Protobuf.TestProtos {
       get { return durationField_; }
     }
 
+    /// <summary>Field number for the "empty_field" field.</summary>
     public const int EmptyFieldFieldNumber = 4;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Empty>.Codec _map_emptyField_codec
         = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Empty>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Empty.Parser), 34);
@@ -1955,6 +2029,7 @@ namespace Google.Protobuf.TestProtos {
       get { return emptyField_; }
     }
 
+    /// <summary>Field number for the "field_mask_field" field.</summary>
     public const int FieldMaskFieldFieldNumber = 5;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.FieldMask>.Codec _map_fieldMaskField_codec
         = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.FieldMask>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.FieldMask.Parser), 42);
@@ -1963,6 +2038,7 @@ namespace Google.Protobuf.TestProtos {
       get { return fieldMaskField_; }
     }
 
+    /// <summary>Field number for the "source_context_field" field.</summary>
     public const int SourceContextFieldFieldNumber = 6;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.SourceContext>.Codec _map_sourceContextField_codec
         = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.SourceContext>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.SourceContext.Parser), 50);
@@ -1971,6 +2047,7 @@ namespace Google.Protobuf.TestProtos {
       get { return sourceContextField_; }
     }
 
+    /// <summary>Field number for the "struct_field" field.</summary>
     public const int StructFieldFieldNumber = 7;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Struct>.Codec _map_structField_codec
         = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Struct>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Struct.Parser), 58);
@@ -1979,6 +2056,7 @@ namespace Google.Protobuf.TestProtos {
       get { return structField_; }
     }
 
+    /// <summary>Field number for the "timestamp_field" field.</summary>
     public const int TimestampFieldFieldNumber = 8;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Timestamp>.Codec _map_timestampField_codec
         = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Timestamp>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Timestamp.Parser), 66);
@@ -1987,6 +2065,7 @@ namespace Google.Protobuf.TestProtos {
       get { return timestampField_; }
     }
 
+    /// <summary>Field number for the "type_field" field.</summary>
     public const int TypeFieldFieldNumber = 9;
     private static readonly pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Type>.Codec _map_typeField_codec
         = new pbc::MapField<int, global::Google.Protobuf.WellKnownTypes.Type>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Type.Parser), 74);
@@ -1995,6 +2074,7 @@ namespace Google.Protobuf.TestProtos {
       get { return typeField_; }
     }
 
+    /// <summary>Field number for the "double_field" field.</summary>
     public const int DoubleFieldFieldNumber = 10;
     private static readonly pbc::MapField<int, double?>.Codec _map_doubleField_codec
         = new pbc::MapField<int, double?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<double>(18), 82);
@@ -2003,6 +2083,7 @@ namespace Google.Protobuf.TestProtos {
       get { return doubleField_; }
     }
 
+    /// <summary>Field number for the "float_field" field.</summary>
     public const int FloatFieldFieldNumber = 11;
     private static readonly pbc::MapField<int, float?>.Codec _map_floatField_codec
         = new pbc::MapField<int, float?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<float>(18), 90);
@@ -2011,6 +2092,7 @@ namespace Google.Protobuf.TestProtos {
       get { return floatField_; }
     }
 
+    /// <summary>Field number for the "int64_field" field.</summary>
     public const int Int64FieldFieldNumber = 12;
     private static readonly pbc::MapField<int, long?>.Codec _map_int64Field_codec
         = new pbc::MapField<int, long?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<long>(18), 98);
@@ -2019,6 +2101,7 @@ namespace Google.Protobuf.TestProtos {
       get { return int64Field_; }
     }
 
+    /// <summary>Field number for the "uint64_field" field.</summary>
     public const int Uint64FieldFieldNumber = 13;
     private static readonly pbc::MapField<int, ulong?>.Codec _map_uint64Field_codec
         = new pbc::MapField<int, ulong?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<ulong>(18), 106);
@@ -2027,6 +2110,7 @@ namespace Google.Protobuf.TestProtos {
       get { return uint64Field_; }
     }
 
+    /// <summary>Field number for the "int32_field" field.</summary>
     public const int Int32FieldFieldNumber = 14;
     private static readonly pbc::MapField<int, int?>.Codec _map_int32Field_codec
         = new pbc::MapField<int, int?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<int>(18), 114);
@@ -2035,6 +2119,7 @@ namespace Google.Protobuf.TestProtos {
       get { return int32Field_; }
     }
 
+    /// <summary>Field number for the "uint32_field" field.</summary>
     public const int Uint32FieldFieldNumber = 15;
     private static readonly pbc::MapField<int, uint?>.Codec _map_uint32Field_codec
         = new pbc::MapField<int, uint?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<uint>(18), 122);
@@ -2043,6 +2128,7 @@ namespace Google.Protobuf.TestProtos {
       get { return uint32Field_; }
     }
 
+    /// <summary>Field number for the "bool_field" field.</summary>
     public const int BoolFieldFieldNumber = 16;
     private static readonly pbc::MapField<int, bool?>.Codec _map_boolField_codec
         = new pbc::MapField<int, bool?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<bool>(18), 130);
@@ -2051,6 +2137,7 @@ namespace Google.Protobuf.TestProtos {
       get { return boolField_; }
     }
 
+    /// <summary>Field number for the "string_field" field.</summary>
     public const int StringFieldFieldNumber = 17;
     private static readonly pbc::MapField<int, string>.Codec _map_stringField_codec
         = new pbc::MapField<int, string>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForClassWrapper<string>(18), 138);
@@ -2059,6 +2146,7 @@ namespace Google.Protobuf.TestProtos {
       get { return stringField_; }
     }
 
+    /// <summary>Field number for the "bytes_field" field.</summary>
     public const int BytesFieldFieldNumber = 18;
     private static readonly pbc::MapField<int, pb::ByteString>.Codec _map_bytesField_codec
         = new pbc::MapField<int, pb::ByteString>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForClassWrapper<pb::ByteString>(18), 146);

@@ -163,6 +163,12 @@ namespace Conformance {
   #endregion
 
   #region Messages
+  /// <summary>
+  ///  Represents a single test case's input.  The testee should:
+  ///    1. parse this proto (which should always succeed)
+  ///    2. parse the protobuf or JSON payload in "payload" (which may fail)
+  ///    3. if the parse succeeded, serialize the message in the requested format.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest> {
     private static readonly pb::MessageParser<ConformanceRequest> _parser = new pb::MessageParser<ConformanceRequest>(() => new ConformanceRequest());
@@ -199,6 +205,7 @@ namespace Conformance {
       return new ConformanceRequest(this);
     }
 
+    /// <summary>Field number for the "protobuf_payload" field.</summary>
     public const int ProtobufPayloadFieldNumber = 1;
     public pb::ByteString ProtobufPayload {
       get { return payloadCase_ == PayloadOneofCase.ProtobufPayload ? (pb::ByteString) payload_ : pb::ByteString.Empty; }
@@ -208,6 +215,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "json_payload" field.</summary>
     public const int JsonPayloadFieldNumber = 2;
     public string JsonPayload {
       get { return payloadCase_ == PayloadOneofCase.JsonPayload ? (string) payload_ : ""; }
@@ -217,8 +225,12 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "requested_output_format" field.</summary>
     public const int RequestedOutputFormatFieldNumber = 3;
     private global::Conformance.WireFormat requestedOutputFormat_ = global::Conformance.WireFormat.UNSPECIFIED;
+    /// <summary>
+    ///  Which format should the testee serialize its message to?
+    /// </summary>
     public global::Conformance.WireFormat RequestedOutputFormat {
       get { return requestedOutputFormat_; }
       set {
@@ -344,6 +356,9 @@ namespace Conformance {
 
   }
 
+  /// <summary>
+  ///  Represents a single test case's output.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse> {
     private static readonly pb::MessageParser<ConformanceResponse> _parser = new pb::MessageParser<ConformanceResponse>(() => new ConformanceResponse());
@@ -388,7 +403,14 @@ namespace Conformance {
       return new ConformanceResponse(this);
     }
 
+    /// <summary>Field number for the "parse_error" field.</summary>
     public const int ParseErrorFieldNumber = 1;
+    /// <summary>
+    ///  This string should be set to indicate parsing failed.  The string can
+    ///  provide more information about the parse error if it is available.
+    ///  Setting this string does not necessarily mean the testee failed the
+    ///  test.  Some of the test cases are intentionally invalid input.
+    /// </summary>
     public string ParseError {
       get { return resultCase_ == ResultOneofCase.ParseError ? (string) result_ : ""; }
       set {
@@ -397,7 +419,13 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "runtime_error" field.</summary>
     public const int RuntimeErrorFieldNumber = 2;
+    /// <summary>
+    ///  This should be set if some other error occurred.  This will always
+    ///  indicate that the test failed.  The string can provide more information
+    ///  about the failure.
+    /// </summary>
     public string RuntimeError {
       get { return resultCase_ == ResultOneofCase.RuntimeError ? (string) result_ : ""; }
       set {
@@ -406,7 +434,12 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "protobuf_payload" field.</summary>
     public const int ProtobufPayloadFieldNumber = 3;
+    /// <summary>
+    ///  If the input was successfully parsed and the requested output was
+    ///  protobuf, serialize it to protobuf and set it in this field.
+    /// </summary>
     public pb::ByteString ProtobufPayload {
       get { return resultCase_ == ResultOneofCase.ProtobufPayload ? (pb::ByteString) result_ : pb::ByteString.Empty; }
       set {
@@ -415,7 +448,12 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "json_payload" field.</summary>
     public const int JsonPayloadFieldNumber = 4;
+    /// <summary>
+    ///  If the input was successfully parsed and the requested output was JSON,
+    ///  serialize to JSON and set it in this field.
+    /// </summary>
     public string JsonPayload {
       get { return resultCase_ == ResultOneofCase.JsonPayload ? (string) result_ : ""; }
       set {
@@ -424,7 +462,12 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "skipped" field.</summary>
     public const int SkippedFieldNumber = 5;
+    /// <summary>
+    ///  For when the testee skipped the test, likely because a certain feature
+    ///  wasn't supported, like JSON input/output.
+    /// </summary>
     public string Skipped {
       get { return resultCase_ == ResultOneofCase.Skipped ? (string) result_ : ""; }
       set {
@@ -586,6 +629,10 @@ namespace Conformance {
 
   }
 
+  /// <summary>
+  ///  This proto includes every type of field in both singular and repeated
+  ///  forms.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes> {
     private static readonly pb::MessageParser<TestAllTypes> _parser = new pb::MessageParser<TestAllTypes>(() => new TestAllTypes());
@@ -689,8 +736,12 @@ namespace Conformance {
       return new TestAllTypes(this);
     }
 
+    /// <summary>Field number for the "optional_int32" field.</summary>
     public const int OptionalInt32FieldNumber = 1;
     private int optionalInt32_;
+    /// <summary>
+    ///  Singular
+    /// </summary>
     public int OptionalInt32 {
       get { return optionalInt32_; }
       set {
@@ -698,6 +749,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_int64" field.</summary>
     public const int OptionalInt64FieldNumber = 2;
     private long optionalInt64_;
     public long OptionalInt64 {
@@ -707,6 +759,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_uint32" field.</summary>
     public const int OptionalUint32FieldNumber = 3;
     private uint optionalUint32_;
     public uint OptionalUint32 {
@@ -716,6 +769,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_uint64" field.</summary>
     public const int OptionalUint64FieldNumber = 4;
     private ulong optionalUint64_;
     public ulong OptionalUint64 {
@@ -725,6 +779,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_sint32" field.</summary>
     public const int OptionalSint32FieldNumber = 5;
     private int optionalSint32_;
     public int OptionalSint32 {
@@ -734,6 +789,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_sint64" field.</summary>
     public const int OptionalSint64FieldNumber = 6;
     private long optionalSint64_;
     public long OptionalSint64 {
@@ -743,6 +799,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_fixed32" field.</summary>
     public const int OptionalFixed32FieldNumber = 7;
     private uint optionalFixed32_;
     public uint OptionalFixed32 {
@@ -752,6 +809,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_fixed64" field.</summary>
     public const int OptionalFixed64FieldNumber = 8;
     private ulong optionalFixed64_;
     public ulong OptionalFixed64 {
@@ -761,6 +819,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_sfixed32" field.</summary>
     public const int OptionalSfixed32FieldNumber = 9;
     private int optionalSfixed32_;
     public int OptionalSfixed32 {
@@ -770,6 +829,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_sfixed64" field.</summary>
     public const int OptionalSfixed64FieldNumber = 10;
     private long optionalSfixed64_;
     public long OptionalSfixed64 {
@@ -779,6 +839,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_float" field.</summary>
     public const int OptionalFloatFieldNumber = 11;
     private float optionalFloat_;
     public float OptionalFloat {
@@ -788,6 +849,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_double" field.</summary>
     public const int OptionalDoubleFieldNumber = 12;
     private double optionalDouble_;
     public double OptionalDouble {
@@ -797,6 +859,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_bool" field.</summary>
     public const int OptionalBoolFieldNumber = 13;
     private bool optionalBool_;
     public bool OptionalBool {
@@ -806,6 +869,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_string" field.</summary>
     public const int OptionalStringFieldNumber = 14;
     private string optionalString_ = "";
     public string OptionalString {
@@ -815,6 +879,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_bytes" field.</summary>
     public const int OptionalBytesFieldNumber = 15;
     private pb::ByteString optionalBytes_ = pb::ByteString.Empty;
     public pb::ByteString OptionalBytes {
@@ -824,6 +889,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_nested_message" field.</summary>
     public const int OptionalNestedMessageFieldNumber = 18;
     private global::Conformance.TestAllTypes.Types.NestedMessage optionalNestedMessage_;
     public global::Conformance.TestAllTypes.Types.NestedMessage OptionalNestedMessage {
@@ -833,6 +899,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_foreign_message" field.</summary>
     public const int OptionalForeignMessageFieldNumber = 19;
     private global::Conformance.ForeignMessage optionalForeignMessage_;
     public global::Conformance.ForeignMessage OptionalForeignMessage {
@@ -842,6 +909,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_nested_enum" field.</summary>
     public const int OptionalNestedEnumFieldNumber = 21;
     private global::Conformance.TestAllTypes.Types.NestedEnum optionalNestedEnum_ = global::Conformance.TestAllTypes.Types.NestedEnum.FOO;
     public global::Conformance.TestAllTypes.Types.NestedEnum OptionalNestedEnum {
@@ -851,6 +919,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_foreign_enum" field.</summary>
     public const int OptionalForeignEnumFieldNumber = 22;
     private global::Conformance.ForeignEnum optionalForeignEnum_ = global::Conformance.ForeignEnum.FOREIGN_FOO;
     public global::Conformance.ForeignEnum OptionalForeignEnum {
@@ -860,6 +929,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_string_piece" field.</summary>
     public const int OptionalStringPieceFieldNumber = 24;
     private string optionalStringPiece_ = "";
     public string OptionalStringPiece {
@@ -869,6 +939,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_cord" field.</summary>
     public const int OptionalCordFieldNumber = 25;
     private string optionalCord_ = "";
     public string OptionalCord {
@@ -878,6 +949,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "recursive_message" field.</summary>
     public const int RecursiveMessageFieldNumber = 27;
     private global::Conformance.TestAllTypes recursiveMessage_;
     public global::Conformance.TestAllTypes RecursiveMessage {
@@ -887,14 +959,19 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "repeated_int32" field.</summary>
     public const int RepeatedInt32FieldNumber = 31;
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForInt32(250);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
+    /// <summary>
+    ///  Repeated
+    /// </summary>
     public pbc::RepeatedField<int> RepeatedInt32 {
       get { return repeatedInt32_; }
     }
 
+    /// <summary>Field number for the "repeated_int64" field.</summary>
     public const int RepeatedInt64FieldNumber = 32;
     private static readonly pb::FieldCodec<long> _repeated_repeatedInt64_codec
         = pb::FieldCodec.ForInt64(258);
@@ -903,6 +980,7 @@ namespace Conformance {
       get { return repeatedInt64_; }
     }
 
+    /// <summary>Field number for the "repeated_uint32" field.</summary>
     public const int RepeatedUint32FieldNumber = 33;
     private static readonly pb::FieldCodec<uint> _repeated_repeatedUint32_codec
         = pb::FieldCodec.ForUInt32(266);
@@ -911,6 +989,7 @@ namespace Conformance {
       get { return repeatedUint32_; }
     }
 
+    /// <summary>Field number for the "repeated_uint64" field.</summary>
     public const int RepeatedUint64FieldNumber = 34;
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedUint64_codec
         = pb::FieldCodec.ForUInt64(274);
@@ -919,6 +998,7 @@ namespace Conformance {
       get { return repeatedUint64_; }
     }
 
+    /// <summary>Field number for the "repeated_sint32" field.</summary>
     public const int RepeatedSint32FieldNumber = 35;
     private static readonly pb::FieldCodec<int> _repeated_repeatedSint32_codec
         = pb::FieldCodec.ForSInt32(282);
@@ -927,6 +1007,7 @@ namespace Conformance {
       get { return repeatedSint32_; }
     }
 
+    /// <summary>Field number for the "repeated_sint64" field.</summary>
     public const int RepeatedSint64FieldNumber = 36;
     private static readonly pb::FieldCodec<long> _repeated_repeatedSint64_codec
         = pb::FieldCodec.ForSInt64(290);
@@ -935,6 +1016,7 @@ namespace Conformance {
       get { return repeatedSint64_; }
     }
 
+    /// <summary>Field number for the "repeated_fixed32" field.</summary>
     public const int RepeatedFixed32FieldNumber = 37;
     private static readonly pb::FieldCodec<uint> _repeated_repeatedFixed32_codec
         = pb::FieldCodec.ForFixed32(298);
@@ -943,6 +1025,7 @@ namespace Conformance {
       get { return repeatedFixed32_; }
     }
 
+    /// <summary>Field number for the "repeated_fixed64" field.</summary>
     public const int RepeatedFixed64FieldNumber = 38;
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedFixed64_codec
         = pb::FieldCodec.ForFixed64(306);
@@ -951,6 +1034,7 @@ namespace Conformance {
       get { return repeatedFixed64_; }
     }
 
+    /// <summary>Field number for the "repeated_sfixed32" field.</summary>
     public const int RepeatedSfixed32FieldNumber = 39;
     private static readonly pb::FieldCodec<int> _repeated_repeatedSfixed32_codec
         = pb::FieldCodec.ForSFixed32(314);
@@ -959,6 +1043,7 @@ namespace Conformance {
       get { return repeatedSfixed32_; }
     }
 
+    /// <summary>Field number for the "repeated_sfixed64" field.</summary>
     public const int RepeatedSfixed64FieldNumber = 40;
     private static readonly pb::FieldCodec<long> _repeated_repeatedSfixed64_codec
         = pb::FieldCodec.ForSFixed64(322);
@@ -967,6 +1052,7 @@ namespace Conformance {
       get { return repeatedSfixed64_; }
     }
 
+    /// <summary>Field number for the "repeated_float" field.</summary>
     public const int RepeatedFloatFieldNumber = 41;
     private static readonly pb::FieldCodec<float> _repeated_repeatedFloat_codec
         = pb::FieldCodec.ForFloat(330);
@@ -975,6 +1061,7 @@ namespace Conformance {
       get { return repeatedFloat_; }
     }
 
+    /// <summary>Field number for the "repeated_double" field.</summary>
     public const int RepeatedDoubleFieldNumber = 42;
     private static readonly pb::FieldCodec<double> _repeated_repeatedDouble_codec
         = pb::FieldCodec.ForDouble(338);
@@ -983,6 +1070,7 @@ namespace Conformance {
       get { return repeatedDouble_; }
     }
 
+    /// <summary>Field number for the "repeated_bool" field.</summary>
     public const int RepeatedBoolFieldNumber = 43;
     private static readonly pb::FieldCodec<bool> _repeated_repeatedBool_codec
         = pb::FieldCodec.ForBool(346);
@@ -991,6 +1079,7 @@ namespace Conformance {
       get { return repeatedBool_; }
     }
 
+    /// <summary>Field number for the "repeated_string" field.</summary>
     public const int RepeatedStringFieldNumber = 44;
     private static readonly pb::FieldCodec<string> _repeated_repeatedString_codec
         = pb::FieldCodec.ForString(354);
@@ -999,6 +1088,7 @@ namespace Conformance {
       get { return repeatedString_; }
     }
 
+    /// <summary>Field number for the "repeated_bytes" field.</summary>
     public const int RepeatedBytesFieldNumber = 45;
     private static readonly pb::FieldCodec<pb::ByteString> _repeated_repeatedBytes_codec
         = pb::FieldCodec.ForBytes(362);
@@ -1007,6 +1097,7 @@ namespace Conformance {
       get { return repeatedBytes_; }
     }
 
+    /// <summary>Field number for the "repeated_nested_message" field.</summary>
     public const int RepeatedNestedMessageFieldNumber = 48;
     private static readonly pb::FieldCodec<global::Conformance.TestAllTypes.Types.NestedMessage> _repeated_repeatedNestedMessage_codec
         = pb::FieldCodec.ForMessage(386, global::Conformance.TestAllTypes.Types.NestedMessage.Parser);
@@ -1015,6 +1106,7 @@ namespace Conformance {
       get { return repeatedNestedMessage_; }
     }
 
+    /// <summary>Field number for the "repeated_foreign_message" field.</summary>
     public const int RepeatedForeignMessageFieldNumber = 49;
     private static readonly pb::FieldCodec<global::Conformance.ForeignMessage> _repeated_repeatedForeignMessage_codec
         = pb::FieldCodec.ForMessage(394, global::Conformance.ForeignMessage.Parser);
@@ -1023,6 +1115,7 @@ namespace Conformance {
       get { return repeatedForeignMessage_; }
     }
 
+    /// <summary>Field number for the "repeated_nested_enum" field.</summary>
     public const int RepeatedNestedEnumFieldNumber = 51;
     private static readonly pb::FieldCodec<global::Conformance.TestAllTypes.Types.NestedEnum> _repeated_repeatedNestedEnum_codec
         = pb::FieldCodec.ForEnum(410, x => (int) x, x => (global::Conformance.TestAllTypes.Types.NestedEnum) x);
@@ -1031,6 +1124,7 @@ namespace Conformance {
       get { return repeatedNestedEnum_; }
     }
 
+    /// <summary>Field number for the "repeated_foreign_enum" field.</summary>
     public const int RepeatedForeignEnumFieldNumber = 52;
     private static readonly pb::FieldCodec<global::Conformance.ForeignEnum> _repeated_repeatedForeignEnum_codec
         = pb::FieldCodec.ForEnum(418, x => (int) x, x => (global::Conformance.ForeignEnum) x);
@@ -1039,6 +1133,7 @@ namespace Conformance {
       get { return repeatedForeignEnum_; }
     }
 
+    /// <summary>Field number for the "repeated_string_piece" field.</summary>
     public const int RepeatedStringPieceFieldNumber = 54;
     private static readonly pb::FieldCodec<string> _repeated_repeatedStringPiece_codec
         = pb::FieldCodec.ForString(434);
@@ -1047,6 +1142,7 @@ namespace Conformance {
       get { return repeatedStringPiece_; }
     }
 
+    /// <summary>Field number for the "repeated_cord" field.</summary>
     public const int RepeatedCordFieldNumber = 55;
     private static readonly pb::FieldCodec<string> _repeated_repeatedCord_codec
         = pb::FieldCodec.ForString(442);
@@ -1055,14 +1151,19 @@ namespace Conformance {
       get { return repeatedCord_; }
     }
 
+    /// <summary>Field number for the "map_int32_int32" field.</summary>
     public const int MapInt32Int32FieldNumber = 56;
     private static readonly pbc::MapField<int, int>.Codec _map_mapInt32Int32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForInt32(16), 450);
     private readonly pbc::MapField<int, int> mapInt32Int32_ = new pbc::MapField<int, int>();
+    /// <summary>
+    ///  Map
+    /// </summary>
     public pbc::MapField<int, int> MapInt32Int32 {
       get { return mapInt32Int32_; }
     }
 
+    /// <summary>Field number for the "map_int64_int64" field.</summary>
     public const int MapInt64Int64FieldNumber = 57;
     private static readonly pbc::MapField<long, long>.Codec _map_mapInt64Int64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForInt64(8), pb::FieldCodec.ForInt64(16), 458);
@@ -1071,6 +1172,7 @@ namespace Conformance {
       get { return mapInt64Int64_; }
     }
 
+    /// <summary>Field number for the "map_uint32_uint32" field.</summary>
     public const int MapUint32Uint32FieldNumber = 58;
     private static readonly pbc::MapField<uint, uint>.Codec _map_mapUint32Uint32_codec
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForUInt32(8), pb::FieldCodec.ForUInt32(16), 466);
@@ -1079,6 +1181,7 @@ namespace Conformance {
       get { return mapUint32Uint32_; }
     }
 
+    /// <summary>Field number for the "map_uint64_uint64" field.</summary>
     public const int MapUint64Uint64FieldNumber = 59;
     private static readonly pbc::MapField<ulong, ulong>.Codec _map_mapUint64Uint64_codec
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForUInt64(8), pb::FieldCodec.ForUInt64(16), 474);
@@ -1087,6 +1190,7 @@ namespace Conformance {
       get { return mapUint64Uint64_; }
     }
 
+    /// <summary>Field number for the "map_sint32_sint32" field.</summary>
     public const int MapSint32Sint32FieldNumber = 60;
     private static readonly pbc::MapField<int, int>.Codec _map_mapSint32Sint32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSInt32(8), pb::FieldCodec.ForSInt32(16), 482);
@@ -1095,6 +1199,7 @@ namespace Conformance {
       get { return mapSint32Sint32_; }
     }
 
+    /// <summary>Field number for the "map_sint64_sint64" field.</summary>
     public const int MapSint64Sint64FieldNumber = 61;
     private static readonly pbc::MapField<long, long>.Codec _map_mapSint64Sint64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSInt64(8), pb::FieldCodec.ForSInt64(16), 490);
@@ -1103,6 +1208,7 @@ namespace Conformance {
       get { return mapSint64Sint64_; }
     }
 
+    /// <summary>Field number for the "map_fixed32_fixed32" field.</summary>
     public const int MapFixed32Fixed32FieldNumber = 62;
     private static readonly pbc::MapField<uint, uint>.Codec _map_mapFixed32Fixed32_codec
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForFixed32(13), pb::FieldCodec.ForFixed32(21), 498);
@@ -1111,6 +1217,7 @@ namespace Conformance {
       get { return mapFixed32Fixed32_; }
     }
 
+    /// <summary>Field number for the "map_fixed64_fixed64" field.</summary>
     public const int MapFixed64Fixed64FieldNumber = 63;
     private static readonly pbc::MapField<ulong, ulong>.Codec _map_mapFixed64Fixed64_codec
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForFixed64(9), pb::FieldCodec.ForFixed64(17), 506);
@@ -1119,6 +1226,7 @@ namespace Conformance {
       get { return mapFixed64Fixed64_; }
     }
 
+    /// <summary>Field number for the "map_sfixed32_sfixed32" field.</summary>
     public const int MapSfixed32Sfixed32FieldNumber = 64;
     private static readonly pbc::MapField<int, int>.Codec _map_mapSfixed32Sfixed32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSFixed32(13), pb::FieldCodec.ForSFixed32(21), 514);
@@ -1127,6 +1235,7 @@ namespace Conformance {
       get { return mapSfixed32Sfixed32_; }
     }
 
+    /// <summary>Field number for the "map_sfixed64_sfixed64" field.</summary>
     public const int MapSfixed64Sfixed64FieldNumber = 65;
     private static readonly pbc::MapField<long, long>.Codec _map_mapSfixed64Sfixed64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSFixed64(9), pb::FieldCodec.ForSFixed64(17), 522);
@@ -1135,6 +1244,7 @@ namespace Conformance {
       get { return mapSfixed64Sfixed64_; }
     }
 
+    /// <summary>Field number for the "map_int32_float" field.</summary>
     public const int MapInt32FloatFieldNumber = 66;
     private static readonly pbc::MapField<int, float>.Codec _map_mapInt32Float_codec
         = new pbc::MapField<int, float>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForFloat(21), 530);
@@ -1143,6 +1253,7 @@ namespace Conformance {
       get { return mapInt32Float_; }
     }
 
+    /// <summary>Field number for the "map_int32_double" field.</summary>
     public const int MapInt32DoubleFieldNumber = 67;
     private static readonly pbc::MapField<int, double>.Codec _map_mapInt32Double_codec
         = new pbc::MapField<int, double>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForDouble(17), 538);
@@ -1151,6 +1262,7 @@ namespace Conformance {
       get { return mapInt32Double_; }
     }
 
+    /// <summary>Field number for the "map_bool_bool" field.</summary>
     public const int MapBoolBoolFieldNumber = 68;
     private static readonly pbc::MapField<bool, bool>.Codec _map_mapBoolBool_codec
         = new pbc::MapField<bool, bool>.Codec(pb::FieldCodec.ForBool(8), pb::FieldCodec.ForBool(16), 546);
@@ -1159,6 +1271,7 @@ namespace Conformance {
       get { return mapBoolBool_; }
     }
 
+    /// <summary>Field number for the "map_string_string" field.</summary>
     public const int MapStringStringFieldNumber = 69;
     private static readonly pbc::MapField<string, string>.Codec _map_mapStringString_codec
         = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 554);
@@ -1167,6 +1280,7 @@ namespace Conformance {
       get { return mapStringString_; }
     }
 
+    /// <summary>Field number for the "map_string_bytes" field.</summary>
     public const int MapStringBytesFieldNumber = 70;
     private static readonly pbc::MapField<string, pb::ByteString>.Codec _map_mapStringBytes_codec
         = new pbc::MapField<string, pb::ByteString>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForBytes(18), 562);
@@ -1175,6 +1289,7 @@ namespace Conformance {
       get { return mapStringBytes_; }
     }
 
+    /// <summary>Field number for the "map_string_nested_message" field.</summary>
     public const int MapStringNestedMessageFieldNumber = 71;
     private static readonly pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedMessage>.Codec _map_mapStringNestedMessage_codec
         = new pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedMessage>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForMessage(18, global::Conformance.TestAllTypes.Types.NestedMessage.Parser), 570);
@@ -1183,6 +1298,7 @@ namespace Conformance {
       get { return mapStringNestedMessage_; }
     }
 
+    /// <summary>Field number for the "map_string_foreign_message" field.</summary>
     public const int MapStringForeignMessageFieldNumber = 72;
     private static readonly pbc::MapField<string, global::Conformance.ForeignMessage>.Codec _map_mapStringForeignMessage_codec
         = new pbc::MapField<string, global::Conformance.ForeignMessage>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForMessage(18, global::Conformance.ForeignMessage.Parser), 578);
@@ -1191,6 +1307,7 @@ namespace Conformance {
       get { return mapStringForeignMessage_; }
     }
 
+    /// <summary>Field number for the "map_string_nested_enum" field.</summary>
     public const int MapStringNestedEnumFieldNumber = 73;
     private static readonly pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedEnum>.Codec _map_mapStringNestedEnum_codec
         = new pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedEnum>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::Conformance.TestAllTypes.Types.NestedEnum) x), 586);
@@ -1199,6 +1316,7 @@ namespace Conformance {
       get { return mapStringNestedEnum_; }
     }
 
+    /// <summary>Field number for the "map_string_foreign_enum" field.</summary>
     public const int MapStringForeignEnumFieldNumber = 74;
     private static readonly pbc::MapField<string, global::Conformance.ForeignEnum>.Codec _map_mapStringForeignEnum_codec
         = new pbc::MapField<string, global::Conformance.ForeignEnum>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::Conformance.ForeignEnum) x), 594);
@@ -1207,6 +1325,7 @@ namespace Conformance {
       get { return mapStringForeignEnum_; }
     }
 
+    /// <summary>Field number for the "oneof_uint32" field.</summary>
     public const int OneofUint32FieldNumber = 111;
     public uint OneofUint32 {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofUint32 ? (uint) oneofField_ : 0; }
@@ -1216,6 +1335,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "oneof_nested_message" field.</summary>
     public const int OneofNestedMessageFieldNumber = 112;
     public global::Conformance.TestAllTypes.Types.NestedMessage OneofNestedMessage {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Conformance.TestAllTypes.Types.NestedMessage) oneofField_ : null; }
@@ -1225,6 +1345,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "oneof_string" field.</summary>
     public const int OneofStringFieldNumber = 113;
     public string OneofString {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofString ? (string) oneofField_ : ""; }
@@ -1234,6 +1355,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "oneof_bytes" field.</summary>
     public const int OneofBytesFieldNumber = 114;
     public pb::ByteString OneofBytes {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofBytes ? (pb::ByteString) oneofField_ : pb::ByteString.Empty; }
@@ -2135,6 +2257,9 @@ namespace Conformance {
         FOO = 0,
         BAR = 1,
         BAZ = 2,
+        /// <summary>
+        ///  Intentionally negative.
+        /// </summary>
         NEG = -1,
       }
 
@@ -2166,6 +2291,7 @@ namespace Conformance {
           return new NestedMessage(this);
         }
 
+        /// <summary>Field number for the "a" field.</summary>
         public const int AFieldNumber = 1;
         private int a_;
         public int A {
@@ -2175,6 +2301,7 @@ namespace Conformance {
           }
         }
 
+        /// <summary>Field number for the "corecursive" field.</summary>
         public const int CorecursiveFieldNumber = 2;
         private global::Conformance.TestAllTypes corecursive_;
         public global::Conformance.TestAllTypes Corecursive {
@@ -2304,6 +2431,7 @@ namespace Conformance {
       return new ForeignMessage(this);
     }
 
+    /// <summary>Field number for the "c" field.</summary>
     public const int CFieldNumber = 1;
     private int c_;
     public int C {

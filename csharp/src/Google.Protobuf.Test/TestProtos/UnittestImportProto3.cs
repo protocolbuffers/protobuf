@@ -78,6 +78,7 @@ namespace Google.Protobuf.TestProtos {
       return new ImportMessage(this);
     }
 
+    /// <summary>Field number for the "d" field.</summary>
     public const int DFieldNumber = 1;
     private int d_;
     public int D {
