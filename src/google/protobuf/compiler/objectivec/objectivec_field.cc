@@ -76,6 +76,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["field_number"] = SimpleItoa(descriptor->number());
   (*variables)["has_index"] = SimpleItoa(descriptor->index());
   (*variables)["field_type"] = GetCapitalizedType(descriptor);
+  (*variables)["deprecated_attribure"] = descriptor->options().deprecated() ? " DEPRECATED_ATTRIBUTE" : "";
   std::vector<string> field_flags;
   if (descriptor->is_repeated()) field_flags.push_back("GPBFieldRepeated");
   if (descriptor->is_required()) field_flags.push_back("GPBFieldRequired");
@@ -271,11 +272,11 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
   if (WantsHasProperty()) {
     printer->Print(
         variables_,
-        "@property(nonatomic, readwrite) BOOL has$capitalized_name$;\n");
+        "@property(nonatomic, readwrite) BOOL has$capitalized_name$$deprecated_attribure$;\n");
   }
   printer->Print(
       variables_,
-      "@property(nonatomic, readwrite) $property_type$ $name$;\n"
+      "@property(nonatomic, readwrite) $property_type$ $name$$deprecated_attribure$;\n"
       "\n");
 }
 
@@ -327,11 +328,11 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   if (WantsHasProperty()) {
     printer->Print(
         variables_,
-        "@property(nonatomic, readwrite) BOOL has$capitalized_name$;\n");
+        "@property(nonatomic, readwrite) BOOL has$capitalized_name$$deprecated_attribure$;\n");
   }
   printer->Print(
       variables_,
-      "@property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$ *$name$$storage_attribute$;\n");
+      "@property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$ *$name$$storage_attribute$$deprecated_attribure$;\n");
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
@@ -379,8 +380,8 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
       variables_,
       "$comments$"
       "$array_comment$"
-      "@property(nonatomic, readwrite, strong, null_resettable) $array_storage_type$ *$name$$storage_attribute$;\n"
-      "@property(nonatomic, readonly) NSUInteger $name$_Count;\n");
+      "@property(nonatomic, readwrite, strong, null_resettable) $array_storage_type$ *$name$$storage_attribute$$deprecated_attribure$;\n"
+      "@property(nonatomic, readonly) NSUInteger $name$_Count$deprecated_attribure$;\n");
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
