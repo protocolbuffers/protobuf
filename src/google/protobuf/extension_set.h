@@ -724,7 +724,7 @@ class RepeatedPrimitiveTypeTraits {
   static const RepeatedFieldType* GetDefaultRepeatedField();
 };
 
-extern ProtobufOnceType repeated_primitive_generic_type_traits_once_init_;
+LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_primitive_generic_type_traits_once_init_;
 
 class LIBPROTOBUF_EXPORT RepeatedPrimitiveGenericTypeTraits {
  private:
@@ -821,7 +821,7 @@ class LIBPROTOBUF_EXPORT StringTypeTraits {
   }
 };
 
-extern ProtobufOnceType repeated_string_type_traits_once_init_;
+LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_string_type_traits_once_init_;
 
 class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
  public:
@@ -1032,7 +1032,7 @@ class RepeatedMessageTypeTraits {
   static const RepeatedFieldType* GetDefaultRepeatedField();
 };
 
-extern ProtobufOnceType repeated_message_generic_type_traits_once_init_;
+LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_message_generic_type_traits_once_init_;
 
 // This class exists only to hold a generic default empty repeated field for all
 // message-type repeated field extensions.
