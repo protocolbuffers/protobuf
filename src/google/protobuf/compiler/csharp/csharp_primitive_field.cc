@@ -38,6 +38,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
 
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
 
@@ -68,6 +69,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
     variables_,
     "private $type_name$ $name_def_message$;\n");
+  WritePropertyDocComment(printer, descriptor_);
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
@@ -170,6 +172,7 @@ PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {
 }
 
 void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
+  WritePropertyDocComment(printer, descriptor_);
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,

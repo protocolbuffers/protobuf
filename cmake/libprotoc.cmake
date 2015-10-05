@@ -14,6 +14,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_primitive_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_service.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_string_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_doc_comment.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_enum.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_enum_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_field_base.cc

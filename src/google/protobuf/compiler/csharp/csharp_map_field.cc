@@ -38,6 +38,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
 
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_map_field.h>
 
@@ -76,6 +77,7 @@ void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     ", $tag$);\n"
     "private readonly pbc::MapField<$key_type_name$, $value_type_name$> $name$_ = new pbc::MapField<$key_type_name$, $value_type_name$>($true_for_wrappers$);\n");
+  WritePropertyDocComment(printer, descriptor_);
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,

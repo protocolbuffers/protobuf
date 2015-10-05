@@ -28,54 +28,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <sstream>
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_DOC_COMMENT_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_DOC_COMMENT_H__
+
 #include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/stubs/strutil.h>
-
-#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
-#include <google/protobuf/compiler/csharp/csharp_enum.h>
-#include <google/protobuf/compiler/csharp/csharp_helpers.h>
-
-using google::protobuf::internal::scoped_ptr;
+#include <google/protobuf/descriptor.h>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace csharp {
-
-EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor) :
-    SourceGeneratorBase(descriptor->file()),
-    descriptor_(descriptor) {
-}
-
-EnumGenerator::~EnumGenerator() {
-}
-
-void EnumGenerator::Generate(io::Printer* printer) {
-  WriteEnumDocComment(printer, descriptor_);
-  WriteGeneratedCodeAttributes(printer);
-  printer->Print("$access_level$ enum $name$ {\n",
-                 "access_level", class_access_level(),
-                 "name", descriptor_->name());
-  printer->Indent();
-  for (int i = 0; i < descriptor_->value_count(); i++) {
-      WriteEnumValueDocComment(printer, descriptor_->value(i));
-      printer->Print("$name$ = $number$,\n",
-                   "name", descriptor_->value(i)->name(),
-                   "number", SimpleItoa(descriptor_->value(i)->number()));
-  }
-  printer->Outdent();
-  printer->Print("}\n");
-  printer->Print("\n");
-}
-
+    void WriteMessageDocComment(io::Printer* printer, const Descriptor* message);
+    void WritePropertyDocComment(io::Printer* printer, const FieldDescriptor* field);
+    void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enumDescriptor);
+    void WriteEnumValueDocComment(io::Printer* printer, const EnumValueDescriptor* value);
+    void WriteMethodDocComment(io::Printer* printer, const MethodDescriptor* method);
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_DOC_COMMENT_H__

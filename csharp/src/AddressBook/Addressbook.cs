@@ -73,6 +73,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       return new Person(this);
     }
 
+    /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private string name_ = "";
     public string Name {
@@ -82,8 +83,12 @@ namespace Google.Protobuf.Examples.AddressBook {
       }
     }
 
+    /// <summary>Field number for the "id" field.</summary>
     public const int IdFieldNumber = 2;
     private int id_;
+    /// <summary>
+    ///  Unique ID number for this person.
+    /// </summary>
     public int Id {
       get { return id_; }
       set {
@@ -91,6 +96,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       }
     }
 
+    /// <summary>Field number for the "email" field.</summary>
     public const int EmailFieldNumber = 3;
     private string email_ = "";
     public string Email {
@@ -100,6 +106,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       }
     }
 
+    /// <summary>Field number for the "phones" field.</summary>
     public const int PhonesFieldNumber = 4;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber> _repeated_phones_codec
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser);
@@ -251,6 +258,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           return new PhoneNumber(this);
         }
 
+        /// <summary>Field number for the "number" field.</summary>
         public const int NumberFieldNumber = 1;
         private string number_ = "";
         public string Number {
@@ -260,6 +268,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           }
         }
 
+        /// <summary>Field number for the "type" field.</summary>
         public const int TypeFieldNumber = 2;
         private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE;
         public global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType Type {
@@ -356,6 +365,9 @@ namespace Google.Protobuf.Examples.AddressBook {
 
   }
 
+  /// <summary>
+  ///  Our address book file is just one of these.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class AddressBook : pb::IMessage<AddressBook> {
     private static readonly pb::MessageParser<AddressBook> _parser = new pb::MessageParser<AddressBook>(() => new AddressBook());
@@ -383,6 +395,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       return new AddressBook(this);
     }
 
+    /// <summary>Field number for the "people" field.</summary>
     public const int PeopleFieldNumber = 1;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Examples.AddressBook.Person> _repeated_people_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Examples.AddressBook.Person.Parser);

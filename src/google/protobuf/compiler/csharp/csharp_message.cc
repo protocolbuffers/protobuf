@@ -42,6 +42,7 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
 
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_enum.h>
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
@@ -101,6 +102,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
 
+  WriteMessageDocComment(printer, descriptor_);
   printer->Print(
     "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n");
   WriteGeneratedCodeAttributes(printer);
@@ -152,7 +154,9 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
     // Rats: we lose the debug comment here :(
     printer->Print(
+      "/// <summary>Field number for the \"$field_name$\" field.</summary>\n"
       "public const int $field_constant_name$ = $index$;\n",
+      "field_name", fieldDescriptor->name(),
       "field_constant_name", GetFieldConstantName(fieldDescriptor),
       "index", SimpleItoa(fieldDescriptor->number()));
     scoped_ptr<FieldGeneratorBase> generator(
@@ -181,6 +185,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     }
     printer->Outdent();
     printer->Print("}\n");
+    // TODO: Should we put the oneof .proto comments here? It's unclear exactly where they should go.
     printer->Print(
       vars,
       "private $property_name$OneofCase $name$Case_ = $property_name$OneofCase.None;\n"
