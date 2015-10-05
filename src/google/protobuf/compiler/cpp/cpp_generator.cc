@@ -90,6 +90,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.dllexport_decl = options[i].second;
     } else if (options[i].first == "safe_boundary_check") {
       file_options.safe_boundary_check = true;
+    } else if (options[i].first == "annotate_headers") {
+      file_options.annotate_headers = true;
+    } else if (options[i].first == "annotation_pragma_name") {
+      file_options.annotation_pragma_name = options[i].second;
+    } else if (options[i].first == "annotation_guard_name") {
+      file_options.annotation_guard_name = options[i].second;
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
@@ -107,16 +113,32 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   if (file_options.proto_h) {
     google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
         generator_context->Open(basename + ".proto.h"));
-    io::Printer printer(output.get(), '$');
+    GeneratedCodeInfo annotations;
+    io::Printer printer(output.get(), '$',
+                        file_options.annotate_headers ? &annotations : NULL,
+                        basename + ".proto.h.meta");
     file_generator.GenerateProtoHeader(&printer);
+    if (file_options.annotate_headers) {
+      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
+          generator_context->Open(basename + ".proto.h.meta"));
+      annotations.SerializeToZeroCopyStream(info_output.get());
+    }
   }
 
   basename.append(".pb");
   {
     google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
         generator_context->Open(basename + ".h"));
-    io::Printer printer(output.get(), '$');
+    GeneratedCodeInfo annotations;
+    io::Printer printer(output.get(), '$',
+                        file_options.annotate_headers ? &annotations : NULL,
+                        basename + ".h.meta");
     file_generator.GeneratePBHeader(&printer);
+    if (file_options.annotate_headers) {
+      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
+          generator_context->Open(basename + ".h.meta"));
+      annotations.SerializeToZeroCopyStream(info_output.get());
+    }
   }
 
   // Generate cc file.

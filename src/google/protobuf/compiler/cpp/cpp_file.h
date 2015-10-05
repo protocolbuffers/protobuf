@@ -102,6 +102,9 @@ class FileGenerator {
   void GenerateLibraryIncludes(io::Printer* printer);
   void GenerateDependencyIncludes(io::Printer* printer);
 
+  // Generate a pragma to pull in metadata if it's enabled.
+  void GenerateMetadataPragma(io::Printer* printer);
+
   // Generates a couple of different pieces before definitions:
   void GenerateGlobalStateFunctionDeclarations(io::Printer* printer);
 

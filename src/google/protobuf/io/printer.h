@@ -39,7 +39,15 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include <google/protobuf/stubs/common.h>
+
+namespace google {
+namespace protobuf {
+  class Descriptor;             // descriptor.h
+  class GeneratedCodeInfo;      // descriptor.proto
+}
+}
 
 namespace google {
 namespace protobuf {
@@ -66,7 +74,35 @@ class LIBPROTOBUF_EXPORT Printer {
   // Create a printer that writes text to the given output stream.  Use the
   // given character as the delimiter for variables.
   Printer(ZeroCopyOutputStream* output, char variable_delimiter);
+
+  // Create a printer that writes text to the given output stream.  Use the
+  // given character as the delimiter for variables.  If info_output is not
+  // null, fill it with annotations about code written to the stream.
+  // info_path should be set to the path of the annotation file if
+  // info_output is not null.
+  Printer(ZeroCopyOutputStream* output, char variable_delimiter,
+          GeneratedCodeInfo* info_output, const string& info_path);
+
   ~Printer();
+
+  // Link a subsitution variable emitted by the last call to Print to the object
+  // described by descriptor.
+  template <typename SomeDescriptor>
+  void Annotate(const char* varname, const SomeDescriptor* descriptor) {
+    if (info_output_ == NULL) {
+      // Annotations aren't turned on for this Printer, so don't pay the cost
+      // of building the location path.
+      return;
+    }
+    vector<int> path;
+    descriptor->GetLocationPath(&path);
+    Annotate(varname, descriptor->file()->name(), path);
+  }
+
+  // Link a subsitution variable emitted by the last call to Print to the object
+  // found at the SourceCodeInfo-style path in a file with path file_path.
+  void Annotate(const char* varname, const string& file_path,
+                const vector<int>& path);
 
   // Print some text after applying variable substitutions.  If a particular
   // variable in the text is not defined, this will crash.  Variables to be
@@ -148,16 +184,40 @@ class LIBPROTOBUF_EXPORT Printer {
   // error.)
   bool failed() const { return failed_; }
 
+  // If non-null, this is the path to which annotations about generated code
+  // will be written.
+  const string* info_path() const {
+    return info_output_ != NULL ? &info_path_ : NULL;
+  }
+
  private:
   const char variable_delimiter_;
 
   ZeroCopyOutputStream* const output_;
   char* buffer_;
   int buffer_size_;
+  size_t offset_;
 
   string indent_;
   bool at_start_of_line_;
   bool failed_;
+
+  // A map from variable name to (start, end) offsets in the output buffer.
+  // These refer to the offsets used for a variable after the last call to
+  // Print.  If a variable was used more than once, the entry used in
+  // this map is arbitrary.  The start offset is the beginning of the
+  // substitution; the end offset is the last byte of the substitution plus
+  // one (such that (end - start) is the length of the substituted string).
+  map<string, pair<size_t, size_t> > substitutions_;
+
+  // If non-null, info_output_ is used to store annotations about generated
+  // code.
+  GeneratedCodeInfo* const info_output_;
+
+  // If info_output_ is not null, info_path_ should be the path (relative to
+  // this Printer's output file) to the file in which annotations will be
+  // stored.
+  string info_path_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Printer);
 };

@@ -37,6 +37,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
@@ -167,6 +168,114 @@ TEST(Printer, InlineVariableSubstitution) {
                "RawBit\n"
                "one two\n",
                buffer);
+}
+
+TEST(Printer, NoInfoOutput) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  {
+    Printer printer(&output, '$', NULL, "foo");
+    EXPECT_TRUE(printer.info_path() == NULL);
+  }
+}
+
+TEST(Printer, AnnotateMap) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  {
+    Printer printer(&output, '$', &info, "foo");
+    ASSERT_TRUE(printer.info_path() != NULL);
+    EXPECT_EQ("foo", *(printer.info_path()));
+    map<string, string> vars;
+    vars["foo"] = "3";
+    vars["bar"] = "5";
+    printer.Print(vars, "012$foo$4$bar$\n");
+    vector<int> path_1;
+    path_1.push_back(33);
+    vector<int> path_2;
+    path_2.push_back(11);
+    path_2.push_back(22);
+    printer.Annotate("foo", "path_1", path_1);
+    printer.Annotate("bar", "path_2", path_2);
+  }
+  buffer[output.ByteCount()] = '\0';
+  EXPECT_STREQ("012345\n", buffer);
+  ASSERT_EQ(2, info.annotation_size());
+  const GeneratedCodeInfo::Annotation *foo = info.annotation(0).path_size() == 1
+                                                 ? &info.annotation(0)
+                                                 : &info.annotation(1);
+  const GeneratedCodeInfo::Annotation *bar = info.annotation(0).path_size() == 1
+                                                 ? &info.annotation(1)
+                                                 : &info.annotation(0);
+  ASSERT_EQ(1, foo->path_size());
+  ASSERT_EQ(2, bar->path_size());
+  EXPECT_EQ(33, foo->path(0));
+  EXPECT_EQ(11, bar->path(0));
+  EXPECT_EQ(22, bar->path(1));
+  EXPECT_EQ("path_1", foo->source_file());
+  EXPECT_EQ("path_2", bar->source_file());
+  EXPECT_EQ(3, foo->begin());
+  EXPECT_EQ(4, foo->end());
+  EXPECT_EQ(5, bar->begin());
+  EXPECT_EQ(6, bar->end());
+}
+
+TEST(Printer, AnnotateInline) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  {
+    Printer printer(&output, '$', &info, "foo");
+    ASSERT_TRUE(printer.info_path() != NULL);
+    EXPECT_EQ("foo", *(printer.info_path()));
+    printer.Print("012$foo$4$bar$\n", "foo", "3", "bar", "5");
+    vector<int> path_1;
+    path_1.push_back(33);
+    vector<int> path_2;
+    path_2.push_back(11);
+    path_2.push_back(22);
+    printer.Annotate("foo", "path_1", path_1);
+    printer.Annotate("bar", "path_2", path_2);
+  }
+  buffer[output.ByteCount()] = '\0';
+  EXPECT_STREQ("012345\n", buffer);
+  ASSERT_EQ(2, info.annotation_size());
+  const GeneratedCodeInfo::Annotation *foo = info.annotation(0).path_size() == 1
+                                                 ? &info.annotation(0)
+                                                 : &info.annotation(1);
+  const GeneratedCodeInfo::Annotation *bar = info.annotation(0).path_size() == 1
+                                                 ? &info.annotation(1)
+                                                 : &info.annotation(0);
+  ASSERT_EQ(1, foo->path_size());
+  ASSERT_EQ(2, bar->path_size());
+  EXPECT_EQ(33, foo->path(0));
+  EXPECT_EQ(11, bar->path(0));
+  EXPECT_EQ(22, bar->path(1));
+  EXPECT_EQ("path_1", foo->source_file());
+  EXPECT_EQ("path_2", bar->source_file());
+  EXPECT_EQ(3, foo->begin());
+  EXPECT_EQ(4, foo->end());
+  EXPECT_EQ(5, bar->begin());
+  EXPECT_EQ(6, bar->end());
+}
+
+TEST(Printer, AnnotateUndefined) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  {
+    Printer printer(&output, '$', &info, "foo");
+    ASSERT_TRUE(printer.info_path() != NULL);
+    EXPECT_EQ("foo", *(printer.info_path()));
+    printer.Print("012$foo$4$foo$\n", "foo", "3");
+    vector<int> path_1;
+    path_1.push_back(33);
+    printer.Annotate("foo", "path_1", path_1);
+  }
+  buffer[output.ByteCount()] = '\0';
+  EXPECT_STREQ("012343\n", buffer);
+  // Our behavior here is arbitrary, so don't check for anything more.
 }
 
 TEST(Printer, Indenting) {

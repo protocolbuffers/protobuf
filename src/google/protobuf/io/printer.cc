@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/logging.h>
@@ -42,13 +44,26 @@ namespace protobuf {
 namespace io {
 
 Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter)
-  : variable_delimiter_(variable_delimiter),
-    output_(output),
-    buffer_(NULL),
-    buffer_size_(0),
-    at_start_of_line_(true),
-    failed_(false) {
-}
+    : variable_delimiter_(variable_delimiter),
+      output_(output),
+      buffer_(NULL),
+      buffer_size_(0),
+      offset_(0),
+      at_start_of_line_(true),
+      failed_(false),
+      info_output_(NULL) {}
+
+Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter,
+                 GeneratedCodeInfo* info_output, const string& info_path)
+    : variable_delimiter_(variable_delimiter),
+      output_(output),
+      buffer_(NULL),
+      buffer_size_(0),
+      offset_(0),
+      at_start_of_line_(true),
+      failed_(false),
+      info_output_(info_output),
+      info_path_(info_path) {}
 
 Printer::~Printer() {
   // Only BackUp() if we have called Next() at least once and never failed.
@@ -57,9 +72,31 @@ Printer::~Printer() {
   }
 }
 
+void Printer::Annotate(const char* varname, const string& file_path,
+                       const vector<int>& path) {
+  if (info_output_ == NULL) {
+    // Can't generate signatures with this Printer.
+    return;
+  }
+  map<string, pair<size_t, size_t> >::const_iterator iter =
+      substitutions_.find(varname);
+  if (iter == substitutions_.end()) {
+    GOOGLE_LOG(DFATAL) << " Undefined variable in annotation: " << varname;
+  } else {
+    GeneratedCodeInfo::Annotation* annotation = info_output_->add_annotation();
+    for (int i = 0; i < path.size(); ++i) {
+      annotation->add_path(path[i]);
+    }
+    annotation->set_source_file(file_path);
+    annotation->set_begin(iter->second.first);
+    annotation->set_end(iter->second.second);
+  }
+}
+
 void Printer::Print(const map<string, string>& variables, const char* text) {
   int size = strlen(text);
   int pos = 0;  // The number of bytes we've written so far.
+  substitutions_.clear();
 
   for (int i = 0; i < size; i++) {
     if (text[i] == '\n') {
@@ -97,7 +134,9 @@ void Printer::Print(const map<string, string>& variables, const char* text) {
         if (iter == variables.end()) {
           GOOGLE_LOG(DFATAL) << " Undefined variable: " << varname;
         } else {
+          size_t begin = offset_;
           WriteRaw(iter->second.data(), iter->second.size());
+          substitutions_[varname] = make_pair(begin, offset_);
         }
       }
 
@@ -277,6 +316,7 @@ void Printer::WriteRaw(const char* data, int size) {
   memcpy(buffer_, data, size);
   buffer_ += size;
   buffer_size_ -= size;
+  offset_ += size;
 }
 
 }  // namespace io

@@ -114,6 +114,8 @@ void FileGenerator::GenerateProtoHeader(io::Printer* printer) {
       "dependency", dependency);
   }
 
+  GenerateMetadataPragma(printer);
+
   printer->Print(
     "// @@protoc_insertion_point(includes)\n");
 
@@ -179,6 +181,7 @@ void FileGenerator::GeneratePBHeader(io::Printer* printer) {
     GenerateLibraryIncludes(printer);
   }
   GenerateDependencyIncludes(printer);
+  GenerateMetadataPragma(printer);
 
   printer->Print(
     "// @@protoc_insertion_point(includes)\n");
@@ -397,20 +400,24 @@ class FileGenerator::ForwardDeclarations {
     return ns;
   }
 
-  set<string>& classes() { return classes_; }
-  set<string>& enums() { return enums_; }
+  map<string, const Descriptor*>& classes() { return classes_; }
+  map<string, const EnumDescriptor*>& enums() { return enums_; }
 
   void Print(io::Printer* printer) const {
-    for (set<string>::const_iterator it = enums_.begin(), end = enums_.end();
+    for (map<string, const EnumDescriptor *>::const_iterator
+             it = enums_.begin(),
+             end = enums_.end();
          it != end; ++it) {
-      printer->Print("enum $enumname$ : int;\n"
-                     "bool $enumname$_IsValid(int value);\n",
-                     "enumname", it->c_str());
+      printer->Print("enum $enumname$ : int;\n", "enumname", it->first.c_str());
+      printer->Annotate("enumname", it->second);
+      printer->Print("bool $enumname$_IsValid(int value);\n", "enumname",
+                     it->first.c_str());
     }
-    for (set<string>::const_iterator it = classes_.begin(),
-                                     end = classes_.end();
+    for (map<string, const Descriptor *>::const_iterator it = classes_.begin(),
+                                                         end = classes_.end();
          it != end; ++it) {
-      printer->Print("class $classname$;\n", "classname", it->c_str());
+      printer->Print("class $classname$;\n", "classname", it->first.c_str());
+      printer->Annotate("classname", it->second);
     }
     for (map<string, ForwardDeclarations *>::const_iterator
              it = namespaces_.begin(),
@@ -427,8 +434,8 @@ class FileGenerator::ForwardDeclarations {
 
  private:
   map<string, ForwardDeclarations*> namespaces_;
-  set<string> classes_;
-  set<string> enums_;
+  map<string, const Descriptor*> classes_;
+  map<string, const EnumDescriptor*> enums_;
 };
 
 void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
@@ -850,6 +857,20 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
   }
 }
 
+void FileGenerator::GenerateMetadataPragma(io::Printer* printer) {
+  if (const string* info_path = printer->info_path()) {
+    if (!options_.annotation_pragma_name.empty() &&
+        !options_.annotation_guard_name.empty() && !info_path->empty()) {
+      printer->Print(
+          "#ifdef $guard$\n"
+          "#pragma $pragma$ \"$info_path$\"\n"
+          "#endif  // $guard$\n",
+          "guard", options_.annotation_guard_name, "pragma",
+          options_.annotation_pragma_name, "info_path", *info_path);
+    }
+  }
+}
+
 void FileGenerator::GenerateDependencyIncludes(io::Printer* printer) {
   set<string> public_import_names;
   for (int i = 0; i < file_->public_dependency_count(); i++) {
@@ -891,13 +912,15 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(
 }
 
 void FileGenerator::GenerateMessageForwardDeclarations(io::Printer* printer) {
-  set<string> classes;
+  map<string, const Descriptor*> classes;
   for (int i = 0; i < file_->message_type_count(); i++) {
     message_generators_[i]->FillMessageForwardDeclarations(&classes);
   }
-  for (set<string>::const_iterator it = classes.begin(), end = classes.end();
+  for (map<string, const Descriptor *>::const_iterator it = classes.begin(),
+                                                       end = classes.end();
        it != end; ++it) {
-    printer->Print("class $classname$;\n", "classname", it->c_str());
+    printer->Print("class $classname$;\n", "classname", it->first.c_str());
+    printer->Annotate("classname", it->second);
   }
 }
 
