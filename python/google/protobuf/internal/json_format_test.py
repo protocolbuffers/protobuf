@@ -400,8 +400,8 @@ class JsonFormatTest(JsonFormatBase):
 
   def testParseBadIdentifer(self):
     self.CheckError('{int32Value: 1}',
-                    (r'Failed to load JSON: Expecting property name enclosed '
-                     r'in double quotes: line 1'))
+                    (r'Failed to load JSON: Expecting property name'
+                     r'( enclosed in double quotes)?: line 1'))
     self.CheckError('{"unknownName": 1}',
                     'Message type "proto3.TestMessage" has no field named '
                     '"unknownName".')
@@ -424,7 +424,7 @@ class JsonFormatTest(JsonFormatBase):
     self.assertRaises(json_format.ParseError,
                       json_format.Parse, text, message)
     self.CheckError('{"int32Value": 012345}',
-                    (r'Failed to load JSON: Expecting \',\' delimiter: '
+                    (r'Failed to load JSON: Expecting \'?,\'? delimiter: '
                      r'line 1'))
     self.CheckError('{"int32Value": 1.0}',
                     'Failed to parse int32Value field: '
@@ -462,8 +462,8 @@ class JsonFormatTest(JsonFormatBase):
     text = '{"int32Map": {1: 2, "2": 3}}'
     self.assertRaisesRegexp(
         json_format.ParseError,
-        (r'Failed to load JSON: Expecting property name enclosed '
-         r'in double quotes: line 1'),
+        (r'Failed to load JSON: Expecting property name'
+         r'( enclosed in double quotes)?: line 1'),
         json_format.Parse, text, message)
     text = r'{"stringMap": {"a": 3, "\u0061": 2}}'
     self.assertRaisesRegexp(
