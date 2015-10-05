@@ -163,6 +163,7 @@ cc_library(
         "src/google/protobuf/compiler/cpp/cpp_primitive_field.cc",
         "src/google/protobuf/compiler/cpp/cpp_service.cc",
         "src/google/protobuf/compiler/cpp/cpp_string_field.cc",
+        "src/google/protobuf/compiler/csharp/csharp_doc_comment.cc",
         "src/google/protobuf/compiler/csharp/csharp_enum.cc",
         "src/google/protobuf/compiler/csharp/csharp_enum_field.cc",
         "src/google/protobuf/compiler/csharp/csharp_field_base.cc",
