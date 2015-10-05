@@ -177,7 +177,7 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   ::google::protobuf::internal::ArenaStringPtr parameter_;
   ::google::protobuf::RepeatedPtrField< ::std::string> proto_path_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > proto_file_;
-  friend void  protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+  friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
