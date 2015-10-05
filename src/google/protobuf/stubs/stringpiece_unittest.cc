@@ -30,13 +30,13 @@
 #include <google/protobuf/stubs/stringpiece.h>
 
 #include <iterator>
-#include <hash_set>
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/stubs/hash.h>
 #include <gtest/gtest.h>
 
 namespace google {
