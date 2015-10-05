@@ -45,12 +45,12 @@
 //%TESTS_FOR_ENUM_VALUE_RAW_ADDITIONS(KEY_NAME, KEY_TYPE, KisP, KSUFFIX, KEY1, KEY2, KEY3, KEY4)
 
 //%PDDM-DEFINE TESTS_FOR_POD_VALUE(KEY_NAME, KEY_TYPE, KisP, KSUFFIX, KEY1, KEY2, KEY3, KEY4, VALUE_NAME, VALUE_TYPE, VACCESSOR, VAL1, VAL2, VAL3, VAL4)
-//%TESTS_COMMON(KEY_NAME, KEY_TYPE, KisP, KSUFFIX, KEY1, KEY2, KEY3, KEY4, VALUE_NAME, VALUE_TYPE, , POD, VACCESSOR, VAL1, VAL2, VAL3, VAL4)
+//%TESTS_COMMON(KEY_NAME, KEY_TYPE, KisP, KSUFFIX, KEY1, KEY2, KEY3, KEY4, VALUE_NAME, VALUE_TYPE, , value, POD, VACCESSOR, VAL1, VAL2, VAL3, VAL4)
 
 //%PDDM-DEFINE TESTS_FOR_POD_KEY_OBJECT_VALUE(KEY_NAME, KEY_TYPE, KEY1, KEY2, KEY3, KEY4, VALUE_NAME, VALUE_TYPE, VAL1, VAL2, VAL3, VAL4)
-//%TESTS_COMMON(KEY_NAME, KEY_TYPE, , , KEY1, KEY2, KEY3, KEY4, VALUE_NAME, VALUE_TYPE, Objects, OBJECT, , VAL1, VAL2, VAL3, VAL4)
+//%TESTS_COMMON(KEY_NAME, KEY_TYPE, , , KEY1, KEY2, KEY3, KEY4, VALUE_NAME, VALUE_TYPE, Objects, object, OBJECT, , VAL1, VAL2, VAL3, VAL4)
 
-//%PDDM-DEFINE TESTS_COMMON(KEY_NAME, KEY_TYPE, KisP, KSUFFIX, KEY1, KEY2, KEY3, KEY4, VALUE_NAME, VALUE_TYPE, VSUFFIX, VHELPER, VACCESSOR, VAL1, VAL2, VAL3, VAL4)
+//%PDDM-DEFINE TESTS_COMMON(KEY_NAME, KEY_TYPE, KisP, KSUFFIX, KEY1, KEY2, KEY3, KEY4, VALUE_NAME, VALUE_TYPE, VSUFFIX, VNAME, VHELPER, VACCESSOR, VAL1, VAL2, VAL3, VAL4)
 //%#pragma mark - KEY_NAME -> VALUE_NAME
 //%
 //%@interface GPB##KEY_NAME##VALUE_NAME##DictionaryTests : XCTestCase
@@ -63,47 +63,47 @@
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 0U);
 //%VALUE_NOT_FOUND##VHELPER(dict, KEY1)
-//%  [dict enumerateKeysAndValuesUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE aValue, BOOL *stop) {
-//%    #pragma unused(aKey, aValue, stop)
+//%  [dict enumerateKeysAnd##VNAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u, BOOL *stop) {
+//%    #pragma unused(aKey, a##VNAME$u, stop)
 //%    XCTFail(@"Shouldn't get here!");
 //%  }];
 //%  [dict release];
 //%}
 //%
 //%- (void)testOne {
-//%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict = [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWithValue:VAL1 forKey:KEY1];
+//%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict = [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWith##VNAME$u##:VAL1 forKey:KEY1];
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 1U);
-//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, value)TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
+//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
 //%VALUE_NOT_FOUND##VHELPER(dict, KEY2)
-//%  [dict enumerateKeysAndValuesUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE aValue, BOOL *stop) {
+//%  [dict enumerateKeysAnd##VNAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u, BOOL *stop) {
 //%    XCTAssertEqual##KSUFFIX(aKey, KEY1);
-//%    XCTAssertEqual##VSUFFIX(aValue, VAL1);
+//%    XCTAssertEqual##VSUFFIX(a##VNAME$u, VAL1);
 //%    XCTAssertNotEqual(stop, NULL);
 //%  }];
 //%}
 //%
 //%- (void)testBasics {
 //%  const KEY_TYPE KisP##kKeys[] = { KEY1, KEY2, KEY3 };
-//%  const VALUE_TYPE kValues[] = { VAL1, VAL2, VAL3 };
+//%  const VALUE_TYPE k##VNAME$u##s[] = { VAL1, VAL2, VAL3 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s)];
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 3U);
-//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, value)TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
-//%TEST_VALUE##VHELPER(dict, value, KEY2, VAL2)
-//%TEST_VALUE##VHELPER(dict, value, KEY3, VAL3)
+//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY2, VAL2)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY3, VAL3)
 //%VALUE_NOT_FOUND##VHELPER(dict, KEY4)
 //%
 //%  __block NSUInteger idx = 0;
 //%  KEY_TYPE KisP##*seenKeys = malloc(3 * sizeof(KEY_TYPE##KisP));
-//%  VALUE_TYPE *seenValues = malloc(3 * sizeof(VALUE_TYPE));
-//%  [dict enumerateKeysAndValuesUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE aValue, BOOL *stop) {
+//%  VALUE_TYPE *seen##VNAME$u##s = malloc(3 * sizeof(VALUE_TYPE));
+//%  [dict enumerateKeysAnd##VNAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u, BOOL *stop) {
 //%    XCTAssertLessThan(idx, 3U);
 //%    seenKeys[idx] = aKey;
-//%    seenValues[idx] = aValue;
+//%    seen##VNAME$u##s[idx] = a##VNAME$u##;
 //%    XCTAssertNotEqual(stop, NULL);
 //%    ++idx;
 //%  }];
@@ -112,18 +112,18 @@
 //%    for (int j = 0; (j < 3) && !foundKey; ++j) {
 //%      if (COMPARE_KEYS##KSUFFIX(kKeys[i], seenKeys[j])) {
 //%        foundKey = YES;
-//%        XCTAssertEqual##VSUFFIX(kValues[i], seenValues[j], @"i = %d, j = %d", i, j);
+//%        XCTAssertEqual##VSUFFIX(k##VNAME$u##s[i], seen##VNAME$u##s[j], @"i = %d, j = %d", i, j);
 //%      }
 //%    }
 //%    XCTAssertTrue(foundKey, @"i = %d", i);
 //%  }
 //%  free(seenKeys);
-//%  free(seenValues);
+//%  free(seen##VNAME$u##s);
 //%
 //%  // Stopping the enumeration.
 //%  idx = 0;
-//%  [dict enumerateKeysAndValuesUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE aValue, BOOL *stop) {
-//%    #pragma unused(aKey, aValue)
+//%  [dict enumerateKeysAnd##VNAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u, BOOL *stop) {
+//%    #pragma unused(aKey, a##VNAME$u)
 //%    if (idx == 1) *stop = YES;
 //%    XCTAssertNotEqual(idx, 2U);
 //%    ++idx;
@@ -134,33 +134,33 @@
 //%- (void)testEquality {
 //%  const KEY_TYPE KisP##kKeys1[] = { KEY1, KEY2, KEY3, KEY4 };
 //%  const KEY_TYPE KisP##kKeys2[] = { KEY2, KEY1, KEY4 };
-//%  const VALUE_TYPE kValues1[] = { VAL1, VAL2, VAL3 };
-//%  const VALUE_TYPE kValues2[] = { VAL1, VAL4, VAL3 };
-//%  const VALUE_TYPE kValues3[] = { VAL1, VAL2, VAL3, VAL4 };
+//%  const VALUE_TYPE k##VNAME$u##s1[] = { VAL1, VAL2, VAL3 };
+//%  const VALUE_TYPE k##VNAME$u##s2[] = { VAL1, VAL4, VAL3 };
+//%  const VALUE_TYPE k##VNAME$u##s3[] = { VAL1, VAL2, VAL3, VAL4 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict1 =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues1
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys1
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues1)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s1)];
 //%  XCTAssertNotNil(dict1);
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict1prime =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues1
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys1
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues1)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s1)];
 //%  XCTAssertNotNil(dict1prime);
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict2 =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues2
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys1
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues2)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s2
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s2)];
 //%  XCTAssertNotNil(dict2);
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict3 =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues1
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys2
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues1)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys2
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s1)];
 //%  XCTAssertNotNil(dict3);
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict4 =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues3
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys1
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues3)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s3
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s3)];
 //%  XCTAssertNotNil(dict4);
 //%
 //%  // 1/1Prime should be different objects, but equal.
@@ -169,10 +169,10 @@
 //%  // Equal, so they must have same hash.
 //%  XCTAssertEqual([dict1 hash], [dict1prime hash]);
 //%
-//%  // 2 is save keys, different values; not equal.
+//%  // 2 is same keys, different ##VNAME##s; not equal.
 //%  XCTAssertNotEqualObjects(dict1, dict2);
 //%
-//%  // 3 is different keys, samae values; not equal.
+//%  // 3 is different keys, same ##VNAME##s; not equal.
 //%  XCTAssertNotEqualObjects(dict1, dict3);
 //%
 //%  // 4 extra pair; not equal
@@ -187,11 +187,11 @@
 //%
 //%- (void)testCopy {
 //%  const KEY_TYPE KisP##kKeys[] = { KEY1, KEY2, KEY3, KEY4 };
-//%  const VALUE_TYPE kValues[] = { VAL1, VAL2, VAL3, VAL4 };
+//%  const VALUE_TYPE k##VNAME$u##s[] = { VAL1, VAL2, VAL3, VAL4 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s)];
 //%  XCTAssertNotNil(dict);
 //%
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict2 = [dict copy];
@@ -208,11 +208,11 @@
 //%
 //%- (void)testDictionaryFromDictionary {
 //%  const KEY_TYPE KisP##kKeys[] = { KEY1, KEY2, KEY3, KEY4 };
-//%  const VALUE_TYPE kValues[] = { VAL1, VAL2, VAL3, VAL4 };
+//%  const VALUE_TYPE k##VNAME$u##s[] = { VAL1, VAL2, VAL3, VAL4 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s)];
 //%  XCTAssertNotNil(dict);
 //%
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict2 =
@@ -230,56 +230,56 @@
 //%  XCTAssertNotNil(dict);
 //%
 //%  XCTAssertEqual(dict.count, 0U);
-//%  [dict setValue:VAL1 forKey:KEY1];
+//%  [dict set##VNAME$u##:VAL1 forKey:KEY1];
 //%  XCTAssertEqual(dict.count, 1U);
 //%
 //%  const KEY_TYPE KisP##kKeys[] = { KEY2, KEY3, KEY4 };
-//%  const VALUE_TYPE kValues[] = { VAL2, VAL3, VAL4 };
+//%  const VALUE_TYPE k##VNAME$u##s[] = { VAL2, VAL3, VAL4 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict2 =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s)];
 //%  XCTAssertNotNil(dict2);
 //%  [dict add##VACCESSOR##EntriesFromDictionary:dict2];
 //%  XCTAssertEqual(dict.count, 4U);
 //%
-//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, value)TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
-//%TEST_VALUE##VHELPER(dict, value, KEY2, VAL2)
-//%TEST_VALUE##VHELPER(dict, value, KEY3, VAL3)
-//%TEST_VALUE##VHELPER(dict, value, KEY4, VAL4)
+//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY2, VAL2)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY3, VAL3)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY4, VAL4)
 //%  [dict2 release];
 //%}
 //%
 //%- (void)testRemove {
 //%  const KEY_TYPE KisP##kKeys[] = { KEY1, KEY2, KEY3, KEY4 };
-//%  const VALUE_TYPE kValues[] = { VAL1, VAL2, VAL3, VAL4 };
+//%  const VALUE_TYPE k##VNAME$u##s[] = { VAL1, VAL2, VAL3, VAL4 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues
-//%           KEY_NAME$S VALUE_NAME$S                 forKeys:kKeys
-//%           KEY_NAME$S VALUE_NAME$S                   count:GPBARRAYSIZE(kValues)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s
+//%           KEY_NAME$S VALUE_NAME$S          ##VNAME$S##  forKeys:kKeys
+//%           KEY_NAME$S VALUE_NAME$S          ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s)];
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 4U);
 //%
-//%  [dict removeValueForKey:KEY2];
+//%  [dict remove##VNAME$u##ForKey:KEY2];
 //%  XCTAssertEqual(dict.count, 3U);
-//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, value)TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
+//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
 //%VALUE_NOT_FOUND##VHELPER(dict, KEY2)
-//%TEST_VALUE##VHELPER(dict, value, KEY3, VAL3)
-//%TEST_VALUE##VHELPER(dict, value, KEY4, VAL4)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY3, VAL3)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY4, VAL4)
 //%
 //%  // Remove again does nothing.
-//%  [dict removeValueForKey:KEY2];
+//%  [dict remove##VNAME$u##ForKey:KEY2];
 //%  XCTAssertEqual(dict.count, 3U);
-//%TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
 //%VALUE_NOT_FOUND##VHELPER(dict, KEY2)
-//%TEST_VALUE##VHELPER(dict, value, KEY3, VAL3)
-//%TEST_VALUE##VHELPER(dict, value, KEY4, VAL4)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY3, VAL3)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY4, VAL4)
 //%
-//%  [dict removeValueForKey:KEY4];
+//%  [dict remove##VNAME$u##ForKey:KEY4];
 //%  XCTAssertEqual(dict.count, 2U);
-//%TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
 //%VALUE_NOT_FOUND##VHELPER(dict, KEY2)
-//%TEST_VALUE##VHELPER(dict, value, KEY3, VAL3)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY3, VAL3)
 //%VALUE_NOT_FOUND##VHELPER(dict, KEY4)
 //%
 //%  [dict removeAll];
@@ -293,45 +293,45 @@
 //%
 //%- (void)testInplaceMutation {
 //%  const KEY_TYPE KisP##kKeys[] = { KEY1, KEY2, KEY3, KEY4 };
-//%  const VALUE_TYPE kValues[] = { VAL1, VAL2, VAL3, VAL4 };
+//%  const VALUE_TYPE k##VNAME$u##s[] = { VAL1, VAL2, VAL3, VAL4 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues
-//%           KEY_NAME$S VALUE_NAME$S                 forKeys:kKeys
-//%           KEY_NAME$S VALUE_NAME$S                   count:GPBARRAYSIZE(kValues)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s
+//%           KEY_NAME$S VALUE_NAME$S          ##VNAME$S##  forKeys:kKeys
+//%           KEY_NAME$S VALUE_NAME$S          ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s)];
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 4U);
-//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, value)TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
-//%TEST_VALUE##VHELPER(dict, value, KEY2, VAL2)
-//%TEST_VALUE##VHELPER(dict, value, KEY3, VAL3)
-//%TEST_VALUE##VHELPER(dict, value, KEY4, VAL4)
+//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY2, VAL2)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY3, VAL3)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY4, VAL4)
 //%
-//%  [dict setValue:VAL4 forKey:KEY1];
+//%  [dict set##VNAME$u##:VAL4 forKey:KEY1];
 //%  XCTAssertEqual(dict.count, 4U);
-//%TEST_VALUE##VHELPER(dict, value, KEY1, VAL4)
-//%TEST_VALUE##VHELPER(dict, value, KEY2, VAL2)
-//%TEST_VALUE##VHELPER(dict, value, KEY3, VAL3)
-//%TEST_VALUE##VHELPER(dict, value, KEY4, VAL4)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL4)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY2, VAL2)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY3, VAL3)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY4, VAL4)
 //%
-//%  [dict setValue:VAL2 forKey:KEY4];
+//%  [dict set##VNAME$u##:VAL2 forKey:KEY4];
 //%  XCTAssertEqual(dict.count, 4U);
-//%TEST_VALUE##VHELPER(dict, value, KEY1, VAL4)
-//%TEST_VALUE##VHELPER(dict, value, KEY2, VAL2)
-//%TEST_VALUE##VHELPER(dict, value, KEY3, VAL3)
-//%TEST_VALUE##VHELPER(dict, value, KEY4, VAL2)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL4)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY2, VAL2)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY3, VAL3)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY4, VAL2)
 //%
 //%  const KEY_TYPE KisP##kKeys2[] = { KEY2, KEY3 };
-//%  const VALUE_TYPE kValues2[] = { VAL3, VAL1 };
+//%  const VALUE_TYPE k##VNAME$u##s2[] = { VAL3, VAL1 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict2 =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues2
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys2
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues2)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s2
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys2
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s2)];
 //%  XCTAssertNotNil(dict2);
 //%  [dict add##VACCESSOR##EntriesFromDictionary:dict2];
 //%  XCTAssertEqual(dict.count, 4U);
-//%TEST_VALUE##VHELPER(dict, value, KEY1, VAL4)
-//%TEST_VALUE##VHELPER(dict, value, KEY2, VAL3)
-//%TEST_VALUE##VHELPER(dict, value, KEY3, VAL1)
-//%TEST_VALUE##VHELPER(dict, value, KEY4, VAL2)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL4)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY2, VAL3)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY3, VAL1)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY4, VAL2)
 //%
 //%  [dict2 release];
 //%  [dict release];
@@ -466,10 +466,10 @@
 //%  // Equal, so they must have same hash.
 //%  XCTAssertEqual([dict1 hash], [dict1prime hash]);
 //%
-//%  // 2 is save keys, different values; not equal.
+//%  // 2 is same keys, different values; not equal.
 //%  XCTAssertNotEqualObjects(dict1, dict2);
 //%
-//%  // 3 is different keys, samae values; not equal.
+//%  // 3 is different keys, same values; not equal.
 //%  XCTAssertNotEqualObjects(dict1, dict3);
 //%
 //%  // 4 extra pair; not equal
@@ -709,9 +709,9 @@
 //%PDDM-DEFINE DECLARE_VALUE_STORAGEOBJECT(VALUE_TYPE, NAME)
 // Empty
 //%PDDM-DEFINE VALUE_NOT_FOUNDOBJECT(DICT, KEY)
-//%  XCTAssertNil([DICT valueForKey:KEY]);
+//%  XCTAssertNil([DICT objectForKey:KEY]);
 //%PDDM-DEFINE TEST_VALUEOBJECT(DICT, STORAGE, KEY, VALUE)
-//%  XCTAssertEqualObjects([DICT valueForKey:KEY], VALUE);
+//%  XCTAssertEqualObjects([DICT objectForKey:KEY], VALUE);
 //%PDDM-DEFINE COMPARE_KEYSObjects(KEY1, KEY2)
 //%[KEY1 isEqual:KEY2]
 
@@ -768,12 +768,12 @@
 //TODO(thomasvl): enum tests
 
 //%PDDM-DEFINE BOOL_TESTS_FOR_POD_VALUE(VALUE_NAME, VALUE_TYPE, VAL1, VAL2)
-//%BOOL_TESTS_COMMON(Bool, BOOL, , , YES, NO, VALUE_NAME, VALUE_TYPE, , POD, VAL1, VAL2)
+//%BOOL_TESTS_COMMON(Bool, BOOL, , , YES, NO, VALUE_NAME, VALUE_TYPE, , value, POD, VAL1, VAL2)
 
 //%PDDM-DEFINE TESTS_FOR_BOOL_KEY_OBJECT_VALUE(VALUE_NAME, VALUE_TYPE, VAL1, VAL2)
-//%BOOL_TESTS_COMMON(Bool, BOOL, , , YES, NO, VALUE_NAME, VALUE_TYPE, Objects, OBJECT, VAL1, VAL2)
+//%BOOL_TESTS_COMMON(Bool, BOOL, , , YES, NO, VALUE_NAME, VALUE_TYPE, Objects, object, OBJECT, VAL1, VAL2)
 
-//%PDDM-DEFINE BOOL_TESTS_COMMON(KEY_NAME, KEY_TYPE, KisP, KSUFFIX, KEY1, KEY2, VALUE_NAME, VALUE_TYPE, VSUFFIX, VHELPER, VAL1, VAL2)
+//%PDDM-DEFINE BOOL_TESTS_COMMON(KEY_NAME, KEY_TYPE, KisP, KSUFFIX, KEY1, KEY2, VALUE_NAME, VALUE_TYPE, VSUFFIX, VNAME, VHELPER, VAL1, VAL2)
 //%#pragma mark - KEY_NAME -> VALUE_NAME
 //%
 //%@interface GPB##KEY_NAME##VALUE_NAME##DictionaryTests : XCTestCase
@@ -786,45 +786,45 @@
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 0U);
 //%VALUE_NOT_FOUND##VHELPER(dict, KEY1)
-//%  [dict enumerateKeysAndValuesUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE aValue, BOOL *stop) {
-//%    #pragma unused(aKey, aValue, stop)
+//%  [dict enumerateKeysAnd##VNAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u##, BOOL *stop) {
+//%    #pragma unused(aKey, a##VNAME$u##, stop)
 //%    XCTFail(@"Shouldn't get here!");
 //%  }];
 //%  [dict release];
 //%}
 //%
 //%- (void)testOne {
-//%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict = [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWithValue:VAL1 forKey:KEY1];
+//%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict = [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWith##VNAME$u##:VAL1 forKey:KEY1];
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 1U);
-//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, value)TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
+//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
 //%VALUE_NOT_FOUND##VHELPER(dict, KEY2)
-//%  [dict enumerateKeysAndValuesUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE aValue, BOOL *stop) {
+//%  [dict enumerateKeysAnd##VNAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u, BOOL *stop) {
 //%    XCTAssertEqual##KSUFFIX(aKey, KEY1);
-//%    XCTAssertEqual##VSUFFIX(aValue, VAL1);
+//%    XCTAssertEqual##VSUFFIX(a##VNAME$u, VAL1);
 //%    XCTAssertNotEqual(stop, NULL);
 //%  }];
 //%}
 //%
 //%- (void)testBasics {
 //%  const KEY_TYPE KisP##kKeys[] = { KEY1, KEY2 };
-//%  const VALUE_TYPE kValues[] = { VAL1, VAL2 };
+//%  const VALUE_TYPE k##VNAME$u##s[] = { VAL1, VAL2 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s)];
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 2U);
-//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, value)TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
-//%TEST_VALUE##VHELPER(dict, value, KEY2, VAL2)
+//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY2, VAL2)
 //%
 //%  __block NSUInteger idx = 0;
 //%  KEY_TYPE KisP##*seenKeys = malloc(2 * sizeof(KEY_TYPE##KisP));
-//%  VALUE_TYPE *seenValues = malloc(2 * sizeof(VALUE_TYPE));
-//%  [dict enumerateKeysAndValuesUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE aValue, BOOL *stop) {
+//%  VALUE_TYPE *seen##VNAME$u##s = malloc(2 * sizeof(VALUE_TYPE));
+//%  [dict enumerateKeysAnd##VNAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u##, BOOL *stop) {
 //%    XCTAssertLessThan(idx, 2U);
 //%    seenKeys[idx] = aKey;
-//%    seenValues[idx] = aValue;
+//%    seen##VNAME$u##s[idx] = a##VNAME$u;
 //%    XCTAssertNotEqual(stop, NULL);
 //%    ++idx;
 //%  }];
@@ -833,18 +833,18 @@
 //%    for (int j = 0; (j < 2) && !foundKey; ++j) {
 //%      if (COMPARE_KEYS##KSUFFIX(kKeys[i], seenKeys[j])) {
 //%        foundKey = YES;
-//%        XCTAssertEqual##VSUFFIX(kValues[i], seenValues[j], @"i = %d, j = %d", i, j);
+//%        XCTAssertEqual##VSUFFIX(k##VNAME$u##s[i], seen##VNAME$u##s[j], @"i = %d, j = %d", i, j);
 //%      }
 //%    }
 //%    XCTAssertTrue(foundKey, @"i = %d", i);
 //%  }
 //%  free(seenKeys);
-//%  free(seenValues);
+//%  free(seen##VNAME$u##s);
 //%
 //%  // Stopping the enumeration.
 //%  idx = 0;
-//%  [dict enumerateKeysAndValuesUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE aValue, BOOL *stop) {
-//%    #pragma unused(aKey, aValue)
+//%  [dict enumerateKeysAnd##VNAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u##, BOOL *stop) {
+//%    #pragma unused(aKey, a##VNAME$u)
 //%    if (idx == 0) *stop = YES;
 //%    XCTAssertNotEqual(idx, 2U);
 //%    ++idx;
@@ -855,33 +855,33 @@
 //%- (void)testEquality {
 //%  const KEY_TYPE KisP##kKeys1[] = { KEY1, KEY2 };
 //%  const KEY_TYPE KisP##kKeys2[] = { KEY2, KEY1 };
-//%  const VALUE_TYPE kValues1[] = { VAL1, VAL2 };
-//%  const VALUE_TYPE kValues2[] = { VAL2, VAL1 };
-//%  const VALUE_TYPE kValues3[] = { VAL2 };
+//%  const VALUE_TYPE k##VNAME$u##s1[] = { VAL1, VAL2 };
+//%  const VALUE_TYPE k##VNAME$u##s2[] = { VAL2, VAL1 };
+//%  const VALUE_TYPE k##VNAME$u##s3[] = { VAL2 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict1 =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues1
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys1
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues1)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s1)];
 //%  XCTAssertNotNil(dict1);
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict1prime =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues1
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys1
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues1)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s1)];
 //%  XCTAssertNotNil(dict1prime);
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict2 =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues2
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys1
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues2)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s2
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s2)];
 //%  XCTAssertNotNil(dict2);
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict3 =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues1
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys2
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues1)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys2
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s1)];
 //%  XCTAssertNotNil(dict3);
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict4 =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues3
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys1
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues3)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s3
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys1
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s3)];
 //%  XCTAssertNotNil(dict4);
 //%
 //%  // 1/1Prime should be different objects, but equal.
@@ -890,10 +890,10 @@
 //%  // Equal, so they must have same hash.
 //%  XCTAssertEqual([dict1 hash], [dict1prime hash]);
 //%
-//%  // 2 is save keys, different values; not equal.
+//%  // 2 is same keys, different ##VNAME##s; not equal.
 //%  XCTAssertNotEqualObjects(dict1, dict2);
 //%
-//%  // 3 is different keys, samae values; not equal.
+//%  // 3 is different keys, same ##VNAME##s; not equal.
 //%  XCTAssertNotEqualObjects(dict1, dict3);
 //%
 //%  // 4 Fewer pairs; not equal
@@ -908,11 +908,11 @@
 //%
 //%- (void)testCopy {
 //%  const KEY_TYPE KisP##kKeys[] = { KEY1, KEY2 };
-//%  const VALUE_TYPE kValues[] = { VAL1, VAL2 };
+//%  const VALUE_TYPE k##VNAME$u##s[] = { VAL1, VAL2 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s)];
 //%  XCTAssertNotNil(dict);
 //%
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict2 = [dict copy];
@@ -929,11 +929,11 @@
 //%
 //%- (void)testDictionaryFromDictionary {
 //%  const KEY_TYPE KisP##kKeys[] = { KEY1, KEY2 };
-//%  const VALUE_TYPE kValues[] = { VAL1, VAL2 };
+//%  const VALUE_TYPE k##VNAME$u##s[] = { VAL1, VAL2 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s)];
 //%  XCTAssertNotNil(dict);
 //%
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict2 =
@@ -951,43 +951,43 @@
 //%  XCTAssertNotNil(dict);
 //%
 //%  XCTAssertEqual(dict.count, 0U);
-//%  [dict setValue:VAL1 forKey:KEY1];
+//%  [dict set##VNAME$u:VAL1 forKey:KEY1];
 //%  XCTAssertEqual(dict.count, 1U);
 //%
 //%  const KEY_TYPE KisP##kKeys[] = { KEY2 };
-//%  const VALUE_TYPE kValues[] = { VAL2 };
+//%  const VALUE_TYPE k##VNAME$u##s[] = { VAL2 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict2 =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s)];
 //%  XCTAssertNotNil(dict2);
 //%  [dict addEntriesFromDictionary:dict2];
 //%  XCTAssertEqual(dict.count, 2U);
 //%
-//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, value)TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
-//%TEST_VALUE##VHELPER(dict, value, KEY2, VAL2)
+//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY2, VAL2)
 //%  [dict2 release];
 //%}
 //%
 //%- (void)testRemove {
 //%  const KEY_TYPE KisP##kKeys[] = { KEY1, KEY2};
-//%  const VALUE_TYPE kValues[] = { VAL1, VAL2 };
+//%  const VALUE_TYPE k##VNAME$u##s[] = { VAL1, VAL2 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues
-//%           KEY_NAME$S VALUE_NAME$S                 forKeys:kKeys
-//%           KEY_NAME$S VALUE_NAME$S                   count:GPBARRAYSIZE(kValues)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s
+//%           KEY_NAME$S VALUE_NAME$S          ##VNAME$S##  forKeys:kKeys
+//%           KEY_NAME$S VALUE_NAME$S          ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s)];
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 2U);
 //%
-//%  [dict removeValueForKey:KEY2];
+//%  [dict remove##VNAME$u##ForKey:KEY2];
 //%  XCTAssertEqual(dict.count, 1U);
-//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, value)TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
+//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
 //%VALUE_NOT_FOUND##VHELPER(dict, KEY2)
 //%
 //%  // Remove again does nothing.
-//%  [dict removeValueForKey:KEY2];
+//%  [dict remove##VNAME$u##ForKey:KEY2];
 //%  XCTAssertEqual(dict.count, 1U);
-//%TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
 //%VALUE_NOT_FOUND##VHELPER(dict, KEY2)
 //%
 //%  [dict removeAll];
@@ -999,37 +999,37 @@
 //%
 //%- (void)testInplaceMutation {
 //%  const KEY_TYPE KisP##kKeys[] = { KEY1, KEY2 };
-//%  const VALUE_TYPE kValues[] = { VAL1, VAL2 };
+//%  const VALUE_TYPE k##VNAME$u##s[] = { VAL1, VAL2 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues
-//%           KEY_NAME$S VALUE_NAME$S                 forKeys:kKeys
-//%           KEY_NAME$S VALUE_NAME$S                   count:GPBARRAYSIZE(kValues)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s
+//%           KEY_NAME$S VALUE_NAME$S          ##VNAME$S##  forKeys:kKeys
+//%           KEY_NAME$S VALUE_NAME$S          ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s)];
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 2U);
-//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, value)TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
-//%TEST_VALUE##VHELPER(dict, value, KEY2, VAL2)
+//%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY2, VAL2)
 //%
-//%  [dict setValue:VAL2 forKey:KEY1];
+//%  [dict set##VNAME$u##:VAL2 forKey:KEY1];
 //%  XCTAssertEqual(dict.count, 2U);
-//%TEST_VALUE##VHELPER(dict, value, KEY1, VAL2)
-//%TEST_VALUE##VHELPER(dict, value, KEY2, VAL2)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL2)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY2, VAL2)
 //%
-//%  [dict setValue:VAL1 forKey:KEY2];
+//%  [dict set##VNAME$u##:VAL1 forKey:KEY2];
 //%  XCTAssertEqual(dict.count, 2U);
-//%TEST_VALUE##VHELPER(dict, value, KEY1, VAL2)
-//%TEST_VALUE##VHELPER(dict, value, KEY2, VAL1)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL2)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY2, VAL1)
 //%
 //%  const KEY_TYPE KisP##kKeys2[] = { KEY2, KEY1 };
-//%  const VALUE_TYPE kValues2[] = { VAL2, VAL1 };
+//%  const VALUE_TYPE k##VNAME$u##s2[] = { VAL2, VAL1 };
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *dict2 =
-//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValues:kValues2
-//%           KEY_NAME$S VALUE_NAME$S                        forKeys:kKeys2
-//%           KEY_NAME$S VALUE_NAME$S                          count:GPBARRAYSIZE(kValues2)];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWith##VNAME$u##s:k##VNAME$u##s2
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##  forKeys:kKeys2
+//%           KEY_NAME$S VALUE_NAME$S                 ##VNAME$S##    count:GPBARRAYSIZE(k##VNAME$u##s2)];
 //%  XCTAssertNotNil(dict2);
 //%  [dict addEntriesFromDictionary:dict2];
 //%  XCTAssertEqual(dict.count, 2U);
-//%TEST_VALUE##VHELPER(dict, value, KEY1, VAL1)
-//%TEST_VALUE##VHELPER(dict, value, KEY2, VAL2)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY1, VAL1)
+//%TEST_VALUE##VHELPER(dict, VNAME, KEY2, VAL2)
 //%
 //%  [dict2 release];
 //%  [dict release];

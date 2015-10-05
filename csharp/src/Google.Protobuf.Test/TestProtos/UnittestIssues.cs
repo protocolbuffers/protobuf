@@ -9,10 +9,12 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace UnitTest.Issues.TestProtos {
 
+  /// <summary>Holder for reflection information generated from unittest_issues.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class UnittestIssues {
 
     #region Descriptor
+    /// <summary>File descriptor for unittest_issues.proto</summary>
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }
@@ -21,28 +23,28 @@ namespace UnitTest.Issues.TestProtos {
     static UnittestIssues() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChV1bml0dGVzdF9pc3N1ZXMucHJvdG8SD3VuaXR0ZXN0X2lzc3VlcyInCghJ", 
-            "c3N1ZTMwNxobCgpOZXN0ZWRPbmNlGg0KC05lc3RlZFR3aWNlIrABChNOZWdh", 
-            "dGl2ZUVudW1NZXNzYWdlEiwKBXZhbHVlGAEgASgOMh0udW5pdHRlc3RfaXNz", 
-            "dWVzLk5lZ2F0aXZlRW51bRIxCgZ2YWx1ZXMYAiADKA4yHS51bml0dGVzdF9p", 
-            "c3N1ZXMuTmVnYXRpdmVFbnVtQgIQABI4Cg1wYWNrZWRfdmFsdWVzGAMgAygO", 
-            "Mh0udW5pdHRlc3RfaXNzdWVzLk5lZ2F0aXZlRW51bUICEAEiEQoPRGVwcmVj", 
-            "YXRlZENoaWxkIrkCChdEZXByZWNhdGVkRmllbGRzTWVzc2FnZRIaCg5Qcmlt", 
-            "aXRpdmVWYWx1ZRgBIAEoBUICGAESGgoOUHJpbWl0aXZlQXJyYXkYAiADKAVC", 
-            "AhgBEjoKDE1lc3NhZ2VWYWx1ZRgDIAEoCzIgLnVuaXR0ZXN0X2lzc3Vlcy5E", 
-            "ZXByZWNhdGVkQ2hpbGRCAhgBEjoKDE1lc3NhZ2VBcnJheRgEIAMoCzIgLnVu", 
-            "aXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkQ2hpbGRCAhgBEjYKCUVudW1WYWx1", 
-            "ZRgFIAEoDjIfLnVuaXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkRW51bUICGAES", 
-            "NgoJRW51bUFycmF5GAYgAygOMh8udW5pdHRlc3RfaXNzdWVzLkRlcHJlY2F0", 
-            "ZWRFbnVtQgIYASIZCglJdGVtRmllbGQSDAoEaXRlbRgBIAEoBSJECg1SZXNl", 
-            "cnZlZE5hbWVzEg0KBXR5cGVzGAEgASgFEhIKCmRlc2NyaXB0b3IYAiABKAUa", 
-            "EAoOU29tZU5lc3RlZFR5cGUioAEKFVRlc3RKc29uRmllbGRPcmRlcmluZxIT", 
-            "CgtwbGFpbl9pbnQzMhgEIAEoBRITCglvMV9zdHJpbmcYAiABKAlIABISCghv", 
-            "MV9pbnQzMhgFIAEoBUgAEhQKDHBsYWluX3N0cmluZxgBIAEoCRISCghvMl9p", 
-            "bnQzMhgGIAEoBUgBEhMKCW8yX3N0cmluZxgDIAEoCUgBQgQKAm8xQgQKAm8y", 
-            "KlUKDE5lZ2F0aXZlRW51bRIWChJORUdBVElWRV9FTlVNX1pFUk8QABIWCglG", 
-            "aXZlQmVsb3cQ+///////////ARIVCghNaW51c09uZRD///////////8BKi4K", 
-            "DkRlcHJlY2F0ZWRFbnVtEhMKD0RFUFJFQ0FURURfWkVSTxAAEgcKA29uZRAB", 
+            "ChV1bml0dGVzdF9pc3N1ZXMucHJvdG8SD3VuaXR0ZXN0X2lzc3VlcyInCghJ",
+            "c3N1ZTMwNxobCgpOZXN0ZWRPbmNlGg0KC05lc3RlZFR3aWNlIrABChNOZWdh",
+            "dGl2ZUVudW1NZXNzYWdlEiwKBXZhbHVlGAEgASgOMh0udW5pdHRlc3RfaXNz",
+            "dWVzLk5lZ2F0aXZlRW51bRIxCgZ2YWx1ZXMYAiADKA4yHS51bml0dGVzdF9p",
+            "c3N1ZXMuTmVnYXRpdmVFbnVtQgIQABI4Cg1wYWNrZWRfdmFsdWVzGAMgAygO",
+            "Mh0udW5pdHRlc3RfaXNzdWVzLk5lZ2F0aXZlRW51bUICEAEiEQoPRGVwcmVj",
+            "YXRlZENoaWxkIrkCChdEZXByZWNhdGVkRmllbGRzTWVzc2FnZRIaCg5Qcmlt",
+            "aXRpdmVWYWx1ZRgBIAEoBUICGAESGgoOUHJpbWl0aXZlQXJyYXkYAiADKAVC",
+            "AhgBEjoKDE1lc3NhZ2VWYWx1ZRgDIAEoCzIgLnVuaXR0ZXN0X2lzc3Vlcy5E",
+            "ZXByZWNhdGVkQ2hpbGRCAhgBEjoKDE1lc3NhZ2VBcnJheRgEIAMoCzIgLnVu",
+            "aXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkQ2hpbGRCAhgBEjYKCUVudW1WYWx1",
+            "ZRgFIAEoDjIfLnVuaXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkRW51bUICGAES",
+            "NgoJRW51bUFycmF5GAYgAygOMh8udW5pdHRlc3RfaXNzdWVzLkRlcHJlY2F0",
+            "ZWRFbnVtQgIYASIZCglJdGVtRmllbGQSDAoEaXRlbRgBIAEoBSJECg1SZXNl",
+            "cnZlZE5hbWVzEg0KBXR5cGVzGAEgASgFEhIKCmRlc2NyaXB0b3IYAiABKAUa",
+            "EAoOU29tZU5lc3RlZFR5cGUioAEKFVRlc3RKc29uRmllbGRPcmRlcmluZxIT",
+            "CgtwbGFpbl9pbnQzMhgEIAEoBRITCglvMV9zdHJpbmcYAiABKAlIABISCghv",
+            "MV9pbnQzMhgFIAEoBUgAEhQKDHBsYWluX3N0cmluZxgBIAEoCRISCghvMl9p",
+            "bnQzMhgGIAEoBUgBEhMKCW8yX3N0cmluZxgDIAEoCUgBQgQKAm8xQgQKAm8y",
+            "KlUKDE5lZ2F0aXZlRW51bRIWChJORUdBVElWRV9FTlVNX1pFUk8QABIWCglG",
+            "aXZlQmVsb3cQ+///////////ARIVCghNaW51c09uZRD///////////8BKi4K",
+            "DkRlcHJlY2F0ZWRFbnVtEhMKD0RFUFJFQ0FURURfWkVSTxAAEgcKA29uZRAB",
             "Qh9IAaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] { },
@@ -74,6 +76,10 @@ namespace UnitTest.Issues.TestProtos {
   #endregion
 
   #region Messages
+  /// <summary>
+  ///  Issue 307: when generating doubly-nested types, any references
+  ///  should be of the form A.Types.B.Types.C.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Issue307 : pb::IMessage<Issue307> {
     private static readonly pb::MessageParser<Issue307> _parser = new pb::MessageParser<Issue307>(() => new Issue307());
@@ -149,6 +155,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     #region Nested types
+    /// <summary>Container for nested types declared in the Issue307 message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -226,6 +233,7 @@ namespace UnitTest.Issues.TestProtos {
         }
 
         #region Nested types
+        /// <summary>Container for nested types declared in the NestedOnce message type.</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         public static partial class Types {
           [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -343,6 +351,7 @@ namespace UnitTest.Issues.TestProtos {
       return new NegativeEnumMessage(this);
     }
 
+    /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
     private global::UnitTest.Issues.TestProtos.NegativeEnum value_ = global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO;
     public global::UnitTest.Issues.TestProtos.NegativeEnum Value {
@@ -352,6 +361,7 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "values" field.</summary>
     public const int ValuesFieldNumber = 2;
     private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.NegativeEnum> _repeated_values_codec
         = pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::UnitTest.Issues.TestProtos.NegativeEnum) x);
@@ -360,6 +370,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return values_; }
     }
 
+    /// <summary>Field number for the "packed_values" field.</summary>
     public const int PackedValuesFieldNumber = 3;
     private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.NegativeEnum> _repeated_packedValues_codec
         = pb::FieldCodec.ForEnum(26, x => (int) x, x => (global::UnitTest.Issues.TestProtos.NegativeEnum) x);
@@ -562,6 +573,7 @@ namespace UnitTest.Issues.TestProtos {
       return new DeprecatedFieldsMessage(this);
     }
 
+    /// <summary>Field number for the "PrimitiveValue" field.</summary>
     public const int PrimitiveValueFieldNumber = 1;
     private int primitiveValue_;
     [global::System.ObsoleteAttribute()]
@@ -572,6 +584,7 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "PrimitiveArray" field.</summary>
     public const int PrimitiveArrayFieldNumber = 2;
     private static readonly pb::FieldCodec<int> _repeated_primitiveArray_codec
         = pb::FieldCodec.ForInt32(18);
@@ -581,6 +594,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return primitiveArray_; }
     }
 
+    /// <summary>Field number for the "MessageValue" field.</summary>
     public const int MessageValueFieldNumber = 3;
     private global::UnitTest.Issues.TestProtos.DeprecatedChild messageValue_;
     [global::System.ObsoleteAttribute()]
@@ -591,6 +605,7 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "MessageArray" field.</summary>
     public const int MessageArrayFieldNumber = 4;
     private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.DeprecatedChild> _repeated_messageArray_codec
         = pb::FieldCodec.ForMessage(34, global::UnitTest.Issues.TestProtos.DeprecatedChild.Parser);
@@ -600,6 +615,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return messageArray_; }
     }
 
+    /// <summary>Field number for the "EnumValue" field.</summary>
     public const int EnumValueFieldNumber = 5;
     private global::UnitTest.Issues.TestProtos.DeprecatedEnum enumValue_ = global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO;
     [global::System.ObsoleteAttribute()]
@@ -610,6 +626,7 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "EnumArray" field.</summary>
     public const int EnumArrayFieldNumber = 6;
     private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.DeprecatedEnum> _repeated_enumArray_codec
         = pb::FieldCodec.ForEnum(50, x => (int) x, x => (global::UnitTest.Issues.TestProtos.DeprecatedEnum) x);
@@ -752,6 +769,9 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  /// <summary>
+  ///  Issue 45: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=45
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class ItemField : pb::IMessage<ItemField> {
     private static readonly pb::MessageParser<ItemField> _parser = new pb::MessageParser<ItemField>(() => new ItemField());
@@ -779,6 +799,7 @@ namespace UnitTest.Issues.TestProtos {
       return new ItemField(this);
     }
 
+    /// <summary>Field number for the "item" field.</summary>
     public const int ItemFieldNumber = 1;
     private int item_;
     public int Item {
@@ -882,6 +903,7 @@ namespace UnitTest.Issues.TestProtos {
       return new ReservedNames(this);
     }
 
+    /// <summary>Field number for the "types" field.</summary>
     public const int Types_FieldNumber = 1;
     private int types_;
     public int Types_ {
@@ -891,6 +913,7 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "descriptor" field.</summary>
     public const int Descriptor_FieldNumber = 2;
     private int descriptor_;
     public int Descriptor_ {
@@ -981,8 +1004,12 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     #region Nested types
+    /// <summary>Container for nested types declared in the ReservedNames message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
+      /// <summary>
+      ///  Force a nested type called Types
+      /// </summary>
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
       public sealed partial class SomeNestedType : pb::IMessage<SomeNestedType> {
         private static readonly pb::MessageParser<SomeNestedType> _parser = new pb::MessageParser<SomeNestedType>(() => new SomeNestedType());
@@ -1064,6 +1091,18 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
+  /// <summary>
+  ///  These fields are deliberately not declared in numeric
+  ///  order, and the oneof fields aren't contiguous either.
+  ///  This allows for reasonably robust tests of JSON output
+  ///  ordering.
+  ///  TestFieldOrderings in unittest_proto3.proto is similar,
+  ///  but doesn't include oneofs.
+  ///  TODO: Consider adding oneofs to TestFieldOrderings, although
+  ///  that will require fixing other tests in multiple platforms.
+  ///  Alternatively, consider just adding this to
+  ///  unittest_proto3.proto if multiple platforms want it.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class TestJsonFieldOrdering : pb::IMessage<TestJsonFieldOrdering> {
     private static readonly pb::MessageParser<TestJsonFieldOrdering> _parser = new pb::MessageParser<TestJsonFieldOrdering>(() => new TestJsonFieldOrdering());
@@ -1110,6 +1149,7 @@ namespace UnitTest.Issues.TestProtos {
       return new TestJsonFieldOrdering(this);
     }
 
+    /// <summary>Field number for the "plain_int32" field.</summary>
     public const int PlainInt32FieldNumber = 4;
     private int plainInt32_;
     public int PlainInt32 {
@@ -1119,6 +1159,7 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "o1_string" field.</summary>
     public const int O1StringFieldNumber = 2;
     public string O1String {
       get { return o1Case_ == O1OneofCase.O1String ? (string) o1_ : ""; }
@@ -1128,6 +1169,7 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "o1_int32" field.</summary>
     public const int O1Int32FieldNumber = 5;
     public int O1Int32 {
       get { return o1Case_ == O1OneofCase.O1Int32 ? (int) o1_ : 0; }
@@ -1137,6 +1179,7 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "plain_string" field.</summary>
     public const int PlainStringFieldNumber = 1;
     private string plainString_ = "";
     public string PlainString {
@@ -1146,6 +1189,7 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "o2_int32" field.</summary>
     public const int O2Int32FieldNumber = 6;
     public int O2Int32 {
       get { return o2Case_ == O2OneofCase.O2Int32 ? (int) o2_ : 0; }
@@ -1155,6 +1199,7 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "o2_string" field.</summary>
     public const int O2StringFieldNumber = 3;
     public string O2String {
       get { return o2Case_ == O2OneofCase.O2String ? (string) o2_ : ""; }
@@ -1165,6 +1210,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     private object o1_;
+    /// <summary>Enum of possible cases for the "o1" oneof.</summary>
     public enum O1OneofCase {
       None = 0,
       O1String = 2,
@@ -1181,6 +1227,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     private object o2_;
+    /// <summary>Enum of possible cases for the "o2" oneof.</summary>
     public enum O2OneofCase {
       None = 0,
       O2Int32 = 6,

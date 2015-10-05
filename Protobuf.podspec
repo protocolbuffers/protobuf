@@ -5,7 +5,7 @@
 # dependent projects use the :git notation to refer to the library.
 Pod::Spec.new do |s|
   s.name     = 'Protobuf'
-  s.version  = '3.0.0-alpha-4'
+  s.version  = '3.0.0-alpha-4.1'
   s.summary  = 'Protocol Buffers v.3 runtime library for Objective-C.'
   s.homepage = 'https://github.com/google/protobuf'
   s.license  = 'New BSD'
@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
                    'objectivec/google/protobuf/SourceContext.pbobjc.{h,m}',
                    'objectivec/google/protobuf/Struct.pbobjc.{h,m}',
                    'objectivec/google/protobuf/Timestamp.pbobjc.h',
-                   'objectivec/google/protobuf/Type.pbobjc.{h,m}'
+                   'objectivec/google/protobuf/Type.pbobjc.{h,m}',
                    'objectivec/google/protobuf/Wrappers.pbobjc.{h,m}'
   # Timestamp.pbobjc.m and Duration.pbobjc.m are #imported by GPBWellKnownTypes.m. So we can't
   # compile them (duplicate symbols), but we need them available for the importing:

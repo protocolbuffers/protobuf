@@ -94,6 +94,13 @@ string TestSourceDir() {
 namespace {
 
 string GetTemporaryDirectoryName() {
+  // Tests run under Bazel "should not" use /tmp. Bazel sets this environment
+  // variable for tests to use instead.
+  char *from_environment = getenv("TEST_TMPDIR");
+  if (from_environment != NULL && from_environment[0] != '\0') {
+    return string(from_environment) + "/protobuf_tmpdir";
+  }
+
   // tmpnam() is generally not considered safe but we're only using it for
   // testing.  We cannot use tmpfile() or mkstemp() since we're creating a
   // directory.

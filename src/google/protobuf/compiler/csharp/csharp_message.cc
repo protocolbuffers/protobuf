@@ -42,6 +42,7 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
 
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_enum.h>
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
@@ -101,6 +102,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
 
+  WriteMessageDocComment(printer, descriptor_);
   printer->Print(
     "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n");
   WriteGeneratedCodeAttributes(printer);
@@ -152,7 +154,9 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
     // Rats: we lose the debug comment here :(
     printer->Print(
+      "/// <summary>Field number for the \"$field_name$\" field.</summary>\n"
       "public const int $field_constant_name$ = $index$;\n",
+      "field_name", fieldDescriptor->name(),
       "field_constant_name", GetFieldConstantName(fieldDescriptor),
       "index", SimpleItoa(fieldDescriptor->number()));
     scoped_ptr<FieldGeneratorBase> generator(
@@ -169,6 +173,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print(
       vars,
       "private object $name$_;\n"
+      "/// <summary>Enum of possible cases for the \"$original_name$\" oneof.</summary>\n"
       "public enum $property_name$OneofCase {\n");
     printer->Indent();
     printer->Print("None = 0,\n");
@@ -180,6 +185,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     }
     printer->Outdent();
     printer->Print("}\n");
+    // TODO: Should we put the oneof .proto comments here? It's unclear exactly where they should go.
     printer->Print(
       vars,
       "private $property_name$OneofCase $name$Case_ = $property_name$OneofCase.None;\n"
@@ -199,8 +205,11 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   // Nested messages and enums
   if (HasNestedGeneratedTypes()) {
-    printer->Print("#region Nested types\n"
-		   "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n");
+    printer->Print(
+      vars,
+      "#region Nested types\n"
+      "/// <summary>Container for nested types declared in the $class_name$ message type.</summary>\n"
+      "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n");
     WriteGeneratedCodeAttributes(printer);
     printer->Print("public static partial class Types {\n");
     printer->Indent();

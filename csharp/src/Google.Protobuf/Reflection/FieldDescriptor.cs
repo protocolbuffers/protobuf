@@ -252,7 +252,7 @@ namespace Google.Protobuf.Reflection
             {
                 if (fieldType != FieldType.Message)
                 {
-                    throw new InvalidOperationException("MessageType is only valid for enum fields.");
+                    throw new InvalidOperationException("MessageType is only valid for message fields.");
                 }
                 return messageType;
             }

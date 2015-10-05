@@ -11,10 +11,12 @@ namespace Google.Protobuf.WellKnownTypes {
 
   namespace Proto {
 
+    /// <summary>Holder for reflection information generated from google/protobuf/source_context.proto</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class SourceContext {
 
       #region Descriptor
+      /// <summary>File descriptor for google/protobuf/source_context.proto</summary>
       public static pbr::FileDescriptor Descriptor {
         get { return descriptor; }
       }
@@ -23,11 +25,11 @@ namespace Google.Protobuf.WellKnownTypes {
       static SourceContext() {
         byte[] descriptorData = global::System.Convert.FromBase64String(
             string.Concat(
-              "CiRnb29nbGUvcHJvdG9idWYvc291cmNlX2NvbnRleHQucHJvdG8SD2dvb2ds", 
-              "ZS5wcm90b2J1ZiIiCg1Tb3VyY2VDb250ZXh0EhEKCWZpbGVfbmFtZRgBIAEo", 
-              "CUJSChNjb20uZ29vZ2xlLnByb3RvYnVmQhJTb3VyY2VDb250ZXh0UHJvdG9Q", 
-              "AaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IGcHJv", 
-              "dG8z"));
+              "CiRnb29nbGUvcHJvdG9idWYvc291cmNlX2NvbnRleHQucHJvdG8SD2dvb2ds",
+              "ZS5wcm90b2J1ZiIiCg1Tb3VyY2VDb250ZXh0EhEKCWZpbGVfbmFtZRgBIAEo",
+              "CUJVChNjb20uZ29vZ2xlLnByb3RvYnVmQhJTb3VyY2VDb250ZXh0UHJvdG9Q",
+              "AaABAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IG",
+              "cHJvdG8z"));
         descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
             new pbr::FileDescriptor[] { },
             new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
@@ -39,6 +41,10 @@ namespace Google.Protobuf.WellKnownTypes {
     }
   }
   #region Messages
+  /// <summary>
+  ///  `SourceContext` represents information about the source of a
+  ///  protobuf element, like the file in which it is defined.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class SourceContext : pb::IMessage<SourceContext> {
     private static readonly pb::MessageParser<SourceContext> _parser = new pb::MessageParser<SourceContext>(() => new SourceContext());
@@ -66,8 +72,13 @@ namespace Google.Protobuf.WellKnownTypes {
       return new SourceContext(this);
     }
 
+    /// <summary>Field number for the "file_name" field.</summary>
     public const int FileNameFieldNumber = 1;
     private string fileName_ = "";
+    /// <summary>
+    ///  The path-qualified name of the .proto file that contained the associated
+    ///  protobuf element.  For example: `"google/protobuf/source.proto"`.
+    /// </summary>
     public string FileName {
       get { return fileName_; }
       set {
