@@ -36,7 +36,10 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import sys
 
-import unittest
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
@@ -391,7 +394,7 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual(self.my_file.name, 'some/filename/some.proto')
     self.assertEqual(self.my_file.package, 'protobuf_unittest')
 
-  @test_util.skipIf(
+  @unittest.skipIf(
       api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
       'Immutability of descriptors is only enforced in v2 implementation')
   def testImmutableCppDescriptor(self):

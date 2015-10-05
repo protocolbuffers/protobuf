@@ -35,7 +35,10 @@
 
 __author__ = 'bohdank@google.com (Bohdan Koval)'
 
-import unittest
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
@@ -48,7 +51,7 @@ from google.protobuf.internal import type_checkers
 
 
 def SkipIfCppImplementation(func):
-  return test_util.skipIf(
+  return unittest.skipIf(
       api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
       'C++ implementation does not expose unknown fields to Python')(func)
 

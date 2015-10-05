@@ -52,7 +52,10 @@ import pickle
 import six
 import sys
 
-import unittest
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
 from google.protobuf.internal import _parameterized
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
