@@ -28,8 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Copyright 2007 Google Inc. All Rights Reserved.
-#
 # This code is meant to work on Python 2.4 and above only.
 #
 # TODO(robinson): Helpers for verbose, common checks like seeing if a

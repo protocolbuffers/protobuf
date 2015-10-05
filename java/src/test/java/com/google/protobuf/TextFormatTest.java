@@ -830,6 +830,22 @@ public class TextFormatTest extends TestCase {
             .build()));
   }
 
+  public void testShortDebugString_field() {
+    final FieldDescriptor dataField =
+      OneString.getDescriptor().findFieldByName("data");
+    assertEquals(
+      "data: \"test data\"",
+      TextFormat.shortDebugString(dataField, "test data"));
+
+    final FieldDescriptor optionalField =
+      TestAllTypes.getDescriptor().findFieldByName("optional_nested_message");
+    final Object value = NestedMessage.newBuilder().setBb(42).build();
+
+    assertEquals(
+      "optional_nested_message { bb: 42 }",
+      TextFormat.shortDebugString(optionalField, value));
+  }
+
   public void testShortDebugString_unknown() {
     assertEquals("5: 1 5: 0x00000002 5: 0x0000000000000003 5: \"4\" 5 { 10: 5 }"
         + " 8: 1 8: 2 8: 3 15: 12379813812177893520 15: 0xabcd1234 15:"

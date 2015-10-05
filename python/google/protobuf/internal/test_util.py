@@ -38,6 +38,13 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import os.path
 
+import sys
+# PY2.6 compatible skipIf
+if sys.version_info < (2, 7):
+  from unittest2 import skipIf
+else:
+  from unittest import skipIf
+
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2

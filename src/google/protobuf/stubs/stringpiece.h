@@ -149,6 +149,7 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/hash.h>
 
 namespace google {
 namespace protobuf {
@@ -436,5 +437,17 @@ extern std::ostream& operator<<(std::ostream& o, StringPiece piece);
 
 }  // namespace protobuf
 }  // namespace google
+
+GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START
+template<> struct hash<StringPiece> {
+  size_t operator()(const StringPiece& s) const {
+    size_t result = 0;
+    for (const char *str = s.data(), *end = str + s.size(); str < end; str++) {  
+      result = 5 * result + *str;
+    }
+    return result;
+  }
+};
+GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END
 
 #endif  // STRINGS_STRINGPIECE_H_

@@ -43,22 +43,16 @@ abstract interface.
 
 __author__ = 'gps@google.com (Gregory P. Smith)'
 
+
 import collections
 import copy
 import math
 import operator
 import pickle
+import six
 import sys
 
-import six
-
-if six.PY3:
-  long = int
-
-try:
-  import unittest2 as unittest
-except ImportError:
-  import unittest
+import unittest
 from google.protobuf.internal import _parameterized
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
@@ -67,6 +61,9 @@ from google.protobuf.internal import api_implementation
 from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import test_util
 from google.protobuf import message
+
+if six.PY3:
+  long = int
 
 # Python pre-2.6 does not have isinf() or isnan() functions, so we have
 # to provide our own.
@@ -442,7 +439,7 @@ class MessageTest(unittest.TestCase):
     message.repeated_nested_message.add().bb = 24
     message.repeated_nested_message.add().bb = 10
     message.repeated_nested_message.sort(key=lambda z: z.bb // 10)
-    self.assertEquals(
+    self.assertEqual(
         [13, 11, 10, 21, 20, 24, 33],
         [n.bb for n in message.repeated_nested_message])
 
@@ -451,7 +448,7 @@ class MessageTest(unittest.TestCase):
     pb = message.SerializeToString()
     message.Clear()
     message.MergeFromString(pb)
-    self.assertEquals(
+    self.assertEqual(
         [13, 11, 10, 21, 20, 24, 33],
         [n.bb for n in message.repeated_nested_message])
 
@@ -913,7 +910,6 @@ class MessageTest(unittest.TestCase):
     m = message_module.TestAllTypes()
     with self.assertRaises(pickle.PickleError) as _:
       pickle.dumps(m.repeated_int32, pickle.HIGHEST_PROTOCOL)
-
 
   def testSortEmptyRepeatedCompositeContainer(self, message_module):
     """Exercise a scenario that has led to segfaults in the past.

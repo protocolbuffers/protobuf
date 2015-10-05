@@ -298,16 +298,21 @@ bool IsMap(const google::protobuf::Field& field,
                                  "google.protobuf.MessageOptions.map_entry", false));
 }
 
+bool IsMessageSetWireFormat(const google::protobuf::Type& type) {
+  return GetBoolOptionOrDefault(
+      type.options(), "google.protobuf.MessageOptions.message_set_wire_format", false);
+}
+
 string DoubleAsString(double value) {
-  if (google::protobuf::MathLimits<double>::IsPosInf(value)) return "Infinity";
-  if (google::protobuf::MathLimits<double>::IsNegInf(value)) return "-Infinity";
-  if (google::protobuf::MathLimits<double>::IsNaN(value)) return "NaN";
+  if (MathLimits<double>::IsPosInf(value)) return "Infinity";
+  if (MathLimits<double>::IsNegInf(value)) return "-Infinity";
+  if (MathLimits<double>::IsNaN(value)) return "NaN";
 
   return SimpleDtoa(value);
 }
 
 string FloatAsString(float value) {
-  if (google::protobuf::MathLimits<float>::IsFinite(value)) return SimpleFtoa(value);
+  if (MathLimits<float>::IsFinite(value)) return SimpleFtoa(value);
   return DoubleAsString(value);
 }
 
@@ -318,7 +323,7 @@ bool SafeStrToFloat(StringPiece str, float *value) {
   }
   *value = static_cast<float>(double_value);
 
-  if (google::protobuf::MathLimits<float>::IsInf(*value)) {
+  if (MathLimits<float>::IsInf(*value)) {
     return false;
   }
   return true;

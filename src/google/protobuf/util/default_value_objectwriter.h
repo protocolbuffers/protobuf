@@ -1,53 +1,19 @@
-// Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_DEFAULT_VALUE_OBJECTWRITER_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_DEFAULT_VALUE_OBJECTWRITER_H__
+#ifndef NET_PROTO2_UTIL_CONVERTER_INTERNAL_DEFAULT_VALUE_OBJECTWRITER_H_
+#define NET_PROTO2_UTIL_CONVERTER_INTERNAL_DEFAULT_VALUE_OBJECTWRITER_H_
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <stack>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/util/internal/type_info.h>
-#include <google/protobuf/util/internal/datapiece.h>
-#include <google/protobuf/util/internal/object_writer.h>
-#include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/stubs/stringpiece.h>
+#include "base/macros.h"
+#include "net/proto2/util/converter/internal/type_info.h"
+#include "net/proto2/util/converter/public/datapiece.h"
+#include "net/proto2/util/converter/public/object_writer.h"
+#include "net/proto2/util/converter/public/utility.h"
+#include "net/proto2/util/public/type_resolver.h"
+#include "strings/stringpiece.h"
 
-namespace google {
-namespace protobuf {
+namespace proto2 {
 namespace util {
 namespace converter {
 
@@ -57,8 +23,13 @@ namespace converter {
 // ObjectWriter when EndObject() is called on the root object. It also writes
 // out all non-repeated primitive fields that haven't been explicitly rendered
 // with their default values (0 for numbers, "" for strings, etc).
-class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
+class DefaultValueObjectWriter : public ObjectWriter {
  public:
+#ifndef PROTO2_OPENSOURCE
+  DefaultValueObjectWriter(const TypeInfo& typeinfo,
+                           const google::protobuf::Type& type,
+                           ObjectWriter* ow);
+#endif  // !PROTO2_OPENSOURCE
   DefaultValueObjectWriter(TypeResolver* type_resolver,
                            const google::protobuf::Type& type,
                            ObjectWriter* ow);
@@ -93,8 +64,13 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
 
   virtual DefaultValueObjectWriter* RenderString(StringPiece name,
                                                  StringPiece value);
+#ifdef PROTO2_OPENSOURCE
   virtual DefaultValueObjectWriter* RenderBytes(StringPiece name,
                                                 StringPiece value);
+#else   // PROTO2_OPENSOURCE
+  virtual DefaultValueObjectWriter* RenderCord(StringPiece name,
+                                               const Cord& value);
+#endif  // !PROTO2_OPENSOURCE
 
   virtual DefaultValueObjectWriter* RenderNull(StringPiece name);
 
@@ -110,7 +86,7 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
 
   // "Node" represents a node in the tree that holds the input of
   // DefaultValueObjectWriter.
-  class LIBPROTOBUF_EXPORT Node {
+  class Node {
    public:
     Node(const string& name, const google::protobuf::Type* type, NodeKind kind,
          const DataPiece& data, bool is_placeholder);
@@ -196,7 +172,7 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   void MaybePopulateChildrenOfAny(Node* node);
 
   // Writes the root_ node to ow_ and resets the root_ and current_ pointer to
-  // NULL.
+  // nullptr.
   void WriteRoot();
 
   // Creates a DataPiece containing the default value of the type of the field.
@@ -226,18 +202,17 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   // The current Node. Owned by its parents.
   Node* current_;
   // The root Node.
-  google::protobuf::scoped_ptr<Node> root_;
+  std::unique_ptr<Node> root_;
   // The stack to hold the path of Nodes from current_ to root_;
   std::stack<Node*> stack_;
 
   ObjectWriter* ow_;
 
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DefaultValueObjectWriter);
+  DISALLOW_COPY_AND_ASSIGN(DefaultValueObjectWriter);
 };
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
+}  // namespace proto2
 
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_DEFAULT_VALUE_OBJECTWRITER_H__
+#endif  // NET_PROTO2_UTIL_CONVERTER_INTERNAL_DEFAULT_VALUE_OBJECTWRITER_H_

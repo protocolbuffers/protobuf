@@ -34,7 +34,6 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/util/internal/default_value_objectwriter.h>
-#include <google/protobuf/util/internal/snake2camel_objectwriter.h>
 #include <google/protobuf/util/internal/error_listener.h>
 #include <google/protobuf/util/internal/json_objectwriter.h>
 #include <google/protobuf/util/internal/json_stream_parser.h>
@@ -83,13 +82,12 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
   io::CodedOutputStream out_stream(json_output);
   converter::JsonObjectWriter json_writer(options.add_whitespace ? " " : "",
                                           &out_stream);
-  converter::Snake2CamelObjectWriter snake2camel_writer(&json_writer);
   if (options.always_print_primitive_fields) {
     converter::DefaultValueObjectWriter default_value_writer(
-        resolver, type, &snake2camel_writer);
+        resolver, type, &json_writer);
     return proto_source.WriteTo(&default_value_writer);
   } else {
-    return proto_source.WriteTo(&snake2camel_writer);
+    return proto_source.WriteTo(&json_writer);
   }
 }
 

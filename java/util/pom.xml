@@ -10,7 +10,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java-util</artifactId>
-  <version>3.0.0-beta-1</version>
+  <version>3.0.0-alpha-4-pre</version>
   <packaging>bundle</packaging>
   <name>Protocol Buffer Java API</name>
   <description>
@@ -36,7 +36,7 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>3.0.0-beta-1</version>
+      <version>3.0.0-alpha-4-pre</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -123,7 +123,7 @@
           <instructions>
             <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
             <Bundle-SymbolicName>com.google.protobuf.util</Bundle-SymbolicName>
-            <Export-Package>com.google.protobuf.util;version=3.0.0-beta-1</Export-Package>
+            <Export-Package>com.google.protobuf.util;version=3.0.0-alpha-3</Export-Package>
           </instructions>
         </configuration>
       </plugin>

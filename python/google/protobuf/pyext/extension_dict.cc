@@ -123,7 +123,8 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
   if (descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       PyObject *message_class = cdescriptor_pool::GetMessageClass(
-          GetDescriptorPool(), descriptor->message_type());
+          cmessage::GetDescriptorPoolForMessage(self->parent),
+          descriptor->message_type());
       if (message_class == NULL) {
         return NULL;
       }

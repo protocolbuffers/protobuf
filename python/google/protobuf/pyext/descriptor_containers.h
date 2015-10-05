@@ -54,6 +54,7 @@ bool InitDescriptorMappingTypes();
 
 namespace message_descriptor {
 PyObject* NewMessageFieldsByName(const Descriptor* descriptor);
+PyObject* NewMessageFieldsByCamelcaseName(const Descriptor* descriptor);
 PyObject* NewMessageFieldsByNumber(const Descriptor* descriptor);
 PyObject* NewMessageFieldsSeq(const Descriptor* descriptor);
 

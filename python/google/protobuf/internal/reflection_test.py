@@ -38,14 +38,10 @@ pure-Python protocol compiler.
 import copy
 import gc
 import operator
-import struct
-try:
-  import unittest2 as unittest
-except ImportError:
-  import unittest
-
 import six
+import struct
 
+import unittest
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -1627,7 +1623,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertFalse(proto.IsInitialized(errors))
     self.assertEqual(errors, ['a', 'b', 'c'])
 
-  @unittest.skipIf(
+  @test_util.skipIf(
       api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
       'Errors are only available from the most recent C++ implementation.')
   def testFileDescriptorErrors(self):
@@ -1798,7 +1794,6 @@ class ReflectionTest(unittest.TestCase):
     msg = import_test_package.myproto.Outer()
     # Just check the default value.
     self.assertEqual(57, msg.inner.value)
-
 
 #  Since we had so many tests for protocol buffer equality, we broke these out
 #  into separate TestCase classes.
@@ -2827,7 +2822,7 @@ class OptionsTest(unittest.TestCase):
 
 class ClassAPITest(unittest.TestCase):
 
-  @unittest.skipIf(
+  @test_util.skipIf(
       api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
       'C++ implementation requires a call to MakeDescriptor()')
   def testMakeClassWithNestedDescriptor(self):

@@ -138,9 +138,6 @@ const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
     const google::protobuf::Enum* enum_type, int32 value);
 
 // Converts input to camel-case and returns it.
-// Tests are in wrappers/translator/snake2camel_objectwriter_test.cc
-// TODO(skarvaje): Isolate tests for this function and put them in
-// utility_test.cc
 LIBPROTOBUF_EXPORT string ToCamelCase(const StringPiece input);
 
 // Converts input to snake_case and returns it.
@@ -156,6 +153,9 @@ LIBPROTOBUF_EXPORT bool IsValidBoolString(const string& bool_string);
 // Returns true if "field" is a protobuf map field based on its type.
 LIBPROTOBUF_EXPORT bool IsMap(const google::protobuf::Field& field,
            const google::protobuf::Type& type);
+
+// Returns true if the given type has special MessageSet wire format.
+bool IsMessageSetWireFormat(const google::protobuf::Type& type);
 
 // Infinity/NaN-aware conversion to string.
 LIBPROTOBUF_EXPORT string DoubleAsString(double value);

@@ -946,6 +946,18 @@ bool MessageDifferencer::IsIgnored(
   return false;
 }
 
+bool MessageDifferencer::IsUnknownFieldIgnored(
+    const Message& message1, const Message& message2,
+    const SpecificField& field, const vector<SpecificField>& parent_fields) {
+  for (int i = 0; i < ignore_criteria_.size(); ++i) {
+    if (ignore_criteria_[i]->IsUnknownFieldIgnored(message1, message2, field,
+                                                   parent_fields)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 const MessageDifferencer::MapKeyComparator* MessageDifferencer
     ::GetMapKeyComparator(const FieldDescriptor* field) {
   if (!field->is_repeated()) return NULL;
@@ -1127,15 +1139,6 @@ bool MessageDifferencer::CompareUnknownFields(
       continue;
     }
 
-    if (change_type == ADDITION || change_type == DELETION ||
-        change_type == MODIFICATION) {
-      if (reporter_ == NULL) {
-        // We found a difference and we have no reproter.
-        return false;
-      }
-      is_different = true;
-    }
-
     // Build the SpecificField.  This is slightly complicated.
     SpecificField specific_field;
     specific_field.unknown_field_number = focus_field->number();
@@ -1158,6 +1161,25 @@ bool MessageDifferencer::CompareUnknownFields(
     } else {
       specific_field.index = index1 - current_repeated_start1;
       specific_field.new_index = index2 - current_repeated_start2;
+    }
+
+    if (IsUnknownFieldIgnored(message1, message2, specific_field,
+                              *parent_field)) {
+      if (reporter_ != NULL) {
+        parent_field->push_back(specific_field);
+        reporter_->ReportUnknownFieldIgnored(message1, message2, *parent_field);
+        parent_field->pop_back();
+      }
+      return true;
+    }
+
+    if (change_type == ADDITION || change_type == DELETION ||
+        change_type == MODIFICATION) {
+      if (reporter_ == NULL) {
+        // We found a difference and we have no reproter.
+        return false;
+      }
+      is_different = true;
     }
 
     parent_field->push_back(specific_field);
@@ -1615,6 +1637,18 @@ void MessageDifferencer::StreamReporter::ReportMatched(
 void MessageDifferencer::StreamReporter::ReportIgnored(
     const Message& message1,
     const Message& message2,
+    const vector<SpecificField>& field_path) {
+  printer_->Print("ignored: ");
+  PrintPath(field_path, true);
+  if (CheckPathChanged(field_path)) {
+    printer_->Print(" -> ");
+    PrintPath(field_path, false);
+  }
+  printer_->Print("\n");  // Print for newlines.
+}
+
+void MessageDifferencer::StreamReporter::ReportUnknownFieldIgnored(
+    const Message& message1, const Message& message2,
     const vector<SpecificField>& field_path) {
   printer_->Print("ignored: ");
   PrintPath(field_path, true);

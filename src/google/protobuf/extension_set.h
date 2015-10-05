@@ -724,8 +724,7 @@ class RepeatedPrimitiveTypeTraits {
   static const RepeatedFieldType* GetDefaultRepeatedField();
 };
 
-LIBPROTOBUF_EXPORT extern ProtobufOnceType
-repeated_primitive_generic_type_traits_once_init_;
+extern ProtobufOnceType repeated_primitive_generic_type_traits_once_init_;
 
 class LIBPROTOBUF_EXPORT RepeatedPrimitiveGenericTypeTraits {
  private:
@@ -766,7 +765,7 @@ template<> inline void RepeatedPrimitiveTypeTraits<TYPE>::Add(             \
 }                                                                          \
 template<> inline const RepeatedField<TYPE>*                               \
     RepeatedPrimitiveTypeTraits<TYPE>::GetDefaultRepeatedField() {         \
-  GoogleOnceInit(                                                          \
+  ::google::protobuf::GoogleOnceInit(                                                          \
       &repeated_primitive_generic_type_traits_once_init_,                  \
       &RepeatedPrimitiveGenericTypeTraits::InitializeDefaultRepeatedFields); \
   return RepeatedPrimitiveGenericTypeTraits::                              \
@@ -822,8 +821,7 @@ class LIBPROTOBUF_EXPORT StringTypeTraits {
   }
 };
 
-LIBPROTOBUF_EXPORT extern ProtobufOnceType
-repeated_string_type_traits_once_init_;
+extern ProtobufOnceType repeated_string_type_traits_once_init_;
 
 class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
  public:
@@ -868,7 +866,7 @@ class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
   }
 
   static const RepeatedFieldType* GetDefaultRepeatedField() {
-    GoogleOnceInit(&repeated_string_type_traits_once_init_,
+    ::google::protobuf::GoogleOnceInit(&repeated_string_type_traits_once_init_,
                    &InitializeDefaultRepeatedFields);
     return default_repeated_field_;
   }
@@ -1034,8 +1032,7 @@ class RepeatedMessageTypeTraits {
   static const RepeatedFieldType* GetDefaultRepeatedField();
 };
 
-LIBPROTOBUF_EXPORT extern ProtobufOnceType
-repeated_message_generic_type_traits_once_init_;
+extern ProtobufOnceType repeated_message_generic_type_traits_once_init_;
 
 // This class exists only to hold a generic default empty repeated field for all
 // message-type repeated field extensions.
@@ -1052,7 +1049,7 @@ class LIBPROTOBUF_EXPORT RepeatedMessageGenericTypeTraits {
 template<typename Type> inline
     const typename RepeatedMessageTypeTraits<Type>::RepeatedFieldType*
     RepeatedMessageTypeTraits<Type>::GetDefaultRepeatedField() {
-  GoogleOnceInit(
+  ::google::protobuf::GoogleOnceInit(
       &repeated_message_generic_type_traits_once_init_,
       &RepeatedMessageGenericTypeTraits::InitializeDefaultRepeatedFields);
   return reinterpret_cast<const RepeatedFieldType*>(

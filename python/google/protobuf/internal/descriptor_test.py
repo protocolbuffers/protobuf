@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
@@ -36,19 +36,16 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import sys
 
+import unittest
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import api_implementation
+from google.protobuf.internal import test_util
 from google.protobuf import descriptor
 from google.protobuf import symbol_database
 from google.protobuf import text_format
-
-try:
-  import unittest2 as unittest
-except ImportError:
-  import unittest
 
 
 TEST_EMPTY_MESSAGE_DESCRIPTOR_ASCII = """
@@ -394,7 +391,7 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual(self.my_file.name, 'some/filename/some.proto')
     self.assertEqual(self.my_file.package, 'protobuf_unittest')
 
-  @unittest.skipIf(
+  @test_util.skipIf(
       api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
       'Immutability of descriptors is only enforced in v2 implementation')
   def testImmutableCppDescriptor(self):
@@ -425,10 +422,12 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.CheckDescriptorSequence(message_descriptor.fields)
     self.CheckDescriptorMapping(message_descriptor.fields_by_name)
     self.CheckDescriptorMapping(message_descriptor.fields_by_number)
+    self.CheckDescriptorMapping(message_descriptor.fields_by_camelcase_name)
 
   def CheckFieldDescriptor(self, field_descriptor):
     # Basic properties
     self.assertEqual(field_descriptor.name, 'optional_int32')
+    self.assertEqual(field_descriptor.camelcase_name, 'optionalInt32')
     self.assertEqual(field_descriptor.full_name,
                      'protobuf_unittest.TestAllTypes.optional_int32')
     self.assertEqual(field_descriptor.containing_type.name, 'TestAllTypes')
@@ -436,6 +435,10 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertEqual(field_descriptor, field_descriptor)
     self.assertEqual(
         field_descriptor.containing_type.fields_by_name['optional_int32'],
+        field_descriptor)
+    self.assertEqual(
+        field_descriptor.containing_type.fields_by_camelcase_name[
+            'optionalInt32'],
         field_descriptor)
     self.assertIn(field_descriptor, [field_descriptor])
     self.assertIn(field_descriptor, {field_descriptor: None})
@@ -480,6 +483,9 @@ class GeneratedDescriptorTest(unittest.TestCase):
     message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
     self.CheckMessageDescriptor(message_descriptor)
     field_descriptor = message_descriptor.fields_by_name['optional_int32']
+    self.CheckFieldDescriptor(field_descriptor)
+    field_descriptor = message_descriptor.fields_by_camelcase_name[
+        'optionalInt32']
     self.CheckFieldDescriptor(field_descriptor)
 
   def testCppDescriptorContainer(self):
@@ -778,6 +784,21 @@ class MakeDescriptorTest(unittest.TestCase):
     options = reformed_descriptor.GetOptions()
     self.assertEqual(101,
                       options.Extensions[unittest_custom_options_pb2.msgopt].i)
+
+  def testCamelcaseName(self):
+    descriptor_proto = descriptor_pb2.DescriptorProto()
+    descriptor_proto.name = 'Bar'
+    names = ['foo_foo', 'FooBar', 'fooBaz', 'fooFoo', 'foobar']
+    camelcase_names = ['fooFoo', 'fooBar', 'fooBaz', 'fooFoo', 'foobar']
+    for index in range(len(names)):
+      field = descriptor_proto.field.add()
+      field.number = index + 1
+      field.name = names[index]
+    result = descriptor.MakeDescriptor(descriptor_proto)
+    for index in range(len(camelcase_names)):
+      self.assertEqual(result.fields[index].camelcase_name,
+                       camelcase_names[index])
+
 
 if __name__ == '__main__':
   unittest.main()

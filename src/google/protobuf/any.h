@@ -70,6 +70,7 @@ class LIBPROTOBUF_EXPORT AnyMetadata {
 
 extern const char kAnyFullTypeName[];          // "google.protobuf.Any".
 extern const char kTypeGoogleApisComPrefix[];  // "type.googleapis.com/".
+extern const char kTypeGoogleProdComPrefix[];  // "type.googleprod.com/".
 
 // Get the proto type name from Any::type_url value. For example, passing
 // "type.googleapis.com/rpc.QueryOrigin" will return "rpc.QueryOrigin" in

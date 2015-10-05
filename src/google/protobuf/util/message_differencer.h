@@ -278,6 +278,13 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
         const Message& message2,
         const vector<SpecificField>& field_path) { }
 
+    // Report that an unkown field is ignored. (see comment above).
+    // Note this is a different function since the last SpecificField in field
+    // path has a null field.  This could break existing Reporter.
+    virtual void ReportUnknownFieldIgnored(
+        const Message& message1, const Message& message2,
+        const vector<SpecificField>& field_path) {}
+
    private:
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Reporter);
   };
@@ -317,6 +324,16 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
         const Message& message2,
         const FieldDescriptor* field,
         const vector<SpecificField>& parent_fields) = 0;
+
+    // Returns true if the unknown field should be ignored.
+    // Note: This will be called for unknown fields as well in which case
+    //       field.field will be null.
+    virtual bool IsUnknownFieldIgnored(
+        const Message& message1, const Message& message2,
+        const SpecificField& field,
+        const vector<SpecificField>& parent_fields) {
+      return false;
+    }
   };
 
   // To add a Reporter, construct default here, then use ReportDifferencesTo or
@@ -583,6 +600,10 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
                                const Message& message2,
                                const vector<SpecificField>& field_path);
 
+    virtual void ReportUnknownFieldIgnored(
+        const Message& message1, const Message& message2,
+        const vector<SpecificField>& field_path);
+
    protected:
     // Prints the specified path of fields to the buffer.
     virtual void PrintPath(const vector<SpecificField>& field_path,
@@ -721,6 +742,12 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
       const Message& message2,
       const FieldDescriptor* field,
       const vector<SpecificField>& parent_fields);
+
+  // Returns true if this unknown field is to be ignored when this
+  // MessageDifferencer compares messages.
+  bool IsUnknownFieldIgnored(const Message& message1, const Message& message2,
+                             const SpecificField& field,
+                             const vector<SpecificField>& parent_fields);
 
   // Returns MapKeyComparator* when this field has been configured to
   // be treated as a map.  If not, returns NULL.

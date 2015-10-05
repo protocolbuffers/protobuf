@@ -28,8 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Copyright 2012 Google Inc. All Rights Reserved.
-
 """Provides a factory class for generating dynamic messages.
 
 The easiest way to use this class is if you have access to the FileDescriptor

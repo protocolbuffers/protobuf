@@ -32,27 +32,29 @@
 
 """Tests for google.protobuf.symbol_database."""
 
-try:
-  import unittest2 as unittest
-except ImportError:
-  import unittest
+import unittest
 from google.protobuf import unittest_pb2
+from google.protobuf import descriptor
 from google.protobuf import symbol_database
-
 
 class SymbolDatabaseTest(unittest.TestCase):
 
   def _Database(self):
-    db = symbol_database.SymbolDatabase()
-    # Register representative types from unittest_pb2.
-    db.RegisterFileDescriptor(unittest_pb2.DESCRIPTOR)
-    db.RegisterMessage(unittest_pb2.TestAllTypes)
-    db.RegisterMessage(unittest_pb2.TestAllTypes.NestedMessage)
-    db.RegisterMessage(unittest_pb2.TestAllTypes.OptionalGroup)
-    db.RegisterMessage(unittest_pb2.TestAllTypes.RepeatedGroup)
-    db.RegisterEnumDescriptor(unittest_pb2.ForeignEnum.DESCRIPTOR)
-    db.RegisterEnumDescriptor(unittest_pb2.TestAllTypes.NestedEnum.DESCRIPTOR)
-    return db
+    # TODO(b/17734095): Remove this difference when the C++ implementation
+    # supports multiple databases.
+    if descriptor._USE_C_DESCRIPTORS:
+      return symbol_database.Default()
+    else:
+      db = symbol_database.SymbolDatabase()
+      # Register representative types from unittest_pb2.
+      db.RegisterFileDescriptor(unittest_pb2.DESCRIPTOR)
+      db.RegisterMessage(unittest_pb2.TestAllTypes)
+      db.RegisterMessage(unittest_pb2.TestAllTypes.NestedMessage)
+      db.RegisterMessage(unittest_pb2.TestAllTypes.OptionalGroup)
+      db.RegisterMessage(unittest_pb2.TestAllTypes.RepeatedGroup)
+      db.RegisterEnumDescriptor(unittest_pb2.ForeignEnum.DESCRIPTOR)
+      db.RegisterEnumDescriptor(unittest_pb2.TestAllTypes.NestedEnum.DESCRIPTOR)
+      return db
 
   def testGetPrototype(self):
     instance = self._Database().GetPrototype(

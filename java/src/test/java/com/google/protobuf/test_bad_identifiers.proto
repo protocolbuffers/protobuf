@@ -140,11 +140,11 @@ message TestConflictingFieldNames {
   optional bytes bytes_field_count = 14;
   optional TestMessage message_field_count = 15;
 
-  repeated int32 Int32Field = 21;
-  repeated TestEnum EnumField = 22;
-  repeated string StringField = 23;
-  repeated bytes BytesField = 24;
-  repeated TestMessage MessageField = 25;
+  repeated int32 Int32Field = 21;  // NO_PROTO3
+  repeated TestEnum EnumField = 22;  // NO_PROTO3
+  repeated string StringField = 23;  // NO_PROTO3
+  repeated bytes BytesField = 24;  // NO_PROTO3
+  repeated TestMessage MessageField = 25;  // NO_PROTO3
 
   // This field conflicts with "int32_field" as they both generate
   // the method getInt32FieldList().

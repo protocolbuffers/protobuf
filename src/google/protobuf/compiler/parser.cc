@@ -993,6 +993,9 @@ bool Parser::ParseFieldOptions(FieldDescriptorProto* field,
       // We intentionally pass field_location rather than location here, since
       // the default value is not actually an option.
       DO(ParseDefaultAssignment(field, field_location, containing_file));
+    } else if (LookingAt("json_name")) {
+      // Like default value, this "json_name" is not an actual option.
+      DO(ParseJsonName(field, field_location, containing_file));
     } else {
       DO(ParseOption(field->mutable_options(), location,
                      containing_file, OPTION_ASSIGNMENT));
@@ -1139,6 +1142,28 @@ bool Parser::ParseDefaultAssignment(
 
   return true;
 }
+
+bool Parser::ParseJsonName(
+    FieldDescriptorProto* field,
+    const LocationRecorder& field_location,
+    const FileDescriptorProto* containing_file) {
+  if (field->has_json_name()) {
+    AddError("Already set option \"json_name\".");
+    field->clear_json_name();
+  }
+
+  DO(Consume("json_name"));
+  DO(Consume("="));
+
+  LocationRecorder location(field_location,
+                            FieldDescriptorProto::kJsonNameFieldNumber);
+  location.RecordLegacyLocation(
+      field, DescriptorPool::ErrorCollector::OPTION_VALUE);
+  DO(ConsumeString(field->mutable_json_name(),
+                   "Expected string for JSON name."));
+  return true;
+}
+
 
 bool Parser::ParseOptionNamePart(UninterpretedOption* uninterpreted_option,
                                  const LocationRecorder& part_location,

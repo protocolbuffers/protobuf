@@ -35,11 +35,7 @@
 
 __author__ = 'bohdank@google.com (Bohdan Koval)'
 
-try:
-  import unittest2 as unittest
-except ImportError:
-  import unittest
-
+import unittest
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
@@ -52,7 +48,7 @@ from google.protobuf.internal import type_checkers
 
 
 def SkipIfCppImplementation(func):
-  return unittest.skipIf(
+  return test_util.skipIf(
       api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
       'C++ implementation does not expose unknown fields to Python')(func)
 
@@ -261,6 +257,19 @@ class UnknownEnumValuesTest(unittest.TestCase):
           tag_bytes][0]
         decoder(value, 0, len(value), self.message, result_dict)
     return result_dict[field_descriptor]
+
+  def testUnknownParseMismatchEnumValue(self):
+    just_string = missing_enum_values_pb2.JustString()
+    just_string.dummy = 'blah'
+
+    missing = missing_enum_values_pb2.TestEnumValues()
+    # The parse is invalid, storing the string proto into the set of
+    # unknown fields.
+    missing.ParseFromString(just_string.SerializeToString())
+
+    # Fetching the enum field shouldn't crash, instead returning the
+    # default value.
+    self.assertEqual(missing.optional_nested_enum, 0)
 
   @SkipIfCppImplementation
   def testUnknownEnumValue(self):

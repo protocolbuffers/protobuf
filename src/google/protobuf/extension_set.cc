@@ -34,6 +34,7 @@
 
 #include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -594,20 +595,21 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
     ClearExtension(number);
     return;
   }
+  ::google::protobuf::Arena* message_arena = message->GetArena();
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
     GOOGLE_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
     extension->is_repeated = false;
     extension->is_lazy = false;
-    if (message->GetArena() == arena_) {
+    if (message_arena == arena_) {
       extension->message_value = message;
+    } else if (message_arena == NULL) {
+      extension->message_value = message;
+      arena_->Own(message);  // not NULL because not equal to message_arena
     } else {
       extension->message_value = message->New(arena_);
       extension->message_value->CheckTypeAndMergeFrom(*message);
-      if (message->GetArena() == NULL) {
-        delete message;
-      }
     }
   } else {
     GOOGLE_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
@@ -617,14 +619,14 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
       if (arena_ == NULL) {
         delete extension->message_value;
       }
-      if (message->GetArena() == arena_) {
+      if (message_arena == arena_) {
         extension->message_value = message;
+      } else if (message_arena == NULL) {
+        extension->message_value = message;
+        arena_->Own(message);  // not NULL because not equal to message_arena
       } else {
         extension->message_value = message->New(arena_);
         extension->message_value->CheckTypeAndMergeFrom(*message);
-        if (message->GetArena() == NULL) {
-          delete message;
-        }
       }
     }
   }

@@ -119,6 +119,21 @@ public final class TextFormat {
   }
 
   /**
+   * Generates a human readable form of the field, useful for debugging
+   * and other purposes, with no newline characters.
+   */
+  public static String shortDebugString(final FieldDescriptor field,
+                                        final Object value) {
+    try {
+      final StringBuilder sb = new StringBuilder();
+      SINGLE_LINE_PRINTER.printField(field, value, new TextGenerator(sb));
+      return sb.toString().trim();
+    } catch (IOException e) {
+        throw new IllegalStateException(e);
+    }
+  }
+
+  /**
    * Generates a human readable form of the unknown fields, useful for debugging
    * and other purposes, with no newline characters.
    */

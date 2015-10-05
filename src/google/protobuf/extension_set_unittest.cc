@@ -360,9 +360,8 @@ TEST(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
   unittest::ForeignMessage* foreign_message = new unittest::ForeignMessage();
   message->SetAllocatedExtension(unittest::optional_foreign_message_extension,
                                  foreign_message);
-  // foreign_message is copied underneath, as foreign_message is on heap
-  // and extension_set is on an arena.
-  EXPECT_NE(foreign_message,
+  // foreign_message is now owned by the arena.
+  EXPECT_EQ(foreign_message,
             message->MutableExtension(
                 unittest::optional_foreign_message_extension));
 
