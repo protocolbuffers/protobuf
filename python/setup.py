@@ -148,17 +148,24 @@ class build_py(_build_py):
 if __name__ == '__main__':
   ext_module_list = []
   cpp_impl = '--cpp_implementation'
+  warnings_as_errors = '--warnings_as_errors'
   if cpp_impl in sys.argv:
     sys.argv.remove(cpp_impl)
+    extra_compile_args = ['-Wno-write-strings']
+
+    if warnings_as_errors in sys.argv:
+      extra_compile_args.append('-Werror')
+      sys.argv.remove(warnings_as_errors)
+
     # C++ implementation extension
     ext_module_list.append(
         Extension(
             "google.protobuf.pyext._message",
             glob.glob('google/protobuf/pyext/*.cc'),
-            define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
             include_dirs=[".", "../src"],
             libraries=['protobuf'],
             library_dirs=['../src/.libs'],
+            extra_compile_args=extra_compile_args,
         )
     )
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
