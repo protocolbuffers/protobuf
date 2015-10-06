@@ -82,7 +82,7 @@ public abstract class AbstractMessage extends AbstractMessageLite
     return TextFormat.printToString(this);
   }
 
-  public void writeTo(final CodedOutputStream output) throws IOException {
+  public void writeTo(final Encoder output) throws IOException {
     MessageReflection.writeMessageTo(this, getAllFields(), output, false);
   }
 

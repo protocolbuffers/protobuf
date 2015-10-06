@@ -52,7 +52,7 @@ import java.util.logging.Logger;
  *
  * @author kneton@google.com Kenton Varda
  */
-public final class CodedOutputStream {
+public final class CodedOutputStream implements Encoder {
   
   private static final Logger logger = Logger.getLogger(CodedOutputStream.class.getName());
 

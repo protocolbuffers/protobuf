@@ -219,7 +219,7 @@ public final class CodedInputStream {
    * @return {@code false} if the tag is an endgroup tag, in which case
    *         nothing is skipped.  Otherwise, returns {@code true}.
    */
-  public boolean skipField(final int tag, final CodedOutputStream output)
+  public boolean skipField(final int tag, final Encoder output)
       throws IOException {
     switch (WireFormat.getTagWireType(tag)) {
       case WireFormat.WIRETYPE_VARINT: {
@@ -281,7 +281,7 @@ public final class CodedInputStream {
    * This will read either until EOF or until an endgroup tag,
    * whichever comes first.
    */
-  public void skipMessage(CodedOutputStream output) throws IOException {
+  public void skipMessage(Encoder output) throws IOException {
     while (true) {
       final int tag = readTag();
       if (tag == 0 || !skipField(tag, output)) {

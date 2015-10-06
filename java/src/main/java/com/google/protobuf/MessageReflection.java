@@ -48,7 +48,7 @@ class MessageReflection {
   static void writeMessageTo(
       Message message,
       Map<FieldDescriptor, Object> fields,
-      CodedOutputStream output,
+      Encoder output,
       boolean alwaysWriteRequiredFields)
       throws IOException {
     final boolean isMessageSet =

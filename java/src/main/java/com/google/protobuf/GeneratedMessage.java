@@ -36,15 +36,12 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
-import com.google.protobuf.GeneratedMessageLite.ExtendableMessage;
-import com.google.protobuf.GeneratedMessageLite.GeneratedExtension;
 
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -277,7 +274,7 @@ public abstract class GeneratedMessage extends AbstractMessage
   }
 
   @Override
-  public void writeTo(final CodedOutputStream output) throws IOException {
+  public void writeTo(final Encoder output) throws IOException {
     MessageReflection.writeMessageTo(this, getAllFieldsRaw(), output, false);
   }
 
@@ -880,7 +877,7 @@ public abstract class GeneratedMessage extends AbstractMessage
         this.messageSetWireFormat = messageSetWireFormat;
       }
 
-      public void writeUntil(final int end, final CodedOutputStream output)
+      public void writeUntil(final int end, final Encoder output)
                              throws IOException {
         while (next != null && next.getKey().getNumber() < end) {
           FieldDescriptor descriptor = next.getKey();
@@ -2759,7 +2756,7 @@ public abstract class GeneratedMessage extends AbstractMessage
   }
   
   protected static void writeString(
-      CodedOutputStream output, final int fieldNumber, final Object value) throws IOException {
+      Encoder output, final int fieldNumber, final Object value) throws IOException {
     if (value instanceof String) {
       output.writeString(fieldNumber, (String) value);
     } else {
@@ -2768,7 +2765,7 @@ public abstract class GeneratedMessage extends AbstractMessage
   }
   
   protected static void writeStringNoTag(
-      CodedOutputStream output, final Object value) throws IOException {
+      Encoder output, final Object value) throws IOException {
     if (value instanceof String) {
       output.writeStringNoTag((String) value);
     } else {

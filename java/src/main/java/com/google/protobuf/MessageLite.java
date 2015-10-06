@@ -71,7 +71,7 @@ public interface MessageLite extends MessageLiteOrBuilder {
    * Serializes the message and writes it to {@code output}.  This does not
    * flush or close the stream.
    */
-  void writeTo(CodedOutputStream output) throws IOException;
+  void writeTo(Encoder output) throws IOException;
 
   /**
    * Get the number of bytes required to encode this message.  The result
@@ -91,20 +91,20 @@ public interface MessageLite extends MessageLiteOrBuilder {
   /**
    * Serializes the message to a {@code ByteString} and returns it. This is
    * just a trivial wrapper around
-   * {@link #writeTo(CodedOutputStream)}.
+   * {@link #writeTo(Encoder)}.
    */
   ByteString toByteString();
 
   /**
    * Serializes the message to a {@code byte} array and returns it.  This is
    * just a trivial wrapper around
-   * {@link #writeTo(CodedOutputStream)}.
+   * {@link #writeTo(Encoder)}.
    */
   byte[] toByteArray();
 
   /**
    * Serializes the message and writes it to {@code output}.  This is just a
-   * trivial wrapper around {@link #writeTo(CodedOutputStream)}.  This does
+   * trivial wrapper around {@link #writeTo(Encoder)}.  This does
    * not flush or close the stream.
    * <p>
    * NOTE:  Protocol Buffers are not self-delimiting.  Therefore, if you write

@@ -434,7 +434,7 @@ public abstract class GeneratedMessageLite<
         this.messageSetWireFormat = messageSetWireFormat;
       }
 
-      public void writeUntil(final int end, final CodedOutputStream output)
+      public void writeUntil(final int end, final Encoder output)
                              throws IOException {
         while (next != null && next.getKey().getNumber() < end) {
           ExtensionDescriptor extension = next.getKey();

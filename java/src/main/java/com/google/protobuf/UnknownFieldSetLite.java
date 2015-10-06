@@ -117,7 +117,7 @@ public final class UnknownFieldSetLite {
    *
    * <p>For use by generated code only.
    */
-  public void writeTo(CodedOutputStream output) throws IOException {
+  public void writeTo(Encoder output) throws IOException {
     for (int i = 0; i < count; i++) {
       int tag = tags[i];
       int fieldNumber = WireFormat.getTagFieldNumber(tag);

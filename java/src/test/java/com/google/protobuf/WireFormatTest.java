@@ -562,7 +562,7 @@ public class WireFormatTest extends TestCase {
     // Serialize RawMessageSet unnormally (message value before type id)
     ByteString.CodedBuilder out = ByteString.newCodedBuilder(
         raw.getSerializedSize());
-    CodedOutputStream output = out.getCodedOutput();
+    Encoder output = out.getCodedOutput();
     List<RawMessageSet.Item> items = raw.getItemList();
     for (int i = 0; i < items.size(); i++) {
       RawMessageSet.Item item = items.get(i);

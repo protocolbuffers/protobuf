@@ -563,8 +563,8 @@ final class FieldSet<FieldDescriptorType extends
   }
 
 
-  /** See {@link Message#writeTo(CodedOutputStream)}. */
-  public void writeTo(final CodedOutputStream output)
+  /** See {@link Message#writeTo(Encoder)}. */
+  public void writeTo(final Encoder output)
                       throws IOException {
     for (int i = 0; i < fields.getNumArrayEntries(); i++) {
       final Map.Entry<FieldDescriptorType, Object> entry =
@@ -580,7 +580,7 @@ final class FieldSet<FieldDescriptorType extends
   /**
    * Like {@link #writeTo} but uses MessageSet wire format.
    */
-  public void writeMessageSetTo(final CodedOutputStream output)
+  public void writeMessageSetTo(final Encoder output)
                                 throws IOException {
     for (int i = 0; i < fields.getNumArrayEntries(); i++) {
       writeMessageSetTo(fields.getArrayEntryAt(i), output);
@@ -593,7 +593,7 @@ final class FieldSet<FieldDescriptorType extends
 
   private void writeMessageSetTo(
       final Map.Entry<FieldDescriptorType, Object> entry,
-      final CodedOutputStream output) throws IOException {
+      final Encoder output) throws IOException {
     final FieldDescriptorType descriptor = entry.getKey();
     if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE &&
         !descriptor.isRepeated() && !descriptor.isPacked()) {
@@ -619,7 +619,7 @@ final class FieldSet<FieldDescriptorType extends
    *               {@link Message#getField(Descriptors.FieldDescriptor)} for
    *               this field.
    */
-  private static void writeElement(final CodedOutputStream output,
+  private static void writeElement(final Encoder output,
                                    final WireFormat.FieldType type,
                                    final int number,
                                    final Object value) throws IOException {
@@ -644,7 +644,7 @@ final class FieldSet<FieldDescriptorType extends
    *               this field.
    */
   static void writeElementNoTag(
-      final CodedOutputStream output,
+      final Encoder output,
       final WireFormat.FieldType type,
       final Object value) throws IOException {
     switch (type) {
@@ -691,7 +691,7 @@ final class FieldSet<FieldDescriptorType extends
   /** Write a single field. */
   public static void writeField(final FieldDescriptorLite<?> descriptor,
                                 final Object value,
-                                final CodedOutputStream output)
+                                final Encoder output)
                                 throws IOException {
     WireFormat.FieldType type = descriptor.getLiteType();
     int number = descriptor.getNumber();

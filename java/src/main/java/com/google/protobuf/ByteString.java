@@ -247,6 +247,15 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
+   * Unsafe operation that creates a {@link UnsafeByteString} that directly wraps the given
+   * {@link ByteBuffer}. Any changes to the underlying {@link ByteBuffer} will change the content
+   * of the returned {@link UnsafeByteString}. Use at your own risk.
+   */
+  public static UnsafeByteString unsafeWrapper(ByteBuffer bytes) {
+    return new UnsafeByteString(bytes);
+  }
+
+  /**
    * Encodes {@code text} into a sequence of bytes using the named charset
    * and returns the result as a {@code ByteString}.
    *
@@ -716,6 +725,17 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   public abstract boolean equals(Object o);
 
   /**
+   * Check equality of the substring of given length of this object starting at
+   * zero with another {@code ByteString} substring starting at offset.
+   *
+   * @param other  what to compare a substring in
+   * @param offset offset into other
+   * @param length number of bytes to compare
+   * @return true for equality of substrings, else false.
+   */
+  abstract boolean equalsRange(ByteString other, int offset, int length);
+
+  /**
    * Return a non-zero hashCode depending only on the sequence of bytes
    * in this ByteString.
    *
@@ -1004,7 +1024,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return new LiteralByteString(buffer);
     }
 
-    public CodedOutputStream getCodedOutput() {
+    public Encoder getCodedOutput() {
       return output;
     }
   }

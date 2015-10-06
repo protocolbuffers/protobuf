@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import sun.misc.Unsafe;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -219,7 +221,7 @@ class LiteralByteString extends ByteString {
    * @param length number of bytes to compare
    * @return true for equality of substrings, else false.
    */
-  boolean equalsRange(LiteralByteString other, int offset, int length) {
+  boolean equalsRange(ByteString other, int offset, int length) {
     if (length > other.size()) {
       throw new IllegalArgumentException(
           "Length too large: " + length + size());
@@ -230,17 +232,22 @@ class LiteralByteString extends ByteString {
               other.size());
     }
 
-    byte[] thisBytes = bytes;
-    byte[] otherBytes = other.bytes;
-    int thisLimit = getOffsetIntoBytes() + length;
-    for (int thisIndex = getOffsetIntoBytes(), otherIndex =
-        other.getOffsetIntoBytes() + offset;
-        (thisIndex < thisLimit); ++thisIndex, ++otherIndex) {
-      if (thisBytes[thisIndex] != otherBytes[otherIndex]) {
-        return false;
+    if (other instanceof LiteralByteString) {
+      LiteralByteString lbsOther = (LiteralByteString) other;
+      byte[] thisBytes = bytes;
+      byte[] otherBytes = lbsOther.bytes;
+      int thisLimit = getOffsetIntoBytes() + length;
+      for (int thisIndex = getOffsetIntoBytes(), otherIndex =
+           lbsOther.getOffsetIntoBytes() + offset;
+           (thisIndex < thisLimit); ++thisIndex, ++otherIndex) {
+        if (thisBytes[thisIndex] != otherBytes[otherIndex]) {
+          return false;
+        }
       }
+      return true;
     }
-    return true;
+
+    return other.substring(offset, offset + length).equals(substring(0, length));
   }
 
   /**

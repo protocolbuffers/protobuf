@@ -391,7 +391,7 @@ class RopeByteString extends ByteString {
     List<ByteBuffer> result = new ArrayList<ByteBuffer>();
     PieceIterator pieces = new PieceIterator(this);
     while (pieces.hasNext()) {
-      LiteralByteString byteString = pieces.next();
+      ByteString byteString = pieces.next();
       result.add(byteString.asReadOnlyByteBuffer());
     }
     return result;
@@ -481,6 +481,11 @@ class RopeByteString extends ByteString {
     return equalsFragments(otherByteString);
   }
 
+  @Override
+  boolean equalsRange(ByteString other, int offset, int length) {
+    throw new UnsupportedOperationException();
+  }
+
   /**
    * Determines if this string is equal to another of the same length by
    * iterating over the leaf nodes. On each step of the iteration, the
@@ -492,12 +497,12 @@ class RopeByteString extends ByteString {
    */
   private boolean equalsFragments(ByteString other) {
     int thisOffset = 0;
-    Iterator<LiteralByteString> thisIter = new PieceIterator(this);
-    LiteralByteString thisString = thisIter.next();
+    Iterator<ByteString> thisIter = new PieceIterator(this);
+    ByteString thisString = thisIter.next();
 
     int thatOffset = 0;
-    Iterator<LiteralByteString> thatIter = new PieceIterator(other);
-    LiteralByteString thatString = thatIter.next();
+    Iterator<ByteString> thatIter = new PieceIterator(other);
+    ByteString thatString = thatIter.next();
 
     int pos = 0;
     while (true) {
@@ -714,34 +719,34 @@ class RopeByteString extends ByteString {
    * <p>This iterator is used to implement
    * {@link RopeByteString#equalsFragments(ByteString)}.
    */
-  private static class PieceIterator implements Iterator<LiteralByteString> {
+  private static class PieceIterator implements Iterator<ByteString> {
 
     private final Stack<RopeByteString> breadCrumbs =
         new Stack<RopeByteString>();
-    private LiteralByteString next;
+    private ByteString next;
 
     private PieceIterator(ByteString root) {
       next = getLeafByLeft(root);
     }
 
-    private LiteralByteString getLeafByLeft(ByteString root) {
+    private ByteString getLeafByLeft(ByteString root) {
       ByteString pos = root;
       while (pos instanceof RopeByteString) {
         RopeByteString rbs = (RopeByteString) pos;
         breadCrumbs.push(rbs);
         pos = rbs.left;
       }
-      return (LiteralByteString) pos;
+      return pos;
     }
 
-    private LiteralByteString getNextNonEmptyLeaf() {
+    private ByteString getNextNonEmptyLeaf() {
       while (true) {
         // Almost always, we go through this loop exactly once.  However, if
         // we discover an empty string in the rope, we toss it and try again.
         if (breadCrumbs.isEmpty()) {
           return null;
         } else {
-          LiteralByteString result = getLeafByLeft(breadCrumbs.pop().right);
+          ByteString result = getLeafByLeft(breadCrumbs.pop().right);
           if (!result.isEmpty()) {
             return result;
           }
@@ -758,11 +763,11 @@ class RopeByteString extends ByteString {
      *
      * @return next non-empty LiteralByteString or {@code null}
      */
-    public LiteralByteString next() {
+    public ByteString next() {
       if (next == null) {
         throw new NoSuchElementException();
       }
-      LiteralByteString result = next;
+      ByteString result = next;
       next = getNextNonEmptyLeaf();
       return result;
     }
@@ -835,7 +840,7 @@ class RopeByteString extends ByteString {
     // Iterates through the pieces of the rope
     private PieceIterator pieceIterator;
     // The current piece
-    private LiteralByteString currentPiece;
+    private ByteString currentPiece;
     // The size of the current piece
     private int currentPieceSize;
     // The index of the next byte to read in the current piece

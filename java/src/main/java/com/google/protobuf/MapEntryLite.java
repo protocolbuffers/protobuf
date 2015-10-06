@@ -113,14 +113,14 @@ public class MapEntryLite<K, V> extends AbstractMessageLite {
   }
   
   @Override
-  public void writeTo(CodedOutputStream output) throws IOException {
+  public void writeTo(Encoder output) throws IOException {
     writeField(KEY_FIELD_NUMBER, metadata.keyType, key, output);
     writeField(VALUE_FIELD_NUMBER, metadata.valueType, value, output);
   }
 
   private void writeField(
       int number, WireFormat.FieldType type, Object value,
-      CodedOutputStream output) throws IOException {
+      Encoder output) throws IOException {
     output.writeTag(number, type.getWireType());
     FieldSet.writeElementNoTag(output, type, value);
   }

@@ -32,6 +32,12 @@
       scm:git:https://github.com/google/protobuf.git
     </connection>
   </scm>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -51,18 +57,31 @@
       <version>2.2.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-core</artifactId>
+      <version>1.11.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-generator-annprocess</artifactId>
+      <version>1.11.1</version>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.3</version>
         <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
+          <source>1.6</source>
+          <target>1.6</target>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.18.1</version>
         <configuration>
           <includes>
             <include>**/*Test.java</include>
@@ -304,6 +323,7 @@
                 <include>**/UnmodifiableLazyStringList.java</include>
                 <include>**/Utf8.java</include>
                 <include>**/WireFormat.java</include>
+                <include>**/UnsafeByteString.java</include>
               </includes>
               <testIncludes>
                 <testInclude>**/*Lite.java</testInclude>
@@ -316,6 +336,7 @@
                 <testInclude>**/LongArrayListTest.java</testInclude>
                 <testInclude>**/ProtobufArrayListTest.java</testInclude>
                 <testInclude>**/UnknownFieldSetLiteTest.java</testInclude>
+                <testInclude>**/UnsafeByteStringTest.java</testInclude>
               </testIncludes>
             </configuration>
           </plugin>
