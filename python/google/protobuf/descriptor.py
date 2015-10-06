@@ -28,8 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Copyright 2007 Google Inc. All Rights Reserved.
-
 """Descriptors essentially contain exactly the information found in a .proto
 file, in types that make this information accessible in Python.
 """
@@ -39,7 +37,6 @@ __author__ = 'robinson@google.com (Will Robinson)'
 import six
 
 from google.protobuf.internal import api_implementation
-
 
 _USE_C_DESCRIPTORS = False
 if api_implementation.Type() == 'cpp':
@@ -221,6 +218,9 @@ class Descriptor(_NestedDescriptorBase):
     fields_by_name: (dict str -> FieldDescriptor) Same FieldDescriptor
       objects as in |fields|, but indexed by "name" attribute in each
       FieldDescriptor.
+    fields_by_camelcase_name: (dict str -> FieldDescriptor) Same
+      FieldDescriptor objects as in |fields|, but indexed by
+      "camelcase_name" attribute in each FieldDescriptor.
 
     nested_types: (list of Descriptors) Descriptor references
       for all protocol message types nested within this one.
@@ -292,6 +292,7 @@ class Descriptor(_NestedDescriptorBase):
       field.containing_type = self
     self.fields_by_number = dict((f.number, f) for f in fields)
     self.fields_by_name = dict((f.name, f) for f in fields)
+    self._fields_by_camelcase_name = None
 
     self.nested_types = nested_types
     for nested_type in nested_types:
@@ -316,6 +317,13 @@ class Descriptor(_NestedDescriptorBase):
     for oneof in self.oneofs:
       oneof.containing_type = self
     self.syntax = syntax or "proto2"
+
+  @property
+  def fields_by_camelcase_name(self):
+    if self._fields_by_camelcase_name is None:
+      self._fields_by_camelcase_name = dict(
+          (f.camelcase_name, f) for f in self.fields)
+    return self._fields_by_camelcase_name
 
   def EnumValueName(self, enum, value):
     """Returns the string name of an enum value.
@@ -365,6 +373,7 @@ class FieldDescriptor(DescriptorBase):
     name: (str) Name of this field, exactly as it appears in .proto.
     full_name: (str) Name of this field, including containing scope.  This is
       particularly relevant for extensions.
+    camelcase_name: (str) Camelcase name of this field.
     index: (int) Dense, 0-indexed index giving the order that this
       field textually appears within its message in the .proto file.
     number: (int) Tag number declared for this field in the .proto file.
@@ -509,6 +518,7 @@ class FieldDescriptor(DescriptorBase):
     super(FieldDescriptor, self).__init__(options, 'FieldOptions')
     self.name = name
     self.full_name = full_name
+    self._camelcase_name = None
     self.index = index
     self.number = number
     self.type = type
@@ -529,6 +539,12 @@ class FieldDescriptor(DescriptorBase):
         self._cdescriptor = _message.default_pool.FindFieldByName(full_name)
     else:
       self._cdescriptor = None
+
+  @property
+  def camelcase_name(self):
+    if self._camelcase_name is None:
+      self._camelcase_name = _ToCamelCase(self.name)
+    return self._camelcase_name
 
   @staticmethod
   def ProtoTypeToCppProtoType(proto_type):
@@ -820,6 +836,27 @@ def _ParseOptions(message, string):
   """
   message.ParseFromString(string)
   return message
+
+
+def _ToCamelCase(name):
+  """Converts name to camel-case and returns it."""
+  capitalize_next = False
+  result = []
+
+  for c in name:
+    if c == '_':
+      if result:
+        capitalize_next = True
+    elif capitalize_next:
+      result.append(c.upper())
+      capitalize_next = False
+    else:
+      result += c
+
+  # Lower-case the first letter.
+  if result and result[0].isupper():
+    result[0] = result[0].lower()
+  return ''.join(result)
 
 
 def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,

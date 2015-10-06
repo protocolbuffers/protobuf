@@ -66,7 +66,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
       (*variables)["wrapper"] = "EntryWrapper";
       break;
     case FieldDescriptor::CPPTYPE_ENUM:
-      (*variables)["val_cpp"] = ClassName(val->enum_type(), false);
+      (*variables)["val_cpp"] = ClassName(val->enum_type(), true);
       (*variables)["wrapper"] = "EnumEntryWrapper";
       break;
     default:
@@ -200,7 +200,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
       case FieldDescriptor::CPPTYPE_ENUM:
         printer->Print(variables_,
             "(*mutable_$name$())[entry->key()] =\n"
-            "    static_cast<$val_cpp$>(*entry->mutable_value());\n");
+            "    static_cast< $val_cpp$ >(*entry->mutable_value());\n");
         break;
       default:
         printer->Print(variables_,
@@ -215,7 +215,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
         "  DO_(entry->ParseFromString(data));\n"
         "  if ($val_cpp$_IsValid(*entry->mutable_value())) {\n"
         "    (*mutable_$name$())[entry->key()] =\n"
-        "        static_cast<$val_cpp$>(*entry->mutable_value());\n"
+        "        static_cast< $val_cpp$ >(*entry->mutable_value());\n"
         "  } else {\n");
     if (HasDescriptorMethods(descriptor_->file())) {
       printer->Print(variables_,

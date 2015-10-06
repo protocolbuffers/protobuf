@@ -377,8 +377,8 @@ class TextFormat::Parser::ParserImpl {
     if (internal::GetAnyFieldDescriptors(*message, &any_type_url_field,
                                          &any_value_field) &&
         TryConsume("[")) {
-      string full_type_name;
-      DO(ConsumeAnyTypeUrl(&full_type_name));
+      string full_type_name, prefix;
+      DO(ConsumeAnyTypeUrl(&full_type_name, &prefix));
       DO(Consume("]"));
       string serialized_value;
       DO(ConsumeAnyValue(full_type_name,
@@ -386,7 +386,7 @@ class TextFormat::Parser::ParserImpl {
                          &serialized_value));
       reflection->SetString(
           message, any_type_url_field,
-          string(internal::kTypeGoogleApisComPrefix) + full_type_name);
+          string(prefix + full_type_name));
       reflection->SetString(message, any_value_field, serialized_value);
       return true;
       // Fall through.
@@ -981,7 +981,8 @@ class TextFormat::Parser::ParserImpl {
   }
 
   // Consumes Any::type_url value, of form "type.googleapis.com/full.type.Name"
-  bool ConsumeAnyTypeUrl(string* full_type_name) {
+  // or "type.googleprod.com/full.type.Name"
+  bool ConsumeAnyTypeUrl(string* full_type_name, string* prefix) {
     // TODO(saito) Extend Consume() to consume multiple tokens at once, so that
     // this code can be written as just DO(Consume(kGoogleApisTypePrefix)).
     string url1, url2, url3;
@@ -993,10 +994,12 @@ class TextFormat::Parser::ParserImpl {
     DO(Consume("/"));
     DO(ConsumeFullTypeName(full_type_name));
 
-    const string prefix = url1 + "." + url2 + "." + url3 + "/";
-    if (prefix != internal::kTypeGoogleApisComPrefix) {
+    *prefix = url1 + "." + url2 + "." + url3 + "/";
+    if (*prefix != internal::kTypeGoogleApisComPrefix &&
+        *prefix != internal::kTypeGoogleProdComPrefix) {
       ReportError("TextFormat::Parser for Any supports only "
-                  "type.googleapi.com, but found \"" + prefix + "\"");
+                  "type.googleapis.com and type.googleprod.com, "
+                  "but found \"" + *prefix + "\"");
       return false;
     }
     return true;

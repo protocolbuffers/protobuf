@@ -344,6 +344,7 @@ typedef GPB_ENUM(GPBFieldDescriptorProto_FieldNumber) {
   GPBFieldDescriptorProto_FieldNumber_DefaultValue = 7,
   GPBFieldDescriptorProto_FieldNumber_Options = 8,
   GPBFieldDescriptorProto_FieldNumber_OneofIndex = 9,
+  GPBFieldDescriptorProto_FieldNumber_JsonName = 10,
 };
 
 // Describes a field within a message.
@@ -388,6 +389,13 @@ typedef GPB_ENUM(GPBFieldDescriptorProto_FieldNumber) {
 // list.  This field is a member of that oneof.
 @property(nonatomic, readwrite) BOOL hasOneofIndex;
 @property(nonatomic, readwrite) int32_t oneofIndex;
+
+// JSON name of this field. The value is set by protocol compiler. If the
+// user has set a "json_name" option on this field, that option's value
+// will be used. Otherwise, it's deduced from the field's name by converting
+// it to camelCase.
+@property(nonatomic, readwrite) BOOL hasJsonName;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *jsonName;
 
 @property(nonatomic, readwrite) BOOL hasOptions;
 @property(nonatomic, readwrite, strong, null_resettable) GPBFieldOptions *options;

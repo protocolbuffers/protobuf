@@ -47,7 +47,6 @@
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/status_macros.h>
 
 
@@ -140,6 +139,7 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
                                              const uint32 end_tag,
                                              bool include_start_and_end,
                                              ObjectWriter* ow) const {
+
   const TypeRenderer* type_renderer = FindTypeRenderer(type.name());
   if (type_renderer != NULL) {
     return (*type_renderer)(this, type, name, ow);
@@ -332,10 +332,9 @@ Status ProtoStreamObjectSource::RenderDuration(
   if (seconds < 0) {
     if (nanos > 0) {
       return Status(util::error::INTERNAL,
-                    StrCat(
-                        "Duration nanos is non-negative, but seconds is "
-                        "negative for field: ",
-                        field_name));
+                    StrCat("Duration nanos is non-negative, but seconds is "
+                           "negative for field: ",
+                           field_name));
     }
     sign = "-";
     seconds = -seconds;
@@ -648,6 +647,7 @@ Status ProtoStreamObjectSource::RenderFieldMask(
   return Status::OK;
 }
 
+
 hash_map<string, ProtoStreamObjectSource::TypeRenderer>*
     ProtoStreamObjectSource::renderers_ = NULL;
 GOOGLE_PROTOBUF_DECLARE_ONCE(source_renderers_init_);
@@ -670,13 +670,16 @@ void ProtoStreamObjectSource::InitRendererMap() {
       &ProtoStreamObjectSource::RenderInt32;
   (*renderers_)["google.protobuf.UInt32Value"] =
       &ProtoStreamObjectSource::RenderUInt32;
-  (*renderers_)["google.protobuf.BoolValue"] = &ProtoStreamObjectSource::RenderBool;
+  (*renderers_)["google.protobuf.BoolValue"] =
+      &ProtoStreamObjectSource::RenderBool;
   (*renderers_)["google.protobuf.StringValue"] =
       &ProtoStreamObjectSource::RenderString;
   (*renderers_)["google.protobuf.BytesValue"] =
       &ProtoStreamObjectSource::RenderBytes;
-  (*renderers_)["google.protobuf.Any"] = &ProtoStreamObjectSource::RenderAny;
-  (*renderers_)["google.protobuf.Struct"] = &ProtoStreamObjectSource::RenderStruct;
+  (*renderers_)["google.protobuf.Any"] =
+      &ProtoStreamObjectSource::RenderAny;
+  (*renderers_)["google.protobuf.Struct"] =
+      &ProtoStreamObjectSource::RenderStruct;
   (*renderers_)["google.protobuf.Value"] =
       &ProtoStreamObjectSource::RenderStructValue;
   (*renderers_)["google.protobuf.ListValue"] =
@@ -835,6 +838,7 @@ Status ProtoStreamObjectSource::RenderField(
                       StrCat("Invalid configuration. Could not find the type: ",
                              field->type_url()));
       }
+
       RETURN_IF_ERROR(WriteMessage(*type, field_name, 0, true, ow));
       if (!stream_->ConsumedEntireMessage()) {
         return Status(util::error::INVALID_ARGUMENT,
@@ -988,7 +992,7 @@ std::pair<int64, int32> ProtoStreamObjectSource::ReadSecondsAndNanos(
   uint32 nanos = 0;
   uint32 tag = 0;
   int64 signed_seconds = 0;
-  int64 signed_nanos = 0;
+  int32 signed_nanos = 0;
 
   for (tag = stream_->ReadTag(); tag != 0; tag = stream_->ReadTag()) {
     const google::protobuf::Field* field = FindAndVerifyField(type, tag);

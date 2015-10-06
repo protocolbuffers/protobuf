@@ -452,6 +452,20 @@ TEST_F(ParseMessageTest, FieldDefaults) {
 #undef ETC
 }
 
+TEST_F(ParseMessageTest, FieldJsonName) {
+  ExpectParsesTo(
+    "message TestMessage {\n"
+    "  optional string foo = 1 [json_name = \"@type\"];\n"
+    "}\n",
+    "message_type {"
+    "  name: \"TestMessage\""
+    "  field {\n"
+    "    name: \"foo\" label: LABEL_OPTIONAL type: TYPE_STRING number: 1"
+    "    json_name: \"@type\"\n"
+    "  }\n"
+    "}\n");
+}
+
 TEST_F(ParseMessageTest, FieldOptions) {
   ExpectParsesTo(
     "message TestMessage {\n"
@@ -1124,6 +1138,22 @@ TEST_F(ParseErrorTest, DefaultValueTooLarge) {
     "4:36: Integer out of range.\n"
     "5:36: Integer out of range.\n"
     "6:36: Integer out of range.\n");
+}
+
+TEST_F(ParseErrorTest, JsonNameNotString) {
+  ExpectHasErrors(
+    "message TestMessage {\n"
+    "  optional string foo = 1 [json_name=1];\n"
+    "}\n",
+    "1:37: Expected string for JSON name.\n");
+}
+
+TEST_F(ParseErrorTest, DuplicateJsonName) {
+  ExpectHasErrors(
+    "message TestMessage {\n"
+    "  optional uint32 foo = 1 [json_name=\"a\",json_name=\"b\"];\n"
+    "}\n",
+    "1:41: Already set option \"json_name\".\n");
 }
 
 TEST_F(ParseErrorTest, EnumValueOutOfRange) {

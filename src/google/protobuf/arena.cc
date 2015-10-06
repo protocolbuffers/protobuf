@@ -38,16 +38,16 @@ namespace google {
 namespace protobuf {
 
 google::protobuf::internal::SequenceNumber Arena::lifecycle_id_generator_;
-#ifdef PROTOBUF_USE_DLLS
-Arena::ThreadCache& Arena::thread_cache() {
-  static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_ = { -1, NULL };
-  return thread_cache_;
-}
-#elif defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
+#if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
 Arena::ThreadCache& Arena::thread_cache() {
   static internal::ThreadLocalStorage<ThreadCache>* thread_cache_ =
       new internal::ThreadLocalStorage<ThreadCache>();
   return *thread_cache_->Get();
+}
+#elif defined(PROTOBUF_USE_DLLS)
+Arena::ThreadCache& Arena::thread_cache() {
+  static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_ = { -1, NULL };
+  return thread_cache_;
 }
 #else
 GOOGLE_THREAD_LOCAL Arena::ThreadCache Arena::thread_cache_ = { -1, NULL };

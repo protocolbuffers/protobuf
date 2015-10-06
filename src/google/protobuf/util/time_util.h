@@ -41,7 +41,6 @@
 #endif
 
 #include <google/protobuf/duration.pb.h>
-#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/timestamp.pb.h>
 
 namespace google {
@@ -243,10 +242,8 @@ inline ostream& operator<<(ostream& out, const Duration& d) {
 // Overloaded operators for Timestamp
 //
 // Assignement operators.
-LIBPROTOBUF_EXPORT
-Timestamp& operator+=(Timestamp& t, const Duration& d);  // NOLINT
-LIBPROTOBUF_EXPORT
-Timestamp& operator-=(Timestamp& t, const Duration& d);  // NOLINT
+LIBPROTOBUF_EXPORT Timestamp& operator+=(Timestamp& t, const Duration& d);  // NOLINT
+LIBPROTOBUF_EXPORT Timestamp& operator-=(Timestamp& t, const Duration& d);  // NOLINT
 // Relational operators.
 inline bool operator<(const Timestamp& t1, const Timestamp& t2) {
   if (t1.seconds() == t2.seconds()) {

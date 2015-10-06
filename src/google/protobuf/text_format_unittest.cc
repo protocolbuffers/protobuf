@@ -37,6 +37,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include <limits>
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -931,7 +935,7 @@ class TextFormatParserTest : public testing::Test {
  protected:
   void ExpectFailure(const string& input, const string& message, int line,
                      int col) {
-    scoped_ptr<unittest::TestAllTypes> proto(new unittest::TestAllTypes);
+    google::protobuf::scoped_ptr<unittest::TestAllTypes> proto(new unittest::TestAllTypes);
     ExpectFailure(input, message, line, col, proto.get());
   }
 
@@ -992,7 +996,7 @@ class TextFormatParserTest : public testing::Test {
 };
 
 TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
-  scoped_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
+  google::protobuf::scoped_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
   const Descriptor* d = message->GetDescriptor();
 
   string stringData =
@@ -1057,7 +1061,7 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
 }
 
 TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
-  scoped_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
+  google::protobuf::scoped_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
   const Descriptor* d = message->GetDescriptor();
 
 #define EXPECT_FIELD(name, value, valuestring) \

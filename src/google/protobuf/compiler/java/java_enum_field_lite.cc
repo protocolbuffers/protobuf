@@ -299,7 +299,7 @@ GenerateParsingCode(io::Printer* printer) const {
       "if (value == null) {\n");
     if (PreserveUnknownFields(descriptor_->containing_type())) {
       printer->Print(variables_,
-        "  unknownFields.mergeVarintField($number$, rawValue);\n");
+        "  super.mergeVarintField($number$, rawValue);\n");
     }
     printer->Print(variables_,
       "} else {\n"
@@ -492,7 +492,7 @@ GenerateParsingCode(io::Printer* printer) const {
       "if (value == null) {\n");
     if (PreserveUnknownFields(descriptor_->containing_type())) {
       printer->Print(variables_,
-        "  unknownFields.mergeVarintField($number$, rawValue);\n");
+        "  super.mergeVarintField($number$, rawValue);\n");
     }
     printer->Print(variables_,
       "} else {\n"
@@ -850,7 +850,7 @@ GenerateParsingCode(io::Printer* printer) const {
         "if (value == null) {\n");
     if (PreserveUnknownFields(descriptor_->containing_type())) {
       printer->Print(variables_,
-        "  unknownFields.mergeVarintField($number$, rawValue);\n");
+        "  super.mergeVarintField($number$, rawValue);\n");
     }
     printer->Print(variables_,
       "} else {\n"

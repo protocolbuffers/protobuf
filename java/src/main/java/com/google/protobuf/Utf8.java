@@ -360,8 +360,8 @@ final class Utf8 {
   
   static class UnpairedSurrogateException extends IllegalArgumentException {
     
-    private UnpairedSurrogateException(int index) {
-      super("Unpaired surrogate at index " + index);
+    private UnpairedSurrogateException(int index, int length) {
+      super("Unpaired surrogate at index " + index + " of " + length);
     }
   }
   
@@ -417,7 +417,7 @@ final class Utf8 {
           // Check that we have a well-formed surrogate pair.
           int cp = Character.codePointAt(sequence, i);
           if (cp < Character.MIN_SUPPLEMENTARY_CODE_POINT) {
-            throw new UnpairedSurrogateException(i);
+            throw new UnpairedSurrogateException(i, utf16Length);
           }
           i++;
         }
@@ -457,7 +457,7 @@ final class Utf8 {
         final char low;
         if (i + 1 == sequence.length()
                 || !Character.isSurrogatePair(c, (low = sequence.charAt(++i)))) {
-          throw new UnpairedSurrogateException((i - 1));
+          throw new UnpairedSurrogateException((i - 1), utf16Length);
         }
         int codePoint = Character.toCodePoint(c, low);
         bytes[j++] = (byte) ((0xF << 4) | (codePoint >>> 18));
@@ -470,7 +470,7 @@ final class Utf8 {
         if ((Character.MIN_SURROGATE <= c && c <= Character.MAX_SURROGATE)
             && (i + 1 == sequence.length()
                 || !Character.isSurrogatePair(c, sequence.charAt(i + 1)))) {
-          throw new UnpairedSurrogateException(i);
+          throw new UnpairedSurrogateException(i, utf16Length);
         }
         throw new ArrayIndexOutOfBoundsException("Failed writing " + c + " at index " + j);
       }

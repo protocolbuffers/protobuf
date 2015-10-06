@@ -35,11 +35,11 @@
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import os
+
 try:
   import unittest2 as unittest
 except ImportError:
   import unittest
-
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import api_implementation
@@ -47,6 +47,7 @@ from google.protobuf.internal import descriptor_pool_test1_pb2
 from google.protobuf.internal import descriptor_pool_test2_pb2
 from google.protobuf.internal import factory_test1_pb2
 from google.protobuf.internal import factory_test2_pb2
+from google.protobuf.internal import test_util
 from google.protobuf import descriptor
 from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool

@@ -350,7 +350,7 @@ void CollectMapInfo(const Descriptor* descriptor,
       (*variables)["val"] = FieldMessageTypeName(val);
       break;
     case FieldDescriptor::CPPTYPE_ENUM:
-      (*variables)["val"] = ClassName(val->enum_type(), false);
+      (*variables)["val"] = ClassName(val->enum_type(), true);
       break;
     default:
       (*variables)["val"] = PrimitiveTypeName(val->cpp_type());

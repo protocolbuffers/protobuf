@@ -36,6 +36,7 @@
 #include <vector>
 
 #include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/stubs/hash.h>
 #include <gtest/gtest.h>
 
 namespace google {
@@ -743,6 +744,23 @@ TEST(StringPiece, Comparisons2) {
   EXPECT_TRUE(abc.ends_with(abc));
   EXPECT_TRUE(!abc.ends_with("abcdefguvwxyz"));
   EXPECT_TRUE(abc.ends_with("nopqrstuvwxyz"));
+}
+
+TEST(StringPiece, HashFunction) {
+  hash_set<StringPiece> set;
+
+  set.insert(StringPiece("hello"));
+  EXPECT_EQ(1, set.size());
+
+  // Insert a StringPiece of the same value again and should NOT increment
+  // size of the set.
+  set.insert(StringPiece("hello"));
+  EXPECT_EQ(1, set.size());
+
+  // Insert a StringPiece with different value and check that size of the set
+  // has been increment by one.
+  set.insert(StringPiece("world"));
+  EXPECT_EQ(2, set.size());
 }
 
 TEST(ComparisonOpsTest, StringCompareNotAmbiguous) {

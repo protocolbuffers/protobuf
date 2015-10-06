@@ -33,13 +33,13 @@
 #include <functional>
 #include <stack>
 
+#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/time.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/util/internal/field_mask_utility.h>
 #include <google/protobuf/util/internal/object_location_tracker.h>
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/statusor.h>
@@ -397,8 +397,8 @@ void ProtoStreamObjectWriter::AnyWriter::RenderDataPiece(
     const TypeRenderer* type_renderer =
         FindTypeRenderer(GetFullTypeWithUrl(ow_->master_type_.name()));
     if (type_renderer) {
-      // TODO(rikka): Don't just ignore the util::Status object!
-      (*type_renderer)(ow_.get(), value);
+      Status status = (*type_renderer)(ow_.get(), value);
+      if (!status.ok()) ow_->InvalidValue("Any", status.error_message());
     } else {
       ow_->RenderDataPiece(name, value);
     }
@@ -600,6 +600,11 @@ void ProtoStreamObjectWriter::ProtoElement::TakeOneofIndex(int32 index) {
   InsertIfNotPresent(&oneof_indices_, index);
 }
 
+bool ProtoStreamObjectWriter::ProtoElement::InsertMapKeyIfNotPresent(
+    StringPiece map_key) {
+  return InsertIfNotPresent(&map_keys_, map_key);
+}
+
 inline void ProtoStreamObjectWriter::InvalidName(StringPiece unknown_name,
                                                  StringPiece message) {
   listener_->InvalidName(location(), ToSnakeCase(unknown_name), message);
@@ -643,6 +648,11 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     return this;
   } else if (element_ != NULL &&
              (element_->IsMap() || element_->IsStructMap())) {
+    if (!ValidMapKey(name)) {
+      ++invalid_depth_;
+      return this;
+    }
+
     field = StartMapEntry(name);
     if (element_->IsStructMapEntry()) {
       // If the top element is a map entry, this means we are starting another
@@ -698,7 +708,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     element_.reset(
         new ProtoElement(element_.release(), field, *type, ProtoElement::MAP));
   } else {
-    WriteTag(*field);
+      WriteTag(*field);
     element_.reset(new ProtoElement(element_.release(), field, *type,
                                     ProtoElement::MESSAGE));
   }
@@ -863,6 +873,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::EndObject() {
   // struct.
   SkipElements();
 
+
   // If ending the root element,
   // then serialize the full message with calculated sizes.
   if (element_ == NULL) {
@@ -914,6 +925,11 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(StringPiece name) {
   // Check if we need to start a map. This can heppen when there is either a map
   // or a struct type within a list.
   if (element_->IsMap() || element_->IsStructMap()) {
+    if (!ValidMapKey(name)) {
+      ++invalid_depth_;
+      return this;
+    }
+
     field = StartMapEntry(name);
     if (field == NULL) return this;
 
@@ -969,7 +985,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(StringPiece name) {
                                       ProtoElement::MESSAGE));
       InvalidValue("Map", "Cannot bind a list to map.");
       ++invalid_depth_;
-      element_->pop();
+      element_.reset(element_->pop());
       return this;
     }
 
@@ -1188,6 +1204,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
     type_url = GetFullTypeWithUrl(master_type_.name());
   } else {
     if (element_->IsMap() || element_->IsStructMap()) {
+      if (!ValidMapKey(name)) return this;
       is_map_entry = true;
       field = StartMapEntry(name);
     } else {
@@ -1462,6 +1479,19 @@ bool ProtoStreamObjectWriter::ValidOneof(const google::protobuf::Field& field,
   return true;
 }
 
+bool ProtoStreamObjectWriter::ValidMapKey(StringPiece unnormalized_name) {
+  if (element_ == NULL) return true;
+
+  if (!element_->InsertMapKeyIfNotPresent(unnormalized_name)) {
+    InvalidName(
+        unnormalized_name,
+        StrCat("Repeated map key: '", unnormalized_name, "' is already set."));
+    return false;
+  }
+
+  return true;
+}
+
 const google::protobuf::Field* ProtoStreamObjectWriter::BeginNamed(
     StringPiece name, bool is_list) {
   if (invalid_depth_ > 0) {
@@ -1613,6 +1643,7 @@ void ProtoStreamObjectWriter::WriteTag(const google::protobuf::Field& field) {
       static_cast<WireFormatLite::FieldType>(field.kind()));
   stream_->WriteTag(WireFormatLite::MakeTag(field.number(), wire_type));
 }
+
 
 }  // namespace converter
 }  // namespace util

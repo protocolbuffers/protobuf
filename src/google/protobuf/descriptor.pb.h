@@ -1133,6 +1133,18 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   ::google::protobuf::int32 oneof_index() const;
   void set_oneof_index(::google::protobuf::int32 value);
 
+  // optional string json_name = 10;
+  bool has_json_name() const;
+  void clear_json_name();
+  static const int kJsonNameFieldNumber = 10;
+  const ::std::string& json_name() const;
+  void set_json_name(const ::std::string& value);
+  void set_json_name(const char* value);
+  void set_json_name(const char* value, size_t size);
+  ::std::string* mutable_json_name();
+  ::std::string* release_json_name();
+  void set_allocated_json_name(::std::string* json_name);
+
   // optional .google.protobuf.FieldOptions options = 8;
   bool has_options() const;
   void clear_options();
@@ -1160,6 +1172,8 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   inline void clear_has_default_value();
   inline void set_has_oneof_index();
   inline void clear_has_oneof_index();
+  inline void set_has_json_name();
+  inline void clear_has_json_name();
   inline void set_has_options();
   inline void clear_has_options();
 
@@ -1174,6 +1188,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   int type_;
   ::google::protobuf::int32 oneof_index_;
   ::google::protobuf::internal::ArenaStringPtr default_value_;
+  ::google::protobuf::internal::ArenaStringPtr json_name_;
   ::google::protobuf::FieldOptions* options_;
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
@@ -4678,15 +4693,68 @@ inline void FieldDescriptorProto::set_oneof_index(::google::protobuf::int32 valu
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.oneof_index)
 }
 
-// optional .google.protobuf.FieldOptions options = 8;
-inline bool FieldDescriptorProto::has_options() const {
+// optional string json_name = 10;
+inline bool FieldDescriptorProto::has_json_name() const {
   return (_has_bits_[0] & 0x00000100u) != 0;
 }
-inline void FieldDescriptorProto::set_has_options() {
+inline void FieldDescriptorProto::set_has_json_name() {
   _has_bits_[0] |= 0x00000100u;
 }
-inline void FieldDescriptorProto::clear_has_options() {
+inline void FieldDescriptorProto::clear_has_json_name() {
   _has_bits_[0] &= ~0x00000100u;
+}
+inline void FieldDescriptorProto::clear_json_name() {
+  json_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_json_name();
+}
+inline const ::std::string& FieldDescriptorProto::json_name() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.json_name)
+  return json_name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void FieldDescriptorProto::set_json_name(const ::std::string& value) {
+  set_has_json_name();
+  json_name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.json_name)
+}
+inline void FieldDescriptorProto::set_json_name(const char* value) {
+  set_has_json_name();
+  json_name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.FieldDescriptorProto.json_name)
+}
+inline void FieldDescriptorProto::set_json_name(const char* value, size_t size) {
+  set_has_json_name();
+  json_name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldDescriptorProto.json_name)
+}
+inline ::std::string* FieldDescriptorProto::mutable_json_name() {
+  set_has_json_name();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.json_name)
+  return json_name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* FieldDescriptorProto::release_json_name() {
+  clear_has_json_name();
+  return json_name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void FieldDescriptorProto::set_allocated_json_name(::std::string* json_name) {
+  if (json_name != NULL) {
+    set_has_json_name();
+  } else {
+    clear_has_json_name();
+  }
+  json_name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), json_name);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.json_name)
+}
+
+// optional .google.protobuf.FieldOptions options = 8;
+inline bool FieldDescriptorProto::has_options() const {
+  return (_has_bits_[0] & 0x00000200u) != 0;
+}
+inline void FieldDescriptorProto::set_has_options() {
+  _has_bits_[0] |= 0x00000200u;
+}
+inline void FieldDescriptorProto::clear_has_options() {
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void FieldDescriptorProto::clear_options() {
   if (options_ != NULL) options_->::google::protobuf::FieldOptions::Clear();

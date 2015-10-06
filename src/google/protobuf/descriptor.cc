@@ -34,6 +34,10 @@
 
 #include <google/protobuf/stubs/hash.h>
 #include <map>
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 #include <set>
 #include <string>
 #include <vector>
@@ -1726,6 +1730,20 @@ void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
   }
 }
 
+void FileDescriptor::CopyJsonNameTo(FileDescriptorProto* proto) const {
+  if (message_type_count() != proto->message_type_size() ||
+      extension_count() != proto->extension_size()) {
+    GOOGLE_LOG(ERROR) << "Cannot copy json_name to a proto of a different size.";
+    return;
+  }
+  for (int i = 0; i < message_type_count(); i++) {
+    message_type(i)->CopyJsonNameTo(proto->mutable_message_type(i));
+  }
+  for (int i = 0; i < extension_count(); i++) {
+    extension(i)->CopyJsonNameTo(proto->mutable_extension(i));
+  }
+}
+
 void FileDescriptor::CopySourceCodeInfoTo(FileDescriptorProto* proto) const {
   if (source_code_info_ &&
       source_code_info_ != &SourceCodeInfo::default_instance()) {
@@ -1770,9 +1788,30 @@ void Descriptor::CopyTo(DescriptorProto* proto) const {
   }
 }
 
+void Descriptor::CopyJsonNameTo(DescriptorProto* proto) const {
+  if (field_count() != proto->field_size() ||
+      nested_type_count() != proto->nested_type_size() ||
+      extension_count() != proto->extension_size()) {
+    GOOGLE_LOG(ERROR) << "Cannot copy json_name to a proto of a different size.";
+    return;
+  }
+  for (int i = 0; i < field_count(); i++) {
+    field(i)->CopyJsonNameTo(proto->mutable_field(i));
+  }
+  for (int i = 0; i < nested_type_count(); i++) {
+    nested_type(i)->CopyJsonNameTo(proto->mutable_nested_type(i));
+  }
+  for (int i = 0; i < extension_count(); i++) {
+    extension(i)->CopyJsonNameTo(proto->mutable_extension(i));
+  }
+}
+
 void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
   proto->set_name(name());
   proto->set_number(number());
+  if (has_json_name_) {
+    proto->set_json_name(json_name());
+  }
 
   // Some compilers do not allow static_cast directly between two enum types,
   // so we must cast to int first.
@@ -1817,6 +1856,10 @@ void FieldDescriptor::CopyTo(FieldDescriptorProto* proto) const {
   if (&options() != &FieldOptions::default_instance()) {
     proto->mutable_options()->CopyFrom(options());
   }
+}
+
+void FieldDescriptor::CopyJsonNameTo(FieldDescriptorProto* proto) const {
+  proto->set_json_name(json_name());
 }
 
 void OneofDescriptor::CopyTo(OneofDescriptorProto* proto) const {
@@ -4136,6 +4179,14 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
       tables_->AllocateString(ToCamelCase(proto.name(),
                                           /* lower_first = */ true));
 
+  if (proto.has_json_name()) {
+    result->has_json_name_ = true;
+    result->json_name_ = tables_->AllocateString(proto.json_name());
+  } else {
+    result->has_json_name_ = false;
+    result->json_name_ = result->camelcase_name_;
+  }
+
   // Some compilers do not allow static_cast directly between two enum types,
   // so we must cast to int first.
   result->type_  = static_cast<FieldDescriptor::Type>(
@@ -5040,6 +5091,20 @@ void DescriptorBuilder::ValidateProto3(
   }
 }
 
+static string ToLowercaseWithoutUnderscores(const string& name) {
+  string result;
+  for (int i = 0; i < name.size(); ++i) {
+    if (name[i] != '_') {
+      if (name[i] >= 'A' && name[i] <= 'Z') {
+        result.push_back(name[i] - 'A' + 'a');
+      } else {
+        result.push_back(name[i]);
+      }
+    }
+  }
+  return result;
+}
+
 void DescriptorBuilder::ValidateProto3Message(
     Descriptor* message, const DescriptorProto& proto) {
   for (int i = 0; i < message->nested_type_count(); ++i) {
@@ -5066,6 +5131,25 @@ void DescriptorBuilder::ValidateProto3Message(
     AddError(message->full_name(), proto,
              DescriptorPool::ErrorCollector::OTHER,
              "MessageSet is not supported in proto3.");
+  }
+
+  // In proto3, we reject field names if they conflict in camelCase.
+  // Note that we currently enforce a stricter rule: Field names must be
+  // unique after being converted to lowercase with underscores removed.
+  map<string, const FieldDescriptor*> name_to_field;
+  for (int i = 0; i < message->field_count(); ++i) {
+    string lowercase_name = ToLowercaseWithoutUnderscores(
+        message->field(i)->name());
+    if (name_to_field.find(lowercase_name) != name_to_field.end()) {
+      AddError(message->full_name(), proto,
+               DescriptorPool::ErrorCollector::OTHER,
+               "The JSON camcel-case name of field \"" +
+               message->field(i)->name() + "\" conflicts with field \"" +
+               name_to_field[lowercase_name]->name() + "\". This is not " +
+               "allowed in proto3.");
+    } else {
+      name_to_field[lowercase_name] = message->field(i);
+    }
   }
 }
 
@@ -5602,7 +5686,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
 
   // First set the value on the UnknownFieldSet corresponding to the
   // innermost message.
-  scoped_ptr<UnknownFieldSet> unknown_fields(new UnknownFieldSet());
+  google::protobuf::scoped_ptr<UnknownFieldSet> unknown_fields(new UnknownFieldSet());
   if (!SetOptionValue(field, unknown_fields.get())) {
     return false;  // SetOptionValue() already added the error.
   }
@@ -5612,7 +5696,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   for (vector<const FieldDescriptor*>::reverse_iterator iter =
            intermediate_fields.rbegin();
        iter != intermediate_fields.rend(); ++iter) {
-    scoped_ptr<UnknownFieldSet> parent_unknown_fields(new UnknownFieldSet());
+    google::protobuf::scoped_ptr<UnknownFieldSet> parent_unknown_fields(
+        new UnknownFieldSet());
     switch ((*iter)->type()) {
       case FieldDescriptor::TYPE_MESSAGE: {
         io::StringOutputStream outstr(
@@ -5998,7 +6083,7 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
   }
 
   const Descriptor* type = option_field->message_type();
-  scoped_ptr<Message> dynamic(dynamic_factory_.GetPrototype(type)->New());
+  google::protobuf::scoped_ptr<Message> dynamic(dynamic_factory_.GetPrototype(type)->New());
   GOOGLE_CHECK(dynamic.get() != NULL)
       << "Could not create an instance of " << option_field->DebugString();
 

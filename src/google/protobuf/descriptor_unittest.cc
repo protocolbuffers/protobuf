@@ -34,6 +34,10 @@
 //
 // This file makes extensive use of RFC 3092.  :)
 
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 #include <vector>
 
 #include <google/protobuf/compiler/importer.h>
@@ -461,6 +465,16 @@ class DescriptorTest : public testing::Test {
     //     map<int32, int32> map_int32_int32 = 1;
     //   }
     //
+    //   // in "json.proto"
+    //   message TestMessage4 {
+    //     optional int32 field_name1 = 1;
+    //     optional int32 fieldName2 = 2;
+    //     optional int32 FieldName3 = 3;
+    //     optional int32 _field_name4 = 4;
+    //     optional int32 FIELD_NAME5 = 5;
+    //     optional int32 field_name6 = 6 [json_name = "@type"];
+    //   }
+    //
     // We cheat and use TestForeign as the type for qux rather than create
     // an actual nested type.
     //
@@ -526,6 +540,30 @@ class DescriptorTest : public testing::Test {
              FieldDescriptorProto::TYPE_MESSAGE)
         ->set_type_name("MapInt32Int32Entry");
 
+    FileDescriptorProto json_file;
+    json_file.set_name("json.proto");
+    json_file.set_syntax("proto3");
+    DescriptorProto* message4 = AddMessage(&json_file, "TestMessage4");
+    AddField(message4, "field_name1", 1,
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    AddField(message4, "fieldName2", 2,
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    AddField(message4, "FieldName3", 3,
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    AddField(message4, "_field_name4", 4,
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    AddField(message4, "FIELD_NAME5", 5,
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32);
+    AddField(message4, "field_name6", 6,
+             FieldDescriptorProto::LABEL_OPTIONAL,
+             FieldDescriptorProto::TYPE_INT32)
+        ->set_json_name("@type");
+
     // Build the descriptors and get the pointers.
     foo_file_ = pool_.BuildFile(foo_file);
     ASSERT_TRUE(foo_file_ != NULL);
@@ -535,6 +573,9 @@ class DescriptorTest : public testing::Test {
 
     map_file_ = pool_.BuildFile(map_file);
     ASSERT_TRUE(map_file_ != NULL);
+
+    json_file_ = pool_.BuildFile(json_file);
+    ASSERT_TRUE(json_file_ != NULL);
 
     ASSERT_EQ(1, foo_file_->enum_type_count());
     enum_ = foo_file_->enum_type(0);
@@ -562,6 +603,14 @@ class DescriptorTest : public testing::Test {
 
     ASSERT_EQ(1, message3_->field_count());
     map_  = message3_->field(0);
+
+    ASSERT_EQ(1, json_file_->message_type_count());
+    message4_ = json_file_->message_type(0);
+  }
+
+  void CopyWithJsonName(const Descriptor* message, DescriptorProto* proto) {
+    message->CopyTo(proto);
+    message->CopyJsonNameTo(proto);
   }
 
   DescriptorPool pool_;
@@ -569,10 +618,12 @@ class DescriptorTest : public testing::Test {
   const FileDescriptor* foo_file_;
   const FileDescriptor* bar_file_;
   const FileDescriptor* map_file_;
+  const FileDescriptor* json_file_;
 
   const Descriptor* message_;
   const Descriptor* message2_;
   const Descriptor* message3_;
+  const Descriptor* message4_;
   const Descriptor* foreign_;
   const EnumDescriptor* enum_;
 
@@ -662,6 +713,35 @@ TEST_F(DescriptorTest, FieldFullName) {
   EXPECT_EQ("corge.grault.TestMessage2.foo", foo2_->full_name());
   EXPECT_EQ("corge.grault.TestMessage2.bar", bar2_->full_name());
   EXPECT_EQ("corge.grault.TestMessage2.quux", quux2_->full_name());
+}
+
+TEST_F(DescriptorTest, FieldJsonName) {
+  EXPECT_EQ("fieldName1", message4_->field(0)->json_name());
+  EXPECT_EQ("fieldName2", message4_->field(1)->json_name());
+  EXPECT_EQ("fieldName3", message4_->field(2)->json_name());
+  EXPECT_EQ("fieldName4", message4_->field(3)->json_name());
+  EXPECT_EQ("fIELDNAME5", message4_->field(4)->json_name());
+  EXPECT_EQ("@type", message4_->field(5)->json_name());
+
+  DescriptorProto proto;
+  message4_->CopyTo(&proto);
+  ASSERT_EQ(6, proto.field_size());
+  EXPECT_FALSE(proto.field(0).has_json_name());
+  EXPECT_FALSE(proto.field(1).has_json_name());
+  EXPECT_FALSE(proto.field(2).has_json_name());
+  EXPECT_FALSE(proto.field(3).has_json_name());
+  EXPECT_FALSE(proto.field(4).has_json_name());
+  EXPECT_EQ("@type", proto.field(5).json_name());
+
+  proto.Clear();
+  CopyWithJsonName(message4_, &proto);
+  ASSERT_EQ(6, proto.field_size());
+  EXPECT_EQ("fieldName1", proto.field(0).json_name());
+  EXPECT_EQ("fieldName2", proto.field(1).json_name());
+  EXPECT_EQ("fieldName3", proto.field(2).json_name());
+  EXPECT_EQ("fieldName4", proto.field(3).json_name());
+  EXPECT_EQ("fIELDNAME5", proto.field(4).json_name());
+  EXPECT_EQ("@type", proto.field(5).json_name());
 }
 
 TEST_F(DescriptorTest, FieldFile) {
@@ -1900,7 +1980,7 @@ class MiscTest : public testing::Test {
     return field != NULL ? field->enum_type() : NULL;
   }
 
-  scoped_ptr<DescriptorPool> pool_;
+  google::protobuf::scoped_ptr<DescriptorPool> pool_;
 };
 
 TEST_F(MiscTest, TypeNames) {
@@ -2330,7 +2410,7 @@ class AllowUnknownDependenciesTest
   const FieldDescriptor* qux_field_;
 
   SimpleDescriptorDatabase db_;        // used if in FALLBACK_DATABASE mode.
-  scoped_ptr<DescriptorPool> pool_;
+  google::protobuf::scoped_ptr<DescriptorPool> pool_;
 };
 
 TEST_P(AllowUnknownDependenciesTest, PlaceholderFile) {
@@ -5679,6 +5759,32 @@ TEST_F(ValidationErrorTest, ValidateProto3Extension) {
       "}",
       "bar.proto: bar: OTHER: Extensions in proto3 are only allowed for "
       "defining options.\n");
+}
+
+// Test that field names that may conflict in JSON is not allowed by protoc.
+TEST_F(ValidationErrorTest, ValidateProto3JsonName) {
+  // The comparison is case-insensitive.
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type {"
+      "  name: 'Foo'"
+      "  field { name:'name' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
+      "  field { name:'Name' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
+      "}",
+      "foo.proto: Foo: OTHER: The JSON camcel-case name of field \"Name\" "
+      "conflicts with field \"name\". This is not allowed in proto3.\n");
+  // Underscores are ignored.
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "syntax: 'proto3' "
+      "message_type {"
+      "  name: 'Foo'"
+      "  field { name:'ab' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
+      "  field { name:'_a__b_' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
+      "}",
+      "foo.proto: Foo: OTHER: The JSON camcel-case name of field \"_a__b_\" "
+      "conflicts with field \"ab\". This is not allowed in proto3.\n");
 }
 
 // ===================================================================

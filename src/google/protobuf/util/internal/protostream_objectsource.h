@@ -188,8 +188,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
   // Helper to render google.protobuf.Struct's ListValue fields to ObjectWriter.
   static util::Status RenderStructListValue(
-      const ProtoStreamObjectSource* os,
-      const google::protobuf::Type& type,
+      const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
       StringPiece name, ObjectWriter* ow);
 
   // Render the "Any" type.
@@ -210,6 +209,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // Renders a field value to the ObjectWriter.
   util::Status RenderField(const google::protobuf::Field* field,
                              StringPiece field_name, ObjectWriter* ow) const;
+
 
   // Reads field value according to Field spec in 'field' and returns the read
   // value as string. This only works for primitive datatypes (no message

@@ -259,6 +259,13 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter
     // generate an error.
     void TakeOneofIndex(int32 index);
 
+    // Inserts map key into hash set if and only if the key did NOT already
+    // exist in hash set.
+    // The hash set (map_keys_) is ONLY used to keep track of map keys.
+    // Return true if insert successfully; returns false if the map key was
+    // already present.
+    bool InsertMapKeyIfNotPresent(StringPiece map_key);
+
    private:
     // Used for access to variables of the enclosing instance of
     // ProtoStreamObjectWriter.
@@ -295,6 +302,10 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter
     // Set of oneof indices already seen for the type_. Used to validate
     // incoming messages so no more than one oneof is set.
     hash_set<int32> oneof_indices_;
+
+    // Set of map keys already seen for the type_. Used to validate incoming
+    // messages so no map key appears more than once.
+    hash_set<StringPiece> map_keys_;
 
     GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoElement);
   };
@@ -378,6 +389,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter
   // Helper method to write proto tags based on the given field.
   void WriteTag(const google::protobuf::Field& field);
 
+
   // Helper function to render primitive data types in DataPiece.
   void RenderSimpleDataPiece(const google::protobuf::Field& field,
                              const google::protobuf::Type& type,
@@ -423,6 +435,14 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter
   // unnormalized_name is used for error string.
   bool ValidOneof(const google::protobuf::Field& field,
                   StringPiece unnormalized_name);
+
+  // Returns true if the map key for type_ is not duplicated key.
+  // If map key is duplicated key, this function returns false.
+  // Note that caller should make sure that the current proto element (element_)
+  // is of element type MAP or STRUCT_MAP.
+  // It also calls the appropriate error callback and unnormalzied_name is used
+  // for error string.
+  bool ValidMapKey(StringPiece unnormalized_name);
 
   // Variables for describing the structure of the input tree:
   // master_type_: descriptor for the whole protobuf message.

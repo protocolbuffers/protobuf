@@ -38,7 +38,16 @@
 #if __cplusplus >= 201103L
 #include <google/protobuf/stubs/type_traits.h>
 #endif
+#if defined(_MSC_VER) && !_HAS_EXCEPTIONS
+// Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.
+#include <exception>
 #include <typeinfo>
+namespace std {
+using type_info = ::type_info;
+}
+#else
+#include <typeinfo>
+#endif
 
 #include <google/protobuf/stubs/atomic_sequence_num.h>
 #include <google/protobuf/stubs/atomicops.h>
@@ -533,14 +542,14 @@ class LIBPROTOBUF_EXPORT Arena {
 
   static const size_t kHeaderSize = sizeof(Block);
   static google::protobuf::internal::SequenceNumber lifecycle_id_generator_;
-#ifdef PROTOBUF_USE_DLLS
-  // Thread local variables cannot be exposed through DLL interface but we can
-  // wrap them in static functions.
-  static ThreadCache& thread_cache();
-#elif defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
+#if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
   // Android ndk does not support GOOGLE_THREAD_LOCAL keyword so we use a custom thread
   // local storage class we implemented.
   // iOS also does not support the GOOGLE_THREAD_LOCAL keyword.
+  static ThreadCache& thread_cache();
+#elif defined(PROTOBUF_USE_DLLS)
+  // Thread local variables cannot be exposed through DLL interface but we can
+  // wrap them in static functions.
   static ThreadCache& thread_cache();
 #else
   static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_;
@@ -581,11 +590,13 @@ class LIBPROTOBUF_EXPORT Arena {
     template<typename U>
     static double DestructorSkippable(...);
 
+    // The raw_skippable_value const bool variable is separated from the typedef
+    // line below as a work-around of an NVCC 7.0 (and earlier) compiler bug.
+    static const bool raw_skippable_value =
+          sizeof(DestructorSkippable<const T>(static_cast<const T*>(0))) ==
+          sizeof(char) || google::protobuf::internal::has_trivial_destructor<T>::value == true;
     // This will resolve to either google::protobuf::internal::true_type or google::protobuf::internal::false_type.
-    typedef google::protobuf::internal::integral_constant<bool,
-              sizeof(DestructorSkippable<const T>(static_cast<const T*>(0))) ==
-              sizeof(char) || google::protobuf::internal::has_trivial_destructor<T>::value == true>
-              type;
+    typedef google::protobuf::internal::integral_constant<bool, raw_skippable_value> type;
     static const type value;
   };
 

@@ -100,6 +100,16 @@ message TestMap {
   map<string, int32> string_map = 6;
 }
 
+message TestNestedMap {
+  map<bool, int32> bool_map = 1;
+  map<int32, int32> int32_map = 2;
+  map<int64, int32> int64_map = 3;
+  map<uint32, int32> uint32_map = 4;
+  map<uint64, int32> uint64_map = 5;
+  map<string, int32> string_map = 6;
+  map<string, TestNestedMap> map_map = 7;
+}
+
 message TestWrapper {
   google.protobuf.BoolValue bool_value = 1;
   google.protobuf.Int32Value int32_value = 2;

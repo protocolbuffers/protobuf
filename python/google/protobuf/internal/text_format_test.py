@@ -34,6 +34,7 @@
 
 __author__ = 'kenton@google.com (Kenton Varda)'
 
+
 import re
 import six
 import string
@@ -389,7 +390,7 @@ class TextFormatTest(TextFormatBase):
 # Ideally the schemas would be made more similar so these tests could pass.
 class OnlyWorksWithProto2RightNowTests(TextFormatBase):
 
-  def testPrintAllFieldsPointy(self, message_module):
+  def testPrintAllFieldsPointy(self):
     message = unittest_pb2.TestAllTypes()
     test_util.SetAllFields(message)
     self.CompareToGoldenFile(

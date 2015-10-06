@@ -28,8 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Copyright 2008 Google Inc. All Rights Reserved.
-
 """Provides type checking routines.
 
 This module defines type checking utilities in the forms of dictionaries:
@@ -52,6 +50,7 @@ import six
 if six.PY3:
   long = int
 
+from google.protobuf.internal import api_implementation
 from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
 from google.protobuf.internal import wire_format

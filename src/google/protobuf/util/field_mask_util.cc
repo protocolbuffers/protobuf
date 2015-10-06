@@ -43,7 +43,7 @@ string FieldMaskUtil::ToString(const FieldMask& mask) {
   return Join(mask.paths(), ",");
 }
 
-void FieldMaskUtil::FromString(const string& str, FieldMask* out) {
+void FieldMaskUtil::FromString(StringPiece str, FieldMask* out) {
   out->Clear();
   vector<string> paths = Split(str, ",");
   for (int i = 0; i < paths.size(); ++i) {
@@ -53,7 +53,7 @@ void FieldMaskUtil::FromString(const string& str, FieldMask* out) {
 }
 
 bool FieldMaskUtil::InternalIsValidPath(const Descriptor* descriptor,
-                                        const string& path) {
+                                        StringPiece path) {
   vector<string> parts = Split(path, ".");
   for (int i = 0; i < parts.size(); ++i) {
     const string& field_name = parts[i];
@@ -386,15 +386,15 @@ void FieldMaskUtil::Intersect(const FieldMask& mask1, const FieldMask& mask2,
   intersection.MergeToFieldMask(out);
 }
 
-bool FieldMaskUtil::IsPathInFieldMask(const string& path,
-                                      const FieldMask& mask) {
+bool FieldMaskUtil::IsPathInFieldMask(StringPiece path, const FieldMask& mask) {
   for (int i = 0; i < mask.paths_size(); ++i) {
     const string& mask_path = mask.paths(i);
     if (path == mask_path) {
       return true;
     } else if (mask_path.length() < path.length()) {
       // Also check whether mask.paths(i) is a prefix of path.
-      if (path.compare(0, mask_path.length() + 1, mask_path + ".") == 0) {
+      if (path.substr(0, mask_path.length() + 1).compare(mask_path + ".") ==
+          0) {
         return true;
       }
     }

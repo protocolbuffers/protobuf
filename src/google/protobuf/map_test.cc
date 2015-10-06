@@ -2154,7 +2154,7 @@ TEST_F(MapFieldInDynamicMessageTest, MapIndependentOffsets) {
   // Check that all fields have independent offsets by setting each
   // one to a unique value then checking that they all still have those
   // unique values (i.e. they don't stomp each other).
-  scoped_ptr<Message> message(map_prototype_->New());
+  google::protobuf::scoped_ptr<Message> message(map_prototype_->New());
   MapReflectionTester reflection_tester(map_descriptor_);
 
   reflection_tester.SetMapFieldsViaReflection(message.get());
@@ -2163,7 +2163,7 @@ TEST_F(MapFieldInDynamicMessageTest, MapIndependentOffsets) {
 
 TEST_F(MapFieldInDynamicMessageTest, DynamicMapReflection) {
   // Check that map fields work properly.
-  scoped_ptr<Message> message(map_prototype_->New());
+  google::protobuf::scoped_ptr<Message> message(map_prototype_->New());
 
   // Check set functions.
   MapReflectionTester reflection_tester(map_descriptor_);
@@ -2177,7 +2177,7 @@ TEST_F(MapFieldInDynamicMessageTest, MapSpaceUsed) {
   // Since we share the implementation with generated messages, we don't need
   // to test very much here.  Just make sure it appears to be working.
 
-  scoped_ptr<Message> message(map_prototype_->New());
+  google::protobuf::scoped_ptr<Message> message(map_prototype_->New());
   MapReflectionTester reflection_tester(map_descriptor_);
 
   int initial_space_used = message->SpaceUsed();

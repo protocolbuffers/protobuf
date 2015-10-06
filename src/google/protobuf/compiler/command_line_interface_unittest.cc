@@ -63,13 +63,13 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
-namespace compiler {
 
 // Disable the whole test when we use tcmalloc for "draconian" heap checks, in
 // which case tcmalloc will print warnings that fail the plugin tests.
 #if !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
+namespace google {
+namespace protobuf {
+namespace compiler {
 
 #if defined(_WIN32)
 #ifndef STDIN_FILENO
@@ -1800,8 +1800,8 @@ TEST_F(EncodeDecodeTest, ProtoParseError) {
 
 }  // anonymous namespace
 
-#endif  // !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
-
 }  // namespace compiler
 }  // namespace protobuf
+
+#endif  // !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
 }  // namespace google
