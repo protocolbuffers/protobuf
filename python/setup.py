@@ -123,12 +123,16 @@ class build_py(_build_py):
     # Generate necessary .proto file if it doesn't exist.
     generate_proto("../src/google/protobuf/descriptor.proto")
     generate_proto("../src/google/protobuf/compiler/plugin.proto")
-    generate_proto("../src/google/protobuf/timestamp.proto")
-    generate_proto("../src/google/protobuf/duration.proto")
-    generate_proto("../src/google/protobuf/wrappers.proto")
-    generate_proto("../src/google/protobuf/struct.proto")
     generate_proto("../src/google/protobuf/any.proto")
+    generate_proto("../src/google/protobuf/api.proto")
+    generate_proto("../src/google/protobuf/duration.proto")
+    generate_proto("../src/google/protobuf/empty.proto")
     generate_proto("../src/google/protobuf/field_mask.proto")
+    generate_proto("../src/google/protobuf/source_context.proto")
+    generate_proto("../src/google/protobuf/struct.proto")
+    generate_proto("../src/google/protobuf/timestamp.proto")
+    generate_proto("../src/google/protobuf/type.proto")
+    generate_proto("../src/google/protobuf/wrappers.proto")
     GenerateUnittestProtos()
 
     # Make sure google.protobuf/** are valid packages.
