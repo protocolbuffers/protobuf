@@ -65,7 +65,7 @@ class EnumGenerator {
   // generating other .proto.h files. This code should be placed within the
   // enum's package namespace, but NOT within any class, even for nested
   // enums.
-  void FillForwardDeclaration(set<string>* enum_names);
+  void FillForwardDeclaration(map<string, const EnumDescriptor*>* enum_names);
 
   // Generate header code defining the enum.  This code should be placed
   // within the enum's package namespace, but NOT within any class, even for

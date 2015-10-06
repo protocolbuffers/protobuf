@@ -68,8 +68,8 @@ class MessageGenerator {
 
   // Return names for foward declarations of this class and all its nested
   // types.
-  void FillMessageForwardDeclarations(set<string>* class_names);
-  void FillEnumForwardDeclarations(set<string>* enum_names);
+  void FillMessageForwardDeclarations(map<string, const Descriptor*>* class_names);
+  void FillEnumForwardDeclarations(map<string, const EnumDescriptor*>* enum_names);
 
   // Generate definitions of all nested enums (must come before class
   // definitions because those classes use the enums definitions).

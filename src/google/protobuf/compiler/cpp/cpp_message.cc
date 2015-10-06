@@ -423,8 +423,8 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
 MessageGenerator::~MessageGenerator() {}
 
 void MessageGenerator::
-FillMessageForwardDeclarations(set<string>* class_names) {
-  class_names->insert(classname_);
+FillMessageForwardDeclarations(map<string, const Descriptor*>* class_names) {
+  (*class_names)[classname_] = descriptor_;
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     // map entry message doesn't need forward declaration. Since map entry
@@ -436,7 +436,7 @@ FillMessageForwardDeclarations(set<string>* class_names) {
 }
 
 void MessageGenerator::
-FillEnumForwardDeclarations(set<string>* enum_names) {
+FillEnumForwardDeclarations(map<string, const EnumDescriptor*>* enum_names) {
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     nested_generators_[i]->FillEnumForwardDeclarations(enum_names);
   }
@@ -892,6 +892,7 @@ GenerateClassDefinition(io::Printer* printer) {
   }
   printer->Print(vars,
     "class $dllexport$$classname$ : public $superclass$ {\n");
+  printer->Annotate("classname", descriptor_);
   if (use_dependent_base_) {
     printer->Print(vars, "  friend class $superclass$;\n");
   }

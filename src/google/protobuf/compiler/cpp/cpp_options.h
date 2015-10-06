@@ -43,17 +43,19 @@ namespace cpp {
 
 // Generator options (see generator.cc for a description of each):
 struct Options {
-  Options() : safe_boundary_check(false), proto_h(false) {
-  }
+  Options()
+      : safe_boundary_check(false), proto_h(false), annotate_headers(false) {}
   string dllexport_decl;
   bool safe_boundary_check;
   bool proto_h;
+  bool annotate_headers;
+  string annotation_pragma_name;
+  string annotation_guard_name;
 };
 
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
-
 
 }  // namespace google
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
