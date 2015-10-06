@@ -108,9 +108,6 @@ PyObject *NewContainer(
     const FieldDescriptor* parent_field_descriptor,
     PyObject *concrete_class);
 
-// Returns the number of items in this repeated composite container.
-static Py_ssize_t Length(RepeatedCompositeContainer* self);
-
 // Appends a new CMessage to the container and returns it.  The
 // CMessage is initialized using the content of kwargs.
 //

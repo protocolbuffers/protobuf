@@ -211,7 +211,7 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* name) {
   if (extensions_by_name == NULL) {
     return NULL;
   }
-  PyObject* result = PyDict_GetItem(extensions_by_name, name);
+  PyObject* result = PyDict_GetItem(extensions_by_name.get(), name);
   if (result == NULL) {
     Py_RETURN_NONE;
   } else {

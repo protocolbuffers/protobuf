@@ -116,7 +116,7 @@ static int UpdateChildMessages(RepeatedCompositeContainer* self) {
     cmsg->owner = self->owner;
     cmsg->message = const_cast<Message*>(&sub_message);
     cmsg->parent = self->parent;
-    if (PyList_Append(self->child_messages, py_cmsg) < 0) {
+    if (PyList_Append(self->child_messages, py_cmsg.get()) < 0) {
       return -1;
     }
   }
@@ -202,8 +202,8 @@ PyObject* Extend(RepeatedCompositeContainer* self, PyObject* value) {
     return NULL;
   }
   ScopedPyObjectPtr next;
-  while ((next.reset(PyIter_Next(iter))) != NULL) {
-    if (!PyObject_TypeCheck(next, &CMessage_Type)) {
+  while ((next.reset(PyIter_Next(iter.get()))) != NULL) {
+    if (!PyObject_TypeCheck(next.get(), &CMessage_Type)) {
       PyErr_SetString(PyExc_TypeError, "Not a cmessage");
       return NULL;
     }
@@ -212,7 +212,8 @@ PyObject* Extend(RepeatedCompositeContainer* self, PyObject* value) {
       return NULL;
     }
     CMessage* new_cmessage = reinterpret_cast<CMessage*>(new_message.get());
-    if (ScopedPyObjectPtr(cmessage::MergeFrom(new_cmessage, next)) == NULL) {
+    if (ScopedPyObjectPtr(cmessage::MergeFrom(new_cmessage, next.get())) ==
+        NULL) {
       return NULL;
     }
   }
@@ -294,7 +295,7 @@ static PyObject* Remove(RepeatedCompositeContainer* self, PyObject* value) {
     return NULL;
   }
   ScopedPyObjectPtr py_index(PyLong_FromLong(index));
-  if (AssignSubscript(self, py_index, NULL) < 0) {
+  if (AssignSubscript(self, py_index.get(), NULL) < 0) {
     return NULL;
   }
   Py_RETURN_NONE;
@@ -318,17 +319,17 @@ static PyObject* RichCompare(RepeatedCompositeContainer* self,
     if (full_slice == NULL) {
       return NULL;
     }
-    ScopedPyObjectPtr list(Subscript(self, full_slice));
+    ScopedPyObjectPtr list(Subscript(self, full_slice.get()));
     if (list == NULL) {
       return NULL;
     }
     ScopedPyObjectPtr other_list(
-        Subscript(
-            reinterpret_cast<RepeatedCompositeContainer*>(other), full_slice));
+        Subscript(reinterpret_cast<RepeatedCompositeContainer*>(other),
+                  full_slice.get()));
     if (other_list == NULL) {
       return NULL;
     }
-    return PyObject_RichCompare(list, other_list, opid);
+    return PyObject_RichCompare(list.get(), other_list.get(), opid);
   } else {
     Py_INCREF(Py_NotImplemented);
     return Py_NotImplemented;
@@ -365,7 +366,7 @@ static int SortPythonMessages(RepeatedCompositeContainer* self,
   ScopedPyObjectPtr m(PyObject_GetAttrString(self->child_messages, "sort"));
   if (m == NULL)
     return -1;
-  if (PyObject_Call(m, args, kwds) == NULL)
+  if (PyObject_Call(m.get(), args, kwds) == NULL)
     return -1;
   if (self->message != NULL) {
     ReorderAttached(self);
@@ -429,7 +430,7 @@ static PyObject* Pop(RepeatedCompositeContainer* self,
     return NULL;
   }
   ScopedPyObjectPtr py_index(PyLong_FromSsize_t(index));
-  if (AssignSubscript(self, py_index, NULL) < 0) {
+  if (AssignSubscript(self, py_index.get(), NULL) < 0) {
     return NULL;
   }
   return item;
