@@ -36,7 +36,6 @@ try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict  #PY26
-import collections
 try:
   import unittest2 as unittest
 except ImportError:
