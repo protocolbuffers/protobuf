@@ -313,7 +313,7 @@ static PyObject* New(PyTypeObject* type,
 
   // Add the message to the DescriptorPool.
   if (cdescriptor_pool::RegisterMessageClass(newtype->py_descriptor_pool,
-                                             descriptor, result) < 0) {
+                                             descriptor, result.get()) < 0) {
     return NULL;
   }
 
@@ -1946,8 +1946,6 @@ static PyObject* RegisterExtension(PyObject* cls,
   if (descriptor == NULL) {
     return NULL;
   }
-  const Descriptor* cmessage_descriptor = GetMessageDescriptor(
-      reinterpret_cast<PyTypeObject*>(cls));
 
   ScopedPyObjectPtr extensions_by_name(
       PyObject_GetAttr(cls, k_extensions_by_name));
