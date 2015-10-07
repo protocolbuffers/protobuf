@@ -151,7 +151,8 @@ if __name__ == '__main__':
   warnings_as_errors = '--warnings_as_errors'
   if cpp_impl in sys.argv:
     sys.argv.remove(cpp_impl)
-    extra_compile_args = ['-Wno-write-strings']
+    extra_compile_args = ['-Wno-write-strings', '-Wno-shorten-64-to-32',
+                          '-Wno-invalid-offsetof']
 
     if warnings_as_errors in sys.argv:
       extra_compile_args.append('-Werror')
