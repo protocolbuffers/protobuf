@@ -151,8 +151,10 @@ if __name__ == '__main__':
   warnings_as_errors = '--warnings_as_errors'
   if cpp_impl in sys.argv:
     sys.argv.remove(cpp_impl)
-    extra_compile_args = ['-Wno-write-strings', '-Wno-shorten-64-to-32',
-                          '-Wno-invalid-offsetof']
+    extra_compile_args = ['-Wno-write-strings', '-Wno-invalid-offsetof']
+
+    if "clang" in os.popen('$CC --version').read():
+      extra_compile_args.append('-Wno-shorten-64-to-32')
 
     if warnings_as_errors in sys.argv:
       extra_compile_args.append('-Werror')
