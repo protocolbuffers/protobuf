@@ -163,7 +163,7 @@ typedef pair<char*, int> Segment;
 class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
  public:
   explicit SegmentedZeroCopyOutputStream(list<Segment> segments)
-      : segments_(segments), last_segment_((char*)NULL, 0), byte_count_(0) {}
+      : segments_(segments), last_segment_(static_cast<char*>(NULL), 0), byte_count_(0) {}
 
   virtual bool Next(void** buffer, int* length) {
     if (segments_.empty()) {
