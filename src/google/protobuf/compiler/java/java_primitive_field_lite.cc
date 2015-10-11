@@ -345,7 +345,7 @@ void ImmutablePrimitiveFieldLiteGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($is_field_present_message$) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
+    "  size += com.google.protobuf.WireFormat\n"
     "    .compute$capitalized_type$Size($number$, $name$_);\n"
     "}\n");
 }
@@ -564,7 +564,7 @@ void ImmutablePrimitiveOneofFieldLiteGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($has_oneof_case_message$) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
+    "  size += com.google.protobuf.WireFormat\n"
     "    .compute$capitalized_type$Size(\n"
     "        $number$, ($type$)(($boxed_type$) $oneof_name$_));\n"
     "}\n");
@@ -810,8 +810,8 @@ GenerateSerializationCode(io::Printer* printer) const {
     // That makes it safe to rely on the memoized size here.
     printer->Print(variables_,
       "if (get$capitalized_name$List().size() > 0) {\n"
-      "  output.writeRawVarint32($tag$);\n"
-      "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
+      "  output.writeUInt32NoTag($tag$);\n"
+      "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
       "}\n"
       "for (int i = 0; i < $name$_.size(); i++) {\n"
       "  output.write$capitalized_type$NoTag($name$_.get(i));\n"
@@ -834,7 +834,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   if (FixedSize(GetType(descriptor_)) == -1) {
     printer->Print(variables_,
       "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  dataSize += com.google.protobuf.CodedOutputStream\n"
+      "  dataSize += com.google.protobuf.WireFormat\n"
       "    .compute$capitalized_type$SizeNoTag($name$_.get(i));\n"
       "}\n");
   } else {
@@ -849,7 +849,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     printer->Print(variables_,
       "if (!get$capitalized_name$List().isEmpty()) {\n"
       "  size += $tag_size$;\n"
-      "  size += com.google.protobuf.CodedOutputStream\n"
+      "  size += com.google.protobuf.WireFormat\n"
       "      .computeInt32SizeNoTag(dataSize);\n"
       "}\n");
   } else {

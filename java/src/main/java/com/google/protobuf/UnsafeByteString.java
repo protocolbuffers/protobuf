@@ -65,6 +65,9 @@ public final class UnsafeByteString extends ByteString implements Externalizable
    */
   private int hash;
 
+  private OutputStream output;
+  private WritableByteChannel channel;
+
   /**
    * Public no-arg constructor is needed by {@link Externalizable}. Do not use directly.
    */
@@ -197,7 +200,7 @@ public final class UnsafeByteString extends ByteString implements Externalizable
 
   @Override
   public void writeTo(OutputStream out) throws IOException {
-    writeBufferTo(buffer, out);
+    writeToInternal(out, buffer.position(), buffer.remaining());
   }
 
   @Override
@@ -207,8 +210,22 @@ public final class UnsafeByteString extends ByteString implements Externalizable
 
   @Override
   void writeToInternal(OutputStream out, int sourceOffset, int numberToWrite) throws IOException {
+    if (buffer.hasArray()) {
+      // Optimized write for array-backed buffers.
+      int bufferOffset = buffer.arrayOffset() + buffer.position() + sourceOffset;
+      out.write(buffer.array(), bufferOffset, numberToWrite);
+      return;
+    }
+
+    // The buffer isn't backed by an array, we need to wrap the output stream with a channel.
+    // Cache the channel if the output stream has not changed since the last invocation.
+    if (output != out) {
+      output = out;
+      channel = Channels.newChannel(out);
+    }
+
     ByteBuffer slice = slice(sourceOffset, sourceOffset + numberToWrite);
-    writeBufferTo(slice, out);
+    channel.write(slice);
   }
 
   @Override
@@ -371,7 +388,6 @@ public final class UnsafeByteString extends ByteString implements Externalizable
 
   @Override
   public CodedInputStream newCodedInput() {
-    // TODO(nmittler): Do we care about this? It does a copy.
     return CodedInputStream.newInstance(buffer);
   }
 
@@ -388,11 +404,6 @@ public final class UnsafeByteString extends ByteString implements Externalizable
   @Override
   protected int peekCachedHashCode() {
     return hash;
-  }
-
-  private void writeBufferTo(ByteBuffer source, OutputStream out) throws IOException {
-    WritableByteChannel channel = Channels.newChannel(out);
-    channel.write(source.slice());
   }
 
   private ByteBuffer slice(int beginIndex, int endIndex) {

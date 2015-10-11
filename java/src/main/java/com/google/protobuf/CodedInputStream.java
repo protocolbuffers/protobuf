@@ -224,29 +224,29 @@ public final class CodedInputStream {
     switch (WireFormat.getTagWireType(tag)) {
       case WireFormat.WIRETYPE_VARINT: {
         long value = readInt64();
-        output.writeRawVarint32(tag);
+        output.writeUInt32NoTag(tag);
         output.writeUInt64NoTag(value);
         return true;
       }
       case WireFormat.WIRETYPE_FIXED64: {
         long value = readRawLittleEndian64();
-        output.writeRawVarint32(tag);
+        output.writeUInt32NoTag(tag);
         output.writeFixed64NoTag(value);
         return true;
       }
       case WireFormat.WIRETYPE_LENGTH_DELIMITED: {
         ByteString value = readBytes();
-        output.writeRawVarint32(tag);
+        output.writeUInt32NoTag(tag);
         output.writeBytesNoTag(value);
         return true;
       }
       case WireFormat.WIRETYPE_START_GROUP: {
-        output.writeRawVarint32(tag);
+        output.writeUInt32NoTag(tag);
         skipMessage(output);
         int endtag = WireFormat.makeTag(WireFormat.getTagFieldNumber(tag),
                                         WireFormat.WIRETYPE_END_GROUP);
         checkLastTagWas(endtag);
-        output.writeRawVarint32(endtag);
+        output.writeUInt32NoTag(endtag);
         return true;
       }
       case WireFormat.WIRETYPE_END_GROUP: {
@@ -254,7 +254,7 @@ public final class CodedInputStream {
       }
       case WireFormat.WIRETYPE_FIXED32: {
         int value = readRawLittleEndian32();
-        output.writeRawVarint32(tag);
+        output.writeUInt32NoTag(tag);
         output.writeFixed32NoTag(value);
         return true;
       }

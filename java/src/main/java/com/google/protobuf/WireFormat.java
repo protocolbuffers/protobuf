@@ -163,6 +163,455 @@ public final class WireFormat {
   static final int MESSAGE_SET_MESSAGE_TAG =
     makeTag(MESSAGE_SET_MESSAGE, WIRETYPE_LENGTH_DELIMITED);
 
+  public static final int LITTLE_ENDIAN_32_SIZE = 4;
+  public static final int LITTLE_ENDIAN_64_SIZE = 8;
+
+  /** Compute the number of bytes that would be needed to encode a tag. */
+  public static int computeTagSize(final int fieldNumber) {
+    return computeRawVarint32Size(WireFormat.makeTag(fieldNumber, 0));
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code double} field, including tag.
+   */
+  public static int computeDoubleSize(final int fieldNumber,
+                                      final double value) {
+    return computeTagSize(fieldNumber) + computeDoubleSizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code float} field, including tag.
+   */
+  public static int computeFloatSize(final int fieldNumber, final float value) {
+    return computeTagSize(fieldNumber) + computeFloatSizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code uint64} field, including tag.
+   */
+  public static int computeUInt64Size(final int fieldNumber, final long value) {
+    return computeTagSize(fieldNumber) + computeUInt64SizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * {@code int64} field, including tag.
+   */
+  public static int computeInt64Size(final int fieldNumber, final long value) {
+    return computeTagSize(fieldNumber) + computeInt64SizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * {@code int32} field, including tag.
+   */
+  public static int computeInt32Size(final int fieldNumber, final int value) {
+    return computeTagSize(fieldNumber) + computeInt32SizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code fixed64} field, including tag.
+   */
+  public static int computeFixed64Size(final int fieldNumber,
+                                       final long value) {
+    return computeTagSize(fieldNumber) + computeFixed64SizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code fixed32} field, including tag.
+   */
+  public static int computeFixed32Size(final int fieldNumber,
+                                       final int value) {
+    return computeTagSize(fieldNumber) + computeFixed32SizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code bool} field, including tag.
+   */
+  public static int computeBoolSize(final int fieldNumber,
+                                    final boolean value) {
+    return computeTagSize(fieldNumber) + computeBoolSizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code string} field, including tag.
+   */
+  public static int computeStringSize(final int fieldNumber,
+                                      final String value) {
+    return computeTagSize(fieldNumber) + computeStringSizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code group} field, including tag.
+   */
+  public static int computeGroupSize(final int fieldNumber,
+                                     final MessageLite value) {
+    return computeTagSize(fieldNumber) * 2 + computeGroupSizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * embedded message field, including tag.
+   */
+  public static int computeMessageSize(final int fieldNumber,
+                                       final MessageLite value) {
+    return computeTagSize(fieldNumber) + computeMessageSizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code bytes} field, including tag.
+   */
+  public static int computeBytesSize(final int fieldNumber,
+                                     final ByteString value) {
+    return computeTagSize(fieldNumber) + computeBytesSizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code bytes} field, including tag.
+   */
+  public static int computeByteArraySize(final int fieldNumber,
+                                         final byte[] value) {
+    return WireFormat.computeTagSize(fieldNumber) + computeByteArraySizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * embedded message in lazy field, including tag.
+   */
+  public static int computeLazyFieldSize(final int fieldNumber,
+                                         final LazyFieldLite value) {
+    return computeTagSize(fieldNumber) + computeLazyFieldSizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code uint32} field, including tag.
+   */
+  public static int computeUInt32Size(final int fieldNumber, final int value) {
+    return computeTagSize(fieldNumber) + computeUInt32SizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * enum field, including tag.  Caller is responsible for converting the
+   * enum value to its numeric value.
+   */
+  public static int computeEnumSize(final int fieldNumber, final int value) {
+    return computeTagSize(fieldNumber) + computeEnumSizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * {@code sfixed32} field, including tag.
+   */
+  public static int computeSFixed32Size(final int fieldNumber,
+                                        final int value) {
+    return computeTagSize(fieldNumber) + computeSFixed32SizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * {@code sfixed64} field, including tag.
+   */
+  public static int computeSFixed64Size(final int fieldNumber,
+                                        final long value) {
+    return computeTagSize(fieldNumber) + computeSFixed64SizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * {@code sint32} field, including tag.
+   */
+  public static int computeSInt32Size(final int fieldNumber, final int value) {
+    return computeTagSize(fieldNumber) + computeSInt32SizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * {@code sint64} field, including tag.
+   */
+  public static int computeSInt64Size(final int fieldNumber, final long value) {
+    return computeTagSize(fieldNumber) + computeSInt64SizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * MessageSet extension to the stream.  For historical reasons,
+   * the wire format differs from normal fields.
+   */
+  public static int computeMessageSetExtensionSize(
+          final int fieldNumber, final MessageLite value) {
+    return computeTagSize(WireFormat.MESSAGE_SET_ITEM) * 2 +
+            computeUInt32Size(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber) +
+            computeMessageSize(WireFormat.MESSAGE_SET_MESSAGE, value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * unparsed MessageSet extension field to the stream.  For
+   * historical reasons, the wire format differs from normal fields.
+   */
+  public static int computeRawMessageSetExtensionSize(
+          final int fieldNumber, final ByteString value) {
+    return computeTagSize(WireFormat.MESSAGE_SET_ITEM) * 2 +
+            computeUInt32Size(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber) +
+            computeBytesSize(WireFormat.MESSAGE_SET_MESSAGE, value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * lazily parsed MessageSet extension field to the stream.  For
+   * historical reasons, the wire format differs from normal fields.
+   */
+  public static int computeLazyFieldMessageSetExtensionSize(
+          final int fieldNumber, final LazyFieldLite value) {
+    return computeTagSize(WireFormat.MESSAGE_SET_ITEM) * 2 +
+            computeUInt32Size(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber) +
+            computeLazyFieldSize(WireFormat.MESSAGE_SET_MESSAGE, value);
+  }
+
+  // -----------------------------------------------------------------
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code double} field, including tag.
+   */
+  public static int computeDoubleSizeNoTag(@SuppressWarnings("unused") final double value) {
+    return LITTLE_ENDIAN_64_SIZE;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code float} field, including tag.
+   */
+  public static int computeFloatSizeNoTag(@SuppressWarnings("unused") final float value) {
+    return LITTLE_ENDIAN_32_SIZE;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code uint64} field, including tag.
+   */
+  public static int computeUInt64SizeNoTag(final long value) {
+    return computeRawVarint64Size(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * {@code int64} field, including tag.
+   */
+  public static int computeInt64SizeNoTag(final long value) {
+    return computeRawVarint64Size(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * {@code int32} field, including tag.
+   */
+  public static int computeInt32SizeNoTag(final int value) {
+    if (value >= 0) {
+      return computeRawVarint32Size(value);
+    } else {
+      // Must sign-extend.
+      return 10;
+    }
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code fixed64} field.
+   */
+  public static int computeFixed64SizeNoTag(@SuppressWarnings("unused") final long value) {
+    return LITTLE_ENDIAN_64_SIZE;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code fixed32} field.
+   */
+  public static int computeFixed32SizeNoTag(@SuppressWarnings("unused") final int value) {
+    return LITTLE_ENDIAN_32_SIZE;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code bool} field.
+   */
+  public static int computeBoolSizeNoTag(@SuppressWarnings("unused") final boolean value) {
+    return 1;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code string} field.
+   */
+  public static int computeStringSizeNoTag(final String value) {
+    int length;
+    try {
+      length = Utf8.encodedLength(value);
+    } catch (Utf8.UnpairedSurrogateException e) {
+      // TODO(dweis): Consider using nio Charset methods instead.
+      final byte[] bytes = value.getBytes(Internal.UTF_8);
+      length = bytes.length;
+    }
+
+    return computeRawVarint32Size(length) + length;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code group} field.
+   */
+  public static int computeGroupSizeNoTag(final MessageLite value) {
+    return value.getSerializedSize();
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an embedded
+   * message field.
+   */
+  public static int computeMessageSizeNoTag(final MessageLite value) {
+    final int size = value.getSerializedSize();
+    return computeRawVarint32Size(size) + size;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an embedded
+   * message stored in lazy field.
+   */
+  public static int computeLazyFieldSizeNoTag(final LazyFieldLite value) {
+    final int size = value.getSerializedSize();
+    return computeRawVarint32Size(size) + size;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code bytes} field.
+   */
+  public static int computeBytesSizeNoTag(final ByteString value) {
+    return computeRawVarint32Size(value.size()) +
+            value.size();
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code bytes} field.
+   */
+  public static int computeByteArraySizeNoTag(final byte[] value) {
+    return WireFormat.computeRawVarint32Size(value.length) + value.length;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a
+   * {@code uint32} field.
+   */
+  public static int computeUInt32SizeNoTag(final int value) {
+    return computeRawVarint32Size(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an enum field.
+   * Caller is responsible for converting the enum value to its numeric value.
+   */
+  public static int computeEnumSizeNoTag(final int value) {
+    return computeInt32SizeNoTag(value);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * {@code sfixed32} field.
+   */
+  public static int computeSFixed32SizeNoTag(@SuppressWarnings("unused") final int value) {
+    return LITTLE_ENDIAN_32_SIZE;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * {@code sfixed64} field.
+   */
+  public static int computeSFixed64SizeNoTag(@SuppressWarnings("unused") final long value) {
+    return LITTLE_ENDIAN_64_SIZE;
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * {@code sint32} field.
+   */
+  public static int computeSInt32SizeNoTag(final int value) {
+    return computeRawVarint32Size(encodeZigZag32(value));
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an
+   * {@code sint64} field.
+   */
+  public static int computeSInt64SizeNoTag(final long value) {
+    return computeRawVarint64Size(encodeZigZag64(value));
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a varint. {@code value} is treated
+   * as unsigned, so it won't be sign-extended if negative.
+   */
+  public static int computeRawVarint32Size(final int value) {
+    if ((value & (0xffffffff << 7)) == 0) return 1;
+    if ((value & (0xffffffff << 14)) == 0) return 2;
+    if ((value & (0xffffffff << 21)) == 0) return 3;
+    if ((value & (0xffffffff << 28)) == 0) return 4;
+    return 5;
+  }
+
+  public static int computeRawVarint64Size(final long value) {
+    if ((value & (0xffffffffffffffffL <<  7)) == 0) return 1;
+    if ((value & (0xffffffffffffffffL << 14)) == 0) return 2;
+    if ((value & (0xffffffffffffffffL << 21)) == 0) return 3;
+    if ((value & (0xffffffffffffffffL << 28)) == 0) return 4;
+    if ((value & (0xffffffffffffffffL << 35)) == 0) return 5;
+    if ((value & (0xffffffffffffffffL << 42)) == 0) return 6;
+    if ((value & (0xffffffffffffffffL << 49)) == 0) return 7;
+    if ((value & (0xffffffffffffffffL << 56)) == 0) return 8;
+    if ((value & (0xffffffffffffffffL << 63)) == 0) return 9;
+    return 10;
+  }
+
+  /**
+   * Encode a ZigZag-encoded 32-bit value.  ZigZag encodes signed integers into values that can be
+   * efficiently encoded with varint.  (Otherwise, negative values must be sign-extended to 64 bits
+   * to be varint encoded, thus always taking 10 bytes on the wire.)
+   *
+   * @param n A signed 32-bit integer.
+   * @return An unsigned 32-bit integer, stored in a signed int because Java has no explicit
+   * unsigned support.
+   */
+  public static int encodeZigZag32(final int n) {
+    // Note:  the right-shift must be arithmetic
+    return (n << 1) ^ (n >> 31);
+  }
+
+  /**
+   * Encode a ZigZag-encoded 64-bit value.  ZigZag encodes signed integers into values that can be
+   * efficiently encoded with varint.  (Otherwise, negative values must be sign-extended to 64 bits
+   * to be varint encoded, thus always taking 10 bytes on the wire.)
+   *
+   * @param n A signed 64-bit integer.
+   * @return An unsigned 64-bit integer, stored in a signed int because Java has no explicit
+   * unsigned support.
+   */
+  public static long encodeZigZag64(final long n) {
+    // Note:  the right-shift must be arithmetic
+    return (n << 1) ^ (n >> 63);
+  }
+
   /**
    * Validation level for handling incoming string field data which potentially
    * contain non-UTF8 bytes.

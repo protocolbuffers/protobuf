@@ -172,6 +172,7 @@ public final class CodedOutputStream implements Encoder {
   // -----------------------------------------------------------------
 
   /** Write a {@code double} field, including tag, to the stream. */
+  @Override
   public void writeDouble(final int fieldNumber, final double value)
                           throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED64);
@@ -179,6 +180,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code float} field, including tag, to the stream. */
+  @Override
   public void writeFloat(final int fieldNumber, final float value)
                          throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED32);
@@ -186,6 +188,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code uint64} field, including tag, to the stream. */
+  @Override
   public void writeUInt64(final int fieldNumber, final long value)
                           throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
@@ -193,6 +196,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write an {@code int64} field, including tag, to the stream. */
+  @Override
   public void writeInt64(final int fieldNumber, final long value)
                          throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
@@ -200,6 +204,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write an {@code int32} field, including tag, to the stream. */
+  @Override
   public void writeInt32(final int fieldNumber, final int value)
                          throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
@@ -207,6 +212,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code fixed64} field, including tag, to the stream. */
+  @Override
   public void writeFixed64(final int fieldNumber, final long value)
                            throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED64);
@@ -214,6 +220,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code fixed32} field, including tag, to the stream. */
+  @Override
   public void writeFixed32(final int fieldNumber, final int value)
                            throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED32);
@@ -221,6 +228,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code bool} field, including tag, to the stream. */
+  @Override
   public void writeBool(final int fieldNumber, final boolean value)
                         throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
@@ -228,6 +236,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code string} field, including tag, to the stream. */
+  @Override
   public void writeString(final int fieldNumber, final String value)
                           throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
@@ -235,6 +244,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code group} field, including tag, to the stream. */
+  @Override
   public void writeGroup(final int fieldNumber, final MessageLite value)
                          throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_START_GROUP);
@@ -257,6 +267,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write an embedded message field, including tag, to the stream. */
+  @Override
   public void writeMessage(final int fieldNumber, final MessageLite value)
                            throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
@@ -265,6 +276,7 @@ public final class CodedOutputStream implements Encoder {
 
 
   /** Write a {@code bytes} field, including tag, to the stream. */
+  @Override
   public void writeBytes(final int fieldNumber, final ByteString value)
                          throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
@@ -279,6 +291,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code bytes} field, including tag, to the stream. */
+  @Override
   public void writeByteArray(final int fieldNumber,
                              final byte[] value,
                              final int offset,
@@ -305,6 +318,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code uint32} field, including tag, to the stream. */
+  @Override
   public void writeUInt32(final int fieldNumber, final int value)
                           throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
@@ -315,6 +329,7 @@ public final class CodedOutputStream implements Encoder {
    * Write an enum field, including tag, to the stream.  Caller is responsible
    * for converting the enum value to its numeric value.
    */
+  @Override
   public void writeEnum(final int fieldNumber, final int value)
                         throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
@@ -322,6 +337,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write an {@code sfixed32} field, including tag, to the stream. */
+  @Override
   public void writeSFixed32(final int fieldNumber, final int value)
                             throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED32);
@@ -329,6 +345,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write an {@code sfixed64} field, including tag, to the stream. */
+  @Override
   public void writeSFixed64(final int fieldNumber, final long value)
                             throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED64);
@@ -336,6 +353,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write an {@code sint32} field, including tag, to the stream. */
+  @Override
   public void writeSInt32(final int fieldNumber, final int value)
                           throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
@@ -343,6 +361,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write an {@code sint64} field, including tag, to the stream. */
+  @Override
   public void writeSInt64(final int fieldNumber, final long value)
                           throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
@@ -353,6 +372,7 @@ public final class CodedOutputStream implements Encoder {
    * Write a MessageSet extension field to the stream.  For historical reasons,
    * the wire format differs from normal fields.
    */
+  @Override
   public void writeMessageSetExtension(final int fieldNumber,
                                        final MessageLite value)
                                        throws IOException {
@@ -366,6 +386,7 @@ public final class CodedOutputStream implements Encoder {
    * Write an unparsed MessageSet extension field to the stream.  For
    * historical reasons, the wire format differs from normal fields.
    */
+  @Override
   public void writeRawMessageSetExtension(final int fieldNumber,
                                           final ByteString value)
                                           throws IOException {
@@ -378,26 +399,31 @@ public final class CodedOutputStream implements Encoder {
   // -----------------------------------------------------------------
 
   /** Write a {@code double} field to the stream. */
+  @Override
   public void writeDoubleNoTag(final double value) throws IOException {
     writeRawLittleEndian64(Double.doubleToRawLongBits(value));
   }
 
   /** Write a {@code float} field to the stream. */
+  @Override
   public void writeFloatNoTag(final float value) throws IOException {
     writeRawLittleEndian32(Float.floatToRawIntBits(value));
   }
 
   /** Write a {@code uint64} field to the stream. */
+  @Override
   public void writeUInt64NoTag(final long value) throws IOException {
     writeRawVarint64(value);
   }
 
   /** Write an {@code int64} field to the stream. */
+  @Override
   public void writeInt64NoTag(final long value) throws IOException {
     writeRawVarint64(value);
   }
 
   /** Write an {@code int32} field to the stream. */
+  @Override
   public void writeInt32NoTag(final int value) throws IOException {
     if (value >= 0) {
       writeRawVarint32(value);
@@ -408,22 +434,26 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code fixed64} field to the stream. */
+  @Override
   public void writeFixed64NoTag(final long value) throws IOException {
     writeRawLittleEndian64(value);
   }
 
   /** Write a {@code fixed32} field to the stream. */
+  @Override
   public void writeFixed32NoTag(final int value) throws IOException {
     writeRawLittleEndian32(value);
   }
 
   /** Write a {@code bool} field to the stream. */
+  @Override
   public void writeBoolNoTag(final boolean value) throws IOException {
     writeRawByte(value ? 1 : 0);
   }
 
   /** Write a {@code string} field to the stream. */
   // TODO(dweis): Document behavior on ill-formed UTF-16 input.
+  @Override
   public void writeStringNoTag(final String value) throws IOException {
     try {
       efficientWriteStringNoTag(value);
@@ -458,7 +488,7 @@ public final class CodedOutputStream implements Encoder {
     // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
     // and at most 3 times of it. We take advantage of this in both branches below.
     final int maxLength = value.length() * Utf8.MAX_BYTES_PER_CHAR;
-    final int maxLengthVarIntSize = computeRawVarint32Size(maxLength);
+    final int maxLengthVarIntSize = WireFormat.computeRawVarint32Size(maxLength);
 
     // If we are streaming and the potential length is too big to fit in our buffer, we take the
     // slower path. Otherwise, we're good to try the fast path.
@@ -474,7 +504,7 @@ public final class CodedOutputStream implements Encoder {
     } else {
       // Optimize for the case where we know this length results in a constant varint length as this
       // saves a pass for measuring the length of the string.
-      final int minLengthVarIntSize = computeRawVarint32Size(value.length());
+      final int minLengthVarIntSize = WireFormat.computeRawVarint32Size(value.length());
       int oldPosition = position;
       final int length;
       try {
@@ -505,6 +535,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code group} field to the stream. */
+  @Override
   public void writeGroupNoTag(final MessageLite value) throws IOException {
     value.writeTo(this);
   }
@@ -523,6 +554,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write an embedded message field to the stream. */
+  @Override
   public void writeMessageNoTag(final MessageLite value) throws IOException {
     writeRawVarint32(value.getSerializedSize());
     value.writeTo(this);
@@ -530,6 +562,7 @@ public final class CodedOutputStream implements Encoder {
 
 
   /** Write a {@code bytes} field to the stream. */
+  @Override
   public void writeBytesNoTag(final ByteString value) throws IOException {
     writeRawVarint32(value.size());
     writeRawBytes(value);
@@ -542,6 +575,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code bytes} field to the stream. */
+  @Override
   public void writeByteArrayNoTag(final byte[] value,
                                   final int offset,
                                   final int length) throws IOException {
@@ -564,6 +598,7 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Write a {@code uint32} field to the stream. */
+  @Override
   public void writeUInt32NoTag(final int value) throws IOException {
     writeRawVarint32(value);
   }
@@ -572,28 +607,33 @@ public final class CodedOutputStream implements Encoder {
    * Write an enum field to the stream.  Caller is responsible
    * for converting the enum value to its numeric value.
    */
+  @Override
   public void writeEnumNoTag(final int value) throws IOException {
     writeInt32NoTag(value);
   }
 
   /** Write an {@code sfixed32} field to the stream. */
+  @Override
   public void writeSFixed32NoTag(final int value) throws IOException {
     writeRawLittleEndian32(value);
   }
 
   /** Write an {@code sfixed64} field to the stream. */
+  @Override
   public void writeSFixed64NoTag(final long value) throws IOException {
     writeRawLittleEndian64(value);
   }
 
   /** Write an {@code sint32} field to the stream. */
+  @Override
   public void writeSInt32NoTag(final int value) throws IOException {
-    writeRawVarint32(encodeZigZag32(value));
+    writeRawVarint32(WireFormat.encodeZigZag32(value));
   }
 
   /** Write an {@code sint64} field to the stream. */
+  @Override
   public void writeSInt64NoTag(final long value) throws IOException {
-    writeRawVarint64(encodeZigZag64(value));
+    writeRawVarint64(WireFormat.encodeZigZag64(value));
   }
 
   // =================================================================
@@ -601,87 +641,107 @@ public final class CodedOutputStream implements Encoder {
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code double} field, including tag.
+   * @deprecated Use {@link WireFormat#computeDoubleSize(int, double)} instead.
    */
+  @Deprecated
   public static int computeDoubleSize(final int fieldNumber,
                                       final double value) {
-    return computeTagSize(fieldNumber) + computeDoubleSizeNoTag(value);
+    return WireFormat.computeDoubleSize(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code float} field, including tag.
+   * @deprecated Use {@link WireFormat#computeFloatSize(int, float)} instead.
    */
+  @Deprecated
   public static int computeFloatSize(final int fieldNumber, final float value) {
-    return computeTagSize(fieldNumber) + computeFloatSizeNoTag(value);
+    return WireFormat.computeFloatSize(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code uint64} field, including tag.
+   * @deprecated Use {@link WireFormat#computeUInt64Size(int, long)} instead.
    */
+  @Deprecated
   public static int computeUInt64Size(final int fieldNumber, final long value) {
-    return computeTagSize(fieldNumber) + computeUInt64SizeNoTag(value);
+    return WireFormat.computeUInt64Size(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * {@code int64} field, including tag.
+   * @deprecated Use {@link WireFormat#computeInt64Size(int, long)} instead.
    */
+  @Deprecated
   public static int computeInt64Size(final int fieldNumber, final long value) {
-    return computeTagSize(fieldNumber) + computeInt64SizeNoTag(value);
+    return WireFormat.computeInt64Size(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * {@code int32} field, including tag.
+   * @deprecated Use {@link WireFormat#computeInt32Size(int, int)} instead.
    */
+  @Deprecated
   public static int computeInt32Size(final int fieldNumber, final int value) {
-    return computeTagSize(fieldNumber) + computeInt32SizeNoTag(value);
+    return WireFormat.computeInt32Size(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code fixed64} field, including tag.
+   * @deprecated Use {@link WireFormat#computeFixed64Size(int, long)} instead.
    */
+  @Deprecated
   public static int computeFixed64Size(final int fieldNumber,
                                        final long value) {
-    return computeTagSize(fieldNumber) + computeFixed64SizeNoTag(value);
+    return WireFormat.computeFixed64Size(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code fixed32} field, including tag.
+   * @deprecated Use {@link WireFormat#computeFixed32Size(int, int)} instead.
    */
+  @Deprecated
   public static int computeFixed32Size(final int fieldNumber,
                                        final int value) {
-    return computeTagSize(fieldNumber) + computeFixed32SizeNoTag(value);
+    return WireFormat.computeFixed32Size(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code bool} field, including tag.
+   * @deprecated Use {@link WireFormat#computeBoolSize(int, boolean)} instead.
    */
+  @Deprecated
   public static int computeBoolSize(final int fieldNumber,
                                     final boolean value) {
-    return computeTagSize(fieldNumber) + computeBoolSizeNoTag(value);
+    return WireFormat.computeBoolSize(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code string} field, including tag.
+   * @deprecated Use {@link WireFormat#computeStringSize(int, String)} instead.
    */
+  @Deprecated
   public static int computeStringSize(final int fieldNumber,
                                       final String value) {
-    return computeTagSize(fieldNumber) + computeStringSizeNoTag(value);
+    return WireFormat.computeStringSize(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code group} field, including tag.
+   * @deprecated Use {@link WireFormat#computeGroupSize(int, MessageLite)} instead.
    */
+  @Deprecated
   public static int computeGroupSize(final int fieldNumber,
                                      final MessageLite value) {
-    return computeTagSize(fieldNumber) * 2 + computeGroupSizeNoTag(value);
+    return WireFormat.computeGroupSize(fieldNumber, value);
   }
 
   /**
@@ -695,34 +755,40 @@ public final class CodedOutputStream implements Encoder {
   @Deprecated
   public static int computeUnknownGroupSize(final int fieldNumber,
                                             final MessageLite value) {
-    return computeGroupSize(fieldNumber, value);
+    return WireFormat.computeGroupSize(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * embedded message field, including tag.
+   * @deprecated Use {@link WireFormat#computeMessageSize(int, MessageLite)} instead.
    */
+  @Deprecated
   public static int computeMessageSize(final int fieldNumber,
                                        final MessageLite value) {
-    return computeTagSize(fieldNumber) + computeMessageSizeNoTag(value);
+    return WireFormat.computeMessageSize(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code bytes} field, including tag.
+   * @deprecated Use {@link WireFormat#computeBytesSize(int, ByteString)} instead.
    */
+  @Deprecated
   public static int computeBytesSize(final int fieldNumber,
                                      final ByteString value) {
-    return computeTagSize(fieldNumber) + computeBytesSizeNoTag(value);
+    return WireFormat.computeBytesSize(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code bytes} field, including tag.
+   * @deprecated Use {@link WireFormat#computeByteArraySize(int, byte[])} instead.
    */
+  @Deprecated
   public static int computeByteArraySize(final int fieldNumber,
                                          final byte[] value) {
-    return computeTagSize(fieldNumber) + computeByteArraySizeNoTag(value);
+    return WireFormat.computeTagSize(fieldNumber) + computeByteArraySizeNoTag(value);
   }
 
   /**
@@ -731,103 +797,118 @@ public final class CodedOutputStream implements Encoder {
    */
   public static int computeByteBufferSize(final int fieldNumber,
                                          final ByteBuffer value) {
-    return computeTagSize(fieldNumber) + computeByteBufferSizeNoTag(value);
+    return WireFormat.computeTagSize(fieldNumber) + computeByteBufferSizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * embedded message in lazy field, including tag.
+   * @deprecated Use {@link WireFormat#computeLazyFieldSize(int, LazyFieldLite)} instead.
    */
+  @Deprecated
   public static int computeLazyFieldSize(final int fieldNumber,
                                          final LazyFieldLite value) {
-    return computeTagSize(fieldNumber) + computeLazyFieldSizeNoTag(value);
+    return WireFormat.computeLazyFieldSize(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code uint32} field, including tag.
+   * @deprecated Use {@link WireFormat#computeUInt32Size(int, int)} instead.
    */
+  @Deprecated
   public static int computeUInt32Size(final int fieldNumber, final int value) {
-    return computeTagSize(fieldNumber) + computeUInt32SizeNoTag(value);
+    return WireFormat.computeUInt32Size(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * enum field, including tag.  Caller is responsible for converting the
    * enum value to its numeric value.
+   * @deprecated Use {@link WireFormat#computeEnumSize(int, int)} instead.
    */
+  @Deprecated
   public static int computeEnumSize(final int fieldNumber, final int value) {
-    return computeTagSize(fieldNumber) + computeEnumSizeNoTag(value);
+    return WireFormat.computeEnumSize(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * {@code sfixed32} field, including tag.
+   * @deprecated Use {@link WireFormat#computeSFixed32Size(int, int)} instead.
    */
+  @Deprecated
   public static int computeSFixed32Size(final int fieldNumber,
                                         final int value) {
-    return computeTagSize(fieldNumber) + computeSFixed32SizeNoTag(value);
+    return WireFormat.computeSFixed32Size(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * {@code sfixed64} field, including tag.
+   * @deprecated Use {@link WireFormat#computeSFixed64Size(int, long)} instead.
    */
+  @Deprecated
   public static int computeSFixed64Size(final int fieldNumber,
                                         final long value) {
-    return computeTagSize(fieldNumber) + computeSFixed64SizeNoTag(value);
+    return WireFormat.computeSFixed64Size(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * {@code sint32} field, including tag.
+   * @deprecated Use {@link WireFormat#computeSInt32Size(int, int)} instead.
    */
+  @Deprecated
   public static int computeSInt32Size(final int fieldNumber, final int value) {
-    return computeTagSize(fieldNumber) + computeSInt32SizeNoTag(value);
+    return WireFormat.computeSInt32Size(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * {@code sint64} field, including tag.
+   * @deprecated Use {@link WireFormat#computeSInt64Size(int, long)} instead.
    */
+  @Deprecated
   public static int computeSInt64Size(final int fieldNumber, final long value) {
-    return computeTagSize(fieldNumber) + computeSInt64SizeNoTag(value);
+    return WireFormat.computeSInt64Size(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * MessageSet extension to the stream.  For historical reasons,
    * the wire format differs from normal fields.
+   * @deprecated Use {@link WireFormat#computeMessageSetExtensionSize(int, MessageLite)} instead.
    */
+  @Deprecated
   public static int computeMessageSetExtensionSize(
       final int fieldNumber, final MessageLite value) {
-    return computeTagSize(WireFormat.MESSAGE_SET_ITEM) * 2 +
-           computeUInt32Size(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber) +
-           computeMessageSize(WireFormat.MESSAGE_SET_MESSAGE, value);
+    return WireFormat.computeMessageSetExtensionSize(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * unparsed MessageSet extension field to the stream.  For
    * historical reasons, the wire format differs from normal fields.
+   * @deprecated Use {@link WireFormat#computeRawMessageSetExtensionSize(int, ByteString)} instead.
    */
+  @Deprecated
   public static int computeRawMessageSetExtensionSize(
       final int fieldNumber, final ByteString value) {
-    return computeTagSize(WireFormat.MESSAGE_SET_ITEM) * 2 +
-           computeUInt32Size(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber) +
-           computeBytesSize(WireFormat.MESSAGE_SET_MESSAGE, value);
+    return WireFormat.computeRawMessageSetExtensionSize(fieldNumber, value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * lazily parsed MessageSet extension field to the stream.  For
    * historical reasons, the wire format differs from normal fields.
+   * @deprecated Use {@link WireFormat#computeLazyFieldMessageSetExtensionSize(int, LazyFieldLite)}
+   * instead.
    */
+  @Deprecated
   public static int computeLazyFieldMessageSetExtensionSize(
       final int fieldNumber, final LazyFieldLite value) {
-    return computeTagSize(WireFormat.MESSAGE_SET_ITEM) * 2 +
-           computeUInt32Size(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber) +
-           computeLazyFieldSize(WireFormat.MESSAGE_SET_MESSAGE, value);
+    return WireFormat.computeLazyFieldMessageSetExtensionSize(fieldNumber, value);
   }
 
   // -----------------------------------------------------------------
@@ -835,95 +916,101 @@ public final class CodedOutputStream implements Encoder {
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code double} field, including tag.
+   * @deprecated Use {@link WireFormat#computeDoubleSizeNoTag(double)} instead.
    */
+  @Deprecated
   public static int computeDoubleSizeNoTag(final double value) {
-    return LITTLE_ENDIAN_64_SIZE;
+    return WireFormat.LITTLE_ENDIAN_64_SIZE;
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code float} field, including tag.
+   * @deprecated Use {@link WireFormat#computeFloatSizeNoTag(float)} instead.
    */
-  public static int computeFloatSizeNoTag(final float value) {
-    return LITTLE_ENDIAN_32_SIZE;
+  @Deprecated
+  public static int computeFloatSizeNoTag(@SuppressWarnings("unused") final float value) {
+    return WireFormat.LITTLE_ENDIAN_32_SIZE;
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code uint64} field, including tag.
+   * @deprecated Use {@link WireFormat#computeUInt64SizeNoTag(long)} instead.
    */
+  @Deprecated
   public static int computeUInt64SizeNoTag(final long value) {
-    return computeRawVarint64Size(value);
+    return WireFormat.computeUInt64SizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * {@code int64} field, including tag.
+   * @deprecated Use {@link WireFormat#computeInt64SizeNoTag(long)} instead.
    */
+  @Deprecated
   public static int computeInt64SizeNoTag(final long value) {
-    return computeRawVarint64Size(value);
+    return WireFormat.computeInt64SizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * {@code int32} field, including tag.
+   * @deprecated Use {@link WireFormat#computeInt32SizeNoTag(int)} instead.
    */
+  @Deprecated
   public static int computeInt32SizeNoTag(final int value) {
-    if (value >= 0) {
-      return computeRawVarint32Size(value);
-    } else {
-      // Must sign-extend.
-      return 10;
-    }
+    return WireFormat.computeInt32SizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code fixed64} field.
+   * @deprecated Use {@link WireFormat#computeFixed64SizeNoTag(long)} instead.
    */
+  @Deprecated
   public static int computeFixed64SizeNoTag(final long value) {
-    return LITTLE_ENDIAN_64_SIZE;
+    return WireFormat.computeFixed64SizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code fixed32} field.
+   * @deprecated Use {@link WireFormat#computeFixed32SizeNoTag(int)} instead.
    */
+  @Deprecated
   public static int computeFixed32SizeNoTag(final int value) {
-    return LITTLE_ENDIAN_32_SIZE;
+    return WireFormat.computeFixed32SizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code bool} field.
+   * @deprecated Use {@link WireFormat#computeBoolSizeNoTag(boolean)} instead.
    */
+  @Deprecated
   public static int computeBoolSizeNoTag(final boolean value) {
-    return 1;
+    return WireFormat.computeBoolSizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code string} field.
+   * @deprecated Use {@link WireFormat#computeStringSizeNoTag(String)} instead.
    */
+  @Deprecated
   public static int computeStringSizeNoTag(final String value) {
-    int length;
-    try {
-      length = Utf8.encodedLength(value);
-    } catch (UnpairedSurrogateException e) {
-      // TODO(dweis): Consider using nio Charset methods instead.
-      final byte[] bytes = value.getBytes(Internal.UTF_8);
-      length = bytes.length;
-    }
-
-    return computeRawVarint32Size(length) + length;
+    return WireFormat.computeStringSizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code group} field.
+   * @deprecated Use {@link WireFormat#computeGroupSizeNoTag(MessageLite)} instead.
    */
+  @Deprecated
   public static int computeGroupSizeNoTag(final MessageLite value) {
-    return value.getSerializedSize();
+    return WireFormat.computeGroupSizeNoTag(value);
   }
 
   /**
@@ -932,46 +1019,51 @@ public final class CodedOutputStream implements Encoder {
    * tag.
    *
    * @deprecated UnknownFieldSet now implements MessageLite, so you can just
-   *             call {@link #computeUnknownGroupSizeNoTag}.
+   *             call {@link WireFormat#computeGroupSizeNoTag}.
    */
   @Deprecated
   public static int computeUnknownGroupSizeNoTag(final MessageLite value) {
-    return computeGroupSizeNoTag(value);
+    return WireFormat.computeGroupSizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an embedded
    * message field.
+   * @deprecated Use {@link WireFormat#computeMessageSizeNoTag(MessageLite)} instead.
    */
+  @Deprecated
   public static int computeMessageSizeNoTag(final MessageLite value) {
-    final int size = value.getSerializedSize();
-    return computeRawVarint32Size(size) + size;
+    return WireFormat.computeMessageSizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an embedded
    * message stored in lazy field.
+   * @deprecated Use {@link WireFormat#computeLazyFieldSizeNoTag(LazyFieldLite)} instead.
    */
+  @Deprecated
   public static int computeLazyFieldSizeNoTag(final LazyFieldLite value) {
-    final int size = value.getSerializedSize();
-    return computeRawVarint32Size(size) + size;
+    return WireFormat.computeLazyFieldSizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code bytes} field.
+   * @deprecated Use {@link WireFormat#computeBytesSizeNoTag(ByteString)} instead.
    */
+  @Deprecated
   public static int computeBytesSizeNoTag(final ByteString value) {
-    return computeRawVarint32Size(value.size()) +
-           value.size();
+    return WireFormat.computeBytesSizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code bytes} field.
+   * @deprecated Use {@link WireFormat#computeByteArraySizeNoTag(byte[])} instead.
    */
+  @Deprecated
   public static int computeByteArraySizeNoTag(final byte[] value) {
-    return computeRawVarint32Size(value.length) + value.length;
+    return WireFormat.computeRawVarint32Size(value.length) + value.length;
   }
 
   /**
@@ -979,55 +1071,67 @@ public final class CodedOutputStream implements Encoder {
    * {@code bytes} field.
    */
   public static int computeByteBufferSizeNoTag(final ByteBuffer value) {
-    return computeRawVarint32Size(value.capacity()) + value.capacity();
+    return WireFormat.computeRawVarint32Size(value.capacity()) + value.capacity();
   }
 
   /**
    * Compute the number of bytes that would be needed to encode a
    * {@code uint32} field.
+   * @deprecated Use {@link WireFormat#computeUInt32SizeNoTag(int)} instead.
    */
+  @Deprecated
   public static int computeUInt32SizeNoTag(final int value) {
-    return computeRawVarint32Size(value);
+    return WireFormat.computeUInt32SizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an enum field.
    * Caller is responsible for converting the enum value to its numeric value.
+   * @deprecated Use {@link WireFormat#computeEnumSizeNoTag(int)} instead.
    */
+  @Deprecated
   public static int computeEnumSizeNoTag(final int value) {
-    return computeInt32SizeNoTag(value);
+    return WireFormat.computeEnumSizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * {@code sfixed32} field.
+   * @deprecated Use {@link WireFormat#computeSFixed32SizeNoTag(int)} instead.
    */
+  @Deprecated
   public static int computeSFixed32SizeNoTag(final int value) {
-    return LITTLE_ENDIAN_32_SIZE;
+    return WireFormat.computeSFixed32SizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * {@code sfixed64} field.
+   * @deprecated Use {@link WireFormat#computeSFixed64SizeNoTag(long)} instead.
    */
+  @Deprecated
   public static int computeSFixed64SizeNoTag(final long value) {
-    return LITTLE_ENDIAN_64_SIZE;
+    return WireFormat.computeSFixed64SizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * {@code sint32} field.
+   * @deprecated Use {@link WireFormat#computeSInt32SizeNoTag(int)} instead.
    */
+  @Deprecated
   public static int computeSInt32SizeNoTag(final int value) {
-    return computeRawVarint32Size(encodeZigZag32(value));
+    return WireFormat.computeSInt32SizeNoTag(value);
   }
 
   /**
    * Compute the number of bytes that would be needed to encode an
    * {@code sint64} field.
+   * @deprecated Use {@link WireFormat#computeSInt64SizeNoTag(long)} instead.
    */
+  @Deprecated
   public static int computeSInt64SizeNoTag(final long value) {
-    return computeRawVarint64Size(encodeZigZag64(value));
+    return WireFormat.computeSInt64SizeNoTag(value);
   }
 
   // =================================================================
@@ -1052,6 +1156,7 @@ public final class CodedOutputStream implements Encoder {
    * Flushes the stream and forces any buffered bytes to be written.  This
    * does not flush the underlying OutputStream.
    */
+  @Override
   public void flush() throws IOException {
     if (output != null) {
       refreshBuffer();
@@ -1263,14 +1368,19 @@ public final class CodedOutputStream implements Encoder {
   }
 
   /** Encode and write a tag. */
+  @Override
   public void writeTag(final int fieldNumber, final int wireType)
                        throws IOException {
     writeRawVarint32(WireFormat.makeTag(fieldNumber, wireType));
   }
 
-  /** Compute the number of bytes that would be needed to encode a tag. */
+  /**
+   * Compute the number of bytes that would be needed to encode a tag.
+   * @deprecated Use {@link WireFormat#computeTagSize(int)} instead.
+   */
+  @Deprecated
   public static int computeTagSize(final int fieldNumber) {
-    return computeRawVarint32Size(WireFormat.makeTag(fieldNumber, 0));
+    return WireFormat.computeTagSize(fieldNumber);
   }
 
   /**
@@ -1293,13 +1403,11 @@ public final class CodedOutputStream implements Encoder {
    * Compute the number of bytes that would be needed to encode a varint.
    * {@code value} is treated as unsigned, so it won't be sign-extended if
    * negative.
+   * @deprecated Use {@link WireFormat#computeRawVarint32Size(int)} instead.
    */
+  @Deprecated
   public static int computeRawVarint32Size(final int value) {
-    if ((value & (0xffffffff <<  7)) == 0) return 1;
-    if ((value & (0xffffffff << 14)) == 0) return 2;
-    if ((value & (0xffffffff << 21)) == 0) return 3;
-    if ((value & (0xffffffff << 28)) == 0) return 4;
-    return 5;
+    return WireFormat.computeRawVarint32Size(value);
   }
 
   /** Encode and write a varint. */
@@ -1315,18 +1423,13 @@ public final class CodedOutputStream implements Encoder {
     }
   }
 
-  /** Compute the number of bytes that would be needed to encode a varint. */
+  /**
+   * Compute the number of bytes that would be needed to encode a varint.
+   * @deprecated Use {@link WireFormat#computeRawVarint64Size(long)} instead.
+   */
+  @Deprecated
   public static int computeRawVarint64Size(final long value) {
-    if ((value & (0xffffffffffffffffL <<  7)) == 0) return 1;
-    if ((value & (0xffffffffffffffffL << 14)) == 0) return 2;
-    if ((value & (0xffffffffffffffffL << 21)) == 0) return 3;
-    if ((value & (0xffffffffffffffffL << 28)) == 0) return 4;
-    if ((value & (0xffffffffffffffffL << 35)) == 0) return 5;
-    if ((value & (0xffffffffffffffffL << 42)) == 0) return 6;
-    if ((value & (0xffffffffffffffffL << 49)) == 0) return 7;
-    if ((value & (0xffffffffffffffffL << 56)) == 0) return 8;
-    if ((value & (0xffffffffffffffffL << 63)) == 0) return 9;
-    return 10;
+    return WireFormat.computeRawVarint64Size(value);
   }
 
   /** Write a little-endian 32-bit integer. */
@@ -1337,7 +1440,11 @@ public final class CodedOutputStream implements Encoder {
     writeRawByte((value >> 24) & 0xFF);
   }
 
-  public static final int LITTLE_ENDIAN_32_SIZE = 4;
+  /**
+   * @deprecated Use {@link WireFormat#LITTLE_ENDIAN_32_SIZE} instead.
+   */
+  @Deprecated
+  public static final int LITTLE_ENDIAN_32_SIZE = WireFormat.LITTLE_ENDIAN_32_SIZE;
 
   /** Write a little-endian 64-bit integer. */
   public void writeRawLittleEndian64(final long value) throws IOException {
@@ -1351,7 +1458,11 @@ public final class CodedOutputStream implements Encoder {
     writeRawByte((int)(value >> 56) & 0xFF);
   }
 
-  public static final int LITTLE_ENDIAN_64_SIZE = 8;
+  /**
+   * @deprecated Use {@link WireFormat#LITTLE_ENDIAN_64_SIZE} instead.
+   */
+  @Deprecated
+  public static final int LITTLE_ENDIAN_64_SIZE = WireFormat.LITTLE_ENDIAN_64_SIZE;
 
   /**
    * Encode a ZigZag-encoded 32-bit value.  ZigZag encodes signed integers
@@ -1362,10 +1473,11 @@ public final class CodedOutputStream implements Encoder {
    * @param n A signed 32-bit integer.
    * @return An unsigned 32-bit integer, stored in a signed int because
    *         Java has no explicit unsigned support.
+   * @deprecated Use {@link WireFormat#encodeZigZag32(int)} instead.
    */
+  @Deprecated
   public static int encodeZigZag32(final int n) {
-    // Note:  the right-shift must be arithmetic
-    return (n << 1) ^ (n >> 31);
+    return WireFormat.encodeZigZag32(n);
   }
 
   /**
@@ -1377,9 +1489,10 @@ public final class CodedOutputStream implements Encoder {
    * @param n A signed 64-bit integer.
    * @return An unsigned 64-bit integer, stored in a signed int because
    *         Java has no explicit unsigned support.
+   * @deprecated Use {@link WireFormat#encodeZigZag64(long)} instead.
    */
+  @Deprecated
   public static long encodeZigZag64(final long n) {
-    // Note:  the right-shift must be arithmetic
-    return (n << 1) ^ (n >> 63);
+    return WireFormat.encodeZigZag64(n);
   }
 }

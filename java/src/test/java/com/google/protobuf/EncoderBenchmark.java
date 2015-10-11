@@ -10,13 +10,11 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
-import java.util.Random;
+import java.util.Arrays;
 
 /**
  * Microbenchmarks for writing out protobufs.
@@ -24,6 +22,7 @@ import java.util.Random;
 @State(Scope.Benchmark)
 @Fork(1)
 public class EncoderBenchmark {
+  private static final String SIMPLE_STRING = "This is a test string!";
 
   public enum DataSize {
     SMALL(10),
@@ -55,38 +54,65 @@ public class EncoderBenchmark {
     NEW
   }
 
+  public enum ByteStringType {
+    LITERAL,
+    UNSAFE
+  }
+
   @Param
   private DataSize dataSize;
 
-  @Param
+  @Param("MEDIUM")
   private BufferSize bufferSize;
+
+  @Param("UNSAFE")
+  private ByteStringType byteStringType;
 
   @Param
   private Type type;
 
   private Encoder outputter;
 
-  private ByteArrayOutputStream stream = new ByteArrayOutputStream(BufferSize.LARGE.size * 2);
+  private OutputStream stream = new OutputStream() {
+    @Override
+    public void write(byte[] b, int off, int len) {
+      // Do nothing.
+    }
+
+    @Override
+    public void write(byte[] b) {
+      // Do nothing.
+    }
+
+    @Override
+    public void write(int b) {
+      // Do nothing.
+    }
+  };
 
   private MessageLite msg;
 
   @Setup(Level.Trial)
-  public void setup() throws Exception {
+  public void setup() {
     switch (type) {
       case OLD:
         outputter = CodedOutputStream.newInstance(stream, bufferSize.size);
         break;
       case NEW:
         outputter = new ZeroCopyEncoder(new ZeroCopyEncoder.Handler() {
-          private final WritableByteChannel channel = Channels.newChannel(stream);
           @Override
-          public void onDataEncoded(byte[] b, int offset, int length) {
-            stream.write(b, offset, length);
+          public void copyEncodedData(byte[] b, int offset, int length) throws IOException {
+            // Do nothing.
+          }
+
+          @Override
+          public void onDataEncoded(byte[] b, int offset, int length) throws IOException {
+            // Do nothing.
           }
 
           @Override
           public void onDataEncoded(ByteBuffer data) throws IOException {
-            channel.write(data);
+            // Do nothing.
           }
         }, bufferSize.size);
         break;
@@ -94,25 +120,46 @@ public class EncoderBenchmark {
 
     // Create a builder for the test message and put a few simple fields in it.
     TestAllTypes.Builder msgBuilder = TestAllTypes.newBuilder();
-    ByteString smallBytes = ByteString.unsafeWrapper(
-            ByteBuffer.wrap("This is a test string!".getBytes(Charset.forName("UTF-8"))));
+    byte[] simpleStringBytes = SIMPLE_STRING.getBytes(Charset.forName("UTF-8"));
     for (int ix=0; ix < 10; ++ix) {
       msgBuilder.addRepeatedInt32(ix);
-      msgBuilder.addRepeatedBytes(smallBytes);
-      msgBuilder.addRepeatedString("This is a test string!");
+      msgBuilder.addRepeatedBytes(newByteString(simpleStringBytes));
+      msgBuilder.addRepeatedString(SIMPLE_STRING);
     }
 
     // Create a random buffer for the data size and add it to the message.
     byte[] bytes = new byte[dataSize.size];
-    new Random().nextBytes(bytes);
-    msgBuilder.addRepeatedBytes(ByteString.unsafeWrapper(ByteBuffer.wrap(bytes)));
+    Arrays.fill(bytes, (byte) 1);
+    msgBuilder.addRepeatedBytes(newByteString(bytes));
     msg = msgBuilder.build();
   }
 
+  private ByteString newByteString(byte[] data) {
+    switch (byteStringType) {
+      case LITERAL:
+        return ByteString.copyFrom(data);
+      case UNSAFE:
+        return ByteString.unsafeWrapper(ByteBuffer.wrap(data));
+      default:
+        throw new IllegalStateException("Unknown ByteStringType: " + byteStringType);
+    }
+  }
   @Benchmark
   public void doOutput() throws IOException {
-    stream.reset();
     msg.writeTo(outputter);
     outputter.flush();
+  }
+
+  public static void main(String[] args) throws IOException {
+    EncoderBenchmark benchmark = new EncoderBenchmark();
+    benchmark.bufferSize = BufferSize.MEDIUM;
+    benchmark.dataSize = DataSize.SMALL;
+    benchmark.type = Type.OLD;
+    benchmark.byteStringType = ByteStringType.UNSAFE;
+
+    benchmark.setup();
+    //while(true) {
+      benchmark.doOutput();
+    //}
   }
 }

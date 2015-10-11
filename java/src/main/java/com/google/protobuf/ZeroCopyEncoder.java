@@ -30,6 +30,9 @@
 
 package com.google.protobuf;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -43,7 +46,13 @@ public final class ZeroCopyEncoder implements Encoder {
   // TODO(nmittler): Consider using an allocator for buffers to allow pooling.
   // TODO(nmittler): Need experimentation with good values.
   private static final int SMALL_BUFFER = 1024;
-  private static final double COPY_THRESHOLD = 0.75;
+
+  /**
+   * Default internal buffer size used if not specified.
+   */
+  private static final int DEFAULT_BUFFER_SIZE = 4096;
+
+  private static final int MAX_VARINT_SIZE = 10;
 
   /**
    * Java 1.8 defines Integer.BYTES, but we need this for older versions.
@@ -52,20 +61,26 @@ public final class ZeroCopyEncoder implements Encoder {
   private static final int LONG_BYTES = Long.SIZE / 8;
 
   private final Handler handler;
-  private final int bufferSize;
 
   /**
    * Internal buffer used to avoid writing small chunks of data. This is guaranteed to be
    * backed by an array.
    */
-  private ByteBuffer buffer;
+  private final ByteBuffer buffer;
 
   /**
    * A target to receive individual writes from this marshaller.
    */
   public interface Handler {
     /**
-     * Handler for encoded data. It is assumed that this data will not change.
+     * Handler for encoded data. The handler is responsible for copying this data as necessary and
+     * must not modify the contents of the given array.
+     */
+    void copyEncodedData(byte[] b, int offset, int length) throws IOException;
+
+    /**
+     * Handler for an encoded array. It is assumed that the content of this array will not change
+     * and the handler must not change the data.
      */
     void onDataEncoded(byte[] b, int offset, int length) throws IOException;
 
@@ -77,7 +92,7 @@ public final class ZeroCopyEncoder implements Encoder {
   }
 
   public ZeroCopyEncoder(Handler handler) {
-    this(handler, SMALL_BUFFER);
+    this(handler, DEFAULT_BUFFER_SIZE);
   }
 
   public ZeroCopyEncoder(Handler handler, int bufferSize) {
@@ -86,31 +101,16 @@ public final class ZeroCopyEncoder implements Encoder {
     }
 
     this.handler = handler;
-    this.bufferSize = Math.max(bufferSize, SMALL_BUFFER);
+    this.buffer = ByteBuffer.wrap(new byte[max(bufferSize, SMALL_BUFFER)]);
+
+    // Use little endian for the putInt and putLong methods.
+    buffer.order(ByteOrder.LITTLE_ENDIAN);
   }
 
   @Override
-  public void writeDouble(int fieldNumber, double value) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED64);
-    writeDoubleNoTag(value);
-  }
-
-  @Override
-  public void writeFloat(int fieldNumber, float value) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED32);
-    writeFloatNoTag(value);
-  }
-
-  @Override
-  public void writeUInt64(int fieldNumber, long value) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
-    writeUInt64NoTag(value);
-  }
-
-  @Override
-  public void writeInt64(int fieldNumber, long value) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
-    writeInt64NoTag(value);
+  public void writeTag(int fieldNumber, int wireType) throws IOException {
+    ensureCapacity(MAX_VARINT_SIZE);
+    writeRawVarint32(WireFormat.makeTag(fieldNumber, wireType));
   }
 
   @Override
@@ -120,15 +120,69 @@ public final class ZeroCopyEncoder implements Encoder {
   }
 
   @Override
-  public void writeFixed64(int fieldNumber, long value) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED64);
-    writeFixed64NoTag(value);
+  public void writeUInt32(int fieldNumber, int value) throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
+    writeUInt32NoTag(value);
+  }
+
+  @Override
+  public void writeSInt32(int fieldNumber, int value) throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
+    writeSInt32NoTag(value);
   }
 
   @Override
   public void writeFixed32(int fieldNumber, int value) throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED32);
     writeFixed32NoTag(value);
+  }
+
+  @Override
+  public void writeSFixed32(int fieldNumber, int value) throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED32);
+    writeSFixed32NoTag(value);
+  }
+
+  @Override
+  public void writeInt64(int fieldNumber, long value) throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
+    writeInt64NoTag(value);
+  }
+
+  @Override
+  public void writeUInt64(int fieldNumber, long value) throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
+    writeUInt64NoTag(value);
+  }
+
+  @Override
+  public void writeSInt64(int fieldNumber, long value) throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
+    writeSInt64NoTag(value);
+  }
+
+  @Override
+  public void writeFixed64(int fieldNumber, long value) throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED64);
+    writeFixed64NoTag(value);
+  }
+
+  @Override
+  public void writeSFixed64(int fieldNumber, long value) throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED64);
+    writeSFixed64NoTag(value);
+  }
+
+  @Override
+  public void writeFloat(int fieldNumber, float value) throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED32);
+    writeFloatNoTag(value);
+  }
+
+  @Override
+  public void writeDouble(int fieldNumber, double value) throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED64);
+    writeDoubleNoTag(value);
   }
 
   @Override
@@ -157,57 +211,9 @@ public final class ZeroCopyEncoder implements Encoder {
   }
 
   @Override
-  public void writeBytes(int fieldNumber, ByteString value) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    writeBytesNoTag(value);
-  }
-
-  @Override
-  public void writeByteArray(int fieldNumber, byte[] value) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    writeByteArrayNoTag(value);
-  }
-
-  @Override
-  public void writeByteArray(int fieldNumber, byte[] value, int offset, int length) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    writeByteArrayNoTag(value, offset, length);
-  }
-
-  @Override
-  public void writeUInt32(int fieldNumber, int value) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
-    writeUInt32NoTag(value);
-  }
-
-  @Override
   public void writeEnum(int fieldNumber, int value) throws IOException {
     writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
     writeEnumNoTag(value);
-  }
-
-  @Override
-  public void writeSFixed32(int fieldNumber, int value) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED32);
-    writeSFixed32NoTag(value);
-  }
-
-  @Override
-  public void writeSFixed64(int fieldNumber, long value) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED64);
-    writeSFixed64NoTag(value);
-  }
-
-  @Override
-  public void writeSInt32(int fieldNumber, int value) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
-    writeSInt32NoTag(value);
-  }
-
-  @Override
-  public void writeSInt64(int fieldNumber, long value) throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
-    writeSInt64NoTag(value);
   }
 
   @Override
@@ -224,6 +230,19 @@ public final class ZeroCopyEncoder implements Encoder {
     writeUInt32(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber);
     writeBytes(WireFormat.MESSAGE_SET_MESSAGE, value);
     writeTag(WireFormat.MESSAGE_SET_ITEM, WireFormat.WIRETYPE_END_GROUP);
+  }
+
+  @Override
+  public void writeBytes(int fieldNumber, ByteString value) throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    writeBytesNoTag(value);
+  }
+
+  @Override
+  public void writeByteArray(int fieldNumber, byte[] value, int offset, int length)
+          throws IOException {
+    writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    writeByteArrayNoTag(value, offset, length);
   }
 
   @Override
@@ -248,6 +267,7 @@ public final class ZeroCopyEncoder implements Encoder {
 
   @Override
   public void writeInt32NoTag(int value) throws IOException {
+    ensureCapacity(MAX_VARINT_SIZE);
     if (value >= 0) {
       writeRawVarint32(value);
     } else {
@@ -268,87 +288,53 @@ public final class ZeroCopyEncoder implements Encoder {
 
   @Override
   public void writeBoolNoTag(boolean value) throws IOException {
-    writeRawByte(value ? 1 : 0);
+    ensureCapacity(1);
+    buffer.put((byte) (value ? 1 : 0));
   }
 
   @Override
   public void writeStringNoTag(String value) throws IOException {
-    //byte[] bytes = value.getBytes("UTF-8");
-    //writeRawBytes(bytes);
     // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
     // and at most 3 times of it. We take advantage of this in both branches below.
     final int maxEncodedSize = value.length() * Utf8.MAX_BYTES_PER_CHAR;
-    final int maxLengthVarIntSize = computeRawVarint32Size(maxEncodedSize);
+    final int maxLengthVarIntSize = WireFormat.computeRawVarint32Size(maxEncodedSize);
     final int maxRequiredSize = maxEncodedSize + maxLengthVarIntSize;
 
-    int capacity = capacity();
+    int capacity = buffer.remaining();
     if (capacity >= maxRequiredSize) {
       // Optimize for the case where we know this length results in a constant varint length as this
       // saves a pass for measuring the length of the string.
-      final int minLengthVarIntSize = computeRawVarint32Size(value.length());
+      final int minLengthVarIntSize = WireFormat.computeRawVarint32Size(value.length());
 
-      getOrCreateBuffer();
-      int oldPosition = buffer.position();
       if (minLengthVarIntSize == maxLengthVarIntSize) {
+        int oldPosition = buffer.position();
         int position = oldPosition + minLengthVarIntSize;
-        int newPosition = Utf8.encode(value, getOrCreateBuffer().array(),
-                buffer.arrayOffset() + position,
-                capacity - position);
+        int start = buffer.arrayOffset() + position;
+        int end = Utf8.encode(value, buffer.array(), start, buffer.limit() - position);
         // Since this class is stateful and tracks the position, we rewind and store the state,
         // prepend the length, then reset it back to the end of the string.
-        buffer.position(oldPosition);
-        int length = newPosition - oldPosition - minLengthVarIntSize;
+        int length = end - start;
         writeRawVarint32(length);
-        buffer.position(newPosition);
+        buffer.position(end - buffer.arrayOffset());
       } else {
         int length = Utf8.encodedLength(value);
         writeRawVarint32(length);
-        int position = Utf8.encode(value, getOrCreateBuffer().array(),
-                buffer.arrayOffset() + buffer.position(),
-                capacity - buffer.position());
-        buffer.position(position);
+        int start = buffer.arrayOffset() + buffer.position();
+        int end = Utf8.encode(value, buffer.array(), start, capacity - buffer.position());
+        buffer.position(end - buffer.arrayOffset());
       }
     } else {
-      // There is not enough space to onDataEncoded the entire string to the buffer.
+      // Allocate a byte[] that we know can fit the string and encode into it. String.getBytes()
+      // does the same internally and then does *another copy* to return a byte[] of exactly the
+      // right size. We can skip that copy and just writeRawBytes up to the actualLength of the
+      // UTF-8 encoded bytes.
+      final byte[] encodedBytes = new byte[maxEncodedSize];
+      int actualLength = Utf8.encode(value, encodedBytes, 0, maxEncodedSize);
 
-      // Calculate the encoded length of the string and onDataEncoded it to the buffer.
-      int encodedLength = Utf8.encodedLength(value);
-      writeRawVarint32(encodedLength);
-
-      // Write encoded chunks and flush as needed until the entire encoded string is written.
-      int charPos = 0;
-      while (charPos < value.length()) {
-        capacity = capacity();
-        int charsToWrite = Math.min(value.length() - charPos, capacity / Utf8.MAX_BYTES_PER_CHAR);
-        if (charsToWrite == 0) {
-          // The buffer is full, flush it and try again.
-          flush();
-          continue;
-        }
-
-        getOrCreateBuffer();
-
-        // Write a chunk of the string to buffer.
-        String chunk = value.substring(charPos, charPos + charsToWrite);
-        int position = Utf8.encode(chunk, buffer.array(),
-                buffer.arrayOffset() + buffer.position(),
-                bufferSize - buffer.position());
-        buffer.position(position);
-        charPos += charsToWrite;
-      }
+      ensureCapacity(actualLength + MAX_VARINT_SIZE);
+      writeRawVarint32(actualLength);
+      writeRawBytes(encodedBytes, 0, actualLength);
     }
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a varint. {@code value} is treated
-   * as unsigned, so it won't be sign-extended if negative.
-   */
-  private static int computeRawVarint32Size(final int value) {
-    if ((value & (0xffffffff << 7)) == 0) return 1;
-    if ((value & (0xffffffff << 14)) == 0) return 2;
-    if ((value & (0xffffffff << 21)) == 0) return 3;
-    if ((value & (0xffffffff << 28)) == 0) return 4;
-    return 5;
   }
 
   @Override
@@ -358,30 +344,28 @@ public final class ZeroCopyEncoder implements Encoder {
 
   @Override
   public void writeMessageNoTag(MessageLite value) throws IOException {
+    ensureCapacity(MAX_VARINT_SIZE);
     writeRawVarint32(value.getSerializedSize());
     value.writeTo(this);
   }
 
   @Override
   public void writeBytesNoTag(ByteString value) throws IOException {
+    ensureCapacity(MAX_VARINT_SIZE);
     writeRawVarint32(value.size());
-    writeRawBytes(value);
-  }
-
-  @Override
-  public void writeByteArrayNoTag(byte[] value) throws IOException {
-    writeRawVarint32(value.length);
-    writeRawBytes(value);
+    writeRawBytes(value, 0, value.size());
   }
 
   @Override
   public void writeByteArrayNoTag(byte[] value, int offset, int length) throws IOException {
+    ensureCapacity(MAX_VARINT_SIZE);
     writeRawVarint32(length);
     writeRawBytes(value, offset, length);
   }
 
   @Override
   public void writeUInt32NoTag(int value) throws IOException {
+    ensureCapacity(MAX_VARINT_SIZE);
     writeRawVarint32(value);
   }
 
@@ -402,103 +386,34 @@ public final class ZeroCopyEncoder implements Encoder {
 
   @Override
   public void writeSInt32NoTag(int value) throws IOException {
-    writeRawVarint32(encodeZigZag32(value));
+    ensureCapacity(MAX_VARINT_SIZE);
+    writeRawVarint32(WireFormat.encodeZigZag32(value));
   }
 
   @Override
   public void writeSInt64NoTag(long value) throws IOException {
-    writeRawVarint64(encodeZigZag64(value));
+    ensureCapacity(MAX_VARINT_SIZE);
+    writeRawVarint64(WireFormat.encodeZigZag64(value));
   }
 
   @Override
   public void flush() throws IOException {
-    if (position() == 0) {
+    if (buffer.position() == 0) {
       // Nothing to flush.
       return;
     }
 
+    // Write the data to the handler.
     buffer.flip();
-    int limit = buffer.limit();
-    if (limit < SMALL_BUFFER || (bufferSize / limit) < COPY_THRESHOLD) {
-      // Either not much data to onDataEncoded or the buffer is not very full ... copy the buffer.
-      byte[] bytes = new byte[limit];
-      buffer.get(bytes);
-      buffer.position(0);
-      handler.onDataEncoded(bytes, 0, limit);
-    } else {
-      // Use the current buffer and create a new buffer on the next onDataEncoded.
-      ByteBuffer buf = buffer;
-      buffer = null;
-      handler.onDataEncoded(buf);
-    }
+    handler.copyEncodedData(buffer.array(),
+            buffer.arrayOffset() + buffer.position(),
+            buffer.remaining());
+
+    // Clear the buffer.
+    buffer.clear();
   }
 
-  @Override
-  public void writeRawByte(byte value) throws IOException {
-    if (capacity() == 0) {
-      flush();
-    }
-
-    getOrCreateBuffer().put(value);
-  }
-
-  @Override
-  public void writeRawByte(int value) throws IOException {
-    writeRawByte((byte) value);
-  }
-
-  @Override
-  public void writeRawBytes(ByteString value) throws IOException {
-    writeRawBytes(value, 0, value.size());
-  }
-
-  @Override
-  public void writeRawBytes(byte[] value) throws IOException {
-    writeRawBytes(value, 0, value.length);
-  }
-
-  @Override
-  public void writeRawBytes(ByteBuffer value) throws IOException {
-    if (!value.hasRemaining()) {
-      // Nothing to onDataEncoded.
-      return;
-    }
-
-    if (value.remaining() > SMALL_BUFFER) {
-      // It's a large buffer, just flush any previous data and onDataEncoded the buffer directly.
-      flush();
-
-      // Write a read-only view of this buffer. The new buffer has its own position and limit.
-      handler.onDataEncoded(value.asReadOnlyBuffer());
-
-      // Indicate that the buffer has been fully read.
-      value.position(value.limit());
-      return;
-    }
-
-    // Copy the value to the internal buffer, flushing as necessary.
-    while (value.hasRemaining()) {
-      int capacity = capacity();
-      if (capacity == 0) {
-        // The buffer is full, flush it and try again.
-        flush();
-        continue;
-      }
-
-      // Limit the value buffer by the number of bytes that can be written now.
-      int bytesToWrite = Math.min(value.remaining(), capacity);
-      int valueLimit = value.limit();
-      value.limit(value.position() + bytesToWrite);
-
-      getOrCreateBuffer().put(value);
-
-      // Restore the actual limit to the input value.
-      value.limit(valueLimit);
-    }
-  }
-
-  @Override
-  public void writeRawBytes(byte[] value, int offset, int length) throws IOException {
+  private void writeRawBytes(byte[] value, int offset, int length) throws IOException {
     if (length == 0) {
       return;
     }
@@ -512,136 +427,123 @@ public final class ZeroCopyEncoder implements Encoder {
       return;
     }
 
-    while(offset < length) {
-      int capacity = capacity();
-      if (capacity == 0) {
-        // The buffer is full, flush it and try again.
-        flush();
-        continue;
-      }
-
-      // Determine the number of bytes that can be written before another flush is required.
-      int remaining = length - offset;
-      int bytesToWrite = Math.min(remaining, capacity);
-
-      getOrCreateBuffer().put(value, offset, bytesToWrite);
-      offset += bytesToWrite;
-    }
-  }
-
-  @Override
-  public void writeRawBytes(ByteString value, int offset, int length) throws IOException {
-    if (length == 0) {
+    int capacity = buffer.remaining();
+    if (capacity >= length) {
+      // The entire value can be buffered.
+      buffer.put(value, offset, length);
       return;
     }
 
-    if (value instanceof LiteralByteString) {
-      LiteralByteString lbs = (LiteralByteString) value;
-      writeRawBytes(lbs.bytes, lbs.getOffsetIntoBytes(), lbs.size());
-    } else if (value instanceof UnsafeByteString) {
-      writeRawBytes(value.asReadOnlyByteBuffer());
-    } else {
-      for(ByteBuffer buf : value.asReadOnlyByteBufferList()) {
-        writeRawBytes(buf);
+    // It's a small buffer that won't completely fit into the buffer. Write it to the buffer,
+    // flushing as necessary.
+    int end = offset + length;
+    while(offset < end) {
+      if (capacity == 0) {
+        // The buffer is full, flush it.
+        flush();
+        capacity = buffer.remaining();
       }
+
+      // Determine the number of bytes that can be written before another flush is required.
+      int bytesToWrite = min(end - offset, capacity);
+
+      buffer.put(value, offset, bytesToWrite);
+      offset += bytesToWrite;
+      capacity -= bytesToWrite;
     }
   }
 
-  @Override
-  public void writeTag(int fieldNumber, int wireType) throws IOException {
-    writeRawVarint32(WireFormat.makeTag(fieldNumber, wireType));
+  private void writeRawBytes(ByteString value, int offset, int length) throws IOException {
+    if (length > SMALL_BUFFER) {
+      // It's a large buffer. Flush any currently buffered data and write out the value
+      // to the handler directly.
+      flush();
+
+      if (value instanceof LiteralByteString) {
+        LiteralByteString lbs = (LiteralByteString) value;
+        handler.onDataEncoded(lbs.bytes, lbs.getOffsetIntoBytes() + offset, length);
+      } else if (value instanceof UnsafeByteString) {
+        ByteBuffer buf = ((UnsafeByteString) value).buffer().asReadOnlyBuffer();
+        buf.position(offset);
+        buf.limit(offset + length);
+        handler.onDataEncoded(buf);
+      } else {
+        for(ByteBuffer buf : value.substring(offset, offset + length).asReadOnlyByteBufferList()) {
+          handler.onDataEncoded(buf);
+        }
+      }
+      return;
+    }
+
+    byte[] targetArray = buffer.array();
+    int targetOffset = buffer.arrayOffset() + buffer.position();
+
+    int capacity = buffer.remaining();
+
+    // If the buffer will hold the entire value, just add it to the buffer.
+    if (capacity >= length) {
+      value.copyToInternal(targetArray, offset, targetOffset, length);
+      buffer.position(buffer.position() + length);
+      return;
+    }
+
+    // Write enough bytes to fill the buffer.
+    value.copyToInternal(targetArray, offset, targetOffset, capacity);
+    buffer.position(buffer.limit());
+    offset += capacity;
+    length -= capacity;
+
+    // Flush the content of the buffer to the handler.
+    flush();
+
+    // We now have space for the remaining data.
+    targetOffset = buffer.arrayOffset() + buffer.position();
+    try {
+      value.copyToInternal(targetArray, offset, targetOffset, length);
+    } catch (IndexOutOfBoundsException e) {
+      System.err.println(String.format("NM: offset: %d, targetOffset: %d, length: %d", offset, targetOffset, length));
+      throw e;
+    }
+    buffer.position(buffer.position() + length);
   }
 
-  @Override
-  public void writeRawVarint32(int value) throws IOException {
+  private void writeRawVarint32(int value) {
     while (true) {
       if ((value & ~0x7F) == 0) {
-        writeRawByte(value);
+        buffer.put((byte) value);
         return;
-      } else {
-        writeRawByte((value & 0x7F) | 0x80);
-        value >>>= 7;
       }
+
+      buffer.put((byte) ((value & 0x7F) | 0x80));
+      value >>>= 7;
     }
   }
 
-  @Override
-  public void writeRawVarint64(long value) throws IOException {
+  private void writeRawVarint64(long value) throws IOException {
     while (true) {
       if ((value & ~0x7FL) == 0) {
-        writeRawByte((int) value);
+        buffer.put((byte) value);
         return;
-      } else {
-        writeRawByte(((int) value & 0x7F) | 0x80);
-        value >>>= 7;
       }
+
+      buffer.put((byte) ((value & 0x7F) | 0x80));
+      value >>>= 7;
     }
   }
 
-  @Override
-  public void writeRawLittleEndian32(int value) throws IOException {
-    if(capacity() < INTEGER_BYTES) {
-      flush();
-    }
-    getOrCreateBuffer();
-    buffer.order(ByteOrder.LITTLE_ENDIAN);
+  private void writeRawLittleEndian32(int value) throws IOException {
+    ensureCapacity(INTEGER_BYTES);
     buffer.putInt(value);
-    buffer.order(ByteOrder.LITTLE_ENDIAN);
   }
 
-  @Override
-  public void writeRawLittleEndian64(long value) throws IOException {
-    if(capacity() < LONG_BYTES) {
+  private void writeRawLittleEndian64(long value) throws IOException {
+    ensureCapacity(LONG_BYTES);
+    buffer.putLong(value);
+  }
+
+  private void ensureCapacity(int bytes) throws IOException {
+    if (buffer.remaining() < bytes) {
       flush();
     }
-    getOrCreateBuffer();
-    buffer.order(ByteOrder.LITTLE_ENDIAN);
-    buffer.putLong(value);
-    buffer.order(ByteOrder.LITTLE_ENDIAN);
-  }
-
-  private int position() {
-    return buffer == null ? 0 : buffer.position();
-  }
-
-  private int capacity() {
-    return bufferSize - position();
-  }
-
-  private ByteBuffer getOrCreateBuffer() {
-    if (buffer == null) {
-      // Guarantee that it has a backing array.
-      buffer = ByteBuffer.wrap(new byte[bufferSize]);
-      buffer.order(ByteOrder.BIG_ENDIAN);
-    }
-    return buffer;
-  }
-
-  /**
-   * Encode a ZigZag-encoded 32-bit value.  ZigZag encodes signed integers into values that can be
-   * efficiently encoded with varint.  (Otherwise, negative values must be sign-extended to 64 bits
-   * to be varint encoded, thus always taking 10 bytes on the wire.)
-   *
-   * @param n A signed 32-bit integer.
-   * @return An unsigned 32-bit integer, stored in a signed int because Java has no explicit
-   * unsigned support.
-   */
-  private static int encodeZigZag32(final int n) {
-    // Note:  the right-shift must be arithmetic
-    return (n << 1) ^ (n >> 31);
-  }
-
-  /**
-   * Encode a ZigZag-encoded 64-bit value.  ZigZag encodes signed integers into values that can be
-   * efficiently encoded with varint.  (Otherwise, negative values must be sign-extended to 64 bits
-   * to be varint encoded, thus always taking 10 bytes on the wire.)
-   *
-   * @param n A signed 64-bit integer.
-   * @return An unsigned 64-bit integer, stored in a signed int because Java has no explicit
-   * unsigned support.
-   */
-  public static long encodeZigZag64(final long n) {
-    // Note:  the right-shift must be arithmetic
-    return (n << 1) ^ (n >> 63);
   }
 }
