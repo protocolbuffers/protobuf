@@ -38,7 +38,6 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
@@ -64,9 +63,6 @@ public final class UnsafeByteString extends ByteString implements Externalizable
    * Has is lazy-calculated.
    */
   private int hash;
-
-  private OutputStream output;
-  private WritableByteChannel channel;
 
   /**
    * Public no-arg constructor is needed by {@link Externalizable}. Do not use directly.
@@ -217,15 +213,8 @@ public final class UnsafeByteString extends ByteString implements Externalizable
       return;
     }
 
-    // The buffer isn't backed by an array, we need to wrap the output stream with a channel.
-    // Cache the channel if the output stream has not changed since the last invocation.
-    if (output != out) {
-      output = out;
-      channel = Channels.newChannel(out);
-    }
-
-    ByteBuffer slice = slice(sourceOffset, sourceOffset + numberToWrite);
-    channel.write(slice);
+    // Slow path. Creating a channel allocates an 8KB buffer each time it's called.
+    Channels.newChannel(out).write(slice(sourceOffset, sourceOffset + numberToWrite));
   }
 
   @Override
