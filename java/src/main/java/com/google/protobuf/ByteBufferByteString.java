@@ -44,9 +44,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * A {@link ByteString} that wraps around a {@link ByteBuffer} and exposes the underlying buffer.
+ * A {@link ByteString} that wraps around a {@link ByteBuffer}.
  */
-public final class UnsafeByteString extends ByteString implements Externalizable {
+final class ByteBufferByteString extends ByteString implements Externalizable {
   private static final long serialVersionUID = -5543703061195105843L;
 
   /**
@@ -67,10 +67,10 @@ public final class UnsafeByteString extends ByteString implements Externalizable
   /**
    * Public no-arg constructor is needed by {@link Externalizable}. Do not use directly.
    */
-  public UnsafeByteString() {
+  public ByteBufferByteString() {
   }
 
-  UnsafeByteString(ByteBuffer buffer) {
+  ByteBufferByteString(ByteBuffer buffer) {
     if (buffer == null) {
       throw new NullPointerException("buffer");
     }
@@ -170,7 +170,7 @@ public final class UnsafeByteString extends ByteString implements Externalizable
   @Override
   public ByteString substring(int beginIndex, int endIndex) {
     ByteBuffer slice = slice(beginIndex, endIndex);
-    return new UnsafeByteString(slice);
+    return new ByteBufferByteString(slice);
   }
 
   @Override
@@ -287,8 +287,8 @@ public final class UnsafeByteString extends ByteString implements Externalizable
     if (size() == 0) {
       return true;
     }
-    if (other instanceof UnsafeByteString) {
-      return buffer.equals(((UnsafeByteString) other).buffer);
+    if (other instanceof ByteBufferByteString) {
+      return buffer.equals(((ByteBufferByteString) other).buffer);
     }
     if (other instanceof RopeByteString) {
       return other.equals(this);

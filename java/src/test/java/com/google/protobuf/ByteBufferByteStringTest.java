@@ -47,9 +47,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * Tests for {@link UnsafeByteString}.
+ * Tests for {@link ByteBufferByteString}.
  */
-public class UnsafeByteStringTest extends TestCase {
+public class ByteBufferByteStringTest extends TestCase {
   protected static final String UTF_8 = "UTF-8";
 
   protected String classUnderTest;
@@ -59,9 +59,9 @@ public class UnsafeByteStringTest extends TestCase {
 
   @Override
   protected void setUp() throws Exception {
-    classUnderTest = UnsafeByteString.class.getSimpleName();
+    classUnderTest = ByteBufferByteString.class.getSimpleName();
     referenceBytes = ByteStringTest.getTestBytes(1234, 11337766L);
-    stringUnderTest = ByteString.unsafeWrapper(ByteBuffer.wrap(referenceBytes));
+    stringUnderTest = ByteString.wrap(ByteBuffer.wrap(referenceBytes));
     expectedHashCode = 331161852;
   }
 

@@ -247,12 +247,27 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
-   * Unsafe operation that creates a {@link UnsafeByteString} that directly wraps the given
-   * {@link ByteBuffer}. Any changes to the underlying {@link ByteBuffer} will change the content
-   * of the returned {@link UnsafeByteString}. Use at your own risk.
+   * Unsafe operation, allowing zero-copy. Creates a {@link ByteString} backed by the given
+   * array. This should only be used if the given array is guaranteed never to change.
    */
-  public static UnsafeByteString unsafeWrapper(ByteBuffer bytes) {
-    return new UnsafeByteString(bytes);
+  public static ByteString wrap(byte[] bytes) {
+    return new LiteralByteString(bytes);
+  }
+
+  /**
+   * Unsafe operation, allowing zero-copy. Creates a {@link ByteString} backed by the given
+   * array. This should only be used if the given array is guaranteed never to change.
+   */
+  public static ByteString wrap(byte[] bytes, int offset, int length) {
+    return new BoundedByteString(bytes, offset, length);
+  }
+
+  /**
+   * Unsafe operation, allowing zero-copy. Creates a {@link ByteString} backed by the given
+   * buffer. This should only be used if the given buffer is guaranteed never to change.
+   */
+  public static ByteString wrap(ByteBuffer bytes) {
+    return new ByteBufferByteString(bytes);
   }
 
   /**

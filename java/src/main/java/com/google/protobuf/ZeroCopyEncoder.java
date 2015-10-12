@@ -43,10 +43,6 @@ import java.nio.ByteOrder;
  * however, are written directly through.
  */
 public final class ZeroCopyEncoder implements Encoder {
-  // TODO(nmittler): Consider using an allocator for buffers to allow pooling.
-  // TODO(nmittler): Need experimentation with good values.
-  private static final int SMALL_BUFFER = 1024;
-
   /**
    * Default internal buffer size used if not specified.
    */
@@ -99,9 +95,12 @@ public final class ZeroCopyEncoder implements Encoder {
     if (handler == null) {
       throw new NullPointerException("writer");
     }
+    if (bufferSize <= 0) {
+      throw new IllegalArgumentException("bufferSize must be > 0");
+    }
 
     this.handler = handler;
-    this.buffer = ByteBuffer.wrap(new byte[max(bufferSize, SMALL_BUFFER)]);
+    this.buffer = ByteBuffer.wrap(new byte[bufferSize]);
 
     // Use little endian for the putInt and putLong methods.
     buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -418,7 +417,7 @@ public final class ZeroCopyEncoder implements Encoder {
       return;
     }
 
-    if (length > SMALL_BUFFER) {
+    if (length > buffer.capacity()) {
       // It's a large buffer, just flush any previous data and onDataEncoded the buffer directly.
       flush();
 
@@ -454,7 +453,7 @@ public final class ZeroCopyEncoder implements Encoder {
   }
 
   private void writeRawBytes(ByteString value, int offset, int length) throws IOException {
-    if (length > SMALL_BUFFER) {
+    if (length > buffer.capacity()) {
       // It's a large buffer. Flush any currently buffered data and write out the value
       // to the handler directly.
       flush();
@@ -462,8 +461,8 @@ public final class ZeroCopyEncoder implements Encoder {
       if (value instanceof LiteralByteString) {
         LiteralByteString lbs = (LiteralByteString) value;
         handler.onDataEncoded(lbs.bytes, lbs.getOffsetIntoBytes() + offset, length);
-      } else if (value instanceof UnsafeByteString) {
-        ByteBuffer buf = ((UnsafeByteString) value).buffer().asReadOnlyBuffer();
+      } else if (value instanceof ByteBufferByteString) {
+        ByteBuffer buf = ((ByteBufferByteString) value).buffer().asReadOnlyBuffer();
         buf.position(offset);
         buf.limit(offset + length);
         handler.onDataEncoded(buf);

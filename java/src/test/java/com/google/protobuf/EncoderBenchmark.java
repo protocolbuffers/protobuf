@@ -14,7 +14,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Microbenchmarks for writing out protobufs.
@@ -50,13 +52,37 @@ public class EncoderBenchmark {
   }
 
   public enum Type {
-    OLD,
-    NEW
+    ORIGINAL,
+    ZERO_COPY
   }
 
   public enum ByteStringType {
     LITERAL,
-    UNSAFE
+    BUFFER
+  }
+
+  private class OutputManager {
+    private List<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+
+    public void clear() {
+      buffers.clear();
+    }
+
+    public void addCopy(byte[] b, int offset, int length) {
+      // Do nothing.
+      ByteBuffer buf = ByteBuffer.allocate(length);
+      buf.put(b, offset, length);
+      buf.flip();
+      buffers.add(buf);
+    }
+
+    public void add(byte[] b, int offset, int length) {
+      buffers.add(ByteBuffer.wrap(b, offset, length));
+    }
+
+    public void add(ByteBuffer data) {
+      buffers.add(data);
+    }
   }
 
   @Param
@@ -65,97 +91,117 @@ public class EncoderBenchmark {
   @Param("MEDIUM")
   private BufferSize bufferSize;
 
-  @Param("UNSAFE")
+  @Param
   private ByteStringType byteStringType;
 
   @Param
   private Type type;
 
-  private Encoder outputter;
+  private Encoder encoder;
+
+  private OutputManager outputManager = new OutputManager();
 
   private OutputStream stream = new OutputStream() {
+    private final byte[] oneElementArray = new byte[1];
+
     @Override
     public void write(byte[] b, int off, int len) {
-      // Do nothing.
+      outputManager.addCopy(b, off, len);
     }
 
     @Override
     public void write(byte[] b) {
-      // Do nothing.
+      write(b, 0, b.length);
     }
 
     @Override
     public void write(int b) {
-      // Do nothing.
+      oneElementArray[0] = (byte) b;
+      write(oneElementArray, 0, 1);
     }
   };
 
-  private MessageLite msg;
+  private TestAllTypes.Builder msgBuilder;
+  private byte[] bytes;
 
   @Setup(Level.Trial)
   public void setup() {
     switch (type) {
-      case OLD:
-        outputter = CodedOutputStream.newInstance(stream, bufferSize.size);
+      case ORIGINAL:
+        encoder = CodedOutputStream.newInstance(stream, bufferSize.size);
         break;
-      case NEW:
-        outputter = new ZeroCopyEncoder(new ZeroCopyEncoder.Handler() {
+      case ZERO_COPY:
+        encoder = new ZeroCopyEncoder(new ZeroCopyEncoder.Handler() {
           @Override
           public void copyEncodedData(byte[] b, int offset, int length) throws IOException {
-            // Do nothing.
+            outputManager.addCopy(b, offset, length);
           }
 
           @Override
           public void onDataEncoded(byte[] b, int offset, int length) throws IOException {
-            // Do nothing.
+            outputManager.add(b, offset, length);
           }
 
           @Override
           public void onDataEncoded(ByteBuffer data) throws IOException {
-            // Do nothing.
+            outputManager.add(data);
           }
         }, bufferSize.size);
         break;
     }
 
     // Create a builder for the test message and put a few simple fields in it.
-    TestAllTypes.Builder msgBuilder = TestAllTypes.newBuilder();
+    msgBuilder = TestAllTypes.newBuilder();
     byte[] simpleStringBytes = SIMPLE_STRING.getBytes(Charset.forName("UTF-8"));
     for (int ix=0; ix < 10; ++ix) {
       msgBuilder.addRepeatedInt32(ix);
-      msgBuilder.addRepeatedBytes(newByteString(simpleStringBytes));
+      msgBuilder.addRepeatedBytes(newByteString(simpleStringBytes, false));
       msgBuilder.addRepeatedString(SIMPLE_STRING);
     }
 
     // Create a random buffer for the data size and add it to the message.
-    byte[] bytes = new byte[dataSize.size];
+    bytes = new byte[dataSize.size];
     Arrays.fill(bytes, (byte) 1);
-    msgBuilder.addRepeatedBytes(newByteString(bytes));
-    msg = msgBuilder.build();
   }
 
-  private ByteString newByteString(byte[] data) {
+  private ByteString newByteString(byte[] data, boolean copy) {
     switch (byteStringType) {
       case LITERAL:
-        return ByteString.copyFrom(data);
-      case UNSAFE:
-        return ByteString.unsafeWrapper(ByteBuffer.wrap(data));
+        return copy ? ByteString.copyFrom(data) : ByteString.wrap(data);
+      case BUFFER:
+        if (copy) {
+          ByteBuffer bufCopy = ByteBuffer.allocate(data.length);
+          bufCopy.put(data);
+          bufCopy.flip();
+          return ByteString.wrap(bufCopy);
+        } else {
+          return ByteString.wrap(ByteBuffer.wrap(data));
+        }
       default:
         throw new IllegalStateException("Unknown ByteStringType: " + byteStringType);
     }
   }
   @Benchmark
   public void doOutput() throws IOException {
-    msg.writeTo(outputter);
-    outputter.flush();
+    // Create the ByteString and build the message.
+    ByteString byteString = newByteString(bytes, type != Type.ZERO_COPY);
+    msgBuilder.addRepeatedBytes(byteString);
+
+    // Write the message to the encoder.
+    msgBuilder.build().writeTo(encoder);
+    encoder.flush();
+
+    // Clear data for the next iteration.
+    msgBuilder.clearRepeatedBytes();
+    outputManager.clear();
   }
 
   public static void main(String[] args) throws IOException {
     EncoderBenchmark benchmark = new EncoderBenchmark();
     benchmark.bufferSize = BufferSize.MEDIUM;
     benchmark.dataSize = DataSize.SMALL;
-    benchmark.type = Type.OLD;
-    benchmark.byteStringType = ByteStringType.UNSAFE;
+    benchmark.type = Type.ORIGINAL;
+    benchmark.byteStringType = ByteStringType.BUFFER;
 
     benchmark.setup();
     //while(true) {
