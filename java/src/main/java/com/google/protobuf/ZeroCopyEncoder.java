@@ -30,7 +30,6 @@
 
 package com.google.protobuf;
 
-import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 import java.io.IOException;
@@ -38,9 +37,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /**
- * A protobuf {@link Encoder} that does little to no buffering for fields. It's not fully
- * zero-copy in that it does maintain an internal buffer for small operations. Large fields,
- * however, are written directly through.
+ * A protobuf {@link Encoder} that does little to no buffering for fields. It's not fully zero-copy
+ * in that it does maintain an internal buffer for small operations. Large fields, however, are
+ * written directly through.
  */
 public final class ZeroCopyEncoder implements Encoder {
   /**
@@ -59,8 +58,8 @@ public final class ZeroCopyEncoder implements Encoder {
   private final Handler handler;
 
   /**
-   * Internal buffer used to avoid writing small chunks of data. This is guaranteed to be
-   * backed by an array.
+   * Internal buffer used to avoid writing small chunks of data. This is guaranteed to be backed by
+   * an array.
    */
   private final ByteBuffer buffer;
 
@@ -69,22 +68,26 @@ public final class ZeroCopyEncoder implements Encoder {
    */
   public interface Handler {
     /**
-     * Handler for encoded data. The handler is responsible for copying this data as necessary and
-     * must not modify the contents of the given array.
+     * Handler for encoded data.
+     *
+     * @param b      a byte array containing the encoded data.
+     * @param offset the offset in the array where the encoded data begins.
+     * @param length the length of the encoded data.
+     * @param copy   if {@code true}, the handler must make a defensive copy of the encoded data as
+     *               the content of the array may change after the method returns. If {@code false},
+     *               the handler may safely assume that the content of the array will never change.
      */
-    void copyEncodedData(byte[] b, int offset, int length) throws IOException;
+    void onDataEncoded(byte[] b, int offset, int length, boolean copy) throws IOException;
 
     /**
-     * Handler for an encoded array. It is assumed that the content of this array will not change
-     * and the handler must not change the data.
+     * Handler for encoded data.
+     *
+     * @param data the encoded data.
+     * @param copy if {@code true}, the handler must make a defensive copy of the encoded data as
+     *             the content may change after the method returns. If {@code false}, the handler
+     *             may safely assume that the content of the buffer will never change.
      */
-    void onDataEncoded(byte[] b, int offset, int length) throws IOException;
-
-    /**
-     * Handler for an encoded, read-only {@link ByteBuffer}. It is assumed that this data
-     * will not change.
-     */
-    void onDataEncoded(ByteBuffer data) throws IOException;
+    void onDataEncoded(ByteBuffer data, boolean copy) throws IOException;
   }
 
   public ZeroCopyEncoder(Handler handler) {
@@ -404,9 +407,10 @@ public final class ZeroCopyEncoder implements Encoder {
 
     // Write the data to the handler.
     buffer.flip();
-    handler.copyEncodedData(buffer.array(),
+    handler.onDataEncoded(buffer.array(),
             buffer.arrayOffset() + buffer.position(),
-            buffer.remaining());
+            buffer.remaining(),
+            true);
 
     // Clear the buffer.
     buffer.clear();
@@ -422,7 +426,7 @@ public final class ZeroCopyEncoder implements Encoder {
       flush();
 
       // Write a read-only view of this buffer. The new buffer has its own position and limit.
-      handler.onDataEncoded(value, offset, length);
+      handler.onDataEncoded(value, offset, length, false);
       return;
     }
 
@@ -436,7 +440,7 @@ public final class ZeroCopyEncoder implements Encoder {
     // It's a small buffer that won't completely fit into the buffer. Write it to the buffer,
     // flushing as necessary.
     int end = offset + length;
-    while(offset < end) {
+    while (offset < end) {
       if (capacity == 0) {
         // The buffer is full, flush it.
         flush();
@@ -460,15 +464,15 @@ public final class ZeroCopyEncoder implements Encoder {
 
       if (value instanceof LiteralByteString) {
         LiteralByteString lbs = (LiteralByteString) value;
-        handler.onDataEncoded(lbs.bytes, lbs.getOffsetIntoBytes() + offset, length);
+        handler.onDataEncoded(lbs.bytes, lbs.getOffsetIntoBytes() + offset, length, false);
       } else if (value instanceof ByteBufferByteString) {
         ByteBuffer buf = ((ByteBufferByteString) value).buffer().asReadOnlyBuffer();
         buf.position(offset);
         buf.limit(offset + length);
-        handler.onDataEncoded(buf);
+        handler.onDataEncoded(buf, false);
       } else {
-        for(ByteBuffer buf : value.substring(offset, offset + length).asReadOnlyByteBufferList()) {
-          handler.onDataEncoded(buf);
+        for (ByteBuffer buf : value.substring(offset, offset + length).asReadOnlyByteBufferList()) {
+          handler.onDataEncoded(buf, false);
         }
       }
       return;

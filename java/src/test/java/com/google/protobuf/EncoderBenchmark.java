@@ -133,18 +133,24 @@ public class EncoderBenchmark {
       case ZERO_COPY:
         encoder = new ZeroCopyEncoder(new ZeroCopyEncoder.Handler() {
           @Override
-          public void copyEncodedData(byte[] b, int offset, int length) throws IOException {
-            outputManager.addCopy(b, offset, length);
+          public void onDataEncoded(byte[] b, int offset, int length, boolean copy) throws IOException {
+            if (copy) {
+              outputManager.addCopy(b, offset, length);
+            } else {
+              outputManager.add(b, offset, length);
+            }
           }
 
           @Override
-          public void onDataEncoded(byte[] b, int offset, int length) throws IOException {
-            outputManager.add(b, offset, length);
-          }
-
-          @Override
-          public void onDataEncoded(ByteBuffer data) throws IOException {
-            outputManager.add(data);
+          public void onDataEncoded(ByteBuffer data, boolean copy) throws IOException {
+            if (copy) {
+              ByteBuffer bufCopy = ByteBuffer.allocate(data.remaining());
+              bufCopy.put(data);
+              bufCopy.flip();
+              outputManager.add(bufCopy);
+            } else {
+              outputManager.add(data);
+            }
           }
         }, bufferSize.size);
         break;
