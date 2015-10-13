@@ -14,9 +14,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Microbenchmarks for writing out protobufs.
@@ -62,34 +60,41 @@ public class EncoderBenchmark {
   }
 
   private class OutputManager {
-    private List<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
+    public void add(byte[] b, int offset, int length, boolean mustCopy) {
+      if (mustCopy) {
+        // Copy but do nothing with the result.
+        byte[] copy = new byte[length];
+        System.arraycopy(b, offset, copy, 0, length);
+        b = copy;
+        offset = 0;
+      }
 
-    public void clear() {
-      buffers.clear();
+      doNothing(ByteBuffer.wrap(b, offset, length));
     }
 
-    public void addCopy(byte[] b, int offset, int length) {
-      // Do nothing.
-      ByteBuffer buf = ByteBuffer.allocate(length);
-      buf.put(b, offset, length);
-      buf.flip();
-      buffers.add(buf);
+    public void add(ByteBuffer data, boolean mustCopy) {
+      if (mustCopy) {
+        // Copy but do nothing with the result.
+        byte[] copy = new byte[data.remaining()];
+        data.get(copy);
+        data = ByteBuffer.wrap(copy);
+      }
+      doNothing(data);
     }
 
-    public void add(byte[] b, int offset, int length) {
-      buffers.add(ByteBuffer.wrap(b, offset, length));
-    }
-
-    public void add(ByteBuffer data) {
-      buffers.add(data);
+    private void doNothing(ByteBuffer buffer) {
+      buffer.clear();
     }
   }
 
   @Param
   private DataSize dataSize;
 
-  @Param("MEDIUM")
-  private BufferSize bufferSize;
+  /**
+   * Turns out this doesn't make a huge difference in the benchmarks. Leave it out
+   * as a parameter.
+   */
+  private BufferSize bufferSize = BufferSize.MEDIUM;
 
   @Param
   private ByteStringType byteStringType;
@@ -99,14 +104,14 @@ public class EncoderBenchmark {
 
   private Encoder encoder;
 
-  private OutputManager outputManager = new OutputManager();
+  private OutputManager outputManager;
 
   private OutputStream stream = new OutputStream() {
     private final byte[] oneElementArray = new byte[1];
 
     @Override
     public void write(byte[] b, int off, int len) {
-      outputManager.addCopy(b, off, len);
+      outputManager.add(b, off, len, true);
     }
 
     @Override
@@ -126,6 +131,7 @@ public class EncoderBenchmark {
 
   @Setup(Level.Trial)
   public void setup() {
+    outputManager = new OutputManager();
     switch (type) {
       case ORIGINAL:
         encoder = CodedOutputStream.newInstance(stream, bufferSize.size);
@@ -134,23 +140,12 @@ public class EncoderBenchmark {
         encoder = new ZeroCopyEncoder(new ZeroCopyEncoder.Handler() {
           @Override
           public void onDataEncoded(byte[] b, int offset, int length, boolean copy) throws IOException {
-            if (copy) {
-              outputManager.addCopy(b, offset, length);
-            } else {
-              outputManager.add(b, offset, length);
-            }
+            outputManager.add(b, offset, length, copy);
           }
 
           @Override
           public void onDataEncoded(ByteBuffer data, boolean copy) throws IOException {
-            if (copy) {
-              ByteBuffer bufCopy = ByteBuffer.allocate(data.remaining());
-              bufCopy.put(data);
-              bufCopy.flip();
-              outputManager.add(bufCopy);
-            } else {
-              outputManager.add(data);
-            }
+            outputManager.add(data, copy);
           }
         }, bufferSize.size);
         break;
@@ -165,6 +160,10 @@ public class EncoderBenchmark {
       msgBuilder.addRepeatedString(SIMPLE_STRING);
     }
 
+    // Also add a message from a different charset.
+    String yiddish = "דעם איז אַ פּראָבע אָנזאָג צו אילוסטרירן פאַרשידענע העלד שטעלט";
+    msgBuilder.addRepeatedString(yiddish);
+
     // Create a random buffer for the data size and add it to the message.
     bytes = new byte[dataSize.size];
     Arrays.fill(bytes, (byte) 1);
@@ -176,7 +175,7 @@ public class EncoderBenchmark {
         return copy ? ByteString.copyFrom(data) : ByteString.wrap(data);
       case BUFFER:
         if (copy) {
-          ByteBuffer bufCopy = ByteBuffer.allocate(data.length);
+          ByteBuffer bufCopy = ByteBuffer.allocateDirect(data.length);
           bufCopy.put(data);
           bufCopy.flip();
           return ByteString.wrap(bufCopy);
@@ -199,19 +198,16 @@ public class EncoderBenchmark {
 
     // Clear data for the next iteration.
     msgBuilder.clearRepeatedBytes();
-    outputManager.clear();
   }
 
   public static void main(String[] args) throws IOException {
     EncoderBenchmark benchmark = new EncoderBenchmark();
     benchmark.bufferSize = BufferSize.MEDIUM;
     benchmark.dataSize = DataSize.SMALL;
-    benchmark.type = Type.ORIGINAL;
+    benchmark.type = Type.ZERO_COPY;
     benchmark.byteStringType = ByteStringType.BUFFER;
 
     benchmark.setup();
-    //while(true) {
-      benchmark.doOutput();
-    //}
+    benchmark.doOutput();
   }
 }

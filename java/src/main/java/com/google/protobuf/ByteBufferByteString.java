@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import java.io.Externalizable;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
@@ -185,10 +186,11 @@ final class ByteBufferByteString extends ByteString implements Externalizable {
   }
 
   @Override
-  public void copyTo(ByteBuffer target) {
+  public void copyTo(ByteBuffer target, int sourceOffset, int length) {
     int oldPos = buffer.position();
     try {
-      target.put(buffer);
+      ByteBuffer slice = slice(sourceOffset, sourceOffset + length);
+      target.put(slice);
     } finally {
       buffer.position(oldPos);
     }
@@ -214,7 +216,13 @@ final class ByteBufferByteString extends ByteString implements Externalizable {
     }
 
     // Slow path. Creating a channel allocates an 8KB buffer each time it's called.
-    Channels.newChannel(out).write(slice(sourceOffset, sourceOffset + numberToWrite));
+    if (out instanceof FileOutputStream || numberToWrite >= 8192) {
+      Channels.newChannel(out).write(slice(sourceOffset, sourceOffset + numberToWrite));
+    } else {
+      byte[] bytes = new byte[numberToWrite];
+      this.copyToInternal(bytes, sourceOffset, 0, numberToWrite);
+      out.write(bytes);
+    }
   }
 
   @Override

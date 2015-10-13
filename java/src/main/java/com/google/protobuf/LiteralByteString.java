@@ -120,8 +120,8 @@ class LiteralByteString extends ByteString {
   }
 
   @Override
-  public void copyTo(ByteBuffer target) {
-    target.put(bytes, getOffsetIntoBytes(), size());  // Copies bytes
+  public void copyTo(ByteBuffer target, int sourceOffset, int numberToCopy) {
+    target.put(bytes, getOffsetIntoBytes() + sourceOffset, numberToCopy);  // Copies bytes
   }
 
   @Override

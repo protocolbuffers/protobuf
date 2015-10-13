@@ -551,7 +551,19 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @throws java.nio.BufferOverflowException if the {@code target}'s
    *     remaining() space is not large enough to hold the data.
    */
-  public abstract void copyTo(ByteBuffer target);
+  public void copyTo(ByteBuffer target) {
+    copyTo(target, 0, size());
+  }
+
+  /**
+   * Copies bytes into a ByteBuffer.
+   *
+   * @param target ByteBuffer to copy into.
+   * @throws java.nio.ReadOnlyBufferException if the {@code target} is read-only
+   * @throws java.nio.BufferOverflowException if the {@code target}'s
+   *     remaining() space is not large enough to hold the data.
+   */
+  public abstract void copyTo(ByteBuffer target, int sourceOffset, int numberToCopy);
 
   /**
    * Copies bytes to a {@code byte[]}.

@@ -373,9 +373,14 @@ class RopeByteString extends ByteString {
   }
 
   @Override
-  public void copyTo(ByteBuffer target) {
-    left.copyTo(target);
-    right.copyTo(target);
+  public void copyTo(ByteBuffer target, int sourceOffset, int numberToCopy) {
+    if (sourceOffset == 0 && numberToCopy == size()) {
+      // Copy everything.
+      left.copyTo(target);
+      right.copyTo(target);
+    } else {
+      substring(sourceOffset, sourceOffset + numberToCopy).copyTo(target);
+    }
   }
 
   @Override

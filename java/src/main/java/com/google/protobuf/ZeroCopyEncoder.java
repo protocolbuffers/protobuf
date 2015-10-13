@@ -35,11 +35,13 @@ import static java.lang.Math.min;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CoderResult;
 
 /**
  * A protobuf {@link Encoder} that does little to no buffering for fields. It's not fully zero-copy
  * in that it does maintain an internal buffer for small operations. Large fields, however, are
- * written directly through.
+ * written directly through to the {@link ZeroCopyEncoder.Handler}.
  */
 public final class ZeroCopyEncoder implements Encoder {
   /**
@@ -64,30 +66,31 @@ public final class ZeroCopyEncoder implements Encoder {
   private final ByteBuffer buffer;
 
   /**
-   * A target to receive individual writes from this marshaller.
+   * A handler for the output of this encoder.
    */
   public interface Handler {
     /**
      * Handler for encoded data.
      *
-     * @param b      a byte array containing the encoded data.
-     * @param offset the offset in the array where the encoded data begins.
-     * @param length the length of the encoded data.
-     * @param copy   if {@code true}, the handler must make a defensive copy of the encoded data as
-     *               the content of the array may change after the method returns. If {@code false},
-     *               the handler may safely assume that the content of the array will never change.
+     * @param b        a byte array containing the encoded data.
+     * @param offset   the offset in the array where the encoded data begins.
+     * @param length   the length of the encoded data.
+     * @param mustCopy if {@code true}, the handler must make a defensive copy of the encoded data
+     *                 as the content of the array may change after the method returns. If {@code
+     *                 false}, the handler may safely assume that the content of the array will
+     *                 never change.
      */
-    void onDataEncoded(byte[] b, int offset, int length, boolean copy) throws IOException;
+    void onDataEncoded(byte[] b, int offset, int length, boolean mustCopy) throws IOException;
 
     /**
      * Handler for encoded data.
      *
-     * @param data the encoded data.
-     * @param copy if {@code true}, the handler must make a defensive copy of the encoded data as
-     *             the content may change after the method returns. If {@code false}, the handler
-     *             may safely assume that the content of the buffer will never change.
+     * @param data     the encoded data.
+     * @param mustCopy if {@code true}, the handler must make a defensive copy of the encoded data
+     *                 as the content may change after the method returns. If {@code false}, the
+     *                 handler may safely assume that the content of the buffer will never change.
      */
-    void onDataEncoded(ByteBuffer data, boolean copy) throws IOException;
+    void onDataEncoded(ByteBuffer data, boolean mustCopy) throws IOException;
   }
 
   public ZeroCopyEncoder(Handler handler) {
@@ -103,7 +106,8 @@ public final class ZeroCopyEncoder implements Encoder {
     }
 
     this.handler = handler;
-    this.buffer = ByteBuffer.wrap(new byte[bufferSize]);
+    // TODO(nmittler): heap or direct? Maybe allow the user to specify?
+    this.buffer = ByteBuffer.allocateDirect(bufferSize);
 
     // Use little endian for the putInt and putLong methods.
     buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -298,7 +302,7 @@ public final class ZeroCopyEncoder implements Encoder {
   public void writeStringNoTag(String value) throws IOException {
     // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
     // and at most 3 times of it. We take advantage of this in both branches below.
-    final int maxEncodedSize = value.length() * Utf8.MAX_BYTES_PER_CHAR;
+    int maxEncodedSize = value.length() * Utf8.MAX_BYTES_PER_CHAR;
     final int maxLengthVarIntSize = WireFormat.computeRawVarint32Size(maxEncodedSize);
     final int maxRequiredSize = maxEncodedSize + maxLengthVarIntSize;
 
@@ -306,36 +310,58 @@ public final class ZeroCopyEncoder implements Encoder {
     if (capacity >= maxRequiredSize) {
       // Optimize for the case where we know this length results in a constant varint length as this
       // saves a pass for measuring the length of the string.
-      final int minLengthVarIntSize = WireFormat.computeRawVarint32Size(value.length());
-
+      int minLengthVarIntSize = WireFormat.computeRawVarint32Size(value.length());
       if (minLengthVarIntSize == maxLengthVarIntSize) {
-        int oldPosition = buffer.position();
-        int position = oldPosition + minLengthVarIntSize;
-        int start = buffer.arrayOffset() + position;
-        int end = Utf8.encode(value, buffer.array(), start, buffer.limit() - position);
-        // Since this class is stateful and tracks the position, we rewind and store the state,
-        // prepend the length, then reset it back to the end of the string.
-        int length = end - start;
-        writeRawVarint32(length);
-        buffer.position(end - buffer.arrayOffset());
+        // Save the current position and increment past the length field. We'll come back
+        // and write the length field after the encoding is complete.
+        int startPos = buffer.position();
+        buffer.position(buffer.position() + minLengthVarIntSize);
+
+        // Encode the string.
+        encodeString(value);
+
+        // Now go back to the beginning and write the length.
+        int endPos = buffer.position();
+        buffer.position(startPos);
+        writeRawVarint32(endPos - startPos);
+
+        // Reposition the buffer past the written data.
+        buffer.position(endPos);
       } else {
         int length = Utf8.encodedLength(value);
         writeRawVarint32(length);
-        int start = buffer.arrayOffset() + buffer.position();
-        int end = Utf8.encode(value, buffer.array(), start, capacity - buffer.position());
-        buffer.position(end - buffer.arrayOffset());
+        encodeString(value);
       }
     } else {
-      // Allocate a byte[] that we know can fit the string and encode into it. String.getBytes()
-      // does the same internally and then does *another copy* to return a byte[] of exactly the
-      // right size. We can skip that copy and just writeRawBytes up to the actualLength of the
-      // UTF-8 encoded bytes.
-      final byte[] encodedBytes = new byte[maxEncodedSize];
-      int actualLength = Utf8.encode(value, encodedBytes, 0, maxEncodedSize);
+      // There is not enough space to write the entire String. Iterate, writing parts of the
+      // string and flushing as necessary.
+      int length = Utf8.encodedLength(value);
+      writeRawVarint32(length);
+      int srcIx = 0;
 
-      ensureCapacity(actualLength + MAX_VARINT_SIZE);
-      writeRawVarint32(actualLength);
-      writeRawBytes(encodedBytes, 0, actualLength);
+      while (srcIx < value.length()) {
+        int numChars = buffer.remaining() / Utf8.MAX_BYTES_PER_CHAR;
+        if (numChars == 0) {
+          // Buffer is full, flush it.
+          flush();
+          numChars = buffer.remaining() / Utf8.MAX_BYTES_PER_CHAR;
+        }
+
+        encodeString(value.substring(srcIx, srcIx + numChars));
+        srcIx += numChars;
+      }
+    }
+  }
+
+  private void encodeString(String value) {
+    try {
+      // Encode the string.
+      CoderResult coderResult = PlatformDependent.encode(value, buffer);
+      if (!coderResult.isUnderflow()) {
+        coderResult.throwException();
+      }
+    } catch (CharacterCodingException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -405,12 +431,9 @@ public final class ZeroCopyEncoder implements Encoder {
       return;
     }
 
-    // Write the data to the handler.
+    // Write the data to the handler and require that it be copied.
     buffer.flip();
-    handler.onDataEncoded(buffer.array(),
-            buffer.arrayOffset() + buffer.position(),
-            buffer.remaining(),
-            true);
+    handler.onDataEncoded(buffer, true);
 
     // Clear the buffer.
     buffer.clear();
@@ -478,21 +501,16 @@ public final class ZeroCopyEncoder implements Encoder {
       return;
     }
 
-    byte[] targetArray = buffer.array();
-    int targetOffset = buffer.arrayOffset() + buffer.position();
-
     int capacity = buffer.remaining();
 
     // If the buffer will hold the entire value, just add it to the buffer.
     if (capacity >= length) {
-      value.copyToInternal(targetArray, offset, targetOffset, length);
-      buffer.position(buffer.position() + length);
+      value.copyTo(buffer, offset, length);
       return;
     }
 
     // Write enough bytes to fill the buffer.
-    value.copyToInternal(targetArray, offset, targetOffset, capacity);
-    buffer.position(buffer.limit());
+    value.copyTo(buffer, offset, capacity);
     offset += capacity;
     length -= capacity;
 
@@ -500,13 +518,7 @@ public final class ZeroCopyEncoder implements Encoder {
     flush();
 
     // We now have space for the remaining data.
-    targetOffset = buffer.arrayOffset() + buffer.position();
-    try {
-      value.copyToInternal(targetArray, offset, targetOffset, length);
-    } catch (IndexOutOfBoundsException e) {
-      System.err.println(String.format("NM: offset: %d, targetOffset: %d, length: %d", offset, targetOffset, length));
-      throw e;
-    }
+    value.copyTo(buffer, offset, length);
     buffer.position(buffer.position() + length);
   }
 
