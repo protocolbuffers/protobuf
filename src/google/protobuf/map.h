@@ -275,7 +275,7 @@ class LIBPROTOBUF_EXPORT MapValueRef {
                "MapValueRef::SetInt32Value");
     *reinterpret_cast<int32*>(data_) = value;
   }
-  void SetUInt32Value(uint64 value) {
+  void SetUInt32Value(uint32 value) {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT32,
                "MapValueRef::SetUInt32Value");
     *reinterpret_cast<uint32*>(data_) = value;
