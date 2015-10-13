@@ -96,11 +96,11 @@ For advanced usage information on configure and make, see INSTALL.txt.
 
     $ sudo xcode-select --install
 
-  To install Unix tools, you can install "port" following the instructions at
-  https://www.macports.org . This will reside in /opt/local/bin/port for most
+  To install Unix tools, you can install "homebrew" following the instructions at
+  http://brew.sh/ . This will reside in /usr/local for most
   Mac installations.
 
-    $ sudo /opt/local/bin/port install autoconf automake libtool
+    $ brew install autoconf automake libtool
 
   Then follow the Unix instructions above.
 
