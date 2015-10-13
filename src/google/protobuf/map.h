@@ -155,7 +155,7 @@ class LIBPROTOBUF_EXPORT MapKey {
                "MapKey::GetUInt32Value");
     return val_.uint32_value_;
   }
-  int32 GetBoolValue() const {
+  bool GetBoolValue() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_BOOL,
                "MapKey::GetBoolValue");
     return val_.bool_value_;
