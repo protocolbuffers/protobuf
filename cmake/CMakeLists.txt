@@ -10,7 +10,12 @@ cmake_policy(SET CMP0022 NEW)
 # Options
 option(protobuf_VERBOSE "Enable for verbose output" OFF)
 option(protobuf_BUILD_TESTS "Build tests" ON)
-option(protobuf_BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
+if (BUILD_SHARED_LIBS)
+  set(protobuf_BUILD_SHARED_LIBS_DEFAULT ON)
+else (BUILD_SHARED_LIBS)
+  set(protobuf_BUILD_SHARED_LIBS_DEFAULT OFF)
+endif (BUILD_SHARED_LIBS)
+option(protobuf_BUILD_SHARED_LIBS "Build Shared Libraries" ${protobuf_BUILD_SHARED_LIBS_DEFAULT})
 option(protobuf_MSVC_STATIC_RUNTIME "Link static runtime libraries" ON)
 if (MSVC)
   set(protobuf_WITH_ZLIB_DEFAULT OFF)
@@ -89,29 +94,28 @@ if (HAVE_ZLIB)
   add_definitions(-DHAVE_ZLIB)
 endif (HAVE_ZLIB)
 
-if (MSVC)
-  if (protobuf_BUILD_SHARED_LIBS)
-    add_definitions(-DPROTOBUF_USE_DLLS)
-  else (protobuf_BUILD_SHARED_LIBS)
-    # In case we are building static libraries, link also the runtime library statically
-    # so that MSVCR*.DLL is not required at runtime.
-    # https://msdn.microsoft.com/en-us/library/2kzt1wy3.aspx
-    # This is achieved by replacing msvc option /MD with /MT and /MDd with /MTd
-    # http://www.cmake.org/Wiki/CMake_FAQ#How_can_I_build_my_MSVC_application_with_a_static_runtime.3F
-    if (protobuf_MSVC_STATIC_RUNTIME)
-      foreach(flag_var
-          CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-          CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-        if(${flag_var} MATCHES "/MD")
-          string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-        endif(${flag_var} MATCHES "/MD")
-      endforeach(flag_var)
-    endif (protobuf_MSVC_STATIC_RUNTIME)
-  endif (protobuf_BUILD_SHARED_LIBS)
-  add_definitions(/wd4244 /wd4267 /wd4018 /wd4355 /wd4800 /wd4251 /wd4996 /wd4146 /wd4305)
-endif (MSVC)
+if (protobuf_BUILD_SHARED_LIBS)
+  set(protobuf_SHARED_OR_STATIC "SHARED")
+else (protobuf_BUILD_SHARED_LIBS)
+  set(protobuf_SHARED_OR_STATIC "STATIC")
+  # In case we are building static libraries, link also the runtime library statically
+  # so that MSVCR*.DLL is not required at runtime.
+  # https://msdn.microsoft.com/en-us/library/2kzt1wy3.aspx
+  # This is achieved by replacing msvc option /MD with /MT and /MDd with /MTd
+  # http://www.cmake.org/Wiki/CMake_FAQ#How_can_I_build_my_MSVC_application_with_a_static_runtime.3F
+  if (MSVC AND protobuf_MSVC_STATIC_RUNTIME)
+    foreach(flag_var
+        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+      if(${flag_var} MATCHES "/MD")
+        string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+      endif(${flag_var} MATCHES "/MD")
+    endforeach(flag_var)
+  endif (MSVC AND protobuf_MSVC_STATIC_RUNTIME)
+endif (protobuf_BUILD_SHARED_LIBS)
 
 if (MSVC)
+  add_definitions(/wd4244 /wd4267 /wd4018 /wd4355 /wd4800 /wd4251 /wd4996 /wd4146 /wd4305)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
   configure_file(extract_includes.bat.in extract_includes.bat)
