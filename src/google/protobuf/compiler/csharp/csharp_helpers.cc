@@ -269,6 +269,41 @@ std::string GetPropertyName(const FieldDescriptor* descriptor) {
   return property_name;
 }
 
+std::string GetOutputFile(
+    const google::protobuf::FileDescriptor* descriptor,
+    const std::string file_extension,
+    const bool generate_directories,
+    const std::string base_namespace,
+    string* error) {
+  string relative_filename = GetUmbrellaClassUnqualifiedName(descriptor) + file_extension;
+  if (!generate_directories) {
+    return relative_filename;
+  }
+  string ns = GetFileNamespace(descriptor);
+  string namespace_suffix = ns;
+  if (!base_namespace.empty()) {
+    // Check that the base_namespace is either equal to or a leading part of
+    // the file namespace. This isn't just a simple prefix; "Foo.B" shouldn't
+    // be regarded as a prefix of "Foo.Bar". The simplest option is to add "."
+    // to both.
+    string extended_ns = ns + ".";
+    if (extended_ns.find(base_namespace + ".") != 0) {
+      *error = "Namespace " + ns + " is not a prefix namespace of base namespace " + base_namespace;
+      return ""; // This will be ignored, because we've set an error.
+    }
+    namespace_suffix = ns.substr(base_namespace.length());
+    if (namespace_suffix.find(".") == 0) {
+      namespace_suffix = namespace_suffix.substr(1);
+    }
+  }
+
+  string namespace_dir = StringReplace(namespace_suffix, ".", "/", true);
+  if (!namespace_dir.empty()) {
+    namespace_dir += "/";
+  }
+  return namespace_dir + relative_filename;
+}
+
 // TODO: c&p from Java protoc plugin
 // For encodings with fixed sizes, returns that size in bytes.  Otherwise
 // returns -1.
