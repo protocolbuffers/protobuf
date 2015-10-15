@@ -98,16 +98,32 @@ public final class ZeroCopyEncoder implements Encoder {
   }
 
   public ZeroCopyEncoder(Handler handler, int bufferSize) {
-    if (handler == null) {
-      throw new NullPointerException("writer");
-    }
+    this(handler, allocateBuffer(bufferSize));
+  }
+
+  private static ByteBuffer allocateBuffer(int bufferSize) {
     if (bufferSize <= 0) {
       throw new IllegalArgumentException("bufferSize must be > 0");
     }
+    return ByteBuffer.allocateDirect(bufferSize);
+  }
+
+  public ZeroCopyEncoder(Handler handler, ByteBuffer buffer) {
+    if (handler == null) {
+      throw new NullPointerException("writer");
+    }
+    if (buffer == null) {
+      throw new NullPointerException("buffer");
+    }
+    if (!buffer.hasRemaining()) {
+      throw new IllegalArgumentException("buffer has no capacity");
+    }
+    if (buffer.isReadOnly()) {
+      throw new IllegalArgumentException("buffer is readonly");
+    }
 
     this.handler = handler;
-    // TODO(nmittler): heap or direct? Maybe allow the user to specify?
-    this.buffer = ByteBuffer.allocateDirect(bufferSize);
+    this.buffer = buffer.slice();
 
     // Use little endian for the putInt and putLong methods.
     buffer.order(ByteOrder.LITTLE_ENDIAN);

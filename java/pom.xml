@@ -291,6 +291,7 @@
                 <include>**/AbstractProtobufList.java</include>
                 <include>**/BoundedByteString.java</include>
                 <include>**/BooleanArrayList.java</include>
+                <include>**/ByteBufferByteString.java</include>
                 <include>**/ByteString.java</include>
                 <include>**/CodedInputStream.java</include>
                 <include>**/CodedOutputStream.java</include>
@@ -314,6 +315,7 @@
                 <include>**/MessageLiteOrBuilder.java</include>
                 <include>**/MutabilityOracle.java</include>
                 <include>**/Parser.java</include>
+                <include>**/PlatformDependent.java</include>
                 <include>**/ProtobufArrayList.java</include>
                 <include>**/ProtocolStringList.java</include>
                 <include>**/RopeByteString.java</include>
@@ -323,20 +325,20 @@
                 <include>**/UnmodifiableLazyStringList.java</include>
                 <include>**/Utf8.java</include>
                 <include>**/WireFormat.java</include>
-                <include>**/UnsafeByteString.java</include>
               </includes>
               <testIncludes>
                 <testInclude>**/*Lite.java</testInclude>
                 <testInclude>**/BooleanArrayListTest.java</testInclude>
+                <testInclude>**/ByteBufferByteStringTest.java</testInclude>
                 <testInclude>**/DoubleArrayListTest.java</testInclude>
                 <testInclude>**/FloatArrayListTest.java</testInclude>
                 <testInclude>**/IntArrayListTest.java</testInclude>
                 <testInclude>**/LazyMessageLiteTest.java</testInclude>
                 <testInclude>**/LiteTest.java</testInclude>
                 <testInclude>**/LongArrayListTest.java</testInclude>
+                <testInclude>**/PlatformDependentTest.java</testInclude>
                 <testInclude>**/ProtobufArrayListTest.java</testInclude>
                 <testInclude>**/UnknownFieldSetLiteTest.java</testInclude>
-                <testInclude>**/UnsafeByteStringTest.java</testInclude>
               </testIncludes>
             </configuration>
           </plugin>
