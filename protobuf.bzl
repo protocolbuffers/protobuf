@@ -7,11 +7,11 @@ def _gen_dir(ctx):
     return ctx.attr.prefix
   return ctx.label.package + '/' + ctx.attr.prefix
 
-def CcOuts(srcs):
+def _cc_outs(srcs):
   return [s[:-len(".proto")] +  ".pb.h" for s in srcs] + \
          [s[:-len(".proto")] + ".pb.cc" for s in srcs]
 
-def PyOuts(srcs):
+def _py_outs(srcs):
   return [s[:-len(".proto")] + "_pb2.py" for s in srcs]
 
 def _proto_srcs_impl(ctx):
@@ -91,7 +91,7 @@ def cc_proto_library(
         **kargs)
     return
 
-  outs = CcOuts(srcs)
+  outs = _cc_outs(srcs)
   _proto_srcs(
       name=name + "_genproto",
       srcs=srcs,
