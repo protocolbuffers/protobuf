@@ -31,11 +31,40 @@
 package com.google.protobuf;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * An encoder for protobuf fields.
  */
 public interface Encoder {
+
+  /**
+   * A handler for the output of an {@link Encoder}.
+   */
+  interface Handler {
+    /**
+     * Handler for encoded data.
+     *
+     * @param b        a byte array containing the encoded data.
+     * @param offset   the offset in the array where the encoded data begins.
+     * @param length   the length of the encoded data.
+     * @param mustCopy if {@code true}, the handler must make a defensive copy of the encoded data
+     *                 as the content of the array may change after the method returns. If {@code
+     *                 false}, the handler may safely assume that the content of the array will
+     *                 never change.
+     */
+    void onDataEncoded(byte[] b, int offset, int length, boolean mustCopy) throws IOException;
+
+    /**
+     * Handler for encoded data.
+     *
+     * @param data     the encoded data.
+     * @param mustCopy if {@code true}, the handler must make a defensive copy of the encoded data
+     *                 as the content may change after the method returns. If {@code false}, the
+     *                 handler may safely assume that the content of the buffer will never change.
+     */
+    void onDataEncoded(ByteBuffer data, boolean mustCopy) throws IOException;
+  }
 
   /** Encode and onDataEncoded a tag. */
   void writeTag(int fieldNumber, int wireType) throws IOException;

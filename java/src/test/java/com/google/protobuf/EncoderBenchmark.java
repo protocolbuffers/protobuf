@@ -139,7 +139,7 @@ public class EncoderBenchmark {
 
   private OutputManager outputManager;
 
-  private ZeroCopyEncoder.Handler handler = new ZeroCopyEncoder.Handler() {
+  private Encoder.Handler handler = new Encoder.Handler() {
     @Override
     public void onDataEncoded(byte[] b, int offset, int length, boolean copy) throws IOException {
       outputManager.add(b, offset, length, copy);
