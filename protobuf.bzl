@@ -1,6 +1,5 @@
 # -*- mode: python; -*- PYTHON-PREPROCESSING-REQUIRED
 
-
 def _gen_dir(ctx):
   if not ctx.attr.prefix:
     return ctx.label.package
@@ -49,17 +48,21 @@ def _proto_srcs_impl(ctx):
       )
 
 _proto_srcs = rule(
-    implementation = _proto_srcs_impl,
-    output_to_genfiles = True,
     attrs = {
-      "srcs": attr.label_list(allow_files=True),
-      "deps": attr.label_list(providers=["proto"]),
-      "prefix": attr.string(),
-      "protoc": attr.label(executable=True, single_file=True, mandatory=True),
-      "gen_cc": attr.bool(),
-      "gen_py": attr.bool(),
-      "outs": attr.output_list()
-    }
+        "srcs": attr.label_list(allow_files = True),
+        "deps": attr.label_list(providers = ["proto"]),
+        "prefix": attr.string(),
+        "protoc": attr.label(
+            executable = True,
+            single_file = True,
+            mandatory = True,
+        ),
+        "gen_cc": attr.bool(),
+        "gen_py": attr.bool(),
+        "outs": attr.output_list(),
+    },
+    output_to_genfiles = True,
+    implementation = _proto_srcs_impl,
 )
 
 def cc_proto_library(
