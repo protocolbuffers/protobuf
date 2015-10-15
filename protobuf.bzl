@@ -14,8 +14,8 @@ def _cc_outs(srcs):
 def _py_outs(srcs):
   return [s[:-len(".proto")] + "_pb2.py" for s in srcs]
 
-def _proto_srcs_impl(ctx):
-  """General implementation for calculating proto srcs"""
+def _proto_gen_impl(ctx):
+  """General implementation for generating protos"""
   srcs = ctx.files.srcs
   deps = []
   deps += ctx.files.srcs
@@ -36,7 +36,7 @@ def _proto_srcs_impl(ctx):
         inputs=srcs + deps,
         outputs=ctx.outputs.outs,
         arguments=args + import_flags + [s.path for s in srcs],
-        executable=ctx.executable.protoc
+        executable=ctx.executable.protoc,
     )
 
   return struct(
@@ -47,7 +47,7 @@ def _proto_srcs_impl(ctx):
       ),
   )
 
-_proto_srcs = rule(
+_proto_gen = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = ["proto"]),
@@ -62,7 +62,7 @@ _proto_srcs = rule(
         "outs": attr.output_list(),
     },
     output_to_genfiles = True,
-    implementation = _proto_srcs_impl,
+    implementation = _proto_gen_impl,
 )
 
 def cc_proto_library(
@@ -78,7 +78,7 @@ def cc_proto_library(
   if internal_bootstrap_hack:
     # For pre-checked-in generated files, we add the internal_bootstrap_hack
     # which will skip the codegen action.
-    _proto_srcs(
+    _proto_gen(
         name=name + "_genproto",
         srcs=srcs,
         deps=[s + "_genproto" for s in proto_deps],
@@ -88,11 +88,12 @@ def cc_proto_library(
     # An empty cc_library to make rule dependency consistent.
     native.cc_library(
         name=name,
-        **kargs)
+        **kargs,
+    )
     return
 
   outs = _cc_outs(srcs)
-  _proto_srcs(
+  _proto_gen(
       name=name + "_genproto",
       srcs=srcs,
       deps=[s + "_genproto" for s in proto_deps],
@@ -107,4 +108,5 @@ def cc_proto_library(
       srcs=outs,
       deps=deps + proto_deps,
       includes=[prefix],
-      **kargs)
+      **kargs,
+  )
