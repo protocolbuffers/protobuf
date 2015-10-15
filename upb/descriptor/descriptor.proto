@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// http://code.google.com/p/protobuf/
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -37,10 +37,14 @@
 // without any other information (e.g. without reading its imports).
 
 
+syntax = "proto2";
 
 package google.protobuf;
+option go_package = "descriptor";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "DescriptorProtos";
+option csharp_namespace = "Google.Protobuf.Reflection";
+option objc_class_prefix = "GPB";
 
 // descriptor.proto must be optimized for speed because reflection-based
 // algorithms don't work during bootstrapping.
@@ -74,10 +78,14 @@ message FileDescriptorProto {
   optional FileOptions options = 8;
 
   // This field contains optional information about the original source code.
-  // You may safely remove this entire field whithout harming runtime
+  // You may safely remove this entire field without harming runtime
   // functionality of the descriptors -- the information is needed only by
   // development tools.
   optional SourceCodeInfo source_code_info = 9;
+
+  // The syntax of the proto file.
+  // The supported values are "proto2" and "proto3".
+  optional string syntax = 12;
 }
 
 // Describes a message type.
@@ -96,7 +104,21 @@ message DescriptorProto {
   }
   repeated ExtensionRange extension_range = 5;
 
+  repeated OneofDescriptorProto oneof_decl = 8;
+
   optional MessageOptions options = 7;
+
+  // Range of reserved tag numbers. Reserved tag numbers may not be used by
+  // fields or extension ranges in the same message. Reserved ranges may
+  // not overlap.
+  message ReservedRange {
+    optional int32 start = 1; // Inclusive.
+    optional int32 end = 2;   // Exclusive.
+  }
+  repeated ReservedRange reserved_range = 9;
+  // Reserved field names, which may not be used by fields in the same message.
+  // A given name may only be reserved once.
+  repeated string reserved_name = 10;
 }
 
 // Describes a field within a message.
@@ -143,7 +165,7 @@ message FieldDescriptorProto {
   optional Label label = 4;
 
   // If type_name is set, this need not be set.  If both this and type_name
-  // are set, this must be either TYPE_ENUM or TYPE_MESSAGE.
+  // are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
   optional Type type = 5;
 
   // For message and enum types, this is the name of the type.  If the name
@@ -164,7 +186,22 @@ message FieldDescriptorProto {
   // TODO(kenton):  Base-64 encode?
   optional string default_value = 7;
 
+  // If set, gives the index of a oneof in the containing type's oneof_decl
+  // list.  This field is a member of that oneof.
+  optional int32 oneof_index = 9;
+
+  // JSON name of this field. The value is set by protocol compiler. If the
+  // user has set a "json_name" option on this field, that option's value
+  // will be used. Otherwise, it's deduced from the field's name by converting
+  // it to camelCase.
+  optional string json_name = 10;
+
   optional FieldOptions options = 8;
+}
+
+// Describes a oneof.
+message OneofDescriptorProto {
+  optional string name = 1;
 }
 
 // Describes an enum type.
@@ -202,6 +239,11 @@ message MethodDescriptorProto {
   optional string output_type = 3;
 
   optional MethodOptions options = 4;
+
+  // Identifies if client streams multiple client messages
+  optional bool client_streaming = 5 [default=false];
+  // Identifies if server streams multiple server messages
+  optional bool server_streaming = 6 [default=false];
 }
 
 
@@ -228,12 +270,12 @@ message MethodDescriptorProto {
 // * For options which will be published and used publicly by multiple
 //   independent entities, e-mail protobuf-global-extension-registry@google.com
 //   to reserve extension numbers. Simply provide your project name (e.g.
-//   Object-C plugin) and your porject website (if available) -- there's no need
-//   to explain how you intend to use them. Usually you only need one extension
-//   number. You can declare multiple options with only one extension number by
-//   putting them in a sub-message. See the Custom Options section of the docs
-//   for examples:
-//   http://code.google.com/apis/protocolbuffers/docs/proto.html#options
+//   Objective-C plugin) and your project website (if available) -- there's no
+//   need to explain how you intend to use them. Usually you only need one
+//   extension number. You can declare multiple options with only one extension
+//   number by putting them in a sub-message. See the Custom Options section of
+//   the docs for examples:
+//   https://developers.google.com/protocol-buffers/docs/proto#options
 //   If this turns out to be popular, a web service will be set up
 //   to automatically assign option numbers.
 
@@ -263,10 +305,27 @@ message FileOptions {
   optional bool java_multiple_files = 10 [default=false];
 
   // If set true, then the Java code generator will generate equals() and
-  // hashCode() methods for all messages defined in the .proto file. This is
-  // purely a speed optimization, as the AbstractMessage base class includes
-  // reflection-based implementations of these methods.
+  // hashCode() methods for all messages defined in the .proto file.
+  // This increases generated code size, potentially substantially for large
+  // protos, which may harm a memory-constrained application.
+  // - In the full runtime this is a speed optimization, as the
+  // AbstractMessage base class includes reflection-based implementations of
+  // these methods.
+  // - In the lite runtime, setting this option changes the semantics of
+  // equals() and hashCode() to more closely match those of the full runtime;
+  // the generated methods compute their results based on field values rather
+  // than object identity. (Implementations should not assume that hashcodes
+  // will be consistent across runtimes or versions of the protocol compiler.)
   optional bool java_generate_equals_and_hash = 20 [default=false];
+
+  // If set true, then the Java2 code generator will generate code that
+  // throws an exception whenever an attempt is made to assign a non-UTF-8
+  // byte sequence to a string field.
+  // Message reflection will do the same.
+  // However, an extension field still accepts non-UTF-8 byte sequences.
+  // This option has no effect on when used with the lite runtime.
+  optional bool java_string_check_utf8 = 27 [default=false];
+
 
   // Generated classes can be optimized for speed or code size.
   enum OptimizeMode {
@@ -278,7 +337,10 @@ message FileOptions {
   optional OptimizeMode optimize_for = 9 [default=SPEED];
 
   // Sets the Go package where structs generated from this .proto will be
-  // placed.  There is no default.
+  // placed. If omitted, the Go package will be derived from the following:
+  //   - The basename of the package import path, if provided.
+  //   - Otherwise, the package statement in the .proto file, if present.
+  //   - Otherwise, the basename of the .proto file, without extension.
   optional string go_package = 11;
 
 
@@ -287,7 +349,7 @@ message FileOptions {
   // are not specific to any particular RPC system.  They are generated by the
   // main code generators in each language (without additional plugins).
   // Generic services were the only kind of service generation supported by
-  // early versions of proto2.
+  // early versions of google.protobuf.
   //
   // Generic services are now considered deprecated in favor of using plugins
   // that generate code specific to your particular RPC system.  Therefore,
@@ -296,6 +358,28 @@ message FileOptions {
   optional bool cc_generic_services = 16 [default=false];
   optional bool java_generic_services = 17 [default=false];
   optional bool py_generic_services = 18 [default=false];
+
+  // Is this file deprecated?
+  // Depending on the target platform, this can emit Deprecated annotations
+  // for everything in the file, or it will be completely ignored; in the very
+  // least, this is a formalization for deprecating files.
+  optional bool deprecated = 23 [default=false];
+
+  // Enables the use of arenas for the proto messages in this file. This applies
+  // only to generated classes for C++.
+  optional bool cc_enable_arenas = 31 [default=false];
+
+
+  // Sets the objective c class prefix which is prepended to all objective c
+  // generated classes from this .proto. There is no default.
+  optional string objc_class_prefix = 36;
+
+  // Namespace for generated classes; defaults to the package.
+  optional string csharp_namespace = 37;
+
+  // Whether the nano proto compiler should generate in the deprecated non-nano
+  // suffixed package.
+  optional bool javanano_use_deprecated_package = 38;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -330,6 +414,35 @@ message MessageOptions {
   // from proto1 easier; new code should avoid fields named "descriptor".
   optional bool no_standard_descriptor_accessor = 2 [default=false];
 
+  // Is this message deprecated?
+  // Depending on the target platform, this can emit Deprecated annotations
+  // for the message, or it will be completely ignored; in the very least,
+  // this is a formalization for deprecating messages.
+  optional bool deprecated = 3 [default=false];
+
+  // Whether the message is an automatically generated map entry type for the
+  // maps field.
+  //
+  // For maps fields:
+  //     map<KeyType, ValueType> map_field = 1;
+  // The parsed descriptor looks like:
+  //     message MapFieldEntry {
+  //         option map_entry = true;
+  //         optional KeyType key = 1;
+  //         optional ValueType value = 2;
+  //     }
+  //     repeated MapFieldEntry map_field = 1;
+  //
+  // Implementations may choose not to generate the map_entry=true message, but
+  // use a native map in the target language to hold the keys and values.
+  // The reflection APIs in such implementions still need to work as
+  // if the field is a repeated message field.
+  //
+  // NOTE: Do not set the option in .proto files. Always use the maps syntax
+  // instead. The option should only be implicitly set by the proto compiler
+  // parser.
+  optional bool map_entry = 7;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -354,10 +467,31 @@ message FieldOptions {
   // The packed option can be enabled for repeated primitive fields to enable
   // a more efficient representation on the wire. Rather than repeatedly
   // writing the tag and type for each element, the entire array is encoded as
-  // a single length-delimited blob.
+  // a single length-delimited blob. In proto3, only explicit setting it to
+  // false will avoid using packed encoding.
   optional bool packed = 2;
 
 
+  // The jstype option determines the JavaScript type used for values of the
+  // field.  The option is permitted only for 64 bit integral and fixed types
+  // (int64, uint64, sint64, fixed64, sfixed64).  By default these types are
+  // represented as JavaScript strings.  This avoids loss of precision that can
+  // happen when a large value is converted to a floating point JavaScript
+  // numbers.  Specifying JS_NUMBER for the jstype causes the generated
+  // JavaScript code to use the JavaScript "number" type instead of strings.
+  // This option is an enum to permit additional types to be added,
+  // e.g. goog.math.Integer.
+  optional JSType jstype = 6 [default = JS_NORMAL];
+  enum JSType {
+    // Use the default type.
+    JS_NORMAL = 0;
+
+    // Use JavaScript strings.
+    JS_STRING = 1;
+
+    // Use JavaScript numbers.
+    JS_NUMBER = 2;
+  }
 
   // Should this field be parsed lazily?  Lazy applies only to message-type
   // fields.  It means that when the outer message is initially parsed, the
@@ -395,22 +529,9 @@ message FieldOptions {
   // is a formalization for deprecating fields.
   optional bool deprecated = 3 [default=false];
 
-  // EXPERIMENTAL.  DO NOT USE.
-  // For "map" fields, the name of the field in the enclosed type that
-  // is the key for this map.  For example, suppose we have:
-  //   message Item {
-  //     required string name = 1;
-  //     required string value = 2;
-  //   }
-  //   message Config {
-  //     repeated Item items = 1 [experimental_map_key="name"];
-  //   }
-  // In this situation, the map key for Item will be set to "name".
-  // TODO: Fully-implement this, then remove the "experimental_" prefix.
-  optional string experimental_map_key = 9;
-
   // For Google-internal migration only. Do not use.
   optional bool weak = 10 [default=false];
+
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -421,9 +542,15 @@ message FieldOptions {
 
 message EnumOptions {
 
-  // Set this option to false to disallow mapping different tag names to a same
+  // Set this option to true to allow mapping different tag names to the same
   // value.
-  optional bool allow_alias = 2 [default=true];
+  optional bool allow_alias = 2;
+
+  // Is this enum deprecated?
+  // Depending on the target platform, this can emit Deprecated annotations
+  // for the enum, or it will be completely ignored; in the very least, this
+  // is a formalization for deprecating enums.
+  optional bool deprecated = 3 [default=false];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -433,6 +560,12 @@ message EnumOptions {
 }
 
 message EnumValueOptions {
+  // Is this enum value deprecated?
+  // Depending on the target platform, this can emit Deprecated annotations
+  // for the enum value, or it will be completely ignored; in the very least,
+  // this is a formalization for deprecating enum values.
+  optional bool deprecated = 1 [default=false];
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -447,6 +580,12 @@ message ServiceOptions {
   //   we were already using them long before we decided to release Protocol
   //   Buffers.
 
+  // Is this service deprecated?
+  // Depending on the target platform, this can emit Deprecated annotations
+  // for the service, or it will be completely ignored; in the very least,
+  // this is a formalization for deprecating services.
+  optional bool deprecated = 33 [default=false];
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -460,6 +599,12 @@ message MethodOptions {
   //   framework.  We apologize for hoarding these numbers to ourselves, but
   //   we were already using them long before we decided to release Protocol
   //   Buffers.
+
+  // Is this method deprecated?
+  // Depending on the target platform, this can emit Deprecated annotations
+  // for the method, or it will be completely ignored; in the very least,
+  // this is a formalization for deprecating methods.
+  optional bool deprecated = 33 [default=false];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -587,6 +732,11 @@ message SourceCodeInfo {
     // A series of line comments appearing on consecutive lines, with no other
     // tokens appearing on those lines, will be treated as a single comment.
     //
+    // leading_detached_comments will keep paragraphs of comments that appear
+    // before (but not connected to) the current element. Each paragraph,
+    // separated by empty lines, will be one comment element in the repeated
+    // field.
+    //
     // Only the comment content is provided; comment markers (e.g. //) are
     // stripped out.  For block comments, leading whitespace and an asterisk
     // will be stripped from the beginning of each line other than the first.
@@ -607,6 +757,12 @@ message SourceCodeInfo {
     //   // Another line attached to qux.
     //   optional double qux = 4;
     //
+    //   // Detached comment for corge. This is not leading or trailing comments
+    //   // to qux or corge because there are blank lines separating it from
+    //   // both.
+    //
+    //   // Detached comment for corge paragraph 2.
+    //
     //   optional string corge = 5;
     //   /* Block comment attached
     //    * to corge.  Leading asterisks
@@ -614,7 +770,10 @@ message SourceCodeInfo {
     //   /* Block comment attached to
     //    * grault. */
     //   optional int32 grault = 6;
+    //
+    //   // ignored detached comments.
     optional string leading_comments = 3;
     optional string trailing_comments = 4;
+    repeated string leading_detached_comments = 6;
   }
 }

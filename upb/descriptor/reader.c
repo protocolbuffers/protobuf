@@ -203,6 +203,20 @@ static size_t file_onpackage(void *closure, const void *hd, const char *buf,
   return n;
 }
 
+static size_t file_onsyntax(void *closure, const void *hd, const char *buf,
+                          size_t n, const upb_bufhandle *handle) {
+  upb_descreader *r = closure;
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+  /* XXX: see comment at the top of the file. */
+  if (n == strlen("proto3") && memcmp(buf, "proto3", strlen("proto3")) == 0) {
+    /* TODO(haberman): set a flag in the scope so that all enclosing messages
+     * will set field presence to false. */
+    UPB_UNUSED(r);
+  }
+  return n;
+}
+
 /* Handlers for google.protobuf.EnumValueDescriptorProto. */
 static bool enumval_startmsg(void *closure, const void *hd) {
   upb_descreader *r = closure;
@@ -571,6 +585,8 @@ static void reghandlers(const void *closure, upb_handlers *h) {
     upb_handlers_setstartmsg(h, &file_startmsg, NULL);
     upb_handlers_setendmsg(h, &file_endmsg, NULL);
     upb_handlers_setstring(h, D(FileDescriptorProto_package), &file_onpackage,
+                           NULL);
+    upb_handlers_setstring(h, D(FileDescriptorProto_syntax), &file_onsyntax,
                            NULL);
     upb_handlers_setendsubmsg(h, D(FileDescriptorProto_extension), &pushextension,
                               NULL);
