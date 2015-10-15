@@ -1,5 +1,10 @@
 #!/bin/bash
 
+install_protoc() {
+  sudo apt-get install protobuf-compiler
+  protoc --version || true
+}
+
 # Bare build: no dependencies installed, no JIT enabled.
 bare_install() {
   :
@@ -21,7 +26,8 @@ barejit_script() {
 # Build with Google protobuf support and tests (with JIT).
 withprotobuf_install() {
   sudo apt-get update -qq
-  sudo apt-get install protobuf-compiler libprotobuf-dev
+  sudo apt-get install libprotobuf-dev
+  install_protoc
 }
 withprotobuf_script() {
   make -j12 tests googlepbtests WITH_JIT=yes
@@ -66,9 +72,13 @@ lua_script() {
 # don't want the test to be brittle.
 genfiles_install() {
   sudo apt-get update -qq
-  sudo apt-get install lua5.2 liblua5.2-dev protobuf-compiler
+  sudo apt-get install lua5.2 liblua5.2-dev
 }
 genfiles_script() {
+  # Avoid regenerating descriptor.pb, since its output can vary based on the
+  # version of protoc.
+  touch upb/descriptor/descriptor.pb
+
   make -j12 genfiles USER_CPPFLAGS="$USER_CPPFLAGS `pkg-config lua5.2 --cflags`"
   # Will fail if any differences were observed.
   git diff --exit-code
@@ -77,7 +87,8 @@ genfiles_script() {
 # Tests the ndebug build.
 ndebug_install() {
   sudo apt-get update -qq
-  sudo apt-get install lua5.2 liblua5.2-dev protobuf-compiler libprotobuf-dev
+  sudo apt-get install lua5.2 liblua5.2-dev libprotobuf-dev
+  install_protoc
 }
 ndebug_script() {
   # Override of USER_CPPFLAGS removes -UNDEBUG.
@@ -89,7 +100,8 @@ ndebug_script() {
 # A run that executes with coverage support and uploads to coveralls.io
 coverage_install() {
   sudo apt-get update -qq
-  sudo apt-get install protobuf-compiler libprotobuf-dev lua5.2 liblua5.2-dev
+  sudo apt-get install libprotobuf-dev lua5.2 liblua5.2-dev
+  install_protoc
   sudo pip install cpp-coveralls
 }
 coverage_script() {

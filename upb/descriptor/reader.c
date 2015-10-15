@@ -53,6 +53,9 @@ struct upb_descreader {
   upb_descreader_frame stack[UPB_MAX_MESSAGE_NESTING];
   int stack_len;
 
+  bool primitives_have_presence;
+  int file_start;
+
   uint32_t number;
   char *name;
   bool saw_number;
@@ -179,9 +182,12 @@ void upb_descreader_setscopename(upb_descreader *r, char *str) {
 }
 
 /* Handlers for google.protobuf.FileDescriptorProto. */
-static bool file_startmsg(void *r, const void *hd) {
+static bool file_startmsg(void *closure, const void *hd) {
+  upb_descreader *r = closure;
   UPB_UNUSED(hd);
   upb_descreader_startcontainer(r);
+  r->primitives_have_presence = true;
+  r->file_start = r->defs.len;
   return true;
 }
 
@@ -210,9 +216,17 @@ static size_t file_onsyntax(void *closure, const void *hd, const char *buf,
   UPB_UNUSED(handle);
   /* XXX: see comment at the top of the file. */
   if (n == strlen("proto3") && memcmp(buf, "proto3", strlen("proto3")) == 0) {
-    /* TODO(haberman): set a flag in the scope so that all enclosing messages
-     * will set field presence to false. */
-    UPB_UNUSED(r);
+    uint32_t i;
+    /* Cover messages created previously. */
+    for (i = r->file_start; i < r->defs.len; i++) {
+      upb_msgdef *m = upb_dyncast_msgdef_mutable(r->defs.defs[i]);
+      if (m) {
+        upb_msgdef_setprimitiveshavepresence(m, false);
+      }
+    }
+
+    /* Cover messages created subsequently. */
+    r->primitives_have_presence = false;
   }
   return n;
 }
@@ -511,10 +525,12 @@ static size_t field_ondefaultval(void *closure, const void *hd, const char *buf,
 /* Handlers for google.protobuf.DescriptorProto (representing a message). */
 static bool msg_startmsg(void *closure, const void *hd) {
   upb_descreader *r = closure;
+  upb_msgdef *m;
   UPB_UNUSED(hd);
 
-  upb_deflist_push(&r->defs,
-                   upb_msgdef_upcast_mutable(upb_msgdef_new(&r->defs)));
+  m = upb_msgdef_new(&r->defs);
+  upb_msgdef_setprimitiveshavepresence(m, r->primitives_have_presence);
+  upb_deflist_push(&r->defs, upb_msgdef_upcast_mutable(m));
   upb_descreader_startcontainer(r);
   return true;
 }
