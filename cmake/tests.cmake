@@ -2,6 +2,9 @@ if (NOT EXISTS "${PROJECT_SOURCE_DIR}/../gmock/CMakeLists.txt")
   message(FATAL_ERROR "Cannot find gmock directory.")
 endif()
 
+option(protobuf_ABSOLUTE_TEST_PLUGIN_PATH
+  "Using absolute test_plugin path in tests" ON)
+
 include_directories(
   ${protobuf_source_dir}/gmock
   ${protobuf_source_dir}/gmock/gtest
@@ -96,6 +99,8 @@ set(common_test_files
   ${protobuf_source_dir}/src/google/protobuf/test_util.cc
   ${protobuf_source_dir}/src/google/protobuf/testing/file.cc
   ${protobuf_source_dir}/src/google/protobuf/testing/googletest.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/mock_code_generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/internal/type_info_test_helper.cc
 )
 
 set(common_lite_test_files
@@ -116,7 +121,6 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/importer_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_doc_comment_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_plugin_unittest.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/mock_code_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/parser_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_plugin_unittest.cc
@@ -162,13 +166,16 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/util/internal/json_stream_parser_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectsource_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectwriter_test.cc
-  ${protobuf_source_dir}/src/google/protobuf/util/internal/type_info_test_helper.cc
   ${protobuf_source_dir}/src/google/protobuf/util/json_util_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/time_util_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/type_resolver_util_test.cc
   ${protobuf_source_dir}/src/google/protobuf/well_known_types_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/wire_format_unittest.cc
 )
+
+if(protobuf_ABSOLUTE_TEST_PLUGIN_PATH)
+  add_compile_options(-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH="$<TARGET_FILE:test_plugin>")
+endif()
 
 add_executable(tests ${tests_files} ${common_test_files} ${tests_proto_files} ${lite_test_proto_files})
 target_link_libraries(tests libprotoc libprotobuf gmock_main)
@@ -194,3 +201,7 @@ set(lite_arena_test_files
 )
 add_executable(lite-arena-test ${lite_arena_test_files} ${common_lite_test_files} ${lite_test_proto_files})
 target_link_libraries(lite-arena-test libprotobuf-lite gmock_main)
+
+add_custom_target(check
+  COMMAND tests
+  WORKING_DIRECTORY ${protobuf_source_dir})
