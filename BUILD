@@ -147,7 +147,7 @@ cc_proto_library(
     srcs = ["src/" + s for s in WELL_KNOWN_PROTOS],
     internal_bootstrap_hack = 1,
     prefix = "src",
-    deps = ":protobuf",
+    cc_libs = [":protobuf"],
 )
 
 ################################################################################
@@ -341,7 +341,7 @@ cc_proto_library(
     name = "cc_test_protos",
     srcs = ["src/" + s for s in (LITE_TEST_PROTOS + TEST_PROTOS)],
     prefix = "src",
-    proto_deps = [":cc_wkt_protos"],
+    deps = [":cc_wkt_protos"],
 )
 
 COMMON_TEST_SRCS = [
