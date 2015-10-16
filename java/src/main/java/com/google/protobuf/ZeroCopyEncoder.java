@@ -65,6 +65,7 @@ public final class ZeroCopyEncoder implements Encoder {
    */
   private final ByteBuffer buffer;
 
+
   public ZeroCopyEncoder(Handler handler) {
     this(handler, DEFAULT_BUFFER_SIZE);
   }
@@ -522,7 +523,7 @@ public final class ZeroCopyEncoder implements Encoder {
     }
   }
 
-  private void writeRawVarint64(long value) throws IOException {
+  private void writeRawVarint64(long value) {
     while (true) {
       if ((value & ~0x7FL) == 0) {
         buffer.put((byte) value);

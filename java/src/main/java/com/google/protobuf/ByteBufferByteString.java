@@ -61,7 +61,7 @@ final class ByteBufferByteString extends ByteString implements Externalizable {
   private List<ByteBuffer> readOnlyBufferList;
 
   /**
-   * Has is lazy-calculated.
+   * Hash is lazy-calculated.
    */
   private int hash;
 
@@ -241,7 +241,7 @@ final class ByteBufferByteString extends ByteString implements Externalizable {
     int offset;
     if(buffer.hasArray()) {
       bytes = buffer.array();
-      offset = buffer.arrayOffset();
+      offset = buffer.arrayOffset() + buffer.position();
     } else {
       bytes = new byte[buffer.remaining()];
       offset = 0;
@@ -344,7 +344,7 @@ final class ByteBufferByteString extends ByteString implements Externalizable {
       private int mark;
 
       @Override
-      public synchronized void mark(int readlimit) {
+      public void mark(int readlimit) {
         mark = buf.position();
       }
 
@@ -354,7 +354,7 @@ final class ByteBufferByteString extends ByteString implements Externalizable {
       }
 
       @Override
-      public synchronized void reset() throws IOException {
+      public void reset() throws IOException {
         buf.position(mark);
       }
 

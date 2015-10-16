@@ -61,12 +61,13 @@
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-core</artifactId>
       <version>1.11.1</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
       <artifactId>jmh-generator-annprocess</artifactId>
       <version>1.11.1</version>
-      <scope>provided</scope>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <build>
