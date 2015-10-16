@@ -28,11 +28,11 @@ Create a folder where protobuf headers/libraries/binaries will be installed afte
 
     C:\Path\to>mkdir install
 
-If *cmake* coomand is not avaliable from *Command Promt*, add it to system *PATH* variable:
+If *cmake* command is not avaliable from *Command Prompt*, add it to system *PATH* variable:
 
     C:\Path\to>set PATH=%PATH%;C:\Program Files (x86)\CMake\bin
 
-If *git* coomand is not avaliable from *Command Promt*, add it to system *PATH* variable:
+If *git* command is not avaliable from *Command Prompt*, add it to system *PATH* variable:
 
     C:\Path\to>set PATH=%PATH%;C:\Program Files\Git\cmd
 
@@ -64,7 +64,7 @@ You can download gmock as follows:
 
      C:\Path\to\protobuf>git clone -b release-1.7.0 https://github.com/google/googlemock.git gmock
 
-Then go to *gmock* folder and downdload gtest:
+Then go to *gmock* folder and download gtest:
 
      C:\Path\to\protobuf>cd gmock
      C:\Path\to\protobuf\gmock>git clone -b release-1.7.0 https://github.com/google/googletest.git gtest
@@ -123,12 +123,12 @@ It will generate *nmake* *Makefile* in current directory.
 
 To create *Visual Studio* solution file:
 
-     C:\Path\to\protobuf\cmake>mkdir solution & cd solution
-     C:\Path\to\protobuf\cmake\solution>cmake -G "Visual Studio 12 2013 Win64" ^
+     C:\Path\to\protobuf\cmake\build>mkdir solution & cd solution
+     C:\Path\to\protobuf\cmake\build\solution>cmake -G "Visual Studio 12 2013 Win64" ^
      -DCMAKE_INSTALL_PREFIX=../../../../install ^
      ../..
 
-It will generate *Visual Studion* solution file *protobuf.sln* in current directory.
+It will generate *Visual Studio* solution file *protobuf.sln* in current directory.
 
 If the *gmock* directory does not exist, and you do not want to build protobuf unit tests,
 you need to add *cmake* command argument `-Dprotobuf_BUILD_TESTS=OFF` to disable testing.
@@ -146,13 +146,13 @@ or
 
 And wait for the compilation to finish.
 
-You prefer to use the IDE:
+If you prefer to use the IDE:
 
   * Open the generated protobuf.sln file in Microsoft Visual Studio.
   * Choose "Debug" or "Release" configuration as desired.
   * From the Build menu, choose "Build Solution".
 
-wait for the compilation to finish.
+And wait for the compilation to finish.
 
 Testing
 =======
@@ -163,7 +163,7 @@ To run unit-tests:
 
 or
 
-     C:\Path\to\protobuf\cmake\build\debug>nmake  check
+     C:\Path\to\protobuf\cmake\build\debug>nmake check
 
 You can also build project *check* from Visual Studio solution.
 Yes, it may sound strange, but it works.
@@ -211,7 +211,7 @@ To install protobuf to the specified *install* folder:
 
 or
 
-     C:\Path\to\protobuf\cmake\build\debug>nmake  install
+     C:\Path\to\protobuf\cmake\build\debug>nmake install
 
 You can also build project *INSTALL* from Visual Studio solution.
 It sounds not so strange and it works.
