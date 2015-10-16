@@ -71,8 +71,8 @@ def cc_proto_library(
         protoc=":protoc",
         internal_bootstrap_hack=False,
         prefix="",
-        proto_deps=[],
         deps=[],
+        cc_libs=[],
         **kargs):
 
   if internal_bootstrap_hack:
@@ -81,22 +81,21 @@ def cc_proto_library(
     _proto_gen(
         name=name + "_genproto",
         srcs=srcs,
-        deps=[s + "_genproto" for s in proto_deps],
+        deps=[s + "_genproto" for s in deps],
         prefix=prefix,
         protoc=protoc,
     )
     # An empty cc_library to make rule dependency consistent.
     native.cc_library(
         name=name,
-        **kargs,
-    )
+        **kargs)
     return
 
   outs = _cc_outs(srcs)
   _proto_gen(
       name=name + "_genproto",
       srcs=srcs,
-      deps=[s + "_genproto" for s in proto_deps],
+      deps=[s + "_genproto" for s in deps],
       prefix=prefix,
       protoc=protoc,
       gen_cc=1,
@@ -106,7 +105,6 @@ def cc_proto_library(
   native.cc_library(
       name=name,
       srcs=outs,
-      deps=deps + proto_deps,
+      deps=cc_libs + deps,
       includes=[prefix],
-      **kargs,
-  )
+      **kargs)
