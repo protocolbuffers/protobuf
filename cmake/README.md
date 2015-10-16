@@ -131,7 +131,7 @@ To create *Visual Studio* solution file:
 It will generate *Visual Studio* solution file *protobuf.sln* in current directory.
 
 If the *gmock* directory does not exist, and you do not want to build protobuf unit tests,
-you need to add *cmake* command argument `-DBUILD_TESTING=OFF` to disable testing.
+you need to add *cmake* command argument `-Dprotobuf_BUILD_TESTS=OFF` to disable testing.
 
 Compiling
 =========
