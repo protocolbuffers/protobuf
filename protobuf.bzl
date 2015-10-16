@@ -1,11 +1,11 @@
 # -*- mode: python; -*- PYTHON-PREPROCESSING-REQUIRED
 
 def _gen_dir(ctx):
-  if not ctx.attr.prefix:
+  if not ctx.attr.include:
     return ctx.label.package
   if not ctx.label.package:
-    return ctx.attr.prefix
-  return ctx.label.package + '/' + ctx.attr.prefix
+    return ctx.attr.include
+  return ctx.label.package + '/' + ctx.attr.include
 
 def _cc_outs(srcs):
   return [s[:-len(".proto")] +  ".pb.h" for s in srcs] + \
@@ -51,7 +51,7 @@ _proto_gen = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = ["proto"]),
-        "prefix": attr.string(),
+        "include": attr.string(),
         "protoc": attr.label(
             executable = True,
             single_file = True,
@@ -68,12 +68,29 @@ _proto_gen = rule(
 def cc_proto_library(
         name,
         srcs=[],
-        protoc=":protoc",
-        internal_bootstrap_hack=False,
-        prefix="",
         deps=[],
         cc_libs=[],
+        include="",
+        protoc=":protoc",
+        internal_bootstrap_hack=False,
         **kargs):
+  """Bazel rule to create a C++ protobuf library from proto source files
+
+  Args:
+    name: the name of the cc_proto_library.
+    srcs: the .proto files of the cc_proto_library.
+    deps: a list of dependency labels; must be cc_proto_library.
+    cc_libs: a list of other cc_library targets depended by the generated
+        cc_library.
+    include: a string indicating the include path of the .proto files.
+    protoc: the label of the protocol compiler to generate the sources.
+    internal_bootstrap_hack: a flag indicate the cc_proto_library is used only
+        for bootstraping. When it is set to True, no files will be generated.
+        The rule will simply be a provider for .proto files, so that other
+        cc_proto_library can depend on it.
+    **kargs: other keyword arguments that are passed to cc_library.
+
+  """
 
   if internal_bootstrap_hack:
     # For pre-checked-in generated files, we add the internal_bootstrap_hack
@@ -82,7 +99,7 @@ def cc_proto_library(
         name=name + "_genproto",
         srcs=srcs,
         deps=[s + "_genproto" for s in deps],
-        prefix=prefix,
+        include=include,
         protoc=protoc,
     )
     # An empty cc_library to make rule dependency consistent.
@@ -96,7 +113,7 @@ def cc_proto_library(
       name=name + "_genproto",
       srcs=srcs,
       deps=[s + "_genproto" for s in deps],
-      prefix=prefix,
+      include=include,
       protoc=protoc,
       gen_cc=1,
       outs=outs,
@@ -106,5 +123,5 @@ def cc_proto_library(
       name=name,
       srcs=outs,
       deps=cc_libs + deps,
-      includes=[prefix],
+      includes=[include],
       **kargs)
