@@ -1,6 +1,8 @@
 # -*- mode: python; -*- PYTHON-PREPROCESSING-REQUIRED
 
 def _gen_dir(ctx):
+  if ctx.attr.include == None:
+    return ""
   if not ctx.attr.include:
     return ctx.label.package
   if not ctx.label.package:
@@ -70,7 +72,7 @@ def cc_proto_library(
         srcs=[],
         deps=[],
         cc_libs=[],
-        include="",
+        include=None,
         protoc=":protoc",
         internal_bootstrap_hack=False,
         **kargs):
@@ -119,9 +121,13 @@ def cc_proto_library(
       outs=outs,
   )
 
+  includes = []
+  if include != None:
+    includes = [include]
+
   native.cc_library(
       name=name,
       srcs=outs,
       deps=cc_libs + deps,
-      includes=[include],
+      includes=includes,
       **kargs)
