@@ -40,6 +40,14 @@ import java.io.InputStream;
  * @author liujisi@google.com (Pherl Liu)
  */
 public interface Parser<MessageType> {
+
+  // NB(jh): All methods that operate on an input stream (vs. a byte array) should *also* throw
+  // plain ol' IOException. If there's an I/O problem on the stream, that is *not* the same thing
+  // as an invalid protocol buffer! We can't add IOException to "throws" clauses since that would
+  // break backwards compatibility. Ugh! Instead, clients must actually examine the cause of the
+  // InvalidProtocolBufferException. If it's an IOException, we know that the real problem was
+  // with I/O-related, not because the proto was invalid.
+
   /**
    * Parses a message of {@code MessageType} from the input.
    *
