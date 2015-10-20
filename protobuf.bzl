@@ -1,6 +1,6 @@
 # -*- mode: python; -*- PYTHON-PREPROCESSING-REQUIRED
 
-def _gen_dir(ctx):
+def _GenDir(ctx):
   if ctx.attr.include == None:
     return ""
   if not ctx.attr.include:
@@ -9,19 +9,41 @@ def _gen_dir(ctx):
     return ctx.attr.include
   return ctx.label.package + '/' + ctx.attr.include
 
-def _cc_outs(srcs):
+def _CcOuts(srcs):
   return [s[:-len(".proto")] +  ".pb.h" for s in srcs] + \
          [s[:-len(".proto")] + ".pb.cc" for s in srcs]
 
-def _py_outs(srcs):
+def _PyOuts(srcs):
   return [s[:-len(".proto")] + "_pb2.py" for s in srcs]
+
+def _RelativeOutputPath(path, include):
+  if include == None:
+    return path
+
+  if not path.startswith(include):
+    fail("Include path %s isn't part of the path %s." % (include, path))
+
+  if include and include[-1] != '/':
+    include = include + '/'
+
+  path = path[len(include):]
+
+  if not path.startswith(PACKAGE_NAME):
+    fail("The package %s is not within the path %s" % (PACKAGE_NAME, path))
+
+  if not PACKAGE_NAME:
+    return path
+
+  return path[len(PACKAGE_NAME)+1:]
+
+
 
 def _proto_gen_impl(ctx):
   """General implementation for generating protos"""
   srcs = ctx.files.srcs
   deps = []
   deps += ctx.files.srcs
-  gen_dir = _gen_dir(ctx)
+  gen_dir = _GenDir(ctx)
   import_flags = ["-I" + gen_dir]
   for dep in ctx.attr.deps:
     import_flags += dep.proto.import_flags
@@ -110,7 +132,7 @@ def cc_proto_library(
         **kargs)
     return
 
-  outs = _cc_outs(srcs)
+  outs = _CcOuts(srcs)
   _proto_gen(
       name=name + "_genproto",
       srcs=srcs,
@@ -131,3 +153,70 @@ def cc_proto_library(
       deps=cc_libs + deps,
       includes=includes,
       **kargs)
+
+
+def copied_srcs(
+        name,
+        srcs,
+        include,
+        **kargs):
+  outs = [_RelativeOutputPath(s, include) for s in srcs]
+
+  native.genrule(
+      name=name+"_genrule",
+      srcs=srcs,
+      outs=outs,
+      cmd=";".join(["cp $(location %s) $(location %s)" % \
+                    (s, _RelativeOutputPath(s, include)) \
+                    for s in srcs]))
+
+  native.filegroup(
+      name=name,
+      srcs=outs,
+      **kargs)
+
+
+def py_proto_library(
+        name,
+        srcs=[],
+        deps=[],
+        py_libs=[],
+        py_extra_srcs=[],
+        include=None,
+        protoc=":protoc",
+        **kargs):
+  outs = _PyOuts(srcs)
+  _proto_gen(
+      name=name + "_genproto",
+      srcs=srcs,
+      deps=[s + "_genproto" for s in deps],
+      include=include,
+      protoc=protoc,
+      gen_py=1,
+      outs=outs,
+  )
+
+  copied_srcs_name=name + "_copied_srcs"
+  if include != None:
+    copied_srcs(
+        name=copied_srcs_name,
+        srcs=outs,
+        include=include)
+    srcs=[copied_srcs_name]
+
+  native.py_library(
+      name=name,
+      srcs=srcs+py_extra_srcs,
+      deps=py_libs,
+      **kargs)
+
+def internal_protobuf_py_tests(
+    name,
+    modules=[],
+    **kargs):
+  for m in modules:
+    native.py_test(
+        name="py_%s" % m,
+        srcs=["google/protobuf/internal/%s.py" % m],
+        main="google/protobuf/internal/%s.py" % m,
+        **kargs)
