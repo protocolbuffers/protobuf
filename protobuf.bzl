@@ -237,12 +237,12 @@ def py_proto_library(
         name=copied_srcs_name,
         srcs=outs,
         include=include)
-    srcs=[copied_srcs_name]
+    outs=[copied_srcs_name]
 
   native.py_library(
       name=name,
-      srcs=srcs+py_extra_srcs,
-      deps=py_libs,
+      srcs=outs+py_extra_srcs,
+      deps=py_libs+deps,
       **kargs)
 
 def internal_protobuf_py_tests(
