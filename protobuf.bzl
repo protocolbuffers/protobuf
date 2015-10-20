@@ -95,7 +95,7 @@ def cc_proto_library(
         deps=[],
         cc_libs=[],
         include=None,
-        protoc=":protoc",
+        protoc="//google/protobuf:protoc",
         internal_bootstrap_hack=False,
         **kargs):
   """Bazel rule to create a C++ protobuf library from proto source files
@@ -192,7 +192,7 @@ def py_proto_library(
         py_libs=[],
         py_extra_srcs=[],
         include=None,
-        protoc=":protoc",
+        protoc="//google/protobuf:protoc",
         **kargs):
   """Bazel rule to create a Python protobuf library from proto source files
 
