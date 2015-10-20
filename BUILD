@@ -549,7 +549,7 @@ py_library(
 )
 
 internal_protobuf_py_tests(
-    name = "python_tests",
+    name = "python_tests_batch",
     modules = [
         "descriptor_database_test",
         "descriptor_pool_test",
