@@ -124,13 +124,13 @@ cc_library(
     deps = [":protobuf_lite"],
 )
 
-objc_library(
-    name = "protobuf_objc",
-    hdrs = ["objectivec/GPBProtocolBuffers.h"],
-    includes = ["objectivec"],
-    non_arc_srcs = ["objectivec/GPBProtocolBuffers.m"],
-    visibility = ["//visibility:public"],
-)
+# objc_library(
+#     name = "protobuf_objc",
+#     hdrs = ["objectivec/GPBProtocolBuffers.h"],
+#     includes = ["objectivec"],
+#     non_arc_srcs = ["objectivec/GPBProtocolBuffers.m"],
+#     visibility = ["//visibility:public"],
+# )
 
 RELATIVE_WELL_KNOWN_PROTOS = [
     # AUTOGEN(well_known_protos)
