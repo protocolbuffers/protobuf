@@ -463,6 +463,21 @@ java_library(
 # Python support
 ################################################################################
 
+# Hack:
+# protoc generated files contain imports like:
+#   "from google.protobuf.xxx import yyy"
+# However, the sources files of the python runtime are not directly under
+# "google/protobuf" (they are under python/google/protobuf).  We workaround
+# this by copying runtime source files into the desired location to workaround
+# the import issue. Ideally py_library should support something similiar to the
+# "include" attribute in cc_library to inject the PYTHON_PATH for all libraries
+# that depend on the target.
+#
+# If you use python protobuf as a third_party library in your bazel managed
+# project, please import the whole package to //google/protobuf in your
+# project. Otherwise, bazel disallows generated files out of the current
+# package, thus we won't be able to copy protobuf runtime files into
+# //google/protobuf/.
 copied_srcs(
     name = "python_srcs",
     srcs = glob(
