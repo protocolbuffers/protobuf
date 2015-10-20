@@ -160,6 +160,15 @@ def copied_srcs(
         srcs,
         include,
         **kargs):
+  """Bazel rule to fix sources file to workaround with python path issues.
+
+  Args:
+    name: the name of the copied_srcs rule, which will be the name of the
+        generated filegroup.
+    srcs: the source files to be copied.
+    include: the expected import root of the source.
+    **kargs: extra arguments that will be passed into the filegroup.
+  """
   outs = [_RelativeOutputPath(s, include) for s in srcs]
 
   native.genrule(
@@ -185,6 +194,21 @@ def py_proto_library(
         include=None,
         protoc=":protoc",
         **kargs):
+  """Bazel rule to create a Python protobuf library from proto source files
+
+  Args:
+    name: the name of the py_proto_library.
+    srcs: the .proto files of the py_proto_library.
+    deps: a list of dependency labels; must be py_proto_library.
+    py_libs: a list of other py_library targets depended by the generated
+        py_library.
+    py_extra_srcs: extra source files that will be added to the output
+        py_library. This attribute is used for internal bootstrapping.
+    include: a string indicating the include path of the .proto files.
+    protoc: the label of the protocol compiler to generate the sources.
+    **kargs: other keyword arguments that are passed to cc_library.
+
+  """
   outs = _PyOuts(srcs)
   _proto_gen(
       name=name + "_genproto",
@@ -196,8 +220,9 @@ def py_proto_library(
       outs=outs,
   )
 
-  copied_srcs_name=name + "_copied_srcs"
   if include != None:
+    # Copy the output files to the desired location to make the import work.
+    copied_srcs_name=name + "_copied_srcs"
     copied_srcs(
         name=copied_srcs_name,
         srcs=outs,
@@ -214,9 +239,20 @@ def internal_protobuf_py_tests(
     name,
     modules=[],
     **kargs):
+  """Bazel rules to create batch tests for protobuf internal.
+
+  Args:
+    name: the name of the rule.
+    modules: a list of modules for tests. The macro will create a py_test for
+        each of the parameter with the source "google/protobuf/%s.py"
+    kargs: extra parameters that will be passed into the py_test.
+
+  """
   for m in modules:
+    s = _RelativeOutputPath(
+        "python/google/protobuf/internal/%s.py" % m, "python")
     native.py_test(
         name="py_%s" % m,
-        srcs=["google/protobuf/internal/%s.py" % m],
-        main="google/protobuf/internal/%s.py" % m,
+        srcs=[s],
+        main=s,
         **kargs)
