@@ -18,8 +18,13 @@ COPTS = [
 # Bazel should provide portable link_opts for pthread.
 LINK_OPTS = ["-lpthread"]
 
-load("protobuf", "cc_proto_library", "py_proto_library", "copied_srcs",
-     "internal_protobuf_py_tests")
+load(
+    "protobuf",
+    "cc_proto_library",
+    "py_proto_library",
+    "copied_srcs",
+    "internal_protobuf_py_tests",
+)
 
 cc_library(
     name = "protobuf_lite",
@@ -151,6 +156,7 @@ cc_proto_library(
     include = "src",
     cc_libs = [":protobuf"],
     internal_bootstrap_hack = 1,
+    protoc = ":protoc",
 )
 
 ################################################################################
@@ -327,6 +333,7 @@ cc_proto_library(
     name = "cc_test_protos",
     srcs = LITE_TEST_PROTOS + TEST_PROTOS,
     include = "src",
+    protoc = ":protoc",
     deps = [":cc_wkt_protos"],
 )
 
@@ -497,6 +504,7 @@ py_proto_library(
     name = "python_proto",
     srcs = WELL_KNOWN_PROTOS,
     include = "src",
+    protoc = ":protoc",
     py_extra_srcs = [":python_srcs"],
     visibility = ["//visibility:public"],
 )
@@ -516,6 +524,7 @@ py_proto_library(
     name = "python_common_test_protos",
     srcs = LITE_TEST_PROTOS + TEST_PROTOS,
     include = "src",
+    protoc = ":protoc",
     deps = [":python_proto"],
 )
 
@@ -523,6 +532,7 @@ py_proto_library(
     name = "python_specific_test_protos",
     srcs = glob(["python/google/protobuf/internal/*.proto"]),
     include = "python",
+    protoc = ":protoc",
     deps = [":python_common_test_protos"],
 )
 
