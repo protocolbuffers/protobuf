@@ -538,7 +538,7 @@ GenerateBuilderParsingMethods(io::Printer* printer) {
     "    parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);\n"
     "  } catch (com.google.protobuf.InvalidProtocolBufferException e) {\n"
     "    parsedMessage = ($classname$) e.getUnfinishedMessage();\n"
-    "    throw e;\n"
+    "    throw e.unwrapIOException();\n"
     "  } finally {\n"
     "    if (parsedMessage != null) {\n"
     "      mergeFrom(parsedMessage);\n"
