@@ -1,13 +1,13 @@
 # -*- mode: python; -*- PYTHON-PREPROCESSING-REQUIRED
 
 def _GenDir(ctx):
-  if ctx.attr.include == None:
+  if not ctx.attr.includes:
     return ""
-  if not ctx.attr.include:
+  if not ctx.attr.includes[0]:
     return ctx.label.package
   if not ctx.label.package:
-    return ctx.attr.include
-  return ctx.label.package + '/' + ctx.attr.include
+    return ctx.attr.includes[0]
+  return ctx.label.package + '/' + ctx.attr.includes[0]
 
 def _CcOuts(srcs):
   return [s[:-len(".proto")] +  ".pb.h" for s in srcs] + \
@@ -44,7 +44,11 @@ def _proto_gen_impl(ctx):
   deps = []
   deps += ctx.files.srcs
   gen_dir = _GenDir(ctx)
-  import_flags = ["-I" + gen_dir]
+  if gen_dir:
+    import_flags = ["-I" + gen_dir]
+  else:
+    import_flags = ["-I."]
+
   for dep in ctx.attr.deps:
     import_flags += dep.proto.import_flags
     deps += dep.proto.deps
@@ -75,7 +79,7 @@ _proto_gen = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = ["proto"]),
-        "include": attr.string(),
+        "includes": attr.string_list(),
         "protoc": attr.label(
             executable = True,
             single_file = True,
@@ -116,6 +120,10 @@ def cc_proto_library(
 
   """
 
+  includes = []
+  if include != None:
+    includes = [include]
+
   if internal_bootstrap_hack:
     # For pre-checked-in generated files, we add the internal_bootstrap_hack
     # which will skip the codegen action.
@@ -123,7 +131,7 @@ def cc_proto_library(
         name=name + "_genproto",
         srcs=srcs,
         deps=[s + "_genproto" for s in deps],
-        include=include,
+        includes=includes,
         protoc=protoc,
     )
     # An empty cc_library to make rule dependency consistent.
@@ -137,15 +145,12 @@ def cc_proto_library(
       name=name + "_genproto",
       srcs=srcs,
       deps=[s + "_genproto" for s in deps],
-      include=include,
+      includes=includes,
       protoc=protoc,
       gen_cc=1,
       outs=outs,
   )
 
-  includes = []
-  if include != None:
-    includes = [include]
 
   native.cc_library(
       name=name,
@@ -210,11 +215,16 @@ def py_proto_library(
 
   """
   outs = _PyOuts(srcs)
+
+  includes = []
+  if include != None:
+    includes = [include]
+
   _proto_gen(
       name=name + "_genproto",
       srcs=srcs,
       deps=[s + "_genproto" for s in deps],
-      include=include,
+      includes=includes,
       protoc=protoc,
       gen_py=1,
       outs=outs,
