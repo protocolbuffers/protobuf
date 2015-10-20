@@ -22,7 +22,7 @@ load(
     "protobuf",
     "cc_proto_library",
     "py_proto_library",
-    "copied_srcs",
+    "internal_copied_filegroup",
     "internal_protobuf_py_tests",
 )
 
@@ -487,7 +487,7 @@ java_library(
 # project. Otherwise, bazel disallows generated files out of the current
 # package, thus we won't be able to copy protobuf runtime files into
 # //google/protobuf/.
-copied_srcs(
+internal_copied_filegroup(
     name = "python_srcs",
     srcs = glob(
         [
@@ -511,7 +511,7 @@ py_proto_library(
     visibility = ["//visibility:public"],
 )
 
-copied_srcs(
+internal_copied_filegroup(
     name = "python_test_srcs",
     srcs = glob(
         [

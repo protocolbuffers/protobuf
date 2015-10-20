@@ -160,7 +160,7 @@ def cc_proto_library(
       **kargs)
 
 
-def copied_srcs(
+def internal_copied_filegroup(
         name,
         srcs,
         include,
@@ -168,8 +168,8 @@ def copied_srcs(
   """Bazel rule to fix sources file to workaround with python path issues.
 
   Args:
-    name: the name of the copied_srcs rule, which will be the name of the
-        generated filegroup.
+    name: the name of the internal_copied_filegroup rule, which will be the
+        name of the generated filegroup.
     srcs: the source files to be copied.
     include: the expected import root of the source.
     **kargs: extra arguments that will be passed into the filegroup.
@@ -232,12 +232,12 @@ def py_proto_library(
 
   if include != None:
     # Copy the output files to the desired location to make the import work.
-    copied_srcs_name=name + "_copied_srcs"
-    copied_srcs(
-        name=copied_srcs_name,
+    internal_copied_filegroup_name=name + "_internal_copied_filegroup"
+    internal_copied_filegroup(
+        name=internal_copied_filegroup_name,
         srcs=outs,
         include=include)
-    outs=[copied_srcs_name]
+    outs=[internal_copied_filegroup_name]
 
   native.py_library(
       name=name,
