@@ -37,6 +37,7 @@ from datetime import datetime
 import json
 import math
 import re
+import sys
 
 from google.protobuf import descriptor
 
@@ -114,7 +115,14 @@ def _RegularMessageToJsonObject(message, including_default_value_fields):
         # Convert a map field.
         js_map = {}
         for key in value:
-          js_map[key] = _ConvertFieldToJsonObject(
+          if isinstance(key, bool):
+            if key:
+              recorded_key = 'true'
+            else:
+              recorded_key = 'false'
+          else:
+            recorded_key = key
+          js_map[recorded_key] = _ConvertFieldToJsonObject(
               field.message_type.fields_by_name['value'],
               value[key], including_default_value_fields)
         js[name] = js_map
@@ -297,7 +305,11 @@ def Parse(text, message):
   """
   if not isinstance(text, _UNICODETYPE): text = text.decode('utf-8')
   try:
-    js = json.loads(text, object_pairs_hook=_DuplicateChecker)
+    if sys.version_info < (2, 7):
+      # object_pair_hook is not supported before python2.7
+      js = json.loads(text)
+    else:
+      js = json.loads(text, object_pairs_hook=_DuplicateChecker)
   except ValueError as e:
     raise ParseError('Failed to load JSON: ' + str(e))
   _ConvertFieldValuePair(js, message)
@@ -419,7 +431,8 @@ def _ConvertTimestampMessage(value, message):
     second_value = time_value[:point_position]
     nano_value = time_value[point_position + 1:]
   date_object = datetime.strptime(second_value, _TIMESTAMPFOMAT)
-  seconds = (date_object - datetime(1970, 1, 1)).total_seconds()
+  td = date_object - datetime(1970, 1, 1)
+  seconds = td.seconds + td.days * 24 * 3600
   if len(nano_value) > 9:
     raise ParseError(
         'Failed to parse Timestamp: nanos {0} more than '

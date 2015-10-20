@@ -410,6 +410,9 @@ class JsonFormatTest(JsonFormatBase):
                     '"unknownName".')
 
   def testDuplicateField(self):
+    # Duplicate key check is not supported for python2.6
+    if sys.version_info < (2, 7):
+      return
     self.CheckError('{"int32Value": 1,\n"int32Value":2}',
                     'Failed to load JSON: duplicate key int32Value')
 
@@ -468,15 +471,17 @@ class JsonFormatTest(JsonFormatBase):
         (r'Failed to load JSON: Expecting property name'
          r'( enclosed in double quotes)?: line 1'),
         json_format.Parse, text, message)
-    text = r'{"stringMap": {"a": 3, "\u0061": 2}}'
-    self.assertRaisesRegexp(
-        json_format.ParseError,
-        'Failed to load JSON: duplicate key a',
-        json_format.Parse, text, message)
     text = '{"boolMap": {"null": 1}}'
     self.assertRaisesRegexp(
         json_format.ParseError,
         'Failed to parse boolMap field: Expect "true" or "false", not null.',
+        json_format.Parse, text, message)
+    if sys.version_info < (2, 7):
+      return
+    text = r'{"stringMap": {"a": 3, "\u0061": 2}}'
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        'Failed to load JSON: duplicate key a',
         json_format.Parse, text, message)
 
   def testInvalidTimestamp(self):
