@@ -1213,6 +1213,16 @@ bool upb_fielddef_ismap(const upb_fielddef *f) {
          upb_msgdef_mapentry(upb_fielddef_msgsubdef(f));
 }
 
+bool upb_fielddef_haspresence(const upb_fielddef *f) {
+  if (upb_fielddef_isseq(f)) return false;
+  if (upb_fielddef_issubmsg(f)) return true;
+
+  /* Primitive field: return true unless there is a message that specifies
+   * presence should not exist. */
+  if (f->msg_is_symbolic || !f->msg.def) return true;
+  return f->msg.def->primitives_have_presence;
+}
+
 bool upb_fielddef_hassubdef(const upb_fielddef *f) {
   return upb_fielddef_issubmsg(f) || upb_fielddef_type(f) == UPB_TYPE_ENUM;
 }
@@ -1269,6 +1279,7 @@ upb_msgdef *upb_msgdef_new(const void *owner) {
   if (!upb_strtable_init(&m->ntof, UPB_CTYPE_PTR)) goto err2;
   if (!upb_strtable_init(&m->ntoo, UPB_CTYPE_PTR)) goto err1;
   m->map_entry = false;
+  m->primitives_have_presence = true;
   return m;
 
 err1:
@@ -1291,6 +1302,7 @@ upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner) {
                            upb_def_fullname(upb_msgdef_upcast(m)),
                            NULL);
   newm->map_entry = m->map_entry;
+  newm->primitives_have_presence = m->primitives_have_presence;
   UPB_ASSERT_VAR(ok, ok);
   for(upb_msg_field_begin(&i, m);
       !upb_msg_field_done(&i);
@@ -1433,6 +1445,11 @@ bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
   if (ref_donor) upb_oneofdef_unref(o, ref_donor);
 
   return true;
+}
+
+void upb_msgdef_setprimitiveshavepresence(upb_msgdef *m, bool have_presence) {
+  assert(!upb_msgdef_isfrozen(m));
+  m->primitives_have_presence = have_presence;
 }
 
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i) {

@@ -15,6 +15,11 @@
 #include "upb/sink.h"
 #include "upb/descriptor/descriptor.upb.h"
 
+/* Compares a NULL-terminated string with a non-NULL-terminated string. */
+static bool upb_streq(const char *str, const char *buf, size_t n) {
+  return strlen(str) == n && memcmp(str, buf, n) == 0;
+}
+
 /* upb_deflist is an internal-only dynamic array for storing a growing list of
  * upb_defs. */
 typedef struct {
@@ -52,6 +57,9 @@ struct upb_descreader {
   upb_deflist defs;
   upb_descreader_frame stack[UPB_MAX_MESSAGE_NESTING];
   int stack_len;
+
+  bool primitives_have_presence;
+  int file_start;
 
   uint32_t number;
   char *name;
@@ -179,9 +187,12 @@ void upb_descreader_setscopename(upb_descreader *r, char *str) {
 }
 
 /* Handlers for google.protobuf.FileDescriptorProto. */
-static bool file_startmsg(void *r, const void *hd) {
+static bool file_startmsg(void *closure, const void *hd) {
+  upb_descreader *r = closure;
   UPB_UNUSED(hd);
   upb_descreader_startcontainer(r);
+  r->primitives_have_presence = true;
+  r->file_start = r->defs.len;
   return true;
 }
 
@@ -200,6 +211,35 @@ static size_t file_onpackage(void *closure, const void *hd, const char *buf,
   UPB_UNUSED(handle);
   /* XXX: see comment at the top of the file. */
   upb_descreader_setscopename(r, upb_strndup(buf, n));
+  return n;
+}
+
+static size_t file_onsyntax(void *closure, const void *hd, const char *buf,
+                            size_t n, const upb_bufhandle *handle) {
+  upb_descreader *r = closure;
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+  /* XXX: see comment at the top of the file. */
+  if (upb_streq("proto2", buf, n)) {
+    /* Technically we could verify that proto3 hadn't previously been seen. */
+  } else if (upb_streq("proto3", buf, n)) {
+    uint32_t i;
+    /* Update messages created before the syntax was read. */
+    for (i = r->file_start; i < r->defs.len; i++) {
+      upb_msgdef *m = upb_dyncast_msgdef_mutable(r->defs.defs[i]);
+      if (m) {
+        upb_msgdef_setprimitiveshavepresence(m, false);
+      }
+    }
+
+    /* Set a flag for any future messages that will be created. */
+    r->primitives_have_presence = false;
+  } else {
+    /* Error: neither proto3 nor proto3.
+     * TODO(haberman): there should be a status object we can report this to. */
+    return 0;
+  }
+
   return n;
 }
 
@@ -497,10 +537,12 @@ static size_t field_ondefaultval(void *closure, const void *hd, const char *buf,
 /* Handlers for google.protobuf.DescriptorProto (representing a message). */
 static bool msg_startmsg(void *closure, const void *hd) {
   upb_descreader *r = closure;
+  upb_msgdef *m;
   UPB_UNUSED(hd);
 
-  upb_deflist_push(&r->defs,
-                   upb_msgdef_upcast_mutable(upb_msgdef_new(&r->defs)));
+  m = upb_msgdef_new(&r->defs);
+  upb_msgdef_setprimitiveshavepresence(m, r->primitives_have_presence);
+  upb_deflist_push(&r->defs, upb_msgdef_upcast_mutable(m));
   upb_descreader_startcontainer(r);
   return true;
 }
@@ -571,6 +613,8 @@ static void reghandlers(const void *closure, upb_handlers *h) {
     upb_handlers_setstartmsg(h, &file_startmsg, NULL);
     upb_handlers_setendmsg(h, &file_endmsg, NULL);
     upb_handlers_setstring(h, D(FileDescriptorProto_package), &file_onpackage,
+                           NULL);
+    upb_handlers_setstring(h, D(FileDescriptorProto_syntax), &file_onsyntax,
                            NULL);
     upb_handlers_setendsubmsg(h, D(FileDescriptorProto_extension), &pushextension,
                               NULL);

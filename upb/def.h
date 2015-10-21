@@ -359,6 +359,18 @@ class upb::FieldDef {
   bool IsPrimitive() const;
   bool IsMap() const;
 
+  /* Whether this field must be able to explicitly represent presence:
+   *
+   * * This is always false for repeated fields (an empty repeated field is
+   *   equivalent to a repeated field with zero entries).
+   *
+   * * This is always true for submessages.
+   *
+   * * For other fields, it depends on the message (see
+   *   MessageDef::SetPrimitivesHavePresence())
+   */
+  bool HasPresence() const;
+
   /* How integers are encoded.  Only meaningful for integer types.
    * Defaults to UPB_INTFMT_VARIABLE, and is reset when "type" changes. */
   IntegerFormat integer_format() const;
@@ -536,6 +548,7 @@ bool upb_fielddef_isstring(const upb_fielddef *f);
 bool upb_fielddef_isseq(const upb_fielddef *f);
 bool upb_fielddef_isprimitive(const upb_fielddef *f);
 bool upb_fielddef_ismap(const upb_fielddef *f);
+bool upb_fielddef_haspresence(const upb_fielddef *f);
 int64_t upb_fielddef_defaultint64(const upb_fielddef *f);
 int32_t upb_fielddef_defaultint32(const upb_fielddef *f);
 uint64_t upb_fielddef_defaultuint64(const upb_fielddef *f);
@@ -653,6 +666,11 @@ class upb::MessageDef {
    * msgdef is unchanged. */
   bool AddOneof(OneofDef* o, Status* s);
   bool AddOneof(const reffed_ptr<OneofDef>& o, Status* s);
+
+  /* Set this to false to indicate that primitive fields should not have
+   * explicit presence information associated with them.  This will affect all
+   * fields added to this message.  Defaults to true. */
+  void SetPrimitivesHavePresence(bool have_presence);
 
   /* These return NULL if the field is not found. */
   FieldDef* FindFieldByNumber(uint32_t number);
@@ -847,6 +865,7 @@ bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f, const void *ref_donor,
                          upb_status *s);
 bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
                          upb_status *s);
+void upb_msgdef_setprimitiveshavepresence(upb_msgdef *m, bool have_presence);
 
 /* Field lookup in a couple of different variations:
  *   - itof = int to field

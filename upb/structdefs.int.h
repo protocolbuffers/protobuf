@@ -114,6 +114,11 @@ struct upb_msgdef {
    * descriptor.upb.c. */
   bool map_entry;
 
+  /* Do primitive values in this message have explicit presence or not?
+   * TODO: set this flag properly for static descriptors; regenerate
+   * descriptor.upb.c. */
+  bool primitives_have_presence;
+
   /* TODO(haberman): proper extension ranges (there can be multiple). */
 };
 
@@ -124,7 +129,7 @@ struct upb_msgdef {
   {                                                                           \
     UPB_DEF_INIT(name, UPB_DEF_MSG, refs, ref2s), selector_count,             \
         submsg_field_count, itof, ntof,                                       \
-        UPB_EMPTY_STRTABLE_INIT(UPB_CTYPE_PTR), false                         \
+        UPB_EMPTY_STRTABLE_INIT(UPB_CTYPE_PTR), false, true                   \
   }
 
 
