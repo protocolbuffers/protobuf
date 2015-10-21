@@ -432,7 +432,9 @@ cc_test(
     copts = COPTS,
     data = [
         ":test_plugin",
-    ],
+    ] + glob([
+        "src/google/protobuf/**/*",
+    ]),
     includes = [
         "src/",
     ],
@@ -542,8 +544,8 @@ py_library(
     name = "python_tests",
     srcs = [":python_test_srcs"],
     deps = [
-        ":python_common_test_protos",
         ":protobuf_python",
+        ":python_common_test_protos",
         ":python_specific_test_protos",
     ],
 )
