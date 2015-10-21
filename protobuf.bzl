@@ -180,9 +180,9 @@ def internal_copied_filegroup(
       name=name+"_genrule",
       srcs=srcs,
       outs=outs,
-      cmd=";".join(["cp $(location %s) $(location %s)" % \
-                    (s, _RelativeOutputPath(s, include)) \
-                    for s in srcs]))
+      cmd=" && ".join(["cp $(location %s) $(location %s)" %
+                       (s, _RelativeOutputPath(s, include))
+                       for s in srcs]))
 
   native.filegroup(
       name=name,
