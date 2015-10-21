@@ -15,6 +15,11 @@
 #include "upb/sink.h"
 #include "upb/descriptor/descriptor.upb.h"
 
+/* Compares a NULL-terminated string with a non-NULL-terminated string. */
+static bool upb_streq(const char *str, const char *buf, size_t n) {
+  return strlen(str) == n && memcmp(str, buf, n) == 0;
+}
+
 /* upb_deflist is an internal-only dynamic array for storing a growing list of
  * upb_defs. */
 typedef struct {
@@ -210,14 +215,16 @@ static size_t file_onpackage(void *closure, const void *hd, const char *buf,
 }
 
 static size_t file_onsyntax(void *closure, const void *hd, const char *buf,
-                          size_t n, const upb_bufhandle *handle) {
+                            size_t n, const upb_bufhandle *handle) {
   upb_descreader *r = closure;
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
   /* XXX: see comment at the top of the file. */
-  if (n == strlen("proto3") && memcmp(buf, "proto3", strlen("proto3")) == 0) {
+  if (upb_streq("proto2", buf, n)) {
+    /* Technically we could verify that proto3 hadn't previously been seen. */
+  } else if (upb_streq("proto3", buf, n)) {
     uint32_t i;
-    /* Cover messages created previously. */
+    /* Update messages created before the syntax was read. */
     for (i = r->file_start; i < r->defs.len; i++) {
       upb_msgdef *m = upb_dyncast_msgdef_mutable(r->defs.defs[i]);
       if (m) {
@@ -225,9 +232,14 @@ static size_t file_onsyntax(void *closure, const void *hd, const char *buf,
       }
     }
 
-    /* Cover messages created subsequently. */
+    /* Set a flag for any future messages that will be created. */
     r->primitives_have_presence = false;
+  } else {
+    /* Error: neither proto3 nor proto3.
+     * TODO(haberman): there should be a status object we can report this to. */
+    return 0;
   }
+
   return n;
 }
 
