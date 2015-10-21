@@ -665,7 +665,7 @@ class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
   static inline ::google::protobuf::Arena* GetArena(string*) {
     return NULL;
   }
-  static inline void* GetMaybeArenaPointer(string* value) {
+  static inline void* GetMaybeArenaPointer(string* /*value*/) {
     return NULL;
   }
   static inline void Delete(string* value, Arena* arena) {
