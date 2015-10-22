@@ -472,8 +472,6 @@ java_library(
 # Python support
 ################################################################################
 
-# Requires: six for python 2/3 compatibility.  `pip install six`
-
 # Hack:
 # protoc generated files contain imports like:
 #   "from google.protobuf.xxx import yyy"
@@ -485,10 +483,13 @@ java_library(
 # that depend on the target.
 #
 # If you use python protobuf as a third_party library in your bazel managed
-# project, please import the whole package to //google/protobuf in your
+# project:
+# 1) Please import the whole package to //google/protobuf in your
 # project. Otherwise, bazel disallows generated files out of the current
 # package, thus we won't be able to copy protobuf runtime files into
 # //google/protobuf/.
+# 2) The runtime also requires "six" for Python2/3 compatibility, please see the
+# WORKSPACE file and bind "six" to your workspace as well.
 internal_copied_filegroup(
     name = "python_srcs",
     srcs = glob(
@@ -510,6 +511,7 @@ py_proto_library(
     include = "src",
     protoc = ":protoc",
     py_extra_srcs = [":python_srcs"],
+    py_libs = ["//external:six"],
     visibility = ["//visibility:public"],
 )
 
@@ -534,7 +536,10 @@ py_proto_library(
 
 py_proto_library(
     name = "python_specific_test_protos",
-    srcs = glob(["python/google/protobuf/internal/*.proto"]),
+    srcs = glob([
+        "python/google/protobuf/internal/*.proto",
+        "python/google/protobuf/internal/import_test_package/*.proto",
+    ]),
     include = "python",
     protoc = ":protoc",
     deps = [":python_common_test_protos"],
@@ -552,6 +557,9 @@ py_library(
 
 internal_protobuf_py_tests(
     name = "python_tests_batch",
+    data = glob([
+        "src/google/protobuf/**/*",
+    ]),
     modules = [
         "descriptor_database_test",
         "descriptor_pool_test",
@@ -559,13 +567,13 @@ internal_protobuf_py_tests(
         "generator_test",
         "json_format_test",
         "message_factory_test",
-        # "message_test",      # failed due to testdata path
+        "message_test",
         "proto_builder_test",
-        # "reflection_test",   # failed due to testdata path
+        "reflection_test",
         "service_reflection_test",
         "symbol_database_test",
         "text_encoding_test",
-        # "text_format_test",  # failed due to testdata path
+        "text_format_test",
         "unknown_fields_test",
         "wire_format_test",
     ],
