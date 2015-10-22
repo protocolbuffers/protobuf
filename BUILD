@@ -472,8 +472,6 @@ java_library(
 # Python support
 ################################################################################
 
-# Requires: six for python 2/3 compatibility.  `pip install six`
-
 # Hack:
 # protoc generated files contain imports like:
 #   "from google.protobuf.xxx import yyy"
@@ -485,10 +483,13 @@ java_library(
 # that depend on the target.
 #
 # If you use python protobuf as a third_party library in your bazel managed
-# project, please import the whole package to //google/protobuf in your
+# project:
+# 1) Please import the whole package to //google/protobuf in your
 # project. Otherwise, bazel disallows generated files out of the current
 # package, thus we won't be able to copy protobuf runtime files into
 # //google/protobuf/.
+# 2) The runtime also requires "six" for Python2/3 compatibility, please see the
+# WORKSPACE file and bind "six" to your workspace as well.
 internal_copied_filegroup(
     name = "python_srcs",
     srcs = glob(
