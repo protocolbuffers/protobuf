@@ -510,6 +510,7 @@ py_proto_library(
     include = "src",
     protoc = ":protoc",
     py_extra_srcs = [":python_srcs"],
+    py_libs = ["//external:six"],
     visibility = ["//visibility:public"],
 )
 
