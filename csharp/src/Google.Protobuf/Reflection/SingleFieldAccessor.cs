@@ -61,7 +61,7 @@ namespace Google.Protobuf.Reflection
             
             // TODO: Validate that this is a reasonable single field? (Should be a value type, a message type, or string/ByteString.)
             object defaultValue =
-                typeof(IMessage).IsAssignableFrom(clrType) ? null
+                descriptor.FieldType == FieldType.Message ? null
                 : clrType == typeof(string) ? ""
                 : clrType == typeof(ByteString) ? ByteString.Empty
                 : Activator.CreateInstance(clrType);

@@ -197,7 +197,7 @@ namespace Google.Protobuf.Reflection
         }
 
         /// <summary>
-        /// Returns  the type of the field.
+        /// Returns the type of the field.
         /// </summary>
         public FieldType FieldType
         {
