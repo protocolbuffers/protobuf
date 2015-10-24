@@ -566,6 +566,16 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Oneof_DefaultValuesNotEqual()
+        {
+            var message1 = new TestAllTypes { OneofString = "" };
+            var message2 = new TestAllTypes { OneofUint32 = 0 };
+            Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofString, message1.OneofFieldCase);
+            Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofUint32, message2.OneofFieldCase);
+            Assert.AreNotEqual(message1, message2);
+        }
+
+        [Test]
         public void OneofSerialization_NonDefaultValue()
         {
             var message = new TestAllTypes();
