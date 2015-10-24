@@ -1596,6 +1596,7 @@ namespace Google.Protobuf.TestProtos {
       if (BoolField != other.BoolField) return false;
       if (StringField != other.StringField) return false;
       if (BytesField != other.BytesField) return false;
+      if (OneofFieldCase != other.OneofFieldCase) return false;
       return true;
     }
 
@@ -1619,6 +1620,7 @@ namespace Google.Protobuf.TestProtos {
       if (oneofFieldCase_ == OneofFieldOneofCase.BoolField) hash ^= BoolField.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.StringField) hash ^= StringField.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.BytesField) hash ^= BytesField.GetHashCode();
+      hash ^= (int) oneofFieldCase_;
       return hash;
     }
 

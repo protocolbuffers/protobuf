@@ -868,6 +868,7 @@ namespace Google.Protobuf.TestProtos {
       if (!object.Equals(OneofNestedMessage, other.OneofNestedMessage)) return false;
       if (OneofString != other.OneofString) return false;
       if (OneofBytes != other.OneofBytes) return false;
+      if (OneofFieldCase != other.OneofFieldCase) return false;
       return true;
     }
 
@@ -921,6 +922,7 @@ namespace Google.Protobuf.TestProtos {
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) hash ^= OneofNestedMessage.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) hash ^= OneofString.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) hash ^= OneofBytes.GetHashCode();
+      hash ^= (int) oneofFieldCase_;
       return hash;
     }
 
@@ -4470,6 +4472,7 @@ namespace Google.Protobuf.TestProtos {
       if (FooInt != other.FooInt) return false;
       if (FooString != other.FooString) return false;
       if (!object.Equals(FooMessage, other.FooMessage)) return false;
+      if (FooCase != other.FooCase) return false;
       return true;
     }
 
@@ -4478,6 +4481,7 @@ namespace Google.Protobuf.TestProtos {
       if (fooCase_ == FooOneofCase.FooInt) hash ^= FooInt.GetHashCode();
       if (fooCase_ == FooOneofCase.FooString) hash ^= FooString.GetHashCode();
       if (fooCase_ == FooOneofCase.FooMessage) hash ^= FooMessage.GetHashCode();
+      hash ^= (int) fooCase_;
       return hash;
     }
 
