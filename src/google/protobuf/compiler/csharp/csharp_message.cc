@@ -323,6 +323,10 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
             CreateFieldGeneratorInternal(descriptor_->field(i)));
         generator->WriteEquals(printer);
     }
+    for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+        printer->Print("if ($property_name$Case != other.$property_name$Case) return false;\n",
+            "property_name", UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true));
+    }
     printer->Outdent();
     printer->Print(
         "  return true;\n"
@@ -338,6 +342,10 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
         scoped_ptr<FieldGeneratorBase> generator(
             CreateFieldGeneratorInternal(descriptor_->field(i)));
         generator->WriteHash(printer);
+    }
+    for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+        printer->Print("hash ^= (int) $name$Case_;\n",
+            "name", UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false));
     }
     printer->Print("return hash;\n");
     printer->Outdent();

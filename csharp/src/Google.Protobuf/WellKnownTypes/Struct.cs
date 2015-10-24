@@ -344,6 +344,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (BoolValue != other.BoolValue) return false;
       if (!object.Equals(StructValue, other.StructValue)) return false;
       if (!object.Equals(ListValue, other.ListValue)) return false;
+      if (KindCase != other.KindCase) return false;
       return true;
     }
 
@@ -355,6 +356,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (kindCase_ == KindOneofCase.BoolValue) hash ^= BoolValue.GetHashCode();
       if (kindCase_ == KindOneofCase.StructValue) hash ^= StructValue.GetHashCode();
       if (kindCase_ == KindOneofCase.ListValue) hash ^= ListValue.GetHashCode();
+      hash ^= (int) kindCase_;
       return hash;
     }
 
