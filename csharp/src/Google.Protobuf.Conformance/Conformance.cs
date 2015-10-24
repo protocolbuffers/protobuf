@@ -269,6 +269,7 @@ namespace Conformance {
       if (ProtobufPayload != other.ProtobufPayload) return false;
       if (JsonPayload != other.JsonPayload) return false;
       if (RequestedOutputFormat != other.RequestedOutputFormat) return false;
+      if (PayloadCase != other.PayloadCase) return false;
       return true;
     }
 
@@ -277,6 +278,7 @@ namespace Conformance {
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
       if (RequestedOutputFormat != global::Conformance.WireFormat.UNSPECIFIED) hash ^= RequestedOutputFormat.GetHashCode();
+      hash ^= (int) payloadCase_;
       return hash;
     }
 
@@ -512,6 +514,7 @@ namespace Conformance {
       if (ProtobufPayload != other.ProtobufPayload) return false;
       if (JsonPayload != other.JsonPayload) return false;
       if (Skipped != other.Skipped) return false;
+      if (ResultCase != other.ResultCase) return false;
       return true;
     }
 
@@ -522,6 +525,7 @@ namespace Conformance {
       if (resultCase_ == ResultOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
       if (resultCase_ == ResultOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
       if (resultCase_ == ResultOneofCase.Skipped) hash ^= Skipped.GetHashCode();
+      hash ^= (int) resultCase_;
       return hash;
     }
 
@@ -1461,6 +1465,7 @@ namespace Conformance {
       if (!object.Equals(OneofNestedMessage, other.OneofNestedMessage)) return false;
       if (OneofString != other.OneofString) return false;
       if (OneofBytes != other.OneofBytes) return false;
+      if (OneofFieldCase != other.OneofFieldCase) return false;
       return true;
     }
 
@@ -1532,6 +1537,7 @@ namespace Conformance {
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) hash ^= OneofNestedMessage.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) hash ^= OneofString.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) hash ^= OneofBytes.GetHashCode();
+      hash ^= (int) oneofFieldCase_;
       return hash;
     }
 
