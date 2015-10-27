@@ -101,6 +101,7 @@ def cc_proto_library(
         include=None,
         protoc="//google/protobuf:protoc",
         internal_bootstrap_hack=False,
+        default_runtime="//google/protobuf:protobuf",
         **kargs):
   """Bazel rule to create a C++ protobuf library from proto source files
 
@@ -116,6 +117,8 @@ def cc_proto_library(
         for bootstraping. When it is set to True, no files will be generated.
         The rule will simply be a provider for .proto files, so that other
         cc_proto_library can depend on it.
+    default_runtime: the implicitly default runtime which will be depended on by
+        the generated cc_library target.
     **kargs: other keyword arguments that are passed to cc_library.
 
   """
@@ -151,6 +154,8 @@ def cc_proto_library(
       outs=outs,
   )
 
+  if default_runtime and not default_runtime in cc_libs:
+    cc_libs += [default_runtime]
 
   native.cc_library(
       name=name,
@@ -197,6 +202,7 @@ def py_proto_library(
         py_libs=[],
         py_extra_srcs=[],
         include=None,
+        default_runtime="//google/protobuf:protobuf_python",
         protoc="//google/protobuf:protoc",
         **kargs):
   """Bazel rule to create a Python protobuf library from proto source files
@@ -210,6 +216,8 @@ def py_proto_library(
     py_extra_srcs: extra source files that will be added to the output
         py_library. This attribute is used for internal bootstrapping.
     include: a string indicating the include path of the .proto files.
+    default_runtime: the implicitly default runtime which will be depended on by
+        the generated py_library target.
     protoc: the label of the protocol compiler to generate the sources.
     **kargs: other keyword arguments that are passed to cc_library.
 
@@ -238,6 +246,9 @@ def py_proto_library(
         srcs=outs,
         include=include)
     outs=[internal_copied_filegroup_name]
+
+  if default_runtime and not default_runtime in py_libs + deps:
+    py_libs += [default_runtime]
 
   native.py_library(
       name=name,
