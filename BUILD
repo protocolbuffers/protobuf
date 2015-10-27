@@ -154,9 +154,9 @@ cc_proto_library(
     name = "cc_wkt_protos",
     srcs = WELL_KNOWN_PROTOS,
     include = "src",
-    cc_libs = [":protobuf"],
     internal_bootstrap_hack = 1,
     protoc = ":protoc",
+    default_runtime = ":protobuf",
 )
 
 ################################################################################
@@ -334,6 +334,7 @@ cc_proto_library(
     srcs = LITE_TEST_PROTOS + TEST_PROTOS,
     include = "src",
     protoc = ":protoc",
+    default_runtime = ":protobuf",
     deps = [":cc_wkt_protos"],
 )
 
@@ -512,6 +513,7 @@ py_proto_library(
     protoc = ":protoc",
     py_extra_srcs = [":python_srcs"],
     py_libs = ["//external:six"],
+    default_runtime = "",
     visibility = ["//visibility:public"],
 )
 
@@ -532,6 +534,7 @@ py_proto_library(
     include = "src",
     protoc = ":protoc",
     deps = [":protobuf_python"],
+    default_runtime = "",
 )
 
 py_proto_library(
@@ -543,6 +546,7 @@ py_proto_library(
     include = "python",
     protoc = ":protoc",
     deps = [":python_common_test_protos"],
+    default_runtime = ":protobuf_python",
 )
 
 py_library(
