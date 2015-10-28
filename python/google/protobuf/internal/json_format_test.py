@@ -239,6 +239,15 @@ class JsonFormatTest(JsonFormatBase):
     parsed_message = json_format_proto3_pb2.TestOneof()
     self.CheckParseBack(message, parsed_message)
 
+  def testJsonFormatIndentation(self):
+    message = json_format_proto3_pb2.TestOneof()
+    message.oneof_int32_value = 0
+    self.assertEqual(
+        json_format.MessageToJson(message, True, indent=2),
+        '{\n'
+        '  "oneofInt32Value": 0'
+        '\n}')
+
   def testTimestampMessage(self):
     message = json_format_proto3_pb2.TestTimestamp()
     message.value.seconds = 0
