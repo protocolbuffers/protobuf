@@ -159,8 +159,8 @@ class JsonFormatTest(JsonFormatBase):
       message.string_value += (b'\xe2\x80\xa8\xe2\x80\xa9').decode('utf-8')
     self.assertEqual(
         json_format.MessageToJson(message),
-        '{\n  "stringValue": '
-        '"&\\n<\\\"\\r>\\b\\t\\f\\\\\\u0001/\\u2028\\u2029"\n}')
+        '{"stringValue": '
+        '"&\\n<\\\"\\r>\\b\\t\\f\\\\\\u0001/\\u2028\\u2029"}')
     parsed_message = json_format_proto3_pb2.TestMessage()
     self.CheckParseBack(message, parsed_message)
     text = u'{"int32Value": "\u0031"}'
@@ -233,8 +233,8 @@ class JsonFormatTest(JsonFormatBase):
     message.oneof_int32_value = 0
     self.assertEqual(
         json_format.MessageToJson(message, True),
-        '{\n'
-        '  "oneofInt32Value": 0\n'
+        '{'
+        '"oneofInt32Value": 0'
         '}')
     parsed_message = json_format_proto3_pb2.TestOneof()
     self.CheckParseBack(message, parsed_message)
@@ -311,8 +311,8 @@ class JsonFormatTest(JsonFormatBase):
     message.value.paths.append('bar')
     self.assertEqual(
         json_format.MessageToJson(message, True),
-        '{\n'
-        '  "value": "foo.bar,bar"\n'
+        '{'
+        '"value": "foo.bar,bar"'
         '}')
     parsed_message = json_format_proto3_pb2.TestFieldMask()
     self.CheckParseBack(message, parsed_message)
@@ -327,7 +327,7 @@ class JsonFormatTest(JsonFormatBase):
     message.repeated_bool_value.add().value = False
     self.assertEqual(
         json.loads(json_format.MessageToJson(message, True)),
-        json.loads('{\n'
+        json.loads('{'
                    '  "int32Value": 0,'
                    '  "boolValue": false,'
                    '  "stringValue": "",'
@@ -381,7 +381,7 @@ class JsonFormatTest(JsonFormatBase):
   def testNanFloat(self):
     message = json_format_proto3_pb2.TestMessage()
     message.float_value = float('nan')
-    text = '{\n  "floatValue": "NaN"\n}'
+    text = '{"floatValue": "NaN"}'
     self.assertEqual(json_format.MessageToJson(message), text)
     parsed_message = json_format_proto3_pb2.TestMessage()
     json_format.Parse(text, parsed_message)
