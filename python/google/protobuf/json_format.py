@@ -66,7 +66,7 @@ class ParseError(Exception):
   """Thrown in case of parsing error."""
 
 
-def MessageToJson(message, including_default_value_fields=False):
+def MessageToJson(message, including_default_value_fields=False, indent=None):
   """Converts protobuf message to JSON format.
 
   Args:
@@ -80,7 +80,7 @@ def MessageToJson(message, including_default_value_fields=False):
     A string containing the JSON formatted protocol buffer message.
   """
   js = _MessageToJsonObject(message, including_default_value_fields)
-  return json.dumps(js, indent=2)
+  return json.dumps(js, indent=indent)
 
 
 def _MessageToJsonObject(message, including_default_value_fields):
