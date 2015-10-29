@@ -142,7 +142,7 @@ static bool AddFieldNumberToClass(
   if (number == NULL) {
     return false;
   }
-  if (PyObject_SetAttr(cls, attr_name, number) == -1) {
+  if (PyObject_SetAttr(cls, attr_name.get(), number.get()) == -1) {
     return false;
   }
   return true;
@@ -155,11 +155,11 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
   // classes will register themselves in this class.
   if (descriptor->extension_range_count() > 0) {
     ScopedPyObjectPtr by_name(PyDict_New());
-    if (PyObject_SetAttr(cls, k_extensions_by_name, by_name) < 0) {
+    if (PyObject_SetAttr(cls, k_extensions_by_name, by_name.get()) < 0) {
       return -1;
     }
     ScopedPyObjectPtr by_number(PyDict_New());
-    if (PyObject_SetAttr(cls, k_extensions_by_number, by_number) < 0) {
+    if (PyObject_SetAttr(cls, k_extensions_by_number, by_number.get()) < 0) {
       return -1;
     }
   }
@@ -190,7 +190,7 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
       return -1;
     }
     if (PyObject_SetAttrString(
-            cls, enum_descriptor->name().c_str(), wrapped) == -1) {
+            cls, enum_descriptor->name().c_str(), wrapped.get()) == -1) {
       return -1;
     }
 
@@ -203,8 +203,8 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
       if (value_number == NULL) {
         return -1;
       }
-      if (PyObject_SetAttrString(
-              cls, enum_value_descriptor->name().c_str(), value_number) == -1) {
+      if (PyObject_SetAttrString(cls, enum_value_descriptor->name().c_str(),
+                                 value_number.get()) == -1) {
         return -1;
       }
     }
@@ -224,7 +224,7 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
 
     // Add the extension field to the message class.
     if (PyObject_SetAttrString(
-            cls, field->name().c_str(), extension_field) == -1) {
+            cls, field->name().c_str(), extension_field.get()) == -1) {
       return -1;
     }
 
@@ -280,7 +280,7 @@ static PyObject* New(PyTypeObject* type,
     return NULL;
   }
   // Call the base metaclass.
-  ScopedPyObjectPtr result(PyType_Type.tp_new(type, new_args, NULL));
+  ScopedPyObjectPtr result(PyType_Type.tp_new(type, new_args.get(), NULL));
   if (result == NULL) {
     return NULL;
   }
@@ -313,12 +313,12 @@ static PyObject* New(PyTypeObject* type,
 
   // Add the message to the DescriptorPool.
   if (cdescriptor_pool::RegisterMessageClass(newtype->py_descriptor_pool,
-                                             descriptor, result) < 0) {
+                                             descriptor, result.get()) < 0) {
     return NULL;
   }
 
   // Continue with type initialization: add other descriptors, enum values...
-  if (AddDescriptors(result, descriptor) < 0) {
+  if (AddDescriptors(result.get(), descriptor) < 0) {
     return NULL;
   }
   return result.release();
@@ -328,11 +328,6 @@ static void Dealloc(PyMessageMeta *self) {
   Py_DECREF(self->py_message_descriptor);
   Py_DECREF(self->py_descriptor_pool);
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
-}
-
-static PyObject* GetDescriptor(PyMessageMeta *self, void *closure) {
-  Py_INCREF(self->py_message_descriptor);
-  return self->py_message_descriptor;
 }
 
 
@@ -862,7 +857,6 @@ int AssureWritable(CMessage* self) {
       return -1;
 
     // Make self->message writable.
-    Message* parent_message = self->parent->message;
     Message* mutable_message = GetMutableMessage(
         self->parent,
         self->parent_field_descriptor);
@@ -1106,8 +1100,8 @@ int InitAttributes(CMessage* self, PyObject* kwargs) {
           return -1;
         }
         ScopedPyObjectPtr next;
-        while ((next.reset(PyIter_Next(iter))) != NULL) {
-          PyObject* kwargs = (PyDict_Check(next) ? next.get() : NULL);
+        while ((next.reset(PyIter_Next(iter.get()))) != NULL) {
+          PyObject* kwargs = (PyDict_Check(next.get()) ? next.get() : NULL);
           ScopedPyObjectPtr new_msg(
               repeated_composite_container::Add(rc_container, NULL, kwargs));
           if (new_msg == NULL) {
@@ -1115,9 +1109,9 @@ int InitAttributes(CMessage* self, PyObject* kwargs) {
           }
           if (kwargs == NULL) {
             // next was not a dict, it's a message we need to merge
-            ScopedPyObjectPtr merged(
-                MergeFrom(reinterpret_cast<CMessage*>(new_msg.get()), next));
-            if (merged == NULL) {
+            ScopedPyObjectPtr merged(MergeFrom(
+                reinterpret_cast<CMessage*>(new_msg.get()), next.get()));
+            if (merged.get() == NULL) {
               return -1;
             }
           }
@@ -1135,13 +1129,14 @@ int InitAttributes(CMessage* self, PyObject* kwargs) {
           return -1;
         }
         ScopedPyObjectPtr next;
-        while ((next.reset(PyIter_Next(iter))) != NULL) {
-          ScopedPyObjectPtr enum_value(GetIntegerEnumValue(*descriptor, next));
+        while ((next.reset(PyIter_Next(iter.get()))) != NULL) {
+          ScopedPyObjectPtr enum_value(
+              GetIntegerEnumValue(*descriptor, next.get()));
           if (enum_value == NULL) {
             return -1;
           }
-          ScopedPyObjectPtr new_msg(
-              repeated_scalar_container::Append(rs_container, enum_value));
+          ScopedPyObjectPtr new_msg(repeated_scalar_container::Append(
+              rs_container, enum_value.get()));
           if (new_msg == NULL) {
             return -1;
           }
@@ -1182,7 +1177,8 @@ int InitAttributes(CMessage* self, PyObject* kwargs) {
           return -1;
         }
       }
-      if (SetAttr(self, name, (new_val == NULL) ? value : new_val) < 0) {
+      if (SetAttr(self, name, (new_val.get() == NULL) ? value : new_val.get()) <
+          0) {
         return -1;
       }
     }
@@ -1769,13 +1765,13 @@ static PyObject* SerializeToString(CMessage* self, PyObject* args) {
     }
 
     ScopedPyObjectPtr encode_error(
-        PyObject_GetAttrString(message_module, "EncodeError"));
+        PyObject_GetAttrString(message_module.get(), "EncodeError"));
     if (encode_error.get() == NULL) {
       return NULL;
     }
     PyErr_Format(encode_error.get(),
                  "Message %s is missing required fields: %s",
-                 GetMessageName(self).c_str(), PyString_AsString(joined));
+                 GetMessageName(self).c_str(), PyString_AsString(joined.get()));
     return NULL;
   }
   int size = self->message->ByteSize();
@@ -1950,8 +1946,6 @@ static PyObject* RegisterExtension(PyObject* cls,
   if (descriptor == NULL) {
     return NULL;
   }
-  const Descriptor* cmessage_descriptor = GetMessageDescriptor(
-      reinterpret_cast<PyTypeObject*>(cls));
 
   ScopedPyObjectPtr extensions_by_name(
       PyObject_GetAttr(cls, k_extensions_by_name));
@@ -1965,7 +1959,8 @@ static PyObject* RegisterExtension(PyObject* cls,
   }
 
   // If the extension was already registered, check that it is the same.
-  PyObject* existing_extension = PyDict_GetItem(extensions_by_name, full_name);
+  PyObject* existing_extension =
+      PyDict_GetItem(extensions_by_name.get(), full_name.get());
   if (existing_extension != NULL) {
     const FieldDescriptor* existing_extension_descriptor =
         GetExtensionDescriptor(existing_extension);
@@ -1977,7 +1972,8 @@ static PyObject* RegisterExtension(PyObject* cls,
     Py_RETURN_NONE;
   }
 
-  if (PyDict_SetItem(extensions_by_name, full_name, extension_handle) < 0) {
+  if (PyDict_SetItem(extensions_by_name.get(), full_name.get(),
+                     extension_handle) < 0) {
     return NULL;
   }
 
@@ -1992,7 +1988,8 @@ static PyObject* RegisterExtension(PyObject* cls,
   if (number == NULL) {
     return NULL;
   }
-  if (PyDict_SetItem(extensions_by_number, number, extension_handle) < 0) {
+  if (PyDict_SetItem(extensions_by_number.get(), number.get(),
+                     extension_handle) < 0) {
     return NULL;
   }
 
@@ -2008,7 +2005,8 @@ static PyObject* RegisterExtension(PyObject* cls,
     if (message_name == NULL) {
       return NULL;
     }
-    PyDict_SetItem(extensions_by_name, message_name, extension_handle);
+    PyDict_SetItem(extensions_by_name.get(), message_name.get(),
+                   extension_handle);
   }
 
   Py_RETURN_NONE;
@@ -2058,7 +2056,7 @@ static PyObject* ListFields(CMessage* self) {
   // the field information.  Thus the actual size of the py list will be
   // smaller than the size of fields.  Set the actual size at the end.
   Py_ssize_t actual_size = 0;
-  for (Py_ssize_t i = 0; i < fields.size(); ++i) {
+  for (size_t i = 0; i < fields.size(); ++i) {
     ScopedPyObjectPtr t(PyTuple_New(2));
     if (t == NULL) {
       return NULL;
@@ -2086,7 +2084,7 @@ static PyObject* ListFields(CMessage* self) {
         return NULL;
       }
       // 'extension' reference later stolen by PyTuple_SET_ITEM.
-      PyObject* extension = PyObject_GetItem(extensions, extension_field);
+      PyObject* extension = PyObject_GetItem(extensions, extension_field.get());
       if (extension == NULL) {
         return NULL;
       }
@@ -2108,9 +2106,9 @@ static PyObject* ListFields(CMessage* self) {
         return NULL;
       }
 
-      PyObject* field_value = GetAttr(self, py_field_name);
+      PyObject* field_value = GetAttr(self, py_field_name.get());
       if (field_value == NULL) {
-        PyErr_SetObject(PyExc_ValueError, py_field_name);
+        PyErr_SetObject(PyExc_ValueError, py_field_name.get());
         return NULL;
       }
       PyTuple_SET_ITEM(t.get(), 0, field_descriptor.release());
@@ -2132,7 +2130,7 @@ PyObject* FindInitializationErrors(CMessage* self) {
   if (error_list == NULL) {
     return NULL;
   }
-  for (Py_ssize_t i = 0; i < errors.size(); ++i) {
+  for (size_t i = 0; i < errors.size(); ++i) {
     const string& error = errors[i];
     PyObject* error_string = PyString_FromStringAndSize(
         error.c_str(), error.length());
@@ -2430,16 +2428,16 @@ PyObject* ToUnicode(CMessage* self) {
     return NULL;
   }
   Py_INCREF(Py_True);
-  ScopedPyObjectPtr encoded(PyObject_CallMethodObjArgs(text_format, method_name,
-                                                       self, Py_True, NULL));
+  ScopedPyObjectPtr encoded(PyObject_CallMethodObjArgs(
+      text_format.get(), method_name.get(), self, Py_True, NULL));
   Py_DECREF(Py_True);
   if (encoded == NULL) {
     return NULL;
   }
 #if PY_MAJOR_VERSION < 3
-  PyObject* decoded = PyString_AsDecodedObject(encoded, "utf-8", NULL);
+  PyObject* decoded = PyString_AsDecodedObject(encoded.get(), "utf-8", NULL);
 #else
-  PyObject* decoded = PyUnicode_FromEncodedObject(encoded, "utf-8", NULL);
+  PyObject* decoded = PyUnicode_FromEncodedObject(encoded.get(), "utf-8", NULL);
 #endif
   if (decoded == NULL) {
     return NULL;
@@ -2462,7 +2460,7 @@ PyObject* Reduce(CMessage* self) {
   if (serialized == NULL) {
     return NULL;
   }
-  if (PyDict_SetItemString(state, "serialized", serialized) < 0) {
+  if (PyDict_SetItemString(state.get(), "serialized", serialized.get()) < 0) {
     return NULL;
   }
   return Py_BuildValue("OOO", constructor.get(), args.get(), state.get());
@@ -2817,16 +2815,16 @@ bool InitProto2MessageModule(PyObject *m) {
   if (empty_dict == NULL) {
     return false;
   }
-  ScopedPyObjectPtr immutable_dict(PyDictProxy_New(empty_dict));
+  ScopedPyObjectPtr immutable_dict(PyDictProxy_New(empty_dict.get()));
   if (immutable_dict == NULL) {
     return false;
   }
   if (PyDict_SetItem(CMessage_Type.tp_dict,
-                     k_extensions_by_name, immutable_dict) < 0) {
+                     k_extensions_by_name, immutable_dict.get()) < 0) {
     return false;
   }
   if (PyDict_SetItem(CMessage_Type.tp_dict,
-                     k_extensions_by_number, immutable_dict) < 0) {
+                     k_extensions_by_number, immutable_dict.get()) < 0) {
     return false;
   }
 
@@ -2856,19 +2854,19 @@ bool InitProto2MessageModule(PyObject *m) {
     if (collections == NULL) {
       return false;
     }
-    ScopedPyObjectPtr mutable_sequence(PyObject_GetAttrString(
-        collections, "MutableSequence"));
+    ScopedPyObjectPtr mutable_sequence(
+        PyObject_GetAttrString(collections.get(), "MutableSequence"));
     if (mutable_sequence == NULL) {
       return false;
     }
-    if (ScopedPyObjectPtr(PyObject_CallMethod(mutable_sequence, "register", "O",
-                                              &RepeatedScalarContainer_Type))
-        == NULL) {
+    if (ScopedPyObjectPtr(
+            PyObject_CallMethod(mutable_sequence.get(), "register", "O",
+                                &RepeatedScalarContainer_Type)) == NULL) {
       return false;
     }
-    if (ScopedPyObjectPtr(PyObject_CallMethod(mutable_sequence, "register", "O",
-                                              &RepeatedCompositeContainer_Type))
-        == NULL) {
+    if (ScopedPyObjectPtr(
+            PyObject_CallMethod(mutable_sequence.get(), "register", "O",
+                                &RepeatedCompositeContainer_Type)) == NULL) {
       return false;
     }
   }
@@ -2883,16 +2881,16 @@ bool InitProto2MessageModule(PyObject *m) {
     }
 
     ScopedPyObjectPtr mutable_mapping(
-        PyObject_GetAttrString(containers, "MutableMapping"));
+        PyObject_GetAttrString(containers.get(), "MutableMapping"));
     if (mutable_mapping == NULL) {
       return false;
     }
 
-    if (!PyObject_TypeCheck(mutable_mapping, &PyType_Type)) {
+    if (!PyObject_TypeCheck(mutable_mapping.get(), &PyType_Type)) {
       return false;
     }
 
-    Py_INCREF(mutable_mapping);
+    Py_INCREF(mutable_mapping.get());
 #if PY_MAJOR_VERSION >= 3
     PyObject* bases = PyTuple_New(1);
     PyTuple_SET_ITEM(bases, 0, mutable_mapping.get());
@@ -2925,7 +2923,7 @@ bool InitProto2MessageModule(PyObject *m) {
         PyType_FromSpecWithBases(&MessageMapContainer_Type_spec, bases);
     PyModule_AddObject(m, "MessageMapContainer", MessageMapContainer_Type);
 #else
-    Py_INCREF(mutable_mapping);
+    Py_INCREF(mutable_mapping.get());
     MessageMapContainer_Type.tp_base =
         reinterpret_cast<PyTypeObject*>(mutable_mapping.get());
 

@@ -232,7 +232,7 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
   }
 
   // Cache the result.
-  Py_INCREF(value);
+  Py_INCREF(value.get());
   (*pool->descriptor_options)[descriptor] = value.get();
 
   return value.release();
@@ -1489,7 +1489,8 @@ static bool AddEnumValues(PyTypeObject *type,
     if (obj == NULL) {
       return false;
     }
-    if (PyDict_SetItemString(type->tp_dict, value->name().c_str(), obj) < 0) {
+    if (PyDict_SetItemString(type->tp_dict, value->name().c_str(), obj.get()) <
+        0) {
       return false;
     }
   }
@@ -1498,7 +1499,7 @@ static bool AddEnumValues(PyTypeObject *type,
 
 static bool AddIntConstant(PyTypeObject *type, const char* name, int value) {
   ScopedPyObjectPtr obj(PyInt_FromLong(value));
-  if (PyDict_SetItemString(type->tp_dict, name, obj) < 0) {
+  if (PyDict_SetItemString(type->tp_dict, name, obj.get()) < 0) {
     return false;
   }
   return true;

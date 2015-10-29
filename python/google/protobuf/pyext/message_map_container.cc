@@ -155,7 +155,7 @@ static PyObject* GetCMessage(MessageMapContainer* self, Message* entry) {
   Message* message = entry->GetReflection()->MutableMessage(
       entry, self->value_field_descriptor);
   ScopedPyObjectPtr key(PyLong_FromVoidPtr(message));
-  PyObject* ret = PyDict_GetItem(self->message_dict, key);
+  PyObject* ret = PyDict_GetItem(self->message_dict, key.get());
 
   if (ret == NULL) {
     CMessage* cmsg = cmessage::NewEmptyMessage(self->subclass_init,
@@ -169,7 +169,7 @@ static PyObject* GetCMessage(MessageMapContainer* self, Message* entry) {
     cmsg->message = message;
     cmsg->parent = self->parent;
 
-    if (PyDict_SetItem(self->message_dict, key, ret) < 0) {
+    if (PyDict_SetItem(self->message_dict, key.get(), ret) < 0) {
       Py_DECREF(ret);
       return NULL;
     }
@@ -202,7 +202,7 @@ int MapKeyMatches(MessageMapContainer* self, const Message* entry,
   // TODO(haberman): do we need more strict type checking?
   ScopedPyObjectPtr entry_key(
       cmessage::InternalGetScalar(entry, self->key_field_descriptor));
-  int ret = PyObject_RichCompareBool(key, entry_key, Py_EQ);
+  int ret = PyObject_RichCompareBool(key, entry_key.get(), Py_EQ);
   return ret;
 }
 
@@ -237,7 +237,7 @@ int SetItem(PyObject *_self, PyObject *key, PyObject *v) {
     if (matches < 0) return -1;
     if (matches) {
       found = true;
-      if (i != size - 1) {
+      if (i != (int)size - 1) {
         reflection->SwapElements(message, self->parent_field_descriptor, i,
                                  size - 1);
       }
@@ -266,7 +266,7 @@ PyObject* GetIterator(PyObject *_self) {
     return PyErr_Format(PyExc_KeyError, "Could not allocate iterator");
   }
 
-  MessageMapIterator* iter = GetIter(obj);
+  MessageMapIterator* iter = GetIter(obj.get());
 
   Py_INCREF(self);
   iter->container = self;
@@ -354,7 +354,7 @@ PyObject* Contains(PyObject* _self, PyObject* key) {
   // via linear search.
   //
   // TODO(haberman): add lookup API to Reflection API.
-  size_t size =
+  int size =
       reflection->FieldSize(*message, self->parent_field_descriptor);
   for (int i = 0; i < size; i++) {
     Message* entry = reflection->MutableRepeatedMessage(
@@ -404,12 +404,6 @@ PyObject* Get(PyObject* self, PyObject* args) {
     }
   }
 }
-
-static PyMappingMethods MpMethods = {
-  Length,    // mp_length
-  GetItem,   // mp_subscript
-  SetItem,   // mp_ass_subscript
-};
 
 static void Dealloc(PyObject* _self) {
   MessageMapContainer* self = GetMap(_self);
@@ -485,6 +479,12 @@ PyObject* IterNext(PyObject* _self) {
   PyObject *MessageMapContainer_Type;
 
 #else
+  static PyMappingMethods MpMethods = {
+    message_map_container::Length,    // mp_length
+    message_map_container::GetItem,   // mp_subscript
+    message_map_container::SetItem,   // mp_ass_subscript
+  };
+
   PyTypeObject MessageMapContainer_Type = {
     PyVarObject_HEAD_INIT(&PyType_Type, 0)
     FULL_MODULE_NAME ".MessageMapContainer",  //  tp_name
@@ -498,7 +498,7 @@ PyObject* IterNext(PyObject* _self) {
     0,                                   //  tp_repr
     0,                                   //  tp_as_number
     0,                                   //  tp_as_sequence
-    &message_map_container::MpMethods,   //  tp_as_mapping
+    &MpMethods,                          //  tp_as_mapping
     0,                                   //  tp_hash
     0,                                   //  tp_call
     0,                                   //  tp_str
