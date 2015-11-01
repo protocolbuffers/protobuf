@@ -6328,6 +6328,10 @@ class SingletonSourceTree : public compiler::SourceTree {
         new io::ArrayInputStream(contents_.data(), contents_.size()) : NULL;
   }
 
+  virtual string GetLastErrorMessage() {
+    return "File not found.";
+  }
+
  private:
   const string filename_;
   const string contents_;

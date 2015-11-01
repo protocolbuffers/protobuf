@@ -199,7 +199,7 @@ class LIBPROTOBUF_EXPORT MultiFileErrorCollector {
 class LIBPROTOBUF_EXPORT SourceTree {
  public:
   inline SourceTree() {}
-  virtual ~SourceTree();
+  virtual ~SourceTree() {}
 
   // Open the given file and return a stream that reads it, or NULL if not
   // found.  The caller takes ownership of the returned object.  The filename
@@ -211,8 +211,7 @@ class LIBPROTOBUF_EXPORT SourceTree {
   // description of the error.
   // Subclasses should implement this method and return a meaningful value for
   // better error reporting.
-  // TODO(xiaofeng): change this to a pure virtual function.
-  virtual string GetLastErrorMessage();
+  virtual string GetLastErrorMessage() = 0;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SourceTree);
