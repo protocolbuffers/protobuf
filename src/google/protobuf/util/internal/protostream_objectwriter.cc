@@ -602,7 +602,7 @@ void ProtoStreamObjectWriter::ProtoElement::TakeOneofIndex(int32 index) {
 
 bool ProtoStreamObjectWriter::ProtoElement::InsertMapKeyIfNotPresent(
     StringPiece map_key) {
-  return InsertIfNotPresent(&map_keys_, map_key);
+  return InsertIfNotPresent(&map_keys_, map_key.ToString());
 }
 
 inline void ProtoStreamObjectWriter::InvalidName(StringPiece unknown_name,
