@@ -394,7 +394,7 @@ PyObject* Add(PyDescriptorPool* self, PyObject* file_descriptor_proto) {
   if (serialized_pb == NULL) {
     return NULL;
   }
-  return AddSerializedFile(self, serialized_pb);
+  return AddSerializedFile(self, serialized_pb.get());
 }
 
 static PyMethodDef Methods[] = {

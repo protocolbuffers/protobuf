@@ -1260,6 +1260,8 @@ namespace UnitTest.Issues.TestProtos {
       if (PlainString != other.PlainString) return false;
       if (O2Int32 != other.O2Int32) return false;
       if (O2String != other.O2String) return false;
+      if (O1Case != other.O1Case) return false;
+      if (O2Case != other.O2Case) return false;
       return true;
     }
 
@@ -1271,6 +1273,8 @@ namespace UnitTest.Issues.TestProtos {
       if (PlainString.Length != 0) hash ^= PlainString.GetHashCode();
       if (o2Case_ == O2OneofCase.O2Int32) hash ^= O2Int32.GetHashCode();
       if (o2Case_ == O2OneofCase.O2String) hash ^= O2String.GetHashCode();
+      hash ^= (int) o1Case_;
+      hash ^= (int) o2Case_;
       return hash;
     }
 

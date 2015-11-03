@@ -18,6 +18,14 @@ COPTS = [
 # Bazel should provide portable link_opts for pthread.
 LINK_OPTS = ["-lpthread"]
 
+load(
+    "protobuf",
+    "cc_proto_library",
+    "py_proto_library",
+    "internal_copied_filegroup",
+    "internal_protobuf_py_tests",
+)
+
 cc_library(
     name = "protobuf_lite",
     srcs = [
@@ -124,7 +132,7 @@ objc_library(
     visibility = ["//visibility:public"],
 )
 
-WELL_KNOWN_PROTOS = [
+RELATIVE_WELL_KNOWN_PROTOS = [
     # AUTOGEN(well_known_protos)
     "google/protobuf/any.proto",
     "google/protobuf/api.proto",
@@ -139,6 +147,17 @@ WELL_KNOWN_PROTOS = [
     "google/protobuf/type.proto",
     "google/protobuf/wrappers.proto",
 ]
+
+WELL_KNOWN_PROTOS = ["src/" + s for s in RELATIVE_WELL_KNOWN_PROTOS]
+
+cc_proto_library(
+    name = "cc_wkt_protos",
+    srcs = WELL_KNOWN_PROTOS,
+    include = "src",
+    internal_bootstrap_hack = 1,
+    protoc = ":protoc",
+    default_runtime = ":protobuf",
+)
 
 ################################################################################
 # Protocol Buffers Compiler
@@ -163,6 +182,7 @@ cc_library(
         "src/google/protobuf/compiler/cpp/cpp_primitive_field.cc",
         "src/google/protobuf/compiler/cpp/cpp_service.cc",
         "src/google/protobuf/compiler/cpp/cpp_string_field.cc",
+        "src/google/protobuf/compiler/csharp/csharp_doc_comment.cc",
         "src/google/protobuf/compiler/csharp/csharp_enum.cc",
         "src/google/protobuf/compiler/csharp/csharp_enum_field.cc",
         "src/google/protobuf/compiler/csharp/csharp_field_base.cc",
@@ -253,32 +273,10 @@ cc_binary(
 )
 
 ################################################################################
-# Java support
-################################################################################
-genrule(
-    name = "generate_java_descriptor_proto",
-    tools = [":protoc"],
-    srcs = [ "src/google/protobuf/descriptor.proto", ],
-    outs = [ "com/google/protobuf/DescriptorProtos.java" ],
-    cmd = "$(location :protoc) --java_out=$(@D)/../../.. $<",
-)
-
-java_library(
-    name = "java_proto",
-    visibility = ["//visibility:public"],
-    srcs = glob([
-        "java/src/main/java/com/google/protobuf/*.java"
-    ]) + [
-      ":generate_java_descriptor_proto",
-    ]
-)
-
-
-################################################################################
 # Tests
 ################################################################################
 
-LITE_TEST_PROTOS = [
+RELATIVE_LITE_TEST_PROTOS = [
     # AUTOGEN(lite_test_protos)
     "google/protobuf/map_lite_unittest.proto",
     "google/protobuf/unittest_import_lite.proto",
@@ -287,7 +285,9 @@ LITE_TEST_PROTOS = [
     "google/protobuf/unittest_no_arena_lite.proto",
 ]
 
-TEST_PROTOS = [
+LITE_TEST_PROTOS = ["src/" + s for s in RELATIVE_LITE_TEST_PROTOS]
+
+RELATIVE_TEST_PROTOS = [
     # AUTOGEN(test_protos)
     "google/protobuf/any_test.proto",
     "google/protobuf/compiler/cpp/cpp_test_bad_identifiers.proto",
@@ -327,22 +327,15 @@ TEST_PROTOS = [
     "google/protobuf/util/json_format_proto3.proto",
 ]
 
-PROTOS = LITE_TEST_PROTOS + TEST_PROTOS
+TEST_PROTOS = ["src/" + s for s in RELATIVE_TEST_PROTOS]
 
-INPUTS = PROTOS + WELL_KNOWN_PROTOS
-
-OUTPUTS = ["src/" + x[:-5] + "pb.h" for x in PROTOS] + \
-          ["src/" + x[:-5] + "pb.cc" for x in PROTOS]
-
-genrule(
-    name = "gen_test_protos",
-    srcs = ["src/" + x for x in INPUTS],
-    outs = OUTPUTS,
-    cmd =
-        "$(location :protoc) --cpp_out=$(@D)/src" +
-        "".join([" -I" + x + "=$(location src/" + x + ")" for x in INPUTS]) +
-        "".join([" $(location src/" + x + ")" for x in PROTOS]),
-    tools = [":protoc"],
+cc_proto_library(
+    name = "cc_test_protos",
+    srcs = LITE_TEST_PROTOS + TEST_PROTOS,
+    include = "src",
+    protoc = ":protoc",
+    default_runtime = ":protobuf",
+    deps = [":cc_wkt_protos"],
 )
 
 COMMON_TEST_SRCS = [
@@ -371,7 +364,7 @@ cc_binary(
 
 cc_test(
     name = "protobuf_test",
-    srcs = OUTPUTS + COMMON_TEST_SRCS + [
+    srcs = COMMON_TEST_SRCS + [
         # AUTOGEN(test_srcs)
         "src/google/protobuf/any_test.cc",
         "src/google/protobuf/arena_unittest.cc",
@@ -440,14 +433,153 @@ cc_test(
     copts = COPTS,
     data = [
         ":test_plugin",
-    ],
+    ] + glob([
+        "src/google/protobuf/**/*",
+    ]),
     includes = [
         "src/",
     ],
     linkopts = LINK_OPTS,
     deps = [
+        ":cc_test_protos",
         ":protobuf",
         ":protoc_lib",
         "//external:gtest_main",
     ],
+)
+
+################################################################################
+# Java support
+################################################################################
+genrule(
+    name = "generate_java_descriptor_proto",
+    srcs = ["src/google/protobuf/descriptor.proto"],
+    outs = ["com/google/protobuf/DescriptorProtos.java"],
+    cmd = "$(location :protoc) --java_out=$(@D)/../../.. $<",
+    tools = [":protoc"],
+)
+
+java_library(
+    name = "protobuf_java",
+    srcs = glob([
+        "java/src/main/java/com/google/protobuf/*.java",
+    ]) + [
+        ":generate_java_descriptor_proto",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+################################################################################
+# Python support
+################################################################################
+
+# Hack:
+# protoc generated files contain imports like:
+#   "from google.protobuf.xxx import yyy"
+# However, the sources files of the python runtime are not directly under
+# "google/protobuf" (they are under python/google/protobuf).  We workaround
+# this by copying runtime source files into the desired location to workaround
+# the import issue. Ideally py_library should support something similiar to the
+# "include" attribute in cc_library to inject the PYTHON_PATH for all libraries
+# that depend on the target.
+#
+# If you use python protobuf as a third_party library in your bazel managed
+# project:
+# 1) Please import the whole package to //google/protobuf in your
+# project. Otherwise, bazel disallows generated files out of the current
+# package, thus we won't be able to copy protobuf runtime files into
+# //google/protobuf/.
+# 2) The runtime also requires "six" for Python2/3 compatibility, please see the
+# WORKSPACE file and bind "six" to your workspace as well.
+internal_copied_filegroup(
+    name = "python_srcs",
+    srcs = glob(
+        [
+            "python/google/protobuf/*.py",
+            "python/google/protobuf/**/*.py",
+        ],
+        exclude = [
+            "python/google/protobuf/internal/*_test.py",
+            "python/google/protobuf/internal/test_util.py",
+        ],
+    ),
+    include = "python",
+)
+
+py_proto_library(
+    name = "protobuf_python",
+    srcs = WELL_KNOWN_PROTOS,
+    include = "src",
+    protoc = ":protoc",
+    py_extra_srcs = [":python_srcs"],
+    py_libs = ["//external:six"],
+    default_runtime = "",
+    visibility = ["//visibility:public"],
+)
+
+internal_copied_filegroup(
+    name = "python_test_srcs",
+    srcs = glob(
+        [
+            "python/google/protobuf/internal/*_test.py",
+            "python/google/protobuf/internal/test_util.py",
+        ],
+    ),
+    include = "python",
+)
+
+py_proto_library(
+    name = "python_common_test_protos",
+    srcs = LITE_TEST_PROTOS + TEST_PROTOS,
+    include = "src",
+    protoc = ":protoc",
+    deps = [":protobuf_python"],
+    default_runtime = "",
+)
+
+py_proto_library(
+    name = "python_specific_test_protos",
+    srcs = glob([
+        "python/google/protobuf/internal/*.proto",
+        "python/google/protobuf/internal/import_test_package/*.proto",
+    ]),
+    include = "python",
+    protoc = ":protoc",
+    deps = [":python_common_test_protos"],
+    default_runtime = ":protobuf_python",
+)
+
+py_library(
+    name = "python_tests",
+    srcs = [":python_test_srcs"],
+    deps = [
+        ":protobuf_python",
+        ":python_common_test_protos",
+        ":python_specific_test_protos",
+    ],
+)
+
+internal_protobuf_py_tests(
+    name = "python_tests_batch",
+    data = glob([
+        "src/google/protobuf/**/*",
+    ]),
+    modules = [
+        "descriptor_database_test",
+        "descriptor_pool_test",
+        "descriptor_test",
+        "generator_test",
+        "json_format_test",
+        "message_factory_test",
+        "message_test",
+        "proto_builder_test",
+        "reflection_test",
+        "service_reflection_test",
+        "symbol_database_test",
+        "text_encoding_test",
+        "text_format_test",
+        "unknown_fields_test",
+        "wire_format_test",
+    ],
+    deps = [":python_tests"],
 )

@@ -345,5 +345,15 @@ namespace Google.Protobuf.WellKnownTypes
             var message = TestWellKnownTypes.Parser.ParseFrom(stream);
             Assert.AreEqual(6, message.Int32Field);
         }
+
+        [Test]
+        public void ClearWithReflection()
+        {
+            // String and Bytes are the tricky ones here, as the CLR type of the property
+            // is the same between the wrapper and non-wrapper types.
+            var message = new TestWellKnownTypes { StringField = "foo" };
+            TestWellKnownTypes.Descriptor.Fields[TestWellKnownTypes.StringFieldFieldNumber].Accessor.Clear(message);
+            Assert.IsNull(message.StringField);
+        }
     }
 }
