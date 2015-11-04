@@ -114,7 +114,7 @@ while [[ $# != 0 ]]; do
 done
 
 # Into the proto dir.
-pushd "${ProtoRootDir}"
+cd "${ProtoRootDir}"
 
 # if no Makefile, force the autogen.
 if [[ ! -f Makefile ]] ; then
@@ -160,6 +160,10 @@ header "Building"
 # at random.
 wrapped_make -j "${NUM_MAKE_JOBS}" all
 wrapped_make -j "${NUM_MAKE_JOBS}" check
+# Fire off the conformance tests also.
+cd conformance
+wrapped_make -j "${NUM_MAKE_JOBS}"
+cd ..
 
 header "Ensuring the ObjC descriptors are current."
 # Find the newest input file (protos, compiler, and the generator script).
