@@ -723,5 +723,23 @@ namespace Google.Protobuf
             string json = "{} 10";
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
         }
+
+        /// <summary>
+        /// JSON equivalent to <see cref="CodedInputStreamTest.MaliciousRecursion"/>
+        /// </summary>
+        [Test]
+        public void MaliciousRecursion()
+        {
+            string data64 = CodedInputStreamTest.MakeRecursiveMessage(64).ToString();
+            string data65 = CodedInputStreamTest.MakeRecursiveMessage(65).ToString();
+
+            var parser64 = new JsonParser(new JsonParser.Settings(64));
+            CodedInputStreamTest.AssertMessageDepth(parser64.Parse<TestRecursiveMessage>(data64), 64);
+            Assert.Throws<InvalidProtocolBufferException>(() => parser64.Parse<TestRecursiveMessage>(data65));
+
+            var parser63 = new JsonParser(new JsonParser.Settings(63));
+            Assert.Throws<InvalidProtocolBufferException>(() => parser63.Parse<TestRecursiveMessage>(data64));
+
+        }
     }
 }
