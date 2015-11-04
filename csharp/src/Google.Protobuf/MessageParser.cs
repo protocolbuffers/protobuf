@@ -148,6 +148,8 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="json">The JSON to parse.</param>
         /// <returns>The parsed message.</returns>
+        /// <exception cref="InvalidJsonException">The JSON does not comply with RFC 7159</exception>
+        /// <exception cref="InvalidProtocolBufferException">The JSON does not represent a Protocol Buffers message correctly</exception>
         public T ParseJson(string json)
         {
             T message = factory();

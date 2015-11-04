@@ -84,6 +84,7 @@
     <Compile Include="FieldCodec.cs" />
     <Compile Include="FrameworkPortability.cs" />
     <Compile Include="IDeepCloneable.cs" />
+    <Compile Include="InvalidJsonException.cs" />
     <Compile Include="JsonFormatter.cs" />
     <Compile Include="JsonParser.cs" />
     <Compile Include="JsonToken.cs" />
