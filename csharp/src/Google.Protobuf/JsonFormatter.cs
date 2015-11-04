@@ -189,6 +189,7 @@ namespace Google.Protobuf
         }
 
         // Converted from src/google/protobuf/util/internal/utility.cc ToCamelCase
+        // TODO: Use the new field in FieldDescriptor.
         internal static string ToCamelCase(string input)
         {
             bool capitalizeNext = false;
@@ -382,10 +383,19 @@ namespace Google.Protobuf
                 WriteNull(builder);
                 return;
             }
-            // For wrapper types, the value will be the (possibly boxed) "native" value,
-            // so we can write it as if we were unconditionally writing the Value field for the wrapper type.
+            // For wrapper types, the value will either be the (possibly boxed) "native" value,
+            // or the message itself if we're formatting it at the top level (e.g. just calling ToString on the object itself).
+            // If it's the message form, we can extract the value first, which *will* be the (possibly boxed) native value,
+            // and then proceed, writing it as if we were definitely in a field. (We never need to wrap it in an extra string...
+            // WriteValue will do the right thing.)
+            // TODO: Detect this differently when we have dynamic messages.
             if (descriptor.File == Int32Value.Descriptor.File)
             {
+                if (value is IMessage)
+                {
+                    var message = (IMessage) value;
+                    value = message.Descriptor.Fields[Wrappers.WrapperValueFieldNumber].Accessor.GetValue(message);
+                }
                 WriteValue(builder, value);
                 return;
             }
@@ -749,7 +759,6 @@ namespace Google.Protobuf
             public static Settings Default { get { return defaultInstance; } }
 
             private readonly bool formatDefaultValues;
-
 
             /// <summary>
             /// Whether fields whose values are the default for the field type (e.g. 0 for integers)

@@ -95,6 +95,8 @@
     <Compile Include="Collections\MapFieldTest.cs" />
     <Compile Include="Collections\RepeatedFieldTest.cs" />
     <Compile Include="JsonFormatterTest.cs" />
+    <Compile Include="JsonParserTest.cs" />
+    <Compile Include="JsonTokenizerTest.cs" />
     <Compile Include="Reflection\DescriptorsTest.cs" />
     <Compile Include="Reflection\FieldAccessTest.cs" />
     <Compile Include="SampleEnum.cs" />

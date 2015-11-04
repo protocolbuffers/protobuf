@@ -276,6 +276,13 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void WrapperFormatting_Message()
+        {
+            Assert.AreEqual("\"\"", JsonFormatter.Default.Format(new StringValue()));
+            Assert.AreEqual("0", JsonFormatter.Default.Format(new Int32Value()));
+        }
+
+        [Test]
         public void WrapperFormatting_IncludeNull()
         {
             // The actual JSON here is very large because there are lots of fields. Just test a couple of them.
@@ -376,12 +383,12 @@ namespace Google.Protobuf
             {
                 Fields =
                 {
-                    { "a", new Value { NullValue = new NullValue() } },
-                    { "b", new Value { BoolValue = false } },
-                    { "c", new Value { NumberValue = 10.5 } },
-                    { "d", new Value { StringValue = "text" } },
-                    { "e", new Value { ListValue = new ListValue { Values = { new Value { StringValue = "t1" }, new Value { NumberValue = 5 } } } } },
-                    { "f", new Value { StructValue = new Struct { Fields = { { "nested", new Value { StringValue = "value" } } } } } }
+                    { "a", Value.ForNull() },
+                    { "b", Value.ForBool(false) },
+                    { "c", Value.ForNumber(10.5) },
+                    { "d", Value.ForString("text") },
+                    { "e", Value.ForList(Value.ForString("t1"), Value.ForNumber(5)) },
+                    { "f", Value.ForStruct(new Struct { Fields = { { "nested", Value.ForString("value") } } }) }
                 }
             };
             AssertJson("{ 'a': null, 'b': false, 'c': 10.5, 'd': 'text', 'e': [ 't1', 5 ], 'f': { 'nested': 'value' } }", message.ToString());
@@ -403,6 +410,14 @@ namespace Google.Protobuf
         {
             var message = new TestWellKnownTypes { FieldMaskField = new FieldMask { Paths = { "user.display_name", "photo" } } };
             AssertJson("{ 'fieldMaskField': 'user.displayName,photo' }", JsonFormatter.Default.Format(message));
+        }
+
+        // SourceContext is an example of a well-known type with no special JSON handling
+        [Test]
+        public void SourceContextStandalone()
+        {
+            var message = new SourceContext { FileName = "foo.proto" };
+            AssertJson("{ 'fileName': 'foo.proto' }", JsonFormatter.Default.Format(message));
         }
 
         /// <summary>
