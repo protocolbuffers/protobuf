@@ -55,7 +55,6 @@ UmbrellaClassGenerator::UmbrellaClassGenerator(const FileDescriptor* file)
       file_(file) {
   namespace_ = GetFileNamespace(file);
   umbrellaClassname_ = GetUmbrellaClassUnqualifiedName(file);
-  umbrellaNamespace_ = GetUmbrellaClassNestedNamespace(file);
 }
 
 UmbrellaClassGenerator::~UmbrellaClassGenerator() {
@@ -68,12 +67,6 @@ void UmbrellaClassGenerator::Generate(io::Printer* printer) {
   // Close the class declaration.
   printer->Outdent();
   printer->Print("}\n");
-
-  // Close the namespace around the umbrella class if defined
-  if (!umbrellaNamespace_.empty()) {
-    printer->Outdent();
-    printer->Print("}\n");
-  }
 
   // write children: Enums
   if (file_->enum_type_count() > 0) {
@@ -122,14 +115,6 @@ void UmbrellaClassGenerator::WriteIntroduction(io::Printer* printer) {
 
   if (!namespace_.empty()) {
     printer->Print("namespace $namespace$ {\n", "namespace", namespace_);
-    printer->Indent();
-    printer->Print("\n");
-  }
-
-  // Add the namespace around the umbrella class if defined
-  if (!umbrellaNamespace_.empty()) {
-    printer->Print("namespace $umbrella_namespace$ {\n",
-                   "umbrella_namespace", umbrellaNamespace_);
     printer->Indent();
     printer->Print("\n");
   }

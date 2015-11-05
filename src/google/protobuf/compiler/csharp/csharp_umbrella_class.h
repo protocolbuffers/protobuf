@@ -53,7 +53,6 @@ class UmbrellaClassGenerator : public SourceGeneratorBase {
 
   std::string namespace_;
   std::string umbrellaClassname_;
-  std::string umbrellaNamespace_;
 
   void WriteIntroduction(io::Printer* printer);
   void WriteDescriptor(io::Printer* printer);
