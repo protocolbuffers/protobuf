@@ -77,6 +77,8 @@ src/**/*.trs
 
 # JavaBuild output.
 java/target
+java/util/target
+java/plugin/target
 javanano/target
 
 # Windows native output.
