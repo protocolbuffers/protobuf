@@ -37,7 +37,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -164,11 +163,7 @@ namespace Google.Protobuf
                 throw new InvalidProtocolBufferException("Expected an object");
             }
             var descriptor = message.Descriptor;
-            // TODO: Make this more efficient, e.g. by building it once in the descriptor.
-            // Additionally, we need to consider whether to parse field names in their original proto form,
-            // and any overrides in the descriptor. But yes, all of this should be in the descriptor somehow...
-            // the descriptor can expose the dictionary.
-            var jsonFieldMap = descriptor.Fields.InDeclarationOrder().ToDictionary(field => JsonFormatter.ToCamelCase(field.Name));
+            var jsonFieldMap = descriptor.Fields.ByJsonName();
             while (true)
             {
                 token = tokenizer.Next();
