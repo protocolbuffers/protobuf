@@ -119,6 +119,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Google.Protobuf.nuspec                          \
   csharp/src/Google.Protobuf/IDeepCloneable.cs                               \
   csharp/src/Google.Protobuf/IMessage.cs                                     \
+  csharp/src/Google.Protobuf/InvalidJsonException.cs                         \
   csharp/src/Google.Protobuf/InvalidProtocolBufferException.cs               \
   csharp/src/Google.Protobuf/JsonFormatter.cs                                \
   csharp/src/Google.Protobuf/JsonParser.cs                                   \

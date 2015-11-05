@@ -88,6 +88,7 @@ namespace Google.Protobuf
         /// </remarks>
         /// <returns>The next token in the stream. This is never null.</returns>
         /// <exception cref="InvalidOperationException">This method is called after an EndDocument token has been returned</exception>
+        /// <exception cref="InvalidJsonException">The input text does not comply with RFC 7159</exception>
         internal JsonToken Next()
         {
             if (bufferedToken != null)
@@ -182,7 +183,7 @@ namespace Google.Protobuf
                         ValidateAndModifyStateForValue("Invalid state to read a number token: ");
                         return JsonToken.Value(number);
                     default:
-                        throw new InvalidProtocolBufferException("Invalid first character of token: " + next.Value);
+                        throw new InvalidJsonException("Invalid first character of token: " + next.Value);
                 }
             }
         }
@@ -191,7 +192,7 @@ namespace Google.Protobuf
         {
             if ((validStates & state) == 0)
             {
-                throw new InvalidProtocolBufferException(errorPrefix + state);
+                throw reader.CreateException(errorPrefix + state);
             }
         }
 
@@ -207,13 +208,13 @@ namespace Google.Protobuf
                 char c = reader.ReadOrFail("Unexpected end of text while reading string");
                 if (c < ' ')
                 {
-                    throw new InvalidProtocolBufferException(string.Format(CultureInfo.InvariantCulture, "Invalid character in string literal: U+{0:x4}", (int) c));
+                    throw reader.CreateException(string.Format(CultureInfo.InvariantCulture, "Invalid character in string literal: U+{0:x4}", (int) c));
                 }
                 if (c == '"')
                 {
                     if (haveHighSurrogate)
                     {
-                        throw new InvalidProtocolBufferException("Invalid use of surrogate pair code units");
+                        throw reader.CreateException("Invalid use of surrogate pair code units");
                     }
                     return value.ToString();
                 }
@@ -226,7 +227,7 @@ namespace Google.Protobuf
                 // followed by an escaped low surrogate or vice versa... and that couldn't even be represented in UTF-8.
                 if (haveHighSurrogate != char.IsLowSurrogate(c))
                 {
-                    throw new InvalidProtocolBufferException("Invalid use of surrogate pair code units");
+                    throw reader.CreateException("Invalid use of surrogate pair code units");
                 }
                 haveHighSurrogate = char.IsHighSurrogate(c);
                 value.Append(c);
@@ -260,7 +261,7 @@ namespace Google.Protobuf
                 case 'u':
                     return ReadUnicodeEscape();
                 default:
-                    throw new InvalidProtocolBufferException(string.Format(CultureInfo.InvariantCulture, "Invalid character in character escape sequence: U+{0:x4}", (int) c));
+                    throw reader.CreateException(string.Format(CultureInfo.InvariantCulture, "Invalid character in character escape sequence: U+{0:x4}", (int) c));
             }
         }
 
@@ -288,7 +289,7 @@ namespace Google.Protobuf
                 }
                 else
                 {
-                    throw new InvalidProtocolBufferException(string.Format(CultureInfo.InvariantCulture, "Invalid character in character escape sequence: U+{0:x4}", (int) c));
+                    throw reader.CreateException(string.Format(CultureInfo.InvariantCulture, "Invalid character in character escape sequence: U+{0:x4}", (int) c));
                 }
                 result = (result << 4) + nybble;
             }
@@ -306,11 +307,11 @@ namespace Google.Protobuf
                 char? next = reader.Read();
                 if (next == null)
                 {
-                    throw new InvalidProtocolBufferException("Unexpected end of text while reading literal token " + text);
+                    throw reader.CreateException("Unexpected end of text while reading literal token " + text);
                 }
                 if (next.Value != text[i])
                 {
-                    throw new InvalidProtocolBufferException("Unexpected character while reading literal token " + text);
+                    throw reader.CreateException("Unexpected character while reading literal token " + text);
                 }
             }
         }
@@ -354,7 +355,7 @@ namespace Google.Protobuf
             }
             catch (OverflowException)
             {
-                throw new InvalidProtocolBufferException("Numeric value out of range: " + builder);
+                throw reader.CreateException("Numeric value out of range: " + builder);
             }
         }
 
@@ -363,14 +364,14 @@ namespace Google.Protobuf
             char first = reader.ReadOrFail("Invalid numeric literal");
             if (first < '0' || first > '9')
             {
-                throw new InvalidProtocolBufferException("Invalid numeric literal");
+                throw reader.CreateException("Invalid numeric literal");
             }
             builder.Append(first);
             int digitCount;
             char? next = ConsumeDigits(builder, out digitCount);
             if (first == '0' && digitCount != 0)
             {
-                throw new InvalidProtocolBufferException("Invalid numeric literal: leading 0 for non-zero value.");
+                throw reader.CreateException("Invalid numeric literal: leading 0 for non-zero value.");
             }
             return next;
         }
@@ -382,7 +383,7 @@ namespace Google.Protobuf
             char? next = ConsumeDigits(builder, out digitCount);
             if (digitCount == 0)
             {
-                throw new InvalidProtocolBufferException("Invalid numeric literal: fraction with no trailing digits");
+                throw reader.CreateException("Invalid numeric literal: fraction with no trailing digits");
             }
             return next;
         }
@@ -393,7 +394,7 @@ namespace Google.Protobuf
             char? next = reader.Read();
             if (next == null)
             {
-                throw new InvalidProtocolBufferException("Invalid numeric literal: exponent with no trailing digits");
+                throw reader.CreateException("Invalid numeric literal: exponent with no trailing digits");
             }
             if (next == '-' || next == '+')
             {
@@ -407,7 +408,7 @@ namespace Google.Protobuf
             next = ConsumeDigits(builder, out digitCount);
             if (digitCount == 0)
             {
-                throw new InvalidProtocolBufferException("Invalid numeric literal: exponent without value");
+                throw reader.CreateException("Invalid numeric literal: exponent without value");
             }
             return next;
         }
@@ -615,7 +616,7 @@ namespace Google.Protobuf
                 char? next = Read();
                 if (next == null)
                 {
-                    throw new InvalidProtocolBufferException(messageOnFailure);
+                    throw CreateException(messageOnFailure);
                 }
                 return next.Value;
             }
@@ -627,6 +628,15 @@ namespace Google.Protobuf
                     throw new InvalidOperationException("Cannot push back when already buffering a character");
                 }
                 nextChar = c;
+            }
+
+            /// <summary>
+            /// Creates a new exception appropriate for the current state of the reader.
+            /// </summary>
+            internal InvalidJsonException CreateException(string message)
+            {
+                // TODO: Keep track of and use the location.
+                return new InvalidJsonException(message);
             }
         }
     }

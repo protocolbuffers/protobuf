@@ -337,6 +337,8 @@ namespace Google.Protobuf
         /// </summary>
         /// <typeparam name="T">The type of message to create.</typeparam>
         /// <param name="json">The JSON to parse.</param>
+        /// <exception cref="InvalidJsonException">The JSON does not comply with RFC 7159</exception>
+        /// <exception cref="InvalidProtocolBufferException">The JSON does not represent a Protocol Buffers message correctly</exception>
         public T Parse<T>(string json) where T : IMessage, new()
         {
             return Parse<T>(new StringReader(json));
@@ -347,6 +349,8 @@ namespace Google.Protobuf
         /// </summary>
         /// <typeparam name="T">The type of message to create.</typeparam>
         /// <param name="jsonReader">Reader providing the JSON to parse.</param>
+        /// <exception cref="InvalidJsonException">The JSON does not comply with RFC 7159</exception>
+        /// <exception cref="InvalidProtocolBufferException">The JSON does not represent a Protocol Buffers message correctly</exception>
         public T Parse<T>(TextReader jsonReader) where T : IMessage, new()
         {
             T message = new T();
