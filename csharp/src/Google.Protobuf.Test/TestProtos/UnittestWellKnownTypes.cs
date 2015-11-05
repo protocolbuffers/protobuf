@@ -11,7 +11,7 @@ namespace Google.Protobuf.TestProtos {
 
   /// <summary>Holder for reflection information generated from google/protobuf/unittest_well_known_types.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class UnittestWellKnownTypes {
+  public static partial class UnittestWellKnownTypesReflection {
 
     #region Descriptor
     /// <summary>File descriptor for google/protobuf/unittest_well_known_types.proto</summary>
@@ -20,7 +20,7 @@ namespace Google.Protobuf.TestProtos {
     }
     private static pbr::FileDescriptor descriptor;
 
-    static UnittestWellKnownTypes() {
+    static UnittestWellKnownTypesReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ci9nb29nbGUvcHJvdG9idWYvdW5pdHRlc3Rfd2VsbF9rbm93bl90eXBlcy5w",
@@ -160,7 +160,7 @@ namespace Google.Protobuf.TestProtos {
             "Lmdvb2dsZS5wcm90b2J1Zi50ZXN0UAGqAhpHb29nbGUuUHJvdG9idWYuVGVz",
             "dFByb3Rvc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.Proto.Any.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Api.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Duration.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Empty.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.FieldMask.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.SourceContext.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Struct.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Timestamp.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Type.Descriptor, global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor, },
+          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.ApiReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
           new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestWellKnownTypes), new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes), new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null),
@@ -183,7 +183,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestWellKnownTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -847,7 +847,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<RepeatedWellKnownTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[1]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.Descriptor.MessageTypes[1]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -1268,7 +1268,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<OneofWellKnownTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[2]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.Descriptor.MessageTypes[2]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -1957,7 +1957,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<MapWellKnownTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[3]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.Descriptor.MessageTypes[3]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {

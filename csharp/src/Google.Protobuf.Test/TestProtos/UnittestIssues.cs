@@ -11,7 +11,7 @@ namespace UnitTest.Issues.TestProtos {
 
   /// <summary>Holder for reflection information generated from unittest_issues.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class UnittestIssues {
+  public static partial class UnittestIssuesReflection {
 
     #region Descriptor
     /// <summary>File descriptor for unittest_issues.proto</summary>
@@ -20,7 +20,7 @@ namespace UnitTest.Issues.TestProtos {
     }
     private static pbr::FileDescriptor descriptor;
 
-    static UnittestIssues() {
+    static UnittestIssuesReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChV1bml0dGVzdF9pc3N1ZXMucHJvdG8SD3VuaXR0ZXN0X2lzc3VlcyInCghJ",
@@ -86,7 +86,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<Issue307> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[0]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -328,7 +328,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<NegativeEnumMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[1]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[1]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -471,7 +471,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<DeprecatedChild> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[2]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[2]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -547,7 +547,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<DeprecatedFieldsMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[3]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[3]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -778,7 +778,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<ItemField> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[4]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[4]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -881,7 +881,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<ReservedNames> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[5]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[5]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -1109,7 +1109,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<TestJsonFieldOrdering> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[6]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[6]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {

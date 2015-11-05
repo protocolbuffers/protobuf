@@ -383,6 +383,6 @@ namespace Google.Protobuf.Reflection
         /// <value>
         /// The file descriptor for <c>descriptor.proto</c>.
         /// </value>
-        public static FileDescriptor DescriptorProtoFileDescriptor { get { return DescriptorProtoFile.Descriptor; } }
+        public static FileDescriptor DescriptorProtoFileDescriptor { get { return DescriptorReflection.Descriptor; } }
     }
 }

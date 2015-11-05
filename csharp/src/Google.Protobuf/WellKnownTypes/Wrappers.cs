@@ -11,7 +11,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
   /// <summary>Holder for reflection information generated from google/protobuf/wrappers.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class Wrappers {
+  public static partial class WrappersReflection {
 
     #region Descriptor
     /// <summary>File descriptor for google/protobuf/wrappers.proto</summary>
@@ -20,7 +20,7 @@ namespace Google.Protobuf.WellKnownTypes {
     }
     private static pbr::FileDescriptor descriptor;
 
-    static Wrappers() {
+    static WrappersReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ch5nb29nbGUvcHJvdG9idWYvd3JhcHBlcnMucHJvdG8SD2dvb2dsZS5wcm90",
@@ -61,7 +61,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<DoubleValue> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -172,7 +172,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<FloatValue> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[1]; }
+      get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[1]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -283,7 +283,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<Int64Value> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[2]; }
+      get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[2]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -394,7 +394,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<UInt64Value> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[3]; }
+      get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[3]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -505,7 +505,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<Int32Value> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[4]; }
+      get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[4]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -616,7 +616,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<UInt32Value> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[5]; }
+      get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[5]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -727,7 +727,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<BoolValue> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[6]; }
+      get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[6]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -838,7 +838,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<StringValue> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[7]; }
+      get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[7]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -949,7 +949,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<BytesValue> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor.MessageTypes[8]; }
+      get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[8]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {

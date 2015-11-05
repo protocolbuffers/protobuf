@@ -11,7 +11,7 @@ namespace Google.Protobuf.Examples.AddressBook {
 
   /// <summary>Holder for reflection information generated from addressbook.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class Addressbook {
+  public static partial class AddressbookReflection {
 
     #region Descriptor
     /// <summary>File descriptor for addressbook.proto</summary>
@@ -20,7 +20,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     }
     private static pbr::FileDescriptor descriptor;
 
-    static Addressbook() {
+    static AddressbookReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChFhZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwi1QEKBlBlcnNvbhIMCgRu",
@@ -49,7 +49,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     public static pb::MessageParser<Person> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -374,7 +374,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     public static pb::MessageParser<AddressBook> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.Descriptor.MessageTypes[1]; }
+      get { return global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.Descriptor.MessageTypes[1]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {

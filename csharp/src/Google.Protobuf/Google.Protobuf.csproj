@@ -95,9 +95,9 @@
     <Compile Include="LimitedInputStream.cs" />
     <Compile Include="MessageParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\Descriptor.cs" />
     <Compile Include="Reflection\DescriptorBase.cs" />
     <Compile Include="Reflection\DescriptorPool.cs" />
-    <Compile Include="Reflection\DescriptorProtoFile.cs" />
     <Compile Include="Reflection\DescriptorUtil.cs" />
     <Compile Include="Reflection\DescriptorValidationException.cs" />
     <Compile Include="Reflection\EnumDescriptor.cs" />

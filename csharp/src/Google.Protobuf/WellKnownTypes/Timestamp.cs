@@ -9,36 +9,33 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.WellKnownTypes {
 
-  namespace Proto {
+  /// <summary>Holder for reflection information generated from google/protobuf/timestamp.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  public static partial class TimestampReflection {
 
-    /// <summary>Holder for reflection information generated from google/protobuf/timestamp.proto</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public static partial class Timestamp {
-
-      #region Descriptor
-      /// <summary>File descriptor for google/protobuf/timestamp.proto</summary>
-      public static pbr::FileDescriptor Descriptor {
-        get { return descriptor; }
-      }
-      private static pbr::FileDescriptor descriptor;
-
-      static Timestamp() {
-        byte[] descriptorData = global::System.Convert.FromBase64String(
-            string.Concat(
-              "Ch9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvEg9nb29nbGUucHJv",
-              "dG9idWYiKwoJVGltZXN0YW1wEg8KB3NlY29uZHMYASABKAMSDQoFbmFub3MY",
-              "AiABKAVCUQoTY29tLmdvb2dsZS5wcm90b2J1ZkIOVGltZXN0YW1wUHJvdG9Q",
-              "AaABAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IG",
-              "cHJvdG8z"));
-        descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-            new pbr::FileDescriptor[] { },
-            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Timestamp), new[]{ "Seconds", "Nanos" }, null, null, null)
-            }));
-      }
-      #endregion
-
+    #region Descriptor
+    /// <summary>File descriptor for google/protobuf/timestamp.proto</summary>
+    public static pbr::FileDescriptor Descriptor {
+      get { return descriptor; }
     }
+    private static pbr::FileDescriptor descriptor;
+
+    static TimestampReflection() {
+      byte[] descriptorData = global::System.Convert.FromBase64String(
+          string.Concat(
+            "Ch9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvEg9nb29nbGUucHJv",
+            "dG9idWYiKwoJVGltZXN0YW1wEg8KB3NlY29uZHMYASABKAMSDQoFbmFub3MY",
+            "AiABKAVCUQoTY29tLmdvb2dsZS5wcm90b2J1ZkIOVGltZXN0YW1wUHJvdG9Q",
+            "AaABAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IG",
+            "cHJvdG8z"));
+      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+          new pbr::FileDescriptor[] { },
+          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Timestamp), new[]{ "Seconds", "Nanos" }, null, null, null)
+          }));
+    }
+    #endregion
+
   }
   #region Messages
   /// <summary>
@@ -101,7 +98,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<Timestamp> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.Timestamp.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {

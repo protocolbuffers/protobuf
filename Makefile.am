@@ -130,9 +130,9 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/MessageParser.cs                                \
   csharp/src/Google.Protobuf/Preconditions.cs                                \
   csharp/src/Google.Protobuf/Properties/AssemblyInfo.cs                      \
+  csharp/src/Google.Protobuf/Reflection/Descriptor.cs                        \
   csharp/src/Google.Protobuf/Reflection/DescriptorBase.cs                    \
   csharp/src/Google.Protobuf/Reflection/DescriptorPool.cs                    \
-  csharp/src/Google.Protobuf/Reflection/DescriptorProtoFile.cs               \
   csharp/src/Google.Protobuf/Reflection/DescriptorUtil.cs                    \
   csharp/src/Google.Protobuf/Reflection/DescriptorValidationException.cs     \
   csharp/src/Google.Protobuf/Reflection/EnumDescriptor.cs                    \
