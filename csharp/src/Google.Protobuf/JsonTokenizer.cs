@@ -58,6 +58,13 @@ namespace Google.Protobuf
         private readonly PushBackReader reader;
         private JsonToken bufferedToken;
         private State state;
+        private int objectDepth = 0;
+
+        /// <summary>
+        /// Returns the depth of the stack, purely in objects (not collections).
+        /// Informally, this is the number of remaining unclosed '{' characters we have.
+        /// </summary>
+        internal int ObjectDepth { get { return objectDepth; } }
 
         internal JsonTokenizer(TextReader reader)
         {
@@ -66,6 +73,8 @@ namespace Google.Protobuf
             containerStack.Push(ContainerType.Document);
         }
 
+        // TODO: Why do we allow a different token to be pushed back? It might be better to always remember the previous
+        // token returned, and allow a parameterless Rewind() method (which could only be called once, just like the current PushBack).
         internal void PushBack(JsonToken token)
         {
             if (bufferedToken != null)
@@ -73,6 +82,14 @@ namespace Google.Protobuf
                 throw new InvalidOperationException("Can't push back twice");
             }
             bufferedToken = token;
+            if (token.Type == JsonToken.TokenType.StartObject)
+            {
+                objectDepth--;
+            }
+            else if (token.Type == JsonToken.TokenType.EndObject)
+            {
+                objectDepth++;
+            }
         }
 
         /// <summary>
@@ -94,6 +111,14 @@ namespace Google.Protobuf
             {
                 var ret = bufferedToken;
                 bufferedToken = null;
+                if (ret.Type == JsonToken.TokenType.StartObject)
+                {
+                    objectDepth++;
+                }
+                else if (ret.Type == JsonToken.TokenType.EndObject)
+                {
+                    objectDepth--;
+                }
                 return ret;
             }
             if (state == State.ReaderExhausted)
@@ -141,10 +166,12 @@ namespace Google.Protobuf
                         ValidateState(ValueStates, "Invalid state to read an open brace: ");
                         state = State.ObjectStart;
                         containerStack.Push(ContainerType.Object);
+                        objectDepth++;
                         return JsonToken.StartObject;
                     case '}':
                         ValidateState(State.ObjectAfterProperty | State.ObjectStart, "Invalid state to read a close brace: ");
                         PopContainer();
+                        objectDepth--;
                         return JsonToken.EndObject;
                     case '[':
                         ValidateState(ValueStates, "Invalid state to read an open square bracket: ");

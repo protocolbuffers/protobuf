@@ -69,16 +69,16 @@ namespace Google.Protobuf
 
         // TODO: Consider introducing a class containing parse state of the parser, tokenizer and depth. That would simplify these handlers
         // and the signatures of various methods.
-        private static readonly Dictionary<string, Action<JsonParser, IMessage, JsonTokenizer, int>>
-            WellKnownTypeHandlers = new Dictionary<string, Action<JsonParser, IMessage, JsonTokenizer, int>>
+        private static readonly Dictionary<string, Action<JsonParser, IMessage, JsonTokenizer>>
+            WellKnownTypeHandlers = new Dictionary<string, Action<JsonParser, IMessage, JsonTokenizer>>
         {
-            { Timestamp.Descriptor.FullName, (parser, message, tokenizer, depth) => MergeTimestamp(message, tokenizer.Next()) },
-            { Duration.Descriptor.FullName, (parser, message, tokenizer, depth) => MergeDuration(message, tokenizer.Next()) },
-            { Value.Descriptor.FullName, (parser, message, tokenizer, depth) => parser.MergeStructValue(message, tokenizer, depth) },
-            { ListValue.Descriptor.FullName, (parser, message, tokenizer, depth) =>
-                parser.MergeRepeatedField(message, message.Descriptor.Fields[ListValue.ValuesFieldNumber], tokenizer, depth) },
-            { Struct.Descriptor.FullName, (parser, message, tokenizer, depth) => parser.MergeStruct(message, tokenizer, depth) },
-            { FieldMask.Descriptor.FullName, (parser, message, tokenizer, depth) => MergeFieldMask(message, tokenizer.Next()) },
+            { Timestamp.Descriptor.FullName, (parser, message, tokenizer) => MergeTimestamp(message, tokenizer.Next()) },
+            { Duration.Descriptor.FullName, (parser, message, tokenizer) => MergeDuration(message, tokenizer.Next()) },
+            { Value.Descriptor.FullName, (parser, message, tokenizer) => parser.MergeStructValue(message, tokenizer) },
+            { ListValue.Descriptor.FullName, (parser, message, tokenizer) =>
+                parser.MergeRepeatedField(message, message.Descriptor.Fields[ListValue.ValuesFieldNumber], tokenizer) },
+            { Struct.Descriptor.FullName, (parser, message, tokenizer) => parser.MergeStruct(message, tokenizer) },
+            { FieldMask.Descriptor.FullName, (parser, message, tokenizer) => MergeFieldMask(message, tokenizer.Next()) },
             { Int32Value.Descriptor.FullName, MergeWrapperField },
             { Int64Value.Descriptor.FullName, MergeWrapperField },
             { UInt32Value.Descriptor.FullName, MergeWrapperField },
@@ -91,9 +91,9 @@ namespace Google.Protobuf
 
         // Convenience method to avoid having to repeat the same code multiple times in the above
         // dictionary initialization.
-        private static void MergeWrapperField(JsonParser parser, IMessage message, JsonTokenizer tokenizer, int depth)
+        private static void MergeWrapperField(JsonParser parser, IMessage message, JsonTokenizer tokenizer)
         {
-            parser.MergeField(message, message.Descriptor.Fields[Wrappers.WrapperValueFieldNumber], tokenizer, depth);
+            parser.MergeField(message, message.Descriptor.Fields[Wrappers.WrapperValueFieldNumber], tokenizer);
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace Google.Protobuf
         internal void Merge(IMessage message, TextReader jsonReader)
         {
             var tokenizer = new JsonTokenizer(jsonReader);
-            Merge(message, tokenizer, 0);
+            Merge(message, tokenizer);
             var lastToken = tokenizer.Next();
             if (lastToken != JsonToken.EndDocument)
             {
@@ -145,19 +145,18 @@ namespace Google.Protobuf
         /// of tokens provided by the tokenizer. This token stream is assumed to be valid JSON, with the
         /// tokenizer performing that validation - but not every token stream is valid "protobuf JSON".
         /// </summary>
-        private void Merge(IMessage message, JsonTokenizer tokenizer, int depth)
+        private void Merge(IMessage message, JsonTokenizer tokenizer)
         {
-            if (depth > settings.RecursionLimit)
+            if (tokenizer.ObjectDepth > settings.RecursionLimit)
             {
-                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+                throw InvalidProtocolBufferException.JsonRecursionLimitExceeded();
             }
-            depth++;
             if (message.Descriptor.IsWellKnownType)
             {
-                Action<JsonParser, IMessage, JsonTokenizer, int> handler;
+                Action<JsonParser, IMessage, JsonTokenizer> handler;
                 if (WellKnownTypeHandlers.TryGetValue(message.Descriptor.FullName, out handler))
                 {
-                    handler(this, message, tokenizer, depth);
+                    handler(this, message, tokenizer);
                     return;
                 }
                 // Well-known types with no special handling continue in the normal way.
@@ -188,7 +187,7 @@ namespace Google.Protobuf
                 FieldDescriptor field;
                 if (jsonFieldMap.TryGetValue(name, out field))
                 {
-                    MergeField(message, field, tokenizer, depth);
+                    MergeField(message, field, tokenizer);
                 }
                 else
                 {
@@ -200,7 +199,7 @@ namespace Google.Protobuf
             }
         }
 
-        private void MergeField(IMessage message, FieldDescriptor field, JsonTokenizer tokenizer, int depth)
+        private void MergeField(IMessage message, FieldDescriptor field, JsonTokenizer tokenizer)
         {
             var token = tokenizer.Next();
             if (token.Type == JsonToken.TokenType.Null)
@@ -214,20 +213,20 @@ namespace Google.Protobuf
 
             if (field.IsMap)
             {
-                MergeMapField(message, field, tokenizer, depth);
+                MergeMapField(message, field, tokenizer);
             }
             else if (field.IsRepeated)
             {
-                MergeRepeatedField(message, field, tokenizer, depth);
+                MergeRepeatedField(message, field, tokenizer);
             }
             else
             {
-                var value = ParseSingleValue(field, tokenizer, depth);
+                var value = ParseSingleValue(field, tokenizer);
                 field.Accessor.SetValue(message, value);
             }
         }
 
-        private void MergeRepeatedField(IMessage message, FieldDescriptor field, JsonTokenizer tokenizer, int depth)
+        private void MergeRepeatedField(IMessage message, FieldDescriptor field, JsonTokenizer tokenizer)
         {
             var token = tokenizer.Next();
             if (token.Type != JsonToken.TokenType.StartArray)
@@ -244,11 +243,11 @@ namespace Google.Protobuf
                     return;
                 }
                 tokenizer.PushBack(token);
-                list.Add(ParseSingleValue(field, tokenizer, depth));
+                list.Add(ParseSingleValue(field, tokenizer));
             }
         }
 
-        private void MergeMapField(IMessage message, FieldDescriptor field, JsonTokenizer tokenizer, int depth)
+        private void MergeMapField(IMessage message, FieldDescriptor field, JsonTokenizer tokenizer)
         {
             // Map fields are always objects, even if the values are well-known types: ParseSingleValue handles those.
             var token = tokenizer.Next();
@@ -274,13 +273,13 @@ namespace Google.Protobuf
                     return;
                 }
                 object key = ParseMapKey(keyField, token.StringValue);
-                object value = ParseSingleValue(valueField, tokenizer, depth);
+                object value = ParseSingleValue(valueField, tokenizer);
                 // TODO: Null handling
                 dictionary[key] = value;
             }
         }
 
-        private object ParseSingleValue(FieldDescriptor field, JsonTokenizer tokenizer, int depth)
+        private object ParseSingleValue(FieldDescriptor field, JsonTokenizer tokenizer)
         {
             var token = tokenizer.Next();
             if (token.Type == JsonToken.TokenType.Null)
@@ -308,7 +307,7 @@ namespace Google.Protobuf
                     // TODO: Merge the current value in message? (Public API currently doesn't make this relevant as we don't expose merging.)
                     tokenizer.PushBack(token);
                     IMessage subMessage = NewMessageForField(field);
-                    Merge(subMessage, tokenizer, depth);
+                    Merge(subMessage, tokenizer);
                     return subMessage;
                 }
             }
@@ -358,7 +357,7 @@ namespace Google.Protobuf
             return message;
         }
 
-        private void MergeStructValue(IMessage message, JsonTokenizer tokenizer, int depth)
+        private void MergeStructValue(IMessage message, JsonTokenizer tokenizer)
         {
             var firstToken = tokenizer.Next();
             var fields = message.Descriptor.Fields;
@@ -382,7 +381,7 @@ namespace Google.Protobuf
                         var field = fields[Value.StructValueFieldNumber];
                         var structMessage = NewMessageForField(field);
                         tokenizer.PushBack(firstToken);
-                        Merge(structMessage, tokenizer, depth);
+                        Merge(structMessage, tokenizer);
                         field.Accessor.SetValue(message, structMessage);
                         return;
                     }
@@ -391,7 +390,7 @@ namespace Google.Protobuf
                         var field = fields[Value.ListValueFieldNumber];
                         var list = NewMessageForField(field);
                         tokenizer.PushBack(firstToken);
-                        Merge(list, tokenizer, depth);
+                        Merge(list, tokenizer);
                         field.Accessor.SetValue(message, list);
                         return;
                     }
@@ -400,7 +399,7 @@ namespace Google.Protobuf
             }
         }
 
-        private void MergeStruct(IMessage message, JsonTokenizer tokenizer, int depth)
+        private void MergeStruct(IMessage message, JsonTokenizer tokenizer)
         {
             var token = tokenizer.Next();
             if (token.Type != JsonToken.TokenType.StartObject)
@@ -410,7 +409,7 @@ namespace Google.Protobuf
             tokenizer.PushBack(token);
 
             var field = message.Descriptor.Fields[Struct.FieldsFieldNumber];
-            MergeMapField(message, field, tokenizer, depth);
+            MergeMapField(message, field, tokenizer);
         }
 
         #region Utility methods which don't depend on the state (or settings) of the parser.

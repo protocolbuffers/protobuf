@@ -82,6 +82,63 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void ObjectDepth()
+        {
+            string json = "{ \"foo\": { \"x\": 1, \"y\": [ 0 ] } }";
+            var tokenizer = new JsonTokenizer(new StringReader(json));
+            // If we had more tests like this, I'd introduce a helper method... but for one test, it's not worth it.
+            Assert.AreEqual(0, tokenizer.ObjectDepth);
+            Assert.AreEqual(JsonToken.StartObject, tokenizer.Next());
+            Assert.AreEqual(1, tokenizer.ObjectDepth);
+            Assert.AreEqual(JsonToken.Name("foo"), tokenizer.Next());
+            Assert.AreEqual(1, tokenizer.ObjectDepth);
+            Assert.AreEqual(JsonToken.StartObject, tokenizer.Next());
+            Assert.AreEqual(2, tokenizer.ObjectDepth);
+            Assert.AreEqual(JsonToken.Name("x"), tokenizer.Next());
+            Assert.AreEqual(2, tokenizer.ObjectDepth);
+            Assert.AreEqual(JsonToken.Value(1), tokenizer.Next());
+            Assert.AreEqual(2, tokenizer.ObjectDepth);
+            Assert.AreEqual(JsonToken.Name("y"), tokenizer.Next());
+            Assert.AreEqual(2, tokenizer.ObjectDepth);
+            Assert.AreEqual(JsonToken.StartArray, tokenizer.Next());
+            Assert.AreEqual(2, tokenizer.ObjectDepth); // Depth hasn't changed in array
+            Assert.AreEqual(JsonToken.Value(0), tokenizer.Next());
+            Assert.AreEqual(2, tokenizer.ObjectDepth);
+            Assert.AreEqual(JsonToken.EndArray, tokenizer.Next());
+            Assert.AreEqual(2, tokenizer.ObjectDepth);
+            Assert.AreEqual(JsonToken.EndObject, tokenizer.Next());
+            Assert.AreEqual(1, tokenizer.ObjectDepth);
+            Assert.AreEqual(JsonToken.EndObject, tokenizer.Next());
+            Assert.AreEqual(0, tokenizer.ObjectDepth);
+            Assert.AreEqual(JsonToken.EndDocument, tokenizer.Next());
+            Assert.AreEqual(0, tokenizer.ObjectDepth);
+        }
+
+        [Test]
+        public void ObjectDepth_WithPushBack()
+        {
+            string json = "{}";
+            var tokenizer = new JsonTokenizer(new StringReader(json));
+            Assert.AreEqual(0, tokenizer.ObjectDepth);
+            var token = tokenizer.Next();
+            Assert.AreEqual(1, tokenizer.ObjectDepth);
+            // When we push back a "start object", we should effectively be back to the previous depth.
+            tokenizer.PushBack(token);
+            Assert.AreEqual(0, tokenizer.ObjectDepth);
+            // Read the same token again, and get back to depth 1
+            token = tokenizer.Next();
+            Assert.AreEqual(1, tokenizer.ObjectDepth);
+
+            // Now the same in reverse, with EndObject
+            token = tokenizer.Next();
+            Assert.AreEqual(0, tokenizer.ObjectDepth);
+            tokenizer.PushBack(token);
+            Assert.AreEqual(1, tokenizer.ObjectDepth);
+            tokenizer.Next();
+            Assert.AreEqual(0, tokenizer.ObjectDepth);
+        }
+
+        [Test]
         [TestCase("embedded tab\t")]
         [TestCase("embedded CR\r")]
         [TestCase("embedded LF\n")]
