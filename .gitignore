@@ -104,4 +104,5 @@ conformance/conformance-cpp
 conformance/conformance-test-runner
 conformance/conformance.pb.cc
 conformance/conformance.pb.h
+conformance/conformance.rb
 conformance/protoc_middleman
