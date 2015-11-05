@@ -92,6 +92,7 @@
                   <arg value="../src/google/protobuf/timestamp.proto" />
                   <arg value="../src/google/protobuf/type.proto" />
                   <arg value="../src/google/protobuf/wrappers.proto" />
+                  <arg value="../src/google/protobuf/compiler/plugin.proto" />
                 </exec>
               </tasks>
               <sourceRoot>target/generated-sources</sourceRoot>
@@ -186,6 +187,7 @@
           <include>google/protobuf/timestamp.proto</include>
           <include>google/protobuf/type.proto</include>
           <include>google/protobuf/wrappers.proto</include>
+          <include>google/protobuf/compiler/plugin.proto</include>
         </includes>
       </resource>
     </resources>
