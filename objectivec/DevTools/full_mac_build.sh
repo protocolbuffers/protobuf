@@ -26,10 +26,12 @@ OPTIONS:
          Issue a clean before the normal build.
    -a, --autogen
          Start by rerunning autogen & configure.
-   -r, --regenerate-descriptors
+   -r, --regenerate-cpp-descriptors
          The descriptor.proto is checked in generated, cause it to regenerate.
    -j #, --jobs #
          Force the number of parallel jobs (useful for debugging build issues).
+   --core-only
+         Skip some of the core protobuf build/checks to shorten the build time.
    --skip-xcode
          Skip the invoke of Xcode to test the runtime on both iOS and OS X.
    --skip-xcode-ios
@@ -68,6 +70,7 @@ fi
 DO_AUTOGEN=no
 DO_CLEAN=no
 REGEN_CPP_DESCRIPTORS=no
+CORE_ONLY=no
 DO_XCODE_IOS_TESTS=yes
 DO_XCODE_OSX_TESTS=yes
 while [[ $# != 0 ]]; do
@@ -88,6 +91,9 @@ while [[ $# != 0 ]]; do
     -j | --jobs )
       shift
       NUM_MAKE_JOBS="${1}"
+      ;;
+    --core-only )
+      CORE_ONLY=yes
       ;;
     --skip-xcode )
       DO_XCODE_IOS_TESTS=no
@@ -155,15 +161,20 @@ if [[ "${REGEN_CPP_DESCRIPTORS}" == "yes" ]] ; then
   ./generate_descriptor_proto.sh -j "${NUM_MAKE_JOBS}"
 fi
 
-header "Building"
-# Can't issue these together, when fully parallel, something sometimes chokes
-# at random.
-wrapped_make -j "${NUM_MAKE_JOBS}" all
-wrapped_make -j "${NUM_MAKE_JOBS}" check
-# Fire off the conformance tests also.
-cd conformance
-wrapped_make -j "${NUM_MAKE_JOBS}"
-cd ..
+if [[ "${CORE_ONLY}" == "yes" ]] ; then
+  header "Building core Only"
+  wrapped_make -j "${NUM_MAKE_JOBS}"
+else
+  header "Building"
+  # Can't issue these together, when fully parallel, something sometimes chokes
+  # at random.
+  wrapped_make -j "${NUM_MAKE_JOBS}" all
+  wrapped_make -j "${NUM_MAKE_JOBS}" check
+  # Fire off the conformance tests also.
+  cd conformance
+  wrapped_make -j "${NUM_MAKE_JOBS}"
+  cd ..
+fi
 
 header "Ensuring the ObjC descriptors are current."
 # Find the newest input file (protos, compiler, and the generator script).
@@ -203,19 +214,42 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
     xcodebuild
       -project objectivec/ProtocolBuffers_iOS.xcodeproj
       -scheme ProtocolBuffers
-      # Don't need to worry about form factors or retina/non retina;
-      # just pick a mix of OS Versions and 32/64 bit.
-      -destination "platform=iOS Simulator,name=iPhone 4s,OS=7.1" # 32bit
-      -destination "platform=iOS Simulator,name=iPhone 6,OS=8.4" # 64bit
-      -destination "platform=iOS Simulator,name=iPad 2,OS=7.1" # 32bit
-      -destination "platform=iOS Simulator,name=iPad Air,OS=8.4" # 64bit
   )
+  # Don't need to worry about form factors or retina/non retina;
+  # just pick a mix of OS Versions and 32/64 bit.
+  # NOTE: Different Xcode have different simulated hardware/os support.
+  readonly XCODE_VERSION_LINE="$(xcodebuild -version | grep Xcode\  )"
+  readonly XCODE_VERSION="${XCODE_VERSION_LINE/Xcode /}"  # drop the prefix.
+  IOS_SIMULATOR_NAME="Simulator"
+  case "${XCODE_VERSION}" in
+    6.* )
+      XCODEBUILD_TEST_BASE_IOS+=(
+          -destination "platform=iOS Simulator,name=iPhone 4s,OS=7.1" # 32bit
+          -destination "platform=iOS Simulator,name=iPhone 6,OS=8.4" # 64bit
+          -destination "platform=iOS Simulator,name=iPad 2,OS=7.1" # 32bit
+          -destination "platform=iOS Simulator,name=iPad Air,OS=8.4" # 64bit
+      )
+      IOS_SIMULATOR_NAME="iOS Simulator"
+      ;;
+    7.* )
+      XCODEBUILD_TEST_BASE_IOS+=(
+          -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
+          -destination "platform=iOS Simulator,name=iPhone 6,OS=9.0" # 64bit
+          -destination "platform=iOS Simulator,name=iPad 2,OS=8.1" # 32bit
+          -destination "platform=iOS Simulator,name=iPad Air,OS=9.0" # 64bit
+      )
+      ;;
+    * )
+      echo "Time to update the simulator targets for Xcode ${XCODE_VERSION}"
+      exit 2
+      ;;
+  esac
   header "Doing Xcode iOS build/tests - Debug"
   "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Debug test
   header "Doing Xcode iOS build/tests - Release"
   "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Release test
   # Don't leave the simulator in the developer's face.
-  killall "iOS Simulator"
+  killall "${IOS_SIMULATOR_NAME}"
 fi
 if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
   XCODEBUILD_TEST_BASE_OSX=(
