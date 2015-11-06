@@ -165,6 +165,7 @@ namespace Conformance {
   #region Messages
   /// <summary>
   ///  Represents a single test case's input.  The testee should:
+  ///
   ///    1. parse this proto (which should always succeed)
   ///    2. parse the protobuf or JSON payload in "payload" (which may fail)
   ///    3. if the parse succeeded, serialize the message in the requested format.
@@ -410,6 +411,7 @@ namespace Conformance {
     /// <summary>
     ///  This string should be set to indicate parsing failed.  The string can
     ///  provide more information about the parse error if it is available.
+    ///
     ///  Setting this string does not necessarily mean the testee failed the
     ///  test.  Some of the test cases are intentionally invalid input.
     /// </summary>

@@ -43,25 +43,30 @@ namespace Google.Protobuf.WellKnownTypes {
   /// <summary>
   ///  `Any` contains an arbitrary serialized message along with a URL
   ///  that describes the type of the serialized message.
+  ///
   ///  JSON
   ///  ====
   ///  The JSON representation of an `Any` value uses the regular
   ///  representation of the deserialized, embedded message, with an
   ///  additional field `@type` which contains the type URL. Example:
+  ///
   ///      package google.profile;
   ///      message Person {
   ///        string first_name = 1;
   ///        string last_name = 2;
   ///      }
+  ///
   ///      {
   ///        "@type": "type.googleapis.com/google.profile.Person",
   ///        "firstName": &lt;string>,
   ///        "lastName": &lt;string>
   ///      }
+  ///
   ///  If the embedded message type is well-known and has a custom JSON
   ///  representation, that representation will be embedded adding a field
   ///  `value` which holds the custom JSON in addition to the the `@type`
   ///  field. Example (for message [google.protobuf.Duration][google.protobuf.Duration]):
+  ///
   ///      {
   ///        "@type": "type.googleapis.com/google.protobuf.Duration",
   ///        "value": "1.212s"
@@ -101,8 +106,10 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>
     ///  A URL/resource name whose content describes the type of the
     ///  serialized message.
+    ///
     ///  For URLs which use the schema `http`, `https`, or no schema, the
     ///  following restrictions and interpretations apply:
+    ///
     ///  * If no schema is provided, `https` is assumed.
     ///  * The last segment of the URL's path must represent the fully
     ///    qualified name of the type (as in `path/google.protobuf.Duration`).
@@ -113,6 +120,7 @@ namespace Google.Protobuf.WellKnownTypes {
     ///    lookup. Therefore, binary compatibility needs to be preserved
     ///    on changes to types. (Use versioned type names to manage
     ///    breaking changes.)
+    ///
     ///  Schemas other than `http`, `https` (or the empty schema) might be
     ///  used with implementation specific semantics.
     /// </summary>

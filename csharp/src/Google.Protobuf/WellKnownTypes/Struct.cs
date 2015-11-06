@@ -55,6 +55,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// <summary>
   ///  `NullValue` is a singleton enumeration to represent the null value for the
   ///  `Value` type union.
+  ///
   ///   The JSON representation for `NullValue` is JSON `null`.
   /// </summary>
   public enum NullValue {
@@ -74,6 +75,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///  scripting languages like JS a struct is represented as an
   ///  object. The details of that representation are described together
   ///  with the proto support for the language.
+  ///
   ///  The JSON representation for `Struct` is JSON object.
   /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -179,6 +181,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///  null, a number, a string, a boolean, a recursive struct value, or a
   ///  list of values. A producer of value is expected to set one of that
   ///  variants, absence of any variant indicates an error.
+  ///
   ///  The JSON representation for `Value` is JSON value.
   /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -491,6 +494,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
   /// <summary>
   ///  `ListValue` is a wrapper around a repeated field of values.
+  ///
   ///  The JSON representation for `ListValue` is JSON array.
   /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
