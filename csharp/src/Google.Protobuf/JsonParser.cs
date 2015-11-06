@@ -66,13 +66,16 @@ namespace Google.Protobuf
 
         private static readonly JsonParser defaultInstance = new JsonParser(Settings.Default);
 
+        // TODO: Consider introducing a class containing parse state of the parser, tokenizer and depth. That would simplify these handlers
+        // and the signatures of various methods.
         private static readonly Dictionary<string, Action<JsonParser, IMessage, JsonTokenizer>>
             WellKnownTypeHandlers = new Dictionary<string, Action<JsonParser, IMessage, JsonTokenizer>>
         {
             { Timestamp.Descriptor.FullName, (parser, message, tokenizer) => MergeTimestamp(message, tokenizer.Next()) },
             { Duration.Descriptor.FullName, (parser, message, tokenizer) => MergeDuration(message, tokenizer.Next()) },
             { Value.Descriptor.FullName, (parser, message, tokenizer) => parser.MergeStructValue(message, tokenizer) },
-            { ListValue.Descriptor.FullName, (parser, message, tokenizer) => parser.MergeRepeatedField(message, message.Descriptor.Fields[ListValue.ValuesFieldNumber], tokenizer) },
+            { ListValue.Descriptor.FullName, (parser, message, tokenizer) =>
+                parser.MergeRepeatedField(message, message.Descriptor.Fields[ListValue.ValuesFieldNumber], tokenizer) },
             { Struct.Descriptor.FullName, (parser, message, tokenizer) => parser.MergeStruct(message, tokenizer) },
             { FieldMask.Descriptor.FullName, (parser, message, tokenizer) => MergeFieldMask(message, tokenizer.Next()) },
             { Int32Value.Descriptor.FullName, MergeWrapperField },
@@ -93,15 +96,11 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Returns a formatter using the default settings.        /// </summary>
+        /// Returns a formatter using the default settings.
+        /// </summary>
         public static JsonParser Default { get { return defaultInstance; } }
 
-// Currently the settings are unused.
-// TODO: When we've implemented Any (and the json spec is finalized), revisit whether they're
-// needed at all.
-#pragma warning disable 0414
         private readonly Settings settings;
-#pragma warning restore 0414
 
         /// <summary>
         /// Creates a new formatted with the given settings.
@@ -147,6 +146,10 @@ namespace Google.Protobuf
         /// </summary>
         private void Merge(IMessage message, JsonTokenizer tokenizer)
         {
+            if (tokenizer.ObjectDepth > settings.RecursionLimit)
+            {
+                throw InvalidProtocolBufferException.JsonRecursionLimitExceeded();
+            }
             if (message.Descriptor.IsWellKnownType)
             {
                 Action<JsonParser, IMessage, JsonTokenizer> handler;
@@ -787,14 +790,13 @@ namespace Google.Protobuf
         #endregion
 
         /// <summary>
-        /// Settings controlling JSON parsing. (Currently doesn't have any actual settings, but I suspect
-        /// we'll want them for levels of strictness, descriptor pools for Any handling, etc.)
+        /// Settings controlling JSON parsing.
         /// </summary>
         public sealed class Settings
         {
-            private static readonly Settings defaultInstance = new Settings();
+            private static readonly Settings defaultInstance = new Settings(CodedInputStream.DefaultRecursionLimit);
 
-            // TODO: Add recursion limit.
+            private readonly int recursionLimit;
 
             /// <summary>
             /// Default settings, as used by <see cref="JsonParser.Default"/>
@@ -802,10 +804,19 @@ namespace Google.Protobuf
             public static Settings Default { get { return defaultInstance; } }
 
             /// <summary>
-            /// Creates a new <see cref="Settings"/> object.
+            /// The maximum depth of messages to parse. Note that this limit only applies to parsing
+            /// messages, not collections - so a message within a collection within a message only counts as
+            /// depth 2, not 3.
             /// </summary>
-            public Settings()
+            public int RecursionLimit { get { return recursionLimit; } }
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified recursion limit.
+            /// </summary>
+            /// <param name="recursionLimit">The maximum depth of messages to parse</param>
+            public Settings(int recursionLimit)
             {
+                this.recursionLimit = recursionLimit;
             }
         }
     }
