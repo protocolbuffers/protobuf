@@ -129,18 +129,55 @@ internal_install_python_deps() {
   fi
 }
 
-build_objectivec_common () {
-  # Reused the build script that takes care of configure and then Xcode
-  # builds/tests.
-  objectivec/DevTools/full_mac_build.sh --core-only "$@"
+internal_objectivec_common () {
+  # Make sure xctool is up to date. Adapted from
+  #  http://docs.travis-ci.com/user/osx-ci-environment/
+  # We don't use a before_install because we test multiple OSes.
+  brew update
+  brew outdated xctool || brew upgrade xctool
+  # Reused the build script that takes care of configuring and ensuring things
+  # are up to date.
+  objectivec/DevTools/full_mac_build.sh --core-only --skip-xcode
+}
+
+internal_xctool_debug_and_release() {
+  xctool -configuration Debug "$@"
+  xctool -configuration Release "$@"
 }
 
 build_objectivec_ios() {
-  build_objectivec_common --skip-xcode-osx
+  internal_objectivec_common
+  # https://github.com/facebook/xctool/issues/509 - unlike xcodebuild, xctool
+  # doesn't support >1 destination, so we have to build first and then run the
+  # tests one destination at a time.
+  internal_xctool_debug_and_release \
+    -project objectivec/ProtocolBuffers_iOS.xcodeproj \
+    -scheme ProtocolBuffers \
+    -sdk iphonesimulator \
+    build-tests
+  IOS_DESTINATIONS=(
+    "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
+    "platform=iOS Simulator,name=iPhone 6,OS=9.1" # 64bit
+    "platform=iOS Simulator,name=iPad 2,OS=8.1" # 32bit
+    "platform=iOS Simulator,name=iPad Air,OS=9.1" # 64bit
+  )
+  for i in "${IOS_DESTINATIONS[@]}" ; do
+    internal_xctool_debug_and_release \
+      -project objectivec/ProtocolBuffers_iOS.xcodeproj \
+      -scheme ProtocolBuffers \
+      -sdk iphonesimulator \
+      -destination "${i}" \
+      run-tests
+  done
 }
 
 build_objectivec_osx() {
-  build_objectivec_common --skip-xcode-ios
+  internal_objectivec_common
+  internal_xctool_debug_and_release \
+    -project objectivec/ProtocolBuffers_OSX.xcodeproj \
+    -scheme ProtocolBuffers \
+    -destination "platform=OS X,arch=x86_64" \
+    test
 }
 
 build_python() {
