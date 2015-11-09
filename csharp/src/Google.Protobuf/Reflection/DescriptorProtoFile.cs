@@ -2695,6 +2695,7 @@ namespace Google.Protobuf.Reflection {
     ///  main code generators in each language (without additional plugins).
     ///  Generic services were the only kind of service generation supported by
     ///  early versions of google.protobuf.
+    ///
     ///  Generic services are now considered deprecated in favor of using plugins
     ///  that generate code specific to your particular RPC system.  Therefore,
     ///  these default to false.  Old code which depends on generic services should
@@ -3173,6 +3174,7 @@ namespace Google.Protobuf.Reflection {
     ///  This is provided for backwards-compatibility with the MessageSet wire
     ///  format.  You should not use this for any other reason:  It's less
     ///  efficient, has fewer features, and is more complicated.
+    ///
     ///  The message must be defined exactly as follows:
     ///    message Foo {
     ///      option message_set_wire_format = true;
@@ -3180,8 +3182,10 @@ namespace Google.Protobuf.Reflection {
     ///    }
     ///  Note that the message cannot have any defined fields; MessageSets only
     ///  have extensions.
+    ///
     ///  All extensions of your type must be singular messages; e.g. they cannot
     ///  be int32s, enums, or repeated messages.
+    ///
     ///  Because this is an option, the above two restrictions are not enforced by
     ///  the protocol compiler.
     /// </summary>
@@ -3229,6 +3233,7 @@ namespace Google.Protobuf.Reflection {
     /// <summary>
     ///  Whether the message is an automatically generated map entry type for the
     ///  maps field.
+    ///
     ///  For maps fields:
     ///      map&lt;KeyType, ValueType> map_field = 1;
     ///  The parsed descriptor looks like:
@@ -3238,10 +3243,12 @@ namespace Google.Protobuf.Reflection {
     ///          optional ValueType value = 2;
     ///      }
     ///      repeated MapFieldEntry map_field = 1;
+    ///
     ///  Implementations may choose not to generate the map_entry=true message, but
     ///  use a native map in the target language to hold the keys and values.
     ///  The reflection APIs in such implementions still need to work as
     ///  if the field is a repeated message field.
+    ///
     ///  NOTE: Do not set the option in .proto files. Always use the maps syntax
     ///  instead. The option should only be implicitly set by the proto compiler
     ///  parser.
@@ -3483,16 +3490,19 @@ namespace Google.Protobuf.Reflection {
     ///  fields.  It means that when the outer message is initially parsed, the
     ///  inner message's contents will not be parsed but instead stored in encoded
     ///  form.  The inner message will actually be parsed when it is first accessed.
+    ///
     ///  This is only a hint.  Implementations are free to choose whether to use
     ///  eager or lazy parsing regardless of the value of this option.  However,
     ///  setting this option true suggests that the protocol author believes that
     ///  using lazy parsing on this field is worth the additional bookkeeping
     ///  overhead typically needed to implement it.
+    ///
     ///  This option does not affect the public interface of any generated code;
     ///  all method signatures remain the same.  Furthermore, thread-safety of the
     ///  interface is not affected by this option; const methods remain safe to
     ///  call from multiple threads concurrently, while non-const methods continue
     ///  to require exclusive access.
+    ///
     ///  Note that implementations may choose not to check required fields within
     ///  a lazy sub-message.  That is, calling IsInitialized() on the outher message
     ///  may return true even if the inner message has missing required fields.
@@ -4747,6 +4757,7 @@ namespace Google.Protobuf.Reflection {
     ///  corresponds to a particular definition.  This information is intended
     ///  to be useful to IDEs, code indexers, documentation generators, and similar
     ///  tools.
+    ///
     ///  For example, say we have a file like:
     ///    message Foo {
     ///      optional string foo = 1;
@@ -4762,6 +4773,7 @@ namespace Google.Protobuf.Reflection {
     ///    [c,d)  [ 4, 0, 2, 0, 5 ]  The type (string).
     ///    [e,f)  [ 4, 0, 2, 0, 1 ]  The name (foo).
     ///    [g,h)  [ 4, 0, 2, 0, 3 ]  The number (1).
+    ///
     ///  Notes:
     ///  - A location may refer to a repeated field itself (i.e. not to any
     ///    particular index within it).  This is used whenever a set of elements are
@@ -4889,6 +4901,7 @@ namespace Google.Protobuf.Reflection {
         /// <summary>
         ///  Identifies which part of the FileDescriptorProto was defined at this
         ///  location.
+        ///
         ///  Each element is a field number or an index.  They form a path from
         ///  the root FileDescriptorProto to the place where the definition.  For
         ///  example, this path:
@@ -4903,6 +4916,7 @@ namespace Google.Protobuf.Reflection {
         ///    repeated FieldDescriptorProto field = 2;
         ///  and FieldDescriptorProto.name has field number 1:
         ///    optional string name = 1;
+        ///
         ///  Thus, the above path gives the location of a field name.  If we removed
         ///  the last element:
         ///    [ 4, 3, 2, 7 ]
@@ -4936,31 +4950,41 @@ namespace Google.Protobuf.Reflection {
         ///  If this SourceCodeInfo represents a complete declaration, these are any
         ///  comments appearing before and after the declaration which appear to be
         ///  attached to the declaration.
+        ///
         ///  A series of line comments appearing on consecutive lines, with no other
         ///  tokens appearing on those lines, will be treated as a single comment.
+        ///
         ///  leading_detached_comments will keep paragraphs of comments that appear
         ///  before (but not connected to) the current element. Each paragraph,
         ///  separated by empty lines, will be one comment element in the repeated
         ///  field.
+        ///
         ///  Only the comment content is provided; comment markers (e.g. //) are
         ///  stripped out.  For block comments, leading whitespace and an asterisk
         ///  will be stripped from the beginning of each line other than the first.
         ///  Newlines are included in the output.
+        ///
         ///  Examples:
+        ///
         ///    optional int32 foo = 1;  // Comment attached to foo.
         ///    // Comment attached to bar.
         ///    optional int32 bar = 2;
+        ///
         ///    optional string baz = 3;
         ///    // Comment attached to baz.
         ///    // Another line attached to baz.
+        ///
         ///    // Comment attached to qux.
         ///    //
         ///    // Another line attached to qux.
         ///    optional double qux = 4;
+        ///
         ///    // Detached comment for corge. This is not leading or trailing comments
         ///    // to qux or corge because there are blank lines separating it from
         ///    // both.
+        ///
         ///    // Detached comment for corge paragraph 2.
+        ///
         ///    optional string corge = 5;
         ///    /* Block comment attached
         ///     * to corge.  Leading asterisks
@@ -4968,6 +4992,7 @@ namespace Google.Protobuf.Reflection {
         ///    /* Block comment attached to
         ///     * grault. */
         ///    optional int32 grault = 6;
+        ///
         ///    // ignored detached comments.
         /// </summary>
         public string LeadingComments {
