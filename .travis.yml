@@ -7,6 +7,8 @@ language: cpp
 os:
   - linux
   - osx
+osx_image:
+  - xcode6.4
 script:
   - ./travis.sh $CONFIG
 env:
@@ -26,6 +28,7 @@ env:
   - CONFIG=ruby21
   - CONFIG=ruby22
   - CONFIG=jruby
+  - CONFIG=objectivec
 matrix:
   exclude:
     # It's nontrivial to programmatically install a new JDK from the command
@@ -46,6 +49,8 @@ matrix:
     # which doesn't work on OS X.
     - os: osx
       env: CONFIG=csharp
+    - os: linux
+      env: CONFIG=objectivec
   allow_failures:
     # These currently do not work on OS X but are being worked on by @haberman.
     - os: osx
