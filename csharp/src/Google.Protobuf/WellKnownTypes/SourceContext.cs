@@ -31,7 +31,7 @@ namespace Google.Protobuf.WellKnownTypes {
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.SourceContext), new[]{ "FileName" }, null, null, null)
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.SourceContext), global::Google.Protobuf.WellKnownTypes.SourceContext.Parser, new[]{ "FileName" }, null, null, null)
           }));
     }
     #endregion
