@@ -232,7 +232,7 @@ void UmbrellaClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descriptor
     return;
   }
   // Generated message type
-  printer->Print("new pbr::GeneratedCodeInfo(typeof($type_name$), ", "type_name", GetClassName(descriptor));
+  printer->Print("new pbr::GeneratedCodeInfo(typeof($type_name$), $type_name$.Parser, ", "type_name", GetClassName(descriptor));
   
   // Fields
   if (descriptor->field_count() > 0) {

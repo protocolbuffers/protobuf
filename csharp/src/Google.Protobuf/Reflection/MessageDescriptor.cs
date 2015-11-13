@@ -67,11 +67,13 @@ namespace Google.Protobuf.Reflection
         private readonly IList<OneofDescriptor> oneofs;
         // CLR representation of the type described by this descriptor, if any.
         private readonly Type generatedType;
+        private readonly MessageParser parser;
         
         internal MessageDescriptor(DescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int typeIndex, GeneratedCodeInfo generatedCodeInfo)
             : base(file, file.ComputeFullName(parent, proto.Name), typeIndex)
         {
             this.proto = proto;
+            parser = generatedCodeInfo == null ? null : generatedCodeInfo.Parser;
             generatedType = generatedCodeInfo == null ? null : generatedCodeInfo.ClrType;
 
             containingType = parent;
@@ -121,6 +123,15 @@ namespace Google.Protobuf.Reflection
         /// The generated type for this message, or <c>null</c> if the descriptor does not represent a generated type.
         /// </summary>
         public Type GeneratedType { get { return generatedType; } }
+
+        /// <summary>
+        /// A parser for this message type.
+        /// </summary>
+        /// <remarks>
+        /// As <see cref="MessageDescriptor"/> is not generic, this cannot be statically
+        /// typed to the relevant type, but if <see cref="GeneratedType"/> returns a non-null value, the parser returned
+        /// </remarks>
+        public MessageParser Parser { get { return parser; } }
 
         /// <summary>
         /// Returns whether this message is one of the "well known types" which may have runtime/protoc support.
