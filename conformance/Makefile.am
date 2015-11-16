@@ -7,6 +7,10 @@ protoc_outputs =                                               \
   conformance.pb.cc                                            \
   conformance.pb.h
 
+other_language_protoc_outputs =                                \
+  conformance.rb                                               \
+  com/google/protobuf/conformance/Conformance.java
+
 bin_PROGRAMS = conformance-test-runner conformance-cpp
 
 conformance_test_runner_LDADD = $(top_srcdir)/src/libprotobuf.la
@@ -38,14 +42,16 @@ endif
 
 $(protoc_outputs): protoc_middleman
 
+$(other_language_protoc_outputs): protoc_middleman
+
 BUILT_SOURCES = $(protoc_outputs)
 
-CLEANFILES = $(protoc_outputs) protoc_middleman javac_middleman conformance-java conformance-csharp
+CLEANFILES = $(protoc_outputs) protoc_middleman javac_middleman conformance-java conformance-csharp $(other_language_protoc_outputs)
 
 MAINTAINERCLEANFILES =   \
   Makefile.in
 
-javac_middleman: ConformanceJava.java protoc_middleman
+javac_middleman: ConformanceJava.java protoc_middleman $(other_language_protoc_outputs)
 	javac -classpath ../java/target/classes ConformanceJava.java com/google/protobuf/conformance/Conformance.java
 	@touch javac_middleman
 
@@ -58,7 +64,7 @@ conformance-java: javac_middleman
 # Currently the conformance code is alongside the rest of the C#
 # source, as it's easier to maintain there. We assume we've already
 # built that, so we just need a script to run it.
-conformance-csharp:
+conformance-csharp: $(other_language_protoc_outputs)
 	@echo "Writing shortcut script conformance-csharp..."
 	@echo '#! /bin/sh' > conformance-csharp
 	@echo 'mono ../csharp/src/Google.Protobuf.Conformance/bin/Release/Google.Protobuf.Conformance.exe "$$@"' >> conformance-csharp
@@ -74,5 +80,5 @@ test_java: protoc_middleman conformance-test-runner conformance-java
 test_csharp: protoc_middleman conformance-test-runner conformance-csharp
 	./conformance-test-runner --failure_list failure_list_csharp.txt ./conformance-csharp
 
-test_ruby: protoc_middleman conformance-test-runner
+test_ruby: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
 	RUBYLIB=../ruby/lib:. ./conformance-test-runner --failure_list failure_list_ruby.txt ./conformance_ruby.rb
