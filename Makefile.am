@@ -35,6 +35,10 @@ clean-local:
 	if test -e conformance/Makefile; then \
 	  echo "Making clean in conformance"; \
 	  cd conformance && $(MAKE) $(AM_MAKEFLAGS) clean; \
+	fi; \
+	if test -e objectivec/DevTools; then \
+	  echo "Cleaning any ObjC pyc files"; \
+	  rm -f objectivec/DevTools/*.pyc; \
 	fi
 
 pkgconfigdir = $(libdir)/pkgconfig

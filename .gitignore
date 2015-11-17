@@ -101,8 +101,11 @@ objectivec/ProtocolBuffers_iOS.xcodeproj/xcuserdata/
 conformance/.libs/
 conformance/com/
 conformance/conformance-cpp
+conformance/conformance-csharp
+conformance/conformance-java
 conformance/conformance-test-runner
 conformance/conformance.pb.cc
 conformance/conformance.pb.h
 conformance/conformance.rb
+conformance/javac_middleman
 conformance/protoc_middleman
