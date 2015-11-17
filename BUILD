@@ -157,6 +157,7 @@ cc_proto_library(
     internal_bootstrap_hack = 1,
     protoc = ":protoc",
     default_runtime = ":protobuf",
+    visibility = ["//visibility:public"],
 )
 
 ################################################################################
