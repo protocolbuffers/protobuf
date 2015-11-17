@@ -38,6 +38,8 @@ OPTIONS:
          Skip the invoke of Xcode to test the runtime on iOS.
    --skip-xcode-osx
          Skip the invoke of Xcode to test the runtime on OS X.
+   --skip-objc-conformance
+         Skip the Objective C conformance tests (run on OS X).
 
 EOF
 }
@@ -73,6 +75,7 @@ REGEN_CPP_DESCRIPTORS=no
 CORE_ONLY=no
 DO_XCODE_IOS_TESTS=yes
 DO_XCODE_OSX_TESTS=yes
+DO_OBJC_CONFORMANCE_TESTS=yes
 while [[ $# != 0 ]]; do
   case "${1}" in
     -h | --help )
@@ -104,6 +107,9 @@ while [[ $# != 0 ]]; do
       ;;
     --skip-xcode-osx )
       DO_XCODE_OSX_TESTS=no
+      ;;
+    --skip-objc-conformance )
+      DO_OBJC_CONFORMANCE_TESTS=no
       ;;
     -*)
       echo "ERROR: Unknown option: ${1}" 1>&2
@@ -172,7 +178,7 @@ else
   wrapped_make -j "${NUM_MAKE_JOBS}" check
   # Fire off the conformance tests also.
   cd conformance
-  wrapped_make -j "${NUM_MAKE_JOBS}"
+  wrapped_make -j "${NUM_MAKE_JOBS}" test_cpp
   cd ..
 fi
 
@@ -263,4 +269,10 @@ if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
   "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Debug test
   header "Doing Xcode OS X build/tests - Release"
   "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Release test
+fi
+
+if [[ "${DO_OBJC_CONFORMANCE_TESTS}" == "yes" ]] ; then
+  cd conformance
+  wrapped_make -j "${NUM_MAKE_JOBS}" test_objc
+  cd ..
 fi
