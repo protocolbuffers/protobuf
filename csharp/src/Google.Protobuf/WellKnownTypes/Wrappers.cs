@@ -35,15 +35,15 @@ namespace Google.Protobuf.WellKnownTypes {
       descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.DoubleValue), new[]{ "Value" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.FloatValue), new[]{ "Value" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Int64Value), new[]{ "Value" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.UInt64Value), new[]{ "Value" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Int32Value), new[]{ "Value" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.UInt32Value), new[]{ "Value" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.BoolValue), new[]{ "Value" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.StringValue), new[]{ "Value" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.BytesValue), new[]{ "Value" }, null, null, null)
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.DoubleValue), global::Google.Protobuf.WellKnownTypes.DoubleValue.Parser, new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.FloatValue), global::Google.Protobuf.WellKnownTypes.FloatValue.Parser, new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Int64Value), global::Google.Protobuf.WellKnownTypes.Int64Value.Parser, new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.UInt64Value), global::Google.Protobuf.WellKnownTypes.UInt64Value.Parser, new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Int32Value), global::Google.Protobuf.WellKnownTypes.Int32Value.Parser, new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.UInt32Value), global::Google.Protobuf.WellKnownTypes.UInt32Value.Parser, new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.BoolValue), global::Google.Protobuf.WellKnownTypes.BoolValue.Parser, new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.StringValue), global::Google.Protobuf.WellKnownTypes.StringValue.Parser, new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.BytesValue), global::Google.Protobuf.WellKnownTypes.BytesValue.Parser, new[]{ "Value" }, null, null, null)
           }));
     }
     #endregion

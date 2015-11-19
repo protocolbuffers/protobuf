@@ -18,6 +18,11 @@ namespace Google.Protobuf.Reflection
         public Type ClrType { get; private set; }
 
         /// <summary>
+        /// Irrelevant for file descriptors; the parser for message descriptors.
+        /// </summary>
+        public MessageParser Parser { get; private set; }
+
+        /// <summary>
         /// Irrelevant for file descriptors; the CLR property names (in message descriptor field order)
         /// for fields in the message for message descriptors.
         /// </summary>
@@ -46,11 +51,12 @@ namespace Google.Protobuf.Reflection
         /// Each array parameter may be null, to indicate a lack of values.
         /// The parameter order is designed to make it feasible to format the generated code readably.
         /// </summary>
-        public GeneratedCodeInfo(Type clrType, string[] propertyNames, string[] oneofNames, Type[] nestedEnums, GeneratedCodeInfo[] nestedTypes)
+        public GeneratedCodeInfo(Type clrType, MessageParser parser, string[] propertyNames, string[] oneofNames, Type[] nestedEnums, GeneratedCodeInfo[] nestedTypes)
         {
             NestedTypes = nestedTypes ?? EmptyCodeInfo;
             NestedEnums = nestedEnums ?? ReflectionUtil.EmptyTypes;
             ClrType = clrType;
+            Parser = parser;
             PropertyNames = propertyNames ?? EmptyNames;
             OneofNames = oneofNames ?? EmptyNames;
         }
@@ -59,7 +65,7 @@ namespace Google.Protobuf.Reflection
         /// Creates a GeneratedCodeInfo for a file descriptor, with only types and enums.
         /// </summary>
         public GeneratedCodeInfo(Type[] nestedEnums, GeneratedCodeInfo[] nestedTypes)
-            : this(null, null, null, nestedEnums, nestedTypes)
+            : this(null, null, null, null, nestedEnums, nestedTypes)
         {
         }
     }

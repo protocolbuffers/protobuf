@@ -36,6 +36,109 @@ using System.IO;
 namespace Google.Protobuf
 {
     /// <summary>
+    /// A general message parser, typically used by reflection-based code as all the methods
+    /// return simple <see cref="IMessage"/>.
+    /// </summary>
+    public class MessageParser
+    {
+        private Func<IMessage> factory;
+
+        internal MessageParser(Func<IMessage> factory)
+        {
+            this.factory = factory;
+        }
+
+        /// <summary>
+        /// Creates a template instance ready for population.
+        /// </summary>
+        /// <returns>An empty message.</returns>
+        internal IMessage CreateTemplate()
+        {
+            return factory();
+        }
+
+        /// <summary>
+        /// Parses a message from a byte array.
+        /// </summary>
+        /// <param name="data">The byte array containing the message. Must not be null.</param>
+        /// <returns>The newly parsed message.</returns>
+        public IMessage ParseFrom(byte[] data)
+        {
+            Preconditions.CheckNotNull(data, "data");
+            IMessage message = factory();
+            message.MergeFrom(data);
+            return message;
+        }
+
+        /// <summary>
+        /// Parses a message from the given byte string.
+        /// </summary>
+        /// <param name="data">The data to parse.</param>
+        /// <returns>The parsed message.</returns>
+        public IMessage ParseFrom(ByteString data)
+        {
+            Preconditions.CheckNotNull(data, "data");
+            IMessage message = factory();
+            message.MergeFrom(data);
+            return message;
+        }
+
+        /// <summary>
+        /// Parses a message from the given stream.
+        /// </summary>
+        /// <param name="input">The stream to parse.</param>
+        /// <returns>The parsed message.</returns>
+        public IMessage ParseFrom(Stream input)
+        {
+            IMessage message = factory();
+            message.MergeFrom(input);
+            return message;
+        }
+
+        /// <summary>
+        /// Parses a length-delimited message from the given stream.
+        /// </summary>
+        /// <remarks>
+        /// The stream is expected to contain a length and then the data. Only the amount of data
+        /// specified by the length will be consumed.
+        /// </remarks>
+        /// <param name="input">The stream to parse.</param>
+        /// <returns>The parsed message.</returns>
+        public IMessage ParseDelimitedFrom(Stream input)
+        {
+            IMessage message = factory();
+            message.MergeDelimitedFrom(input);
+            return message;
+        }
+
+        /// <summary>
+        /// Parses a message from the given coded input stream.
+        /// </summary>
+        /// <param name="input">The stream to parse.</param>
+        /// <returns>The parsed message.</returns>
+        public IMessage ParseFrom(CodedInputStream input)
+        {
+            IMessage message = factory();
+            message.MergeFrom(input);
+            return message;
+        }
+
+        /// <summary>
+        /// Parses a message from the given JSON.
+        /// </summary>
+        /// <param name="json">The JSON to parse.</param>
+        /// <returns>The parsed message.</returns>
+        /// <exception cref="InvalidJsonException">The JSON does not comply with RFC 7159</exception>
+        /// <exception cref="InvalidProtocolBufferException">The JSON does not represent a Protocol Buffers message correctly</exception>
+        public IMessage ParseJson(string json)
+        {
+            IMessage message = factory();
+            JsonParser.Default.Merge(message, json);
+            return message;
+        }
+    }
+
+    /// <summary>
     /// A parser for a specific message type.
     /// </summary>
     /// <remarks>
@@ -51,8 +154,12 @@ namespace Google.Protobuf
     /// </p>
     /// </remarks>
     /// <typeparam name="T">The type of message to be parsed.</typeparam>
-    public sealed class MessageParser<T> where T : IMessage<T>
+    public sealed class MessageParser<T> : MessageParser where T : IMessage<T>
     {
+        // Implementation note: all the methods here *could* just delegate up to the base class and cast the result.
+        // The current implementation avoids a virtual method call and a cast, which *may* be significant in some cases.
+        // Benchmarking work is required to measure the significance - but it's only a few lines of code in any case.
+        // The API wouldn't change anyway - just the implementation - so this work can be deferred.
         private readonly Func<T> factory; 
 
         /// <summary>
@@ -63,7 +170,7 @@ namespace Google.Protobuf
         /// to require a parameterless constructor: delegates are significantly faster to execute.
         /// </remarks>
         /// <param name="factory">Function to invoke when a new, empty message is required.</param>
-        public MessageParser(Func<T> factory)
+        public MessageParser(Func<T> factory) : base(() => factory())
         {
             this.factory = factory;
         }
@@ -72,7 +179,7 @@ namespace Google.Protobuf
         /// Creates a template instance ready for population.
         /// </summary>
         /// <returns>An empty message.</returns>
-        internal T CreateTemplate()
+        internal new T CreateTemplate()
         {
             return factory();
         }
@@ -82,7 +189,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="data">The byte array containing the message. Must not be null.</param>
         /// <returns>The newly parsed message.</returns>
-        public T ParseFrom(byte[] data)
+        public new T ParseFrom(byte[] data)
         {
             Preconditions.CheckNotNull(data, "data");
             T message = factory();
@@ -95,7 +202,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="data">The data to parse.</param>
         /// <returns>The parsed message.</returns>
-        public T ParseFrom(ByteString data)
+        public new T ParseFrom(ByteString data)
         {
             Preconditions.CheckNotNull(data, "data");
             T message = factory();
@@ -108,7 +215,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="input">The stream to parse.</param>
         /// <returns>The parsed message.</returns>
-        public T ParseFrom(Stream input)
+        public new T ParseFrom(Stream input)
         {
             T message = factory();
             message.MergeFrom(input);
@@ -124,7 +231,7 @@ namespace Google.Protobuf
         /// </remarks>
         /// <param name="input">The stream to parse.</param>
         /// <returns>The parsed message.</returns>
-        public T ParseDelimitedFrom(Stream input)
+        public new T ParseDelimitedFrom(Stream input)
         {
             T message = factory();
             message.MergeDelimitedFrom(input);
@@ -136,7 +243,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="input">The stream to parse.</param>
         /// <returns>The parsed message.</returns>
-        public T ParseFrom(CodedInputStream input)
+        public new T ParseFrom(CodedInputStream input)
         {
             T message = factory();
             message.MergeFrom(input);
@@ -150,7 +257,7 @@ namespace Google.Protobuf
         /// <returns>The parsed message.</returns>
         /// <exception cref="InvalidJsonException">The JSON does not comply with RFC 7159</exception>
         /// <exception cref="InvalidProtocolBufferException">The JSON does not represent a Protocol Buffers message correctly</exception>
-        public T ParseJson(string json)
+        public new T ParseJson(string json)
         {
             T message = factory();
             JsonParser.Default.Merge(message, json);
