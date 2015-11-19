@@ -56,7 +56,6 @@ namespace Google.Protobuf.Examples.AddressBook
             }
             Person copy = Person.Parser.ParseFrom(bytes);
 
-            // A more streamlined approach might look like this:
             AddressBook book = new AddressBook
             {
                 People = { copy }
