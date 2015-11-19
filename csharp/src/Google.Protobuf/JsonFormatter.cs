@@ -394,7 +394,7 @@ namespace Google.Protobuf
                 if (value is IMessage)
                 {
                     var message = (IMessage) value;
-                    value = message.Descriptor.Fields[Wrappers.WrapperValueFieldNumber].Accessor.GetValue(message);
+                    value = message.Descriptor.Fields[WrappersReflection.WrapperValueFieldNumber].Accessor.GetValue(message);
                 }
                 WriteValue(builder, value);
                 return;

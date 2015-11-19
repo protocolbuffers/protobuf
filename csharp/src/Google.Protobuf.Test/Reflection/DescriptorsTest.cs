@@ -46,7 +46,7 @@ namespace Google.Protobuf.Reflection
         [Test]
         public void FileDescriptor()
         {
-            FileDescriptor file = UnittestProto3.Descriptor;
+            FileDescriptor file = UnittestProto3Reflection.Descriptor;
 
             Assert.AreEqual("google/protobuf/unittest_proto3.proto", file.Name);
             Assert.AreEqual("protobuf_unittest", file.Package);
@@ -56,11 +56,11 @@ namespace Google.Protobuf.Reflection
 
             // unittest.proto doesn't have any public imports, but unittest_import.proto does.
             Assert.AreEqual(0, file.PublicDependencies.Count);
-            Assert.AreEqual(1, UnittestImportProto3.Descriptor.PublicDependencies.Count);
-            Assert.AreEqual(UnittestImportPublicProto3.Descriptor, UnittestImportProto3.Descriptor.PublicDependencies[0]);
+            Assert.AreEqual(1, UnittestImportProto3Reflection.Descriptor.PublicDependencies.Count);
+            Assert.AreEqual(UnittestImportPublicProto3Reflection.Descriptor, UnittestImportProto3Reflection.Descriptor.PublicDependencies[0]);
 
             Assert.AreEqual(1, file.Dependencies.Count);
-            Assert.AreEqual(UnittestImportProto3.Descriptor, file.Dependencies[0]);
+            Assert.AreEqual(UnittestImportProto3Reflection.Descriptor, file.Dependencies[0]);
 
             MessageDescriptor messageType = TestAllTypes.Descriptor;
             Assert.AreSame(typeof(TestAllTypes), messageType.GeneratedType);
@@ -76,8 +76,8 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual(file.EnumTypes[0], file.FindTypeByName<EnumDescriptor>("ForeignEnum"));
             Assert.Null(file.FindTypeByName<EnumDescriptor>("NoSuchType"));
             Assert.Null(file.FindTypeByName<EnumDescriptor>("protobuf_unittest.ForeignEnum"));
-            Assert.AreEqual(1, UnittestImportProto3.Descriptor.EnumTypes.Count);
-            Assert.AreEqual("ImportEnum", UnittestImportProto3.Descriptor.EnumTypes[0].Name);
+            Assert.AreEqual(1, UnittestImportProto3Reflection.Descriptor.EnumTypes.Count);
+            Assert.AreEqual("ImportEnum", UnittestImportProto3Reflection.Descriptor.EnumTypes[0].Name);
             for (int i = 0; i < file.EnumTypes.Count; i++)
             {
                 Assert.AreEqual(i, file.EnumTypes[i].Index);
@@ -94,7 +94,7 @@ namespace Google.Protobuf.Reflection
 
             Assert.AreEqual("TestAllTypes", messageType.Name);
             Assert.AreEqual("protobuf_unittest.TestAllTypes", messageType.FullName);
-            Assert.AreEqual(UnittestProto3.Descriptor, messageType.File);
+            Assert.AreEqual(UnittestProto3Reflection.Descriptor, messageType.File);
             Assert.IsNull(messageType.ContainingType);
             Assert.IsNull(messageType.Proto.Options);
 
@@ -102,7 +102,7 @@ namespace Google.Protobuf.Reflection
 
             Assert.AreEqual("NestedMessage", nestedType.Name);
             Assert.AreEqual("protobuf_unittest.TestAllTypes.NestedMessage", nestedType.FullName);
-            Assert.AreEqual(UnittestProto3.Descriptor, nestedType.File);
+            Assert.AreEqual(UnittestProto3Reflection.Descriptor, nestedType.File);
             Assert.AreEqual(messageType, nestedType.ContainingType);
 
             FieldDescriptor field = messageType.Fields.InDeclarationOrder()[0];
@@ -146,7 +146,7 @@ namespace Google.Protobuf.Reflection
                             primitiveField.FullName);
             Assert.AreEqual(1, primitiveField.FieldNumber);
             Assert.AreEqual(messageType, primitiveField.ContainingType);
-            Assert.AreEqual(UnittestProto3.Descriptor, primitiveField.File);
+            Assert.AreEqual(UnittestProto3Reflection.Descriptor, primitiveField.File);
             Assert.AreEqual(FieldType.Int32, primitiveField.FieldType);
             Assert.IsNull(primitiveField.Proto.Options);
             
@@ -175,19 +175,19 @@ namespace Google.Protobuf.Reflection
         public void EnumDescriptor()
         {
             // Note: this test is a bit different to the Java version because there's no static way of getting to the descriptor
-            EnumDescriptor enumType = UnittestProto3.Descriptor.FindTypeByName<EnumDescriptor>("ForeignEnum");
+            EnumDescriptor enumType = UnittestProto3Reflection.Descriptor.FindTypeByName<EnumDescriptor>("ForeignEnum");
             EnumDescriptor nestedType = TestAllTypes.Descriptor.FindDescriptor<EnumDescriptor>("NestedEnum");
 
             Assert.AreEqual("ForeignEnum", enumType.Name);
             Assert.AreEqual("protobuf_unittest.ForeignEnum", enumType.FullName);
-            Assert.AreEqual(UnittestProto3.Descriptor, enumType.File);
+            Assert.AreEqual(UnittestProto3Reflection.Descriptor, enumType.File);
             Assert.Null(enumType.ContainingType);
             Assert.Null(enumType.Proto.Options);
 
             Assert.AreEqual("NestedEnum", nestedType.Name);
             Assert.AreEqual("protobuf_unittest.TestAllTypes.NestedEnum",
                             nestedType.FullName);
-            Assert.AreEqual(UnittestProto3.Descriptor, nestedType.File);
+            Assert.AreEqual(UnittestProto3Reflection.Descriptor, nestedType.File);
             Assert.AreEqual(TestAllTypes.Descriptor, nestedType.ContainingType);
 
             EnumValueDescriptor value = enumType.FindValueByName("FOREIGN_FOO");
@@ -228,7 +228,7 @@ namespace Google.Protobuf.Reflection
         [Test]
         public void ConstructionWithoutGeneratedCodeInfo()
         {
-            var data = UnittestIssues.Descriptor.Proto.ToByteArray();
+            var data = UnittestIssuesReflection.Descriptor.Proto.ToByteArray();
             var newDescriptor = Google.Protobuf.Reflection.FileDescriptor.InternalBuildGeneratedFileFrom(data, new Reflection.FileDescriptor[] { }, null);
 
             // We should still be able to get at a field...
@@ -257,6 +257,7 @@ namespace Google.Protobuf.Reflection
         public void DescriptorProtoFileDescriptor()
         {
             var descriptor = Google.Protobuf.Reflection.FileDescriptor.DescriptorProtoFileDescriptor;
+            Assert.AreEqual("google/protobuf/descriptor.proto", descriptor.Name);
         }
     }
 }

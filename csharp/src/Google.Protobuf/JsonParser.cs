@@ -92,7 +92,7 @@ namespace Google.Protobuf
         // dictionary initialization.
         private static void MergeWrapperField(JsonParser parser, IMessage message, JsonTokenizer tokenizer)
         {
-            parser.MergeField(message, message.Descriptor.Fields[Wrappers.WrapperValueFieldNumber], tokenizer);
+            parser.MergeField(message, message.Descriptor.Fields[WrappersReflection.WrapperValueFieldNumber], tokenizer);
         }
 
         /// <summary>
@@ -294,7 +294,7 @@ namespace Google.Protobuf
                 // TODO: Detect this differently when we have dynamic messages, and put it in one place...
                 if (field.MessageType.IsWellKnownType && field.MessageType.File == Int32Value.Descriptor.File)
                 {
-                    field = field.MessageType.Fields[Wrappers.WrapperValueFieldNumber];
+                    field = field.MessageType.Fields[WrappersReflection.WrapperValueFieldNumber];
                     fieldType = field.FieldType;
                 }
                 else

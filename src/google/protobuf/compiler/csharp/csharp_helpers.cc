@@ -117,43 +117,19 @@ std::string GetFileNamespace(const FileDescriptor* descriptor) {
   return UnderscoresToCamelCase(descriptor->package(), true, true);
 }
 
-std::string GetUmbrellaClassUnqualifiedName(const FileDescriptor* descriptor) {
-  // We manually rename Descriptor to DescriptorProtoFile to avoid collisions with
-  // the static Descriptor property. It would be nice to be able to do this with an
-  // option, but it would be rarely used.
-  if (IsDescriptorProto(descriptor)) {
-    return "DescriptorProtoFile";
-  }
-  // umbrella_classname can no longer be set using message option.
-  std::string proto_file = descriptor->name();
-  int lastslash = proto_file.find_last_of("/");
-  std::string base = proto_file.substr(lastslash + 1);
-  return UnderscoresToPascalCase(StripDotProto(base));
+// Returns the Pascal-cased last part of the proto file. For example,
+// input of "google/protobuf/foo_bar.proto" would result in "FooBar".
+std::string GetFileNameBase(const FileDescriptor* descriptor) {
+    std::string proto_file = descriptor->name();
+    int lastslash = proto_file.find_last_of("/");
+    std::string base = proto_file.substr(lastslash + 1);
+    return UnderscoresToPascalCase(StripDotProto(base));
 }
 
-std::string GetUmbrellaClassNestedNamespace(const FileDescriptor* descriptor) {
-  // TODO(jtattermusch): reintroduce csharp_umbrella_namespace option
-  bool collision = false;
-  std::string umbrella_classname = GetUmbrellaClassUnqualifiedName(descriptor);
-  for(int i = 0; i < descriptor->message_type_count(); i++) {
-    if (descriptor->message_type(i)->name() == umbrella_classname) {
-      collision = true;
-      break;
-    }
-  }
-  for (int i = 0; i < descriptor->service_count(); i++) {
-    if (descriptor->service(i)->name() == umbrella_classname) {
-      collision = true;
-      break;
-    }
-  }
-  for (int i = 0; i < descriptor->enum_type_count(); i++) {
-    if (descriptor->enum_type(i)->name() == umbrella_classname) {
-      collision = true;
-      break;
-    }
-  }
-  return collision ? "Proto" : "";
+std::string GetUmbrellaClassUnqualifiedName(const FileDescriptor* descriptor) {
+  // umbrella_classname can no longer be set using message option.
+  // TODO: Detect collisions with existing messages, and append an underscore if necessary.
+  return GetFileNameBase(descriptor) + "Reflection";
 }
 
 // TODO(jtattermusch): can we reuse a utility function?
@@ -223,10 +199,6 @@ std::string GetUmbrellaClassName(const FileDescriptor* descriptor) {
   if (!result.empty()) {
     result += '.';
   }
-  std::string umbrellaNamespace = GetUmbrellaClassNestedNamespace(descriptor);
-  if (!umbrellaNamespace.empty()) {
-      result += umbrellaNamespace + ".";
-  }
   result += GetUmbrellaClassUnqualifiedName(descriptor);
   return "global::" + result;
 }
@@ -275,7 +247,7 @@ std::string GetOutputFile(
     const bool generate_directories,
     const std::string base_namespace,
     string* error) {
-  string relative_filename = GetUmbrellaClassUnqualifiedName(descriptor) + file_extension;
+  string relative_filename = GetFileNameBase(descriptor) + file_extension;
   if (!generate_directories) {
     return relative_filename;
   }

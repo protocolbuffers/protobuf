@@ -11,7 +11,7 @@ namespace Conformance {
 
   /// <summary>Holder for reflection information generated from conformance.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class Conformance {
+  public static partial class ConformanceReflection {
 
     #region Descriptor
     /// <summary>File descriptor for conformance.proto</summary>
@@ -20,7 +20,7 @@ namespace Conformance {
     }
     private static pbr::FileDescriptor descriptor;
 
-    static Conformance() {
+    static ConformanceReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UijQEKEkNvbmZvcm1h",
@@ -176,7 +176,7 @@ namespace Conformance {
     public static pb::MessageParser<ConformanceRequest> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.Conformance.Descriptor.MessageTypes[0]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -368,7 +368,7 @@ namespace Conformance {
     public static pb::MessageParser<ConformanceResponse> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.Conformance.Descriptor.MessageTypes[1]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[1]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -645,7 +645,7 @@ namespace Conformance {
     public static pb::MessageParser<TestAllTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.Conformance.Descriptor.MessageTypes[2]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[2]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -2418,7 +2418,7 @@ namespace Conformance {
     public static pb::MessageParser<ForeignMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.Conformance.Descriptor.MessageTypes[3]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[3]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {

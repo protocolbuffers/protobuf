@@ -139,7 +139,7 @@ namespace Google.Protobuf
             Assert.AreEqual(expected, parsed);
 
             JsonParser.Default.Merge(parsed, json);
-            expected.Descriptor.Fields[Wrappers.WrapperValueFieldNumber].Accessor.SetValue(expected, expectedValue);
+            expected.Descriptor.Fields[WrappersReflection.WrapperValueFieldNumber].Accessor.SetValue(expected, expectedValue);
             Assert.AreEqual(expected, parsed);
         }
 
