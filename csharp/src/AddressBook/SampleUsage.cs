@@ -57,7 +57,11 @@ namespace Google.Protobuf.Examples.AddressBook
             Person copy = Person.Parser.ParseFrom(bytes);
 
             // A more streamlined approach might look like this:
-            bytes = copy.ToByteArray();
+            AddressBook book = new AddressBook
+            {
+                People = { copy }
+            };
+            bytes = book.ToByteArray();
             // And read the address book back again
             AddressBook restored = AddressBook.Parser.ParseFrom(bytes);
             // The message performs a deep-comparison on equality:
