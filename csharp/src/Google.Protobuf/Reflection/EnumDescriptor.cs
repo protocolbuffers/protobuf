@@ -45,11 +45,11 @@ namespace Google.Protobuf.Reflection
         private readonly IList<EnumValueDescriptor> values;
         private readonly Type clrType;
 
-        internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, Type generatedType)
+        internal EnumDescriptor(EnumDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, Type clrType)
             : base(file, file.ComputeFullName(parent, proto.Name), index)
         {
             this.proto = proto;
-            this.clrType = generatedType;
+            this.clrType = clrType;
             containingType = parent;
 
             if (proto.Value.Count == 0)

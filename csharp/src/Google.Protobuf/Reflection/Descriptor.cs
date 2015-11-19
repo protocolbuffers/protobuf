@@ -135,7 +135,7 @@ namespace Google.Protobuf.Reflection {
             "X2NvbW1lbnRzGAYgAygJQlgKE2NvbS5nb29nbGUucHJvdG9idWZCEERlc2Ny",
             "aXB0b3JQcm90b3NIAVoKZGVzY3JpcHRvcqICA0dQQqoCGkdvb2dsZS5Qcm90",
             "b2J1Zi5SZWZsZWN0aW9u"));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Reflection.FileDescriptorSet), global::Google.Protobuf.Reflection.FileDescriptorSet.Parser, new[]{ "File" }, null, null, null),

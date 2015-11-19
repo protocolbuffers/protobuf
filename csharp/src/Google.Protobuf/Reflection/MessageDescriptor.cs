@@ -187,7 +187,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         /// <param name="name">The unqualified name of the field (e.g. "foo").</param>
         /// <returns>The field's descriptor, or null if not found.</returns>
-        public FieldDescriptor FindFieldByName(String name) =>File.DescriptorPool.FindSymbol<FieldDescriptor>(FullName + "." + name);
+        public FieldDescriptor FindFieldByName(String name) => File.DescriptorPool.FindSymbol<FieldDescriptor>(FullName + "." + name);
 
         /// <summary>
         /// Finds a field by field number.

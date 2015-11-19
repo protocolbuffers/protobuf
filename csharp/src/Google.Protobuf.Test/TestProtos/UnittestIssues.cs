@@ -46,7 +46,7 @@ namespace UnitTest.Issues.TestProtos {
             "aXZlQmVsb3cQ+///////////ARIVCghNaW51c09uZRD///////////8BKi4K",
             "DkRlcHJlY2F0ZWRFbnVtEhMKD0RFUFJFQ0FURURfWkVSTxAAEgcKA29uZRAB",
             "Qh9IAaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zYgZwcm90bzM="));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedCodeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, new pbr::GeneratedCodeInfo[] {
             new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307), global::UnitTest.Issues.TestProtos.Issue307.Parser, null, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce), global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Parser, null, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice), global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice.Parser, null, null, null, null)})}),

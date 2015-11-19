@@ -37,7 +37,7 @@ namespace Google.Protobuf.WellKnownTypes {
             "QUxVRRAAQk4KE2NvbS5nb29nbGUucHJvdG9idWZCC1N0cnVjdFByb3RvUAGg",
             "AQGiAgNHUEKqAh5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnBy",
             "b3RvMw=="));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedCodeInfo(new[] {typeof(global::Google.Protobuf.WellKnownTypes.NullValue), }, new pbr::GeneratedCodeInfo[] {
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Struct), global::Google.Protobuf.WellKnownTypes.Struct.Parser, new[]{ "Fields" }, null, null, new pbr::GeneratedCodeInfo[] { null, }),

@@ -32,7 +32,7 @@ namespace Google.Protobuf.Examples.AddressBook {
             "GAEgAygLMhAudHV0b3JpYWwuUGVyc29uQlAKFGNvbS5leGFtcGxlLnR1dG9y",
             "aWFsQhFBZGRyZXNzQm9va1Byb3Rvc6oCJEdvb2dsZS5Qcm90b2J1Zi5FeGFt",
             "cGxlcy5BZGRyZXNzQm9va2IGcHJvdG8z"));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person), global::Google.Protobuf.Examples.AddressBook.Person.Parser, new[]{ "Name", "Id", "Email", "Phones" }, null, new[]{ typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) }, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser, new[]{ "Number", "Type" }, null, null, null)}),
