@@ -126,8 +126,7 @@ std::string GetFileNameBase(const FileDescriptor* descriptor) {
     return UnderscoresToPascalCase(StripDotProto(base));
 }
 
-std::string GetUmbrellaClassUnqualifiedName(const FileDescriptor* descriptor) {
-  // umbrella_classname can no longer be set using message option.
+std::string GetReflectionClassUnqualifiedName(const FileDescriptor* descriptor) {
   // TODO: Detect collisions with existing messages, and append an underscore if necessary.
   return GetFileNameBase(descriptor) + "Reflection";
 }
@@ -194,12 +193,12 @@ std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
   return "global::" + result;
 }
 
-std::string GetUmbrellaClassName(const FileDescriptor* descriptor) {
+std::string GetReflectionClassName(const FileDescriptor* descriptor) {
   std::string result = GetFileNamespace(descriptor);
   if (!result.empty()) {
     result += '.';
   }
-  result += GetUmbrellaClassUnqualifiedName(descriptor);
+  result += GetReflectionClassUnqualifiedName(descriptor);
   return "global::" + result;
 }
 

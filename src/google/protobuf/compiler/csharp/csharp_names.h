@@ -72,7 +72,7 @@ string GetClassName(const Descriptor* descriptor);
 //   The fully-qualified name of the C# class that provides
 //   access to the file descriptor. Proto compiler generates
 //   such class for each .proto file processed.
-string GetUmbrellaClassName(const FileDescriptor* descriptor);
+string GetReflectionClassName(const FileDescriptor* descriptor);
 
 // Generates output file name for given file descriptor. If generate_directories
 // is true, the output file will be put under directory corresponding to file's
