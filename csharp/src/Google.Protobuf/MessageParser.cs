@@ -157,7 +157,9 @@ namespace Google.Protobuf
     public sealed class MessageParser<T> : MessageParser where T : IMessage<T>
     {
         // Implementation note: all the methods here *could* just delegate up to the base class and cast the result.
-        // The 
+        // The current implementation avoids a virtual method call and a cast, which *may* be significant in some cases.
+        // Benchmarking work is required to measure the significance - but it's only a few lines of code in any case.
+        // The API wouldn't change anyway - just the implementation - so this work can be deferred.
         private readonly Func<T> factory; 
 
         /// <summary>
