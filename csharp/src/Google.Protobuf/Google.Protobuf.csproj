@@ -121,6 +121,7 @@
     <Compile Include="Reflection\ServiceDescriptor.cs" />
     <Compile Include="Reflection\SingleFieldAccessor.cs" />
     <Compile Include="Preconditions.cs" />
+    <Compile Include="Reflection\TypeRegistry.cs" />
     <Compile Include="WellKnownTypes\Any.cs" />
     <Compile Include="WellKnownTypes\AnyPartial.cs" />
     <Compile Include="WellKnownTypes\Api.cs" />
