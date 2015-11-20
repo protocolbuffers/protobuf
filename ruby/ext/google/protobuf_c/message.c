@@ -166,7 +166,7 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
                                           name, name_len);
 
   if (f == NULL) {
-    rb_raise(rb_eArgError, "Unknown field");
+    return rb_call_super(argc, argv);
   }
 
   if (setter) {

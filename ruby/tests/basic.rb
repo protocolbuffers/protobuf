@@ -191,6 +191,18 @@ module BasicTest
       assert m1.hash != m2.hash
     end
 
+    def test_unknown_field_errors
+      e = assert_raise NoMethodError do
+        TestMessage.new.hello
+      end
+      assert_match(/hello/, e.message)
+
+      e = assert_raise NoMethodError do
+        TestMessage.new.hello = "world"
+      end
+      assert_match(/hello/, e.message)
+    end
+
     def test_type_errors
       m = TestMessage.new
       assert_raise TypeError do
