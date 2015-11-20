@@ -93,7 +93,7 @@ public class RubyMessage extends RubyObject {
                         maps.put(fieldDescriptor, map);
                     } else if (fieldDescriptor.isRepeated()) {
                         if (!(value instanceof RubyArray))
-                            throw runtime.newTypeError("Expected array as initializer var for repeated field.");
+                            throw runtime.newArgumentError("Expected array as initializer var for repeated field.");
                         RubyRepeatedField repeatedField = rubyToRepeatedField(context, fieldDescriptor, value);
                         addRepeatedField(fieldDescriptor, repeatedField);
                     } else {
