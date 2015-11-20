@@ -41,7 +41,7 @@
 #include <google/protobuf/compiler/csharp/csharp_generator.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_names.h>
-#include <google/protobuf/compiler/csharp/csharp_umbrella_class.h>
+#include <google/protobuf/compiler/csharp/csharp_reflection_class.h>
 
 using google::protobuf::internal::scoped_ptr;
 
@@ -52,8 +52,8 @@ namespace csharp {
 
 void GenerateFile(const google::protobuf::FileDescriptor* file,
                   io::Printer* printer) {
-  UmbrellaClassGenerator umbrellaGenerator(file);
-  umbrellaGenerator.Generate(printer);
+  ReflectionClassGenerator reflectionClassGenerator(file);
+  reflectionClassGenerator.Generate(printer);
 }
 
 bool Generator::Generate(

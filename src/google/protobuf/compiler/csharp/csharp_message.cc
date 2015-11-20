@@ -119,7 +119,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
 
   // Access the message descriptor via the relevant file descriptor or containing message descriptor.
   if (!descriptor_->containing_type()) {
-    vars["descriptor_accessor"] = GetUmbrellaClassName(descriptor_->file())
+    vars["descriptor_accessor"] = GetReflectionClassName(descriptor_->file())
         + ".Descriptor.MessageTypes[" + SimpleItoa(descriptor_->index()) + "]";
   } else {
     vars["descriptor_accessor"] = GetClassName(descriptor_->containing_type())

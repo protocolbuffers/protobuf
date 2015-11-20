@@ -453,6 +453,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_message_field.h       \
   google/protobuf/compiler/csharp/csharp_primitive_field.cc    \
   google/protobuf/compiler/csharp/csharp_primitive_field.h     \
+  google/protobuf/compiler/csharp/csharp_reflection_class.cc     \
+  google/protobuf/compiler/csharp/csharp_reflection_class.h      \
   google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc \
   google/protobuf/compiler/csharp/csharp_repeated_enum_field.h \
   google/protobuf/compiler/csharp/csharp_repeated_message_field.cc \
@@ -461,8 +463,6 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h \
   google/protobuf/compiler/csharp/csharp_source_generator_base.cc \
   google/protobuf/compiler/csharp/csharp_source_generator_base.h \
-  google/protobuf/compiler/csharp/csharp_umbrella_class.cc     \
-  google/protobuf/compiler/csharp/csharp_umbrella_class.h      \
   google/protobuf/compiler/csharp/csharp_wrapper_field.cc      \
   google/protobuf/compiler/csharp/csharp_wrapper_field.h
 
