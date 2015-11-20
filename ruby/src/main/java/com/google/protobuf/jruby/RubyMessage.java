@@ -86,14 +86,14 @@ public class RubyMessage extends RubyObject {
 
                     if (Utils.isMapEntry(fieldDescriptor)) {
                         if (!(value instanceof RubyHash))
-                            throw runtime.newArgumentError("Expected Hash object as initializer value for map field.");
+                            throw runtime.newArgumentError("Expected Hash object as initializer value for map field '" +  key.asJavaString() + "'.");
 
                         final RubyMap map = newMapForField(context, fieldDescriptor);
                         map.mergeIntoSelf(context, value);
                         maps.put(fieldDescriptor, map);
                     } else if (fieldDescriptor.isRepeated()) {
                         if (!(value instanceof RubyArray))
-                            throw runtime.newArgumentError("Expected array as initializer var for repeated field.");
+                            throw runtime.newArgumentError("Expected array as initializer value for repeated field '" +  key.asJavaString() + "'.");
                         RubyRepeatedField repeatedField = rubyToRepeatedField(context, fieldDescriptor, value);
                         addRepeatedField(fieldDescriptor, repeatedField);
                     } else {
