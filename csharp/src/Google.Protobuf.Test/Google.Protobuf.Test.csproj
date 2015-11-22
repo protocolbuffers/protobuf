@@ -99,6 +99,7 @@
     <Compile Include="JsonTokenizerTest.cs" />
     <Compile Include="Reflection\DescriptorsTest.cs" />
     <Compile Include="Reflection\FieldAccessTest.cs" />
+    <Compile Include="Reflection\TypeRegistryTest.cs" />
     <Compile Include="SampleEnum.cs" />
     <Compile Include="SampleMessages.cs" />
     <Compile Include="TestProtos\MapUnittestProto3.cs" />
