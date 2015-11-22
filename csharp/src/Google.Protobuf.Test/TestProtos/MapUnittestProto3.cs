@@ -147,7 +147,7 @@ namespace Google.Protobuf.TestProtos {
             "dmFsdWUYAiABKAU6AjgBKj8KB01hcEVudW0SEAoMTUFQX0VOVU1fRk9PEAAS",
             "EAoMTUFQX0VOVU1fQkFSEAESEAoMTUFQX0VOVU1fQkFaEAJCIPgBAaoCGkdv",
             "b2dsZS5Qcm90b2J1Zi5UZXN0UHJvdG9zYgZwcm90bzM="));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor, },
           new pbr::GeneratedCodeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.MapEnum), }, new pbr::GeneratedCodeInfo[] {
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestMap), global::Google.Protobuf.TestProtos.TestMap.Parser, new[]{ "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapInt32Bytes", "MapInt32Enum", "MapInt32ForeignMessage" }, null, null, new pbr::GeneratedCodeInfo[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, }),

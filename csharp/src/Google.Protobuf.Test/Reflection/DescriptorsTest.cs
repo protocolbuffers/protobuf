@@ -63,7 +63,7 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual(UnittestImportProto3Reflection.Descriptor, file.Dependencies[0]);
 
             MessageDescriptor messageType = TestAllTypes.Descriptor;
-            Assert.AreSame(typeof(TestAllTypes), messageType.GeneratedType);
+            Assert.AreSame(typeof(TestAllTypes), messageType.ClrType);
             Assert.AreSame(TestAllTypes.Parser, messageType.Parser);
             Assert.AreEqual(messageType, file.MessageTypes[0]);
             Assert.AreEqual(messageType, file.FindTypeByName<MessageDescriptor>("TestAllTypes"));
@@ -227,18 +227,12 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
-        public void ConstructionWithoutGeneratedCodeInfo()
+        public void MapEntryMessageDescriptor()
         {
-            var data = UnittestIssuesReflection.Descriptor.Proto.ToByteArray();
-            var newDescriptor = Google.Protobuf.Reflection.FileDescriptor.InternalBuildGeneratedFileFrom(data, new Reflection.FileDescriptor[] { }, null);
-
-            // We should still be able to get at a field...
-            var messageDescriptor = newDescriptor.FindTypeByName<MessageDescriptor>("ItemField");
-            var fieldDescriptor = messageDescriptor.FindFieldByName("item");
-            // But there shouldn't be an accessor (or a generated type for the message, or parser)
-            Assert.IsNull(fieldDescriptor.Accessor);
-            Assert.IsNull(messageDescriptor.GeneratedType);
-            Assert.IsNull(messageDescriptor.Parser);
+            var descriptor = MapWellKnownTypes.Descriptor.NestedTypes[0];
+            Assert.IsNull(descriptor.Parser);
+            Assert.IsNull(descriptor.ClrType);
+            Assert.IsNull(descriptor.Fields[1].Accessor);
         }
 
         // From TestFieldOrdering:

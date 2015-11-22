@@ -166,7 +166,7 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
   // -----------------------------------------------------------------
   // Invoke InternalBuildGeneratedFileFrom() to build the file.
   printer->Print(
-      "descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,\n");
+      "descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,\n");
   printer->Print("    new pbr::FileDescriptor[] { ");
   for (int i = 0; i < file_->dependency_count(); i++) {
     // descriptor.proto is special: we don't allow access to the generated code, but there's

@@ -159,7 +159,7 @@ namespace Google.Protobuf.TestProtos {
             "AiABKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZToCOAFCOQoYY29t",
             "Lmdvb2dsZS5wcm90b2J1Zi50ZXN0UAGqAhpHb29nbGUuUHJvdG9idWYuVGVz",
             "dFByb3Rvc2IGcHJvdG8z"));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.ApiReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
           new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestWellKnownTypes), global::Google.Protobuf.TestProtos.TestWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null),

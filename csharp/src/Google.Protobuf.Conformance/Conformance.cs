@@ -134,7 +134,7 @@ namespace Conformance {
             "QlVGEAESCAoESlNPThACKkAKC0ZvcmVpZ25FbnVtEg8KC0ZPUkVJR05fRk9P",
             "EAASDwoLRk9SRUlHTl9CQVIQARIPCgtGT1JFSUdOX0JBWhACQiEKH2NvbS5n",
             "b29nbGUucHJvdG9idWYuY29uZm9ybWFuY2ViBnByb3RvMw=="));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedCodeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.ForeignEnum), }, new pbr::GeneratedCodeInfo[] {
             new pbr::GeneratedCodeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat" }, new[]{ "Payload" }, null, null),

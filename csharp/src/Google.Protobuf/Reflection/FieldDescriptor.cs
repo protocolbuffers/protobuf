@@ -62,8 +62,7 @@ namespace Google.Protobuf.Reflection
 
             if (FieldNumber <= 0)
             {
-                throw new DescriptorValidationException(this,
-                                                        "Field numbers must be positive integers.");
+                throw new DescriptorValidationException(this, "Field numbers must be positive integers.");
             }
             containingType = parent;
             // OneofIndex "defaults" to -1 due to a hack in FieldDescriptor.OnConstruction.
@@ -72,7 +71,7 @@ namespace Google.Protobuf.Reflection
                 if (proto.OneofIndex < 0 || proto.OneofIndex >= parent.Proto.OneofDecl.Count)
                 {
                     throw new DescriptorValidationException(this,
-                        "FieldDescriptorProto.oneof_index is out of range for type " + parent.Name);
+                        $"FieldDescriptorProto.oneof_index is out of range for type {parent.Name}");
                 }
                 containingOneof = parent.Oneofs[proto.OneofIndex];
             }
@@ -94,13 +93,22 @@ namespace Google.Protobuf.Reflection
         internal FieldDescriptorProto Proto { get { return proto; } }
 
         /// <summary>
-        /// Returns the accessor for this field, or <c>null</c> if this descriptor does
-        /// not support reflective access.
+        /// Returns the accessor for this field.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// While a <see cref="FieldDescriptor"/> describes the field, it does not provide
         /// any way of obtaining or changing the value of the field within a specific message;
         /// that is the responsibility of the accessor.
+        /// </para>
+        /// <para>
+        /// The value returned by this property will be non-null for all regular fields. However,
+        /// if a message containing a map field is introspected, the list of nested messages will include
+        /// an auto-generated nested key/value pair message for the field. This is not represented in any
+        /// generated type, and the value of the map field itself is represented by a dictionary in the
+        /// reflection API. There are never instances of those "hidden" messages, so no accessor is provided
+        /// and this property will return null.
+        /// </para>
         /// </remarks>
         public IFieldAccessor Accessor { get { return accessor; } }
         
@@ -281,7 +289,7 @@ namespace Google.Protobuf.Reflection
                     }
                     else
                     {
-                        throw new DescriptorValidationException(this, "\"" + Proto.TypeName + "\" is not a type.");
+                        throw new DescriptorValidationException(this, $"\"{Proto.TypeName}\" is not a type.");
                     }
                 }
 
@@ -289,8 +297,7 @@ namespace Google.Protobuf.Reflection
                 {
                     if (!(typeDescriptor is MessageDescriptor))
                     {
-                        throw new DescriptorValidationException(this,
-                                                                "\"" + Proto.TypeName + "\" is not a message type.");
+                        throw new DescriptorValidationException(this, $"\"{Proto.TypeName}\" is not a message type.");
                     }
                     messageType = (MessageDescriptor) typeDescriptor;
 
@@ -303,7 +310,7 @@ namespace Google.Protobuf.Reflection
                 {
                     if (!(typeDescriptor is EnumDescriptor))
                     {
-                        throw new DescriptorValidationException(this, "\"" + Proto.TypeName + "\" is not an enum type.");
+                        throw new DescriptorValidationException(this, $"\"{Proto.TypeName}\" is not an enum type.");
                     }
                     enumType = (EnumDescriptor) typeDescriptor;
                 }
@@ -333,14 +340,16 @@ namespace Google.Protobuf.Reflection
 
         private IFieldAccessor CreateAccessor(string propertyName)
         {
-            if (containingType.GeneratedType == null || propertyName == null)
+            // If we're given no property name, that's because we really don't want an accessor.
+            // (At the moment, that means it's a map entry message...)
+            if (propertyName == null)
             {
                 return null;
             }
-            var property = containingType.GeneratedType.GetProperty(propertyName);
+            var property = containingType.ClrType.GetProperty(propertyName);
             if (property == null)
             {
-                throw new DescriptorValidationException(this, "Property " + propertyName + " not found in " + containingType.GeneratedType);
+                throw new DescriptorValidationException(this, $"Property {propertyName} not found in {containingType.ClrType}");
             }
             return IsMap ? new MapFieldAccessor(property, this)
                 : IsRepeated ? new RepeatedFieldAccessor(property, this)
