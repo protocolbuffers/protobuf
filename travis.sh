@@ -136,8 +136,9 @@ internal_objectivec_common () {
   brew update
   brew outdated xctool || brew upgrade xctool
   # Reused the build script that takes care of configuring and ensuring things
-  # are up to date.
-  objectivec/DevTools/full_mac_build.sh --core-only --skip-xcode
+  # are up to date. Xcode and conformance tests will be directly invoked.
+  objectivec/DevTools/full_mac_build.sh \
+      --core-only --skip-xcode --skip-objc-conformance
 }
 
 internal_xctool_debug_and_release() {
@@ -178,6 +179,7 @@ build_objectivec_osx() {
     -scheme ProtocolBuffers \
     -destination "platform=OS X,arch=x86_64" \
     test
+  cd conformance && make test_objc && cd ..
 }
 
 build_python() {

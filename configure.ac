@@ -59,6 +59,7 @@ AC_LANG([C++])
 ACX_USE_SYSTEM_EXTENSIONS
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AM_CONDITIONAL(GCC, test "$GCC" = yes)   # let the Makefile know if we're gcc
+AC_PROG_OBJC
 
 # test_util.cc takes forever to compile with GCC and optimization turned on.
 AC_MSG_CHECKING([C++ compiler flags...])
@@ -162,6 +163,15 @@ case "$target_os" in
     AC_SEARCH_LIBS([sched_yield], [rt], [], [AC_MSG_FAILURE([sched_yield was not found on your system])])
     ;;
 esac
+
+# Enable ObjC support for conformance directory on OS X.
+OBJC_CONFORMANCE_TEST=0
+case "$target_os" in
+  darwin*)
+    OBJC_CONFORMANCE_TEST=1
+    ;;
+esac
+AM_CONDITIONAL([OBJC_CONFORMANCE_TEST], [test $OBJC_CONFORMANCE_TEST = 1])
 
 # HACK:  Make gmock's configure script pick up our copy of CFLAGS and CXXFLAGS,
 #   since the flags added by ACX_CHECK_SUNCC must be used when compiling gmock
