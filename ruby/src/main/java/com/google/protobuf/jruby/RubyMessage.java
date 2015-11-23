@@ -218,7 +218,7 @@ public class RubyMessage extends RubyObject {
             IRubyObject oneofDescriptor = rubyDescriptor.lookupOneof(context, args[0]);
             if (oneofDescriptor.isNil()) {
                 if (!hasField(args[0])) {
-                    throw context.runtime.newNoMethodError("undefined method `" + args[0].toString() + "' for " + metaClass.toString(), args[0].asJavaString(),  metaClass);
+                    return Helpers.invokeSuper(context, this, metaClass, "method_missing", args, Block.NULL_BLOCK);
                 }
                 return index(context, args[0]);
             }
@@ -238,7 +238,7 @@ public class RubyMessage extends RubyObject {
             }
 
             if (!hasField(field)) {
-                throw context.runtime.newNoMethodError("undefined method `" + args[0].asJavaString() + "' for " + metaClass.toString(), args[0].asJavaString(),  metaClass);
+                return Helpers.invokeSuper(context, this, metaClass, "method_missing", args, Block.NULL_BLOCK);
             }
             return indexSet(context, field, args[1]);
         }
