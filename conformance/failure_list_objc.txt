@@ -1,2 +1,1 @@
-ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE
-ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE
+# No tests currently failing.
