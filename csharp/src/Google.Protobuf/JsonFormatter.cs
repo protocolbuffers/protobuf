@@ -55,6 +55,12 @@ namespace Google.Protobuf
     /// </remarks>
     public sealed class JsonFormatter
     {
+        internal const string AnyTypeUrlField = "@type";
+        internal const string AnyWellKnownTypeValueField = "value";
+        private const string TypeUrlPrefix = "type.googleapis.com";
+        private const string NameValueSeparator = ": ";
+        private const string PropertySeparator = ", ";
+
         private static JsonFormatter defaultInstance = new JsonFormatter(Settings.Default);
 
         /// <summary>
@@ -130,7 +136,7 @@ namespace Google.Protobuf
         /// <returns>The formatted message.</returns>
         public string Format(IMessage message)
         {
-            Preconditions.CheckNotNull(message, "message");
+            Preconditions.CheckNotNull(message, nameof(message));
             StringBuilder builder = new StringBuilder();
             if (message.Descriptor.IsWellKnownType)
             {
@@ -151,13 +157,18 @@ namespace Google.Protobuf
                 return;
             }
             builder.Append("{ ");
+            bool writtenFields = WriteMessageFields(builder, message, false);
+            builder.Append(writtenFields ? " }" : "}");
+        }
+
+        private bool WriteMessageFields(StringBuilder builder, IMessage message, bool assumeFirstFieldWritten)
+        {
             var fields = message.Descriptor.Fields;
-            bool first = true;
+            bool first = !assumeFirstFieldWritten;
             // First non-oneof fields
             foreach (var field in fields.InFieldNumberOrder())
             {
                 var accessor = field.Accessor;
-                // Oneofs are written later
                 if (field.ContainingOneof != null && field.ContainingOneof.Accessor.GetCaseFieldDescriptor(message) != field)
                 {
                     continue;
@@ -178,14 +189,14 @@ namespace Google.Protobuf
                 // Okay, all tests complete: let's write the field value...
                 if (!first)
                 {
-                    builder.Append(", ");
+                    builder.Append(PropertySeparator);
                 }
                 WriteString(builder, ToCamelCase(accessor.Descriptor.Name));
-                builder.Append(": ");
+                builder.Append(NameValueSeparator);
                 WriteValue(builder, value);
                 first = false;
             }            
-            builder.Append(first ? "}" : " }");
+            return !first;
         }
 
         // Converted from src/google/protobuf/util/internal/utility.cc ToCamelCase
@@ -378,6 +389,8 @@ namespace Google.Protobuf
         /// </summary>
         private void WriteWellKnownTypeValue(StringBuilder builder, MessageDescriptor descriptor, object value, bool inField)
         {
+            // Currently, we can never actually get here, because null values are always handled by the caller. But if we *could*,
+            // this would do the right thing.
             if (value == null)
             {
                 WriteNull(builder);
@@ -427,6 +440,11 @@ namespace Google.Protobuf
             if (descriptor.FullName == Value.Descriptor.FullName)
             {
                 WriteStructFieldValue(builder, (IMessage) value);
+                return;
+            }
+            if (descriptor.FullName == Any.Descriptor.FullName)
+            {
+                WriteAny(builder, (IMessage) value);
                 return;
             }
             WriteMessage(builder, (IMessage) value);
@@ -496,6 +514,46 @@ namespace Google.Protobuf
             AppendEscapedString(builder, string.Join(",", paths.Cast<string>().Select(ToCamelCase)));
         }
 
+        private void WriteAny(StringBuilder builder, IMessage value)
+        {
+            string typeUrl = (string) value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
+            ByteString data = (ByteString) value.Descriptor.Fields[Any.ValueFieldNumber].Accessor.GetValue(value);
+            string typeName = GetTypeName(typeUrl);
+            MessageDescriptor descriptor = settings.TypeRegistry.Find(typeName);
+            if (descriptor == null)
+            {
+                throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'");
+            }
+            IMessage message = descriptor.Parser.ParseFrom(data);
+            builder.Append("{ ");
+            WriteString(builder, AnyTypeUrlField);
+            builder.Append(NameValueSeparator);
+            WriteString(builder, typeUrl);
+
+            if (descriptor.IsWellKnownType)
+            {
+                builder.Append(PropertySeparator);
+                WriteString(builder, AnyWellKnownTypeValueField);
+                builder.Append(NameValueSeparator);
+                WriteWellKnownTypeValue(builder, descriptor, message, true);
+            }
+            else
+            {
+                WriteMessageFields(builder, message, true);
+            }
+            builder.Append(" }");
+        }
+
+        internal static string GetTypeName(String typeUrl)
+        {
+            string[] parts = typeUrl.Split('/');
+            if (parts.Length != 2 || parts[0] != TypeUrlPrefix)
+            {
+                throw new InvalidProtocolBufferException($"Invalid type url: {typeUrl}");
+            }
+            return parts[1];
+        }
+
         /// <summary>
         /// Appends a number of nanoseconds to a StringBuilder. Either 0 digits are added (in which
         /// case no "." is appended), or 3 6 or 9 digits.
@@ -537,10 +595,10 @@ namespace Google.Protobuf
 
                 if (!first)
                 {
-                    builder.Append(", ");
+                    builder.Append(PropertySeparator);
                 }
                 WriteString(builder, key);
-                builder.Append(": ");
+                builder.Append(NameValueSeparator);
                 WriteStructFieldValue(builder, value);
                 first = false;
             }
@@ -590,7 +648,7 @@ namespace Google.Protobuf
                 }
                 if (!first)
                 {
-                    builder.Append(", ");
+                    builder.Append(PropertySeparator);
                 }
                 WriteValue(builder, value);
                 first = false;
@@ -611,7 +669,7 @@ namespace Google.Protobuf
                 }
                 if (!first)
                 {
-                    builder.Append(", ");
+                    builder.Append(PropertySeparator);
                 }
                 string keyText;
                 if (pair.Key is string)
@@ -635,7 +693,7 @@ namespace Google.Protobuf
                     throw new ArgumentException("Unhandled dictionary key type: " + pair.Key.GetType());
                 }
                 WriteString(builder, keyText);
-                builder.Append(": ");
+                builder.Append(NameValueSeparator);
                 WriteValue(builder, pair.Value);
                 first = false;
             }
@@ -755,23 +813,40 @@ namespace Google.Protobuf
             /// <summary>
             /// Default settings, as used by <see cref="JsonFormatter.Default"/>
             /// </summary>
-            public static Settings Default { get { return defaultInstance; } }
-
-            private readonly bool formatDefaultValues;
+            public static Settings Default { get; } = new Settings(false);
 
             /// <summary>
             /// Whether fields whose values are the default for the field type (e.g. 0 for integers)
             /// should be formatted (true) or omitted (false).
             /// </summary>
-            public bool FormatDefaultValues { get { return formatDefaultValues; } }
+            public bool FormatDefaultValues { get; }
 
             /// <summary>
-            /// Creates a new <see cref="Settings"/> object with the specified formatting of default values.
+            /// The type registry used to format <see cref="Any"/> messages.
+            /// </summary>
+            public TypeRegistry TypeRegistry { get; }
+
+            // TODO: Work out how we're going to scale this to multiple settings. "WithXyz" methods?
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified formatting of default values
+            /// and an empty type registry.
             /// </summary>
             /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc) should be formatted; <c>false</c> otherwise.</param>
-            public Settings(bool formatDefaultValues)
+            public Settings(bool formatDefaultValues) : this(formatDefaultValues, TypeRegistry.Empty)
             {
-                this.formatDefaultValues = formatDefaultValues;
+            }
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified formatting of default values
+            /// and type registry.
+            /// </summary>
+            /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc) should be formatted; <c>false</c> otherwise.</param>
+            /// <param name="typeRegistry">The <see cref="TypeRegistry"/> to use when formatting <see cref="Any"/> messages.</param>
+            public Settings(bool formatDefaultValues, TypeRegistry typeRegistry)
+            {
+                FormatDefaultValues = formatDefaultValues;
+                TypeRegistry = Preconditions.CheckNotNull(typeRegistry, nameof(typeRegistry));
             }
         }
     }
