@@ -27,6 +27,7 @@ os:
   - osx
 # The Objective C build needs Xcode 6.4 or later.
 osx_image: xcode7.1
+mono: latest
 script:
   - ./travis.sh $CONFIG
 env:
