@@ -264,10 +264,6 @@ void GPBCodedInputStreamPopLimit(GPBCodedInputStreamState *state,
 }
 
 size_t GPBCodedInputStreamBytesUntilLimit(GPBCodedInputStreamState *state) {
-  if (state->currentLimit == SIZE_T_MAX) {
-    return state->currentLimit;
-  }
-
   return state->currentLimit - state->bufferPos;
 }
 
@@ -299,7 +295,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
     buffer_ = [data retain];
     state_.bytes = (const uint8_t *)[data bytes];
     state_.bufferSize = [data length];
-    state_.currentLimit = NSUIntegerMax;
+    state_.currentLimit = state_.bufferSize;
   }
   return self;
 }
