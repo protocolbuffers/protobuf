@@ -808,12 +808,17 @@ namespace Google.Protobuf
         /// </summary>
         public sealed class Settings
         {
-            private static readonly Settings defaultInstance = new Settings(false);
-
             /// <summary>
             /// Default settings, as used by <see cref="JsonFormatter.Default"/>
             /// </summary>
-            public static Settings Default { get; } = new Settings(false);
+            public static Settings Default { get; }
+
+            // Workaround for the Mono compiler complaining about XML comments not being on
+            // valid language elements.
+            static Settings()
+            {
+                Default = new Settings(false);
+            }
 
             /// <summary>
             /// Whether fields whose values are the default for the field type (e.g. 0 for integers)

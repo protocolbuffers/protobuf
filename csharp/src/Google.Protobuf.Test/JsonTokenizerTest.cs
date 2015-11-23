@@ -85,7 +85,7 @@ namespace Google.Protobuf
         public void ObjectDepth()
         {
             string json = "{ \"foo\": { \"x\": 1, \"y\": [ 0 ] } }";
-            var tokenizer = new JsonTokenizer(new StringReader(json));
+            var tokenizer = JsonTokenizer.FromTextReader(new StringReader(json));
             // If we had more tests like this, I'd introduce a helper method... but for one test, it's not worth it.
             Assert.AreEqual(0, tokenizer.ObjectDepth);
             Assert.AreEqual(JsonToken.StartObject, tokenizer.Next());
@@ -118,7 +118,7 @@ namespace Google.Protobuf
         public void ObjectDepth_WithPushBack()
         {
             string json = "{}";
-            var tokenizer = new JsonTokenizer(new StringReader(json));
+            var tokenizer = JsonTokenizer.FromTextReader(new StringReader(json));
             Assert.AreEqual(0, tokenizer.ObjectDepth);
             var token = tokenizer.Next();
             Assert.AreEqual(1, tokenizer.ObjectDepth);
@@ -275,7 +275,7 @@ namespace Google.Protobuf
             // Note: we don't test that the earlier tokens are exactly as expected,
             // partly because that's hard to parameterize.
             var reader = new StringReader(json.Replace('\'', '"'));
-            var tokenizer = new JsonTokenizer(reader);
+            var tokenizer = JsonTokenizer.FromTextReader(reader);
             for (int i = 0; i < expectedValidTokens; i++)
             {
                 Assert.IsNotNull(tokenizer.Next());
@@ -334,7 +334,7 @@ namespace Google.Protobuf
         [Test]
         public void NextAfterEndDocumentThrows()
         {
-            var tokenizer = new JsonTokenizer(new StringReader("null"));
+            var tokenizer = JsonTokenizer.FromTextReader(new StringReader("null"));
             Assert.AreEqual(JsonToken.Null, tokenizer.Next());
             Assert.AreEqual(JsonToken.EndDocument, tokenizer.Next());
             Assert.Throws<InvalidOperationException>(() => tokenizer.Next());
@@ -343,7 +343,7 @@ namespace Google.Protobuf
         [Test]
         public void CanPushBackEndDocument()
         {
-            var tokenizer = new JsonTokenizer(new StringReader("null"));
+            var tokenizer = JsonTokenizer.FromTextReader(new StringReader("null"));
             Assert.AreEqual(JsonToken.Null, tokenizer.Next());
             Assert.AreEqual(JsonToken.EndDocument, tokenizer.Next());
             tokenizer.PushBack(JsonToken.EndDocument);
@@ -373,7 +373,7 @@ namespace Google.Protobuf
         private static void AssertTokensNoReplacement(string json, params JsonToken[] expectedTokens)
         {
             var reader = new StringReader(json);
-            var tokenizer = new JsonTokenizer(reader);
+            var tokenizer = JsonTokenizer.FromTextReader(reader);
             for (int i = 0; i < expectedTokens.Length; i++)
             {
                 var actualToken = tokenizer.Next();
@@ -393,7 +393,7 @@ namespace Google.Protobuf
         private static void AssertThrowsAfter(string json, params JsonToken[] expectedTokens)
         {
             var reader = new StringReader(json);
-            var tokenizer = new JsonTokenizer(reader);
+            var tokenizer = JsonTokenizer.FromTextReader(reader);
             for (int i = 0; i < expectedTokens.Length; i++)
             {
                 var actualToken = tokenizer.Next();

@@ -77,6 +77,7 @@ namespace Google.Protobuf
             { ListValue.Descriptor.FullName, (parser, message, tokenizer) =>
                 parser.MergeRepeatedField(message, message.Descriptor.Fields[ListValue.ValuesFieldNumber], tokenizer) },
             { Struct.Descriptor.FullName, (parser, message, tokenizer) => parser.MergeStruct(message, tokenizer) },
+            { Any.Descriptor.FullName, (parser, message, tokenizer) => parser.MergeAny(message, tokenizer) },
             { FieldMask.Descriptor.FullName, (parser, message, tokenizer) => MergeFieldMask(message, tokenizer.Next()) },
             { Int32Value.Descriptor.FullName, MergeWrapperField },
             { Int64Value.Descriptor.FullName, MergeWrapperField },
@@ -128,7 +129,7 @@ namespace Google.Protobuf
         /// <param name="jsonReader">Reader providing the JSON to parse.</param>
         internal void Merge(IMessage message, TextReader jsonReader)
         {
-            var tokenizer = new JsonTokenizer(jsonReader);
+            var tokenizer = JsonTokenizer.FromTextReader(jsonReader);
             Merge(message, tokenizer);
             var lastToken = tokenizer.Next();
             if (lastToken != JsonToken.EndDocument)
@@ -338,6 +339,7 @@ namespace Google.Protobuf
         /// <exception cref="InvalidProtocolBufferException">The JSON does not represent a Protocol Buffers message correctly</exception>
         public T Parse<T>(string json) where T : IMessage, new()
         {
+            Preconditions.CheckNotNull(json, nameof(json));
             return Parse<T>(new StringReader(json));
         }
 
@@ -350,7 +352,38 @@ namespace Google.Protobuf
         /// <exception cref="InvalidProtocolBufferException">The JSON does not represent a Protocol Buffers message correctly</exception>
         public T Parse<T>(TextReader jsonReader) where T : IMessage, new()
         {
+            Preconditions.CheckNotNull(jsonReader, nameof(jsonReader));
             T message = new T();
+            Merge(message, jsonReader);
+            return message;
+        }
+
+        /// <summary>
+        /// Parses <paramref name="json"/> into a new message.
+        /// </summary>
+        /// <param name="json">The JSON to parse.</param>
+        /// <param name="descriptor">Descriptor of message type to parse.</param>
+        /// <exception cref="InvalidJsonException">The JSON does not comply with RFC 7159</exception>
+        /// <exception cref="InvalidProtocolBufferException">The JSON does not represent a Protocol Buffers message correctly</exception>
+        public IMessage Parse(string json, MessageDescriptor descriptor)
+        {
+            Preconditions.CheckNotNull(json, nameof(json));
+            Preconditions.CheckNotNull(descriptor, nameof(descriptor));
+            return Parse(new StringReader(json), descriptor);
+        }
+
+        /// <summary>
+        /// Parses JSON read from <paramref name="jsonReader"/> into a new message.
+        /// </summary>
+        /// <param name="jsonReader">Reader providing the JSON to parse.</param>
+        /// <param name="descriptor">Descriptor of message type to parse.</param>
+        /// <exception cref="InvalidJsonException">The JSON does not comply with RFC 7159</exception>
+        /// <exception cref="InvalidProtocolBufferException">The JSON does not represent a Protocol Buffers message correctly</exception>
+        public IMessage Parse(TextReader jsonReader, MessageDescriptor descriptor)
+        {
+            Preconditions.CheckNotNull(jsonReader, nameof(jsonReader));
+            Preconditions.CheckNotNull(descriptor, nameof(descriptor));
+            IMessage message = descriptor.Parser.CreateTemplate();
             Merge(message, jsonReader);
             return message;
         }
@@ -408,6 +441,83 @@ namespace Google.Protobuf
 
             var field = message.Descriptor.Fields[Struct.FieldsFieldNumber];
             MergeMapField(message, field, tokenizer);
+        }
+
+        private void MergeAny(IMessage message, JsonTokenizer tokenizer)
+        {
+            // Record the token stream until we see the @type property. At that point, we can take the value, consult
+            // the type registry for the relevant message, and replay the stream, omitting the @type property.
+            var tokens = new List<JsonToken>();
+
+            var token = tokenizer.Next();
+            if (token.Type != JsonToken.TokenType.StartObject)
+            {
+                throw new InvalidProtocolBufferException("Expected object value for Any");
+            }
+            int typeUrlObjectDepth = tokenizer.ObjectDepth;
+
+            // The check for the property depth protects us from nested Any values which occur before the type URL
+            // for *this* Any.
+            while (token.Type != JsonToken.TokenType.Name ||
+                token.StringValue != JsonFormatter.AnyTypeUrlField ||
+                tokenizer.ObjectDepth != typeUrlObjectDepth)
+            {
+                tokens.Add(token);
+                token = tokenizer.Next();
+            }
+
+            // Don't add the @type property or its value to the recorded token list
+            token = tokenizer.Next();
+            if (token.Type != JsonToken.TokenType.StringValue)
+            {
+                throw new InvalidProtocolBufferException("Expected string value for Any.@type");
+            }
+            string typeUrl = token.StringValue;
+            string typeName = JsonFormatter.GetTypeName(typeUrl);
+
+            MessageDescriptor descriptor = settings.TypeRegistry.Find(typeName);
+            if (descriptor == null)
+            {
+                throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'");
+            }
+
+            // Now replay the token stream we've already read and anything that remains of the object, just parsing it
+            // as normal. Our original tokenizer should end up at the end of the object.
+            var replay = JsonTokenizer.FromReplayedTokens(tokens, tokenizer);
+            var body = descriptor.Parser.CreateTemplate();
+            if (descriptor.IsWellKnownType)
+            {
+                MergeWellKnownTypeAnyBody(body, replay);
+            }
+            else
+            {
+                Merge(body, replay);
+            }
+            var data = body.ToByteString();
+
+            // Now that we have the message data, we can pack it into an Any (the message received as a parameter).
+            message.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.SetValue(message, typeUrl);
+            message.Descriptor.Fields[Any.ValueFieldNumber].Accessor.SetValue(message, data);
+        }
+
+        // Well-known types end up in a property called "value" in the JSON. As there's no longer a @type property
+        // in the given JSON token stream, we should *only* have tokens of start-object, name("value"), the value
+        // itself, and then end-object.
+        private void MergeWellKnownTypeAnyBody(IMessage body, JsonTokenizer tokenizer)
+        {
+            var token = tokenizer.Next(); // Definitely start-object; checked in previous method
+            token = tokenizer.Next();
+            // TODO: What about an absent Int32Value, for example?
+            if (token.Type != JsonToken.TokenType.Name || token.StringValue != JsonFormatter.AnyWellKnownTypeValueField)
+            {
+                throw new InvalidProtocolBufferException($"Expected '{JsonFormatter.AnyWellKnownTypeValueField}' property for well-known type Any body");
+            }
+            Merge(body, tokenizer);
+            token = tokenizer.Next();
+            if (token.Type != JsonToken.TokenType.EndObject)
+            {
+                throw new InvalidProtocolBufferException($"Expected end-object token after @type/value for well-known type");
+            }
         }
 
         #region Utility methods which don't depend on the state (or settings) of the parser.
@@ -789,29 +899,48 @@ namespace Google.Protobuf
         /// </summary>
         public sealed class Settings
         {
-            private static readonly Settings defaultInstance = new Settings(CodedInputStream.DefaultRecursionLimit);
-
-            private readonly int recursionLimit;
-
             /// <summary>
-            /// Default settings, as used by <see cref="JsonParser.Default"/>
+            /// Default settings, as used by <see cref="JsonParser.Default"/>. This has the same default
+            /// recursion limit as <see cref="CodedInputStream"/>, and an empty type registry.
             /// </summary>
-            public static Settings Default { get { return defaultInstance; } }
+            public static Settings Default { get; }
+
+            // Workaround for the Mono compiler complaining about XML comments not being on
+            // valid language elements.
+            static Settings()
+            {
+                Default = new Settings(CodedInputStream.DefaultRecursionLimit);
+            }
 
             /// <summary>
             /// The maximum depth of messages to parse. Note that this limit only applies to parsing
             /// messages, not collections - so a message within a collection within a message only counts as
             /// depth 2, not 3.
             /// </summary>
-            public int RecursionLimit { get { return recursionLimit; } }
+            public int RecursionLimit { get; }
+
+            /// <summary>
+            /// The type registry used to parse <see cref="Any"/> messages.
+            /// </summary>
+            public TypeRegistry TypeRegistry { get; }
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object with the specified recursion limit.
             /// </summary>
             /// <param name="recursionLimit">The maximum depth of messages to parse</param>
-            public Settings(int recursionLimit)
+            public Settings(int recursionLimit) : this(recursionLimit, TypeRegistry.Empty)
             {
-                this.recursionLimit = recursionLimit;
+            }
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified recursion limit and type registry.
+            /// </summary>
+            /// <param name="recursionLimit">The maximum depth of messages to parse</param>
+            /// <param name="typeRegistry">The type registry used to parse <see cref="Any"/> messages</param>
+            public Settings(int recursionLimit, TypeRegistry typeRegistry)
+            {
+                RecursionLimit = recursionLimit;
+                TypeRegistry = Preconditions.CheckNotNull(typeRegistry, nameof(typeRegistry));
             }
         }
     }

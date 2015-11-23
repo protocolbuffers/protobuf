@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Reflection;
 using Google.Protobuf.TestProtos;
 using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
@@ -715,6 +716,55 @@ namespace Google.Protobuf
             string json = "\"" + jsonValue + "\"";
             var parsed = FieldMask.Parser.ParseJson(json);
             CollectionAssert.AreEqual(expectedPaths, parsed.Paths);
+        }
+
+        [Test]
+        public void Any_RegularMessage()
+        {
+            var registry = TypeRegistry.FromMessages(TestAllTypes.Descriptor);
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false, TypeRegistry.FromMessages(TestAllTypes.Descriptor)));
+            var message = new TestAllTypes { SingleInt32 = 10, SingleNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 20 } };
+            var original = Any.Pack(message);
+            var json = formatter.Format(original); // This is tested in JsonFormatterTest
+            var parser = new JsonParser(new JsonParser.Settings(10, registry));
+            Assert.AreEqual(original, parser.Parse<Any>(json));
+            string valueFirstJson = "{ \"singleInt32\": 10, \"singleNestedMessage\": { \"bb\": 20 }, \"@type\": \"type.googleapis.com/protobuf_unittest.TestAllTypes\" }";
+            Assert.AreEqual(original, parser.Parse<Any>(valueFirstJson));
+        }
+
+        [Test]
+        public void Any_UnknownType()
+        {
+            string json = "{ \"@type\": \"type.googleapis.com/bogus\" }";
+            Assert.Throws<InvalidOperationException>(() => Any.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void Any_WellKnownType()
+        {
+            var registry = TypeRegistry.FromMessages(Timestamp.Descriptor);
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false, registry));
+            var timestamp = new DateTime(1673, 6, 19, 12, 34, 56, DateTimeKind.Utc).ToTimestamp();
+            var original = Any.Pack(timestamp);
+            var json = formatter.Format(original); // This is tested in JsonFormatterTest
+            var parser = new JsonParser(new JsonParser.Settings(10, registry));
+            Assert.AreEqual(original, parser.Parse<Any>(json));
+            string valueFirstJson = "{ \"value\": \"1673-06-19T12:34:56Z\", \"@type\": \"type.googleapis.com/google.protobuf.Timestamp\" }";
+            Assert.AreEqual(original, parser.Parse<Any>(valueFirstJson));
+        }
+
+        [Test]
+        public void Any_Nested()
+        {
+            var registry = TypeRegistry.FromMessages(TestWellKnownTypes.Descriptor, TestAllTypes.Descriptor);
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false, registry));
+            var parser = new JsonParser(new JsonParser.Settings(10, registry));
+            var doubleNestedMessage = new TestAllTypes { SingleInt32 = 20 };
+            var nestedMessage = Any.Pack(doubleNestedMessage);
+            var message = new TestWellKnownTypes { AnyField = Any.Pack(nestedMessage) };
+            var json = formatter.Format(message);
+            // Use the descriptor-based parser just for a change.
+            Assert.AreEqual(message, parser.Parse(json, TestWellKnownTypes.Descriptor));
         }
 
         [Test]
