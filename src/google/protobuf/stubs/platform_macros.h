@@ -97,6 +97,8 @@ GOOGLE_PROTOBUF_PLATFORM_ERROR
 #if TARGET_OS_IPHONE
 #define GOOGLE_PROTOBUF_OS_IPHONE
 #endif
+#elif defined(__EMSCRIPTEN__)
+#define GOOGLE_PROTOBUF_OS_EMSCRIPTEN
 #elif defined(__native_client__)
 #define GOOGLE_PROTOBUF_OS_NACL
 #elif defined(sun)
