@@ -58,6 +58,14 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+Options::Options() {
+  // Default is the value of the env for the package prefixes.
+  const char* file_path = getenv("GPB_OBJC_EXPECTED_PACKAGE_PREFIXES");
+  if (file_path) {
+    expected_prefixes_path = file_path;
+  }
+}
+
 namespace {
 
 hash_set<string> MakeWordsMap(const char* const words[], size_t num_words) {
@@ -890,26 +898,26 @@ bool Parser::ParseLoop() {
   return true;
 }
 
-bool LoadExpectedPackagePrefixes(map<string, string>* prefix_map,
-                                 string* out_expect_file_path,
+bool LoadExpectedPackagePrefixes(const Options &generation_options,
+                                 map<string, string>* prefix_map,
                                  string* out_error) {
-  const char* file_path = getenv("GPB_OBJC_EXPECTED_PACKAGE_PREFIXES");
-  if (file_path == NULL) {
+  if (generation_options.expected_prefixes_path.empty()) {
     return true;
   }
 
   int fd;
   do {
-    fd = open(file_path, O_RDONLY);
+    fd = open(generation_options.expected_prefixes_path.c_str(), O_RDONLY);
   } while (fd < 0 && errno == EINTR);
   if (fd < 0) {
     *out_error =
-        string(file_path) + ":0:0: error: Unable to open." + strerror(errno);
+        string("error: Unable to open \"") +
+        generation_options.expected_prefixes_path +
+        "\", " + strerror(errno);
     return false;
   }
   io::FileInputStream file_stream(fd);
   file_stream.SetCloseOnDelete(true);
-  *out_expect_file_path = file_path;
 
   Parser parser(prefix_map);
   const void* buf;
@@ -920,8 +928,9 @@ bool LoadExpectedPackagePrefixes(map<string, string>* prefix_map,
     }
 
     if (!parser.ParseChunk(StringPiece(static_cast<const char*>(buf), buf_len))) {
-      *out_error = string(file_path) + ":" + SimpleItoa(parser.last_line()) +
-                   ":0: error: " + parser.error_str();
+      *out_error =
+          string("error: ") + generation_options.expected_prefixes_path +
+          " Line " + SimpleItoa(parser.last_line()) + ", " + parser.error_str();
       return false;
     }
   }
@@ -930,7 +939,9 @@ bool LoadExpectedPackagePrefixes(map<string, string>* prefix_map,
 
 }  // namespace
 
-bool ValidateObjCClassPrefix(const FileDescriptor* file, string* out_error) {
+bool ValidateObjCClassPrefix(const FileDescriptor* file,
+                             const Options& generation_options,
+                             string* out_error) {
   const string prefix = file->options().objc_class_prefix();
   const string package = file->package();
 
@@ -939,11 +950,10 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file, string* out_error) {
 
   // Load any expected package prefixes to validate against those.
   map<string, string> expected_package_prefixes;
-  string expect_file_path;
-  if (!LoadExpectedPackagePrefixes(&expected_package_prefixes,
-                                   &expect_file_path, out_error)) {
-    // Any error, clear the entries that were read.
-    expected_package_prefixes.clear();
+  if (!LoadExpectedPackagePrefixes(generation_options,
+                                   &expected_package_prefixes,
+                                   out_error)) {
+    return false;
   }
 
   // Check: Error - See if there was an expected prefix for the package and
@@ -957,7 +967,7 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file, string* out_error) {
       return true;
     } else {
       // ...it didn't match!
-      *out_error = "protoc:0: error: Expected 'option objc_class_prefix = \"" +
+      *out_error = "error: Expected 'option objc_class_prefix = \"" +
                    package_match->second + "\";' in '" + file->name() + "'";
       if (prefix.length()) {
         *out_error += "; but found '" + prefix + "' instead";
@@ -980,11 +990,11 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file, string* out_error) {
        i != expected_package_prefixes.end(); ++i) {
     if (i->second == prefix) {
       *out_error =
-          "protoc:0: error: Found 'option objc_class_prefix = \"" + prefix +
+          "error: Found 'option objc_class_prefix = \"" + prefix +
           "\";' in '" + file->name() +
           "'; that prefix is already used for 'package " + i->first +
           ";'. It can only be reused by listing it in the expected file (" +
-          expect_file_path + ").";
+          generation_options.expected_prefixes_path + ").";
       return false;  // Only report first usage of the prefix.
     }
   }
@@ -1017,7 +1027,7 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file, string* out_error) {
          << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
          << " consider adding it to the expected prefixes file ("
-         << expect_file_path << ")." << endl;
+         << generation_options.expected_prefixes_path << ")." << endl;
     cerr.flush();
   }
 

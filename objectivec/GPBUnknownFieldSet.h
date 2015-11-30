@@ -42,8 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)addField:(GPBUnknownField *)field;
 
-// Returns an NSArray of the GPBFields sorted by the field numbers.
-- (NSArray *)sortedFields;
+// Returns an NSArray of the GPBUnknownFields sorted by the field numbers.
+- (NSArray<GPBUnknownField*> *)sortedFields;
 
 @end
 

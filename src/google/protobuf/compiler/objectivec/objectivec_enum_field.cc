@@ -44,6 +44,7 @@ namespace compiler {
 namespace objectivec {
 
 namespace {
+
 void SetEnumVariables(const FieldDescriptor* descriptor,
                       map<string, string>* variables) {
   string type = EnumName(descriptor->enum_type());
@@ -63,8 +64,9 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
 }
 }  // namespace
 
-EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor)
-    : SingleFieldGenerator(descriptor) {
+EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor,
+                                       const Options& options)
+    : SingleFieldGenerator(descriptor, options) {
   SetEnumVariables(descriptor, &variables_);
 }
 
@@ -112,6 +114,7 @@ void EnumFieldGenerator::GenerateCFunctionImplementations(
 
 void EnumFieldGenerator::DetermineForwardDeclarations(
     set<string>* fwd_decls) const {
+  SingleFieldGenerator::DetermineForwardDeclarations(fwd_decls);
   // If it is an enum defined in a different file, then we'll need a forward
   // declaration for it.  When it is in our file, all the enums are output
   // before the message, so it will be declared before it is needed.
@@ -123,13 +126,19 @@ void EnumFieldGenerator::DetermineForwardDeclarations(
 }
 
 RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
-    const FieldDescriptor* descriptor)
-    : RepeatedFieldGenerator(descriptor) {
+    const FieldDescriptor* descriptor, const Options& options)
+    : RepeatedFieldGenerator(descriptor, options) {
   SetEnumVariables(descriptor, &variables_);
   variables_["array_storage_type"] = "GPBEnumArray";
 }
 
 RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {}
+
+void RepeatedEnumFieldGenerator::FinishInitialization(void) {
+  RepeatedFieldGenerator::FinishInitialization();
+  variables_["array_comment"] =
+      "// |" + variables_["name"] + "| contains |" + variables_["storage_type"] + "|\n";
+}
 
 void RepeatedEnumFieldGenerator::GenerateFieldDescriptionTypeSpecific(
     io::Printer* printer) const {

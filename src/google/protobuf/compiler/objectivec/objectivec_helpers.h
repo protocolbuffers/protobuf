@@ -42,6 +42,12 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+// Generator options (see objectivec_generator.cc for a description of each):
+struct Options {
+  Options();
+  string expected_prefixes_path;
+};
+
 // Strips ".proto" or ".protodevel" from the end of a filename.
 string StripProto(const string& filename);
 
@@ -145,7 +151,9 @@ string BuildCommentsString(const SourceLocation& location);
 // Checks the prefix for a given file and outputs any warnings needed, if
 // there are flat out errors, then out_error is filled in and the result is
 // false.
-bool ValidateObjCClassPrefix(const FileDescriptor* file, string *out_error);
+bool ValidateObjCClassPrefix(const FileDescriptor* file,
+                             const Options& generation_options,
+                             string* out_error);
 
 // Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform
 // the input into the expected output.

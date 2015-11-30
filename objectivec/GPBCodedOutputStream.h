@@ -168,26 +168,26 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)writeEnumNoTag:(int32_t)value;
 
 - (void)writeString:(int32_t)fieldNumber value:(NSString *)value;
-- (void)writeStringArray:(int32_t)fieldNumber values:(NSArray *)values;
+- (void)writeStringArray:(int32_t)fieldNumber values:(NSArray<NSString*> *)values;
 - (void)writeStringNoTag:(NSString *)value;
 
 - (void)writeMessage:(int32_t)fieldNumber value:(GPBMessage *)value;
-- (void)writeMessageArray:(int32_t)fieldNumber values:(NSArray *)values;
+- (void)writeMessageArray:(int32_t)fieldNumber values:(NSArray<GPBMessage*> *)values;
 - (void)writeMessageNoTag:(GPBMessage *)value;
 
 - (void)writeBytes:(int32_t)fieldNumber value:(NSData *)value;
-- (void)writeBytesArray:(int32_t)fieldNumber values:(NSArray *)values;
+- (void)writeBytesArray:(int32_t)fieldNumber values:(NSArray<NSData*> *)values;
 - (void)writeBytesNoTag:(NSData *)value;
 
 - (void)writeGroup:(int32_t)fieldNumber
              value:(GPBMessage *)value;
-- (void)writeGroupArray:(int32_t)fieldNumber values:(NSArray *)values;
+- (void)writeGroupArray:(int32_t)fieldNumber values:(NSArray<GPBMessage*> *)values;
 - (void)writeGroupNoTag:(int32_t)fieldNumber
                   value:(GPBMessage *)value;
 
 - (void)writeUnknownGroup:(int32_t)fieldNumber
                     value:(GPBUnknownFieldSet *)value;
-- (void)writeUnknownGroupArray:(int32_t)fieldNumber values:(NSArray *)values;
+- (void)writeUnknownGroupArray:(int32_t)fieldNumber values:(NSArray<GPBUnknownFieldSet*> *)values;
 - (void)writeUnknownGroupNoTag:(int32_t)fieldNumber
                          value:(GPBUnknownFieldSet *)value;
 
@@ -306,17 +306,17 @@ NS_ASSUME_NONNULL_END
 //%
 // Write methods for types that aren't in packed arrays.
 //%PDDM-DEFINE _WRITE_UNPACKABLE_DECLS(NAME, TYPE)
-//%- (void)write##NAME:(int32_t)fieldNumber value:(TYPE)value;
-//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray *)values;
-//%- (void)write##NAME##NoTag:(TYPE)value;
+//%- (void)write##NAME:(int32_t)fieldNumber value:(TYPE *)value;
+//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray<##TYPE##*> *)values;
+//%- (void)write##NAME##NoTag:(TYPE *)value;
 //%
 // Special write methods for Groups.
 //%PDDM-DEFINE _WRITE_GROUP_DECLS(NAME, TYPE)
 //%- (void)write##NAME:(int32_t)fieldNumber
-//%       NAME$S value:(TYPE)value;
-//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray *)values;
+//%       NAME$S value:(TYPE *)value;
+//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray<##TYPE##*> *)values;
 //%- (void)write##NAME##NoTag:(int32_t)fieldNumber
-//%            NAME$S value:(TYPE)value;
+//%            NAME$S value:(TYPE *)value;
 //%
 
 // One macro to hide it all up above.
@@ -335,8 +335,8 @@ NS_ASSUME_NONNULL_END
 //%_WRITE_PACKABLE_DECLS(SFixed32, Int32, int32_t)
 //%_WRITE_PACKABLE_DECLS(Bool, Bool, BOOL)
 //%_WRITE_PACKABLE_DECLS(Enum, Enum, int32_t)
-//%_WRITE_UNPACKABLE_DECLS(String, NSString *)
-//%_WRITE_UNPACKABLE_DECLS(Message, GPBMessage *)
-//%_WRITE_UNPACKABLE_DECLS(Bytes, NSData *)
-//%_WRITE_GROUP_DECLS(Group, GPBMessage *)
-//%_WRITE_GROUP_DECLS(UnknownGroup, GPBUnknownFieldSet *)
+//%_WRITE_UNPACKABLE_DECLS(String, NSString)
+//%_WRITE_UNPACKABLE_DECLS(Message, GPBMessage)
+//%_WRITE_UNPACKABLE_DECLS(Bytes, NSData)
+//%_WRITE_GROUP_DECLS(Group, GPBMessage)
+//%_WRITE_GROUP_DECLS(UnknownGroup, GPBUnknownFieldSet)

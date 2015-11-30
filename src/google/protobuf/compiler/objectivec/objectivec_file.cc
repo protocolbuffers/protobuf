@@ -50,17 +50,18 @@ const int32 GOOGLE_PROTOBUF_OBJC_GEN_VERSION = 30000;
 namespace compiler {
 namespace objectivec {
 
-FileGenerator::FileGenerator(const FileDescriptor *file)
+FileGenerator::FileGenerator(const FileDescriptor *file, const Options& options)
     : file_(file),
       root_class_name_(FileClassName(file)),
-      is_public_dep_(false) {
+      is_public_dep_(false),
+      options_(options) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
     EnumGenerator *generator = new EnumGenerator(file_->enum_type(i));
     enum_generators_.push_back(generator);
   }
   for (int i = 0; i < file_->message_type_count(); i++) {
     MessageGenerator *generator =
-        new MessageGenerator(root_class_name_, file_->message_type(i));
+        new MessageGenerator(root_class_name_, file_->message_type(i), options_);
     message_generators_.push_back(generator);
   }
   for (int i = 0; i < file_->extension_count(); i++) {
@@ -352,7 +353,8 @@ const vector<FileGenerator *> &FileGenerator::DependencyGenerators() {
       public_import_names.insert(file_->public_dependency(i)->name());
     }
     for (int i = 0; i < file_->dependency_count(); i++) {
-      FileGenerator *generator = new FileGenerator(file_->dependency(i));
+      FileGenerator *generator =
+          new FileGenerator(file_->dependency(i), options_);
       const string& name = file_->dependency(i)->name();
       bool public_import = (public_import_names.count(name) != 0);
       generator->SetIsPublicDependency(public_import);

@@ -174,10 +174,11 @@ const FieldDescriptor** SortFieldsByStorageSize(const Descriptor* descriptor) {
 }  // namespace
 
 MessageGenerator::MessageGenerator(const string& root_classname,
-                                   const Descriptor* descriptor)
+                                   const Descriptor* descriptor,
+                                   const Options& options)
     : root_classname_(root_classname),
       descriptor_(descriptor),
-      field_generators_(descriptor),
+      field_generators_(descriptor, options),
       class_name_(ClassName(descriptor_)) {
   for (int i = 0; i < descriptor_->extension_count(); i++) {
     extension_generators_.push_back(
@@ -196,7 +197,9 @@ MessageGenerator::MessageGenerator(const string& root_classname,
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     MessageGenerator* generator =
-        new MessageGenerator(root_classname_, descriptor_->nested_type(i));
+        new MessageGenerator(root_classname_,
+                             descriptor_->nested_type(i),
+                             options);
     nested_message_generators_.push_back(generator);
   }
 }
@@ -230,11 +233,6 @@ void MessageGenerator::DetermineForwardDeclarations(set<string>* fwd_decls) {
   if (!IsMapEntryMessage(descriptor_)) {
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
-      // If it is a the field is repeated, the type will be and *Array, and we
-      // don't need any forward decl.
-      if (fieldDescriptor->is_repeated()) {
-        continue;
-      }
       field_generators_.get(fieldDescriptor)
           .DetermineForwardDeclarations(fwd_decls);
     }

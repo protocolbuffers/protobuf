@@ -55,9 +55,9 @@ typedef NS_ENUM(NSInteger, GPBFieldType) {
 @interface GPBDescriptor : NSObject<NSCopying>
 
 @property(nonatomic, readonly, copy) NSString *name;
-@property(nonatomic, readonly, strong, nullable) NSArray *fields;
-@property(nonatomic, readonly, strong, nullable) NSArray *oneofs;
-@property(nonatomic, readonly, strong, nullable) NSArray *enums;
+@property(nonatomic, readonly, strong, nullable) NSArray<GPBFieldDescriptor*> *fields;
+@property(nonatomic, readonly, strong, nullable) NSArray<GPBOneofDescriptor*> *oneofs;
+@property(nonatomic, readonly, strong, nullable) NSArray<GPBEnumDescriptor*> *enums;
 @property(nonatomic, readonly, nullable) const GPBExtensionRange *extensionRanges;
 @property(nonatomic, readonly) NSUInteger extensionRangesCount;
 @property(nonatomic, readonly, assign) GPBFileDescriptor *file;
@@ -81,7 +81,7 @@ typedef NS_ENUM(NSInteger, GPBFieldType) {
 
 @interface GPBOneofDescriptor : NSObject
 @property(nonatomic, readonly) NSString *name;
-@property(nonatomic, readonly) NSArray *fields;
+@property(nonatomic, readonly) NSArray<GPBFieldDescriptor*> *fields;
 
 - (nullable GPBFieldDescriptor *)fieldWithNumber:(uint32_t)fieldNumber;
 - (nullable GPBFieldDescriptor *)fieldWithName:(NSString *)name;

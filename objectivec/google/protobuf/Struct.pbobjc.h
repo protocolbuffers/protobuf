@@ -13,6 +13,7 @@ CF_EXTERN_C_BEGIN
 
 @class GPBListValue;
 @class GPBStruct;
+@class GPBValue;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -60,8 +61,7 @@ typedef GPB_ENUM(GPBStruct_FieldNumber) {
 @interface GPBStruct : GPBMessage
 
 // Map of dynamically typed values.
-// |fields| values are |GPBValue|
-@property(nonatomic, readwrite, strong, null_resettable) NSMutableDictionary *fields;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableDictionary<NSString*, GPBValue*> *fields;
 @property(nonatomic, readonly) NSUInteger fields_Count;
 
 @end
@@ -135,8 +135,7 @@ typedef GPB_ENUM(GPBListValue_FieldNumber) {
 @interface GPBListValue : GPBMessage
 
 // Repeated field of dynamically typed values.
-// |valuesArray| contains |GPBValue|
-@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *valuesArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBValue*> *valuesArray;
 @property(nonatomic, readonly) NSUInteger valuesArray_Count;
 
 @end

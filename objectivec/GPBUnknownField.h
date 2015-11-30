@@ -45,8 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly, strong) GPBUInt64Array *varintList;
 @property(nonatomic, readonly, strong) GPBUInt32Array *fixed32List;
 @property(nonatomic, readonly, strong) GPBUInt64Array *fixed64List;
-@property(nonatomic, readonly, strong) NSArray *lengthDelimitedList;  // NSData
-@property(nonatomic, readonly, strong) NSArray *groupList;  // GPBUnknownFieldSet
+@property(nonatomic, readonly, strong) NSArray<NSData*> *lengthDelimitedList;
+@property(nonatomic, readonly, strong) NSArray<GPBUnknownFieldSet*> *groupList;
 
 // Only one of these should be used per Field.
 - (void)addVarint:(uint64_t)value;

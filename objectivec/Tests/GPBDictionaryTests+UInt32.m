@@ -3363,11 +3363,11 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 @implementation GPBUInt32ObjectDictionaryTests
 
 - (void)testEmpty {
-  GPBUInt32ObjectDictionary *dict = [[GPBUInt32ObjectDictionary alloc] init];
+  GPBUInt32ObjectDictionary<NSString*> *dict = [[GPBUInt32ObjectDictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertNil([dict objectForKey:1U]);
-  [dict enumerateKeysAndObjectsUsingBlock:^(uint32_t aKey, id aObject, BOOL *stop) {
+  [dict enumerateKeysAndObjectsUsingBlock:^(uint32_t aKey, NSString* aObject, BOOL *stop) {
     #pragma unused(aKey, aObject, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -3375,12 +3375,12 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testOne {
-  GPBUInt32ObjectDictionary *dict = [GPBUInt32ObjectDictionary dictionaryWithObject:@"abc" forKey:1U];
+  GPBUInt32ObjectDictionary<NSString*> *dict = [GPBUInt32ObjectDictionary dictionaryWithObject:@"abc" forKey:1U];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   XCTAssertEqualObjects([dict objectForKey:1U], @"abc");
   XCTAssertNil([dict objectForKey:2U]);
-  [dict enumerateKeysAndObjectsUsingBlock:^(uint32_t aKey, id aObject, BOOL *stop) {
+  [dict enumerateKeysAndObjectsUsingBlock:^(uint32_t aKey, NSString* aObject, BOOL *stop) {
     XCTAssertEqual(aKey, 1U);
     XCTAssertEqualObjects(aObject, @"abc");
     XCTAssertNotEqual(stop, NULL);
@@ -3389,8 +3389,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
 - (void)testBasics {
   const uint32_t kKeys[] = { 1U, 2U, 3U };
-  const id kObjects[] = { @"abc", @"def", @"ghi" };
-  GPBUInt32ObjectDictionary *dict =
+  const NSString* kObjects[] = { @"abc", @"def", @"ghi" };
+  GPBUInt32ObjectDictionary<NSString*> *dict =
       [[GPBUInt32ObjectDictionary alloc] initWithObjects:kObjects
                                                  forKeys:kKeys
                                                    count:GPBARRAYSIZE(kObjects)];
@@ -3403,8 +3403,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   __block NSUInteger idx = 0;
   uint32_t *seenKeys = malloc(3 * sizeof(uint32_t));
-  id *seenObjects = malloc(3 * sizeof(id));
-  [dict enumerateKeysAndObjectsUsingBlock:^(uint32_t aKey, id aObject, BOOL *stop) {
+  NSString* *seenObjects = malloc(3 * sizeof(NSString*));
+  [dict enumerateKeysAndObjectsUsingBlock:^(uint32_t aKey, NSString* aObject, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
     seenKeys[idx] = aKey;
     seenObjects[idx] = aObject;
@@ -3426,7 +3426,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndObjectsUsingBlock:^(uint32_t aKey, id aObject, BOOL *stop) {
+  [dict enumerateKeysAndObjectsUsingBlock:^(uint32_t aKey, NSString* aObject, BOOL *stop) {
     #pragma unused(aKey, aObject)
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -3438,30 +3438,30 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 - (void)testEquality {
   const uint32_t kKeys1[] = { 1U, 2U, 3U, 4U };
   const uint32_t kKeys2[] = { 2U, 1U, 4U };
-  const id kObjects1[] = { @"abc", @"def", @"ghi" };
-  const id kObjects2[] = { @"abc", @"jkl", @"ghi" };
-  const id kObjects3[] = { @"abc", @"def", @"ghi", @"jkl" };
-  GPBUInt32ObjectDictionary *dict1 =
+  const NSString* kObjects1[] = { @"abc", @"def", @"ghi" };
+  const NSString* kObjects2[] = { @"abc", @"jkl", @"ghi" };
+  const NSString* kObjects3[] = { @"abc", @"def", @"ghi", @"jkl" };
+  GPBUInt32ObjectDictionary<NSString*> *dict1 =
       [[GPBUInt32ObjectDictionary alloc] initWithObjects:kObjects1
                                                  forKeys:kKeys1
                                                    count:GPBARRAYSIZE(kObjects1)];
   XCTAssertNotNil(dict1);
-  GPBUInt32ObjectDictionary *dict1prime =
+  GPBUInt32ObjectDictionary<NSString*> *dict1prime =
       [[GPBUInt32ObjectDictionary alloc] initWithObjects:kObjects1
                                                  forKeys:kKeys1
                                                    count:GPBARRAYSIZE(kObjects1)];
   XCTAssertNotNil(dict1prime);
-  GPBUInt32ObjectDictionary *dict2 =
+  GPBUInt32ObjectDictionary<NSString*> *dict2 =
       [[GPBUInt32ObjectDictionary alloc] initWithObjects:kObjects2
                                                  forKeys:kKeys1
                                                    count:GPBARRAYSIZE(kObjects2)];
   XCTAssertNotNil(dict2);
-  GPBUInt32ObjectDictionary *dict3 =
+  GPBUInt32ObjectDictionary<NSString*> *dict3 =
       [[GPBUInt32ObjectDictionary alloc] initWithObjects:kObjects1
                                                  forKeys:kKeys2
                                                    count:GPBARRAYSIZE(kObjects1)];
   XCTAssertNotNil(dict3);
-  GPBUInt32ObjectDictionary *dict4 =
+  GPBUInt32ObjectDictionary<NSString*> *dict4 =
       [[GPBUInt32ObjectDictionary alloc] initWithObjects:kObjects3
                                                  forKeys:kKeys1
                                                    count:GPBARRAYSIZE(kObjects3)];
@@ -3491,14 +3491,14 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
 - (void)testCopy {
   const uint32_t kKeys[] = { 1U, 2U, 3U, 4U };
-  const id kObjects[] = { @"abc", @"def", @"ghi", @"jkl" };
-  GPBUInt32ObjectDictionary *dict =
+  const NSString* kObjects[] = { @"abc", @"def", @"ghi", @"jkl" };
+  GPBUInt32ObjectDictionary<NSString*> *dict =
       [[GPBUInt32ObjectDictionary alloc] initWithObjects:kObjects
                                                  forKeys:kKeys
                                                    count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict);
 
-  GPBUInt32ObjectDictionary *dict2 = [dict copy];
+  GPBUInt32ObjectDictionary<NSString*> *dict2 = [dict copy];
   XCTAssertNotNil(dict2);
 
   // Should be new object but equal.
@@ -3512,14 +3512,14 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
 - (void)testDictionaryFromDictionary {
   const uint32_t kKeys[] = { 1U, 2U, 3U, 4U };
-  const id kObjects[] = { @"abc", @"def", @"ghi", @"jkl" };
-  GPBUInt32ObjectDictionary *dict =
+  const NSString* kObjects[] = { @"abc", @"def", @"ghi", @"jkl" };
+  GPBUInt32ObjectDictionary<NSString*> *dict =
       [[GPBUInt32ObjectDictionary alloc] initWithObjects:kObjects
                                                  forKeys:kKeys
                                                    count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict);
 
-  GPBUInt32ObjectDictionary *dict2 =
+  GPBUInt32ObjectDictionary<NSString*> *dict2 =
       [GPBUInt32ObjectDictionary dictionaryWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
@@ -3530,7 +3530,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testAdds {
-  GPBUInt32ObjectDictionary *dict = [GPBUInt32ObjectDictionary dictionary];
+  GPBUInt32ObjectDictionary<NSString*> *dict = [GPBUInt32ObjectDictionary dictionary];
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
@@ -3538,8 +3538,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertEqual(dict.count, 1U);
 
   const uint32_t kKeys[] = { 2U, 3U, 4U };
-  const id kObjects[] = { @"def", @"ghi", @"jkl" };
-  GPBUInt32ObjectDictionary *dict2 =
+  const NSString* kObjects[] = { @"def", @"ghi", @"jkl" };
+  GPBUInt32ObjectDictionary<NSString*> *dict2 =
       [[GPBUInt32ObjectDictionary alloc] initWithObjects:kObjects
                                                  forKeys:kKeys
                                                    count:GPBARRAYSIZE(kObjects)];
@@ -3556,8 +3556,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
 - (void)testRemove {
   const uint32_t kKeys[] = { 1U, 2U, 3U, 4U };
-  const id kObjects[] = { @"abc", @"def", @"ghi", @"jkl" };
-  GPBUInt32ObjectDictionary *dict =
+  const NSString* kObjects[] = { @"abc", @"def", @"ghi", @"jkl" };
+  GPBUInt32ObjectDictionary<NSString*> *dict =
       [[GPBUInt32ObjectDictionary alloc] initWithObjects:kObjects
                                           forKeys:kKeys
                                             count:GPBARRAYSIZE(kObjects)];
@@ -3597,8 +3597,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
 - (void)testInplaceMutation {
   const uint32_t kKeys[] = { 1U, 2U, 3U, 4U };
-  const id kObjects[] = { @"abc", @"def", @"ghi", @"jkl" };
-  GPBUInt32ObjectDictionary *dict =
+  const NSString* kObjects[] = { @"abc", @"def", @"ghi", @"jkl" };
+  GPBUInt32ObjectDictionary<NSString*> *dict =
       [[GPBUInt32ObjectDictionary alloc] initWithObjects:kObjects
                                           forKeys:kKeys
                                             count:GPBARRAYSIZE(kObjects)];
@@ -3624,8 +3624,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertEqualObjects([dict objectForKey:4U], @"def");
 
   const uint32_t kKeys2[] = { 2U, 3U };
-  const id kObjects2[] = { @"ghi", @"abc" };
-  GPBUInt32ObjectDictionary *dict2 =
+  const NSString* kObjects2[] = { @"ghi", @"abc" };
+  GPBUInt32ObjectDictionary<NSString*> *dict2 =
       [[GPBUInt32ObjectDictionary alloc] initWithObjects:kObjects2
                                                  forKeys:kKeys2
                                                    count:GPBARRAYSIZE(kObjects2)];
