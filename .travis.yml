@@ -15,6 +15,7 @@ env:
   - CONFIG=cpp
   - CONFIG=cpp_distcheck
   - CONFIG=csharp
+  - CONFIG=golang
   - CONFIG=java_jdk6
   - CONFIG=java_jdk7
   - CONFIG=java_oracle7
@@ -48,6 +49,10 @@ matrix:
     # which doesn't work on OS X.
     - os: osx
       env: CONFIG=csharp
+    # Requires installing golang, currently travis.sh is doing that with apt-get
+    # which doesn't work on OS X.
+    - os: osx
+      env: CONFIG=golang
   # Add into the matrix OS X tests of Objective C (needs Xcode, so it won't
   # work on other platforms). These are split so it doesn't take as long to run.
   include:

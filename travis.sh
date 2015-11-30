@@ -47,6 +47,24 @@ build_csharp() {
   cd conformance && make test_csharp && cd ..
 }
 
+build_golang() {
+  # Go build needs `protoc`.
+  internal_build_cpp
+  # Add protoc to the path so that the examples build finds it.
+  export PATH="`pwd`/src:$PATH"
+
+  # Install Go and the Go protobuf compiler plugin.
+  sudo apt-get update -qq
+  sudo apt-get install -qq golang
+  export GOPATH="$HOME/gocode"
+  mkdir -p "$GOPATH/src/github.com/google"
+  ln -s "`pwd`" "$GOPATH/src/github.com/google/protobuf"
+  export PATH="$GOPATH/bin:$PATH"
+  go get github.com/golang/protobuf/protoc-gen-go
+
+  cd examples && make gotest && cd ..
+}
+
 use_java() {
   version=$1
   case "$version" in
