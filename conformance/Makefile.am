@@ -38,7 +38,11 @@ bin_PROGRAMS += conformance-objc
 
 conformance_objc_SOURCES = conformance_objc.m ../objectivec/GPBProtocolBuffers.m
 nodist_conformance_objc_SOURCES = Conformance.pbobjc.m
-conformance_objc_CPPFLAGS = -I$(top_srcdir)/objectivec
+# On travis, the build fails without the isysroot because whatever system
+# headers are being found don't include generics support for
+# NSArray/NSDictionary, the only guess is their image at one time had an odd
+# setup for Xcode and old frameworks are being found.
+conformance_objc_CPPFLAGS = -I$(top_srcdir)/objectivec -isysroot `xcrun --sdk macosx --show-sdk-path`
 conformance_objc_LDFLAGS = -framework Foundation
 # Explicit dep beacuse BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_objc" could fail if parallel enough.
