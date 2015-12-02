@@ -35,6 +35,7 @@ using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 using UnitTest.Issues.TestProtos;
 using Google.Protobuf.WellKnownTypes;
+using Google.Protobuf.Reflection;
 
 namespace Google.Protobuf
 {
@@ -418,6 +419,47 @@ namespace Google.Protobuf
         {
             var message = new SourceContext { FileName = "foo.proto" };
             AssertJson("{ 'fileName': 'foo.proto' }", JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void AnyWellKnownType()
+        {
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false, TypeRegistry.FromMessages(Timestamp.Descriptor)));
+            var timestamp = new DateTime(1673, 6, 19, 12, 34, 56, DateTimeKind.Utc).ToTimestamp();
+            var any = Any.Pack(timestamp);
+            AssertJson("{ '@type': 'type.googleapis.com/google.protobuf.Timestamp', 'value': '1673-06-19T12:34:56Z' }", formatter.Format(any));
+        }
+
+        [Test]
+        public void AnyMessageType()
+        {
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false, TypeRegistry.FromMessages(TestAllTypes.Descriptor)));
+            var message = new TestAllTypes { SingleInt32 = 10, SingleNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 20 } };
+            var any = Any.Pack(message);
+            AssertJson("{ '@type': 'type.googleapis.com/protobuf_unittest.TestAllTypes', 'singleInt32': 10, 'singleNestedMessage': { 'bb': 20 } }", formatter.Format(any));
+        }
+
+        [Test]
+        public void AnyNested()
+        {
+            var registry = TypeRegistry.FromMessages(TestWellKnownTypes.Descriptor, TestAllTypes.Descriptor);
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false, registry));
+
+            // Nest an Any as the value of an Any.
+            var doubleNestedMessage = new TestAllTypes { SingleInt32 = 20 };
+            var nestedMessage = Any.Pack(doubleNestedMessage);
+            var message = new TestWellKnownTypes { AnyField = Any.Pack(nestedMessage) };
+            AssertJson("{ 'anyField': { '@type': 'type.googleapis.com/google.protobuf.Any', 'value': { '@type': 'type.googleapis.com/protobuf_unittest.TestAllTypes', 'singleInt32': 20 } } }",
+                formatter.Format(message));
+        }
+
+        [Test]
+        public void AnyUnknownType()
+        {
+            // The default type registry doesn't have any types in it.
+            var message = new TestAllTypes();
+            var any = Any.Pack(message);
+            Assert.Throws<InvalidOperationException>(() => JsonFormatter.Default.Format(any));
         }
 
         /// <summary>
