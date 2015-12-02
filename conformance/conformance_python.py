@@ -39,6 +39,7 @@ import struct
 import sys
 import os
 from google.protobuf import message
+from google.protobuf import json_format
 import conformance_pb2
 
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'wb', 0)
@@ -61,8 +62,11 @@ def do_test(request):
         return response
 
     elif request.WhichOneof('payload') == 'json_payload':
-      response.skipped = "JSON not supported yet."
-      return response
+      try:
+        json_format.Parse(request.json_payload, test_message)
+      except json_format.ParseError as e:
+        response.parse_error = str(e)
+        return response
 
     else:
       raise "Request didn't have payload."
@@ -74,7 +78,8 @@ def do_test(request):
       response.protobuf_payload = test_message.SerializeToString()
 
     elif request.requested_output_format == conformance_pb2.JSON:
-      response.skipped = "JSON not supported yet."
+      response.json_payload = json_format.MessageToJson(test_message)
+
   except Exception as e:
     response.runtime_error = str(e)
 
