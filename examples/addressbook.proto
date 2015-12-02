@@ -1,5 +1,3 @@
-// See README.txt for information and build instructions.
-
 syntax = "proto3";
 
 package tutorial;
