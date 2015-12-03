@@ -202,6 +202,12 @@ void UsageError() {
 
 void ParseFailureList(const char *filename, vector<string>* failure_list) {
   std::ifstream infile(filename);
+
+  if (!infile.is_open()) {
+    fprintf(stderr, "Couldn't open failure list file: %s\n", filename);
+    exit(1);
+  }
+
   for (string line; getline(infile, line);) {
     // Remove whitespace.
     line.erase(std::remove_if(line.begin(), line.end(), ::isspace),

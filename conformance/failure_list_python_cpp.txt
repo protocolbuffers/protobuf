@@ -1,0 +1,25 @@
+# This is the list of conformance tests that are known to fail for the
+# Python/C++ implementation right now.  These should be fixed.
+#
+# By listing them here we can keep tabs on which ones are failing and be sure
+# that we don't introduce regressions in other tests.
+#
+# TODO(haberman): insert links to corresponding bugs tracking the issue.
+# Should we use GitHub issues or the Google-internal bug tracker?
+
+ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE
+ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE
+ProtobufInput.PrematureEofInPackedField.BOOL
+ProtobufInput.PrematureEofInPackedField.DOUBLE
+ProtobufInput.PrematureEofInPackedField.ENUM
+ProtobufInput.PrematureEofInPackedField.FIXED32
+ProtobufInput.PrematureEofInPackedField.FIXED64
+ProtobufInput.PrematureEofInPackedField.FLOAT
+ProtobufInput.PrematureEofInPackedField.INT32
+ProtobufInput.PrematureEofInPackedField.INT64
+ProtobufInput.PrematureEofInPackedField.SFIXED32
+ProtobufInput.PrematureEofInPackedField.SFIXED64
+ProtobufInput.PrematureEofInPackedField.SINT32
+ProtobufInput.PrematureEofInPackedField.SINT64
+ProtobufInput.PrematureEofInPackedField.UINT32
+ProtobufInput.PrematureEofInPackedField.UINT64

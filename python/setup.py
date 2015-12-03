@@ -147,7 +147,8 @@ class build_py(_build_py):
 class test_conformance(_build_py):
   target = 'test_python'
   def run(self):
-    os.system('cd ../conformance && make %s' % (test_conformance.target))
+    cmd = 'cd ../conformance && make %s' % (test_conformance.target)
+    status = subprocess.check_call(cmd, shell=True)
 
 
 if __name__ == '__main__':
