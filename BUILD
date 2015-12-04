@@ -512,6 +512,7 @@ internal_copied_filegroup(
 py_proto_library(
     name = "protobuf_python",
     srcs = WELL_KNOWN_PROTOS,
+    srcs_version = "PY2AND3",
     include = "src",
     protoc = ":protoc",
     py_extra_srcs = [":python_srcs"],
@@ -555,6 +556,7 @@ py_proto_library(
 py_library(
     name = "python_tests",
     srcs = [":python_test_srcs"],
+    srcs_version = "PY2AND3",
     deps = [
         ":protobuf_python",
         ":python_common_test_protos",
