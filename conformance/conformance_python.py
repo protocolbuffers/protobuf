@@ -48,6 +48,9 @@ sys.stdin = os.fdopen(sys.stdin.fileno(), 'rb', 0)
 test_count = 0
 verbose = False
 
+class ProtocolError(Exception):
+  pass
+
 def do_test(request):
   test_message = conformance_pb2.TestAllTypes()
   response = conformance_pb2.ConformanceResponse()
@@ -69,10 +72,10 @@ def do_test(request):
         return response
 
     else:
-      raise "Request didn't have payload."
+      raise ProtocolError("Request didn't have payload.")
 
     if request.requested_output_format == conformance_pb2.UNSPECIFIED:
-      raise "Unspecified output format"
+      raise ProtocolError("Unspecified output format")
 
     elif request.requested_output_format == conformance_pb2.PROTOBUF:
       response.protobuf_payload = test_message.SerializeToString()
@@ -98,7 +101,7 @@ def do_test_io():
   length = struct.unpack("<I", length_bytes)[0]
   serialized_request = sys.stdin.read(length)
   if len(serialized_request) != length:
-    raise "I/O error"
+    raise IOError("I/O error")
 
   request = conformance_pb2.ConformanceRequest()
   request.ParseFromString(serialized_request)
