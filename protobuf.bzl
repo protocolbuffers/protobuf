@@ -141,6 +141,7 @@ def cc_proto_library(
         deps=[s + "_genproto" for s in deps],
         includes=includes,
         protoc=protoc,
+        visibility=["//visibility:public"],
     )
     # An empty cc_library to make rule dependency consistent.
     native.cc_library(
@@ -157,6 +158,7 @@ def cc_proto_library(
       protoc=protoc,
       gen_cc=1,
       outs=outs,
+      visibility=["//visibility:public"],
   )
 
   if default_runtime and not default_runtime in cc_libs:
@@ -245,6 +247,7 @@ def py_proto_library(
       protoc=protoc,
       gen_py=1,
       outs=outs,
+      visibility=["//visibility:public"],
   )
 
   if include != None:
