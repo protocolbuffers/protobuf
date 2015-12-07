@@ -225,8 +225,10 @@
   // Serialize and parse it.  Make sure to parse from an InputStream, not
   // directly from a ByteString, so that CodedInputStream uses buffered
   // reading.
+  NSData *messageData = message.data;
+  XCTAssertNotNil(messageData);
   GPBCodedInputStream* stream =
-      [GPBCodedInputStream streamWithData:message.data];
+      [GPBCodedInputStream streamWithData:messageData];
   TestAllTypes* message2 = [TestAllTypes parseFromCodedInputStream:stream
                                                  extensionRegistry:nil
                                                              error:NULL];
