@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 // most likely won't exactly match the original .proto file.
 NSString *GPBTextFormatForMessage(GPBMessage *message,
                                   NSString * __nullable lineIndent);
-NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *unknownSet,
+NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet * __nullable unknownSet,
                                           NSString * __nullable lineIndent);
 
 //

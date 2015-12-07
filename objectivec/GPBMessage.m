@@ -1212,7 +1212,8 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     NSLog(@"%@: Internal exception while building message delimitedData: %@",
           [self class], exception);
 #endif
-    data = nil;
+    // If it happens, truncate.
+    data.length = 0;
   }
   [stream release];
   return data;
@@ -1791,7 +1792,12 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     extensionMap_ = [[NSMutableDictionary alloc] init];
   }
 
-  [extensionMap_ setObject:value forKey:extension];
+  // This pointless cast is for CLANG_WARN_NULLABLE_TO_NONNULL_CONVERSION.
+  // Without it, the compiler complains we're passing an id nullable when
+  // setObject:forKey: requires a id nonnull for the value. The check for
+  // !value at the start of the method ensures it isn't nil, but the check
+  // isn't smart enough to realize that.
+  [extensionMap_ setObject:(id)value forKey:extension];
 
   GPBExtensionDescriptor *descriptor = extension;
 
