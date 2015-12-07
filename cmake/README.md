@@ -152,6 +152,11 @@ If you prefer to use the IDE:
   * Choose "Debug" or "Release" configuration as desired.
   * From the Build menu, choose "Build Solution".
 
+or to build the solution from command line
+
+     C:\Path\to\protobuf\cmake>cmake --build solution --config Debug --target INSTALL
+     C:\Path\to\protobuf\cmake>cmake --build solution --config Release --target INSTALL
+
 And wait for the compilation to finish.
 
 Testing
