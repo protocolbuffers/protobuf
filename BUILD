@@ -54,9 +54,9 @@ cc_library(
         "src/google/protobuf/stubs/time.cc",
         "src/google/protobuf/wire_format_lite.cc",
     ],
+    hdrs = glob(["src/google/protobuf/**/*.h"]),
     copts = COPTS,
     includes = ["src/"],
-    hdrs = glob(["src/google/protobuf/**/*.h"]),
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
 )
@@ -156,9 +156,9 @@ cc_proto_library(
     name = "cc_wkt_protos",
     srcs = WELL_KNOWN_PROTOS,
     include = "src",
+    default_runtime = ":protobuf",
     internal_bootstrap_hack = 1,
     protoc = ":protoc",
-    default_runtime = ":protobuf",
     visibility = ["//visibility:public"],
 )
 
@@ -336,8 +336,8 @@ cc_proto_library(
     name = "cc_test_protos",
     srcs = LITE_TEST_PROTOS + TEST_PROTOS,
     include = "src",
-    protoc = ":protoc",
     default_runtime = ":protobuf",
+    protoc = ":protoc",
     deps = [":cc_wkt_protos"],
 )
 
@@ -509,15 +509,49 @@ internal_copied_filegroup(
     include = "python",
 )
 
+cc_binary(
+    name = "google/protobuf/internal/_api_implementation.so",
+    srcs = ["python/google/protobuf/internal/api_implementation.cc"],
+    copts = COPTS + [
+        "-I/usr/include/python2.7",
+        "-DPYTHON_PROTO2_CPP_IMPL_V2",
+    ],
+    linkshared = 1,
+    linkstatic = 1,
+)
+
+cc_binary(
+    name = "google/protobuf/pyext/_message.so",
+    srcs = glob([
+        "python/google/protobuf/pyext/*.cc",
+        "python/google/protobuf/pyext/*.h",
+    ]),
+    copts = COPTS + [
+        "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
+        "-I/usr/include/python2.7",
+    ],
+    includes = [
+        "python/",
+        "src/",
+    ],
+    linkshared = 1,
+    linkstatic = 1,
+    deps = [":protobuf"],
+)
+
 py_proto_library(
     name = "protobuf_python",
     srcs = WELL_KNOWN_PROTOS,
-    srcs_version = "PY2AND3",
     include = "src",
+    data = [
+        ":google/protobuf/internal/_api_implementation.so",
+        ":google/protobuf/pyext/_message.so",
+    ],
+    default_runtime = "",
     protoc = ":protoc",
     py_extra_srcs = [":python_srcs"],
     py_libs = ["//external:six"],
-    default_runtime = "",
+    srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
 )
 
@@ -536,9 +570,9 @@ py_proto_library(
     name = "python_common_test_protos",
     srcs = LITE_TEST_PROTOS + TEST_PROTOS,
     include = "src",
+    default_runtime = "",
     protoc = ":protoc",
     deps = [":protobuf_python"],
-    default_runtime = "",
 )
 
 py_proto_library(
@@ -548,9 +582,9 @@ py_proto_library(
         "python/google/protobuf/internal/import_test_package/*.proto",
     ]),
     include = "python",
+    default_runtime = ":protobuf_python",
     protoc = ":protoc",
     deps = [":python_common_test_protos"],
-    default_runtime = ":protobuf_python",
 )
 
 py_library(

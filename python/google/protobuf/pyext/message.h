@@ -52,7 +52,8 @@ class Descriptor;
 class DescriptorPool;
 class MessageFactory;
 
-using internal::shared_ptr;
+using std::shared_ptr;
+using std::string;
 
 namespace python {
 
