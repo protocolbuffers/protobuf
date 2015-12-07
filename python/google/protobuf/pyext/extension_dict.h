@@ -47,8 +47,9 @@ namespace protobuf {
 class Message;
 class FieldDescriptor;
 
+#ifdef _SHARED_PTR_H
 using std::shared_ptr;
-using std::string;
+#endif
 
 namespace python {
 
