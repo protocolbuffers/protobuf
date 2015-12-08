@@ -55,10 +55,15 @@ NSString *const GPBExceptionMessageKey =
 static NSString *const kGPBDataCoderKey = @"GPBData";
 
 #ifndef _GPBCompileAssert
-#define _GPBCompileAssertSymbolInner(line, msg) _GPBCompileAssert ## line ## __ ## msg
-#define _GPBCompileAssertSymbol(line, msg) _GPBCompileAssertSymbolInner(line, msg)
-#define _GPBCompileAssert(test, msg) \
-    typedef char _GPBCompileAssertSymbol(__LINE__, msg) [ ((test) ? 1 : -1) ]
+  #if __has_feature(c_static_assert) || __has_extension(c_static_assert)
+    #define _GPBCompileAssert(test, msg) _Static_assert((test), #msg)
+  #else
+    // Pre-Xcode 7 support.
+    #define _GPBCompileAssertSymbolInner(line, msg) _GPBCompileAssert ## line ## __ ## msg
+    #define _GPBCompileAssertSymbol(line, msg) _GPBCompileAssertSymbolInner(line, msg)
+    #define _GPBCompileAssert(test, msg) \
+        typedef char _GPBCompileAssertSymbol(__LINE__, msg) [ ((test) ? 1 : -1) ]
+  #endif  // __has_feature(c_static_assert) || __has_extension(c_static_assert)
 #endif // _GPBCompileAssert
 
 //
