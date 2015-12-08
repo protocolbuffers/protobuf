@@ -58,7 +58,10 @@ static NSString *const kGPBDataCoderKey = @"GPBData";
 #define _GPBCompileAssertSymbolInner(line, msg) _GPBCompileAssert ## line ## __ ## msg
 #define _GPBCompileAssertSymbol(line, msg) _GPBCompileAssertSymbolInner(line, msg)
 #define _GPBCompileAssert(test, msg) \
-    typedef char _GPBCompileAssertSymbol(__LINE__, msg) [ ((test) ? 1 : -1) ]
+_Pragma("clang diagnostic push") \
+_Pragma("clang diagnostic ignored \"-Wunused-local-typedefs\"") \
+    typedef char _GPBCompileAssertSymbol(__LINE__, msg) [ ((test) ? 1 : -1) ] \
+_Pragma("clang diagnostic pop")
 #endif // _GPBCompileAssert
 
 //
