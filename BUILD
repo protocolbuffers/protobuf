@@ -513,11 +513,14 @@ cc_binary(
     name = "google/protobuf/internal/_api_implementation.so",
     srcs = ["python/google/protobuf/internal/api_implementation.cc"],
     copts = COPTS + [
-        "-I/usr/include/python2.7",
         "-DPYTHON_PROTO2_CPP_IMPL_V2",
     ],
     linkshared = 1,
     linkstatic = 1,
+    deps = select({
+        "//conditions:default": [],
+        ":use_fast_cpp_protos": ["//util/python:python_headers"],
+    }),
 )
 
 cc_binary(
@@ -528,7 +531,6 @@ cc_binary(
     ]),
     copts = COPTS + [
         "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
-        "-I/usr/include/python2.7",
     ],
     includes = [
         "python/",
@@ -536,17 +538,32 @@ cc_binary(
     ],
     linkshared = 1,
     linkstatic = 1,
-    deps = [":protobuf"],
+    deps = [
+        ":protobuf",
+    ] + select({
+        "//conditions:default": [],
+        ":use_fast_cpp_protos": ["//util/python:python_headers"],
+    }),
+)
+
+config_setting(
+    name = "use_fast_cpp_protos",
+    values = {
+        "define": "use_fast_cpp_protos=true",
+    },
 )
 
 py_proto_library(
     name = "protobuf_python",
     srcs = WELL_KNOWN_PROTOS,
     include = "src",
-    data = [
-        ":google/protobuf/internal/_api_implementation.so",
-        ":google/protobuf/pyext/_message.so",
-    ],
+    data = select({
+        "//conditions:default": [],
+        ":use_fast_cpp_protos": [
+            ":google/protobuf/internal/_api_implementation.so",
+            ":google/protobuf/pyext/_message.so",
+        ],
+    }),
     default_runtime = "",
     protoc = ":protoc",
     py_extra_srcs = [":python_srcs"],
