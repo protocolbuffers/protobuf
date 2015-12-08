@@ -510,7 +510,7 @@ internal_copied_filegroup(
 )
 
 cc_binary(
-    name = "google/protobuf/internal/_api_implementation.so",
+    name = "internal/_api_implementation.so",
     srcs = ["python/google/protobuf/internal/api_implementation.cc"],
     copts = COPTS + [
         "-DPYTHON_PROTO2_CPP_IMPL_V2",
@@ -524,7 +524,7 @@ cc_binary(
 )
 
 cc_binary(
-    name = "google/protobuf/pyext/_message.so",
+    name = "pyext/_message.so",
     srcs = glob([
         "python/google/protobuf/pyext/*.cc",
         "python/google/protobuf/pyext/*.h",
@@ -560,8 +560,8 @@ py_proto_library(
     data = select({
         "//conditions:default": [],
         ":use_fast_cpp_protos": [
-            ":google/protobuf/internal/_api_implementation.so",
-            ":google/protobuf/pyext/_message.so",
+            ":internal/_api_implementation.so",
+            ":pyext/_message.so",
         ],
     }),
     default_runtime = "",
