@@ -47,6 +47,8 @@ class Message;
 
 #ifdef _SHARED_PTR_H
 using std::shared_ptr;
+#else
+using internal::shared_ptr;
 #endif
 
 namespace python {
