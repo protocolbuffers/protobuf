@@ -10,6 +10,7 @@ protoc_outputs =                                               \
 other_language_protoc_outputs =                                \
   conformance.rb                                               \
   com/google/protobuf/conformance/Conformance.java             \
+  conformance_pb2.py                                           \
   Conformance.pbobjc.h                                         \
   Conformance.pbobjc.m
 
