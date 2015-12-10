@@ -66,9 +66,5 @@ matrix:
       env: CONFIG=ruby22
     - os: osx
       env: CONFIG=jruby
-    # Travis seems be flaky in letting the iOS simulator launch, so keep that
-    # flake from failing builds by marking that build as an allowed failure.
-    - os: osx
-      env: CONFIG=objectivec_ios
 notifications:
   email: false
