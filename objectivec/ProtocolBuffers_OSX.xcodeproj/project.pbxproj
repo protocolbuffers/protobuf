@@ -567,8 +567,9 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0710;
 				LastTestingUpgradeCheck = 0600;
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0710;
 				TargetAttributes = {
 					8BBEA4A5147C727100C4ADB7 = {
 						TestTargetID = 8B9A5EA41831993600A9D33B;
@@ -756,6 +757,7 @@
 				);
 				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -773,6 +775,7 @@
 				);
 				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 			};
@@ -792,6 +795,7 @@
 				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";

@@ -644,8 +644,9 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0710;
 				LastTestingUpgradeCheck = 0600;
-				LastUpgradeCheck = 0630;
+				LastUpgradeCheck = 0710;
 				TargetAttributes = {
 					8BBEA4A5147C727100C4ADB7 = {
 						TestTargetID = 8B9A5EA41831993600A9D33B;
@@ -865,6 +866,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/Tests/iOSTestHarness/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.google.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
@@ -879,6 +881,7 @@
 				CLANG_ENABLE_OBJC_ARC = YES;
 				INFOPLIST_FILE = "$(SRCROOT)/Tests/iOSTestHarness/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.google.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				WRAPPER_EXTENSION = app;
@@ -955,6 +958,7 @@
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
