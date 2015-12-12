@@ -1918,6 +1918,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   io::CodedInputStream input(
       reinterpret_cast<const uint8*>(data), data_length);
   PyDescriptorPool* pool = GetDescriptorPoolForMessage(self);
+  input.SetTotalBytesLimit(data_length, data_length);
   input.SetExtensionRegistry(pool->pool, pool->message_factory);
   bool success = self->message->MergePartialFromCodedStream(&input);
   if (success) {
