@@ -102,6 +102,11 @@ public abstract class GeneratedMessageLite<
    * @return {@code true} unless the tag is an end-group tag.
    */
   protected boolean parseUnknownField(int tag, CodedInputStream input) throws IOException {
+    // This will avoid the allocation of unknown fields when a group tag is encountered.
+    if (WireFormat.getTagWireType(tag) == WireFormat.WIRETYPE_END_GROUP) {
+      return false;
+    }
+    
     ensureUnknownFieldsInitialized();
     return unknownFields.mergeFieldFrom(tag, input);
   }
@@ -1173,6 +1178,10 @@ public abstract class GeneratedMessageLite<
     return new IntArrayList();
   }
   
+  protected static IntList newIntListWithCapacity(int capacity) {
+    return new IntArrayList(capacity);
+  }
+  
   protected static IntList newIntList(List<Integer> toCopy) {
     return new IntArrayList(toCopy);
   }
@@ -1180,9 +1189,13 @@ public abstract class GeneratedMessageLite<
   protected static IntList emptyIntList() {
     return IntArrayList.emptyList();
   }
-  
+
   protected static LongList newLongList() {
     return new LongArrayList();
+  }
+
+  protected static LongList newLongListWithCapacity(int capacity) {
+    return new LongArrayList(capacity);
   }
   
   protected static LongList newLongList(List<Long> toCopy) {
@@ -1197,6 +1210,10 @@ public abstract class GeneratedMessageLite<
     return new FloatArrayList();
   }
   
+  protected static FloatList newFloatListWithCapacity(int capacity) {
+    return new FloatArrayList(capacity);
+  }
+  
   protected static FloatList newFloatList(List<Float> toCopy) {
     return new FloatArrayList(toCopy);
   }
@@ -1209,6 +1226,10 @@ public abstract class GeneratedMessageLite<
     return new DoubleArrayList();
   }
   
+  protected static DoubleList newDoubleListWithCapacity(int capacity) {
+    return new DoubleArrayList(capacity);
+  }
+  
   protected static DoubleList newDoubleList(List<Double> toCopy) {
     return new DoubleArrayList(toCopy);
   }
@@ -1219,6 +1240,10 @@ public abstract class GeneratedMessageLite<
   
   protected static BooleanList newBooleanList() {
     return new BooleanArrayList();
+  }
+  
+  protected static BooleanList newBooleanListWithCapacity(int capacity) {
+    return new BooleanArrayList(capacity);
   }
   
   protected static BooleanList newBooleanList(List<Boolean> toCopy) {
@@ -1235,6 +1260,10 @@ public abstract class GeneratedMessageLite<
   
   protected static <E> ProtobufList<E> newProtobufList(List<E> toCopy) {
     return new ProtobufArrayList<E>(toCopy);
+  }
+  
+  protected static <E> ProtobufList<E> newProtobufListWithCapacity(int capacity) {
+    return new ProtobufArrayList<E>(capacity);
   }
   
   protected static <E> ProtobufList<E> emptyProtobufList() {

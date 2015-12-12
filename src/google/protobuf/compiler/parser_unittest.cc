@@ -1170,6 +1170,29 @@ TEST_F(ParseErrorTest, EnumValueOutOfRange) {
     "4:19: Integer out of range.\n");
 }
 
+TEST_F(ParseErrorTest, EnumAllowAliasFalse) {
+  ExpectHasErrors(
+    "enum Foo {\n"
+    "  option allow_alias = false;\n"
+    "  BAR = 1;\n"
+    "  BAZ = 2;\n"
+    "}\n",
+    "5:0: \"Foo\" declares 'option allow_alias = false;' which has no effect. "
+    "Please remove the declaration.\n");
+}
+
+TEST_F(ParseErrorTest, UnnecessaryEnumAllowAlias) {
+  ExpectHasErrors(
+    "enum Foo {\n"
+    "  option allow_alias = true;\n"
+    "  BAR = 1;\n"
+    "  BAZ = 2;\n"
+    "}\n",
+    "5:0: \"Foo\" declares support for enum aliases but no enum values share "
+    "field numbers. Please remove the unnecessary 'option allow_alias = true;' "
+    "declaration.\n");
+}
+
 TEST_F(ParseErrorTest, DefaultValueMissing) {
   ExpectHasErrors(
     "message TestMessage {\n"
@@ -1839,6 +1862,8 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
       "// Detached comment before TestMessage1.\n"
       "\n"
       "// Message comment.\n"
+      "//\n"
+      "// More detail in message comment.\n"
       "message TestMessage1 {\n"
       "\n"
       "  // Detached comment before foo.\n"
@@ -1890,11 +1915,6 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
       pool_.BuildFileCollectingErrors(parsed_desc, &collector);
   ASSERT_TRUE(descriptor != NULL);
 
-  DebugStringOptions debug_string_options;
-  debug_string_options.include_comments = true;
-  const string debug_string =
-      descriptor->DebugStringWithOptions(debug_string_options);
-
   // Ensure that each of the comments appears somewhere in the DebugString().
   // We don't test the exact comment placement or formatting, because we do not
   // want to be too fragile here.
@@ -1905,6 +1925,7 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
     "Package comment.",
     "Detached comment before TestMessage1.",
     "Message comment.",
+    "More detail in message comment.",
     "Detached comment before foo.",
     "Field comment",
     "Detached comment before NestedMessage.",
@@ -1919,11 +1940,28 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
     "RPC comment",
   };
 
-  for (int i = 0; i < GOOGLE_ARRAYSIZE(expected_comments); ++i) {
-    string::size_type found_pos = debug_string.find(expected_comments[i]);
-    EXPECT_TRUE(found_pos != string::npos)
-        << "\"" << expected_comments[i] << "\" not found.";
+  DebugStringOptions debug_string_options;
+  debug_string_options.include_comments = true;
+
+  {
+    const string debug_string =
+        descriptor->DebugStringWithOptions(debug_string_options);
+
+    for (int i = 0; i < GOOGLE_ARRAYSIZE(expected_comments); ++i) {
+      string::size_type found_pos = debug_string.find(expected_comments[i]);
+      EXPECT_TRUE(found_pos != string::npos)
+          << "\"" << expected_comments[i] << "\" not found.";
+    }
+
+    // Result of DebugStringWithOptions should be parseable.
+    SetupParser(debug_string.c_str());
+    FileDescriptorProto parsed;
+    parser_->Parse(input_.get(), &parsed);
+    EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
+    ASSERT_EQ("", error_collector_.text_)
+        << "Failed to parse:\n" << debug_string;
   }
+
 }
 
 TEST_F(ParseDescriptorDebugTest, TestMaps) {

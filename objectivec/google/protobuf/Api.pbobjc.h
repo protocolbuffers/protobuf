@@ -174,7 +174,6 @@ typedef GPB_ENUM(GPBMixin_FieldNumber) {
 //
 //     package google.storage.v2;
 //     service Storage {
-//       // (-- see AccessControl.GetAcl --)
 //       rpc GetAcl(GetAclRequest) returns (Acl);
 //
 //       // Get a data record.

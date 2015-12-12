@@ -310,7 +310,7 @@ public class LongArrayListTest extends TestCase {
   }
   
   private void assertImmutable(LongArrayList list) {
-    if (list.contains(1)) {
+    if (list.contains(1L)) {
       throw new RuntimeException("Cannot test the immutability of lists that contain 1.");
     }
     
@@ -413,7 +413,7 @@ public class LongArrayListTest extends TestCase {
     }
     
     try {
-      list.removeAll(Collections.singleton(1));
+      list.removeAll(Collections.singleton(1L));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
@@ -434,7 +434,7 @@ public class LongArrayListTest extends TestCase {
     }
     
     try {
-      list.retainAll(Collections.singleton(1));
+      list.retainAll(Collections.singleton(1L));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected

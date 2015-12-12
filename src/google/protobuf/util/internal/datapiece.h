@@ -98,7 +98,8 @@ class LIBPROTOBUF_EXPORT DataPiece {
 
   static DataPiece NullData() { return DataPiece(TYPE_NULL, 0); }
 
-  virtual ~DataPiece() {}
+  virtual ~DataPiece() {
+  }
 
   // Accessors
   Type type() const { return type_; }

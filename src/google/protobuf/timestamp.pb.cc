@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -82,9 +83,9 @@ void protobuf_AddDesc_google_2fprotobuf_2ftimestamp_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\037google/protobuf/timestamp.proto\022\017googl"
     "e.protobuf\"+\n\tTimestamp\022\017\n\007seconds\030\001 \001(\003"
-    "\022\r\n\005nanos\030\002 \001(\005BQ\n\023com.google.protobufB\016"
-    "TimestampProtoP\001\240\001\001\242\002\003GPB\252\002\036Google.Proto"
-    "buf.WellKnownTypesb\006proto3", 186);
+    "\022\r\n\005nanos\030\002 \001(\005BT\n\023com.google.protobufB\016"
+    "TimestampProtoP\001\240\001\001\370\001\001\242\002\003GPB\252\002\036Google.Pr"
+    "otobuf.WellKnownTypesb\006proto3", 189);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/timestamp.proto", &protobuf_RegisterTypes);
   Timestamp::default_instance_ = new Timestamp();
@@ -122,6 +123,14 @@ Timestamp::Timestamp()
   // @@protoc_insertion_point(constructor:google.protobuf.Timestamp)
 }
 
+Timestamp::Timestamp(::google::protobuf::Arena* arena)
+  : ::google::protobuf::Message(),
+  _internal_metadata_(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.Timestamp)
+}
+
 void Timestamp::InitAsDefaultInstance() {
   _is_default_instance_ = true;
 }
@@ -147,10 +156,20 @@ Timestamp::~Timestamp() {
 }
 
 void Timestamp::SharedDtor() {
+  if (GetArenaNoVirtual() != NULL) {
+    return;
+  }
+
   if (this != default_instance_) {
   }
 }
 
+void Timestamp::ArenaDtor(void* object) {
+  Timestamp* _this = reinterpret_cast< Timestamp* >(object);
+  (void)_this;
+}
+void Timestamp::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+}
 void Timestamp::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = size;
@@ -169,11 +188,7 @@ const Timestamp& Timestamp::default_instance() {
 Timestamp* Timestamp::default_instance_ = NULL;
 
 Timestamp* Timestamp::New(::google::protobuf::Arena* arena) const {
-  Timestamp* n = new Timestamp;
-  if (arena != NULL) {
-    arena->Own(n);
-  }
-  return n;
+  return ::google::protobuf::Arena::CreateMessage<Timestamp>(arena);
 }
 
 void Timestamp::Clear() {
@@ -349,6 +364,18 @@ bool Timestamp::IsInitialized() const {
 
 void Timestamp::Swap(Timestamp* other) {
   if (other == this) return;
+  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+    InternalSwap(other);
+  } else {
+    Timestamp temp;
+    temp.MergeFrom(*this);
+    CopyFrom(*other);
+    other->CopyFrom(temp);
+  }
+}
+void Timestamp::UnsafeArenaSwap(Timestamp* other) {
+  if (other == this) return;
+  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
   InternalSwap(other);
 }
 void Timestamp::InternalSwap(Timestamp* other) {

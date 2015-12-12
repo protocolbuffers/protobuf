@@ -295,15 +295,19 @@
                 <include>**/MapFieldLite.java</include>
                 <include>**/MessageLite.java</include>
                 <include>**/MessageLiteOrBuilder.java</include>
+                <include>**/MessageLiteToString.java</include>
                 <include>**/MutabilityOracle.java</include>
+                <include>**/NioByteString.java</include>
                 <include>**/Parser.java</include>
                 <include>**/ProtobufArrayList.java</include>
                 <include>**/ProtocolStringList.java</include>
                 <include>**/RopeByteString.java</include>
                 <include>**/SmallSortedMap.java</include>
+                <include>**/TextFormatEscaper.java</include>
                 <include>**/UninitializedMessageException.java</include>
                 <include>**/UnknownFieldSetLite.java</include>
                 <include>**/UnmodifiableLazyStringList.java</include>
+                <include>**/UnsafeByteStrings.java</include>
                 <include>**/Utf8.java</include>
                 <include>**/WireFormat.java</include>
               </includes>
@@ -316,6 +320,7 @@
                 <testInclude>**/LazyMessageLiteTest.java</testInclude>
                 <testInclude>**/LiteTest.java</testInclude>
                 <testInclude>**/LongArrayListTest.java</testInclude>
+                <testInclude>**/NioByteStringTest.java</testInclude>
                 <testInclude>**/ProtobufArrayListTest.java</testInclude>
                 <testInclude>**/UnknownFieldSetLiteTest.java</testInclude>
               </testIncludes>

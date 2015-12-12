@@ -310,7 +310,7 @@ public class DoubleArrayListTest extends TestCase {
   }
   
   private void assertImmutable(DoubleArrayList list) {
-    if (list.contains(1)) {
+    if (list.contains(1D)) {
       throw new RuntimeException("Cannot test the immutability of lists that contain 1.");
     }
     
@@ -413,7 +413,7 @@ public class DoubleArrayListTest extends TestCase {
     }
     
     try {
-      list.removeAll(Collections.singleton(1));
+      list.removeAll(Collections.singleton(1D));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
@@ -434,7 +434,7 @@ public class DoubleArrayListTest extends TestCase {
     }
     
     try {
-      list.retainAll(Collections.singleton(1));
+      list.retainAll(Collections.singleton(1D));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected

@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Internal.EnumLite;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,7 +46,7 @@ import java.util.Set;
  * This class is a protobuf implementation detail. Users shouldn't use this
  * class directly.
  */
-public class MapFieldLite<K, V> implements MutabilityOracle {
+public final class MapFieldLite<K, V> implements MutabilityOracle {
   private MutatabilityAwareMap<K, V> mapData;
   private boolean isMutable;
   
@@ -136,8 +138,9 @@ public class MapFieldLite<K, V> implements MutabilityOracle {
     if (a instanceof byte[]) {
       return LiteralByteString.hashCode((byte[]) a);
     }
-    if (a instanceof Internal.EnumLite) {
-      return Internal.hashEnum((Internal.EnumLite) a);
+    // Enums should be stored as integers internally.
+    if (a instanceof EnumLite) {
+      throw new UnsupportedOperationException();
     }
     return a.hashCode();
   }

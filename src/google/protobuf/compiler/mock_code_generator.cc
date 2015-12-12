@@ -147,6 +147,12 @@ bool MockCodeGenerator::Generate(
         std::cerr << "Saw message type MockCodeGenerator_HasSourceCodeInfo: "
                   << has_source_code_info << "." << std::endl;
         abort();
+      } else if (command == "HasJsonName") {
+        FieldDescriptorProto field_descriptor_proto;
+        file->message_type(i)->field(0)->CopyTo(&field_descriptor_proto);
+        std::cerr << "Saw json_name: "
+                  << field_descriptor_proto.has_json_name() << std::endl;
+        abort();
       } else {
         GOOGLE_LOG(FATAL) << "Unknown MockCodeGenerator command: " << command;
       }

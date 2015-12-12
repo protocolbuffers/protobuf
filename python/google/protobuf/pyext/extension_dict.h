@@ -117,11 +117,6 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value);
 PyObject* ClearExtension(ExtensionDict* self,
                                        PyObject* extension);
 
-// Checks if the dict has an extension.
-//
-// Returns a new python boolean reference.
-PyObject* HasExtension(ExtensionDict* self, PyObject* extension);
-
 // Gets an extension from the dict given the extension name as opposed to
 // descriptor.
 //

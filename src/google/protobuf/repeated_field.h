@@ -208,10 +208,19 @@ class RepeatedField {
   // sizeof(*this)
   int SpaceUsedExcludingSelf() const;
 
-  // Remove the element referenced by position.
+  // Removes the element referenced by position.
+  //
+  // Returns an iterator to the element immediately following the removed
+  // element.
+  //
+  // Invalidates all iterators at or after the removed element, including end().
   iterator erase(const_iterator position);
 
-  // Remove the elements in the range [first, last).
+  // Removes the elements in the range [first, last).
+  //
+  // Returns an iterator to the element immediately following the removed range.
+  //
+  // Invalidates all iterators at or after the removed range, including end().
   iterator erase(const_iterator first, const_iterator last);
 
   // Get the Arena on which this RepeatedField stores its elements.
@@ -885,10 +894,19 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
   // so will trigger a GOOGLE_DCHECK-failure.
   Element* ReleaseCleared();
 
-  // Remove the element referenced by position.
+  // Removes the element referenced by position.
+  //
+  // Returns an iterator to the element immediately following the removed
+  // element.
+  //
+  // Invalidates all iterators at or after the removed element, including end().
   iterator erase(const_iterator position);
 
   // Removes the elements in the range [first, last).
+  //
+  // Returns an iterator to the element immediately following the removed range.
+  //
+  // Invalidates all iterators at or after the removed range, including end().
   iterator erase(const_iterator first, const_iterator last);
 
   // Gets the arena on which this RepeatedPtrField stores its elements.

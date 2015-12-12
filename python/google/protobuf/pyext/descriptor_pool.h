@@ -55,7 +55,16 @@ namespace python {
 typedef struct PyDescriptorPool {
   PyObject_HEAD
 
+  // The C++ pool containing Descriptors.
   DescriptorPool* pool;
+
+  // The C++ pool acting as an underlay. Can be NULL.
+  // This pointer is not owned and must stay alive.
+  const DescriptorPool* underlay;
+
+  // The C++ descriptor database used to fetch unknown protos. Can be NULL.
+  // This pointer is owned.
+  const DescriptorDatabase* database;
 
   // DynamicMessageFactory used to create C++ instances of messages.
   // This object cache the descriptors that were used, so the DescriptorPool
@@ -138,6 +147,7 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg);
 // Retrieve the global descriptor pool owned by the _message module.
 // This is the one used by pb2.py generated modules.
 // Returns a *borrowed* reference.
+// "Default" pool used to register messages from _pb2.py modules.
 PyDescriptorPool* GetDefaultDescriptorPool();
 
 // Retrieve the python descriptor pool owning a C++ descriptor pool.

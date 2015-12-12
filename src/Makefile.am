@@ -148,15 +148,16 @@ nobase_include_HEADERS =                                        \
   google/protobuf/compiler/plugin.h                             \
   google/protobuf/compiler/plugin.pb.h                          \
   google/protobuf/compiler/cpp/cpp_generator.h                  \
+  google/protobuf/compiler/csharp/csharp_generator.h            \
+  google/protobuf/compiler/csharp/csharp_names.h                \
   google/protobuf/compiler/java/java_generator.h                \
   google/protobuf/compiler/java/java_names.h                    \
   google/protobuf/compiler/javanano/javanano_generator.h        \
+  google/protobuf/compiler/js/js_generator.h                    \
   google/protobuf/compiler/objectivec/objectivec_generator.h    \
   google/protobuf/compiler/objectivec/objectivec_helpers.h      \
   google/protobuf/compiler/python/python_generator.h            \
   google/protobuf/compiler/ruby/ruby_generator.h                \
-  google/protobuf/compiler/csharp/csharp_generator.h            \
-  google/protobuf/compiler/csharp/csharp_names.h                \
   google/protobuf/util/type_resolver.h                          \
   google/protobuf/util/field_comparator.h                       \
   google/protobuf/util/field_mask_util.h                        \
@@ -276,6 +277,8 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/util/internal/protostream_objectsource.h     \
   google/protobuf/util/internal/protostream_objectwriter.cc    \
   google/protobuf/util/internal/protostream_objectwriter.h     \
+  google/protobuf/util/internal/proto_writer.cc                \
+  google/protobuf/util/internal/proto_writer.h                 \
   google/protobuf/util/internal/snake2camel_objectwriter.h     \
   google/protobuf/util/internal/structured_objectwriter.h      \
   google/protobuf/util/internal/testdata                       \
@@ -386,6 +389,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_string_field_lite.h       \
   google/protobuf/compiler/java/java_doc_comment.cc            \
   google/protobuf/compiler/java/java_doc_comment.h             \
+  google/protobuf/compiler/js/js_generator.cc                  \
   google/protobuf/compiler/javanano/javanano_enum.cc           \
   google/protobuf/compiler/javanano/javanano_enum.h            \
   google/protobuf/compiler/javanano/javanano_enum_field.cc     \

@@ -591,14 +591,12 @@ class LIBPROTOBUF_EXPORT Arena {
   // This is inside Arena because only Arena has the friend relationships
   // necessary to see the underlying generated code traits.
   template<typename T>
-  struct is_destructor_skippable :
-      public google::protobuf::internal::integral_constant<bool,
-              sizeof(InternalIsDestructorSkippableHelper::DestructorSkippable<
-                     const T>(static_cast<const T*>(0))) ==
-              sizeof(char) ||
-              google::protobuf::internal::has_trivial_destructor<T>::value> {
-  };
-
+  struct is_destructor_skippable
+      : public google::protobuf::internal::integral_constant<
+            bool,
+            sizeof(InternalIsDestructorSkippableHelper::DestructorSkippable<
+                   const T>(static_cast<const T*>(0))) == sizeof(char) ||
+                google::protobuf::internal::has_trivial_destructor<T>::value> {};
 
   // CreateMessage<T> requires that T supports arenas, but this private method
   // works whether or not T supports arenas. These are not exposed to user code

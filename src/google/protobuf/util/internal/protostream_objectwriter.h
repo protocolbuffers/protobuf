@@ -42,6 +42,7 @@
 #include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/internal/datapiece.h>
 #include <google/protobuf/util/internal/error_listener.h>
+#include <google/protobuf/util/internal/proto_writer.h>
 #include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
@@ -67,9 +68,11 @@ namespace converter {
 class ObjectLocationTracker;
 
 // An ObjectWriter that can write protobuf bytes directly from writer events.
+// This class supports all special types like Struct and Map. It uses
+// the ProtoWriter class to write raw proto bytes.
 //
 // It also supports streaming.
-class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter {
+class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
  public:
 // Constructor. Does not take ownership of any parameter passed in.
   ProtoStreamObjectWriter(TypeResolver* type_resolver,
@@ -82,56 +85,13 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter
   virtual ProtoStreamObjectWriter* EndObject();
   virtual ProtoStreamObjectWriter* StartList(StringPiece name);
   virtual ProtoStreamObjectWriter* EndList();
-  virtual ProtoStreamObjectWriter* RenderBool(StringPiece name, bool value) {
-    return RenderDataPiece(name, DataPiece(value));
-  }
-  virtual ProtoStreamObjectWriter* RenderInt32(StringPiece name, int32 value) {
-    return RenderDataPiece(name, DataPiece(value));
-  }
-  virtual ProtoStreamObjectWriter* RenderUint32(StringPiece name,
-                                                uint32 value) {
-    return RenderDataPiece(name, DataPiece(value));
-  }
-  virtual ProtoStreamObjectWriter* RenderInt64(StringPiece name, int64 value) {
-    return RenderDataPiece(name, DataPiece(value));
-  }
-  virtual ProtoStreamObjectWriter* RenderUint64(StringPiece name,
-                                                uint64 value) {
-    return RenderDataPiece(name, DataPiece(value));
-  }
-  virtual ProtoStreamObjectWriter* RenderDouble(StringPiece name,
-                                                double value) {
-    return RenderDataPiece(name, DataPiece(value));
-  }
-  virtual ProtoStreamObjectWriter* RenderFloat(StringPiece name, float value) {
-    return RenderDataPiece(name, DataPiece(value));
-  }
-  virtual ProtoStreamObjectWriter* RenderString(StringPiece name,
-                                                StringPiece value) {
-    return RenderDataPiece(name, DataPiece(value));
-  }
-  virtual ProtoStreamObjectWriter* RenderBytes(StringPiece name,
-                                               StringPiece value) {
-    return RenderDataPiece(name, DataPiece(value, false));
-  }
-  virtual ProtoStreamObjectWriter* RenderNull(StringPiece name) {
-    return RenderDataPiece(name, DataPiece::NullData());
-  }
 
   // Renders a DataPiece 'value' into a field whose wire type is determined
   // from the given field 'name'.
-  ProtoStreamObjectWriter* RenderDataPiece(StringPiece name,
-                                           const DataPiece& value);
+  virtual ProtoStreamObjectWriter* RenderDataPiece(StringPiece name,
+                                                   const DataPiece& value);
 
-  // Returns the location tracker to use for tracking locations for errors.
-  const LocationTrackerInterface& location() {
-    return element_ != NULL ? *element_ : *tracker_;
-  }
-
-  // When true, we finished writing to output a complete message.
-  bool done() const { return done_; }
-
- private:
+ protected:
   // Function that renders a well known type with modified behavior.
   typedef util::Status (*TypeRenderer)(ProtoStreamObjectWriter*,
                                          const DataPiece&);
@@ -192,72 +152,36 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter
     bool has_injected_value_message_;
   };
 
-  class LIBPROTOBUF_EXPORT ProtoElement : public BaseElement, public LocationTrackerInterface {
+  // Represents an item in a stack of items used to keep state between
+  // ObjectWrier events.
+  class LIBPROTOBUF_EXPORT Item : public BaseElement {
    public:
-    // Indicates the type of element. Special types like LIST, MAP, MAP_ENTRY,
-    // STRUCT etc. are used to deduce other information based on their position
-    // on the stack of elements.
-    enum ElementType {
-      MESSAGE,       // Simple message
-      LIST,          // List/repeated element
-      MAP,           // Proto3 map type
-      MAP_ENTRY,     // Proto3 map message type, with 'key' and 'value' fields
-      ANY,           // Proto3 Any type
-      STRUCT,        // Proto3 struct type
-      STRUCT_VALUE,  // Struct's Value message type
-      STRUCT_LIST,   // List type indicator within a struct
-      STRUCT_LIST_VALUE,  // Struct Value's ListValue message type
-      STRUCT_MAP,         // Struct within a struct type
-      STRUCT_MAP_ENTRY    // Struct map's entry type with 'key' and 'value'
-                          // fields
+    // Indicates the type of item.
+    enum ItemType {
+      MESSAGE,  // Simple message
+      MAP,      // Proto3 map type
+      ANY,      // Proto3 Any type
     };
 
-    // Constructor for the root element. No parent nor field.
-    ProtoElement(const TypeInfo* typeinfo, const google::protobuf::Type& type,
-                 ProtoStreamObjectWriter* enclosing);
+    // Constructor for the root item.
+    Item(ProtoStreamObjectWriter* enclosing, ItemType item_type,
+         bool is_placeholder, bool is_list);
 
-    // Constructor for a field of an element.
-    ProtoElement(ProtoElement* parent, const google::protobuf::Field* field,
-                 const google::protobuf::Type& type, ElementType element_type);
+    // Constructor for a field of a message.
+    Item(Item* parent, ItemType item_type, bool is_placeholder, bool is_list);
 
-    virtual ~ProtoElement() {}
-
-    // Called just before the destructor for clean up:
-    //   - reports any missing required fields
-    //   - computes the space needed by the size field, and augment the
-    //     length of all parent messages by this additional space.
-    //   - releases and returns the parent pointer.
-    ProtoElement* pop();
-
-    // Accessors
-    const google::protobuf::Field* field() const { return field_; }
-    const google::protobuf::Type& type() const { return type_; }
+    virtual ~Item() {}
 
     // These functions return true if the element type is corresponding to the
     // type in function name.
-    bool IsMap() { return element_type_ == MAP; }
-    bool IsStructMap() { return element_type_ == STRUCT_MAP; }
-    bool IsStructMapEntry() { return element_type_ == STRUCT_MAP_ENTRY; }
-    bool IsStructList() { return element_type_ == STRUCT_LIST; }
-    bool IsAny() { return element_type_ == ANY; }
-
-    ElementType element_type() { return element_type_; }
-
-    void RegisterField(const google::protobuf::Field* field);
-    virtual string ToString() const;
+    bool IsMap() { return item_type_ == MAP; }
+    bool IsAny() { return item_type_ == ANY; }
 
     AnyWriter* any() const { return any_.get(); }
 
-    virtual ProtoElement* parent() const {
-      return static_cast<ProtoElement*>(BaseElement::parent());
+    virtual Item* parent() const {
+      return static_cast<Item*>(BaseElement::parent());
     }
-
-    // Returns true if the index is already taken by a preceeding oneof input.
-    bool OneofIndexTaken(int32 index);
-
-    // Marks the oneof 'index' as taken. Future inputs to this oneof will
-    // generate an error.
-    void TakeOneofIndex(int32 index);
 
     // Inserts map key into hash set if and only if the key did NOT already
     // exist in hash set.
@@ -265,6 +189,9 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter
     // Return true if insert successfully; returns false if the map key was
     // already present.
     bool InsertMapKeyIfNotPresent(StringPiece map_key);
+
+    bool is_placeholder() const { return is_placeholder_; }
+    bool is_list() const { return is_list_; }
 
    private:
     // Used for access to variables of the enclosing instance of
@@ -274,111 +201,27 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter
     // A writer for Any objects, handles all Any-related nonsense.
     google::protobuf::scoped_ptr<AnyWriter> any_;
 
-    // Describes the element as a field in the parent message.
-    // field_ is NULL if and only if this element is the root element.
-    const google::protobuf::Field* field_;
-
-    // TypeInfo to lookup types.
-    const TypeInfo* typeinfo_;
-
-    // Additional variables if this element is a message:
-    // (Root element is always a message).
-    // descriptor_     : describes allowed fields in the message.
-    // required_fields_: set of required fields.
-    // is_repeated_type_ : true if the element is of type list or map.
-    // size_index_     : index into ProtoStreamObjectWriter::size_insert_
-    //                   for later insertion of serialized message length.
-    const google::protobuf::Type& type_;
-    std::set<const google::protobuf::Field*> required_fields_;
-    const bool is_repeated_type_;
-    const int size_index_;
-
-    // Tracks position in repeated fields, needed for LocationTrackerInterface.
-    int array_index_;
-
     // The type of this element, see enum for permissible types.
-    ElementType element_type_;
-
-    // Set of oneof indices already seen for the type_. Used to validate
-    // incoming messages so no more than one oneof is set.
-    hash_set<int32> oneof_indices_;
+    ItemType item_type_;
 
     // Set of map keys already seen for the type_. Used to validate incoming
     // messages so no map key appears more than once.
     hash_set<string> map_keys_;
 
-    GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoElement);
-  };
+    // Conveys whether this Item is a placeholder or not. Placeholder items are
+    // pushed to stack to account for special types.
+    bool is_placeholder_;
 
-  // Container for inserting 'size' information at the 'pos' position.
-  struct SizeInfo {
-    const int pos;
-    int size;
+    // Conveys whether this Item is a list or not. This is used to send
+    // StartList or EndList calls to underlying ObjectWriter.
+    bool is_list_;
+
+    GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(Item);
   };
 
   ProtoStreamObjectWriter(const TypeInfo* typeinfo,
                           const google::protobuf::Type& type,
                           strings::ByteSink* output, ErrorListener* listener);
-
-  ProtoElement* element() { return element_.get(); }
-
-  // Helper methods for calling ErrorListener. See error_listener.h.
-  void InvalidName(StringPiece unknown_name, StringPiece message);
-  void InvalidValue(StringPiece type_name, StringPiece value);
-  void MissingField(StringPiece missing_name);
-
-  // Common code for BeginObject() and BeginList() that does invalid_depth_
-  // bookkeeping associated with name lookup.
-  const google::protobuf::Field* BeginNamed(StringPiece name, bool is_list);
-
-  // Lookup the field in the current element. Looks in the base descriptor
-  // and in any extension. This will report an error if the field cannot be
-  // found or if multiple matching extensions are found.
-  const google::protobuf::Field* Lookup(StringPiece name);
-
-  // Lookup the field type in the type descriptor. Returns NULL if the type
-  // is not known.
-  const google::protobuf::Type* LookupType(
-      const google::protobuf::Field* field);
-
-  // Looks up the oneof struct Value field depending on the type.
-  // On failure to find, it returns an appropriate error.
-  util::StatusOr<const google::protobuf::Field*> LookupStructField(
-      DataPiece::Type type);
-
-  // Starts an entry in map. This will be called after placing map element at
-  // the top of the stack. Uses this information to write map entries.
-  const google::protobuf::Field* StartMapEntry(StringPiece name);
-
-  // Starts a google.protobuf.Struct.
-  // 'field' is of type google.protobuf.Struct.
-  // If field is NULL, it indicates that the top-level message is a struct
-  // type.
-  void StartStruct(const google::protobuf::Field* field);
-
-  // Starts another struct within a struct.
-  // 'field' is of type google.protobuf.Value (see struct.proto).
-  const google::protobuf::Field* StartStructValueInStruct(
-      const google::protobuf::Field* field);
-
-  // Starts a list within a struct.
-  // 'field' is of type google.protobuf.ListValue (see struct.proto).
-  const google::protobuf::Field* StartListValueInStruct(
-      const google::protobuf::Field* field);
-
-  // Starts the repeated "values" field in struct.proto's
-  // google.protobuf.ListValue type. 'field' should be of type
-  // google.protobuf.ListValue.
-  const google::protobuf::Field* StartRepeatedValuesInListValue(
-      const google::protobuf::Field* field);
-
-  // Pops sentinel elements off the stack.
-  void SkipElements();
-
-  // Write serialized output to the final output ByteSink, inserting all
-  // the size information for nested messages that are missing from the
-  // intermediate Cord buffer.
-  void WriteRootMessage();
 
   // Returns true if the field is a map.
   bool IsMap(const google::protobuf::Field& field);
@@ -386,14 +229,14 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter
   // Returns true if the field is an any.
   bool IsAny(const google::protobuf::Field& field);
 
-  // Helper method to write proto tags based on the given field.
-  void WriteTag(const google::protobuf::Field& field);
+  // Returns true if the field is google.protobuf.Struct.
+  bool IsStruct(const google::protobuf::Field& field);
 
+  // Returns true if the field is google.protobuf.Value.
+  bool IsStructValue(const google::protobuf::Field& field);
 
-  // Helper function to render primitive data types in DataPiece.
-  void RenderSimpleDataPiece(const google::protobuf::Field& field,
-                             const google::protobuf::Type& type,
-                             const DataPiece& data);
+  // Returns true if the field is google.protobuf.ListValue.
+  bool IsStructListValue(const google::protobuf::Field& field);
 
   // Renders google.protobuf.Value in struct.proto. It picks the right oneof
   // type based on value's type.
@@ -417,69 +260,46 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public StructuredObjectWriter
   static util::Status RenderWrapperType(ProtoStreamObjectWriter* ow,
                                           const DataPiece& value);
 
-  // Helper functions to create the map and find functions responsible for
-  // rendering well known types, keyed by type URL.
-  static hash_map<string, TypeRenderer>* renderers_;
   static void InitRendererMap();
   static void DeleteRendererMap();
   static TypeRenderer* FindTypeRenderer(const string& type_url);
 
-  // Returns the ProtoElement::ElementType for the given Type.
-  static ProtoElement::ElementType GetElementType(
-      const google::protobuf::Type& type);
-
-  // Returns true if the field for type_ can be set as a oneof. If field is not
-  // a oneof type, this function does nothing and returns true.
-  // If another field for this oneof is already set, this function returns
-  // false. It also calls the appropriate error callback.
-  // unnormalized_name is used for error string.
-  bool ValidOneof(const google::protobuf::Field& field,
-                  StringPiece unnormalized_name);
-
   // Returns true if the map key for type_ is not duplicated key.
   // If map key is duplicated key, this function returns false.
-  // Note that caller should make sure that the current proto element (element_)
+  // Note that caller should make sure that the current proto element (current_)
   // is of element type MAP or STRUCT_MAP.
   // It also calls the appropriate error callback and unnormalzied_name is used
   // for error string.
   bool ValidMapKey(StringPiece unnormalized_name);
 
+  // Pushes an item on to the stack. Also calls either StartObject or StartList
+  // on the underlying ObjectWriter depending on whether is_list is false or
+  // not.
+  // is_placeholder conveys whether the item is a placeholder item or not.
+  // Placeholder items are pushed when adding auxillary types' StartObject or
+  // StartList calls.
+  void Push(StringPiece name, Item::ItemType item_type, bool is_placeholder,
+            bool is_list);
+
+  // Pops items from the stack. All placeholder items are popped until a
+  // non-placeholder item is found.
+  void Pop();
+
+  // Pops one element from the stack. Calls EndObject() or EndList() on the
+  // underlying ObjectWriter depending on the value of is_list_.
+  void PopOneElement();
+
+ private:
+  // Helper functions to create the map and find functions responsible for
+  // rendering well known types, keyed by type URL.
+  static hash_map<string, TypeRenderer>* renderers_;
+
   // Variables for describing the structure of the input tree:
   // master_type_: descriptor for the whole protobuf message.
-  // typeinfo_ : the TypeInfo object to lookup types.
   const google::protobuf::Type& master_type_;
-  const TypeInfo* typeinfo_;
-  // Whether we own the typeinfo_ object.
-  bool own_typeinfo_;
 
-  // Indicates whether we finished writing root message completely.
-  bool done_;
-
-  // Variable for internal state processing:
-  // element_    : the current element.
-  // size_insert_: sizes of nested messages.
-  //               pos  - position to insert the size field.
-  //               size - size value to be inserted.
-  google::protobuf::scoped_ptr<ProtoElement> element_;
-  std::deque<SizeInfo> size_insert_;
-
-  // Variables for output generation:
-  // output_  : pointer to an external ByteSink for final user-visible output.
-  // buffer_  : buffer holding partial message before being ready for output_.
-  // adapter_ : internal adapter between CodedOutputStream and Cord buffer_.
-  // stream_  : wrapper for writing tags and other encodings in wire format.
-  strings::ByteSink* output_;
-  string buffer_;
-  google::protobuf::io::StringOutputStream adapter_;
-  google::protobuf::scoped_ptr<google::protobuf::io::CodedOutputStream> stream_;
-
-  // Variables for error tracking and reporting:
-  // listener_     : a place to report any errors found.
-  // invalid_depth_: number of enclosing invalid nested messages.
-  // tracker_      : the root location tracker interface.
-  ErrorListener* listener_;
-  int invalid_depth_;
-  google::protobuf::scoped_ptr<LocationTrackerInterface> tracker_;
+  // The current element, variable for internal state processing.
+  google::protobuf::scoped_ptr<Item> current_;
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoStreamObjectWriter);
 };

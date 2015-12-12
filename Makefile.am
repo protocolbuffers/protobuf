@@ -215,6 +215,7 @@ java_EXTRA_DIST=                                                             \
   java/src/main/java/com/google/protobuf/Message.java                        \
   java/src/main/java/com/google/protobuf/MessageLite.java                    \
   java/src/main/java/com/google/protobuf/MessageLiteOrBuilder.java           \
+  java/src/main/java/com/google/protobuf/MessageLiteToString.java            \
   java/src/main/java/com/google/protobuf/MessageOrBuilder.java               \
   java/src/main/java/com/google/protobuf/MessageReflection.java              \
   java/src/main/java/com/google/protobuf/MutabilityOracle.java               \
@@ -233,6 +234,7 @@ java_EXTRA_DIST=                                                             \
   java/src/main/java/com/google/protobuf/SingleFieldBuilder.java             \
   java/src/main/java/com/google/protobuf/SmallSortedMap.java                 \
   java/src/main/java/com/google/protobuf/TextFormat.java                     \
+  java/src/main/java/com/google/protobuf/TextFormatEscaper.java              \
   java/src/main/java/com/google/protobuf/UninitializedMessageException.java  \
   java/src/main/java/com/google/protobuf/UnknownFieldSet.java                \
   java/src/main/java/com/google/protobuf/UnknownFieldSetLite.java            \
@@ -504,6 +506,7 @@ objectivec_EXTRA_DIST=                                                       \
 
 python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
+  python/google/protobuf/internal/any_test.proto                             \
   python/google/protobuf/internal/api_implementation.cc                      \
   python/google/protobuf/internal/api_implementation.py                      \
   python/google/protobuf/internal/containers.py                              \
@@ -540,6 +543,8 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/text_format_test.py                        \
   python/google/protobuf/internal/type_checkers.py                           \
   python/google/protobuf/internal/unknown_fields_test.py                     \
+  python/google/protobuf/internal/well_known_types.py                        \
+  python/google/protobuf/internal/well_known_types_test.py                   \
   python/google/protobuf/internal/wire_format.py                             \
   python/google/protobuf/internal/wire_format_test.py                        \
   python/google/protobuf/internal/__init__.py                                \
@@ -558,8 +563,6 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/extension_dict.cc                             \
   python/google/protobuf/pyext/message.h                                     \
   python/google/protobuf/pyext/message.cc                                    \
-  python/google/protobuf/pyext/message_map_container.cc                      \
-  python/google/protobuf/pyext/message_map_container.h                       \
   python/google/protobuf/pyext/proto2_api_test.proto                         \
   python/google/protobuf/pyext/python.proto                                  \
   python/google/protobuf/pyext/python_protobuf.h                             \
@@ -567,8 +570,6 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/repeated_composite_container.cc               \
   python/google/protobuf/pyext/repeated_scalar_container.h                   \
   python/google/protobuf/pyext/repeated_scalar_container.cc                  \
-  python/google/protobuf/pyext/scalar_map_container.cc                       \
-  python/google/protobuf/pyext/scalar_map_container.h                        \
   python/google/protobuf/pyext/scoped_pyobject_ptr.h                         \
   python/google/protobuf/pyext/__init__.py                                   \
   python/google/protobuf/descriptor.py                                       \

@@ -43,4 +43,11 @@ message DefaultValueTest {
   bool bool_value = 13;
   string string_value = 15;
   bytes bytes_value = 17 [ctype = CORD];
+
+  enum EnumDefault {
+    ENUM_FIRST = 0;
+    ENUM_SECOND = 1;
+    ENUM_THIRD = 2;
+  }
+  EnumDefault enum_value = 18;
 }

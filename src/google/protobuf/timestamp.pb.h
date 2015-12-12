@@ -53,9 +53,14 @@ class LIBPROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message {
     return *this;
   }
 
+  inline ::google::protobuf::Arena* GetArena() const { return GetArenaNoVirtual(); }
+  inline void* GetMaybeArenaPointer() const {
+    return MaybeArenaPtr();
+  }
   static const ::google::protobuf::Descriptor* descriptor();
   static const Timestamp& default_instance();
 
+  void UnsafeArenaSwap(Timestamp* other);
   void Swap(Timestamp* other);
 
   // implements Message ----------------------------------------------
@@ -82,6 +87,11 @@ class LIBPROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message {
   void SharedDtor();
   void SetCachedSize(int size) const;
   void InternalSwap(Timestamp* other);
+  protected:
+  explicit Timestamp(::google::protobuf::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::google::protobuf::Arena* arena);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
@@ -113,6 +123,9 @@ class LIBPROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message {
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  friend class ::google::protobuf::Arena;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
   bool _is_default_instance_;
   ::google::protobuf::int64 seconds_;
   ::google::protobuf::int32 nanos_;

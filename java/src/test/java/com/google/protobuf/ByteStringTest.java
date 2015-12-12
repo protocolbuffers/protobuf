@@ -39,7 +39,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -129,7 +128,7 @@ public class ByteStringTest extends TestCase {
         isArrayRange(byteString.toByteArray(), bytes, 500, bytes.length - 500));
   }
 
-  public void testCopyFrom_StringEncoding() throws UnsupportedEncodingException {
+  public void testCopyFrom_StringEncoding() {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString byteString = ByteString.copyFrom(testString, UTF_16);
     byte[] testBytes = testString.getBytes(UTF_16);
@@ -137,7 +136,7 @@ public class ByteStringTest extends TestCase {
         isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length));
   }
 
-  public void testCopyFrom_Utf8() throws UnsupportedEncodingException {
+  public void testCopyFrom_Utf8() {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString byteString = ByteString.copyFromUtf8(testString);
     byte[] testBytes = testString.getBytes(Internal.UTF_8);
@@ -154,6 +153,7 @@ public class ByteStringTest extends TestCase {
         isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length));
     // Call copyFrom on an iteration that's not a collection
     ByteString byteStringAlt = ByteString.copyFrom(new Iterable<ByteString>() {
+      @Override
       public Iterator<ByteString> iterator() {
         return pieces.iterator();
       }
@@ -399,7 +399,7 @@ public class ByteStringTest extends TestCase {
     }
   }
 
-  public void testToStringUtf8() throws UnsupportedEncodingException {
+  public void testToStringUtf8() {
     String testString = "I love unicode \u1234\u5678 characters";
     byte[] testBytes = testString.getBytes(Internal.UTF_8);
     ByteString byteString = ByteString.copyFrom(testBytes);
@@ -419,7 +419,7 @@ public class ByteStringTest extends TestCase {
 
   // Test newOutput() using a variety of buffer sizes and a variety of (fixed)
   // write sizes
-  public void testNewOutput_ArrayWrite() throws IOException {
+  public void testNewOutput_ArrayWrite() {
     byte[] bytes = getTestBytes();
     int length = bytes.length;
     int[] bufferSizes = {128, 256, length / 2, length - 1, length, length + 1,
@@ -442,7 +442,7 @@ public class ByteStringTest extends TestCase {
 
   // Test newOutput() using a variety of buffer sizes, but writing all the
   // characters using write(byte);
-  public void testNewOutput_WriteChar() throws IOException {
+  public void testNewOutput_WriteChar() {
     byte[] bytes = getTestBytes();
     int length = bytes.length;
     int[] bufferSizes = {0, 1, 128, 256, length / 2,
@@ -461,7 +461,7 @@ public class ByteStringTest extends TestCase {
 
   // Test newOutput() in which we write the bytes using a variety of methods
   // and sizes, and in which we repeatedly call toByteString() in the middle.
-  public void testNewOutput_Mixed() throws IOException {
+  public void testNewOutput_Mixed() {
     Random rng = new Random(1);
     byte[] bytes = getTestBytes();
     int length = bytes.length;
@@ -494,7 +494,7 @@ public class ByteStringTest extends TestCase {
     }
   }
 
-  public void testNewOutputEmpty() throws IOException {
+  public void testNewOutputEmpty() {
     // Make sure newOutput() correctly builds empty byte strings
     ByteString byteString = ByteString.newOutput().toByteString();
     assertEquals(ByteString.EMPTY, byteString);

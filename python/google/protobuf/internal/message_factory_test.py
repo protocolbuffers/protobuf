@@ -45,6 +45,7 @@ from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 
+
 class MessageFactoryTest(unittest.TestCase):
 
   def setUp(self):
@@ -104,8 +105,8 @@ class MessageFactoryTest(unittest.TestCase):
   def testGetMessages(self):
     # performed twice because multiple calls with the same input must be allowed
     for _ in range(2):
-      messages = message_factory.GetMessages([self.factory_test2_fd,
-                                              self.factory_test1_fd])
+      messages = message_factory.GetMessages([self.factory_test1_fd,
+                                              self.factory_test2_fd])
       self.assertTrue(
           set(['google.protobuf.python.internal.Factory2Message',
                'google.protobuf.python.internal.Factory1Message'],
@@ -116,7 +117,7 @@ class MessageFactoryTest(unittest.TestCase):
           set(['google.protobuf.python.internal.Factory2Message.one_more_field',
                'google.protobuf.python.internal.another_field'],
              ).issubset(
-                set(messages['google.protobuf.python.internal.Factory1Message']
+                 set(messages['google.protobuf.python.internal.Factory1Message']
                      ._extensions_by_name.keys())))
       factory_msg1 = messages['google.protobuf.python.internal.Factory1Message']
       msg1 = messages['google.protobuf.python.internal.Factory1Message']()

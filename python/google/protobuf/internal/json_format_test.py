@@ -42,6 +42,7 @@ try:
   import unittest2 as unittest
 except ImportError:
   import unittest
+from google.protobuf.internal import well_known_types
 from google.protobuf import json_format
 from google.protobuf.util import json_format_proto3_pb2
 
@@ -269,15 +270,15 @@ class JsonFormatTest(JsonFormatBase):
                    '}'))
     parsed_message = json_format_proto3_pb2.TestTimestamp()
     self.CheckParseBack(message, parsed_message)
-    text = (r'{"value": "1972-01-01T01:00:00.01+08:00",'
+    text = (r'{"value": "1970-01-01T00:00:00.01+08:00",'
             r'"repeatedValue":['
-            r'  "1972-01-01T01:00:00.01+08:30",'
-            r'  "1972-01-01T01:00:00.01-01:23"]}')
+            r'  "1970-01-01T00:00:00.01+08:30",'
+            r'  "1970-01-01T00:00:00.01-01:23"]}')
     json_format.Parse(text, parsed_message)
-    self.assertEqual(parsed_message.value.seconds, 63104400)
+    self.assertEqual(parsed_message.value.seconds, -8 * 3600)
     self.assertEqual(parsed_message.value.nanos, 10000000)
-    self.assertEqual(parsed_message.repeated_value[0].seconds, 63106200)
-    self.assertEqual(parsed_message.repeated_value[1].seconds, 63070620)
+    self.assertEqual(parsed_message.repeated_value[0].seconds, -8.5 * 3600)
+    self.assertEqual(parsed_message.repeated_value[1].seconds, 3600 + 23 * 60)
 
   def testDurationMessage(self):
     message = json_format_proto3_pb2.TestDuration()
@@ -389,7 +390,7 @@ class JsonFormatTest(JsonFormatBase):
 
   def testParseEmptyText(self):
     self.CheckError('',
-                    r'Failed to load JSON: (Expecting value)|(No JSON)')
+                    r'Failed to load JSON: (Expecting value)|(No JSON).')
 
   def testParseBadEnumValue(self):
     self.CheckError(
@@ -414,7 +415,7 @@ class JsonFormatTest(JsonFormatBase):
     if sys.version_info < (2, 7):
       return
     self.CheckError('{"int32Value": 1,\n"int32Value":2}',
-                    'Failed to load JSON: duplicate key int32Value')
+                    'Failed to load JSON: duplicate key int32Value.')
 
   def testInvalidBoolValue(self):
     self.CheckError('{"boolValue": 1}',
@@ -431,39 +432,43 @@ class JsonFormatTest(JsonFormatBase):
                       json_format.Parse, text, message)
     self.CheckError('{"int32Value": 012345}',
                     (r'Failed to load JSON: Expecting \'?,\'? delimiter: '
-                     r'line 1'))
+                     r'line 1.'))
     self.CheckError('{"int32Value": 1.0}',
                     'Failed to parse int32Value field: '
-                    'Couldn\'t parse integer: 1.0')
+                    'Couldn\'t parse integer: 1.0.')
     self.CheckError('{"int32Value": " 1 "}',
                     'Failed to parse int32Value field: '
-                    'Couldn\'t parse integer: " 1 "')
+                    'Couldn\'t parse integer: " 1 ".')
+    self.CheckError('{"int32Value": "1 "}',
+                    'Failed to parse int32Value field: '
+                    'Couldn\'t parse integer: "1 ".')
     self.CheckError('{"int32Value": 12345678901234567890}',
                     'Failed to parse int32Value field: Value out of range: '
-                    '12345678901234567890')
+                    '12345678901234567890.')
     self.CheckError('{"int32Value": 1e5}',
                     'Failed to parse int32Value field: '
-                    'Couldn\'t parse integer: 100000.0')
+                    'Couldn\'t parse integer: 100000.0.')
     self.CheckError('{"uint32Value": -1}',
-                    'Failed to parse uint32Value field: Value out of range: -1')
+                    'Failed to parse uint32Value field: '
+                    'Value out of range: -1.')
 
   def testInvalidFloatValue(self):
     self.CheckError('{"floatValue": "nan"}',
                     'Failed to parse floatValue field: Couldn\'t '
-                    'parse float "nan", use "NaN" instead')
+                    'parse float "nan", use "NaN" instead.')
 
   def testInvalidBytesValue(self):
     self.CheckError('{"bytesValue": "AQI"}',
-                    'Failed to parse bytesValue field: Incorrect padding')
+                    'Failed to parse bytesValue field: Incorrect padding.')
     self.CheckError('{"bytesValue": "AQI*"}',
-                    'Failed to parse bytesValue field: Incorrect padding')
+                    'Failed to parse bytesValue field: Incorrect padding.')
 
   def testInvalidMap(self):
     message = json_format_proto3_pb2.TestMap()
     text = '{"int32Map": {"null": 2, "2": 3}}'
     self.assertRaisesRegexp(
         json_format.ParseError,
-        'Failed to parse int32Map field: Couldn\'t parse integer: "null"',
+        'Failed to parse int32Map field: invalid literal',
         json_format.Parse, text, message)
     text = '{"int32Map": {1: 2, "2": 3}}'
     self.assertRaisesRegexp(
@@ -474,7 +479,7 @@ class JsonFormatTest(JsonFormatBase):
     text = '{"boolMap": {"null": 1}}'
     self.assertRaisesRegexp(
         json_format.ParseError,
-        'Failed to parse boolMap field: Expect "true" or "false", not null.',
+        'Failed to parse boolMap field: Expected "true" or "false", not null.',
         json_format.Parse, text, message)
     if sys.version_info < (2, 7):
       return
@@ -490,30 +495,29 @@ class JsonFormatTest(JsonFormatBase):
     self.assertRaisesRegexp(
         json_format.ParseError,
         'time data \'10000-01-01T00:00:00\' does not match'
-        ' format \'%Y-%m-%dT%H:%M:%S\'',
+        ' format \'%Y-%m-%dT%H:%M:%S\'.',
         json_format.Parse, text, message)
     text = '{"value": "1970-01-01T00:00:00.0123456789012Z"}'
     self.assertRaisesRegexp(
-        json_format.ParseError,
-        'Failed to parse value field: Failed to parse Timestamp: '
+        well_known_types.ParseError,
         'nanos 0123456789012 more than 9 fractional digits.',
         json_format.Parse, text, message)
     text = '{"value": "1972-01-01T01:00:00.01+08"}'
     self.assertRaisesRegexp(
-        json_format.ParseError,
-        (r'Failed to parse value field: Invalid timezone offset value: \+08'),
+        well_known_types.ParseError,
+        (r'Invalid timezone offset value: \+08.'),
         json_format.Parse, text, message)
     # Time smaller than minimum time.
     text = '{"value": "0000-01-01T00:00:00Z"}'
     self.assertRaisesRegexp(
         json_format.ParseError,
-        'Failed to parse value field: year is out of range',
+        'Failed to parse value field: year is out of range.',
         json_format.Parse, text, message)
     # Time bigger than maxinum time.
     message.value.seconds = 253402300800
     self.assertRaisesRegexp(
-        json_format.SerializeToJsonError,
-        'Failed to serialize value field: year is out of range',
+        OverflowError,
+        'date value out of range',
         json_format.MessageToJson, message)
 
   def testInvalidOneof(self):

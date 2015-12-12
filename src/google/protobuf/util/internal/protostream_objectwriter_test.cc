@@ -241,6 +241,21 @@ TEST_P(ProtoStreamObjectWriterTest, SimpleMessage) {
   CheckOutput(book);
 }
 
+TEST_P(ProtoStreamObjectWriterTest, CustomJsonName) {
+  Book book;
+  Author* robert = book.mutable_author();
+  robert->set_id(12345);
+  robert->set_name("robert");
+
+  ow_->StartObject("")
+      ->StartObject("author")
+      ->RenderUint64("@id", 12345)
+      ->RenderString("name", "robert")
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(book);
+}
+
 TEST_P(ProtoStreamObjectWriterTest, PrimitiveFromStringConversion) {
   Primitive full;
   full.set_fix32(101);
@@ -796,10 +811,6 @@ TEST_P(ProtoStreamObjectWriterTest, RootNamedList) {
               InvalidName(_, StringPiece("oops"),
                           StringPiece("Root element should not be named.")))
       .With(Args<0>(HasObjectLocation("")));
-  EXPECT_CALL(listener_,
-              InvalidName(_, StringPiece(""),
-                          StringPiece("Proto fields must have a name.")))
-      .With(Args<0>(HasObjectLocation("")));
   ow_->StartList("oops")->RenderString("", "item")->EndList();
   CheckOutput(empty, 0);
 }
@@ -864,6 +875,18 @@ INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
                         ::testing::Values(
                             testing::USE_TYPE_RESOLVER));
 
+TEST_P(ProtoStreamObjectWriterTimestampDurationTest, ParseTimestamp) {
+  TimestampDuration timestamp;
+  google::protobuf::Timestamp* ts = timestamp.mutable_ts();
+  ts->set_seconds(1448249855);
+  ts->set_nanos(33155000);
+
+  ow_->StartObject("")
+      ->RenderString("ts", "2015-11-23T03:37:35.033155Z")
+      ->EndObject();
+  CheckOutput(timestamp);
+}
+
 TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError1) {
   TimestampDuration timestamp;
 
@@ -922,9 +945,66 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError4) {
   CheckOutput(timestamp);
 }
 
-// TODO(skarvaje): Write a test for nanos that exceed limit. Currently, it is
-// not possible to construct a test case where nanos exceed limit because of
-// floating point arithmetic.
+TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError5) {
+  TimestampDuration timestamp;
+
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "2015-11-23T03:37:35.033155   Z")));
+
+  ow_->StartObject("")
+      // Whitespace in the Timestamp nanos is not allowed.
+      ->RenderString("ts", "2015-11-23T03:37:35.033155   Z")
+      ->EndObject();
+  CheckOutput(timestamp);
+}
+
+TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError6) {
+  TimestampDuration timestamp;
+
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "2015-11-23T03:37:35.033155 1234Z")));
+
+  ow_->StartObject("")
+      // Whitespace in the Timestamp nanos is not allowed.
+      ->RenderString("ts", "2015-11-23T03:37:35.033155 1234Z")
+      ->EndObject();
+  CheckOutput(timestamp);
+}
+
+TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidTimestampError7) {
+  TimestampDuration timestamp;
+
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Timestamp"),
+                   StringPiece("Field 'ts', Invalid time format: "
+                               "2015-11-23T03:37:35.033abc155Z")));
+
+  ow_->StartObject("")
+      // Non-numeric characters in the Timestamp nanos is not allowed.
+      ->RenderString("ts", "2015-11-23T03:37:35.033abc155Z")
+      ->EndObject();
+  CheckOutput(timestamp);
+}
+
+TEST_P(ProtoStreamObjectWriterTimestampDurationTest, ParseDuration) {
+  TimestampDuration duration;
+  google::protobuf::Duration* dur = duration.mutable_dur();
+  dur->set_seconds(1448216930);
+  dur->set_nanos(132262000);
+
+  ow_->StartObject("")->RenderString("dur", "1448216930.132262s")->EndObject();
+  CheckOutput(duration);
+}
 
 TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidDurationError1) {
   TimestampDuration duration;
@@ -962,7 +1042,7 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidDurationError3) {
       InvalidValue(
           _, StringPiece("type.googleapis.com/google.protobuf.Duration"),
           StringPiece("Field 'dur', Invalid duration format, failed to "
-                      "parse nanos seconds")));
+                      "parse nano seconds")));
 
   ow_->StartObject("")->RenderString("dur", "123.DEFs")->EndObject();
   CheckOutput(duration);
@@ -978,6 +1058,19 @@ TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidDurationError4) {
                    StringPiece("Field 'dur', Duration value exceeds limits")));
 
   ow_->StartObject("")->RenderString("dur", "315576000002s")->EndObject();
+  CheckOutput(duration);
+}
+
+TEST_P(ProtoStreamObjectWriterTimestampDurationTest, InvalidDurationError5) {
+  TimestampDuration duration;
+
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(_,
+                   StringPiece("type.googleapis.com/google.protobuf.Duration"),
+                   StringPiece("Field 'dur', Duration value exceeds limits")));
+
+  ow_->StartObject("")->RenderString("dur", "0.1000000001s")->EndObject();
   CheckOutput(duration);
 }
 
@@ -1066,12 +1159,12 @@ TEST_P(ProtoStreamObjectWriterStructTest, StructInvalidInputFailure) {
 TEST_P(ProtoStreamObjectWriterStructTest, SimpleRepeatedStructMapKeyTest) {
   EXPECT_CALL(
       listener_,
-      InvalidName(_, StringPiece("k1"),
-                  StringPiece("Repeated map key: 'k1' is already set.")));
+      InvalidName(_, StringPiece("gBike"),
+                  StringPiece("Repeated map key: 'gBike' is already set.")));
   ow_->StartObject("")
       ->StartObject("object")
-      ->RenderString("k1", "v1")
-      ->RenderString("k1", "v2")
+      ->RenderString("gBike", "v1")
+      ->RenderString("gBike", "v2")
       ->EndObject()
       ->EndObject();
 }
@@ -1121,10 +1214,11 @@ INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
 
 TEST_P(ProtoStreamObjectWriterMapTest, MapShouldNotAcceptList) {
   MapIn mm;
-  EXPECT_CALL(listener_,
-              InvalidValue(_, StringPiece("Map"),
-                           StringPiece("Cannot bind a list to map.")))
-      .With(Args<0>(HasObjectLocation("map_input")));
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(
+          _, StringPiece("Map"),
+          StringPiece("Cannot bind a list to map for field 'map_input'.")));
   ow_->StartObject("")
       ->StartList("map_input")
       ->RenderString("a", "b")

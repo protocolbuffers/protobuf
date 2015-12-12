@@ -397,8 +397,15 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
   // + n^3) in which n^3 is the time complexity of the maximum matching
   // algorithm.
   //
-  // REQUIRES:  field->is_repeated()
+  // REQUIRES:  field->is_repeated() and field not registered with TreatAsList
   void TreatAsSet(const FieldDescriptor* field);
+
+  // The elements of the given repeated field will be treated as a list for
+  // diffing purposes, so different orderings of the same elements will NOT be
+  // considered equal.
+  //
+  // REQUIRED: field->is_repeated() and field not registered with TreatAsSet
+  void TreatAsList(const FieldDescriptor* field);
 
   // The elements of the given repeated field will be treated as a map for
   // diffing purposes, with |key| being the map key.  Thus, elements with the
@@ -791,6 +798,7 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
   RepeatedFieldComparison repeated_field_comparison_;
 
   FieldSet set_fields_;
+  FieldSet list_fields_;
   // Keeps track of MapKeyComparators that are created within
   // MessageDifferencer. These MapKeyComparators should be deleted
   // before MessageDifferencer is destroyed.

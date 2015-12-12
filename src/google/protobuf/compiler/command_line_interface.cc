@@ -271,15 +271,35 @@ class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector,
   // implements MultiFileErrorCollector ------------------------------
   void AddError(const string& filename, int line, int column,
                 const string& message) {
+    AddErrorOrWarning(filename, line, column, message, "error", std::cerr);
+  }
 
+  void AddWarning(const string& filename, int line, int column,
+                  const string& message) {
+    AddErrorOrWarning(filename, line, column, message, "warning", std::clog);
+  }
+
+  // implements io::ErrorCollector -----------------------------------
+  void AddError(int line, int column, const string& message) {
+    AddError("input", line, column, message);
+  }
+
+  void AddWarning(int line, int column, const string& message) {
+    AddErrorOrWarning("input", line, column, message, "warning", std::clog);
+  }
+
+ private:
+  void AddErrorOrWarning(
+      const string& filename, int line, int column,
+      const string& message, const string& type, ostream& out) {
     // Print full path when running under MSVS
     string dfile;
     if (format_ == CommandLineInterface::ERROR_FORMAT_MSVS &&
         tree_ != NULL &&
         tree_->VirtualFileToDiskFile(filename, &dfile)) {
-      std::cerr << dfile;
+      out << dfile;
     } else {
-      std::cerr << filename;
+      out << filename;
     }
 
     // Users typically expect 1-based line/column numbers, so we add 1
@@ -288,24 +308,22 @@ class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector,
       // Allow for both GCC- and Visual-Studio-compatible output.
       switch (format_) {
         case CommandLineInterface::ERROR_FORMAT_GCC:
-          std::cerr << ":" << (line + 1) << ":" << (column + 1);
+          out << ":" << (line + 1) << ":" << (column + 1);
           break;
         case CommandLineInterface::ERROR_FORMAT_MSVS:
-          std::cerr << "(" << (line + 1)
-                    << ") : error in column=" << (column + 1);
+          out << "(" << (line + 1) << ") : "
+              << type << " in column=" << (column + 1);
           break;
       }
     }
 
-    std::cerr << ": " << message << std::endl;
+    if (type == "warning") {
+      out << ": warning: " << message << std::endl;
+    } else {
+      out << ": " << message << std::endl;
+    }
   }
 
-  // implements io::ErrorCollector -----------------------------------
-  void AddError(int line, int column, const string& message) {
-    AddError("input", line, column, message);
-  }
-
- private:
   const ErrorFormat format_;
   DiskSourceTree *tree_;
 };
@@ -1353,7 +1371,7 @@ void CommandLineInterface::PrintHelpText() {
 "                              defined in the given proto files. Groups share\n"
 "                              the same field number space with the parent \n"
 "                              message. Extension ranges are counted as \n"
-"                              occupied fields numbers."
+"                              occupied fields numbers.\n"
       << std::endl;
   if (!plugin_prefix_.empty()) {
     std::cerr <<
@@ -1443,6 +1461,7 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
   for (int i = 0; i < parsed_files.size(); i++) {
     GetTransitiveDependencies(parsed_files[i],
                               false,
+                              false,
                               &already_seen,
                               file_set.mutable_file());
   }
@@ -1522,6 +1541,7 @@ bool CommandLineInterface::GeneratePluginOutput(
   for (int i = 0; i < parsed_files.size(); i++) {
     request.add_file_to_generate(parsed_files[i]->name());
     GetTransitiveDependencies(parsed_files[i],
+                              true,  // Include json_name for plugins.
                               true,  // Include source code info.
                               &already_seen, request.mutable_proto_file());
   }
@@ -1654,6 +1674,7 @@ bool CommandLineInterface::WriteDescriptorSet(
     set<const FileDescriptor*> already_seen;
     for (int i = 0; i < parsed_files.size(); i++) {
       GetTransitiveDependencies(parsed_files[i],
+                                true,  // Include json_name
                                 source_info_in_descriptor_set_,
                                 &already_seen, file_set.mutable_file());
     }
@@ -1665,6 +1686,7 @@ bool CommandLineInterface::WriteDescriptorSet(
       }
       FileDescriptorProto* file_proto = file_set.add_file();
       parsed_files[i]->CopyTo(file_proto);
+      parsed_files[i]->CopyJsonNameTo(file_proto);
       if (source_info_in_descriptor_set_) {
         parsed_files[i]->CopySourceCodeInfoTo(file_proto);
       }
@@ -1699,7 +1721,9 @@ bool CommandLineInterface::WriteDescriptorSet(
 }
 
 void CommandLineInterface::GetTransitiveDependencies(
-    const FileDescriptor* file, bool include_source_code_info,
+    const FileDescriptor* file,
+    bool include_json_name,
+    bool include_source_code_info,
     set<const FileDescriptor*>* already_seen,
     RepeatedPtrField<FileDescriptorProto>* output) {
   if (!already_seen->insert(file).second) {
@@ -1709,13 +1733,18 @@ void CommandLineInterface::GetTransitiveDependencies(
 
   // Add all dependencies.
   for (int i = 0; i < file->dependency_count(); i++) {
-    GetTransitiveDependencies(file->dependency(i), include_source_code_info,
+    GetTransitiveDependencies(file->dependency(i),
+                              include_json_name,
+                              include_source_code_info,
                               already_seen, output);
   }
 
   // Add this file.
   FileDescriptorProto* new_descriptor = output->Add();
   file->CopyTo(new_descriptor);
+  if (include_json_name) {
+    file->CopyJsonNameTo(new_descriptor);
+  }
   if (include_source_code_info) {
     file->CopySourceCodeInfoTo(new_descriptor);
   }

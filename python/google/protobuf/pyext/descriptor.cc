@@ -203,6 +203,14 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
   PyObject* message_class(cdescriptor_pool::GetMessageClass(
       pool, message_type));
   if (message_class == NULL) {
+    // The Options message was not found in the current DescriptorPool.
+    // In this case, there cannot be extensions to these options, and we can
+    // try to use the basic pool instead.
+    PyErr_Clear();
+    message_class = cdescriptor_pool::GetMessageClass(
+      GetDefaultDescriptorPool(), message_type);
+  }
+  if (message_class == NULL) {
     PyErr_Format(PyExc_TypeError, "Could not retrieve class for Options: %s",
                  message_type->full_name().c_str());
     return NULL;
@@ -210,6 +218,12 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
   ScopedPyObjectPtr value(PyEval_CallObject(message_class, NULL));
   if (value == NULL) {
     return NULL;
+  }
+  if (!PyObject_TypeCheck(value.get(), &CMessage_Type)) {
+      PyErr_Format(PyExc_TypeError, "Invalid class for %s: %s",
+                   message_type->full_name().c_str(),
+                   Py_TYPE(value.get())->tp_name);
+      return NULL;
   }
   CMessage* cmsg = reinterpret_cast<CMessage*>(value.get());
 
@@ -327,7 +341,8 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
   PyDescriptorPool* pool = GetDescriptorPool_FromPool(
       GetFileDescriptor(descriptor)->pool());
   if (pool == NULL) {
-    Py_DECREF(py_descriptor);
+    // Don't DECREF, the object is not fully initialized.
+    PyObject_Del(py_descriptor);
     return NULL;
   }
   Py_INCREF(pool);
@@ -1213,6 +1228,13 @@ static void Dealloc(PyFileDescriptor* self) {
   descriptor::Dealloc(&self->base);
 }
 
+static PyObject* GetPool(PyFileDescriptor *self, void *closure) {
+  PyObject* pool = reinterpret_cast<PyObject*>(
+      GetDescriptorPool_FromPool(_GetDescriptor(self)->pool()));
+  Py_XINCREF(pool);
+  return pool;
+}
+
 static PyObject* GetName(PyFileDescriptor *self, void *closure) {
   return PyString_FromCppString(_GetDescriptor(self)->name());
 }
@@ -1292,6 +1314,7 @@ static PyObject* CopyToProto(PyFileDescriptor *self, PyObject *target) {
 }
 
 static PyGetSetDef Getters[] = {
+  { "pool", (getter)GetPool, NULL, "pool"},
   { "name", (getter)GetName, NULL, "name"},
   { "package", (getter)GetPackage, NULL, "package"},
   { "serialized_pb", (getter)GetSerializedPb},
@@ -1354,8 +1377,8 @@ PyTypeObject PyFileDescriptor_Type = {
   0,                                    // tp_descr_set
   0,                                    // tp_dictoffset
   0,                                    // tp_init
-  PyType_GenericAlloc,                  // tp_alloc
-  PyType_GenericNew,                    // tp_new
+  0,                                    // tp_alloc
+  0,                                    // tp_new
   PyObject_Del,                         // tp_free
 };
 

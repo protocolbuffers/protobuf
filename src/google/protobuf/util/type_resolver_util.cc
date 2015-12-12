@@ -159,7 +159,10 @@ class DescriptorPoolTypeResolver : public TypeResolver {
     }
     field->set_number(descriptor->number());
     field->set_name(descriptor->name());
-    field->set_json_name(converter::ToCamelCase(descriptor->name()));
+    field->set_json_name(descriptor->json_name());
+    if (descriptor->has_default_value()) {
+      field->set_default_value(DefaultValueAsString(descriptor));
+    }
     if (descriptor->type() == FieldDescriptor::TYPE_MESSAGE) {
       field->set_type_url(GetTypeUrl(descriptor->message_type()));
     } else if (descriptor->type() == FieldDescriptor::TYPE_ENUM) {
@@ -198,6 +201,46 @@ class DescriptorPoolTypeResolver : public TypeResolver {
 
   string GetTypeUrl(const EnumDescriptor* descriptor) {
     return url_prefix_ + "/" + descriptor->full_name();
+  }
+
+  string DefaultValueAsString(const FieldDescriptor* descriptor) {
+    switch (descriptor->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_INT32:
+        return SimpleItoa(descriptor->default_value_int32());
+        break;
+      case FieldDescriptor::CPPTYPE_INT64:
+        return SimpleItoa(descriptor->default_value_int64());
+        break;
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return SimpleItoa(descriptor->default_value_uint32());
+        break;
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return SimpleItoa(descriptor->default_value_uint64());
+        break;
+      case FieldDescriptor::CPPTYPE_FLOAT:
+        return SimpleFtoa(descriptor->default_value_float());
+        break;
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+        return SimpleDtoa(descriptor->default_value_double());
+        break;
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return descriptor->default_value_bool() ? "true" : "false";
+        break;
+      case FieldDescriptor::CPPTYPE_STRING:
+        if (descriptor->type() == FieldDescriptor::TYPE_BYTES) {
+          return CEscape(descriptor->default_value_string());
+        } else {
+          return descriptor->default_value_string();
+        }
+        break;
+      case FieldDescriptor::CPPTYPE_ENUM:
+        return descriptor->default_value_enum()->name();
+        break;
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        GOOGLE_LOG(DFATAL) << "Messages can't have default values!";
+        break;
+    }
+    return "";
   }
 
   string url_prefix_;

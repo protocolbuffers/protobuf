@@ -68,10 +68,17 @@ final class DoubleArrayList
   private int size;
 
   /**
-   * Constructs a new mutable {@code DoubleArrayList}.
+   * Constructs a new mutable {@code DoubleArrayList} with default capacity.
    */
   DoubleArrayList() {
-    array = new double[DEFAULT_CAPACITY];
+    this(DEFAULT_CAPACITY);
+  }
+
+  /**
+   * Constructs a new mutable {@code DoubleArrayList} with the provided capacity.
+   */
+  DoubleArrayList(int capacity) {
+    array = new double[capacity];
     size = 0;
   }
 

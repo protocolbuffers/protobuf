@@ -405,7 +405,7 @@ void ImmutableStringFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-      "String s = input.readStringRequireUtf8();\n"
+      "java.lang.String s = input.readStringRequireUtf8();\n"
       "$set_has_field_bit_message$\n"
       "$name$_ = s;\n");
   } else if (!HasDescriptorMethods(descriptor_->file())) {
@@ -414,7 +414,7 @@ GenerateParsingCode(io::Printer* printer) const {
     // spurious intermediary ByteString allocations, cutting overall allocations
     // in half.
     printer->Print(variables_,
-      "String s = input.readString();\n"
+      "java.lang.String s = input.readString();\n"
       "$set_has_field_bit_message$\n"
       "$name$_ = s;\n");
   } else {
@@ -665,7 +665,7 @@ void ImmutableStringOneofFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-      "String s = input.readStringRequireUtf8();\n"
+      "java.lang.String s = input.readStringRequireUtf8();\n"
       "$set_oneof_case_message$;\n"
       "$oneof_name$_ = s;\n");
   } else if (!HasDescriptorMethods(descriptor_->file())) {
@@ -674,7 +674,7 @@ GenerateParsingCode(io::Printer* printer) const {
     // spurious intermediary ByteString allocations, cutting overall allocations
     // in half.
     printer->Print(variables_,
-      "String s = input.readString();\n"
+      "java.lang.String s = input.readString();\n"
       "$set_oneof_case_message$;\n"
       "$oneof_name$_ = s;\n");
   } else {
@@ -773,12 +773,6 @@ GenerateMembers(io::Printer* printer) const {
     "    get$capitalized_name$Bytes(int index) {\n"
     "  return $name$_.getByteString(index);\n"
     "}\n");
-
-  if (descriptor_->options().packed() &&
-      HasGeneratedMethods(descriptor_->containing_type())) {
-    printer->Print(variables_,
-      "private int $name$MemoizedSerializedSize = -1;\n");
-  }
 }
 
 void RepeatedImmutableStringFieldGenerator::
@@ -939,14 +933,14 @@ void RepeatedImmutableStringFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-    "String s = input.readStringRequireUtf8();\n");
+    "java.lang.String s = input.readStringRequireUtf8();\n");
   } else if (!HasDescriptorMethods(descriptor_->file())) {
     // Lite runtime should attempt to reduce allocations by attempting to
     // construct the string directly from the input stream buffer. This avoids
     // spurious intermediary ByteString allocations, cutting overall allocations
     // in half.
     printer->Print(variables_,
-    "String s = input.readString();\n");
+    "java.lang.String s = input.readString();\n");
   } else {
     printer->Print(variables_,
     "com.google.protobuf.ByteString bs = input.readBytes();\n");
@@ -966,30 +960,6 @@ GenerateParsingCode(io::Printer* printer) const {
 }
 
 void RepeatedImmutableStringFieldGenerator::
-GenerateParsingCodeFromPacked(io::Printer* printer) const {
-  printer->Print(variables_,
-    "int length = input.readRawVarint32();\n"
-    "int limit = input.pushLimit(length);\n"
-    "if (!$get_mutable_bit_parser$ && input.getBytesUntilLimit() > 0) {\n"
-    "  $name$_ = new com.google.protobuf.LazyStringArrayList();\n"
-    "  $set_mutable_bit_parser$;\n"
-    "}\n"
-    "while (input.getBytesUntilLimit() > 0) {\n");
-  if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_,
-      "  String s = input.readStringRequireUtf8();\n");
-  } else {
-    printer->Print(variables_,
-      "  String s = input.readString();\n");
-  }
-  printer->Print(variables_,
-    "  $name$.add(s);\n");
-  printer->Print(variables_,
-    "}\n"
-    "input.popLimit(limit);\n");
-}
-
-void RepeatedImmutableStringFieldGenerator::
 GenerateParsingDoneCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($get_mutable_bit_parser$) {\n"
@@ -999,21 +969,10 @@ GenerateParsingDoneCode(io::Printer* printer) const {
 
 void RepeatedImmutableStringFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "if (get$capitalized_name$List().size() > 0) {\n"
-      "  output.writeRawVarint32($tag$);\n"
-      "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
-      "}\n"
-      "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  writeStringNoTag(output, $name$_.getRaw(i));\n"
-      "}\n");
-  } else {
-    printer->Print(variables_,
-      "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  $writeString$(output, $number$, $name$_.getRaw(i));\n"
-      "}\n");
-  }
+  printer->Print(variables_,
+    "for (int i = 0; i < $name$_.size(); i++) {\n"
+    "  $writeString$(output, $number$, $name$_.getRaw(i));\n"
+    "}\n");
 }
 
 void RepeatedImmutableStringFieldGenerator::
@@ -1031,23 +990,8 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(
       "size += dataSize;\n");
 
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "if (!get$capitalized_name$List().isEmpty()) {\n"
-      "  size += $tag_size$;\n"
-      "  size += com.google.protobuf.CodedOutputStream\n"
-      "      .computeInt32SizeNoTag(dataSize);\n"
-      "}\n");
-  } else {
-    printer->Print(variables_,
-      "size += $tag_size$ * get$capitalized_name$List().size();\n");
-  }
-
-  // cache the data size for packed fields.
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "$name$MemoizedSerializedSize = dataSize;\n");
-  }
+  printer->Print(variables_,
+    "size += $tag_size$ * get$capitalized_name$List().size();\n");
 
   printer->Outdent();
   printer->Print("}\n");

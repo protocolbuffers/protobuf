@@ -1,0 +1,212 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// Author: mwr@google.com (Mark Rawling)
+
+syntax = "proto2";
+
+option java_package = "com.google.apps.jspb.proto";
+option java_multiple_files = true;
+
+import "google/protobuf/descriptor.proto";
+
+package jspb.test;
+
+message Empty {
+}
+
+enum OuterEnum {
+  FOO = 1;
+  BAR = 2;
+}
+
+message EnumContainer {
+  optional OuterEnum outer_enum = 1;
+}
+
+message Simple1 {
+  required string a_string = 1;
+  repeated string a_repeated_string = 2;
+  optional bool a_boolean = 3;
+}
+
+// A message that differs from Simple1 only by name
+message Simple2 {
+  required string a_string = 1;
+  repeated string a_repeated_string = 2;
+}
+
+message SpecialCases {
+  required string normal = 1;
+  // Examples of Js reserved names that are converted to pb_<name>.
+  required string default = 2;
+  required string function = 3;
+  required string var = 4;
+}
+
+message OptionalFields {
+  message Nested {
+    optional int32 an_int = 1;
+  }
+  optional string a_string = 1;
+  required bool a_bool = 2;
+  optional Nested a_nested_message = 3;
+  repeated Nested a_repeated_message = 4;
+  repeated string a_repeated_string = 5;
+}
+
+message HasExtensions {
+  optional string str1 = 1;
+  optional string str2 = 2;
+  optional string str3 = 3;
+  extensions 10 to max;
+}
+
+message Complex {
+  message Nested {
+    required int32 an_int = 2;
+  }
+  required string a_string = 1;
+  required bool an_out_of_order_bool = 9;
+  optional Nested a_nested_message = 4;
+  repeated Nested a_repeated_message = 5;
+  repeated string a_repeated_string = 7;
+}
+
+message IsExtension {
+  extend HasExtensions {
+    optional IsExtension ext_field = 100;
+  }
+  optional string ext1 = 1;
+
+  // Extensions of proto2 Descriptor messages will be ignored.
+  extend google.protobuf.EnumOptions {
+    optional string simple_option = 42113038;
+  }
+}
+
+message IndirectExtension {
+  extend HasExtensions {
+    optional Simple1 simple = 101;
+    optional string str = 102;
+    repeated string repeated_str = 103;
+    repeated Simple1 repeated_simple = 104;
+  }
+}
+
+extend HasExtensions {
+  optional Simple1 simple1 = 105;
+}
+
+message DefaultValues {
+  enum Enum {
+    E1 = 13;
+    E2 = 77;
+  }
+  optional string string_field = 1 [default="default<>\'\"abc"];
+  optional bool bool_field = 2 [default=true];
+  optional int64 int_field = 3 [default=11];
+  optional Enum enum_field = 4 [default=E1];
+  optional string empty_field = 6 [default=""];
+  optional bytes bytes_field = 8 [default="moo"]; // Base64 encoding is "bW9v"
+}
+
+message TestClone {
+  optional string str = 1;
+  optional Simple1 simple1 = 3;
+  repeated Simple1 simple2 = 5;
+  optional string unused = 7;
+  extensions 10 to max;
+}
+
+message CloneExtension {
+  extend TestClone {
+    optional CloneExtension ext_field = 100;
+  }
+  optional string ext = 2;
+}
+
+message TestGroup {
+  repeated group RepeatedGroup = 1 {
+    required string id = 1;
+    repeated bool some_bool = 2;
+  }
+  required group RequiredGroup = 2 {
+    required string id = 1;
+  }
+  optional group OptionalGroup = 3 {
+    required string id = 1;
+  }
+  optional string id = 4;
+  required Simple2 required_simple = 5;
+  optional Simple2 optional_simple = 6;
+}
+
+message TestGroup1 {
+  optional TestGroup.RepeatedGroup group = 1;
+}
+
+message TestReservedNames {
+  optional int32 extension = 1;
+  extensions 10 to max;
+}
+
+message TestReservedNamesExtension {
+  extend TestReservedNames {
+    optional int32 foo = 10;
+  }
+}
+
+message TestMessageWithOneof {
+
+  oneof partial_oneof {
+    string pone = 3;
+    string pthree = 5;
+  }
+
+  oneof recursive_oneof {
+    TestMessageWithOneof rone = 6;
+    string rtwo = 7;
+  }
+
+  optional bool normal_field = 8;
+  repeated string repeated_field = 9;
+
+  oneof default_oneof_a {
+    int32 aone = 10 [default = 1234];
+    int32 atwo = 11;
+  }
+
+  oneof default_oneof_b {
+    int32 bone = 12;
+    int32 btwo = 13 [default = 1234];
+  }
+}
+

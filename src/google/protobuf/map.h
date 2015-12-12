@@ -188,7 +188,6 @@ class LIBPROTOBUF_EXPORT MapKey {
       case FieldDescriptor::CPPTYPE_ENUM:
       case FieldDescriptor::CPPTYPE_MESSAGE:
         GOOGLE_LOG(FATAL) << "Can't get here.";
-        return false;
     }
     GOOGLE_LOG(FATAL) << "Can't get here.";
     return false;
@@ -497,7 +496,7 @@ class Map {
     insert(other.begin(), other.end());
   }
   template <class InputIt>
-  explicit Map(const InputIt& first, const InputIt& last)
+  Map(const InputIt& first, const InputIt& last)
       : arena_(NULL),
         allocator_(arena_),
         elements_(0, hasher(), key_equal(), allocator_),
@@ -546,9 +545,7 @@ class Map {
     }
 
 #if __cplusplus >= 201103L && !defined(GOOGLE_PROTOBUF_OS_APPLE) && \
-    !defined(GOOGLE_PROTOBUF_OS_NACL) &&                            \
-    !defined(GOOGLE_PROTOBUF_OS_ANDROID) &&                         \
-    !defined(GOOGLE_PROTOBUF_OS_EMSCRIPTEN)
+    !defined(GOOGLE_PROTOBUF_OS_NACL) && !defined(GOOGLE_PROTOBUF_OS_ANDROID)
     template<class NodeType, class... Args>
     void construct(NodeType* p, Args&&... args) {
       new (static_cast<void*>(p)) NodeType(std::forward<Args>(args)...);
@@ -586,21 +583,22 @@ class Map {
 
    private:
     typedef void DestructorSkippable_;
-    Arena* arena_;
+    Arena* const arena_;
 
     template <typename X>
     friend class MapAllocator;
   };
 
- public:
   typedef MapAllocator<std::pair<const Key, MapPair<Key, T>*> > Allocator;
+  typedef hash_map<Key, value_type*, hash<Key>, equal_to<Key>, Allocator>
+      InnerMap;
 
+ public:
   // Iterators
   class const_iterator
       : public std::iterator<std::forward_iterator_tag, value_type, ptrdiff_t,
                              const value_type*, const value_type&> {
-    typedef typename hash_map<Key, value_type*, hash<Key>, equal_to<Key>,
-                              Allocator>::const_iterator InnerIt;
+    typedef typename InnerMap::const_iterator InnerIt;
 
    public:
     const_iterator() {}
@@ -627,8 +625,7 @@ class Map {
   };
 
   class iterator : public std::iterator<std::forward_iterator_tag, value_type> {
-    typedef typename hash_map<Key, value_type*, hasher, equal_to<Key>,
-                              Allocator>::iterator InnerIt;
+    typedef typename InnerMap::iterator InnerIt;
 
    public:
     iterator() {}
@@ -744,8 +741,7 @@ class Map {
 
   // Erase
   size_type erase(const key_type& key) {
-    typename hash_map<Key, value_type*, hash<Key>, equal_to<Key>,
-                      Allocator>::iterator it = elements_.find(key);
+    typename InnerMap::iterator it = elements_.find(key);
     if (it == elements_.end()) {
       return 0;
     } else {
@@ -815,7 +811,7 @@ class Map {
 
   Arena* arena_;
   Allocator allocator_;
-  hash_map<Key, value_type*, hash<Key>, equal_to<Key>, Allocator> elements_;
+  InnerMap elements_;
   int default_enum_value_;
 
   friend class ::google::protobuf::Arena;
@@ -854,7 +850,6 @@ struct hash<google::protobuf::MapKey> {
       case google::protobuf::FieldDescriptor::CPPTYPE_ENUM:
       case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
         GOOGLE_LOG(FATAL) << "Can't get here.";
-        return 0;
     }
     GOOGLE_LOG(FATAL) << "Can't get here.";
     return 0;
@@ -879,7 +874,6 @@ struct hash<google::protobuf::MapKey> {
       case google::protobuf::FieldDescriptor::CPPTYPE_ENUM:
       case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
         GOOGLE_LOG(FATAL) << "Can't get here.";
-        return true;
     }
     GOOGLE_LOG(FATAL) << "Can't get here.";
     return true;

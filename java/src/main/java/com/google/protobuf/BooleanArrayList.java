@@ -68,10 +68,17 @@ final class BooleanArrayList
   private int size;
 
   /**
-   * Constructs a new mutable {@code BooleanArrayList}.
+   * Constructs a new mutable {@code BooleanArrayList} with default capacity.
    */
   BooleanArrayList() {
-    array = new boolean[DEFAULT_CAPACITY];
+    this(DEFAULT_CAPACITY);
+  }
+
+  /**
+   * Constructs a new mutable {@code BooleanArrayList} with the provided capacity.
+   */
+  BooleanArrayList(int capacity) {
+    array = new boolean[capacity];
     size = 0;
   }
 

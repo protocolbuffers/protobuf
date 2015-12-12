@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -79,9 +80,9 @@ void protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\033google/protobuf/empty.proto\022\017google.pr"
-    "otobuf\"\007\n\005EmptyBM\n\023com.google.protobufB\n"
-    "EmptyProtoP\001\240\001\001\242\002\003GPB\252\002\036Google.Protobuf."
-    "WellKnownTypesb\006proto3", 142);
+    "otobuf\"\007\n\005EmptyBP\n\023com.google.protobufB\n"
+    "EmptyProtoP\001\240\001\001\370\001\001\242\002\003GPB\252\002\036Google.Protob"
+    "uf.WellKnownTypesb\006proto3", 145);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/empty.proto", &protobuf_RegisterTypes);
   Empty::default_instance_ = new Empty();
@@ -117,6 +118,14 @@ Empty::Empty()
   // @@protoc_insertion_point(constructor:google.protobuf.Empty)
 }
 
+Empty::Empty(::google::protobuf::Arena* arena)
+  : ::google::protobuf::Message(),
+  _internal_metadata_(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:google.protobuf.Empty)
+}
+
 void Empty::InitAsDefaultInstance() {
   _is_default_instance_ = true;
 }
@@ -140,10 +149,20 @@ Empty::~Empty() {
 }
 
 void Empty::SharedDtor() {
+  if (GetArenaNoVirtual() != NULL) {
+    return;
+  }
+
   if (this != default_instance_) {
   }
 }
 
+void Empty::ArenaDtor(void* object) {
+  Empty* _this = reinterpret_cast< Empty* >(object);
+  (void)_this;
+}
+void Empty::RegisterArenaDtor(::google::protobuf::Arena* arena) {
+}
 void Empty::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = size;
@@ -162,11 +181,7 @@ const Empty& Empty::default_instance() {
 Empty* Empty::default_instance_ = NULL;
 
 Empty* Empty::New(::google::protobuf::Arena* arena) const {
-  Empty* n = new Empty;
-  if (arena != NULL) {
-    arena->Own(n);
-  }
-  return n;
+  return ::google::protobuf::Arena::CreateMessage<Empty>(arena);
 }
 
 void Empty::Clear() {
@@ -255,6 +270,18 @@ bool Empty::IsInitialized() const {
 
 void Empty::Swap(Empty* other) {
   if (other == this) return;
+  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+    InternalSwap(other);
+  } else {
+    Empty temp;
+    temp.MergeFrom(*this);
+    CopyFrom(*other);
+    other->CopyFrom(temp);
+  }
+}
+void Empty::UnsafeArenaSwap(Empty* other) {
+  if (other == this) return;
+  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
   InternalSwap(other);
 }
 void Empty::InternalSwap(Empty* other) {

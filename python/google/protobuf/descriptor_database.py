@@ -65,6 +65,7 @@ class DescriptorDatabase(object):
       raise DescriptorDatabaseConflictingDefinitionError(
           '%s already added, but with different descriptor.' % proto_name)
 
+    # Add the top-level Message, Enum and Extension descriptors to the index.
     package = file_desc_proto.package
     for message in file_desc_proto.message_type:
       self._file_desc_protos_by_symbol.update(
@@ -72,6 +73,9 @@ class DescriptorDatabase(object):
     for enum in file_desc_proto.enum_type:
       self._file_desc_protos_by_symbol[
           '.'.join((package, enum.name))] = file_desc_proto
+    for extension in file_desc_proto.extension:
+      self._file_desc_protos_by_symbol[
+          '.'.join((package, extension.name))] = file_desc_proto
 
   def FindFileByName(self, name):
     """Finds the file descriptor proto by file name.

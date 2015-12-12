@@ -38,14 +38,19 @@
 #ifndef CONFORMANCE_CONFORMANCE_TEST_H
 #define CONFORMANCE_CONFORMANCE_TEST_H
 
+#include <functional>
 #include <string>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/wire_format_lite.h>
 
+#include "third_party/jsoncpp/value.h"
+#include "third_party/jsoncpp/reader.h"
+
 namespace conformance {
 class ConformanceRequest;
 class ConformanceResponse;
+class TestAllTypes;
 }  // namespace conformance
 
 namespace google {
@@ -53,6 +58,8 @@ namespace protobuf {
 
 class ConformanceTestRunner {
  public:
+  virtual ~ConformanceTestRunner() {}
+
   // Call to run a single conformance test.
   //
   // "input" is a serialized conformance.ConformanceRequest.
@@ -60,7 +67,9 @@ class ConformanceTestRunner {
   //
   // If there is any error in running the test itself, set "runtime_error" in
   // the response.
-  virtual void RunTest(const std::string& input, std::string* output) = 0;
+  virtual void RunTest(const std::string& test_name,
+                       const std::string& input,
+                       std::string* output) = 0;
 };
 
 // Class representing the test suite itself.  To run it, implement your own
@@ -118,6 +127,18 @@ class ConformanceTestSuite {
                          conformance::WireFormat requested_output);
   void RunValidJsonTest(const string& test_name, const string& input_json,
                         const string& equivalent_text_format);
+  void RunValidJsonTestWithProtobufInput(const string& test_name,
+                                         const conformance::TestAllTypes& input,
+                                         const string& equivalent_text_format);
+
+  typedef std::function<bool(const Json::Value&)> Validator;
+  void RunValidJsonTestWithValidator(const string& test_name,
+                                     const string& input_json,
+                                     const Validator& validator);
+  void ExpectParseFailureForJson(const string& test_name,
+                                 const string& input_json);
+  void ExpectSerializeFailureForJson(const string& test_name,
+                                     const string& text_format);
   void ExpectParseFailureForProto(const std::string& proto,
                                   const std::string& test_name);
   void ExpectHardParseFailureForProto(const std::string& proto,

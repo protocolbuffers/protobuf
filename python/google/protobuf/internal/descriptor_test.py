@@ -47,6 +47,7 @@ from google.protobuf import descriptor_pb2
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import test_util
 from google.protobuf import descriptor
+from google.protobuf import descriptor_pool
 from google.protobuf import symbol_database
 from google.protobuf import text_format
 
@@ -75,9 +76,9 @@ class DescriptorTest(unittest.TestCase):
     enum_proto.value.add(name='FOREIGN_BAR', number=5)
     enum_proto.value.add(name='FOREIGN_BAZ', number=6)
 
-    descriptor_pool = symbol_database.Default().pool
-    descriptor_pool.Add(file_proto)
-    self.my_file = descriptor_pool.FindFileByName(file_proto.name)
+    self.pool = self.GetDescriptorPool()
+    self.pool.Add(file_proto)
+    self.my_file = self.pool.FindFileByName(file_proto.name)
     self.my_message = self.my_file.message_types_by_name[message_proto.name]
     self.my_enum = self.my_message.enum_types_by_name[enum_proto.name]
 
@@ -96,6 +97,9 @@ class DescriptorTest(unittest.TestCase):
         methods=[
             self.my_method
         ])
+
+  def GetDescriptorPool(self):
+    return symbol_database.Default().pool
 
   def testEnumValueName(self):
     self.assertEqual(self.my_message.EnumValueName('ForeignEnum', 4),
@@ -393,6 +397,9 @@ class DescriptorTest(unittest.TestCase):
   def testFileDescriptor(self):
     self.assertEqual(self.my_file.name, 'some/filename/some.proto')
     self.assertEqual(self.my_file.package, 'protobuf_unittest')
+    self.assertEqual(self.my_file.pool, self.pool)
+    # Generated modules also belong to the default pool.
+    self.assertEqual(unittest_pb2.DESCRIPTOR.pool, descriptor_pool.Default())
 
   @unittest.skipIf(
       api_implementation.Type() != 'cpp' or api_implementation.Version() != 2,
@@ -405,6 +412,13 @@ class DescriptorTest(unittest.TestCase):
       message_descriptor.fields_by_name['Another'] = None
     with self.assertRaises(TypeError):
       message_descriptor.fields.append(None)
+
+
+class NewDescriptorTest(DescriptorTest):
+  """Redo the same tests as above, but with a separate DescriptorPool."""
+
+  def GetDescriptorPool(self):
+    return descriptor_pool.DescriptorPool()
 
 
 class GeneratedDescriptorTest(unittest.TestCase):

@@ -18,13 +18,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Enum GPBSyntax
 
-// Syntax specifies the syntax in which a service element was defined.
+// The syntax in which a protocol buffer element is defined.
 typedef GPB_ENUM(GPBSyntax) {
   GPBSyntax_GPBUnrecognizedEnumeratorValue = kGPBUnrecognizedEnumeratorValue,
-  // Syntax "proto2"
+  // Syntax `proto2`.
   GPBSyntax_SyntaxProto2 = 0,
 
-  // Syntax "proto3"
+  // Syntax `proto3`.
   GPBSyntax_SyntaxProto3 = 1,
 };
 
@@ -34,7 +34,7 @@ BOOL GPBSyntax_IsValidValue(int32_t value);
 
 #pragma mark - Enum GPBField_Kind
 
-// Kind represents a basic field type.
+// Basic field types.
 typedef GPB_ENUM(GPBField_Kind) {
   GPBField_Kind_GPBUnrecognizedEnumeratorValue = kGPBUnrecognizedEnumeratorValue,
   // Field type unknown.
@@ -67,7 +67,7 @@ typedef GPB_ENUM(GPBField_Kind) {
   // Field type string.
   GPBField_Kind_TypeString = 9,
 
-  // Field type group (deprecated proto2 type)
+  // Field type group. Proto2 syntax only, and deprecated.
   GPBField_Kind_TypeGroup = 10,
 
   // Field type message.
@@ -101,17 +101,16 @@ BOOL GPBField_Kind_IsValidValue(int32_t value);
 
 #pragma mark - Enum GPBField_Cardinality
 
-// Cardinality represents whether a field is optional, required, or
-// repeated.
+// Whether a field is optional, required, or repeated.
 typedef GPB_ENUM(GPBField_Cardinality) {
   GPBField_Cardinality_GPBUnrecognizedEnumeratorValue = kGPBUnrecognizedEnumeratorValue,
-  // The field cardinality is unknown. Typically an error condition.
+  // For fields with unknown cardinality.
   GPBField_Cardinality_CardinalityUnknown = 0,
 
   // For optional fields.
   GPBField_Cardinality_CardinalityOptional = 1,
 
-  // For required fields. Not used for proto3.
+  // For required fields. Proto2 syntax only.
   GPBField_Cardinality_CardinalityRequired = 2,
 
   // For repeated fields.
@@ -144,7 +143,7 @@ typedef GPB_ENUM(GPBType_FieldNumber) {
   GPBType_FieldNumber_Syntax = 6,
 };
 
-// A light-weight descriptor for a proto message type.
+// A protocol buffer message type.
 @interface GPBType : GPBMessage
 
 // The fully qualified message name.
@@ -155,12 +154,12 @@ typedef GPB_ENUM(GPBType_FieldNumber) {
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *fieldsArray;
 @property(nonatomic, readonly) NSUInteger fieldsArray_Count;
 
-// The list of oneof definitions.
+// The list of types appearing in `oneof` definitions in this type.
 // |oneofsArray| contains |NSString|
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *oneofsArray;
 @property(nonatomic, readonly) NSUInteger oneofsArray_Count;
 
-// The proto options.
+// The protocol buffer options.
 // |optionsArray| contains |GPBOption|
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *optionsArray;
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
@@ -189,40 +188,45 @@ typedef GPB_ENUM(GPBField_FieldNumber) {
   GPBField_FieldNumber_Packed = 8,
   GPBField_FieldNumber_OptionsArray = 9,
   GPBField_FieldNumber_JsonName = 10,
+  GPBField_FieldNumber_DefaultValue = 11,
 };
 
-// Field represents a single field of a message type.
+// A single field of a message type.
 @interface GPBField : GPBMessage
 
-// The field kind.
+// The field type.
 @property(nonatomic, readwrite) GPBField_Kind kind;
 
-// The field cardinality, i.e. optional/required/repeated.
+// The field cardinality.
 @property(nonatomic, readwrite) GPBField_Cardinality cardinality;
 
-// The proto field number.
+// The field number.
 @property(nonatomic, readwrite) int32_t number;
 
 // The field name.
 @property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
-// The type URL (without the scheme) when the type is MESSAGE or ENUM,
-// such as `type.googleapis.com/google.protobuf.Empty`.
+// The field type URL, without the scheme, for message or enumeration
+// types. Example: `"type.googleapis.com/google.protobuf.Timestamp"`.
 @property(nonatomic, readwrite, copy, null_resettable) NSString *typeURL;
 
-// Index in Type.oneofs. Starts at 1. Zero means no oneof mapping.
+// The index of the field type in `Type.oneofs`, for message or enumeration
+// types. The first type has index 1; zero means the type is not in the list.
 @property(nonatomic, readwrite) int32_t oneofIndex;
 
 // Whether to use alternative packed wire representation.
 @property(nonatomic, readwrite) BOOL packed;
 
-// The proto options.
+// The protocol buffer options.
 // |optionsArray| contains |GPBOption|
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *optionsArray;
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
-// The JSON name for this field.
+// The field JSON name.
 @property(nonatomic, readwrite, copy, null_resettable) NSString *jsonName;
+
+// The string value of the default value of this field. Proto2 syntax only.
+@property(nonatomic, readwrite, copy, null_resettable) NSString *defaultValue;
 
 @end
 
@@ -253,7 +257,7 @@ typedef GPB_ENUM(GPBEnum_FieldNumber) {
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *enumvalueArray;
 @property(nonatomic, readonly) NSUInteger enumvalueArray_Count;
 
-// Proto options for the enum type.
+// Protocol buffer options.
 // |optionsArray| contains |GPBOption|
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *optionsArray;
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
@@ -287,7 +291,7 @@ typedef GPB_ENUM(GPBEnumValue_FieldNumber) {
 // Enum value number.
 @property(nonatomic, readwrite) int32_t number;
 
-// Proto options for the enum value.
+// Protocol buffer options.
 // |optionsArray| contains |GPBOption|
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *optionsArray;
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
@@ -301,13 +305,14 @@ typedef GPB_ENUM(GPBOption_FieldNumber) {
   GPBOption_FieldNumber_Value = 2,
 };
 
-// Proto option attached to messages/fields/enums etc.
+// A protocol buffer option, which can be attached to a message, field,
+// enumeration, etc.
 @interface GPBOption : GPBMessage
 
-// Proto option name.
+// The option's name. For example, `"java_package"`.
 @property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
-// Proto option value.
+// The option's value. For example, `"com.google.protobuf"`.
 @property(nonatomic, readwrite) BOOL hasValue;
 @property(nonatomic, readwrite, strong, null_resettable) GPBAny *value;
 

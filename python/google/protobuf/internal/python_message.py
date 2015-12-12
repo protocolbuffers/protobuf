@@ -65,6 +65,7 @@ from google.protobuf.internal import encoder
 from google.protobuf.internal import enum_type_wrapper
 from google.protobuf.internal import message_listener as message_listener_mod
 from google.protobuf.internal import type_checkers
+from google.protobuf.internal import well_known_types
 from google.protobuf.internal import wire_format
 from google.protobuf import descriptor as descriptor_mod
 from google.protobuf import message as message_mod
@@ -72,6 +73,7 @@ from google.protobuf import symbol_database
 from google.protobuf import text_format
 
 _FieldDescriptor = descriptor_mod.FieldDescriptor
+_AnyFullTypeName = 'google.protobuf.Any'
 
 
 class GeneratedProtocolMessageType(type):
@@ -127,6 +129,8 @@ class GeneratedProtocolMessageType(type):
       Newly-allocated class.
     """
     descriptor = dictionary[GeneratedProtocolMessageType._DESCRIPTOR_KEY]
+    if descriptor.full_name in well_known_types.WKTBASES:
+      bases += (well_known_types.WKTBASES[descriptor.full_name],)
     _AddClassAttributesForNestedExtensions(descriptor, dictionary)
     _AddSlots(descriptor, dictionary)
 
@@ -261,7 +265,6 @@ def _IsMessageSetExtension(field):
           field.containing_type.has_options and
           field.containing_type.GetOptions().message_set_wire_format and
           field.type == _FieldDescriptor.TYPE_MESSAGE and
-          field.message_type == field.extension_scope and
           field.label == _FieldDescriptor.LABEL_OPTIONAL)
 
 
@@ -543,7 +546,8 @@ def _GetFieldByName(message_descriptor, field_name):
   try:
     return message_descriptor.fields_by_name[field_name]
   except KeyError:
-    raise ValueError('Protocol message has no "%s" field.' % field_name)
+    raise ValueError('Protocol message %s has no "%s" field.' %
+                     (message_descriptor.name, field_name))
 
 
 def _AddPropertiesForFields(descriptor, cls):
@@ -848,9 +852,15 @@ def _AddClearFieldMethod(message_descriptor, cls):
         else:
           return
       except KeyError:
-        raise ValueError('Protocol message has no "%s" field.' % field_name)
+        raise ValueError('Protocol message %s() has no "%s" field.' %
+                         (message_descriptor.name, field_name))
 
     if field in self._fields:
+      # To match the C++ implementation, we need to invalidate iterators
+      # for map fields when ClearField() happens.
+      if hasattr(self._fields[field], 'InvalidateIterators'):
+        self._fields[field].InvalidateIterators()
+
       # Note:  If the field is a sub-message, its listener will still point
       #   at us.  That's fine, because the worst than can happen is that it
       #   will call _Modified() and invalidate our byte size.  Big deal.
@@ -904,7 +914,19 @@ def _AddHasExtensionMethod(cls):
       return extension_handle in self._fields
   cls.HasExtension = HasExtension
 
-def _UnpackAny(msg):
+def _InternalUnpackAny(msg):
+  """Unpacks Any message and returns the unpacked message.
+
+  This internal method is differnt from public Any Unpack method which takes
+  the target message as argument. _InternalUnpackAny method does not have
+  target message type and need to find the message type in descriptor pool.
+
+  Args:
+    msg: An Any message to be unpacked.
+
+  Returns:
+    The unpacked message.
+  """
   type_url = msg.type_url
   db = symbol_database.Default()
 
@@ -935,9 +957,9 @@ def _AddEqualsMethod(message_descriptor, cls):
     if self is other:
       return True
 
-    if self.DESCRIPTOR.full_name == "google.protobuf.Any":
-      any_a = _UnpackAny(self)
-      any_b = _UnpackAny(other)
+    if self.DESCRIPTOR.full_name == _AnyFullTypeName:
+      any_a = _InternalUnpackAny(self)
+      any_b = _InternalUnpackAny(other)
       if any_a and any_b:
         return any_a == any_b
 
@@ -960,6 +982,13 @@ def _AddStrMethod(message_descriptor, cls):
   def __str__(self):
     return text_format.MessageToString(self)
   cls.__str__ = __str__
+
+
+def _AddReprMethod(message_descriptor, cls):
+  """Helper for _AddMessageMethods()."""
+  def __repr__(self):
+    return text_format.MessageToString(self)
+  cls.__repr__ = __repr__
 
 
 def _AddUnicodeMethod(unused_message_descriptor, cls):
@@ -1270,6 +1299,7 @@ def _AddMessageMethods(message_descriptor, cls):
   _AddClearMethod(message_descriptor, cls)
   _AddEqualsMethod(message_descriptor, cls)
   _AddStrMethod(message_descriptor, cls)
+  _AddReprMethod(message_descriptor, cls)
   _AddUnicodeMethod(message_descriptor, cls)
   _AddSetListenerMethod(cls)
   _AddByteSizeMethod(message_descriptor, cls)
@@ -1279,6 +1309,7 @@ def _AddMessageMethods(message_descriptor, cls):
   _AddIsInitializedMethod(message_descriptor, cls)
   _AddMergeFromMethod(cls)
   _AddWhichOneofMethod(message_descriptor, cls)
+
 
 def _AddPrivateHelperMethods(message_descriptor, cls):
   """Adds implementation of private helper methods to cls."""

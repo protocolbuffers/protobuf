@@ -2394,8 +2394,10 @@ class SerializationTest(unittest.TestCase):
     extension_message2 = message_set_extensions_pb2.TestMessageSetExtension2
     extension1 = extension_message1.message_set_extension
     extension2 = extension_message2.message_set_extension
+    extension3 = message_set_extensions_pb2.message_set_extension3
     proto.Extensions[extension1].i = 123
     proto.Extensions[extension2].str = 'foo'
+    proto.Extensions[extension3].text = 'bar'
 
     # Serialize using the MessageSet wire format (this is specified in the
     # .proto file).
@@ -2407,7 +2409,7 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual(
         len(serialized),
         raw.MergeFromString(serialized))
-    self.assertEqual(2, len(raw.item))
+    self.assertEqual(3, len(raw.item))
 
     message1 = message_set_extensions_pb2.TestMessageSetExtension1()
     self.assertEqual(
@@ -2421,6 +2423,12 @@ class SerializationTest(unittest.TestCase):
         message2.MergeFromString(raw.item[1].message))
     self.assertEqual('foo', message2.str)
 
+    message3 = message_set_extensions_pb2.TestMessageSetExtension3()
+    self.assertEqual(
+        len(raw.item[2].message),
+        message3.MergeFromString(raw.item[2].message))
+    self.assertEqual('bar', message3.text)
+
     # Deserialize using the MessageSet wire format.
     proto2 = message_set_extensions_pb2.TestMessageSet()
     self.assertEqual(
@@ -2428,6 +2436,7 @@ class SerializationTest(unittest.TestCase):
         proto2.MergeFromString(serialized))
     self.assertEqual(123, proto2.Extensions[extension1].i)
     self.assertEqual('foo', proto2.Extensions[extension2].str)
+    self.assertEqual('bar', proto2.Extensions[extension3].text)
 
     # Check byte size.
     self.assertEqual(proto2.ByteSize(), len(serialized))
@@ -2757,9 +2766,10 @@ class SerializationTest(unittest.TestCase):
   def testInitArgsUnknownFieldName(self):
     def InitalizeEmptyMessageWithExtraKeywordArg():
       unused_proto = unittest_pb2.TestEmptyMessage(unknown='unknown')
-    self._CheckRaises(ValueError,
-                      InitalizeEmptyMessageWithExtraKeywordArg,
-                      'Protocol message has no "unknown" field.')
+    self._CheckRaises(
+        ValueError,
+        InitalizeEmptyMessageWithExtraKeywordArg,
+        'Protocol message TestEmptyMessage has no "unknown" field.')
 
   def testInitRequiredKwargs(self):
     proto = unittest_pb2.TestRequired(a=1, b=1, c=1)

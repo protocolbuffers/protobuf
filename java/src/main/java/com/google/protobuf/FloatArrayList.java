@@ -67,10 +67,17 @@ final class FloatArrayList extends AbstractProtobufList<Float> implements FloatL
   private int size;
 
   /**
-   * Constructs a new mutable {@code FloatArrayList}.
+   * Constructs a new mutable {@code FloatArrayList} with default capacity.
    */
   FloatArrayList() {
-    array = new float[DEFAULT_CAPACITY];
+    this(DEFAULT_CAPACITY);
+  }
+
+  /**
+   * Constructs a new mutable {@code FloatArrayList} with the provided capacity.
+   */
+  FloatArrayList(int capacity) {
+    array = new float[capacity];
     size = 0;
   }
 

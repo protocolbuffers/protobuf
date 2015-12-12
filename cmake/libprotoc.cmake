@@ -70,6 +70,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_message.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_message_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_primitive_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/js/js_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_extension.cc

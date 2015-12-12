@@ -122,19 +122,11 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
                                      StringPiece name, uint32 list_tag,
                                      ObjectWriter* ow) const;
 
-  // Renders an entry in a map, advancing stream pointers appropriately.
-  util::Status RenderMapEntry(const google::protobuf::Type* type,
-                                ObjectWriter* ow) const;
-
   // Renders a packed repeating field. A packed field is stored as:
   // {tag length item1 item2 item3} instead of the less efficient
   // {tag item1 tag item2 tag item3}.
   util::Status RenderPacked(const google::protobuf::Field* field,
                               ObjectWriter* ow) const;
-
-  // Equivalent of RenderPacked, but for map entries.
-  util::Status RenderPackedMapEntry(const google::protobuf::Type* type,
-                                      ObjectWriter* ow) const;
 
   // Renders a google.protobuf.Timestamp value to ObjectWriter
   static util::Status RenderTimestamp(const ProtoStreamObjectSource* os,
@@ -210,6 +202,12 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   util::Status RenderField(const google::protobuf::Field* field,
                              StringPiece field_name, ObjectWriter* ow) const;
 
+  // Same as above but renders all non-message field types. Callers don't call
+  // this function directly. They just use RenderField.
+  util::Status RenderNonMessageField(const google::protobuf::Field* field,
+                                       StringPiece field_name,
+                                       ObjectWriter* ow) const;
+
 
   // Reads field value according to Field spec in 'field' and returns the read
   // value as string. This only works for primitive datatypes (no message
@@ -237,6 +235,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
   // google::protobuf::Type of the message source.
   const google::protobuf::Type& type_;
+
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoStreamObjectSource);
 };

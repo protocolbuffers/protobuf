@@ -355,7 +355,7 @@ public class LiteralByteStringTest extends TestCase {
     assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
   }
 
-  public void testCharsetToString() throws UnsupportedEncodingException {
+  public void testCharsetToString() {
     String testString = "I love unicode \u1234\u5678 characters";
     LiteralByteString unicode = new LiteralByteString(testString.getBytes(Internal.UTF_8));
     String roundTripString = unicode.toString(Internal.UTF_8);

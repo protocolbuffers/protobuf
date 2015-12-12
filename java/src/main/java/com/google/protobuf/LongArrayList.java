@@ -67,10 +67,17 @@ final class LongArrayList extends AbstractProtobufList<Long> implements LongList
   private int size;
 
   /**
-   * Constructs a new mutable {@code LongArrayList}.
+   * Constructs a new mutable {@code LongArrayList} with default capacity.
    */
   LongArrayList() {
-    array = new long[DEFAULT_CAPACITY];
+    this(DEFAULT_CAPACITY);
+  }
+
+  /**
+   * Constructs a new mutable {@code LongArrayList} with the provided capacity.
+   */
+  LongArrayList(int capacity) {
+    array = new long[capacity];
     size = 0;
   }
 

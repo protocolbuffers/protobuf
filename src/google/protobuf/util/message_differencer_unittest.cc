@@ -1103,12 +1103,19 @@ TEST(MessageDifferencerTest, RepeatedFieldSetTest_Combination) {
   msg1.add_rw("change"); msg2.add_rw("change");
 
   // Compare
-  util::MessageDifferencer differencer;
-  differencer.TreatAsMap(msg1.GetDescriptor()->FindFieldByName("item"),
-                         item->GetDescriptor()->FindFieldByName("a"));
-  differencer.TreatAsSet(msg1.GetDescriptor()->FindFieldByName("rv"));
-  differencer.TreatAsSet(item->GetDescriptor()->FindFieldByName("ra"));
-  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+  util::MessageDifferencer differencer1;
+  differencer1.TreatAsMap(msg1.GetDescriptor()->FindFieldByName("item"),
+                          item->GetDescriptor()->FindFieldByName("a"));
+  differencer1.TreatAsSet(msg1.GetDescriptor()->FindFieldByName("rv"));
+  differencer1.TreatAsSet(item->GetDescriptor()->FindFieldByName("ra"));
+  EXPECT_TRUE(differencer1.Compare(msg1, msg2));
+
+  util::MessageDifferencer differencer2;
+  differencer2.TreatAsMap(msg1.GetDescriptor()->FindFieldByName("item"),
+                          item->GetDescriptor()->FindFieldByName("a"));
+  differencer2.set_repeated_field_comparison(util::MessageDifferencer::AS_SET);
+  differencer2.TreatAsList(msg1.GetDescriptor()->FindFieldByName("rw"));
+  EXPECT_TRUE(differencer2.Compare(msg1, msg2));
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldMapTest_Partial) {
@@ -1168,6 +1175,11 @@ TEST(MessageDifferencerTest, RepeatedFieldSetTest_Duplicates) {
   differencer.TreatAsSet(GetFieldDescriptor(a, "rv"));
   EXPECT_TRUE(differencer.Compare(b, a));
   EXPECT_FALSE(differencer.Compare(c, a));
+
+  util::MessageDifferencer differencer1;
+  differencer1.set_repeated_field_comparison(util::MessageDifferencer::AS_SET);
+  EXPECT_TRUE(differencer1.Compare(b, a));
+  EXPECT_FALSE(differencer1.Compare(c, a));
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldSetTest_PartialSimple) {

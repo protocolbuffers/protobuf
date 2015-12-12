@@ -75,9 +75,10 @@ message DefaultValueTestCases {
   IntToStringMap int_to_string = 403;
   MixedMap mixed1 = 404;
   MixedMap2 mixed2 = 405;
-  MessageMap map_of_objects = 406;
-  MixedMap mixed_empty = 407;
-  MessageMap message_map_empty = 408;
+  MixedMap2 empty_mixed2 = 406;
+  MessageMap map_of_objects = 407;
+  MixedMap mixed_empty = 408;
+  MessageMap message_map_empty = 409;
   DoubleValueMessage double_value = 501;
   DoubleValueMessage double_value_default = 502;
 }

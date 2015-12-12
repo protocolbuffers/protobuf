@@ -252,6 +252,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     "#include <algorithm>\n"    // for swap()
     "\n"
     "#include <google/protobuf/stubs/common.h>\n"
+    "#include <google/protobuf/stubs/port.h>\n"
     "#include <google/protobuf/stubs/once.h>\n"
     "#include <google/protobuf/io/coded_stream.h>\n"
     "#include <google/protobuf/wire_format_lite_inl.h>\n",

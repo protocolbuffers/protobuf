@@ -140,10 +140,10 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
                                              bool include_start_and_end,
                                              ObjectWriter* ow) const {
 
-  const TypeRenderer* type_renderer = FindTypeRenderer(type.name());
-  if (type_renderer != NULL) {
-    return (*type_renderer)(this, type, name, ow);
-  }
+    const TypeRenderer* type_renderer = FindTypeRenderer(type.name());
+    if (type_renderer != NULL) {
+      return (*type_renderer)(this, type, name, ow);
+    }
 
   const google::protobuf::Field* field = NULL;
   string field_name;
@@ -171,7 +171,9 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
 
     if (field->cardinality() ==
         google::protobuf::Field_Cardinality_CARDINALITY_REPEATED) {
-      if (IsMap(*field)) {
+      bool check_maps = true;
+
+      if (check_maps && IsMap(*field)) {
         ow->StartObject(field_name);
         ASSIGN_OR_RETURN(tag, RenderMap(field, field_name, tag, ow));
         ow->EndObject();
@@ -218,48 +220,32 @@ StatusOr<uint32> ProtoStreamObjectSource::RenderMap(
   const google::protobuf::Type* field_type =
       typeinfo_->GetTypeByTypeUrl(field->type_url());
   uint32 tag_to_return = 0;
-  if (IsPackable(*field) &&
-      list_tag ==
-          WireFormatLite::MakeTag(field->number(),
-                                  WireFormatLite::WIRETYPE_LENGTH_DELIMITED)) {
-    RETURN_IF_ERROR(RenderPackedMapEntry(field_type, ow));
-    tag_to_return = stream_->ReadTag();
-  } else {
-    do {
-      RETURN_IF_ERROR(RenderMapEntry(field_type, ow));
-    } while ((tag_to_return = stream_->ReadTag()) == list_tag);
-  }
-  return tag_to_return;
-}
-
-Status ProtoStreamObjectSource::RenderMapEntry(
-    const google::protobuf::Type* type, ObjectWriter* ow) const {
-  uint32 buffer32;
-  stream_->ReadVarint32(&buffer32);  // message length
-  int old_limit = stream_->PushLimit(buffer32);
-  string map_key;
-  for (uint32 tag = stream_->ReadTag(); tag != 0; tag = stream_->ReadTag()) {
-    const google::protobuf::Field* field = FindAndVerifyField(*type, tag);
-    if (field == NULL) {
-      WireFormat::SkipField(stream_, tag, NULL);
-      continue;
-    }
-    // Map field numbers are key = 1 and value = 2
-    if (field->number() == 1) {
-      map_key = ReadFieldValueAsString(*field);
-    } else if (field->number() == 2) {
-      if (map_key.empty()) {
-        return Status(util::error::INTERNAL, "Map key must be non-empty");
+  do {
+    // Render map entry message type.
+    uint32 buffer32;
+    stream_->ReadVarint32(&buffer32);  // message length
+    int old_limit = stream_->PushLimit(buffer32);
+    string map_key;
+    for (uint32 tag = stream_->ReadTag(); tag != 0; tag = stream_->ReadTag()) {
+      const google::protobuf::Field* field =
+          FindAndVerifyField(*field_type, tag);
+      if (field == NULL) {
+        WireFormat::SkipField(stream_, tag, NULL);
+        continue;
       }
-      // Disable case normalization for map keys as they are just data. We
-      // retain them intact.
-      ow->DisableCaseNormalizationForNextKey();
-      RETURN_IF_ERROR(RenderField(field, map_key, ow));
+      // Map field numbers are key = 1 and value = 2
+      if (field->number() == 1) {
+        map_key = ReadFieldValueAsString(*field);
+      } else if (field->number() == 2) {
+        if (map_key.empty()) {
+          return Status(util::error::INTERNAL, "Map key must be non-empty");
+        }
+        RETURN_IF_ERROR(RenderField(field, map_key, ow));
+      }
     }
-  }
-  stream_->PopLimit(old_limit);
-
-  return Status::OK;
+    stream_->PopLimit(old_limit);
+  } while ((tag_to_return = stream_->ReadTag()) == list_tag);
+  return tag_to_return;
 }
 
 Status ProtoStreamObjectSource::RenderPacked(
@@ -269,18 +255,6 @@ Status ProtoStreamObjectSource::RenderPacked(
   int old_limit = stream_->PushLimit(length);
   while (stream_->BytesUntilLimit() > 0) {
     RETURN_IF_ERROR(RenderField(field, StringPiece(), ow));
-  }
-  stream_->PopLimit(old_limit);
-  return Status::OK;
-}
-
-Status ProtoStreamObjectSource::RenderPackedMapEntry(
-    const google::protobuf::Type* type, ObjectWriter* ow) const {
-  uint32 length;
-  stream_->ReadVarint32(&length);
-  int old_limit = stream_->PushLimit(length);
-  while (stream_->BytesUntilLimit() > 0) {
-    RETURN_IF_ERROR(RenderMapEntry(type, ow));
   }
   stream_->PopLimit(old_limit);
   return Status::OK;
@@ -601,10 +575,10 @@ Status ProtoStreamObjectSource::RenderAny(const ProtoStreamObjectSource* os,
   // nested_type cannot be null at this time.
   const google::protobuf::Type* nested_type = resolved_type.ValueOrDie();
 
-  // We know the type so we can render it. Recursively parse the nested stream
-  // using a nested ProtoStreamObjectSource using our nested type information.
   google::protobuf::io::ArrayInputStream zero_copy_stream(value.data(), value.size());
   google::protobuf::io::CodedInputStream in_stream(&zero_copy_stream);
+  // We know the type so we can render it. Recursively parse the nested stream
+  // using a nested ProtoStreamObjectSource using our nested type information.
   ProtoStreamObjectSource nested_os(&in_stream, os->typeinfo_, *nested_type);
 
   // We manually call start and end object here so we can inject the @type.
@@ -676,8 +650,7 @@ void ProtoStreamObjectSource::InitRendererMap() {
       &ProtoStreamObjectSource::RenderString;
   (*renderers_)["google.protobuf.BytesValue"] =
       &ProtoStreamObjectSource::RenderBytes;
-  (*renderers_)["google.protobuf.Any"] =
-      &ProtoStreamObjectSource::RenderAny;
+  (*renderers_)["google.protobuf.Any"] = &ProtoStreamObjectSource::RenderAny;
   (*renderers_)["google.protobuf.Struct"] =
       &ProtoStreamObjectSource::RenderStruct;
   (*renderers_)["google.protobuf.Value"] =
@@ -704,87 +677,118 @@ ProtoStreamObjectSource::FindTypeRenderer(const string& type_url) {
 Status ProtoStreamObjectSource::RenderField(
     const google::protobuf::Field* field, StringPiece field_name,
     ObjectWriter* ow) const {
+  // Short-circuit message types as it tends to call WriteMessage recursively
+  // and ends up using a lot of stack space. Keep the stack usage of this
+  // message small in order to preserve stack space and not crash.
+  if (field->kind() == google::protobuf::Field_Kind_TYPE_MESSAGE) {
+    uint32 buffer32;
+    stream_->ReadVarint32(&buffer32);  // message length
+    int old_limit = stream_->PushLimit(buffer32);
+    // Get the nested message type for this field.
+    const google::protobuf::Type* type =
+        typeinfo_->GetTypeByTypeUrl(field->type_url());
+    if (type == NULL) {
+      return Status(util::error::INTERNAL,
+                    StrCat("Invalid configuration. Could not find the type: ",
+                           field->type_url()));
+    }
+
+    // Short-circuit any special type rendering to save call-stack space.
+    const TypeRenderer* type_renderer = FindTypeRenderer(type->name());
+
+    bool use_type_renderer = type_renderer != NULL;
+
+    if (use_type_renderer) {
+      RETURN_IF_ERROR((*type_renderer)(this, *type, field_name, ow));
+    } else {
+      RETURN_IF_ERROR(WriteMessage(*type, field_name, 0, true, ow));
+    }
+    if (!stream_->ConsumedEntireMessage()) {
+      return Status(util::error::INVALID_ARGUMENT,
+                    "Nested protocol message not parsed in its entirety.");
+    }
+    stream_->PopLimit(old_limit);
+  } else {
+    // Render all other non-message types.
+    return RenderNonMessageField(field, field_name, ow);
+  }
+  return Status::OK;
+}
+
+Status ProtoStreamObjectSource::RenderNonMessageField(
+    const google::protobuf::Field* field, StringPiece field_name,
+    ObjectWriter* ow) const {
+  // Temporary buffers of different types.
+  uint32 buffer32;
+  uint64 buffer64;
+  string strbuffer;
   switch (field->kind()) {
     case google::protobuf::Field_Kind_TYPE_BOOL: {
-      uint64 buffer64;
       stream_->ReadVarint64(&buffer64);
       ow->RenderBool(field_name, buffer64 != 0);
       break;
     }
     case google::protobuf::Field_Kind_TYPE_INT32: {
-      uint32 buffer32;
       stream_->ReadVarint32(&buffer32);
       ow->RenderInt32(field_name, bit_cast<int32>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_INT64: {
-      uint64 buffer64;
       stream_->ReadVarint64(&buffer64);
       ow->RenderInt64(field_name, bit_cast<int64>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_UINT32: {
-      uint32 buffer32;
       stream_->ReadVarint32(&buffer32);
       ow->RenderUint32(field_name, bit_cast<uint32>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_UINT64: {
-      uint64 buffer64;
       stream_->ReadVarint64(&buffer64);
       ow->RenderUint64(field_name, bit_cast<uint64>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_SINT32: {
-      uint32 buffer32;
       stream_->ReadVarint32(&buffer32);
       ow->RenderInt32(field_name, WireFormatLite::ZigZagDecode32(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_SINT64: {
-      uint64 buffer64;
       stream_->ReadVarint64(&buffer64);
       ow->RenderInt64(field_name, WireFormatLite::ZigZagDecode64(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_SFIXED32: {
-      uint32 buffer32;
       stream_->ReadLittleEndian32(&buffer32);
       ow->RenderInt32(field_name, bit_cast<int32>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_SFIXED64: {
-      uint64 buffer64;
       stream_->ReadLittleEndian64(&buffer64);
       ow->RenderInt64(field_name, bit_cast<int64>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_FIXED32: {
-      uint32 buffer32;
       stream_->ReadLittleEndian32(&buffer32);
       ow->RenderUint32(field_name, bit_cast<uint32>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_FIXED64: {
-      uint64 buffer64;
       stream_->ReadLittleEndian64(&buffer64);
       ow->RenderUint64(field_name, bit_cast<uint64>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_FLOAT: {
-      uint32 buffer32;
       stream_->ReadLittleEndian32(&buffer32);
       ow->RenderFloat(field_name, bit_cast<float>(buffer32));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_DOUBLE: {
-      uint64 buffer64;
       stream_->ReadLittleEndian64(&buffer64);
       ow->RenderDouble(field_name, bit_cast<double>(buffer64));
       break;
     }
     case google::protobuf::Field_Kind_TYPE_ENUM: {
-      uint32 buffer32;
       stream_->ReadVarint32(&buffer32);
 
       // If the field represents an explicit NULL value, render null.
@@ -811,40 +815,15 @@ Status ProtoStreamObjectSource::RenderField(
       break;
     }
     case google::protobuf::Field_Kind_TYPE_STRING: {
-      uint32 buffer32;
-      string str;
       stream_->ReadVarint32(&buffer32);  // string size.
-      stream_->ReadString(&str, buffer32);
-      ow->RenderString(field_name, str);
+      stream_->ReadString(&strbuffer, buffer32);
+      ow->RenderString(field_name, strbuffer);
       break;
     }
     case google::protobuf::Field_Kind_TYPE_BYTES: {
-      uint32 buffer32;
       stream_->ReadVarint32(&buffer32);  // bytes size.
-      string value;
-      stream_->ReadString(&value, buffer32);
-      ow->RenderBytes(field_name, value);
-      break;
-    }
-    case google::protobuf::Field_Kind_TYPE_MESSAGE: {
-      uint32 buffer32;
-      stream_->ReadVarint32(&buffer32);  // message length
-      int old_limit = stream_->PushLimit(buffer32);
-      // Get the nested message type for this field.
-      const google::protobuf::Type* type =
-          typeinfo_->GetTypeByTypeUrl(field->type_url());
-      if (type == NULL) {
-        return Status(util::error::INTERNAL,
-                      StrCat("Invalid configuration. Could not find the type: ",
-                             field->type_url()));
-      }
-
-      RETURN_IF_ERROR(WriteMessage(*type, field_name, 0, true, ow));
-      if (!stream_->ConsumedEntireMessage()) {
-        return Status(util::error::INVALID_ARGUMENT,
-                      "Nested protocol message not parsed in its entirety.");
-      }
-      stream_->PopLimit(old_limit);
+      stream_->ReadString(&strbuffer, buffer32);
+      ow->RenderBytes(field_name, strbuffer);
       break;
     }
     default:

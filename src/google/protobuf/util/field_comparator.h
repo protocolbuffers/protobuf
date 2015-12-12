@@ -93,7 +93,7 @@ class LIBPROTOBUF_EXPORT FieldComparator {
 
 // Basic implementation of FieldComparator.  Supports four modes of floating
 // point value comparison: exact, approximate using MathUtil::AlmostEqual
-// method, and arbitrarilly precise using MathUtil::WithinFracionOrMargin.
+// method, and arbitrarilly precise using MathUtil::WithinFractionOrMargin.
 class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
  public:
   enum FloatComparison {

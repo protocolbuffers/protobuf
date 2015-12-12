@@ -85,17 +85,10 @@ EnumGenerator::~EnumGenerator() {}
 
 void EnumGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, descriptor_);
-  if (HasDescriptorMethods(descriptor_)) {
-    printer->Print(
-      "public enum $classname$\n"
-      "    implements com.google.protobuf.ProtocolMessageEnum {\n",
-      "classname", descriptor_->name());
-  } else {
-    printer->Print(
-      "public enum $classname$\n"
-      "    implements com.google.protobuf.Internal.EnumLite {\n",
-      "classname", descriptor_->name());
-  }
+  printer->Print(
+    "public enum $classname$\n"
+    "    implements com.google.protobuf.ProtocolMessageEnum {\n",
+    "classname", descriptor_->name());
   printer->Indent();
 
   for (int i = 0; i < canonical_values_.size(); i++) {
@@ -311,7 +304,6 @@ void EnumGenerator::Generate(io::Printer* printer) {
       "}\n"
       "\n");
 
-    // index is only used for reflection; lite implementation does not need it
     printer->Print("private final int index;\n");
   }
 

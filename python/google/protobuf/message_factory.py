@@ -39,7 +39,6 @@ my_proto_instance = message_classes['some.proto.package.MessageName']()
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
-from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool
 from google.protobuf import message
 from google.protobuf import reflection
@@ -50,8 +49,7 @@ class MessageFactory(object):
 
   def __init__(self, pool=None):
     """Initializes a new factory."""
-    self.pool = (pool or descriptor_pool.DescriptorPool(
-        descriptor_database.DescriptorDatabase()))
+    self.pool = pool or descriptor_pool.DescriptorPool()
 
     # local cache of all classes built from protobuf descriptors
     self._classes = {}

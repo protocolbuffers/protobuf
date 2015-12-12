@@ -786,25 +786,33 @@ class FileDescriptor(DescriptorBase):
   message_types_by_name: Dict of message names of their descriptors.
   enum_types_by_name: Dict of enum names and their descriptors.
   extensions_by_name: Dict of extension names and their descriptors.
+  pool: the DescriptorPool this descriptor belongs to.  When not passed to the
+    constructor, the global default pool is used.
   """
 
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.FileDescriptor
 
     def __new__(cls, name, package, options=None, serialized_pb=None,
-                dependencies=None, syntax=None):
+                dependencies=None, syntax=None, pool=None):
       # FileDescriptor() is called from various places, not only from generated
       # files, to register dynamic proto files and messages.
       if serialized_pb:
+        # TODO(amauryfa): use the pool passed as argument. This will work only
+        # for C++-implemented DescriptorPools.
         return _message.default_pool.AddSerializedFile(serialized_pb)
       else:
         return super(FileDescriptor, cls).__new__(cls)
 
   def __init__(self, name, package, options=None, serialized_pb=None,
-               dependencies=None, syntax=None):
+               dependencies=None, syntax=None, pool=None):
     """Constructor."""
     super(FileDescriptor, self).__init__(options, 'FileOptions')
 
+    if pool is None:
+      from google.protobuf import descriptor_pool
+      pool = descriptor_pool.Default()
+    self.pool = pool
     self.message_types_by_name = {}
     self.name = name
     self.package = package

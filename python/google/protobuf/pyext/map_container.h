@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_PYTHON_CPP_SCALAR_MAP_CONTAINER_H__
-#define GOOGLE_PROTOBUF_PYTHON_CPP_SCALAR_MAP_CONTAINER_H__
+#ifndef GOOGLE_PROTOBUF_PYTHON_CPP_MAP_CONTAINER_H__
+#define GOOGLE_PROTOBUF_PYTHON_CPP_MAP_CONTAINER_H__
 
 #include <Python.h>
 
@@ -39,6 +39,7 @@
 #endif
 
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/message.h>
 
 namespace google {
 namespace protobuf {
@@ -55,18 +56,23 @@ namespace python {
 
 struct CMessage;
 
-struct ScalarMapContainer {
+// This struct is used directly for ScalarMap, and is the base class of
+// MessageMapContainer, which is used for MessageMap.
+struct MapContainer {
   PyObject_HEAD;
 
   // This is the top-level C++ Message object that owns the whole
-  // proto tree.  Every Python ScalarMapContainer holds a
+  // proto tree.  Every Python MapContainer holds a
   // reference to it in order to keep it alive as long as there's a
   // Python object that references any part of the tree.
   shared_ptr<Message> owner;
 
   // Pointer to the C++ Message that contains this container.  The
-  // ScalarMapContainer does not own this pointer.
-  Message* message;
+  // MapContainer does not own this pointer.
+  const Message* message;
+
+  // Use to get a mutable message when necessary.
+  Message* GetMutableMessage();
 
   // Weak reference to a parent CMessage object (i.e. may be NULL.)
   //
@@ -85,35 +91,43 @@ struct ScalarMapContainer {
   // We bump this whenever we perform a mutation, to invalidate existing
   // iterators.
   uint64 version;
+
+  // Releases the messages in the container to a new message.
+  //
+  // Returns 0 on success, -1 on failure.
+  int Release();
+
+  // Set the owner field of self and any children of self.
+  void SetOwner(const shared_ptr<Message>& new_owner) {
+    owner = new_owner;
+  }
 };
 
-#if PY_MAJOR_VERSION >= 3
-  extern PyObject *ScalarMapContainer_Type;
-  extern PyType_Spec ScalarMapContainer_Type_spec;
-#else
-  extern PyTypeObject ScalarMapContainer_Type;
-#endif
-extern PyTypeObject ScalarMapIterator_Type;
+struct MessageMapContainer : public MapContainer {
+  // A callable that is used to create new child messages.
+  PyObject* subclass_init;
 
-namespace scalar_map_container {
+  // A dict mapping Message* -> CMessage.
+  PyObject* message_dict;
+};
 
-// Builds a ScalarMapContainer object, from a parent message and a
+extern PyTypeObject ScalarMapContainer_Type;
+extern PyTypeObject MessageMapContainer_Type;
+extern PyTypeObject MapIterator_Type;  // Both map types use the same iterator.
+
+// Builds a MapContainer object, from a parent message and a
 // field descriptor.
-extern PyObject *NewContainer(
+extern PyObject* NewScalarMapContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor);
 
-// Releases the messages in the container to a new message.
-//
-// Returns 0 on success, -1 on failure.
-int Release(ScalarMapContainer* self);
+// Builds a MessageMap object, from a parent message and a
+// field descriptor.
+extern PyObject* NewMessageMapContainer(
+    CMessage* parent, const FieldDescriptor* parent_field_descriptor,
+    PyObject* concrete_class);
 
-// Set the owner field of self and any children of self.
-void SetOwner(ScalarMapContainer* self,
-              const shared_ptr<Message>& new_owner);
-
-}  // namespace scalar_map_container
 }  // namespace python
 }  // namespace protobuf
 
 }  // namespace google
-#endif  // GOOGLE_PROTOBUF_PYTHON_CPP_SCALAR_MAP_CONTAINER_H__
+#endif  // GOOGLE_PROTOBUF_PYTHON_CPP_MAP_CONTAINER_H__

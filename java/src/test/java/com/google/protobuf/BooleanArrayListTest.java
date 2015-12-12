@@ -310,10 +310,6 @@ public class BooleanArrayListTest extends TestCase {
   }
   
   private void assertImmutable(BooleanArrayList list) {
-    if (list.contains(1)) {
-      throw new RuntimeException("Cannot test the immutability of lists that contain 1.");
-    }
-    
     try {
       list.add(false);
       fail();
@@ -413,7 +409,7 @@ public class BooleanArrayListTest extends TestCase {
     }
     
     try {
-      list.removeAll(Collections.singleton(1));
+      list.removeAll(Collections.singleton(Boolean.TRUE));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
@@ -434,7 +430,7 @@ public class BooleanArrayListTest extends TestCase {
     }
     
     try {
-      list.retainAll(Collections.singleton(1));
+      list.retainAll(Collections.singleton(Boolean.TRUE));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected

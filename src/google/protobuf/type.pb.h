@@ -471,6 +471,17 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message {
   ::std::string* release_json_name();
   void set_allocated_json_name(::std::string* json_name);
 
+  // optional string default_value = 11;
+  void clear_default_value();
+  static const int kDefaultValueFieldNumber = 11;
+  const ::std::string& default_value() const;
+  void set_default_value(const ::std::string& value);
+  void set_default_value(const char* value);
+  void set_default_value(const char* value, size_t size);
+  ::std::string* mutable_default_value();
+  ::std::string* release_default_value();
+  void set_allocated_default_value(::std::string* default_value);
+
   // @@protoc_insertion_point(class_scope:google.protobuf.Field)
  private:
 
@@ -484,6 +495,7 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message {
   ::google::protobuf::internal::ArenaStringPtr type_url_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option > options_;
   ::google::protobuf::internal::ArenaStringPtr json_name_;
+  ::google::protobuf::internal::ArenaStringPtr default_value_;
   bool packed_;
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto();
@@ -1262,6 +1274,49 @@ inline void Field::set_allocated_json_name(::std::string* json_name) {
   }
   json_name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), json_name);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Field.json_name)
+}
+
+// optional string default_value = 11;
+inline void Field::clear_default_value() {
+  default_value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& Field::default_value() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.Field.default_value)
+  return default_value_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Field::set_default_value(const ::std::string& value) {
+  
+  default_value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:google.protobuf.Field.default_value)
+}
+inline void Field::set_default_value(const char* value) {
+  
+  default_value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.Field.default_value)
+}
+inline void Field::set_default_value(const char* value, size_t size) {
+  
+  default_value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.Field.default_value)
+}
+inline ::std::string* Field::mutable_default_value() {
+  
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Field.default_value)
+  return default_value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Field::release_default_value() {
+  
+  return default_value_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Field::set_allocated_default_value(::std::string* default_value) {
+  if (default_value != NULL) {
+    
+  } else {
+    
+  }
+  default_value_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), default_value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.Field.default_value)
 }
 
 // -------------------------------------------------------------------

@@ -65,7 +65,7 @@ message TestAllTypes {
   float optional_float = 11;
   double optional_double = 12;
   bool optional_bool = 13;
-  string optional_string = 14;
+  string optional_string = 14 [enforce_utf8 = false];
   bytes optional_bytes = 15;
   NestedMessage optional_nested_message = 18;
   NestedEnum optional_nested_enum = 21;
@@ -84,10 +84,17 @@ message TestAllTypes {
   repeated float repeated_float = 41;
   repeated double repeated_double = 42;
   repeated bool repeated_bool = 43;
-  repeated string repeated_string = 44;
+  repeated string repeated_string = 44 [enforce_utf8 = false];
   repeated bytes repeated_bytes = 45;
   repeated NestedMessage repeated_nested_message = 48;
   repeated NestedEnum repeated_nested_enum = 51;
+}
+
+message TestOneof {
+  oneof oneof_field {
+    int32 oneof_int32 = 1;
+    TestAllTypes.NestedMessage oneof_nested_message = 2;
+  }
 }
 
 message TestMap {
@@ -105,7 +112,7 @@ message TestMap {
   map<sfixed32, int32> sfixed32_to_int32_map = 9;
   map<sfixed64, int32> sfixed64_to_int32_map = 10;
   map<bool, int32> bool_to_int32_map = 11;
-  map<string, int32> string_to_int32_map = 12;
+  map<string, int32> string_to_int32_map = 12 [enforce_utf8 = false];
 
   map<int32, int64> int32_to_int64_map = 101;
   map<int32, uint32> int32_to_uint32_map = 102;
@@ -119,7 +126,7 @@ message TestMap {
   map<int32, float> int32_to_float_map = 110;
   map<int32, double> int32_to_double_map = 111;
   map<int32, bool> int32_to_bool_map = 112;
-  map<int32, string> int32_to_string_map = 113;
+  map<int32, string> int32_to_string_map = 113 [enforce_utf8 = false];
   map<int32, bytes> int32_to_bytes_map = 114;
   map<int32, TestAllTypes.NestedMessage> int32_to_message_map = 115;
   map<int32, TestAllTypes.NestedEnum> int32_to_enum_map = 116;
@@ -151,8 +158,13 @@ message TestFieldMask {
 
 message TestStruct {
   google.protobuf.Struct struct_value = 1;
+  google.protobuf.Value value = 2;
 }
 
 message TestAny {
   google.protobuf.Any any_value = 1;
+}
+
+message TestCustomJsonName {
+  int32 value = 1 [json_name = "@value"];
 }

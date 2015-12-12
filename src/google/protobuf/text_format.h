@@ -219,6 +219,18 @@ class LIBPROTOBUF_EXPORT TextFormat {
       expand_any_ = expand;
     }
 
+    // If non-zero, we truncate all string fields that are  longer than this
+    // threshold.  This is useful when the proto message has very long strings,
+    // e.g., dump of encoded image file.
+    //
+    // NOTE(hfgong):  Setting a non-zero value breaks round-trip safe
+    // property of TextFormat::Printer.  That is, from the printed message, we
+    // cannot fully recover the original string field any more.
+    void SetTruncateStringFieldLongerThan(
+        const int64 truncate_string_field_longer_than) {
+      truncate_string_field_longer_than_ = truncate_string_field_longer_than;
+    }
+
     // Register a custom field-specific FieldValuePrinter for fields
     // with a particular FieldDescriptor.
     // Returns "true" if the registration succeeded, or "false", if there is
@@ -285,6 +297,8 @@ class LIBPROTOBUF_EXPORT TextFormat {
     bool print_message_fields_in_index_order_;
 
     bool expand_any_;
+
+    int64 truncate_string_field_longer_than_;
 
     google::protobuf::scoped_ptr<const FieldValuePrinter> default_field_value_printer_;
     typedef map<const FieldDescriptor*,

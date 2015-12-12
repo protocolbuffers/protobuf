@@ -40,6 +40,7 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/util/internal/json_objectwriter.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/json_stream_parser.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/object_writer.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/internal/proto_writer.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectsource.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectwriter.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/type_info.cc

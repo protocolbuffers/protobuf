@@ -34,6 +34,7 @@ typedef GPB_ENUM(GPBAny_FieldNumber) {
 // `Any` contains an arbitrary serialized message along with a URL
 // that describes the type of the serialized message.
 //
+//
 // JSON
 // ====
 // The JSON representation of an `Any` value uses the regular
@@ -54,8 +55,8 @@ typedef GPB_ENUM(GPBAny_FieldNumber) {
 //
 // If the embedded message type is well-known and has a custom JSON
 // representation, that representation will be embedded adding a field
-// `value` which holds the custom JSON in addition to the the `@type`
-// field. Example (for message [google.protobuf.Duration][google.protobuf.Duration]):
+// `value` which holds the custom JSON in addition to the `@type`
+// field. Example (for message [google.protobuf.Duration][]):
 //
 //     {
 //       "@type": "type.googleapis.com/google.protobuf.Duration",
@@ -72,7 +73,7 @@ typedef GPB_ENUM(GPBAny_FieldNumber) {
 // * If no schema is provided, `https` is assumed.
 // * The last segment of the URL's path must represent the fully
 //   qualified name of the type (as in `path/google.protobuf.Duration`).
-// * An HTTP GET on the URL must yield a [google.protobuf.Type][google.protobuf.Type]
+// * An HTTP GET on the URL must yield a [google.protobuf.Type][]
 //   value in binary format, or produce an error.
 // * Applications are allowed to cache lookup results based on the
 //   URL, or have them precompiled into a binary to avoid any
