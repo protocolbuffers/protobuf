@@ -55,7 +55,7 @@ class BaseDefaultValueObjectWriterTest
         string(kTypeServiceBaseUrl) + "/" + descriptor->full_name(), &mock_));
   }
 
-  ~BaseDefaultValueObjectWriterTest() override {}
+  virtual ~BaseDefaultValueObjectWriterTest() {}
 
   TypeInfoTestHelper helper_;
   MockObjectWriter mock_;
@@ -69,7 +69,7 @@ class DefaultValueObjectWriterTest : public BaseDefaultValueObjectWriterTest {
  protected:
   DefaultValueObjectWriterTest()
       : BaseDefaultValueObjectWriterTest(DefaultValueTest::descriptor()) {}
-  ~DefaultValueObjectWriterTest() override {}
+  virtual ~DefaultValueObjectWriterTest() {}
 };
 
 INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
