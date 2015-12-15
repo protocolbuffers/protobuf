@@ -53,6 +53,9 @@ AC_DEFUN([AC_CXX_STL_HASH],
    if test -n "$ac_cv_cxx_hash_map"; then
       AC_DEFINE(HAVE_HASH_MAP, 1, [define if the compiler has hash_map])
       AC_DEFINE(HAVE_HASH_SET, 1, [define if the compiler has hash_set])
+      if test "$ac_cv_cxx_hash_map_class" = "unordered_map"; then
+         AC_DEFINE(HAVE_UNORDERED_MAP, 1, [define if the hash_map class is unordered_map])
+      fi
       AC_DEFINE_UNQUOTED(HASH_MAP_H,$ac_cv_cxx_hash_map,
                          [the location of <unordered_map> or <hash_map>])
       AC_DEFINE_UNQUOTED(HASH_SET_H,$ac_cv_cxx_hash_set,
