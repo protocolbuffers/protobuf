@@ -8,6 +8,50 @@ import (
 	pb "github.com/google/protobuf/examples/tutorial"
 )
 
+func TestWritePersonWritesPerson(t *testing.T) {
+	buf := new(bytes.Buffer)
+	// [START populate_proto]
+	p := pb.Person{
+		Id:    1234,
+		Name:  "John Doe",
+		Email: "jdoe@example.com",
+		Phones: []*pb.Person_PhoneNumber{
+			{Number: "555-4321", Type: pb.Person_HOME},
+		},
+	}
+	// [END populate_proto]
+	writePerson(buf, &p)
+	want := strings.Split(`Person ID: 1234
+  Name: John Doe
+  E-mail address: jdoe@example.com
+  Home phone #: 555-4321
+`, "\n")
+
+	got := strings.Split(buf.String(), "\n")
+	if len(got) != len(want) {
+		t.Errorf(
+			"writePerson(%s) =>\n\t%q has %d lines, want %d",
+			p.String(),
+			buf.String(),
+			len(got),
+			len(want))
+	}
+	lines := len(got)
+	if lines > len(want) {
+		lines = len(want)
+	}
+	for i := 0; i < lines; i++ {
+		if got[i] != want[i] {
+			t.Errorf(
+				"writePerson(%s) =>\n\tline %d %q, want %q",
+				p.String(),
+				i,
+				got[i],
+				want[i])
+		}
+	}
+}
+
 func TestListPeopleWritesList(t *testing.T) {
 	buf := new(bytes.Buffer)
 	in := pb.AddressBook{[]*pb.Person{
