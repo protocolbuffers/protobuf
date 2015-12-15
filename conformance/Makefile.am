@@ -17,9 +17,10 @@ other_language_protoc_outputs =                                \
 bin_PROGRAMS = conformance-test-runner conformance-cpp
 
 conformance_test_runner_LDADD = $(top_srcdir)/src/libprotobuf.la
-conformance_test_runner_SOURCES = conformance_test.cc conformance_test_runner.cc
+conformance_test_runner_SOURCES = conformance_test.cc conformance_test_runner.cc \
+                                  third_party/jsoncpp/jsoncpp.cpp
 nodist_conformance_test_runner_SOURCES = conformance.pb.cc
-conformance_test_runner_CPPFLAGS = -I$(top_srcdir)/src
+conformance_test_runner_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)
 # Explicit deps beacuse BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_cpp" could fail if parallel enough.
 conformance_test_runner-conformance_test.$(OBJEXT): conformance.pb.h
@@ -63,7 +64,7 @@ else
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
 protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(protoc_inputs)
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd $(protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd $(protoc_inputs) )
 	touch protoc_middleman
 
 endif
@@ -80,13 +81,13 @@ MAINTAINERCLEANFILES =   \
   Makefile.in
 
 javac_middleman: ConformanceJava.java protoc_middleman $(other_language_protoc_outputs)
-	javac -classpath ../java/target/classes ConformanceJava.java com/google/protobuf/conformance/Conformance.java
+	jar=`ls ../java/util/target/*.jar` && javac -classpath ../java/target/classes:$$jar ConformanceJava.java com/google/protobuf/conformance/Conformance.java
 	@touch javac_middleman
 
 conformance-java: javac_middleman
 	@echo "Writing shortcut script conformance-java..."
 	@echo '#! /bin/sh' > conformance-java
-	@echo 'java -classpath .:../java/target/classes ConformanceJava "$$@"' >> conformance-java
+	@jar=`ls ../java/util/target/*.jar` && echo java -classpath .:../java/target/classes:$$jar ConformanceJava '$$@' >> conformance-java
 	@chmod +x conformance-java
 
 # Currently the conformance code is alongside the rest of the C#
@@ -103,7 +104,7 @@ test_cpp: protoc_middleman conformance-test-runner conformance-cpp
 	./conformance-test-runner --failure_list failure_list_cpp.txt ./conformance-cpp
 
 test_java: protoc_middleman conformance-test-runner conformance-java
-	./conformance-test-runner ./conformance-java
+	./conformance-test-runner --failure_list failure_list_java.txt ./conformance-java
 
 test_csharp: protoc_middleman conformance-test-runner conformance-csharp
 	./conformance-test-runner --failure_list failure_list_csharp.txt ./conformance-csharp

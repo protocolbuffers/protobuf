@@ -93,7 +93,7 @@ use_java() {
 build_java() {
   # Java build needs `protoc`.
   internal_build_cpp
-  cd java && mvn test && cd ..
+  cd java && mvn test && cd util && mvn test && mvn assembly:single && cd ../..
   cd conformance && make test_java && cd ..
 }
 

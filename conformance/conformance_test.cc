@@ -42,8 +42,7 @@
 #include <google/protobuf/util/type_resolver_util.h>
 #include <google/protobuf/wire_format_lite.h>
 
-#include "third_party/jsoncpp/value.h"
-#include "third_party/jsoncpp/reader.h"
+#include "third_party/jsoncpp/json.h"
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
