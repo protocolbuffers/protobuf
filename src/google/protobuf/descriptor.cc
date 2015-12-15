@@ -560,7 +560,7 @@ class FileDescriptorTables {
   ~FileDescriptorTables();
 
   // Empty table, used with placeholder files.
-  static const FileDescriptorTables kEmpty;
+  inline static const FileDescriptorTables& GetEmptyInstance();
 
   // -----------------------------------------------------------------
   // Finding items.
@@ -665,7 +665,10 @@ FileDescriptorTables::FileDescriptorTables()
 
 FileDescriptorTables::~FileDescriptorTables() {}
 
-const FileDescriptorTables FileDescriptorTables::kEmpty;
+inline const FileDescriptorTables& FileDescriptorTables::GetEmptyInstance() {
+    static const FileDescriptorTables kEmpty;
+    return kEmpty;
+}
 
 void DescriptorPool::Tables::AddCheckpoint() {
   checkpoints_.push_back(CheckPoint(this));
@@ -3535,7 +3538,7 @@ FileDescriptor* DescriptorBuilder::NewPlaceholderFile(
   placeholder->package_ = &internal::GetEmptyString();
   placeholder->pool_ = pool_;
   placeholder->options_ = &FileOptions::default_instance();
-  placeholder->tables_ = &FileDescriptorTables::kEmpty;
+  placeholder->tables_ = &FileDescriptorTables::GetEmptyInstance();
   placeholder->source_code_info_ = &SourceCodeInfo::default_instance();
   placeholder->is_placeholder_ = true;
   placeholder->syntax_ = FileDescriptor::SYNTAX_PROTO2;
