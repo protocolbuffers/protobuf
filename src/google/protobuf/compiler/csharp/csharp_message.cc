@@ -353,7 +353,7 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
 
     printer->Print(
         "public override string ToString() {\n"
-        "  return pb::JsonFormatter.Default.Format(this);\n"
+        "  return pb::JsonFormatter.ToDiagnosticString(this);\n"
         "}\n\n");
 }
 
