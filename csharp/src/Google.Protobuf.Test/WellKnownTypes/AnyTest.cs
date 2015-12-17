@@ -62,5 +62,28 @@ namespace Google.Protobuf.WellKnownTypes
             var unpacked = any.Unpack<TestAllTypes>();
             Assert.AreEqual(message, unpacked);
         }
+
+        [Test]
+        public void ToString_WithValues()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var any = Any.Pack(message);
+            var text = any.ToString();
+            Assert.That(text, Is.StringContaining("\"@value\": \"" + message.ToByteString().ToBase64() + "\""));
+        }
+
+        [Test]
+        public void ToString_Empty()
+        {
+            var any = new Any();
+            Assert.AreEqual("{ \"@type\": \"\", \"@value\": \"\" }", any.ToString());
+        }
+
+        [Test]
+        public void ToString_MessageContainingAny()
+        {
+            var message = new TestWellKnownTypes { AnyField = new Any() };
+            Assert.AreEqual("{ \"anyField\": { \"@type\": \"\", \"@value\": \"\" } }", message.ToString());
+        }
     }
 }
