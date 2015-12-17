@@ -16,6 +16,8 @@
     <FileAlignment>512</FileAlignment>
     <OldToolsVersion>3.5</OldToolsVersion>
     <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -142,9 +144,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Google.Protobuf.nuspec" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <Import Project="..\packages\NuSpec.ReferenceGenerator.1.4.1\build\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10\NuSpec.ReferenceGenerator.targets" Condition="Exists('..\packages\NuSpec.ReferenceGenerator.1.4.1\build\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10\NuSpec.ReferenceGenerator.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\NuSpec.ReferenceGenerator.1.4.1\build\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10\NuSpec.ReferenceGenerator.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NuSpec.ReferenceGenerator.1.4.1\build\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10\NuSpec.ReferenceGenerator.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
