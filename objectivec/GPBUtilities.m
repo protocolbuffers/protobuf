@@ -411,7 +411,7 @@ id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
     return field.defaultValue.valueMessage;
   }
 
-  OSSpinLockLock(&self->readOnlyMutex_);
+  dispatch_semaphore_wait(self->readOnlySemaphore_, DISPATCH_TIME_FOREVER);
   GPBMessage *result = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
   if (!result) {
     // For non repeated messages, create the object, set it and return it.
@@ -420,7 +420,7 @@ id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
     result = GPBCreateMessageWithAutocreator(field.msgClass, self, field);
     GPBSetAutocreatedRetainedObjectIvarWithField(self, field, result);
   }
-  OSSpinLockUnlock(&self->readOnlyMutex_);
+  dispatch_semaphore_signal(self->readOnlySemaphore_);
   return result;
 }
 

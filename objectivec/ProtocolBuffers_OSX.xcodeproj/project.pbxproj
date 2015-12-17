@@ -28,7 +28,6 @@
 		8B8B615D17DF7056002EE618 /* GPBARCUnittestProtos.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B8B615C17DF7056002EE618 /* GPBARCUnittestProtos.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		8B96157414C8C38C00A2AC0B /* GPBDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B96157314C8C38C00A2AC0B /* GPBDescriptor.m */; };
 		8B96157514CA019D00A2AC0B /* Descriptor.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BD3982214BE5B0C0081D629 /* Descriptor.pbobjc.m */; };
-		8BA9364518DA5F4C0056FA2A /* GPBStringTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BA9364418DA5F4B0056FA2A /* GPBStringTests.m */; };
 		8BBEA4A9147C727D00C4ADB7 /* GPBCodedInputStreamTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B69B0F94FDF800A0C422 /* GPBCodedInputStreamTests.m */; };
 		8BBEA4AA147C727D00C4ADB7 /* GPBCodedOuputStreamTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B69D0F94FDF800A0C422 /* GPBCodedOuputStreamTests.m */; };
 		8BBEA4AC147C727D00C4ADB7 /* GPBMessageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B6A30F94FDF800A0C422 /* GPBMessageTests.m */; };
@@ -158,7 +157,6 @@
 		8B8B615C17DF7056002EE618 /* GPBARCUnittestProtos.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBARCUnittestProtos.m; sourceTree = "<group>"; };
 		8B96157214C8B06000A2AC0B /* GPBDescriptor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBDescriptor.h; sourceTree = "<group>"; };
 		8B96157314C8C38C00A2AC0B /* GPBDescriptor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBDescriptor.m; sourceTree = "<group>"; };
-		8BA9364418DA5F4B0056FA2A /* GPBStringTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBStringTests.m; sourceTree = "<group>"; };
 		8BBD9DB016DD1DC8008E1EC1 /* unittest_lite.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = unittest_lite.proto; path = ../../src/google/protobuf/unittest_lite.proto; sourceTree = "<group>"; };
 		8BBEA4A6147C727100C4ADB7 /* UnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8BCF338814ED799900BC5317 /* GPBProtocolBuffers.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GPBProtocolBuffers.m; sourceTree = "<group>"; };
@@ -419,7 +417,6 @@
 				F4487C7E1AAF62CD00531423 /* GPBMessageTests+Serialization.m */,
 				F4B51B1D1BBC610700744318 /* GPBObjectiveCPlusPlusTest.mm */,
 				F41C175C1833D3310064ED4D /* GPBPerfTests.m */,
-				8BA9364418DA5F4B0056FA2A /* GPBStringTests.m */,
 				8B4248BA1A8C256A00BC1EC6 /* GPBSwiftTests.swift */,
 				7461B6AB0F94FDF800A0C422 /* GPBTestUtilities.h */,
 				7461B6AC0F94FDF800A0C422 /* GPBTestUtilities.m */,
@@ -689,7 +686,6 @@
 				F41C175D1833D3310064ED4D /* GPBPerfTests.m in Sources */,
 				F4353D341AC06F10005A6198 /* GPBDictionaryTests+Bool.m in Sources */,
 				F4487C831AAF6AB300531423 /* GPBMessageTests+Merge.m in Sources */,
-				8BA9364518DA5F4C0056FA2A /* GPBStringTests.m in Sources */,
 				8BBEA4B6147C727D00C4ADB7 /* GPBUnknownFieldSetTest.m in Sources */,
 				F4353D371AC06F10005A6198 /* GPBDictionaryTests+String.m in Sources */,
 				F4353D381AC06F10005A6198 /* GPBDictionaryTests+UInt32.m in Sources */,
