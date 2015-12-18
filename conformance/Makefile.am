@@ -21,6 +21,7 @@ conformance_test_runner_SOURCES = conformance_test.cc conformance_test_runner.cc
                                   third_party/jsoncpp/jsoncpp.cpp
 nodist_conformance_test_runner_SOURCES = conformance.pb.cc
 conformance_test_runner_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)
+conformance_test_runner_CXXFLAGS = -std=c++11
 # Explicit deps beacuse BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_cpp" could fail if parallel enough.
 conformance_test_runner-conformance_test.$(OBJEXT): conformance.pb.h
