@@ -237,7 +237,7 @@ public final class DynamicMessage extends AbstractMessage {
   }
 
   @Override
-  public void writeTo(CodedOutputStream output) throws IOException {
+  public void writeTo(Encoder output) throws IOException {
     if (type.getOptions().getMessageSetWireFormat()) {
       fields.writeMessageSetTo(output);
       unknownFields.writeAsMessageSetTo(output);

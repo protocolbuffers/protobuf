@@ -32,6 +32,12 @@
       scm:git:https://github.com/google/protobuf.git
     </connection>
   </scm>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -51,18 +57,32 @@
       <version>2.2.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-core</artifactId>
+      <version>1.11.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-generator-annprocess</artifactId>
+      <version>1.11.1</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.3</version>
         <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
+          <source>1.6</source>
+          <target>1.6</target>
         </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.18.1</version>
         <configuration>
           <includes>
             <include>**/*Test.java</include>
@@ -274,6 +294,7 @@
                 <include>**/AbstractProtobufList.java</include>
                 <include>**/BoundedByteString.java</include>
                 <include>**/BooleanArrayList.java</include>
+                <include>**/ByteBufferByteString.java</include>
                 <include>**/ByteString.java</include>
                 <include>**/CodedInputStream.java</include>
                 <include>**/CodedOutputStream.java</include>
@@ -297,6 +318,7 @@
                 <include>**/MessageLiteOrBuilder.java</include>
                 <include>**/MutabilityOracle.java</include>
                 <include>**/Parser.java</include>
+                <include>**/PlatformDependent.java</include>
                 <include>**/ProtobufArrayList.java</include>
                 <include>**/ProtocolStringList.java</include>
                 <include>**/RopeByteString.java</include>
@@ -310,12 +332,14 @@
               <testIncludes>
                 <testInclude>**/*Lite.java</testInclude>
                 <testInclude>**/BooleanArrayListTest.java</testInclude>
+                <testInclude>**/ByteBufferByteStringTest.java</testInclude>
                 <testInclude>**/DoubleArrayListTest.java</testInclude>
                 <testInclude>**/FloatArrayListTest.java</testInclude>
                 <testInclude>**/IntArrayListTest.java</testInclude>
                 <testInclude>**/LazyMessageLiteTest.java</testInclude>
                 <testInclude>**/LiteTest.java</testInclude>
                 <testInclude>**/LongArrayListTest.java</testInclude>
+                <testInclude>**/PlatformDependentTest.java</testInclude>
                 <testInclude>**/ProtobufArrayListTest.java</testInclude>
                 <testInclude>**/UnknownFieldSetLiteTest.java</testInclude>
               </testIncludes>

@@ -461,7 +461,7 @@ final class FieldSet<FieldDescriptorType extends
   /**
    * Given a field type, return the wire type.
    *
-   * @returns One of the {@code WIRETYPE_} constants defined in
+   * @return One of the {@code WIRETYPE_} constants defined in
    *          {@link WireFormat}.
    */
   static int getWireFormatForFieldType(final WireFormat.FieldType type,
@@ -563,8 +563,8 @@ final class FieldSet<FieldDescriptorType extends
   }
 
 
-  /** See {@link Message#writeTo(CodedOutputStream)}. */
-  public void writeTo(final CodedOutputStream output)
+  /** See {@link Message#writeTo(Encoder)}. */
+  public void writeTo(final Encoder output)
                       throws IOException {
     for (int i = 0; i < fields.getNumArrayEntries(); i++) {
       final Map.Entry<FieldDescriptorType, Object> entry =
@@ -580,7 +580,7 @@ final class FieldSet<FieldDescriptorType extends
   /**
    * Like {@link #writeTo} but uses MessageSet wire format.
    */
-  public void writeMessageSetTo(final CodedOutputStream output)
+  public void writeMessageSetTo(final Encoder output)
                                 throws IOException {
     for (int i = 0; i < fields.getNumArrayEntries(); i++) {
       writeMessageSetTo(fields.getArrayEntryAt(i), output);
@@ -593,7 +593,7 @@ final class FieldSet<FieldDescriptorType extends
 
   private void writeMessageSetTo(
       final Map.Entry<FieldDescriptorType, Object> entry,
-      final CodedOutputStream output) throws IOException {
+      final Encoder output) throws IOException {
     final FieldDescriptorType descriptor = entry.getKey();
     if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE &&
         !descriptor.isRepeated() && !descriptor.isPacked()) {
@@ -619,7 +619,7 @@ final class FieldSet<FieldDescriptorType extends
    *               {@link Message#getField(Descriptors.FieldDescriptor)} for
    *               this field.
    */
-  private static void writeElement(final CodedOutputStream output,
+  private static void writeElement(final Encoder output,
                                    final WireFormat.FieldType type,
                                    final int number,
                                    final Object value) throws IOException {
@@ -644,7 +644,7 @@ final class FieldSet<FieldDescriptorType extends
    *               this field.
    */
   static void writeElementNoTag(
-      final CodedOutputStream output,
+      final Encoder output,
       final WireFormat.FieldType type,
       final Object value) throws IOException {
     switch (type) {
@@ -669,7 +669,8 @@ final class FieldSet<FieldDescriptorType extends
         if (value instanceof ByteString) {
           output.writeBytesNoTag((ByteString) value);
         } else {
-          output.writeByteArrayNoTag((byte[]) value);
+          byte[] bytes = (byte[]) value;
+          output.writeByteArrayNoTag(bytes, 0, bytes.length);
         }
         break;
       case UINT32  : output.writeUInt32NoTag  ((Integer    ) value); break;
@@ -691,7 +692,7 @@ final class FieldSet<FieldDescriptorType extends
   /** Write a single field. */
   public static void writeField(final FieldDescriptorLite<?> descriptor,
                                 final Object value,
-                                final CodedOutputStream output)
+                                final Encoder output)
                                 throws IOException {
     WireFormat.FieldType type = descriptor.getLiteType();
     int number = descriptor.getNumber();
@@ -704,7 +705,7 @@ final class FieldSet<FieldDescriptorType extends
         for (final Object element : valueList) {
           dataSize += computeElementSizeNoTag(type, element);
         }
-        output.writeRawVarint32(dataSize);
+        output.writeUInt32NoTag(dataSize);
         // Write the data itself, without any tags.
         for (final Object element : valueList) {
           writeElementNoTag(output, type, element);
@@ -763,10 +764,10 @@ final class FieldSet<FieldDescriptorType extends
     if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE
         && !descriptor.isRepeated() && !descriptor.isPacked()) {
       if (value instanceof LazyField) {
-        return CodedOutputStream.computeLazyFieldMessageSetExtensionSize(
+        return WireFormat.computeLazyFieldMessageSetExtensionSize(
             entry.getKey().getNumber(), (LazyField) value);
       } else {
-        return CodedOutputStream.computeMessageSetExtensionSize(
+        return WireFormat.computeMessageSetExtensionSize(
             entry.getKey().getNumber(), (MessageLite) value);
       }
     } else {
@@ -788,7 +789,7 @@ final class FieldSet<FieldDescriptorType extends
   private static int computeElementSize(
       final WireFormat.FieldType type,
       final int number, final Object value) {
-    int tagSize = CodedOutputStream.computeTagSize(number);
+    int tagSize = WireFormat.computeTagSize(number);
     if (type == WireFormat.FieldType.GROUP) {
       // Only count the end group tag for proto2 messages as for proto1 the end
       // group tag will be counted as a part of getSerializedSize().
@@ -812,46 +813,46 @@ final class FieldSet<FieldDescriptorType extends
     switch (type) {
       // Note:  Minor violation of 80-char limit rule here because this would
       //   actually be harder to read if we wrapped the lines.
-      case DOUBLE  : return CodedOutputStream.computeDoubleSizeNoTag  ((Double     )value);
-      case FLOAT   : return CodedOutputStream.computeFloatSizeNoTag   ((Float      )value);
-      case INT64   : return CodedOutputStream.computeInt64SizeNoTag   ((Long       )value);
-      case UINT64  : return CodedOutputStream.computeUInt64SizeNoTag  ((Long       )value);
-      case INT32   : return CodedOutputStream.computeInt32SizeNoTag   ((Integer    )value);
-      case FIXED64 : return CodedOutputStream.computeFixed64SizeNoTag ((Long       )value);
-      case FIXED32 : return CodedOutputStream.computeFixed32SizeNoTag ((Integer    )value);
-      case BOOL    : return CodedOutputStream.computeBoolSizeNoTag    ((Boolean    )value);
-      case GROUP   : return CodedOutputStream.computeGroupSizeNoTag   ((MessageLite)value);
+      case DOUBLE  : return WireFormat.computeDoubleSizeNoTag  ((Double     )value);
+      case FLOAT   : return WireFormat.computeFloatSizeNoTag   ((Float      )value);
+      case INT64   : return WireFormat.computeInt64SizeNoTag   ((Long       )value);
+      case UINT64  : return WireFormat.computeUInt64SizeNoTag  ((Long       )value);
+      case INT32   : return WireFormat.computeInt32SizeNoTag   ((Integer    )value);
+      case FIXED64 : return WireFormat.computeFixed64SizeNoTag ((Long       )value);
+      case FIXED32 : return WireFormat.computeFixed32SizeNoTag ((Integer    )value);
+      case BOOL    : return WireFormat.computeBoolSizeNoTag    ((Boolean    )value);
+      case GROUP   : return WireFormat.computeGroupSizeNoTag   ((MessageLite)value);
       case BYTES   :
         if (value instanceof ByteString) {
-          return CodedOutputStream.computeBytesSizeNoTag((ByteString) value);
+          return WireFormat.computeBytesSizeNoTag((ByteString) value);
         } else {
-          return CodedOutputStream.computeByteArraySizeNoTag((byte[]) value);
+          return WireFormat.computeByteArraySizeNoTag((byte[]) value);
         }
       case STRING  :
         if (value instanceof ByteString) {
-          return CodedOutputStream.computeBytesSizeNoTag((ByteString) value);
+          return WireFormat.computeBytesSizeNoTag((ByteString) value);
         } else {
-          return CodedOutputStream.computeStringSizeNoTag((String) value);
+          return WireFormat.computeStringSizeNoTag((String) value);
         }
-      case UINT32  : return CodedOutputStream.computeUInt32SizeNoTag  ((Integer    )value);
-      case SFIXED32: return CodedOutputStream.computeSFixed32SizeNoTag((Integer    )value);
-      case SFIXED64: return CodedOutputStream.computeSFixed64SizeNoTag((Long       )value);
-      case SINT32  : return CodedOutputStream.computeSInt32SizeNoTag  ((Integer    )value);
-      case SINT64  : return CodedOutputStream.computeSInt64SizeNoTag  ((Long       )value);
+      case UINT32  : return WireFormat.computeUInt32SizeNoTag  ((Integer    )value);
+      case SFIXED32: return WireFormat.computeSFixed32SizeNoTag((Integer    )value);
+      case SFIXED64: return WireFormat.computeSFixed64SizeNoTag((Long       )value);
+      case SINT32  : return WireFormat.computeSInt32SizeNoTag  ((Integer    )value);
+      case SINT64  : return WireFormat.computeSInt64SizeNoTag  ((Long       )value);
 
       case MESSAGE:
         if (value instanceof LazyField) {
-          return CodedOutputStream.computeLazyFieldSizeNoTag((LazyField) value);
+          return WireFormat.computeLazyFieldSizeNoTag((LazyField) value);
         } else {
-          return CodedOutputStream.computeMessageSizeNoTag((MessageLite) value);
+          return WireFormat.computeMessageSizeNoTag((MessageLite) value);
         }
 
       case ENUM:
         if (value instanceof Internal.EnumLite) {
-          return CodedOutputStream.computeEnumSizeNoTag(
+          return WireFormat.computeEnumSizeNoTag(
               ((Internal.EnumLite) value).getNumber());
         } else {
-          return CodedOutputStream.computeEnumSizeNoTag((Integer) value);
+          return WireFormat.computeEnumSizeNoTag((Integer) value);
         }
     }
 
@@ -872,9 +873,8 @@ final class FieldSet<FieldDescriptorType extends
         for (final Object element : (List<?>)value) {
           dataSize += computeElementSizeNoTag(type, element);
         }
-        return dataSize +
-            CodedOutputStream.computeTagSize(number) +
-            CodedOutputStream.computeRawVarint32Size(dataSize);
+        return dataSize + WireFormat.computeTagSize(number) +
+                WireFormat.computeRawVarint32Size(dataSize);
       } else {
         int size = 0;
         for (final Object element : (List<?>)value) {

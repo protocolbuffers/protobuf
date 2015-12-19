@@ -126,7 +126,7 @@ public final class UnknownFieldSet implements MessageLite {
   }
 
   /** Serializes the set and writes it to {@code output}. */
-  public void writeTo(final CodedOutputStream output) throws IOException {
+  public void writeTo(final Encoder output) throws IOException {
     for (final Map.Entry<Integer, Field> entry : fields.entrySet()) {
       entry.getValue().writeTo(entry.getKey(), output);
     }
@@ -144,7 +144,7 @@ public final class UnknownFieldSet implements MessageLite {
 
   /**
    * Serializes the message to a {@code ByteString} and returns it. This is
-   * just a trivial wrapper around {@link #writeTo(CodedOutputStream)}.
+   * just a trivial wrapper around {@link #writeTo(Encoder)}.
    */
   public ByteString toByteString() {
     try {
@@ -161,7 +161,7 @@ public final class UnknownFieldSet implements MessageLite {
 
   /**
    * Serializes the message to a {@code byte} array and returns it.  This is
-   * just a trivial wrapper around {@link #writeTo(CodedOutputStream)}.
+   * just a trivial wrapper around {@link #writeTo(Encoder)}.
    */
   public byte[] toByteArray() {
     try {
@@ -179,7 +179,7 @@ public final class UnknownFieldSet implements MessageLite {
 
   /**
    * Serializes the message and writes it to {@code output}.  This is just a
-   * trivial wrapper around {@link #writeTo(CodedOutputStream)}.
+   * trivial wrapper around {@link #writeTo(Encoder)}.
    */
   public void writeTo(final OutputStream output) throws IOException {
     final CodedOutputStream codedOutput = CodedOutputStream.newInstance(output);
@@ -207,7 +207,7 @@ public final class UnknownFieldSet implements MessageLite {
    * Serializes the set and writes it to {@code output} using
    * {@code MessageSet} wire format.
    */
-  public void writeAsMessageSetTo(final CodedOutputStream output)
+  public void writeAsMessageSetTo(final Encoder output)
       throws IOException {
     for (final Map.Entry<Integer, Field> entry : fields.entrySet()) {
       entry.getValue().writeAsMessageSetExtensionTo(
@@ -760,7 +760,7 @@ public final class UnknownFieldSet implements MessageLite {
      * Serializes the field, including field number, and writes it to
      * {@code output}.
      */
-    public void writeTo(final int fieldNumber, final CodedOutputStream output)
+    public void writeTo(final int fieldNumber, final Encoder output)
                         throws IOException {
       for (final long value : varint) {
         output.writeUInt64(fieldNumber, value);
@@ -809,7 +809,7 @@ public final class UnknownFieldSet implements MessageLite {
      */
     public void writeAsMessageSetExtensionTo(
         final int fieldNumber,
-        final CodedOutputStream output)
+        final Encoder output)
         throws IOException {
       for (final ByteString value : lengthDelimited) {
         output.writeRawMessageSetExtension(fieldNumber, value);

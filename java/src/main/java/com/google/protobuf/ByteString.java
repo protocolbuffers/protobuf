@@ -247,6 +247,30 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
+   * Unsafe operation, allowing zero-copy. Creates a {@link ByteString} backed by the given
+   * array. This should only be used if the given array is guaranteed never to change.
+   */
+  public static ByteString wrap(byte[] bytes) {
+    return new LiteralByteString(bytes);
+  }
+
+  /**
+   * Unsafe operation, allowing zero-copy. Creates a {@link ByteString} backed by the given
+   * array. This should only be used if the given array is guaranteed never to change.
+   */
+  public static ByteString wrap(byte[] bytes, int offset, int length) {
+    return new BoundedByteString(bytes, offset, length);
+  }
+
+  /**
+   * Unsafe operation, allowing zero-copy. Creates a {@link ByteString} backed by the given
+   * buffer. This should only be used if the given buffer is guaranteed never to change.
+   */
+  public static ByteString wrap(ByteBuffer bytes) {
+    return new ByteBufferByteString(bytes);
+  }
+
+  /**
    * Encodes {@code text} into a sequence of bytes using the named charset
    * and returns the result as a {@code ByteString}.
    *
@@ -527,7 +551,19 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @throws java.nio.BufferOverflowException if the {@code target}'s
    *     remaining() space is not large enough to hold the data.
    */
-  public abstract void copyTo(ByteBuffer target);
+  public void copyTo(ByteBuffer target) {
+    copyTo(target, 0, size());
+  }
+
+  /**
+   * Copies bytes into a ByteBuffer.
+   *
+   * @param target ByteBuffer to copy into.
+   * @throws java.nio.ReadOnlyBufferException if the {@code target} is read-only
+   * @throws java.nio.BufferOverflowException if the {@code target}'s
+   *     remaining() space is not large enough to hold the data.
+   */
+  public abstract void copyTo(ByteBuffer target, int sourceOffset, int numberToCopy);
 
   /**
    * Copies bytes to a {@code byte[]}.
@@ -714,6 +750,17 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
   @Override
   public abstract boolean equals(Object o);
+
+  /**
+   * Check equality of the substring of given length of this object starting at
+   * zero with another {@code ByteString} substring starting at offset.
+   *
+   * @param other  what to compare a substring in
+   * @param offset offset into other
+   * @param length number of bytes to compare
+   * @return true for equality of substrings, else false.
+   */
+  abstract boolean equalsRange(ByteString other, int offset, int length);
 
   /**
    * Return a non-zero hashCode depending only on the sequence of bytes
@@ -1004,7 +1051,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return new LiteralByteString(buffer);
     }
 
-    public CodedOutputStream getCodedOutput() {
+    public Encoder getCodedOutput() {
       return output;
     }
   }

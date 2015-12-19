@@ -342,7 +342,7 @@ void ImmutableEnumFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($is_field_present_message$) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
+    "  size += com.google.protobuf.WireFormat\n"
     "    .computeEnumSize($number$, $name$_);\n"
     "}\n");
 }
@@ -526,7 +526,7 @@ void ImmutableEnumOneofFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($has_oneof_case_message$) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
+    "  size += com.google.protobuf.WireFormat\n"
     "    .computeEnumSize($number$, ((java.lang.Integer) $oneof_name$_));\n"
     "}\n");
 }
@@ -894,8 +894,8 @@ GenerateSerializationCode(io::Printer* printer) const {
   if (descriptor_->is_packed()) {
     printer->Print(variables_,
       "if (get$capitalized_name$List().size() > 0) {\n"
-      "  output.writeRawVarint32($tag$);\n"
-      "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
+      "  output.writeUInt32NoTag($tag$);\n"
+      "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
       "}\n"
       "for (int i = 0; i < $name$_.size(); i++) {\n"
       "  output.writeEnumNoTag($name$_.get(i));\n"
@@ -917,7 +917,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 
   printer->Print(variables_,
     "for (int i = 0; i < $name$_.size(); i++) {\n"
-    "  dataSize += com.google.protobuf.CodedOutputStream\n"
+    "  dataSize += com.google.protobuf.WireFormat\n"
     "    .computeEnumSizeNoTag($name$_.get(i));\n"
     "}\n");
   printer->Print(
@@ -926,7 +926,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     printer->Print(variables_,
       "if (!get$capitalized_name$List().isEmpty()) {"
       "  size += $tag_size$;\n"
-      "  size += com.google.protobuf.CodedOutputStream\n"
+      "  size += com.google.protobuf.WireFormat\n"
       "    .computeRawVarint32Size(dataSize);\n"
       "}");
   } else {

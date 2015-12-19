@@ -121,7 +121,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
   }
   
   @Override
-  public void writeTo(CodedOutputStream output) throws IOException {
+  public void writeTo(Encoder output) throws IOException {
     data.writeTo(output);
   }
   

@@ -534,11 +534,11 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
             ExtensionRangeOrdering());
 
   printer->Print(
-    "public void writeTo(com.google.protobuf.CodedOutputStream output)\n"
+    "public void writeTo(com.google.protobuf.Encoder output)\n"
     "                    throws java.io.IOException {\n");
   printer->Indent();
   if (HasPackedFields(descriptor_)) {
-    // writeTo(CodedOutputStream output) might be invoked without
+    // writeTo(Encoder output) might be invoked without
     // getSerializedSize() ever being called, but we need the memoized
     // sizes in case this message has packed fields. Rather than emit checks for
     // each packed field, just call getSerializedSize() up front.

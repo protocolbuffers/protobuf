@@ -517,7 +517,7 @@ public class ByteStringTest extends TestCase {
   public void testNewCodedBuilder() throws IOException {
     byte[] bytes = getTestBytes();
     ByteString.CodedBuilder builder = ByteString.newCodedBuilder(bytes.length);
-    builder.getCodedOutput().writeRawBytes(bytes);
+    ((CodedOutputStream) builder.getCodedOutput()).writeRawBytes(bytes, 0, bytes.length);
     ByteString byteString = builder.build();
     assertTrue("String built from newCodedBuilder() must contain the expected bytes",
         isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));

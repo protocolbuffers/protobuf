@@ -262,7 +262,7 @@ void ImmutableLazyMessageFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($get_has_field_bit_message$) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
+    "  size += com.google.protobuf.WireFormat\n"
     "    .computeLazyFieldSize($number$, $name$_);\n"
     "}\n");
 }
@@ -449,7 +449,7 @@ void ImmutableLazyMessageOneofFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($has_oneof_case_message$) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
+    "  size += com.google.protobuf.WireFormat\n"
     "    .computeLazyFieldSize($number$, ($lazy_type$) $oneof_name$_);\n"
     "}\n");
 }
@@ -803,7 +803,7 @@ void RepeatedImmutableLazyMessageFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "for (int i = 0; i < $name$_.size(); i++) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
+    "  size += com.google.protobuf.WireFormat\n"
     "    .computeLazyFieldSize($number$, $name$_.get(i));\n"
     "}\n");
 }
