@@ -560,7 +560,7 @@ class FileDescriptorTables {
   ~FileDescriptorTables();
 
   // Empty table, used with placeholder files.
-  static const FileDescriptorTables kEmpty;
+  inline static const FileDescriptorTables& GetEmptyInstance();
 
   // -----------------------------------------------------------------
   // Finding items.
@@ -665,7 +665,32 @@ FileDescriptorTables::FileDescriptorTables()
 
 FileDescriptorTables::~FileDescriptorTables() {}
 
-const FileDescriptorTables FileDescriptorTables::kEmpty;
+namespace {
+
+FileDescriptorTables* file_descriptor_tables_ = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(file_descriptor_tables_once_init_);
+
+void DeleteFileDescriptorTables() {
+  delete file_descriptor_tables_;
+  file_descriptor_tables_ = NULL;
+}
+
+void InitFileDescriptorTables() {
+  file_descriptor_tables_ = new FileDescriptorTables();
+  internal::OnShutdown(&DeleteFileDescriptorTables);
+}
+
+inline void InitFileDescriptorTablesOnce() {
+  ::google::protobuf::GoogleOnceInit(
+      &file_descriptor_tables_once_init_, &InitFileDescriptorTables);
+}
+
+}  // anonymous namespace
+
+inline const FileDescriptorTables& FileDescriptorTables::GetEmptyInstance() {
+  InitFileDescriptorTablesOnce();
+  return *file_descriptor_tables_;
+}
 
 void DescriptorPool::Tables::AddCheckpoint() {
   checkpoints_.push_back(CheckPoint(this));
@@ -3535,7 +3560,7 @@ FileDescriptor* DescriptorBuilder::NewPlaceholderFile(
   placeholder->package_ = &internal::GetEmptyString();
   placeholder->pool_ = pool_;
   placeholder->options_ = &FileOptions::default_instance();
-  placeholder->tables_ = &FileDescriptorTables::kEmpty;
+  placeholder->tables_ = &FileDescriptorTables::GetEmptyInstance();
   placeholder->source_code_info_ = &SourceCodeInfo::default_instance();
   placeholder->is_placeholder_ = true;
   placeholder->syntax_ = FileDescriptor::SYNTAX_PROTO2;
