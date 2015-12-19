@@ -665,9 +665,31 @@ FileDescriptorTables::FileDescriptorTables()
 
 FileDescriptorTables::~FileDescriptorTables() {}
 
+namespace {
+
+FileDescriptorTables* file_descriptor_tables_ = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(file_descriptor_tables_once_init_);
+
+void DeleteFileDescriptorTables() {
+  delete file_descriptor_tables_;
+  file_descriptor_tables_ = NULL;
+}
+
+void InitFileDescriptorTables() {
+  file_descriptor_tables_ = new FileDescriptorTables();
+  internal::OnShutdown(&DeleteFileDescriptorTables);
+}
+
+inline void InitFileDescriptorTablesOnce() {
+  ::google::protobuf::GoogleOnceInit(
+      &file_descriptor_tables_once_init_, &InitFileDescriptorTables);
+}
+
+}  // anonymous namespace
+
 inline const FileDescriptorTables& FileDescriptorTables::GetEmptyInstance() {
-    static const FileDescriptorTables kEmpty;
-    return kEmpty;
+  InitFileDescriptorTablesOnce();
+  return *file_descriptor_tables_;
 }
 
 void DescriptorPool::Tables::AddCheckpoint() {
