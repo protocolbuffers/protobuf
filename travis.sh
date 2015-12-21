@@ -103,6 +103,14 @@ build_java() {
   # Java build needs `protoc`.
   internal_build_cpp
   cd java && mvn test && mvn install
+  cd util && mvn test
+  cd ../..
+}
+
+build_java_with_conformance_tests() {
+  # Java build needs `protoc`.
+  internal_build_cpp
+  cd java && mvn test && mvn install
   cd util && mvn test && mvn assembly:single
   cd ../..
   cd conformance && make test_java && cd ..
@@ -120,7 +128,7 @@ build_java_jdk6() {
 }
 build_java_jdk7() {
   use_java jdk7
-  build_java
+  build_java_with_conformance_tests
 }
 build_java_oracle7() {
   use_java oracle7
