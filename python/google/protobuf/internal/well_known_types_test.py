@@ -36,10 +36,14 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 
 from datetime import datetime
 
+try:
+  import unittest2 as unittest
+except ImportError:
+  import unittest
+
 from google.protobuf import duration_pb2
 from google.protobuf import field_mask_pb2
 from google.protobuf import timestamp_pb2
-import unittest
 from google.protobuf import unittest_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import well_known_types
