@@ -273,6 +273,11 @@ build_jruby() {
   cd ruby && bash travis-test.sh jruby && cd ..
 }
 
+build_javascript() {
+  internal_build_cpp
+  cd js && npm install && gulp test && cd ..
+}
+
 # -------- main --------
 
 if [ "$#" -ne 1 ]; then

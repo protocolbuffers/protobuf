@@ -22,6 +22,7 @@ env:
   - CONFIG=javanano_jdk6
   - CONFIG=javanano_jdk7
   - CONFIG=javanano_oracle7
+  - CONFIG=javascript
   - CONFIG=python
   - CONFIG=python_cpp
   - CONFIG=ruby19
