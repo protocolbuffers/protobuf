@@ -2922,14 +2922,6 @@ bool InitProto2MessageModule(PyObject *m) {
     }
 
     Py_INCREF(mutable_mapping.get());
-#if PY_MAJOR_VERSION >= 3
-    PyObject* bases = PyTuple_New(1);
-    PyTuple_SET_ITEM(bases, 0, mutable_mapping.get());
-
-    ScalarMapContainer_Type = 
-        PyType_FromSpecWithBases(&ScalarMapContainer_Type_spec, bases);
-    PyModule_AddObject(m, "ScalarMapContainer", ScalarMapContainer_Type);
-#else
     ScalarMapContainer_Type.tp_base =
         reinterpret_cast<PyTypeObject*>(mutable_mapping.get());
 
@@ -2939,7 +2931,6 @@ bool InitProto2MessageModule(PyObject *m) {
 
     PyModule_AddObject(m, "ScalarMapContainer",
                        reinterpret_cast<PyObject*>(&ScalarMapContainer_Type));
-#endif
 
     if (PyType_Ready(&MapIterator_Type) < 0) {
       return false;
@@ -2949,11 +2940,6 @@ bool InitProto2MessageModule(PyObject *m) {
                        reinterpret_cast<PyObject*>(&MapIterator_Type));
 
 
-#if PY_MAJOR_VERSION >= 3
-    MessageMapContainer_Type = 
-        PyType_FromSpecWithBases(&MessageMapContainer_Type_spec, bases);
-    PyModule_AddObject(m, "MessageMapContainer", MessageMapContainer_Type);
-#else
     Py_INCREF(mutable_mapping.get());
     MessageMapContainer_Type.tp_base =
         reinterpret_cast<PyTypeObject*>(mutable_mapping.get());
@@ -2964,7 +2950,6 @@ bool InitProto2MessageModule(PyObject *m) {
 
     PyModule_AddObject(m, "MessageMapContainer",
                        reinterpret_cast<PyObject*>(&MessageMapContainer_Type));
-#endif
   }
 
   if (PyType_Ready(&ExtensionDict_Type) < 0) {
