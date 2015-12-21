@@ -31,6 +31,7 @@
 #endregion
 
 using Conformance;
+using Google.Protobuf.Reflection;
 using System;
 using System.IO;
 
@@ -47,16 +48,17 @@ namespace Google.Protobuf.Conformance
             // This way we get the binary streams instead of readers/writers.
             var input = new BinaryReader(Console.OpenStandardInput());
             var output = new BinaryWriter(Console.OpenStandardOutput());
+            var typeRegistry = TypeRegistry.FromMessages(TestAllTypes.Descriptor);
 
             int count = 0;
-            while (RunTest(input, output))
+            while (RunTest(input, output, typeRegistry))
             {
                 count++;
             }
             Console.Error.WriteLine("Received EOF after {0} tests", count);
         }
 
-        private static bool RunTest(BinaryReader input, BinaryWriter output)
+        private static bool RunTest(BinaryReader input, BinaryWriter output, TypeRegistry typeRegistry)
         {
             int? size = ReadInt32(input);
             if (size == null)
@@ -69,7 +71,7 @@ namespace Google.Protobuf.Conformance
                 throw new EndOfStreamException("Read " + inputData.Length + " bytes of data when expecting " + size);
             }
             ConformanceRequest request = ConformanceRequest.Parser.ParseFrom(inputData);
-            ConformanceResponse response = PerformRequest(request);
+            ConformanceResponse response = PerformRequest(request, typeRegistry);
             byte[] outputData = response.ToByteArray();
             output.Write(outputData.Length);
             output.Write(outputData);
@@ -77,30 +79,33 @@ namespace Google.Protobuf.Conformance
             return true;
         }
 
-        private static ConformanceResponse PerformRequest(ConformanceRequest request)
+        private static ConformanceResponse PerformRequest(ConformanceRequest request, TypeRegistry typeRegistry)
         {
             TestAllTypes message;
-            switch (request.PayloadCase)
+            try
             {
-                case ConformanceRequest.PayloadOneofCase.JsonPayload:
-                    return new ConformanceResponse { Skipped = "JSON parsing not implemented in C# yet" };
-                case ConformanceRequest.PayloadOneofCase.ProtobufPayload:
-                    try
-                    {
+                switch (request.PayloadCase)
+                {
+                    case ConformanceRequest.PayloadOneofCase.JsonPayload:
+                        var parser = new JsonParser(new JsonParser.Settings(20, typeRegistry));
+                        message = parser.Parse<TestAllTypes>(request.JsonPayload);
+                        break;
+                    case ConformanceRequest.PayloadOneofCase.ProtobufPayload:
                         message = TestAllTypes.Parser.ParseFrom(request.ProtobufPayload);
-                    }
-                    catch (InvalidProtocolBufferException e)
-                    {
-                        return new ConformanceResponse { ParseError = e.Message };
-                    }
-                    break;
-                default:
-                    throw new Exception("Unsupported request payload: " + request.PayloadCase);
+                        break;
+                    default:
+                        throw new Exception("Unsupported request payload: " + request.PayloadCase);
+                }
+            }
+            catch (InvalidProtocolBufferException e)
+            {
+                return new ConformanceResponse { ParseError = e.Message };
             }
             switch (request.RequestedOutputFormat)
             {
                 case global::Conformance.WireFormat.JSON:
-                    return new ConformanceResponse { JsonPayload = JsonFormatter.Default.Format(message) };
+                    var formatter = new JsonFormatter(new JsonFormatter.Settings(false, typeRegistry));
+                    return new ConformanceResponse { JsonPayload = formatter.Format(message) };
                 case global::Conformance.WireFormat.PROTOBUF:
                     return new ConformanceResponse { ProtobufPayload = message.ToByteString() };
                 default:

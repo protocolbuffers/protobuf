@@ -115,6 +115,8 @@ else (protobuf_BUILD_SHARED_LIBS)
 endif (protobuf_BUILD_SHARED_LIBS)
 
 if (MSVC)
+  # Build with multiple processes
+  add_definitions(/MP)
   add_definitions(/wd4244 /wd4267 /wd4018 /wd4355 /wd4800 /wd4251 /wd4996 /wd4146 /wd4305)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})

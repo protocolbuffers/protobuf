@@ -56,17 +56,19 @@ namespace Google.Protobuf
     public sealed class JsonFormatter
     {
         internal const string AnyTypeUrlField = "@type";
+        internal const string AnyDiagnosticValueField = "@value";
         internal const string AnyWellKnownTypeValueField = "value";
         private const string TypeUrlPrefix = "type.googleapis.com";
         private const string NameValueSeparator = ": ";
         private const string PropertySeparator = ", ";
 
-        private static JsonFormatter defaultInstance = new JsonFormatter(Settings.Default);
-
         /// <summary>
         /// Returns a formatter using the default settings.
         /// </summary>
-        public static JsonFormatter Default { get { return defaultInstance; } }
+        public static JsonFormatter Default { get; } = new JsonFormatter(Settings.Default);
+
+        // A JSON formatter which *only* exists 
+        private static readonly JsonFormatter diagnosticFormatter = new JsonFormatter(Settings.Default);
 
         /// <summary>
         /// The JSON representation of the first 160 characters of Unicode.
@@ -147,6 +149,29 @@ namespace Google.Protobuf
                 WriteMessage(builder, message);
             }
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Converts a message to JSON for diagnostic purposes with no extra context.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This differs from calling <see cref="Format(IMessage)"/> on the default JSON
+        /// formatter in its handling of <see cref="Any"/>. As no type registry is available
+        /// in <see cref="object.ToString"/> calls, the normal way of resolving the type of
+        /// an <c>Any</c> message cannot be applied. Instead, a JSON property named <c>@value</c>
+        /// is included with the base64 data from the <see cref="Any.Value"/> property of the message.
+        /// </para>
+        /// <para>The value returned by this method is only designed to be used for diagnostic
+        /// purposes. It may not be parsable by <see cref="JsonParser"/>, and may not be parsable
+        /// by other Protocol Buffer implementations.</para>
+        /// </remarks>
+        /// <param name="message">The message to format for diagnostic purposes.</param>
+        /// <returns>The diagnostic-only JSON representation of the message</returns>
+        public static string ToDiagnosticString(IMessage message)
+        {
+            Preconditions.CheckNotNull(message, nameof(message));
+            return diagnosticFormatter.Format(message);
         }
 
         private void WriteMessage(StringBuilder builder, IMessage message)
@@ -516,6 +541,12 @@ namespace Google.Protobuf
 
         private void WriteAny(StringBuilder builder, IMessage value)
         {
+            if (ReferenceEquals(this, diagnosticFormatter))
+            {
+                WriteDiagnosticOnlyAny(builder, value);
+                return;
+            }
+
             string typeUrl = (string) value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
             ByteString data = (ByteString) value.Descriptor.Fields[Any.ValueFieldNumber].Accessor.GetValue(value);
             string typeName = GetTypeName(typeUrl);
@@ -541,6 +572,23 @@ namespace Google.Protobuf
             {
                 WriteMessageFields(builder, message, true);
             }
+            builder.Append(" }");
+        }
+
+        private void WriteDiagnosticOnlyAny(StringBuilder builder, IMessage value)
+        {
+            string typeUrl = (string) value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
+            ByteString data = (ByteString) value.Descriptor.Fields[Any.ValueFieldNumber].Accessor.GetValue(value);
+            builder.Append("{ ");
+            WriteString(builder, AnyTypeUrlField);
+            builder.Append(NameValueSeparator);
+            WriteString(builder, typeUrl);
+            builder.Append(PropertySeparator);
+            WriteString(builder, AnyDiagnosticValueField);
+            builder.Append(NameValueSeparator);
+            builder.Append('"');
+            builder.Append(data.ToBase64());
+            builder.Append('"');
             builder.Append(" }");
         }
 
