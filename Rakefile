@@ -10,27 +10,33 @@ if RUBY_PLATFORM == "java"
     raise ArgumentError, "maven needs to be installed"
   end
   task :clean do
-    system("mvn clean")
+    system("mvn -f ruby/pom.xml clean")
   end
 
   task :compile do
-    system("mvn package")
+    system("mvn -f ruby/pom.xml package")
   end
 else
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
-    ext.ext_dir = "ext/google/protobuf_c"
-    ext.lib_dir = "lib/google"
+    ext.ext_dir = "ruby/ext/google/protobuf_c"
+    ext.lib_dir = "ruby/lib/google"
   end
 end
 
 Gem::PackageTask.new(spec) do |pkg|
 end
 
-Rake::TestTask.new(:test => :build) do |t|
-  t.test_files = FileList["tests/*.rb"]
+task :protoc do
+  raise "autogen.sh failed" unless system './autogen.sh'
+  raise "configure failed" unless system './configure'
+  raise "make failed" unless system 'make'
 end
 
-task :build => [:clean, :compile]
+Rake::TestTask.new(:test => :build) do |t|
+  t.test_files = FileList["ruby/tests/*.rb"]
+end
+
+task :build => [:clean, :compile, :protoc]
 task :default => [:build]
 
 # vim:sw=2:et
