@@ -16,8 +16,27 @@ other_language_protoc_outputs =                                \
 
 bin_PROGRAMS = conformance-test-runner conformance-cpp
 
+# All source files excepet C++/Objective-C ones should be explicitly listed
+# here because the autoconf tools don't include files of other languages
+# automatically.
+EXTRA_DIST =                  \
+  ConformanceJava.java        \
+  README.md                   \
+  conformance.proto           \
+  conformance_python.py       \
+  conformance_ruby.rb         \
+  failure_list_cpp.txt        \
+  failure_list_csharp.txt     \
+  failure_list_java.txt       \
+  failure_list_objc.txt       \
+  failure_list_python.txt     \
+  failure_list_python_cpp.txt \
+  failure_list_ruby.txt
+
 conformance_test_runner_LDADD = $(top_srcdir)/src/libprotobuf.la
-conformance_test_runner_SOURCES = conformance_test.cc conformance_test_runner.cc \
+conformance_test_runner_SOURCES = conformance_test.h conformance_test.cc \
+                                  conformance_test_runner.cc             \
+                                  third_party/jsoncpp/json.h             \
                                   third_party/jsoncpp/jsoncpp.cpp
 nodist_conformance_test_runner_SOURCES = conformance.pb.cc
 conformance_test_runner_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)

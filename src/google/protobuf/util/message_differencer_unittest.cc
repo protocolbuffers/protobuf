@@ -1454,11 +1454,10 @@ static const char* const kIgnoredFields[] = {"rm.b", "rm.m.b"};
 
 class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
  public:
-  bool IsIgnored(
+  virtual bool IsIgnored(
       const Message& message1, const Message& message2,
       const FieldDescriptor* field,
-      const vector<util::MessageDifferencer::SpecificField>& parent_fields)
-      override {
+      const vector<util::MessageDifferencer::SpecificField>& parent_fields) {
     string name = "";
     for (int i = 0; i < parent_fields.size(); ++i) {
       name += parent_fields[i].field->name() + ".";
@@ -1500,8 +1499,10 @@ TEST(MessageDifferencerTest, TreatRepeatedFieldAsMapWithIgnoredKeyFields) {
 class ValueProductMapKeyComparator
     : public util::MessageDifferencer::MapKeyComparator {
  public:
-  virtual bool IsMatch(const Message &message1,
-                       const Message &message2) const {
+  typedef util::MessageDifferencer::SpecificField SpecificField;
+  virtual bool IsMatch(
+      const Message &message1, const Message &message2,
+      const vector<SpecificField>& parent_fields) const {
     const Reflection* reflection1 = message1.GetReflection();
     const Reflection* reflection2 = message2.GetReflection();
     // FieldDescriptor for item.ra

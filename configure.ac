@@ -26,7 +26,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_ARG_VAR(DIST_LANG, [language to include in the distribution package (i.e., make dist)])
 case "$DIST_LANG" in
   "") DIST_LANG=all ;;
-  all | cpp | csharp | java | python | javanano | objectivec | ruby) ;;
+  all | cpp | csharp | java | python | javanano | objectivec | ruby | js) ;;
   *) AC_MSG_FAILURE([unknown language: $DIST_LANG]) ;;
 esac
 AC_SUBST(DIST_LANG)

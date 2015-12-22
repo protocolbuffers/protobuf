@@ -279,9 +279,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/util/internal/protostream_objectwriter.h     \
   google/protobuf/util/internal/proto_writer.cc                \
   google/protobuf/util/internal/proto_writer.h                 \
-  google/protobuf/util/internal/snake2camel_objectwriter.h     \
   google/protobuf/util/internal/structured_objectwriter.h      \
-  google/protobuf/util/internal/testdata                       \
   google/protobuf/util/internal/type_info.cc                   \
   google/protobuf/util/internal/type_info.h                    \
   google/protobuf/util/internal/type_info_test_helper.cc       \
@@ -517,6 +515,7 @@ protoc_inputs =                                                   \
   google/protobuf/util/internal/testdata/struct.proto             \
   google/protobuf/util/internal/testdata/timestamp_duration.proto \
   google/protobuf/util/json_format_proto3.proto                   \
+  google/protobuf/util/message_differencer_unittest.proto         \
   google/protobuf/compiler/cpp/cpp_test_large_enum_value.proto
 
 EXTRA_DIST =                                                   \
@@ -628,7 +627,9 @@ protoc_outputs =                                                  \
   google/protobuf/util/internal/testdata/timestamp_duration.pb.cc \
   google/protobuf/util/internal/testdata/timestamp_duration.pb.h  \
   google/protobuf/util/json_format_proto3.pb.cc                   \
-  google/protobuf/util/json_format_proto3.pb.h
+  google/protobuf/util/json_format_proto3.pb.h                    \
+  google/protobuf/util/message_differencer_unittest.pb.cc         \
+  google/protobuf/util/message_differencer_unittest.pb.h
 
 BUILT_SOURCES = $(protoc_outputs)
 
@@ -741,6 +742,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/util/internal/protostream_objectwriter_test.cc \
   google/protobuf/util/internal/type_info_test_helper.cc       \
   google/protobuf/util/json_util_test.cc                       \
+  google/protobuf/util/message_differencer_unittest.cc         \
   google/protobuf/util/time_util_test.cc                       \
   google/protobuf/util/type_resolver_util_test.cc              \
   $(COMMON_TEST_SOURCES)
