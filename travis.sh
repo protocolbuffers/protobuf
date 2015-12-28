@@ -275,7 +275,7 @@ build_jruby() {
 
 build_javascript() {
   internal_build_cpp
-  cd js && npm install && gulp test && cd ..
+  cd js && npm install && npm test && cd ..
 }
 
 # -------- main --------
