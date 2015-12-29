@@ -690,6 +690,8 @@ string JSFieldDefault(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return "null";
   }
+  GOOGLE_LOG(FATAL) << "Shouldn't reach here.";
+  return "";
 }
 
 string ProtoTypeName(const GeneratorOptions& options,
