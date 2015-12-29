@@ -106,6 +106,7 @@ cc_library(
         "src/google/protobuf/util/internal/json_objectwriter.cc",
         "src/google/protobuf/util/internal/json_stream_parser.cc",
         "src/google/protobuf/util/internal/object_writer.cc",
+        "src/google/protobuf/util/internal/proto_writer.cc",
         "src/google/protobuf/util/internal/protostream_objectsource.cc",
         "src/google/protobuf/util/internal/protostream_objectwriter.cc",
         "src/google/protobuf/util/internal/type_info.cc",
@@ -241,6 +242,7 @@ cc_library(
         "src/google/protobuf/compiler/javanano/javanano_message.cc",
         "src/google/protobuf/compiler/javanano/javanano_message_field.cc",
         "src/google/protobuf/compiler/javanano/javanano_primitive_field.cc",
+        "src/google/protobuf/compiler/js/js_generator.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_enum.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_extension.cc",
@@ -328,6 +330,7 @@ RELATIVE_TEST_PROTOS = [
     "google/protobuf/util/internal/testdata/struct.proto",
     "google/protobuf/util/internal/testdata/timestamp_duration.proto",
     "google/protobuf/util/json_format_proto3.proto",
+    "google/protobuf/util/message_differencer_unittest.proto",
 ]
 
 TEST_PROTOS = ["src/" + s for s in RELATIVE_TEST_PROTOS]
@@ -428,6 +431,7 @@ cc_test(
         "src/google/protobuf/util/internal/protostream_objectwriter_test.cc",
         "src/google/protobuf/util/internal/type_info_test_helper.cc",
         "src/google/protobuf/util/json_util_test.cc",
+        "src/google/protobuf/util/message_differencer_unittest.cc",
         "src/google/protobuf/util/time_util_test.cc",
         "src/google/protobuf/util/type_resolver_util_test.cc",
         "src/google/protobuf/well_known_types_unittest.cc",

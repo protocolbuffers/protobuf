@@ -63,6 +63,7 @@ set(tests_protos
   google/protobuf/util/internal/testdata/struct.proto
   google/protobuf/util/internal/testdata/timestamp_duration.proto
   google/protobuf/util/json_format_proto3.proto
+  google/protobuf/util/message_differencer_unittest.proto
 )
 
 macro(compile_proto_file filename)
@@ -99,8 +100,6 @@ set(common_test_files
   ${protobuf_source_dir}/src/google/protobuf/test_util.cc
   ${protobuf_source_dir}/src/google/protobuf/testing/file.cc
   ${protobuf_source_dir}/src/google/protobuf/testing/googletest.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/mock_code_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/util/internal/type_info_test_helper.cc
 )
 
 set(common_lite_test_files
@@ -121,6 +120,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/importer_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_doc_comment_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_plugin_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/mock_code_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/parser_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_plugin_unittest.cc
@@ -166,7 +166,9 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/util/internal/json_stream_parser_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectsource_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectwriter_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/internal/type_info_test_helper.cc
   ${protobuf_source_dir}/src/google/protobuf/util/json_util_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/message_differencer_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/util/time_util_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/type_resolver_util_test.cc
   ${protobuf_source_dir}/src/google/protobuf/well_known_types_unittest.cc
