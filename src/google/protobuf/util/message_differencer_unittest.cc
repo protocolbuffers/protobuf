@@ -2816,15 +2816,20 @@ class MatchingTest : public testing::Test {
                               const Message& msg1, const Message& msg2,
                               bool result) {
     string output;
-    io::StringOutputStream output_stream(&output);
-    MessageDifferencer::StreamReporter reporter(&output_stream);
-    reporter.set_report_modified_aggregates(true);
-    differencer->set_report_matches(true);
-    differencer->ReportDifferencesTo(&reporter);
-    if (result) {
-      EXPECT_TRUE(differencer->Compare(msg1, msg2));
-    } else {
-      EXPECT_FALSE(differencer->Compare(msg1, msg2));
+    {
+      // Before we return the "output" string, we must make sure the
+      // StreamReporter is destructored because its destructor will
+      // flush the stream.
+      io::StringOutputStream output_stream(&output);
+      MessageDifferencer::StreamReporter reporter(&output_stream);
+      reporter.set_report_modified_aggregates(true);
+      differencer->set_report_matches(true);
+      differencer->ReportDifferencesTo(&reporter);
+      if (result) {
+        EXPECT_TRUE(differencer->Compare(msg1, msg2));
+      } else {
+        EXPECT_FALSE(differencer->Compare(msg1, msg2));
+      }
     }
     return output;
   }

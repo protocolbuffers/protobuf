@@ -1685,13 +1685,17 @@ TEST_P(ProtoStreamObjectWriterFieldMaskTest, MapKeyMustBeEscapedCorrectly) {
 TEST_P(ProtoStreamObjectWriterFieldMaskTest, MapKeyCanContainAnyChars) {
   FieldMaskTest expected;
   expected.mutable_single_mask()->add_paths(
-      "path.to.map[\"(),[],\\\"'!@#$%^&*123_|War孙天涌,./?><\\\\\"]");
+      // \xE5\xAD\x99 is the UTF-8 byte sequence for chinese character 孙.
+      // We cannot embed non-ASCII characters in the code directly because
+      // some windows compilers will try to interpret them using the system's
+      // current encoding and end up with invalid UTF-8 byte sequence.
+      "path.to.map[\"(),[],\\\"'!@#$%^&*123_|War\xE5\xAD\x99,./?><\\\\\"]");
   expected.mutable_single_mask()->add_paths("path.to.map[\"key2\"]");
 
   ow_->StartObject("");
   ow_->RenderString(
       "single_mask",
-      "path.to.map[\"(),[],\\\"'!@#$%^&*123_|War孙天涌,./?><\\\\\"],"
+      "path.to.map[\"(),[],\\\"'!@#$%^&*123_|War\xE5\xAD\x99,./?><\\\\\"],"
       "path.to.map[\"key2\"]");
   ow_->EndObject();
 

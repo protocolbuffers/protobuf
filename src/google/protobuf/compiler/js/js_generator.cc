@@ -447,7 +447,7 @@ string JSOneofIndex(const OneofDescriptor* oneof) {
 
 // Decodes a codepoint in \x0000 -- \xFFFF. Since JS strings are UTF-16, we only
 // need to handle the BMP (16-bit range) here.
-uint16_t DecodeUTF8Codepoint(uint8_t* bytes, size_t* length) {
+uint16 DecodeUTF8Codepoint(uint8* bytes, size_t* length) {
   if (*length == 0) {
     return 0;
   }
@@ -491,14 +491,14 @@ string EscapeJSString(const string& in, bool is_utf8) {
   string result;
   size_t decoded = 0;
   for (size_t i = 0; i < in.size(); i += decoded) {
-    uint16_t codepoint = 0;
+    uint16 codepoint = 0;
     if (is_utf8) {
       // Decode the next UTF-8 codepoint.
       size_t have_bytes = in.size() - i;
-      uint8_t bytes[3] = {
-        static_cast<uint8_t>(in[i]),
-        static_cast<uint8_t>(((i + 1) < in.size()) ? in[i + 1] : 0),
-        static_cast<uint8_t>(((i + 2) < in.size()) ? in[i + 2] : 0),
+      uint8 bytes[3] = {
+        static_cast<uint8>(in[i]),
+        static_cast<uint8>(((i + 1) < in.size()) ? in[i + 1] : 0),
+        static_cast<uint8>(((i + 2) < in.size()) ? in[i + 2] : 0),
       };
       codepoint = DecodeUTF8Codepoint(bytes, &have_bytes);
       if (have_bytes == 0) {
@@ -506,7 +506,7 @@ string EscapeJSString(const string& in, bool is_utf8) {
       }
       decoded = have_bytes;
     } else {
-      codepoint = static_cast<uint16_t>(static_cast<uint8_t>(in[i]));
+      codepoint = static_cast<uint16>(static_cast<uint8>(in[i]));
       decoded = 1;
     }
 
