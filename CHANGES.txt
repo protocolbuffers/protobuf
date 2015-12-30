@@ -1,4 +1,4 @@
-2015-08-26 version 3.0.0-beta-1 (C++/Java/Python/Ruby/Nano/Objective-C/C#/JavaScript)
+2015-12-30 version 3.0.0-beta-2 (C++/Java/Python/Ruby/Nano/Objective-C/C#/JavaScript)
   General
   * Introduced a new language implementation: JavaScript.
   * Added a new field option "json_name". By default proto field names are
@@ -35,6 +35,10 @@
     and a few well-known types except for Any and Struct.
   * Added runtime support for Any, Timestamp, Duration and FieldMask.
   * [ ] is now accepted for repeated scalar fields in text format parser.
+  * Map fields now have proper O(1) performance for lookup/insert/delete
+    when using the Python/C++ implementation. They were previously using O(n)
+    search-based algorithms because the C++ reflection interface didn't
+    support true map operations.
 
   Objective-C (Beta)
   * Various bug-fixes and code tweaks to pass more strict compiler warnings.
