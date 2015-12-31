@@ -38,6 +38,7 @@ EXTRA_DIST =                  \
   failure_list_objc.txt       \
   failure_list_python.txt     \
   failure_list_python_cpp.txt \
+  failure_list_python-post26.txt \
   failure_list_ruby.txt
 
 conformance_test_runner_LDADD = $(top_srcdir)/src/libprotobuf.la
