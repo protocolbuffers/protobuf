@@ -111,8 +111,16 @@ struct MessageMapContainer : public MapContainer {
   PyObject* message_dict;
 };
 
-extern PyTypeObject ScalarMapContainer_Type;
-extern PyTypeObject MessageMapContainer_Type;
+#if PY_MAJOR_VERSION >= 3
+  extern PyObject *MessageMapContainer_Type;
+  extern PyType_Spec MessageMapContainer_Type_spec;
+  extern PyObject *ScalarMapContainer_Type;
+  extern PyType_Spec ScalarMapContainer_Type_spec;
+#else
+  extern PyTypeObject MessageMapContainer_Type;
+  extern PyTypeObject ScalarMapContainer_Type;
+#endif
+
 extern PyTypeObject MapIterator_Type;  // Both map types use the same iterator.
 
 // Builds a MapContainer object, from a parent message and a

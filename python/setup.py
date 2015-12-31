@@ -162,7 +162,7 @@ if __name__ == '__main__':
     extra_compile_args = ['-Wno-write-strings', '-Wno-invalid-offsetof']
     test_conformance.target = 'test_python_cpp'
 
-    if "clang" in os.popen('$CC --version').read():
+    if "clang" in os.popen('$CC --version 2> /dev/null').read():
       extra_compile_args.append('-Wno-shorten-64-to-32')
 
     if warnings_as_errors in sys.argv:
