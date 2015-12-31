@@ -299,7 +299,13 @@ void ConformanceTestSuite::RunValidInputTest(
         return;
       }
 
-      GOOGLE_CHECK(test_message.ParseFromString(binary_protobuf));
+      if (!test_message.ParseFromString(binary_protobuf)) {
+        ReportFailure(test_name, request, response,
+                      "INTERNAL ERROR: internal JSON->protobuf transcode "
+                      "yielded unparseable proto.");
+        return;
+      }
+
       break;
     }
 

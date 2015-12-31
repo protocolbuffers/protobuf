@@ -18,10 +18,7 @@ test_version() {
        which ruby && \
        gem install bundler && bundle && \
        rake test"
-    # TODO(xiaofeng): Conformance tests are disabled because the ruby testee
-    # program crashes on some inputs.
-    #  cd ../conformance && \
-    #  make test_ruby
+    cd ../conformance && make test_ruby
   fi
 }
 
