@@ -30,38 +30,39 @@ namespace Google.Protobuf.WellKnownTypes {
             "b2ZzGAMgAygJEigKB29wdGlvbnMYBCADKAsyFy5nb29nbGUucHJvdG9idWYu",
             "T3B0aW9uEjYKDnNvdXJjZV9jb250ZXh0GAUgASgLMh4uZ29vZ2xlLnByb3Rv",
             "YnVmLlNvdXJjZUNvbnRleHQSJwoGc3ludGF4GAYgASgOMhcuZ29vZ2xlLnBy",
-            "b3RvYnVmLlN5bnRheCK+BQoFRmllbGQSKQoEa2luZBgBIAEoDjIbLmdvb2ds",
+            "b3RvYnVmLlN5bnRheCLVBQoFRmllbGQSKQoEa2luZBgBIAEoDjIbLmdvb2ds",
             "ZS5wcm90b2J1Zi5GaWVsZC5LaW5kEjcKC2NhcmRpbmFsaXR5GAIgASgOMiIu",
             "Z29vZ2xlLnByb3RvYnVmLkZpZWxkLkNhcmRpbmFsaXR5Eg4KBm51bWJlchgD",
             "IAEoBRIMCgRuYW1lGAQgASgJEhAKCHR5cGVfdXJsGAYgASgJEhMKC29uZW9m",
             "X2luZGV4GAcgASgFEg4KBnBhY2tlZBgIIAEoCBIoCgdvcHRpb25zGAkgAygL",
-            "MhcuZ29vZ2xlLnByb3RvYnVmLk9wdGlvbhIRCglqc29uX25hbWUYCiABKAki",
-            "yAIKBEtpbmQSEAoMVFlQRV9VTktOT1dOEAASDwoLVFlQRV9ET1VCTEUQARIO",
-            "CgpUWVBFX0ZMT0FUEAISDgoKVFlQRV9JTlQ2NBADEg8KC1RZUEVfVUlOVDY0",
-            "EAQSDgoKVFlQRV9JTlQzMhAFEhAKDFRZUEVfRklYRUQ2NBAGEhAKDFRZUEVf",
-            "RklYRUQzMhAHEg0KCVRZUEVfQk9PTBAIEg8KC1RZUEVfU1RSSU5HEAkSDgoK",
-            "VFlQRV9HUk9VUBAKEhAKDFRZUEVfTUVTU0FHRRALEg4KClRZUEVfQllURVMQ",
-            "DBIPCgtUWVBFX1VJTlQzMhANEg0KCVRZUEVfRU5VTRAOEhEKDVRZUEVfU0ZJ",
-            "WEVEMzIQDxIRCg1UWVBFX1NGSVhFRDY0EBASDwoLVFlQRV9TSU5UMzIQERIP",
-            "CgtUWVBFX1NJTlQ2NBASInQKC0NhcmRpbmFsaXR5EhcKE0NBUkRJTkFMSVRZ",
-            "X1VOS05PV04QABIYChRDQVJESU5BTElUWV9PUFRJT05BTBABEhgKFENBUkRJ",
-            "TkFMSVRZX1JFUVVJUkVEEAISGAoUQ0FSRElOQUxJVFlfUkVQRUFURUQQAyLO",
-            "AQoERW51bRIMCgRuYW1lGAEgASgJEi0KCWVudW12YWx1ZRgCIAMoCzIaLmdv",
-            "b2dsZS5wcm90b2J1Zi5FbnVtVmFsdWUSKAoHb3B0aW9ucxgDIAMoCzIXLmdv",
-            "b2dsZS5wcm90b2J1Zi5PcHRpb24SNgoOc291cmNlX2NvbnRleHQYBCABKAsy",
-            "Hi5nb29nbGUucHJvdG9idWYuU291cmNlQ29udGV4dBInCgZzeW50YXgYBSAB",
-            "KA4yFy5nb29nbGUucHJvdG9idWYuU3ludGF4IlMKCUVudW1WYWx1ZRIMCgRu",
-            "YW1lGAEgASgJEg4KBm51bWJlchgCIAEoBRIoCgdvcHRpb25zGAMgAygLMhcu",
-            "Z29vZ2xlLnByb3RvYnVmLk9wdGlvbiI7CgZPcHRpb24SDAoEbmFtZRgBIAEo",
-            "CRIjCgV2YWx1ZRgCIAEoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkqLgoGU3lu",
-            "dGF4EhEKDVNZTlRBWF9QUk9UTzIQABIRCg1TWU5UQVhfUFJPVE8zEAFCTAoT",
-            "Y29tLmdvb2dsZS5wcm90b2J1ZkIJVHlwZVByb3RvUAGgAQGiAgNHUEKqAh5H",
-            "b29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
+            "MhcuZ29vZ2xlLnByb3RvYnVmLk9wdGlvbhIRCglqc29uX25hbWUYCiABKAkS",
+            "FQoNZGVmYXVsdF92YWx1ZRgLIAEoCSLIAgoES2luZBIQCgxUWVBFX1VOS05P",
+            "V04QABIPCgtUWVBFX0RPVUJMRRABEg4KClRZUEVfRkxPQVQQAhIOCgpUWVBF",
+            "X0lOVDY0EAMSDwoLVFlQRV9VSU5UNjQQBBIOCgpUWVBFX0lOVDMyEAUSEAoM",
+            "VFlQRV9GSVhFRDY0EAYSEAoMVFlQRV9GSVhFRDMyEAcSDQoJVFlQRV9CT09M",
+            "EAgSDwoLVFlQRV9TVFJJTkcQCRIOCgpUWVBFX0dST1VQEAoSEAoMVFlQRV9N",
+            "RVNTQUdFEAsSDgoKVFlQRV9CWVRFUxAMEg8KC1RZUEVfVUlOVDMyEA0SDQoJ",
+            "VFlQRV9FTlVNEA4SEQoNVFlQRV9TRklYRUQzMhAPEhEKDVRZUEVfU0ZJWEVE",
+            "NjQQEBIPCgtUWVBFX1NJTlQzMhAREg8KC1RZUEVfU0lOVDY0EBIidAoLQ2Fy",
+            "ZGluYWxpdHkSFwoTQ0FSRElOQUxJVFlfVU5LTk9XThAAEhgKFENBUkRJTkFM",
+            "SVRZX09QVElPTkFMEAESGAoUQ0FSRElOQUxJVFlfUkVRVUlSRUQQAhIYChRD",
+            "QVJESU5BTElUWV9SRVBFQVRFRBADIs4BCgRFbnVtEgwKBG5hbWUYASABKAkS",
+            "LQoJZW51bXZhbHVlGAIgAygLMhouZ29vZ2xlLnByb3RvYnVmLkVudW1WYWx1",
+            "ZRIoCgdvcHRpb25zGAMgAygLMhcuZ29vZ2xlLnByb3RvYnVmLk9wdGlvbhI2",
+            "Cg5zb3VyY2VfY29udGV4dBgEIAEoCzIeLmdvb2dsZS5wcm90b2J1Zi5Tb3Vy",
+            "Y2VDb250ZXh0EicKBnN5bnRheBgFIAEoDjIXLmdvb2dsZS5wcm90b2J1Zi5T",
+            "eW50YXgiUwoJRW51bVZhbHVlEgwKBG5hbWUYASABKAkSDgoGbnVtYmVyGAIg",
+            "ASgFEigKB29wdGlvbnMYAyADKAsyFy5nb29nbGUucHJvdG9idWYuT3B0aW9u",
+            "IjsKBk9wdGlvbhIMCgRuYW1lGAEgASgJEiMKBXZhbHVlGAIgASgLMhQuZ29v",
+            "Z2xlLnByb3RvYnVmLkFueSouCgZTeW50YXgSEQoNU1lOVEFYX1BST1RPMhAA",
+            "EhEKDVNZTlRBWF9QUk9UTzMQAUJMChNjb20uZ29vZ2xlLnByb3RvYnVmQglU",
+            "eXBlUHJvdG9QAaABAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25v",
+            "d25UeXBlc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, },
           new pbr::GeneratedCodeInfo(new[] {typeof(global::Google.Protobuf.WellKnownTypes.Syntax), }, new pbr::GeneratedCodeInfo[] {
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Type), global::Google.Protobuf.WellKnownTypes.Type.Parser, new[]{ "Name", "Fields", "Oneofs", "Options", "SourceContext", "Syntax" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Field), global::Google.Protobuf.WellKnownTypes.Field.Parser, new[]{ "Kind", "Cardinality", "Number", "Name", "TypeUrl", "OneofIndex", "Packed", "Options", "JsonName" }, null, new[]{ typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Kind), typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality) }, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Field), global::Google.Protobuf.WellKnownTypes.Field.Parser, new[]{ "Kind", "Cardinality", "Number", "Name", "TypeUrl", "OneofIndex", "Packed", "Options", "JsonName", "DefaultValue" }, null, new[]{ typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Kind), typeof(global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality) }, null),
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Enum), global::Google.Protobuf.WellKnownTypes.Enum.Parser, new[]{ "Name", "Enumvalue", "Options", "SourceContext", "Syntax" }, null, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.EnumValue), global::Google.Protobuf.WellKnownTypes.EnumValue.Parser, new[]{ "Name", "Number", "Options" }, null, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Option), global::Google.Protobuf.WellKnownTypes.Option.Parser, new[]{ "Name", "Value" }, null, null, null)
@@ -72,15 +73,15 @@ namespace Google.Protobuf.WellKnownTypes {
   }
   #region Enums
   /// <summary>
-  ///  Syntax specifies the syntax in which a service element was defined.
+  ///  The syntax in which a protocol buffer element is defined.
   /// </summary>
   public enum Syntax {
     /// <summary>
-    ///  Syntax "proto2"
+    ///  Syntax `proto2`.
     /// </summary>
     SYNTAX_PROTO2 = 0,
     /// <summary>
-    ///  Syntax "proto3"
+    ///  Syntax `proto3`.
     /// </summary>
     SYNTAX_PROTO3 = 1,
   }
@@ -89,7 +90,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
   #region Messages
   /// <summary>
-  ///  A light-weight descriptor for a proto message type.
+  ///  A protocol buffer message type.
   /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Type : pb::IMessage<Type> {
@@ -154,7 +155,7 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForString(26);
     private readonly pbc::RepeatedField<string> oneofs_ = new pbc::RepeatedField<string>();
     /// <summary>
-    ///  The list of oneof definitions.
+    ///  The list of types appearing in `oneof` definitions in this type.
     /// </summary>
     public pbc::RepeatedField<string> Oneofs {
       get { return oneofs_; }
@@ -166,7 +167,7 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
     /// <summary>
-    ///  The proto options.
+    ///  The protocol buffer options.
     /// </summary>
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
       get { return options_; }
@@ -330,7 +331,7 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  ///  Field represents a single field of a message type.
+  ///  A single field of a message type.
   /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Field : pb::IMessage<Field> {
@@ -361,6 +362,7 @@ namespace Google.Protobuf.WellKnownTypes {
       packed_ = other.packed_;
       options_ = other.options_.Clone();
       jsonName_ = other.jsonName_;
+      defaultValue_ = other.defaultValue_;
     }
 
     public Field Clone() {
@@ -371,7 +373,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int KindFieldNumber = 1;
     private global::Google.Protobuf.WellKnownTypes.Field.Types.Kind kind_ = global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TYPE_UNKNOWN;
     /// <summary>
-    ///  The field kind.
+    ///  The field type.
     /// </summary>
     public global::Google.Protobuf.WellKnownTypes.Field.Types.Kind Kind {
       get { return kind_; }
@@ -384,7 +386,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int CardinalityFieldNumber = 2;
     private global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality cardinality_ = global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality.CARDINALITY_UNKNOWN;
     /// <summary>
-    ///  The field cardinality, i.e. optional/required/repeated.
+    ///  The field cardinality.
     /// </summary>
     public global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality Cardinality {
       get { return cardinality_; }
@@ -397,7 +399,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int NumberFieldNumber = 3;
     private int number_;
     /// <summary>
-    ///  The proto field number.
+    ///  The field number.
     /// </summary>
     public int Number {
       get { return number_; }
@@ -423,8 +425,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int TypeUrlFieldNumber = 6;
     private string typeUrl_ = "";
     /// <summary>
-    ///  The type URL (without the scheme) when the type is MESSAGE or ENUM,
-    ///  such as `type.googleapis.com/google.protobuf.Empty`.
+    ///  The field type URL, without the scheme, for message or enumeration
+    ///  types. Example: `"type.googleapis.com/google.protobuf.Timestamp"`.
     /// </summary>
     public string TypeUrl {
       get { return typeUrl_; }
@@ -437,7 +439,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int OneofIndexFieldNumber = 7;
     private int oneofIndex_;
     /// <summary>
-    ///  Index in Type.oneofs. Starts at 1. Zero means no oneof mapping.
+    ///  The index of the field type in `Type.oneofs`, for message or enumeration
+    ///  types. The first type has index 1; zero means the type is not in the list.
     /// </summary>
     public int OneofIndex {
       get { return oneofIndex_; }
@@ -465,7 +468,7 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(74, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
     /// <summary>
-    ///  The proto options.
+    ///  The protocol buffer options.
     /// </summary>
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
       get { return options_; }
@@ -475,12 +478,25 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int JsonNameFieldNumber = 10;
     private string jsonName_ = "";
     /// <summary>
-    ///  The JSON name for this field.
+    ///  The field JSON name.
     /// </summary>
     public string JsonName {
       get { return jsonName_; }
       set {
         jsonName_ = pb::Preconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "default_value" field.</summary>
+    public const int DefaultValueFieldNumber = 11;
+    private string defaultValue_ = "";
+    /// <summary>
+    ///  The string value of the default value of this field. Proto2 syntax only.
+    /// </summary>
+    public string DefaultValue {
+      get { return defaultValue_; }
+      set {
+        defaultValue_ = pb::Preconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -504,6 +520,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (Packed != other.Packed) return false;
       if(!options_.Equals(other.options_)) return false;
       if (JsonName != other.JsonName) return false;
+      if (DefaultValue != other.DefaultValue) return false;
       return true;
     }
 
@@ -518,6 +535,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (Packed != false) hash ^= Packed.GetHashCode();
       hash ^= options_.GetHashCode();
       if (JsonName.Length != 0) hash ^= JsonName.GetHashCode();
+      if (DefaultValue.Length != 0) hash ^= DefaultValue.GetHashCode();
       return hash;
     }
 
@@ -559,6 +577,10 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(82);
         output.WriteString(JsonName);
       }
+      if (DefaultValue.Length != 0) {
+        output.WriteRawTag(90);
+        output.WriteString(DefaultValue);
+      }
     }
 
     public int CalculateSize() {
@@ -587,6 +609,9 @@ namespace Google.Protobuf.WellKnownTypes {
       size += options_.CalculateSize(_repeated_options_codec);
       if (JsonName.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(JsonName);
+      }
+      if (DefaultValue.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(DefaultValue);
       }
       return size;
     }
@@ -619,6 +644,9 @@ namespace Google.Protobuf.WellKnownTypes {
       options_.Add(other.options_);
       if (other.JsonName.Length != 0) {
         JsonName = other.JsonName;
+      }
+      if (other.DefaultValue.Length != 0) {
+        DefaultValue = other.DefaultValue;
       }
     }
 
@@ -665,6 +693,10 @@ namespace Google.Protobuf.WellKnownTypes {
             JsonName = input.ReadString();
             break;
           }
+          case 90: {
+            DefaultValue = input.ReadString();
+            break;
+          }
         }
       }
     }
@@ -674,7 +706,7 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       /// <summary>
-      ///  Kind represents a basic field type.
+      ///  Basic field types.
       /// </summary>
       public enum Kind {
         /// <summary>
@@ -718,7 +750,7 @@ namespace Google.Protobuf.WellKnownTypes {
         /// </summary>
         TYPE_STRING = 9,
         /// <summary>
-        ///  Field type group (deprecated proto2 type)
+        ///  Field type group. Proto2 syntax only, and deprecated.
         /// </summary>
         TYPE_GROUP = 10,
         /// <summary>
@@ -756,12 +788,11 @@ namespace Google.Protobuf.WellKnownTypes {
       }
 
       /// <summary>
-      ///  Cardinality represents whether a field is optional, required, or
-      ///  repeated.
+      ///  Whether a field is optional, required, or repeated.
       /// </summary>
       public enum Cardinality {
         /// <summary>
-        ///  The field cardinality is unknown. Typically an error condition.
+        ///  For fields with unknown cardinality.
         /// </summary>
         CARDINALITY_UNKNOWN = 0,
         /// <summary>
@@ -769,7 +800,7 @@ namespace Google.Protobuf.WellKnownTypes {
         /// </summary>
         CARDINALITY_OPTIONAL = 1,
         /// <summary>
-        ///  For required fields. Not used for proto3.
+        ///  For required fields. Proto2 syntax only.
         /// </summary>
         CARDINALITY_REQUIRED = 2,
         /// <summary>
@@ -848,7 +879,7 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
     /// <summary>
-    ///  Proto options for the enum type.
+    ///  Protocol buffer options.
     /// </summary>
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
       get { return options_; }
@@ -1066,7 +1097,7 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
     /// <summary>
-    ///  Proto options for the enum value.
+    ///  Protocol buffer options.
     /// </summary>
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
       get { return options_; }
@@ -1164,7 +1195,8 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  ///  Proto option attached to messages/fields/enums etc.
+  ///  A protocol buffer option, which can be attached to a message, field,
+  ///  enumeration, etc.
   /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Option : pb::IMessage<Option> {
@@ -1198,7 +1230,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int NameFieldNumber = 1;
     private string name_ = "";
     /// <summary>
-    ///  Proto option name.
+    ///  The option's name. For example, `"java_package"`.
     /// </summary>
     public string Name {
       get { return name_; }
@@ -1211,7 +1243,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 2;
     private global::Google.Protobuf.WellKnownTypes.Any value_;
     /// <summary>
-    ///  Proto option value.
+    ///  The option's value. For example, `"com.google.protobuf"`.
     /// </summary>
     public global::Google.Protobuf.WellKnownTypes.Any Value {
       get { return value_; }
