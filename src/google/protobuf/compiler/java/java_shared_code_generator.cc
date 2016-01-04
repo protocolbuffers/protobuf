@@ -1,4 +1,4 @@
-// Protocol Buffers - Google's data interchange format
+﻿// Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
@@ -172,8 +172,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
       string classname = name_resolver_->GetDescriptorClassName(file_->dependency(i));
       if (package.empty()) {
         dependencies.push_back(std::make_pair(filename, classname));
-      }
-      else {
+      } else {
         dependencies.push_back(std::make_pair(filename, package + "." + classname));
       }
     }
