@@ -354,11 +354,6 @@ namespace Google.Protobuf
             // Otherwise it's the default value of the CLR type
         }
 
-        private static Func<T, bool> CreateDefaultValueCheck<TTmp>(Func<TTmp, bool> check)
-        {
-            return (Func<T, bool>)(object)check;
-        }
-
         private readonly Func<CodedInputStream, T> reader;
         private readonly Action<CodedOutputStream, T> writer;
         private readonly Func<T, int> sizeCalculator;
