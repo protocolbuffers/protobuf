@@ -39,9 +39,7 @@ using System;
 namespace Google.Protobuf
 {
     /// <summary>
-    /// Unit tests for JSON parsing. Some tests are ignored at the moment as the desired behaviour
-    /// isn't fully known, either in terms of which exceptions should be thrown or whether they should
-    /// count as valid values.
+    /// Unit tests for JSON parsing.
     /// </summary>
     public class JsonParserTest
     {
@@ -205,6 +203,8 @@ namespace Google.Protobuf
 
         [Test]
         [TestCase("+0")]
+        [TestCase(" 1")]
+        [TestCase("1 ")]
         [TestCase("00")]
         [TestCase("-00")]
         [TestCase("--1")]
@@ -318,7 +318,18 @@ namespace Google.Protobuf
         [TestCase("1.0.0")]
         [TestCase("+1")]
         [TestCase("00")]
+        [TestCase("01")]
+        [TestCase("-00")]
+        [TestCase("-01")]
         [TestCase("--1")]
+        [TestCase(" Infinity")]
+        [TestCase(" -Infinity")]
+        [TestCase("NaN ")]
+        [TestCase("Infinity ")]
+        [TestCase("-Infinity ")]
+        [TestCase(" NaN")]
+        [TestCase("INFINITY")]
+        [TestCase("nan")]
         [TestCase("\u00BD")] // 1/2 as a single Unicode character. Just sanity checking...
         public void StringToDouble_Invalid(string jsonValue)
         {
@@ -363,6 +374,10 @@ namespace Google.Protobuf
         [TestCase("-1", -1)]
         [TestCase("2147483647", 2147483647)]
         [TestCase("-2147483648", -2147483648)]
+        [TestCase("1e1", 10)]
+        [TestCase("-1e1", -10)]
+        [TestCase("10.00", 10)]
+        [TestCase("-10.00", -10)]
         public void NumberToInt32_Valid(string jsonValue, int expectedParsedValue)
         {
             string json = "{ \"singleInt32\": " + jsonValue + "}";
@@ -376,7 +391,8 @@ namespace Google.Protobuf
         [TestCase("-00", typeof(InvalidJsonException))]
         [TestCase("--1", typeof(InvalidJsonException))]
         [TestCase("+1", typeof(InvalidJsonException))]
-        [TestCase("1.5", typeof(InvalidProtocolBufferException), Ignore = true, Reason = "Desired behaviour unclear")]
+        [TestCase("1.5", typeof(InvalidProtocolBufferException))]
+        // Value is out of range
         [TestCase("1e10", typeof(InvalidProtocolBufferException))]
         [TestCase("2147483648", typeof(InvalidProtocolBufferException))]
         [TestCase("-2147483649", typeof(InvalidProtocolBufferException))]
@@ -411,8 +427,10 @@ namespace Google.Protobuf
         [TestCase("0", 0L)]
         [TestCase("1", 1L)]
         [TestCase("-1", -1L)]
-        [TestCase("9223372036854775807", 9223372036854775807, Ignore = true, Reason = "Desired behaviour unclear")]
-        [TestCase("-9223372036854775808", -9223372036854775808, Ignore = true, Reason = "Desired behaviour unclear")]
+        // long.MaxValue isn't actually representable as a double. This string value is the highest
+        // representable value which isn't greater than long.MaxValue.
+        [TestCase("9223372036854769664", 9223372036854769664)]
+        [TestCase("-9223372036854775808", -9223372036854775808)]
         public void NumberToInt64_Valid(string jsonValue, long expectedParsedValue)
         {
             string json = "{ \"singleInt64\": " + jsonValue + "}";
@@ -422,8 +440,11 @@ namespace Google.Protobuf
 
         // Assume that anything non-bounds-related is covered in the Int32 case
         [Test]
-        [TestCase("-9223372036854775809", Ignore = true, Reason = "Desired behaviour unclear")]
-        [TestCase("9223372036854775808", Ignore = true, Reason = "Desired behaviour unclear")]
+        [TestCase("9223372036854775808")]
+        // Theoretical bound would be -9223372036854775809, but when that is parsed to a double
+        // we end up with the exact value of long.MinValue due to lack of precision. The value here
+        // is the "next double down".
+        [TestCase("-9223372036854780000")]
         public void NumberToInt64_Invalid(string jsonValue)
         {
             string json = "{ \"singleInt64\": " + jsonValue + "}";
@@ -433,7 +454,9 @@ namespace Google.Protobuf
         [Test]
         [TestCase("0", 0UL)]
         [TestCase("1", 1UL)]
-        [TestCase("18446744073709551615", 18446744073709551615, Ignore = true, Reason = "Desired behaviour unclear")]
+        // ulong.MaxValue isn't representable as a double. This value is the largest double within
+        // the range of ulong.
+        [TestCase("18446744073709500416", 18446744073709500416UL)]
         public void NumberToUInt64_Valid(string jsonValue, ulong expectedParsedValue)
         {
             string json = "{ \"singleUint64\": " + jsonValue + "}";
@@ -475,9 +498,9 @@ namespace Google.Protobuf
         }
 
         [Test]
-        [TestCase("1.7977e308", Ignore = true, Reason = "Desired behaviour unclear")]
-        [TestCase("-1.7977e308", Ignore = true, Reason = "Desired behaviour unclear")]
-        [TestCase("1e309", Ignore = true, Reason = "Desired behaviour unclear")]
+        [TestCase("1.7977e308")]
+        [TestCase("-1.7977e308")]
+        [TestCase("1e309")]
         [TestCase("1,0")]
         [TestCase("1.0.0")]
         [TestCase("+1")]
