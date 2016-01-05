@@ -675,14 +675,12 @@
 
   TestAllTypes *subMsg = [TestAllTypes message];
   subMsg.repeatedInt32Array = [GPBInt32Array arrayWithValue:100];
-  msg1.mapInt32Message = [GPBInt32ObjectDictionary dictionary];
   [msg1.mapInt32Message setObject:subMsg forKey:0];
   subMsg = nil;
 
   subMsg = [TestAllTypes message];
   subMsg.repeatedInt32Array = [GPBInt32Array arrayWithValue:101];
-  msg2.mapInt32Message = [GPBInt32ObjectDictionary dictionary];
-  
+
   [msg2.mapInt32Message setObject:subMsg forKey:0];
   subMsg = nil;
 

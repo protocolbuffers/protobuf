@@ -55,7 +55,6 @@
   [message setOptionalInt32:1];
   [message setOptionalString:@"foo"];
   [message setOptionalForeignMessage:[ForeignMessage message]];
-  message.repeatedStringArray = [NSMutableArray array];
   [message.repeatedStringArray addObject:@"bar"];
   return message;
 }
@@ -67,7 +66,6 @@
   ForeignMessage *foreignMessage = [ForeignMessage message];
   [foreignMessage setC:3];
   [message setOptionalForeignMessage:foreignMessage];
-  message.repeatedStringArray = [NSMutableArray array];
   [message.repeatedStringArray addObject:@"qux"];
   return message;
 }
@@ -76,7 +74,6 @@
   TestAllTypes *message = [TestAllTypes message];
   [message setOptionalInt64:2];
   [message setOptionalString:@"baz"];
-  message.repeatedStringArray = [NSMutableArray array];
   [message.repeatedStringArray addObject:@"qux"];
   return message;
 }
@@ -89,7 +86,6 @@
   ForeignMessage *foreignMessage = [ForeignMessage message];
   [foreignMessage setC:3];
   [message setOptionalForeignMessage:foreignMessage];
-  message.repeatedStringArray = [NSMutableArray array];
   [message.repeatedStringArray addObject:@"qux"];
   [message.repeatedStringArray addObject:@"bar"];
   return message;
@@ -102,7 +98,6 @@
   [message setOptionalString:@"foo"];
   ForeignMessage *foreignMessage = [ForeignMessage message];
   [message setOptionalForeignMessage:foreignMessage];
-  message.repeatedStringArray = [NSMutableArray array];
   [message.repeatedStringArray addObject:@"qux"];
   [message.repeatedStringArray addObject:@"bar"];
   return message;
@@ -248,7 +243,6 @@
   [message setOptionalMessage:self.testRequiredInitialized];
   XCTAssertTrue(message.initialized);
 
-  message.repeatedMessageArray = [NSMutableArray array];
   [message.repeatedMessageArray addObject:[TestRequired message]];
   XCTAssertFalse(message.initialized);
 
@@ -300,7 +294,6 @@
 - (void)testDataFromNestedUninitialized {
   TestRequiredForeign *message = [TestRequiredForeign message];
   [message setOptionalMessage:[TestRequired message]];
-  message.repeatedMessageArray = [NSMutableArray array];
   [message.repeatedMessageArray addObject:[TestRequired message]];
   [message.repeatedMessageArray addObject:[TestRequired message]];
   NSData *data = [message data];
@@ -319,7 +312,6 @@
 
   TestRequiredForeign *message = [TestRequiredForeign message];
   [message setOptionalMessage:[TestRequired message]];
-  message.repeatedMessageArray = [NSMutableArray array];
   [message.repeatedMessageArray addObject:[TestRequired message]];
   [message.repeatedMessageArray addObject:[TestRequired message]];
 
