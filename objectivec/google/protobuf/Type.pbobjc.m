@@ -208,6 +208,7 @@ void SetGPBType_Syntax_RawValue(GPBType *message, int32_t value) {
 @dynamic packed;
 @dynamic optionsArray, optionsArray_Count;
 @dynamic jsonName;
+@dynamic defaultValue;
 
 typedef struct GPBField__storage_ {
   uint32_t _has_storage_[1];
@@ -220,6 +221,7 @@ typedef struct GPBField__storage_ {
   NSString *typeURL;
   NSMutableArray *optionsArray;
   NSString *jsonName;
+  NSString *defaultValue;
 } GPBField__storage_;
 
 // This method is threadsafe because it is initially called
@@ -323,6 +325,17 @@ typedef struct GPBField__storage_ {
         .flags = GPBFieldOptional,
         .dataType = GPBDataTypeString,
         .offset = offsetof(GPBField__storage_, jsonName),
+        .defaultValue.valueString = nil,
+        .dataTypeSpecific.className = NULL,
+        .fieldOptions = NULL,
+      },
+      {
+        .name = "defaultValue",
+        .number = GPBField_FieldNumber_DefaultValue,
+        .hasIndex = 9,
+        .flags = GPBFieldOptional,
+        .dataType = GPBDataTypeString,
+        .offset = offsetof(GPBField__storage_, defaultValue),
         .defaultValue.valueString = nil,
         .dataTypeSpecific.className = NULL,
         .fieldOptions = NULL,
