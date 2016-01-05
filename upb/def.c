@@ -526,6 +526,10 @@ static void upb_fielddef_uninit_default(upb_fielddef *f) {
     freestr(f->defaultval.bytes);
 }
 
+const char *upb_fielddef_fullname(const upb_fielddef *e) {
+  return upb_def_fullname(upb_fielddef_upcast(e));
+}
+
 static void visitfield(const upb_refcounted *r, upb_refcounted_visit *visit,
                        void *closure) {
   const upb_fielddef *f = (const upb_fielddef*)r;
