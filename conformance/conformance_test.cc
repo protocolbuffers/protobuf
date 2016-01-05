@@ -356,6 +356,8 @@ void ConformanceTestSuite::ExpectParseFailureForProto(
   RunTest(effective_test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kParseError) {
     ReportSuccess(effective_test_name);
+  } else if (response.result_case() == ConformanceResponse::kSkipped) {
+    ReportSkip(effective_test_name, request, response);
   } else {
     ReportFailure(effective_test_name, request, response,
                   "Should have failed to parse, but didn't.");
@@ -408,6 +410,11 @@ void ConformanceTestSuite::RunValidJsonTestWithValidator(
 
   RunTest(effective_test_name, request, &response);
 
+  if (response.result_case() == ConformanceResponse::kSkipped) {
+    ReportSkip(effective_test_name, request, response);
+    return;
+  }
+
   if (response.result_case() != ConformanceResponse::kJsonPayload) {
     ReportFailure(effective_test_name, request, response,
                   "Expected JSON payload but got type %d.",
@@ -444,6 +451,8 @@ void ConformanceTestSuite::ExpectParseFailureForJson(
   RunTest(effective_test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kParseError) {
     ReportSuccess(effective_test_name);
+  } else if (response.result_case() == ConformanceResponse::kSkipped) {
+    ReportSkip(effective_test_name, request, response);
   } else {
     ReportFailure(effective_test_name, request, response,
                   "Should have failed to parse, but didn't.");
@@ -466,6 +475,8 @@ void ConformanceTestSuite::ExpectSerializeFailureForJson(
   RunTest(effective_test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kSerializeError) {
     ReportSuccess(effective_test_name);
+  } else if (response.result_case() == ConformanceResponse::kSkipped) {
+    ReportSkip(effective_test_name, request, response);
   } else {
     ReportFailure(effective_test_name, request, response,
                   "Should have failed to serialize, but didn't.");
