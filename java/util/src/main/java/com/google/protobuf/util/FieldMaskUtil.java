@@ -119,7 +119,7 @@ public class FieldMaskUtil {
   /**
    * Constructs a FieldMask from the passed field numbers.
    *
-   * @throws IllegalArugmentException if any of the fields are invalid for the message.
+   * @throws IllegalArgumentException if any of the fields are invalid for the message.
    */
   public static FieldMask fromFieldNumbers(Class<? extends Message> type, int... fieldNumbers) {
     return fromFieldNumbers(type, Ints.asList(fieldNumbers));
@@ -128,7 +128,7 @@ public class FieldMaskUtil {
   /**
    * Constructs a FieldMask from the passed field numbers.
    *
-   * @throws IllegalArugmentException if any of the fields are invalid for the message.
+   * @throws IllegalArgumentException if any of the fields are invalid for the message.
    */
   public static FieldMask fromFieldNumbers(
       Class<? extends Message> type, Iterable<Integer> fieldNumbers) {

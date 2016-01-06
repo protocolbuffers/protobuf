@@ -32,13 +32,13 @@ package com.google.protobuf.nano;
 
 
 /**
- * A custom version of {@link android.util.SparseArray} with the minimal API
+ * A custom version of {@code android.util.SparseArray} with the minimal API
  * for storing {@link FieldData} objects.
  *
  * <p>This class is an internal implementation detail of nano and should not
  * be called directly by clients.
  *
- * Based on {@link android.support.v4.util.SpareArrayCompat}.
+ * Based on {@code android.support.v4.util.SpareArrayCompat}.
  */
 public final class FieldArray implements Cloneable {
     private static final FieldData DELETED = new FieldData();
