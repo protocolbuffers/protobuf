@@ -142,7 +142,7 @@ namespace Google.Protobuf
             StringBuilder builder = new StringBuilder();
             if (message.Descriptor.IsWellKnownType)
             {
-                WriteWellKnownTypeValue(builder, message.Descriptor, message, false);
+                WriteWellKnownTypeValue(builder, message.Descriptor, message);
             }
             else
             {
@@ -393,7 +393,7 @@ namespace Google.Protobuf
                 IMessage message = (IMessage) value;
                 if (message.Descriptor.IsWellKnownType)
                 {
-                    WriteWellKnownTypeValue(builder, message.Descriptor, value, true);
+                    WriteWellKnownTypeValue(builder, message.Descriptor, value);
                 }
                 else
                 {
@@ -412,7 +412,7 @@ namespace Google.Protobuf
         /// values are using the embedded well-known types, in order to allow for dynamic messages
         /// in the future.
         /// </summary>
-        private void WriteWellKnownTypeValue(StringBuilder builder, MessageDescriptor descriptor, object value, bool inField)
+        private void WriteWellKnownTypeValue(StringBuilder builder, MessageDescriptor descriptor, object value)
         {
             // Currently, we can never actually get here, because null values are always handled by the caller. But if we *could*,
             // this would do the right thing.
@@ -438,17 +438,17 @@ namespace Google.Protobuf
             }
             if (descriptor.FullName == Timestamp.Descriptor.FullName)
             {
-                MaybeWrapInString(builder, value, WriteTimestamp, inField);
+                WriteTimestamp(builder, (IMessage) value);
                 return;
             }
             if (descriptor.FullName == Duration.Descriptor.FullName)
             {
-                MaybeWrapInString(builder, value, WriteDuration, inField);
+                WriteDuration(builder, (IMessage) value);
                 return;
             }
             if (descriptor.FullName == FieldMask.Descriptor.FullName)
             {
-                MaybeWrapInString(builder, value, WriteFieldMask, inField);
+                WriteFieldMask(builder, (IMessage) value);
                 return;
             }
             if (descriptor.FullName == Struct.Descriptor.FullName)
@@ -475,26 +475,9 @@ namespace Google.Protobuf
             WriteMessage(builder, (IMessage) value);
         }
 
-        /// <summary>
-        /// Some well-known types end up as string values... so they need wrapping in quotes, but only
-        /// when they're being used as fields within another message.
-        /// </summary>
-        private void MaybeWrapInString(StringBuilder builder, object value, Action<StringBuilder, IMessage> action, bool inField)
-        {
-            if (inField)
-            {
-                builder.Append('"');
-                action(builder, (IMessage) value);
-                builder.Append('"');
-            }
-            else
-            {
-                action(builder, (IMessage) value);
-            }
-        }
-
         private void WriteTimestamp(StringBuilder builder, IMessage value)
         {
+            builder.Append('"');
             // TODO: In the common case where this *is* using the built-in Timestamp type, we could
             // avoid all the reflection at this point, by casting to Timestamp. In the interests of
             // avoiding subtle bugs, don't do that until we've implemented DynamicMessage so that we can prove
@@ -509,11 +492,12 @@ namespace Google.Protobuf
             DateTime dateTime = normalized.ToDateTime();
             builder.Append(dateTime.ToString("yyyy'-'MM'-'dd'T'HH:mm:ss", CultureInfo.InvariantCulture));
             AppendNanoseconds(builder, Math.Abs(normalized.Nanos));
-            builder.Append('Z');
+            builder.Append("Z\"");
         }
 
         private void WriteDuration(StringBuilder builder, IMessage value)
         {
+            builder.Append('"');
             // TODO: Same as for WriteTimestamp
             int nanos = (int) value.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.GetValue(value);
             long seconds = (long) value.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.GetValue(value);
@@ -530,13 +514,13 @@ namespace Google.Protobuf
 
             builder.Append(normalized.Seconds.ToString("d", CultureInfo.InvariantCulture));
             AppendNanoseconds(builder, Math.Abs(normalized.Nanos));
-            builder.Append('s');
+            builder.Append("s\"");
         }
 
         private void WriteFieldMask(StringBuilder builder, IMessage value)
         {
             IList paths = (IList) value.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor.GetValue(value);
-            AppendEscapedString(builder, string.Join(",", paths.Cast<string>().Select(ToCamelCase)));
+            WriteString(builder, string.Join(",", paths.Cast<string>().Select(ToCamelCase)));
         }
 
         private void WriteAny(StringBuilder builder, IMessage value)
@@ -566,7 +550,7 @@ namespace Google.Protobuf
                 builder.Append(PropertySeparator);
                 WriteString(builder, AnyWellKnownTypeValueField);
                 builder.Append(NameValueSeparator);
-                WriteWellKnownTypeValue(builder, descriptor, message, true);
+                WriteWellKnownTypeValue(builder, descriptor, message);
             }
             else
             {
@@ -674,7 +658,7 @@ namespace Google.Protobuf
                 case Value.ListValueFieldNumber:
                     // Structs and ListValues are nested messages, and already well-known types.
                     var nestedMessage = (IMessage) specifiedField.Accessor.GetValue(message);
-                    WriteWellKnownTypeValue(builder, nestedMessage.Descriptor, nestedMessage, true);
+                    WriteWellKnownTypeValue(builder, nestedMessage.Descriptor, nestedMessage);
                     return;
                 case Value.NullValueFieldNumber:
                     WriteNull(builder);
@@ -771,15 +755,6 @@ namespace Google.Protobuf
         private void WriteString(StringBuilder builder, string text)
         {
             builder.Append('"');
-            AppendEscapedString(builder, text);
-            builder.Append('"');
-        }
-
-        /// <summary>
-        /// Appends the given text to the string builder, escaping as required.
-        /// </summary>
-        private void AppendEscapedString(StringBuilder builder, string text)
-        {
             for (int i = 0; i < text.Length; i++)
             {
                 char c = text[i];
@@ -839,6 +814,7 @@ namespace Google.Protobuf
                         break;
                 }
             }
+            builder.Append('"');
         }
 
         private const string Hex = "0123456789abcdef";
