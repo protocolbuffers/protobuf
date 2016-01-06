@@ -102,6 +102,7 @@
     <Compile Include="Reflection\TypeRegistryTest.cs" />
     <Compile Include="SampleEnum.cs" />
     <Compile Include="SampleMessages.cs" />
+    <Compile Include="TestProtos\ForeignMessagePartial.cs" />
     <Compile Include="TestProtos\MapUnittestProto3.cs" />
     <Compile Include="TestProtos\UnittestImportProto3.cs" />
     <Compile Include="TestProtos\UnittestImportPublicProto3.cs" />

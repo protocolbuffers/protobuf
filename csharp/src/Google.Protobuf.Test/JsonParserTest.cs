@@ -182,7 +182,7 @@ namespace Google.Protobuf
         private static void AssertRoundtrip<T>(T message) where T : IMessage<T>, new()
         {
             var clone = message.Clone();
-            var json = message.ToString();
+            var json = JsonFormatter.Default.Format(message);
             var parsed = JsonParser.Default.Parse<T>(json);
             Assert.AreEqual(clone, parsed);
         }
