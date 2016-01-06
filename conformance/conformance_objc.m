@@ -95,7 +95,7 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
       case WireFormat_Protobuf:
         response.protobufPayload = testMessage.data;
         if (!response.protobufPayload) {
-          response.runtimeError =
+          response.serializeError =
             [NSString stringWithFormat:@"Failed to make data from: %@", testMessage];
         }
         break;
