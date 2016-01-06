@@ -1011,6 +1011,7 @@ upb_pbdecoder *upb_pbdecoder_create(upb_env *e, const upb_pbdecodermethod *m,
   d->env = e;
   d->limit = d->stack + default_max_nesting - 1;
   d->stack_size = default_max_nesting;
+  d->status = NULL;
 
   upb_pbdecoder_reset(d);
   upb_bytessink_reset(&d->input_, &m->input_handler_, d);
