@@ -629,6 +629,24 @@ CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output)
   had_error_ = false;
 }
 
+CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output,
+                                     bool do_eager_refresh)
+  : output_(output),
+    buffer_(NULL),
+    buffer_size_(0),
+    total_bytes_(0),
+    had_error_(false),
+    aliasing_enabled_(false) {
+  if (do_eager_refresh) {
+    // Eagerly Refresh() so buffer space is immediately available.
+    Refresh();
+    // The Refresh() may have failed. If the client doesn't write any data,
+    // though, don't consider this an error. If the client does write data, then
+    // another Refresh() will be attempted and it will set the error once again.
+    had_error_ = false;
+  }
+}
+
 CodedOutputStream::~CodedOutputStream() {
   Trim();
 }

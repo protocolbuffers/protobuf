@@ -666,6 +666,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
  public:
   // Create an CodedOutputStream that writes to the given ZeroCopyOutputStream.
   explicit CodedOutputStream(ZeroCopyOutputStream* output);
+  CodedOutputStream(ZeroCopyOutputStream* output, bool do_eager_refresh);
 
   // Destroy the CodedOutputStream and position the underlying
   // ZeroCopyOutputStream immediately after the last byte written.

@@ -148,12 +148,36 @@ class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
   void BackUp(int count);
   int64 ByteCount() const;
 
+ protected:
+  void SetString(string* target);
+
  private:
   static const int kMinimumSize = 16;
 
   string* target_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringOutputStream);
+};
+
+// LazyStringOutputStream is a StringOutputStream with lazy acquisition of
+// the output string from a callback. The string is owned externally, and not
+// deleted in the stream destructor.
+class LIBPROTOBUF_EXPORT LazyStringOutputStream : public StringOutputStream {
+ public:
+  // Callback should be permanent (non-self-deleting). Ownership is transferred
+  // to the LazyStringOutputStream.
+  explicit LazyStringOutputStream(ResultCallback<string*>* callback);
+  ~LazyStringOutputStream();
+
+  // implements ZeroCopyOutputStream, overriding StringOutputStream -----------
+  bool Next(void** data, int* size);
+  int64 ByteCount() const;
+
+ private:
+  const scoped_ptr<ResultCallback<string*> > callback_;
+  bool string_is_set_;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LazyStringOutputStream);
 };
 
 // Note:  There is no StringInputStream.  Instead, just create an
