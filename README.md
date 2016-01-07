@@ -10,6 +10,20 @@ https://developers.google.com/protocol-buffers/
 C++ Installation - Unix
 -----------------------
 
+To build protobuf from source, the following tools are needed:
+
+  * autoconf
+  * automake
+  * libtool
+  * curl (used to download gmock)
+
+On Ubuntu, you can install them with:
+
+  $ sudo apt-get intall autoconf automake libtool curl
+
+On other platforms, please use the corresponding package managing tool to
+install them before proceeding.
+
 If you get the source from github, you need to generate the configure script
 first:
 
@@ -28,15 +42,17 @@ Buffer compiler (protoc) execute the following:
     $ ./configure
     $ make
     $ make check
-    $ make install
+    $ sudo make install
+    $ sudo ldconfig # refresh shared library cache.
 
 If "make check" fails, you can still install, but it is likely that
 some features of this library will not work correctly on your system.
 Proceed at your own risk.
 
-"make install" may require superuser privileges.
+For advanced usage information on configure and make, please refer to the
+autoconf documentation:
 
-For advanced usage information on configure and make, see INSTALL.txt.
+  http://www.gnu.org/software/autoconf/manual/autoconf.html#Running-configure-Scripts
 
 **Hint on install location**
 
@@ -156,9 +172,18 @@ For advanced usage information on configure and make, see INSTALL.txt.
 C++ Installation - Windows
 --------------------------
 
-If you are using Microsoft Visual C++, see cmake/README.md.
+If you only need the protoc binary, you can download it from the release
+page:
 
-If you are using Cygwin or MinGW, follow the Unix installation
+  https://github.com/google/protobuf/releases
+
+In the downloads section, download the zip file protoc-$VERSION-win32.zip.
+It contains the protoc binary as well as public proto files of protobuf
+library.
+
+To build from source using Microsoft Visual C++, see cmake/README.md.
+
+To build from source using Cygwin or MinGW, follow the Unix installation
 instructions, above.
 
 Binary Compatibility Warning
