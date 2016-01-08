@@ -19,7 +19,7 @@ To build protobuf from source, the following tools are needed:
 
 On Ubuntu, you can install them with:
 
-  $ sudo apt-get intall autoconf automake libtool curl
+  $ sudo apt-get install autoconf automake libtool curl
 
 On other platforms, please use the corresponding package managing tool to
 install them before proceeding.
