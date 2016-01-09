@@ -69,14 +69,8 @@ CSharpType GetCSharpType(FieldDescriptor::Type type);
 
 std::string StripDotProto(const std::string& proto_file);
 
-// Gets unqualified name of the umbrella class
-std::string GetUmbrellaClassUnqualifiedName(const FileDescriptor* descriptor);
-
-// Gets name of the nested for umbrella class (just the nested part,
-// not including the GetFileNamespace part).
-std::string GetUmbrellaClassNestedNamespace(const FileDescriptor* descriptor);
-
-std::string GetClassName(const Descriptor* descriptor);
+// Gets unqualified name of the reflection class
+std::string GetReflectionClassUnqualifiedName(const FileDescriptor* descriptor);
 
 std::string GetClassName(const EnumDescriptor* descriptor);
 
@@ -100,8 +94,6 @@ std::string UnderscoresToPascalCase(const std::string& input);
 std::string StringToBase64(const std::string& input);
 
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor);
-
-uint FixedMakeTag(const FieldDescriptor* descriptor);
 
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
 

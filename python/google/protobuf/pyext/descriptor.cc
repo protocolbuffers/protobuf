@@ -203,6 +203,14 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
   PyObject* message_class(cdescriptor_pool::GetMessageClass(
       pool, message_type));
   if (message_class == NULL) {
+    // The Options message was not found in the current DescriptorPool.
+    // In this case, there cannot be extensions to these options, and we can
+    // try to use the basic pool instead.
+    PyErr_Clear();
+    message_class = cdescriptor_pool::GetMessageClass(
+      GetDefaultDescriptorPool(), message_type);
+  }
+  if (message_class == NULL) {
     PyErr_Format(PyExc_TypeError, "Could not retrieve class for Options: %s",
                  message_type->full_name().c_str());
     return NULL;
@@ -210,6 +218,12 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
   ScopedPyObjectPtr value(PyEval_CallObject(message_class, NULL));
   if (value == NULL) {
     return NULL;
+  }
+  if (!PyObject_TypeCheck(value.get(), &CMessage_Type)) {
+      PyErr_Format(PyExc_TypeError, "Invalid class for %s: %s",
+                   message_type->full_name().c_str(),
+                   Py_TYPE(value.get())->tp_name);
+      return NULL;
   }
   CMessage* cmsg = reinterpret_cast<CMessage*>(value.get());
 
@@ -223,8 +237,7 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
     options.SerializeToString(&serialized);
     io::CodedInputStream input(
         reinterpret_cast<const uint8*>(serialized.c_str()), serialized.size());
-    input.SetExtensionRegistry(pool->pool,
-                               GetDescriptorPool()->message_factory);
+    input.SetExtensionRegistry(pool->pool, pool->message_factory);
     bool success = cmsg->message->MergePartialFromCodedStream(&input);
     if (!success) {
       PyErr_Format(PyExc_ValueError, "Error parsing Options message");
@@ -233,7 +246,7 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
   }
 
   // Cache the result.
-  Py_INCREF(value);
+  Py_INCREF(value.get());
   (*pool->descriptor_options)[descriptor] = value.get();
 
   return value.release();
@@ -328,7 +341,8 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
   PyDescriptorPool* pool = GetDescriptorPool_FromPool(
       GetFileDescriptor(descriptor)->pool());
   if (pool == NULL) {
-    Py_DECREF(py_descriptor);
+    // Don't DECREF, the object is not fully initialized.
+    PyObject_Del(py_descriptor);
     return NULL;
   }
   Py_INCREF(pool);
@@ -414,14 +428,25 @@ static PyObject* GetFile(PyBaseDescriptor *self, void *closure) {
 }
 
 static PyObject* GetConcreteClass(PyBaseDescriptor* self, void *closure) {
+  // Retuns the canonical class for the given descriptor.
+  // This is the class that was registered with the primary descriptor pool
+  // which contains this descriptor.
+  // This might not be the one you expect! For example the returned object does
+  // not know about extensions defined in a custom pool.
   PyObject* concrete_class(cdescriptor_pool::GetMessageClass(
-      GetDescriptorPool(), _GetDescriptor(self)));
+      GetDescriptorPool_FromPool(_GetDescriptor(self)->file()->pool()),
+      _GetDescriptor(self)));
   Py_XINCREF(concrete_class);
   return concrete_class;
 }
 
 static PyObject* GetFieldsByName(PyBaseDescriptor* self, void *closure) {
   return NewMessageFieldsByName(_GetDescriptor(self));
+}
+
+static PyObject* GetFieldsByCamelcaseName(PyBaseDescriptor* self,
+                                          void *closure) {
+  return NewMessageFieldsByCamelcaseName(_GetDescriptor(self));
 }
 
 static PyObject* GetFieldsByNumber(PyBaseDescriptor* self, void *closure) {
@@ -564,6 +589,8 @@ static PyGetSetDef Getters[] = {
 
   { "fields", (getter)GetFieldsSeq, NULL, "Fields sequence"},
   { "fields_by_name", (getter)GetFieldsByName, NULL, "Fields by name"},
+  { "fields_by_camelcase_name", (getter)GetFieldsByCamelcaseName, NULL,
+    "Fields by camelCase name"},
   { "fields_by_number", (getter)GetFieldsByNumber, NULL, "Fields by number"},
   { "nested_types", (getter)GetNestedTypesSeq, NULL, "Nested types sequence"},
   { "nested_types_by_name", (getter)GetNestedTypesByName, NULL,
@@ -660,6 +687,10 @@ static PyObject* GetFullName(PyBaseDescriptor* self, void *closure) {
 
 static PyObject* GetName(PyBaseDescriptor *self, void *closure) {
   return PyString_FromCppString(_GetDescriptor(self)->name());
+}
+
+static PyObject* GetCamelcaseName(PyBaseDescriptor* self, void *closure) {
+  return PyString_FromCppString(_GetDescriptor(self)->camelcase_name());
 }
 
 static PyObject* GetType(PyBaseDescriptor *self, void *closure) {
@@ -850,6 +881,7 @@ static int SetOptions(PyBaseDescriptor *self, PyObject *value,
 static PyGetSetDef Getters[] = {
   { "full_name", (getter)GetFullName, NULL, "Full name"},
   { "name", (getter)GetName, NULL, "Unqualified name"},
+  { "camelcase_name", (getter)GetCamelcaseName, NULL, "Camelcase name"},
   { "type", (getter)GetType, NULL, "C++ Type"},
   { "cpp_type", (getter)GetCppType, NULL, "C++ Type"},
   { "label", (getter)GetLabel, NULL, "Label"},
@@ -1070,6 +1102,15 @@ PyObject* PyEnumDescriptor_FromDescriptor(
       &PyEnumDescriptor_Type, enum_descriptor, NULL);
 }
 
+const EnumDescriptor* PyEnumDescriptor_AsDescriptor(PyObject* obj) {
+  if (!PyObject_TypeCheck(obj, &PyEnumDescriptor_Type)) {
+    PyErr_SetString(PyExc_TypeError, "Not an EnumDescriptor");
+    return NULL;
+  }
+  return reinterpret_cast<const EnumDescriptor*>(
+      reinterpret_cast<PyBaseDescriptor*>(obj)->descriptor);
+}
+
 namespace enumvalue_descriptor {
 
 // Unchecked accessor to the C++ pointer.
@@ -1187,6 +1228,13 @@ static void Dealloc(PyFileDescriptor* self) {
   descriptor::Dealloc(&self->base);
 }
 
+static PyObject* GetPool(PyFileDescriptor *self, void *closure) {
+  PyObject* pool = reinterpret_cast<PyObject*>(
+      GetDescriptorPool_FromPool(_GetDescriptor(self)->pool()));
+  Py_XINCREF(pool);
+  return pool;
+}
+
 static PyObject* GetName(PyFileDescriptor *self, void *closure) {
   return PyString_FromCppString(_GetDescriptor(self)->name());
 }
@@ -1266,6 +1314,7 @@ static PyObject* CopyToProto(PyFileDescriptor *self, PyObject *target) {
 }
 
 static PyGetSetDef Getters[] = {
+  { "pool", (getter)GetPool, NULL, "pool"},
   { "name", (getter)GetName, NULL, "name"},
   { "package", (getter)GetPackage, NULL, "package"},
   { "serialized_pb", (getter)GetSerializedPb},
@@ -1328,8 +1377,8 @@ PyTypeObject PyFileDescriptor_Type = {
   0,                                    // tp_descr_set
   0,                                    // tp_dictoffset
   0,                                    // tp_init
-  PyType_GenericAlloc,                  // tp_alloc
-  PyType_GenericNew,                    // tp_new
+  0,                                    // tp_alloc
+  0,                                    // tp_new
   PyObject_Del,                         // tp_free
 };
 
@@ -1357,6 +1406,15 @@ PyObject* PyFileDescriptor_FromDescriptorWithSerializedPb(
   // is the same as before.
 
   return py_descriptor;
+}
+
+const FileDescriptor* PyFileDescriptor_AsDescriptor(PyObject* obj) {
+  if (!PyObject_TypeCheck(obj, &PyFileDescriptor_Type)) {
+    PyErr_SetString(PyExc_TypeError, "Not a FileDescriptor");
+    return NULL;
+  }
+  return reinterpret_cast<const FileDescriptor*>(
+      reinterpret_cast<PyBaseDescriptor*>(obj)->descriptor);
 }
 
 namespace oneof_descriptor {
@@ -1454,7 +1512,8 @@ static bool AddEnumValues(PyTypeObject *type,
     if (obj == NULL) {
       return false;
     }
-    if (PyDict_SetItemString(type->tp_dict, value->name().c_str(), obj) < 0) {
+    if (PyDict_SetItemString(type->tp_dict, value->name().c_str(), obj.get()) <
+        0) {
       return false;
     }
   }
@@ -1463,7 +1522,7 @@ static bool AddEnumValues(PyTypeObject *type,
 
 static bool AddIntConstant(PyTypeObject *type, const char* name, int value) {
   ScopedPyObjectPtr obj(PyInt_FromLong(value));
-  if (PyDict_SetItemString(type->tp_dict, name, obj) < 0) {
+  if (PyDict_SetItemString(type->tp_dict, name, obj.get()) < 0) {
     return false;
   }
   return true;

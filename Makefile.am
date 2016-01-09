@@ -35,6 +35,10 @@ clean-local:
 	if test -e conformance/Makefile; then \
 	  echo "Making clean in conformance"; \
 	  cd conformance && $(MAKE) $(AM_MAKEFLAGS) clean; \
+	fi; \
+	if test -e objectivec/DevTools; then \
+	  echo "Cleaning any ObjC pyc files"; \
+	  rm -f objectivec/DevTools/*.pyc; \
 	fi
 
 pkgconfigdir = $(libdir)/pkgconfig
@@ -82,10 +86,13 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj                \
   csharp/src/Google.Protobuf.Test/IssuesTest.cs                              \
   csharp/src/Google.Protobuf.Test/JsonFormatterTest.cs                       \
+  csharp/src/Google.Protobuf.Test/JsonParserTest.cs                          \
+  csharp/src/Google.Protobuf.Test/JsonTokenizerTest.cs                       \
   csharp/src/Google.Protobuf.Test/Properties/AppManifest.xml                 \
   csharp/src/Google.Protobuf.Test/Properties/AssemblyInfo.cs                 \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorsTest.cs              \
   csharp/src/Google.Protobuf.Test/Reflection/FieldAccessTest.cs              \
+  csharp/src/Google.Protobuf.Test/Reflection/TypeRegistryTest.cs             \
   csharp/src/Google.Protobuf.Test/SampleEnum.cs                              \
   csharp/src/Google.Protobuf.Test/SampleMessages.cs                          \
   csharp/src/Google.Protobuf.Test/TestCornerCases.cs                         \
@@ -95,6 +102,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestIssues.cs               \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestProto3.cs               \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestWellKnownTypes.cs       \
+  csharp/src/Google.Protobuf.Test/WellKnownTypes/AnyTest.cs                  \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/DurationTest.cs             \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/TimestampTest.cs            \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/WrappersTest.cs             \
@@ -116,16 +124,20 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Google.Protobuf.nuspec                          \
   csharp/src/Google.Protobuf/IDeepCloneable.cs                               \
   csharp/src/Google.Protobuf/IMessage.cs                                     \
+  csharp/src/Google.Protobuf/InvalidJsonException.cs                         \
   csharp/src/Google.Protobuf/InvalidProtocolBufferException.cs               \
   csharp/src/Google.Protobuf/JsonFormatter.cs                                \
+  csharp/src/Google.Protobuf/JsonParser.cs                                   \
+  csharp/src/Google.Protobuf/JsonToken.cs                                    \
+  csharp/src/Google.Protobuf/JsonTokenizer.cs                                \
   csharp/src/Google.Protobuf/LimitedInputStream.cs                           \
   csharp/src/Google.Protobuf/MessageExtensions.cs                            \
   csharp/src/Google.Protobuf/MessageParser.cs                                \
   csharp/src/Google.Protobuf/Preconditions.cs                                \
   csharp/src/Google.Protobuf/Properties/AssemblyInfo.cs                      \
+  csharp/src/Google.Protobuf/Reflection/Descriptor.cs                        \
   csharp/src/Google.Protobuf/Reflection/DescriptorBase.cs                    \
   csharp/src/Google.Protobuf/Reflection/DescriptorPool.cs                    \
-  csharp/src/Google.Protobuf/Reflection/DescriptorProtoFile.cs               \
   csharp/src/Google.Protobuf/Reflection/DescriptorUtil.cs                    \
   csharp/src/Google.Protobuf/Reflection/DescriptorValidationException.cs     \
   csharp/src/Google.Protobuf/Reflection/EnumDescriptor.cs                    \
@@ -148,7 +160,9 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Reflection/RepeatedFieldAccessor.cs             \
   csharp/src/Google.Protobuf/Reflection/ServiceDescriptor.cs                 \
   csharp/src/Google.Protobuf/Reflection/SingleFieldAccessor.cs               \
+  csharp/src/Google.Protobuf/Reflection/TypeRegistry.cs                      \
   csharp/src/Google.Protobuf/WellKnownTypes/Any.cs                           \
+  csharp/src/Google.Protobuf/WellKnownTypes/AnyPartial.cs                    \
   csharp/src/Google.Protobuf/WellKnownTypes/Api.cs                           \
   csharp/src/Google.Protobuf/WellKnownTypes/Duration.cs                      \
   csharp/src/Google.Protobuf/WellKnownTypes/DurationPartial.cs               \
@@ -160,8 +174,11 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/WellKnownTypes/Timestamp.cs                     \
   csharp/src/Google.Protobuf/WellKnownTypes/TimestampPartial.cs              \
   csharp/src/Google.Protobuf/WellKnownTypes/Type.cs                          \
+  csharp/src/Google.Protobuf/WellKnownTypes/ValuePartial.cs                  \
   csharp/src/Google.Protobuf/WellKnownTypes/Wrappers.cs                      \
+  csharp/src/Google.Protobuf/WellKnownTypes/WrappersPartial.cs               \
   csharp/src/Google.Protobuf/WireFormat.cs                                   \
+  csharp/src/Google.Protobuf/packages.config                                 \
   csharp/src/packages/repositories.config
 
 java_EXTRA_DIST=                                                             \
@@ -203,9 +220,12 @@ java_EXTRA_DIST=                                                             \
   java/src/main/java/com/google/protobuf/Message.java                        \
   java/src/main/java/com/google/protobuf/MessageLite.java                    \
   java/src/main/java/com/google/protobuf/MessageLiteOrBuilder.java           \
+  java/src/main/java/com/google/protobuf/MessageLiteToString.java            \
+  java/src/main/java/com/google/protobuf/MessageLiteToString.java            \
   java/src/main/java/com/google/protobuf/MessageOrBuilder.java               \
   java/src/main/java/com/google/protobuf/MessageReflection.java              \
   java/src/main/java/com/google/protobuf/MutabilityOracle.java               \
+  java/src/main/java/com/google/protobuf/NioByteString.java                  \
   java/src/main/java/com/google/protobuf/Parser.java                         \
   java/src/main/java/com/google/protobuf/ProtobufArrayList.java              \
   java/src/main/java/com/google/protobuf/ProtocolMessageEnum.java            \
@@ -221,10 +241,13 @@ java_EXTRA_DIST=                                                             \
   java/src/main/java/com/google/protobuf/SingleFieldBuilder.java             \
   java/src/main/java/com/google/protobuf/SmallSortedMap.java                 \
   java/src/main/java/com/google/protobuf/TextFormat.java                     \
+  java/src/main/java/com/google/protobuf/TextFormatEscaper.java              \
+  java/src/main/java/com/google/protobuf/TextFormatEscaper.java              \
   java/src/main/java/com/google/protobuf/UninitializedMessageException.java  \
   java/src/main/java/com/google/protobuf/UnknownFieldSet.java                \
   java/src/main/java/com/google/protobuf/UnknownFieldSetLite.java            \
   java/src/main/java/com/google/protobuf/UnmodifiableLazyStringList.java     \
+  java/src/main/java/com/google/protobuf/UnsafeByteStrings.java              \
   java/src/main/java/com/google/protobuf/Utf8.java                           \
   java/src/main/java/com/google/protobuf/WireFormat.java                     \
   java/src/test/java/com/google/protobuf/AbstractMessageTest.java            \
@@ -260,6 +283,7 @@ java_EXTRA_DIST=                                                             \
   java/src/test/java/com/google/protobuf/MapTest.java                        \
   java/src/test/java/com/google/protobuf/MessageTest.java                    \
   java/src/test/java/com/google/protobuf/NestedBuildersTest.java             \
+  java/src/test/java/com/google/protobuf/NioByteStringTest.java              \
   java/src/test/java/com/google/protobuf/ParserTest.java                     \
   java/src/test/java/com/google/protobuf/ProtobufArrayListTest.java          \
   java/src/test/java/com/google/protobuf/RepeatedFieldBuilderTest.java       \
@@ -454,8 +478,8 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/GPBMessageTests+Runtime.m                                 \
   objectivec/Tests/GPBMessageTests+Serialization.m                           \
   objectivec/Tests/GPBMessageTests.m                                         \
+  objectivec/Tests/GPBObjectiveCPlusPlusTest.mm                              \
   objectivec/Tests/GPBPerfTests.m                                            \
-  objectivec/Tests/GPBStringTests.m                                          \
   objectivec/Tests/GPBSwiftTests.swift                                       \
   objectivec/Tests/GPBTestUtilities.h                                        \
   objectivec/Tests/GPBTestUtilities.m                                        \
@@ -491,6 +515,15 @@ objectivec_EXTRA_DIST=                                                       \
 
 python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
+  python/google/__init__.py                                                  \
+  python/google/protobuf/__init__.py                                         \
+  python/google/protobuf/descriptor.py                                       \
+  python/google/protobuf/descriptor_database.py                              \
+  python/google/protobuf/descriptor_pool.py                                  \
+  python/google/protobuf/internal/__init__.py                                \
+  python/google/protobuf/internal/_parameterized.py                          \
+  python/google/protobuf/internal/any_test.proto                             \
+  python/google/protobuf/internal/any_test.proto                             \
   python/google/protobuf/internal/api_implementation.cc                      \
   python/google/protobuf/internal/api_implementation.py                      \
   python/google/protobuf/internal/containers.py                              \
@@ -505,16 +538,19 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/factory_test1.proto                        \
   python/google/protobuf/internal/factory_test2.proto                        \
   python/google/protobuf/internal/generator_test.py                          \
+  python/google/protobuf/internal/import_test_package/__init__.py            \
+  python/google/protobuf/internal/import_test_package/inner.proto            \
+  python/google/protobuf/internal/import_test_package/outer.proto            \
+  python/google/protobuf/internal/json_format_test.py                        \
   python/google/protobuf/internal/message_factory_test.py                    \
   python/google/protobuf/internal/message_listener.py                        \
   python/google/protobuf/internal/message_set_extensions.proto               \
   python/google/protobuf/internal/message_test.py                            \
   python/google/protobuf/internal/missing_enum_values.proto                  \
-  python/google/protobuf/internal/more_extensions_dynamic.proto              \
   python/google/protobuf/internal/more_extensions.proto                      \
+  python/google/protobuf/internal/more_extensions_dynamic.proto              \
   python/google/protobuf/internal/more_messages.proto                        \
   python/google/protobuf/internal/packed_field_test.proto                    \
-  python/google/protobuf/internal/_parameterized.py                          \
   python/google/protobuf/internal/proto_builder_test.py                      \
   python/google/protobuf/internal/python_message.py                          \
   python/google/protobuf/internal/reflection_test.py                         \
@@ -526,51 +562,47 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/text_format_test.py                        \
   python/google/protobuf/internal/type_checkers.py                           \
   python/google/protobuf/internal/unknown_fields_test.py                     \
+  python/google/protobuf/internal/well_known_types.py                        \
+  python/google/protobuf/internal/well_known_types.py                        \
+  python/google/protobuf/internal/well_known_types_test.py                   \
+  python/google/protobuf/internal/well_known_types_test.py                   \
   python/google/protobuf/internal/wire_format.py                             \
   python/google/protobuf/internal/wire_format_test.py                        \
-  python/google/protobuf/internal/__init__.py                                \
-  python/google/protobuf/internal/import_test_package/__init__.py            \
-  python/google/protobuf/internal/import_test_package/inner.proto            \
-  python/google/protobuf/internal/import_test_package/outer.proto            \
-  python/google/protobuf/pyext/README                                        \
-  python/google/protobuf/pyext/cpp_message.py                                \
-  python/google/protobuf/pyext/descriptor.h                                  \
-  python/google/protobuf/pyext/descriptor.cc                                 \
-  python/google/protobuf/pyext/descriptor_pool.h                             \
-  python/google/protobuf/pyext/descriptor_pool.cc                            \
-  python/google/protobuf/pyext/descriptor_containers.h                       \
-  python/google/protobuf/pyext/descriptor_containers.cc                      \
-  python/google/protobuf/pyext/extension_dict.h                              \
-  python/google/protobuf/pyext/extension_dict.cc                             \
-  python/google/protobuf/pyext/message.h                                     \
-  python/google/protobuf/pyext/message.cc                                    \
-  python/google/protobuf/pyext/message_map_container.cc                      \
-  python/google/protobuf/pyext/message_map_container.h                       \
-  python/google/protobuf/pyext/proto2_api_test.proto                         \
-  python/google/protobuf/pyext/python.proto                                  \
-  python/google/protobuf/pyext/python_protobuf.h                             \
-  python/google/protobuf/pyext/repeated_composite_container.h                \
-  python/google/protobuf/pyext/repeated_composite_container.cc               \
-  python/google/protobuf/pyext/repeated_scalar_container.h                   \
-  python/google/protobuf/pyext/repeated_scalar_container.cc                  \
-  python/google/protobuf/pyext/scalar_map_container.cc                       \
-  python/google/protobuf/pyext/scalar_map_container.h                        \
-  python/google/protobuf/pyext/scoped_pyobject_ptr.h                         \
-  python/google/protobuf/pyext/__init__.py                                   \
-  python/google/protobuf/descriptor.py                                       \
-  python/google/protobuf/descriptor_database.py                              \
-  python/google/protobuf/descriptor_pool.py                                  \
+  python/google/protobuf/json_format.py                                      \
   python/google/protobuf/message.py                                          \
   python/google/protobuf/message_factory.py                                  \
   python/google/protobuf/proto_builder.py                                    \
+  python/google/protobuf/pyext/README                                        \
+  python/google/protobuf/pyext/__init__.py                                   \
+  python/google/protobuf/pyext/cpp_message.py                                \
+  python/google/protobuf/pyext/descriptor.cc                                 \
+  python/google/protobuf/pyext/descriptor.h                                  \
+  python/google/protobuf/pyext/descriptor_containers.cc                      \
+  python/google/protobuf/pyext/descriptor_containers.h                       \
+  python/google/protobuf/pyext/descriptor_database.cc                        \
+  python/google/protobuf/pyext/descriptor_database.h                         \
+  python/google/protobuf/pyext/descriptor_pool.cc                            \
+  python/google/protobuf/pyext/descriptor_pool.h                             \
+  python/google/protobuf/pyext/extension_dict.cc                             \
+  python/google/protobuf/pyext/extension_dict.h                              \
+  python/google/protobuf/pyext/map_container.cc                              \
+  python/google/protobuf/pyext/map_container.h                               \
+  python/google/protobuf/pyext/message.cc                                    \
+  python/google/protobuf/pyext/message.h                                     \
+  python/google/protobuf/pyext/proto2_api_test.proto                         \
+  python/google/protobuf/pyext/python.proto                                  \
+  python/google/protobuf/pyext/python_protobuf.h                             \
+  python/google/protobuf/pyext/repeated_composite_container.cc               \
+  python/google/protobuf/pyext/repeated_composite_container.h                \
+  python/google/protobuf/pyext/repeated_scalar_container.cc                  \
+  python/google/protobuf/pyext/repeated_scalar_container.h                   \
+  python/google/protobuf/pyext/scoped_pyobject_ptr.h                         \
   python/google/protobuf/reflection.py                                       \
   python/google/protobuf/service.py                                          \
   python/google/protobuf/service_reflection.py                               \
   python/google/protobuf/symbol_database.py                                  \
   python/google/protobuf/text_encoding.py                                    \
   python/google/protobuf/text_format.py                                      \
-  python/google/protobuf/__init__.py                                         \
-  python/google/__init__.py                                                  \
   python/mox.py                                                              \
   python/setup.py                                                            \
   python/stubout.py                                                          \
@@ -625,13 +657,46 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/generated_code_test.rb                                          \
   ruby/travis-test.sh
 
-all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST)
+js_EXTRA_DIST=              \
+  js/README.md              \
+  js/binary/arith.js        \
+  js/binary/arith_test.js   \
+  js/binary/constants.js    \
+  js/binary/decoder.js      \
+  js/binary/decoder_test.js \
+  js/binary/proto_test.js   \
+  js/binary/reader.js       \
+  js/binary/reader_test.js  \
+  js/binary/utils.js        \
+  js/binary/utils_test.js   \
+  js/binary/writer.js       \
+  js/binary/writer_test.js  \
+  js/data.proto             \
+  js/debug.js               \
+  js/debug_test.js          \
+  js/gulpfile.js            \
+  js/jasmine.json           \
+  js/message.js             \
+  js/message_test.js        \
+  js/node_loader.js         \
+  js/package.json           \
+  js/proto3_test.js         \
+  js/proto3_test.proto      \
+  js/test.proto             \
+  js/test2.proto            \
+  js/test3.proto            \
+  js/test4.proto            \
+  js/test5.proto            \
+  js/test_bootstrap.js      \
+  js/testbinary.proto       \
+  js/testempty.proto
+
+all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST) $(js_EXTRA_DIST)
 
 EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   autogen.sh                             \
   generate_descriptor_proto.sh           \
   README.md                              \
-  INSTALL.txt                            \
   LICENSE                                \
   CONTRIBUTORS.txt                       \
   CHANGES.txt                            \
@@ -658,15 +723,23 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   examples/Makefile                      \
   examples/addressbook.proto             \
   examples/add_person.cc                 \
+  examples/add_person.go                 \
+  examples/add_person_test.go            \
   examples/list_people.cc                \
+  examples/list_people.go                \
   examples/AddPerson.java                \
   examples/ListPeople.java               \
   examples/add_person.py                 \
-  examples/list_people.py
+  examples/list_people.py                \
+  examples/list_people_test.go           \
+  protobuf.bzl                           \
+  six.BUILD                              \
+  util/python/BUILD
 
 # Deletes all the files generated by autogen.sh.
 MAINTAINERCLEANFILES =   \
   aclocal.m4             \
+  ar-lib                 \
   config.guess           \
   config.sub             \
   configure              \

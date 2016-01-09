@@ -71,11 +71,18 @@ class MockErrorCollector : public MultiFileErrorCollector {
   ~MockErrorCollector() {}
 
   string text_;
+  string warning_text_;
 
   // implements ErrorCollector ---------------------------------------
   void AddError(const string& filename, int line, int column,
                 const string& message) {
     strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n",
+                                 filename, line, column, message);
+  }
+
+  void AddWarning(const string& filename, int line, int column,
+                  const string& message) {
+    strings::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n",
                                  filename, line, column, message);
   }
 };
@@ -123,6 +130,7 @@ class ImporterTest : public testing::Test {
 
   // Return the collected error text
   string error() const { return error_collector_.text_; }
+  string warning() const { return error_collector_.warning_text_; }
 
   MockErrorCollector error_collector_;
   MockSourceTree source_tree_;

@@ -49,12 +49,20 @@ class Message;
 class Reflection;
 class FieldDescriptor;
 class Descriptor;
+class DescriptorPool;
+class MessageFactory;
 
+#ifdef _SHARED_PTR_H
+using std::shared_ptr;
+using std::string;
+#else
 using internal::shared_ptr;
+#endif
 
 namespace python {
 
 struct ExtensionDict;
+struct PyDescriptorPool;
 
 typedef struct CMessage {
   PyObject_HEAD;
@@ -220,6 +228,16 @@ PyObject* FindInitializationErrors(CMessage* self);
 int SetOwner(CMessage* self, const shared_ptr<Message>& new_owner);
 
 int AssureWritable(CMessage* self);
+
+// Returns the "best" DescriptorPool for the given message.
+// This is often equivalent to message.DESCRIPTOR.pool, but not always, when
+// the message class was created from a MessageFactory using a custom pool which
+// uses the generated pool as an underlay.
+//
+// The returned pool is suitable for finding fields and building submessages,
+// even in the case of extensions.
+PyDescriptorPool* GetDescriptorPoolForMessage(CMessage* message);
+
 }  // namespace cmessage
 
 
@@ -289,6 +307,7 @@ bool CheckAndGetInteger(
 bool CheckAndGetDouble(PyObject* arg, double* value);
 bool CheckAndGetFloat(PyObject* arg, float* value);
 bool CheckAndGetBool(PyObject* arg, bool* value);
+PyObject* CheckString(PyObject* arg, const FieldDescriptor* descriptor);
 bool CheckAndSetString(
     PyObject* arg, Message* message,
     const FieldDescriptor* descriptor,

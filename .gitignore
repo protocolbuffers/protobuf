@@ -81,6 +81,7 @@ javanano/target
 
 # Windows native output.
 cmake/build
+build_msvc
 
 # NuGet packages: we want the repository configuration, but not the
 # packages themselves.
@@ -100,7 +101,14 @@ objectivec/ProtocolBuffers_iOS.xcodeproj/xcuserdata/
 conformance/.libs/
 conformance/com/
 conformance/conformance-cpp
+conformance/conformance-csharp
+conformance/conformance-java
+conformance/conformance-objc
 conformance/conformance-test-runner
 conformance/conformance.pb.cc
 conformance/conformance.pb.h
+conformance/Conformance.pbobjc.h
+conformance/Conformance.pbobjc.m
+conformance/conformance.rb
+conformance/javac_middleman
 conformance/protoc_middleman

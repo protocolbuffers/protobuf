@@ -79,9 +79,12 @@ struct PyContainer;
 typedef int (*CountMethod)(PyContainer* self);
 typedef const void* (*GetByIndexMethod)(PyContainer* self, int index);
 typedef const void* (*GetByNameMethod)(PyContainer* self, const string& name);
+typedef const void* (*GetByCamelcaseNameMethod)(PyContainer* self,
+                                                const string& name);
 typedef const void* (*GetByNumberMethod)(PyContainer* self, int index);
 typedef PyObject* (*NewObjectFromItemMethod)(const void* descriptor);
 typedef const string& (*GetItemNameMethod)(const void* descriptor);
+typedef const string& (*GetItemCamelcaseNameMethod)(const void* descriptor);
 typedef int (*GetItemNumberMethod)(const void* descriptor);
 typedef int (*GetItemIndexMethod)(const void* descriptor);
 
@@ -95,6 +98,9 @@ struct DescriptorContainerDef {
   // Retrieve item by name (usually a call to some 'FindByName' method).
   // Used by "by_name" mappings.
   GetByNameMethod get_by_name_fn;
+  // Retrieve item by camelcase name (usually a call to some
+  // 'FindByCamelcaseName' method). Used by "by_camelcase_name" mappings.
+  GetByCamelcaseNameMethod get_by_camelcase_name_fn;
   // Retrieve item by declared number (field tag, or enum value).
   // Used by "by_number" mappings.
   GetByNumberMethod get_by_number_fn;
@@ -102,6 +108,9 @@ struct DescriptorContainerDef {
   NewObjectFromItemMethod new_object_from_item_fn;
   // Retrieve the name of an item. Used by iterators on "by_name" mappings.
   GetItemNameMethod get_item_name_fn;
+  // Retrieve the camelcase name of an item. Used by iterators on
+  // "by_camelcase_name" mappings.
+  GetItemCamelcaseNameMethod get_item_camelcase_name_fn;
   // Retrieve the number of an item. Used by iterators on "by_number" mappings.
   GetItemNumberMethod get_item_number_fn;
   // Retrieve the index of an item for the container type.
@@ -125,6 +134,7 @@ struct PyContainer {
   enum ContainerKind {
     KIND_SEQUENCE,
     KIND_BYNAME,
+    KIND_BYCAMELCASENAME,
     KIND_BYNUMBER,
   } kind;
 };
@@ -172,6 +182,23 @@ static bool _GetItemByKey(PyContainer* self, PyObject* key, const void** item) {
             self, string(name, name_size));
         return true;
       }
+    case PyContainer::KIND_BYCAMELCASENAME:
+      {
+        char* camelcase_name;
+        Py_ssize_t name_size;
+        if (PyString_AsStringAndSize(key, &camelcase_name, &name_size) < 0) {
+          if (PyErr_ExceptionMatches(PyExc_TypeError)) {
+            // Not a string, cannot be in the container.
+            PyErr_Clear();
+            *item = NULL;
+            return true;
+          }
+          return false;
+        }
+        *item = self->container_def->get_by_camelcase_name_fn(
+            self, string(camelcase_name, name_size));
+        return true;
+      }
     case PyContainer::KIND_BYNUMBER:
       {
         Py_ssize_t number = PyNumber_AsSsize_t(key, NULL);
@@ -201,6 +228,12 @@ static PyObject* _NewKey_ByIndex(PyContainer* self, Py_ssize_t index) {
     case PyContainer::KIND_BYNAME:
       {
         const string& name(self->container_def->get_item_name_fn(item));
+        return PyString_FromStringAndSize(name.c_str(), name.size());
+      }
+    case PyContainer::KIND_BYCAMELCASENAME:
+      {
+        const string& name(
+            self->container_def->get_item_camelcase_name_fn(item));
         return PyString_FromStringAndSize(name.c_str(), name.size());
       }
     case PyContainer::KIND_BYNUMBER:
@@ -276,6 +309,9 @@ static PyObject* ContainerRepr(PyContainer* self) {
     case PyContainer::KIND_BYNAME:
       kind = "mapping by name";
       break;
+    case PyContainer::KIND_BYCAMELCASENAME:
+      kind = "mapping by camelCase name";
+      break;
     case PyContainer::KIND_BYNUMBER:
       kind = "mapping by number";
       break;
@@ -319,7 +355,7 @@ static int DescriptorSequence_Equal(PyContainer* self, PyObject* other) {
       if (value2 == NULL) {
         return -1;
       }
-      int cmp = PyObject_RichCompareBool(value1, value2, Py_EQ);
+      int cmp = PyObject_RichCompareBool(value1.get(), value2, Py_EQ);
       if (cmp != 1)  // error or not equal
           return cmp;
     }
@@ -363,12 +399,12 @@ static int DescriptorMapping_Equal(PyContainer* self, PyObject* other) {
       if (value1 == NULL) {
         return -1;
       }
-      PyObject* value2 = PyDict_GetItem(other, key);
+      PyObject* value2 = PyDict_GetItem(other, key.get());
       if (value2 == NULL) {
         // Not found in the other dictionary
         return 0;
       }
-      int cmp = PyObject_RichCompareBool(value1, value2, Py_EQ);
+      int cmp = PyObject_RichCompareBool(value1.get(), value2, Py_EQ);
       if (cmp != 1)  // error or not equal
           return cmp;
     }
@@ -731,6 +767,18 @@ static PyObject* NewMappingByName(
   return reinterpret_cast<PyObject*>(self);
 }
 
+static PyObject* NewMappingByCamelcaseName(
+    DescriptorContainerDef* container_def, const void* descriptor) {
+  PyContainer* self = PyObject_New(PyContainer, &DescriptorMapping_Type);
+  if (self == NULL) {
+    return NULL;
+  }
+  self->descriptor = descriptor;
+  self->container_def = container_def;
+  self->kind = PyContainer::KIND_BYCAMELCASENAME;
+  return reinterpret_cast<PyObject*>(self);
+}
+
 static PyObject* NewMappingByNumber(
     DescriptorContainerDef* container_def, const void* descriptor) {
   if (container_def->get_by_number_fn == NULL ||
@@ -889,6 +937,11 @@ static ItemDescriptor GetByName(PyContainer* self, const string& name) {
   return GetDescriptor(self)->FindFieldByName(name);
 }
 
+static ItemDescriptor GetByCamelcaseName(PyContainer* self,
+                                         const string& name) {
+  return GetDescriptor(self)->FindFieldByCamelcaseName(name);
+}
+
 static ItemDescriptor GetByNumber(PyContainer* self, int number) {
   return GetDescriptor(self)->FindFieldByNumber(number);
 }
@@ -905,6 +958,10 @@ static const string& GetItemName(ItemDescriptor item) {
   return item->name();
 }
 
+static const string& GetItemCamelcaseName(ItemDescriptor item) {
+  return item->camelcase_name();
+}
+
 static int GetItemNumber(ItemDescriptor item) {
   return item->number();
 }
@@ -918,9 +975,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)GetByName,
+  (GetByCamelcaseNameMethod)GetByCamelcaseName,
   (GetByNumberMethod)GetByNumber,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)GetItemName,
+  (GetItemCamelcaseNameMethod)GetItemCamelcaseName,
   (GetItemNumberMethod)GetItemNumber,
   (GetItemIndexMethod)GetItemIndex,
 };
@@ -929,6 +988,11 @@ static DescriptorContainerDef ContainerDef = {
 
 PyObject* NewMessageFieldsByName(ParentDescriptor descriptor) {
   return descriptor::NewMappingByName(&fields::ContainerDef, descriptor);
+}
+
+PyObject* NewMessageFieldsByCamelcaseName(ParentDescriptor descriptor) {
+  return descriptor::NewMappingByCamelcaseName(&fields::ContainerDef,
+                                               descriptor);
 }
 
 PyObject* NewMessageFieldsByNumber(ParentDescriptor descriptor) {
@@ -972,9 +1036,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)GetByName,
+  (GetByCamelcaseNameMethod)NULL,
   (GetByNumberMethod)NULL,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)GetItemName,
+  (GetItemCamelcaseNameMethod)NULL,
   (GetItemNumberMethod)NULL,
   (GetItemIndexMethod)GetItemIndex,
 };
@@ -1022,9 +1088,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)GetByName,
+  (GetByCamelcaseNameMethod)NULL,
   (GetByNumberMethod)NULL,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)GetItemName,
+  (GetItemCamelcaseNameMethod)NULL,
   (GetItemNumberMethod)NULL,
   (GetItemIndexMethod)GetItemIndex,
 };
@@ -1094,9 +1162,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)GetByName,
+  (GetByCamelcaseNameMethod)NULL,
   (GetByNumberMethod)NULL,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)GetItemName,
+  (GetItemCamelcaseNameMethod)NULL,
   (GetItemNumberMethod)NULL,
   (GetItemIndexMethod)NULL,
 };
@@ -1140,9 +1210,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)GetByName,
+  (GetByCamelcaseNameMethod)NULL,
   (GetByNumberMethod)NULL,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)GetItemName,
+  (GetItemCamelcaseNameMethod)NULL,
   (GetItemNumberMethod)NULL,
   (GetItemIndexMethod)GetItemIndex,
 };
@@ -1190,9 +1262,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)GetByName,
+  (GetByCamelcaseNameMethod)NULL,
   (GetByNumberMethod)NULL,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)GetItemName,
+  (GetItemCamelcaseNameMethod)NULL,
   (GetItemNumberMethod)NULL,
   (GetItemIndexMethod)GetItemIndex,
 };
@@ -1258,9 +1332,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)GetByName,
+  (GetByCamelcaseNameMethod)NULL,
   (GetByNumberMethod)GetByNumber,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)GetItemName,
+  (GetItemCamelcaseNameMethod)NULL,
   (GetItemNumberMethod)GetItemNumber,
   (GetItemIndexMethod)GetItemIndex,
 };
@@ -1314,9 +1390,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)NULL,
+  (GetByCamelcaseNameMethod)NULL,
   (GetByNumberMethod)NULL,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)NULL,
+  (GetItemCamelcaseNameMethod)NULL,
   (GetItemNumberMethod)NULL,
   (GetItemIndexMethod)GetItemIndex,
 };
@@ -1370,9 +1448,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)GetByName,
+  (GetByCamelcaseNameMethod)NULL,
   (GetByNumberMethod)NULL,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)GetItemName,
+  (GetItemCamelcaseNameMethod)NULL,
   (GetItemNumberMethod)NULL,
   (GetItemIndexMethod)GetItemIndex,
 };
@@ -1416,9 +1496,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)GetByName,
+  (GetByCamelcaseNameMethod)NULL,
   (GetByNumberMethod)NULL,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)GetItemName,
+  (GetItemCamelcaseNameMethod)NULL,
   (GetItemNumberMethod)NULL,
   (GetItemIndexMethod)GetItemIndex,
 };
@@ -1462,9 +1544,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)GetByName,
+  (GetByCamelcaseNameMethod)NULL,
   (GetByNumberMethod)NULL,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)GetItemName,
+  (GetItemCamelcaseNameMethod)NULL,
   (GetItemNumberMethod)NULL,
   (GetItemIndexMethod)GetItemIndex,
 };
@@ -1496,9 +1580,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)NULL,
+  (GetByCamelcaseNameMethod)NULL,
   (GetByNumberMethod)NULL,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)NULL,
+  (GetItemCamelcaseNameMethod)NULL,
   (GetItemNumberMethod)NULL,
   (GetItemIndexMethod)NULL,
 };
@@ -1530,9 +1616,11 @@ static DescriptorContainerDef ContainerDef = {
   (CountMethod)Count,
   (GetByIndexMethod)GetByIndex,
   (GetByNameMethod)NULL,
+  (GetByCamelcaseNameMethod)NULL,
   (GetByNumberMethod)NULL,
   (NewObjectFromItemMethod)NewObjectFromItem,
   (GetItemNameMethod)NULL,
+  (GetItemCamelcaseNameMethod)NULL,
   (GetItemNumberMethod)NULL,
   (GetItemIndexMethod)NULL,
 };

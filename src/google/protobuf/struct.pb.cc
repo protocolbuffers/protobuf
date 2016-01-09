@@ -2,11 +2,12 @@
 // source: google/protobuf/struct.proto
 
 #define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION
-#include "google/protobuf/struct.pb.h"
+#include <google/protobuf/struct.pb.h>
 
 #include <algorithm>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -212,9 +213,9 @@ static void MergeFromFail(int line) {
 
 // ===================================================================
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Struct::kFieldsFieldNumber;
-#endif  // !_MSC_VER
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Struct::Struct()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
@@ -480,14 +481,14 @@ Struct::mutable_fields() {
 
 // ===================================================================
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Value::kNullValueFieldNumber;
 const int Value::kNumberValueFieldNumber;
 const int Value::kStringValueFieldNumber;
 const int Value::kBoolValueFieldNumber;
 const int Value::kStructValueFieldNumber;
 const int Value::kListValueFieldNumber;
-#endif  // !_MSC_VER
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Value::Value()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
@@ -1218,9 +1219,9 @@ Value::KindCase Value::kind_case() const {
 
 // ===================================================================
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int ListValue::kValuesFieldNumber;
-#endif  // !_MSC_VER
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ListValue::ListValue()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {

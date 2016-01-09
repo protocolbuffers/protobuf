@@ -37,6 +37,7 @@ import protobuf_unittest.UnittestProto.TestSparseEnum;
 
 import junit.framework.TestCase;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -80,8 +81,8 @@ public class CodedOutputStreamTest extends TestCase {
    * checks that the result matches the given bytes.
    */
   private void assertWriteVarint(byte[] data, long value) throws Exception {
-    // Only do 32-bit write if the value fits in 32 bits.
-    if ((value >>> 32) == 0) {
+    // Only test 32-bit write if the value fits into an int.
+    if (value == (int) value) {
       ByteArrayOutputStream rawOutput = new ByteArrayOutputStream();
       CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
       output.writeRawVarint32((int) value);
@@ -107,8 +108,8 @@ public class CodedOutputStreamTest extends TestCase {
 
     // Try different block sizes.
     for (int blockSize = 1; blockSize <= 16; blockSize *= 2) {
-      // Only do 32-bit write if the value fits in 32 bits.
-      if ((value >>> 32) == 0) {
+      // Only test 32-bit write if the value fits into an int.
+      if (value == (int) value) {
         ByteArrayOutputStream rawOutput = new ByteArrayOutputStream();
         CodedOutputStream output =
           CodedOutputStream.newInstance(rawOutput, blockSize);
@@ -125,6 +126,42 @@ public class CodedOutputStreamTest extends TestCase {
         output.flush();
         assertEqualBytes(data, rawOutput.toByteArray());
       }
+    }
+  }
+
+  private void assertVarintRoundTrip(long value) throws Exception {
+    {
+      ByteArrayOutputStream rawOutput = new ByteArrayOutputStream();
+      CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
+      output.writeRawVarint64(value);
+      output.flush();
+      byte[] bytes = rawOutput.toByteArray();
+      assertEquals(bytes.length, CodedOutputStream.computeRawVarint64Size(value));
+      CodedInputStream input = CodedInputStream.newInstance(new ByteArrayInputStream(bytes));
+      assertEquals(value, input.readRawVarint64());
+    }
+
+    if (value == (int) value) {
+      ByteArrayOutputStream rawOutput = new ByteArrayOutputStream();
+      CodedOutputStream output = CodedOutputStream.newInstance(rawOutput);
+      output.writeRawVarint32((int) value);
+      output.flush();
+      byte[] bytes = rawOutput.toByteArray();
+      assertEquals(bytes.length, CodedOutputStream.computeRawVarint32Size((int) value));
+      CodedInputStream input = CodedInputStream.newInstance(new ByteArrayInputStream(bytes));
+      assertEquals(value, input.readRawVarint32());
+    }
+  }
+
+  /** Checks that invariants are maintained for varint round trip input and output. */
+  public void testVarintRoundTrips() throws Exception {
+    assertVarintRoundTrip(0L);
+    for (int bits = 0; bits < 64; bits++) {
+      long value = 1L << bits;
+      assertVarintRoundTrip(value);
+      assertVarintRoundTrip(value + 1);
+      assertVarintRoundTrip(value - 1);
+      assertVarintRoundTrip(-value);
     }
   }
 

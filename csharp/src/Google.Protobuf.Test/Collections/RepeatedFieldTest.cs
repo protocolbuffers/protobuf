@@ -37,6 +37,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Google.Protobuf.TestProtos;
+using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
 
 namespace Google.Protobuf.Collections
@@ -598,6 +599,62 @@ namespace Google.Protobuf.Collections
             IList list = new RepeatedField<string> { "first", "second" };
             list.Insert(1, "middle");
             CollectionAssert.AreEqual(new[] { "first", "middle", "second" }, list);
+        }
+
+        [Test]
+        public void ToString_Integers()
+        {
+            var list = new RepeatedField<int> { 5, 10, 20 };
+            var text = list.ToString();
+            Assert.AreEqual("[ 5, 10, 20 ]", text);
+        }
+
+        [Test]
+        public void ToString_Strings()
+        {
+            var list = new RepeatedField<string> { "x", "y", "z" };
+            var text = list.ToString();
+            Assert.AreEqual("[ \"x\", \"y\", \"z\" ]", text);
+        }
+
+        [Test]
+        public void ToString_Messages()
+        {
+            var list = new RepeatedField<TestAllTypes> { new TestAllTypes { SingleDouble = 1.5 }, new TestAllTypes { SingleInt32 = 10 } };
+            var text = list.ToString();
+            Assert.AreEqual("[ { \"singleDouble\": 1.5 }, { \"singleInt32\": 10 } ]", text);
+        }
+
+        [Test]
+        public void ToString_Empty()
+        {
+            var list = new RepeatedField<TestAllTypes> { };
+            var text = list.ToString();
+            Assert.AreEqual("[ ]", text);
+        }
+
+        [Test]
+        public void ToString_InvalidElementType()
+        {
+            var list = new RepeatedField<decimal> { 15m };
+            Assert.Throws<ArgumentException>(() => list.ToString());
+        }
+
+        [Test]
+        public void ToString_Timestamp()
+        {
+            var list = new RepeatedField<Timestamp> { Timestamp.FromDateTime(new DateTime(2015, 10, 1, 12, 34, 56, DateTimeKind.Utc)) };
+            var text = list.ToString();
+            Assert.AreEqual("[ \"2015-10-01T12:34:56Z\" ]", text);
+        }
+
+        [Test]
+        public void ToString_Struct()
+        {
+            var message = new Struct { Fields = { { "foo", new Value { NumberValue = 20 } } } };
+            var list = new RepeatedField<Struct> { message };
+            var text = list.ToString();
+            Assert.AreEqual(text, "[ { \"foo\": 20 } ]", message.ToString());
         }
     }
 }

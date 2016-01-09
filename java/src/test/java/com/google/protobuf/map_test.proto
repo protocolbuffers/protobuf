@@ -36,7 +36,6 @@ option java_package = "map_test";
 option java_outer_classname = "MapTestProto";
 option java_generate_equals_and_hash = true;
 
-
 message TestMap {
   message MessageValue {
     int32 value = 1;

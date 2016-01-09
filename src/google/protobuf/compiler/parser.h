@@ -439,6 +439,10 @@ class LIBPROTOBUF_EXPORT Parser {
                               const LocationRecorder& field_location,
                               const FileDescriptorProto* containing_file);
 
+  bool ParseJsonName(FieldDescriptorProto* field,
+                     const LocationRecorder& field_location,
+                     const FileDescriptorProto* containing_file);
+
   enum OptionStyle {
     OPTION_ASSIGNMENT,  // just "name = value"
     OPTION_STATEMENT    // "option name = value;"
@@ -493,6 +497,8 @@ class LIBPROTOBUF_EXPORT Parser {
     return syntax_identifier_ == "proto3";
   }
 
+
+  bool ValidateEnum(const EnumDescriptorProto* proto);
 
   // =================================================================
 

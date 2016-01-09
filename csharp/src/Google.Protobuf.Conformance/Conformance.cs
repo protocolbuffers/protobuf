@@ -9,137 +9,189 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Conformance {
 
+  /// <summary>Holder for reflection information generated from conformance.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class Conformance {
+  public static partial class ConformanceReflection {
 
     #region Descriptor
+    /// <summary>File descriptor for conformance.proto</summary>
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }
     private static pbr::FileDescriptor descriptor;
 
-    static Conformance() {
+    static ConformanceReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UijQEKEkNvbmZvcm1h", 
-            "bmNlUmVxdWVzdBIaChBwcm90b2J1Zl9wYXlsb2FkGAEgASgMSAASFgoManNv", 
-            "bl9wYXlsb2FkGAIgASgJSAASOAoXcmVxdWVzdGVkX291dHB1dF9mb3JtYXQY", 
-            "AyABKA4yFy5jb25mb3JtYW5jZS5XaXJlRm9ybWF0QgkKB3BheWxvYWQilgEK", 
-            "E0NvbmZvcm1hbmNlUmVzcG9uc2USFQoLcGFyc2VfZXJyb3IYASABKAlIABIX", 
-            "Cg1ydW50aW1lX2Vycm9yGAIgASgJSAASGgoQcHJvdG9idWZfcGF5bG9hZBgD", 
-            "IAEoDEgAEhYKDGpzb25fcGF5bG9hZBgEIAEoCUgAEhEKB3NraXBwZWQYBSAB", 
-            "KAlIAEIICgZyZXN1bHQi6yIKDFRlc3RBbGxUeXBlcxIWCg5vcHRpb25hbF9p", 
-            "bnQzMhgBIAEoBRIWCg5vcHRpb25hbF9pbnQ2NBgCIAEoAxIXCg9vcHRpb25h", 
-            "bF91aW50MzIYAyABKA0SFwoPb3B0aW9uYWxfdWludDY0GAQgASgEEhcKD29w", 
-            "dGlvbmFsX3NpbnQzMhgFIAEoERIXCg9vcHRpb25hbF9zaW50NjQYBiABKBIS", 
-            "GAoQb3B0aW9uYWxfZml4ZWQzMhgHIAEoBxIYChBvcHRpb25hbF9maXhlZDY0", 
-            "GAggASgGEhkKEW9wdGlvbmFsX3NmaXhlZDMyGAkgASgPEhkKEW9wdGlvbmFs", 
-            "X3NmaXhlZDY0GAogASgQEhYKDm9wdGlvbmFsX2Zsb2F0GAsgASgCEhcKD29w", 
-            "dGlvbmFsX2RvdWJsZRgMIAEoARIVCg1vcHRpb25hbF9ib29sGA0gASgIEhcK", 
-            "D29wdGlvbmFsX3N0cmluZxgOIAEoCRIWCg5vcHRpb25hbF9ieXRlcxgPIAEo", 
-            "DBJIChdvcHRpb25hbF9uZXN0ZWRfbWVzc2FnZRgSIAEoCzInLmNvbmZvcm1h", 
-            "bmNlLlRlc3RBbGxUeXBlcy5OZXN0ZWRNZXNzYWdlEj0KGG9wdGlvbmFsX2Zv", 
-            "cmVpZ25fbWVzc2FnZRgTIAEoCzIbLmNvbmZvcm1hbmNlLkZvcmVpZ25NZXNz", 
-            "YWdlEkIKFG9wdGlvbmFsX25lc3RlZF9lbnVtGBUgASgOMiQuY29uZm9ybWFu", 
-            "Y2UuVGVzdEFsbFR5cGVzLk5lc3RlZEVudW0SNwoVb3B0aW9uYWxfZm9yZWln", 
-            "bl9lbnVtGBYgASgOMhguY29uZm9ybWFuY2UuRm9yZWlnbkVudW0SIQoVb3B0", 
-            "aW9uYWxfc3RyaW5nX3BpZWNlGBggASgJQgIIAhIZCg1vcHRpb25hbF9jb3Jk", 
-            "GBkgASgJQgIIARI0ChFyZWN1cnNpdmVfbWVzc2FnZRgbIAEoCzIZLmNvbmZv", 
-            "cm1hbmNlLlRlc3RBbGxUeXBlcxIWCg5yZXBlYXRlZF9pbnQzMhgfIAMoBRIW", 
-            "Cg5yZXBlYXRlZF9pbnQ2NBggIAMoAxIXCg9yZXBlYXRlZF91aW50MzIYISAD", 
-            "KA0SFwoPcmVwZWF0ZWRfdWludDY0GCIgAygEEhcKD3JlcGVhdGVkX3NpbnQz", 
-            "MhgjIAMoERIXCg9yZXBlYXRlZF9zaW50NjQYJCADKBISGAoQcmVwZWF0ZWRf", 
-            "Zml4ZWQzMhglIAMoBxIYChByZXBlYXRlZF9maXhlZDY0GCYgAygGEhkKEXJl", 
-            "cGVhdGVkX3NmaXhlZDMyGCcgAygPEhkKEXJlcGVhdGVkX3NmaXhlZDY0GCgg", 
-            "AygQEhYKDnJlcGVhdGVkX2Zsb2F0GCkgAygCEhcKD3JlcGVhdGVkX2RvdWJs", 
-            "ZRgqIAMoARIVCg1yZXBlYXRlZF9ib29sGCsgAygIEhcKD3JlcGVhdGVkX3N0", 
-            "cmluZxgsIAMoCRIWCg5yZXBlYXRlZF9ieXRlcxgtIAMoDBJIChdyZXBlYXRl", 
-            "ZF9uZXN0ZWRfbWVzc2FnZRgwIAMoCzInLmNvbmZvcm1hbmNlLlRlc3RBbGxU", 
-            "eXBlcy5OZXN0ZWRNZXNzYWdlEj0KGHJlcGVhdGVkX2ZvcmVpZ25fbWVzc2Fn", 
-            "ZRgxIAMoCzIbLmNvbmZvcm1hbmNlLkZvcmVpZ25NZXNzYWdlEkIKFHJlcGVh", 
-            "dGVkX25lc3RlZF9lbnVtGDMgAygOMiQuY29uZm9ybWFuY2UuVGVzdEFsbFR5", 
-            "cGVzLk5lc3RlZEVudW0SNwoVcmVwZWF0ZWRfZm9yZWlnbl9lbnVtGDQgAygO", 
-            "MhguY29uZm9ybWFuY2UuRm9yZWlnbkVudW0SIQoVcmVwZWF0ZWRfc3RyaW5n", 
-            "X3BpZWNlGDYgAygJQgIIAhIZCg1yZXBlYXRlZF9jb3JkGDcgAygJQgIIARJF", 
-            "Cg9tYXBfaW50MzJfaW50MzIYOCADKAsyLC5jb25mb3JtYW5jZS5UZXN0QWxs", 
-            "VHlwZXMuTWFwSW50MzJJbnQzMkVudHJ5EkUKD21hcF9pbnQ2NF9pbnQ2NBg5", 
-            "IAMoCzIsLmNvbmZvcm1hbmNlLlRlc3RBbGxUeXBlcy5NYXBJbnQ2NEludDY0", 
-            "RW50cnkSSQoRbWFwX3VpbnQzMl91aW50MzIYOiADKAsyLi5jb25mb3JtYW5j", 
-            "ZS5UZXN0QWxsVHlwZXMuTWFwVWludDMyVWludDMyRW50cnkSSQoRbWFwX3Vp", 
-            "bnQ2NF91aW50NjQYOyADKAsyLi5jb25mb3JtYW5jZS5UZXN0QWxsVHlwZXMu", 
-            "TWFwVWludDY0VWludDY0RW50cnkSSQoRbWFwX3NpbnQzMl9zaW50MzIYPCAD", 
-            "KAsyLi5jb25mb3JtYW5jZS5UZXN0QWxsVHlwZXMuTWFwU2ludDMyU2ludDMy", 
-            "RW50cnkSSQoRbWFwX3NpbnQ2NF9zaW50NjQYPSADKAsyLi5jb25mb3JtYW5j", 
-            "ZS5UZXN0QWxsVHlwZXMuTWFwU2ludDY0U2ludDY0RW50cnkSTQoTbWFwX2Zp", 
-            "eGVkMzJfZml4ZWQzMhg+IAMoCzIwLmNvbmZvcm1hbmNlLlRlc3RBbGxUeXBl", 
-            "cy5NYXBGaXhlZDMyRml4ZWQzMkVudHJ5Ek0KE21hcF9maXhlZDY0X2ZpeGVk", 
-            "NjQYPyADKAsyMC5jb25mb3JtYW5jZS5UZXN0QWxsVHlwZXMuTWFwRml4ZWQ2", 
-            "NEZpeGVkNjRFbnRyeRJRChVtYXBfc2ZpeGVkMzJfc2ZpeGVkMzIYQCADKAsy", 
-            "Mi5jb25mb3JtYW5jZS5UZXN0QWxsVHlwZXMuTWFwU2ZpeGVkMzJTZml4ZWQz", 
-            "MkVudHJ5ElEKFW1hcF9zZml4ZWQ2NF9zZml4ZWQ2NBhBIAMoCzIyLmNvbmZv", 
-            "cm1hbmNlLlRlc3RBbGxUeXBlcy5NYXBTZml4ZWQ2NFNmaXhlZDY0RW50cnkS", 
-            "RQoPbWFwX2ludDMyX2Zsb2F0GEIgAygLMiwuY29uZm9ybWFuY2UuVGVzdEFs", 
-            "bFR5cGVzLk1hcEludDMyRmxvYXRFbnRyeRJHChBtYXBfaW50MzJfZG91Ymxl", 
-            "GEMgAygLMi0uY29uZm9ybWFuY2UuVGVzdEFsbFR5cGVzLk1hcEludDMyRG91", 
-            "YmxlRW50cnkSQQoNbWFwX2Jvb2xfYm9vbBhEIAMoCzIqLmNvbmZvcm1hbmNl", 
-            "LlRlc3RBbGxUeXBlcy5NYXBCb29sQm9vbEVudHJ5EkkKEW1hcF9zdHJpbmdf", 
-            "c3RyaW5nGEUgAygLMi4uY29uZm9ybWFuY2UuVGVzdEFsbFR5cGVzLk1hcFN0", 
-            "cmluZ1N0cmluZ0VudHJ5EkcKEG1hcF9zdHJpbmdfYnl0ZXMYRiADKAsyLS5j", 
-            "b25mb3JtYW5jZS5UZXN0QWxsVHlwZXMuTWFwU3RyaW5nQnl0ZXNFbnRyeRJY", 
-            "ChltYXBfc3RyaW5nX25lc3RlZF9tZXNzYWdlGEcgAygLMjUuY29uZm9ybWFu", 
-            "Y2UuVGVzdEFsbFR5cGVzLk1hcFN0cmluZ05lc3RlZE1lc3NhZ2VFbnRyeRJa", 
-            "ChptYXBfc3RyaW5nX2ZvcmVpZ25fbWVzc2FnZRhIIAMoCzI2LmNvbmZvcm1h", 
-            "bmNlLlRlc3RBbGxUeXBlcy5NYXBTdHJpbmdGb3JlaWduTWVzc2FnZUVudHJ5", 
-            "ElIKFm1hcF9zdHJpbmdfbmVzdGVkX2VudW0YSSADKAsyMi5jb25mb3JtYW5j", 
-            "ZS5UZXN0QWxsVHlwZXMuTWFwU3RyaW5nTmVzdGVkRW51bUVudHJ5ElQKF21h", 
-            "cF9zdHJpbmdfZm9yZWlnbl9lbnVtGEogAygLMjMuY29uZm9ybWFuY2UuVGVz", 
-            "dEFsbFR5cGVzLk1hcFN0cmluZ0ZvcmVpZ25FbnVtRW50cnkSFgoMb25lb2Zf", 
-            "dWludDMyGG8gASgNSAASRwoUb25lb2ZfbmVzdGVkX21lc3NhZ2UYcCABKAsy", 
-            "Jy5jb25mb3JtYW5jZS5UZXN0QWxsVHlwZXMuTmVzdGVkTWVzc2FnZUgAEhYK", 
-            "DG9uZW9mX3N0cmluZxhxIAEoCUgAEhUKC29uZW9mX2J5dGVzGHIgASgMSAAa", 
-            "SgoNTmVzdGVkTWVzc2FnZRIJCgFhGAEgASgFEi4KC2NvcmVjdXJzaXZlGAIg", 
-            "ASgLMhkuY29uZm9ybWFuY2UuVGVzdEFsbFR5cGVzGjQKEk1hcEludDMySW50", 
-            "MzJFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAU6AjgBGjQKEk1h", 
-            "cEludDY0SW50NjRFbnRyeRILCgNrZXkYASABKAMSDQoFdmFsdWUYAiABKAM6", 
-            "AjgBGjYKFE1hcFVpbnQzMlVpbnQzMkVudHJ5EgsKA2tleRgBIAEoDRINCgV2", 
-            "YWx1ZRgCIAEoDToCOAEaNgoUTWFwVWludDY0VWludDY0RW50cnkSCwoDa2V5", 
-            "GAEgASgEEg0KBXZhbHVlGAIgASgEOgI4ARo2ChRNYXBTaW50MzJTaW50MzJF", 
-            "bnRyeRILCgNrZXkYASABKBESDQoFdmFsdWUYAiABKBE6AjgBGjYKFE1hcFNp", 
-            "bnQ2NFNpbnQ2NEVudHJ5EgsKA2tleRgBIAEoEhINCgV2YWx1ZRgCIAEoEjoC", 
-            "OAEaOAoWTWFwRml4ZWQzMkZpeGVkMzJFbnRyeRILCgNrZXkYASABKAcSDQoF", 
-            "dmFsdWUYAiABKAc6AjgBGjgKFk1hcEZpeGVkNjRGaXhlZDY0RW50cnkSCwoD", 
-            "a2V5GAEgASgGEg0KBXZhbHVlGAIgASgGOgI4ARo6ChhNYXBTZml4ZWQzMlNm", 
-            "aXhlZDMyRW50cnkSCwoDa2V5GAEgASgPEg0KBXZhbHVlGAIgASgPOgI4ARo6", 
-            "ChhNYXBTZml4ZWQ2NFNmaXhlZDY0RW50cnkSCwoDa2V5GAEgASgQEg0KBXZh", 
-            "bHVlGAIgASgQOgI4ARo0ChJNYXBJbnQzMkZsb2F0RW50cnkSCwoDa2V5GAEg", 
-            "ASgFEg0KBXZhbHVlGAIgASgCOgI4ARo1ChNNYXBJbnQzMkRvdWJsZUVudHJ5", 
-            "EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoAToCOAEaMgoQTWFwQm9vbEJv", 
-            "b2xFbnRyeRILCgNrZXkYASABKAgSDQoFdmFsdWUYAiABKAg6AjgBGjYKFE1h", 
-            "cFN0cmluZ1N0cmluZ0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEo", 
-            "CToCOAEaNQoTTWFwU3RyaW5nQnl0ZXNFbnRyeRILCgNrZXkYASABKAkSDQoF", 
-            "dmFsdWUYAiABKAw6AjgBGmYKG01hcFN0cmluZ05lc3RlZE1lc3NhZ2VFbnRy", 
-            "eRILCgNrZXkYASABKAkSNgoFdmFsdWUYAiABKAsyJy5jb25mb3JtYW5jZS5U", 
-            "ZXN0QWxsVHlwZXMuTmVzdGVkTWVzc2FnZToCOAEaWwocTWFwU3RyaW5nRm9y", 
-            "ZWlnbk1lc3NhZ2VFbnRyeRILCgNrZXkYASABKAkSKgoFdmFsdWUYAiABKAsy", 
-            "Gy5jb25mb3JtYW5jZS5Gb3JlaWduTWVzc2FnZToCOAEaYAoYTWFwU3RyaW5n", 
-            "TmVzdGVkRW51bUVudHJ5EgsKA2tleRgBIAEoCRIzCgV2YWx1ZRgCIAEoDjIk", 
-            "LmNvbmZvcm1hbmNlLlRlc3RBbGxUeXBlcy5OZXN0ZWRFbnVtOgI4ARpVChlN", 
-            "YXBTdHJpbmdGb3JlaWduRW51bUVudHJ5EgsKA2tleRgBIAEoCRInCgV2YWx1", 
-            "ZRgCIAEoDjIYLmNvbmZvcm1hbmNlLkZvcmVpZ25FbnVtOgI4ASI5CgpOZXN0", 
-            "ZWRFbnVtEgcKA0ZPTxAAEgcKA0JBUhABEgcKA0JBWhACEhAKA05FRxD/////", 
-            "//////8BQg0KC29uZW9mX2ZpZWxkIhsKDkZvcmVpZ25NZXNzYWdlEgkKAWMY", 
-            "ASABKAUqNQoKV2lyZUZvcm1hdBIPCgtVTlNQRUNJRklFRBAAEgwKCFBST1RP", 
-            "QlVGEAESCAoESlNPThACKkAKC0ZvcmVpZ25FbnVtEg8KC0ZPUkVJR05fRk9P", 
-            "EAASDwoLRk9SRUlHTl9CQVIQARIPCgtGT1JFSUdOX0JBWhACQiEKH2NvbS5n", 
-            "b29nbGUucHJvdG9idWYuY29uZm9ybWFuY2ViBnByb3RvMw=="));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbr::FileDescriptor[] { },
+            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UaGWdvb2dsZS9wcm90",
+            "b2J1Zi9hbnkucHJvdG8aHmdvb2dsZS9wcm90b2J1Zi9kdXJhdGlvbi5wcm90",
+            "bxogZ29vZ2xlL3Byb3RvYnVmL2ZpZWxkX21hc2sucHJvdG8aHGdvb2dsZS9w",
+            "cm90b2J1Zi9zdHJ1Y3QucHJvdG8aH2dvb2dsZS9wcm90b2J1Zi90aW1lc3Rh",
+            "bXAucHJvdG8aHmdvb2dsZS9wcm90b2J1Zi93cmFwcGVycy5wcm90byKNAQoS",
+            "Q29uZm9ybWFuY2VSZXF1ZXN0EhoKEHByb3RvYnVmX3BheWxvYWQYASABKAxI",
+            "ABIWCgxqc29uX3BheWxvYWQYAiABKAlIABI4ChdyZXF1ZXN0ZWRfb3V0cHV0",
+            "X2Zvcm1hdBgDIAEoDjIXLmNvbmZvcm1hbmNlLldpcmVGb3JtYXRCCQoHcGF5",
+            "bG9hZCKxAQoTQ29uZm9ybWFuY2VSZXNwb25zZRIVCgtwYXJzZV9lcnJvchgB",
+            "IAEoCUgAEhkKD3NlcmlhbGl6ZV9lcnJvchgGIAEoCUgAEhcKDXJ1bnRpbWVf",
+            "ZXJyb3IYAiABKAlIABIaChBwcm90b2J1Zl9wYXlsb2FkGAMgASgMSAASFgoM",
+            "anNvbl9wYXlsb2FkGAQgASgJSAASEQoHc2tpcHBlZBgFIAEoCUgAQggKBnJl",
+            "c3VsdCLVMgoMVGVzdEFsbFR5cGVzEhYKDm9wdGlvbmFsX2ludDMyGAEgASgF",
+            "EhYKDm9wdGlvbmFsX2ludDY0GAIgASgDEhcKD29wdGlvbmFsX3VpbnQzMhgD",
+            "IAEoDRIXCg9vcHRpb25hbF91aW50NjQYBCABKAQSFwoPb3B0aW9uYWxfc2lu",
+            "dDMyGAUgASgREhcKD29wdGlvbmFsX3NpbnQ2NBgGIAEoEhIYChBvcHRpb25h",
+            "bF9maXhlZDMyGAcgASgHEhgKEG9wdGlvbmFsX2ZpeGVkNjQYCCABKAYSGQoR",
+            "b3B0aW9uYWxfc2ZpeGVkMzIYCSABKA8SGQoRb3B0aW9uYWxfc2ZpeGVkNjQY",
+            "CiABKBASFgoOb3B0aW9uYWxfZmxvYXQYCyABKAISFwoPb3B0aW9uYWxfZG91",
+            "YmxlGAwgASgBEhUKDW9wdGlvbmFsX2Jvb2wYDSABKAgSFwoPb3B0aW9uYWxf",
+            "c3RyaW5nGA4gASgJEhYKDm9wdGlvbmFsX2J5dGVzGA8gASgMEkgKF29wdGlv",
+            "bmFsX25lc3RlZF9tZXNzYWdlGBIgASgLMicuY29uZm9ybWFuY2UuVGVzdEFs",
+            "bFR5cGVzLk5lc3RlZE1lc3NhZ2USPQoYb3B0aW9uYWxfZm9yZWlnbl9tZXNz",
+            "YWdlGBMgASgLMhsuY29uZm9ybWFuY2UuRm9yZWlnbk1lc3NhZ2USQgoUb3B0",
+            "aW9uYWxfbmVzdGVkX2VudW0YFSABKA4yJC5jb25mb3JtYW5jZS5UZXN0QWxs",
+            "VHlwZXMuTmVzdGVkRW51bRI3ChVvcHRpb25hbF9mb3JlaWduX2VudW0YFiAB",
+            "KA4yGC5jb25mb3JtYW5jZS5Gb3JlaWduRW51bRIhChVvcHRpb25hbF9zdHJp",
+            "bmdfcGllY2UYGCABKAlCAggCEhkKDW9wdGlvbmFsX2NvcmQYGSABKAlCAggB",
+            "EjQKEXJlY3Vyc2l2ZV9tZXNzYWdlGBsgASgLMhkuY29uZm9ybWFuY2UuVGVz",
+            "dEFsbFR5cGVzEhYKDnJlcGVhdGVkX2ludDMyGB8gAygFEhYKDnJlcGVhdGVk",
+            "X2ludDY0GCAgAygDEhcKD3JlcGVhdGVkX3VpbnQzMhghIAMoDRIXCg9yZXBl",
+            "YXRlZF91aW50NjQYIiADKAQSFwoPcmVwZWF0ZWRfc2ludDMyGCMgAygREhcK",
+            "D3JlcGVhdGVkX3NpbnQ2NBgkIAMoEhIYChByZXBlYXRlZF9maXhlZDMyGCUg",
+            "AygHEhgKEHJlcGVhdGVkX2ZpeGVkNjQYJiADKAYSGQoRcmVwZWF0ZWRfc2Zp",
+            "eGVkMzIYJyADKA8SGQoRcmVwZWF0ZWRfc2ZpeGVkNjQYKCADKBASFgoOcmVw",
+            "ZWF0ZWRfZmxvYXQYKSADKAISFwoPcmVwZWF0ZWRfZG91YmxlGCogAygBEhUK",
+            "DXJlcGVhdGVkX2Jvb2wYKyADKAgSFwoPcmVwZWF0ZWRfc3RyaW5nGCwgAygJ",
+            "EhYKDnJlcGVhdGVkX2J5dGVzGC0gAygMEkgKF3JlcGVhdGVkX25lc3RlZF9t",
+            "ZXNzYWdlGDAgAygLMicuY29uZm9ybWFuY2UuVGVzdEFsbFR5cGVzLk5lc3Rl",
+            "ZE1lc3NhZ2USPQoYcmVwZWF0ZWRfZm9yZWlnbl9tZXNzYWdlGDEgAygLMhsu",
+            "Y29uZm9ybWFuY2UuRm9yZWlnbk1lc3NhZ2USQgoUcmVwZWF0ZWRfbmVzdGVk",
+            "X2VudW0YMyADKA4yJC5jb25mb3JtYW5jZS5UZXN0QWxsVHlwZXMuTmVzdGVk",
+            "RW51bRI3ChVyZXBlYXRlZF9mb3JlaWduX2VudW0YNCADKA4yGC5jb25mb3Jt",
+            "YW5jZS5Gb3JlaWduRW51bRIhChVyZXBlYXRlZF9zdHJpbmdfcGllY2UYNiAD",
+            "KAlCAggCEhkKDXJlcGVhdGVkX2NvcmQYNyADKAlCAggBEkUKD21hcF9pbnQz",
+            "Ml9pbnQzMhg4IAMoCzIsLmNvbmZvcm1hbmNlLlRlc3RBbGxUeXBlcy5NYXBJ",
+            "bnQzMkludDMyRW50cnkSRQoPbWFwX2ludDY0X2ludDY0GDkgAygLMiwuY29u",
+            "Zm9ybWFuY2UuVGVzdEFsbFR5cGVzLk1hcEludDY0SW50NjRFbnRyeRJJChFt",
+            "YXBfdWludDMyX3VpbnQzMhg6IAMoCzIuLmNvbmZvcm1hbmNlLlRlc3RBbGxU",
+            "eXBlcy5NYXBVaW50MzJVaW50MzJFbnRyeRJJChFtYXBfdWludDY0X3VpbnQ2",
+            "NBg7IAMoCzIuLmNvbmZvcm1hbmNlLlRlc3RBbGxUeXBlcy5NYXBVaW50NjRV",
+            "aW50NjRFbnRyeRJJChFtYXBfc2ludDMyX3NpbnQzMhg8IAMoCzIuLmNvbmZv",
+            "cm1hbmNlLlRlc3RBbGxUeXBlcy5NYXBTaW50MzJTaW50MzJFbnRyeRJJChFt",
+            "YXBfc2ludDY0X3NpbnQ2NBg9IAMoCzIuLmNvbmZvcm1hbmNlLlRlc3RBbGxU",
+            "eXBlcy5NYXBTaW50NjRTaW50NjRFbnRyeRJNChNtYXBfZml4ZWQzMl9maXhl",
+            "ZDMyGD4gAygLMjAuY29uZm9ybWFuY2UuVGVzdEFsbFR5cGVzLk1hcEZpeGVk",
+            "MzJGaXhlZDMyRW50cnkSTQoTbWFwX2ZpeGVkNjRfZml4ZWQ2NBg/IAMoCzIw",
+            "LmNvbmZvcm1hbmNlLlRlc3RBbGxUeXBlcy5NYXBGaXhlZDY0Rml4ZWQ2NEVu",
+            "dHJ5ElEKFW1hcF9zZml4ZWQzMl9zZml4ZWQzMhhAIAMoCzIyLmNvbmZvcm1h",
+            "bmNlLlRlc3RBbGxUeXBlcy5NYXBTZml4ZWQzMlNmaXhlZDMyRW50cnkSUQoV",
+            "bWFwX3NmaXhlZDY0X3NmaXhlZDY0GEEgAygLMjIuY29uZm9ybWFuY2UuVGVz",
+            "dEFsbFR5cGVzLk1hcFNmaXhlZDY0U2ZpeGVkNjRFbnRyeRJFCg9tYXBfaW50",
+            "MzJfZmxvYXQYQiADKAsyLC5jb25mb3JtYW5jZS5UZXN0QWxsVHlwZXMuTWFw",
+            "SW50MzJGbG9hdEVudHJ5EkcKEG1hcF9pbnQzMl9kb3VibGUYQyADKAsyLS5j",
+            "b25mb3JtYW5jZS5UZXN0QWxsVHlwZXMuTWFwSW50MzJEb3VibGVFbnRyeRJB",
+            "Cg1tYXBfYm9vbF9ib29sGEQgAygLMiouY29uZm9ybWFuY2UuVGVzdEFsbFR5",
+            "cGVzLk1hcEJvb2xCb29sRW50cnkSSQoRbWFwX3N0cmluZ19zdHJpbmcYRSAD",
+            "KAsyLi5jb25mb3JtYW5jZS5UZXN0QWxsVHlwZXMuTWFwU3RyaW5nU3RyaW5n",
+            "RW50cnkSRwoQbWFwX3N0cmluZ19ieXRlcxhGIAMoCzItLmNvbmZvcm1hbmNl",
+            "LlRlc3RBbGxUeXBlcy5NYXBTdHJpbmdCeXRlc0VudHJ5ElgKGW1hcF9zdHJp",
+            "bmdfbmVzdGVkX21lc3NhZ2UYRyADKAsyNS5jb25mb3JtYW5jZS5UZXN0QWxs",
+            "VHlwZXMuTWFwU3RyaW5nTmVzdGVkTWVzc2FnZUVudHJ5EloKGm1hcF9zdHJp",
+            "bmdfZm9yZWlnbl9tZXNzYWdlGEggAygLMjYuY29uZm9ybWFuY2UuVGVzdEFs",
+            "bFR5cGVzLk1hcFN0cmluZ0ZvcmVpZ25NZXNzYWdlRW50cnkSUgoWbWFwX3N0",
+            "cmluZ19uZXN0ZWRfZW51bRhJIAMoCzIyLmNvbmZvcm1hbmNlLlRlc3RBbGxU",
+            "eXBlcy5NYXBTdHJpbmdOZXN0ZWRFbnVtRW50cnkSVAoXbWFwX3N0cmluZ19m",
+            "b3JlaWduX2VudW0YSiADKAsyMy5jb25mb3JtYW5jZS5UZXN0QWxsVHlwZXMu",
+            "TWFwU3RyaW5nRm9yZWlnbkVudW1FbnRyeRIWCgxvbmVvZl91aW50MzIYbyAB",
+            "KA1IABJHChRvbmVvZl9uZXN0ZWRfbWVzc2FnZRhwIAEoCzInLmNvbmZvcm1h",
+            "bmNlLlRlc3RBbGxUeXBlcy5OZXN0ZWRNZXNzYWdlSAASFgoMb25lb2Zfc3Ry",
+            "aW5nGHEgASgJSAASFQoLb25lb2ZfYnl0ZXMYciABKAxIABI6ChVvcHRpb25h",
+            "bF9ib29sX3dyYXBwZXIYyQEgASgLMhouZ29vZ2xlLnByb3RvYnVmLkJvb2xW",
+            "YWx1ZRI8ChZvcHRpb25hbF9pbnQzMl93cmFwcGVyGMoBIAEoCzIbLmdvb2ds",
+            "ZS5wcm90b2J1Zi5JbnQzMlZhbHVlEjwKFm9wdGlvbmFsX2ludDY0X3dyYXBw",
+            "ZXIYywEgASgLMhsuZ29vZ2xlLnByb3RvYnVmLkludDY0VmFsdWUSPgoXb3B0",
+            "aW9uYWxfdWludDMyX3dyYXBwZXIYzAEgASgLMhwuZ29vZ2xlLnByb3RvYnVm",
+            "LlVJbnQzMlZhbHVlEj4KF29wdGlvbmFsX3VpbnQ2NF93cmFwcGVyGM0BIAEo",
+            "CzIcLmdvb2dsZS5wcm90b2J1Zi5VSW50NjRWYWx1ZRI8ChZvcHRpb25hbF9m",
+            "bG9hdF93cmFwcGVyGM4BIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZh",
+            "bHVlEj4KF29wdGlvbmFsX2RvdWJsZV93cmFwcGVyGM8BIAEoCzIcLmdvb2ds",
+            "ZS5wcm90b2J1Zi5Eb3VibGVWYWx1ZRI+ChdvcHRpb25hbF9zdHJpbmdfd3Jh",
+            "cHBlchjQASABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSPAoW",
+            "b3B0aW9uYWxfYnl0ZXNfd3JhcHBlchjRASABKAsyGy5nb29nbGUucHJvdG9i",
+            "dWYuQnl0ZXNWYWx1ZRI6ChVyZXBlYXRlZF9ib29sX3dyYXBwZXIY0wEgAygL",
+            "MhouZ29vZ2xlLnByb3RvYnVmLkJvb2xWYWx1ZRI8ChZyZXBlYXRlZF9pbnQz",
+            "Ml93cmFwcGVyGNQBIAMoCzIbLmdvb2dsZS5wcm90b2J1Zi5JbnQzMlZhbHVl",
+            "EjwKFnJlcGVhdGVkX2ludDY0X3dyYXBwZXIY1QEgAygLMhsuZ29vZ2xlLnBy",
+            "b3RvYnVmLkludDY0VmFsdWUSPgoXcmVwZWF0ZWRfdWludDMyX3dyYXBwZXIY",
+            "1gEgAygLMhwuZ29vZ2xlLnByb3RvYnVmLlVJbnQzMlZhbHVlEj4KF3JlcGVh",
+            "dGVkX3VpbnQ2NF93cmFwcGVyGNcBIAMoCzIcLmdvb2dsZS5wcm90b2J1Zi5V",
+            "SW50NjRWYWx1ZRI8ChZyZXBlYXRlZF9mbG9hdF93cmFwcGVyGNgBIAMoCzIb",
+            "Lmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEj4KF3JlcGVhdGVkX2RvdWJs",
+            "ZV93cmFwcGVyGNkBIAMoCzIcLmdvb2dsZS5wcm90b2J1Zi5Eb3VibGVWYWx1",
+            "ZRI+ChdyZXBlYXRlZF9zdHJpbmdfd3JhcHBlchjaASADKAsyHC5nb29nbGUu",
+            "cHJvdG9idWYuU3RyaW5nVmFsdWUSPAoWcmVwZWF0ZWRfYnl0ZXNfd3JhcHBl",
+            "chjbASADKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZRI1ChFvcHRp",
+            "b25hbF9kdXJhdGlvbhitAiABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRp",
+            "b24SNwoSb3B0aW9uYWxfdGltZXN0YW1wGK4CIAEoCzIaLmdvb2dsZS5wcm90",
+            "b2J1Zi5UaW1lc3RhbXASOAoTb3B0aW9uYWxfZmllbGRfbWFzaxivAiABKAsy",
+            "Gi5nb29nbGUucHJvdG9idWYuRmllbGRNYXNrEjEKD29wdGlvbmFsX3N0cnVj",
+            "dBiwAiABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0EisKDG9wdGlvbmFs",
+            "X2FueRixAiABKAsyFC5nb29nbGUucHJvdG9idWYuQW55Ei8KDm9wdGlvbmFs",
+            "X3ZhbHVlGLICIAEoCzIWLmdvb2dsZS5wcm90b2J1Zi5WYWx1ZRI1ChFyZXBl",
+            "YXRlZF9kdXJhdGlvbhi3AiADKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRp",
+            "b24SNwoScmVwZWF0ZWRfdGltZXN0YW1wGLgCIAMoCzIaLmdvb2dsZS5wcm90",
+            "b2J1Zi5UaW1lc3RhbXASNwoScmVwZWF0ZWRfZmllbGRtYXNrGLkCIAMoCzIa",
+            "Lmdvb2dsZS5wcm90b2J1Zi5GaWVsZE1hc2sSMQoPcmVwZWF0ZWRfc3RydWN0",
+            "GMQCIAMoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSKwoMcmVwZWF0ZWRf",
+            "YW55GLsCIAMoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkSLwoOcmVwZWF0ZWRf",
+            "dmFsdWUYvAIgAygLMhYuZ29vZ2xlLnByb3RvYnVmLlZhbHVlEhMKCmZpZWxk",
+            "bmFtZTEYkQMgASgFEhQKC2ZpZWxkX25hbWUyGJIDIAEoBRIVCgxfZmllbGRf",
+            "bmFtZTMYkwMgASgFEhYKDWZpZWxkX19uYW1lNF8YlAMgASgFEhQKC2ZpZWxk",
+            "MG5hbWU1GJUDIAEoBRIWCg1maWVsZF8wX25hbWU2GJYDIAEoBRITCgpmaWVs",
+            "ZE5hbWU3GJcDIAEoBRITCgpGaWVsZE5hbWU4GJgDIAEoBRIUCgtmaWVsZF9O",
+            "YW1lORiZAyABKAUSFQoMRmllbGRfTmFtZTEwGJoDIAEoBRIVCgxGSUVMRF9O",
+            "QU1FMTEYmwMgASgFEhUKDEZJRUxEX25hbWUxMhicAyABKAUaSgoNTmVzdGVk",
+            "TWVzc2FnZRIJCgFhGAEgASgFEi4KC2NvcmVjdXJzaXZlGAIgASgLMhkuY29u",
+            "Zm9ybWFuY2UuVGVzdEFsbFR5cGVzGjQKEk1hcEludDMySW50MzJFbnRyeRIL",
+            "CgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAU6AjgBGjQKEk1hcEludDY0SW50",
+            "NjRFbnRyeRILCgNrZXkYASABKAMSDQoFdmFsdWUYAiABKAM6AjgBGjYKFE1h",
+            "cFVpbnQzMlVpbnQzMkVudHJ5EgsKA2tleRgBIAEoDRINCgV2YWx1ZRgCIAEo",
+            "DToCOAEaNgoUTWFwVWludDY0VWludDY0RW50cnkSCwoDa2V5GAEgASgEEg0K",
+            "BXZhbHVlGAIgASgEOgI4ARo2ChRNYXBTaW50MzJTaW50MzJFbnRyeRILCgNr",
+            "ZXkYASABKBESDQoFdmFsdWUYAiABKBE6AjgBGjYKFE1hcFNpbnQ2NFNpbnQ2",
+            "NEVudHJ5EgsKA2tleRgBIAEoEhINCgV2YWx1ZRgCIAEoEjoCOAEaOAoWTWFw",
+            "Rml4ZWQzMkZpeGVkMzJFbnRyeRILCgNrZXkYASABKAcSDQoFdmFsdWUYAiAB",
+            "KAc6AjgBGjgKFk1hcEZpeGVkNjRGaXhlZDY0RW50cnkSCwoDa2V5GAEgASgG",
+            "Eg0KBXZhbHVlGAIgASgGOgI4ARo6ChhNYXBTZml4ZWQzMlNmaXhlZDMyRW50",
+            "cnkSCwoDa2V5GAEgASgPEg0KBXZhbHVlGAIgASgPOgI4ARo6ChhNYXBTZml4",
+            "ZWQ2NFNmaXhlZDY0RW50cnkSCwoDa2V5GAEgASgQEg0KBXZhbHVlGAIgASgQ",
+            "OgI4ARo0ChJNYXBJbnQzMkZsb2F0RW50cnkSCwoDa2V5GAEgASgFEg0KBXZh",
+            "bHVlGAIgASgCOgI4ARo1ChNNYXBJbnQzMkRvdWJsZUVudHJ5EgsKA2tleRgB",
+            "IAEoBRINCgV2YWx1ZRgCIAEoAToCOAEaMgoQTWFwQm9vbEJvb2xFbnRyeRIL",
+            "CgNrZXkYASABKAgSDQoFdmFsdWUYAiABKAg6AjgBGjYKFE1hcFN0cmluZ1N0",
+            "cmluZ0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaNQoT",
+            "TWFwU3RyaW5nQnl0ZXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiAB",
+            "KAw6AjgBGmYKG01hcFN0cmluZ05lc3RlZE1lc3NhZ2VFbnRyeRILCgNrZXkY",
+            "ASABKAkSNgoFdmFsdWUYAiABKAsyJy5jb25mb3JtYW5jZS5UZXN0QWxsVHlw",
+            "ZXMuTmVzdGVkTWVzc2FnZToCOAEaWwocTWFwU3RyaW5nRm9yZWlnbk1lc3Nh",
+            "Z2VFbnRyeRILCgNrZXkYASABKAkSKgoFdmFsdWUYAiABKAsyGy5jb25mb3Jt",
+            "YW5jZS5Gb3JlaWduTWVzc2FnZToCOAEaYAoYTWFwU3RyaW5nTmVzdGVkRW51",
+            "bUVudHJ5EgsKA2tleRgBIAEoCRIzCgV2YWx1ZRgCIAEoDjIkLmNvbmZvcm1h",
+            "bmNlLlRlc3RBbGxUeXBlcy5OZXN0ZWRFbnVtOgI4ARpVChlNYXBTdHJpbmdG",
+            "b3JlaWduRW51bUVudHJ5EgsKA2tleRgBIAEoCRInCgV2YWx1ZRgCIAEoDjIY",
+            "LmNvbmZvcm1hbmNlLkZvcmVpZ25FbnVtOgI4ASI5CgpOZXN0ZWRFbnVtEgcK",
+            "A0ZPTxAAEgcKA0JBUhABEgcKA0JBWhACEhAKA05FRxD///////////8BQg0K",
+            "C29uZW9mX2ZpZWxkIhsKDkZvcmVpZ25NZXNzYWdlEgkKAWMYASABKAUqNQoK",
+            "V2lyZUZvcm1hdBIPCgtVTlNQRUNJRklFRBAAEgwKCFBST1RPQlVGEAESCAoE",
+            "SlNPThACKkAKC0ZvcmVpZ25FbnVtEg8KC0ZPUkVJR05fRk9PEAASDwoLRk9S",
+            "RUlHTl9CQVIQARIPCgtGT1JFSUdOX0JBWhACQiEKH2NvbS5nb29nbGUucHJv",
+            "dG9idWYuY29uZm9ybWFuY2ViBnByb3RvMw=="));
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
+          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
           new pbr::GeneratedCodeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.ForeignEnum), }, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Conformance.ConformanceRequest), new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat" }, new[]{ "Payload" }, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Conformance.ConformanceResponse), new[]{ "ParseError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped" }, new[]{ "Result" }, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Conformance.TestAllTypes), new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes" }, new[]{ "OneofField" }, new[]{ typeof(global::Conformance.TestAllTypes.Types.NestedEnum) }, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::Conformance.TestAllTypes.Types.NestedMessage), new[]{ "A", "Corecursive" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat" }, new[]{ "Payload" }, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped" }, new[]{ "Result" }, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Conformance.TestAllTypes), global::Conformance.TestAllTypes.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OptionalBoolWrapper", "OptionalInt32Wrapper", "OptionalInt64Wrapper", "OptionalUint32Wrapper", "OptionalUint64Wrapper", "OptionalFloatWrapper", "OptionalDoubleWrapper", "OptionalStringWrapper", "OptionalBytesWrapper", "RepeatedBoolWrapper", "RepeatedInt32Wrapper", "RepeatedInt64Wrapper", "RepeatedUint32Wrapper", "RepeatedUint64Wrapper", "RepeatedFloatWrapper", "RepeatedDoubleWrapper", "RepeatedStringWrapper", "RepeatedBytesWrapper", "OptionalDuration", "OptionalTimestamp", "OptionalFieldMask", "OptionalStruct", "OptionalAny", "OptionalValue", "RepeatedDuration", "RepeatedTimestamp", "RepeatedFieldmask", "RepeatedStruct", "RepeatedAny", "RepeatedValue", "Fieldname1", "FieldName2", "FieldName3", "FieldName4", "Field0Name5", "Field0Name6", "FieldName7", "FieldName8", "FieldName9", "FieldName10", "FIELDNAME11", "FIELDName12" }, new[]{ "OneofField" }, new[]{ typeof(global::Conformance.TestAllTypes.Types.NestedEnum) }, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::Conformance.TestAllTypes.Types.NestedMessage), global::Conformance.TestAllTypes.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null),
             null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, }),
-            new pbr::GeneratedCodeInfo(typeof(global::Conformance.ForeignMessage), new[]{ "C" }, null, null, null)
+            new pbr::GeneratedCodeInfo(typeof(global::Conformance.ForeignMessage), global::Conformance.ForeignMessage.Parser, new[]{ "C" }, null, null, null)
           }));
     }
     #endregion
@@ -161,13 +213,20 @@ namespace Conformance {
   #endregion
 
   #region Messages
+  /// <summary>
+  ///  Represents a single test case's input.  The testee should:
+  ///
+  ///    1. parse this proto (which should always succeed)
+  ///    2. parse the protobuf or JSON payload in "payload" (which may fail)
+  ///    3. if the parse succeeded, serialize the message in the requested format.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest> {
     private static readonly pb::MessageParser<ConformanceRequest> _parser = new pb::MessageParser<ConformanceRequest>(() => new ConformanceRequest());
     public static pb::MessageParser<ConformanceRequest> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.Conformance.Descriptor.MessageTypes[0]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -197,6 +256,7 @@ namespace Conformance {
       return new ConformanceRequest(this);
     }
 
+    /// <summary>Field number for the "protobuf_payload" field.</summary>
     public const int ProtobufPayloadFieldNumber = 1;
     public pb::ByteString ProtobufPayload {
       get { return payloadCase_ == PayloadOneofCase.ProtobufPayload ? (pb::ByteString) payload_ : pb::ByteString.Empty; }
@@ -206,6 +266,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "json_payload" field.</summary>
     public const int JsonPayloadFieldNumber = 2;
     public string JsonPayload {
       get { return payloadCase_ == PayloadOneofCase.JsonPayload ? (string) payload_ : ""; }
@@ -215,8 +276,12 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "requested_output_format" field.</summary>
     public const int RequestedOutputFormatFieldNumber = 3;
     private global::Conformance.WireFormat requestedOutputFormat_ = global::Conformance.WireFormat.UNSPECIFIED;
+    /// <summary>
+    ///  Which format should the testee serialize its message to?
+    /// </summary>
     public global::Conformance.WireFormat RequestedOutputFormat {
       get { return requestedOutputFormat_; }
       set {
@@ -225,6 +290,7 @@ namespace Conformance {
     }
 
     private object payload_;
+    /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
       None = 0,
       ProtobufPayload = 1,
@@ -254,6 +320,7 @@ namespace Conformance {
       if (ProtobufPayload != other.ProtobufPayload) return false;
       if (JsonPayload != other.JsonPayload) return false;
       if (RequestedOutputFormat != other.RequestedOutputFormat) return false;
+      if (PayloadCase != other.PayloadCase) return false;
       return true;
     }
 
@@ -262,11 +329,12 @@ namespace Conformance {
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
       if (RequestedOutputFormat != global::Conformance.WireFormat.UNSPECIFIED) hash ^= RequestedOutputFormat.GetHashCode();
+      hash ^= (int) payloadCase_;
       return hash;
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -341,13 +409,16 @@ namespace Conformance {
 
   }
 
+  /// <summary>
+  ///  Represents a single test case's output.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse> {
     private static readonly pb::MessageParser<ConformanceResponse> _parser = new pb::MessageParser<ConformanceResponse>(() => new ConformanceResponse());
     public static pb::MessageParser<ConformanceResponse> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.Conformance.Descriptor.MessageTypes[1]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[1]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -364,6 +435,9 @@ namespace Conformance {
       switch (other.ResultCase) {
         case ResultOneofCase.ParseError:
           ParseError = other.ParseError;
+          break;
+        case ResultOneofCase.SerializeError:
+          SerializeError = other.SerializeError;
           break;
         case ResultOneofCase.RuntimeError:
           RuntimeError = other.RuntimeError;
@@ -385,7 +459,15 @@ namespace Conformance {
       return new ConformanceResponse(this);
     }
 
+    /// <summary>Field number for the "parse_error" field.</summary>
     public const int ParseErrorFieldNumber = 1;
+    /// <summary>
+    ///  This string should be set to indicate parsing failed.  The string can
+    ///  provide more information about the parse error if it is available.
+    ///
+    ///  Setting this string does not necessarily mean the testee failed the
+    ///  test.  Some of the test cases are intentionally invalid input.
+    /// </summary>
     public string ParseError {
       get { return resultCase_ == ResultOneofCase.ParseError ? (string) result_ : ""; }
       set {
@@ -394,7 +476,28 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "serialize_error" field.</summary>
+    public const int SerializeErrorFieldNumber = 6;
+    /// <summary>
+    ///  If the input was successfully parsed but errors occurred when
+    ///  serializing it to the requested output format, set the error message in
+    ///  this field.
+    /// </summary>
+    public string SerializeError {
+      get { return resultCase_ == ResultOneofCase.SerializeError ? (string) result_ : ""; }
+      set {
+        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        resultCase_ = ResultOneofCase.SerializeError;
+      }
+    }
+
+    /// <summary>Field number for the "runtime_error" field.</summary>
     public const int RuntimeErrorFieldNumber = 2;
+    /// <summary>
+    ///  This should be set if some other error occurred.  This will always
+    ///  indicate that the test failed.  The string can provide more information
+    ///  about the failure.
+    /// </summary>
     public string RuntimeError {
       get { return resultCase_ == ResultOneofCase.RuntimeError ? (string) result_ : ""; }
       set {
@@ -403,7 +506,12 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "protobuf_payload" field.</summary>
     public const int ProtobufPayloadFieldNumber = 3;
+    /// <summary>
+    ///  If the input was successfully parsed and the requested output was
+    ///  protobuf, serialize it to protobuf and set it in this field.
+    /// </summary>
     public pb::ByteString ProtobufPayload {
       get { return resultCase_ == ResultOneofCase.ProtobufPayload ? (pb::ByteString) result_ : pb::ByteString.Empty; }
       set {
@@ -412,7 +520,12 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "json_payload" field.</summary>
     public const int JsonPayloadFieldNumber = 4;
+    /// <summary>
+    ///  If the input was successfully parsed and the requested output was JSON,
+    ///  serialize to JSON and set it in this field.
+    /// </summary>
     public string JsonPayload {
       get { return resultCase_ == ResultOneofCase.JsonPayload ? (string) result_ : ""; }
       set {
@@ -421,7 +534,12 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "skipped" field.</summary>
     public const int SkippedFieldNumber = 5;
+    /// <summary>
+    ///  For when the testee skipped the test, likely because a certain feature
+    ///  wasn't supported, like JSON input/output.
+    /// </summary>
     public string Skipped {
       get { return resultCase_ == ResultOneofCase.Skipped ? (string) result_ : ""; }
       set {
@@ -431,9 +549,11 @@ namespace Conformance {
     }
 
     private object result_;
+    /// <summary>Enum of possible cases for the "result" oneof.</summary>
     public enum ResultOneofCase {
       None = 0,
       ParseError = 1,
+      SerializeError = 6,
       RuntimeError = 2,
       ProtobufPayload = 3,
       JsonPayload = 4,
@@ -461,25 +581,29 @@ namespace Conformance {
         return true;
       }
       if (ParseError != other.ParseError) return false;
+      if (SerializeError != other.SerializeError) return false;
       if (RuntimeError != other.RuntimeError) return false;
       if (ProtobufPayload != other.ProtobufPayload) return false;
       if (JsonPayload != other.JsonPayload) return false;
       if (Skipped != other.Skipped) return false;
+      if (ResultCase != other.ResultCase) return false;
       return true;
     }
 
     public override int GetHashCode() {
       int hash = 1;
       if (resultCase_ == ResultOneofCase.ParseError) hash ^= ParseError.GetHashCode();
+      if (resultCase_ == ResultOneofCase.SerializeError) hash ^= SerializeError.GetHashCode();
       if (resultCase_ == ResultOneofCase.RuntimeError) hash ^= RuntimeError.GetHashCode();
       if (resultCase_ == ResultOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
       if (resultCase_ == ResultOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
       if (resultCase_ == ResultOneofCase.Skipped) hash ^= Skipped.GetHashCode();
+      hash ^= (int) resultCase_;
       return hash;
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -503,12 +627,19 @@ namespace Conformance {
         output.WriteRawTag(42);
         output.WriteString(Skipped);
       }
+      if (resultCase_ == ResultOneofCase.SerializeError) {
+        output.WriteRawTag(50);
+        output.WriteString(SerializeError);
+      }
     }
 
     public int CalculateSize() {
       int size = 0;
       if (resultCase_ == ResultOneofCase.ParseError) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(ParseError);
+      }
+      if (resultCase_ == ResultOneofCase.SerializeError) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(SerializeError);
       }
       if (resultCase_ == ResultOneofCase.RuntimeError) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(RuntimeError);
@@ -532,6 +663,9 @@ namespace Conformance {
       switch (other.ResultCase) {
         case ResultOneofCase.ParseError:
           ParseError = other.ParseError;
+          break;
+        case ResultOneofCase.SerializeError:
+          SerializeError = other.SerializeError;
           break;
         case ResultOneofCase.RuntimeError:
           RuntimeError = other.RuntimeError;
@@ -576,19 +710,27 @@ namespace Conformance {
             Skipped = input.ReadString();
             break;
           }
+          case 50: {
+            SerializeError = input.ReadString();
+            break;
+          }
         }
       }
     }
 
   }
 
+  /// <summary>
+  ///  This proto includes every type of field in both singular and repeated
+  ///  forms.
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes> {
     private static readonly pb::MessageParser<TestAllTypes> _parser = new pb::MessageParser<TestAllTypes>(() => new TestAllTypes());
     public static pb::MessageParser<TestAllTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.Conformance.Descriptor.MessageTypes[2]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[2]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -664,6 +806,48 @@ namespace Conformance {
       mapStringForeignMessage_ = other.mapStringForeignMessage_.Clone();
       mapStringNestedEnum_ = other.mapStringNestedEnum_.Clone();
       mapStringForeignEnum_ = other.mapStringForeignEnum_.Clone();
+      OptionalBoolWrapper = other.OptionalBoolWrapper;
+      OptionalInt32Wrapper = other.OptionalInt32Wrapper;
+      OptionalInt64Wrapper = other.OptionalInt64Wrapper;
+      OptionalUint32Wrapper = other.OptionalUint32Wrapper;
+      OptionalUint64Wrapper = other.OptionalUint64Wrapper;
+      OptionalFloatWrapper = other.OptionalFloatWrapper;
+      OptionalDoubleWrapper = other.OptionalDoubleWrapper;
+      OptionalStringWrapper = other.OptionalStringWrapper;
+      OptionalBytesWrapper = other.OptionalBytesWrapper;
+      repeatedBoolWrapper_ = other.repeatedBoolWrapper_.Clone();
+      repeatedInt32Wrapper_ = other.repeatedInt32Wrapper_.Clone();
+      repeatedInt64Wrapper_ = other.repeatedInt64Wrapper_.Clone();
+      repeatedUint32Wrapper_ = other.repeatedUint32Wrapper_.Clone();
+      repeatedUint64Wrapper_ = other.repeatedUint64Wrapper_.Clone();
+      repeatedFloatWrapper_ = other.repeatedFloatWrapper_.Clone();
+      repeatedDoubleWrapper_ = other.repeatedDoubleWrapper_.Clone();
+      repeatedStringWrapper_ = other.repeatedStringWrapper_.Clone();
+      repeatedBytesWrapper_ = other.repeatedBytesWrapper_.Clone();
+      OptionalDuration = other.optionalDuration_ != null ? other.OptionalDuration.Clone() : null;
+      OptionalTimestamp = other.optionalTimestamp_ != null ? other.OptionalTimestamp.Clone() : null;
+      OptionalFieldMask = other.optionalFieldMask_ != null ? other.OptionalFieldMask.Clone() : null;
+      OptionalStruct = other.optionalStruct_ != null ? other.OptionalStruct.Clone() : null;
+      OptionalAny = other.optionalAny_ != null ? other.OptionalAny.Clone() : null;
+      OptionalValue = other.optionalValue_ != null ? other.OptionalValue.Clone() : null;
+      repeatedDuration_ = other.repeatedDuration_.Clone();
+      repeatedTimestamp_ = other.repeatedTimestamp_.Clone();
+      repeatedFieldmask_ = other.repeatedFieldmask_.Clone();
+      repeatedStruct_ = other.repeatedStruct_.Clone();
+      repeatedAny_ = other.repeatedAny_.Clone();
+      repeatedValue_ = other.repeatedValue_.Clone();
+      fieldname1_ = other.fieldname1_;
+      fieldName2_ = other.fieldName2_;
+      FieldName3_ = other.FieldName3_;
+      fieldName4_ = other.fieldName4_;
+      field0Name5_ = other.field0Name5_;
+      field0Name6_ = other.field0Name6_;
+      fieldName7_ = other.fieldName7_;
+      fieldName8_ = other.fieldName8_;
+      fieldName9_ = other.fieldName9_;
+      fieldName10_ = other.fieldName10_;
+      fIELDNAME11_ = other.fIELDNAME11_;
+      fIELDName12_ = other.fIELDName12_;
       switch (other.OneofFieldCase) {
         case OneofFieldOneofCase.OneofUint32:
           OneofUint32 = other.OneofUint32;
@@ -685,8 +869,12 @@ namespace Conformance {
       return new TestAllTypes(this);
     }
 
+    /// <summary>Field number for the "optional_int32" field.</summary>
     public const int OptionalInt32FieldNumber = 1;
     private int optionalInt32_;
+    /// <summary>
+    ///  Singular
+    /// </summary>
     public int OptionalInt32 {
       get { return optionalInt32_; }
       set {
@@ -694,6 +882,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_int64" field.</summary>
     public const int OptionalInt64FieldNumber = 2;
     private long optionalInt64_;
     public long OptionalInt64 {
@@ -703,6 +892,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_uint32" field.</summary>
     public const int OptionalUint32FieldNumber = 3;
     private uint optionalUint32_;
     public uint OptionalUint32 {
@@ -712,6 +902,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_uint64" field.</summary>
     public const int OptionalUint64FieldNumber = 4;
     private ulong optionalUint64_;
     public ulong OptionalUint64 {
@@ -721,6 +912,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_sint32" field.</summary>
     public const int OptionalSint32FieldNumber = 5;
     private int optionalSint32_;
     public int OptionalSint32 {
@@ -730,6 +922,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_sint64" field.</summary>
     public const int OptionalSint64FieldNumber = 6;
     private long optionalSint64_;
     public long OptionalSint64 {
@@ -739,6 +932,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_fixed32" field.</summary>
     public const int OptionalFixed32FieldNumber = 7;
     private uint optionalFixed32_;
     public uint OptionalFixed32 {
@@ -748,6 +942,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_fixed64" field.</summary>
     public const int OptionalFixed64FieldNumber = 8;
     private ulong optionalFixed64_;
     public ulong OptionalFixed64 {
@@ -757,6 +952,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_sfixed32" field.</summary>
     public const int OptionalSfixed32FieldNumber = 9;
     private int optionalSfixed32_;
     public int OptionalSfixed32 {
@@ -766,6 +962,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_sfixed64" field.</summary>
     public const int OptionalSfixed64FieldNumber = 10;
     private long optionalSfixed64_;
     public long OptionalSfixed64 {
@@ -775,6 +972,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_float" field.</summary>
     public const int OptionalFloatFieldNumber = 11;
     private float optionalFloat_;
     public float OptionalFloat {
@@ -784,6 +982,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_double" field.</summary>
     public const int OptionalDoubleFieldNumber = 12;
     private double optionalDouble_;
     public double OptionalDouble {
@@ -793,6 +992,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_bool" field.</summary>
     public const int OptionalBoolFieldNumber = 13;
     private bool optionalBool_;
     public bool OptionalBool {
@@ -802,6 +1002,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_string" field.</summary>
     public const int OptionalStringFieldNumber = 14;
     private string optionalString_ = "";
     public string OptionalString {
@@ -811,6 +1012,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_bytes" field.</summary>
     public const int OptionalBytesFieldNumber = 15;
     private pb::ByteString optionalBytes_ = pb::ByteString.Empty;
     public pb::ByteString OptionalBytes {
@@ -820,6 +1022,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_nested_message" field.</summary>
     public const int OptionalNestedMessageFieldNumber = 18;
     private global::Conformance.TestAllTypes.Types.NestedMessage optionalNestedMessage_;
     public global::Conformance.TestAllTypes.Types.NestedMessage OptionalNestedMessage {
@@ -829,6 +1032,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_foreign_message" field.</summary>
     public const int OptionalForeignMessageFieldNumber = 19;
     private global::Conformance.ForeignMessage optionalForeignMessage_;
     public global::Conformance.ForeignMessage OptionalForeignMessage {
@@ -838,6 +1042,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_nested_enum" field.</summary>
     public const int OptionalNestedEnumFieldNumber = 21;
     private global::Conformance.TestAllTypes.Types.NestedEnum optionalNestedEnum_ = global::Conformance.TestAllTypes.Types.NestedEnum.FOO;
     public global::Conformance.TestAllTypes.Types.NestedEnum OptionalNestedEnum {
@@ -847,6 +1052,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_foreign_enum" field.</summary>
     public const int OptionalForeignEnumFieldNumber = 22;
     private global::Conformance.ForeignEnum optionalForeignEnum_ = global::Conformance.ForeignEnum.FOREIGN_FOO;
     public global::Conformance.ForeignEnum OptionalForeignEnum {
@@ -856,6 +1062,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_string_piece" field.</summary>
     public const int OptionalStringPieceFieldNumber = 24;
     private string optionalStringPiece_ = "";
     public string OptionalStringPiece {
@@ -865,6 +1072,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_cord" field.</summary>
     public const int OptionalCordFieldNumber = 25;
     private string optionalCord_ = "";
     public string OptionalCord {
@@ -874,6 +1082,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "recursive_message" field.</summary>
     public const int RecursiveMessageFieldNumber = 27;
     private global::Conformance.TestAllTypes recursiveMessage_;
     public global::Conformance.TestAllTypes RecursiveMessage {
@@ -883,14 +1092,19 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "repeated_int32" field.</summary>
     public const int RepeatedInt32FieldNumber = 31;
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForInt32(250);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
+    /// <summary>
+    ///  Repeated
+    /// </summary>
     public pbc::RepeatedField<int> RepeatedInt32 {
       get { return repeatedInt32_; }
     }
 
+    /// <summary>Field number for the "repeated_int64" field.</summary>
     public const int RepeatedInt64FieldNumber = 32;
     private static readonly pb::FieldCodec<long> _repeated_repeatedInt64_codec
         = pb::FieldCodec.ForInt64(258);
@@ -899,6 +1113,7 @@ namespace Conformance {
       get { return repeatedInt64_; }
     }
 
+    /// <summary>Field number for the "repeated_uint32" field.</summary>
     public const int RepeatedUint32FieldNumber = 33;
     private static readonly pb::FieldCodec<uint> _repeated_repeatedUint32_codec
         = pb::FieldCodec.ForUInt32(266);
@@ -907,6 +1122,7 @@ namespace Conformance {
       get { return repeatedUint32_; }
     }
 
+    /// <summary>Field number for the "repeated_uint64" field.</summary>
     public const int RepeatedUint64FieldNumber = 34;
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedUint64_codec
         = pb::FieldCodec.ForUInt64(274);
@@ -915,6 +1131,7 @@ namespace Conformance {
       get { return repeatedUint64_; }
     }
 
+    /// <summary>Field number for the "repeated_sint32" field.</summary>
     public const int RepeatedSint32FieldNumber = 35;
     private static readonly pb::FieldCodec<int> _repeated_repeatedSint32_codec
         = pb::FieldCodec.ForSInt32(282);
@@ -923,6 +1140,7 @@ namespace Conformance {
       get { return repeatedSint32_; }
     }
 
+    /// <summary>Field number for the "repeated_sint64" field.</summary>
     public const int RepeatedSint64FieldNumber = 36;
     private static readonly pb::FieldCodec<long> _repeated_repeatedSint64_codec
         = pb::FieldCodec.ForSInt64(290);
@@ -931,6 +1149,7 @@ namespace Conformance {
       get { return repeatedSint64_; }
     }
 
+    /// <summary>Field number for the "repeated_fixed32" field.</summary>
     public const int RepeatedFixed32FieldNumber = 37;
     private static readonly pb::FieldCodec<uint> _repeated_repeatedFixed32_codec
         = pb::FieldCodec.ForFixed32(298);
@@ -939,6 +1158,7 @@ namespace Conformance {
       get { return repeatedFixed32_; }
     }
 
+    /// <summary>Field number for the "repeated_fixed64" field.</summary>
     public const int RepeatedFixed64FieldNumber = 38;
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedFixed64_codec
         = pb::FieldCodec.ForFixed64(306);
@@ -947,6 +1167,7 @@ namespace Conformance {
       get { return repeatedFixed64_; }
     }
 
+    /// <summary>Field number for the "repeated_sfixed32" field.</summary>
     public const int RepeatedSfixed32FieldNumber = 39;
     private static readonly pb::FieldCodec<int> _repeated_repeatedSfixed32_codec
         = pb::FieldCodec.ForSFixed32(314);
@@ -955,6 +1176,7 @@ namespace Conformance {
       get { return repeatedSfixed32_; }
     }
 
+    /// <summary>Field number for the "repeated_sfixed64" field.</summary>
     public const int RepeatedSfixed64FieldNumber = 40;
     private static readonly pb::FieldCodec<long> _repeated_repeatedSfixed64_codec
         = pb::FieldCodec.ForSFixed64(322);
@@ -963,6 +1185,7 @@ namespace Conformance {
       get { return repeatedSfixed64_; }
     }
 
+    /// <summary>Field number for the "repeated_float" field.</summary>
     public const int RepeatedFloatFieldNumber = 41;
     private static readonly pb::FieldCodec<float> _repeated_repeatedFloat_codec
         = pb::FieldCodec.ForFloat(330);
@@ -971,6 +1194,7 @@ namespace Conformance {
       get { return repeatedFloat_; }
     }
 
+    /// <summary>Field number for the "repeated_double" field.</summary>
     public const int RepeatedDoubleFieldNumber = 42;
     private static readonly pb::FieldCodec<double> _repeated_repeatedDouble_codec
         = pb::FieldCodec.ForDouble(338);
@@ -979,6 +1203,7 @@ namespace Conformance {
       get { return repeatedDouble_; }
     }
 
+    /// <summary>Field number for the "repeated_bool" field.</summary>
     public const int RepeatedBoolFieldNumber = 43;
     private static readonly pb::FieldCodec<bool> _repeated_repeatedBool_codec
         = pb::FieldCodec.ForBool(346);
@@ -987,6 +1212,7 @@ namespace Conformance {
       get { return repeatedBool_; }
     }
 
+    /// <summary>Field number for the "repeated_string" field.</summary>
     public const int RepeatedStringFieldNumber = 44;
     private static readonly pb::FieldCodec<string> _repeated_repeatedString_codec
         = pb::FieldCodec.ForString(354);
@@ -995,6 +1221,7 @@ namespace Conformance {
       get { return repeatedString_; }
     }
 
+    /// <summary>Field number for the "repeated_bytes" field.</summary>
     public const int RepeatedBytesFieldNumber = 45;
     private static readonly pb::FieldCodec<pb::ByteString> _repeated_repeatedBytes_codec
         = pb::FieldCodec.ForBytes(362);
@@ -1003,6 +1230,7 @@ namespace Conformance {
       get { return repeatedBytes_; }
     }
 
+    /// <summary>Field number for the "repeated_nested_message" field.</summary>
     public const int RepeatedNestedMessageFieldNumber = 48;
     private static readonly pb::FieldCodec<global::Conformance.TestAllTypes.Types.NestedMessage> _repeated_repeatedNestedMessage_codec
         = pb::FieldCodec.ForMessage(386, global::Conformance.TestAllTypes.Types.NestedMessage.Parser);
@@ -1011,6 +1239,7 @@ namespace Conformance {
       get { return repeatedNestedMessage_; }
     }
 
+    /// <summary>Field number for the "repeated_foreign_message" field.</summary>
     public const int RepeatedForeignMessageFieldNumber = 49;
     private static readonly pb::FieldCodec<global::Conformance.ForeignMessage> _repeated_repeatedForeignMessage_codec
         = pb::FieldCodec.ForMessage(394, global::Conformance.ForeignMessage.Parser);
@@ -1019,6 +1248,7 @@ namespace Conformance {
       get { return repeatedForeignMessage_; }
     }
 
+    /// <summary>Field number for the "repeated_nested_enum" field.</summary>
     public const int RepeatedNestedEnumFieldNumber = 51;
     private static readonly pb::FieldCodec<global::Conformance.TestAllTypes.Types.NestedEnum> _repeated_repeatedNestedEnum_codec
         = pb::FieldCodec.ForEnum(410, x => (int) x, x => (global::Conformance.TestAllTypes.Types.NestedEnum) x);
@@ -1027,6 +1257,7 @@ namespace Conformance {
       get { return repeatedNestedEnum_; }
     }
 
+    /// <summary>Field number for the "repeated_foreign_enum" field.</summary>
     public const int RepeatedForeignEnumFieldNumber = 52;
     private static readonly pb::FieldCodec<global::Conformance.ForeignEnum> _repeated_repeatedForeignEnum_codec
         = pb::FieldCodec.ForEnum(418, x => (int) x, x => (global::Conformance.ForeignEnum) x);
@@ -1035,6 +1266,7 @@ namespace Conformance {
       get { return repeatedForeignEnum_; }
     }
 
+    /// <summary>Field number for the "repeated_string_piece" field.</summary>
     public const int RepeatedStringPieceFieldNumber = 54;
     private static readonly pb::FieldCodec<string> _repeated_repeatedStringPiece_codec
         = pb::FieldCodec.ForString(434);
@@ -1043,6 +1275,7 @@ namespace Conformance {
       get { return repeatedStringPiece_; }
     }
 
+    /// <summary>Field number for the "repeated_cord" field.</summary>
     public const int RepeatedCordFieldNumber = 55;
     private static readonly pb::FieldCodec<string> _repeated_repeatedCord_codec
         = pb::FieldCodec.ForString(442);
@@ -1051,14 +1284,19 @@ namespace Conformance {
       get { return repeatedCord_; }
     }
 
+    /// <summary>Field number for the "map_int32_int32" field.</summary>
     public const int MapInt32Int32FieldNumber = 56;
     private static readonly pbc::MapField<int, int>.Codec _map_mapInt32Int32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForInt32(16), 450);
     private readonly pbc::MapField<int, int> mapInt32Int32_ = new pbc::MapField<int, int>();
+    /// <summary>
+    ///  Map
+    /// </summary>
     public pbc::MapField<int, int> MapInt32Int32 {
       get { return mapInt32Int32_; }
     }
 
+    /// <summary>Field number for the "map_int64_int64" field.</summary>
     public const int MapInt64Int64FieldNumber = 57;
     private static readonly pbc::MapField<long, long>.Codec _map_mapInt64Int64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForInt64(8), pb::FieldCodec.ForInt64(16), 458);
@@ -1067,6 +1305,7 @@ namespace Conformance {
       get { return mapInt64Int64_; }
     }
 
+    /// <summary>Field number for the "map_uint32_uint32" field.</summary>
     public const int MapUint32Uint32FieldNumber = 58;
     private static readonly pbc::MapField<uint, uint>.Codec _map_mapUint32Uint32_codec
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForUInt32(8), pb::FieldCodec.ForUInt32(16), 466);
@@ -1075,6 +1314,7 @@ namespace Conformance {
       get { return mapUint32Uint32_; }
     }
 
+    /// <summary>Field number for the "map_uint64_uint64" field.</summary>
     public const int MapUint64Uint64FieldNumber = 59;
     private static readonly pbc::MapField<ulong, ulong>.Codec _map_mapUint64Uint64_codec
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForUInt64(8), pb::FieldCodec.ForUInt64(16), 474);
@@ -1083,6 +1323,7 @@ namespace Conformance {
       get { return mapUint64Uint64_; }
     }
 
+    /// <summary>Field number for the "map_sint32_sint32" field.</summary>
     public const int MapSint32Sint32FieldNumber = 60;
     private static readonly pbc::MapField<int, int>.Codec _map_mapSint32Sint32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSInt32(8), pb::FieldCodec.ForSInt32(16), 482);
@@ -1091,6 +1332,7 @@ namespace Conformance {
       get { return mapSint32Sint32_; }
     }
 
+    /// <summary>Field number for the "map_sint64_sint64" field.</summary>
     public const int MapSint64Sint64FieldNumber = 61;
     private static readonly pbc::MapField<long, long>.Codec _map_mapSint64Sint64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSInt64(8), pb::FieldCodec.ForSInt64(16), 490);
@@ -1099,6 +1341,7 @@ namespace Conformance {
       get { return mapSint64Sint64_; }
     }
 
+    /// <summary>Field number for the "map_fixed32_fixed32" field.</summary>
     public const int MapFixed32Fixed32FieldNumber = 62;
     private static readonly pbc::MapField<uint, uint>.Codec _map_mapFixed32Fixed32_codec
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForFixed32(13), pb::FieldCodec.ForFixed32(21), 498);
@@ -1107,6 +1350,7 @@ namespace Conformance {
       get { return mapFixed32Fixed32_; }
     }
 
+    /// <summary>Field number for the "map_fixed64_fixed64" field.</summary>
     public const int MapFixed64Fixed64FieldNumber = 63;
     private static readonly pbc::MapField<ulong, ulong>.Codec _map_mapFixed64Fixed64_codec
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForFixed64(9), pb::FieldCodec.ForFixed64(17), 506);
@@ -1115,6 +1359,7 @@ namespace Conformance {
       get { return mapFixed64Fixed64_; }
     }
 
+    /// <summary>Field number for the "map_sfixed32_sfixed32" field.</summary>
     public const int MapSfixed32Sfixed32FieldNumber = 64;
     private static readonly pbc::MapField<int, int>.Codec _map_mapSfixed32Sfixed32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSFixed32(13), pb::FieldCodec.ForSFixed32(21), 514);
@@ -1123,6 +1368,7 @@ namespace Conformance {
       get { return mapSfixed32Sfixed32_; }
     }
 
+    /// <summary>Field number for the "map_sfixed64_sfixed64" field.</summary>
     public const int MapSfixed64Sfixed64FieldNumber = 65;
     private static readonly pbc::MapField<long, long>.Codec _map_mapSfixed64Sfixed64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSFixed64(9), pb::FieldCodec.ForSFixed64(17), 522);
@@ -1131,6 +1377,7 @@ namespace Conformance {
       get { return mapSfixed64Sfixed64_; }
     }
 
+    /// <summary>Field number for the "map_int32_float" field.</summary>
     public const int MapInt32FloatFieldNumber = 66;
     private static readonly pbc::MapField<int, float>.Codec _map_mapInt32Float_codec
         = new pbc::MapField<int, float>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForFloat(21), 530);
@@ -1139,6 +1386,7 @@ namespace Conformance {
       get { return mapInt32Float_; }
     }
 
+    /// <summary>Field number for the "map_int32_double" field.</summary>
     public const int MapInt32DoubleFieldNumber = 67;
     private static readonly pbc::MapField<int, double>.Codec _map_mapInt32Double_codec
         = new pbc::MapField<int, double>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForDouble(17), 538);
@@ -1147,6 +1395,7 @@ namespace Conformance {
       get { return mapInt32Double_; }
     }
 
+    /// <summary>Field number for the "map_bool_bool" field.</summary>
     public const int MapBoolBoolFieldNumber = 68;
     private static readonly pbc::MapField<bool, bool>.Codec _map_mapBoolBool_codec
         = new pbc::MapField<bool, bool>.Codec(pb::FieldCodec.ForBool(8), pb::FieldCodec.ForBool(16), 546);
@@ -1155,6 +1404,7 @@ namespace Conformance {
       get { return mapBoolBool_; }
     }
 
+    /// <summary>Field number for the "map_string_string" field.</summary>
     public const int MapStringStringFieldNumber = 69;
     private static readonly pbc::MapField<string, string>.Codec _map_mapStringString_codec
         = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 554);
@@ -1163,6 +1413,7 @@ namespace Conformance {
       get { return mapStringString_; }
     }
 
+    /// <summary>Field number for the "map_string_bytes" field.</summary>
     public const int MapStringBytesFieldNumber = 70;
     private static readonly pbc::MapField<string, pb::ByteString>.Codec _map_mapStringBytes_codec
         = new pbc::MapField<string, pb::ByteString>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForBytes(18), 562);
@@ -1171,6 +1422,7 @@ namespace Conformance {
       get { return mapStringBytes_; }
     }
 
+    /// <summary>Field number for the "map_string_nested_message" field.</summary>
     public const int MapStringNestedMessageFieldNumber = 71;
     private static readonly pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedMessage>.Codec _map_mapStringNestedMessage_codec
         = new pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedMessage>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForMessage(18, global::Conformance.TestAllTypes.Types.NestedMessage.Parser), 570);
@@ -1179,6 +1431,7 @@ namespace Conformance {
       get { return mapStringNestedMessage_; }
     }
 
+    /// <summary>Field number for the "map_string_foreign_message" field.</summary>
     public const int MapStringForeignMessageFieldNumber = 72;
     private static readonly pbc::MapField<string, global::Conformance.ForeignMessage>.Codec _map_mapStringForeignMessage_codec
         = new pbc::MapField<string, global::Conformance.ForeignMessage>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForMessage(18, global::Conformance.ForeignMessage.Parser), 578);
@@ -1187,6 +1440,7 @@ namespace Conformance {
       get { return mapStringForeignMessage_; }
     }
 
+    /// <summary>Field number for the "map_string_nested_enum" field.</summary>
     public const int MapStringNestedEnumFieldNumber = 73;
     private static readonly pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedEnum>.Codec _map_mapStringNestedEnum_codec
         = new pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedEnum>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::Conformance.TestAllTypes.Types.NestedEnum) x), 586);
@@ -1195,6 +1449,7 @@ namespace Conformance {
       get { return mapStringNestedEnum_; }
     }
 
+    /// <summary>Field number for the "map_string_foreign_enum" field.</summary>
     public const int MapStringForeignEnumFieldNumber = 74;
     private static readonly pbc::MapField<string, global::Conformance.ForeignEnum>.Codec _map_mapStringForeignEnum_codec
         = new pbc::MapField<string, global::Conformance.ForeignEnum>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::Conformance.ForeignEnum) x), 594);
@@ -1203,6 +1458,7 @@ namespace Conformance {
       get { return mapStringForeignEnum_; }
     }
 
+    /// <summary>Field number for the "oneof_uint32" field.</summary>
     public const int OneofUint32FieldNumber = 111;
     public uint OneofUint32 {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofUint32 ? (uint) oneofField_ : 0; }
@@ -1212,6 +1468,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "oneof_nested_message" field.</summary>
     public const int OneofNestedMessageFieldNumber = 112;
     public global::Conformance.TestAllTypes.Types.NestedMessage OneofNestedMessage {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Conformance.TestAllTypes.Types.NestedMessage) oneofField_ : null; }
@@ -1221,6 +1478,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "oneof_string" field.</summary>
     public const int OneofStringFieldNumber = 113;
     public string OneofString {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofString ? (string) oneofField_ : ""; }
@@ -1230,6 +1488,7 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "oneof_bytes" field.</summary>
     public const int OneofBytesFieldNumber = 114;
     public pb::ByteString OneofBytes {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofBytes ? (pb::ByteString) oneofField_ : pb::ByteString.Empty; }
@@ -1239,7 +1498,428 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "optional_bool_wrapper" field.</summary>
+    public const int OptionalBoolWrapperFieldNumber = 201;
+    private static readonly pb::FieldCodec<bool?> _single_optionalBoolWrapper_codec = pb::FieldCodec.ForStructWrapper<bool>(1610);
+    private bool? optionalBoolWrapper_;
+    /// <summary>
+    ///  Well-known types
+    /// </summary>
+    public bool? OptionalBoolWrapper {
+      get { return optionalBoolWrapper_; }
+      set {
+        optionalBoolWrapper_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_int32_wrapper" field.</summary>
+    public const int OptionalInt32WrapperFieldNumber = 202;
+    private static readonly pb::FieldCodec<int?> _single_optionalInt32Wrapper_codec = pb::FieldCodec.ForStructWrapper<int>(1618);
+    private int? optionalInt32Wrapper_;
+    public int? OptionalInt32Wrapper {
+      get { return optionalInt32Wrapper_; }
+      set {
+        optionalInt32Wrapper_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_int64_wrapper" field.</summary>
+    public const int OptionalInt64WrapperFieldNumber = 203;
+    private static readonly pb::FieldCodec<long?> _single_optionalInt64Wrapper_codec = pb::FieldCodec.ForStructWrapper<long>(1626);
+    private long? optionalInt64Wrapper_;
+    public long? OptionalInt64Wrapper {
+      get { return optionalInt64Wrapper_; }
+      set {
+        optionalInt64Wrapper_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_uint32_wrapper" field.</summary>
+    public const int OptionalUint32WrapperFieldNumber = 204;
+    private static readonly pb::FieldCodec<uint?> _single_optionalUint32Wrapper_codec = pb::FieldCodec.ForStructWrapper<uint>(1634);
+    private uint? optionalUint32Wrapper_;
+    public uint? OptionalUint32Wrapper {
+      get { return optionalUint32Wrapper_; }
+      set {
+        optionalUint32Wrapper_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_uint64_wrapper" field.</summary>
+    public const int OptionalUint64WrapperFieldNumber = 205;
+    private static readonly pb::FieldCodec<ulong?> _single_optionalUint64Wrapper_codec = pb::FieldCodec.ForStructWrapper<ulong>(1642);
+    private ulong? optionalUint64Wrapper_;
+    public ulong? OptionalUint64Wrapper {
+      get { return optionalUint64Wrapper_; }
+      set {
+        optionalUint64Wrapper_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_float_wrapper" field.</summary>
+    public const int OptionalFloatWrapperFieldNumber = 206;
+    private static readonly pb::FieldCodec<float?> _single_optionalFloatWrapper_codec = pb::FieldCodec.ForStructWrapper<float>(1650);
+    private float? optionalFloatWrapper_;
+    public float? OptionalFloatWrapper {
+      get { return optionalFloatWrapper_; }
+      set {
+        optionalFloatWrapper_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_double_wrapper" field.</summary>
+    public const int OptionalDoubleWrapperFieldNumber = 207;
+    private static readonly pb::FieldCodec<double?> _single_optionalDoubleWrapper_codec = pb::FieldCodec.ForStructWrapper<double>(1658);
+    private double? optionalDoubleWrapper_;
+    public double? OptionalDoubleWrapper {
+      get { return optionalDoubleWrapper_; }
+      set {
+        optionalDoubleWrapper_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_string_wrapper" field.</summary>
+    public const int OptionalStringWrapperFieldNumber = 208;
+    private static readonly pb::FieldCodec<string> _single_optionalStringWrapper_codec = pb::FieldCodec.ForClassWrapper<string>(1666);
+    private string optionalStringWrapper_;
+    public string OptionalStringWrapper {
+      get { return optionalStringWrapper_; }
+      set {
+        optionalStringWrapper_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_bytes_wrapper" field.</summary>
+    public const int OptionalBytesWrapperFieldNumber = 209;
+    private static readonly pb::FieldCodec<pb::ByteString> _single_optionalBytesWrapper_codec = pb::FieldCodec.ForClassWrapper<pb::ByteString>(1674);
+    private pb::ByteString optionalBytesWrapper_;
+    public pb::ByteString OptionalBytesWrapper {
+      get { return optionalBytesWrapper_; }
+      set {
+        optionalBytesWrapper_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "repeated_bool_wrapper" field.</summary>
+    public const int RepeatedBoolWrapperFieldNumber = 211;
+    private static readonly pb::FieldCodec<bool?> _repeated_repeatedBoolWrapper_codec
+        = pb::FieldCodec.ForStructWrapper<bool>(1690);
+    private readonly pbc::RepeatedField<bool?> repeatedBoolWrapper_ = new pbc::RepeatedField<bool?>();
+    public pbc::RepeatedField<bool?> RepeatedBoolWrapper {
+      get { return repeatedBoolWrapper_; }
+    }
+
+    /// <summary>Field number for the "repeated_int32_wrapper" field.</summary>
+    public const int RepeatedInt32WrapperFieldNumber = 212;
+    private static readonly pb::FieldCodec<int?> _repeated_repeatedInt32Wrapper_codec
+        = pb::FieldCodec.ForStructWrapper<int>(1698);
+    private readonly pbc::RepeatedField<int?> repeatedInt32Wrapper_ = new pbc::RepeatedField<int?>();
+    public pbc::RepeatedField<int?> RepeatedInt32Wrapper {
+      get { return repeatedInt32Wrapper_; }
+    }
+
+    /// <summary>Field number for the "repeated_int64_wrapper" field.</summary>
+    public const int RepeatedInt64WrapperFieldNumber = 213;
+    private static readonly pb::FieldCodec<long?> _repeated_repeatedInt64Wrapper_codec
+        = pb::FieldCodec.ForStructWrapper<long>(1706);
+    private readonly pbc::RepeatedField<long?> repeatedInt64Wrapper_ = new pbc::RepeatedField<long?>();
+    public pbc::RepeatedField<long?> RepeatedInt64Wrapper {
+      get { return repeatedInt64Wrapper_; }
+    }
+
+    /// <summary>Field number for the "repeated_uint32_wrapper" field.</summary>
+    public const int RepeatedUint32WrapperFieldNumber = 214;
+    private static readonly pb::FieldCodec<uint?> _repeated_repeatedUint32Wrapper_codec
+        = pb::FieldCodec.ForStructWrapper<uint>(1714);
+    private readonly pbc::RepeatedField<uint?> repeatedUint32Wrapper_ = new pbc::RepeatedField<uint?>();
+    public pbc::RepeatedField<uint?> RepeatedUint32Wrapper {
+      get { return repeatedUint32Wrapper_; }
+    }
+
+    /// <summary>Field number for the "repeated_uint64_wrapper" field.</summary>
+    public const int RepeatedUint64WrapperFieldNumber = 215;
+    private static readonly pb::FieldCodec<ulong?> _repeated_repeatedUint64Wrapper_codec
+        = pb::FieldCodec.ForStructWrapper<ulong>(1722);
+    private readonly pbc::RepeatedField<ulong?> repeatedUint64Wrapper_ = new pbc::RepeatedField<ulong?>();
+    public pbc::RepeatedField<ulong?> RepeatedUint64Wrapper {
+      get { return repeatedUint64Wrapper_; }
+    }
+
+    /// <summary>Field number for the "repeated_float_wrapper" field.</summary>
+    public const int RepeatedFloatWrapperFieldNumber = 216;
+    private static readonly pb::FieldCodec<float?> _repeated_repeatedFloatWrapper_codec
+        = pb::FieldCodec.ForStructWrapper<float>(1730);
+    private readonly pbc::RepeatedField<float?> repeatedFloatWrapper_ = new pbc::RepeatedField<float?>();
+    public pbc::RepeatedField<float?> RepeatedFloatWrapper {
+      get { return repeatedFloatWrapper_; }
+    }
+
+    /// <summary>Field number for the "repeated_double_wrapper" field.</summary>
+    public const int RepeatedDoubleWrapperFieldNumber = 217;
+    private static readonly pb::FieldCodec<double?> _repeated_repeatedDoubleWrapper_codec
+        = pb::FieldCodec.ForStructWrapper<double>(1738);
+    private readonly pbc::RepeatedField<double?> repeatedDoubleWrapper_ = new pbc::RepeatedField<double?>();
+    public pbc::RepeatedField<double?> RepeatedDoubleWrapper {
+      get { return repeatedDoubleWrapper_; }
+    }
+
+    /// <summary>Field number for the "repeated_string_wrapper" field.</summary>
+    public const int RepeatedStringWrapperFieldNumber = 218;
+    private static readonly pb::FieldCodec<string> _repeated_repeatedStringWrapper_codec
+        = pb::FieldCodec.ForClassWrapper<string>(1746);
+    private readonly pbc::RepeatedField<string> repeatedStringWrapper_ = new pbc::RepeatedField<string>();
+    public pbc::RepeatedField<string> RepeatedStringWrapper {
+      get { return repeatedStringWrapper_; }
+    }
+
+    /// <summary>Field number for the "repeated_bytes_wrapper" field.</summary>
+    public const int RepeatedBytesWrapperFieldNumber = 219;
+    private static readonly pb::FieldCodec<pb::ByteString> _repeated_repeatedBytesWrapper_codec
+        = pb::FieldCodec.ForClassWrapper<pb::ByteString>(1754);
+    private readonly pbc::RepeatedField<pb::ByteString> repeatedBytesWrapper_ = new pbc::RepeatedField<pb::ByteString>();
+    public pbc::RepeatedField<pb::ByteString> RepeatedBytesWrapper {
+      get { return repeatedBytesWrapper_; }
+    }
+
+    /// <summary>Field number for the "optional_duration" field.</summary>
+    public const int OptionalDurationFieldNumber = 301;
+    private global::Google.Protobuf.WellKnownTypes.Duration optionalDuration_;
+    public global::Google.Protobuf.WellKnownTypes.Duration OptionalDuration {
+      get { return optionalDuration_; }
+      set {
+        optionalDuration_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_timestamp" field.</summary>
+    public const int OptionalTimestampFieldNumber = 302;
+    private global::Google.Protobuf.WellKnownTypes.Timestamp optionalTimestamp_;
+    public global::Google.Protobuf.WellKnownTypes.Timestamp OptionalTimestamp {
+      get { return optionalTimestamp_; }
+      set {
+        optionalTimestamp_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_field_mask" field.</summary>
+    public const int OptionalFieldMaskFieldNumber = 303;
+    private global::Google.Protobuf.WellKnownTypes.FieldMask optionalFieldMask_;
+    public global::Google.Protobuf.WellKnownTypes.FieldMask OptionalFieldMask {
+      get { return optionalFieldMask_; }
+      set {
+        optionalFieldMask_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_struct" field.</summary>
+    public const int OptionalStructFieldNumber = 304;
+    private global::Google.Protobuf.WellKnownTypes.Struct optionalStruct_;
+    public global::Google.Protobuf.WellKnownTypes.Struct OptionalStruct {
+      get { return optionalStruct_; }
+      set {
+        optionalStruct_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_any" field.</summary>
+    public const int OptionalAnyFieldNumber = 305;
+    private global::Google.Protobuf.WellKnownTypes.Any optionalAny_;
+    public global::Google.Protobuf.WellKnownTypes.Any OptionalAny {
+      get { return optionalAny_; }
+      set {
+        optionalAny_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_value" field.</summary>
+    public const int OptionalValueFieldNumber = 306;
+    private global::Google.Protobuf.WellKnownTypes.Value optionalValue_;
+    public global::Google.Protobuf.WellKnownTypes.Value OptionalValue {
+      get { return optionalValue_; }
+      set {
+        optionalValue_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "repeated_duration" field.</summary>
+    public const int RepeatedDurationFieldNumber = 311;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Duration> _repeated_repeatedDuration_codec
+        = pb::FieldCodec.ForMessage(2490, global::Google.Protobuf.WellKnownTypes.Duration.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Duration> repeatedDuration_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Duration>();
+    public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Duration> RepeatedDuration {
+      get { return repeatedDuration_; }
+    }
+
+    /// <summary>Field number for the "repeated_timestamp" field.</summary>
+    public const int RepeatedTimestampFieldNumber = 312;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Timestamp> _repeated_repeatedTimestamp_codec
+        = pb::FieldCodec.ForMessage(2498, global::Google.Protobuf.WellKnownTypes.Timestamp.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Timestamp> repeatedTimestamp_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Timestamp>();
+    public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Timestamp> RepeatedTimestamp {
+      get { return repeatedTimestamp_; }
+    }
+
+    /// <summary>Field number for the "repeated_fieldmask" field.</summary>
+    public const int RepeatedFieldmaskFieldNumber = 313;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.FieldMask> _repeated_repeatedFieldmask_codec
+        = pb::FieldCodec.ForMessage(2506, global::Google.Protobuf.WellKnownTypes.FieldMask.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.FieldMask> repeatedFieldmask_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.FieldMask>();
+    public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.FieldMask> RepeatedFieldmask {
+      get { return repeatedFieldmask_; }
+    }
+
+    /// <summary>Field number for the "repeated_struct" field.</summary>
+    public const int RepeatedStructFieldNumber = 324;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Struct> _repeated_repeatedStruct_codec
+        = pb::FieldCodec.ForMessage(2594, global::Google.Protobuf.WellKnownTypes.Struct.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Struct> repeatedStruct_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Struct>();
+    public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Struct> RepeatedStruct {
+      get { return repeatedStruct_; }
+    }
+
+    /// <summary>Field number for the "repeated_any" field.</summary>
+    public const int RepeatedAnyFieldNumber = 315;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Any> _repeated_repeatedAny_codec
+        = pb::FieldCodec.ForMessage(2522, global::Google.Protobuf.WellKnownTypes.Any.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Any> repeatedAny_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Any>();
+    public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Any> RepeatedAny {
+      get { return repeatedAny_; }
+    }
+
+    /// <summary>Field number for the "repeated_value" field.</summary>
+    public const int RepeatedValueFieldNumber = 316;
+    private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Value> _repeated_repeatedValue_codec
+        = pb::FieldCodec.ForMessage(2530, global::Google.Protobuf.WellKnownTypes.Value.Parser);
+    private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Value> repeatedValue_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Value>();
+    public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Value> RepeatedValue {
+      get { return repeatedValue_; }
+    }
+
+    /// <summary>Field number for the "fieldname1" field.</summary>
+    public const int Fieldname1FieldNumber = 401;
+    private int fieldname1_;
+    /// <summary>
+    ///  Test field-name-to-JSON-name convention.
+    /// </summary>
+    public int Fieldname1 {
+      get { return fieldname1_; }
+      set {
+        fieldname1_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "field_name2" field.</summary>
+    public const int FieldName2FieldNumber = 402;
+    private int fieldName2_;
+    public int FieldName2 {
+      get { return fieldName2_; }
+      set {
+        fieldName2_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "_field_name3" field.</summary>
+    public const int FieldName3FieldNumber = 403;
+    private int FieldName3_;
+    public int FieldName3 {
+      get { return FieldName3_; }
+      set {
+        FieldName3_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "field__name4_" field.</summary>
+    public const int FieldName4FieldNumber = 404;
+    private int fieldName4_;
+    public int FieldName4 {
+      get { return fieldName4_; }
+      set {
+        fieldName4_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "field0name5" field.</summary>
+    public const int Field0Name5FieldNumber = 405;
+    private int field0Name5_;
+    public int Field0Name5 {
+      get { return field0Name5_; }
+      set {
+        field0Name5_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "field_0_name6" field.</summary>
+    public const int Field0Name6FieldNumber = 406;
+    private int field0Name6_;
+    public int Field0Name6 {
+      get { return field0Name6_; }
+      set {
+        field0Name6_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "fieldName7" field.</summary>
+    public const int FieldName7FieldNumber = 407;
+    private int fieldName7_;
+    public int FieldName7 {
+      get { return fieldName7_; }
+      set {
+        fieldName7_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "FieldName8" field.</summary>
+    public const int FieldName8FieldNumber = 408;
+    private int fieldName8_;
+    public int FieldName8 {
+      get { return fieldName8_; }
+      set {
+        fieldName8_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "field_Name9" field.</summary>
+    public const int FieldName9FieldNumber = 409;
+    private int fieldName9_;
+    public int FieldName9 {
+      get { return fieldName9_; }
+      set {
+        fieldName9_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Field_Name10" field.</summary>
+    public const int FieldName10FieldNumber = 410;
+    private int fieldName10_;
+    public int FieldName10 {
+      get { return fieldName10_; }
+      set {
+        fieldName10_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "FIELD_NAME11" field.</summary>
+    public const int FIELDNAME11FieldNumber = 411;
+    private int fIELDNAME11_;
+    public int FIELDNAME11 {
+      get { return fIELDNAME11_; }
+      set {
+        fIELDNAME11_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "FIELD_name12" field.</summary>
+    public const int FIELDName12FieldNumber = 412;
+    private int fIELDName12_;
+    public int FIELDName12 {
+      get { return fIELDName12_; }
+      set {
+        fIELDName12_ = value;
+      }
+    }
+
     private object oneofField_;
+    /// <summary>Enum of possible cases for the "oneof_field" oneof.</summary>
     public enum OneofFieldOneofCase {
       None = 0,
       OneofUint32 = 111,
@@ -1334,6 +2014,49 @@ namespace Conformance {
       if (!object.Equals(OneofNestedMessage, other.OneofNestedMessage)) return false;
       if (OneofString != other.OneofString) return false;
       if (OneofBytes != other.OneofBytes) return false;
+      if (OptionalBoolWrapper != other.OptionalBoolWrapper) return false;
+      if (OptionalInt32Wrapper != other.OptionalInt32Wrapper) return false;
+      if (OptionalInt64Wrapper != other.OptionalInt64Wrapper) return false;
+      if (OptionalUint32Wrapper != other.OptionalUint32Wrapper) return false;
+      if (OptionalUint64Wrapper != other.OptionalUint64Wrapper) return false;
+      if (OptionalFloatWrapper != other.OptionalFloatWrapper) return false;
+      if (OptionalDoubleWrapper != other.OptionalDoubleWrapper) return false;
+      if (OptionalStringWrapper != other.OptionalStringWrapper) return false;
+      if (OptionalBytesWrapper != other.OptionalBytesWrapper) return false;
+      if(!repeatedBoolWrapper_.Equals(other.repeatedBoolWrapper_)) return false;
+      if(!repeatedInt32Wrapper_.Equals(other.repeatedInt32Wrapper_)) return false;
+      if(!repeatedInt64Wrapper_.Equals(other.repeatedInt64Wrapper_)) return false;
+      if(!repeatedUint32Wrapper_.Equals(other.repeatedUint32Wrapper_)) return false;
+      if(!repeatedUint64Wrapper_.Equals(other.repeatedUint64Wrapper_)) return false;
+      if(!repeatedFloatWrapper_.Equals(other.repeatedFloatWrapper_)) return false;
+      if(!repeatedDoubleWrapper_.Equals(other.repeatedDoubleWrapper_)) return false;
+      if(!repeatedStringWrapper_.Equals(other.repeatedStringWrapper_)) return false;
+      if(!repeatedBytesWrapper_.Equals(other.repeatedBytesWrapper_)) return false;
+      if (!object.Equals(OptionalDuration, other.OptionalDuration)) return false;
+      if (!object.Equals(OptionalTimestamp, other.OptionalTimestamp)) return false;
+      if (!object.Equals(OptionalFieldMask, other.OptionalFieldMask)) return false;
+      if (!object.Equals(OptionalStruct, other.OptionalStruct)) return false;
+      if (!object.Equals(OptionalAny, other.OptionalAny)) return false;
+      if (!object.Equals(OptionalValue, other.OptionalValue)) return false;
+      if(!repeatedDuration_.Equals(other.repeatedDuration_)) return false;
+      if(!repeatedTimestamp_.Equals(other.repeatedTimestamp_)) return false;
+      if(!repeatedFieldmask_.Equals(other.repeatedFieldmask_)) return false;
+      if(!repeatedStruct_.Equals(other.repeatedStruct_)) return false;
+      if(!repeatedAny_.Equals(other.repeatedAny_)) return false;
+      if(!repeatedValue_.Equals(other.repeatedValue_)) return false;
+      if (Fieldname1 != other.Fieldname1) return false;
+      if (FieldName2 != other.FieldName2) return false;
+      if (FieldName3 != other.FieldName3) return false;
+      if (FieldName4 != other.FieldName4) return false;
+      if (Field0Name5 != other.Field0Name5) return false;
+      if (Field0Name6 != other.Field0Name6) return false;
+      if (FieldName7 != other.FieldName7) return false;
+      if (FieldName8 != other.FieldName8) return false;
+      if (FieldName9 != other.FieldName9) return false;
+      if (FieldName10 != other.FieldName10) return false;
+      if (FIELDNAME11 != other.FIELDNAME11) return false;
+      if (FIELDName12 != other.FIELDName12) return false;
+      if (OneofFieldCase != other.OneofFieldCase) return false;
       return true;
     }
 
@@ -1405,11 +2128,54 @@ namespace Conformance {
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) hash ^= OneofNestedMessage.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) hash ^= OneofString.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) hash ^= OneofBytes.GetHashCode();
+      if (optionalBoolWrapper_ != null) hash ^= OptionalBoolWrapper.GetHashCode();
+      if (optionalInt32Wrapper_ != null) hash ^= OptionalInt32Wrapper.GetHashCode();
+      if (optionalInt64Wrapper_ != null) hash ^= OptionalInt64Wrapper.GetHashCode();
+      if (optionalUint32Wrapper_ != null) hash ^= OptionalUint32Wrapper.GetHashCode();
+      if (optionalUint64Wrapper_ != null) hash ^= OptionalUint64Wrapper.GetHashCode();
+      if (optionalFloatWrapper_ != null) hash ^= OptionalFloatWrapper.GetHashCode();
+      if (optionalDoubleWrapper_ != null) hash ^= OptionalDoubleWrapper.GetHashCode();
+      if (optionalStringWrapper_ != null) hash ^= OptionalStringWrapper.GetHashCode();
+      if (optionalBytesWrapper_ != null) hash ^= OptionalBytesWrapper.GetHashCode();
+      hash ^= repeatedBoolWrapper_.GetHashCode();
+      hash ^= repeatedInt32Wrapper_.GetHashCode();
+      hash ^= repeatedInt64Wrapper_.GetHashCode();
+      hash ^= repeatedUint32Wrapper_.GetHashCode();
+      hash ^= repeatedUint64Wrapper_.GetHashCode();
+      hash ^= repeatedFloatWrapper_.GetHashCode();
+      hash ^= repeatedDoubleWrapper_.GetHashCode();
+      hash ^= repeatedStringWrapper_.GetHashCode();
+      hash ^= repeatedBytesWrapper_.GetHashCode();
+      if (optionalDuration_ != null) hash ^= OptionalDuration.GetHashCode();
+      if (optionalTimestamp_ != null) hash ^= OptionalTimestamp.GetHashCode();
+      if (optionalFieldMask_ != null) hash ^= OptionalFieldMask.GetHashCode();
+      if (optionalStruct_ != null) hash ^= OptionalStruct.GetHashCode();
+      if (optionalAny_ != null) hash ^= OptionalAny.GetHashCode();
+      if (optionalValue_ != null) hash ^= OptionalValue.GetHashCode();
+      hash ^= repeatedDuration_.GetHashCode();
+      hash ^= repeatedTimestamp_.GetHashCode();
+      hash ^= repeatedFieldmask_.GetHashCode();
+      hash ^= repeatedStruct_.GetHashCode();
+      hash ^= repeatedAny_.GetHashCode();
+      hash ^= repeatedValue_.GetHashCode();
+      if (Fieldname1 != 0) hash ^= Fieldname1.GetHashCode();
+      if (FieldName2 != 0) hash ^= FieldName2.GetHashCode();
+      if (FieldName3 != 0) hash ^= FieldName3.GetHashCode();
+      if (FieldName4 != 0) hash ^= FieldName4.GetHashCode();
+      if (Field0Name5 != 0) hash ^= Field0Name5.GetHashCode();
+      if (Field0Name6 != 0) hash ^= Field0Name6.GetHashCode();
+      if (FieldName7 != 0) hash ^= FieldName7.GetHashCode();
+      if (FieldName8 != 0) hash ^= FieldName8.GetHashCode();
+      if (FieldName9 != 0) hash ^= FieldName9.GetHashCode();
+      if (FieldName10 != 0) hash ^= FieldName10.GetHashCode();
+      if (FIELDNAME11 != 0) hash ^= FIELDNAME11.GetHashCode();
+      if (FIELDName12 != 0) hash ^= FIELDName12.GetHashCode();
+      hash ^= (int) oneofFieldCase_;
       return hash;
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -1557,6 +2323,120 @@ namespace Conformance {
         output.WriteRawTag(146, 7);
         output.WriteBytes(OneofBytes);
       }
+      if (optionalBoolWrapper_ != null) {
+        _single_optionalBoolWrapper_codec.WriteTagAndValue(output, OptionalBoolWrapper);
+      }
+      if (optionalInt32Wrapper_ != null) {
+        _single_optionalInt32Wrapper_codec.WriteTagAndValue(output, OptionalInt32Wrapper);
+      }
+      if (optionalInt64Wrapper_ != null) {
+        _single_optionalInt64Wrapper_codec.WriteTagAndValue(output, OptionalInt64Wrapper);
+      }
+      if (optionalUint32Wrapper_ != null) {
+        _single_optionalUint32Wrapper_codec.WriteTagAndValue(output, OptionalUint32Wrapper);
+      }
+      if (optionalUint64Wrapper_ != null) {
+        _single_optionalUint64Wrapper_codec.WriteTagAndValue(output, OptionalUint64Wrapper);
+      }
+      if (optionalFloatWrapper_ != null) {
+        _single_optionalFloatWrapper_codec.WriteTagAndValue(output, OptionalFloatWrapper);
+      }
+      if (optionalDoubleWrapper_ != null) {
+        _single_optionalDoubleWrapper_codec.WriteTagAndValue(output, OptionalDoubleWrapper);
+      }
+      if (optionalStringWrapper_ != null) {
+        _single_optionalStringWrapper_codec.WriteTagAndValue(output, OptionalStringWrapper);
+      }
+      if (optionalBytesWrapper_ != null) {
+        _single_optionalBytesWrapper_codec.WriteTagAndValue(output, OptionalBytesWrapper);
+      }
+      repeatedBoolWrapper_.WriteTo(output, _repeated_repeatedBoolWrapper_codec);
+      repeatedInt32Wrapper_.WriteTo(output, _repeated_repeatedInt32Wrapper_codec);
+      repeatedInt64Wrapper_.WriteTo(output, _repeated_repeatedInt64Wrapper_codec);
+      repeatedUint32Wrapper_.WriteTo(output, _repeated_repeatedUint32Wrapper_codec);
+      repeatedUint64Wrapper_.WriteTo(output, _repeated_repeatedUint64Wrapper_codec);
+      repeatedFloatWrapper_.WriteTo(output, _repeated_repeatedFloatWrapper_codec);
+      repeatedDoubleWrapper_.WriteTo(output, _repeated_repeatedDoubleWrapper_codec);
+      repeatedStringWrapper_.WriteTo(output, _repeated_repeatedStringWrapper_codec);
+      repeatedBytesWrapper_.WriteTo(output, _repeated_repeatedBytesWrapper_codec);
+      if (optionalDuration_ != null) {
+        output.WriteRawTag(234, 18);
+        output.WriteMessage(OptionalDuration);
+      }
+      if (optionalTimestamp_ != null) {
+        output.WriteRawTag(242, 18);
+        output.WriteMessage(OptionalTimestamp);
+      }
+      if (optionalFieldMask_ != null) {
+        output.WriteRawTag(250, 18);
+        output.WriteMessage(OptionalFieldMask);
+      }
+      if (optionalStruct_ != null) {
+        output.WriteRawTag(130, 19);
+        output.WriteMessage(OptionalStruct);
+      }
+      if (optionalAny_ != null) {
+        output.WriteRawTag(138, 19);
+        output.WriteMessage(OptionalAny);
+      }
+      if (optionalValue_ != null) {
+        output.WriteRawTag(146, 19);
+        output.WriteMessage(OptionalValue);
+      }
+      repeatedDuration_.WriteTo(output, _repeated_repeatedDuration_codec);
+      repeatedTimestamp_.WriteTo(output, _repeated_repeatedTimestamp_codec);
+      repeatedFieldmask_.WriteTo(output, _repeated_repeatedFieldmask_codec);
+      repeatedAny_.WriteTo(output, _repeated_repeatedAny_codec);
+      repeatedValue_.WriteTo(output, _repeated_repeatedValue_codec);
+      repeatedStruct_.WriteTo(output, _repeated_repeatedStruct_codec);
+      if (Fieldname1 != 0) {
+        output.WriteRawTag(136, 25);
+        output.WriteInt32(Fieldname1);
+      }
+      if (FieldName2 != 0) {
+        output.WriteRawTag(144, 25);
+        output.WriteInt32(FieldName2);
+      }
+      if (FieldName3 != 0) {
+        output.WriteRawTag(152, 25);
+        output.WriteInt32(FieldName3);
+      }
+      if (FieldName4 != 0) {
+        output.WriteRawTag(160, 25);
+        output.WriteInt32(FieldName4);
+      }
+      if (Field0Name5 != 0) {
+        output.WriteRawTag(168, 25);
+        output.WriteInt32(Field0Name5);
+      }
+      if (Field0Name6 != 0) {
+        output.WriteRawTag(176, 25);
+        output.WriteInt32(Field0Name6);
+      }
+      if (FieldName7 != 0) {
+        output.WriteRawTag(184, 25);
+        output.WriteInt32(FieldName7);
+      }
+      if (FieldName8 != 0) {
+        output.WriteRawTag(192, 25);
+        output.WriteInt32(FieldName8);
+      }
+      if (FieldName9 != 0) {
+        output.WriteRawTag(200, 25);
+        output.WriteInt32(FieldName9);
+      }
+      if (FieldName10 != 0) {
+        output.WriteRawTag(208, 25);
+        output.WriteInt32(FieldName10);
+      }
+      if (FIELDNAME11 != 0) {
+        output.WriteRawTag(216, 25);
+        output.WriteInt32(FIELDNAME11);
+      }
+      if (FIELDName12 != 0) {
+        output.WriteRawTag(224, 25);
+        output.WriteInt32(FIELDName12);
+      }
     }
 
     public int CalculateSize() {
@@ -1678,6 +2558,102 @@ namespace Conformance {
       }
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) {
         size += 2 + pb::CodedOutputStream.ComputeBytesSize(OneofBytes);
+      }
+      if (optionalBoolWrapper_ != null) {
+        size += _single_optionalBoolWrapper_codec.CalculateSizeWithTag(OptionalBoolWrapper);
+      }
+      if (optionalInt32Wrapper_ != null) {
+        size += _single_optionalInt32Wrapper_codec.CalculateSizeWithTag(OptionalInt32Wrapper);
+      }
+      if (optionalInt64Wrapper_ != null) {
+        size += _single_optionalInt64Wrapper_codec.CalculateSizeWithTag(OptionalInt64Wrapper);
+      }
+      if (optionalUint32Wrapper_ != null) {
+        size += _single_optionalUint32Wrapper_codec.CalculateSizeWithTag(OptionalUint32Wrapper);
+      }
+      if (optionalUint64Wrapper_ != null) {
+        size += _single_optionalUint64Wrapper_codec.CalculateSizeWithTag(OptionalUint64Wrapper);
+      }
+      if (optionalFloatWrapper_ != null) {
+        size += _single_optionalFloatWrapper_codec.CalculateSizeWithTag(OptionalFloatWrapper);
+      }
+      if (optionalDoubleWrapper_ != null) {
+        size += _single_optionalDoubleWrapper_codec.CalculateSizeWithTag(OptionalDoubleWrapper);
+      }
+      if (optionalStringWrapper_ != null) {
+        size += _single_optionalStringWrapper_codec.CalculateSizeWithTag(OptionalStringWrapper);
+      }
+      if (optionalBytesWrapper_ != null) {
+        size += _single_optionalBytesWrapper_codec.CalculateSizeWithTag(OptionalBytesWrapper);
+      }
+      size += repeatedBoolWrapper_.CalculateSize(_repeated_repeatedBoolWrapper_codec);
+      size += repeatedInt32Wrapper_.CalculateSize(_repeated_repeatedInt32Wrapper_codec);
+      size += repeatedInt64Wrapper_.CalculateSize(_repeated_repeatedInt64Wrapper_codec);
+      size += repeatedUint32Wrapper_.CalculateSize(_repeated_repeatedUint32Wrapper_codec);
+      size += repeatedUint64Wrapper_.CalculateSize(_repeated_repeatedUint64Wrapper_codec);
+      size += repeatedFloatWrapper_.CalculateSize(_repeated_repeatedFloatWrapper_codec);
+      size += repeatedDoubleWrapper_.CalculateSize(_repeated_repeatedDoubleWrapper_codec);
+      size += repeatedStringWrapper_.CalculateSize(_repeated_repeatedStringWrapper_codec);
+      size += repeatedBytesWrapper_.CalculateSize(_repeated_repeatedBytesWrapper_codec);
+      if (optionalDuration_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalDuration);
+      }
+      if (optionalTimestamp_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalTimestamp);
+      }
+      if (optionalFieldMask_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalFieldMask);
+      }
+      if (optionalStruct_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalStruct);
+      }
+      if (optionalAny_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalAny);
+      }
+      if (optionalValue_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalValue);
+      }
+      size += repeatedDuration_.CalculateSize(_repeated_repeatedDuration_codec);
+      size += repeatedTimestamp_.CalculateSize(_repeated_repeatedTimestamp_codec);
+      size += repeatedFieldmask_.CalculateSize(_repeated_repeatedFieldmask_codec);
+      size += repeatedStruct_.CalculateSize(_repeated_repeatedStruct_codec);
+      size += repeatedAny_.CalculateSize(_repeated_repeatedAny_codec);
+      size += repeatedValue_.CalculateSize(_repeated_repeatedValue_codec);
+      if (Fieldname1 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Fieldname1);
+      }
+      if (FieldName2 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName2);
+      }
+      if (FieldName3 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName3);
+      }
+      if (FieldName4 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName4);
+      }
+      if (Field0Name5 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field0Name5);
+      }
+      if (Field0Name6 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(Field0Name6);
+      }
+      if (FieldName7 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName7);
+      }
+      if (FieldName8 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName8);
+      }
+      if (FieldName9 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName9);
+      }
+      if (FieldName10 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName10);
+      }
+      if (FIELDNAME11 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FIELDNAME11);
+      }
+      if (FIELDName12 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FIELDName12);
       }
       return size;
     }
@@ -1801,6 +2777,138 @@ namespace Conformance {
       mapStringForeignMessage_.Add(other.mapStringForeignMessage_);
       mapStringNestedEnum_.Add(other.mapStringNestedEnum_);
       mapStringForeignEnum_.Add(other.mapStringForeignEnum_);
+      if (other.optionalBoolWrapper_ != null) {
+        if (optionalBoolWrapper_ == null || other.OptionalBoolWrapper != false) {
+          OptionalBoolWrapper = other.OptionalBoolWrapper;
+        }
+      }
+      if (other.optionalInt32Wrapper_ != null) {
+        if (optionalInt32Wrapper_ == null || other.OptionalInt32Wrapper != 0) {
+          OptionalInt32Wrapper = other.OptionalInt32Wrapper;
+        }
+      }
+      if (other.optionalInt64Wrapper_ != null) {
+        if (optionalInt64Wrapper_ == null || other.OptionalInt64Wrapper != 0L) {
+          OptionalInt64Wrapper = other.OptionalInt64Wrapper;
+        }
+      }
+      if (other.optionalUint32Wrapper_ != null) {
+        if (optionalUint32Wrapper_ == null || other.OptionalUint32Wrapper != 0) {
+          OptionalUint32Wrapper = other.OptionalUint32Wrapper;
+        }
+      }
+      if (other.optionalUint64Wrapper_ != null) {
+        if (optionalUint64Wrapper_ == null || other.OptionalUint64Wrapper != 0UL) {
+          OptionalUint64Wrapper = other.OptionalUint64Wrapper;
+        }
+      }
+      if (other.optionalFloatWrapper_ != null) {
+        if (optionalFloatWrapper_ == null || other.OptionalFloatWrapper != 0F) {
+          OptionalFloatWrapper = other.OptionalFloatWrapper;
+        }
+      }
+      if (other.optionalDoubleWrapper_ != null) {
+        if (optionalDoubleWrapper_ == null || other.OptionalDoubleWrapper != 0D) {
+          OptionalDoubleWrapper = other.OptionalDoubleWrapper;
+        }
+      }
+      if (other.optionalStringWrapper_ != null) {
+        if (optionalStringWrapper_ == null || other.OptionalStringWrapper != "") {
+          OptionalStringWrapper = other.OptionalStringWrapper;
+        }
+      }
+      if (other.optionalBytesWrapper_ != null) {
+        if (optionalBytesWrapper_ == null || other.OptionalBytesWrapper != pb::ByteString.Empty) {
+          OptionalBytesWrapper = other.OptionalBytesWrapper;
+        }
+      }
+      repeatedBoolWrapper_.Add(other.repeatedBoolWrapper_);
+      repeatedInt32Wrapper_.Add(other.repeatedInt32Wrapper_);
+      repeatedInt64Wrapper_.Add(other.repeatedInt64Wrapper_);
+      repeatedUint32Wrapper_.Add(other.repeatedUint32Wrapper_);
+      repeatedUint64Wrapper_.Add(other.repeatedUint64Wrapper_);
+      repeatedFloatWrapper_.Add(other.repeatedFloatWrapper_);
+      repeatedDoubleWrapper_.Add(other.repeatedDoubleWrapper_);
+      repeatedStringWrapper_.Add(other.repeatedStringWrapper_);
+      repeatedBytesWrapper_.Add(other.repeatedBytesWrapper_);
+      if (other.optionalDuration_ != null) {
+        if (optionalDuration_ == null) {
+          optionalDuration_ = new global::Google.Protobuf.WellKnownTypes.Duration();
+        }
+        OptionalDuration.MergeFrom(other.OptionalDuration);
+      }
+      if (other.optionalTimestamp_ != null) {
+        if (optionalTimestamp_ == null) {
+          optionalTimestamp_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+        }
+        OptionalTimestamp.MergeFrom(other.OptionalTimestamp);
+      }
+      if (other.optionalFieldMask_ != null) {
+        if (optionalFieldMask_ == null) {
+          optionalFieldMask_ = new global::Google.Protobuf.WellKnownTypes.FieldMask();
+        }
+        OptionalFieldMask.MergeFrom(other.OptionalFieldMask);
+      }
+      if (other.optionalStruct_ != null) {
+        if (optionalStruct_ == null) {
+          optionalStruct_ = new global::Google.Protobuf.WellKnownTypes.Struct();
+        }
+        OptionalStruct.MergeFrom(other.OptionalStruct);
+      }
+      if (other.optionalAny_ != null) {
+        if (optionalAny_ == null) {
+          optionalAny_ = new global::Google.Protobuf.WellKnownTypes.Any();
+        }
+        OptionalAny.MergeFrom(other.OptionalAny);
+      }
+      if (other.optionalValue_ != null) {
+        if (optionalValue_ == null) {
+          optionalValue_ = new global::Google.Protobuf.WellKnownTypes.Value();
+        }
+        OptionalValue.MergeFrom(other.OptionalValue);
+      }
+      repeatedDuration_.Add(other.repeatedDuration_);
+      repeatedTimestamp_.Add(other.repeatedTimestamp_);
+      repeatedFieldmask_.Add(other.repeatedFieldmask_);
+      repeatedStruct_.Add(other.repeatedStruct_);
+      repeatedAny_.Add(other.repeatedAny_);
+      repeatedValue_.Add(other.repeatedValue_);
+      if (other.Fieldname1 != 0) {
+        Fieldname1 = other.Fieldname1;
+      }
+      if (other.FieldName2 != 0) {
+        FieldName2 = other.FieldName2;
+      }
+      if (other.FieldName3 != 0) {
+        FieldName3 = other.FieldName3;
+      }
+      if (other.FieldName4 != 0) {
+        FieldName4 = other.FieldName4;
+      }
+      if (other.Field0Name5 != 0) {
+        Field0Name5 = other.Field0Name5;
+      }
+      if (other.Field0Name6 != 0) {
+        Field0Name6 = other.Field0Name6;
+      }
+      if (other.FieldName7 != 0) {
+        FieldName7 = other.FieldName7;
+      }
+      if (other.FieldName8 != 0) {
+        FieldName8 = other.FieldName8;
+      }
+      if (other.FieldName9 != 0) {
+        FieldName9 = other.FieldName9;
+      }
+      if (other.FieldName10 != 0) {
+        FieldName10 = other.FieldName10;
+      }
+      if (other.FIELDNAME11 != 0) {
+        FIELDNAME11 = other.FIELDNAME11;
+      }
+      if (other.FIELDName12 != 0) {
+        FIELDName12 = other.FIELDName12;
+      }
       switch (other.OneofFieldCase) {
         case OneofFieldOneofCase.OneofUint32:
           OneofUint32 = other.OneofUint32;
@@ -2118,17 +3226,234 @@ namespace Conformance {
             OneofBytes = input.ReadBytes();
             break;
           }
+          case 1610: {
+            bool? value = _single_optionalBoolWrapper_codec.Read(input);
+            if (optionalBoolWrapper_ == null || value != false) {
+              OptionalBoolWrapper = value;
+            }
+            break;
+          }
+          case 1618: {
+            int? value = _single_optionalInt32Wrapper_codec.Read(input);
+            if (optionalInt32Wrapper_ == null || value != 0) {
+              OptionalInt32Wrapper = value;
+            }
+            break;
+          }
+          case 1626: {
+            long? value = _single_optionalInt64Wrapper_codec.Read(input);
+            if (optionalInt64Wrapper_ == null || value != 0L) {
+              OptionalInt64Wrapper = value;
+            }
+            break;
+          }
+          case 1634: {
+            uint? value = _single_optionalUint32Wrapper_codec.Read(input);
+            if (optionalUint32Wrapper_ == null || value != 0) {
+              OptionalUint32Wrapper = value;
+            }
+            break;
+          }
+          case 1642: {
+            ulong? value = _single_optionalUint64Wrapper_codec.Read(input);
+            if (optionalUint64Wrapper_ == null || value != 0UL) {
+              OptionalUint64Wrapper = value;
+            }
+            break;
+          }
+          case 1650: {
+            float? value = _single_optionalFloatWrapper_codec.Read(input);
+            if (optionalFloatWrapper_ == null || value != 0F) {
+              OptionalFloatWrapper = value;
+            }
+            break;
+          }
+          case 1658: {
+            double? value = _single_optionalDoubleWrapper_codec.Read(input);
+            if (optionalDoubleWrapper_ == null || value != 0D) {
+              OptionalDoubleWrapper = value;
+            }
+            break;
+          }
+          case 1666: {
+            string value = _single_optionalStringWrapper_codec.Read(input);
+            if (optionalStringWrapper_ == null || value != "") {
+              OptionalStringWrapper = value;
+            }
+            break;
+          }
+          case 1674: {
+            pb::ByteString value = _single_optionalBytesWrapper_codec.Read(input);
+            if (optionalBytesWrapper_ == null || value != pb::ByteString.Empty) {
+              OptionalBytesWrapper = value;
+            }
+            break;
+          }
+          case 1690: {
+            repeatedBoolWrapper_.AddEntriesFrom(input, _repeated_repeatedBoolWrapper_codec);
+            break;
+          }
+          case 1698: {
+            repeatedInt32Wrapper_.AddEntriesFrom(input, _repeated_repeatedInt32Wrapper_codec);
+            break;
+          }
+          case 1706: {
+            repeatedInt64Wrapper_.AddEntriesFrom(input, _repeated_repeatedInt64Wrapper_codec);
+            break;
+          }
+          case 1714: {
+            repeatedUint32Wrapper_.AddEntriesFrom(input, _repeated_repeatedUint32Wrapper_codec);
+            break;
+          }
+          case 1722: {
+            repeatedUint64Wrapper_.AddEntriesFrom(input, _repeated_repeatedUint64Wrapper_codec);
+            break;
+          }
+          case 1730: {
+            repeatedFloatWrapper_.AddEntriesFrom(input, _repeated_repeatedFloatWrapper_codec);
+            break;
+          }
+          case 1738: {
+            repeatedDoubleWrapper_.AddEntriesFrom(input, _repeated_repeatedDoubleWrapper_codec);
+            break;
+          }
+          case 1746: {
+            repeatedStringWrapper_.AddEntriesFrom(input, _repeated_repeatedStringWrapper_codec);
+            break;
+          }
+          case 1754: {
+            repeatedBytesWrapper_.AddEntriesFrom(input, _repeated_repeatedBytesWrapper_codec);
+            break;
+          }
+          case 2410: {
+            if (optionalDuration_ == null) {
+              optionalDuration_ = new global::Google.Protobuf.WellKnownTypes.Duration();
+            }
+            input.ReadMessage(optionalDuration_);
+            break;
+          }
+          case 2418: {
+            if (optionalTimestamp_ == null) {
+              optionalTimestamp_ = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            }
+            input.ReadMessage(optionalTimestamp_);
+            break;
+          }
+          case 2426: {
+            if (optionalFieldMask_ == null) {
+              optionalFieldMask_ = new global::Google.Protobuf.WellKnownTypes.FieldMask();
+            }
+            input.ReadMessage(optionalFieldMask_);
+            break;
+          }
+          case 2434: {
+            if (optionalStruct_ == null) {
+              optionalStruct_ = new global::Google.Protobuf.WellKnownTypes.Struct();
+            }
+            input.ReadMessage(optionalStruct_);
+            break;
+          }
+          case 2442: {
+            if (optionalAny_ == null) {
+              optionalAny_ = new global::Google.Protobuf.WellKnownTypes.Any();
+            }
+            input.ReadMessage(optionalAny_);
+            break;
+          }
+          case 2450: {
+            if (optionalValue_ == null) {
+              optionalValue_ = new global::Google.Protobuf.WellKnownTypes.Value();
+            }
+            input.ReadMessage(optionalValue_);
+            break;
+          }
+          case 2490: {
+            repeatedDuration_.AddEntriesFrom(input, _repeated_repeatedDuration_codec);
+            break;
+          }
+          case 2498: {
+            repeatedTimestamp_.AddEntriesFrom(input, _repeated_repeatedTimestamp_codec);
+            break;
+          }
+          case 2506: {
+            repeatedFieldmask_.AddEntriesFrom(input, _repeated_repeatedFieldmask_codec);
+            break;
+          }
+          case 2522: {
+            repeatedAny_.AddEntriesFrom(input, _repeated_repeatedAny_codec);
+            break;
+          }
+          case 2530: {
+            repeatedValue_.AddEntriesFrom(input, _repeated_repeatedValue_codec);
+            break;
+          }
+          case 2594: {
+            repeatedStruct_.AddEntriesFrom(input, _repeated_repeatedStruct_codec);
+            break;
+          }
+          case 3208: {
+            Fieldname1 = input.ReadInt32();
+            break;
+          }
+          case 3216: {
+            FieldName2 = input.ReadInt32();
+            break;
+          }
+          case 3224: {
+            FieldName3 = input.ReadInt32();
+            break;
+          }
+          case 3232: {
+            FieldName4 = input.ReadInt32();
+            break;
+          }
+          case 3240: {
+            Field0Name5 = input.ReadInt32();
+            break;
+          }
+          case 3248: {
+            Field0Name6 = input.ReadInt32();
+            break;
+          }
+          case 3256: {
+            FieldName7 = input.ReadInt32();
+            break;
+          }
+          case 3264: {
+            FieldName8 = input.ReadInt32();
+            break;
+          }
+          case 3272: {
+            FieldName9 = input.ReadInt32();
+            break;
+          }
+          case 3280: {
+            FieldName10 = input.ReadInt32();
+            break;
+          }
+          case 3288: {
+            FIELDNAME11 = input.ReadInt32();
+            break;
+          }
+          case 3296: {
+            FIELDName12 = input.ReadInt32();
+            break;
+          }
         }
       }
     }
 
     #region Nested types
+    /// <summary>Container for nested types declared in the TestAllTypes message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       public enum NestedEnum {
         FOO = 0,
         BAR = 1,
         BAZ = 2,
+        /// <summary>
+        ///  Intentionally negative.
+        /// </summary>
         NEG = -1,
       }
 
@@ -2160,6 +3485,7 @@ namespace Conformance {
           return new NestedMessage(this);
         }
 
+        /// <summary>Field number for the "a" field.</summary>
         public const int AFieldNumber = 1;
         private int a_;
         public int A {
@@ -2169,6 +3495,7 @@ namespace Conformance {
           }
         }
 
+        /// <summary>Field number for the "corecursive" field.</summary>
         public const int CorecursiveFieldNumber = 2;
         private global::Conformance.TestAllTypes corecursive_;
         public global::Conformance.TestAllTypes Corecursive {
@@ -2202,7 +3529,7 @@ namespace Conformance {
         }
 
         public override string ToString() {
-          return pb::JsonFormatter.Default.Format(this);
+          return pb::JsonFormatter.ToDiagnosticString(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -2277,7 +3604,7 @@ namespace Conformance {
     public static pb::MessageParser<ForeignMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Conformance.Conformance.Descriptor.MessageTypes[3]; }
+      get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[3]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -2298,6 +3625,7 @@ namespace Conformance {
       return new ForeignMessage(this);
     }
 
+    /// <summary>Field number for the "c" field.</summary>
     public const int CFieldNumber = 1;
     private int c_;
     public int C {
@@ -2329,7 +3657,7 @@ namespace Conformance {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {

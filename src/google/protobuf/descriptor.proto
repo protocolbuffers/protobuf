@@ -43,8 +43,7 @@ package google.protobuf;
 option go_package = "descriptor";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "DescriptorProtos";
-// Re-enable this once the tools have picked up the csharp_namespace option.
-// option csharp_namespace = "Google.ProtocolBuffers.DescriptorProtos";
+option csharp_namespace = "Google.Protobuf.Reflection";
 option objc_class_prefix = "GPB";
 
 // descriptor.proto must be optimized for speed because reflection-based
@@ -190,6 +189,12 @@ message FieldDescriptorProto {
   // If set, gives the index of a oneof in the containing type's oneof_decl
   // list.  This field is a member of that oneof.
   optional int32 oneof_index = 9;
+
+  // JSON name of this field. The value is set by protocol compiler. If the
+  // user has set a "json_name" option on this field, that option's value
+  // will be used. Otherwise, it's deduced from the field's name by converting
+  // it to camelCase.
+  optional string json_name = 10;
 
   optional FieldOptions options = 8;
 }

@@ -1,3 +1,64 @@
+2015-08-26 version 3.0.0-beta-1 (C++/Java/Python/Ruby/Nano/Objective-C/C#/JavaSript)
+  General
+  * Intorduced a new language implementaion: JavaScript.
+  * Added a new field option "json_name". By default proto field names are
+    converted to "lowerCamelCase" in proto3 JSON format. This option can be
+    used to override this behavior and specify a different JSON name for the
+    field.
+  * Added conformance tests to ensure implementations are following proto3 JSON
+    specification.
+
+  C++ (Beta)
+  * Various bug fixes and improvements to the JSON support utility:
+      - Duplicate map keys in JSON are now rejected (i.e., translation will
+        fail).
+      - Fixed wire-format for google.protobuf.Value/ListValue.
+      - Fixed precision loss when converting google.protobuf.Timestamp.
+      - Fixed a bug when parsing invalid UTF-8 code points.
+      - Fixed a memory leak.
+      - Reduced call stack usage.
+
+  Java (Beta)
+  * Cleaned up some unused methods on CodedOutputStream.
+  * Presized lists for packed fields during parsing in the lite runtime to
+    reduce allocations and improve performance.
+  * Improved the performance of unknown fields in the lite runtime.
+  * Introduced UnsafeByteStrings to support zero-copy ByteString creation.
+  * Various bug fixes and improvements to the JSON support utility:
+      - Fixed a thread-safety bug.
+      - Added a new option “preservingProtoFieldNames” to JsonFormat.
+      - Added a new option “includingDefaultValueFields” to JsonFormat.
+      - Updated the JSON utility to comply with proto3 JSON specification.
+
+  Python (Beta)
+  * Added proto3 JSON format utility. It includes support for all field types
+    and a few well-known types except for Any and Struct.
+  * Added runtime support for Any, Timestamp, Duration and FieldMask.
+  * [ ] is now accepted for repeated scalar fields in text format parser.
+
+  Objective-C (Beta)
+  * Various bug-fixes and code tweaks to pass more strict compiler warnings.
+  * Now has conformance test coverage and is passing all tests.
+
+  C# (Beta)
+  * Various bug-fixes.
+  * Code generation: Files generated in directories based on namespace.
+  * Code generation: Include comments from .proto files in XML doc
+    comments (naively)
+  * Code generation: Change organization/naming of "reflection class" (access
+    to file descriptor)
+  * Code generation and library: Add Parser property to MessageDescriptor,
+    and introduce a non-generic parser type.
+  * Library: Added TypeRegistry to support JSON parsing/formatting of Any.
+  * Library: Added Any.Pack/Unpack support.
+  * Library: Implemented JSON parsing.
+
+  Javascript (Alpha)
+  * Added proto3 support for JavaScript. The runtime is written in pure
+    JavaScript and works in browsers and in Node.js. To generate JavaScript
+    code for your proto, invoke protoc with "--js_out". See js/README.md
+    for more build instructions.
+
 2015-08-26 version 3.0.0-beta-1 (C++/Java/Python/Ruby/Nano/Objective-C/C#)
   About Beta
   * This is the first beta release of protobuf v3.0.0. Not all languages

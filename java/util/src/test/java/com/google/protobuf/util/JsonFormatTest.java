@@ -51,9 +51,11 @@ import com.google.protobuf.util.JsonTestProto.TestAllTypes;
 import com.google.protobuf.util.JsonTestProto.TestAllTypes.NestedEnum;
 import com.google.protobuf.util.JsonTestProto.TestAllTypes.NestedMessage;
 import com.google.protobuf.util.JsonTestProto.TestAny;
+import com.google.protobuf.util.JsonTestProto.TestCustomJsonName;
 import com.google.protobuf.util.JsonTestProto.TestDuration;
 import com.google.protobuf.util.JsonTestProto.TestFieldMask;
 import com.google.protobuf.util.JsonTestProto.TestMap;
+import com.google.protobuf.util.JsonTestProto.TestOneof;
 import com.google.protobuf.util.JsonTestProto.TestStruct;
 import com.google.protobuf.util.JsonTestProto.TestTimestamp;
 import com.google.protobuf.util.JsonTestProto.TestWrappers;
@@ -196,9 +198,6 @@ public class JsonFormatTest extends TestCase {
   }
   
   public void testUnknownEnumValues() throws Exception {
-    // Unknown enum values will be dropped.
-    // TODO(xiaofeng): We may want to revisit this (whether we should omit
-    // unknown enum values).
     TestAllTypes message = TestAllTypes.newBuilder()
         .setOptionalNestedEnumValue(12345)
         .addRepeatedNestedEnumValue(12345)
@@ -206,8 +205,10 @@ public class JsonFormatTest extends TestCase {
         .build();
     assertEquals(
         "{\n"
-        + "  \"repeatedNestedEnum\": [\"FOO\"]\n"
+        + "  \"optionalNestedEnum\": 12345,\n"
+        + "  \"repeatedNestedEnum\": [12345, \"FOO\"]\n"
         + "}", toJsonString(message));
+    assertRoundTripEquals(message);
     
     TestMap.Builder mapBuilder = TestMap.newBuilder();
     mapBuilder.getMutableInt32ToEnumMapValue().put(1, 0);
@@ -216,9 +217,11 @@ public class JsonFormatTest extends TestCase {
     assertEquals(
         "{\n" 
         + "  \"int32ToEnumMap\": {\n" 
-        + "    \"1\": \"FOO\"\n" 
+        + "    \"1\": \"FOO\",\n"
+        + "    \"2\": 12345\n"
         + "  }\n" 
         + "}", toJsonString(mapMessage));
+    assertRoundTripEquals(mapMessage);
   }
   
   public void testSpecialFloatValues() throws Exception {
@@ -263,6 +266,35 @@ public class JsonFormatTest extends TestCase {
     assertEquals(true, message.getOptionalBool());
   }
   
+  public void testParserAcceptFloatingPointValueForIntegerField() throws Exception {
+    // Test that numeric values like "1.000", "1e5" will also be accepted.
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    mergeFromJson(
+        "{\n"
+            + "  \"repeatedInt32\": [1.000, 1e5, \"1.000\", \"1e5\"],\n"
+            + "  \"repeatedUint32\": [1.000, 1e5, \"1.000\", \"1e5\"],\n"
+            + "  \"repeatedInt64\": [1.000, 1e5, \"1.000\", \"1e5\"],\n"
+            + "  \"repeatedUint64\": [1.000, 1e5, \"1.000\", \"1e5\"]\n"
+            + "}", builder);
+    int[] expectedValues = new int[]{1, 100000, 1, 100000};
+    assertEquals(4, builder.getRepeatedInt32Count());
+    assertEquals(4, builder.getRepeatedUint32Count());
+    assertEquals(4, builder.getRepeatedInt64Count());
+    assertEquals(4, builder.getRepeatedUint64Count());
+    for (int i = 0; i < 4; ++i) {
+      assertEquals(expectedValues[i], builder.getRepeatedInt32(i));
+      assertEquals(expectedValues[i], builder.getRepeatedUint32(i));
+      assertEquals(expectedValues[i], builder.getRepeatedInt64(i));
+      assertEquals(expectedValues[i], builder.getRepeatedUint64(i));
+    }
+    
+    // Non-integers will still be rejected.
+    assertRejects("optionalInt32", "1.5");
+    assertRejects("optionalUint32", "1.5");
+    assertRejects("optionalInt64", "1.5");
+    assertRejects("optionalUint64", "1.5");
+  }
+  
   private void assertRejects(String name, String value) {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     try {
@@ -285,6 +317,7 @@ public class JsonFormatTest extends TestCase {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     // Both numeric form and string form are accepted.
     mergeFromJson("{\"" + name + "\":" + value + "}", builder);
+    builder.clear();
     mergeFromJson("{\"" + name + "\":\"" + value + "\"}", builder);
   }
   
@@ -370,84 +403,74 @@ public class JsonFormatTest extends TestCase {
     TestAllTypes message = builder.build();
     assertEquals(TestAllTypes.getDefaultInstance(), message);
     
-    // Repeated field elements can also be null.
-    builder = TestAllTypes.newBuilder();
-    mergeFromJson(
-        "{\n"
-        + "  \"repeatedInt32\": [null, null],\n"
-        + "  \"repeatedInt64\": [null, null],\n"
-        + "  \"repeatedUint32\": [null, null],\n"
-        + "  \"repeatedUint64\": [null, null],\n"
-        + "  \"repeatedSint32\": [null, null],\n"
-        + "  \"repeatedSint64\": [null, null],\n"
-        + "  \"repeatedFixed32\": [null, null],\n"
-        + "  \"repeatedFixed64\": [null, null],\n"
-        + "  \"repeatedSfixed32\": [null, null],\n"
-        + "  \"repeatedSfixed64\": [null, null],\n"
-        + "  \"repeatedFloat\": [null, null],\n"
-        + "  \"repeatedDouble\": [null, null],\n"
-        + "  \"repeatedBool\": [null, null],\n"
-        + "  \"repeatedString\": [null, null],\n"
-        + "  \"repeatedBytes\": [null, null],\n"
-        + "  \"repeatedNestedMessage\": [null, null],\n"
-        + "  \"repeatedNestedEnum\": [null, null]\n"
-        + "}", builder);
-    message = builder.build();
-    // "null" elements will be parsed to default values.
-    assertEquals(2, message.getRepeatedInt32Count());
-    assertEquals(0, message.getRepeatedInt32(0));
-    assertEquals(0, message.getRepeatedInt32(1));
-    assertEquals(2, message.getRepeatedInt32Count());
-    assertEquals(0, message.getRepeatedInt32(0));
-    assertEquals(0, message.getRepeatedInt32(1));
-    assertEquals(2, message.getRepeatedInt64Count());
-    assertEquals(0, message.getRepeatedInt64(0));
-    assertEquals(0, message.getRepeatedInt64(1));
-    assertEquals(2, message.getRepeatedUint32Count());
-    assertEquals(0, message.getRepeatedUint32(0));
-    assertEquals(0, message.getRepeatedUint32(1));
-    assertEquals(2, message.getRepeatedUint64Count());
-    assertEquals(0, message.getRepeatedUint64(0));
-    assertEquals(0, message.getRepeatedUint64(1));
-    assertEquals(2, message.getRepeatedSint32Count());
-    assertEquals(0, message.getRepeatedSint32(0));
-    assertEquals(0, message.getRepeatedSint32(1));
-    assertEquals(2, message.getRepeatedSint64Count());
-    assertEquals(0, message.getRepeatedSint64(0));
-    assertEquals(0, message.getRepeatedSint64(1));
-    assertEquals(2, message.getRepeatedFixed32Count());
-    assertEquals(0, message.getRepeatedFixed32(0));
-    assertEquals(0, message.getRepeatedFixed32(1));
-    assertEquals(2, message.getRepeatedFixed64Count());
-    assertEquals(0, message.getRepeatedFixed64(0));
-    assertEquals(0, message.getRepeatedFixed64(1));
-    assertEquals(2, message.getRepeatedSfixed32Count());
-    assertEquals(0, message.getRepeatedSfixed32(0));
-    assertEquals(0, message.getRepeatedSfixed32(1));
-    assertEquals(2, message.getRepeatedSfixed64Count());
-    assertEquals(0, message.getRepeatedSfixed64(0));
-    assertEquals(0, message.getRepeatedSfixed64(1));
-    assertEquals(2, message.getRepeatedFloatCount());
-    assertEquals(0f, message.getRepeatedFloat(0));
-    assertEquals(0f, message.getRepeatedFloat(1));
-    assertEquals(2, message.getRepeatedDoubleCount());
-    assertEquals(0.0, message.getRepeatedDouble(0));
-    assertEquals(0.0, message.getRepeatedDouble(1));
-    assertEquals(2, message.getRepeatedBoolCount());
-    assertFalse(message.getRepeatedBool(0));
-    assertFalse(message.getRepeatedBool(1));
-    assertEquals(2, message.getRepeatedStringCount());
-    assertTrue(message.getRepeatedString(0).isEmpty());
-    assertTrue(message.getRepeatedString(1).isEmpty());
-    assertEquals(2, message.getRepeatedBytesCount());
-    assertTrue(message.getRepeatedBytes(0).isEmpty());
-    assertTrue(message.getRepeatedBytes(1).isEmpty());
-    assertEquals(2, message.getRepeatedNestedMessageCount());
-    assertEquals(NestedMessage.getDefaultInstance(), message.getRepeatedNestedMessage(0));
-    assertEquals(NestedMessage.getDefaultInstance(), message.getRepeatedNestedMessage(1));
-    assertEquals(2, message.getRepeatedNestedEnumCount());
-    assertEquals(0, message.getRepeatedNestedEnumValue(0));
-    assertEquals(0, message.getRepeatedNestedEnumValue(1));
+    // Repeated field elements cannot be null.
+    try {
+      builder = TestAllTypes.newBuilder();
+      mergeFromJson(
+          "{\n"
+          + "  \"repeatedInt32\": [null, null],\n"
+          + "}", builder);
+      fail();
+    } catch (InvalidProtocolBufferException e) {
+      // Exception expected.
+    }
+    
+    try {
+      builder = TestAllTypes.newBuilder();
+      mergeFromJson(
+          "{\n"
+          + "  \"repeatedNestedMessage\": [null, null],\n"
+          + "}", builder);
+      fail();
+    } catch (InvalidProtocolBufferException e) {
+      // Exception expected.
+    }
+  }
+  
+  public void testParserRejectDuplicatedFields() throws Exception {
+    // TODO(xiaofeng): The parser we are currently using (GSON) will accept and keep the last
+    // one if multiple entries have the same name. This is not the desired behavior but it can
+    // only be fixed by using our own parser. Here we only test the cases where the names are
+    // different but still referring to the same field.
+    
+    // Duplicated optional fields. 
+    try {
+      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+      mergeFromJson(
+          "{\n"
+              + "  \"optionalNestedMessage\": {},\n"
+              + "  \"optional_nested_message\": {}\n"
+          + "}", builder);
+      fail();
+    } catch (InvalidProtocolBufferException e) {
+      // Exception expected.
+    }
+    
+    // Duplicated repeated fields.
+    try {
+      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+      mergeFromJson(
+          "{\n"
+          + "  \"repeatedNestedMessage\": [null, null],\n"
+          + "  \"repeated_nested_message\": [null, null]\n"
+          + "}", builder);
+      fail();
+    } catch (InvalidProtocolBufferException e) {
+      // Exception expected.
+    }
+    
+    // Duplicated oneof fields.
+    try {
+      TestOneof.Builder builder = TestOneof.newBuilder();
+      mergeFromJson(
+          "{\n"
+          + "  \"oneofInt32\": 1,\n"
+          + "  \"oneof_int32\": 2\n"
+          + "}", builder);
+      fail();
+    } catch (InvalidProtocolBufferException e) {
+      // Exception expected.
+    }
   }
   
   public void testMapFields() throws Exception {
@@ -592,18 +615,30 @@ public class JsonFormatTest extends TestCase {
     assertRoundTripEquals(message);
   }
   
-  public void testMapNullValueIsDefault() throws Exception {
-    TestMap.Builder builder = TestMap.newBuilder();
-    mergeFromJson(
-        "{\n"
-        + "  \"int32ToInt32Map\": {\"1\": null},\n"
-        + "  \"int32ToMessageMap\": {\"2\": null}\n"
-        + "}", builder);
-    TestMap message = builder.build();
-    assertTrue(message.getInt32ToInt32Map().containsKey(1));
-    assertEquals(0, message.getInt32ToInt32Map().get(1).intValue());
-    assertTrue(message.getInt32ToMessageMap().containsKey(2));
-    assertEquals(0, message.getInt32ToMessageMap().get(2).getValue());
+  public void testMapNullValueIsRejected() throws Exception {
+    try {
+      TestMap.Builder builder = TestMap.newBuilder();
+      mergeFromJson(
+          "{\n"
+          + "  \"int32ToInt32Map\": {null: 1},\n"
+          + "  \"int32ToMessageMap\": {null: 2}\n"
+          + "}", builder);
+      fail();
+    } catch (InvalidProtocolBufferException e) {
+      // Exception expected.
+    }
+    
+    try {
+      TestMap.Builder builder = TestMap.newBuilder();
+      mergeFromJson(
+          "{\n"
+          + "  \"int32ToInt32Map\": {\"1\": null},\n"
+          + "  \"int32ToMessageMap\": {\"2\": null}\n"
+          + "}", builder);
+      fail();
+    } catch (InvalidProtocolBufferException e) {
+      // Exception expected.
+    }
   }
   
   public void testParserAcceptNonQuotedObjectKey() throws Exception {
@@ -741,6 +776,15 @@ public class JsonFormatTest extends TestCase {
         + "    },\n"
         + "    \"list_value\": [1.125, null]\n"
         + "  }\n"
+        + "}", toJsonString(message));
+    assertRoundTripEquals(message);
+    
+    builder = TestStruct.newBuilder();
+    builder.setValue(Value.newBuilder().setNullValueValue(0).build());
+    message = builder.build();
+    assertEquals(
+        "{\n"
+        + "  \"value\": null\n"
         + "}", toJsonString(message));
     assertRoundTripEquals(message);
   }
@@ -891,6 +935,15 @@ public class JsonFormatTest extends TestCase {
         + "  }\n"
         + "}", printer.print(anyMessage));
     assertRoundTripEquals(anyMessage, registry);
+    Value.Builder valueBuilder = Value.newBuilder();
+    valueBuilder.setNumberValue(1);
+    anyMessage = Any.pack(valueBuilder.build());
+    assertEquals(
+        "{\n"
+        + "  \"@type\": \"type.googleapis.com/google.protobuf.Value\",\n"
+        + "  \"value\": 1.0\n"
+        + "}", printer.print(anyMessage));
+    assertRoundTripEquals(anyMessage, registry);
   }
   
   public void testParserMissingTypeUrl() throws Exception {
@@ -949,16 +1002,9 @@ public class JsonFormatTest extends TestCase {
   }
   
   public void testParserRejectInvalidBase64() throws Exception {
-    try {
-      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
-      mergeFromJson(
-          "{\n"
-          + "  \"optionalBytes\": \"!@#$\"\n"
-          + "}", builder);
-      fail("Exception is expected.");
-    } catch (InvalidProtocolBufferException e) {
-      // Expected.
-    } 
+    assertRejects("optionalBytes", "!@#$");
+    // We use standard BASE64 with paddings.
+    assertRejects("optionalBytes", "AQI");
   }
   
   public void testParserRejectInvalidEnumValue() throws Exception {
@@ -972,5 +1018,139 @@ public class JsonFormatTest extends TestCase {
     } catch (InvalidProtocolBufferException e) {
       // Expected.
     } 
+  }
+
+  public void testCustomJsonName() throws Exception {
+    TestCustomJsonName message = TestCustomJsonName.newBuilder().setValue(12345).build();
+    assertEquals("{\n" + "  \"@value\": 12345\n" + "}", JsonFormat.printer().print(message));
+    assertRoundTripEquals(message);
+  }
+
+  public void testIncludingDefaultValueFields() throws Exception {
+    TestAllTypes message = TestAllTypes.getDefaultInstance();
+    assertEquals("{\n}", JsonFormat.printer().print(message));
+    assertEquals(
+        "{\n"
+            + "  \"optionalInt32\": 0,\n"
+            + "  \"optionalInt64\": \"0\",\n"
+            + "  \"optionalUint32\": 0,\n"
+            + "  \"optionalUint64\": \"0\",\n"
+            + "  \"optionalSint32\": 0,\n"
+            + "  \"optionalSint64\": \"0\",\n"
+            + "  \"optionalFixed32\": 0,\n"
+            + "  \"optionalFixed64\": \"0\",\n"
+            + "  \"optionalSfixed32\": 0,\n"
+            + "  \"optionalSfixed64\": \"0\",\n"
+            + "  \"optionalFloat\": 0.0,\n"
+            + "  \"optionalDouble\": 0.0,\n"
+            + "  \"optionalBool\": false,\n"
+            + "  \"optionalString\": \"\",\n"
+            + "  \"optionalBytes\": \"\",\n"
+            + "  \"optionalNestedEnum\": \"FOO\",\n"
+            + "  \"repeatedInt32\": [],\n"
+            + "  \"repeatedInt64\": [],\n"
+            + "  \"repeatedUint32\": [],\n"
+            + "  \"repeatedUint64\": [],\n"
+            + "  \"repeatedSint32\": [],\n"
+            + "  \"repeatedSint64\": [],\n"
+            + "  \"repeatedFixed32\": [],\n"
+            + "  \"repeatedFixed64\": [],\n"
+            + "  \"repeatedSfixed32\": [],\n"
+            + "  \"repeatedSfixed64\": [],\n"
+            + "  \"repeatedFloat\": [],\n"
+            + "  \"repeatedDouble\": [],\n"
+            + "  \"repeatedBool\": [],\n"
+            + "  \"repeatedString\": [],\n"
+            + "  \"repeatedBytes\": [],\n"
+            + "  \"repeatedNestedMessage\": [],\n"
+            + "  \"repeatedNestedEnum\": []\n"
+            + "}",
+        JsonFormat.printer().includingDefaultValueFields().print(message));
+
+    TestMap mapMessage = TestMap.getDefaultInstance();
+    assertEquals("{\n}", JsonFormat.printer().print(mapMessage));
+    assertEquals(
+        "{\n"
+            + "  \"int32ToInt32Map\": {\n"
+            + "  },\n"
+            + "  \"int64ToInt32Map\": {\n"
+            + "  },\n"
+            + "  \"uint32ToInt32Map\": {\n"
+            + "  },\n"
+            + "  \"uint64ToInt32Map\": {\n"
+            + "  },\n"
+            + "  \"sint32ToInt32Map\": {\n"
+            + "  },\n"
+            + "  \"sint64ToInt32Map\": {\n"
+            + "  },\n"
+            + "  \"fixed32ToInt32Map\": {\n"
+            + "  },\n"
+            + "  \"fixed64ToInt32Map\": {\n"
+            + "  },\n"
+            + "  \"sfixed32ToInt32Map\": {\n"
+            + "  },\n"
+            + "  \"sfixed64ToInt32Map\": {\n"
+            + "  },\n"
+            + "  \"boolToInt32Map\": {\n"
+            + "  },\n"
+            + "  \"stringToInt32Map\": {\n"
+            + "  },\n"
+            + "  \"int32ToInt64Map\": {\n"
+            + "  },\n"
+            + "  \"int32ToUint32Map\": {\n"
+            + "  },\n"
+            + "  \"int32ToUint64Map\": {\n"
+            + "  },\n"
+            + "  \"int32ToSint32Map\": {\n"
+            + "  },\n"
+            + "  \"int32ToSint64Map\": {\n"
+            + "  },\n"
+            + "  \"int32ToFixed32Map\": {\n"
+            + "  },\n"
+            + "  \"int32ToFixed64Map\": {\n"
+            + "  },\n"
+            + "  \"int32ToSfixed32Map\": {\n"
+            + "  },\n"
+            + "  \"int32ToSfixed64Map\": {\n"
+            + "  },\n"
+            + "  \"int32ToFloatMap\": {\n"
+            + "  },\n"
+            + "  \"int32ToDoubleMap\": {\n"
+            + "  },\n"
+            + "  \"int32ToBoolMap\": {\n"
+            + "  },\n"
+            + "  \"int32ToStringMap\": {\n"
+            + "  },\n"
+            + "  \"int32ToBytesMap\": {\n"
+            + "  },\n"
+            + "  \"int32ToMessageMap\": {\n"
+            + "  },\n"
+            + "  \"int32ToEnumMap\": {\n"
+            + "  }\n"
+            + "}",
+        JsonFormat.printer().includingDefaultValueFields().print(mapMessage));
+  }
+
+  public void testPreservingProtoFieldNames() throws Exception {
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalInt32(12345).build();
+    assertEquals("{\n" + "  \"optionalInt32\": 12345\n" + "}", JsonFormat.printer().print(message));
+    assertEquals(
+        "{\n" + "  \"optional_int32\": 12345\n" + "}",
+        JsonFormat.printer().preservingProtoFieldNames().print(message));
+
+    // The json_name field option is ignored when configured to use original proto field names.
+    TestCustomJsonName messageWithCustomJsonName =
+        TestCustomJsonName.newBuilder().setValue(12345).build();
+    assertEquals(
+        "{\n" + "  \"value\": 12345\n" + "}",
+        JsonFormat.printer().preservingProtoFieldNames().print(messageWithCustomJsonName));
+
+    // Parsers accept both original proto field names and lowerCamelCase names.
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    JsonFormat.parser().merge("{\"optionalInt32\": 12345}", builder);
+    assertEquals(12345, builder.getOptionalInt32());
+    builder.clear();
+    JsonFormat.parser().merge("{\"optional_int32\": 54321}", builder);
+    assertEquals(54321, builder.getOptionalInt32());
   }
 }

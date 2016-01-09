@@ -92,3 +92,8 @@ do
   PROCESS_ROUND=$((PROCESS_ROUND + 1))
 done
 cd ..
+
+if test -x objectivec/generate_descriptors_proto.sh; then
+  echo "Generating messages for objc."
+  objectivec/generate_descriptors_proto.sh $@
+fi

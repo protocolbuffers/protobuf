@@ -88,6 +88,8 @@ def GenerateUnittestProtos():
   generate_proto("../src/google/protobuf/unittest_mset_wire_format.proto", False)
   generate_proto("../src/google/protobuf/unittest_no_generic_services.proto", False)
   generate_proto("../src/google/protobuf/unittest_proto3_arena.proto", False)
+  generate_proto("../src/google/protobuf/util/json_format_proto3.proto", False)
+  generate_proto("google/protobuf/internal/any_test.proto", False)
   generate_proto("google/protobuf/internal/descriptor_pool_test1.proto", False)
   generate_proto("google/protobuf/internal/descriptor_pool_test2.proto", False)
   generate_proto("google/protobuf/internal/factory_test1.proto", False)
@@ -112,7 +114,8 @@ class clean(_clean):
         filepath = os.path.join(dirpath, filename)
         if filepath.endswith("_pb2.py") or filepath.endswith(".pyc") or \
           filepath.endswith(".so") or filepath.endswith(".o") or \
-          filepath.endswith('google/protobuf/compiler/__init__.py'):
+          filepath.endswith('google/protobuf/compiler/__init__.py') or \
+          filepath.endswith('google/protobuf/util/__init__.py'):
           os.remove(filepath)
     # _clean is an old-style class, so super() doesn't work.
     _clean.run(self)
@@ -122,10 +125,20 @@ class build_py(_build_py):
     # Generate necessary .proto file if it doesn't exist.
     generate_proto("../src/google/protobuf/descriptor.proto")
     generate_proto("../src/google/protobuf/compiler/plugin.proto")
+    generate_proto("../src/google/protobuf/any.proto")
+    generate_proto("../src/google/protobuf/api.proto")
+    generate_proto("../src/google/protobuf/duration.proto")
+    generate_proto("../src/google/protobuf/empty.proto")
+    generate_proto("../src/google/protobuf/field_mask.proto")
+    generate_proto("../src/google/protobuf/source_context.proto")
+    generate_proto("../src/google/protobuf/struct.proto")
+    generate_proto("../src/google/protobuf/timestamp.proto")
+    generate_proto("../src/google/protobuf/type.proto")
+    generate_proto("../src/google/protobuf/wrappers.proto")
     GenerateUnittestProtos()
 
     # Make sure google.protobuf/** are valid packages.
-    for path in ['', 'internal/', 'compiler/', 'pyext/']:
+    for path in ['', 'internal/', 'compiler/', 'pyext/', 'util/']:
       try:
         open('google/protobuf/%s__init__.py' % path, 'a').close()
       except EnvironmentError:
@@ -133,27 +146,44 @@ class build_py(_build_py):
     # _build_py is an old-style class, so super() doesn't work.
     _build_py.run(self)
 
+class test_conformance(_build_py):
+  target = 'test_python'
+  def run(self):
+    cmd = 'cd ../conformance && make %s' % (test_conformance.target)
+    status = subprocess.check_call(cmd, shell=True)
+
 
 if __name__ == '__main__':
   ext_module_list = []
   cpp_impl = '--cpp_implementation'
+  warnings_as_errors = '--warnings_as_errors'
   if cpp_impl in sys.argv:
     sys.argv.remove(cpp_impl)
+    extra_compile_args = ['-Wno-write-strings', '-Wno-invalid-offsetof']
+    test_conformance.target = 'test_python_cpp'
+
+    if "clang" in os.popen('$CC --version 2> /dev/null').read():
+      extra_compile_args.append('-Wno-shorten-64-to-32')
+
+    if warnings_as_errors in sys.argv:
+      extra_compile_args.append('-Werror')
+      sys.argv.remove(warnings_as_errors)
+
     # C++ implementation extension
     ext_module_list.append(
         Extension(
             "google.protobuf.pyext._message",
             glob.glob('google/protobuf/pyext/*.cc'),
-            define_macros=[('GOOGLE_PROTOBUF_HAS_ONEOF', '1')],
             include_dirs=[".", "../src"],
             libraries=['protobuf'],
             library_dirs=['../src/.libs'],
+            extra_compile_args=extra_compile_args,
         )
     )
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
 
   # Keep this list of dependencies in sync with tox.ini.
-  install_requires = ['six', 'setuptools']
+  install_requires = ['six>=1.9', 'setuptools']
   if sys.version_info <= (2,7):
     install_requires.append('ordereddict')
     install_requires.append('unittest2')
@@ -186,6 +216,7 @@ if __name__ == '__main__':
       cmdclass={
           'clean': clean,
           'build_py': build_py,
+          'test_conformance': test_conformance,
       },
       install_requires=install_requires,
       ext_modules=ext_module_list,

@@ -53,7 +53,7 @@ import java.util.logging.Logger;
  * @author kneton@google.com Kenton Varda
  */
 public final class CodedOutputStream {
-  
+
   private static final Logger logger = Logger.getLogger(CodedOutputStream.class.getName());
 
   // TODO(dweis): Consider migrating to a ByteBuffer.
@@ -243,19 +243,6 @@ public final class CodedOutputStream {
   }
 
 
-  /**
-   * Write a group represented by an {@link UnknownFieldSet}.
-   *
-   * @deprecated UnknownFieldSet now implements MessageLite, so you can just
-   *             call {@link #writeGroup}.
-   */
-  @Deprecated
-  public void writeUnknownGroup(final int fieldNumber,
-                                final MessageLite value)
-                                throws IOException {
-    writeGroup(fieldNumber, value);
-  }
-
   /** Write an embedded message field, including tag, to the stream. */
   public void writeMessage(final int fieldNumber, final MessageLite value)
                            throws IOException {
@@ -428,7 +415,7 @@ public final class CodedOutputStream {
     try {
       efficientWriteStringNoTag(value);
     } catch (UnpairedSurrogateException e) {
-      logger.log(Level.WARNING, 
+      logger.log(Level.WARNING,
           "Converting ill-formed UTF-16. Your Protocol Buffer will not round trip correctly!", e);
       inefficientWriteStringNoTag(value);
     }
@@ -449,10 +436,10 @@ public final class CodedOutputStream {
    * Write a {@code string} field to the stream efficiently. If the {@code string} is malformed,
    * this method rolls back its changes and throws an {@link UnpairedSurrogateException} with the
    * intent that the caller will catch and retry with {@link #inefficientWriteStringNoTag(String)}.
-   * 
+   *
    * @param value the string to write to the stream
-   * 
-   * @throws UnpairedSurrogateException when {@code value} is ill-formed UTF-16. 
+   *
+   * @throws UnpairedSurrogateException when {@code value} is ill-formed UTF-16.
    */
   private void efficientWriteStringNoTag(final String value) throws IOException {
     // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
@@ -509,18 +496,6 @@ public final class CodedOutputStream {
     value.writeTo(this);
   }
 
-
-  /**
-   * Write a group represented by an {@link UnknownFieldSet}.
-   *
-   * @deprecated UnknownFieldSet now implements MessageLite, so you can just
-   *             call {@link #writeGroupNoTag}.
-   */
-  @Deprecated
-  public void writeUnknownGroupNoTag(final MessageLite value)
-      throws IOException {
-    writeGroupNoTag(value);
-  }
 
   /** Write an embedded message field to the stream. */
   public void writeMessageNoTag(final MessageLite value) throws IOException {
@@ -682,20 +657,6 @@ public final class CodedOutputStream {
   public static int computeGroupSize(final int fieldNumber,
                                      final MessageLite value) {
     return computeTagSize(fieldNumber) * 2 + computeGroupSizeNoTag(value);
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code group} field represented by an {@code UnknownFieldSet}, including
-   * tag.
-   *
-   * @deprecated UnknownFieldSet now implements MessageLite, so you can just
-   *             call {@link #computeGroupSize}.
-   */
-  @Deprecated
-  public static int computeUnknownGroupSize(final int fieldNumber,
-                                            final MessageLite value) {
-    return computeGroupSize(fieldNumber, value);
   }
 
   /**
@@ -924,19 +885,6 @@ public final class CodedOutputStream {
    */
   public static int computeGroupSizeNoTag(final MessageLite value) {
     return value.getSerializedSize();
-  }
-
-  /**
-   * Compute the number of bytes that would be needed to encode a
-   * {@code group} field represented by an {@code UnknownFieldSet}, including
-   * tag.
-   *
-   * @deprecated UnknownFieldSet now implements MessageLite, so you can just
-   *             call {@link #computeUnknownGroupSizeNoTag}.
-   */
-  @Deprecated
-  public static int computeUnknownGroupSizeNoTag(final MessageLite value) {
-    return computeGroupSizeNoTag(value);
   }
 
   /**
@@ -1295,10 +1243,10 @@ public final class CodedOutputStream {
    * negative.
    */
   public static int computeRawVarint32Size(final int value) {
-    if ((value & (0xffffffff <<  7)) == 0) return 1;
-    if ((value & (0xffffffff << 14)) == 0) return 2;
-    if ((value & (0xffffffff << 21)) == 0) return 3;
-    if ((value & (0xffffffff << 28)) == 0) return 4;
+    if ((value & (~0 <<  7)) == 0) return 1;
+    if ((value & (~0 << 14)) == 0) return 2;
+    if ((value & (~0 << 21)) == 0) return 3;
+    if ((value & (~0 << 28)) == 0) return 4;
     return 5;
   }
 
@@ -1316,17 +1264,16 @@ public final class CodedOutputStream {
   }
 
   /** Compute the number of bytes that would be needed to encode a varint. */
-  public static int computeRawVarint64Size(final long value) {
-    if ((value & (0xffffffffffffffffL <<  7)) == 0) return 1;
-    if ((value & (0xffffffffffffffffL << 14)) == 0) return 2;
-    if ((value & (0xffffffffffffffffL << 21)) == 0) return 3;
-    if ((value & (0xffffffffffffffffL << 28)) == 0) return 4;
-    if ((value & (0xffffffffffffffffL << 35)) == 0) return 5;
-    if ((value & (0xffffffffffffffffL << 42)) == 0) return 6;
-    if ((value & (0xffffffffffffffffL << 49)) == 0) return 7;
-    if ((value & (0xffffffffffffffffL << 56)) == 0) return 8;
-    if ((value & (0xffffffffffffffffL << 63)) == 0) return 9;
-    return 10;
+  public static int computeRawVarint64Size(long value) {
+    // handle two popular special cases up front ...
+    if ((value & (~0L << 7)) == 0L) return 1;
+    if (value < 0L) return 10;
+    // ... leaving us with 8 remaining, which we can divide and conquer
+    int n = 2;
+    if ((value & (~0L << 35)) != 0L) { n += 4; value >>>= 28; }
+    if ((value & (~0L << 21)) != 0L) { n += 2; value >>>= 14; }
+    if ((value & (~0L << 14)) != 0L) { n += 1; }
+    return n;
   }
 
   /** Write a little-endian 32-bit integer. */

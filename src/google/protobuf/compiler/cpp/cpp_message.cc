@@ -350,7 +350,7 @@ void CollectMapInfo(const Descriptor* descriptor,
       (*variables)["val"] = FieldMessageTypeName(val);
       break;
     case FieldDescriptor::CPPTYPE_ENUM:
-      (*variables)["val"] = ClassName(val->enum_type(), false);
+      (*variables)["val"] = ClassName(val->enum_type(), true);
       break;
     default:
       (*variables)["val"] = PrimitiveTypeName(val->cpp_type());
@@ -1772,6 +1772,17 @@ GenerateShutdownCode(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateClassMethods(io::Printer* printer) {
+  // mutable_unknown_fields wrapper function for LazyStringOutputStream
+  // callback.
+  if (!UseUnknownFieldSet(descriptor_->file())) {
+    printer->Print(
+        "static ::std::string* MutableUnknownFieldsFor$classname$(\n"
+        "    $classname$* ptr) {\n"
+        "  return ptr->mutable_unknown_fields();\n"
+        "}\n"
+        "\n",
+        "classname", classname_);
+  }
   if (IsAnyMessage(descriptor_)) {
     printer->Print(
       "void $classname$::PackFrom(const ::google::protobuf::Message& message) {\n"
@@ -1807,7 +1818,7 @@ GenerateClassMethods(io::Printer* printer) {
   }
 
   // Generate field number constants.
-  printer->Print("#ifndef _MSC_VER\n");
+  printer->Print("#if !defined(_MSC_VER) || _MSC_VER >= 1900\n");
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor *field = descriptor_->field(i);
     printer->Print(
@@ -1816,7 +1827,7 @@ GenerateClassMethods(io::Printer* printer) {
       "constant_name", FieldConstantName(field));
   }
   printer->Print(
-    "#endif  // !_MSC_VER\n"
+    "#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900\n"
     "\n");
 
   // Define extension identifiers.
@@ -2814,7 +2825,9 @@ GenerateMergeFrom(io::Printer* printer) {
         "}\n");
     } else {
       printer->Print(
-        "mutable_unknown_fields()->append(from.unknown_fields());\n");
+        "if (!from.unknown_fields().empty()) {\n"
+        "  mutable_unknown_fields()->append(from.unknown_fields());\n"
+        "}\n");
     }
   }
 
@@ -2889,11 +2902,16 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     "classname", classname_);
 
   if (!UseUnknownFieldSet(descriptor_->file())) {
+    // Use LazyStringOutputString to avoid initializing unknown fields string
+    // unless it is actually needed. For the same reason, disable eager refresh
+    // on the CodedOutputStream.
     printer->Print(
-      "  ::google::protobuf::io::StringOutputStream unknown_fields_string(\n"
-      "      mutable_unknown_fields());\n"
+      "  ::google::protobuf::io::LazyStringOutputStream unknown_fields_string(\n"
+      "      ::google::protobuf::internal::NewPermanentCallback(\n"
+      "          &MutableUnknownFieldsFor$classname$, this));\n"
       "  ::google::protobuf::io::CodedOutputStream unknown_fields_stream(\n"
-      "      &unknown_fields_string);\n");
+      "      &unknown_fields_string, false);\n",
+      "classname", classname_);
   }
 
   printer->Print(
@@ -3364,7 +3382,7 @@ GenerateSerializeWithCachedSizesBody(io::Printer* printer, bool to_array) {
     } else {
       printer->Print(
         "output->WriteRaw(unknown_fields().data(),\n"
-        "                 unknown_fields().size());\n");
+        "                 static_cast<int>(unknown_fields().size()));\n");
     }
   }
 }

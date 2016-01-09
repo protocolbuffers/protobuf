@@ -33,6 +33,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using Google.Protobuf.Compatibility;
 
 namespace Google.Protobuf.Collections
@@ -41,6 +42,10 @@ namespace Google.Protobuf.Collections
     /// The contents of a repeated field: essentially, a collection with some extra
     /// restrictions (no null values) and capabilities (deep cloning).
     /// </summary>
+    /// <remarks>
+    /// This implementation does not generally prohibit the use of types which are not
+    /// supported by Protocol Buffers but nor does it guarantee that all operations will work in such cases.
+    /// </remarks>
     /// <typeparam name="T">The element type of the repeated field.</typeparam>
     public sealed class RepeatedField<T> : IList<T>, IList, IDeepCloneable<RepeatedField<T>>, IEquatable<RepeatedField<T>>
     {
@@ -462,6 +467,17 @@ namespace Google.Protobuf.Collections
             Array.Copy(array, index + 1, array, index, count - index - 1);
             count--;
             array[count] = default(T);
+        }
+
+        /// <summary>
+        /// Returns a string representation of this repeated field, in the same
+        /// way as it would be represented by the default JSON formatter.
+        /// </summary>
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            JsonFormatter.Default.WriteList(builder, this);
+            return builder.ToString();
         }
 
         /// <summary>

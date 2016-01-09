@@ -49,7 +49,11 @@ namespace protobuf {
 class FieldDescriptor;
 class Message;
 
+#ifdef _SHARED_PTR_H
+using std::shared_ptr;
+#else
 using internal::shared_ptr;
+#endif
 
 namespace python {
 
@@ -107,9 +111,6 @@ PyObject *NewContainer(
     CMessage* parent,
     const FieldDescriptor* parent_field_descriptor,
     PyObject *concrete_class);
-
-// Returns the number of items in this repeated composite container.
-static Py_ssize_t Length(RepeatedCompositeContainer* self);
 
 // Appends a new CMessage to the container and returns it.  The
 // CMessage is initialized using the content of kwargs.

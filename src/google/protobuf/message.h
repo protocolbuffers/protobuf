@@ -971,7 +971,7 @@ class LIBPROTOBUF_EXPORT Reflection {
     return false;
   }
 
-  // Returns a MaIterator referring to the first element in the map field.
+  // Returns a MapIterator referring to the first element in the map field.
   // If the map field is empty, this function returns the same as
   // reflection::MapEnd. Mutation to the field may invalidate the iterator.
   virtual MapIterator MapBegin(

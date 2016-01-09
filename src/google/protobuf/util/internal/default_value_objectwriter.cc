@@ -33,6 +33,7 @@
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/util/internal/constants.h>
+#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/map_util.h>
 
 namespace google {
@@ -42,13 +43,25 @@ using util::Status;
 using util::StatusOr;
 namespace converter {
 
+namespace {
+// Helper function to convert string value to given data type by calling the
+// passed converter function on the DataPiece created from "value" argument.
+// If value is empty or if conversion fails, the default_value is returned.
+template <typename T>
+T ConvertTo(StringPiece value, StatusOr<T> (DataPiece::*converter_fn)() const,
+            T default_value) {
+  if (value.empty()) return default_value;
+  StatusOr<T> result = (DataPiece(value).*converter_fn)();
+  return result.ok() ? result.ValueOrDie() : default_value;
+}
+}  // namespace
+
 DefaultValueObjectWriter::DefaultValueObjectWriter(
     TypeResolver* type_resolver, const google::protobuf::Type& type,
     ObjectWriter* ow)
     : typeinfo_(TypeInfo::NewTypeInfo(type_resolver)),
       own_typeinfo_(true),
       type_(type),
-      disable_normalize_(false),
       current_(NULL),
       root_(NULL),
       ow_(ow) {}
@@ -165,12 +178,6 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderNull(
   return this;
 }
 
-DefaultValueObjectWriter*
-DefaultValueObjectWriter::DisableCaseNormalizationForNextKey() {
-  disable_normalize_ = true;
-  return this;
-}
-
 DefaultValueObjectWriter::Node::Node(const string& name,
                                      const google::protobuf::Type* type,
                                      NodeKind kind, const DataPiece& data,
@@ -178,7 +185,6 @@ DefaultValueObjectWriter::Node::Node(const string& name,
     : name_(name),
       type_(type),
       kind_(kind),
-      disable_normalize_(false),
       is_any_(false),
       data_(data),
       is_placeholder_(is_placeholder) {}
@@ -198,10 +204,6 @@ DefaultValueObjectWriter::Node* DefaultValueObjectWriter::Node::FindChild(
 }
 
 void DefaultValueObjectWriter::Node::WriteTo(ObjectWriter* ow) {
-  if (disable_normalize_) {
-    ow->DisableCaseNormalizationForNextKey();
-  }
-
   if (kind_ == PRIMITIVE) {
     ObjectWriter::RenderDataPieceTo(data_, name_, ow);
     return;
@@ -324,6 +326,7 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
         }
       }
     }
+
     if (!is_map &&
         field.cardinality() ==
             google::protobuf::Field_Cardinality_CARDINALITY_REPEATED) {
@@ -336,11 +339,11 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
 
     // If the child field is of primitive type, sets its data to the default
     // value of its type.
-    google::protobuf::scoped_ptr<Node> child(
-        new Node(field.json_name(), field_type, kind,
-                 kind == PRIMITIVE ? CreateDefaultDataPieceForField(field)
-                                   : DataPiece::NullData(),
-                 true));
+    google::protobuf::scoped_ptr<Node> child(new Node(
+        field.json_name(), field_type, kind,
+        kind == PRIMITIVE ? CreateDefaultDataPieceForField(field, typeinfo)
+                          : DataPiece::NullData(),
+        true));
     new_children.push_back(child.release());
   }
   // Adds all leftover nodes in children_ to the beginning of new_child.
@@ -363,41 +366,68 @@ void DefaultValueObjectWriter::MaybePopulateChildrenOfAny(Node* node) {
   }
 }
 
+DataPiece DefaultValueObjectWriter::FindEnumDefault(
+    const google::protobuf::Field& field, const TypeInfo* typeinfo) {
+  if (!field.default_value().empty()) return DataPiece(field.default_value());
+
+  const google::protobuf::Enum* enum_type =
+      typeinfo->GetEnumByTypeUrl(field.type_url());
+  if (!enum_type) {
+    GOOGLE_LOG(WARNING) << "Could not find enum with type '" << field.type_url()
+                 << "'";
+    return DataPiece::NullData();
+  }
+  // We treat the first value as the default if none is specified.
+  return enum_type->enumvalue_size() > 0
+             ? DataPiece(enum_type->enumvalue(0).name())
+             : DataPiece::NullData();
+}
+
 DataPiece DefaultValueObjectWriter::CreateDefaultDataPieceForField(
-    const google::protobuf::Field& field) {
+    const google::protobuf::Field& field, const TypeInfo* typeinfo) {
   switch (field.kind()) {
     case google::protobuf::Field_Kind_TYPE_DOUBLE: {
-      return DataPiece(static_cast<double>(0));
+      return DataPiece(ConvertTo<double>(
+          field.default_value(), &DataPiece::ToDouble, static_cast<double>(0)));
     }
     case google::protobuf::Field_Kind_TYPE_FLOAT: {
-      return DataPiece(static_cast<float>(0));
+      return DataPiece(ConvertTo<float>(
+          field.default_value(), &DataPiece::ToFloat, static_cast<float>(0)));
     }
     case google::protobuf::Field_Kind_TYPE_INT64:
     case google::protobuf::Field_Kind_TYPE_SINT64:
     case google::protobuf::Field_Kind_TYPE_SFIXED64: {
-      return DataPiece(static_cast<int64>(0));
+      return DataPiece(ConvertTo<int64>(
+          field.default_value(), &DataPiece::ToInt64, static_cast<int64>(0)));
     }
     case google::protobuf::Field_Kind_TYPE_UINT64:
     case google::protobuf::Field_Kind_TYPE_FIXED64: {
-      return DataPiece(static_cast<uint64>(0));
+      return DataPiece(ConvertTo<uint64>(
+          field.default_value(), &DataPiece::ToUint64, static_cast<uint64>(0)));
     }
     case google::protobuf::Field_Kind_TYPE_INT32:
     case google::protobuf::Field_Kind_TYPE_SINT32:
     case google::protobuf::Field_Kind_TYPE_SFIXED32: {
-      return DataPiece(static_cast<int32>(0));
+      return DataPiece(ConvertTo<int32>(
+          field.default_value(), &DataPiece::ToInt32, static_cast<int32>(0)));
     }
     case google::protobuf::Field_Kind_TYPE_BOOL: {
-      return DataPiece(false);
+      return DataPiece(
+          ConvertTo<bool>(field.default_value(), &DataPiece::ToBool, false));
     }
     case google::protobuf::Field_Kind_TYPE_STRING: {
-      return DataPiece(string());
+      return DataPiece(field.default_value());
     }
     case google::protobuf::Field_Kind_TYPE_BYTES: {
-      return DataPiece("", false);
+      return DataPiece(field.default_value(), false);
     }
     case google::protobuf::Field_Kind_TYPE_UINT32:
     case google::protobuf::Field_Kind_TYPE_FIXED32: {
-      return DataPiece(static_cast<uint32>(0));
+      return DataPiece(ConvertTo<uint32>(
+          field.default_value(), &DataPiece::ToUint32, static_cast<uint32>(0)));
+    }
+    case google::protobuf::Field_Kind_TYPE_ENUM: {
+      return FindEnumDefault(field, typeinfo);
     }
     default: { return DataPiece::NullData(); }
   }
@@ -408,7 +438,6 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::StartObject(
   if (current_ == NULL) {
     root_.reset(new Node(name.ToString(), &type_, OBJECT, DataPiece::NullData(),
                          false));
-    root_->set_disable_normalize(GetAndResetDisableNormalize());
     root_->PopulateChildren(typeinfo_);
     current_ = root_.get();
     return this;
@@ -428,7 +457,6 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::StartObject(
   }
 
   child->set_is_placeholder(false);
-  child->set_disable_normalize(GetAndResetDisableNormalize());
   if (child->kind() == OBJECT && child->number_of_children() == 0) {
     child->PopulateChildren(typeinfo_);
   }
@@ -454,21 +482,18 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::StartList(
   if (current_ == NULL) {
     root_.reset(
         new Node(name.ToString(), &type_, LIST, DataPiece::NullData(), false));
-    root_->set_disable_normalize(GetAndResetDisableNormalize());
     current_ = root_.get();
     return this;
   }
   MaybePopulateChildrenOfAny(current_);
   Node* child = current_->FindChild(name);
   if (child == NULL || child->kind() != LIST) {
-    GOOGLE_LOG(WARNING) << "Cannot find field '" << name << "'.";
     google::protobuf::scoped_ptr<Node> node(
         new Node(name.ToString(), NULL, LIST, DataPiece::NullData(), false));
     child = node.get();
     current_->AddChild(node.release());
   }
   child->set_is_placeholder(false);
-  child->set_disable_normalize(GetAndResetDisableNormalize());
 
   stack_.push(current_);
   current_ = child;
@@ -526,7 +551,6 @@ void DefaultValueObjectWriter::RenderDataPiece(StringPiece name,
   } else {
     child->set_data(data);
   }
-  child->set_disable_normalize(GetAndResetDisableNormalize());
 }
 
 }  // namespace converter

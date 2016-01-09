@@ -7,18 +7,22 @@ language: cpp
 os:
   - linux
   - osx
+# The Objective C build needs Xcode 6.4 or later.
+osx_image: xcode7.1
 script:
   - ./travis.sh $CONFIG
 env:
   - CONFIG=cpp
   - CONFIG=cpp_distcheck
   - CONFIG=csharp
+  - CONFIG=golang
   - CONFIG=java_jdk6
   - CONFIG=java_jdk7
   - CONFIG=java_oracle7
   - CONFIG=javanano_jdk6
   - CONFIG=javanano_jdk7
   - CONFIG=javanano_oracle7
+  - CONFIG=javascript
   - CONFIG=python
   - CONFIG=python_cpp
   - CONFIG=ruby19
@@ -46,6 +50,17 @@ matrix:
     # which doesn't work on OS X.
     - os: osx
       env: CONFIG=csharp
+    # Requires installing golang, currently travis.sh is doing that with apt-get
+    # which doesn't work on OS X.
+    - os: osx
+      env: CONFIG=golang
+  # Add into the matrix OS X tests of Objective C (needs Xcode, so it won't
+  # work on other platforms). These are split so it doesn't take as long to run.
+  include:
+    - os: osx
+      env: CONFIG=objectivec_ios
+    - os: osx
+      env: CONFIG=objectivec_osx
   allow_failures:
     # These currently do not work on OS X but are being worked on by @haberman.
     - os: osx

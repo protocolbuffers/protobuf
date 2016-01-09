@@ -1,0 +1,4 @@
+# No tests currently failing.
+#
+# json input or output tests are skipped (in conformance_objc.m) as mobile
+# platforms don't support json wire format to avoid code bloat.

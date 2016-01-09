@@ -55,10 +55,15 @@ NSString *const GPBExceptionMessageKey =
 static NSString *const kGPBDataCoderKey = @"GPBData";
 
 #ifndef _GPBCompileAssert
-#define _GPBCompileAssertSymbolInner(line, msg) _GPBCompileAssert ## line ## __ ## msg
-#define _GPBCompileAssertSymbol(line, msg) _GPBCompileAssertSymbolInner(line, msg)
-#define _GPBCompileAssert(test, msg) \
-    typedef char _GPBCompileAssertSymbol(__LINE__, msg) [ ((test) ? 1 : -1) ]
+  #if __has_feature(c_static_assert) || __has_extension(c_static_assert)
+    #define _GPBCompileAssert(test, msg) _Static_assert((test), #msg)
+  #else
+    // Pre-Xcode 7 support.
+    #define _GPBCompileAssertSymbolInner(line, msg) _GPBCompileAssert ## line ## __ ## msg
+    #define _GPBCompileAssertSymbol(line, msg) _GPBCompileAssertSymbolInner(line, msg)
+    #define _GPBCompileAssert(test, msg) \
+        typedef char _GPBCompileAssertSymbol(__LINE__, msg) [ ((test) ? 1 : -1) ]
+  #endif  // __has_feature(c_static_assert) || __has_extension(c_static_assert)
 #endif // _GPBCompileAssert
 
 //
@@ -563,13 +568,13 @@ static id GetArrayIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
   id array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
   if (!array) {
     // Check again after getting the lock.
-    OSSpinLockLock(&self->readOnlyMutex_);
+    dispatch_semaphore_wait(self->readOnlySemaphore_, DISPATCH_TIME_FOREVER);
     array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
     if (!array) {
       array = CreateArrayForField(field, self);
       GPBSetAutocreatedRetainedObjectIvarWithField(self, field, array);
     }
-    OSSpinLockUnlock(&self->readOnlyMutex_);
+    dispatch_semaphore_signal(self->readOnlySemaphore_);
   }
   return array;
 }
@@ -593,13 +598,13 @@ static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
   id dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
   if (!dict) {
     // Check again after getting the lock.
-    OSSpinLockLock(&self->readOnlyMutex_);
+    dispatch_semaphore_wait(self->readOnlySemaphore_, DISPATCH_TIME_FOREVER);
     dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
     if (!dict) {
       dict = CreateMapForField(field, self);
       GPBSetAutocreatedRetainedObjectIvarWithField(self, field, dict);
     }
-    OSSpinLockUnlock(&self->readOnlyMutex_);
+    dispatch_semaphore_signal(self->readOnlySemaphore_);
   }
   return dict;
 }
@@ -805,7 +810,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     messageStorage_ = (GPBMessage_StoragePtr)(
         ((uint8_t *)self) + class_getInstanceSize([self class]));
 
-    readOnlyMutex_ = OS_SPINLOCK_INIT;
+    readOnlySemaphore_ = dispatch_semaphore_create(1);
   }
 
   return self;
@@ -1212,7 +1217,8 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     NSLog(@"%@: Internal exception while building message delimitedData: %@",
           [self class], exception);
 #endif
-    data = nil;
+    // If it happens, truncate.
+    data.length = 0;
   }
   [stream release];
   return data;
@@ -1717,7 +1723,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   }
 
   // Check for an autocreated value.
-  OSSpinLockLock(&readOnlyMutex_);
+  dispatch_semaphore_wait(readOnlySemaphore_, DISPATCH_TIME_FOREVER);
   value = [autocreatedExtensionMap_ objectForKey:extension];
   if (!value) {
     // Auto create the message extensions to match normal fields.
@@ -1734,7 +1740,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     [value release];
   }
 
-  OSSpinLockUnlock(&readOnlyMutex_);
+  dispatch_semaphore_signal(readOnlySemaphore_);
   return value;
 }
 
@@ -1791,7 +1797,12 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     extensionMap_ = [[NSMutableDictionary alloc] init];
   }
 
-  [extensionMap_ setObject:value forKey:extension];
+  // This pointless cast is for CLANG_WARN_NULLABLE_TO_NONNULL_CONVERSION.
+  // Without it, the compiler complains we're passing an id nullable when
+  // setObject:forKey: requires a id nonnull for the value. The check for
+  // !value at the start of the method ensures it isn't nil, but the check
+  // isn't smart enough to realize that.
+  [extensionMap_ setObject:(id)value forKey:extension];
 
   GPBExtensionDescriptor *descriptor = extension;
 

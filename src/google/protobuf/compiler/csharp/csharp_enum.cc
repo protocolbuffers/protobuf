@@ -38,6 +38,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
 
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_enum.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 
@@ -57,13 +58,15 @@ EnumGenerator::~EnumGenerator() {
 }
 
 void EnumGenerator::Generate(io::Printer* printer) {
+  WriteEnumDocComment(printer, descriptor_);
   WriteGeneratedCodeAttributes(printer);
   printer->Print("$access_level$ enum $name$ {\n",
                  "access_level", class_access_level(),
                  "name", descriptor_->name());
   printer->Indent();
   for (int i = 0; i < descriptor_->value_count(); i++) {
-    printer->Print("$name$ = $number$,\n",
+      WriteEnumValueDocComment(printer, descriptor_->value(i));
+      printer->Print("$name$ = $number$,\n",
                    "name", descriptor_->value(i)->name(),
                    "number", SimpleItoa(descriptor_->value(i)->number()));
   }

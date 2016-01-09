@@ -96,7 +96,7 @@ public class RopeByteStringSubstringTest extends LiteralByteStringTest {
   }
 
   @Override
-  public void testCharsetToString() throws UnsupportedEncodingException {
+  public void testCharsetToString() {
     String sourceString = "I love unicode \u1234\u5678 characters";
     ByteString sourceByteString = ByteString.copyFromUtf8(sourceString);
     int copies = 250;

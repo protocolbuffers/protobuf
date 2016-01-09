@@ -9,30 +9,32 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.TestProtos {
 
+  /// <summary>Holder for reflection information generated from google/protobuf/unittest_import_proto3.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class UnittestImportProto3 {
+  public static partial class UnittestImportProto3Reflection {
 
     #region Descriptor
+    /// <summary>File descriptor for google/protobuf/unittest_import_proto3.proto</summary>
     public static pbr::FileDescriptor Descriptor {
       get { return descriptor; }
     }
     private static pbr::FileDescriptor descriptor;
 
-    static UnittestImportProto3() {
+    static UnittestImportProto3Reflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "Cixnb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfaW1wb3J0X3Byb3RvMy5wcm90", 
-            "bxIYcHJvdG9idWZfdW5pdHRlc3RfaW1wb3J0GjNnb29nbGUvcHJvdG9idWYv", 
-            "dW5pdHRlc3RfaW1wb3J0X3B1YmxpY19wcm90bzMucHJvdG8iGgoNSW1wb3J0", 
-            "TWVzc2FnZRIJCgFkGAEgASgFKlkKCkltcG9ydEVudW0SGwoXSU1QT1JUX0VO", 
-            "VU1fVU5TUEVDSUZJRUQQABIOCgpJTVBPUlRfRk9PEAcSDgoKSU1QT1JUX0JB", 
-            "UhAIEg4KCklNUE9SVF9CQVoQCUI8Chhjb20uZ29vZ2xlLnByb3RvYnVmLnRl", 
-            "c3RIAfgBAaoCGkdvb2dsZS5Qcm90b2J1Zi5UZXN0UHJvdG9zUABiBnByb3Rv", 
+            "Cixnb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfaW1wb3J0X3Byb3RvMy5wcm90",
+            "bxIYcHJvdG9idWZfdW5pdHRlc3RfaW1wb3J0GjNnb29nbGUvcHJvdG9idWYv",
+            "dW5pdHRlc3RfaW1wb3J0X3B1YmxpY19wcm90bzMucHJvdG8iGgoNSW1wb3J0",
+            "TWVzc2FnZRIJCgFkGAEgASgFKlkKCkltcG9ydEVudW0SGwoXSU1QT1JUX0VO",
+            "VU1fVU5TUEVDSUZJRUQQABIOCgpJTVBPUlRfRk9PEAcSDgoKSU1QT1JUX0JB",
+            "UhAIEg4KCklNUE9SVF9CQVoQCUI8Chhjb20uZ29vZ2xlLnByb3RvYnVmLnRl",
+            "c3RIAfgBAaoCGkdvb2dsZS5Qcm90b2J1Zi5UZXN0UHJvdG9zUABiBnByb3Rv",
             "Mw=="));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportPublicProto3.Descriptor, },
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
+          new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportPublicProto3Reflection.Descriptor, },
           new pbr::GeneratedCodeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.ImportEnum), }, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.ImportMessage), new[]{ "D" }, null, null, null)
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.ImportMessage), global::Google.Protobuf.TestProtos.ImportMessage.Parser, new[]{ "D" }, null, null, null)
           }));
     }
     #endregion
@@ -55,7 +57,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<ImportMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestImportProto3.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestImportProto3Reflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -76,6 +78,7 @@ namespace Google.Protobuf.TestProtos {
       return new ImportMessage(this);
     }
 
+    /// <summary>Field number for the "d" field.</summary>
     public const int DFieldNumber = 1;
     private int d_;
     public int D {
@@ -107,7 +110,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {

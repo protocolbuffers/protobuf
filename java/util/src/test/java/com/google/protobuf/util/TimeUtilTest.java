@@ -38,6 +38,8 @@ import junit.framework.TestCase;
 import org.junit.Assert;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Unit tests for {@link TimeUtil}. */
 public class TimeUtilTest extends TestCase {
@@ -74,6 +76,71 @@ public class TimeUtilTest extends TestCase {
     assertEquals("1969-12-31T16:00:00.010Z", TimeUtil.toString(value));
     value = TimeUtil.parseTimestamp("1970-01-01T00:00:00.010-08:00");
     assertEquals("1970-01-01T08:00:00.010Z", TimeUtil.toString(value));
+  }
+
+  private volatile boolean stopParsingThreads = false;
+  private volatile String errorMessage = "";
+
+  private class ParseTimestampThread extends Thread {
+    private final String[] strings;
+    private final Timestamp[] values;
+    public ParseTimestampThread(String[] strings, Timestamp[] values) {
+      this.strings = strings;
+      this.values = values;
+    }
+
+    @Override
+    public void run() {
+      int index = 0;
+      while (!stopParsingThreads) {
+        Timestamp result;
+        try {
+          result = TimeUtil.parseTimestamp(strings[index]);
+        } catch (ParseException e) {
+          errorMessage = "Failed to parse timestamp: " + strings[index];
+          break;
+        }
+        if (result.getSeconds() != values[index].getSeconds()
+            || result.getNanos() != values[index].getNanos()) {
+          errorMessage = "Actual result: " + result.toString() + ", expected: "
+              + values[index].toString();
+          break;
+        }
+        index = (index + 1) % strings.length;
+      }
+    }
+  }
+
+  public void testTimestampConcurrentParsing() throws Exception {
+    String[] timestampStrings = new String[]{
+      "0001-01-01T00:00:00Z",
+      "9999-12-31T23:59:59.999999999Z",
+      "1970-01-01T00:00:00Z",
+      "1969-12-31T23:59:59.999Z",
+    };
+    Timestamp[] timestampValues = new Timestamp[timestampStrings.length];
+    for (int i = 0; i < timestampStrings.length; i++) {
+      timestampValues[i] = TimeUtil.parseTimestamp(timestampStrings[i]);
+    }
+
+    final int THREAD_COUNT = 16;
+    final int RUNNING_TIME = 5000;  // in milliseconds.
+    final List<Thread> threads = new ArrayList<Thread>();
+
+    stopParsingThreads = false;
+    errorMessage = "";
+    for (int i = 0; i < THREAD_COUNT; i++) {
+      Thread thread = new ParseTimestampThread(
+          timestampStrings, timestampValues);
+      thread.start();
+      threads.add(thread);
+    }
+    Thread.sleep(RUNNING_TIME);
+    stopParsingThreads = true;
+    for (Thread thread : threads) {
+      thread.join();
+    }
+    Assert.assertEquals("", errorMessage);
   }
 
   public void testTimetampInvalidFormat() throws Exception {

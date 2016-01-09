@@ -53,6 +53,21 @@ public class FieldMaskUtilTest extends TestCase {
         NestedTestAllTypes.class, "payload.nonexist"));
     
     assertTrue(FieldMaskUtil.isValid(
+        NestedTestAllTypes.class, FieldMaskUtil.fromString("payload")));
+    assertFalse(FieldMaskUtil.isValid(
+        NestedTestAllTypes.class, FieldMaskUtil.fromString("nonexist")));
+    assertFalse(FieldMaskUtil.isValid(
+        NestedTestAllTypes.class, FieldMaskUtil.fromString("payload,nonexist")));
+    
+    assertTrue(FieldMaskUtil.isValid(NestedTestAllTypes.getDescriptor(), "payload"));
+    assertFalse(FieldMaskUtil.isValid(NestedTestAllTypes.getDescriptor(), "nonexist"));
+    
+    assertTrue(FieldMaskUtil.isValid(
+        NestedTestAllTypes.getDescriptor(), FieldMaskUtil.fromString("payload")));
+    assertFalse(FieldMaskUtil.isValid(
+        NestedTestAllTypes.getDescriptor(), FieldMaskUtil.fromString("nonexist")));
+    
+    assertTrue(FieldMaskUtil.isValid(
         NestedTestAllTypes.class, "payload.optional_nested_message.bb"));
     // Repeated fields cannot have sub-paths.
     assertFalse(FieldMaskUtil.isValid(
@@ -74,7 +89,7 @@ public class FieldMaskUtilTest extends TestCase {
       addPaths("bar").addPaths("").build();
     assertEquals("foo,bar", FieldMaskUtil.toString(mask));
   }
-  
+
   public void testFromString() throws Exception {
     FieldMask mask = FieldMaskUtil.fromString("");
     assertEquals(0, mask.getPathsCount());
@@ -85,22 +100,47 @@ public class FieldMaskUtilTest extends TestCase {
     assertEquals(2, mask.getPathsCount());
     assertEquals("foo", mask.getPaths(0));
     assertEquals("bar.baz", mask.getPaths(1));
-    
+
     // Empty field paths are ignore.
     mask = FieldMaskUtil.fromString(",foo,,bar,");
     assertEquals(2, mask.getPathsCount());
     assertEquals("foo", mask.getPaths(0));
     assertEquals("bar", mask.getPaths(1));
-    
+
     // Check whether the field paths are valid if a class parameter is provided.
     mask = FieldMaskUtil.fromString(NestedTestAllTypes.class, ",payload");
-    
+
     try {
       mask = FieldMaskUtil.fromString(
           NestedTestAllTypes.class, "payload,nonexist");
       fail("Exception is expected.");
     } catch (IllegalArgumentException e) {
       // Expected.
+    }
+  }
+
+  public void testFromFieldNumbers() throws Exception {
+    FieldMask mask = FieldMaskUtil.fromFieldNumbers(TestAllTypes.class);
+    assertEquals(0, mask.getPathsCount());
+    mask =
+        FieldMaskUtil.fromFieldNumbers(
+            TestAllTypes.class, TestAllTypes.OPTIONAL_INT32_FIELD_NUMBER);
+    assertEquals(1, mask.getPathsCount());
+    assertEquals("optional_int32", mask.getPaths(0));
+    mask =
+        FieldMaskUtil.fromFieldNumbers(
+            TestAllTypes.class,
+            TestAllTypes.OPTIONAL_INT32_FIELD_NUMBER,
+            TestAllTypes.OPTIONAL_INT64_FIELD_NUMBER);
+    assertEquals(2, mask.getPathsCount());
+    assertEquals("optional_int32", mask.getPaths(0));
+    assertEquals("optional_int64", mask.getPaths(1));
+
+    try {
+      int invalidFieldNumber = 1000;
+      mask = FieldMaskUtil.fromFieldNumbers(TestAllTypes.class, invalidFieldNumber);
+      fail("Exception is expected.");
+    } catch (IllegalArgumentException expected) {
     }
   }
   

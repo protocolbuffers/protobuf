@@ -43,6 +43,7 @@ string GetTypeUrl(const Descriptor* message) {
 
 const char kAnyFullTypeName[] = "google.protobuf.Any";
 const char kTypeGoogleApisComPrefix[] = "type.googleapis.com/";
+const char kTypeGoogleProdComPrefix[] = "type.googleprod.com/";
 
 AnyMetadata::AnyMetadata(UrlType* type_url, ValueType* value)
     : type_url_(type_url), value_(value) {
@@ -64,17 +65,30 @@ bool AnyMetadata::UnpackTo(Message* message) const {
 }
 
 bool AnyMetadata::InternalIs(const Descriptor* descriptor) const {
-  return type_url_->GetNoArena(
-             &::google::protobuf::internal::GetEmptyString()) ==
-         GetTypeUrl(descriptor);
+  const string type_url = type_url_->GetNoArena(
+             &::google::protobuf::internal::GetEmptyString());
+  const string full_name = descriptor->full_name();
+  if (type_url.length() < full_name.length()) {
+      return false;
+  }
+  return (0 == type_url.compare(
+    type_url.length() - full_name.length(),
+    full_name.length(),
+    full_name));
 }
 
 bool ParseAnyTypeUrl(const string& type_url, string* full_type_name) {
-  const int prefix_len = strlen(kTypeGoogleApisComPrefix);
-  if (strncmp(type_url.c_str(), kTypeGoogleApisComPrefix, prefix_len) == 0) {
-    full_type_name->assign(type_url.data() + prefix_len,
-                           type_url.size() - prefix_len);
-    return true;
+  static const char* prefix[] = {
+    kTypeGoogleApisComPrefix,
+    kTypeGoogleProdComPrefix
+  };
+  for (int i = 0; i < 2; i++) {
+    const int prefix_len = strlen(prefix[i]);
+    if (strncmp(type_url.c_str(), prefix[i], prefix_len) == 0) {
+      full_type_name->assign(type_url.data() + prefix_len,
+                             type_url.size() - prefix_len);
+      return true;
+    }
   }
   return false;
 }

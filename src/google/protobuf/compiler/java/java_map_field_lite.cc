@@ -405,7 +405,7 @@ GenerateParsingCode(io::Printer* printer) const {
     printer->Print(
         variables_,
         "if ($value_enum_type$.valueOf($name$.getValue()) == null) {\n"
-        "  unknownFields.mergeLengthDelimitedField($number$, bytes);\n"
+        "  super.mergeLengthDelimitedField($number$, bytes);\n"
         "} else {\n"
         "  $name$_.getMutableMap().put($name$.getKey(), $name$.getValue());\n"
         "}\n");

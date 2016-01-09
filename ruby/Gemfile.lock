@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    google-protobuf (3.0.0.alpha.4)
+    google-protobuf (3.0.0.alpha.4.0)
 
 GEM
   remote: https://rubygems.org/
@@ -23,3 +23,6 @@ DEPENDENCIES
   rake-compiler
   rubygems-tasks
   test-unit
+
+BUNDLED WITH
+   1.10.6

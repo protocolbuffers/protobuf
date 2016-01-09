@@ -78,6 +78,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 /**
@@ -99,7 +100,7 @@ public class JsonFormat {
    * Creates a {@link Printer} with default configurations.
    */
   public static Printer printer() {
-    return new Printer(TypeRegistry.getEmptyTypeRegistry());
+    return new Printer(TypeRegistry.getEmptyTypeRegistry(), false, false);
   }
   
   /**
@@ -107,9 +108,16 @@ public class JsonFormat {
    */
   public static class Printer {
     private final TypeRegistry registry;
-    
-    private Printer(TypeRegistry registry) {
+    private final boolean includingDefaultValueFields;
+    private final boolean preservingProtoFieldNames;
+
+    private Printer(
+        TypeRegistry registry,
+        boolean includingDefaultValueFields,
+        boolean preservingProtoFieldNames) {
       this.registry = registry;
+      this.includingDefaultValueFields = includingDefaultValueFields;
+      this.preservingProtoFieldNames = preservingProtoFieldNames;
     }
     
     /**
@@ -122,7 +130,27 @@ public class JsonFormat {
       if (this.registry != TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
-      return new Printer(registry);
+      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames);
+    }
+
+    /**
+     * Creates a new {@link Printer} that will also print fields set to their
+     * defaults. Empty repeated fields and map fields will be printed as well.
+     * The new Printer clones all other configurations from the current
+     * {@link Printer}.
+     */
+    public Printer includingDefaultValueFields() {
+      return new Printer(registry, true, preservingProtoFieldNames);
+    }
+
+    /**
+     * Creates a new {@link Printer} that is configured to use the original proto
+     * field names as defined in the .proto file rather than converting them to
+     * lowerCamelCase. The new Printer clones all other configurations from the
+     * current {@link Printer}.
+     */
+    public Printer preservingProtoFieldNames() {
+      return new Printer(registry, includingDefaultValueFields, true);
     }
     
     /**
@@ -136,7 +164,8 @@ public class JsonFormat {
         throws IOException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new PrinterImpl(registry, output).print(message);
+      new PrinterImpl(registry, includingDefaultValueFields, preservingProtoFieldNames, output)
+          .print(message);
     }
 
     /**
@@ -298,7 +327,7 @@ public class JsonFormat {
 
       private void addFile(FileDescriptor file) {
         // Skip the file if it's already added.
-        if (files.contains(file.getName())) {
+        if (!files.add(file.getFullName())) {
           return;
         }
         for (FileDescriptor dependency : file.getDependencies()) {
@@ -397,6 +426,8 @@ public class JsonFormat {
    */
   private static final class PrinterImpl {
     private final TypeRegistry registry;
+    private final boolean includingDefaultValueFields;
+    private final boolean preservingProtoFieldNames;
     private final TextGenerator generator;
     // We use Gson to help handle string escapes.
     private final Gson gson;
@@ -405,8 +436,14 @@ public class JsonFormat {
       private static final Gson DEFAULT_GSON = new Gson();
     }
 
-    PrinterImpl(TypeRegistry registry, Appendable jsonOutput) {
+    PrinterImpl(
+        TypeRegistry registry,
+        boolean includingDefaultValueFields,
+        boolean preservingProtoFieldNames,
+        Appendable jsonOutput) {
       this.registry = registry;
+      this.includingDefaultValueFields = includingDefaultValueFields;
+      this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.generator = new TextGenerator(jsonOutput);
       this.gson = GsonHolder.DEFAULT_GSON;
     }
@@ -647,13 +684,23 @@ public class JsonFormat {
         generator.print("\"@type\": " + gson.toJson(typeUrl));
         printedField = true;
       }
-      for (Map.Entry<FieldDescriptor, Object> field
-          : message.getAllFields().entrySet()) {
-        // Skip unknown enum fields.
-        if (field.getValue() instanceof EnumValueDescriptor
-            && ((EnumValueDescriptor) field.getValue()).getIndex() == -1) {
-          continue;
+      Map<FieldDescriptor, Object> fieldsToPrint = null;
+      if (includingDefaultValueFields) {
+        fieldsToPrint = new TreeMap<FieldDescriptor, Object>();
+        for (FieldDescriptor field : message.getDescriptorForType().getFields()) {
+          if (field.isOptional()
+              && field.getJavaType() == FieldDescriptor.JavaType.MESSAGE
+              && !message.hasField(field)) {
+            // Always skip empty optional message fields. If not we will recurse indefinitely if
+            // a message has itself as a sub-field.
+            continue;
+          }
+          fieldsToPrint.put(field, message.getField(field));
         }
+      } else {
+        fieldsToPrint = message.getAllFields();
+      }
+      for (Map.Entry<FieldDescriptor, Object> field : fieldsToPrint.entrySet()) {
         if (printedField) {
           // Add line-endings for the previous field.
           generator.print(",\n");
@@ -673,7 +720,11 @@ public class JsonFormat {
 
     private void printField(FieldDescriptor field, Object value)
         throws IOException {
-      generator.print("\"" + fieldNameToCamelName(field.getName()) + "\": ");
+      if (preservingProtoFieldNames) {
+        generator.print("\"" + field.getName() + "\": ");
+      } else {
+        generator.print("\"" + field.getJsonName() + "\": ");
+      }
       if (field.isMapField()) {
         printMapFieldValue(field, value);
       } else if (field.isRepeated()) {
@@ -689,11 +740,6 @@ public class JsonFormat {
       generator.print("[");
       boolean printedElement = false;
       for (Object element : (List) value) {
-        // Skip unknown enum entries.
-        if (element instanceof EnumValueDescriptor
-            && ((EnumValueDescriptor) element).getIndex() == -1) {
-          continue;
-        }
         if (printedElement) {
           generator.print(", ");
         } else {
@@ -720,11 +766,6 @@ public class JsonFormat {
         Message entry = (Message) element;
         Object entryKey = entry.getField(keyField);
         Object entryValue = entry.getField(valueField);
-        // Skip unknown enum entries.
-        if (entryValue instanceof EnumValueDescriptor
-            && ((EnumValueDescriptor) entryValue).getIndex() == -1) {
-          continue;
-        }
         if (printedElement) {
           generator.print(",\n");
         } else {
@@ -871,8 +912,13 @@ public class JsonFormat {
               generator.print("\"");
             }
           } else {
-            generator.print(
-                "\"" + ((EnumValueDescriptor) value).getName() + "\"");
+            if (((EnumValueDescriptor) value).getIndex() == -1) {
+              generator.print(
+                  String.valueOf(((EnumValueDescriptor) value).getNumber()));
+            } else {
+              generator.print(
+                  "\"" + ((EnumValueDescriptor) value).getName() + "\"");
+            }
           }
           break;
 
@@ -915,38 +961,6 @@ public class JsonFormat {
           "Invalid type url found: " + typeUrl);
     }
     return parts[1];
-  }
-
-  private static String fieldNameToCamelName(String name) {
-    StringBuilder result = new StringBuilder(name.length());
-    boolean isNextUpperCase = false;
-    for (int i = 0; i < name.length(); i++) {
-      Character ch = name.charAt(i);
-      if (Character.isLowerCase(ch)) {
-        if (isNextUpperCase) {
-          result.append(Character.toUpperCase(ch));
-        } else {
-          result.append(ch);
-        }
-        isNextUpperCase = false;
-      } else if (Character.isUpperCase(ch)) {
-        if (i == 0 && !isNextUpperCase) {
-          // Force first letter to lower-case unless explicitly told to
-          // capitalize it.
-          result.append(Character.toLowerCase(ch));
-        } else {
-          // Capital letters after the first are left as-is.
-          result.append(ch);
-        }
-        isNextUpperCase = false;
-      } else if (Character.isDigit(ch)) {
-        result.append(ch);
-        isNextUpperCase = true;
-      } else {
-        isNextUpperCase = true;
-      }
-    }
-    return result.toString();
   }
   
   private static class ParserImpl {
@@ -1085,7 +1099,8 @@ public class JsonFormat {
         Map<String, FieldDescriptor> fieldNameMap =
             new HashMap<String, FieldDescriptor>();
         for (FieldDescriptor field : descriptor.getFields()) {
-          fieldNameMap.put(fieldNameToCamelName(field.getName()), field);
+          fieldNameMap.put(field.getName(), field);
+          fieldNameMap.put(field.getJsonName(), field);
         }
         fieldNameMaps.put(descriptor, fieldNameMap);
         return fieldNameMap;
@@ -1244,7 +1259,25 @@ public class JsonFormat {
     
     private void mergeField(FieldDescriptor field, JsonElement json,
         Message.Builder builder) throws InvalidProtocolBufferException {
-      if (json instanceof JsonNull) {
+      if (field.isRepeated()) {
+        if (builder.getRepeatedFieldCount(field) > 0) {
+          throw new InvalidProtocolBufferException(
+              "Field " + field.getFullName() + " has already been set.");
+        }
+      } else {
+        if (builder.hasField(field)) {
+          throw new InvalidProtocolBufferException(
+              "Field " + field.getFullName() + " has already been set.");
+        }
+        if (field.getContainingOneof() != null
+            && builder.getOneofFieldDescriptor(field.getContainingOneof()) != null) {
+          FieldDescriptor other = builder.getOneofFieldDescriptor(field.getContainingOneof());
+          throw new InvalidProtocolBufferException(
+              "Cannot set field " + field.getFullName() + " because another field "
+              + other.getFullName() + " belonging to the same oneof has already been set ");
+        }
+      }
+      if (field.isRepeated() && json instanceof JsonNull) {
         // We allow "null" as value for all field types and treat it as if the
         // field is not present.
         return;
@@ -1282,7 +1315,8 @@ public class JsonFormat {
         Object value = parseFieldValue(
             valueField, entry.getValue(), entryBuilder);
         if (value == null) {
-          value = getDefaultValue(valueField, entryBuilder);
+          throw new InvalidProtocolBufferException(
+              "Map value cannot be null.");
         }
         entryBuilder.setField(keyField, key);
         entryBuilder.setField(valueField, value);
@@ -1341,7 +1375,8 @@ public class JsonFormat {
       for (int i = 0; i < array.size(); ++i) {
         Object value = parseFieldValue(field, array.get(i), builder);
         if (value == null) {
-          value = getDefaultValue(field, builder);
+          throw new InvalidProtocolBufferException(
+              "Repeated field elements cannot be null");
         }
         builder.addRepeatedField(field, value);
       }
@@ -1352,6 +1387,15 @@ public class JsonFormat {
       try {
         return Integer.parseInt(json.getAsString());
       } catch (Exception e) {
+        // Fall through.
+      }
+      // JSON doesn't distinguish between integer values and floating point values so "1" and
+      // "1.000" are treated as equal in JSON. For this reason we accept floating point values for
+      // integer fields as well as long as it actually is an integer (i.e., round(value) == value).
+      try {
+        BigDecimal value = new BigDecimal(json.getAsString());
+        return value.intValueExact();
+      } catch (Exception e) {
         throw new InvalidProtocolBufferException("Not an int32 value: " + json);
       }
     }
@@ -1361,7 +1405,16 @@ public class JsonFormat {
       try {
         return Long.parseLong(json.getAsString());
       } catch (Exception e) {
-        throw new InvalidProtocolBufferException("Not an int64 value: " + json);
+        // Fall through.
+      }
+      // JSON doesn't distinguish between integer values and floating point values so "1" and
+      // "1.000" are treated as equal in JSON. For this reason we accept floating point values for
+      // integer fields as well as long as it actually is an integer (i.e., round(value) == value).
+      try {
+        BigDecimal value = new BigDecimal(json.getAsString());
+        return value.longValueExact();
+      } catch (Exception e) {
+        throw new InvalidProtocolBufferException("Not an int32 value: " + json);
       }
     }
     
@@ -1377,6 +1430,21 @@ public class JsonFormat {
       } catch (InvalidProtocolBufferException e) {
         throw e;
       } catch (Exception e) {
+        // Fall through.
+      }
+      // JSON doesn't distinguish between integer values and floating point values so "1" and
+      // "1.000" are treated as equal in JSON. For this reason we accept floating point values for
+      // integer fields as well as long as it actually is an integer (i.e., round(value) == value).
+      try {
+        BigDecimal decimalValue = new BigDecimal(json.getAsString());
+        BigInteger value = decimalValue.toBigIntegerExact();
+        if (value.signum() < 0 || value.compareTo(new BigInteger("FFFFFFFF", 16)) > 0) {
+          throw new InvalidProtocolBufferException("Out of range uint32 value: " + json);
+        }
+        return value.intValue();
+      } catch (InvalidProtocolBufferException e) {
+        throw e;
+      } catch (Exception e) {
         throw new InvalidProtocolBufferException(
             "Not an uint32 value: " + json);
       }
@@ -1388,7 +1456,8 @@ public class JsonFormat {
     private long parseUint64(JsonElement json)
         throws InvalidProtocolBufferException {
       try {
-        BigInteger value = new BigInteger(json.getAsString());
+        BigDecimal decimalValue = new BigDecimal(json.getAsString());
+        BigInteger value = decimalValue.toBigIntegerExact();
         if (value.compareTo(BigInteger.ZERO) < 0
             || value.compareTo(MAX_UINT64) > 0) {
           throw new InvalidProtocolBufferException(
@@ -1488,7 +1557,12 @@ public class JsonFormat {
       return json.getAsString();
     }
     
-    private ByteString parseBytes(JsonElement json) {
+    private ByteString parseBytes(JsonElement json) throws InvalidProtocolBufferException {
+      String encoded = json.getAsString();
+      if (encoded.length() % 4 != 0) {
+        throw new InvalidProtocolBufferException(
+            "Bytes field is not encoded in standard BASE64 with paddings: " + encoded);
+      }
       return ByteString.copyFrom(
           BaseEncoding.base64().decode(json.getAsString()));
     }
@@ -1498,9 +1572,25 @@ public class JsonFormat {
       String value = json.getAsString();
       EnumValueDescriptor result = enumDescriptor.findValueByName(value);
       if (result == null) {
-        throw new InvalidProtocolBufferException(
-            "Invalid enum value: " + value + " for enum type: "
-            + enumDescriptor.getFullName());
+        // Try to interpret the value as a number.
+        try {
+          int numericValue = parseInt32(json);
+          if (enumDescriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3) {
+            result = enumDescriptor.findValueByNumberCreatingIfUnknown(numericValue);
+          } else {
+            result = enumDescriptor.findValueByNumber(numericValue);
+          }
+        } catch (InvalidProtocolBufferException e) {
+          // Fall through. This exception is about invalid int32 value we get from parseInt32() but
+          // that's not the exception we want the user to see. Since result == null, we will throw
+          // an exception later.
+        }
+        
+        if (result == null) {
+          throw new InvalidProtocolBufferException(
+              "Invalid enum value: " + value + " for enum type: "
+              + enumDescriptor.getFullName());
+        }
       }
       return result;
     }

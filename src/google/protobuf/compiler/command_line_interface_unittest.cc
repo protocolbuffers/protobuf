@@ -294,6 +294,10 @@ void CommandLineInterfaceTest::Run(const string& command) {
   if (!disallow_plugins_) {
     cli_.AllowPlugins("prefix-");
 #ifndef GOOGLE_THIRD_PARTY_PROTOBUF
+    string plugin_path;
+#ifdef GOOGLE_PROTOBUF_TEST_PLUGIN_PATH
+    plugin_path = GOOGLE_PROTOBUF_TEST_PLUGIN_PATH;
+#else
     const char* possible_paths[] = {
       // When building with shared libraries, libtool hides the real executable
       // in .libs and puts a fake wrapper in the current directory.
@@ -311,15 +315,13 @@ void CommandLineInterfaceTest::Run(const string& command) {
       "test_plugin.exe",        // Other Win32 (MSVC)
       "test_plugin",            // Unix
     };
-
-    string plugin_path;
-
     for (int i = 0; i < GOOGLE_ARRAYSIZE(possible_paths); i++) {
       if (access(possible_paths[i], F_OK) == 0) {
         plugin_path = possible_paths[i];
         break;
       }
     }
+#endif
 
     if (plugin_path.empty()) {
 #else
@@ -884,6 +886,10 @@ TEST_F(CommandLineInterfaceTest, WriteDescriptorSet) {
   EXPECT_EQ("bar.proto", descriptor_set.file(0).name());
   // Descriptor set should not have source code info.
   EXPECT_FALSE(descriptor_set.file(0).has_source_code_info());
+  // Descriptor set should have json_name.
+  EXPECT_EQ("Bar", descriptor_set.file(0).message_type(0).name());
+  EXPECT_EQ("foo", descriptor_set.file(0).message_type(0).field(0).name());
+  EXPECT_TRUE(descriptor_set.file(0).message_type(0).field(0).has_json_name());
 }
 
 TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithDuplicates) {
@@ -917,6 +923,10 @@ TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithDuplicates) {
   EXPECT_EQ("baz.proto", descriptor_set.file(2).name());
   // Descriptor set should not have source code info.
   EXPECT_FALSE(descriptor_set.file(0).has_source_code_info());
+  // Descriptor set should have json_name.
+  EXPECT_EQ("Bar", descriptor_set.file(0).message_type(0).name());
+  EXPECT_EQ("foo", descriptor_set.file(0).message_type(0).field(0).name());
+  EXPECT_TRUE(descriptor_set.file(0).message_type(0).field(0).has_json_name());
 }
 
 TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithSourceInfo) {
@@ -1409,6 +1419,18 @@ TEST_F(CommandLineInterfaceTest, PluginReceivesSourceCodeInfo) {
 
   ExpectErrorSubstring(
       "Saw message type MockCodeGenerator_HasSourceCodeInfo: 1.");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginReceivesJsonName) {
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "message MockCodeGenerator_HasJsonName {\n"
+    "  optional int32 value = 1;\n"
+    "}\n");
+
+  Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Saw json_name: 1");
 }
 
 TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {

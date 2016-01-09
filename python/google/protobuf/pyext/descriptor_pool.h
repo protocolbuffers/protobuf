@@ -55,7 +55,16 @@ namespace python {
 typedef struct PyDescriptorPool {
   PyObject_HEAD
 
+  // The C++ pool containing Descriptors.
   DescriptorPool* pool;
+
+  // The C++ pool acting as an underlay. Can be NULL.
+  // This pointer is not owned and must stay alive.
+  const DescriptorPool* underlay;
+
+  // The C++ descriptor database used to fetch unknown protos. Can be NULL.
+  // This pointer is owned.
+  const DescriptorDatabase* database;
 
   // DynamicMessageFactory used to create C++ instances of messages.
   // This object cache the descriptors that were used, so the DescriptorPool
@@ -89,12 +98,10 @@ const Descriptor* FindMessageTypeByName(PyDescriptorPool* self,
                                         const string& name);
 
 // Registers a new Python class for the given message descriptor.
-// Returns the message Descriptor.
-// On error, returns NULL with a Python exception set.
-const Descriptor* RegisterMessageClass(
-    PyDescriptorPool* self, PyObject* message_class, PyObject* descriptor);
-
-// The function below are also exposed as methods of the DescriptorPool type.
+// On error, returns -1 with a Python exception set.
+int RegisterMessageClass(PyDescriptorPool* self,
+                         const Descriptor* message_descriptor,
+                         PyObject* message_class);
 
 // Retrieves the Python class registered with the given message descriptor.
 //
@@ -102,6 +109,8 @@ const Descriptor* RegisterMessageClass(
 // exception set.
 PyObject* GetMessageClass(PyDescriptorPool* self,
                           const Descriptor* message_descriptor);
+
+// The functions below are also exposed as methods of the DescriptorPool type.
 
 // Looks up a message by name. Returns a PyMessageDescriptor corresponding to
 // the field on success, or NULL on failure.
@@ -136,8 +145,10 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg);
 }  // namespace cdescriptor_pool
 
 // Retrieve the global descriptor pool owned by the _message module.
+// This is the one used by pb2.py generated modules.
 // Returns a *borrowed* reference.
-PyDescriptorPool* GetDescriptorPool();
+// "Default" pool used to register messages from _pb2.py modules.
+PyDescriptorPool* GetDefaultDescriptorPool();
 
 // Retrieve the python descriptor pool owning a C++ descriptor pool.
 // Returns a *borrowed* reference.

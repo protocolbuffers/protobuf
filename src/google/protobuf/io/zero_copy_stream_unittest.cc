@@ -57,6 +57,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 #include <sstream>
 
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -197,7 +201,7 @@ void IoTest::WriteString(ZeroCopyOutputStream* output, const string& str) {
 }
 
 void IoTest::ReadString(ZeroCopyInputStream* input, const string& str) {
-  scoped_array<char> buffer(new char[str.size() + 1]);
+  google::protobuf::scoped_array<char> buffer(new char[str.size() + 1]);
   buffer[str.size()] = '\0';
   EXPECT_EQ(ReadFromInput(input, buffer.get(), str.size()), str.size());
   EXPECT_STREQ(str.c_str(), buffer.get());

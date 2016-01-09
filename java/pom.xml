@@ -10,7 +10,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
-  <version>3.0.0-beta-1</version>
+  <version>3.0.0-beta-2</version>
   <packaging>bundle</packaging>
   <name>Protocol Buffer Java API</name>
   <description>
@@ -92,6 +92,7 @@
                   <arg value="../src/google/protobuf/timestamp.proto" />
                   <arg value="../src/google/protobuf/type.proto" />
                   <arg value="../src/google/protobuf/wrappers.proto" />
+                  <arg value="../src/google/protobuf/compiler/plugin.proto" />
                 </exec>
               </tasks>
               <sourceRoot>target/generated-sources</sourceRoot>
@@ -166,7 +167,7 @@
           <instructions>
             <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
             <Bundle-SymbolicName>com.google.protobuf</Bundle-SymbolicName>
-            <Export-Package>com.google.protobuf;version=3.0.0-beta-1</Export-Package>
+            <Export-Package>com.google.protobuf;version=3.0.0-beta-2</Export-Package>
           </instructions>
         </configuration>
       </plugin>
@@ -186,6 +187,7 @@
           <include>google/protobuf/timestamp.proto</include>
           <include>google/protobuf/type.proto</include>
           <include>google/protobuf/wrappers.proto</include>
+          <include>google/protobuf/compiler/plugin.proto</include>
         </includes>
       </resource>
     </resources>
@@ -293,15 +295,19 @@
                 <include>**/MapFieldLite.java</include>
                 <include>**/MessageLite.java</include>
                 <include>**/MessageLiteOrBuilder.java</include>
+                <include>**/MessageLiteToString.java</include>
                 <include>**/MutabilityOracle.java</include>
+                <include>**/NioByteString.java</include>
                 <include>**/Parser.java</include>
                 <include>**/ProtobufArrayList.java</include>
                 <include>**/ProtocolStringList.java</include>
                 <include>**/RopeByteString.java</include>
                 <include>**/SmallSortedMap.java</include>
+                <include>**/TextFormatEscaper.java</include>
                 <include>**/UninitializedMessageException.java</include>
                 <include>**/UnknownFieldSetLite.java</include>
                 <include>**/UnmodifiableLazyStringList.java</include>
+                <include>**/UnsafeByteStrings.java</include>
                 <include>**/Utf8.java</include>
                 <include>**/WireFormat.java</include>
               </includes>
@@ -314,6 +320,7 @@
                 <testInclude>**/LazyMessageLiteTest.java</testInclude>
                 <testInclude>**/LiteTest.java</testInclude>
                 <testInclude>**/LongArrayListTest.java</testInclude>
+                <testInclude>**/NioByteStringTest.java</testInclude>
                 <testInclude>**/ProtobufArrayListTest.java</testInclude>
                 <testInclude>**/UnknownFieldSetLiteTest.java</testInclude>
               </testIncludes>

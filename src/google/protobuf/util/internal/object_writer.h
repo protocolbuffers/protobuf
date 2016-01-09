@@ -101,11 +101,6 @@ class LIBPROTOBUF_EXPORT ObjectWriter {
   // Renders a Null value.
   virtual ObjectWriter* RenderNull(StringPiece name) = 0;
 
-  // Disables case normalization. Any RenderTYPE call after calling this
-  // function will output the name field as-is. No normalization is attempted on
-  // it. This setting is reset immediately after the next RenderTYPE is called.
-  virtual ObjectWriter* DisableCaseNormalizationForNextKey() { return this; }
-
   // Renders a DataPiece object to a ObjectWriter.
   static void RenderDataPieceTo(const DataPiece& data, StringPiece name,
                                 ObjectWriter* ow);

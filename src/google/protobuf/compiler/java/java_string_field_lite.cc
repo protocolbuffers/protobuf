@@ -647,12 +647,6 @@ GenerateMembers(io::Printer* printer) const {
     "      $name$_.get(index));\n"
     "}\n");
 
-  if (descriptor_->options().packed() &&
-      HasGeneratedMethods(descriptor_->containing_type())) {
-    printer->Print(variables_,
-      "private int $name$MemoizedSerializedSize = -1;\n");
-  }
-
   printer->Print(variables_,
     "private void ensure$capitalized_name$IsMutable() {\n"
     "  if (!$is_mutable$) {\n"
@@ -835,29 +829,6 @@ GenerateParsingCode(io::Printer* printer) const {
 }
 
 void RepeatedImmutableStringFieldLiteGenerator::
-GenerateParsingCodeFromPacked(io::Printer* printer) const {
-  printer->Print(variables_,
-    "int length = input.readRawVarint32();\n"
-    "int limit = input.pushLimit(length);\n"
-    "if (!$is_mutable$ && input.getBytesUntilLimit() > 0) {\n"
-    "  $name$_ = com.google.protobuf.GeneratedMessageLite.newProtobufList();\n"
-    "}\n"
-    "while (input.getBytesUntilLimit() > 0) {\n");
-  if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_,
-      "  String s = input.readStringRequireUtf8();\n");
-  } else {
-    printer->Print(variables_,
-      "  String s = input.readString();\n");
-  }
-  printer->Print(variables_,
-    "  $name$.add(s);\n");
-  printer->Print(variables_,
-    "}\n"
-    "input.popLimit(limit);\n");
-}
-
-void RepeatedImmutableStringFieldLiteGenerator::
 GenerateParsingDoneCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($is_mutable$) {\n"
@@ -870,21 +841,10 @@ GenerateSerializationCode(io::Printer* printer) const {
   // Lite runtime should reduce allocations by serializing the string directly.
   // This avoids spurious intermediary ByteString allocations, cutting overall
   // allocations in half.
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "if (get$capitalized_name$List().size() > 0) {\n"
-      "  output.writeRawVarint32($tag$);\n"
-      "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
-      "}\n"
-      "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  output.writeStringNoTag($name$_.get(i));\n"
-      "}\n");
-  } else {
-    printer->Print(variables_,
-      "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  output.writeString($number$, $name$_.get(i));\n"
-      "}\n");
-  }
+  printer->Print(variables_,
+    "for (int i = 0; i < $name$_.size(); i++) {\n"
+    "  output.writeString($number$, $name$_.get(i));\n"
+    "}\n");
 }
 
 void RepeatedImmutableStringFieldLiteGenerator::
@@ -906,23 +866,9 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(
       "size += dataSize;\n");
 
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "if (!get$capitalized_name$List().isEmpty()) {\n"
-      "  size += $tag_size$;\n"
-      "  size += com.google.protobuf.CodedOutputStream\n"
-      "      .computeInt32SizeNoTag(dataSize);\n"
-      "}\n");
-  } else {
-    printer->Print(variables_,
-      "size += $tag_size$ * get$capitalized_name$List().size();\n");
-  }
 
-  // cache the data size for packed fields.
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "$name$MemoizedSerializedSize = dataSize;\n");
-  }
+  printer->Print(variables_,
+    "size += $tag_size$ * get$capitalized_name$List().size();\n");
 
   printer->Outdent();
   printer->Print("}\n");

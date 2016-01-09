@@ -43,17 +43,14 @@ abstract interface.
 
 __author__ = 'gps@google.com (Gregory P. Smith)'
 
+
 import collections
 import copy
 import math
 import operator
 import pickle
-import sys
-
 import six
-
-if six.PY3:
-  long = int
+import sys
 
 try:
   import unittest2 as unittest
@@ -63,10 +60,14 @@ from google.protobuf.internal import _parameterized
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
+from google.protobuf.internal import any_test_pb2
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import test_util
 from google.protobuf import message
+
+if six.PY3:
+  long = int
 
 # Python pre-2.6 does not have isinf() or isnan() functions, so we have
 # to provide our own.
@@ -442,7 +443,7 @@ class MessageTest(unittest.TestCase):
     message.repeated_nested_message.add().bb = 24
     message.repeated_nested_message.add().bb = 10
     message.repeated_nested_message.sort(key=lambda z: z.bb // 10)
-    self.assertEquals(
+    self.assertEqual(
         [13, 11, 10, 21, 20, 24, 33],
         [n.bb for n in message.repeated_nested_message])
 
@@ -451,7 +452,7 @@ class MessageTest(unittest.TestCase):
     pb = message.SerializeToString()
     message.Clear()
     message.MergeFromString(pb)
-    self.assertEquals(
+    self.assertEqual(
         [13, 11, 10, 21, 20, 24, 33],
         [n.bb for n in message.repeated_nested_message])
 
@@ -914,7 +915,6 @@ class MessageTest(unittest.TestCase):
     with self.assertRaises(pickle.PickleError) as _:
       pickle.dumps(m.repeated_int32, pickle.HIGHEST_PROTOCOL)
 
-
   def testSortEmptyRepeatedCompositeContainer(self, message_module):
     """Exercise a scenario that has led to segfaults in the past.
     """
@@ -1280,12 +1280,13 @@ class Proto3Test(unittest.TestCase):
 
     self.assertIsInstance(msg.map_string_string['abc'], six.text_type)
 
-    # Accessing an unset key still throws TypeError of the type of the key
+    # Accessing an unset key still throws TypeError if the type of the key
     # is incorrect.
     with self.assertRaises(TypeError):
       msg.map_string_string[123]
 
-    self.assertFalse(123 in msg.map_string_string)
+    with self.assertRaises(TypeError):
+      123 in msg.map_string_string
 
   def testMapGet(self):
     # Need to test that get() properly returns the default, even though the dict
@@ -1592,31 +1593,49 @@ class Proto3Test(unittest.TestCase):
     # For the C++ implementation this tests the correctness of
     # ScalarMapContainer::Release()
     msg = map_unittest_pb2.TestMap()
-    map = msg.map_int32_int32
+    int32_map = msg.map_int32_int32
 
-    map[2] = 4
-    map[3] = 6
-    map[4] = 8
+    int32_map[2] = 4
+    int32_map[3] = 6
+    int32_map[4] = 8
 
     msg.ClearField('map_int32_int32')
+    self.assertEqual(b'', msg.SerializeToString())
     matching_dict = {2: 4, 3: 6, 4: 8}
-    self.assertMapIterEquals(map.items(), matching_dict)
+    self.assertMapIterEquals(int32_map.items(), matching_dict)
 
-  def testMapIterValidAfterFieldCleared(self):
-    # Map iterator needs to work even if field is cleared.
+  def testMessageMapValidAfterFieldCleared(self):
+    # Map needs to work even if field is cleared.
+    # For the C++ implementation this tests the correctness of
+    # ScalarMapContainer::Release()
+    msg = map_unittest_pb2.TestMap()
+    int32_foreign_message = msg.map_int32_foreign_message
+
+    int32_foreign_message[2].c = 5
+
+    msg.ClearField('map_int32_foreign_message')
+    self.assertEqual(b'', msg.SerializeToString())
+    self.assertTrue(2 in int32_foreign_message.keys())
+
+  def testMapIterInvalidatedByClearField(self):
+    # Map iterator is invalidated when field is cleared.
+    # But this case does need to not crash the interpreter.
     # For the C++ implementation this tests the correctness of
     # ScalarMapContainer::Release()
     msg = map_unittest_pb2.TestMap()
 
-    msg.map_int32_int32[2] = 4
-    msg.map_int32_int32[3] = 6
-    msg.map_int32_int32[4] = 8
-
-    it = msg.map_int32_int32.items()
+    it = iter(msg.map_int32_int32)
 
     msg.ClearField('map_int32_int32')
-    matching_dict = {2: 4, 3: 6, 4: 8}
-    self.assertMapIterEquals(it, matching_dict)
+    with self.assertRaises(RuntimeError):
+      for _ in it:
+        pass
+
+    it = iter(msg.map_int32_foreign_message)
+    msg.ClearField('map_int32_foreign_message')
+    with self.assertRaises(RuntimeError):
+      for _ in it:
+        pass
 
   def testMapDelete(self):
     msg = map_unittest_pb2.TestMap()
@@ -1646,6 +1665,37 @@ class Proto3Test(unittest.TestCase):
     msg.map_int32_int32[35] = 64
     msg.map_string_foreign_message['foo'].c = 5
     self.assertEqual(0, len(msg.FindInitializationErrors()))
+
+  def testAnyMessage(self):
+    # Creates and sets message.
+    msg = any_test_pb2.TestAny()
+    msg_descriptor = msg.DESCRIPTOR
+    all_types = unittest_pb2.TestAllTypes()
+    all_descriptor = all_types.DESCRIPTOR
+    all_types.repeated_string.append(u'\u00fc\ua71f')
+    # Packs to Any.
+    msg.value.Pack(all_types)
+    self.assertEqual(msg.value.type_url,
+                     'type.googleapis.com/%s' % all_descriptor.full_name)
+    self.assertEqual(msg.value.value,
+                     all_types.SerializeToString())
+    # Tests Is() method.
+    self.assertTrue(msg.value.Is(all_descriptor))
+    self.assertFalse(msg.value.Is(msg_descriptor))
+    # Unpacks Any.
+    unpacked_message = unittest_pb2.TestAllTypes()
+    self.assertTrue(msg.value.Unpack(unpacked_message))
+    self.assertEqual(all_types, unpacked_message)
+    # Unpacks to different type.
+    self.assertFalse(msg.value.Unpack(msg))
+    # Only Any messages have Pack method.
+    try:
+      msg.Pack(all_types)
+    except AttributeError:
+      pass
+    else:
+      raise AttributeError('%s should not have Pack method.' %
+                           msg_descriptor.full_name)
 
 
 

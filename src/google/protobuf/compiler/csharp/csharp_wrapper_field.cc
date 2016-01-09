@@ -37,6 +37,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_wrapper_field.h>
 
@@ -70,6 +71,7 @@ void WrapperFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     ";\n"
     "private $type_name$ $name$_;\n");
+  WritePropertyDocComment(printer, descriptor_);
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
@@ -165,6 +167,7 @@ void WrapperOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
         "private static readonly pb::FieldCodec<$type_name$> _oneof_$name$_codec = ");
   GenerateCodecCode(printer);
   printer->Print(";\n");
+  WritePropertyDocComment(printer, descriptor_);
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,

@@ -36,6 +36,7 @@
 #include <vector>
 
 #include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/stubs/hash.h>
 #include <gtest/gtest.h>
 
 namespace google {

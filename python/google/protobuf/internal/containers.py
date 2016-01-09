@@ -464,6 +464,9 @@ class ScalarMap(MutableMapping):
       return val
 
   def __contains__(self, item):
+    # We check the key's type to match the strong-typing flavor of the API.
+    # Also this makes it easier to match the behavior of the C++ implementation.
+    self._key_checker.CheckValue(item)
     return item in self._values
 
   # We need to override this explicitly, because our defaultdict-like behavior
@@ -491,9 +494,19 @@ class ScalarMap(MutableMapping):
   def __iter__(self):
     return iter(self._values)
 
+  def __repr__(self):
+    return repr(self._values)
+
   def MergeFrom(self, other):
     self._values.update(other._values)
     self._message_listener.Modified()
+
+  def InvalidateIterators(self):
+    # It appears that the only way to reliably invalidate iterators to
+    # self._values is to ensure that its size changes.
+    original = self._values
+    self._values = original.copy()
+    original[None] = None
 
   # This is defined in the abstract base, but we can do it much more cheaply.
   def clear(self):
@@ -576,11 +589,21 @@ class MessageMap(MutableMapping):
   def __iter__(self):
     return iter(self._values)
 
+  def __repr__(self):
+    return repr(self._values)
+
   def MergeFrom(self, other):
     for key in other:
       self[key].MergeFrom(other[key])
     # self._message_listener.Modified() not required here, because
     # mutations to submessages already propagate.
+
+  def InvalidateIterators(self):
+    # It appears that the only way to reliably invalidate iterators to
+    # self._values is to ensure that its size changes.
+    original = self._values
+    self._values = original.copy()
+    original[None] = None
 
   # This is defined in the abstract base, but we can do it much more cheaply.
   def clear(self):

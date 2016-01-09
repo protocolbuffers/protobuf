@@ -225,8 +225,10 @@
   // Serialize and parse it.  Make sure to parse from an InputStream, not
   // directly from a ByteString, so that CodedInputStream uses buffered
   // reading.
+  NSData *messageData = message.data;
+  XCTAssertNotNil(messageData);
   GPBCodedInputStream* stream =
-      [GPBCodedInputStream streamWithData:message.data];
+      [GPBCodedInputStream streamWithData:messageData];
   TestAllTypes* message2 = [TestAllTypes parseFromCodedInputStream:stream
                                                  extensionRegistry:nil
                                                              error:NULL];
@@ -264,6 +266,9 @@
 }
 
 // Verifies fix for b/10315336.
+// Note: Now that there isn't a custom string class under the hood, this test
+// isn't as critical, but it does cover bad input and if a custom class is added
+// again, it will help validate that class' handing of bad utf8.
 - (void)testReadMalformedString {
   NSOutputStream* rawOutput = [NSOutputStream outputStreamToMemory];
   GPBCodedOutputStream* output =
@@ -274,7 +279,7 @@
   [output writeRawVarint32:tag];
   [output writeRawVarint32:5];
   // Create an invalid utf-8 byte array.
-  uint8_t bytes[5] = {0xc2, 0xf2};
+  uint8_t bytes[] = {0xc2, 0xf2, 0x0, 0x0, 0x0};
   [output writeRawData:[NSData dataWithBytes:bytes length:sizeof(bytes)]];
   [output flush];
 
@@ -284,6 +289,7 @@
   TestAllTypes* message = [TestAllTypes parseFromCodedInputStream:input
                                                 extensionRegistry:nil
                                                             error:NULL];
+  XCTAssertNotNil(message);
   // Make sure we can read string properties twice without crashing.
   XCTAssertEqual([message.defaultString length], (NSUInteger)0);
   XCTAssertEqualObjects(@"", message.defaultString);

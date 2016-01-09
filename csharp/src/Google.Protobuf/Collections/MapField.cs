@@ -35,6 +35,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Google.Protobuf.Compatibility;
 
 namespace Google.Protobuf.Collections
@@ -45,10 +46,17 @@ namespace Google.Protobuf.Collections
     /// <typeparam name="TKey">Key type in the map. Must be a type supported by Protocol Buffer map keys.</typeparam>
     /// <typeparam name="TValue">Value type in the map. Must be a type supported by Protocol Buffers.</typeparam>
     /// <remarks>
+    /// <para>
     /// This implementation preserves insertion order for simplicity of testing
     /// code using maps fields. Overwriting an existing entry does not change the
     /// position of that entry within the map. Equality is not order-sensitive.
     /// For string keys, the equality comparison is provided by <see cref="StringComparer.Ordinal" />.
+    /// </para>
+    /// <para>
+    /// This implementation does not generally prohibit the use of key/value types which are not
+    /// supported by Protocol Buffers (e.g. using a key type of <code>byte</code>) but nor does it guarantee
+    /// that all operations will work in such cases.
+    /// </para>
     /// </remarks>
     public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary
     {
@@ -480,6 +488,17 @@ namespace Google.Protobuf.Collections
                 size += CodedOutputStream.ComputeMessageSize(message);
             }
             return size;
+        }
+
+        /// <summary>
+        /// Returns a string representation of this repeated field, in the same
+        /// way as it would be represented by the default JSON formatter.
+        /// </summary>
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            JsonFormatter.Default.WriteDictionary(builder, this);
+            return builder.ToString();
         }
 
         #region IDictionary explicit interface implementation

@@ -28,8 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Copyright 2009 Google Inc. All Rights Reserved.
-
 """Code for decoding protocol buffer primitives.
 
 This code is very similar to encoder.py -- read the docs for that module first.

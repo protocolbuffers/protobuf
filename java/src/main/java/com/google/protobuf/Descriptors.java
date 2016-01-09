@@ -889,6 +889,11 @@ public final class Descriptors {
      */
     public String getFullName() { return fullName; }
 
+    /** Get the JSON name of this field. */
+    public String getJsonName() {
+      return jsonName;
+    }
+
     /**
      * Get the field's java type.  This is just for convenience.  Every
      * {@code FieldDescriptorProto.Type} maps to exactly one Java type.
@@ -1079,6 +1084,7 @@ public final class Descriptors {
 
     private FieldDescriptorProto proto;
     private final String fullName;
+    private final String jsonName;
     private final FileDescriptor file;
     private final Descriptor extensionScope;
 
@@ -1157,6 +1163,38 @@ public final class Descriptors {
       private final Object defaultDefault;
     }
 
+    // TODO(xiaofeng): Implement it consistently across different languages. See b/24751348.
+    private static String fieldNameToLowerCamelCase(String name) {
+      StringBuilder result = new StringBuilder(name.length());
+      boolean isNextUpperCase = false;
+      for (int i = 0; i < name.length(); i++) {
+        Character ch = name.charAt(i);
+        if (Character.isLowerCase(ch)) {
+          if (isNextUpperCase) {
+            result.append(Character.toUpperCase(ch));
+          } else {
+            result.append(ch);
+          }
+          isNextUpperCase = false;
+        } else if (Character.isUpperCase(ch)) {
+          if (i == 0) {
+            // Force first letter to lower-case.
+            result.append(Character.toLowerCase(ch));
+          } else {
+            // Capital letters after the first are left as-is.
+            result.append(ch);
+          }
+          isNextUpperCase = false;
+        } else if (Character.isDigit(ch)) {
+          result.append(ch);
+          isNextUpperCase = false;
+        } else {
+          isNextUpperCase = true;
+        }
+      }
+      return result.toString();
+    }
+
     private FieldDescriptor(final FieldDescriptorProto proto,
                             final FileDescriptor file,
                             final Descriptor parent,
@@ -1167,6 +1205,11 @@ public final class Descriptors {
       this.proto = proto;
       fullName = computeFullName(file, parent, proto.getName());
       this.file = file;
+      if (proto.hasJsonName()) {
+        jsonName = proto.getJsonName();
+      } else {
+        jsonName = fieldNameToLowerCamelCase(proto.getName());
+      }
 
       if (proto.hasType()) {
         type = Type.valueOf(proto.getType());

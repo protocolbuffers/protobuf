@@ -35,6 +35,10 @@
 // This file makes extensive use of RFC 3092.  :)
 
 #include <algorithm>
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/descriptor.h>
@@ -177,7 +181,7 @@ class DescriptorDatabaseTest
     EXPECT_FALSE(test_case_->AddToDatabase(file_proto));
   }
 
-  scoped_ptr<DescriptorDatabaseTestCase> test_case_;
+  google::protobuf::scoped_ptr<DescriptorDatabaseTestCase> test_case_;
   DescriptorDatabase* database_;
 };
 

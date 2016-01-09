@@ -45,12 +45,13 @@ import java.util.Arrays;
  * @author dweis@google.com (Daniel Weis)
  */
 public final class UnknownFieldSetLite {
-
-  private static final int[] EMPTY_INT_ARRAY = new int[0];
-  private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+  
+  // Arbitrarily chosen.
+  // TODO(dweis): Tune this number?
+  private static final int MIN_CAPACITY = 8;
 
   private static final UnknownFieldSetLite DEFAULT_INSTANCE =
-      new UnknownFieldSetLite(0, EMPTY_INT_ARRAY, EMPTY_OBJECT_ARRAY);
+      new UnknownFieldSetLite(0, new int[0], new Object[0], false /* isMutable */);
 
   /**
    * Get an empty {@code UnknownFieldSetLite}.
@@ -62,25 +63,32 @@ public final class UnknownFieldSetLite {
   }
 
   /**
-   * Create a new {@link Builder}.
+   * Returns an empty {@code UnknownFieldSetLite.Builder}.
    *
    * <p>For use by generated code only.
    */
   public static Builder newBuilder() {
     return new Builder();
   }
+  
+  /**
+   * Returns a new mutable instance.
+   */
+  static UnknownFieldSetLite newInstance() {
+    return new UnknownFieldSetLite();
+  }
 
   /**
-   * Returns an {@code UnknownFieldSetLite} that is the composite of {@code first} and
+   * Returns a mutable {@code UnknownFieldSetLite} that is the composite of {@code first} and
    * {@code second}.
    */
-  static UnknownFieldSetLite concat(UnknownFieldSetLite first, UnknownFieldSetLite second) {
+  static UnknownFieldSetLite mutableCopyOf(UnknownFieldSetLite first, UnknownFieldSetLite second) {
     int count = first.count + second.count;
     int[] tags = Arrays.copyOf(first.tags, count);
     System.arraycopy(second.tags, 0, tags, first.count, second.count);
     Object[] objects = Arrays.copyOf(first.objects, count);
     System.arraycopy(second.objects, 0, objects, first.count, second.count);
-    return new UnknownFieldSetLite(count, tags, objects);
+    return new UnknownFieldSetLite(count, tags, objects, true /* isMutable */);
   }
   
   /**
@@ -102,14 +110,45 @@ public final class UnknownFieldSetLite {
    * The lazily computed serialized size of the set.
    */
   private int memoizedSerializedSize = -1;
+  
+  /**
+   * Indicates that this object is mutable. 
+   */
+  private boolean isMutable;
 
+  /**
+   * Constructs a mutable {@code UnknownFieldSetLite}.
+   */
+  private UnknownFieldSetLite() {
+    this(0, new int[MIN_CAPACITY], new Object[MIN_CAPACITY], true /* isMutable */);
+  }
+  
   /**
    * Constructs the {@code UnknownFieldSetLite}.
    */
-  private UnknownFieldSetLite(int count, int[] tags, Object[] objects) {
+  private UnknownFieldSetLite(int count, int[] tags, Object[] objects, boolean isMutable) {
     this.count = count;
     this.tags = tags;
     this.objects = objects;
+    this.isMutable = isMutable;
+  }
+  
+  /**
+   * Marks this object as immutable.
+   * 
+   * <p>Future calls to methods that attempt to modify this object will throw.
+   */
+  public void makeImmutable() {
+    this.isMutable = false;
+  }
+  
+  /**
+   * Throws an {@link UnsupportedOperationException} if immutable.
+   */
+  void checkMutable() {
+    if (!isMutable) {
+      throw new UnsupportedOperationException(); 
+    }
   }
 
   /**
@@ -223,6 +262,114 @@ public final class UnknownFieldSetLite {
     return hashCode;
   }
 
+  private void storeField(int tag, Object value) {
+    ensureCapacity();
+    
+    tags[count] = tag;
+    objects[count] = value;
+    count++;
+  }
+  
+  /**
+   * Ensures that our arrays are long enough to store more metadata.
+   */
+  private void ensureCapacity() {
+    if (count == tags.length) {        
+      int increment = count < (MIN_CAPACITY / 2) ? MIN_CAPACITY : count >> 1;
+      int newLength = count + increment;
+        
+      tags = Arrays.copyOf(tags, newLength);
+      objects = Arrays.copyOf(objects, newLength);
+    }
+  }
+  
+  /**
+   * Parse a single field from {@code input} and merge it into this set.
+   *
+   * <p>For use by generated code only.
+   *
+   * @param tag The field's tag number, which was already parsed.
+   * @return {@code false} if the tag is an end group tag.
+   */
+  boolean mergeFieldFrom(final int tag, final CodedInputStream input) throws IOException {
+    checkMutable();
+    final int fieldNumber = WireFormat.getTagFieldNumber(tag);
+    switch (WireFormat.getTagWireType(tag)) {
+      case WireFormat.WIRETYPE_VARINT:
+        storeField(tag, input.readInt64());
+        return true;
+      case WireFormat.WIRETYPE_FIXED32:
+        storeField(tag, input.readFixed32());
+        return true;
+      case WireFormat.WIRETYPE_FIXED64:
+        storeField(tag, input.readFixed64());
+        return true;
+      case WireFormat.WIRETYPE_LENGTH_DELIMITED:
+        storeField(tag, input.readBytes());
+        return true;
+      case WireFormat.WIRETYPE_START_GROUP:
+        final UnknownFieldSetLite subFieldSet = new UnknownFieldSetLite();
+        subFieldSet.mergeFrom(input);
+        input.checkLastTagWas(
+            WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
+        storeField(tag, subFieldSet);
+        return true;
+      case WireFormat.WIRETYPE_END_GROUP:
+        return false;
+      default:
+        throw InvalidProtocolBufferException.invalidWireType();
+    }
+  }
+
+  /**
+   * Convenience method for merging a new field containing a single varint
+   * value. This is used in particular when an unknown enum value is
+   * encountered.
+   *
+   * <p>For use by generated code only.
+   */
+  UnknownFieldSetLite mergeVarintField(int fieldNumber, int value) {
+    checkMutable();
+    if (fieldNumber == 0) {
+      throw new IllegalArgumentException("Zero is not a valid field number.");
+    }
+
+    storeField(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_VARINT), (long) value);
+    
+    return this;
+  }
+
+  /**
+   * Convenience method for merging a length-delimited field.
+   *
+   * <p>For use by generated code only.
+   */
+  UnknownFieldSetLite mergeLengthDelimitedField(final int fieldNumber, final ByteString value) {  
+    checkMutable();
+    if (fieldNumber == 0) {
+      throw new IllegalArgumentException("Zero is not a valid field number.");
+    }
+
+    storeField(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED), value);
+    
+    return this;
+  }
+  
+  /**
+   * Parse an entire message from {@code input} and merge its fields into
+   * this set.
+   */
+  private UnknownFieldSetLite mergeFrom(final CodedInputStream input) throws IOException {
+    // Ensures initialization in mergeFieldFrom.
+    while (true) {
+      final int tag = input.readTag();
+      if (tag == 0 || !mergeFieldFrom(tag, input)) {
+        break;
+      }
+    }
+    return this;
+  }
+  
   /**
    * Builder for {@link UnknownFieldSetLite}s.
    *
@@ -230,53 +377,26 @@ public final class UnknownFieldSetLite {
    *
    * <p>For use by generated code only.
    */
+  // TODO(dweis): Update the mutable API to no longer need this builder and delete.
   public static final class Builder {
-    
-    // Arbitrarily chosen.
-    // TODO(dweis): Tune this number?
-    private static final int MIN_CAPACITY = 8;
-    
-    private int count = 0;
-    private int[] tags = EMPTY_INT_ARRAY;
-    private Object[] objects = EMPTY_OBJECT_ARRAY;
 
-    private boolean built;
-
-    /**
-     * Constructs a {@code Builder}.
-     */
-    private Builder() {}
+    private UnknownFieldSetLite set;
+    
+    private Builder() {
+      this.set = null;
+    }
 
     /**
      * Ensures internal state is initialized for use.
      */
     private void ensureNotBuilt() {
-      if (built) {
-        throw new IllegalStateException("Do not reuse UnknownFieldSetLite Builders.");
+      if (set == null) {
+        set = new UnknownFieldSetLite();
       }
-    }
-    
-    private void storeField(int tag, Object value) {
-      ensureCapacity();
       
-      tags[count] = tag;
-      objects[count] = value;
-      count++;
+      set.checkMutable();
     }
     
-    /**
-     * Ensures that our arrays are long enough to store more metadata.
-     */
-    private void ensureCapacity() {
-      if (count == tags.length) {        
-        int increment = count < (MIN_CAPACITY / 2) ? MIN_CAPACITY : count >> 1;
-        int newLength = count + increment;
-          
-        tags = Arrays.copyOf(tags, newLength);
-        objects = Arrays.copyOf(objects, newLength);
-      }
-    }
-
     /**
      * Parse a single field from {@code input} and merge it into this set.
      *
@@ -285,36 +405,9 @@ public final class UnknownFieldSetLite {
      * @param tag The field's tag number, which was already parsed.
      * @return {@code false} if the tag is an end group tag.
      */
-    public boolean mergeFieldFrom(final int tag, final CodedInputStream input)
-                                  throws IOException {
+    boolean mergeFieldFrom(final int tag, final CodedInputStream input) throws IOException {
       ensureNotBuilt();
-
-      final int fieldNumber = WireFormat.getTagFieldNumber(tag);
-      switch (WireFormat.getTagWireType(tag)) {
-        case WireFormat.WIRETYPE_VARINT:
-          storeField(tag, input.readInt64());
-          return true;
-        case WireFormat.WIRETYPE_FIXED32:
-          storeField(tag, input.readFixed32());
-          return true;
-        case WireFormat.WIRETYPE_FIXED64:
-          storeField(tag, input.readFixed64());
-          return true;
-        case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-          storeField(tag, input.readBytes());
-          return true;
-        case WireFormat.WIRETYPE_START_GROUP:
-          final Builder subBuilder = newBuilder();
-          subBuilder.mergeFrom(input);
-          input.checkLastTagWas(
-              WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP));
-          storeField(tag, subBuilder.build());
-          return true;
-        case WireFormat.WIRETYPE_END_GROUP:
-          return false;
-        default:
-          throw InvalidProtocolBufferException.invalidWireType();
-      }
+      return set.mergeFieldFrom(tag, input);
     }
 
     /**
@@ -324,71 +417,42 @@ public final class UnknownFieldSetLite {
      *
      * <p>For use by generated code only.
      */
-    public Builder mergeVarintField(int fieldNumber, int value) {
-      if (fieldNumber == 0) {
-        throw new IllegalArgumentException("Zero is not a valid field number.");
-      }
+    Builder mergeVarintField(int fieldNumber, int value) {
       ensureNotBuilt();
-
-      storeField(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_VARINT), (long) value);
-      
+      set.mergeVarintField(fieldNumber, value);
       return this;
     }
-
+    
     /**
      * Convenience method for merging a length-delimited field.
      *
      * <p>For use by generated code only.
      */
-    public Builder mergeLengthDelimitedField(
-        final int fieldNumber, final ByteString value) {  
-      if (fieldNumber == 0) {
-        throw new IllegalArgumentException("Zero is not a valid field number.");
-      }
-      ensureNotBuilt();
-
-      storeField(WireFormat.makeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED), value);
-      
+    public Builder mergeLengthDelimitedField(final int fieldNumber, final ByteString value) {
+      ensureNotBuilt();  
+      set.mergeLengthDelimitedField(fieldNumber, value);
       return this;
     }
     
-    /**
-     * Parse an entire message from {@code input} and merge its fields into
-     * this set.
-     */
-    private Builder mergeFrom(final CodedInputStream input) throws IOException {
-      // Ensures initialization in mergeFieldFrom.
-      while (true) {
-        final int tag = input.readTag();
-        if (tag == 0 || !mergeFieldFrom(tag, input)) {
-          break;
-        }
-      }
-      return this;
-    }
-
     /**
      * Build the {@link UnknownFieldSetLite} and return it.
      *
      * <p>Once {@code build()} has been called, the {@code Builder} will no
      * longer be usable.  Calling any method after {@code build()} will result
-     * in undefined behavior and can cause a {@code IllegalStateException} to be
-     * thrown.
+     * in undefined behavior and can cause an
+     * {@code UnsupportedOperationException} to be thrown.
      *
      * <p>For use by generated code only.
      */
     public UnknownFieldSetLite build() {
-      if (built) {
-        throw new IllegalStateException("Do not reuse UnknownFieldSetLite Builders.");
-      }
-
-      built = true;
-      
-      if (count == 0) {
+      if (set == null) {
         return DEFAULT_INSTANCE;
       }
+      
+      set.checkMutable();
+      set.makeImmutable();
 
-      return new UnknownFieldSetLite(count, tags, objects);
+      return set;
     }
   }
 }

@@ -278,6 +278,13 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
         const Message& message2,
         const vector<SpecificField>& field_path) { }
 
+    // Report that an unkown field is ignored. (see comment above).
+    // Note this is a different function since the last SpecificField in field
+    // path has a null field.  This could break existing Reporter.
+    virtual void ReportUnknownFieldIgnored(
+        const Message& message1, const Message& message2,
+        const vector<SpecificField>& field_path) {}
+
    private:
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Reporter);
   };
@@ -317,6 +324,16 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
         const Message& message2,
         const FieldDescriptor* field,
         const vector<SpecificField>& parent_fields) = 0;
+
+    // Returns true if the unknown field should be ignored.
+    // Note: This will be called for unknown fields as well in which case
+    //       field.field will be null.
+    virtual bool IsUnknownFieldIgnored(
+        const Message& message1, const Message& message2,
+        const SpecificField& field,
+        const vector<SpecificField>& parent_fields) {
+      return false;
+    }
   };
 
   // To add a Reporter, construct default here, then use ReportDifferencesTo or
@@ -380,8 +397,15 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
   // + n^3) in which n^3 is the time complexity of the maximum matching
   // algorithm.
   //
-  // REQUIRES:  field->is_repeated()
+  // REQUIRES:  field->is_repeated() and field not registered with TreatAsList
   void TreatAsSet(const FieldDescriptor* field);
+
+  // The elements of the given repeated field will be treated as a list for
+  // diffing purposes, so different orderings of the same elements will NOT be
+  // considered equal.
+  //
+  // REQUIRED: field->is_repeated() and field not registered with TreatAsSet
+  void TreatAsList(const FieldDescriptor* field);
 
   // The elements of the given repeated field will be treated as a map for
   // diffing purposes, with |key| being the map key.  Thus, elements with the
@@ -583,6 +607,10 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
                                const Message& message2,
                                const vector<SpecificField>& field_path);
 
+    virtual void ReportUnknownFieldIgnored(
+        const Message& message1, const Message& message2,
+        const vector<SpecificField>& field_path);
+
    protected:
     // Prints the specified path of fields to the buffer.
     virtual void PrintPath(const vector<SpecificField>& field_path,
@@ -722,6 +750,12 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
       const FieldDescriptor* field,
       const vector<SpecificField>& parent_fields);
 
+  // Returns true if this unknown field is to be ignored when this
+  // MessageDifferencer compares messages.
+  bool IsUnknownFieldIgnored(const Message& message1, const Message& message2,
+                             const SpecificField& field,
+                             const vector<SpecificField>& parent_fields);
+
   // Returns MapKeyComparator* when this field has been configured to
   // be treated as a map.  If not, returns NULL.
   const MapKeyComparator* GetMapKeyComparator(const FieldDescriptor* field);
@@ -764,6 +798,7 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
   RepeatedFieldComparison repeated_field_comparison_;
 
   FieldSet set_fields_;
+  FieldSet list_fields_;
   // Keeps track of MapKeyComparators that are created within
   // MessageDifferencer. These MapKeyComparators should be deleted
   // before MessageDifferencer is destroyed.

@@ -28,8 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Copyright 2009 Google Inc. All Rights Reserved.
-
 """Code for encoding protocol message primitives.
 
 Contains the logic for encoding every logical protocol field type

@@ -157,10 +157,10 @@ util::Status JsonStreamParser::FinishParse() {
     char* coerced = internal::UTF8CoerceToStructurallyValid(leftover_, utf8.get(), ' ');
     p_ = json_ = StringPiece(coerced, leftover_.size());
   } else {
+    p_ = json_ = leftover_;
     if (!internal::IsStructurallyValidUTF8(leftover_)) {
       return ReportFailure("Encountered non UTF-8 code points.");
     }
-    p_ = json_ = leftover_;
   }
 
   // Parse the remainder in finishing mode, which reports errors for things like

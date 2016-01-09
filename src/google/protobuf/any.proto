@@ -27,20 +27,21 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 syntax = "proto3";
 
 package google.protobuf;
 
-option java_generate_equals_and_hash = true;
-option java_multiple_files = true;
-option java_outer_classname = "AnyProto";
-option java_package = "com.google.protobuf";
 option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+option java_package = "com.google.protobuf";
+option java_outer_classname = "AnyProto";
+option java_multiple_files = true;
+option java_generate_equals_and_hash = true;
 option objc_class_prefix = "GPB";
-
 
 // `Any` contains an arbitrary serialized message along with a URL
 // that describes the type of the serialized message.
+//
 //
 // JSON
 // ====
@@ -62,8 +63,8 @@ option objc_class_prefix = "GPB";
 //
 // If the embedded message type is well-known and has a custom JSON
 // representation, that representation will be embedded adding a field
-// `value` which holds the custom JSON in addition to the the `@type`
-// field. Example (for message [google.protobuf.Duration][google.protobuf.Duration]):
+// `value` which holds the custom JSON in addition to the `@type`
+// field. Example (for message [google.protobuf.Duration][]):
 //
 //     {
 //       "@type": "type.googleapis.com/google.protobuf.Duration",
@@ -80,7 +81,7 @@ message Any {
   // * If no schema is provided, `https` is assumed.
   // * The last segment of the URL's path must represent the fully
   //   qualified name of the type (as in `path/google.protobuf.Duration`).
-  // * An HTTP GET on the URL must yield a [google.protobuf.Type][google.protobuf.Type]
+  // * An HTTP GET on the URL must yield a [google.protobuf.Type][]
   //   value in binary format, or produce an error.
   // * Applications are allowed to cache lookup results based on the
   //   URL, or have them precompiled into a binary to avoid any

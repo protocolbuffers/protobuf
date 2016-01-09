@@ -35,6 +35,9 @@ using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 using UnitTest.Issues.TestProtos;
 using Google.Protobuf.WellKnownTypes;
+using Google.Protobuf.Reflection;
+
+using static Google.Protobuf.JsonParserTest; // For WrapInQuotes
 
 namespace Google.Protobuf
 {
@@ -276,6 +279,13 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void WrapperFormatting_Message()
+        {
+            Assert.AreEqual("\"\"", JsonFormatter.Default.Format(new StringValue()));
+            Assert.AreEqual("0", JsonFormatter.Default.Format(new Int32Value()));
+        }
+
+        [Test]
         public void WrapperFormatting_IncludeNull()
         {
             // The actual JSON here is very large because there are lots of fields. Just test a couple of them.
@@ -311,23 +321,28 @@ namespace Google.Protobuf
         }
 
         [Test]
-        public void TimestampStandalone()
+        [TestCase("1970-01-01T00:00:00Z", 0)]
+        [TestCase("1970-01-01T00:00:00.100Z", 100000000)]
+        [TestCase("1970-01-01T00:00:00.120Z", 120000000)]
+        [TestCase("1970-01-01T00:00:00.123Z", 123000000)]
+        [TestCase("1970-01-01T00:00:00.123400Z", 123400000)]
+        [TestCase("1970-01-01T00:00:00.123450Z", 123450000)]
+        [TestCase("1970-01-01T00:00:00.123456Z", 123456000)]
+        [TestCase("1970-01-01T00:00:00.123456700Z", 123456700)]
+        [TestCase("1970-01-01T00:00:00.123456780Z", 123456780)]
+        [TestCase("1970-01-01T00:00:00.123456789Z", 123456789)]
+        public void TimestampStandalone(string expected, int nanos)
         {
-            Assert.AreEqual("1970-01-01T00:00:00Z", new Timestamp().ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.100Z", new Timestamp { Nanos = 100000000 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.120Z", new Timestamp { Nanos = 120000000 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123Z", new Timestamp { Nanos = 123000000 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123400Z", new Timestamp { Nanos = 123400000 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123450Z", new Timestamp { Nanos = 123450000 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123456Z", new Timestamp { Nanos = 123456000 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123456700Z", new Timestamp { Nanos = 123456700 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123456780Z", new Timestamp { Nanos = 123456780 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123456789Z", new Timestamp { Nanos = 123456789 }.ToString());
+            Assert.AreEqual(WrapInQuotes(expected), new Timestamp { Nanos = nanos }.ToString());
+        }
 
-            // One before and one after the Unix epoch
-            Assert.AreEqual("1673-06-19T12:34:56Z",
+        [Test]
+        public void TimestampStandalone_FromDateTime()
+        {
+            // One before and one after the Unix epoch, more easily represented via DateTime.
+            Assert.AreEqual("\"1673-06-19T12:34:56Z\"",
                 new DateTime(1673, 6, 19, 12, 34, 56, DateTimeKind.Utc).ToTimestamp().ToString());
-            Assert.AreEqual("2015-07-31T10:29:34Z",
+            Assert.AreEqual("\"2015-07-31T10:29:34Z\"",
                 new DateTime(2015, 7, 31, 10, 29, 34, DateTimeKind.Utc).ToTimestamp().ToString());
         }
 
@@ -359,7 +374,7 @@ namespace Google.Protobuf
         [TestCase(1, -100000000, "0.900s")]
         public void DurationStandalone(long seconds, int nanoseconds, string expected)
         {
-            Assert.AreEqual(expected, new Duration { Seconds = seconds, Nanos = nanoseconds }.ToString());
+            Assert.AreEqual(WrapInQuotes(expected), new Duration { Seconds = seconds, Nanos = nanoseconds }.ToString());
         }
 
         [Test]
@@ -376,12 +391,12 @@ namespace Google.Protobuf
             {
                 Fields =
                 {
-                    { "a", new Value { NullValue = new NullValue() } },
-                    { "b", new Value { BoolValue = false } },
-                    { "c", new Value { NumberValue = 10.5 } },
-                    { "d", new Value { StringValue = "text" } },
-                    { "e", new Value { ListValue = new ListValue { Values = { new Value { StringValue = "t1" }, new Value { NumberValue = 5 } } } } },
-                    { "f", new Value { StructValue = new Struct { Fields = { { "nested", new Value { StringValue = "value" } } } } } }
+                    { "a", Value.ForNull() },
+                    { "b", Value.ForBool(false) },
+                    { "c", Value.ForNumber(10.5) },
+                    { "d", Value.ForString("text") },
+                    { "e", Value.ForList(Value.ForString("t1"), Value.ForNumber(5)) },
+                    { "f", Value.ForStruct(new Struct { Fields = { { "nested", Value.ForString("value") } } }) }
                 }
             };
             AssertJson("{ 'a': null, 'b': false, 'c': 10.5, 'd': 'text', 'e': [ 't1', 5 ], 'f': { 'nested': 'value' } }", message.ToString());
@@ -391,11 +406,11 @@ namespace Google.Protobuf
         public void FieldMaskStandalone()
         {
             var fieldMask = new FieldMask { Paths = { "", "single", "with_underscore", "nested.field.name", "nested..double_dot" } };
-            Assert.AreEqual(",single,withUnderscore,nested.field.name,nested..doubleDot", fieldMask.ToString());
+            Assert.AreEqual("\",single,withUnderscore,nested.field.name,nested..doubleDot\"", fieldMask.ToString());
 
             // Invalid, but we shouldn't create broken JSON...
             fieldMask = new FieldMask { Paths = { "x\\y" } };
-            Assert.AreEqual(@"x\\y", fieldMask.ToString());
+            Assert.AreEqual(@"""x\\y""", fieldMask.ToString());
         }
 
         [Test]
@@ -403,6 +418,55 @@ namespace Google.Protobuf
         {
             var message = new TestWellKnownTypes { FieldMaskField = new FieldMask { Paths = { "user.display_name", "photo" } } };
             AssertJson("{ 'fieldMaskField': 'user.displayName,photo' }", JsonFormatter.Default.Format(message));
+        }
+
+        // SourceContext is an example of a well-known type with no special JSON handling
+        [Test]
+        public void SourceContextStandalone()
+        {
+            var message = new SourceContext { FileName = "foo.proto" };
+            AssertJson("{ 'fileName': 'foo.proto' }", JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void AnyWellKnownType()
+        {
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false, TypeRegistry.FromMessages(Timestamp.Descriptor)));
+            var timestamp = new DateTime(1673, 6, 19, 12, 34, 56, DateTimeKind.Utc).ToTimestamp();
+            var any = Any.Pack(timestamp);
+            AssertJson("{ '@type': 'type.googleapis.com/google.protobuf.Timestamp', 'value': '1673-06-19T12:34:56Z' }", formatter.Format(any));
+        }
+
+        [Test]
+        public void AnyMessageType()
+        {
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false, TypeRegistry.FromMessages(TestAllTypes.Descriptor)));
+            var message = new TestAllTypes { SingleInt32 = 10, SingleNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 20 } };
+            var any = Any.Pack(message);
+            AssertJson("{ '@type': 'type.googleapis.com/protobuf_unittest.TestAllTypes', 'singleInt32': 10, 'singleNestedMessage': { 'bb': 20 } }", formatter.Format(any));
+        }
+
+        [Test]
+        public void AnyNested()
+        {
+            var registry = TypeRegistry.FromMessages(TestWellKnownTypes.Descriptor, TestAllTypes.Descriptor);
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false, registry));
+
+            // Nest an Any as the value of an Any.
+            var doubleNestedMessage = new TestAllTypes { SingleInt32 = 20 };
+            var nestedMessage = Any.Pack(doubleNestedMessage);
+            var message = new TestWellKnownTypes { AnyField = Any.Pack(nestedMessage) };
+            AssertJson("{ 'anyField': { '@type': 'type.googleapis.com/google.protobuf.Any', 'value': { '@type': 'type.googleapis.com/protobuf_unittest.TestAllTypes', 'singleInt32': 20 } } }",
+                formatter.Format(message));
+        }
+
+        [Test]
+        public void AnyUnknownType()
+        {
+            // The default type registry doesn't have any types in it.
+            var message = new TestAllTypes();
+            var any = Any.Pack(message);
+            Assert.Throws<InvalidOperationException>(() => JsonFormatter.Default.Format(any));
         }
 
         /// <summary>

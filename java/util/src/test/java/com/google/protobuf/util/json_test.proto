@@ -90,6 +90,13 @@ message TestAllTypes {
   repeated NestedEnum repeated_nested_enum = 51;
 }
 
+message TestOneof {
+  oneof oneof_field {
+    int32 oneof_int32 = 1;
+    TestAllTypes.NestedMessage oneof_nested_message = 2;
+  }
+}
+
 message TestMap {
   // Instead of testing all combinations (too many), we only make sure all
   // valid types have been used at least in one field as key and in one
@@ -151,8 +158,13 @@ message TestFieldMask {
 
 message TestStruct {
   google.protobuf.Struct struct_value = 1;
+  google.protobuf.Value value = 2;
 }
 
 message TestAny {
   google.protobuf.Any any_value = 1;
+}
+
+message TestCustomJsonName {
+  int32 value = 1 [json_name = "@value"];
 }

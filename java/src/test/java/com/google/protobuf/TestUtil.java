@@ -300,6 +300,16 @@ public final class TestUtil {
   }
 
   /**
+   * Get a {@code TestAllTypesLite.Builder} with all fields set as they would be by
+   * {@link #setAllFields(TestAllTypesLite.Builder)}.
+   */
+  public static TestAllTypesLite.Builder getAllLiteSetBuilder() {
+    TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder();
+    setAllFields(builder);
+    return builder;
+  }
+
+  /**
    * Get a {@code TestAllExtensions} with all fields set as they would be by
    * {@link #setAllExtensions(TestAllExtensions.Builder)}.
    */
@@ -338,6 +348,150 @@ public final class TestUtil {
         TestPackedExtensionsLite.newBuilder();
     setPackedExtensions(builder);
     return builder.build();
+  }
+  
+  /**
+   * Set every field of {@code builder} to the values expected by
+   * {@code assertAllFieldsSet()}.
+   */
+  public static void setAllFields(TestAllTypesLite.Builder builder) {
+    builder.setOptionalInt32   (101);
+    builder.setOptionalInt64   (102);
+    builder.setOptionalUint32  (103);
+    builder.setOptionalUint64  (104);
+    builder.setOptionalSint32  (105);
+    builder.setOptionalSint64  (106);
+    builder.setOptionalFixed32 (107);
+    builder.setOptionalFixed64 (108);
+    builder.setOptionalSfixed32(109);
+    builder.setOptionalSfixed64(110);
+    builder.setOptionalFloat   (111);
+    builder.setOptionalDouble  (112);
+    builder.setOptionalBool    (true);
+    builder.setOptionalString  ("115");
+    builder.setOptionalBytes   (toBytes("116"));
+
+    builder.setOptionalGroup(
+        TestAllTypesLite.OptionalGroup.newBuilder().setA(117).build());
+    builder.setOptionalNestedMessage(
+        TestAllTypesLite.NestedMessage.newBuilder().setBb(118).build());
+    builder.setOptionalForeignMessage(
+        ForeignMessageLite.newBuilder().setC(119).build());
+    builder.setOptionalImportMessage(
+        ImportMessageLite.newBuilder().setD(120).build());
+    builder.setOptionalPublicImportMessage(
+        PublicImportMessageLite.newBuilder().setE(126).build());
+    builder.setOptionalLazyMessage(
+        TestAllTypesLite.NestedMessage.newBuilder().setBb(127).build());
+
+    builder.setOptionalNestedEnum (TestAllTypesLite.NestedEnum.BAZ);
+    builder.setOptionalForeignEnum(ForeignEnumLite.FOREIGN_LITE_BAZ);
+    builder.setOptionalImportEnum (ImportEnumLite.IMPORT_LITE_BAZ);
+
+    builder.setOptionalStringPiece("124");
+    builder.setOptionalCord("125");
+
+    // -----------------------------------------------------------------
+
+    builder.addRepeatedInt32   (201);
+    builder.addRepeatedInt64   (202);
+    builder.addRepeatedUint32  (203);
+    builder.addRepeatedUint64  (204);
+    builder.addRepeatedSint32  (205);
+    builder.addRepeatedSint64  (206);
+    builder.addRepeatedFixed32 (207);
+    builder.addRepeatedFixed64 (208);
+    builder.addRepeatedSfixed32(209);
+    builder.addRepeatedSfixed64(210);
+    builder.addRepeatedFloat   (211);
+    builder.addRepeatedDouble  (212);
+    builder.addRepeatedBool    (true);
+    builder.addRepeatedString  ("215");
+    builder.addRepeatedBytes   (toBytes("216"));
+
+    builder.addRepeatedGroup(
+        TestAllTypesLite.RepeatedGroup.newBuilder().setA(217).build());
+    builder.addRepeatedNestedMessage(
+        TestAllTypesLite.NestedMessage.newBuilder().setBb(218).build());
+    builder.addRepeatedForeignMessage(
+        ForeignMessageLite.newBuilder().setC(219).build());
+    builder.addRepeatedImportMessage(
+        ImportMessageLite.newBuilder().setD(220).build());
+    builder.addRepeatedLazyMessage(
+        TestAllTypesLite.NestedMessage.newBuilder().setBb(227).build());
+
+    builder.addRepeatedNestedEnum (TestAllTypesLite.NestedEnum.BAR);
+    builder.addRepeatedForeignEnum(ForeignEnumLite.FOREIGN_LITE_BAR);
+    builder.addRepeatedImportEnum (ImportEnumLite.IMPORT_LITE_BAR);
+
+    builder.addRepeatedStringPiece("224");
+    builder.addRepeatedCord("225");
+
+    // Add a second one of each field.
+    builder.addRepeatedInt32   (301);
+    builder.addRepeatedInt64   (302);
+    builder.addRepeatedUint32  (303);
+    builder.addRepeatedUint64  (304);
+    builder.addRepeatedSint32  (305);
+    builder.addRepeatedSint64  (306);
+    builder.addRepeatedFixed32 (307);
+    builder.addRepeatedFixed64 (308);
+    builder.addRepeatedSfixed32(309);
+    builder.addRepeatedSfixed64(310);
+    builder.addRepeatedFloat   (311);
+    builder.addRepeatedDouble  (312);
+    builder.addRepeatedBool    (false);
+    builder.addRepeatedString  ("315");
+    builder.addRepeatedBytes   (toBytes("316"));
+
+    builder.addRepeatedGroup(
+        TestAllTypesLite.RepeatedGroup.newBuilder().setA(317).build());
+    builder.addRepeatedNestedMessage(
+        TestAllTypesLite.NestedMessage.newBuilder().setBb(318).build());
+    builder.addRepeatedForeignMessage(
+        ForeignMessageLite.newBuilder().setC(319).build());
+    builder.addRepeatedImportMessage(
+        ImportMessageLite.newBuilder().setD(320).build());
+    builder.addRepeatedLazyMessage(
+        TestAllTypesLite.NestedMessage.newBuilder().setBb(327).build());
+
+    builder.addRepeatedNestedEnum (TestAllTypesLite.NestedEnum.BAZ);
+    builder.addRepeatedForeignEnum(ForeignEnumLite.FOREIGN_LITE_BAZ);
+    builder.addRepeatedImportEnum (ImportEnumLite.IMPORT_LITE_BAZ);
+
+    builder.addRepeatedStringPiece("324");
+    builder.addRepeatedCord("325");
+
+    // -----------------------------------------------------------------
+
+    builder.setDefaultInt32   (401);
+    builder.setDefaultInt64   (402);
+    builder.setDefaultUint32  (403);
+    builder.setDefaultUint64  (404);
+    builder.setDefaultSint32  (405);
+    builder.setDefaultSint64  (406);
+    builder.setDefaultFixed32 (407);
+    builder.setDefaultFixed64 (408);
+    builder.setDefaultSfixed32(409);
+    builder.setDefaultSfixed64(410);
+    builder.setDefaultFloat   (411);
+    builder.setDefaultDouble  (412);
+    builder.setDefaultBool    (false);
+    builder.setDefaultString  ("415");
+    builder.setDefaultBytes   (toBytes("416"));
+
+    builder.setDefaultNestedEnum (TestAllTypesLite.NestedEnum.FOO);
+    builder.setDefaultForeignEnum(ForeignEnumLite.FOREIGN_LITE_FOO);
+    builder.setDefaultImportEnum (ImportEnumLite.IMPORT_LITE_FOO);
+
+    builder.setDefaultStringPiece("424");
+    builder.setDefaultCord("425");
+
+    builder.setOneofUint32(601);
+    builder.setOneofNestedMessage(
+        TestAllTypesLite.NestedMessage.newBuilder().setBb(602).build());
+    builder.setOneofString("603");
+    builder.setOneofBytes(toBytes("604"));
   }
 
   /**

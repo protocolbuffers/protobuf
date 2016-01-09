@@ -66,7 +66,7 @@ message Publisher {
 
 // An author of a book
 message Author {
-  optional uint64 id = 1;
+  optional uint64 id = 1 [json_name = "@id"];
   optional string name = 2;
   repeated string pseudonym = 3;
   optional bool alive = 4;

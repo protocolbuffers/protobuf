@@ -46,6 +46,7 @@ import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.test.UnittestImport;
 import com.google.protobuf.test.UnittestImport.ImportEnum;
+import com.google.protobuf.test.UnittestImport.ImportEnumForMap;
 import protobuf_unittest.TestCustomOptions;
 import protobuf_unittest.UnittestCustomOptions;
 import protobuf_unittest.UnittestProto;
@@ -115,7 +116,8 @@ public class DescriptorsTest extends TestCase {
     assertEquals(enumType, file.findEnumTypeByName("ForeignEnum"));
     assertNull(file.findEnumTypeByName("NoSuchType"));
     assertNull(file.findEnumTypeByName("protobuf_unittest.ForeignEnum"));
-    assertEquals(Arrays.asList(ImportEnum.getDescriptor()),
+    assertEquals(Arrays.asList(ImportEnum.getDescriptor(),
+                               ImportEnumForMap.getDescriptor()),
                  UnittestImport.getDescriptor().getEnumTypes());
     for (int i = 0; i < file.getEnumTypes().size(); i++) {
       assertEquals(i, file.getEnumTypes().get(i).getIndex());
@@ -271,6 +273,15 @@ public class DescriptorsTest extends TestCase {
     assertFalse(optionalField.isRepeated());
     assertFalse(repeatedField.isRequired());
     assertTrue(repeatedField.isRepeated());
+  }
+  
+  public void testFieldDescriptorJsonName() throws Exception {
+    FieldDescriptor requiredField = TestRequired.getDescriptor().findFieldByName("a");
+    FieldDescriptor optionalField = TestAllTypes.getDescriptor().findFieldByName("optional_int32");
+    FieldDescriptor repeatedField = TestAllTypes.getDescriptor().findFieldByName("repeated_int32");
+    assertEquals("a", requiredField.getJsonName());
+    assertEquals("optionalInt32", optionalField.getJsonName());
+    assertEquals("repeatedInt32", repeatedField.getJsonName());
   }
 
   public void testFieldDescriptorDefault() throws Exception {

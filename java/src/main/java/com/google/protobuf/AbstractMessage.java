@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.Internal.EnumLite;
@@ -161,10 +162,18 @@ public abstract class AbstractMessage extends AbstractMessageLite
     Descriptors.Descriptor descriptor = entry.getDescriptorForType();
     Descriptors.FieldDescriptor key = descriptor.findFieldByName("key");
     Descriptors.FieldDescriptor value = descriptor.findFieldByName("value");
-    result.put(entry.getField(key), entry.getField(value));
+    Object fieldValue = entry.getField(value);
+    if (fieldValue instanceof EnumValueDescriptor) {
+      fieldValue = ((EnumValueDescriptor) fieldValue).getNumber();
+    }
+    result.put(entry.getField(key), fieldValue);
     while (iterator.hasNext()) {
       entry = (Message) iterator.next();
-      result.put(entry.getField(key), entry.getField(value));
+      fieldValue = entry.getField(value);
+      if (fieldValue instanceof EnumValueDescriptor) {
+        fieldValue = ((EnumValueDescriptor) fieldValue).getNumber();
+      }
+      result.put(entry.getField(key), fieldValue);
     }
     return result;
   }

@@ -55,12 +55,20 @@ namespace Google.Protobuf
     /// </remarks>
     public sealed class JsonFormatter
     {
-        private static JsonFormatter defaultInstance = new JsonFormatter(Settings.Default);
+        internal const string AnyTypeUrlField = "@type";
+        internal const string AnyDiagnosticValueField = "@value";
+        internal const string AnyWellKnownTypeValueField = "value";
+        private const string TypeUrlPrefix = "type.googleapis.com";
+        private const string NameValueSeparator = ": ";
+        private const string PropertySeparator = ", ";
 
         /// <summary>
         /// Returns a formatter using the default settings.
         /// </summary>
-        public static JsonFormatter Default { get { return defaultInstance; } }
+        public static JsonFormatter Default { get; } = new JsonFormatter(Settings.Default);
+
+        // A JSON formatter which *only* exists 
+        private static readonly JsonFormatter diagnosticFormatter = new JsonFormatter(Settings.Default);
 
         /// <summary>
         /// The JSON representation of the first 160 characters of Unicode.
@@ -130,17 +138,40 @@ namespace Google.Protobuf
         /// <returns>The formatted message.</returns>
         public string Format(IMessage message)
         {
-            Preconditions.CheckNotNull(message, "message");
+            Preconditions.CheckNotNull(message, nameof(message));
             StringBuilder builder = new StringBuilder();
             if (message.Descriptor.IsWellKnownType)
             {
-                WriteWellKnownTypeValue(builder, message.Descriptor, message, false);
+                WriteWellKnownTypeValue(builder, message.Descriptor, message);
             }
             else
             {
                 WriteMessage(builder, message);
             }
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Converts a message to JSON for diagnostic purposes with no extra context.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This differs from calling <see cref="Format(IMessage)"/> on the default JSON
+        /// formatter in its handling of <see cref="Any"/>. As no type registry is available
+        /// in <see cref="object.ToString"/> calls, the normal way of resolving the type of
+        /// an <c>Any</c> message cannot be applied. Instead, a JSON property named <c>@value</c>
+        /// is included with the base64 data from the <see cref="Any.Value"/> property of the message.
+        /// </para>
+        /// <para>The value returned by this method is only designed to be used for diagnostic
+        /// purposes. It may not be parsable by <see cref="JsonParser"/>, and may not be parsable
+        /// by other Protocol Buffer implementations.</para>
+        /// </remarks>
+        /// <param name="message">The message to format for diagnostic purposes.</param>
+        /// <returns>The diagnostic-only JSON representation of the message</returns>
+        public static string ToDiagnosticString(IMessage message)
+        {
+            Preconditions.CheckNotNull(message, nameof(message));
+            return diagnosticFormatter.Format(message);
         }
 
         private void WriteMessage(StringBuilder builder, IMessage message)
@@ -151,13 +182,18 @@ namespace Google.Protobuf
                 return;
             }
             builder.Append("{ ");
+            bool writtenFields = WriteMessageFields(builder, message, false);
+            builder.Append(writtenFields ? " }" : "}");
+        }
+
+        private bool WriteMessageFields(StringBuilder builder, IMessage message, bool assumeFirstFieldWritten)
+        {
             var fields = message.Descriptor.Fields;
-            bool first = true;
+            bool first = !assumeFirstFieldWritten;
             // First non-oneof fields
             foreach (var field in fields.InFieldNumberOrder())
             {
                 var accessor = field.Accessor;
-                // Oneofs are written later
                 if (field.ContainingOneof != null && field.ContainingOneof.Accessor.GetCaseFieldDescriptor(message) != field)
                 {
                     continue;
@@ -170,7 +206,7 @@ namespace Google.Protobuf
                     continue;
                 }
                 // Omit awkward (single) values such as unknown enum values
-                if (!field.IsRepeated && !field.IsMap && !CanWriteSingleValue(accessor.Descriptor, value))
+                if (!field.IsRepeated && !field.IsMap && !CanWriteSingleValue(value))
                 {
                     continue;
                 }
@@ -178,17 +214,18 @@ namespace Google.Protobuf
                 // Okay, all tests complete: let's write the field value...
                 if (!first)
                 {
-                    builder.Append(", ");
+                    builder.Append(PropertySeparator);
                 }
                 WriteString(builder, ToCamelCase(accessor.Descriptor.Name));
-                builder.Append(": ");
-                WriteValue(builder, accessor, value);
+                builder.Append(NameValueSeparator);
+                WriteValue(builder, value);
                 first = false;
             }            
-            builder.Append(first ? "}" : " }");
+            return !first;
         }
 
         // Converted from src/google/protobuf/util/internal/utility.cc ToCamelCase
+        // TODO: Use the new field in FieldDescriptor.
         internal static string ToCamelCase(string input)
         {
             bool capitalizeNext = false;
@@ -291,93 +328,81 @@ namespace Google.Protobuf
                     throw new ArgumentException("Invalid field type");
             }
         }
-
-        private void WriteValue(StringBuilder builder, IFieldAccessor accessor, object value)
+        
+        private void WriteValue(StringBuilder builder, object value)
         {
-            if (accessor.Descriptor.IsMap)
+            if (value == null)
             {
-                WriteDictionary(builder, accessor, (IDictionary) value);
+                WriteNull(builder);
             }
-            else if (accessor.Descriptor.IsRepeated)
+            else if (value is bool)
             {
-                WriteList(builder, accessor, (IList) value);
+                builder.Append((bool) value ? "true" : "false");
+            }
+            else if (value is ByteString)
+            {
+                // Nothing in Base64 needs escaping
+                builder.Append('"');
+                builder.Append(((ByteString) value).ToBase64());
+                builder.Append('"');
+            }
+            else if (value is string)
+            {
+                WriteString(builder, (string) value);
+            }
+            else if (value is IDictionary)
+            {
+                WriteDictionary(builder, (IDictionary) value);
+            }
+            else if (value is IList)
+            {
+                WriteList(builder, (IList) value);
+            }
+            else if (value is int || value is uint)
+            {
+                IFormattable formattable = (IFormattable) value;
+                builder.Append(formattable.ToString("d", CultureInfo.InvariantCulture));
+            }
+            else if (value is long || value is ulong)
+            {
+                builder.Append('"');
+                IFormattable formattable = (IFormattable) value;
+                builder.Append(formattable.ToString("d", CultureInfo.InvariantCulture));
+                builder.Append('"');
+            }
+            else if (value is System.Enum)
+            {
+                WriteString(builder, value.ToString());
+            }
+            else if (value is float || value is double)
+            {
+                string text = ((IFormattable) value).ToString("r", CultureInfo.InvariantCulture);
+                if (text == "NaN" || text == "Infinity" || text == "-Infinity")
+                {
+                    builder.Append('"');
+                    builder.Append(text);
+                    builder.Append('"');
+                }
+                else
+                {
+                    builder.Append(text);
+                }
+            }
+            else if (value is IMessage)
+            {
+                IMessage message = (IMessage) value;
+                if (message.Descriptor.IsWellKnownType)
+                {
+                    WriteWellKnownTypeValue(builder, message.Descriptor, value);
+                }
+                else
+                {
+                    WriteMessage(builder, (IMessage) value);
+                }
             }
             else
             {
-                WriteSingleValue(builder, accessor.Descriptor, value);
-            }
-        }
-
-        private void WriteSingleValue(StringBuilder builder, FieldDescriptor descriptor, object value)
-        {
-            switch (descriptor.FieldType)
-            {
-                case FieldType.Bool:
-                    builder.Append((bool) value ? "true" : "false");
-                    break;
-                case FieldType.Bytes:
-                    // Nothing in Base64 needs escaping
-                    builder.Append('"');
-                    builder.Append(((ByteString) value).ToBase64());
-                    builder.Append('"');
-                    break;
-                case FieldType.String:
-                    WriteString(builder, (string) value);
-                    break;
-                case FieldType.Fixed32:
-                case FieldType.UInt32:
-                case FieldType.SInt32:
-                case FieldType.Int32:
-                case FieldType.SFixed32:
-                    {
-                        IFormattable formattable = (IFormattable) value;
-                        builder.Append(formattable.ToString("d", CultureInfo.InvariantCulture));
-                        break;
-                    }
-                case FieldType.Enum:
-                    EnumValueDescriptor enumValue = descriptor.EnumType.FindValueByNumber((int) value);
-                    // We will already have validated that this is a known value.
-                    WriteString(builder, enumValue.Name);
-                    break;
-                case FieldType.Fixed64:
-                case FieldType.UInt64:
-                case FieldType.SFixed64:
-                case FieldType.Int64:
-                case FieldType.SInt64:
-                    {
-                        builder.Append('"');
-                        IFormattable formattable = (IFormattable) value;
-                        builder.Append(formattable.ToString("d", CultureInfo.InvariantCulture));
-                        builder.Append('"');
-                        break;
-                    }
-                case FieldType.Double:
-                case FieldType.Float:
-                    string text = ((IFormattable) value).ToString("r", CultureInfo.InvariantCulture);
-                    if (text == "NaN" || text == "Infinity" || text == "-Infinity")
-                    {
-                        builder.Append('"');
-                        builder.Append(text);
-                        builder.Append('"');
-                    }
-                    else
-                    {
-                        builder.Append(text);
-                    }
-                    break;
-                case FieldType.Message:
-                case FieldType.Group: // Never expect to get this, but...
-                    if (descriptor.MessageType.IsWellKnownType)
-                    {
-                        WriteWellKnownTypeValue(builder, descriptor.MessageType, value, true);
-                    }
-                    else
-                    {
-                        WriteMessage(builder, (IMessage) value);
-                    }
-                    break;
-                default:
-                    throw new ArgumentException("Invalid field type: " + descriptor.FieldType);
+                throw new ArgumentException("Unable to format value of type " + value.GetType());
             }
         }
 
@@ -387,33 +412,43 @@ namespace Google.Protobuf
         /// values are using the embedded well-known types, in order to allow for dynamic messages
         /// in the future.
         /// </summary>
-        private void WriteWellKnownTypeValue(StringBuilder builder, MessageDescriptor descriptor, object value, bool inField)
+        private void WriteWellKnownTypeValue(StringBuilder builder, MessageDescriptor descriptor, object value)
         {
+            // Currently, we can never actually get here, because null values are always handled by the caller. But if we *could*,
+            // this would do the right thing.
             if (value == null)
             {
                 WriteNull(builder);
                 return;
             }
-            // For wrapper types, the value will be the (possibly boxed) "native" value,
-            // so we can write it as if we were unconditionally writing the Value field for the wrapper type.
-            if (descriptor.File == Int32Value.Descriptor.File)
+            // For wrapper types, the value will either be the (possibly boxed) "native" value,
+            // or the message itself if we're formatting it at the top level (e.g. just calling ToString on the object itself).
+            // If it's the message form, we can extract the value first, which *will* be the (possibly boxed) native value,
+            // and then proceed, writing it as if we were definitely in a field. (We never need to wrap it in an extra string...
+            // WriteValue will do the right thing.)
+            if (descriptor.IsWrapperType)
             {
-                WriteSingleValue(builder, descriptor.FindFieldByNumber(1), value);
+                if (value is IMessage)
+                {
+                    var message = (IMessage) value;
+                    value = message.Descriptor.Fields[WrappersReflection.WrapperValueFieldNumber].Accessor.GetValue(message);
+                }
+                WriteValue(builder, value);
                 return;
             }
             if (descriptor.FullName == Timestamp.Descriptor.FullName)
             {
-                MaybeWrapInString(builder, value, WriteTimestamp, inField);
+                WriteTimestamp(builder, (IMessage) value);
                 return;
             }
             if (descriptor.FullName == Duration.Descriptor.FullName)
             {
-                MaybeWrapInString(builder, value, WriteDuration, inField);
+                WriteDuration(builder, (IMessage) value);
                 return;
             }
             if (descriptor.FullName == FieldMask.Descriptor.FullName)
             {
-                MaybeWrapInString(builder, value, WriteFieldMask, inField);
+                WriteFieldMask(builder, (IMessage) value);
                 return;
             }
             if (descriptor.FullName == Struct.Descriptor.FullName)
@@ -424,7 +459,7 @@ namespace Google.Protobuf
             if (descriptor.FullName == ListValue.Descriptor.FullName)
             {
                 var fieldAccessor = descriptor.Fields[ListValue.ValuesFieldNumber].Accessor;
-                WriteList(builder, fieldAccessor, (IList) fieldAccessor.GetValue((IMessage) value));
+                WriteList(builder, (IList) fieldAccessor.GetValue((IMessage) value));
                 return;
             }
             if (descriptor.FullName == Value.Descriptor.FullName)
@@ -432,29 +467,17 @@ namespace Google.Protobuf
                 WriteStructFieldValue(builder, (IMessage) value);
                 return;
             }
+            if (descriptor.FullName == Any.Descriptor.FullName)
+            {
+                WriteAny(builder, (IMessage) value);
+                return;
+            }
             WriteMessage(builder, (IMessage) value);
-        }
-
-        /// <summary>
-        /// Some well-known types end up as string values... so they need wrapping in quotes, but only
-        /// when they're being used as fields within another message.
-        /// </summary>
-        private void MaybeWrapInString(StringBuilder builder, object value, Action<StringBuilder, IMessage> action, bool inField)
-        {
-            if (inField)
-            {
-                builder.Append('"');
-                action(builder, (IMessage) value);
-                builder.Append('"');
-            }
-            else
-            {
-                action(builder, (IMessage) value);
-            }
         }
 
         private void WriteTimestamp(StringBuilder builder, IMessage value)
         {
+            builder.Append('"');
             // TODO: In the common case where this *is* using the built-in Timestamp type, we could
             // avoid all the reflection at this point, by casting to Timestamp. In the interests of
             // avoiding subtle bugs, don't do that until we've implemented DynamicMessage so that we can prove
@@ -469,11 +492,12 @@ namespace Google.Protobuf
             DateTime dateTime = normalized.ToDateTime();
             builder.Append(dateTime.ToString("yyyy'-'MM'-'dd'T'HH:mm:ss", CultureInfo.InvariantCulture));
             AppendNanoseconds(builder, Math.Abs(normalized.Nanos));
-            builder.Append('Z');
+            builder.Append("Z\"");
         }
 
         private void WriteDuration(StringBuilder builder, IMessage value)
         {
+            builder.Append('"');
             // TODO: Same as for WriteTimestamp
             int nanos = (int) value.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.GetValue(value);
             long seconds = (long) value.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.GetValue(value);
@@ -490,13 +514,76 @@ namespace Google.Protobuf
 
             builder.Append(normalized.Seconds.ToString("d", CultureInfo.InvariantCulture));
             AppendNanoseconds(builder, Math.Abs(normalized.Nanos));
-            builder.Append('s');
+            builder.Append("s\"");
         }
 
         private void WriteFieldMask(StringBuilder builder, IMessage value)
         {
             IList paths = (IList) value.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor.GetValue(value);
-            AppendEscapedString(builder, string.Join(",", paths.Cast<string>().Select(ToCamelCase)));
+            WriteString(builder, string.Join(",", paths.Cast<string>().Select(ToCamelCase)));
+        }
+
+        private void WriteAny(StringBuilder builder, IMessage value)
+        {
+            if (ReferenceEquals(this, diagnosticFormatter))
+            {
+                WriteDiagnosticOnlyAny(builder, value);
+                return;
+            }
+
+            string typeUrl = (string) value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
+            ByteString data = (ByteString) value.Descriptor.Fields[Any.ValueFieldNumber].Accessor.GetValue(value);
+            string typeName = GetTypeName(typeUrl);
+            MessageDescriptor descriptor = settings.TypeRegistry.Find(typeName);
+            if (descriptor == null)
+            {
+                throw new InvalidOperationException($"Type registry has no descriptor for type name '{typeName}'");
+            }
+            IMessage message = descriptor.Parser.ParseFrom(data);
+            builder.Append("{ ");
+            WriteString(builder, AnyTypeUrlField);
+            builder.Append(NameValueSeparator);
+            WriteString(builder, typeUrl);
+
+            if (descriptor.IsWellKnownType)
+            {
+                builder.Append(PropertySeparator);
+                WriteString(builder, AnyWellKnownTypeValueField);
+                builder.Append(NameValueSeparator);
+                WriteWellKnownTypeValue(builder, descriptor, message);
+            }
+            else
+            {
+                WriteMessageFields(builder, message, true);
+            }
+            builder.Append(" }");
+        }
+
+        private void WriteDiagnosticOnlyAny(StringBuilder builder, IMessage value)
+        {
+            string typeUrl = (string) value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
+            ByteString data = (ByteString) value.Descriptor.Fields[Any.ValueFieldNumber].Accessor.GetValue(value);
+            builder.Append("{ ");
+            WriteString(builder, AnyTypeUrlField);
+            builder.Append(NameValueSeparator);
+            WriteString(builder, typeUrl);
+            builder.Append(PropertySeparator);
+            WriteString(builder, AnyDiagnosticValueField);
+            builder.Append(NameValueSeparator);
+            builder.Append('"');
+            builder.Append(data.ToBase64());
+            builder.Append('"');
+            builder.Append(" }");
+        }
+
+        internal static string GetTypeName(String typeUrl)
+        {
+            string[] parts = typeUrl.Split('/');
+            if (parts.Length != 2 || parts[0] != TypeUrlPrefix)
+            {
+                throw new InvalidProtocolBufferException($"Invalid type url: {typeUrl}");
+            }
+            return parts[1];
         }
 
         /// <summary>
@@ -540,10 +627,10 @@ namespace Google.Protobuf
 
                 if (!first)
                 {
-                    builder.Append(", ");
+                    builder.Append(PropertySeparator);
                 }
                 WriteString(builder, key);
-                builder.Append(": ");
+                builder.Append(NameValueSeparator);
                 WriteStructFieldValue(builder, value);
                 first = false;
             }
@@ -565,13 +652,13 @@ namespace Google.Protobuf
                 case Value.BoolValueFieldNumber:
                 case Value.StringValueFieldNumber:
                 case Value.NumberValueFieldNumber:
-                    WriteSingleValue(builder, specifiedField, value);
+                    WriteValue(builder, value);
                     return;
                 case Value.StructValueFieldNumber:
                 case Value.ListValueFieldNumber:
                     // Structs and ListValues are nested messages, and already well-known types.
                     var nestedMessage = (IMessage) specifiedField.Accessor.GetValue(message);
-                    WriteWellKnownTypeValue(builder, nestedMessage.Descriptor, nestedMessage, true);
+                    WriteWellKnownTypeValue(builder, nestedMessage.Descriptor, nestedMessage);
                     return;
                 case Value.NullValueFieldNumber:
                     WriteNull(builder);
@@ -581,70 +668,65 @@ namespace Google.Protobuf
             }
         }
 
-        private void WriteList(StringBuilder builder, IFieldAccessor accessor, IList list)
+        internal void WriteList(StringBuilder builder, IList list)
         {
             builder.Append("[ ");
             bool first = true;
             foreach (var value in list)
             {
-                if (!CanWriteSingleValue(accessor.Descriptor, value))
+                if (!CanWriteSingleValue(value))
                 {
                     continue;
                 }
                 if (!first)
                 {
-                    builder.Append(", ");
+                    builder.Append(PropertySeparator);
                 }
-                WriteSingleValue(builder, accessor.Descriptor, value);
+                WriteValue(builder, value);
                 first = false;
             }
             builder.Append(first ? "]" : " ]");
         }
 
-        private void WriteDictionary(StringBuilder builder, IFieldAccessor accessor, IDictionary dictionary)
+        internal void WriteDictionary(StringBuilder builder, IDictionary dictionary)
         {
             builder.Append("{ ");
             bool first = true;
-            FieldDescriptor keyType = accessor.Descriptor.MessageType.FindFieldByNumber(1);
-            FieldDescriptor valueType = accessor.Descriptor.MessageType.FindFieldByNumber(2);
             // This will box each pair. Could use IDictionaryEnumerator, but that's ugly in terms of disposal.
             foreach (DictionaryEntry pair in dictionary)
             {
-                if (!CanWriteSingleValue(valueType, pair.Value))
+                if (!CanWriteSingleValue(pair.Value))
                 {
                     continue;
                 }
                 if (!first)
                 {
-                    builder.Append(", ");
+                    builder.Append(PropertySeparator);
                 }
                 string keyText;
-                switch (keyType.FieldType)
+                if (pair.Key is string)
                 {
-                    case FieldType.String:
-                        keyText = (string) pair.Key;
-                        break;
-                    case FieldType.Bool:
-                        keyText = (bool) pair.Key ? "true" : "false";
-                        break;
-                    case FieldType.Fixed32:
-                    case FieldType.Fixed64:
-                    case FieldType.SFixed32:
-                    case FieldType.SFixed64:
-                    case FieldType.Int32:
-                    case FieldType.Int64:
-                    case FieldType.SInt32:
-                    case FieldType.SInt64:
-                    case FieldType.UInt32:
-                    case FieldType.UInt64:
-                        keyText = ((IFormattable) pair.Key).ToString("d", CultureInfo.InvariantCulture);
-                        break;
-                    default:
-                        throw new ArgumentException("Invalid key type: " + keyType.FieldType);
+                    keyText = (string) pair.Key;
+                }
+                else if (pair.Key is bool)
+                {
+                    keyText = (bool) pair.Key ? "true" : "false";
+                }
+                else if (pair.Key is int || pair.Key is uint | pair.Key is long || pair.Key is ulong)
+                {
+                    keyText = ((IFormattable) pair.Key).ToString("d", CultureInfo.InvariantCulture);
+                }
+                else
+                {
+                    if (pair.Key == null)
+                    {
+                        throw new ArgumentException("Dictionary has entry with null key");
+                    }
+                    throw new ArgumentException("Unhandled dictionary key type: " + pair.Key.GetType());
                 }
                 WriteString(builder, keyText);
-                builder.Append(": ");
-                WriteSingleValue(builder, valueType, pair.Value);
+                builder.Append(NameValueSeparator);
+                WriteValue(builder, pair.Value);
                 first = false;
             }
             builder.Append(first ? "}" : " }");
@@ -655,12 +737,11 @@ namespace Google.Protobuf
         /// Currently only relevant for enums, where unknown values can't be represented.
         /// For repeated/map fields, this always returns true.
         /// </summary>
-        private bool CanWriteSingleValue(FieldDescriptor descriptor, object value)
+        private bool CanWriteSingleValue(object value)
         {
-            if (descriptor.FieldType == FieldType.Enum)
+            if (value is System.Enum)
             {
-                EnumValueDescriptor enumValue = descriptor.EnumType.FindValueByNumber((int) value);
-                return enumValue != null;
+                return System.Enum.IsDefined(value.GetType(), value);
             }
             return true;
         }
@@ -674,15 +755,6 @@ namespace Google.Protobuf
         private void WriteString(StringBuilder builder, string text)
         {
             builder.Append('"');
-            AppendEscapedString(builder, text);
-            builder.Append('"');
-        }
-
-        /// <summary>
-        /// Appends the given text to the string builder, escaping as required.
-        /// </summary>
-        private void AppendEscapedString(StringBuilder builder, string text)
-        {
             for (int i = 0; i < text.Length; i++)
             {
                 char c = text[i];
@@ -742,6 +814,7 @@ namespace Google.Protobuf
                         break;
                 }
             }
+            builder.Append('"');
         }
 
         private const string Hex = "0123456789abcdef";
@@ -759,29 +832,50 @@ namespace Google.Protobuf
         /// </summary>
         public sealed class Settings
         {
-            private static readonly Settings defaultInstance = new Settings(false);
-
             /// <summary>
             /// Default settings, as used by <see cref="JsonFormatter.Default"/>
             /// </summary>
-            public static Settings Default { get { return defaultInstance; } }
+            public static Settings Default { get; }
 
-            private readonly bool formatDefaultValues;
-
+            // Workaround for the Mono compiler complaining about XML comments not being on
+            // valid language elements.
+            static Settings()
+            {
+                Default = new Settings(false);
+            }
 
             /// <summary>
             /// Whether fields whose values are the default for the field type (e.g. 0 for integers)
             /// should be formatted (true) or omitted (false).
             /// </summary>
-            public bool FormatDefaultValues { get { return formatDefaultValues; } }
+            public bool FormatDefaultValues { get; }
 
             /// <summary>
-            /// Creates a new <see cref="Settings"/> object with the specified formatting of default values.
+            /// The type registry used to format <see cref="Any"/> messages.
+            /// </summary>
+            public TypeRegistry TypeRegistry { get; }
+
+            // TODO: Work out how we're going to scale this to multiple settings. "WithXyz" methods?
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified formatting of default values
+            /// and an empty type registry.
             /// </summary>
             /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc) should be formatted; <c>false</c> otherwise.</param>
-            public Settings(bool formatDefaultValues)
+            public Settings(bool formatDefaultValues) : this(formatDefaultValues, TypeRegistry.Empty)
             {
-                this.formatDefaultValues = formatDefaultValues;
+            }
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified formatting of default values
+            /// and type registry.
+            /// </summary>
+            /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc) should be formatted; <c>false</c> otherwise.</param>
+            /// <param name="typeRegistry">The <see cref="TypeRegistry"/> to use when formatting <see cref="Any"/> messages.</param>
+            public Settings(bool formatDefaultValues, TypeRegistry typeRegistry)
+            {
+                FormatDefaultValues = formatDefaultValues;
+                TypeRegistry = Preconditions.CheckNotNull(typeRegistry, nameof(typeRegistry));
             }
         }
     }

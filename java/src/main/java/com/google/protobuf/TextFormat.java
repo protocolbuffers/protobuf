@@ -119,6 +119,21 @@ public final class TextFormat {
   }
 
   /**
+   * Generates a human readable form of the field, useful for debugging
+   * and other purposes, with no newline characters.
+   */
+  public static String shortDebugString(final FieldDescriptor field,
+                                        final Object value) {
+    try {
+      final StringBuilder sb = new StringBuilder();
+      SINGLE_LINE_PRINTER.printField(field, value, new TextGenerator(sb));
+      return sb.toString().trim();
+    } catch (IOException e) {
+        throw new IllegalStateException(e);
+    }
+  }
+
+  /**
    * Generates a human readable form of the unknown fields, useful for debugging
    * and other purposes, with no newline characters.
    */
@@ -1059,6 +1074,18 @@ public final class TextFormat {
     private ParseException floatParseException(final NumberFormatException e) {
       return parseException("Couldn't parse number: " + e.getMessage());
     }
+    
+    /**
+     * Returns a {@link UnknownFieldParseException} with the line and column
+     * numbers of the previous token in the description, and the unknown field
+     * name, suitable for throwing.
+     */
+    public UnknownFieldParseException unknownFieldParseExceptionPreviousToken(
+        final String unknownField, final String description) {
+      // Note:  People generally prefer one-based line and column numbers.
+      return new UnknownFieldParseException(
+        previousLine + 1, previousColumn + 1, unknownField, description);
+    }
   }
 
   /** Thrown when parsing an invalid text format message. */
@@ -1104,6 +1131,45 @@ public final class TextFormat {
      */
     public int getColumn() {
       return column;
+    }
+  }
+  
+  /**
+   * Thrown when encountering an unknown field while parsing
+   * a text format message.
+   */
+  public static class UnknownFieldParseException extends ParseException {
+    private final String unknownField;
+
+    /**
+     * Create a new instance, with -1 as the line and column numbers, and an
+     * empty unknown field name.
+     */
+    public UnknownFieldParseException(final String message) {
+      this(-1, -1, "", message);
+    }
+
+    /**
+     * Create a new instance
+     *
+     * @param line the line number where the parse error occurred,
+     * using 1-offset.
+     * @param column the column number where the parser error occurred,
+     * using 1-offset.
+     * @param unknownField the name of the unknown field found while parsing.
+     */
+    public UnknownFieldParseException(final int line, final int column,
+        final String unknownField, final String message) {
+      super(line, column, message);
+      this.unknownField = unknownField;
+    }
+
+    /**
+     * Return the name of the unknown field encountered while parsing the
+     * protocol buffer string.
+     */
+    public String getUnknownField() {
+      return unknownField;
     }
   }
 
@@ -1175,12 +1241,12 @@ public final class TextFormat {
      * Determines if repeated values for non-repeated fields and
      * oneofs are permitted. For example, given required/optional field "foo"
      * and a oneof containing "baz" and "qux":
-     * <li>
-     * <ul>"foo: 1 foo: 2"
-     * <ul>"baz: 1 qux: 2"
-     * <ul>merging "foo: 2" into a proto in which foo is already set, or
-     * <ul>merging "qux: 2" into a proto in which baz is already set.
-     * </li>
+     * <ul>
+     * <li>"foo: 1 foo: 2"
+     * <li>"baz: 1 qux: 2"
+     * <li>merging "foo: 2" into a proto in which foo is already set, or
+     * <li>merging "qux: 2" into a proto in which baz is already set.
+     * </ul>
      */
     public enum SingularOverwritePolicy {
       /** The last value is retained. */
@@ -1373,7 +1439,8 @@ public final class TextFormat {
 
         if (field == null) {
           if (!allowUnknownFields) {
-            throw tokenizer.parseExceptionPreviousToken(
+            throw tokenizer.unknownFieldParseExceptionPreviousToken(
+              name,
               "Message type \"" + type.getFullName()
               + "\" has no field named \"" + name + "\".");
           } else {

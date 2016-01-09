@@ -47,7 +47,11 @@ namespace protobuf {
 class Message;
 class FieldDescriptor;
 
+#ifdef _SHARED_PTR_H
+using std::shared_ptr;
+#else
 using internal::shared_ptr;
+#endif
 
 namespace python {
 
@@ -112,11 +116,6 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value);
 // Returns None on success.
 PyObject* ClearExtension(ExtensionDict* self,
                                        PyObject* extension);
-
-// Checks if the dict has an extension.
-//
-// Returns a new python boolean reference.
-PyObject* HasExtension(ExtensionDict* self, PyObject* extension);
 
 // Gets an extension from the dict given the extension name as opposed to
 // descriptor.
