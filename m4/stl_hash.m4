@@ -4,8 +4,7 @@
 # include AC_TRY_COMPILE for all the combinations we've seen in the
 # wild.  We define HASH_MAP_H to the location of the header file, and
 # HASH_NAMESPACE to the namespace the class (unordered_map or
-# hash_map) is in.  We define HAVE_UNORDERED_MAP if the class we found
-# is named unordered_map, or leave it undefined if not.
+# hash_map) is in.
 
 # This also checks if unordered map exists.
 AC_DEFUN([AC_CXX_STL_HASH],
@@ -53,9 +52,6 @@ AC_DEFUN([AC_CXX_STL_HASH],
    if test -n "$ac_cv_cxx_hash_map"; then
       AC_DEFINE(HAVE_HASH_MAP, 1, [define if the compiler has hash_map])
       AC_DEFINE(HAVE_HASH_SET, 1, [define if the compiler has hash_set])
-      if test "$ac_cv_cxx_hash_map_class" = "unordered_map"; then
-         AC_DEFINE(HAVE_UNORDERED_MAP, 1, [define if the hash_map class is unordered_map])
-      fi
       AC_DEFINE_UNQUOTED(HASH_MAP_H,$ac_cv_cxx_hash_map,
                          [the location of <unordered_map> or <hash_map>])
       AC_DEFINE_UNQUOTED(HASH_SET_H,$ac_cv_cxx_hash_set,
