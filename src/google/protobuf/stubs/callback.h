@@ -79,7 +79,7 @@ class LIBPROTOBUF_EXPORT Closure {
 };
 
 template<typename R>
-class LIBPROTOBUF_EXPORT ResultCallback {
+class ResultCallback {
  public:
   ResultCallback() {}
   virtual ~ResultCallback() {}
