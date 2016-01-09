@@ -147,7 +147,7 @@ namespace Google.Protobuf
         {
             ByteString data = ByteString.CopyFrom(1, 2, 3);
             // Can't do this with attributes...
-            var parsed = JsonParser.Default.Parse<BytesValue>("\"" + data.ToBase64() + "\"");
+            var parsed = JsonParser.Default.Parse<BytesValue>(WrapInQuotes(data.ToBase64()));
             var expected = new BytesValue { Value = data };
             Assert.AreEqual(expected, parsed);
         }
@@ -588,9 +588,9 @@ namespace Google.Protobuf
         public void Timestamp_Valid(string jsonValue, string expectedFormatted)
         {
             expectedFormatted = expectedFormatted ?? jsonValue;
-            string json = "\"" + jsonValue + "\"";
+            string json = WrapInQuotes(jsonValue);
             var parsed = Timestamp.Parser.ParseJson(json);
-            Assert.AreEqual(expectedFormatted, parsed.ToString());
+            Assert.AreEqual(WrapInQuotes(expectedFormatted), parsed.ToString());
         }
         
         [Test]
@@ -615,7 +615,7 @@ namespace Google.Protobuf
         [TestCase("2100-02-29T14:46:23.123456789Z", Description = "Feb 29th on a non-leap-year")]
         public void Timestamp_Invalid(string jsonValue)
         {
-            string json = "\"" + jsonValue + "\"";
+            string json = WrapInQuotes(jsonValue);
             Assert.Throws<InvalidProtocolBufferException>(() => Timestamp.Parser.ParseJson(json));
         }
 
@@ -689,9 +689,9 @@ namespace Google.Protobuf
         public void Duration_Valid(string jsonValue, string expectedFormatted)
         {
             expectedFormatted = expectedFormatted ?? jsonValue;
-            string json = "\"" + jsonValue + "\"";
+            string json = WrapInQuotes(jsonValue);
             var parsed = Duration.Parser.ParseJson(json);
-            Assert.AreEqual(expectedFormatted, parsed.ToString());
+            Assert.AreEqual(WrapInQuotes(expectedFormatted), parsed.ToString());
         }
 
         // The simplest way of testing that the value has parsed correctly is to reformat it,
@@ -720,7 +720,7 @@ namespace Google.Protobuf
         [TestCase("-3155760000000s", Description = "Integer part too long (negative)")]
         public void Duration_Invalid(string jsonValue)
         {
-            string json = "\"" + jsonValue + "\"";
+            string json = WrapInQuotes(jsonValue);
             Assert.Throws<InvalidProtocolBufferException>(() => Duration.Parser.ParseJson(json));
         }
 
@@ -736,7 +736,7 @@ namespace Google.Protobuf
         [TestCase("fooBar.bazQux", "foo_bar.baz_qux")]
         public void FieldMask_Valid(string jsonValue, params string[] expectedPaths)
         {
-            string json = "\"" + jsonValue + "\"";
+            string json = WrapInQuotes(jsonValue);
             var parsed = FieldMask.Parser.ParseJson(json);
             CollectionAssert.AreEqual(expectedPaths, parsed.Paths);
         }
@@ -812,7 +812,16 @@ namespace Google.Protobuf
 
             var parser63 = new JsonParser(new JsonParser.Settings(63));
             Assert.Throws<InvalidProtocolBufferException>(() => parser63.Parse<TestRecursiveMessage>(data64));
+        }
 
+        /// <summary>
+        /// Various tests use strings which have quotes round them for parsing or as the result
+        /// of formatting, but without those quotes being specified in the tests (for the sake of readability).
+        /// This method simply returns the input, wrapped in double quotes.
+        /// </summary>
+        internal static string WrapInQuotes(string text)
+        {
+            return '"' + text + '"';
         }
     }
 }

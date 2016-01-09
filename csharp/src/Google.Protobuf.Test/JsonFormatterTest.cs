@@ -37,6 +37,8 @@ using UnitTest.Issues.TestProtos;
 using Google.Protobuf.WellKnownTypes;
 using Google.Protobuf.Reflection;
 
+using static Google.Protobuf.JsonParserTest; // For WrapInQuotes
+
 namespace Google.Protobuf
 {
     /// <summary>
@@ -319,23 +321,28 @@ namespace Google.Protobuf
         }
 
         [Test]
-        public void TimestampStandalone()
+        [TestCase("1970-01-01T00:00:00Z", 0)]
+        [TestCase("1970-01-01T00:00:00.100Z", 100000000)]
+        [TestCase("1970-01-01T00:00:00.120Z", 120000000)]
+        [TestCase("1970-01-01T00:00:00.123Z", 123000000)]
+        [TestCase("1970-01-01T00:00:00.123400Z", 123400000)]
+        [TestCase("1970-01-01T00:00:00.123450Z", 123450000)]
+        [TestCase("1970-01-01T00:00:00.123456Z", 123456000)]
+        [TestCase("1970-01-01T00:00:00.123456700Z", 123456700)]
+        [TestCase("1970-01-01T00:00:00.123456780Z", 123456780)]
+        [TestCase("1970-01-01T00:00:00.123456789Z", 123456789)]
+        public void TimestampStandalone(string expected, int nanos)
         {
-            Assert.AreEqual("1970-01-01T00:00:00Z", new Timestamp().ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.100Z", new Timestamp { Nanos = 100000000 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.120Z", new Timestamp { Nanos = 120000000 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123Z", new Timestamp { Nanos = 123000000 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123400Z", new Timestamp { Nanos = 123400000 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123450Z", new Timestamp { Nanos = 123450000 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123456Z", new Timestamp { Nanos = 123456000 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123456700Z", new Timestamp { Nanos = 123456700 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123456780Z", new Timestamp { Nanos = 123456780 }.ToString());
-            Assert.AreEqual("1970-01-01T00:00:00.123456789Z", new Timestamp { Nanos = 123456789 }.ToString());
+            Assert.AreEqual(WrapInQuotes(expected), new Timestamp { Nanos = nanos }.ToString());
+        }
 
-            // One before and one after the Unix epoch
-            Assert.AreEqual("1673-06-19T12:34:56Z",
+        [Test]
+        public void TimestampStandalone_FromDateTime()
+        {
+            // One before and one after the Unix epoch, more easily represented via DateTime.
+            Assert.AreEqual("\"1673-06-19T12:34:56Z\"",
                 new DateTime(1673, 6, 19, 12, 34, 56, DateTimeKind.Utc).ToTimestamp().ToString());
-            Assert.AreEqual("2015-07-31T10:29:34Z",
+            Assert.AreEqual("\"2015-07-31T10:29:34Z\"",
                 new DateTime(2015, 7, 31, 10, 29, 34, DateTimeKind.Utc).ToTimestamp().ToString());
         }
 
@@ -367,7 +374,7 @@ namespace Google.Protobuf
         [TestCase(1, -100000000, "0.900s")]
         public void DurationStandalone(long seconds, int nanoseconds, string expected)
         {
-            Assert.AreEqual(expected, new Duration { Seconds = seconds, Nanos = nanoseconds }.ToString());
+            Assert.AreEqual(WrapInQuotes(expected), new Duration { Seconds = seconds, Nanos = nanoseconds }.ToString());
         }
 
         [Test]
@@ -399,11 +406,11 @@ namespace Google.Protobuf
         public void FieldMaskStandalone()
         {
             var fieldMask = new FieldMask { Paths = { "", "single", "with_underscore", "nested.field.name", "nested..double_dot" } };
-            Assert.AreEqual(",single,withUnderscore,nested.field.name,nested..doubleDot", fieldMask.ToString());
+            Assert.AreEqual("\",single,withUnderscore,nested.field.name,nested..doubleDot\"", fieldMask.ToString());
 
             // Invalid, but we shouldn't create broken JSON...
             fieldMask = new FieldMask { Paths = { "x\\y" } };
-            Assert.AreEqual(@"x\\y", fieldMask.ToString());
+            Assert.AreEqual(@"""x\\y""", fieldMask.ToString());
         }
 
         [Test]
