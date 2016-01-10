@@ -348,7 +348,7 @@ class upb::FieldDef {
    * whatever message this field belongs to.  Guaranteed to be less than
    * f->containing_type()->field_count().  May only be accessed once the def has
    * been finalized. */
-  int index() const;
+  uint32_t index() const;
 
   /* The MessageDef to which this field belongs.
    *
@@ -1361,6 +1361,9 @@ inline void FieldDef::set_lazy(bool lazy) {
 }
 inline bool FieldDef::packed() const {
   return upb_fielddef_packed(this);
+}
+inline uint32_t FieldDef::index() const {
+  return upb_fielddef_index(this);
 }
 inline void FieldDef::set_packed(bool packed) {
   upb_fielddef_setpacked(this, packed);
