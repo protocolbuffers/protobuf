@@ -1,6 +1,6 @@
-2015-08-26 version 3.0.0-beta-1 (C++/Java/Python/Ruby/Nano/Objective-C/C#/JavaSript)
+2015-08-26 version 3.0.0-beta-1 (C++/Java/Python/Ruby/Nano/Objective-C/C#/JavaScript)
   General
-  * Intorduced a new language implementaion: JavaScript.
+  * Introduced a new language implementation: JavaScript.
   * Added a new field option "json_name". By default proto field names are
     converted to "lowerCamelCase" in proto3 JSON format. This option can be
     used to override this behavior and specify a different JSON name for the
@@ -176,7 +176,7 @@
     still disable packed serialization by setting packed to false for now.
   * Added well-known type protos (any.proto, empty.proto, timestamp.proto,
     duration.proto, etc.). Users can import and use these protos just like
-    regular proto files. Addtional runtime support will be added for them in
+    regular proto files. Additional runtime support will be added for them in
     future releases (in the form of utility helper functions, or having them
     replaced by language specific types in generated code).
   * Added a "reserved" keyword in both proto2 and proto3 syntax. User can use
@@ -218,7 +218,7 @@
       https://github.com/jskeet/protobuf-csharp-port. The original project was
       frozen and all the new development will happen here.
     * Codegen plugin for C# was completely rewritten to C++ and is now an
-      intergral part of protoc.
+      integral part of protoc.
     * Some refactorings and cleanup has been applied to the C# runtime library.
     * Only proto2 is supported in C# at the moment, proto3 support is in
       progress and will likely bring significant breaking changes to the API.
@@ -382,7 +382,7 @@
 
     This release (v3.0.0-alpha-1) includes partial proto3 support for C++ and
     Java. Items 6 (well-known types) and 7 (JSON format) in the above feature
-    list are not impelmented.
+    list are not implemented.
 
     A new notion "syntax" is introduced to specify whether a .proto file
     uses proto2 or proto3:
@@ -483,7 +483,7 @@
       }
   * Files, services, enums, messages, methods and enum values can be marked
     as deprecated now.
-  * Added Support for list values, including lists of mesaages, when
+  * Added Support for list values, including lists of messages, when
     parsing text-formatted protos in C++ and Java.
       For example:  foo: [1, 2, 3]
 
@@ -563,7 +563,7 @@
 
   Python
   * Added support for dynamic message creation. DescriptorDatabase,
-    DescriptorPool, and MessageFactory work like their C++ couterparts to
+    DescriptorPool, and MessageFactory work like their C++ counterparts to
     simplify Descriptor construction from *DescriptorProtos, and MessageFactory
     provides a message instance from a Descriptor.
   * Added pickle support for protobuf messages.
@@ -577,7 +577,7 @@
 2011-05-01 version 2.4.1:
 
   C++
-  * Fixed the frendship problem for old compilers to make the library now gcc 3
+  * Fixed the friendship problem for old compilers to make the library now gcc 3
     compatible again.
   * Fixed vcprojects/extract_includes.bat to extract compiler/plugin.h.
 
@@ -844,7 +844,7 @@
   * Fixed tendency for TextFormat's parsing to overflow the stack when
     parsing large string values.  The underlying problem is with Java's
     regex implementation (which unfortunately uses recursive backtracking
-    rather than building an NFA).  Worked around by making use of possesive
+    rather than building an NFA).  Worked around by making use of possessive
     quantifiers.
   * Generated service classes now also generate pure interfaces.  For a service
     Foo, Foo.Interface is a pure interface containing all of the service's
@@ -858,7 +858,7 @@
     RPC implementations will have to implement the new interfaces in order to
     support blocking mode.
   * New I/O methods parseDelimitedFrom(), mergeDelimitedFrom(), and
-    writeDelimitedTo() read and write "delemited" messages from/to a stream,
+    writeDelimitedTo() read and write "delimited" messages from/to a stream,
     meaning that the message size precedes the data.  This way, you can write
     multiple messages to a stream without having to worry about delimiting
     them yourself.
