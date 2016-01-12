@@ -543,8 +543,7 @@ VALUE FieldDescriptor_name_set(VALUE _self, VALUE str) {
 
 upb_fieldtype_t ruby_to_fieldtype(VALUE type) {
   if (TYPE(type) != T_SYMBOL) {
-    rb_raise(rb_eArgError, "Expected symbol for field type, not: %s (%d)",
-             RSTRING_PTR(rb_inspect(type)), TYPE(type));
+    rb_raise(rb_eArgError, "Expected symbol for field type.");
   }
 
 #define CONVERT(upb, ruby)                                           \
