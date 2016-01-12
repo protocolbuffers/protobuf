@@ -1,7 +1,16 @@
 ## Process this file with automake to produce Makefile.in
 
-protoc_inputs =                                                \
+conformance_protoc_inputs =                                    \
   conformance.proto
+
+well_known_type_protoc_inputs =                                \
+  $(top_srcdir)/src/google/protobuf/any.proto                  \
+  $(top_srcdir)/src/google/protobuf/duration.proto             \
+  $(top_srcdir)/src/google/protobuf/field_mask.proto           \
+  $(top_srcdir)/src/google/protobuf/struct.proto               \
+  $(top_srcdir)/src/google/protobuf/timestamp.proto            \
+  $(top_srcdir)/src/google/protobuf/wrappers.proto
+
 
 protoc_outputs =                                               \
   conformance.pb.cc                                            \
@@ -31,6 +40,7 @@ EXTRA_DIST =                  \
   failure_list_objc.txt       \
   failure_list_python.txt     \
   failure_list_python_cpp.txt \
+  failure_list_python-post26.txt \
   failure_list_ruby.txt
 
 conformance_test_runner_LDADD = $(top_srcdir)/src/libprotobuf.la
@@ -74,8 +84,10 @@ endif
 
 if USE_EXTERNAL_PROTOC
 
-protoc_middleman: $(protoc_inputs)
-	$(PROTOC) -I$(srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=.$^
+# Some implementations include pre-generated versions of well-known types.
+protoc_middleman: $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. $(conformance_protoc_inputs)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --python_out=. $(well_known_type_protoc_inputs)
 	touch protoc_middleman
 
 else
@@ -83,8 +95,9 @@ else
 # We have to cd to $(srcdir) before executing protoc because $(protoc_inputs) is
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
-protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(protoc_inputs)
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd $(protoc_inputs) )
+protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd $(conformance_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --python_out=$$oldpwd $(well_known_type_protoc_inputs) )
 	touch protoc_middleman
 
 endif
@@ -135,10 +148,10 @@ test_ruby: protoc_middleman conformance-test-runner $(other_language_protoc_outp
 # These depend on library paths being properly set up.  The easiest way to
 # run them is to just use "tox" from the python dir.
 test_python: protoc_middleman conformance-test-runner
-	./conformance-test-runner --failure_list failure_list_python.txt ./conformance_python.py
+	./conformance-test-runner --failure_list failure_list_python.txt $(CONFORMANCE_PYTHON_EXTRA_FAILURES) ./conformance_python.py
 
 test_python_cpp: protoc_middleman conformance-test-runner
-	./conformance-test-runner --failure_list failure_list_python_cpp.txt ./conformance_python.py
+	./conformance-test-runner --failure_list failure_list_python_cpp.txt $(CONFORMANCE_PYTHON_EXTRA_FAILURES) ./conformance_python.py
 
 if OBJC_CONFORMANCE_TEST
 

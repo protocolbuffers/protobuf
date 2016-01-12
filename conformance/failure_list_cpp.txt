@@ -36,9 +36,6 @@ JsonInput.FieldNameInLowerCamelCase.Validator
 JsonInput.FieldNameInSnakeCase.JsonOutput
 JsonInput.FieldNameInSnakeCase.ProtobufOutput
 JsonInput.FieldNameNotQuoted
-JsonInput.FieldNameWithMixedCases.JsonOutput
-JsonInput.FieldNameWithMixedCases.ProtobufOutput
-JsonInput.FieldNameWithMixedCases.Validator
 JsonInput.FloatFieldTooLarge
 JsonInput.FloatFieldTooSmall
 JsonInput.Int32FieldLeadingSpace
