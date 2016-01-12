@@ -128,7 +128,7 @@ Fixes:
 - Issue 12:	default value for enumerate fields must be filled out
 
 Other:
-- Rewrite of build using MSBbuild instead of NAnt
+- Rewrite of build using MSbuild instead of NAnt
 - Moved to NUnit Version 2.2.8.0
 - Changed to using secure .snk for releases
 
