@@ -196,13 +196,6 @@ namespace Google.Protobuf
         }
 
         [Test]
-        public void NullValueForMessage()
-        {
-            var message = new TestMap { MapInt32ForeignMessage = { { 10, null } } };
-            AssertJson("{ 'mapInt32ForeignMessage': { '10': null } }", JsonFormatter.Default.Format(message));
-        }
-
-        [Test]
         [TestCase("a\u17b4b", "a\\u17b4b")] // Explicit
         [TestCase("a\u0601b", "a\\u0601b")] // Ranged
         [TestCase("a\u0605b", "a\u0605b")] // Passthrough (note lack of double backslash...)

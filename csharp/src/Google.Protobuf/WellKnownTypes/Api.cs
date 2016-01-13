@@ -653,7 +653,6 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   ///      package google.storage.v2;
   ///      service Storage {
-  ///        // (-- see AccessControl.GetAcl --)
   ///        rpc GetAcl(GetAclRequest) returns (Acl);
   ///
   ///        // Get a data record.

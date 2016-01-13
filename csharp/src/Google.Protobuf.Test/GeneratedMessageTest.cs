@@ -221,7 +221,7 @@ namespace Google.Protobuf
                 },
                 MapInt32ForeignMessage = {
                     { 0, new ForeignMessage { C = 10 } },
-                    { 5, null },
+                    { 5, new ForeignMessage() },
                 },
                 MapInt32Enum = {
                     { 1, MapEnum.MAP_ENUM_BAR },
@@ -266,6 +266,40 @@ namespace Google.Protobuf
 
             var parsed = TestMap.Parser.ParseFrom(memoryStream.ToArray());
             Assert.AreEqual(nestedMessage, parsed.MapInt32ForeignMessage[0]);
+        }
+
+        [Test]
+        public void MapWithOnlyKey_PrimitiveValue()
+        {
+            // Hand-craft the stream to contain a single entry with just a key.
+            var memoryStream = new MemoryStream();
+            var output = new CodedOutputStream(memoryStream);
+            output.WriteTag(TestMap.MapInt32DoubleFieldNumber, WireFormat.WireType.LengthDelimited);
+            int key = 10;
+            output.WriteLength(1 + CodedOutputStream.ComputeInt32Size(key));
+            output.WriteTag(1, WireFormat.WireType.Varint);
+            output.WriteInt32(key);
+            output.Flush();
+
+            var parsed = TestMap.Parser.ParseFrom(memoryStream.ToArray());
+            Assert.AreEqual(0.0, parsed.MapInt32Double[key]);
+        }
+
+        [Test]
+        public void MapWithOnlyKey_MessageValue()
+        {
+            // Hand-craft the stream to contain a single entry with just a key.
+            var memoryStream = new MemoryStream();
+            var output = new CodedOutputStream(memoryStream);
+            output.WriteTag(TestMap.MapInt32ForeignMessageFieldNumber, WireFormat.WireType.LengthDelimited);
+            int key = 10;
+            output.WriteLength(1 + CodedOutputStream.ComputeInt32Size(key));
+            output.WriteTag(1, WireFormat.WireType.Varint);
+            output.WriteInt32(key);
+            output.Flush();
+
+            var parsed = TestMap.Parser.ParseFrom(memoryStream.ToArray());
+            Assert.AreEqual(new ForeignMessage(), parsed.MapInt32ForeignMessage[key]);
         }
 
         [Test]

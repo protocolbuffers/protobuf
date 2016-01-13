@@ -2080,7 +2080,7 @@ namespace Google.Protobuf.TestProtos {
     public const int DoubleFieldFieldNumber = 10;
     private static readonly pbc::MapField<int, double?>.Codec _map_doubleField_codec
         = new pbc::MapField<int, double?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<double>(18), 82);
-    private readonly pbc::MapField<int, double?> doubleField_ = new pbc::MapField<int, double?>(true);
+    private readonly pbc::MapField<int, double?> doubleField_ = new pbc::MapField<int, double?>();
     public pbc::MapField<int, double?> DoubleField {
       get { return doubleField_; }
     }
@@ -2089,7 +2089,7 @@ namespace Google.Protobuf.TestProtos {
     public const int FloatFieldFieldNumber = 11;
     private static readonly pbc::MapField<int, float?>.Codec _map_floatField_codec
         = new pbc::MapField<int, float?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<float>(18), 90);
-    private readonly pbc::MapField<int, float?> floatField_ = new pbc::MapField<int, float?>(true);
+    private readonly pbc::MapField<int, float?> floatField_ = new pbc::MapField<int, float?>();
     public pbc::MapField<int, float?> FloatField {
       get { return floatField_; }
     }
@@ -2098,7 +2098,7 @@ namespace Google.Protobuf.TestProtos {
     public const int Int64FieldFieldNumber = 12;
     private static readonly pbc::MapField<int, long?>.Codec _map_int64Field_codec
         = new pbc::MapField<int, long?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<long>(18), 98);
-    private readonly pbc::MapField<int, long?> int64Field_ = new pbc::MapField<int, long?>(true);
+    private readonly pbc::MapField<int, long?> int64Field_ = new pbc::MapField<int, long?>();
     public pbc::MapField<int, long?> Int64Field {
       get { return int64Field_; }
     }
@@ -2107,7 +2107,7 @@ namespace Google.Protobuf.TestProtos {
     public const int Uint64FieldFieldNumber = 13;
     private static readonly pbc::MapField<int, ulong?>.Codec _map_uint64Field_codec
         = new pbc::MapField<int, ulong?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<ulong>(18), 106);
-    private readonly pbc::MapField<int, ulong?> uint64Field_ = new pbc::MapField<int, ulong?>(true);
+    private readonly pbc::MapField<int, ulong?> uint64Field_ = new pbc::MapField<int, ulong?>();
     public pbc::MapField<int, ulong?> Uint64Field {
       get { return uint64Field_; }
     }
@@ -2116,7 +2116,7 @@ namespace Google.Protobuf.TestProtos {
     public const int Int32FieldFieldNumber = 14;
     private static readonly pbc::MapField<int, int?>.Codec _map_int32Field_codec
         = new pbc::MapField<int, int?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<int>(18), 114);
-    private readonly pbc::MapField<int, int?> int32Field_ = new pbc::MapField<int, int?>(true);
+    private readonly pbc::MapField<int, int?> int32Field_ = new pbc::MapField<int, int?>();
     public pbc::MapField<int, int?> Int32Field {
       get { return int32Field_; }
     }
@@ -2125,7 +2125,7 @@ namespace Google.Protobuf.TestProtos {
     public const int Uint32FieldFieldNumber = 15;
     private static readonly pbc::MapField<int, uint?>.Codec _map_uint32Field_codec
         = new pbc::MapField<int, uint?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<uint>(18), 122);
-    private readonly pbc::MapField<int, uint?> uint32Field_ = new pbc::MapField<int, uint?>(true);
+    private readonly pbc::MapField<int, uint?> uint32Field_ = new pbc::MapField<int, uint?>();
     public pbc::MapField<int, uint?> Uint32Field {
       get { return uint32Field_; }
     }
@@ -2134,7 +2134,7 @@ namespace Google.Protobuf.TestProtos {
     public const int BoolFieldFieldNumber = 16;
     private static readonly pbc::MapField<int, bool?>.Codec _map_boolField_codec
         = new pbc::MapField<int, bool?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<bool>(18), 130);
-    private readonly pbc::MapField<int, bool?> boolField_ = new pbc::MapField<int, bool?>(true);
+    private readonly pbc::MapField<int, bool?> boolField_ = new pbc::MapField<int, bool?>();
     public pbc::MapField<int, bool?> BoolField {
       get { return boolField_; }
     }
@@ -2143,7 +2143,7 @@ namespace Google.Protobuf.TestProtos {
     public const int StringFieldFieldNumber = 17;
     private static readonly pbc::MapField<int, string>.Codec _map_stringField_codec
         = new pbc::MapField<int, string>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForClassWrapper<string>(18), 138);
-    private readonly pbc::MapField<int, string> stringField_ = new pbc::MapField<int, string>(true);
+    private readonly pbc::MapField<int, string> stringField_ = new pbc::MapField<int, string>();
     public pbc::MapField<int, string> StringField {
       get { return stringField_; }
     }
@@ -2152,7 +2152,7 @@ namespace Google.Protobuf.TestProtos {
     public const int BytesFieldFieldNumber = 18;
     private static readonly pbc::MapField<int, pb::ByteString>.Codec _map_bytesField_codec
         = new pbc::MapField<int, pb::ByteString>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForClassWrapper<pb::ByteString>(18), 146);
-    private readonly pbc::MapField<int, pb::ByteString> bytesField_ = new pbc::MapField<int, pb::ByteString>(true);
+    private readonly pbc::MapField<int, pb::ByteString> bytesField_ = new pbc::MapField<int, pb::ByteString>();
     public pbc::MapField<int, pb::ByteString> BytesField {
       get { return bytesField_; }
     }

@@ -69,7 +69,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///      z: 8
   ///
   ///  The result will not contain specific values for fields x,y and z
-  ///  (there value will be set to the default, and omitted in proto text
+  ///  (their value will be set to the default, and omitted in proto text
   ///  output):
   ///
   ///      f {
