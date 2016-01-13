@@ -543,10 +543,17 @@ public final class CodedInputStream {
       // into the underlying byte array without copy if the CodedInputStream is
       // constructed from a byte array. If aliasing is disabled or the input is
       // from an InputStream or ByteString, we have to make a copy of the bytes.
-      ByteBuffer result = input == null && !bufferIsImmutable && enableAliasing
-          ? ByteBuffer.wrap(buffer, bufferPos, size).slice()
-          : ByteBuffer.wrap(Arrays.copyOfRange(
-              buffer, bufferPos, bufferPos + size));
+      ByteBuffer result;
+      if (input == null && enableAliasing) {
+        if (bufferIsImmutable) {
+          result = ByteBuffer.wrap(buffer, bufferPos, size).asReadOnlyBuffer().slice();
+        } else {
+          result = ByteBuffer.wrap(buffer, bufferPos, size).slice();
+        }
+      } else {
+        result = ByteBuffer.wrap(Arrays.copyOfRange(
+                buffer, bufferPos, bufferPos + size));
+      }
       bufferPos += size;
       return result;
     } else if (size == 0) {
