@@ -763,6 +763,13 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Any_NoTypeUrl()
+        {
+            string json = "{ \"foo\": \"bar\" }";
+            Assert.Throws<InvalidProtocolBufferException>(() => Any.Parser.ParseJson(json));
+        }
+
+        [Test]
         public void Any_WellKnownType()
         {
             var registry = TypeRegistry.FromMessages(Timestamp.Descriptor);

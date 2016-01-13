@@ -464,6 +464,11 @@ namespace Google.Protobuf
             {
                 tokens.Add(token);
                 token = tokenizer.Next();
+
+                if (tokenizer.ObjectDepth < typeUrlObjectDepth)
+                {
+                    throw new InvalidProtocolBufferException("Any message with no @type");
+                }
             }
 
             // Don't add the @type property or its value to the recorded token list
