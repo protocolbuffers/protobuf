@@ -114,13 +114,13 @@ MAINTAINERCLEANFILES =   \
   Makefile.in
 
 javac_middleman: ConformanceJava.java protoc_middleman $(other_language_protoc_outputs)
-	jar=`ls ../java/util/target/*.jar` && javac -classpath ../java/target/classes:$$jar ConformanceJava.java com/google/protobuf/conformance/Conformance.java
+	jar=`ls ../java/util/target/*jar-with-dependencies.jar` && javac -classpath ../java/target/classes:$$jar ConformanceJava.java com/google/protobuf/conformance/Conformance.java
 	@touch javac_middleman
 
 conformance-java: javac_middleman
 	@echo "Writing shortcut script conformance-java..."
 	@echo '#! /bin/sh' > conformance-java
-	@jar=`ls ../java/util/target/*.jar` && echo java -classpath .:../java/target/classes:$$jar ConformanceJava '$$@' >> conformance-java
+	@jar=`ls ../java/util/target/*jar-with-dependencies.jar` && echo java -classpath .:../java/target/classes:$$jar ConformanceJava '$$@' >> conformance-java
 	@chmod +x conformance-java
 
 # Currently the conformance code is alongside the rest of the C#
