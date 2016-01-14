@@ -1160,7 +1160,7 @@ module BasicTest
       # TODO: Fix JSON in JRuby version.
       return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
-      expected = '{"map_string_int32":{"a":1},"map_string_msg":{}}'
+      expected = '{"mapStringInt32":{"a":1},"mapStringMsg":{}}'
       assert MapMessage.encode_json(m) == expected
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
       assert m == m2

@@ -51,7 +51,12 @@ def do_test(request)
       end
 
     when :json_payload
-      test_message = Conformance::TestAllTypes.decode_json(request.json_payload)
+      begin
+        test_message = Conformance::TestAllTypes.decode_json(request.json_payload)
+      rescue Google::Protobuf::ParseError => err
+        response.parse_error = err.message.encode('utf-8')
+        return response
+      end
 
     when nil
       fail "Request didn't have payload"
@@ -66,6 +71,9 @@ def do_test(request)
 
     when :JSON
       response.json_payload = test_message.to_json
+
+    when nil
+      fail "Request didn't have requested output format"
     end
   rescue StandardError => err
     response.runtime_error = err.message.encode('utf-8')
@@ -96,8 +104,8 @@ def do_test_io
   STDOUT.flush
 
   if $verbose
-    STDERR.puts("conformance-cpp: request={request.to_json}, " \
-                                 "response={response.to_json}\n")
+    STDERR.puts("conformance_ruby: request=#{request.to_json}, " \
+                                 "response=#{response.to_json}\n")
   end
 
   $test_count += 1
@@ -107,7 +115,7 @@ end
 
 loop do
   unless do_test_io
-    STDERR.puts('conformance-cpp: received EOF from test runner ' \
+    STDERR.puts('conformance_ruby: received EOF from test runner ' \
                 "after #{$test_count} tests, exiting")
     break
   end
