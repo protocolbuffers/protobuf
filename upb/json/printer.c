@@ -33,15 +33,25 @@ struct upb_json_printer {
 
 /* StringPiece; a pointer plus a length. */
 typedef struct {
-  const char *ptr;
+  char *ptr;
   size_t len;
 } strpc;
 
+void freestrpc(void *ptr) {
+  strpc *pc = ptr;
+  free(pc->ptr);
+  free(pc);
+}
+
+/* Convert fielddef name to JSON name and return as a string piece. */
 strpc *newstrpc(upb_handlers *h, const upb_fielddef *f) {
+  /* TODO(haberman): handle malloc failure. */
   strpc *ret = malloc(sizeof(*ret));
-  ret->ptr = upb_fielddef_name(f);
+  ret->ptr = malloc(strlen(upb_fielddef_name(f)) + 1);
+  upb_fielddef_getjsonname(f, ret->ptr);
   ret->len = strlen(ret->ptr);
-  upb_handlers_addcleanup(h, ret, free);
+
+  upb_handlers_addcleanup(h, ret, freestrpc);
   return ret;
 }
 

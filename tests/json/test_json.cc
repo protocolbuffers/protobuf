@@ -30,83 +30,83 @@ bool verbose = false;
 static TestCase kTestRoundtripMessages[] = {
   // Test most fields here.
   {
-    TEST("{\"optional_int32\":-42,\"optional_string\":\"Test\\u0001Message\","
-         "\"optional_msg\":{\"foo\":42},"
-         "\"optional_bool\":true,\"repeated_msg\":[{\"foo\":1},"
+    TEST("{\"optionalInt32\":-42,\"optionalString\":\"Test\\u0001Message\","
+         "\"optionalMsg\":{\"foo\":42},"
+         "\"optionalBool\":true,\"repeatedMsg\":[{\"foo\":1},"
          "{\"foo\":2}]}"),
     EXPECT_SAME
   },
   // Test special escapes in strings.
   {
-    TEST("{\"repeated_string\":[\"\\b\",\"\\r\",\"\\n\",\"\\f\",\"\\t\","
+    TEST("{\"repeatedString\":[\"\\b\",\"\\r\",\"\\n\",\"\\f\",\"\\t\","
          "\"\uFFFF\"]}"),
     EXPECT_SAME
   },
   // Test enum symbolic names.
   {
     // The common case: parse and print the symbolic name.
-    TEST("{\"optional_enum\":\"A\"}"),
+    TEST("{\"optionalEnum\":\"A\"}"),
     EXPECT_SAME
   },
   {
     // Unknown enum value: will be printed as an integer.
-    TEST("{\"optional_enum\":42}"),
+    TEST("{\"optionalEnum\":42}"),
     EXPECT_SAME
   },
   {
     // Known enum value: we're happy to parse an integer but we will re-emit the
     // symbolic name.
-    TEST("{\"optional_enum\":1}"),
-    EXPECT("{\"optional_enum\":\"B\"}")
+    TEST("{\"optionalEnum\":1}"),
+    EXPECT("{\"optionalEnum\":\"B\"}")
   },
   // UTF-8 tests: escapes -> literal UTF8 in output.
   {
     // Note double escape on \uXXXX: we want the escape to be processed by the
     // JSON parser, not by the C++ compiler!
-    TEST("{\"optional_string\":\"\\u007F\"}"),
-    EXPECT("{\"optional_string\":\"\x7F\"}")
+    TEST("{\"optionalString\":\"\\u007F\"}"),
+    EXPECT("{\"optionalString\":\"\x7F\"}")
   },
   {
-    TEST("{\"optional_string\":\"\\u0080\"}"),
-    EXPECT("{\"optional_string\":\"\xC2\x80\"}")
+    TEST("{\"optionalString\":\"\\u0080\"}"),
+    EXPECT("{\"optionalString\":\"\xC2\x80\"}")
   },
   {
-    TEST("{\"optional_string\":\"\\u07FF\"}"),
-    EXPECT("{\"optional_string\":\"\xDF\xBF\"}")
+    TEST("{\"optionalString\":\"\\u07FF\"}"),
+    EXPECT("{\"optionalString\":\"\xDF\xBF\"}")
   },
   {
-    TEST("{\"optional_string\":\"\\u0800\"}"),
-    EXPECT("{\"optional_string\":\"\xE0\xA0\x80\"}")
+    TEST("{\"optionalString\":\"\\u0800\"}"),
+    EXPECT("{\"optionalString\":\"\xE0\xA0\x80\"}")
   },
   {
-    TEST("{\"optional_string\":\"\\uFFFF\"}"),
-    EXPECT("{\"optional_string\":\"\xEF\xBF\xBF\"}")
+    TEST("{\"optionalString\":\"\\uFFFF\"}"),
+    EXPECT("{\"optionalString\":\"\xEF\xBF\xBF\"}")
   },
   // map-field tests
   {
-    TEST("{\"map_string_string\":{\"a\":\"value1\",\"b\":\"value2\","
+    TEST("{\"mapStringString\":{\"a\":\"value1\",\"b\":\"value2\","
          "\"c\":\"value3\"}}"),
     EXPECT_SAME
   },
   {
-    TEST("{\"map_int32_string\":{\"1\":\"value1\",\"-1\":\"value2\","
+    TEST("{\"mapInt32String\":{\"1\":\"value1\",\"-1\":\"value2\","
          "\"1234\":\"value3\"}}"),
     EXPECT_SAME
   },
   {
-    TEST("{\"map_bool_string\":{\"false\":\"value1\",\"true\":\"value2\"}}"),
+    TEST("{\"mapBoolString\":{\"false\":\"value1\",\"true\":\"value2\"}}"),
     EXPECT_SAME
   },
   {
-    TEST("{\"map_string_int32\":{\"asdf\":1234,\"jkl;\":-1}}"),
+    TEST("{\"mapStringInt32\":{\"asdf\":1234,\"jkl;\":-1}}"),
     EXPECT_SAME
   },
   {
-    TEST("{\"map_string_bool\":{\"asdf\":true,\"jkl;\":false}}"),
+    TEST("{\"mapStringBool\":{\"asdf\":true,\"jkl;\":false}}"),
     EXPECT_SAME
   },
   {
-    TEST("{\"map_string_msg\":{\"asdf\":{\"foo\":42},\"jkl;\":{\"foo\":84}}}"),
+    TEST("{\"mapStringMsg\":{\"asdf\":{\"foo\":42},\"jkl;\":{\"foo\":84}}}"),
     EXPECT_SAME
   },
   TEST_SENTINEL
@@ -287,13 +287,14 @@ class StringSink {
 void test_json_roundtrip_message(const char* json_src,
                                  const char* json_expected,
                                  const upb::Handlers* serialize_handlers,
+                                 const upb::json::ParserMethod* parser_method,
                                  int seam) {
   VerboseParserEnvironment env(verbose);
   StringSink data_sink;
   upb::json::Printer* printer = upb::json::Printer::Create(
       env.env(), serialize_handlers, data_sink.Sink());
   upb::json::Parser* parser =
-      upb::json::Parser::Create(env.env(), printer->input());
+      upb::json::Parser::Create(env.env(), parser_method, printer->input());
   env.ResetBytesSink(parser->input());
   env.Reset(json_src, strlen(json_src), false, false);
 
@@ -323,6 +324,8 @@ void test_json_roundtrip() {
   const upb::MessageDef* md = BuildTestMessage(symtab.get());
   upb::reffed_ptr<const upb::Handlers> serialize_handlers(
       upb::json::Printer::NewHandlers(md));
+  upb::reffed_ptr<const upb::json::ParserMethod> parser_method(
+      upb::json::ParserMethod::New(md));
 
   for (const TestCase* test_case = kTestRoundtripMessages;
        test_case->input != NULL; test_case++) {
@@ -333,7 +336,8 @@ void test_json_roundtrip() {
 
     for (size_t i = 0; i < strlen(test_case->input); i++) {
       test_json_roundtrip_message(test_case->input, expected,
-                                  serialize_handlers.get(), i);
+                                  serialize_handlers.get(), parser_method.get(),
+                                  i);
     }
   }
 }

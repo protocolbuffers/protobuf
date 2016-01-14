@@ -38,6 +38,9 @@ typedef struct {
   const upb_msgdef *m;
   const upb_fielddef *f;
 
+  /* The table mapping json name to fielddef for this message. */
+  upb_strtable *name_table;
+
   /* We are in a repeated-field context, ready to emit mapentries as
    * submessages. This flag alters the start-of-object (open-brace) behavior to
    * begin a sequence of mapentry messages rather than a single submessage. */
@@ -58,7 +61,7 @@ typedef struct {
 
 struct upb_json_parser {
   upb_env *env;
-  upb_byteshandler input_handler_;
+  const upb_json_parsermethod *method;
   upb_bytessink input_;
 
   /* Stack to track the JSON scopes we are in. */
@@ -93,6 +96,19 @@ struct upb_json_parser {
   uint32_t digit;
 };
 
+struct upb_json_parsermethod {
+  upb_refcounted base;
+
+  upb_byteshandler input_handler_;
+
+  /* Mainly for the purposes of refcounting, so all the fielddefs we point
+   * to stay alive. */
+  const upb_msgdef *msg;
+
+  /* Keys are upb_msgdef*, values are upb_strtable (json_name -> fielddef) */
+  upb_inttable name_tables;
+};
+
 #define PARSER_CHECK_RETURN(x) if (!(x)) return false
 
 /* Used to signal that a capture has been suspended. */
@@ -119,6 +135,13 @@ static bool check_stack(upb_json_parser *p) {
   }
 
   return true;
+}
+
+static void set_name_table(upb_json_parser *p, upb_jsonparser_frame *frame) {
+  upb_value v;
+  bool ok = upb_inttable_lookupptr(&p->method->name_tables, frame->m, &v);
+  UPB_ASSERT_VAR(ok, ok);
+  frame->name_table = upb_value_getptr(v);
 }
 
 /* There are GCC/Clang built-ins for overflow checking which we could start
@@ -717,6 +740,7 @@ static bool start_stringval(upb_json_parser *p) {
     upb_sink_startstr(&p->top->sink, sel, 0, &inner->sink);
     inner->m = p->top->m;
     inner->f = p->top->f;
+    inner->name_table = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
     p->top = inner;
@@ -903,6 +927,7 @@ static bool handle_mapentry(upb_json_parser *p) {
   sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSUBMSG);
   upb_sink_startsubmsg(&p->top->sink, sel, &inner->sink);
   inner->m = mapentrymsg;
+  inner->name_table = NULL;
   inner->mapfield = mapfield;
   inner->is_map = false;
 
@@ -939,20 +964,20 @@ static bool end_membername(upb_json_parser *p) {
   } else {
     size_t len;
     const char *buf = accumulate_getptr(p, &len);
-    const upb_fielddef *f = upb_msgdef_ntof(p->top->m, buf, len);
+    upb_value v;
 
-    if (!f) {
+    if (upb_strtable_lookup2(p->top->name_table, buf, len, &v)) {
+      p->top->f = upb_value_getconstptr(v);
+      multipart_end(p);
+
+      return true;
+    } else {
       /* TODO(haberman): Ignore unknown fields if requested/configured to do
        * so. */
       upb_status_seterrf(&p->status, "No such field: %.*s\n", (int)len, buf);
       upb_env_reporterror(p->env, &p->status);
       return false;
     }
-
-    p->top->f = f;
-    multipart_end(p);
-
-    return true;
   }
 }
 
@@ -994,6 +1019,7 @@ static bool start_subobject(upb_json_parser *p) {
     sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSEQ);
     upb_sink_startseq(&p->top->sink, sel, &inner->sink);
     inner->m = upb_fielddef_msgsubdef(p->top->f);
+    inner->name_table = NULL;
     inner->mapfield = p->top->f;
     inner->f = NULL;
     inner->is_map = true;
@@ -1014,6 +1040,7 @@ static bool start_subobject(upb_json_parser *p) {
     sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSUBMSG);
     upb_sink_startsubmsg(&p->top->sink, sel, &inner->sink);
     inner->m = upb_fielddef_msgsubdef(p->top->f);
+    set_name_table(p, inner);
     inner->f = NULL;
     inner->is_map = false;
     inner->is_mapentry = false;
@@ -1063,6 +1090,7 @@ static bool start_array(upb_json_parser *p) {
   sel = getsel_for_handlertype(p, UPB_HANDLER_STARTSEQ);
   upb_sink_startseq(&p->top->sink, sel, &inner->sink);
   inner->m = p->top->m;
+  inner->name_table = NULL;
   inner->f = p->top->f;
   inner->is_map = false;
   inner->is_mapentry = false;
@@ -1288,10 +1316,65 @@ static void json_parser_reset(upb_json_parser *p) {
   upb_status_clear(&p->status);
 }
 
+static void visit_json_parsermethod(const upb_refcounted *r,
+                                    upb_refcounted_visit *visit,
+                                    void *closure) {
+  const upb_json_parsermethod *method = (upb_json_parsermethod*)r;
+  visit(r, upb_msgdef_upcast2(method->msg), closure);
+}
+
+static void free_json_parsermethod(upb_refcounted *r) {
+  upb_json_parsermethod *method = (upb_json_parsermethod*)r;
+
+  upb_inttable_iter i;
+  upb_inttable_begin(&i, &method->name_tables);
+  for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
+    upb_value val = upb_inttable_iter_value(&i);
+    upb_strtable *t = upb_value_getptr(val);
+    upb_strtable_uninit(t);
+    free(t);
+  }
+
+  upb_inttable_uninit(&method->name_tables);
+
+  free(r);
+}
+
+static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
+  upb_msg_field_iter i;
+  upb_strtable *t;
+
+  if (upb_inttable_lookupptr(&m->name_tables, md, NULL)) {
+    return;
+  }
+
+  /* TODO(haberman): handle malloc failure. */
+  t = malloc(sizeof(*t));
+  upb_strtable_init(t, UPB_CTYPE_CONSTPTR);
+  upb_inttable_insertptr(&m->name_tables, md, upb_value_ptr(t));
+
+  for(upb_msg_field_begin(&i, md);
+      !upb_msg_field_done(&i);
+      upb_msg_field_next(&i)) {
+    const upb_fielddef *f = upb_msg_iter_field(&i);
+    /* It would be nice to stack-allocate this, but protobufs do not limit the
+     * length of fields to any reasonable limit. */
+    char *buf = malloc(strlen(upb_fielddef_name(f)) + 1);
+    upb_fielddef_getjsonname(f, buf);
+    upb_strtable_insert(t, buf, upb_value_constptr(f));
+    free(buf);
+
+    if (upb_fielddef_issubmsg(f)) {
+      add_jsonname_table(m, upb_fielddef_msgsubdef(f));
+    }
+  }
+}
 
 /* Public API *****************************************************************/
 
-upb_json_parser *upb_json_parser_create(upb_env *env, upb_sink *output) {
+upb_json_parser *upb_json_parser_create(upb_env *env,
+                                        const upb_json_parsermethod *method,
+                                        upb_sink *output) {
 #ifndef NDEBUG
   const size_t size_before = upb_env_bytesallocated(env);
 #endif
@@ -1299,17 +1382,16 @@ upb_json_parser *upb_json_parser_create(upb_env *env, upb_sink *output) {
   if (!p) return false;
 
   p->env = env;
+  p->method = method;
   p->limit = p->stack + UPB_JSON_MAX_DEPTH;
   p->accumulate_buf = NULL;
   p->accumulate_buf_size = 0;
-  upb_byteshandler_init(&p->input_handler_);
-  upb_byteshandler_setstring(&p->input_handler_, parse, NULL);
-  upb_byteshandler_setendstr(&p->input_handler_, end, NULL);
-  upb_bytessink_reset(&p->input_, &p->input_handler_, p);
+  upb_bytessink_reset(&p->input_, &method->input_handler_, p);
 
   json_parser_reset(p);
   upb_sink_reset(&p->top->sink, output->handlers, output->closure);
   p->top->m = upb_handlers_msgdef(output->handlers);
+  set_name_table(p, p->top);
 
   /* If this fails, uncomment and increase the value in parser.h. */
   /* fprintf(stderr, "%zd\n", upb_env_bytesallocated(env) - size_before); */
@@ -1319,4 +1401,30 @@ upb_json_parser *upb_json_parser_create(upb_env *env, upb_sink *output) {
 
 upb_bytessink *upb_json_parser_input(upb_json_parser *p) {
   return &p->input_;
+}
+
+upb_json_parsermethod *upb_json_parsermethod_new(const upb_msgdef* md,
+                                                 const void* owner) {
+  static const struct upb_refcounted_vtbl vtbl = {visit_json_parsermethod,
+                                                  free_json_parsermethod};
+  upb_json_parsermethod *ret = malloc(sizeof(*ret));
+  upb_refcounted_init(upb_json_parsermethod_upcast_mutable(ret), &vtbl, owner);
+
+  ret->msg = md;
+  upb_ref2(md, ret);
+
+  upb_byteshandler_init(&ret->input_handler_);
+  upb_byteshandler_setstring(&ret->input_handler_, parse, ret);
+  upb_byteshandler_setendstr(&ret->input_handler_, end, ret);
+
+  upb_inttable_init(&ret->name_tables, UPB_CTYPE_PTR);
+
+  add_jsonname_table(ret, md);
+
+  return ret;
+}
+
+const upb_byteshandler *upb_json_parsermethod_inputhandler(
+    const upb_json_parsermethod *m) {
+  return &m->input_handler_;
 }

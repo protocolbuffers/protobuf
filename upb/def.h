@@ -307,6 +307,12 @@ class upb::FieldDef {
   uint32_t number() const;   /* Returns 0 if uninitialized. */
   bool is_extension() const;
 
+  /* Get the JSON name for this field.  This will copy the JSON name into the
+   * given buffer, which must have size of at least "strlen(name()) + 1".
+   * The string will be NULL-terminated.  Returns false if uninitialized.
+   */
+  bool GetJsonName(char* buf) const;
+
   /* For UPB_TYPE_MESSAGE fields only where is_tag_delimited() == false,
    * indicates whether this field should have lazy parsing handlers that yield
    * the unparsed string for the submessage.
@@ -472,6 +478,16 @@ class upb::FieldDef {
   bool set_name(const char* name, upb::Status* s);
   bool set_name(const std::string& name, upb::Status* s);
 
+  /* Sets the JSON name to the given string. */
+  /* TODO(haberman): implement.  Right now only default json_name (camelCase)
+   * is supported. */
+  bool set_json_name(const char* json_name, upb::Status* s);
+  bool set_json_name(const std::string& name, upb::Status* s);
+
+  /* Clears the JSON name. This will make it revert to its default, which is
+   * a camelCased version of the regular field name. */
+  void clear_json_name();
+
   void set_integer_format(IntegerFormat format);
   bool set_tag_delimited(bool tag_delimited, upb::Status* s);
 
@@ -536,6 +552,7 @@ const char *upb_fielddef_name(const upb_fielddef *f);
 bool upb_fielddef_isextension(const upb_fielddef *f);
 bool upb_fielddef_lazy(const upb_fielddef *f);
 bool upb_fielddef_packed(const upb_fielddef *f);
+bool upb_fielddef_getjsonname(const upb_fielddef *f, char *buf);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
 const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f);
 upb_msgdef *upb_fielddef_containingtype_mutable(upb_fielddef *f);
@@ -570,6 +587,8 @@ void upb_fielddef_setdescriptortype(upb_fielddef *f, int type);
 void upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label);
 bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number, upb_status *s);
 bool upb_fielddef_setname(upb_fielddef *f, const char *name, upb_status *s);
+bool upb_fielddef_setjsonname(upb_fielddef *f, const char *name, upb_status *s);
+bool upb_fielddef_clearjsonname(upb_fielddef *f);
 bool upb_fielddef_setcontainingtypename(upb_fielddef *f, const char *name,
                                         upb_status *s);
 void upb_fielddef_setisextension(upb_fielddef *f, bool is_extension);
@@ -1345,6 +1364,15 @@ inline bool FieldDef::set_name(const char *name, Status* s) {
 }
 inline bool FieldDef::set_name(const std::string& name, Status* s) {
   return upb_fielddef_setname(this, upb_safecstr(name), s);
+}
+inline bool FieldDef::set_json_name(const char *name, Status* s) {
+  return upb_fielddef_setjsonname(this, name, s);
+}
+inline bool FieldDef::set_json_name(const std::string& name, Status* s) {
+  return upb_fielddef_setjsonname(this, upb_safecstr(name), s);
+}
+inline void FieldDef::clear_json_name() {
+  upb_fielddef_clearjsonname(this);
 }
 inline bool FieldDef::set_containing_type_name(const char *name, Status* s) {
   return upb_fielddef_setcontainingtypename(this, name, s);
