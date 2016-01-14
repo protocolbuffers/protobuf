@@ -30,13 +30,19 @@
 
 package com.google.protobuf.util;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.UnittestProto.NestedTestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 
-import junit.framework.TestCase;
-
-public class FieldMaskTreeTest extends TestCase {
+@RunWith(JUnit4.class)
+public class FieldMaskTreeTest {
+  @Test
   public void testAddFieldPath() throws Exception {
     FieldMaskTree tree = new FieldMaskTree();
     assertEquals("", tree.toString());
@@ -62,6 +68,7 @@ public class FieldMaskTreeTest extends TestCase {
     assertEquals("bar,foo", tree.toString());
   }
   
+  @Test
   public void testMergeFromFieldMask() throws Exception {
     FieldMaskTree tree = new FieldMaskTree(
       FieldMaskUtil.fromString("foo,bar.baz,bar.quz"));
@@ -71,6 +78,7 @@ public class FieldMaskTreeTest extends TestCase {
     assertEquals("bar,foo", tree.toString());
   }
   
+  @Test
   public void testIntersectFieldPath() throws Exception {
     FieldMaskTree tree = new FieldMaskTree(
       FieldMaskUtil.fromString("foo,bar.baz,bar.quz"));
@@ -95,6 +103,7 @@ public class FieldMaskTreeTest extends TestCase {
     assertEquals("bar.baz,bar.quz,foo", result.toString());
   }
 
+  @Test
   public void testMerge() throws Exception {
     TestAllTypes value = TestAllTypes.newBuilder()
         .setOptionalInt32(1234)

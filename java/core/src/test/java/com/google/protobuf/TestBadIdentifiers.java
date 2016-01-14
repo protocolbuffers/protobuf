@@ -30,7 +30,11 @@
 
 package com.google.protobuf;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /**
  * Tests that proto2 api generation doesn't cause compile errors when
@@ -39,28 +43,26 @@ import junit.framework.TestCase;
  *
  * @author jonp@google.com (Jon Perlow)
  */
-public class TestBadIdentifiers extends TestCase {
+@RunWith(JUnit4.class)
+public class TestBadIdentifiers {
 
+  @Test
   public void testCompilation() {
     // If this compiles, it means the generation was correct.
     TestBadIdentifiersProto.Deprecated.newBuilder();
     TestBadIdentifiersProto.Override.newBuilder();
   }
 
+  @Test
   public void testGetDescriptor() {
-    Descriptors.FileDescriptor fileDescriptor =
-        TestBadIdentifiersProto.getDescriptor();
-    String descriptorField = TestBadIdentifiersProto.Descriptor
-        .getDefaultInstance().getDescriptor();
-    Descriptors.Descriptor protoDescriptor = TestBadIdentifiersProto.Descriptor
-        .getDefaultInstance().getDescriptorForType();
-    String nestedDescriptorField = TestBadIdentifiersProto.Descriptor
-        .NestedDescriptor.getDefaultInstance().getDescriptor();
-    Descriptors.Descriptor nestedProtoDescriptor = TestBadIdentifiersProto
-        .Descriptor.NestedDescriptor.getDefaultInstance()
-        .getDescriptorForType();
+    TestBadIdentifiersProto.getDescriptor();
+    TestBadIdentifiersProto.Descriptor.getDefaultInstance().getDescriptor();
+    TestBadIdentifiersProto.Descriptor.getDefaultInstance().getDescriptorForType();
+    TestBadIdentifiersProto.Descriptor.NestedDescriptor.getDefaultInstance().getDescriptor();
+    TestBadIdentifiersProto.Descriptor.NestedDescriptor.getDefaultInstance().getDescriptorForType();
   }
 
+  @Test
   public void testConflictingFieldNames() throws Exception {
     TestBadIdentifiersProto.TestConflictingFieldNames message =
         TestBadIdentifiersProto.TestConflictingFieldNames.getDefaultInstance();
@@ -91,6 +93,5 @@ public class TestBadIdentifiers extends TestCase {
         TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldCount).longValue());
     assertEquals(0L, message.getExtension(
         TestBadIdentifiersProto.TestConflictingFieldNames.int64FieldList).longValue());
-
   }
 }

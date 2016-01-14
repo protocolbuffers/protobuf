@@ -31,8 +31,17 @@
 package com.google.protobuf;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -43,7 +52,8 @@ import java.util.Iterator;
  * 
  * @author dweis@google.com (Daniel Weis)
  */
-public class FloatArrayListTest extends TestCase {
+@RunWith(JUnit4.class)
+public class FloatArrayListTest {
   
   private static final FloatArrayList UNARY_LIST = newImmutableFloatArrayList(1);
   private static final FloatArrayList TERTIARY_LIST =
@@ -51,19 +61,22 @@ public class FloatArrayListTest extends TestCase {
   
   private FloatArrayList list;
   
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     list = new FloatArrayList();
   }
   
+  @Test
   public void testEmptyListReturnsSameInstance() {
     assertSame(FloatArrayList.emptyList(), FloatArrayList.emptyList());
   }
   
+  @Test
   public void testEmptyListIsImmutable() {
     assertImmutable(FloatArrayList.emptyList());
   }
   
+  @Test
   public void testMakeImmutable() {
     list.addFloat(2);
     list.addFloat(4);
@@ -73,6 +86,7 @@ public class FloatArrayListTest extends TestCase {
     assertImmutable(list);
   }
   
+  @Test
   public void testCopyConstructor() {
     FloatArrayList copy = new FloatArrayList(TERTIARY_LIST);
     assertEquals(TERTIARY_LIST, copy);
@@ -87,14 +101,15 @@ public class FloatArrayListTest extends TestCase {
     assertEquals(FloatArrayList.emptyList(), copy);
   }
   
+  @Test
   public void testModificationWithIteration() {
     list.addAll(asList(1F, 2F, 3F, 4F));
     Iterator<Float> iterator = list.iterator();
     assertEquals(4, list.size());
-    assertEquals(1F, (float) list.get(0));
-    assertEquals(1F, (float) iterator.next());
+    assertEquals(1F, list.get(0), 0);
+    assertEquals(1F, iterator.next(), 0);
     list.set(0, 1F);
-    assertEquals(2F, (float) iterator.next());
+    assertEquals(2F, iterator.next(), 0);
     
     list.remove(0);
     try {
@@ -114,10 +129,11 @@ public class FloatArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testGet() {
-    assertEquals(1F, (float) TERTIARY_LIST.get(0));
-    assertEquals(2F, (float) TERTIARY_LIST.get(1));
-    assertEquals(3F, (float) TERTIARY_LIST.get(2));
+    assertEquals(1F, TERTIARY_LIST.get(0), 0);
+    assertEquals(2F, TERTIARY_LIST.get(1), 0);
+    assertEquals(3F, TERTIARY_LIST.get(2), 0);
     
     try {
       TERTIARY_LIST.get(-1);
@@ -134,10 +150,11 @@ public class FloatArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testGetFloat() {
-    assertEquals(1F, TERTIARY_LIST.getFloat(0));
-    assertEquals(2F, TERTIARY_LIST.getFloat(1));
-    assertEquals(3F, TERTIARY_LIST.getFloat(2));
+    assertEquals(1F, TERTIARY_LIST.getFloat(0), 0);
+    assertEquals(2F, TERTIARY_LIST.getFloat(1), 0);
+    assertEquals(3F, TERTIARY_LIST.getFloat(2), 0);
     
     try {
       TERTIARY_LIST.get(-1);
@@ -154,6 +171,7 @@ public class FloatArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testSize() {
     assertEquals(0, FloatArrayList.emptyList().size());
     assertEquals(1, UNARY_LIST.size());
@@ -172,15 +190,16 @@ public class FloatArrayListTest extends TestCase {
     assertEquals(4, list.size());
   }
   
+  @Test
   public void testSet() {
     list.addFloat(2);
     list.addFloat(4);
     
-    assertEquals(2F, (float) list.set(0, 0F));
-    assertEquals(0F, list.getFloat(0));
+    assertEquals(2F, list.set(0, 0F), 0);
+    assertEquals(0F, list.getFloat(0), 0);
 
-    assertEquals(4F, (float) list.set(1, 0F));
-    assertEquals(0F, list.getFloat(1));
+    assertEquals(4F, list.set(1, 0F), 0);
+    assertEquals(0F, list.getFloat(1), 0);
     
     try {
       list.set(-1, 0F);
@@ -197,15 +216,16 @@ public class FloatArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testSetFloat() {
     list.addFloat(2);
     list.addFloat(4);
     
-    assertEquals(2F, list.setFloat(0, 0));
-    assertEquals(0F, list.getFloat(0));
+    assertEquals(2F, list.setFloat(0, 0), 0);
+    assertEquals(0F, list.getFloat(0), 0);
 
-    assertEquals(4F, list.setFloat(1, 0));
-    assertEquals(0F, list.getFloat(1));
+    assertEquals(4F, list.setFloat(1, 0), 0);
+    assertEquals(0F, list.getFloat(1), 0);
     
     try {
       list.setFloat(-1, 0);
@@ -222,11 +242,12 @@ public class FloatArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testAdd() {
     assertEquals(0, list.size());
 
     assertTrue(list.add(2F));
-    assertEquals(asList(2F), list);
+    assertEquals(singletonList(2F), list);
 
     assertTrue(list.add(3F));
     list.add(0, 4F);
@@ -236,7 +257,7 @@ public class FloatArrayListTest extends TestCase {
     list.add(0, 0F);
     // Force a resize by getting up to 11 elements.
     for (int i = 0; i < 6; i++) {
-      list.add(Float.valueOf(5 + i));
+      list.add(5F + i);
     }
     assertEquals(asList(0F, 1F, 4F, 2F, 3F, 5F, 6F, 7F, 8F, 9F, 10F), list);
     
@@ -253,23 +274,25 @@ public class FloatArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testAddFloat() {
     assertEquals(0, list.size());
 
     list.addFloat(2);
-    assertEquals(asList(2F), list);
+    assertEquals(singletonList(2F), list);
 
     list.addFloat(3);
     assertEquals(asList(2F, 3F), list);
   }
   
+  @Test
   public void testAddAll() {
     assertEquals(0, list.size());
 
     assertTrue(list.addAll(Collections.singleton(1F)));
     assertEquals(1, list.size());
-    assertEquals(1F, (float) list.get(0));
-    assertEquals(1F, list.getFloat(0));
+    assertEquals(1F, list.get(0), 0);
+    assertEquals(1F, list.getFloat(0), 0);
     
     assertTrue(list.addAll(asList(2F, 3F, 4F, 5F, 6F)));
     assertEquals(asList(1F, 2F, 3F, 4F, 5F, 6F), list);
@@ -281,19 +304,20 @@ public class FloatArrayListTest extends TestCase {
     assertFalse(list.addAll(FloatArrayList.emptyList()));
   }
   
+  @Test
   public void testRemove() {
     list.addAll(TERTIARY_LIST);
-    assertEquals(1F, (float) list.remove(0));
+    assertEquals(1F, list.remove(0), 0);
     assertEquals(asList(2F, 3F), list);
 
     assertTrue(list.remove(Float.valueOf(3)));
-    assertEquals(asList(2F), list);
+    assertEquals(singletonList(2F), list);
 
     assertFalse(list.remove(Float.valueOf(3)));
-    assertEquals(asList(2F), list);
+    assertEquals(singletonList(2F), list);
 
-    assertEquals(2F, (float) list.remove(0));
-    assertEquals(asList(), list);
+    assertEquals(2F, list.remove(0), 0);
+    assertEquals(Collections.<Float>emptyList(), list);
     
     try {
       list.remove(-1);
@@ -336,7 +360,7 @@ public class FloatArrayListTest extends TestCase {
     }
     
     try {
-      list.addAll(Collections.singletonList(1F));
+      list.addAll(singletonList(1F));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected

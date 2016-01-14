@@ -30,13 +30,20 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.Vehicle;
 import protobuf_unittest.Wheel;
 
-import junit.framework.TestCase;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test cases that exercise end-to-end use cases involving
@@ -44,8 +51,10 @@ import java.util.ArrayList;
  *
  * @author jonp@google.com (Jon Perlow)
  */
-public class NestedBuildersTest extends TestCase {
+@RunWith(JUnit4.class)
+public class NestedBuildersTest {
 
+  @Test
   public void testMessagesAndBuilders() {
     Vehicle.Builder vehicleBuilder = Vehicle.newBuilder();
     vehicleBuilder.addWheelBuilder()
@@ -89,6 +98,7 @@ public class NestedBuildersTest extends TestCase {
     assertTrue(vehicle.hasEngine());
   }
 
+  @Test
   public void testMessagesAreCached() {
     Vehicle.Builder vehicleBuilder = Vehicle.newBuilder();
     vehicleBuilder.addWheelBuilder()
@@ -132,6 +142,7 @@ public class NestedBuildersTest extends TestCase {
     }
   }
 
+  @Test
   public void testRemove_WithNestedBuilders() {
     Vehicle.Builder vehicleBuilder = Vehicle.newBuilder();
     vehicleBuilder.addWheelBuilder()
@@ -146,6 +157,7 @@ public class NestedBuildersTest extends TestCase {
     assertEquals(2, vehicleBuilder.getWheel(0).getRadius());
   }
 
+  @Test
   public void testRemove_WithNestedMessages() {
     Vehicle.Builder vehicleBuilder = Vehicle.newBuilder();
     vehicleBuilder.addWheel(Wheel.newBuilder()
@@ -160,6 +172,7 @@ public class NestedBuildersTest extends TestCase {
     assertEquals(2, vehicleBuilder.getWheel(0).getRadius());
   }
 
+  @Test
   public void testMerge() {
     Vehicle vehicle1 = Vehicle.newBuilder()
         .addWheel(Wheel.newBuilder().setRadius(1).build())
@@ -176,6 +189,7 @@ public class NestedBuildersTest extends TestCase {
     assertSame(vehicle1.getWheelList(), vehicle3.getWheelList());
   }
 
+  @Test
   public void testGettingBuilderMarksFieldAsHaving() {
     Vehicle.Builder vehicleBuilder = Vehicle.newBuilder();
     vehicleBuilder.getEngineBuilder();

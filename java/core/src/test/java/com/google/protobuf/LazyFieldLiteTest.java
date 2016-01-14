@@ -30,22 +30,28 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static protobuf_unittest.UnittestProto.optionalInt32Extension;
 import static protobuf_unittest.UnittestProto.optionalInt64Extension;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
-
-import java.io.IOException;
-import junit.framework.TestCase;
 
 /**
  * Unit test for {@link LazyFieldLite}.
  *
  * @author xiangl@google.com (Xiang Li)
  */
-public class LazyFieldLiteTest extends TestCase {
+@RunWith(JUnit4.class)
+public class LazyFieldLiteTest {
 
+  @Test
   public void testGetValue() {
     MessageLite message = TestUtil.getAllSet();
     LazyFieldLite lazyField = createLazyFieldLiteFromMessage(message);
@@ -54,6 +60,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertNotEqual(message, lazyField.getValue(TestAllTypes.getDefaultInstance()));
   }
 
+  @Test
   public void testGetValueEx() throws Exception {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     LazyFieldLite lazyField = createLazyFieldLiteFromMessage(message);
@@ -62,6 +69,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertNotEqual(message, lazyField.getValue(TestAllExtensions.getDefaultInstance()));
   }
 
+  @Test
   public void testSetValue() {
     MessageLite message = TestUtil.getAllSet();
     LazyFieldLite lazyField = createLazyFieldLiteFromMessage(message);
@@ -72,6 +80,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertEquals(message, lazyField.getValue(TestAllTypes.getDefaultInstance()));
   }
 
+  @Test
   public void testSetValueEx() throws Exception {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     LazyFieldLite lazyField = createLazyFieldLiteFromMessage(message);
@@ -82,6 +91,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertEquals(value, lazyField.getValue(TestAllExtensions.getDefaultInstance()));
   }
 
+  @Test
   public void testGetSerializedSize() {
     MessageLite message = TestUtil.getAllSet();
     LazyFieldLite lazyField = createLazyFieldLiteFromMessage(message);
@@ -90,6 +100,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertNotEqual(message.getSerializedSize(), lazyField.getSerializedSize());
   }
 
+  @Test
   public void testGetSerializedSizeEx() throws Exception {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     LazyFieldLite lazyField = createLazyFieldLiteFromMessage(message);
@@ -98,6 +109,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertNotEqual(message.getSerializedSize(), lazyField.getSerializedSize());
   }
 
+  @Test
   public void testGetByteString() {
     MessageLite message = TestUtil.getAllSet();
     LazyFieldLite lazyField = createLazyFieldLiteFromMessage(message);
@@ -106,6 +118,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertNotEqual(message.toByteString(), lazyField.toByteString());
   }
 
+  @Test
   public void testGetByteStringEx() throws Exception {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     LazyFieldLite lazyField = createLazyFieldLiteFromMessage(message);
@@ -114,6 +127,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertNotEqual(message.toByteString(), lazyField.toByteString());
   }
 
+  @Test
   public void testMergeExtensions() throws Exception {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     LazyFieldLite original = createLazyFieldLiteFromMessage(message);
@@ -124,12 +138,14 @@ public class LazyFieldLiteTest extends TestCase {
     assertEquals(message, value);
   }
 
+  @Test
   public void testEmptyLazyField() throws Exception {
     LazyFieldLite field = new LazyFieldLite();
     assertEquals(0, field.getSerializedSize());
     assertEquals(ByteString.EMPTY, field.toByteString());
   }
 
+  @Test
   public void testInvalidProto() throws Exception {
     // Silently fails and uses the default instance.
     LazyFieldLite field = new LazyFieldLite(
@@ -140,6 +156,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertEquals(ByteString.EMPTY, field.toByteString());
   }
 
+  @Test
   public void testMergeBeforeParsing() throws Exception {
     TestAllTypes message1 = TestAllTypes.newBuilder().setOptionalInt32(1).build();
     LazyFieldLite field1 = createLazyFieldLiteFromMessage(message1);
@@ -152,6 +169,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertEquals(expected, field1.getValue(TestAllTypes.getDefaultInstance()));
   }
 
+  @Test
   public void testMergeOneNotParsed() throws Exception {
     // Test a few different paths that involve one message that was not parsed.
     TestAllTypes message1 = TestAllTypes.newBuilder().setOptionalInt32(1).build();
@@ -173,6 +191,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertEquals(expected, field1.getValue(TestAllTypes.getDefaultInstance()));
   }
 
+  @Test
   public void testMergeInvalid() throws Exception {
     // Test a few different paths that involve one message that was not parsed.
     TestAllTypes message = TestAllTypes.newBuilder().setOptionalInt32(1).build();
@@ -185,6 +204,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertEquals(message, invalid.getValue(TestAllTypes.getDefaultInstance()));
   }
 
+  @Test
   public void testMergeKeepsExtensionsWhenPossible() throws Exception {
     // In this test we attempt to only use the empty registry, which will strip out all extensions
     // when serializing and then parsing. We verify that each code path will attempt to not
@@ -220,6 +240,7 @@ public class LazyFieldLiteTest extends TestCase {
     assertEquals(messageWithExtensions, field.getValue(TestAllExtensions.getDefaultInstance()));
   }
 
+  @Test
   public void testMergeMightLoseExtensions() throws Exception {
     // Test that we don't know about the extensions when parsing.
     TestAllExtensions message1 =

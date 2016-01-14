@@ -31,8 +31,17 @@
 package com.google.protobuf;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -43,19 +52,20 @@ import java.util.Iterator;
  * 
  * @author dweis@google.com (Daniel Weis)
  */
-public class DoubleArrayListTest extends TestCase {
-  
+@RunWith(JUnit4.class)
+public class DoubleArrayListTest {
   private static final DoubleArrayList UNARY_LIST = newImmutableDoubleArrayList(1);
   private static final DoubleArrayList TERTIARY_LIST =
       newImmutableDoubleArrayList(1, 2, 3);
   
   private DoubleArrayList list;
-  
-  @Override
-  protected void setUp() throws Exception {
+
+  @Before
+  public void setUp() throws Exception {
     list = new DoubleArrayList();
   }
-  
+
+  @Test
   public void testEmptyListReturnsSameInstance() {
     assertSame(DoubleArrayList.emptyList(), DoubleArrayList.emptyList());
   }
@@ -91,10 +101,10 @@ public class DoubleArrayListTest extends TestCase {
     list.addAll(asList(1D, 2D, 3D, 4D));
     Iterator<Double> iterator = list.iterator();
     assertEquals(4, list.size());
-    assertEquals(1D, (double) list.get(0));
-    assertEquals(1D, (double) iterator.next());
+    assertEquals(1D, list.get(0), 0);
+    assertEquals(1D, iterator.next(), 0);
     list.set(0, 1D);
-    assertEquals(2D, (double) iterator.next());
+    assertEquals(2D, iterator.next(), 0);
     
     list.remove(0);
     try {
@@ -114,10 +124,11 @@ public class DoubleArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testGet() {
-    assertEquals(1D, (double) TERTIARY_LIST.get(0));
-    assertEquals(2D, (double) TERTIARY_LIST.get(1));
-    assertEquals(3D, (double) TERTIARY_LIST.get(2));
+    assertEquals(1D, TERTIARY_LIST.get(0), 0);
+    assertEquals(2D, TERTIARY_LIST.get(1), 0);
+    assertEquals(3D, TERTIARY_LIST.get(2), 0);
     
     try {
       TERTIARY_LIST.get(-1);
@@ -134,10 +145,11 @@ public class DoubleArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testGetInt() {
-    assertEquals(1D, TERTIARY_LIST.getDouble(0));
-    assertEquals(2D, TERTIARY_LIST.getDouble(1));
-    assertEquals(3D, TERTIARY_LIST.getDouble(2));
+    assertEquals(1D, TERTIARY_LIST.getDouble(0), 0);
+    assertEquals(2D, TERTIARY_LIST.getDouble(1), 0);
+    assertEquals(3D, TERTIARY_LIST.getDouble(2), 0);
     
     try {
       TERTIARY_LIST.get(-1);
@@ -154,6 +166,7 @@ public class DoubleArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testSize() {
     assertEquals(0, DoubleArrayList.emptyList().size());
     assertEquals(1, UNARY_LIST.size());
@@ -172,15 +185,16 @@ public class DoubleArrayListTest extends TestCase {
     assertEquals(4, list.size());
   }
   
+  @Test
   public void testSet() {
     list.addDouble(2);
     list.addDouble(4);
     
-    assertEquals(2D, (double) list.set(0, 0D));
-    assertEquals(0D, list.getDouble(0));
+    assertEquals(2D, list.set(0, 0D), 0);
+    assertEquals(0D, list.getDouble(0), 0);
 
-    assertEquals(4D, (double) list.set(1, 0D));
-    assertEquals(0D, list.getDouble(1));
+    assertEquals(4D, list.set(1, 0D), 0);
+    assertEquals(0D, list.getDouble(1), 0);
     
     try {
       list.set(-1, 0D);
@@ -197,15 +211,16 @@ public class DoubleArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testSetInt() {
     list.addDouble(2);
     list.addDouble(4);
     
-    assertEquals(2D, list.setDouble(0, 0));
-    assertEquals(0D, list.getDouble(0));
+    assertEquals(2D, list.setDouble(0, 0), 0);
+    assertEquals(0D, list.getDouble(0), 0);
 
-    assertEquals(4D, list.setDouble(1, 0));
-    assertEquals(0D, list.getDouble(1));
+    assertEquals(4D, list.setDouble(1, 0), 0);
+    assertEquals(0D, list.getDouble(1), 0);
     
     try {
       list.setDouble(-1, 0);
@@ -222,11 +237,12 @@ public class DoubleArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testAdd() {
     assertEquals(0, list.size());
 
     assertTrue(list.add(2D));
-    assertEquals(asList(2D), list);
+    assertEquals(singletonList(2D), list);
 
     assertTrue(list.add(3D));
     list.add(0, 4D);
@@ -236,7 +252,7 @@ public class DoubleArrayListTest extends TestCase {
     list.add(0, 0D);
     // Force a resize by getting up to 11 elements.
     for (int i = 0; i < 6; i++) {
-      list.add(Double.valueOf(5 + i));
+      list.add(5D + i);
     }
     assertEquals(asList(0D, 1D, 4D, 2D, 3D, 5D, 6D, 7D, 8D, 9D, 10D), list);
     
@@ -253,23 +269,25 @@ public class DoubleArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testAddInt() {
     assertEquals(0, list.size());
 
     list.addDouble(2);
-    assertEquals(asList(2D), list);
+    assertEquals(singletonList(2D), list);
 
     list.addDouble(3);
     assertEquals(asList(2D, 3D), list);
   }
   
+  @Test
   public void testAddAll() {
     assertEquals(0, list.size());
 
     assertTrue(list.addAll(Collections.singleton(1D)));
     assertEquals(1, list.size());
-    assertEquals(1D, (double) list.get(0));
-    assertEquals(1D, list.getDouble(0));
+    assertEquals(1D, list.get(0), 0);
+    assertEquals(1D, list.getDouble(0), 0);
     
     assertTrue(list.addAll(asList(2D, 3D, 4D, 5D, 6D)));
     assertEquals(asList(1D, 2D, 3D, 4D, 5D, 6D), list);
@@ -281,19 +299,20 @@ public class DoubleArrayListTest extends TestCase {
     assertFalse(list.addAll(DoubleArrayList.emptyList()));
   }
   
+  @Test
   public void testRemove() {
     list.addAll(TERTIARY_LIST);
-    assertEquals(1D, (double) list.remove(0));
+    assertEquals(1D, list.remove(0), 0);
     assertEquals(asList(2D, 3D), list);
 
     assertTrue(list.remove(Double.valueOf(3)));
-    assertEquals(asList(2D), list);
+    assertEquals(singletonList(2D), list);
 
     assertFalse(list.remove(Double.valueOf(3)));
-    assertEquals(asList(2D), list);
+    assertEquals(singletonList(2D), list);
 
-    assertEquals(2D, (double) list.remove(0));
-    assertEquals(asList(), list);
+    assertEquals(2D, list.remove(0), 0);
+    assertEquals(Collections.<Double>emptyList(), list);
     
     try {
       list.remove(-1);
@@ -336,7 +355,7 @@ public class DoubleArrayListTest extends TestCase {
     }
     
     try {
-      list.addAll(Collections.singletonList(1D));
+      list.addAll(singletonList(1D));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected

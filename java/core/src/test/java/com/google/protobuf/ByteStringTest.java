@@ -30,9 +30,17 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.google.protobuf.ByteString.Output;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -54,7 +62,8 @@ import java.util.Random;
  *
  * @author carlanton@google.com (Carl Haverl)
  */
-public class ByteStringTest extends TestCase {
+@RunWith(JUnit4.class)
+public class ByteStringTest {
 
   private static final Charset UTF_16 = Charset.forName("UTF-16");
 
@@ -87,6 +96,7 @@ public class ByteStringTest extends TestCase {
     return left.length == right.length && isArrayRange(left, right, 0, left.length);
   }
 
+  @Test
   public void testSubstring_BeginIndex() {
     byte[] bytes = getTestBytes();
     ByteString substring = ByteString.copyFrom(bytes).substring(500);
@@ -94,6 +104,7 @@ public class ByteStringTest extends TestCase {
         isArrayRange(substring.toByteArray(), bytes, 500, bytes.length - 500));
   }
 
+  @Test
   public void testCopyFrom_BytesOffsetSize() {
     byte[] bytes = getTestBytes();
     ByteString byteString = ByteString.copyFrom(bytes, 500, 200);
@@ -101,6 +112,7 @@ public class ByteStringTest extends TestCase {
         isArrayRange(byteString.toByteArray(), bytes, 500, 200));
   }
 
+  @Test
   public void testCopyFrom_Bytes() {
     byte[] bytes = getTestBytes();
     ByteString byteString = ByteString.copyFrom(bytes);
@@ -108,6 +120,7 @@ public class ByteStringTest extends TestCase {
         isArray(byteString.toByteArray(), bytes));
   }
 
+  @Test
   public void testCopyFrom_ByteBufferSize() {
     byte[] bytes = getTestBytes();
     ByteBuffer byteBuffer = ByteBuffer.allocate(bytes.length);
@@ -118,6 +131,7 @@ public class ByteStringTest extends TestCase {
         isArrayRange(byteString.toByteArray(), bytes, 500, 200));
   }
 
+  @Test
   public void testCopyFrom_ByteBuffer() {
     byte[] bytes = getTestBytes();
     ByteBuffer byteBuffer = ByteBuffer.allocate(bytes.length);
@@ -128,6 +142,7 @@ public class ByteStringTest extends TestCase {
         isArrayRange(byteString.toByteArray(), bytes, 500, bytes.length - 500));
   }
 
+  @Test
   public void testCopyFrom_StringEncoding() {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString byteString = ByteString.copyFrom(testString, UTF_16);
@@ -136,6 +151,7 @@ public class ByteStringTest extends TestCase {
         isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length));
   }
 
+  @Test
   public void testCopyFrom_Utf8() {
     String testString = "I love unicode \u1234\u5678 characters";
     ByteString byteString = ByteString.copyFromUtf8(testString);
@@ -144,6 +160,7 @@ public class ByteStringTest extends TestCase {
         isArrayRange(byteString.toByteArray(), testBytes, 0, testBytes.length));
   }
 
+  @Test
   public void testCopyFrom_Iterable() {
     byte[] testBytes = getTestBytes(77777, 113344L);
     final List<ByteString> pieces = makeConcretePieces(testBytes);
@@ -162,6 +179,7 @@ public class ByteStringTest extends TestCase {
         byteString, byteStringAlt);
   }
 
+  @Test
   public void testCopyTo_TargetOffset() {
     byte[] bytes = getTestBytes();
     ByteString byteString = ByteString.copyFrom(bytes);
@@ -171,6 +189,7 @@ public class ByteStringTest extends TestCase {
         isArrayRange(bytes, target, 400, bytes.length));
   }
 
+  @Test
   public void testReadFrom_emptyStream() throws IOException {
     ByteString byteString =
         ByteString.readFrom(new ByteArrayInputStream(new byte[0]));
@@ -178,16 +197,17 @@ public class ByteStringTest extends TestCase {
         + "byte string", ByteString.EMPTY, byteString);
   }
 
+  @Test
   public void testReadFrom_smallStream() throws IOException {
     assertReadFrom(getTestBytes(10));
   }
 
+  @Test
   public void testReadFrom_mutating() throws IOException {
-    byte[] capturedArray = null;
     EvilInputStream eis = new EvilInputStream();
     ByteString byteString = ByteString.readFrom(eis);
 
-    capturedArray = eis.capturedArray;
+    byte[] capturedArray = eis.capturedArray;
     byte[] originalValue = byteString.toByteArray();
     for (int x = 0; x < capturedArray.length; ++x) {
       capturedArray[x] = (byte) 0;
@@ -199,6 +219,7 @@ public class ByteStringTest extends TestCase {
   }
 
   // Tests sizes that are near the rope copy-out threshold.
+  @Test
   public void testReadFrom_mediumStream() throws IOException {
     assertReadFrom(getTestBytes(ByteString.CONCATENATE_BY_COPY_SIZE - 1));
     assertReadFrom(getTestBytes(ByteString.CONCATENATE_BY_COPY_SIZE));
@@ -207,6 +228,7 @@ public class ByteStringTest extends TestCase {
   }
 
   // Tests sizes that are over multi-segment rope threshold.
+  @Test
   public void testReadFrom_largeStream() throws IOException {
     assertReadFrom(getTestBytes(0x100));
     assertReadFrom(getTestBytes(0x101));
@@ -220,6 +242,7 @@ public class ByteStringTest extends TestCase {
   }
 
   // Tests sizes that are near the read buffer size.
+  @Test
   public void testReadFrom_byteBoundaries() throws IOException {
     final int min = ByteString.MIN_READ_FROM_CHUNK_SIZE;
     final int max = ByteString.MAX_READ_FROM_CHUNK_SIZE;
@@ -250,6 +273,7 @@ public class ByteStringTest extends TestCase {
   }
 
   // Tests that IOExceptions propagate through ByteString.readFrom().
+  @Test
   public void testReadFrom_IOExceptions() {
     try {
       ByteString.readFrom(new FailStream());
@@ -263,6 +287,7 @@ public class ByteStringTest extends TestCase {
 
   // Tests that ByteString.readFrom works with streams that don't
   // always fill their buffers.
+  @Test
   public void testReadFrom_reluctantStream() throws IOException {
     final byte[] data = getTestBytes(0x1000);
 
@@ -291,6 +316,7 @@ public class ByteStringTest extends TestCase {
 
   // Tests that ByteString.readFrom works with streams that implement
   // available().
+  @Test
   public void testReadFrom_available() throws IOException {
     final byte[] data = getTestBytes(0x1001);
 
@@ -399,6 +425,7 @@ public class ByteStringTest extends TestCase {
     }
   }
 
+  @Test
   public void testToStringUtf8() {
     String testString = "I love unicode \u1234\u5678 characters";
     byte[] testBytes = testString.getBytes(Internal.UTF_8);
@@ -407,6 +434,7 @@ public class ByteStringTest extends TestCase {
         testString, byteString.toStringUtf8());
   }
 
+  @Test
   public void testNewOutput_InitialCapacity() throws IOException {
     byte[] bytes = getTestBytes();
     ByteString.Output output = ByteString.newOutput(bytes.length + 100);
@@ -419,6 +447,7 @@ public class ByteStringTest extends TestCase {
 
   // Test newOutput() using a variety of buffer sizes and a variety of (fixed)
   // write sizes
+  @Test
   public void testNewOutput_ArrayWrite() {
     byte[] bytes = getTestBytes();
     int length = bytes.length;
@@ -442,6 +471,7 @@ public class ByteStringTest extends TestCase {
 
   // Test newOutput() using a variety of buffer sizes, but writing all the
   // characters using write(byte);
+  @Test
   public void testNewOutput_WriteChar() {
     byte[] bytes = getTestBytes();
     int length = bytes.length;
@@ -461,6 +491,7 @@ public class ByteStringTest extends TestCase {
 
   // Test newOutput() in which we write the bytes using a variety of methods
   // and sizes, and in which we repeatedly call toByteString() in the middle.
+  @Test
   public void testNewOutput_Mixed() {
     Random rng = new Random(1);
     byte[] bytes = getTestBytes();
@@ -494,12 +525,14 @@ public class ByteStringTest extends TestCase {
     }
   }
 
+  @Test
   public void testNewOutputEmpty() {
     // Make sure newOutput() correctly builds empty byte strings
     ByteString byteString = ByteString.newOutput().toByteString();
     assertEquals(ByteString.EMPTY, byteString);
   }
 
+  @Test
   public void testNewOutput_Mutating() throws IOException {
     Output os = ByteString.newOutput(5);
     os.write(new byte[] {1, 2, 3, 4, 5});
@@ -514,6 +547,7 @@ public class ByteStringTest extends TestCase {
         Arrays.equals(oldValue, newValue));
   }
 
+  @Test
   public void testNewCodedBuilder() throws IOException {
     byte[] bytes = getTestBytes();
     ByteString.CodedBuilder builder = ByteString.newCodedBuilder(bytes.length);
@@ -523,6 +557,7 @@ public class ByteStringTest extends TestCase {
         isArrayRange(bytes, byteString.toByteArray(), 0, bytes.length));
   }
 
+  @Test
   public void testSubstringParity() {
     byte[] bigBytes = getTestBytes(2048 * 1024, 113344L);
     int start = 512 * 1024 - 3333;
@@ -541,6 +576,7 @@ public class ByteStringTest extends TestCase {
         literalString.hashCode(), concreteSubstring.hashCode());
   }
 
+  @Test
   public void testCompositeSubstring() {
     byte[] referenceBytes = getTestBytes(77748, 113344L);
 
@@ -576,6 +612,7 @@ public class ByteStringTest extends TestCase {
         compositeSubstring.equals(literalSubstring.substring(0, literalSubstring.size() - 1)));
   }
 
+  @Test
   public void testCopyFromList() {
     byte[] referenceBytes = getTestBytes(77748, 113344L);
     ByteString literalString = ByteString.copyFrom(referenceBytes);
@@ -589,6 +626,7 @@ public class ByteStringTest extends TestCase {
         literalString.hashCode(), listString.hashCode());
   }
 
+  @Test
   public void testConcat() {
     byte[] referenceBytes = getTestBytes(77748, 113344L);
     ByteString literalString = ByteString.copyFrom(referenceBytes);
@@ -611,6 +649,7 @@ public class ByteStringTest extends TestCase {
    * Test the Rope implementation can deal with Empty nodes, even though we
    * guard against them. See also {@link LiteralByteStringTest#testConcat_empty()}.
    */
+  @Test
   public void testConcat_empty() {
     byte[] referenceBytes = getTestBytes(7748, 113344L);
     ByteString literalString = ByteString.copyFrom(referenceBytes);
@@ -663,6 +702,7 @@ public class ByteStringTest extends TestCase {
     }
   }
 
+  @Test
   public void testStartsWith() {
     byte[] bytes = getTestBytes(1000, 1234L);
     ByteString string = ByteString.copyFrom(bytes);
@@ -678,6 +718,7 @@ public class ByteStringTest extends TestCase {
     assertTrue(ByteString.EMPTY.startsWith(ByteString.EMPTY));
   }
 
+  @Test
   public void testEndsWith() {
     byte[] bytes = getTestBytes(1000, 1234L);
     ByteString string = ByteString.copyFrom(bytes);
@@ -714,6 +755,7 @@ public class ByteStringTest extends TestCase {
     return output.toByteArray();
   }
 
+  @Test
   public void testWriteToOutputStream() throws Exception {
     // Choose a size large enough so when two ByteStrings are concatenated they
     // won't be merged into one byte array due to some optimizations.

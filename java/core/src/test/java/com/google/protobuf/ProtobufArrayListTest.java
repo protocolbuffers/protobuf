@@ -31,8 +31,15 @@
 package com.google.protobuf;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -42,7 +49,8 @@ import java.util.List;
 /**
  * Tests for {@link ProtobufArrayList}.
  */
-public class ProtobufArrayListTest extends TestCase {
+@RunWith(JUnit4.class)
+public class ProtobufArrayListTest {
   
   private static final ProtobufArrayList<Integer> UNARY_LIST = newImmutableProtoArrayList(1);
   private static final ProtobufArrayList<Integer> TERTIARY_LIST =
@@ -50,19 +58,22 @@ public class ProtobufArrayListTest extends TestCase {
   
   private ProtobufArrayList<Integer> list;
   
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     list = new ProtobufArrayList<Integer>();
   }
   
+  @Test
   public void testEmptyListReturnsSameInstance() {
     assertSame(ProtobufArrayList.emptyList(), ProtobufArrayList.emptyList());
   }
   
+  @Test
   public void testEmptyListIsImmutable() {
     assertImmutable(ProtobufArrayList.<Integer>emptyList());
   }
   
+  @Test
   public void testCopyConstructor() {
     ProtobufArrayList<Integer> copy = new ProtobufArrayList<Integer>(TERTIARY_LIST);
     assertEquals(TERTIARY_LIST, copy);
@@ -77,6 +88,7 @@ public class ProtobufArrayListTest extends TestCase {
     assertEquals(ProtobufArrayList.emptyList(), copy);
   }
   
+  @Test
   public void testModificationWithIteration() {
     list.addAll(asList(1, 2, 3, 4));
     Iterator<Integer> iterator = list.iterator();
@@ -111,6 +123,7 @@ public class ProtobufArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testMakeImmutable() {
     list.add(2);
     list.add(4);
@@ -120,6 +133,7 @@ public class ProtobufArrayListTest extends TestCase {
     assertImmutable(list);
   }
   
+  @Test
   public void testRemove() {
     list.add(2);
     list.add(4);
@@ -129,12 +143,13 @@ public class ProtobufArrayListTest extends TestCase {
     assertEquals(asList(2, 6), list);
 
     list.remove(1);
-    assertEquals(asList(2), list);
+    assertEquals(singletonList(2), list);
 
     list.remove(0);
-    assertEquals(asList(), list);
+    assertEquals(Collections.<Integer>emptyList(), list);
   }
   
+  @Test
   public void testGet() {
     list.add(2);
     list.add(6);
@@ -143,6 +158,7 @@ public class ProtobufArrayListTest extends TestCase {
     assertEquals(6, (int) list.get(1));
   }
   
+  @Test
   public void testSet() {
     list.add(2);
     list.add(6);
@@ -180,7 +196,7 @@ public class ProtobufArrayListTest extends TestCase {
     }
     
     try {
-      list.addAll(Collections.singletonList(1));
+      list.addAll(singletonList(1));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
@@ -243,7 +259,7 @@ public class ProtobufArrayListTest extends TestCase {
     }
     
     try {
-      list.removeAll(Collections.emptyList());
+      list.removeAll(Collections.<Integer>emptyList());
       fail();
     } catch (UnsupportedOperationException e) {
       // expected

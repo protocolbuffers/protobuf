@@ -30,33 +30,43 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
+
+import org.easymock.IArgumentMatcher;
+import org.easymock.classextension.EasyMock;
+import org.easymock.classextension.IMocksControl;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import google.protobuf.no_generic_services_test.UnittestNoGenericServices;
 import protobuf_unittest.MessageWithNoOuter;
 import protobuf_unittest.ServiceWithNoOuter;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestService;
-import protobuf_unittest.UnittestProto.FooRequest;
-import protobuf_unittest.UnittestProto.FooResponse;
 import protobuf_unittest.UnittestProto.BarRequest;
 import protobuf_unittest.UnittestProto.BarResponse;
-
-import org.easymock.classextension.EasyMock;
-import org.easymock.classextension.IMocksControl;
-import org.easymock.IArgumentMatcher;
+import protobuf_unittest.UnittestProto.FooRequest;
+import protobuf_unittest.UnittestProto.FooResponse;
+import protobuf_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto.TestService;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import junit.framework.TestCase;
 
 /**
  * Tests services and stubs.
  *
  * @author kenton@google.com Kenton Varda
  */
-public class ServiceTest extends TestCase {
+@RunWith(JUnit4.class)
+public class ServiceTest {
   private IMocksControl control;
   private RpcController mockController;
 
@@ -65,9 +75,8 @@ public class ServiceTest extends TestCase {
   private final Descriptors.MethodDescriptor barDescriptor =
     TestService.getDescriptor().getMethods().get(1);
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
     control = EasyMock.createStrictControl();
     mockController = control.createMock(RpcController.class);
   }
@@ -75,6 +84,7 @@ public class ServiceTest extends TestCase {
   // =================================================================
 
   /** Tests Service.callMethod(). */
+  @Test
   public void testCallMethod() throws Exception {
     FooRequest fooRequest = FooRequest.newBuilder().build();
     BarRequest barRequest = BarRequest.newBuilder().build();
@@ -96,6 +106,7 @@ public class ServiceTest extends TestCase {
   }
 
   /** Tests Service.get{Request,Response}Prototype(). */
+  @Test
   public void testGetPrototype() throws Exception {
     TestService mockService = control.createMock(TestService.class);
 
@@ -110,6 +121,7 @@ public class ServiceTest extends TestCase {
   }
 
   /** Tests generated stubs. */
+  @Test
   public void testStub() throws Exception {
     FooRequest fooRequest = FooRequest.newBuilder().build();
     BarRequest barRequest = BarRequest.newBuilder().build();
@@ -123,13 +135,13 @@ public class ServiceTest extends TestCase {
       EasyMock.same(mockController),
       EasyMock.same(fooRequest),
       EasyMock.same(FooResponse.getDefaultInstance()),
-      this.<Message>wrapsCallback(fooCallback));
+      this.wrapsCallback(fooCallback));
     mockChannel.callMethod(
       EasyMock.same(barDescriptor),
       EasyMock.same(mockController),
       EasyMock.same(barRequest),
       EasyMock.same(BarResponse.getDefaultInstance()),
-      this.<Message>wrapsCallback(barCallback));
+      this.wrapsCallback(barCallback));
     control.replay();
 
     stub.foo(mockController, fooRequest, fooCallback);
@@ -138,6 +150,7 @@ public class ServiceTest extends TestCase {
   }
 
   /** Tests generated blocking stubs. */
+  @Test
   public void testBlockingStub() throws Exception {
     FooRequest fooRequest = FooRequest.newBuilder().build();
     BarRequest barRequest = BarRequest.newBuilder().build();
@@ -166,6 +179,7 @@ public class ServiceTest extends TestCase {
     control.verify();
   }
 
+  @Test
   public void testNewReflectiveService() {
     ServiceWithNoOuter.Interface impl =
         control.createMock(ServiceWithNoOuter.Interface.class);
@@ -195,6 +209,7 @@ public class ServiceTest extends TestCase {
     control.verify();
   }
 
+  @Test
   public void testNewReflectiveBlockingService() throws ServiceException {
     ServiceWithNoOuter.BlockingInterface impl =
         control.createMock(ServiceWithNoOuter.BlockingInterface.class);
@@ -219,6 +234,7 @@ public class ServiceTest extends TestCase {
     control.verify();
   }
 
+  @Test
   public void testNoGenericServices() throws Exception {
     // Non-services should be usable.
     UnittestNoGenericServices.TestMessage message =
@@ -276,7 +292,7 @@ public class ServiceTest extends TestCase {
    * matches a callback if calling that callback causes c to be called.
    * In other words, c wraps the given callback.
    */
-  private <Type extends Message> RpcCallback<Type> wrapsCallback(
+  private <T extends Message> RpcCallback<T> wrapsCallback(
       MockCallback<?> callback) {
     EasyMock.reportMatcher(new WrapsCallback(callback));
     return null;

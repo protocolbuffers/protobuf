@@ -30,6 +30,16 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -48,10 +58,11 @@ import java.util.Iterator;
  *
  * @author carlanton@google.com (Carl Haverl)
  */
+@RunWith(JUnit4.class)
 public class RopeByteStringTest extends LiteralByteStringTest {
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     classUnderTest = "RopeByteString";
     referenceBytes = ByteStringTest.getTestBytes(22341, 22337766L);
     Iterator<ByteString> iter = ByteStringTest.makeConcretePieces(referenceBytes).iterator();
@@ -63,11 +74,13 @@ public class RopeByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
+  @Test
   public void testGetTreeDepth() {
     assertEquals(classUnderTest + " must have the expected tree depth",
         4, stringUnderTest.getTreeDepth());
   }
 
+  @Test
   public void testBalance() {
     int numberOfPieces = 10000;
     int pieceSize = 64;
@@ -93,6 +106,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
+  @Test
   public void testToString() throws UnsupportedEncodingException {
     String sourceString = "I love unicode \u1234\u5678 characters";
     ByteString sourceByteString = ByteString.copyFromUtf8(sourceString);
@@ -119,6 +133,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
+  @Test
   public void testCharsetToString() {
     String sourceString = "I love unicode \u1234\u5678 characters";
     ByteString sourceByteString = ByteString.copyFromUtf8(sourceString);
@@ -145,6 +160,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
+  @Test
   public void testToString_returnsCanonicalEmptyString() {
     RopeByteString ropeByteString =
         RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
@@ -153,6 +169,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
+  @Test
   public void testToString_raisesException() {
     try {
       ByteString byteString =
@@ -174,6 +191,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
+  @Test
   public void testJavaSerialization() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(out);

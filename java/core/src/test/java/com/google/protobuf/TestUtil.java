@@ -30,205 +30,210 @@
 
 package com.google.protobuf;
 
-import protobuf_unittest.UnittestProto;
-import com.google.protobuf.UnittestLite;
-
-// The static imports are to avoid 100+ char lines.  The following is roughly equivalent to
-// import static protobuf_unittest.UnittestProto.*;
-import static protobuf_unittest.UnittestProto.defaultInt32Extension;
-import static protobuf_unittest.UnittestProto.defaultInt64Extension;
-import static protobuf_unittest.UnittestProto.defaultUint32Extension;
-import static protobuf_unittest.UnittestProto.defaultUint64Extension;
-import static protobuf_unittest.UnittestProto.defaultSint32Extension;
-import static protobuf_unittest.UnittestProto.defaultSint64Extension;
+import static com.google.protobuf.UnittestLite.OptionalGroup_extension_lite;
+import static com.google.protobuf.UnittestLite.RepeatedGroup_extension_lite;
+import static com.google.protobuf.UnittestLite.defaultBoolExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultBytesExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultCordExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultDoubleExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultFixed32ExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultFixed64ExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultFloatExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultForeignEnumExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultImportEnumExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultInt32ExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultInt64ExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultNestedEnumExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultSfixed32ExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultSfixed64ExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultSint32ExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultSint64ExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultStringExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultStringPieceExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultUint32ExtensionLite;
+import static com.google.protobuf.UnittestLite.defaultUint64ExtensionLite;
+import static com.google.protobuf.UnittestLite.oneofBytesExtensionLite;
+import static com.google.protobuf.UnittestLite.oneofNestedMessageExtensionLite;
+import static com.google.protobuf.UnittestLite.oneofStringExtensionLite;
+import static com.google.protobuf.UnittestLite.oneofUint32ExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalBoolExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalBytesExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalCordExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalDoubleExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalFixed32ExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalFixed64ExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalFloatExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalForeignEnumExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalForeignMessageExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalGroupExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalImportEnumExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalImportMessageExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalInt32ExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalInt64ExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalLazyMessageExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalNestedEnumExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalNestedMessageExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalPublicImportMessageExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalSfixed32ExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalSfixed64ExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalSint32ExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalSint64ExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalStringExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalStringPieceExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalUint32ExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalUint64ExtensionLite;
+import static com.google.protobuf.UnittestLite.packedBoolExtensionLite;
+import static com.google.protobuf.UnittestLite.packedDoubleExtensionLite;
+import static com.google.protobuf.UnittestLite.packedEnumExtensionLite;
+import static com.google.protobuf.UnittestLite.packedFixed32ExtensionLite;
+import static com.google.protobuf.UnittestLite.packedFixed64ExtensionLite;
+import static com.google.protobuf.UnittestLite.packedFloatExtensionLite;
+import static com.google.protobuf.UnittestLite.packedInt32ExtensionLite;
+import static com.google.protobuf.UnittestLite.packedInt64ExtensionLite;
+import static com.google.protobuf.UnittestLite.packedSfixed32ExtensionLite;
+import static com.google.protobuf.UnittestLite.packedSfixed64ExtensionLite;
+import static com.google.protobuf.UnittestLite.packedSint32ExtensionLite;
+import static com.google.protobuf.UnittestLite.packedSint64ExtensionLite;
+import static com.google.protobuf.UnittestLite.packedUint32ExtensionLite;
+import static com.google.protobuf.UnittestLite.packedUint64ExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedBoolExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedBytesExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedCordExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedDoubleExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedFixed32ExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedFixed64ExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedFloatExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedForeignEnumExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedForeignMessageExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedGroupExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedImportEnumExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedImportMessageExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedInt32ExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedInt64ExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedLazyMessageExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedNestedEnumExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedNestedMessageExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedSfixed32ExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedSfixed64ExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedSint32ExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedSint64ExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedStringExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedStringPieceExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedUint32ExtensionLite;
+import static com.google.protobuf.UnittestLite.repeatedUint64ExtensionLite;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static protobuf_unittest.UnittestProto.OptionalGroup_extension;
+import static protobuf_unittest.UnittestProto.RepeatedGroup_extension;
+import static protobuf_unittest.UnittestProto.defaultBoolExtension;
+import static protobuf_unittest.UnittestProto.defaultBytesExtension;
+import static protobuf_unittest.UnittestProto.defaultCordExtension;
+import static protobuf_unittest.UnittestProto.defaultDoubleExtension;
 import static protobuf_unittest.UnittestProto.defaultFixed32Extension;
 import static protobuf_unittest.UnittestProto.defaultFixed64Extension;
-import static protobuf_unittest.UnittestProto.defaultSfixed32Extension;
-import static protobuf_unittest.UnittestProto.defaultSfixed64Extension;
 import static protobuf_unittest.UnittestProto.defaultFloatExtension;
-import static protobuf_unittest.UnittestProto.defaultDoubleExtension;
-import static protobuf_unittest.UnittestProto.defaultBoolExtension;
-import static protobuf_unittest.UnittestProto.defaultStringExtension;
-import static protobuf_unittest.UnittestProto.defaultBytesExtension;
-import static protobuf_unittest.UnittestProto.defaultNestedEnumExtension;
 import static protobuf_unittest.UnittestProto.defaultForeignEnumExtension;
 import static protobuf_unittest.UnittestProto.defaultImportEnumExtension;
+import static protobuf_unittest.UnittestProto.defaultInt32Extension;
+import static protobuf_unittest.UnittestProto.defaultInt64Extension;
+import static protobuf_unittest.UnittestProto.defaultNestedEnumExtension;
+import static protobuf_unittest.UnittestProto.defaultSfixed32Extension;
+import static protobuf_unittest.UnittestProto.defaultSfixed64Extension;
+import static protobuf_unittest.UnittestProto.defaultSint32Extension;
+import static protobuf_unittest.UnittestProto.defaultSint64Extension;
+import static protobuf_unittest.UnittestProto.defaultStringExtension;
 import static protobuf_unittest.UnittestProto.defaultStringPieceExtension;
-import static protobuf_unittest.UnittestProto.defaultCordExtension;
-
-import static protobuf_unittest.UnittestProto.oneofUint32Extension;
+import static protobuf_unittest.UnittestProto.defaultUint32Extension;
+import static protobuf_unittest.UnittestProto.defaultUint64Extension;
+import static protobuf_unittest.UnittestProto.oneofBytesExtension;
 import static protobuf_unittest.UnittestProto.oneofNestedMessageExtension;
 import static protobuf_unittest.UnittestProto.oneofStringExtension;
-import static protobuf_unittest.UnittestProto.oneofBytesExtension;
-
-import static protobuf_unittest.UnittestProto.optionalInt32Extension;
-import static protobuf_unittest.UnittestProto.optionalInt64Extension;
-import static protobuf_unittest.UnittestProto.optionalUint32Extension;
-import static protobuf_unittest.UnittestProto.optionalUint64Extension;
-import static protobuf_unittest.UnittestProto.optionalSint32Extension;
-import static protobuf_unittest.UnittestProto.optionalSint64Extension;
+import static protobuf_unittest.UnittestProto.oneofUint32Extension;
+import static protobuf_unittest.UnittestProto.optionalBoolExtension;
+import static protobuf_unittest.UnittestProto.optionalBytesExtension;
+import static protobuf_unittest.UnittestProto.optionalCordExtension;
+import static protobuf_unittest.UnittestProto.optionalDoubleExtension;
 import static protobuf_unittest.UnittestProto.optionalFixed32Extension;
 import static protobuf_unittest.UnittestProto.optionalFixed64Extension;
-import static protobuf_unittest.UnittestProto.optionalSfixed32Extension;
-import static protobuf_unittest.UnittestProto.optionalSfixed64Extension;
 import static protobuf_unittest.UnittestProto.optionalFloatExtension;
-import static protobuf_unittest.UnittestProto.optionalDoubleExtension;
-import static protobuf_unittest.UnittestProto.optionalBoolExtension;
-import static protobuf_unittest.UnittestProto.optionalStringExtension;
-import static protobuf_unittest.UnittestProto.optionalBytesExtension;
-import static protobuf_unittest.UnittestProto.optionalGroupExtension;
-import static protobuf_unittest.UnittestProto.optionalCordExtension;
 import static protobuf_unittest.UnittestProto.optionalForeignEnumExtension;
 import static protobuf_unittest.UnittestProto.optionalForeignMessageExtension;
+import static protobuf_unittest.UnittestProto.optionalGroupExtension;
 import static protobuf_unittest.UnittestProto.optionalImportEnumExtension;
 import static protobuf_unittest.UnittestProto.optionalImportMessageExtension;
+import static protobuf_unittest.UnittestProto.optionalInt32Extension;
+import static protobuf_unittest.UnittestProto.optionalInt64Extension;
+import static protobuf_unittest.UnittestProto.optionalLazyMessageExtension;
 import static protobuf_unittest.UnittestProto.optionalNestedEnumExtension;
 import static protobuf_unittest.UnittestProto.optionalNestedMessageExtension;
 import static protobuf_unittest.UnittestProto.optionalPublicImportMessageExtension;
-import static protobuf_unittest.UnittestProto.optionalLazyMessageExtension;
+import static protobuf_unittest.UnittestProto.optionalSfixed32Extension;
+import static protobuf_unittest.UnittestProto.optionalSfixed64Extension;
+import static protobuf_unittest.UnittestProto.optionalSint32Extension;
+import static protobuf_unittest.UnittestProto.optionalSint64Extension;
+import static protobuf_unittest.UnittestProto.optionalStringExtension;
 import static protobuf_unittest.UnittestProto.optionalStringPieceExtension;
-
-import static protobuf_unittest.UnittestProto.repeatedInt32Extension;
-import static protobuf_unittest.UnittestProto.repeatedInt64Extension;
-import static protobuf_unittest.UnittestProto.repeatedUint32Extension;
-import static protobuf_unittest.UnittestProto.repeatedUint64Extension;
-import static protobuf_unittest.UnittestProto.repeatedSint32Extension;
-import static protobuf_unittest.UnittestProto.repeatedSint64Extension;
-import static protobuf_unittest.UnittestProto.repeatedFixed32Extension;
-import static protobuf_unittest.UnittestProto.repeatedFixed64Extension;
-import static protobuf_unittest.UnittestProto.repeatedSfixed32Extension;
-import static protobuf_unittest.UnittestProto.repeatedSfixed64Extension;
-import static protobuf_unittest.UnittestProto.repeatedFloatExtension;
-import static protobuf_unittest.UnittestProto.repeatedDoubleExtension;
-import static protobuf_unittest.UnittestProto.repeatedBoolExtension;
-import static protobuf_unittest.UnittestProto.repeatedStringExtension;
-import static protobuf_unittest.UnittestProto.repeatedBytesExtension;
-import static protobuf_unittest.UnittestProto.repeatedGroupExtension;
-import static protobuf_unittest.UnittestProto.repeatedNestedMessageExtension;
-import static protobuf_unittest.UnittestProto.repeatedForeignMessageExtension;
-import static protobuf_unittest.UnittestProto.repeatedImportMessageExtension;
-import static protobuf_unittest.UnittestProto.repeatedLazyMessageExtension;
-import static protobuf_unittest.UnittestProto.repeatedNestedEnumExtension;
-import static protobuf_unittest.UnittestProto.repeatedForeignEnumExtension;
-import static protobuf_unittest.UnittestProto.repeatedImportEnumExtension;
-import static protobuf_unittest.UnittestProto.repeatedStringPieceExtension;
-import static protobuf_unittest.UnittestProto.repeatedCordExtension;
-
-import static protobuf_unittest.UnittestProto.OptionalGroup_extension;
-import static protobuf_unittest.UnittestProto.RepeatedGroup_extension;
-
-import static protobuf_unittest.UnittestProto.packedInt32Extension;
-import static protobuf_unittest.UnittestProto.packedInt64Extension;
-import static protobuf_unittest.UnittestProto.packedUint32Extension;
-import static protobuf_unittest.UnittestProto.packedUint64Extension;
-import static protobuf_unittest.UnittestProto.packedSint32Extension;
-import static protobuf_unittest.UnittestProto.packedSint64Extension;
+import static protobuf_unittest.UnittestProto.optionalUint32Extension;
+import static protobuf_unittest.UnittestProto.optionalUint64Extension;
+import static protobuf_unittest.UnittestProto.packedBoolExtension;
+import static protobuf_unittest.UnittestProto.packedDoubleExtension;
+import static protobuf_unittest.UnittestProto.packedEnumExtension;
 import static protobuf_unittest.UnittestProto.packedFixed32Extension;
 import static protobuf_unittest.UnittestProto.packedFixed64Extension;
+import static protobuf_unittest.UnittestProto.packedFloatExtension;
+import static protobuf_unittest.UnittestProto.packedInt32Extension;
+import static protobuf_unittest.UnittestProto.packedInt64Extension;
 import static protobuf_unittest.UnittestProto.packedSfixed32Extension;
 import static protobuf_unittest.UnittestProto.packedSfixed64Extension;
-import static protobuf_unittest.UnittestProto.packedFloatExtension;
-import static protobuf_unittest.UnittestProto.packedDoubleExtension;
-import static protobuf_unittest.UnittestProto.packedBoolExtension;
-import static protobuf_unittest.UnittestProto.packedEnumExtension;
+import static protobuf_unittest.UnittestProto.packedSint32Extension;
+import static protobuf_unittest.UnittestProto.packedSint64Extension;
+import static protobuf_unittest.UnittestProto.packedUint32Extension;
+import static protobuf_unittest.UnittestProto.packedUint64Extension;
+import static protobuf_unittest.UnittestProto.repeatedBoolExtension;
+import static protobuf_unittest.UnittestProto.repeatedBytesExtension;
+import static protobuf_unittest.UnittestProto.repeatedCordExtension;
+import static protobuf_unittest.UnittestProto.repeatedDoubleExtension;
+import static protobuf_unittest.UnittestProto.repeatedFixed32Extension;
+import static protobuf_unittest.UnittestProto.repeatedFixed64Extension;
+import static protobuf_unittest.UnittestProto.repeatedFloatExtension;
+import static protobuf_unittest.UnittestProto.repeatedForeignEnumExtension;
+import static protobuf_unittest.UnittestProto.repeatedForeignMessageExtension;
+import static protobuf_unittest.UnittestProto.repeatedGroupExtension;
+import static protobuf_unittest.UnittestProto.repeatedImportEnumExtension;
+import static protobuf_unittest.UnittestProto.repeatedImportMessageExtension;
+import static protobuf_unittest.UnittestProto.repeatedInt32Extension;
+import static protobuf_unittest.UnittestProto.repeatedInt64Extension;
+import static protobuf_unittest.UnittestProto.repeatedLazyMessageExtension;
+import static protobuf_unittest.UnittestProto.repeatedNestedEnumExtension;
+import static protobuf_unittest.UnittestProto.repeatedNestedMessageExtension;
+import static protobuf_unittest.UnittestProto.repeatedSfixed32Extension;
+import static protobuf_unittest.UnittestProto.repeatedSfixed64Extension;
+import static protobuf_unittest.UnittestProto.repeatedSint32Extension;
+import static protobuf_unittest.UnittestProto.repeatedSint64Extension;
+import static protobuf_unittest.UnittestProto.repeatedStringExtension;
+import static protobuf_unittest.UnittestProto.repeatedStringPieceExtension;
+import static protobuf_unittest.UnittestProto.repeatedUint32Extension;
+import static protobuf_unittest.UnittestProto.repeatedUint64Extension;
 
-import static com.google.protobuf.UnittestLite.defaultInt32ExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultInt64ExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultUint32ExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultUint64ExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultSint32ExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultSint64ExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultFixed32ExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultFixed64ExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultSfixed32ExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultSfixed64ExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultFloatExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultDoubleExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultBoolExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultStringExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultBytesExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultNestedEnumExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultForeignEnumExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultImportEnumExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultStringPieceExtensionLite;
-import static com.google.protobuf.UnittestLite.defaultCordExtensionLite;
+import com.google.protobuf.UnittestImportLite.ImportEnumLite;
+import com.google.protobuf.UnittestImportLite.ImportMessageLite;
+import com.google.protobuf.UnittestImportPublicLite.PublicImportMessageLite;
+import com.google.protobuf.UnittestLite.ForeignEnumLite;
+import com.google.protobuf.UnittestLite.ForeignMessageLite;
+import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
+import com.google.protobuf.UnittestLite.TestAllExtensionsLiteOrBuilder;
+import com.google.protobuf.UnittestLite.TestAllTypesLite;
+import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
+import com.google.protobuf.test.UnittestImport.ImportEnum;
+import com.google.protobuf.test.UnittestImport.ImportMessage;
+import com.google.protobuf.test.UnittestImportPublic.PublicImportMessage;
 
-import static com.google.protobuf.UnittestLite.oneofUint32ExtensionLite;
-import static com.google.protobuf.UnittestLite.oneofNestedMessageExtensionLite;
-import static com.google.protobuf.UnittestLite.oneofStringExtensionLite;
-import static com.google.protobuf.UnittestLite.oneofBytesExtensionLite;
-
-import static com.google.protobuf.UnittestLite.optionalInt32ExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalInt64ExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalUint32ExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalUint64ExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalSint32ExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalSint64ExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalFixed32ExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalFixed64ExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalSfixed32ExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalSfixed64ExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalFloatExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalDoubleExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalBoolExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalStringExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalBytesExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalGroupExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalNestedMessageExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalForeignEnumExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalForeignMessageExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalImportEnumExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalImportMessageExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalNestedEnumExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalPublicImportMessageExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalLazyMessageExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalStringPieceExtensionLite;
-import static com.google.protobuf.UnittestLite.optionalCordExtensionLite;
-
-import static com.google.protobuf.UnittestLite.repeatedInt32ExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedInt64ExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedUint32ExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedUint64ExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedSint32ExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedSint64ExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedFixed32ExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedFixed64ExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedSfixed32ExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedSfixed64ExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedFloatExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedDoubleExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedBoolExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedStringExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedBytesExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedGroupExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedNestedMessageExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedForeignMessageExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedImportMessageExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedLazyMessageExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedNestedEnumExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedForeignEnumExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedImportEnumExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedStringPieceExtensionLite;
-import static com.google.protobuf.UnittestLite.repeatedCordExtensionLite;
-
-import static com.google.protobuf.UnittestLite.OptionalGroup_extension_lite;
-import static com.google.protobuf.UnittestLite.RepeatedGroup_extension_lite;
-
-import static com.google.protobuf.UnittestLite.packedInt32ExtensionLite;
-import static com.google.protobuf.UnittestLite.packedInt64ExtensionLite;
-import static com.google.protobuf.UnittestLite.packedUint32ExtensionLite;
-import static com.google.protobuf.UnittestLite.packedUint64ExtensionLite;
-import static com.google.protobuf.UnittestLite.packedSint32ExtensionLite;
-import static com.google.protobuf.UnittestLite.packedSint64ExtensionLite;
-import static com.google.protobuf.UnittestLite.packedFixed32ExtensionLite;
-import static com.google.protobuf.UnittestLite.packedFixed64ExtensionLite;
-import static com.google.protobuf.UnittestLite.packedSfixed32ExtensionLite;
-import static com.google.protobuf.UnittestLite.packedSfixed64ExtensionLite;
-import static com.google.protobuf.UnittestLite.packedFloatExtensionLite;
-import static com.google.protobuf.UnittestLite.packedDoubleExtensionLite;
-import static com.google.protobuf.UnittestLite.packedBoolExtensionLite;
-import static com.google.protobuf.UnittestLite.packedEnumExtensionLite;
-
+import protobuf_unittest.UnittestProto;
+import protobuf_unittest.UnittestProto.ForeignEnum;
+import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllExtensionsOrBuilder;
 import protobuf_unittest.UnittestProto.TestAllTypes;
@@ -237,27 +242,13 @@ import protobuf_unittest.UnittestProto.TestOneof2;
 import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestUnpackedTypes;
-import protobuf_unittest.UnittestProto.ForeignMessage;
-import protobuf_unittest.UnittestProto.ForeignEnum;
-import com.google.protobuf.test.UnittestImport.ImportEnum;
-import com.google.protobuf.test.UnittestImport.ImportMessage;
-import com.google.protobuf.test.UnittestImportPublic.PublicImportMessage;
-
-import com.google.protobuf.UnittestLite.TestAllTypesLite;
-import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
-import com.google.protobuf.UnittestLite.TestAllExtensionsLiteOrBuilder;
-import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
-import com.google.protobuf.UnittestLite.ForeignMessageLite;
-import com.google.protobuf.UnittestLite.ForeignEnumLite;
-import com.google.protobuf.UnittestImportLite.ImportEnumLite;
-import com.google.protobuf.UnittestImportLite.ImportMessageLite;
-import com.google.protobuf.UnittestImportPublicLite.PublicImportMessageLite;
-
-import junit.framework.Assert;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+
+// The static imports are to avoid 100+ char lines.  The following is roughly equivalent to
+// import static protobuf_unittest.UnittestProto.*;
 
 /**
  * Contains methods for setting all fields of {@code TestAllTypes} to
@@ -683,381 +674,381 @@ public final class TestUtil {
   // -------------------------------------------------------------------
 
   /**
-   * Assert (using {@code junit.framework.Assert}} that all fields of
-   * {@code message} are set to the values assigned by {@code setAllFields}.
+   * Assert that all fields of {@code message} are set to the values assigned by
+   * {@code setAllFields}.
    */
   public static void assertAllFieldsSet(TestAllTypesOrBuilder message) {
-    Assert.assertTrue(message.hasOptionalInt32   ());
-    Assert.assertTrue(message.hasOptionalInt64   ());
-    Assert.assertTrue(message.hasOptionalUint32  ());
-    Assert.assertTrue(message.hasOptionalUint64  ());
-    Assert.assertTrue(message.hasOptionalSint32  ());
-    Assert.assertTrue(message.hasOptionalSint64  ());
-    Assert.assertTrue(message.hasOptionalFixed32 ());
-    Assert.assertTrue(message.hasOptionalFixed64 ());
-    Assert.assertTrue(message.hasOptionalSfixed32());
-    Assert.assertTrue(message.hasOptionalSfixed64());
-    Assert.assertTrue(message.hasOptionalFloat   ());
-    Assert.assertTrue(message.hasOptionalDouble  ());
-    Assert.assertTrue(message.hasOptionalBool    ());
-    Assert.assertTrue(message.hasOptionalString  ());
-    Assert.assertTrue(message.hasOptionalBytes   ());
+    assertTrue(message.hasOptionalInt32   ());
+    assertTrue(message.hasOptionalInt64   ());
+    assertTrue(message.hasOptionalUint32  ());
+    assertTrue(message.hasOptionalUint64  ());
+    assertTrue(message.hasOptionalSint32  ());
+    assertTrue(message.hasOptionalSint64  ());
+    assertTrue(message.hasOptionalFixed32 ());
+    assertTrue(message.hasOptionalFixed64 ());
+    assertTrue(message.hasOptionalSfixed32());
+    assertTrue(message.hasOptionalSfixed64());
+    assertTrue(message.hasOptionalFloat   ());
+    assertTrue(message.hasOptionalDouble  ());
+    assertTrue(message.hasOptionalBool    ());
+    assertTrue(message.hasOptionalString  ());
+    assertTrue(message.hasOptionalBytes   ());
 
-    Assert.assertTrue(message.hasOptionalGroup         ());
-    Assert.assertTrue(message.hasOptionalNestedMessage ());
-    Assert.assertTrue(message.hasOptionalForeignMessage());
-    Assert.assertTrue(message.hasOptionalImportMessage ());
+    assertTrue(message.hasOptionalGroup         ());
+    assertTrue(message.hasOptionalNestedMessage ());
+    assertTrue(message.hasOptionalForeignMessage());
+    assertTrue(message.hasOptionalImportMessage ());
 
-    Assert.assertTrue(message.getOptionalGroup         ().hasA());
-    Assert.assertTrue(message.getOptionalNestedMessage ().hasBb());
-    Assert.assertTrue(message.getOptionalForeignMessage().hasC());
-    Assert.assertTrue(message.getOptionalImportMessage ().hasD());
+    assertTrue(message.getOptionalGroup         ().hasA());
+    assertTrue(message.getOptionalNestedMessage ().hasBb());
+    assertTrue(message.getOptionalForeignMessage().hasC());
+    assertTrue(message.getOptionalImportMessage ().hasD());
 
-    Assert.assertTrue(message.hasOptionalNestedEnum ());
-    Assert.assertTrue(message.hasOptionalForeignEnum());
-    Assert.assertTrue(message.hasOptionalImportEnum ());
+    assertTrue(message.hasOptionalNestedEnum ());
+    assertTrue(message.hasOptionalForeignEnum());
+    assertTrue(message.hasOptionalImportEnum ());
 
-    Assert.assertTrue(message.hasOptionalStringPiece());
-    Assert.assertTrue(message.hasOptionalCord());
+    assertTrue(message.hasOptionalStringPiece());
+    assertTrue(message.hasOptionalCord());
 
-    Assert.assertEquals(101  , message.getOptionalInt32   ());
-    Assert.assertEquals(102  , message.getOptionalInt64   ());
-    Assert.assertEquals(103  , message.getOptionalUint32  ());
-    Assert.assertEquals(104  , message.getOptionalUint64  ());
-    Assert.assertEquals(105  , message.getOptionalSint32  ());
-    Assert.assertEquals(106  , message.getOptionalSint64  ());
-    Assert.assertEquals(107  , message.getOptionalFixed32 ());
-    Assert.assertEquals(108  , message.getOptionalFixed64 ());
-    Assert.assertEquals(109  , message.getOptionalSfixed32());
-    Assert.assertEquals(110  , message.getOptionalSfixed64());
-    Assert.assertEquals(111  , message.getOptionalFloat   (), 0.0);
-    Assert.assertEquals(112  , message.getOptionalDouble  (), 0.0);
-    Assert.assertEquals(true , message.getOptionalBool    ());
-    Assert.assertEquals("115", message.getOptionalString  ());
-    Assert.assertEquals(toBytes("116"), message.getOptionalBytes());
+    assertEquals(101  , message.getOptionalInt32   ());
+    assertEquals(102  , message.getOptionalInt64   ());
+    assertEquals(103  , message.getOptionalUint32  ());
+    assertEquals(104  , message.getOptionalUint64  ());
+    assertEquals(105  , message.getOptionalSint32  ());
+    assertEquals(106  , message.getOptionalSint64  ());
+    assertEquals(107  , message.getOptionalFixed32 ());
+    assertEquals(108  , message.getOptionalFixed64 ());
+    assertEquals(109  , message.getOptionalSfixed32());
+    assertEquals(110  , message.getOptionalSfixed64());
+    assertEquals(111  , message.getOptionalFloat   (), 0.0);
+    assertEquals(112  , message.getOptionalDouble  (), 0.0);
+    assertEquals(true , message.getOptionalBool    ());
+    assertEquals("115", message.getOptionalString  ());
+    assertEquals(toBytes("116"), message.getOptionalBytes());
 
-    Assert.assertEquals(117, message.getOptionalGroup              ().getA());
-    Assert.assertEquals(118, message.getOptionalNestedMessage      ().getBb());
-    Assert.assertEquals(119, message.getOptionalForeignMessage     ().getC());
-    Assert.assertEquals(120, message.getOptionalImportMessage      ().getD());
-    Assert.assertEquals(126, message.getOptionalPublicImportMessage().getE());
-    Assert.assertEquals(127, message.getOptionalLazyMessage        ().getBb());
+    assertEquals(117, message.getOptionalGroup              ().getA());
+    assertEquals(118, message.getOptionalNestedMessage      ().getBb());
+    assertEquals(119, message.getOptionalForeignMessage     ().getC());
+    assertEquals(120, message.getOptionalImportMessage      ().getD());
+    assertEquals(126, message.getOptionalPublicImportMessage().getE());
+    assertEquals(127, message.getOptionalLazyMessage        ().getBb());
 
-    Assert.assertEquals(TestAllTypes.NestedEnum.BAZ, message.getOptionalNestedEnum());
-    Assert.assertEquals(ForeignEnum.FOREIGN_BAZ, message.getOptionalForeignEnum());
-    Assert.assertEquals(ImportEnum.IMPORT_BAZ, message.getOptionalImportEnum());
+    assertEquals(TestAllTypes.NestedEnum.BAZ, message.getOptionalNestedEnum());
+    assertEquals(ForeignEnum.FOREIGN_BAZ, message.getOptionalForeignEnum());
+    assertEquals(ImportEnum.IMPORT_BAZ, message.getOptionalImportEnum());
 
-    Assert.assertEquals("124", message.getOptionalStringPiece());
-    Assert.assertEquals("125", message.getOptionalCord());
-
-    // -----------------------------------------------------------------
-
-    Assert.assertEquals(2, message.getRepeatedInt32Count   ());
-    Assert.assertEquals(2, message.getRepeatedInt64Count   ());
-    Assert.assertEquals(2, message.getRepeatedUint32Count  ());
-    Assert.assertEquals(2, message.getRepeatedUint64Count  ());
-    Assert.assertEquals(2, message.getRepeatedSint32Count  ());
-    Assert.assertEquals(2, message.getRepeatedSint64Count  ());
-    Assert.assertEquals(2, message.getRepeatedFixed32Count ());
-    Assert.assertEquals(2, message.getRepeatedFixed64Count ());
-    Assert.assertEquals(2, message.getRepeatedSfixed32Count());
-    Assert.assertEquals(2, message.getRepeatedSfixed64Count());
-    Assert.assertEquals(2, message.getRepeatedFloatCount   ());
-    Assert.assertEquals(2, message.getRepeatedDoubleCount  ());
-    Assert.assertEquals(2, message.getRepeatedBoolCount    ());
-    Assert.assertEquals(2, message.getRepeatedStringCount  ());
-    Assert.assertEquals(2, message.getRepeatedBytesCount   ());
-
-    Assert.assertEquals(2, message.getRepeatedGroupCount         ());
-    Assert.assertEquals(2, message.getRepeatedNestedMessageCount ());
-    Assert.assertEquals(2, message.getRepeatedForeignMessageCount());
-    Assert.assertEquals(2, message.getRepeatedImportMessageCount ());
-    Assert.assertEquals(2, message.getRepeatedLazyMessageCount   ());
-    Assert.assertEquals(2, message.getRepeatedNestedEnumCount    ());
-    Assert.assertEquals(2, message.getRepeatedForeignEnumCount   ());
-    Assert.assertEquals(2, message.getRepeatedImportEnumCount    ());
-
-    Assert.assertEquals(2, message.getRepeatedStringPieceCount());
-    Assert.assertEquals(2, message.getRepeatedCordCount());
-
-    Assert.assertEquals(201  , message.getRepeatedInt32   (0));
-    Assert.assertEquals(202  , message.getRepeatedInt64   (0));
-    Assert.assertEquals(203  , message.getRepeatedUint32  (0));
-    Assert.assertEquals(204  , message.getRepeatedUint64  (0));
-    Assert.assertEquals(205  , message.getRepeatedSint32  (0));
-    Assert.assertEquals(206  , message.getRepeatedSint64  (0));
-    Assert.assertEquals(207  , message.getRepeatedFixed32 (0));
-    Assert.assertEquals(208  , message.getRepeatedFixed64 (0));
-    Assert.assertEquals(209  , message.getRepeatedSfixed32(0));
-    Assert.assertEquals(210  , message.getRepeatedSfixed64(0));
-    Assert.assertEquals(211  , message.getRepeatedFloat   (0), 0.0);
-    Assert.assertEquals(212  , message.getRepeatedDouble  (0), 0.0);
-    Assert.assertEquals(true , message.getRepeatedBool    (0));
-    Assert.assertEquals("215", message.getRepeatedString  (0));
-    Assert.assertEquals(toBytes("216"), message.getRepeatedBytes(0));
-
-    Assert.assertEquals(217, message.getRepeatedGroup         (0).getA());
-    Assert.assertEquals(218, message.getRepeatedNestedMessage (0).getBb());
-    Assert.assertEquals(219, message.getRepeatedForeignMessage(0).getC());
-    Assert.assertEquals(220, message.getRepeatedImportMessage (0).getD());
-    Assert.assertEquals(227, message.getRepeatedLazyMessage   (0).getBb());
-
-    Assert.assertEquals(TestAllTypes.NestedEnum.BAR, message.getRepeatedNestedEnum (0));
-    Assert.assertEquals(ForeignEnum.FOREIGN_BAR, message.getRepeatedForeignEnum(0));
-    Assert.assertEquals(ImportEnum.IMPORT_BAR, message.getRepeatedImportEnum(0));
-
-    Assert.assertEquals("224", message.getRepeatedStringPiece(0));
-    Assert.assertEquals("225", message.getRepeatedCord(0));
-
-    Assert.assertEquals(301  , message.getRepeatedInt32   (1));
-    Assert.assertEquals(302  , message.getRepeatedInt64   (1));
-    Assert.assertEquals(303  , message.getRepeatedUint32  (1));
-    Assert.assertEquals(304  , message.getRepeatedUint64  (1));
-    Assert.assertEquals(305  , message.getRepeatedSint32  (1));
-    Assert.assertEquals(306  , message.getRepeatedSint64  (1));
-    Assert.assertEquals(307  , message.getRepeatedFixed32 (1));
-    Assert.assertEquals(308  , message.getRepeatedFixed64 (1));
-    Assert.assertEquals(309  , message.getRepeatedSfixed32(1));
-    Assert.assertEquals(310  , message.getRepeatedSfixed64(1));
-    Assert.assertEquals(311  , message.getRepeatedFloat   (1), 0.0);
-    Assert.assertEquals(312  , message.getRepeatedDouble  (1), 0.0);
-    Assert.assertEquals(false, message.getRepeatedBool    (1));
-    Assert.assertEquals("315", message.getRepeatedString  (1));
-    Assert.assertEquals(toBytes("316"), message.getRepeatedBytes(1));
-
-    Assert.assertEquals(317, message.getRepeatedGroup         (1).getA());
-    Assert.assertEquals(318, message.getRepeatedNestedMessage (1).getBb());
-    Assert.assertEquals(319, message.getRepeatedForeignMessage(1).getC());
-    Assert.assertEquals(320, message.getRepeatedImportMessage (1).getD());
-    Assert.assertEquals(327, message.getRepeatedLazyMessage   (1).getBb());
-
-    Assert.assertEquals(TestAllTypes.NestedEnum.BAZ, message.getRepeatedNestedEnum (1));
-    Assert.assertEquals(ForeignEnum.FOREIGN_BAZ, message.getRepeatedForeignEnum(1));
-    Assert.assertEquals(ImportEnum.IMPORT_BAZ, message.getRepeatedImportEnum(1));
-
-    Assert.assertEquals("324", message.getRepeatedStringPiece(1));
-    Assert.assertEquals("325", message.getRepeatedCord(1));
+    assertEquals("124", message.getOptionalStringPiece());
+    assertEquals("125", message.getOptionalCord());
 
     // -----------------------------------------------------------------
 
-    Assert.assertTrue(message.hasDefaultInt32   ());
-    Assert.assertTrue(message.hasDefaultInt64   ());
-    Assert.assertTrue(message.hasDefaultUint32  ());
-    Assert.assertTrue(message.hasDefaultUint64  ());
-    Assert.assertTrue(message.hasDefaultSint32  ());
-    Assert.assertTrue(message.hasDefaultSint64  ());
-    Assert.assertTrue(message.hasDefaultFixed32 ());
-    Assert.assertTrue(message.hasDefaultFixed64 ());
-    Assert.assertTrue(message.hasDefaultSfixed32());
-    Assert.assertTrue(message.hasDefaultSfixed64());
-    Assert.assertTrue(message.hasDefaultFloat   ());
-    Assert.assertTrue(message.hasDefaultDouble  ());
-    Assert.assertTrue(message.hasDefaultBool    ());
-    Assert.assertTrue(message.hasDefaultString  ());
-    Assert.assertTrue(message.hasDefaultBytes   ());
+    assertEquals(2, message.getRepeatedInt32Count   ());
+    assertEquals(2, message.getRepeatedInt64Count   ());
+    assertEquals(2, message.getRepeatedUint32Count  ());
+    assertEquals(2, message.getRepeatedUint64Count  ());
+    assertEquals(2, message.getRepeatedSint32Count  ());
+    assertEquals(2, message.getRepeatedSint64Count  ());
+    assertEquals(2, message.getRepeatedFixed32Count ());
+    assertEquals(2, message.getRepeatedFixed64Count ());
+    assertEquals(2, message.getRepeatedSfixed32Count());
+    assertEquals(2, message.getRepeatedSfixed64Count());
+    assertEquals(2, message.getRepeatedFloatCount   ());
+    assertEquals(2, message.getRepeatedDoubleCount  ());
+    assertEquals(2, message.getRepeatedBoolCount    ());
+    assertEquals(2, message.getRepeatedStringCount  ());
+    assertEquals(2, message.getRepeatedBytesCount   ());
 
-    Assert.assertTrue(message.hasDefaultNestedEnum ());
-    Assert.assertTrue(message.hasDefaultForeignEnum());
-    Assert.assertTrue(message.hasDefaultImportEnum ());
+    assertEquals(2, message.getRepeatedGroupCount         ());
+    assertEquals(2, message.getRepeatedNestedMessageCount ());
+    assertEquals(2, message.getRepeatedForeignMessageCount());
+    assertEquals(2, message.getRepeatedImportMessageCount ());
+    assertEquals(2, message.getRepeatedLazyMessageCount   ());
+    assertEquals(2, message.getRepeatedNestedEnumCount    ());
+    assertEquals(2, message.getRepeatedForeignEnumCount   ());
+    assertEquals(2, message.getRepeatedImportEnumCount    ());
 
-    Assert.assertTrue(message.hasDefaultStringPiece());
-    Assert.assertTrue(message.hasDefaultCord());
+    assertEquals(2, message.getRepeatedStringPieceCount());
+    assertEquals(2, message.getRepeatedCordCount());
 
-    Assert.assertEquals(401  , message.getDefaultInt32   ());
-    Assert.assertEquals(402  , message.getDefaultInt64   ());
-    Assert.assertEquals(403  , message.getDefaultUint32  ());
-    Assert.assertEquals(404  , message.getDefaultUint64  ());
-    Assert.assertEquals(405  , message.getDefaultSint32  ());
-    Assert.assertEquals(406  , message.getDefaultSint64  ());
-    Assert.assertEquals(407  , message.getDefaultFixed32 ());
-    Assert.assertEquals(408  , message.getDefaultFixed64 ());
-    Assert.assertEquals(409  , message.getDefaultSfixed32());
-    Assert.assertEquals(410  , message.getDefaultSfixed64());
-    Assert.assertEquals(411  , message.getDefaultFloat   (), 0.0);
-    Assert.assertEquals(412  , message.getDefaultDouble  (), 0.0);
-    Assert.assertEquals(false, message.getDefaultBool    ());
-    Assert.assertEquals("415", message.getDefaultString  ());
-    Assert.assertEquals(toBytes("416"), message.getDefaultBytes());
+    assertEquals(201  , message.getRepeatedInt32   (0));
+    assertEquals(202  , message.getRepeatedInt64   (0));
+    assertEquals(203  , message.getRepeatedUint32  (0));
+    assertEquals(204  , message.getRepeatedUint64  (0));
+    assertEquals(205  , message.getRepeatedSint32  (0));
+    assertEquals(206  , message.getRepeatedSint64  (0));
+    assertEquals(207  , message.getRepeatedFixed32 (0));
+    assertEquals(208  , message.getRepeatedFixed64 (0));
+    assertEquals(209  , message.getRepeatedSfixed32(0));
+    assertEquals(210  , message.getRepeatedSfixed64(0));
+    assertEquals(211  , message.getRepeatedFloat   (0), 0.0);
+    assertEquals(212  , message.getRepeatedDouble  (0), 0.0);
+    assertEquals(true , message.getRepeatedBool    (0));
+    assertEquals("215", message.getRepeatedString  (0));
+    assertEquals(toBytes("216"), message.getRepeatedBytes(0));
 
-    Assert.assertEquals(TestAllTypes.NestedEnum.FOO, message.getDefaultNestedEnum ());
-    Assert.assertEquals(ForeignEnum.FOREIGN_FOO, message.getDefaultForeignEnum());
-    Assert.assertEquals(ImportEnum.IMPORT_FOO, message.getDefaultImportEnum());
+    assertEquals(217, message.getRepeatedGroup         (0).getA());
+    assertEquals(218, message.getRepeatedNestedMessage (0).getBb());
+    assertEquals(219, message.getRepeatedForeignMessage(0).getC());
+    assertEquals(220, message.getRepeatedImportMessage (0).getD());
+    assertEquals(227, message.getRepeatedLazyMessage   (0).getBb());
 
-    Assert.assertEquals("424", message.getDefaultStringPiece());
-    Assert.assertEquals("425", message.getDefaultCord());
+    assertEquals(TestAllTypes.NestedEnum.BAR, message.getRepeatedNestedEnum (0));
+    assertEquals(ForeignEnum.FOREIGN_BAR, message.getRepeatedForeignEnum(0));
+    assertEquals(ImportEnum.IMPORT_BAR, message.getRepeatedImportEnum(0));
 
-    Assert.assertEquals(TestAllTypes.OneofFieldCase.ONEOF_BYTES, message.getOneofFieldCase());
-    Assert.assertFalse(message.hasOneofUint32());
-    Assert.assertFalse(message.hasOneofNestedMessage());
-    Assert.assertFalse(message.hasOneofString());
-    Assert.assertTrue(message.hasOneofBytes());
+    assertEquals("224", message.getRepeatedStringPiece(0));
+    assertEquals("225", message.getRepeatedCord(0));
 
-    Assert.assertEquals(toBytes("604"), message.getOneofBytes());
+    assertEquals(301  , message.getRepeatedInt32   (1));
+    assertEquals(302  , message.getRepeatedInt64   (1));
+    assertEquals(303  , message.getRepeatedUint32  (1));
+    assertEquals(304  , message.getRepeatedUint64  (1));
+    assertEquals(305  , message.getRepeatedSint32  (1));
+    assertEquals(306  , message.getRepeatedSint64  (1));
+    assertEquals(307  , message.getRepeatedFixed32 (1));
+    assertEquals(308  , message.getRepeatedFixed64 (1));
+    assertEquals(309  , message.getRepeatedSfixed32(1));
+    assertEquals(310  , message.getRepeatedSfixed64(1));
+    assertEquals(311  , message.getRepeatedFloat   (1), 0.0);
+    assertEquals(312  , message.getRepeatedDouble  (1), 0.0);
+    assertEquals(false, message.getRepeatedBool    (1));
+    assertEquals("315", message.getRepeatedString  (1));
+    assertEquals(toBytes("316"), message.getRepeatedBytes(1));
+
+    assertEquals(317, message.getRepeatedGroup         (1).getA());
+    assertEquals(318, message.getRepeatedNestedMessage (1).getBb());
+    assertEquals(319, message.getRepeatedForeignMessage(1).getC());
+    assertEquals(320, message.getRepeatedImportMessage (1).getD());
+    assertEquals(327, message.getRepeatedLazyMessage   (1).getBb());
+
+    assertEquals(TestAllTypes.NestedEnum.BAZ, message.getRepeatedNestedEnum (1));
+    assertEquals(ForeignEnum.FOREIGN_BAZ, message.getRepeatedForeignEnum(1));
+    assertEquals(ImportEnum.IMPORT_BAZ, message.getRepeatedImportEnum(1));
+
+    assertEquals("324", message.getRepeatedStringPiece(1));
+    assertEquals("325", message.getRepeatedCord(1));
+
+    // -----------------------------------------------------------------
+
+    assertTrue(message.hasDefaultInt32   ());
+    assertTrue(message.hasDefaultInt64   ());
+    assertTrue(message.hasDefaultUint32  ());
+    assertTrue(message.hasDefaultUint64  ());
+    assertTrue(message.hasDefaultSint32  ());
+    assertTrue(message.hasDefaultSint64  ());
+    assertTrue(message.hasDefaultFixed32 ());
+    assertTrue(message.hasDefaultFixed64 ());
+    assertTrue(message.hasDefaultSfixed32());
+    assertTrue(message.hasDefaultSfixed64());
+    assertTrue(message.hasDefaultFloat   ());
+    assertTrue(message.hasDefaultDouble  ());
+    assertTrue(message.hasDefaultBool    ());
+    assertTrue(message.hasDefaultString  ());
+    assertTrue(message.hasDefaultBytes   ());
+
+    assertTrue(message.hasDefaultNestedEnum ());
+    assertTrue(message.hasDefaultForeignEnum());
+    assertTrue(message.hasDefaultImportEnum ());
+
+    assertTrue(message.hasDefaultStringPiece());
+    assertTrue(message.hasDefaultCord());
+
+    assertEquals(401  , message.getDefaultInt32   ());
+    assertEquals(402  , message.getDefaultInt64   ());
+    assertEquals(403  , message.getDefaultUint32  ());
+    assertEquals(404  , message.getDefaultUint64  ());
+    assertEquals(405  , message.getDefaultSint32  ());
+    assertEquals(406  , message.getDefaultSint64  ());
+    assertEquals(407  , message.getDefaultFixed32 ());
+    assertEquals(408  , message.getDefaultFixed64 ());
+    assertEquals(409  , message.getDefaultSfixed32());
+    assertEquals(410  , message.getDefaultSfixed64());
+    assertEquals(411  , message.getDefaultFloat   (), 0.0);
+    assertEquals(412  , message.getDefaultDouble  (), 0.0);
+    assertEquals(false, message.getDefaultBool    ());
+    assertEquals("415", message.getDefaultString  ());
+    assertEquals(toBytes("416"), message.getDefaultBytes());
+
+    assertEquals(TestAllTypes.NestedEnum.FOO, message.getDefaultNestedEnum ());
+    assertEquals(ForeignEnum.FOREIGN_FOO, message.getDefaultForeignEnum());
+    assertEquals(ImportEnum.IMPORT_FOO, message.getDefaultImportEnum());
+
+    assertEquals("424", message.getDefaultStringPiece());
+    assertEquals("425", message.getDefaultCord());
+
+    assertEquals(TestAllTypes.OneofFieldCase.ONEOF_BYTES, message.getOneofFieldCase());
+    assertFalse(message.hasOneofUint32());
+    assertFalse(message.hasOneofNestedMessage());
+    assertFalse(message.hasOneofString());
+    assertTrue(message.hasOneofBytes());
+
+    assertEquals(toBytes("604"), message.getOneofBytes());
   }
 
   // -------------------------------------------------------------------
   /**
-   * Assert (using {@code junit.framework.Assert}} that all fields of
+   * Assert that all fields of
    * {@code message} are cleared, and that getting the fields returns their
    * default values.
    */
   public static void assertClear(TestAllTypesOrBuilder message) {
     // hasBlah() should initially be false for all optional fields.
-    Assert.assertFalse(message.hasOptionalInt32   ());
-    Assert.assertFalse(message.hasOptionalInt64   ());
-    Assert.assertFalse(message.hasOptionalUint32  ());
-    Assert.assertFalse(message.hasOptionalUint64  ());
-    Assert.assertFalse(message.hasOptionalSint32  ());
-    Assert.assertFalse(message.hasOptionalSint64  ());
-    Assert.assertFalse(message.hasOptionalFixed32 ());
-    Assert.assertFalse(message.hasOptionalFixed64 ());
-    Assert.assertFalse(message.hasOptionalSfixed32());
-    Assert.assertFalse(message.hasOptionalSfixed64());
-    Assert.assertFalse(message.hasOptionalFloat   ());
-    Assert.assertFalse(message.hasOptionalDouble  ());
-    Assert.assertFalse(message.hasOptionalBool    ());
-    Assert.assertFalse(message.hasOptionalString  ());
-    Assert.assertFalse(message.hasOptionalBytes   ());
+    assertFalse(message.hasOptionalInt32   ());
+    assertFalse(message.hasOptionalInt64   ());
+    assertFalse(message.hasOptionalUint32  ());
+    assertFalse(message.hasOptionalUint64  ());
+    assertFalse(message.hasOptionalSint32  ());
+    assertFalse(message.hasOptionalSint64  ());
+    assertFalse(message.hasOptionalFixed32 ());
+    assertFalse(message.hasOptionalFixed64 ());
+    assertFalse(message.hasOptionalSfixed32());
+    assertFalse(message.hasOptionalSfixed64());
+    assertFalse(message.hasOptionalFloat   ());
+    assertFalse(message.hasOptionalDouble  ());
+    assertFalse(message.hasOptionalBool    ());
+    assertFalse(message.hasOptionalString  ());
+    assertFalse(message.hasOptionalBytes   ());
 
-    Assert.assertFalse(message.hasOptionalGroup         ());
-    Assert.assertFalse(message.hasOptionalNestedMessage ());
-    Assert.assertFalse(message.hasOptionalForeignMessage());
-    Assert.assertFalse(message.hasOptionalImportMessage ());
+    assertFalse(message.hasOptionalGroup         ());
+    assertFalse(message.hasOptionalNestedMessage ());
+    assertFalse(message.hasOptionalForeignMessage());
+    assertFalse(message.hasOptionalImportMessage ());
 
-    Assert.assertFalse(message.hasOptionalNestedEnum ());
-    Assert.assertFalse(message.hasOptionalForeignEnum());
-    Assert.assertFalse(message.hasOptionalImportEnum ());
+    assertFalse(message.hasOptionalNestedEnum ());
+    assertFalse(message.hasOptionalForeignEnum());
+    assertFalse(message.hasOptionalImportEnum ());
 
-    Assert.assertFalse(message.hasOptionalStringPiece());
-    Assert.assertFalse(message.hasOptionalCord());
+    assertFalse(message.hasOptionalStringPiece());
+    assertFalse(message.hasOptionalCord());
 
     // Optional fields without defaults are set to zero or something like it.
-    Assert.assertEquals(0    , message.getOptionalInt32   ());
-    Assert.assertEquals(0    , message.getOptionalInt64   ());
-    Assert.assertEquals(0    , message.getOptionalUint32  ());
-    Assert.assertEquals(0    , message.getOptionalUint64  ());
-    Assert.assertEquals(0    , message.getOptionalSint32  ());
-    Assert.assertEquals(0    , message.getOptionalSint64  ());
-    Assert.assertEquals(0    , message.getOptionalFixed32 ());
-    Assert.assertEquals(0    , message.getOptionalFixed64 ());
-    Assert.assertEquals(0    , message.getOptionalSfixed32());
-    Assert.assertEquals(0    , message.getOptionalSfixed64());
-    Assert.assertEquals(0    , message.getOptionalFloat   (), 0.0);
-    Assert.assertEquals(0    , message.getOptionalDouble  (), 0.0);
-    Assert.assertEquals(false, message.getOptionalBool    ());
-    Assert.assertEquals(""   , message.getOptionalString  ());
-    Assert.assertEquals(ByteString.EMPTY, message.getOptionalBytes());
+    assertEquals(0    , message.getOptionalInt32   ());
+    assertEquals(0    , message.getOptionalInt64   ());
+    assertEquals(0    , message.getOptionalUint32  ());
+    assertEquals(0    , message.getOptionalUint64  ());
+    assertEquals(0    , message.getOptionalSint32  ());
+    assertEquals(0    , message.getOptionalSint64  ());
+    assertEquals(0    , message.getOptionalFixed32 ());
+    assertEquals(0    , message.getOptionalFixed64 ());
+    assertEquals(0    , message.getOptionalSfixed32());
+    assertEquals(0    , message.getOptionalSfixed64());
+    assertEquals(0    , message.getOptionalFloat   (), 0.0);
+    assertEquals(0    , message.getOptionalDouble  (), 0.0);
+    assertEquals(false, message.getOptionalBool    ());
+    assertEquals(""   , message.getOptionalString  ());
+    assertEquals(ByteString.EMPTY, message.getOptionalBytes());
 
     // Embedded messages should also be clear.
-    Assert.assertFalse(message.getOptionalGroup              ().hasA());
-    Assert.assertFalse(message.getOptionalNestedMessage      ().hasBb());
-    Assert.assertFalse(message.getOptionalForeignMessage     ().hasC());
-    Assert.assertFalse(message.getOptionalImportMessage      ().hasD());
-    Assert.assertFalse(message.getOptionalPublicImportMessage().hasE());
-    Assert.assertFalse(message.getOptionalLazyMessage        ().hasBb());
+    assertFalse(message.getOptionalGroup              ().hasA());
+    assertFalse(message.getOptionalNestedMessage      ().hasBb());
+    assertFalse(message.getOptionalForeignMessage     ().hasC());
+    assertFalse(message.getOptionalImportMessage      ().hasD());
+    assertFalse(message.getOptionalPublicImportMessage().hasE());
+    assertFalse(message.getOptionalLazyMessage        ().hasBb());
 
-    Assert.assertEquals(0, message.getOptionalGroup              ().getA());
-    Assert.assertEquals(0, message.getOptionalNestedMessage      ().getBb());
-    Assert.assertEquals(0, message.getOptionalForeignMessage     ().getC());
-    Assert.assertEquals(0, message.getOptionalImportMessage      ().getD());
-    Assert.assertEquals(0, message.getOptionalPublicImportMessage().getE());
-    Assert.assertEquals(0, message.getOptionalLazyMessage        ().getBb());
+    assertEquals(0, message.getOptionalGroup              ().getA());
+    assertEquals(0, message.getOptionalNestedMessage      ().getBb());
+    assertEquals(0, message.getOptionalForeignMessage     ().getC());
+    assertEquals(0, message.getOptionalImportMessage      ().getD());
+    assertEquals(0, message.getOptionalPublicImportMessage().getE());
+    assertEquals(0, message.getOptionalLazyMessage        ().getBb());
 
     // Enums without defaults are set to the first value in the enum.
-    Assert.assertEquals(TestAllTypes.NestedEnum.FOO, message.getOptionalNestedEnum ());
-    Assert.assertEquals(ForeignEnum.FOREIGN_FOO, message.getOptionalForeignEnum());
-    Assert.assertEquals(ImportEnum.IMPORT_FOO, message.getOptionalImportEnum());
+    assertEquals(TestAllTypes.NestedEnum.FOO, message.getOptionalNestedEnum ());
+    assertEquals(ForeignEnum.FOREIGN_FOO, message.getOptionalForeignEnum());
+    assertEquals(ImportEnum.IMPORT_FOO, message.getOptionalImportEnum());
 
-    Assert.assertEquals("", message.getOptionalStringPiece());
-    Assert.assertEquals("", message.getOptionalCord());
+    assertEquals("", message.getOptionalStringPiece());
+    assertEquals("", message.getOptionalCord());
 
     // Repeated fields are empty.
-    Assert.assertEquals(0, message.getRepeatedInt32Count   ());
-    Assert.assertEquals(0, message.getRepeatedInt64Count   ());
-    Assert.assertEquals(0, message.getRepeatedUint32Count  ());
-    Assert.assertEquals(0, message.getRepeatedUint64Count  ());
-    Assert.assertEquals(0, message.getRepeatedSint32Count  ());
-    Assert.assertEquals(0, message.getRepeatedSint64Count  ());
-    Assert.assertEquals(0, message.getRepeatedFixed32Count ());
-    Assert.assertEquals(0, message.getRepeatedFixed64Count ());
-    Assert.assertEquals(0, message.getRepeatedSfixed32Count());
-    Assert.assertEquals(0, message.getRepeatedSfixed64Count());
-    Assert.assertEquals(0, message.getRepeatedFloatCount   ());
-    Assert.assertEquals(0, message.getRepeatedDoubleCount  ());
-    Assert.assertEquals(0, message.getRepeatedBoolCount    ());
-    Assert.assertEquals(0, message.getRepeatedStringCount  ());
-    Assert.assertEquals(0, message.getRepeatedBytesCount   ());
+    assertEquals(0, message.getRepeatedInt32Count   ());
+    assertEquals(0, message.getRepeatedInt64Count   ());
+    assertEquals(0, message.getRepeatedUint32Count  ());
+    assertEquals(0, message.getRepeatedUint64Count  ());
+    assertEquals(0, message.getRepeatedSint32Count  ());
+    assertEquals(0, message.getRepeatedSint64Count  ());
+    assertEquals(0, message.getRepeatedFixed32Count ());
+    assertEquals(0, message.getRepeatedFixed64Count ());
+    assertEquals(0, message.getRepeatedSfixed32Count());
+    assertEquals(0, message.getRepeatedSfixed64Count());
+    assertEquals(0, message.getRepeatedFloatCount   ());
+    assertEquals(0, message.getRepeatedDoubleCount  ());
+    assertEquals(0, message.getRepeatedBoolCount    ());
+    assertEquals(0, message.getRepeatedStringCount  ());
+    assertEquals(0, message.getRepeatedBytesCount   ());
 
-    Assert.assertEquals(0, message.getRepeatedGroupCount         ());
-    Assert.assertEquals(0, message.getRepeatedNestedMessageCount ());
-    Assert.assertEquals(0, message.getRepeatedForeignMessageCount());
-    Assert.assertEquals(0, message.getRepeatedImportMessageCount ());
-    Assert.assertEquals(0, message.getRepeatedLazyMessageCount   ());
-    Assert.assertEquals(0, message.getRepeatedNestedEnumCount    ());
-    Assert.assertEquals(0, message.getRepeatedForeignEnumCount   ());
-    Assert.assertEquals(0, message.getRepeatedImportEnumCount    ());
+    assertEquals(0, message.getRepeatedGroupCount         ());
+    assertEquals(0, message.getRepeatedNestedMessageCount ());
+    assertEquals(0, message.getRepeatedForeignMessageCount());
+    assertEquals(0, message.getRepeatedImportMessageCount ());
+    assertEquals(0, message.getRepeatedLazyMessageCount   ());
+    assertEquals(0, message.getRepeatedNestedEnumCount    ());
+    assertEquals(0, message.getRepeatedForeignEnumCount   ());
+    assertEquals(0, message.getRepeatedImportEnumCount    ());
 
-    Assert.assertEquals(0, message.getRepeatedStringPieceCount());
-    Assert.assertEquals(0, message.getRepeatedCordCount());
+    assertEquals(0, message.getRepeatedStringPieceCount());
+    assertEquals(0, message.getRepeatedCordCount());
 
     // hasBlah() should also be false for all default fields.
-    Assert.assertFalse(message.hasDefaultInt32   ());
-    Assert.assertFalse(message.hasDefaultInt64   ());
-    Assert.assertFalse(message.hasDefaultUint32  ());
-    Assert.assertFalse(message.hasDefaultUint64  ());
-    Assert.assertFalse(message.hasDefaultSint32  ());
-    Assert.assertFalse(message.hasDefaultSint64  ());
-    Assert.assertFalse(message.hasDefaultFixed32 ());
-    Assert.assertFalse(message.hasDefaultFixed64 ());
-    Assert.assertFalse(message.hasDefaultSfixed32());
-    Assert.assertFalse(message.hasDefaultSfixed64());
-    Assert.assertFalse(message.hasDefaultFloat   ());
-    Assert.assertFalse(message.hasDefaultDouble  ());
-    Assert.assertFalse(message.hasDefaultBool    ());
-    Assert.assertFalse(message.hasDefaultString  ());
-    Assert.assertFalse(message.hasDefaultBytes   ());
+    assertFalse(message.hasDefaultInt32   ());
+    assertFalse(message.hasDefaultInt64   ());
+    assertFalse(message.hasDefaultUint32  ());
+    assertFalse(message.hasDefaultUint64  ());
+    assertFalse(message.hasDefaultSint32  ());
+    assertFalse(message.hasDefaultSint64  ());
+    assertFalse(message.hasDefaultFixed32 ());
+    assertFalse(message.hasDefaultFixed64 ());
+    assertFalse(message.hasDefaultSfixed32());
+    assertFalse(message.hasDefaultSfixed64());
+    assertFalse(message.hasDefaultFloat   ());
+    assertFalse(message.hasDefaultDouble  ());
+    assertFalse(message.hasDefaultBool    ());
+    assertFalse(message.hasDefaultString  ());
+    assertFalse(message.hasDefaultBytes   ());
 
-    Assert.assertFalse(message.hasDefaultNestedEnum ());
-    Assert.assertFalse(message.hasDefaultForeignEnum());
-    Assert.assertFalse(message.hasDefaultImportEnum ());
+    assertFalse(message.hasDefaultNestedEnum ());
+    assertFalse(message.hasDefaultForeignEnum());
+    assertFalse(message.hasDefaultImportEnum ());
 
-    Assert.assertFalse(message.hasDefaultStringPiece());
-    Assert.assertFalse(message.hasDefaultCord());
+    assertFalse(message.hasDefaultStringPiece());
+    assertFalse(message.hasDefaultCord());
 
     // Fields with defaults have their default values (duh).
-    Assert.assertEquals( 41    , message.getDefaultInt32   ());
-    Assert.assertEquals( 42    , message.getDefaultInt64   ());
-    Assert.assertEquals( 43    , message.getDefaultUint32  ());
-    Assert.assertEquals( 44    , message.getDefaultUint64  ());
-    Assert.assertEquals(-45    , message.getDefaultSint32  ());
-    Assert.assertEquals( 46    , message.getDefaultSint64  ());
-    Assert.assertEquals( 47    , message.getDefaultFixed32 ());
-    Assert.assertEquals( 48    , message.getDefaultFixed64 ());
-    Assert.assertEquals( 49    , message.getDefaultSfixed32());
-    Assert.assertEquals(-50    , message.getDefaultSfixed64());
-    Assert.assertEquals( 51.5  , message.getDefaultFloat   (), 0.0);
-    Assert.assertEquals( 52e3  , message.getDefaultDouble  (), 0.0);
-    Assert.assertEquals(true   , message.getDefaultBool    ());
-    Assert.assertEquals("hello", message.getDefaultString  ());
-    Assert.assertEquals(toBytes("world"), message.getDefaultBytes());
+    assertEquals( 41    , message.getDefaultInt32   ());
+    assertEquals( 42    , message.getDefaultInt64   ());
+    assertEquals( 43    , message.getDefaultUint32  ());
+    assertEquals( 44    , message.getDefaultUint64  ());
+    assertEquals(-45    , message.getDefaultSint32  ());
+    assertEquals( 46    , message.getDefaultSint64  ());
+    assertEquals( 47    , message.getDefaultFixed32 ());
+    assertEquals( 48    , message.getDefaultFixed64 ());
+    assertEquals( 49    , message.getDefaultSfixed32());
+    assertEquals(-50    , message.getDefaultSfixed64());
+    assertEquals( 51.5  , message.getDefaultFloat   (), 0.0);
+    assertEquals( 52e3  , message.getDefaultDouble  (), 0.0);
+    assertEquals(true   , message.getDefaultBool    ());
+    assertEquals("hello", message.getDefaultString  ());
+    assertEquals(toBytes("world"), message.getDefaultBytes());
 
-    Assert.assertEquals(TestAllTypes.NestedEnum.BAR, message.getDefaultNestedEnum ());
-    Assert.assertEquals(ForeignEnum.FOREIGN_BAR, message.getDefaultForeignEnum());
-    Assert.assertEquals(ImportEnum.IMPORT_BAR, message.getDefaultImportEnum());
+    assertEquals(TestAllTypes.NestedEnum.BAR, message.getDefaultNestedEnum ());
+    assertEquals(ForeignEnum.FOREIGN_BAR, message.getDefaultForeignEnum());
+    assertEquals(ImportEnum.IMPORT_BAR, message.getDefaultImportEnum());
 
-    Assert.assertEquals("abc", message.getDefaultStringPiece());
-    Assert.assertEquals("123", message.getDefaultCord());
+    assertEquals("abc", message.getDefaultStringPiece());
+    assertEquals("123", message.getDefaultCord());
 
-    Assert.assertFalse(message.hasOneofUint32());
-    Assert.assertFalse(message.hasOneofNestedMessage());
-    Assert.assertFalse(message.hasOneofString());
-    Assert.assertFalse(message.hasOneofBytes());
+    assertFalse(message.hasOneofUint32());
+    assertFalse(message.hasOneofNestedMessage());
+    assertFalse(message.hasOneofString());
+    assertFalse(message.hasOneofBytes());
   }
 
   // -------------------------------------------------------------------
 
   /**
-   * Assert (using {@code junit.framework.Assert}} that all fields of
+   * Assert that all fields of
    * {@code message} are set to the values assigned by {@code setAllFields}
    * followed by {@code modifyRepeatedFields}.
    */
@@ -1066,92 +1057,92 @@ public final class TestUtil {
     // ModifyRepeatedFields only sets the second repeated element of each
     // field.  In addition to verifying this, we also verify that the first
     // element and size were *not* modified.
-    Assert.assertEquals(2, message.getRepeatedInt32Count   ());
-    Assert.assertEquals(2, message.getRepeatedInt64Count   ());
-    Assert.assertEquals(2, message.getRepeatedUint32Count  ());
-    Assert.assertEquals(2, message.getRepeatedUint64Count  ());
-    Assert.assertEquals(2, message.getRepeatedSint32Count  ());
-    Assert.assertEquals(2, message.getRepeatedSint64Count  ());
-    Assert.assertEquals(2, message.getRepeatedFixed32Count ());
-    Assert.assertEquals(2, message.getRepeatedFixed64Count ());
-    Assert.assertEquals(2, message.getRepeatedSfixed32Count());
-    Assert.assertEquals(2, message.getRepeatedSfixed64Count());
-    Assert.assertEquals(2, message.getRepeatedFloatCount   ());
-    Assert.assertEquals(2, message.getRepeatedDoubleCount  ());
-    Assert.assertEquals(2, message.getRepeatedBoolCount    ());
-    Assert.assertEquals(2, message.getRepeatedStringCount  ());
-    Assert.assertEquals(2, message.getRepeatedBytesCount   ());
+    assertEquals(2, message.getRepeatedInt32Count   ());
+    assertEquals(2, message.getRepeatedInt64Count   ());
+    assertEquals(2, message.getRepeatedUint32Count  ());
+    assertEquals(2, message.getRepeatedUint64Count  ());
+    assertEquals(2, message.getRepeatedSint32Count  ());
+    assertEquals(2, message.getRepeatedSint64Count  ());
+    assertEquals(2, message.getRepeatedFixed32Count ());
+    assertEquals(2, message.getRepeatedFixed64Count ());
+    assertEquals(2, message.getRepeatedSfixed32Count());
+    assertEquals(2, message.getRepeatedSfixed64Count());
+    assertEquals(2, message.getRepeatedFloatCount   ());
+    assertEquals(2, message.getRepeatedDoubleCount  ());
+    assertEquals(2, message.getRepeatedBoolCount    ());
+    assertEquals(2, message.getRepeatedStringCount  ());
+    assertEquals(2, message.getRepeatedBytesCount   ());
 
-    Assert.assertEquals(2, message.getRepeatedGroupCount         ());
-    Assert.assertEquals(2, message.getRepeatedNestedMessageCount ());
-    Assert.assertEquals(2, message.getRepeatedForeignMessageCount());
-    Assert.assertEquals(2, message.getRepeatedImportMessageCount ());
-    Assert.assertEquals(2, message.getRepeatedLazyMessageCount   ());
-    Assert.assertEquals(2, message.getRepeatedNestedEnumCount    ());
-    Assert.assertEquals(2, message.getRepeatedForeignEnumCount   ());
-    Assert.assertEquals(2, message.getRepeatedImportEnumCount    ());
+    assertEquals(2, message.getRepeatedGroupCount         ());
+    assertEquals(2, message.getRepeatedNestedMessageCount ());
+    assertEquals(2, message.getRepeatedForeignMessageCount());
+    assertEquals(2, message.getRepeatedImportMessageCount ());
+    assertEquals(2, message.getRepeatedLazyMessageCount   ());
+    assertEquals(2, message.getRepeatedNestedEnumCount    ());
+    assertEquals(2, message.getRepeatedForeignEnumCount   ());
+    assertEquals(2, message.getRepeatedImportEnumCount    ());
 
-    Assert.assertEquals(2, message.getRepeatedStringPieceCount());
-    Assert.assertEquals(2, message.getRepeatedCordCount());
+    assertEquals(2, message.getRepeatedStringPieceCount());
+    assertEquals(2, message.getRepeatedCordCount());
 
-    Assert.assertEquals(201  , message.getRepeatedInt32   (0));
-    Assert.assertEquals(202L , message.getRepeatedInt64   (0));
-    Assert.assertEquals(203  , message.getRepeatedUint32  (0));
-    Assert.assertEquals(204L , message.getRepeatedUint64  (0));
-    Assert.assertEquals(205  , message.getRepeatedSint32  (0));
-    Assert.assertEquals(206L , message.getRepeatedSint64  (0));
-    Assert.assertEquals(207  , message.getRepeatedFixed32 (0));
-    Assert.assertEquals(208L , message.getRepeatedFixed64 (0));
-    Assert.assertEquals(209  , message.getRepeatedSfixed32(0));
-    Assert.assertEquals(210L , message.getRepeatedSfixed64(0));
-    Assert.assertEquals(211F , message.getRepeatedFloat   (0));
-    Assert.assertEquals(212D , message.getRepeatedDouble  (0));
-    Assert.assertEquals(true , message.getRepeatedBool    (0));
-    Assert.assertEquals("215", message.getRepeatedString  (0));
-    Assert.assertEquals(toBytes("216"), message.getRepeatedBytes(0));
+    assertEquals(201  , message.getRepeatedInt32   (0));
+    assertEquals(202L , message.getRepeatedInt64   (0));
+    assertEquals(203  , message.getRepeatedUint32  (0));
+    assertEquals(204L , message.getRepeatedUint64  (0));
+    assertEquals(205  , message.getRepeatedSint32  (0));
+    assertEquals(206L , message.getRepeatedSint64  (0));
+    assertEquals(207  , message.getRepeatedFixed32 (0));
+    assertEquals(208L , message.getRepeatedFixed64 (0));
+    assertEquals(209  , message.getRepeatedSfixed32(0));
+    assertEquals(210L , message.getRepeatedSfixed64(0));
+    assertEquals(211F , message.getRepeatedFloat   (0), 0);
+    assertEquals(212D , message.getRepeatedDouble  (0), 0);
+    assertEquals(true , message.getRepeatedBool    (0));
+    assertEquals("215", message.getRepeatedString  (0));
+    assertEquals(toBytes("216"), message.getRepeatedBytes(0));
 
-    Assert.assertEquals(217, message.getRepeatedGroup         (0).getA());
-    Assert.assertEquals(218, message.getRepeatedNestedMessage (0).getBb());
-    Assert.assertEquals(219, message.getRepeatedForeignMessage(0).getC());
-    Assert.assertEquals(220, message.getRepeatedImportMessage (0).getD());
-    Assert.assertEquals(227, message.getRepeatedLazyMessage   (0).getBb());
+    assertEquals(217, message.getRepeatedGroup         (0).getA());
+    assertEquals(218, message.getRepeatedNestedMessage (0).getBb());
+    assertEquals(219, message.getRepeatedForeignMessage(0).getC());
+    assertEquals(220, message.getRepeatedImportMessage (0).getD());
+    assertEquals(227, message.getRepeatedLazyMessage   (0).getBb());
 
-    Assert.assertEquals(TestAllTypes.NestedEnum.BAR, message.getRepeatedNestedEnum (0));
-    Assert.assertEquals(ForeignEnum.FOREIGN_BAR, message.getRepeatedForeignEnum(0));
-    Assert.assertEquals(ImportEnum.IMPORT_BAR, message.getRepeatedImportEnum(0));
+    assertEquals(TestAllTypes.NestedEnum.BAR, message.getRepeatedNestedEnum (0));
+    assertEquals(ForeignEnum.FOREIGN_BAR, message.getRepeatedForeignEnum(0));
+    assertEquals(ImportEnum.IMPORT_BAR, message.getRepeatedImportEnum(0));
 
-    Assert.assertEquals("224", message.getRepeatedStringPiece(0));
-    Assert.assertEquals("225", message.getRepeatedCord(0));
+    assertEquals("224", message.getRepeatedStringPiece(0));
+    assertEquals("225", message.getRepeatedCord(0));
 
     // Actually verify the second (modified) elements now.
-    Assert.assertEquals(501  , message.getRepeatedInt32   (1));
-    Assert.assertEquals(502L , message.getRepeatedInt64   (1));
-    Assert.assertEquals(503  , message.getRepeatedUint32  (1));
-    Assert.assertEquals(504L , message.getRepeatedUint64  (1));
-    Assert.assertEquals(505  , message.getRepeatedSint32  (1));
-    Assert.assertEquals(506L , message.getRepeatedSint64  (1));
-    Assert.assertEquals(507  , message.getRepeatedFixed32 (1));
-    Assert.assertEquals(508L , message.getRepeatedFixed64 (1));
-    Assert.assertEquals(509  , message.getRepeatedSfixed32(1));
-    Assert.assertEquals(510L , message.getRepeatedSfixed64(1));
-    Assert.assertEquals(511F , message.getRepeatedFloat   (1));
-    Assert.assertEquals(512D , message.getRepeatedDouble  (1));
-    Assert.assertEquals(true , message.getRepeatedBool    (1));
-    Assert.assertEquals("515", message.getRepeatedString  (1));
-    Assert.assertEquals(toBytes("516"), message.getRepeatedBytes(1));
+    assertEquals(501  , message.getRepeatedInt32   (1));
+    assertEquals(502L , message.getRepeatedInt64   (1));
+    assertEquals(503  , message.getRepeatedUint32  (1));
+    assertEquals(504L , message.getRepeatedUint64  (1));
+    assertEquals(505  , message.getRepeatedSint32  (1));
+    assertEquals(506L , message.getRepeatedSint64  (1));
+    assertEquals(507  , message.getRepeatedFixed32 (1));
+    assertEquals(508L , message.getRepeatedFixed64 (1));
+    assertEquals(509  , message.getRepeatedSfixed32(1));
+    assertEquals(510L , message.getRepeatedSfixed64(1));
+    assertEquals(511F , message.getRepeatedFloat   (1), 0);
+    assertEquals(512D , message.getRepeatedDouble  (1), 0);
+    assertEquals(true , message.getRepeatedBool    (1));
+    assertEquals("515", message.getRepeatedString  (1));
+    assertEquals(toBytes("516"), message.getRepeatedBytes(1));
 
-    Assert.assertEquals(517, message.getRepeatedGroup         (1).getA());
-    Assert.assertEquals(518, message.getRepeatedNestedMessage (1).getBb());
-    Assert.assertEquals(519, message.getRepeatedForeignMessage(1).getC());
-    Assert.assertEquals(520, message.getRepeatedImportMessage (1).getD());
-    Assert.assertEquals(527, message.getRepeatedLazyMessage   (1).getBb());
+    assertEquals(517, message.getRepeatedGroup         (1).getA());
+    assertEquals(518, message.getRepeatedNestedMessage (1).getBb());
+    assertEquals(519, message.getRepeatedForeignMessage(1).getC());
+    assertEquals(520, message.getRepeatedImportMessage (1).getD());
+    assertEquals(527, message.getRepeatedLazyMessage   (1).getBb());
 
-    Assert.assertEquals(TestAllTypes.NestedEnum.FOO, message.getRepeatedNestedEnum (1));
-    Assert.assertEquals(ForeignEnum.FOREIGN_FOO, message.getRepeatedForeignEnum(1));
-    Assert.assertEquals(ImportEnum.IMPORT_FOO, message.getRepeatedImportEnum(1));
+    assertEquals(TestAllTypes.NestedEnum.FOO, message.getRepeatedNestedEnum (1));
+    assertEquals(ForeignEnum.FOREIGN_FOO, message.getRepeatedForeignEnum(1));
+    assertEquals(ImportEnum.IMPORT_FOO, message.getRepeatedImportEnum(1));
 
-    Assert.assertEquals("524", message.getRepeatedStringPiece(1));
-    Assert.assertEquals("525", message.getRepeatedCord(1));
+    assertEquals("524", message.getRepeatedStringPiece(1));
+    assertEquals("525", message.getRepeatedCord(1));
   }
 
   /**
@@ -1226,101 +1217,101 @@ public final class TestUtil {
   }
 
   /**
-   * Assert (using {@code junit.framework.Assert}} that all fields of
+   * Assert that all fields of
    * {@code message} are set to the values assigned by {@code setPackedFields}.
    */
   public static void assertPackedFieldsSet(TestPackedTypes message) {
-    Assert.assertEquals(2, message.getPackedInt32Count   ());
-    Assert.assertEquals(2, message.getPackedInt64Count   ());
-    Assert.assertEquals(2, message.getPackedUint32Count  ());
-    Assert.assertEquals(2, message.getPackedUint64Count  ());
-    Assert.assertEquals(2, message.getPackedSint32Count  ());
-    Assert.assertEquals(2, message.getPackedSint64Count  ());
-    Assert.assertEquals(2, message.getPackedFixed32Count ());
-    Assert.assertEquals(2, message.getPackedFixed64Count ());
-    Assert.assertEquals(2, message.getPackedSfixed32Count());
-    Assert.assertEquals(2, message.getPackedSfixed64Count());
-    Assert.assertEquals(2, message.getPackedFloatCount   ());
-    Assert.assertEquals(2, message.getPackedDoubleCount  ());
-    Assert.assertEquals(2, message.getPackedBoolCount    ());
-    Assert.assertEquals(2, message.getPackedEnumCount   ());
-    Assert.assertEquals(601  , message.getPackedInt32   (0));
-    Assert.assertEquals(602  , message.getPackedInt64   (0));
-    Assert.assertEquals(603  , message.getPackedUint32  (0));
-    Assert.assertEquals(604  , message.getPackedUint64  (0));
-    Assert.assertEquals(605  , message.getPackedSint32  (0));
-    Assert.assertEquals(606  , message.getPackedSint64  (0));
-    Assert.assertEquals(607  , message.getPackedFixed32 (0));
-    Assert.assertEquals(608  , message.getPackedFixed64 (0));
-    Assert.assertEquals(609  , message.getPackedSfixed32(0));
-    Assert.assertEquals(610  , message.getPackedSfixed64(0));
-    Assert.assertEquals(611  , message.getPackedFloat   (0), 0.0);
-    Assert.assertEquals(612  , message.getPackedDouble  (0), 0.0);
-    Assert.assertEquals(true , message.getPackedBool    (0));
-    Assert.assertEquals(ForeignEnum.FOREIGN_BAR, message.getPackedEnum(0));
-    Assert.assertEquals(701  , message.getPackedInt32   (1));
-    Assert.assertEquals(702  , message.getPackedInt64   (1));
-    Assert.assertEquals(703  , message.getPackedUint32  (1));
-    Assert.assertEquals(704  , message.getPackedUint64  (1));
-    Assert.assertEquals(705  , message.getPackedSint32  (1));
-    Assert.assertEquals(706  , message.getPackedSint64  (1));
-    Assert.assertEquals(707  , message.getPackedFixed32 (1));
-    Assert.assertEquals(708  , message.getPackedFixed64 (1));
-    Assert.assertEquals(709  , message.getPackedSfixed32(1));
-    Assert.assertEquals(710  , message.getPackedSfixed64(1));
-    Assert.assertEquals(711  , message.getPackedFloat   (1), 0.0);
-    Assert.assertEquals(712  , message.getPackedDouble  (1), 0.0);
-    Assert.assertEquals(false, message.getPackedBool    (1));
-    Assert.assertEquals(ForeignEnum.FOREIGN_BAZ, message.getPackedEnum(1));
+    assertEquals(2, message.getPackedInt32Count   ());
+    assertEquals(2, message.getPackedInt64Count   ());
+    assertEquals(2, message.getPackedUint32Count  ());
+    assertEquals(2, message.getPackedUint64Count  ());
+    assertEquals(2, message.getPackedSint32Count  ());
+    assertEquals(2, message.getPackedSint64Count  ());
+    assertEquals(2, message.getPackedFixed32Count ());
+    assertEquals(2, message.getPackedFixed64Count ());
+    assertEquals(2, message.getPackedSfixed32Count());
+    assertEquals(2, message.getPackedSfixed64Count());
+    assertEquals(2, message.getPackedFloatCount   ());
+    assertEquals(2, message.getPackedDoubleCount  ());
+    assertEquals(2, message.getPackedBoolCount    ());
+    assertEquals(2, message.getPackedEnumCount   ());
+    assertEquals(601  , message.getPackedInt32   (0));
+    assertEquals(602  , message.getPackedInt64   (0));
+    assertEquals(603  , message.getPackedUint32  (0));
+    assertEquals(604  , message.getPackedUint64  (0));
+    assertEquals(605  , message.getPackedSint32  (0));
+    assertEquals(606  , message.getPackedSint64  (0));
+    assertEquals(607  , message.getPackedFixed32 (0));
+    assertEquals(608  , message.getPackedFixed64 (0));
+    assertEquals(609  , message.getPackedSfixed32(0));
+    assertEquals(610  , message.getPackedSfixed64(0));
+    assertEquals(611  , message.getPackedFloat   (0), 0.0);
+    assertEquals(612  , message.getPackedDouble  (0), 0.0);
+    assertEquals(true , message.getPackedBool    (0));
+    assertEquals(ForeignEnum.FOREIGN_BAR, message.getPackedEnum(0));
+    assertEquals(701  , message.getPackedInt32   (1));
+    assertEquals(702  , message.getPackedInt64   (1));
+    assertEquals(703  , message.getPackedUint32  (1));
+    assertEquals(704  , message.getPackedUint64  (1));
+    assertEquals(705  , message.getPackedSint32  (1));
+    assertEquals(706  , message.getPackedSint64  (1));
+    assertEquals(707  , message.getPackedFixed32 (1));
+    assertEquals(708  , message.getPackedFixed64 (1));
+    assertEquals(709  , message.getPackedSfixed32(1));
+    assertEquals(710  , message.getPackedSfixed64(1));
+    assertEquals(711  , message.getPackedFloat   (1), 0.0);
+    assertEquals(712  , message.getPackedDouble  (1), 0.0);
+    assertEquals(false, message.getPackedBool    (1));
+    assertEquals(ForeignEnum.FOREIGN_BAZ, message.getPackedEnum(1));
   }
 
   /**
-   * Assert (using {@code junit.framework.Assert}} that all fields of
+   * Assert that all fields of
    * {@code message} are set to the values assigned by {@code setUnpackedFields}.
    */
   public static void assertUnpackedFieldsSet(TestUnpackedTypes message) {
-    Assert.assertEquals(2, message.getUnpackedInt32Count   ());
-    Assert.assertEquals(2, message.getUnpackedInt64Count   ());
-    Assert.assertEquals(2, message.getUnpackedUint32Count  ());
-    Assert.assertEquals(2, message.getUnpackedUint64Count  ());
-    Assert.assertEquals(2, message.getUnpackedSint32Count  ());
-    Assert.assertEquals(2, message.getUnpackedSint64Count  ());
-    Assert.assertEquals(2, message.getUnpackedFixed32Count ());
-    Assert.assertEquals(2, message.getUnpackedFixed64Count ());
-    Assert.assertEquals(2, message.getUnpackedSfixed32Count());
-    Assert.assertEquals(2, message.getUnpackedSfixed64Count());
-    Assert.assertEquals(2, message.getUnpackedFloatCount   ());
-    Assert.assertEquals(2, message.getUnpackedDoubleCount  ());
-    Assert.assertEquals(2, message.getUnpackedBoolCount    ());
-    Assert.assertEquals(2, message.getUnpackedEnumCount   ());
-    Assert.assertEquals(601  , message.getUnpackedInt32   (0));
-    Assert.assertEquals(602  , message.getUnpackedInt64   (0));
-    Assert.assertEquals(603  , message.getUnpackedUint32  (0));
-    Assert.assertEquals(604  , message.getUnpackedUint64  (0));
-    Assert.assertEquals(605  , message.getUnpackedSint32  (0));
-    Assert.assertEquals(606  , message.getUnpackedSint64  (0));
-    Assert.assertEquals(607  , message.getUnpackedFixed32 (0));
-    Assert.assertEquals(608  , message.getUnpackedFixed64 (0));
-    Assert.assertEquals(609  , message.getUnpackedSfixed32(0));
-    Assert.assertEquals(610  , message.getUnpackedSfixed64(0));
-    Assert.assertEquals(611  , message.getUnpackedFloat   (0), 0.0);
-    Assert.assertEquals(612  , message.getUnpackedDouble  (0), 0.0);
-    Assert.assertEquals(true , message.getUnpackedBool    (0));
-    Assert.assertEquals(ForeignEnum.FOREIGN_BAR, message.getUnpackedEnum(0));
-    Assert.assertEquals(701  , message.getUnpackedInt32   (1));
-    Assert.assertEquals(702  , message.getUnpackedInt64   (1));
-    Assert.assertEquals(703  , message.getUnpackedUint32  (1));
-    Assert.assertEquals(704  , message.getUnpackedUint64  (1));
-    Assert.assertEquals(705  , message.getUnpackedSint32  (1));
-    Assert.assertEquals(706  , message.getUnpackedSint64  (1));
-    Assert.assertEquals(707  , message.getUnpackedFixed32 (1));
-    Assert.assertEquals(708  , message.getUnpackedFixed64 (1));
-    Assert.assertEquals(709  , message.getUnpackedSfixed32(1));
-    Assert.assertEquals(710  , message.getUnpackedSfixed64(1));
-    Assert.assertEquals(711  , message.getUnpackedFloat   (1), 0.0);
-    Assert.assertEquals(712  , message.getUnpackedDouble  (1), 0.0);
-    Assert.assertEquals(false, message.getUnpackedBool    (1));
-    Assert.assertEquals(ForeignEnum.FOREIGN_BAZ, message.getUnpackedEnum(1));
+    assertEquals(2, message.getUnpackedInt32Count   ());
+    assertEquals(2, message.getUnpackedInt64Count   ());
+    assertEquals(2, message.getUnpackedUint32Count  ());
+    assertEquals(2, message.getUnpackedUint64Count  ());
+    assertEquals(2, message.getUnpackedSint32Count  ());
+    assertEquals(2, message.getUnpackedSint64Count  ());
+    assertEquals(2, message.getUnpackedFixed32Count ());
+    assertEquals(2, message.getUnpackedFixed64Count ());
+    assertEquals(2, message.getUnpackedSfixed32Count());
+    assertEquals(2, message.getUnpackedSfixed64Count());
+    assertEquals(2, message.getUnpackedFloatCount   ());
+    assertEquals(2, message.getUnpackedDoubleCount  ());
+    assertEquals(2, message.getUnpackedBoolCount    ());
+    assertEquals(2, message.getUnpackedEnumCount   ());
+    assertEquals(601  , message.getUnpackedInt32   (0));
+    assertEquals(602  , message.getUnpackedInt64   (0));
+    assertEquals(603  , message.getUnpackedUint32  (0));
+    assertEquals(604  , message.getUnpackedUint64  (0));
+    assertEquals(605  , message.getUnpackedSint32  (0));
+    assertEquals(606  , message.getUnpackedSint64  (0));
+    assertEquals(607  , message.getUnpackedFixed32 (0));
+    assertEquals(608  , message.getUnpackedFixed64 (0));
+    assertEquals(609  , message.getUnpackedSfixed32(0));
+    assertEquals(610  , message.getUnpackedSfixed64(0));
+    assertEquals(611  , message.getUnpackedFloat   (0), 0.0);
+    assertEquals(612  , message.getUnpackedDouble  (0), 0.0);
+    assertEquals(true , message.getUnpackedBool    (0));
+    assertEquals(ForeignEnum.FOREIGN_BAR, message.getUnpackedEnum(0));
+    assertEquals(701  , message.getUnpackedInt32   (1));
+    assertEquals(702  , message.getUnpackedInt64   (1));
+    assertEquals(703  , message.getUnpackedUint32  (1));
+    assertEquals(704  , message.getUnpackedUint64  (1));
+    assertEquals(705  , message.getUnpackedSint32  (1));
+    assertEquals(706  , message.getUnpackedSint64  (1));
+    assertEquals(707  , message.getUnpackedFixed32 (1));
+    assertEquals(708  , message.getUnpackedFixed64 (1));
+    assertEquals(709  , message.getUnpackedSfixed32(1));
+    assertEquals(710  , message.getUnpackedSfixed64(1));
+    assertEquals(711  , message.getUnpackedFloat   (1), 0.0);
+    assertEquals(712  , message.getUnpackedDouble  (1), 0.0);
+    assertEquals(false, message.getUnpackedBool    (1));
+    assertEquals(ForeignEnum.FOREIGN_BAZ, message.getUnpackedEnum(1));
   }
 
   // ===================================================================
@@ -1330,47 +1321,47 @@ public final class TestUtil {
   // decide whether to call assertEquals(int, int) or assertEquals(Object,
   // Object).  So we define these methods to help it.
   private static void assertEqualsExactType(int a, int b) {
-    Assert.assertEquals(a, b);
+    assertEquals(a, b);
   }
   private static void assertEqualsExactType(long a, long b) {
-    Assert.assertEquals(a, b);
+    assertEquals(a, b);
   }
   private static void assertEqualsExactType(float a, float b) {
-    Assert.assertEquals(a, b, 0.0);
+    assertEquals(a, b, 0.0);
   }
   private static void assertEqualsExactType(double a, double b) {
-    Assert.assertEquals(a, b, 0.0);
+    assertEquals(a, b, 0.0);
   }
   private static void assertEqualsExactType(boolean a, boolean b) {
-    Assert.assertEquals(a, b);
+    assertEquals(a, b);
   }
   private static void assertEqualsExactType(String a, String b) {
-    Assert.assertEquals(a, b);
+    assertEquals(a, b);
   }
   private static void assertEqualsExactType(ByteString a, ByteString b) {
-    Assert.assertEquals(a, b);
+    assertEquals(a, b);
   }
   private static void assertEqualsExactType(TestAllTypes.NestedEnum a,
                                             TestAllTypes.NestedEnum b) {
-    Assert.assertEquals(a, b);
+    assertEquals(a, b);
   }
   private static void assertEqualsExactType(ForeignEnum a, ForeignEnum b) {
-    Assert.assertEquals(a, b);
+    assertEquals(a, b);
   }
   private static void assertEqualsExactType(ImportEnum a, ImportEnum b) {
-    Assert.assertEquals(a, b);
+    assertEquals(a, b);
   }
   private static void assertEqualsExactType(TestAllTypesLite.NestedEnum a,
                                             TestAllTypesLite.NestedEnum b) {
-    Assert.assertEquals(a, b);
+    assertEquals(a, b);
   }
   private static void assertEqualsExactType(ForeignEnumLite a,
                                             ForeignEnumLite b) {
-    Assert.assertEquals(a, b);
+    assertEquals(a, b);
   }
   private static void assertEqualsExactType(ImportEnumLite a,
                                             ImportEnumLite b) {
-    Assert.assertEquals(a, b);
+    assertEquals(a, b);
   }
 
   /**
@@ -1592,43 +1583,43 @@ public final class TestUtil {
   // -------------------------------------------------------------------
 
   /**
-   * Assert (using {@code junit.framework.Assert}} that all extensions of
+   * Assert that all extensions of
    * {@code message} are set to the values assigned by {@code setAllExtensions}.
    */
   public static void assertAllExtensionsSet(
       TestAllExtensionsOrBuilder message) {
-    Assert.assertTrue(message.hasExtension(optionalInt32Extension   ));
-    Assert.assertTrue(message.hasExtension(optionalInt64Extension   ));
-    Assert.assertTrue(message.hasExtension(optionalUint32Extension  ));
-    Assert.assertTrue(message.hasExtension(optionalUint64Extension  ));
-    Assert.assertTrue(message.hasExtension(optionalSint32Extension  ));
-    Assert.assertTrue(message.hasExtension(optionalSint64Extension  ));
-    Assert.assertTrue(message.hasExtension(optionalFixed32Extension ));
-    Assert.assertTrue(message.hasExtension(optionalFixed64Extension ));
-    Assert.assertTrue(message.hasExtension(optionalSfixed32Extension));
-    Assert.assertTrue(message.hasExtension(optionalSfixed64Extension));
-    Assert.assertTrue(message.hasExtension(optionalFloatExtension   ));
-    Assert.assertTrue(message.hasExtension(optionalDoubleExtension  ));
-    Assert.assertTrue(message.hasExtension(optionalBoolExtension    ));
-    Assert.assertTrue(message.hasExtension(optionalStringExtension  ));
-    Assert.assertTrue(message.hasExtension(optionalBytesExtension   ));
+    assertTrue(message.hasExtension(optionalInt32Extension   ));
+    assertTrue(message.hasExtension(optionalInt64Extension   ));
+    assertTrue(message.hasExtension(optionalUint32Extension  ));
+    assertTrue(message.hasExtension(optionalUint64Extension  ));
+    assertTrue(message.hasExtension(optionalSint32Extension  ));
+    assertTrue(message.hasExtension(optionalSint64Extension  ));
+    assertTrue(message.hasExtension(optionalFixed32Extension ));
+    assertTrue(message.hasExtension(optionalFixed64Extension ));
+    assertTrue(message.hasExtension(optionalSfixed32Extension));
+    assertTrue(message.hasExtension(optionalSfixed64Extension));
+    assertTrue(message.hasExtension(optionalFloatExtension   ));
+    assertTrue(message.hasExtension(optionalDoubleExtension  ));
+    assertTrue(message.hasExtension(optionalBoolExtension    ));
+    assertTrue(message.hasExtension(optionalStringExtension  ));
+    assertTrue(message.hasExtension(optionalBytesExtension   ));
 
-    Assert.assertTrue(message.hasExtension(optionalGroupExtension         ));
-    Assert.assertTrue(message.hasExtension(optionalNestedMessageExtension ));
-    Assert.assertTrue(message.hasExtension(optionalForeignMessageExtension));
-    Assert.assertTrue(message.hasExtension(optionalImportMessageExtension ));
+    assertTrue(message.hasExtension(optionalGroupExtension         ));
+    assertTrue(message.hasExtension(optionalNestedMessageExtension ));
+    assertTrue(message.hasExtension(optionalForeignMessageExtension));
+    assertTrue(message.hasExtension(optionalImportMessageExtension ));
 
-    Assert.assertTrue(message.getExtension(optionalGroupExtension         ).hasA());
-    Assert.assertTrue(message.getExtension(optionalNestedMessageExtension ).hasBb());
-    Assert.assertTrue(message.getExtension(optionalForeignMessageExtension).hasC());
-    Assert.assertTrue(message.getExtension(optionalImportMessageExtension ).hasD());
+    assertTrue(message.getExtension(optionalGroupExtension         ).hasA());
+    assertTrue(message.getExtension(optionalNestedMessageExtension ).hasBb());
+    assertTrue(message.getExtension(optionalForeignMessageExtension).hasC());
+    assertTrue(message.getExtension(optionalImportMessageExtension ).hasD());
 
-    Assert.assertTrue(message.hasExtension(optionalNestedEnumExtension ));
-    Assert.assertTrue(message.hasExtension(optionalForeignEnumExtension));
-    Assert.assertTrue(message.hasExtension(optionalImportEnumExtension ));
+    assertTrue(message.hasExtension(optionalNestedEnumExtension ));
+    assertTrue(message.hasExtension(optionalForeignEnumExtension));
+    assertTrue(message.hasExtension(optionalImportEnumExtension ));
 
-    Assert.assertTrue(message.hasExtension(optionalStringPieceExtension));
-    Assert.assertTrue(message.hasExtension(optionalCordExtension));
+    assertTrue(message.hasExtension(optionalStringPieceExtension));
+    assertTrue(message.hasExtension(optionalCordExtension));
 
     assertEqualsExactType(101  , message.getExtension(optionalInt32Extension   ));
     assertEqualsExactType(102L , message.getExtension(optionalInt64Extension   ));
@@ -1665,33 +1656,33 @@ public final class TestUtil {
 
     // -----------------------------------------------------------------
 
-    Assert.assertEquals(2, message.getExtensionCount(repeatedInt32Extension   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedInt64Extension   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedUint32Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedUint64Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSint32Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSint64Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedFixed32Extension ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedFixed64Extension ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSfixed32Extension));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSfixed64Extension));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedFloatExtension   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedDoubleExtension  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedBoolExtension    ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedStringExtension  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedBytesExtension   ));
+    assertEquals(2, message.getExtensionCount(repeatedInt32Extension   ));
+    assertEquals(2, message.getExtensionCount(repeatedInt64Extension   ));
+    assertEquals(2, message.getExtensionCount(repeatedUint32Extension  ));
+    assertEquals(2, message.getExtensionCount(repeatedUint64Extension  ));
+    assertEquals(2, message.getExtensionCount(repeatedSint32Extension  ));
+    assertEquals(2, message.getExtensionCount(repeatedSint64Extension  ));
+    assertEquals(2, message.getExtensionCount(repeatedFixed32Extension ));
+    assertEquals(2, message.getExtensionCount(repeatedFixed64Extension ));
+    assertEquals(2, message.getExtensionCount(repeatedSfixed32Extension));
+    assertEquals(2, message.getExtensionCount(repeatedSfixed64Extension));
+    assertEquals(2, message.getExtensionCount(repeatedFloatExtension   ));
+    assertEquals(2, message.getExtensionCount(repeatedDoubleExtension  ));
+    assertEquals(2, message.getExtensionCount(repeatedBoolExtension    ));
+    assertEquals(2, message.getExtensionCount(repeatedStringExtension  ));
+    assertEquals(2, message.getExtensionCount(repeatedBytesExtension   ));
 
-    Assert.assertEquals(2, message.getExtensionCount(repeatedGroupExtension         ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedNestedMessageExtension ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedForeignMessageExtension));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedImportMessageExtension ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedLazyMessageExtension   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedNestedEnumExtension    ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedForeignEnumExtension   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedImportEnumExtension    ));
+    assertEquals(2, message.getExtensionCount(repeatedGroupExtension         ));
+    assertEquals(2, message.getExtensionCount(repeatedNestedMessageExtension ));
+    assertEquals(2, message.getExtensionCount(repeatedForeignMessageExtension));
+    assertEquals(2, message.getExtensionCount(repeatedImportMessageExtension ));
+    assertEquals(2, message.getExtensionCount(repeatedLazyMessageExtension   ));
+    assertEquals(2, message.getExtensionCount(repeatedNestedEnumExtension    ));
+    assertEquals(2, message.getExtensionCount(repeatedForeignEnumExtension   ));
+    assertEquals(2, message.getExtensionCount(repeatedImportEnumExtension    ));
 
-    Assert.assertEquals(2, message.getExtensionCount(repeatedStringPieceExtension));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedCordExtension));
+    assertEquals(2, message.getExtensionCount(repeatedStringPieceExtension));
+    assertEquals(2, message.getExtensionCount(repeatedCordExtension));
 
     assertEqualsExactType(201  , message.getExtension(repeatedInt32Extension   , 0));
     assertEqualsExactType(202L , message.getExtension(repeatedInt64Extension   , 0));
@@ -1759,28 +1750,28 @@ public final class TestUtil {
 
     // -----------------------------------------------------------------
 
-    Assert.assertTrue(message.hasExtension(defaultInt32Extension   ));
-    Assert.assertTrue(message.hasExtension(defaultInt64Extension   ));
-    Assert.assertTrue(message.hasExtension(defaultUint32Extension  ));
-    Assert.assertTrue(message.hasExtension(defaultUint64Extension  ));
-    Assert.assertTrue(message.hasExtension(defaultSint32Extension  ));
-    Assert.assertTrue(message.hasExtension(defaultSint64Extension  ));
-    Assert.assertTrue(message.hasExtension(defaultFixed32Extension ));
-    Assert.assertTrue(message.hasExtension(defaultFixed64Extension ));
-    Assert.assertTrue(message.hasExtension(defaultSfixed32Extension));
-    Assert.assertTrue(message.hasExtension(defaultSfixed64Extension));
-    Assert.assertTrue(message.hasExtension(defaultFloatExtension   ));
-    Assert.assertTrue(message.hasExtension(defaultDoubleExtension  ));
-    Assert.assertTrue(message.hasExtension(defaultBoolExtension    ));
-    Assert.assertTrue(message.hasExtension(defaultStringExtension  ));
-    Assert.assertTrue(message.hasExtension(defaultBytesExtension   ));
+    assertTrue(message.hasExtension(defaultInt32Extension   ));
+    assertTrue(message.hasExtension(defaultInt64Extension   ));
+    assertTrue(message.hasExtension(defaultUint32Extension  ));
+    assertTrue(message.hasExtension(defaultUint64Extension  ));
+    assertTrue(message.hasExtension(defaultSint32Extension  ));
+    assertTrue(message.hasExtension(defaultSint64Extension  ));
+    assertTrue(message.hasExtension(defaultFixed32Extension ));
+    assertTrue(message.hasExtension(defaultFixed64Extension ));
+    assertTrue(message.hasExtension(defaultSfixed32Extension));
+    assertTrue(message.hasExtension(defaultSfixed64Extension));
+    assertTrue(message.hasExtension(defaultFloatExtension   ));
+    assertTrue(message.hasExtension(defaultDoubleExtension  ));
+    assertTrue(message.hasExtension(defaultBoolExtension    ));
+    assertTrue(message.hasExtension(defaultStringExtension  ));
+    assertTrue(message.hasExtension(defaultBytesExtension   ));
 
-    Assert.assertTrue(message.hasExtension(defaultNestedEnumExtension ));
-    Assert.assertTrue(message.hasExtension(defaultForeignEnumExtension));
-    Assert.assertTrue(message.hasExtension(defaultImportEnumExtension ));
+    assertTrue(message.hasExtension(defaultNestedEnumExtension ));
+    assertTrue(message.hasExtension(defaultForeignEnumExtension));
+    assertTrue(message.hasExtension(defaultImportEnumExtension ));
 
-    Assert.assertTrue(message.hasExtension(defaultStringPieceExtension));
-    Assert.assertTrue(message.hasExtension(defaultCordExtension));
+    assertTrue(message.hasExtension(defaultStringPieceExtension));
+    assertTrue(message.hasExtension(defaultCordExtension));
 
     assertEqualsExactType(401  , message.getExtension(defaultInt32Extension   ));
     assertEqualsExactType(402L , message.getExtension(defaultInt64Extension   ));
@@ -1808,7 +1799,7 @@ public final class TestUtil {
     assertEqualsExactType("424", message.getExtension(defaultStringPieceExtension));
     assertEqualsExactType("425", message.getExtension(defaultCordExtension));
 
-    Assert.assertTrue(message.hasExtension(oneofBytesExtension));
+    assertTrue(message.hasExtension(oneofBytesExtension));
 
     assertEqualsExactType(toBytes("604"), message.getExtension(oneofBytesExtension));
   }
@@ -1816,39 +1807,39 @@ public final class TestUtil {
   // -------------------------------------------------------------------
 
   /**
-   * Assert (using {@code junit.framework.Assert}} that all extensions of
+   * Assert that all extensions of
    * {@code message} are cleared, and that getting the extensions returns their
    * default values.
    */
   public static void assertExtensionsClear(TestAllExtensionsOrBuilder message) {
     // hasBlah() should initially be false for all optional fields.
-    Assert.assertFalse(message.hasExtension(optionalInt32Extension   ));
-    Assert.assertFalse(message.hasExtension(optionalInt64Extension   ));
-    Assert.assertFalse(message.hasExtension(optionalUint32Extension  ));
-    Assert.assertFalse(message.hasExtension(optionalUint64Extension  ));
-    Assert.assertFalse(message.hasExtension(optionalSint32Extension  ));
-    Assert.assertFalse(message.hasExtension(optionalSint64Extension  ));
-    Assert.assertFalse(message.hasExtension(optionalFixed32Extension ));
-    Assert.assertFalse(message.hasExtension(optionalFixed64Extension ));
-    Assert.assertFalse(message.hasExtension(optionalSfixed32Extension));
-    Assert.assertFalse(message.hasExtension(optionalSfixed64Extension));
-    Assert.assertFalse(message.hasExtension(optionalFloatExtension   ));
-    Assert.assertFalse(message.hasExtension(optionalDoubleExtension  ));
-    Assert.assertFalse(message.hasExtension(optionalBoolExtension    ));
-    Assert.assertFalse(message.hasExtension(optionalStringExtension  ));
-    Assert.assertFalse(message.hasExtension(optionalBytesExtension   ));
+    assertFalse(message.hasExtension(optionalInt32Extension   ));
+    assertFalse(message.hasExtension(optionalInt64Extension   ));
+    assertFalse(message.hasExtension(optionalUint32Extension  ));
+    assertFalse(message.hasExtension(optionalUint64Extension  ));
+    assertFalse(message.hasExtension(optionalSint32Extension  ));
+    assertFalse(message.hasExtension(optionalSint64Extension  ));
+    assertFalse(message.hasExtension(optionalFixed32Extension ));
+    assertFalse(message.hasExtension(optionalFixed64Extension ));
+    assertFalse(message.hasExtension(optionalSfixed32Extension));
+    assertFalse(message.hasExtension(optionalSfixed64Extension));
+    assertFalse(message.hasExtension(optionalFloatExtension   ));
+    assertFalse(message.hasExtension(optionalDoubleExtension  ));
+    assertFalse(message.hasExtension(optionalBoolExtension    ));
+    assertFalse(message.hasExtension(optionalStringExtension  ));
+    assertFalse(message.hasExtension(optionalBytesExtension   ));
 
-    Assert.assertFalse(message.hasExtension(optionalGroupExtension         ));
-    Assert.assertFalse(message.hasExtension(optionalNestedMessageExtension ));
-    Assert.assertFalse(message.hasExtension(optionalForeignMessageExtension));
-    Assert.assertFalse(message.hasExtension(optionalImportMessageExtension ));
+    assertFalse(message.hasExtension(optionalGroupExtension         ));
+    assertFalse(message.hasExtension(optionalNestedMessageExtension ));
+    assertFalse(message.hasExtension(optionalForeignMessageExtension));
+    assertFalse(message.hasExtension(optionalImportMessageExtension ));
 
-    Assert.assertFalse(message.hasExtension(optionalNestedEnumExtension ));
-    Assert.assertFalse(message.hasExtension(optionalForeignEnumExtension));
-    Assert.assertFalse(message.hasExtension(optionalImportEnumExtension ));
+    assertFalse(message.hasExtension(optionalNestedEnumExtension ));
+    assertFalse(message.hasExtension(optionalForeignEnumExtension));
+    assertFalse(message.hasExtension(optionalImportEnumExtension ));
 
-    Assert.assertFalse(message.hasExtension(optionalStringPieceExtension));
-    Assert.assertFalse(message.hasExtension(optionalCordExtension));
+    assertFalse(message.hasExtension(optionalStringPieceExtension));
+    assertFalse(message.hasExtension(optionalCordExtension));
 
     // Optional fields without defaults are set to zero or something like it.
     assertEqualsExactType(0    , message.getExtension(optionalInt32Extension   ));
@@ -1868,10 +1859,10 @@ public final class TestUtil {
     assertEqualsExactType(ByteString.EMPTY, message.getExtension(optionalBytesExtension));
 
     // Embedded messages should also be clear.
-    Assert.assertFalse(message.getExtension(optionalGroupExtension         ).hasA());
-    Assert.assertFalse(message.getExtension(optionalNestedMessageExtension ).hasBb());
-    Assert.assertFalse(message.getExtension(optionalForeignMessageExtension).hasC());
-    Assert.assertFalse(message.getExtension(optionalImportMessageExtension ).hasD());
+    assertFalse(message.getExtension(optionalGroupExtension         ).hasA());
+    assertFalse(message.getExtension(optionalNestedMessageExtension ).hasBb());
+    assertFalse(message.getExtension(optionalForeignMessageExtension).hasC());
+    assertFalse(message.getExtension(optionalImportMessageExtension ).hasD());
 
     assertEqualsExactType(0, message.getExtension(optionalGroupExtension         ).getA());
     assertEqualsExactType(0, message.getExtension(optionalNestedMessageExtension ).getBb());
@@ -1890,86 +1881,86 @@ public final class TestUtil {
     assertEqualsExactType("", message.getExtension(optionalCordExtension));
 
     // Repeated fields are empty.
-    Assert.assertEquals(0, message.getExtensionCount(repeatedInt32Extension   ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedInt64Extension   ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedUint32Extension  ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedUint64Extension  ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedSint32Extension  ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedSint64Extension  ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedFixed32Extension ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedFixed64Extension ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedSfixed32Extension));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedSfixed64Extension));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedFloatExtension   ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedDoubleExtension  ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedBoolExtension    ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedStringExtension  ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedBytesExtension   ));
+    assertEquals(0, message.getExtensionCount(repeatedInt32Extension   ));
+    assertEquals(0, message.getExtensionCount(repeatedInt64Extension   ));
+    assertEquals(0, message.getExtensionCount(repeatedUint32Extension  ));
+    assertEquals(0, message.getExtensionCount(repeatedUint64Extension  ));
+    assertEquals(0, message.getExtensionCount(repeatedSint32Extension  ));
+    assertEquals(0, message.getExtensionCount(repeatedSint64Extension  ));
+    assertEquals(0, message.getExtensionCount(repeatedFixed32Extension ));
+    assertEquals(0, message.getExtensionCount(repeatedFixed64Extension ));
+    assertEquals(0, message.getExtensionCount(repeatedSfixed32Extension));
+    assertEquals(0, message.getExtensionCount(repeatedSfixed64Extension));
+    assertEquals(0, message.getExtensionCount(repeatedFloatExtension   ));
+    assertEquals(0, message.getExtensionCount(repeatedDoubleExtension  ));
+    assertEquals(0, message.getExtensionCount(repeatedBoolExtension    ));
+    assertEquals(0, message.getExtensionCount(repeatedStringExtension  ));
+    assertEquals(0, message.getExtensionCount(repeatedBytesExtension   ));
 
-    Assert.assertEquals(0, message.getExtensionCount(repeatedGroupExtension         ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedNestedMessageExtension ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedForeignMessageExtension));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedImportMessageExtension ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedLazyMessageExtension   ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedNestedEnumExtension    ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedForeignEnumExtension   ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedImportEnumExtension    ));
+    assertEquals(0, message.getExtensionCount(repeatedGroupExtension         ));
+    assertEquals(0, message.getExtensionCount(repeatedNestedMessageExtension ));
+    assertEquals(0, message.getExtensionCount(repeatedForeignMessageExtension));
+    assertEquals(0, message.getExtensionCount(repeatedImportMessageExtension ));
+    assertEquals(0, message.getExtensionCount(repeatedLazyMessageExtension   ));
+    assertEquals(0, message.getExtensionCount(repeatedNestedEnumExtension    ));
+    assertEquals(0, message.getExtensionCount(repeatedForeignEnumExtension   ));
+    assertEquals(0, message.getExtensionCount(repeatedImportEnumExtension    ));
 
-    Assert.assertEquals(0, message.getExtensionCount(repeatedStringPieceExtension));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedCordExtension));
+    assertEquals(0, message.getExtensionCount(repeatedStringPieceExtension));
+    assertEquals(0, message.getExtensionCount(repeatedCordExtension));
 
     // Repeated fields are empty via getExtension().size().
-    Assert.assertEquals(0, message.getExtension(repeatedInt32Extension   ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedInt64Extension   ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedUint32Extension  ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedUint64Extension  ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedSint32Extension  ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedSint64Extension  ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedFixed32Extension ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedFixed64Extension ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedSfixed32Extension).size());
-    Assert.assertEquals(0, message.getExtension(repeatedSfixed64Extension).size());
-    Assert.assertEquals(0, message.getExtension(repeatedFloatExtension   ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedDoubleExtension  ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedBoolExtension    ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedStringExtension  ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedBytesExtension   ).size());
+    assertEquals(0, message.getExtension(repeatedInt32Extension   ).size());
+    assertEquals(0, message.getExtension(repeatedInt64Extension   ).size());
+    assertEquals(0, message.getExtension(repeatedUint32Extension  ).size());
+    assertEquals(0, message.getExtension(repeatedUint64Extension  ).size());
+    assertEquals(0, message.getExtension(repeatedSint32Extension  ).size());
+    assertEquals(0, message.getExtension(repeatedSint64Extension  ).size());
+    assertEquals(0, message.getExtension(repeatedFixed32Extension ).size());
+    assertEquals(0, message.getExtension(repeatedFixed64Extension ).size());
+    assertEquals(0, message.getExtension(repeatedSfixed32Extension).size());
+    assertEquals(0, message.getExtension(repeatedSfixed64Extension).size());
+    assertEquals(0, message.getExtension(repeatedFloatExtension   ).size());
+    assertEquals(0, message.getExtension(repeatedDoubleExtension  ).size());
+    assertEquals(0, message.getExtension(repeatedBoolExtension    ).size());
+    assertEquals(0, message.getExtension(repeatedStringExtension  ).size());
+    assertEquals(0, message.getExtension(repeatedBytesExtension   ).size());
 
-    Assert.assertEquals(0, message.getExtension(repeatedGroupExtension         ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedNestedMessageExtension ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedForeignMessageExtension).size());
-    Assert.assertEquals(0, message.getExtension(repeatedImportMessageExtension ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedLazyMessageExtension   ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedNestedEnumExtension    ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedForeignEnumExtension   ).size());
-    Assert.assertEquals(0, message.getExtension(repeatedImportEnumExtension    ).size());
+    assertEquals(0, message.getExtension(repeatedGroupExtension         ).size());
+    assertEquals(0, message.getExtension(repeatedNestedMessageExtension ).size());
+    assertEquals(0, message.getExtension(repeatedForeignMessageExtension).size());
+    assertEquals(0, message.getExtension(repeatedImportMessageExtension ).size());
+    assertEquals(0, message.getExtension(repeatedLazyMessageExtension   ).size());
+    assertEquals(0, message.getExtension(repeatedNestedEnumExtension    ).size());
+    assertEquals(0, message.getExtension(repeatedForeignEnumExtension   ).size());
+    assertEquals(0, message.getExtension(repeatedImportEnumExtension    ).size());
 
-    Assert.assertEquals(0, message.getExtension(repeatedStringPieceExtension).size());
-    Assert.assertEquals(0, message.getExtension(repeatedCordExtension).size());
+    assertEquals(0, message.getExtension(repeatedStringPieceExtension).size());
+    assertEquals(0, message.getExtension(repeatedCordExtension).size());
 
     // hasBlah() should also be false for all default fields.
-    Assert.assertFalse(message.hasExtension(defaultInt32Extension   ));
-    Assert.assertFalse(message.hasExtension(defaultInt64Extension   ));
-    Assert.assertFalse(message.hasExtension(defaultUint32Extension  ));
-    Assert.assertFalse(message.hasExtension(defaultUint64Extension  ));
-    Assert.assertFalse(message.hasExtension(defaultSint32Extension  ));
-    Assert.assertFalse(message.hasExtension(defaultSint64Extension  ));
-    Assert.assertFalse(message.hasExtension(defaultFixed32Extension ));
-    Assert.assertFalse(message.hasExtension(defaultFixed64Extension ));
-    Assert.assertFalse(message.hasExtension(defaultSfixed32Extension));
-    Assert.assertFalse(message.hasExtension(defaultSfixed64Extension));
-    Assert.assertFalse(message.hasExtension(defaultFloatExtension   ));
-    Assert.assertFalse(message.hasExtension(defaultDoubleExtension  ));
-    Assert.assertFalse(message.hasExtension(defaultBoolExtension    ));
-    Assert.assertFalse(message.hasExtension(defaultStringExtension  ));
-    Assert.assertFalse(message.hasExtension(defaultBytesExtension   ));
+    assertFalse(message.hasExtension(defaultInt32Extension   ));
+    assertFalse(message.hasExtension(defaultInt64Extension   ));
+    assertFalse(message.hasExtension(defaultUint32Extension  ));
+    assertFalse(message.hasExtension(defaultUint64Extension  ));
+    assertFalse(message.hasExtension(defaultSint32Extension  ));
+    assertFalse(message.hasExtension(defaultSint64Extension  ));
+    assertFalse(message.hasExtension(defaultFixed32Extension ));
+    assertFalse(message.hasExtension(defaultFixed64Extension ));
+    assertFalse(message.hasExtension(defaultSfixed32Extension));
+    assertFalse(message.hasExtension(defaultSfixed64Extension));
+    assertFalse(message.hasExtension(defaultFloatExtension   ));
+    assertFalse(message.hasExtension(defaultDoubleExtension  ));
+    assertFalse(message.hasExtension(defaultBoolExtension    ));
+    assertFalse(message.hasExtension(defaultStringExtension  ));
+    assertFalse(message.hasExtension(defaultBytesExtension   ));
 
-    Assert.assertFalse(message.hasExtension(defaultNestedEnumExtension ));
-    Assert.assertFalse(message.hasExtension(defaultForeignEnumExtension));
-    Assert.assertFalse(message.hasExtension(defaultImportEnumExtension ));
+    assertFalse(message.hasExtension(defaultNestedEnumExtension ));
+    assertFalse(message.hasExtension(defaultForeignEnumExtension));
+    assertFalse(message.hasExtension(defaultImportEnumExtension ));
 
-    Assert.assertFalse(message.hasExtension(defaultStringPieceExtension));
-    Assert.assertFalse(message.hasExtension(defaultCordExtension));
+    assertFalse(message.hasExtension(defaultStringPieceExtension));
+    assertFalse(message.hasExtension(defaultCordExtension));
 
     // Fields with defaults have their default values (duh).
     assertEqualsExactType( 41    , message.getExtension(defaultInt32Extension   ));
@@ -1998,16 +1989,16 @@ public final class TestUtil {
     assertEqualsExactType("abc", message.getExtension(defaultStringPieceExtension));
     assertEqualsExactType("123", message.getExtension(defaultCordExtension));
 
-    Assert.assertFalse(message.hasExtension(oneofUint32Extension));
-    Assert.assertFalse(message.hasExtension(oneofNestedMessageExtension));
-    Assert.assertFalse(message.hasExtension(oneofStringExtension));
-    Assert.assertFalse(message.hasExtension(oneofBytesExtension));
+    assertFalse(message.hasExtension(oneofUint32Extension));
+    assertFalse(message.hasExtension(oneofNestedMessageExtension));
+    assertFalse(message.hasExtension(oneofStringExtension));
+    assertFalse(message.hasExtension(oneofBytesExtension));
   }
 
   // -------------------------------------------------------------------
 
   /**
-   * Assert (using {@code junit.framework.Assert}} that all extensions of
+   * Assert that all extensions of
    * {@code message} are set to the values assigned by {@code setAllExtensions}
    * followed by {@code modifyRepeatedExtensions}.
    */
@@ -2016,33 +2007,33 @@ public final class TestUtil {
     // ModifyRepeatedFields only sets the second repeated element of each
     // field.  In addition to verifying this, we also verify that the first
     // element and size were *not* modified.
-    Assert.assertEquals(2, message.getExtensionCount(repeatedInt32Extension   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedInt64Extension   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedUint32Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedUint64Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSint32Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSint64Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedFixed32Extension ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedFixed64Extension ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSfixed32Extension));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSfixed64Extension));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedFloatExtension   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedDoubleExtension  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedBoolExtension    ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedStringExtension  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedBytesExtension   ));
+    assertEquals(2, message.getExtensionCount(repeatedInt32Extension   ));
+    assertEquals(2, message.getExtensionCount(repeatedInt64Extension   ));
+    assertEquals(2, message.getExtensionCount(repeatedUint32Extension  ));
+    assertEquals(2, message.getExtensionCount(repeatedUint64Extension  ));
+    assertEquals(2, message.getExtensionCount(repeatedSint32Extension  ));
+    assertEquals(2, message.getExtensionCount(repeatedSint64Extension  ));
+    assertEquals(2, message.getExtensionCount(repeatedFixed32Extension ));
+    assertEquals(2, message.getExtensionCount(repeatedFixed64Extension ));
+    assertEquals(2, message.getExtensionCount(repeatedSfixed32Extension));
+    assertEquals(2, message.getExtensionCount(repeatedSfixed64Extension));
+    assertEquals(2, message.getExtensionCount(repeatedFloatExtension   ));
+    assertEquals(2, message.getExtensionCount(repeatedDoubleExtension  ));
+    assertEquals(2, message.getExtensionCount(repeatedBoolExtension    ));
+    assertEquals(2, message.getExtensionCount(repeatedStringExtension  ));
+    assertEquals(2, message.getExtensionCount(repeatedBytesExtension   ));
 
-    Assert.assertEquals(2, message.getExtensionCount(repeatedGroupExtension         ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedNestedMessageExtension ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedForeignMessageExtension));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedImportMessageExtension ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedLazyMessageExtension   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedNestedEnumExtension    ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedForeignEnumExtension   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedImportEnumExtension    ));
+    assertEquals(2, message.getExtensionCount(repeatedGroupExtension         ));
+    assertEquals(2, message.getExtensionCount(repeatedNestedMessageExtension ));
+    assertEquals(2, message.getExtensionCount(repeatedForeignMessageExtension));
+    assertEquals(2, message.getExtensionCount(repeatedImportMessageExtension ));
+    assertEquals(2, message.getExtensionCount(repeatedLazyMessageExtension   ));
+    assertEquals(2, message.getExtensionCount(repeatedNestedEnumExtension    ));
+    assertEquals(2, message.getExtensionCount(repeatedForeignEnumExtension   ));
+    assertEquals(2, message.getExtensionCount(repeatedImportEnumExtension    ));
 
-    Assert.assertEquals(2, message.getExtensionCount(repeatedStringPieceExtension));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedCordExtension));
+    assertEquals(2, message.getExtensionCount(repeatedStringPieceExtension));
+    assertEquals(2, message.getExtensionCount(repeatedCordExtension));
 
     assertEqualsExactType(201  , message.getExtension(repeatedInt32Extension   , 0));
     assertEqualsExactType(202L , message.getExtension(repeatedInt64Extension   , 0));
@@ -2143,20 +2134,20 @@ public final class TestUtil {
   }
 
   public static void assertPackedExtensionsSet(TestPackedExtensions message) {
-    Assert.assertEquals(2, message.getExtensionCount(packedInt32Extension   ));
-    Assert.assertEquals(2, message.getExtensionCount(packedInt64Extension   ));
-    Assert.assertEquals(2, message.getExtensionCount(packedUint32Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(packedUint64Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(packedSint32Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(packedSint64Extension  ));
-    Assert.assertEquals(2, message.getExtensionCount(packedFixed32Extension ));
-    Assert.assertEquals(2, message.getExtensionCount(packedFixed64Extension ));
-    Assert.assertEquals(2, message.getExtensionCount(packedSfixed32Extension));
-    Assert.assertEquals(2, message.getExtensionCount(packedSfixed64Extension));
-    Assert.assertEquals(2, message.getExtensionCount(packedFloatExtension   ));
-    Assert.assertEquals(2, message.getExtensionCount(packedDoubleExtension  ));
-    Assert.assertEquals(2, message.getExtensionCount(packedBoolExtension    ));
-    Assert.assertEquals(2, message.getExtensionCount(packedEnumExtension));
+    assertEquals(2, message.getExtensionCount(packedInt32Extension   ));
+    assertEquals(2, message.getExtensionCount(packedInt64Extension   ));
+    assertEquals(2, message.getExtensionCount(packedUint32Extension  ));
+    assertEquals(2, message.getExtensionCount(packedUint64Extension  ));
+    assertEquals(2, message.getExtensionCount(packedSint32Extension  ));
+    assertEquals(2, message.getExtensionCount(packedSint64Extension  ));
+    assertEquals(2, message.getExtensionCount(packedFixed32Extension ));
+    assertEquals(2, message.getExtensionCount(packedFixed64Extension ));
+    assertEquals(2, message.getExtensionCount(packedSfixed32Extension));
+    assertEquals(2, message.getExtensionCount(packedSfixed64Extension));
+    assertEquals(2, message.getExtensionCount(packedFloatExtension   ));
+    assertEquals(2, message.getExtensionCount(packedDoubleExtension  ));
+    assertEquals(2, message.getExtensionCount(packedBoolExtension    ));
+    assertEquals(2, message.getExtensionCount(packedEnumExtension));
     assertEqualsExactType(601  , message.getExtension(packedInt32Extension   , 0));
     assertEqualsExactType(602L , message.getExtension(packedInt64Extension   , 0));
     assertEqualsExactType(603  , message.getExtension(packedUint32Extension  , 0));
@@ -2382,43 +2373,43 @@ public final class TestUtil {
   // -------------------------------------------------------------------
 
   /**
-   * Assert (using {@code junit.framework.Assert}} that all extensions of
+   * Assert that all extensions of
    * {@code message} are set to the values assigned by {@code setAllExtensions}.
    */
   public static void assertAllExtensionsSet(
       TestAllExtensionsLiteOrBuilder message) {
-    Assert.assertTrue(message.hasExtension(optionalInt32ExtensionLite   ));
-    Assert.assertTrue(message.hasExtension(optionalInt64ExtensionLite   ));
-    Assert.assertTrue(message.hasExtension(optionalUint32ExtensionLite  ));
-    Assert.assertTrue(message.hasExtension(optionalUint64ExtensionLite  ));
-    Assert.assertTrue(message.hasExtension(optionalSint32ExtensionLite  ));
-    Assert.assertTrue(message.hasExtension(optionalSint64ExtensionLite  ));
-    Assert.assertTrue(message.hasExtension(optionalFixed32ExtensionLite ));
-    Assert.assertTrue(message.hasExtension(optionalFixed64ExtensionLite ));
-    Assert.assertTrue(message.hasExtension(optionalSfixed32ExtensionLite));
-    Assert.assertTrue(message.hasExtension(optionalSfixed64ExtensionLite));
-    Assert.assertTrue(message.hasExtension(optionalFloatExtensionLite   ));
-    Assert.assertTrue(message.hasExtension(optionalDoubleExtensionLite  ));
-    Assert.assertTrue(message.hasExtension(optionalBoolExtensionLite    ));
-    Assert.assertTrue(message.hasExtension(optionalStringExtensionLite  ));
-    Assert.assertTrue(message.hasExtension(optionalBytesExtensionLite   ));
+    assertTrue(message.hasExtension(optionalInt32ExtensionLite   ));
+    assertTrue(message.hasExtension(optionalInt64ExtensionLite   ));
+    assertTrue(message.hasExtension(optionalUint32ExtensionLite  ));
+    assertTrue(message.hasExtension(optionalUint64ExtensionLite  ));
+    assertTrue(message.hasExtension(optionalSint32ExtensionLite  ));
+    assertTrue(message.hasExtension(optionalSint64ExtensionLite  ));
+    assertTrue(message.hasExtension(optionalFixed32ExtensionLite ));
+    assertTrue(message.hasExtension(optionalFixed64ExtensionLite ));
+    assertTrue(message.hasExtension(optionalSfixed32ExtensionLite));
+    assertTrue(message.hasExtension(optionalSfixed64ExtensionLite));
+    assertTrue(message.hasExtension(optionalFloatExtensionLite   ));
+    assertTrue(message.hasExtension(optionalDoubleExtensionLite  ));
+    assertTrue(message.hasExtension(optionalBoolExtensionLite    ));
+    assertTrue(message.hasExtension(optionalStringExtensionLite  ));
+    assertTrue(message.hasExtension(optionalBytesExtensionLite   ));
 
-    Assert.assertTrue(message.hasExtension(optionalGroupExtensionLite         ));
-    Assert.assertTrue(message.hasExtension(optionalNestedMessageExtensionLite ));
-    Assert.assertTrue(message.hasExtension(optionalForeignMessageExtensionLite));
-    Assert.assertTrue(message.hasExtension(optionalImportMessageExtensionLite ));
+    assertTrue(message.hasExtension(optionalGroupExtensionLite         ));
+    assertTrue(message.hasExtension(optionalNestedMessageExtensionLite ));
+    assertTrue(message.hasExtension(optionalForeignMessageExtensionLite));
+    assertTrue(message.hasExtension(optionalImportMessageExtensionLite ));
 
-    Assert.assertTrue(message.getExtension(optionalGroupExtensionLite         ).hasA());
-    Assert.assertTrue(message.getExtension(optionalNestedMessageExtensionLite ).hasBb());
-    Assert.assertTrue(message.getExtension(optionalForeignMessageExtensionLite).hasC());
-    Assert.assertTrue(message.getExtension(optionalImportMessageExtensionLite ).hasD());
+    assertTrue(message.getExtension(optionalGroupExtensionLite         ).hasA());
+    assertTrue(message.getExtension(optionalNestedMessageExtensionLite ).hasBb());
+    assertTrue(message.getExtension(optionalForeignMessageExtensionLite).hasC());
+    assertTrue(message.getExtension(optionalImportMessageExtensionLite ).hasD());
 
-    Assert.assertTrue(message.hasExtension(optionalNestedEnumExtensionLite ));
-    Assert.assertTrue(message.hasExtension(optionalForeignEnumExtensionLite));
-    Assert.assertTrue(message.hasExtension(optionalImportEnumExtensionLite ));
+    assertTrue(message.hasExtension(optionalNestedEnumExtensionLite ));
+    assertTrue(message.hasExtension(optionalForeignEnumExtensionLite));
+    assertTrue(message.hasExtension(optionalImportEnumExtensionLite ));
 
-    Assert.assertTrue(message.hasExtension(optionalStringPieceExtensionLite));
-    Assert.assertTrue(message.hasExtension(optionalCordExtensionLite));
+    assertTrue(message.hasExtension(optionalStringPieceExtensionLite));
+    assertTrue(message.hasExtension(optionalCordExtensionLite));
 
     assertEqualsExactType(101  , message.getExtension(optionalInt32ExtensionLite   ));
     assertEqualsExactType(102L , message.getExtension(optionalInt64ExtensionLite   ));
@@ -2456,33 +2447,33 @@ public final class TestUtil {
 
     // -----------------------------------------------------------------
 
-    Assert.assertEquals(2, message.getExtensionCount(repeatedInt32ExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedInt64ExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedUint32ExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedUint64ExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSint32ExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSint64ExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedFixed32ExtensionLite ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedFixed64ExtensionLite ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSfixed32ExtensionLite));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSfixed64ExtensionLite));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedFloatExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedDoubleExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedBoolExtensionLite    ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedStringExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedBytesExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(repeatedInt32ExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(repeatedInt64ExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(repeatedUint32ExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(repeatedUint64ExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(repeatedSint32ExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(repeatedSint64ExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(repeatedFixed32ExtensionLite ));
+    assertEquals(2, message.getExtensionCount(repeatedFixed64ExtensionLite ));
+    assertEquals(2, message.getExtensionCount(repeatedSfixed32ExtensionLite));
+    assertEquals(2, message.getExtensionCount(repeatedSfixed64ExtensionLite));
+    assertEquals(2, message.getExtensionCount(repeatedFloatExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(repeatedDoubleExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(repeatedBoolExtensionLite    ));
+    assertEquals(2, message.getExtensionCount(repeatedStringExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(repeatedBytesExtensionLite   ));
 
-    Assert.assertEquals(2, message.getExtensionCount(repeatedGroupExtensionLite         ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedNestedMessageExtensionLite ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedForeignMessageExtensionLite));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedImportMessageExtensionLite ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedLazyMessageExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedNestedEnumExtensionLite    ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedForeignEnumExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedImportEnumExtensionLite    ));
+    assertEquals(2, message.getExtensionCount(repeatedGroupExtensionLite         ));
+    assertEquals(2, message.getExtensionCount(repeatedNestedMessageExtensionLite ));
+    assertEquals(2, message.getExtensionCount(repeatedForeignMessageExtensionLite));
+    assertEquals(2, message.getExtensionCount(repeatedImportMessageExtensionLite ));
+    assertEquals(2, message.getExtensionCount(repeatedLazyMessageExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(repeatedNestedEnumExtensionLite    ));
+    assertEquals(2, message.getExtensionCount(repeatedForeignEnumExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(repeatedImportEnumExtensionLite    ));
 
-    Assert.assertEquals(2, message.getExtensionCount(repeatedStringPieceExtensionLite));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedCordExtensionLite));
+    assertEquals(2, message.getExtensionCount(repeatedStringPieceExtensionLite));
+    assertEquals(2, message.getExtensionCount(repeatedCordExtensionLite));
 
     assertEqualsExactType(201  , message.getExtension(repeatedInt32ExtensionLite   , 0));
     assertEqualsExactType(202L , message.getExtension(repeatedInt64ExtensionLite   , 0));
@@ -2550,28 +2541,28 @@ public final class TestUtil {
 
     // -----------------------------------------------------------------
 
-    Assert.assertTrue(message.hasExtension(defaultInt32ExtensionLite   ));
-    Assert.assertTrue(message.hasExtension(defaultInt64ExtensionLite   ));
-    Assert.assertTrue(message.hasExtension(defaultUint32ExtensionLite  ));
-    Assert.assertTrue(message.hasExtension(defaultUint64ExtensionLite  ));
-    Assert.assertTrue(message.hasExtension(defaultSint32ExtensionLite  ));
-    Assert.assertTrue(message.hasExtension(defaultSint64ExtensionLite  ));
-    Assert.assertTrue(message.hasExtension(defaultFixed32ExtensionLite ));
-    Assert.assertTrue(message.hasExtension(defaultFixed64ExtensionLite ));
-    Assert.assertTrue(message.hasExtension(defaultSfixed32ExtensionLite));
-    Assert.assertTrue(message.hasExtension(defaultSfixed64ExtensionLite));
-    Assert.assertTrue(message.hasExtension(defaultFloatExtensionLite   ));
-    Assert.assertTrue(message.hasExtension(defaultDoubleExtensionLite  ));
-    Assert.assertTrue(message.hasExtension(defaultBoolExtensionLite    ));
-    Assert.assertTrue(message.hasExtension(defaultStringExtensionLite  ));
-    Assert.assertTrue(message.hasExtension(defaultBytesExtensionLite   ));
+    assertTrue(message.hasExtension(defaultInt32ExtensionLite   ));
+    assertTrue(message.hasExtension(defaultInt64ExtensionLite   ));
+    assertTrue(message.hasExtension(defaultUint32ExtensionLite  ));
+    assertTrue(message.hasExtension(defaultUint64ExtensionLite  ));
+    assertTrue(message.hasExtension(defaultSint32ExtensionLite  ));
+    assertTrue(message.hasExtension(defaultSint64ExtensionLite  ));
+    assertTrue(message.hasExtension(defaultFixed32ExtensionLite ));
+    assertTrue(message.hasExtension(defaultFixed64ExtensionLite ));
+    assertTrue(message.hasExtension(defaultSfixed32ExtensionLite));
+    assertTrue(message.hasExtension(defaultSfixed64ExtensionLite));
+    assertTrue(message.hasExtension(defaultFloatExtensionLite   ));
+    assertTrue(message.hasExtension(defaultDoubleExtensionLite  ));
+    assertTrue(message.hasExtension(defaultBoolExtensionLite    ));
+    assertTrue(message.hasExtension(defaultStringExtensionLite  ));
+    assertTrue(message.hasExtension(defaultBytesExtensionLite   ));
 
-    Assert.assertTrue(message.hasExtension(defaultNestedEnumExtensionLite ));
-    Assert.assertTrue(message.hasExtension(defaultForeignEnumExtensionLite));
-    Assert.assertTrue(message.hasExtension(defaultImportEnumExtensionLite ));
+    assertTrue(message.hasExtension(defaultNestedEnumExtensionLite ));
+    assertTrue(message.hasExtension(defaultForeignEnumExtensionLite));
+    assertTrue(message.hasExtension(defaultImportEnumExtensionLite ));
 
-    Assert.assertTrue(message.hasExtension(defaultStringPieceExtensionLite));
-    Assert.assertTrue(message.hasExtension(defaultCordExtensionLite));
+    assertTrue(message.hasExtension(defaultStringPieceExtensionLite));
+    assertTrue(message.hasExtension(defaultCordExtensionLite));
 
     assertEqualsExactType(401  , message.getExtension(defaultInt32ExtensionLite   ));
     assertEqualsExactType(402L , message.getExtension(defaultInt64ExtensionLite   ));
@@ -2599,7 +2590,7 @@ public final class TestUtil {
     assertEqualsExactType("424", message.getExtension(defaultStringPieceExtensionLite));
     assertEqualsExactType("425", message.getExtension(defaultCordExtensionLite));
 
-    Assert.assertTrue(message.hasExtension(oneofBytesExtensionLite));
+    assertTrue(message.hasExtension(oneofBytesExtensionLite));
 
     assertEqualsExactType(toBytes("604"), message.getExtension(oneofBytesExtensionLite));
   }
@@ -2607,42 +2598,42 @@ public final class TestUtil {
   // -------------------------------------------------------------------
 
   /**
-   * Assert (using {@code junit.framework.Assert}} that all extensions of
+   * Assert that all extensions of
    * {@code message} are cleared, and that getting the extensions returns their
    * default values.
    */
   public static void assertExtensionsClear(
       TestAllExtensionsLiteOrBuilder message) {
     // hasBlah() should initially be false for all optional fields.
-    Assert.assertFalse(message.hasExtension(optionalInt32ExtensionLite   ));
-    Assert.assertFalse(message.hasExtension(optionalInt64ExtensionLite   ));
-    Assert.assertFalse(message.hasExtension(optionalUint32ExtensionLite  ));
-    Assert.assertFalse(message.hasExtension(optionalUint64ExtensionLite  ));
-    Assert.assertFalse(message.hasExtension(optionalSint32ExtensionLite  ));
-    Assert.assertFalse(message.hasExtension(optionalSint64ExtensionLite  ));
-    Assert.assertFalse(message.hasExtension(optionalFixed32ExtensionLite ));
-    Assert.assertFalse(message.hasExtension(optionalFixed64ExtensionLite ));
-    Assert.assertFalse(message.hasExtension(optionalSfixed32ExtensionLite));
-    Assert.assertFalse(message.hasExtension(optionalSfixed64ExtensionLite));
-    Assert.assertFalse(message.hasExtension(optionalFloatExtensionLite   ));
-    Assert.assertFalse(message.hasExtension(optionalDoubleExtensionLite  ));
-    Assert.assertFalse(message.hasExtension(optionalBoolExtensionLite    ));
-    Assert.assertFalse(message.hasExtension(optionalStringExtensionLite  ));
-    Assert.assertFalse(message.hasExtension(optionalBytesExtensionLite   ));
+    assertFalse(message.hasExtension(optionalInt32ExtensionLite   ));
+    assertFalse(message.hasExtension(optionalInt64ExtensionLite   ));
+    assertFalse(message.hasExtension(optionalUint32ExtensionLite  ));
+    assertFalse(message.hasExtension(optionalUint64ExtensionLite  ));
+    assertFalse(message.hasExtension(optionalSint32ExtensionLite  ));
+    assertFalse(message.hasExtension(optionalSint64ExtensionLite  ));
+    assertFalse(message.hasExtension(optionalFixed32ExtensionLite ));
+    assertFalse(message.hasExtension(optionalFixed64ExtensionLite ));
+    assertFalse(message.hasExtension(optionalSfixed32ExtensionLite));
+    assertFalse(message.hasExtension(optionalSfixed64ExtensionLite));
+    assertFalse(message.hasExtension(optionalFloatExtensionLite   ));
+    assertFalse(message.hasExtension(optionalDoubleExtensionLite  ));
+    assertFalse(message.hasExtension(optionalBoolExtensionLite    ));
+    assertFalse(message.hasExtension(optionalStringExtensionLite  ));
+    assertFalse(message.hasExtension(optionalBytesExtensionLite   ));
 
-    Assert.assertFalse(message.hasExtension(optionalGroupExtensionLite              ));
-    Assert.assertFalse(message.hasExtension(optionalNestedMessageExtensionLite      ));
-    Assert.assertFalse(message.hasExtension(optionalForeignMessageExtensionLite     ));
-    Assert.assertFalse(message.hasExtension(optionalImportMessageExtensionLite      ));
-    Assert.assertFalse(message.hasExtension(optionalPublicImportMessageExtensionLite));
-    Assert.assertFalse(message.hasExtension(optionalLazyMessageExtensionLite        ));
+    assertFalse(message.hasExtension(optionalGroupExtensionLite              ));
+    assertFalse(message.hasExtension(optionalNestedMessageExtensionLite      ));
+    assertFalse(message.hasExtension(optionalForeignMessageExtensionLite     ));
+    assertFalse(message.hasExtension(optionalImportMessageExtensionLite      ));
+    assertFalse(message.hasExtension(optionalPublicImportMessageExtensionLite));
+    assertFalse(message.hasExtension(optionalLazyMessageExtensionLite        ));
 
-    Assert.assertFalse(message.hasExtension(optionalNestedEnumExtensionLite ));
-    Assert.assertFalse(message.hasExtension(optionalForeignEnumExtensionLite));
-    Assert.assertFalse(message.hasExtension(optionalImportEnumExtensionLite ));
+    assertFalse(message.hasExtension(optionalNestedEnumExtensionLite ));
+    assertFalse(message.hasExtension(optionalForeignEnumExtensionLite));
+    assertFalse(message.hasExtension(optionalImportEnumExtensionLite ));
 
-    Assert.assertFalse(message.hasExtension(optionalStringPieceExtensionLite));
-    Assert.assertFalse(message.hasExtension(optionalCordExtensionLite));
+    assertFalse(message.hasExtension(optionalStringPieceExtensionLite));
+    assertFalse(message.hasExtension(optionalCordExtensionLite));
 
     // Optional fields without defaults are set to zero or something like it.
     assertEqualsExactType(0    , message.getExtension(optionalInt32ExtensionLite   ));
@@ -2662,12 +2653,12 @@ public final class TestUtil {
     assertEqualsExactType(ByteString.EMPTY, message.getExtension(optionalBytesExtensionLite));
 
     // Embedded messages should also be clear.
-    Assert.assertFalse(message.getExtension(optionalGroupExtensionLite              ).hasA());
-    Assert.assertFalse(message.getExtension(optionalNestedMessageExtensionLite      ).hasBb());
-    Assert.assertFalse(message.getExtension(optionalForeignMessageExtensionLite     ).hasC());
-    Assert.assertFalse(message.getExtension(optionalImportMessageExtensionLite      ).hasD());
-    Assert.assertFalse(message.getExtension(optionalPublicImportMessageExtensionLite).hasE());
-    Assert.assertFalse(message.getExtension(optionalLazyMessageExtensionLite        ).hasBb());
+    assertFalse(message.getExtension(optionalGroupExtensionLite              ).hasA());
+    assertFalse(message.getExtension(optionalNestedMessageExtensionLite      ).hasBb());
+    assertFalse(message.getExtension(optionalForeignMessageExtensionLite     ).hasC());
+    assertFalse(message.getExtension(optionalImportMessageExtensionLite      ).hasD());
+    assertFalse(message.getExtension(optionalPublicImportMessageExtensionLite).hasE());
+    assertFalse(message.getExtension(optionalLazyMessageExtensionLite        ).hasBb());
 
     assertEqualsExactType(0, message.getExtension(optionalGroupExtensionLite         ).getA());
     assertEqualsExactType(0, message.getExtension(optionalNestedMessageExtensionLite ).getBb());
@@ -2689,57 +2680,57 @@ public final class TestUtil {
     assertEqualsExactType("", message.getExtension(optionalCordExtensionLite));
 
     // Repeated fields are empty.
-    Assert.assertEquals(0, message.getExtensionCount(repeatedInt32ExtensionLite   ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedInt64ExtensionLite   ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedUint32ExtensionLite  ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedUint64ExtensionLite  ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedSint32ExtensionLite  ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedSint64ExtensionLite  ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedFixed32ExtensionLite ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedFixed64ExtensionLite ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedSfixed32ExtensionLite));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedSfixed64ExtensionLite));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedFloatExtensionLite   ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedDoubleExtensionLite  ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedBoolExtensionLite    ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedStringExtensionLite  ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedBytesExtensionLite   ));
+    assertEquals(0, message.getExtensionCount(repeatedInt32ExtensionLite   ));
+    assertEquals(0, message.getExtensionCount(repeatedInt64ExtensionLite   ));
+    assertEquals(0, message.getExtensionCount(repeatedUint32ExtensionLite  ));
+    assertEquals(0, message.getExtensionCount(repeatedUint64ExtensionLite  ));
+    assertEquals(0, message.getExtensionCount(repeatedSint32ExtensionLite  ));
+    assertEquals(0, message.getExtensionCount(repeatedSint64ExtensionLite  ));
+    assertEquals(0, message.getExtensionCount(repeatedFixed32ExtensionLite ));
+    assertEquals(0, message.getExtensionCount(repeatedFixed64ExtensionLite ));
+    assertEquals(0, message.getExtensionCount(repeatedSfixed32ExtensionLite));
+    assertEquals(0, message.getExtensionCount(repeatedSfixed64ExtensionLite));
+    assertEquals(0, message.getExtensionCount(repeatedFloatExtensionLite   ));
+    assertEquals(0, message.getExtensionCount(repeatedDoubleExtensionLite  ));
+    assertEquals(0, message.getExtensionCount(repeatedBoolExtensionLite    ));
+    assertEquals(0, message.getExtensionCount(repeatedStringExtensionLite  ));
+    assertEquals(0, message.getExtensionCount(repeatedBytesExtensionLite   ));
 
-    Assert.assertEquals(0, message.getExtensionCount(repeatedGroupExtensionLite         ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedNestedMessageExtensionLite ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedForeignMessageExtensionLite));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedImportMessageExtensionLite ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedLazyMessageExtensionLite   ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedNestedEnumExtensionLite    ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedForeignEnumExtensionLite   ));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedImportEnumExtensionLite    ));
+    assertEquals(0, message.getExtensionCount(repeatedGroupExtensionLite         ));
+    assertEquals(0, message.getExtensionCount(repeatedNestedMessageExtensionLite ));
+    assertEquals(0, message.getExtensionCount(repeatedForeignMessageExtensionLite));
+    assertEquals(0, message.getExtensionCount(repeatedImportMessageExtensionLite ));
+    assertEquals(0, message.getExtensionCount(repeatedLazyMessageExtensionLite   ));
+    assertEquals(0, message.getExtensionCount(repeatedNestedEnumExtensionLite    ));
+    assertEquals(0, message.getExtensionCount(repeatedForeignEnumExtensionLite   ));
+    assertEquals(0, message.getExtensionCount(repeatedImportEnumExtensionLite    ));
 
-    Assert.assertEquals(0, message.getExtensionCount(repeatedStringPieceExtensionLite));
-    Assert.assertEquals(0, message.getExtensionCount(repeatedCordExtensionLite));
+    assertEquals(0, message.getExtensionCount(repeatedStringPieceExtensionLite));
+    assertEquals(0, message.getExtensionCount(repeatedCordExtensionLite));
 
     // hasBlah() should also be false for all default fields.
-    Assert.assertFalse(message.hasExtension(defaultInt32ExtensionLite   ));
-    Assert.assertFalse(message.hasExtension(defaultInt64ExtensionLite   ));
-    Assert.assertFalse(message.hasExtension(defaultUint32ExtensionLite  ));
-    Assert.assertFalse(message.hasExtension(defaultUint64ExtensionLite  ));
-    Assert.assertFalse(message.hasExtension(defaultSint32ExtensionLite  ));
-    Assert.assertFalse(message.hasExtension(defaultSint64ExtensionLite  ));
-    Assert.assertFalse(message.hasExtension(defaultFixed32ExtensionLite ));
-    Assert.assertFalse(message.hasExtension(defaultFixed64ExtensionLite ));
-    Assert.assertFalse(message.hasExtension(defaultSfixed32ExtensionLite));
-    Assert.assertFalse(message.hasExtension(defaultSfixed64ExtensionLite));
-    Assert.assertFalse(message.hasExtension(defaultFloatExtensionLite   ));
-    Assert.assertFalse(message.hasExtension(defaultDoubleExtensionLite  ));
-    Assert.assertFalse(message.hasExtension(defaultBoolExtensionLite    ));
-    Assert.assertFalse(message.hasExtension(defaultStringExtensionLite  ));
-    Assert.assertFalse(message.hasExtension(defaultBytesExtensionLite   ));
+    assertFalse(message.hasExtension(defaultInt32ExtensionLite   ));
+    assertFalse(message.hasExtension(defaultInt64ExtensionLite   ));
+    assertFalse(message.hasExtension(defaultUint32ExtensionLite  ));
+    assertFalse(message.hasExtension(defaultUint64ExtensionLite  ));
+    assertFalse(message.hasExtension(defaultSint32ExtensionLite  ));
+    assertFalse(message.hasExtension(defaultSint64ExtensionLite  ));
+    assertFalse(message.hasExtension(defaultFixed32ExtensionLite ));
+    assertFalse(message.hasExtension(defaultFixed64ExtensionLite ));
+    assertFalse(message.hasExtension(defaultSfixed32ExtensionLite));
+    assertFalse(message.hasExtension(defaultSfixed64ExtensionLite));
+    assertFalse(message.hasExtension(defaultFloatExtensionLite   ));
+    assertFalse(message.hasExtension(defaultDoubleExtensionLite  ));
+    assertFalse(message.hasExtension(defaultBoolExtensionLite    ));
+    assertFalse(message.hasExtension(defaultStringExtensionLite  ));
+    assertFalse(message.hasExtension(defaultBytesExtensionLite   ));
 
-    Assert.assertFalse(message.hasExtension(defaultNestedEnumExtensionLite ));
-    Assert.assertFalse(message.hasExtension(defaultForeignEnumExtensionLite));
-    Assert.assertFalse(message.hasExtension(defaultImportEnumExtensionLite ));
+    assertFalse(message.hasExtension(defaultNestedEnumExtensionLite ));
+    assertFalse(message.hasExtension(defaultForeignEnumExtensionLite));
+    assertFalse(message.hasExtension(defaultImportEnumExtensionLite ));
 
-    Assert.assertFalse(message.hasExtension(defaultStringPieceExtensionLite));
-    Assert.assertFalse(message.hasExtension(defaultCordExtensionLite));
+    assertFalse(message.hasExtension(defaultStringPieceExtensionLite));
+    assertFalse(message.hasExtension(defaultCordExtensionLite));
 
     // Fields with defaults have their default values (duh).
     assertEqualsExactType( 41    , message.getExtension(defaultInt32ExtensionLite   ));
@@ -2768,16 +2759,16 @@ public final class TestUtil {
     assertEqualsExactType("abc", message.getExtension(defaultStringPieceExtensionLite));
     assertEqualsExactType("123", message.getExtension(defaultCordExtensionLite));
 
-    Assert.assertFalse(message.hasExtension(oneofUint32ExtensionLite));
-    Assert.assertFalse(message.hasExtension(oneofNestedMessageExtensionLite));
-    Assert.assertFalse(message.hasExtension(oneofStringExtensionLite));
-    Assert.assertFalse(message.hasExtension(oneofBytesExtensionLite));
+    assertFalse(message.hasExtension(oneofUint32ExtensionLite));
+    assertFalse(message.hasExtension(oneofNestedMessageExtensionLite));
+    assertFalse(message.hasExtension(oneofStringExtensionLite));
+    assertFalse(message.hasExtension(oneofBytesExtensionLite));
   }
 
   // -------------------------------------------------------------------
 
   /**
-   * Assert (using {@code junit.framework.Assert}} that all extensions of
+   * Assert that all extensions of
    * {@code message} are set to the values assigned by {@code setAllExtensions}
    * followed by {@code modifyRepeatedExtensions}.
    */
@@ -2786,33 +2777,33 @@ public final class TestUtil {
     // ModifyRepeatedFields only sets the second repeated element of each
     // field.  In addition to verifying this, we also verify that the first
     // element and size were *not* modified.
-    Assert.assertEquals(2, message.getExtensionCount(repeatedInt32ExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedInt64ExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedUint32ExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedUint64ExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSint32ExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSint64ExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedFixed32ExtensionLite ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedFixed64ExtensionLite ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSfixed32ExtensionLite));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedSfixed64ExtensionLite));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedFloatExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedDoubleExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedBoolExtensionLite    ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedStringExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedBytesExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(repeatedInt32ExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(repeatedInt64ExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(repeatedUint32ExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(repeatedUint64ExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(repeatedSint32ExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(repeatedSint64ExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(repeatedFixed32ExtensionLite ));
+    assertEquals(2, message.getExtensionCount(repeatedFixed64ExtensionLite ));
+    assertEquals(2, message.getExtensionCount(repeatedSfixed32ExtensionLite));
+    assertEquals(2, message.getExtensionCount(repeatedSfixed64ExtensionLite));
+    assertEquals(2, message.getExtensionCount(repeatedFloatExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(repeatedDoubleExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(repeatedBoolExtensionLite    ));
+    assertEquals(2, message.getExtensionCount(repeatedStringExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(repeatedBytesExtensionLite   ));
 
-    Assert.assertEquals(2, message.getExtensionCount(repeatedGroupExtensionLite         ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedNestedMessageExtensionLite ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedForeignMessageExtensionLite));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedImportMessageExtensionLite ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedLazyMessageExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedNestedEnumExtensionLite    ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedForeignEnumExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedImportEnumExtensionLite    ));
+    assertEquals(2, message.getExtensionCount(repeatedGroupExtensionLite         ));
+    assertEquals(2, message.getExtensionCount(repeatedNestedMessageExtensionLite ));
+    assertEquals(2, message.getExtensionCount(repeatedForeignMessageExtensionLite));
+    assertEquals(2, message.getExtensionCount(repeatedImportMessageExtensionLite ));
+    assertEquals(2, message.getExtensionCount(repeatedLazyMessageExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(repeatedNestedEnumExtensionLite    ));
+    assertEquals(2, message.getExtensionCount(repeatedForeignEnumExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(repeatedImportEnumExtensionLite    ));
 
-    Assert.assertEquals(2, message.getExtensionCount(repeatedStringPieceExtensionLite));
-    Assert.assertEquals(2, message.getExtensionCount(repeatedCordExtensionLite));
+    assertEquals(2, message.getExtensionCount(repeatedStringPieceExtensionLite));
+    assertEquals(2, message.getExtensionCount(repeatedCordExtensionLite));
 
     assertEqualsExactType(201  , message.getExtension(repeatedInt32ExtensionLite   , 0));
     assertEqualsExactType(202L , message.getExtension(repeatedInt64ExtensionLite   , 0));
@@ -2913,20 +2904,20 @@ public final class TestUtil {
   }
 
   public static void assertPackedExtensionsSet(TestPackedExtensionsLite message) {
-    Assert.assertEquals(2, message.getExtensionCount(packedInt32ExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(packedInt64ExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(packedUint32ExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(packedUint64ExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(packedSint32ExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(packedSint64ExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(packedFixed32ExtensionLite ));
-    Assert.assertEquals(2, message.getExtensionCount(packedFixed64ExtensionLite ));
-    Assert.assertEquals(2, message.getExtensionCount(packedSfixed32ExtensionLite));
-    Assert.assertEquals(2, message.getExtensionCount(packedSfixed64ExtensionLite));
-    Assert.assertEquals(2, message.getExtensionCount(packedFloatExtensionLite   ));
-    Assert.assertEquals(2, message.getExtensionCount(packedDoubleExtensionLite  ));
-    Assert.assertEquals(2, message.getExtensionCount(packedBoolExtensionLite    ));
-    Assert.assertEquals(2, message.getExtensionCount(packedEnumExtensionLite));
+    assertEquals(2, message.getExtensionCount(packedInt32ExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(packedInt64ExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(packedUint32ExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(packedUint64ExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(packedSint32ExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(packedSint64ExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(packedFixed32ExtensionLite ));
+    assertEquals(2, message.getExtensionCount(packedFixed64ExtensionLite ));
+    assertEquals(2, message.getExtensionCount(packedSfixed32ExtensionLite));
+    assertEquals(2, message.getExtensionCount(packedSfixed64ExtensionLite));
+    assertEquals(2, message.getExtensionCount(packedFloatExtensionLite   ));
+    assertEquals(2, message.getExtensionCount(packedDoubleExtensionLite  ));
+    assertEquals(2, message.getExtensionCount(packedBoolExtensionLite    ));
+    assertEquals(2, message.getExtensionCount(packedEnumExtensionLite));
     assertEqualsExactType(601  , message.getExtension(packedInt32ExtensionLite   , 0));
     assertEqualsExactType(602L , message.getExtension(packedInt64ExtensionLite   , 0));
     assertEqualsExactType(603  , message.getExtension(packedUint32ExtensionLite  , 0));
@@ -2970,17 +2961,17 @@ public final class TestUtil {
   }
 
   public static void assertOneofSet(TestOneof2 message) {
-    Assert.assertTrue(message.hasFooLazyMessage            ());
-    Assert.assertTrue(message.getFooLazyMessage().hasQuxInt());
+    assertTrue(message.hasFooLazyMessage            ());
+    assertTrue(message.getFooLazyMessage().hasQuxInt());
 
-    Assert.assertTrue(message.hasBarString());
-    Assert.assertTrue(message.hasBazInt   ());
-    Assert.assertTrue(message.hasBazString());
+    assertTrue(message.hasBarString());
+    assertTrue(message.hasBazInt   ());
+    assertTrue(message.hasBazString());
 
-    Assert.assertEquals(100  , message.getFooLazyMessage().getQuxInt());
-    Assert.assertEquals("101", message.getBarString                 ());
-    Assert.assertEquals(102  , message.getBazInt                    ());
-    Assert.assertEquals("103", message.getBazString                 ());
+    assertEquals(100  , message.getFooLazyMessage().getQuxInt());
+    assertEquals("101", message.getBarString                 ());
+    assertEquals(102  , message.getBazInt                    ());
+    assertEquals("103", message.getBazString                 ());
   }
 
   public static void assertAtMostOneFieldSetOneof(TestOneof2 message) {
@@ -2994,7 +2985,7 @@ public final class TestUtil {
     if (message.hasFooMessage()) { ++count; }
     if (message.hasFooGroup()) { ++count; }
     if (message.hasFooLazyMessage()) { ++count; }
-    Assert.assertTrue(count <= 1);
+    assertTrue(count <= 1);
 
     count = 0;
     if (message.hasBarInt()) { ++count; }
@@ -3003,32 +2994,32 @@ public final class TestUtil {
     if (message.hasBarStringPiece()) { ++count; }
     if (message.hasBarBytes()) { ++count; }
     if (message.hasBarEnum()) { ++count; }
-    Assert.assertTrue(count <= 1);
+    assertTrue(count <= 1);
 
     switch (message.getFooCase()) {
       case FOO_INT:
-        Assert.assertTrue(message.hasFooInt());
+        assertTrue(message.hasFooInt());
         break;
       case FOO_STRING:
-        Assert.assertTrue(message.hasFooString());
+        assertTrue(message.hasFooString());
         break;
       case FOO_CORD:
-        Assert.assertTrue(message.hasFooCord());
+        assertTrue(message.hasFooCord());
         break;
       case FOO_BYTES:
-        Assert.assertTrue(message.hasFooBytes());
+        assertTrue(message.hasFooBytes());
         break;
       case FOO_ENUM:
-        Assert.assertTrue(message.hasFooEnum());
+        assertTrue(message.hasFooEnum());
         break;
       case FOO_MESSAGE:
-        Assert.assertTrue(message.hasFooMessage());
+        assertTrue(message.hasFooMessage());
         break;
       case FOOGROUP:
-        Assert.assertTrue(message.hasFooGroup());
+        assertTrue(message.hasFooGroup());
         break;
       case FOO_LAZY_MESSAGE:
-        Assert.assertTrue(message.hasFooLazyMessage());
+        assertTrue(message.hasFooLazyMessage());
         break;
       case FOO_NOT_SET:
         break;
@@ -3097,16 +3088,16 @@ public final class TestUtil {
       this.extensionRegistry = extensionRegistry;
 
       this.file = baseDescriptor.getFile();
-      Assert.assertEquals(1, file.getDependencies().size());
+      assertEquals(1, file.getDependencies().size());
       this.importFile = file.getDependencies().get(0);
       this.publicImportFile = importFile.getDependencies().get(0);
 
       Descriptors.Descriptor testAllTypes;
-      if (baseDescriptor.getName() == "TestAllTypes") {
+      if (baseDescriptor.getName().equals("TestAllTypes")) {
         testAllTypes = baseDescriptor;
       } else {
         testAllTypes = file.findMessageTypeByName("TestAllTypes");
-        Assert.assertNotNull(testAllTypes);
+        assertNotNull(testAllTypes);
       }
 
       if (extensionRegistry == null) {
@@ -3133,14 +3124,15 @@ public final class TestUtil {
       this.foreignEnum = file.findEnumTypeByName("ForeignEnum");
       this.importEnum = importFile.findEnumTypeByName("ImportEnum");
 
-      Assert.assertNotNull(optionalGroup );
-      Assert.assertNotNull(repeatedGroup );
-      Assert.assertNotNull(nestedMessage );
-      Assert.assertNotNull(foreignMessage);
-      Assert.assertNotNull(importMessage );
-      Assert.assertNotNull(nestedEnum    );
-      Assert.assertNotNull(foreignEnum   );
-      Assert.assertNotNull(importEnum    );
+      assertNotNull(optionalGroup );
+      assertNotNull(repeatedGroup );
+      assertNotNull(nestedMessage );
+      assertNotNull(foreignMessage);
+      assertNotNull(importMessage );
+      assertNotNull(publicImportMessage);
+      assertNotNull(nestedEnum    );
+      assertNotNull(foreignEnum   );
+      assertNotNull(importEnum    );
 
       this.nestedB  = nestedMessage .findFieldByName("bb");
       this.foreignC = foreignMessage.findFieldByName("c");
@@ -3159,21 +3151,21 @@ public final class TestUtil {
       this.groupA = optionalGroup.findFieldByName("a");
       this.repeatedGroupA = repeatedGroup.findFieldByName("a");
 
-      Assert.assertNotNull(groupA        );
-      Assert.assertNotNull(repeatedGroupA);
-      Assert.assertNotNull(nestedB       );
-      Assert.assertNotNull(foreignC      );
-      Assert.assertNotNull(importD       );
-      Assert.assertNotNull(importE       );
-      Assert.assertNotNull(nestedFoo     );
-      Assert.assertNotNull(nestedBar     );
-      Assert.assertNotNull(nestedBaz     );
-      Assert.assertNotNull(foreignFoo    );
-      Assert.assertNotNull(foreignBar    );
-      Assert.assertNotNull(foreignBaz    );
-      Assert.assertNotNull(importFoo     );
-      Assert.assertNotNull(importBar     );
-      Assert.assertNotNull(importBaz     );
+      assertNotNull(groupA        );
+      assertNotNull(repeatedGroupA);
+      assertNotNull(nestedB       );
+      assertNotNull(foreignC      );
+      assertNotNull(importD       );
+      assertNotNull(importE       );
+      assertNotNull(nestedFoo     );
+      assertNotNull(nestedBar     );
+      assertNotNull(nestedBaz     );
+      assertNotNull(foreignFoo    );
+      assertNotNull(foreignBar    );
+      assertNotNull(foreignBaz    );
+      assertNotNull(importFoo     );
+      assertNotNull(importBar     );
+      assertNotNull(importBaz     );
     }
 
     /**
@@ -3186,7 +3178,7 @@ public final class TestUtil {
       } else {
         result = file.findExtensionByName(name + "_extension");
       }
-      Assert.assertNotNull(result);
+      assertNotNull(result);
       return result;
     }
 
@@ -3203,8 +3195,8 @@ public final class TestUtil {
         ExtensionRegistry.ExtensionInfo extension =
           extensionRegistry.findImmutableExtensionByNumber(
               field.getContainingType(), field.getNumber());
-        Assert.assertNotNull(extension);
-        Assert.assertNotNull(extension.defaultInstance);
+        assertNotNull(extension);
+        assertNotNull(extension.defaultInstance);
         return extension.defaultInstance.newBuilderForType();
       }
     }
@@ -3424,451 +3416,451 @@ public final class TestUtil {
     // -------------------------------------------------------------------
 
     /**
-     * Assert (using {@code junit.framework.Assert}} that all fields of
+     * Assert that all fields of
      * {@code message} are set to the values assigned by {@code setAllFields},
      * using the {@link Message} reflection interface.
      */
     public void assertAllFieldsSetViaReflection(MessageOrBuilder message) {
-      Assert.assertTrue(message.hasField(f("optional_int32"   )));
-      Assert.assertTrue(message.hasField(f("optional_int64"   )));
-      Assert.assertTrue(message.hasField(f("optional_uint32"  )));
-      Assert.assertTrue(message.hasField(f("optional_uint64"  )));
-      Assert.assertTrue(message.hasField(f("optional_sint32"  )));
-      Assert.assertTrue(message.hasField(f("optional_sint64"  )));
-      Assert.assertTrue(message.hasField(f("optional_fixed32" )));
-      Assert.assertTrue(message.hasField(f("optional_fixed64" )));
-      Assert.assertTrue(message.hasField(f("optional_sfixed32")));
-      Assert.assertTrue(message.hasField(f("optional_sfixed64")));
-      Assert.assertTrue(message.hasField(f("optional_float"   )));
-      Assert.assertTrue(message.hasField(f("optional_double"  )));
-      Assert.assertTrue(message.hasField(f("optional_bool"    )));
-      Assert.assertTrue(message.hasField(f("optional_string"  )));
-      Assert.assertTrue(message.hasField(f("optional_bytes"   )));
+      assertTrue(message.hasField(f("optional_int32"   )));
+      assertTrue(message.hasField(f("optional_int64"   )));
+      assertTrue(message.hasField(f("optional_uint32"  )));
+      assertTrue(message.hasField(f("optional_uint64"  )));
+      assertTrue(message.hasField(f("optional_sint32"  )));
+      assertTrue(message.hasField(f("optional_sint64"  )));
+      assertTrue(message.hasField(f("optional_fixed32" )));
+      assertTrue(message.hasField(f("optional_fixed64" )));
+      assertTrue(message.hasField(f("optional_sfixed32")));
+      assertTrue(message.hasField(f("optional_sfixed64")));
+      assertTrue(message.hasField(f("optional_float"   )));
+      assertTrue(message.hasField(f("optional_double"  )));
+      assertTrue(message.hasField(f("optional_bool"    )));
+      assertTrue(message.hasField(f("optional_string"  )));
+      assertTrue(message.hasField(f("optional_bytes"   )));
 
-      Assert.assertTrue(message.hasField(f("optionalgroup"           )));
-      Assert.assertTrue(message.hasField(f("optional_nested_message" )));
-      Assert.assertTrue(message.hasField(f("optional_foreign_message")));
-      Assert.assertTrue(message.hasField(f("optional_import_message" )));
+      assertTrue(message.hasField(f("optionalgroup"           )));
+      assertTrue(message.hasField(f("optional_nested_message" )));
+      assertTrue(message.hasField(f("optional_foreign_message")));
+      assertTrue(message.hasField(f("optional_import_message" )));
 
-      Assert.assertTrue(
+      assertTrue(
         ((Message)message.getField(f("optionalgroup"))).hasField(groupA));
-      Assert.assertTrue(
+      assertTrue(
         ((Message)message.getField(f("optional_nested_message")))
                          .hasField(nestedB));
-      Assert.assertTrue(
+      assertTrue(
         ((Message)message.getField(f("optional_foreign_message")))
                          .hasField(foreignC));
-      Assert.assertTrue(
+      assertTrue(
         ((Message)message.getField(f("optional_import_message")))
                          .hasField(importD));
 
-      Assert.assertTrue(message.hasField(f("optional_nested_enum" )));
-      Assert.assertTrue(message.hasField(f("optional_foreign_enum")));
-      Assert.assertTrue(message.hasField(f("optional_import_enum" )));
+      assertTrue(message.hasField(f("optional_nested_enum" )));
+      assertTrue(message.hasField(f("optional_foreign_enum")));
+      assertTrue(message.hasField(f("optional_import_enum" )));
 
-      Assert.assertTrue(message.hasField(f("optional_string_piece")));
-      Assert.assertTrue(message.hasField(f("optional_cord")));
+      assertTrue(message.hasField(f("optional_string_piece")));
+      assertTrue(message.hasField(f("optional_cord")));
 
-      Assert.assertEquals(101  , message.getField(f("optional_int32"   )));
-      Assert.assertEquals(102L , message.getField(f("optional_int64"   )));
-      Assert.assertEquals(103  , message.getField(f("optional_uint32"  )));
-      Assert.assertEquals(104L , message.getField(f("optional_uint64"  )));
-      Assert.assertEquals(105  , message.getField(f("optional_sint32"  )));
-      Assert.assertEquals(106L , message.getField(f("optional_sint64"  )));
-      Assert.assertEquals(107  , message.getField(f("optional_fixed32" )));
-      Assert.assertEquals(108L , message.getField(f("optional_fixed64" )));
-      Assert.assertEquals(109  , message.getField(f("optional_sfixed32")));
-      Assert.assertEquals(110L , message.getField(f("optional_sfixed64")));
-      Assert.assertEquals(111F , message.getField(f("optional_float"   )));
-      Assert.assertEquals(112D , message.getField(f("optional_double"  )));
-      Assert.assertEquals(true , message.getField(f("optional_bool"    )));
-      Assert.assertEquals("115", message.getField(f("optional_string"  )));
-      Assert.assertEquals(toBytes("116"), message.getField(f("optional_bytes")));
+      assertEquals(101  , message.getField(f("optional_int32"   )));
+      assertEquals(102L , message.getField(f("optional_int64"   )));
+      assertEquals(103  , message.getField(f("optional_uint32"  )));
+      assertEquals(104L , message.getField(f("optional_uint64"  )));
+      assertEquals(105  , message.getField(f("optional_sint32"  )));
+      assertEquals(106L , message.getField(f("optional_sint64"  )));
+      assertEquals(107  , message.getField(f("optional_fixed32" )));
+      assertEquals(108L , message.getField(f("optional_fixed64" )));
+      assertEquals(109  , message.getField(f("optional_sfixed32")));
+      assertEquals(110L , message.getField(f("optional_sfixed64")));
+      assertEquals(111F , message.getField(f("optional_float"   )));
+      assertEquals(112D , message.getField(f("optional_double"  )));
+      assertEquals(true , message.getField(f("optional_bool"    )));
+      assertEquals("115", message.getField(f("optional_string"  )));
+      assertEquals(toBytes("116"), message.getField(f("optional_bytes")));
 
-      Assert.assertEquals(117,
+      assertEquals(117,
         ((Message)message.getField(f("optionalgroup"))).getField(groupA));
-      Assert.assertEquals(118,
+      assertEquals(118,
         ((Message)message.getField(f("optional_nested_message")))
                          .getField(nestedB));
-      Assert.assertEquals(119,
+      assertEquals(119,
         ((Message)message.getField(f("optional_foreign_message")))
                          .getField(foreignC));
-      Assert.assertEquals(120,
+      assertEquals(120,
         ((Message)message.getField(f("optional_import_message")))
                          .getField(importD));
-      Assert.assertEquals(126,
+      assertEquals(126,
         ((Message)message.getField(f("optional_public_import_message")))
                          .getField(importE));
-      Assert.assertEquals(127,
+      assertEquals(127,
         ((Message)message.getField(f("optional_lazy_message")))
                          .getField(nestedB));
 
-      Assert.assertEquals( nestedBaz, message.getField(f("optional_nested_enum" )));
-      Assert.assertEquals(foreignBaz, message.getField(f("optional_foreign_enum")));
-      Assert.assertEquals( importBaz, message.getField(f("optional_import_enum" )));
+      assertEquals( nestedBaz, message.getField(f("optional_nested_enum" )));
+      assertEquals(foreignBaz, message.getField(f("optional_foreign_enum")));
+      assertEquals( importBaz, message.getField(f("optional_import_enum" )));
 
-      Assert.assertEquals("124", message.getField(f("optional_string_piece")));
-      Assert.assertEquals("125", message.getField(f("optional_cord")));
+      assertEquals("124", message.getField(f("optional_string_piece")));
+      assertEquals("125", message.getField(f("optional_cord")));
 
       // -----------------------------------------------------------------
 
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_int32"   )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_int64"   )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_uint32"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_uint64"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_sint32"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_sint64"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_fixed32" )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_fixed64" )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_sfixed32")));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_sfixed64")));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_float"   )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_double"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_bool"    )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_string"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_bytes"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_int32"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_int64"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_uint32"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_uint64"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_sint32"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_sint64"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_fixed32" )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_fixed64" )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_sfixed32")));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_sfixed64")));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_float"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_double"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_bool"    )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_string"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_bytes"   )));
 
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeatedgroup"           )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_nested_message" )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_foreign_message")));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_import_message" )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_lazy_message" )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_nested_enum"    )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_foreign_enum"   )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_import_enum"    )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeatedgroup"           )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_nested_message" )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_foreign_message")));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_import_message" )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_lazy_message" )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_nested_enum"    )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_foreign_enum"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_import_enum"    )));
 
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_string_piece")));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_cord")));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_string_piece")));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_cord")));
 
-      Assert.assertEquals(201  , message.getRepeatedField(f("repeated_int32"   ), 0));
-      Assert.assertEquals(202L , message.getRepeatedField(f("repeated_int64"   ), 0));
-      Assert.assertEquals(203  , message.getRepeatedField(f("repeated_uint32"  ), 0));
-      Assert.assertEquals(204L , message.getRepeatedField(f("repeated_uint64"  ), 0));
-      Assert.assertEquals(205  , message.getRepeatedField(f("repeated_sint32"  ), 0));
-      Assert.assertEquals(206L , message.getRepeatedField(f("repeated_sint64"  ), 0));
-      Assert.assertEquals(207  , message.getRepeatedField(f("repeated_fixed32" ), 0));
-      Assert.assertEquals(208L , message.getRepeatedField(f("repeated_fixed64" ), 0));
-      Assert.assertEquals(209  , message.getRepeatedField(f("repeated_sfixed32"), 0));
-      Assert.assertEquals(210L , message.getRepeatedField(f("repeated_sfixed64"), 0));
-      Assert.assertEquals(211F , message.getRepeatedField(f("repeated_float"   ), 0));
-      Assert.assertEquals(212D , message.getRepeatedField(f("repeated_double"  ), 0));
-      Assert.assertEquals(true , message.getRepeatedField(f("repeated_bool"    ), 0));
-      Assert.assertEquals("215", message.getRepeatedField(f("repeated_string"  ), 0));
-      Assert.assertEquals(toBytes("216"), message.getRepeatedField(f("repeated_bytes"), 0));
+      assertEquals(201  , message.getRepeatedField(f("repeated_int32"   ), 0));
+      assertEquals(202L , message.getRepeatedField(f("repeated_int64"   ), 0));
+      assertEquals(203  , message.getRepeatedField(f("repeated_uint32"  ), 0));
+      assertEquals(204L , message.getRepeatedField(f("repeated_uint64"  ), 0));
+      assertEquals(205  , message.getRepeatedField(f("repeated_sint32"  ), 0));
+      assertEquals(206L , message.getRepeatedField(f("repeated_sint64"  ), 0));
+      assertEquals(207  , message.getRepeatedField(f("repeated_fixed32" ), 0));
+      assertEquals(208L , message.getRepeatedField(f("repeated_fixed64" ), 0));
+      assertEquals(209  , message.getRepeatedField(f("repeated_sfixed32"), 0));
+      assertEquals(210L , message.getRepeatedField(f("repeated_sfixed64"), 0));
+      assertEquals(211F , message.getRepeatedField(f("repeated_float"   ), 0));
+      assertEquals(212D , message.getRepeatedField(f("repeated_double"  ), 0));
+      assertEquals(true , message.getRepeatedField(f("repeated_bool"    ), 0));
+      assertEquals("215", message.getRepeatedField(f("repeated_string"  ), 0));
+      assertEquals(toBytes("216"), message.getRepeatedField(f("repeated_bytes"), 0));
 
-      Assert.assertEquals(217,
+      assertEquals(217,
         ((Message)message.getRepeatedField(f("repeatedgroup"), 0))
                          .getField(repeatedGroupA));
-      Assert.assertEquals(218,
+      assertEquals(218,
         ((Message)message.getRepeatedField(f("repeated_nested_message"), 0))
                          .getField(nestedB));
-      Assert.assertEquals(219,
+      assertEquals(219,
         ((Message)message.getRepeatedField(f("repeated_foreign_message"), 0))
                          .getField(foreignC));
-      Assert.assertEquals(220,
+      assertEquals(220,
         ((Message)message.getRepeatedField(f("repeated_import_message"), 0))
                          .getField(importD));
-      Assert.assertEquals(227,
+      assertEquals(227,
         ((Message)message.getRepeatedField(f("repeated_lazy_message"), 0))
                          .getField(nestedB));
 
-      Assert.assertEquals( nestedBar, message.getRepeatedField(f("repeated_nested_enum" ),0));
-      Assert.assertEquals(foreignBar, message.getRepeatedField(f("repeated_foreign_enum"),0));
-      Assert.assertEquals( importBar, message.getRepeatedField(f("repeated_import_enum" ),0));
+      assertEquals( nestedBar, message.getRepeatedField(f("repeated_nested_enum" ),0));
+      assertEquals(foreignBar, message.getRepeatedField(f("repeated_foreign_enum"),0));
+      assertEquals( importBar, message.getRepeatedField(f("repeated_import_enum" ),0));
 
-      Assert.assertEquals("224", message.getRepeatedField(f("repeated_string_piece"), 0));
-      Assert.assertEquals("225", message.getRepeatedField(f("repeated_cord"), 0));
+      assertEquals("224", message.getRepeatedField(f("repeated_string_piece"), 0));
+      assertEquals("225", message.getRepeatedField(f("repeated_cord"), 0));
 
-      Assert.assertEquals(301  , message.getRepeatedField(f("repeated_int32"   ), 1));
-      Assert.assertEquals(302L , message.getRepeatedField(f("repeated_int64"   ), 1));
-      Assert.assertEquals(303  , message.getRepeatedField(f("repeated_uint32"  ), 1));
-      Assert.assertEquals(304L , message.getRepeatedField(f("repeated_uint64"  ), 1));
-      Assert.assertEquals(305  , message.getRepeatedField(f("repeated_sint32"  ), 1));
-      Assert.assertEquals(306L , message.getRepeatedField(f("repeated_sint64"  ), 1));
-      Assert.assertEquals(307  , message.getRepeatedField(f("repeated_fixed32" ), 1));
-      Assert.assertEquals(308L , message.getRepeatedField(f("repeated_fixed64" ), 1));
-      Assert.assertEquals(309  , message.getRepeatedField(f("repeated_sfixed32"), 1));
-      Assert.assertEquals(310L , message.getRepeatedField(f("repeated_sfixed64"), 1));
-      Assert.assertEquals(311F , message.getRepeatedField(f("repeated_float"   ), 1));
-      Assert.assertEquals(312D , message.getRepeatedField(f("repeated_double"  ), 1));
-      Assert.assertEquals(false, message.getRepeatedField(f("repeated_bool"    ), 1));
-      Assert.assertEquals("315", message.getRepeatedField(f("repeated_string"  ), 1));
-      Assert.assertEquals(toBytes("316"), message.getRepeatedField(f("repeated_bytes"), 1));
+      assertEquals(301  , message.getRepeatedField(f("repeated_int32"   ), 1));
+      assertEquals(302L , message.getRepeatedField(f("repeated_int64"   ), 1));
+      assertEquals(303  , message.getRepeatedField(f("repeated_uint32"  ), 1));
+      assertEquals(304L , message.getRepeatedField(f("repeated_uint64"  ), 1));
+      assertEquals(305  , message.getRepeatedField(f("repeated_sint32"  ), 1));
+      assertEquals(306L , message.getRepeatedField(f("repeated_sint64"  ), 1));
+      assertEquals(307  , message.getRepeatedField(f("repeated_fixed32" ), 1));
+      assertEquals(308L , message.getRepeatedField(f("repeated_fixed64" ), 1));
+      assertEquals(309  , message.getRepeatedField(f("repeated_sfixed32"), 1));
+      assertEquals(310L , message.getRepeatedField(f("repeated_sfixed64"), 1));
+      assertEquals(311F , message.getRepeatedField(f("repeated_float"   ), 1));
+      assertEquals(312D , message.getRepeatedField(f("repeated_double"  ), 1));
+      assertEquals(false, message.getRepeatedField(f("repeated_bool"    ), 1));
+      assertEquals("315", message.getRepeatedField(f("repeated_string"  ), 1));
+      assertEquals(toBytes("316"), message.getRepeatedField(f("repeated_bytes"), 1));
 
-      Assert.assertEquals(317,
+      assertEquals(317,
         ((Message)message.getRepeatedField(f("repeatedgroup"), 1))
                          .getField(repeatedGroupA));
-      Assert.assertEquals(318,
+      assertEquals(318,
         ((Message)message.getRepeatedField(f("repeated_nested_message"), 1))
                          .getField(nestedB));
-      Assert.assertEquals(319,
+      assertEquals(319,
         ((Message)message.getRepeatedField(f("repeated_foreign_message"), 1))
                          .getField(foreignC));
-      Assert.assertEquals(320,
+      assertEquals(320,
         ((Message)message.getRepeatedField(f("repeated_import_message"), 1))
                          .getField(importD));
-      Assert.assertEquals(327,
+      assertEquals(327,
         ((Message)message.getRepeatedField(f("repeated_lazy_message"), 1))
                          .getField(nestedB));
 
-      Assert.assertEquals( nestedBaz, message.getRepeatedField(f("repeated_nested_enum" ),1));
-      Assert.assertEquals(foreignBaz, message.getRepeatedField(f("repeated_foreign_enum"),1));
-      Assert.assertEquals( importBaz, message.getRepeatedField(f("repeated_import_enum" ),1));
+      assertEquals( nestedBaz, message.getRepeatedField(f("repeated_nested_enum" ),1));
+      assertEquals(foreignBaz, message.getRepeatedField(f("repeated_foreign_enum"),1));
+      assertEquals( importBaz, message.getRepeatedField(f("repeated_import_enum" ),1));
 
-      Assert.assertEquals("324", message.getRepeatedField(f("repeated_string_piece"), 1));
-      Assert.assertEquals("325", message.getRepeatedField(f("repeated_cord"), 1));
+      assertEquals("324", message.getRepeatedField(f("repeated_string_piece"), 1));
+      assertEquals("325", message.getRepeatedField(f("repeated_cord"), 1));
 
       // -----------------------------------------------------------------
 
-      Assert.assertTrue(message.hasField(f("default_int32"   )));
-      Assert.assertTrue(message.hasField(f("default_int64"   )));
-      Assert.assertTrue(message.hasField(f("default_uint32"  )));
-      Assert.assertTrue(message.hasField(f("default_uint64"  )));
-      Assert.assertTrue(message.hasField(f("default_sint32"  )));
-      Assert.assertTrue(message.hasField(f("default_sint64"  )));
-      Assert.assertTrue(message.hasField(f("default_fixed32" )));
-      Assert.assertTrue(message.hasField(f("default_fixed64" )));
-      Assert.assertTrue(message.hasField(f("default_sfixed32")));
-      Assert.assertTrue(message.hasField(f("default_sfixed64")));
-      Assert.assertTrue(message.hasField(f("default_float"   )));
-      Assert.assertTrue(message.hasField(f("default_double"  )));
-      Assert.assertTrue(message.hasField(f("default_bool"    )));
-      Assert.assertTrue(message.hasField(f("default_string"  )));
-      Assert.assertTrue(message.hasField(f("default_bytes"   )));
+      assertTrue(message.hasField(f("default_int32"   )));
+      assertTrue(message.hasField(f("default_int64"   )));
+      assertTrue(message.hasField(f("default_uint32"  )));
+      assertTrue(message.hasField(f("default_uint64"  )));
+      assertTrue(message.hasField(f("default_sint32"  )));
+      assertTrue(message.hasField(f("default_sint64"  )));
+      assertTrue(message.hasField(f("default_fixed32" )));
+      assertTrue(message.hasField(f("default_fixed64" )));
+      assertTrue(message.hasField(f("default_sfixed32")));
+      assertTrue(message.hasField(f("default_sfixed64")));
+      assertTrue(message.hasField(f("default_float"   )));
+      assertTrue(message.hasField(f("default_double"  )));
+      assertTrue(message.hasField(f("default_bool"    )));
+      assertTrue(message.hasField(f("default_string"  )));
+      assertTrue(message.hasField(f("default_bytes"   )));
 
-      Assert.assertTrue(message.hasField(f("default_nested_enum" )));
-      Assert.assertTrue(message.hasField(f("default_foreign_enum")));
-      Assert.assertTrue(message.hasField(f("default_import_enum" )));
+      assertTrue(message.hasField(f("default_nested_enum" )));
+      assertTrue(message.hasField(f("default_foreign_enum")));
+      assertTrue(message.hasField(f("default_import_enum" )));
 
-      Assert.assertTrue(message.hasField(f("default_string_piece")));
-      Assert.assertTrue(message.hasField(f("default_cord")));
+      assertTrue(message.hasField(f("default_string_piece")));
+      assertTrue(message.hasField(f("default_cord")));
 
-      Assert.assertEquals(401  , message.getField(f("default_int32"   )));
-      Assert.assertEquals(402L , message.getField(f("default_int64"   )));
-      Assert.assertEquals(403  , message.getField(f("default_uint32"  )));
-      Assert.assertEquals(404L , message.getField(f("default_uint64"  )));
-      Assert.assertEquals(405  , message.getField(f("default_sint32"  )));
-      Assert.assertEquals(406L , message.getField(f("default_sint64"  )));
-      Assert.assertEquals(407  , message.getField(f("default_fixed32" )));
-      Assert.assertEquals(408L , message.getField(f("default_fixed64" )));
-      Assert.assertEquals(409  , message.getField(f("default_sfixed32")));
-      Assert.assertEquals(410L , message.getField(f("default_sfixed64")));
-      Assert.assertEquals(411F , message.getField(f("default_float"   )));
-      Assert.assertEquals(412D , message.getField(f("default_double"  )));
-      Assert.assertEquals(false, message.getField(f("default_bool"    )));
-      Assert.assertEquals("415", message.getField(f("default_string"  )));
-      Assert.assertEquals(toBytes("416"), message.getField(f("default_bytes")));
+      assertEquals(401  , message.getField(f("default_int32"   )));
+      assertEquals(402L , message.getField(f("default_int64"   )));
+      assertEquals(403  , message.getField(f("default_uint32"  )));
+      assertEquals(404L , message.getField(f("default_uint64"  )));
+      assertEquals(405  , message.getField(f("default_sint32"  )));
+      assertEquals(406L , message.getField(f("default_sint64"  )));
+      assertEquals(407  , message.getField(f("default_fixed32" )));
+      assertEquals(408L , message.getField(f("default_fixed64" )));
+      assertEquals(409  , message.getField(f("default_sfixed32")));
+      assertEquals(410L , message.getField(f("default_sfixed64")));
+      assertEquals(411F , message.getField(f("default_float"   )));
+      assertEquals(412D , message.getField(f("default_double"  )));
+      assertEquals(false, message.getField(f("default_bool"    )));
+      assertEquals("415", message.getField(f("default_string"  )));
+      assertEquals(toBytes("416"), message.getField(f("default_bytes")));
 
-      Assert.assertEquals( nestedFoo, message.getField(f("default_nested_enum" )));
-      Assert.assertEquals(foreignFoo, message.getField(f("default_foreign_enum")));
-      Assert.assertEquals( importFoo, message.getField(f("default_import_enum" )));
+      assertEquals( nestedFoo, message.getField(f("default_nested_enum" )));
+      assertEquals(foreignFoo, message.getField(f("default_foreign_enum")));
+      assertEquals( importFoo, message.getField(f("default_import_enum" )));
 
-      Assert.assertEquals("424", message.getField(f("default_string_piece")));
-      Assert.assertEquals("425", message.getField(f("default_cord")));
+      assertEquals("424", message.getField(f("default_string_piece")));
+      assertEquals("425", message.getField(f("default_cord")));
 
-      Assert.assertTrue(message.hasField(f("oneof_bytes")));
-      Assert.assertEquals(toBytes("604"), message.getField(f("oneof_bytes")));
+      assertTrue(message.hasField(f("oneof_bytes")));
+      assertEquals(toBytes("604"), message.getField(f("oneof_bytes")));
 
       if (extensionRegistry == null) {
-        Assert.assertFalse(message.hasField(f("oneof_uint32")));
-        Assert.assertFalse(message.hasField(f("oneof_nested_message")));
-        Assert.assertFalse(message.hasField(f("oneof_string")));
+        assertFalse(message.hasField(f("oneof_uint32")));
+        assertFalse(message.hasField(f("oneof_nested_message")));
+        assertFalse(message.hasField(f("oneof_string")));
       } else {
-        Assert.assertTrue(message.hasField(f("oneof_uint32")));
-        Assert.assertTrue(message.hasField(f("oneof_nested_message")));
-        Assert.assertTrue(message.hasField(f("oneof_string")));
-        Assert.assertEquals(601, message.getField(f("oneof_uint32")));
-        Assert.assertEquals(602,
+        assertTrue(message.hasField(f("oneof_uint32")));
+        assertTrue(message.hasField(f("oneof_nested_message")));
+        assertTrue(message.hasField(f("oneof_string")));
+        assertEquals(601, message.getField(f("oneof_uint32")));
+        assertEquals(602,
             ((MessageOrBuilder) message.getField(f("oneof_nested_message")))
             .getField(nestedB));
-        Assert.assertEquals("603", message.getField(f("oneof_string")));
+        assertEquals("603", message.getField(f("oneof_string")));
       }
     }
 
     // -------------------------------------------------------------------
 
     /**
-     * Assert (using {@code junit.framework.Assert}} that all fields of
+     * Assert that all fields of
      * {@code message} are cleared, and that getting the fields returns their
      * default values, using the {@link Message} reflection interface.
      */
     public void assertClearViaReflection(MessageOrBuilder message) {
       // has_blah() should initially be false for all optional fields.
-      Assert.assertFalse(message.hasField(f("optional_int32"   )));
-      Assert.assertFalse(message.hasField(f("optional_int64"   )));
-      Assert.assertFalse(message.hasField(f("optional_uint32"  )));
-      Assert.assertFalse(message.hasField(f("optional_uint64"  )));
-      Assert.assertFalse(message.hasField(f("optional_sint32"  )));
-      Assert.assertFalse(message.hasField(f("optional_sint64"  )));
-      Assert.assertFalse(message.hasField(f("optional_fixed32" )));
-      Assert.assertFalse(message.hasField(f("optional_fixed64" )));
-      Assert.assertFalse(message.hasField(f("optional_sfixed32")));
-      Assert.assertFalse(message.hasField(f("optional_sfixed64")));
-      Assert.assertFalse(message.hasField(f("optional_float"   )));
-      Assert.assertFalse(message.hasField(f("optional_double"  )));
-      Assert.assertFalse(message.hasField(f("optional_bool"    )));
-      Assert.assertFalse(message.hasField(f("optional_string"  )));
-      Assert.assertFalse(message.hasField(f("optional_bytes"   )));
+      assertFalse(message.hasField(f("optional_int32"   )));
+      assertFalse(message.hasField(f("optional_int64"   )));
+      assertFalse(message.hasField(f("optional_uint32"  )));
+      assertFalse(message.hasField(f("optional_uint64"  )));
+      assertFalse(message.hasField(f("optional_sint32"  )));
+      assertFalse(message.hasField(f("optional_sint64"  )));
+      assertFalse(message.hasField(f("optional_fixed32" )));
+      assertFalse(message.hasField(f("optional_fixed64" )));
+      assertFalse(message.hasField(f("optional_sfixed32")));
+      assertFalse(message.hasField(f("optional_sfixed64")));
+      assertFalse(message.hasField(f("optional_float"   )));
+      assertFalse(message.hasField(f("optional_double"  )));
+      assertFalse(message.hasField(f("optional_bool"    )));
+      assertFalse(message.hasField(f("optional_string"  )));
+      assertFalse(message.hasField(f("optional_bytes"   )));
 
-      Assert.assertFalse(message.hasField(f("optionalgroup"           )));
-      Assert.assertFalse(message.hasField(f("optional_nested_message" )));
-      Assert.assertFalse(message.hasField(f("optional_foreign_message")));
-      Assert.assertFalse(message.hasField(f("optional_import_message" )));
+      assertFalse(message.hasField(f("optionalgroup"           )));
+      assertFalse(message.hasField(f("optional_nested_message" )));
+      assertFalse(message.hasField(f("optional_foreign_message")));
+      assertFalse(message.hasField(f("optional_import_message" )));
 
-      Assert.assertFalse(message.hasField(f("optional_nested_enum" )));
-      Assert.assertFalse(message.hasField(f("optional_foreign_enum")));
-      Assert.assertFalse(message.hasField(f("optional_import_enum" )));
+      assertFalse(message.hasField(f("optional_nested_enum" )));
+      assertFalse(message.hasField(f("optional_foreign_enum")));
+      assertFalse(message.hasField(f("optional_import_enum" )));
 
-      Assert.assertFalse(message.hasField(f("optional_string_piece")));
-      Assert.assertFalse(message.hasField(f("optional_cord")));
+      assertFalse(message.hasField(f("optional_string_piece")));
+      assertFalse(message.hasField(f("optional_cord")));
 
       // Optional fields without defaults are set to zero or something like it.
-      Assert.assertEquals(0    , message.getField(f("optional_int32"   )));
-      Assert.assertEquals(0L   , message.getField(f("optional_int64"   )));
-      Assert.assertEquals(0    , message.getField(f("optional_uint32"  )));
-      Assert.assertEquals(0L   , message.getField(f("optional_uint64"  )));
-      Assert.assertEquals(0    , message.getField(f("optional_sint32"  )));
-      Assert.assertEquals(0L   , message.getField(f("optional_sint64"  )));
-      Assert.assertEquals(0    , message.getField(f("optional_fixed32" )));
-      Assert.assertEquals(0L   , message.getField(f("optional_fixed64" )));
-      Assert.assertEquals(0    , message.getField(f("optional_sfixed32")));
-      Assert.assertEquals(0L   , message.getField(f("optional_sfixed64")));
-      Assert.assertEquals(0F   , message.getField(f("optional_float"   )));
-      Assert.assertEquals(0D   , message.getField(f("optional_double"  )));
-      Assert.assertEquals(false, message.getField(f("optional_bool"    )));
-      Assert.assertEquals(""   , message.getField(f("optional_string"  )));
-      Assert.assertEquals(ByteString.EMPTY, message.getField(f("optional_bytes")));
+      assertEquals(0    , message.getField(f("optional_int32"   )));
+      assertEquals(0L   , message.getField(f("optional_int64"   )));
+      assertEquals(0    , message.getField(f("optional_uint32"  )));
+      assertEquals(0L   , message.getField(f("optional_uint64"  )));
+      assertEquals(0    , message.getField(f("optional_sint32"  )));
+      assertEquals(0L   , message.getField(f("optional_sint64"  )));
+      assertEquals(0    , message.getField(f("optional_fixed32" )));
+      assertEquals(0L   , message.getField(f("optional_fixed64" )));
+      assertEquals(0    , message.getField(f("optional_sfixed32")));
+      assertEquals(0L   , message.getField(f("optional_sfixed64")));
+      assertEquals(0F   , message.getField(f("optional_float"   )));
+      assertEquals(0D   , message.getField(f("optional_double"  )));
+      assertEquals(false, message.getField(f("optional_bool"    )));
+      assertEquals(""   , message.getField(f("optional_string"  )));
+      assertEquals(ByteString.EMPTY, message.getField(f("optional_bytes")));
 
       // Embedded messages should also be clear.
-      Assert.assertFalse(
+      assertFalse(
         ((Message)message.getField(f("optionalgroup"))).hasField(groupA));
-      Assert.assertFalse(
+      assertFalse(
         ((Message)message.getField(f("optional_nested_message")))
                          .hasField(nestedB));
-      Assert.assertFalse(
+      assertFalse(
         ((Message)message.getField(f("optional_foreign_message")))
                          .hasField(foreignC));
-      Assert.assertFalse(
+      assertFalse(
         ((Message)message.getField(f("optional_import_message")))
                          .hasField(importD));
-      Assert.assertFalse(
+      assertFalse(
         ((Message)message.getField(f("optional_public_import_message")))
                          .hasField(importE));
-      Assert.assertFalse(
+      assertFalse(
         ((Message)message.getField(f("optional_lazy_message")))
                          .hasField(nestedB));
 
-      Assert.assertEquals(0,
+      assertEquals(0,
         ((Message)message.getField(f("optionalgroup"))).getField(groupA));
-      Assert.assertEquals(0,
+      assertEquals(0,
         ((Message)message.getField(f("optional_nested_message")))
                          .getField(nestedB));
-      Assert.assertEquals(0,
+      assertEquals(0,
         ((Message)message.getField(f("optional_foreign_message")))
                          .getField(foreignC));
-      Assert.assertEquals(0,
+      assertEquals(0,
         ((Message)message.getField(f("optional_import_message")))
                          .getField(importD));
-      Assert.assertEquals(0,
+      assertEquals(0,
         ((Message)message.getField(f("optional_public_import_message")))
                          .getField(importE));
-      Assert.assertEquals(0,
+      assertEquals(0,
         ((Message)message.getField(f("optional_lazy_message")))
                          .getField(nestedB));
 
       // Enums without defaults are set to the first value in the enum.
-      Assert.assertEquals( nestedFoo, message.getField(f("optional_nested_enum" )));
-      Assert.assertEquals(foreignFoo, message.getField(f("optional_foreign_enum")));
-      Assert.assertEquals( importFoo, message.getField(f("optional_import_enum" )));
+      assertEquals( nestedFoo, message.getField(f("optional_nested_enum" )));
+      assertEquals(foreignFoo, message.getField(f("optional_foreign_enum")));
+      assertEquals( importFoo, message.getField(f("optional_import_enum" )));
 
-      Assert.assertEquals("", message.getField(f("optional_string_piece")));
-      Assert.assertEquals("", message.getField(f("optional_cord")));
+      assertEquals("", message.getField(f("optional_string_piece")));
+      assertEquals("", message.getField(f("optional_cord")));
 
       // Repeated fields are empty.
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_int32"   )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_int64"   )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_uint32"  )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_uint64"  )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_sint32"  )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_sint64"  )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_fixed32" )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_fixed64" )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_sfixed32")));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_sfixed64")));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_float"   )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_double"  )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_bool"    )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_string"  )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_bytes"   )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_int32"   )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_int64"   )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_uint32"  )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_uint64"  )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_sint32"  )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_sint64"  )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_fixed32" )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_fixed64" )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_sfixed32")));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_sfixed64")));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_float"   )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_double"  )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_bool"    )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_string"  )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_bytes"   )));
 
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeatedgroup"           )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_nested_message" )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_foreign_message")));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_import_message" )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_lazy_message"   )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_nested_enum"    )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_foreign_enum"   )));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_import_enum"    )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeatedgroup"           )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_nested_message" )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_foreign_message")));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_import_message" )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_lazy_message"   )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_nested_enum"    )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_foreign_enum"   )));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_import_enum"    )));
 
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_string_piece")));
-      Assert.assertEquals(0, message.getRepeatedFieldCount(f("repeated_cord")));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_string_piece")));
+      assertEquals(0, message.getRepeatedFieldCount(f("repeated_cord")));
 
       // has_blah() should also be false for all default fields.
-      Assert.assertFalse(message.hasField(f("default_int32"   )));
-      Assert.assertFalse(message.hasField(f("default_int64"   )));
-      Assert.assertFalse(message.hasField(f("default_uint32"  )));
-      Assert.assertFalse(message.hasField(f("default_uint64"  )));
-      Assert.assertFalse(message.hasField(f("default_sint32"  )));
-      Assert.assertFalse(message.hasField(f("default_sint64"  )));
-      Assert.assertFalse(message.hasField(f("default_fixed32" )));
-      Assert.assertFalse(message.hasField(f("default_fixed64" )));
-      Assert.assertFalse(message.hasField(f("default_sfixed32")));
-      Assert.assertFalse(message.hasField(f("default_sfixed64")));
-      Assert.assertFalse(message.hasField(f("default_float"   )));
-      Assert.assertFalse(message.hasField(f("default_double"  )));
-      Assert.assertFalse(message.hasField(f("default_bool"    )));
-      Assert.assertFalse(message.hasField(f("default_string"  )));
-      Assert.assertFalse(message.hasField(f("default_bytes"   )));
+      assertFalse(message.hasField(f("default_int32"   )));
+      assertFalse(message.hasField(f("default_int64"   )));
+      assertFalse(message.hasField(f("default_uint32"  )));
+      assertFalse(message.hasField(f("default_uint64"  )));
+      assertFalse(message.hasField(f("default_sint32"  )));
+      assertFalse(message.hasField(f("default_sint64"  )));
+      assertFalse(message.hasField(f("default_fixed32" )));
+      assertFalse(message.hasField(f("default_fixed64" )));
+      assertFalse(message.hasField(f("default_sfixed32")));
+      assertFalse(message.hasField(f("default_sfixed64")));
+      assertFalse(message.hasField(f("default_float"   )));
+      assertFalse(message.hasField(f("default_double"  )));
+      assertFalse(message.hasField(f("default_bool"    )));
+      assertFalse(message.hasField(f("default_string"  )));
+      assertFalse(message.hasField(f("default_bytes"   )));
 
-      Assert.assertFalse(message.hasField(f("default_nested_enum" )));
-      Assert.assertFalse(message.hasField(f("default_foreign_enum")));
-      Assert.assertFalse(message.hasField(f("default_import_enum" )));
+      assertFalse(message.hasField(f("default_nested_enum" )));
+      assertFalse(message.hasField(f("default_foreign_enum")));
+      assertFalse(message.hasField(f("default_import_enum" )));
 
-      Assert.assertFalse(message.hasField(f("default_string_piece" )));
-      Assert.assertFalse(message.hasField(f("default_cord" )));
+      assertFalse(message.hasField(f("default_string_piece" )));
+      assertFalse(message.hasField(f("default_cord" )));
 
       // Fields with defaults have their default values (duh).
-      Assert.assertEquals( 41    , message.getField(f("default_int32"   )));
-      Assert.assertEquals( 42L   , message.getField(f("default_int64"   )));
-      Assert.assertEquals( 43    , message.getField(f("default_uint32"  )));
-      Assert.assertEquals( 44L   , message.getField(f("default_uint64"  )));
-      Assert.assertEquals(-45    , message.getField(f("default_sint32"  )));
-      Assert.assertEquals( 46L   , message.getField(f("default_sint64"  )));
-      Assert.assertEquals( 47    , message.getField(f("default_fixed32" )));
-      Assert.assertEquals( 48L   , message.getField(f("default_fixed64" )));
-      Assert.assertEquals( 49    , message.getField(f("default_sfixed32")));
-      Assert.assertEquals(-50L   , message.getField(f("default_sfixed64")));
-      Assert.assertEquals( 51.5F , message.getField(f("default_float"   )));
-      Assert.assertEquals( 52e3D , message.getField(f("default_double"  )));
-      Assert.assertEquals(true   , message.getField(f("default_bool"    )));
-      Assert.assertEquals("hello", message.getField(f("default_string"  )));
-      Assert.assertEquals(toBytes("world"), message.getField(f("default_bytes")));
+      assertEquals( 41    , message.getField(f("default_int32"   )));
+      assertEquals( 42L   , message.getField(f("default_int64"   )));
+      assertEquals( 43    , message.getField(f("default_uint32"  )));
+      assertEquals( 44L   , message.getField(f("default_uint64"  )));
+      assertEquals(-45    , message.getField(f("default_sint32"  )));
+      assertEquals( 46L   , message.getField(f("default_sint64"  )));
+      assertEquals( 47    , message.getField(f("default_fixed32" )));
+      assertEquals( 48L   , message.getField(f("default_fixed64" )));
+      assertEquals( 49    , message.getField(f("default_sfixed32")));
+      assertEquals(-50L   , message.getField(f("default_sfixed64")));
+      assertEquals( 51.5F , message.getField(f("default_float"   )));
+      assertEquals( 52e3D , message.getField(f("default_double"  )));
+      assertEquals(true   , message.getField(f("default_bool"    )));
+      assertEquals("hello", message.getField(f("default_string"  )));
+      assertEquals(toBytes("world"), message.getField(f("default_bytes")));
 
-      Assert.assertEquals( nestedBar, message.getField(f("default_nested_enum" )));
-      Assert.assertEquals(foreignBar, message.getField(f("default_foreign_enum")));
-      Assert.assertEquals( importBar, message.getField(f("default_import_enum" )));
+      assertEquals( nestedBar, message.getField(f("default_nested_enum" )));
+      assertEquals(foreignBar, message.getField(f("default_foreign_enum")));
+      assertEquals( importBar, message.getField(f("default_import_enum" )));
 
-      Assert.assertEquals("abc", message.getField(f("default_string_piece")));
-      Assert.assertEquals("123", message.getField(f("default_cord")));
+      assertEquals("abc", message.getField(f("default_string_piece")));
+      assertEquals("123", message.getField(f("default_cord")));
 
-      Assert.assertFalse(message.hasField(f("oneof_uint32")));
-      Assert.assertFalse(message.hasField(f("oneof_nested_message")));
-      Assert.assertFalse(message.hasField(f("oneof_string")));
-      Assert.assertFalse(message.hasField(f("oneof_bytes")));
+      assertFalse(message.hasField(f("oneof_uint32")));
+      assertFalse(message.hasField(f("oneof_nested_message")));
+      assertFalse(message.hasField(f("oneof_string")));
+      assertFalse(message.hasField(f("oneof_bytes")));
 
-      Assert.assertEquals(0, message.getField(f("oneof_uint32")));
-      Assert.assertEquals("", message.getField(f("oneof_string")));
-      Assert.assertEquals(toBytes(""), message.getField(f("oneof_bytes")));
+      assertEquals(0, message.getField(f("oneof_uint32")));
+      assertEquals("", message.getField(f("oneof_string")));
+      assertEquals(toBytes(""), message.getField(f("oneof_bytes")));
     }
 
 
@@ -3879,111 +3871,111 @@ public final class TestUtil {
       // ModifyRepeatedFields only sets the second repeated element of each
       // field.  In addition to verifying this, we also verify that the first
       // element and size were *not* modified.
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_int32"   )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_int64"   )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_uint32"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_uint64"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_sint32"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_sint64"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_fixed32" )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_fixed64" )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_sfixed32")));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_sfixed64")));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_float"   )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_double"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_bool"    )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_string"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_bytes"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_int32"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_int64"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_uint32"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_uint64"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_sint32"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_sint64"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_fixed32" )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_fixed64" )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_sfixed32")));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_sfixed64")));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_float"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_double"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_bool"    )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_string"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_bytes"   )));
 
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeatedgroup"           )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_nested_message" )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_foreign_message")));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_import_message" )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_lazy_message"   )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_nested_enum"    )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_foreign_enum"   )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_import_enum"    )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeatedgroup"           )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_nested_message" )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_foreign_message")));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_import_message" )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_lazy_message"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_nested_enum"    )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_foreign_enum"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_import_enum"    )));
 
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_string_piece")));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("repeated_cord")));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_string_piece")));
+      assertEquals(2, message.getRepeatedFieldCount(f("repeated_cord")));
 
-      Assert.assertEquals(201  , message.getRepeatedField(f("repeated_int32"   ), 0));
-      Assert.assertEquals(202L , message.getRepeatedField(f("repeated_int64"   ), 0));
-      Assert.assertEquals(203  , message.getRepeatedField(f("repeated_uint32"  ), 0));
-      Assert.assertEquals(204L , message.getRepeatedField(f("repeated_uint64"  ), 0));
-      Assert.assertEquals(205  , message.getRepeatedField(f("repeated_sint32"  ), 0));
-      Assert.assertEquals(206L , message.getRepeatedField(f("repeated_sint64"  ), 0));
-      Assert.assertEquals(207  , message.getRepeatedField(f("repeated_fixed32" ), 0));
-      Assert.assertEquals(208L , message.getRepeatedField(f("repeated_fixed64" ), 0));
-      Assert.assertEquals(209  , message.getRepeatedField(f("repeated_sfixed32"), 0));
-      Assert.assertEquals(210L , message.getRepeatedField(f("repeated_sfixed64"), 0));
-      Assert.assertEquals(211F , message.getRepeatedField(f("repeated_float"   ), 0));
-      Assert.assertEquals(212D , message.getRepeatedField(f("repeated_double"  ), 0));
-      Assert.assertEquals(true , message.getRepeatedField(f("repeated_bool"    ), 0));
-      Assert.assertEquals("215", message.getRepeatedField(f("repeated_string"  ), 0));
-      Assert.assertEquals(toBytes("216"), message.getRepeatedField(f("repeated_bytes"), 0));
+      assertEquals(201  , message.getRepeatedField(f("repeated_int32"   ), 0));
+      assertEquals(202L , message.getRepeatedField(f("repeated_int64"   ), 0));
+      assertEquals(203  , message.getRepeatedField(f("repeated_uint32"  ), 0));
+      assertEquals(204L , message.getRepeatedField(f("repeated_uint64"  ), 0));
+      assertEquals(205  , message.getRepeatedField(f("repeated_sint32"  ), 0));
+      assertEquals(206L , message.getRepeatedField(f("repeated_sint64"  ), 0));
+      assertEquals(207  , message.getRepeatedField(f("repeated_fixed32" ), 0));
+      assertEquals(208L , message.getRepeatedField(f("repeated_fixed64" ), 0));
+      assertEquals(209  , message.getRepeatedField(f("repeated_sfixed32"), 0));
+      assertEquals(210L , message.getRepeatedField(f("repeated_sfixed64"), 0));
+      assertEquals(211F , message.getRepeatedField(f("repeated_float"   ), 0));
+      assertEquals(212D , message.getRepeatedField(f("repeated_double"  ), 0));
+      assertEquals(true , message.getRepeatedField(f("repeated_bool"    ), 0));
+      assertEquals("215", message.getRepeatedField(f("repeated_string"  ), 0));
+      assertEquals(toBytes("216"), message.getRepeatedField(f("repeated_bytes"), 0));
 
-      Assert.assertEquals(217,
+      assertEquals(217,
         ((Message)message.getRepeatedField(f("repeatedgroup"), 0))
                          .getField(repeatedGroupA));
-      Assert.assertEquals(218,
+      assertEquals(218,
         ((Message)message.getRepeatedField(f("repeated_nested_message"), 0))
                          .getField(nestedB));
-      Assert.assertEquals(219,
+      assertEquals(219,
         ((Message)message.getRepeatedField(f("repeated_foreign_message"), 0))
                          .getField(foreignC));
-      Assert.assertEquals(220,
+      assertEquals(220,
         ((Message)message.getRepeatedField(f("repeated_import_message"), 0))
                          .getField(importD));
-      Assert.assertEquals(227,
+      assertEquals(227,
         ((Message)message.getRepeatedField(f("repeated_lazy_message"), 0))
                          .getField(nestedB));
 
-      Assert.assertEquals( nestedBar, message.getRepeatedField(f("repeated_nested_enum" ),0));
-      Assert.assertEquals(foreignBar, message.getRepeatedField(f("repeated_foreign_enum"),0));
-      Assert.assertEquals( importBar, message.getRepeatedField(f("repeated_import_enum" ),0));
+      assertEquals( nestedBar, message.getRepeatedField(f("repeated_nested_enum" ),0));
+      assertEquals(foreignBar, message.getRepeatedField(f("repeated_foreign_enum"),0));
+      assertEquals( importBar, message.getRepeatedField(f("repeated_import_enum" ),0));
 
-      Assert.assertEquals("224", message.getRepeatedField(f("repeated_string_piece"), 0));
-      Assert.assertEquals("225", message.getRepeatedField(f("repeated_cord"), 0));
+      assertEquals("224", message.getRepeatedField(f("repeated_string_piece"), 0));
+      assertEquals("225", message.getRepeatedField(f("repeated_cord"), 0));
 
-      Assert.assertEquals(501  , message.getRepeatedField(f("repeated_int32"   ), 1));
-      Assert.assertEquals(502L , message.getRepeatedField(f("repeated_int64"   ), 1));
-      Assert.assertEquals(503  , message.getRepeatedField(f("repeated_uint32"  ), 1));
-      Assert.assertEquals(504L , message.getRepeatedField(f("repeated_uint64"  ), 1));
-      Assert.assertEquals(505  , message.getRepeatedField(f("repeated_sint32"  ), 1));
-      Assert.assertEquals(506L , message.getRepeatedField(f("repeated_sint64"  ), 1));
-      Assert.assertEquals(507  , message.getRepeatedField(f("repeated_fixed32" ), 1));
-      Assert.assertEquals(508L , message.getRepeatedField(f("repeated_fixed64" ), 1));
-      Assert.assertEquals(509  , message.getRepeatedField(f("repeated_sfixed32"), 1));
-      Assert.assertEquals(510L , message.getRepeatedField(f("repeated_sfixed64"), 1));
-      Assert.assertEquals(511F , message.getRepeatedField(f("repeated_float"   ), 1));
-      Assert.assertEquals(512D , message.getRepeatedField(f("repeated_double"  ), 1));
-      Assert.assertEquals(true , message.getRepeatedField(f("repeated_bool"    ), 1));
-      Assert.assertEquals("515", message.getRepeatedField(f("repeated_string"  ), 1));
-      Assert.assertEquals(toBytes("516"), message.getRepeatedField(f("repeated_bytes"), 1));
+      assertEquals(501  , message.getRepeatedField(f("repeated_int32"   ), 1));
+      assertEquals(502L , message.getRepeatedField(f("repeated_int64"   ), 1));
+      assertEquals(503  , message.getRepeatedField(f("repeated_uint32"  ), 1));
+      assertEquals(504L , message.getRepeatedField(f("repeated_uint64"  ), 1));
+      assertEquals(505  , message.getRepeatedField(f("repeated_sint32"  ), 1));
+      assertEquals(506L , message.getRepeatedField(f("repeated_sint64"  ), 1));
+      assertEquals(507  , message.getRepeatedField(f("repeated_fixed32" ), 1));
+      assertEquals(508L , message.getRepeatedField(f("repeated_fixed64" ), 1));
+      assertEquals(509  , message.getRepeatedField(f("repeated_sfixed32"), 1));
+      assertEquals(510L , message.getRepeatedField(f("repeated_sfixed64"), 1));
+      assertEquals(511F , message.getRepeatedField(f("repeated_float"   ), 1));
+      assertEquals(512D , message.getRepeatedField(f("repeated_double"  ), 1));
+      assertEquals(true , message.getRepeatedField(f("repeated_bool"    ), 1));
+      assertEquals("515", message.getRepeatedField(f("repeated_string"  ), 1));
+      assertEquals(toBytes("516"), message.getRepeatedField(f("repeated_bytes"), 1));
 
-      Assert.assertEquals(517,
+      assertEquals(517,
         ((Message)message.getRepeatedField(f("repeatedgroup"), 1))
                          .getField(repeatedGroupA));
-      Assert.assertEquals(518,
+      assertEquals(518,
         ((Message)message.getRepeatedField(f("repeated_nested_message"), 1))
                          .getField(nestedB));
-      Assert.assertEquals(519,
+      assertEquals(519,
         ((Message)message.getRepeatedField(f("repeated_foreign_message"), 1))
                          .getField(foreignC));
-      Assert.assertEquals(520,
+      assertEquals(520,
         ((Message)message.getRepeatedField(f("repeated_import_message"), 1))
                          .getField(importD));
-      Assert.assertEquals(527,
+      assertEquals(527,
         ((Message)message.getRepeatedField(f("repeated_lazy_message"), 1))
                          .getField(nestedB));
 
-      Assert.assertEquals( nestedFoo, message.getRepeatedField(f("repeated_nested_enum" ),1));
-      Assert.assertEquals(foreignFoo, message.getRepeatedField(f("repeated_foreign_enum"),1));
-      Assert.assertEquals( importFoo, message.getRepeatedField(f("repeated_import_enum" ),1));
+      assertEquals( nestedFoo, message.getRepeatedField(f("repeated_nested_enum" ),1));
+      assertEquals(foreignFoo, message.getRepeatedField(f("repeated_foreign_enum"),1));
+      assertEquals( importFoo, message.getRepeatedField(f("repeated_import_enum" ),1));
 
-      Assert.assertEquals("524", message.getRepeatedField(f("repeated_string_piece"), 1));
-      Assert.assertEquals("525", message.getRepeatedField(f("repeated_cord"), 1));
+      assertEquals("524", message.getRepeatedField(f("repeated_string_piece"), 1));
+      assertEquals("525", message.getRepeatedField(f("repeated_cord"), 1));
     }
 
     public void setPackedFieldsViaReflection(Message.Builder message) {
@@ -4019,48 +4011,48 @@ public final class TestUtil {
     }
 
     public void assertPackedFieldsSetViaReflection(MessageOrBuilder message) {
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_int32"   )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_int64"   )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_uint32"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_uint64"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_sint32"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_sint64"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_fixed32" )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_fixed64" )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_sfixed32")));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_sfixed64")));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_float"   )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_double"  )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_bool"    )));
-      Assert.assertEquals(2, message.getRepeatedFieldCount(f("packed_enum"   )));
-      Assert.assertEquals(601  , message.getRepeatedField(f("packed_int32"   ), 0));
-      Assert.assertEquals(602L , message.getRepeatedField(f("packed_int64"   ), 0));
-      Assert.assertEquals(603  , message.getRepeatedField(f("packed_uint32"  ), 0));
-      Assert.assertEquals(604L , message.getRepeatedField(f("packed_uint64"  ), 0));
-      Assert.assertEquals(605  , message.getRepeatedField(f("packed_sint32"  ), 0));
-      Assert.assertEquals(606L , message.getRepeatedField(f("packed_sint64"  ), 0));
-      Assert.assertEquals(607  , message.getRepeatedField(f("packed_fixed32" ), 0));
-      Assert.assertEquals(608L , message.getRepeatedField(f("packed_fixed64" ), 0));
-      Assert.assertEquals(609  , message.getRepeatedField(f("packed_sfixed32"), 0));
-      Assert.assertEquals(610L , message.getRepeatedField(f("packed_sfixed64"), 0));
-      Assert.assertEquals(611F , message.getRepeatedField(f("packed_float"   ), 0));
-      Assert.assertEquals(612D , message.getRepeatedField(f("packed_double"  ), 0));
-      Assert.assertEquals(true , message.getRepeatedField(f("packed_bool"    ), 0));
-      Assert.assertEquals(foreignBar, message.getRepeatedField(f("packed_enum" ),0));
-      Assert.assertEquals(701  , message.getRepeatedField(f("packed_int32"   ), 1));
-      Assert.assertEquals(702L , message.getRepeatedField(f("packed_int64"   ), 1));
-      Assert.assertEquals(703  , message.getRepeatedField(f("packed_uint32"  ), 1));
-      Assert.assertEquals(704L , message.getRepeatedField(f("packed_uint64"  ), 1));
-      Assert.assertEquals(705  , message.getRepeatedField(f("packed_sint32"  ), 1));
-      Assert.assertEquals(706L , message.getRepeatedField(f("packed_sint64"  ), 1));
-      Assert.assertEquals(707  , message.getRepeatedField(f("packed_fixed32" ), 1));
-      Assert.assertEquals(708L , message.getRepeatedField(f("packed_fixed64" ), 1));
-      Assert.assertEquals(709  , message.getRepeatedField(f("packed_sfixed32"), 1));
-      Assert.assertEquals(710L , message.getRepeatedField(f("packed_sfixed64"), 1));
-      Assert.assertEquals(711F , message.getRepeatedField(f("packed_float"   ), 1));
-      Assert.assertEquals(712D , message.getRepeatedField(f("packed_double"  ), 1));
-      Assert.assertEquals(false, message.getRepeatedField(f("packed_bool"    ), 1));
-      Assert.assertEquals(foreignBaz, message.getRepeatedField(f("packed_enum" ),1));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_int32"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_int64"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_uint32"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_uint64"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_sint32"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_sint64"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_fixed32" )));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_fixed64" )));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_sfixed32")));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_sfixed64")));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_float"   )));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_double"  )));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_bool"    )));
+      assertEquals(2, message.getRepeatedFieldCount(f("packed_enum"   )));
+      assertEquals(601  , message.getRepeatedField(f("packed_int32"   ), 0));
+      assertEquals(602L , message.getRepeatedField(f("packed_int64"   ), 0));
+      assertEquals(603  , message.getRepeatedField(f("packed_uint32"  ), 0));
+      assertEquals(604L , message.getRepeatedField(f("packed_uint64"  ), 0));
+      assertEquals(605  , message.getRepeatedField(f("packed_sint32"  ), 0));
+      assertEquals(606L , message.getRepeatedField(f("packed_sint64"  ), 0));
+      assertEquals(607  , message.getRepeatedField(f("packed_fixed32" ), 0));
+      assertEquals(608L , message.getRepeatedField(f("packed_fixed64" ), 0));
+      assertEquals(609  , message.getRepeatedField(f("packed_sfixed32"), 0));
+      assertEquals(610L , message.getRepeatedField(f("packed_sfixed64"), 0));
+      assertEquals(611F , message.getRepeatedField(f("packed_float"   ), 0));
+      assertEquals(612D , message.getRepeatedField(f("packed_double"  ), 0));
+      assertEquals(true , message.getRepeatedField(f("packed_bool"    ), 0));
+      assertEquals(foreignBar, message.getRepeatedField(f("packed_enum" ),0));
+      assertEquals(701  , message.getRepeatedField(f("packed_int32"   ), 1));
+      assertEquals(702L , message.getRepeatedField(f("packed_int64"   ), 1));
+      assertEquals(703  , message.getRepeatedField(f("packed_uint32"  ), 1));
+      assertEquals(704L , message.getRepeatedField(f("packed_uint64"  ), 1));
+      assertEquals(705  , message.getRepeatedField(f("packed_sint32"  ), 1));
+      assertEquals(706L , message.getRepeatedField(f("packed_sint64"  ), 1));
+      assertEquals(707  , message.getRepeatedField(f("packed_fixed32" ), 1));
+      assertEquals(708L , message.getRepeatedField(f("packed_fixed64" ), 1));
+      assertEquals(709  , message.getRepeatedField(f("packed_sfixed32"), 1));
+      assertEquals(710L , message.getRepeatedField(f("packed_sfixed64"), 1));
+      assertEquals(711F , message.getRepeatedField(f("packed_float"   ), 1));
+      assertEquals(712D , message.getRepeatedField(f("packed_double"  ), 1));
+      assertEquals(false, message.getRepeatedField(f("packed_bool"    ), 1));
+      assertEquals(foreignBaz, message.getRepeatedField(f("packed_enum" ),1));
     }
 
     /**
@@ -4072,58 +4064,44 @@ public final class TestUtil {
         throws Exception {
       try {
         builder.setField(f("optional_string"), null);
-        Assert.fail("Exception was not thrown");
+        fail("Exception was not thrown");
       } catch (NullPointerException e) {
         // We expect this exception.
       }
       try {
         builder.setField(f("optional_bytes"), null);
-        Assert.fail("Exception was not thrown");
+        fail("Exception was not thrown");
       } catch (NullPointerException e) {
         // We expect this exception.
       }
       try {
         builder.setField(f("optional_nested_enum"), null);
-        Assert.fail("Exception was not thrown");
+        fail("Exception was not thrown");
       } catch (NullPointerException e) {
         // We expect this exception.
       }
       try {
-        builder.setField(f("optional_nested_message"),
-                         (TestAllTypes.NestedMessage) null);
-        Assert.fail("Exception was not thrown");
-      } catch (NullPointerException e) {
-        // We expect this exception.
-      }
-      try {
-        builder.setField(f("optional_nested_message"),
-                         (TestAllTypes.NestedMessage.Builder) null);
-        Assert.fail("Exception was not thrown");
+        builder.setField(f("optional_nested_message"), null);
+        fail("Exception was not thrown");
       } catch (NullPointerException e) {
         // We expect this exception.
       }
 
       try {
         builder.addRepeatedField(f("repeated_string"), null);
-        Assert.fail("Exception was not thrown");
+        fail("Exception was not thrown");
       } catch (NullPointerException e) {
         // We expect this exception.
       }
       try {
         builder.addRepeatedField(f("repeated_bytes"), null);
-        Assert.fail("Exception was not thrown");
+        fail("Exception was not thrown");
       } catch (NullPointerException e) {
         // We expect this exception.
       }
       try {
         builder.addRepeatedField(f("repeated_nested_enum"), null);
-        Assert.fail("Exception was not thrown");
-      } catch (NullPointerException e) {
-        // We expect this exception.
-      }
-      try {
-        builder.addRepeatedField(f("repeated_nested_message"), null);
-        Assert.fail("Exception was not thrown");
+        fail("Exception was not thrown");
       } catch (NullPointerException e) {
         // We expect this exception.
       }
@@ -4139,7 +4117,7 @@ public final class TestUtil {
       builder.addRepeatedField(f("repeated_string"), "one");
       try {
         builder.setRepeatedField(f("repeated_string"), 0, null);
-        Assert.fail("Exception was not thrown");
+        fail("Exception was not thrown");
       } catch (NullPointerException e) {
         // We expect this exception.
       }
@@ -4147,7 +4125,7 @@ public final class TestUtil {
       builder.addRepeatedField(f("repeated_bytes"), toBytes("one"));
       try {
         builder.setRepeatedField(f("repeated_bytes"), 0, null);
-        Assert.fail("Exception was not thrown");
+        fail("Exception was not thrown");
       } catch (NullPointerException e) {
         // We expect this exception.
       }
@@ -4155,7 +4133,7 @@ public final class TestUtil {
       builder.addRepeatedField(f("repeated_nested_enum"), nestedBaz);
       try {
         builder.setRepeatedField(f("repeated_nested_enum"), 0, null);
-        Assert.fail("Exception was not thrown");
+        fail("Exception was not thrown");
       } catch (NullPointerException e) {
         // We expect this exception.
       }
@@ -4165,7 +4143,7 @@ public final class TestUtil {
           TestAllTypes.NestedMessage.newBuilder().setBb(218).build());
       try {
         builder.setRepeatedField(f("repeated_nested_message"), 0, null);
-        Assert.fail("Exception was not thrown");
+        fail("Exception was not thrown");
       } catch (NullPointerException e) {
         // We expect this exception.
       }

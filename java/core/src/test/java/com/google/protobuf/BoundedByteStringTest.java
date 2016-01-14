@@ -30,6 +30,14 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -45,10 +53,11 @@ import java.io.UnsupportedEncodingException;
  *
  * @author carlanton@google.com (Carl Haverl)
  */
+@RunWith(JUnit4.class)
 public class BoundedByteStringTest extends LiteralByteStringTest {
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     classUnderTest = "BoundedByteString";
     byte[] sourceBytes = ByteStringTest.getTestBytes(2341, 11337766L);
     int from = 100;
@@ -60,6 +69,7 @@ public class BoundedByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
+  @Test
   public void testToString() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
     LiteralByteString unicode = new LiteralByteString(testString.getBytes(Internal.UTF_8));
@@ -73,6 +83,7 @@ public class BoundedByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
+  @Test
   public void testCharsetToString() {
     String testString = "I love unicode \u1234\u5678 characters";
     LiteralByteString unicode = new LiteralByteString(testString.getBytes(Internal.UTF_8));
@@ -86,6 +97,7 @@ public class BoundedByteStringTest extends LiteralByteStringTest {
   }
 
   @Override
+  @Test
   public void testJavaSerialization() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(out);

@@ -90,15 +90,6 @@
         </executions>
       </plugin>
 
-      <!-- Add the generated sources to the build -->
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <generatedSourcesDirectory>${generated.sources.dir}</generatedSourcesDirectory>
-          <generatedTestSourcesDirectory>${generated.testsources.dir}</generatedTestSourcesDirectory>
-        </configuration>
-      </plugin>
-
       <!-- OSGI bundle configuration -->
       <plugin>
         <groupId>org.apache.felix</groupId>

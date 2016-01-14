@@ -30,27 +30,31 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.FieldPresenceTestProto.TestAllTypes;
 import com.google.protobuf.FieldPresenceTestProto.TestOptionalFieldsOnly;
 import com.google.protobuf.FieldPresenceTestProto.TestRepeatedFieldsOnly;
-import protobuf_unittest.UnittestProto;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import protobuf_unittest.UnittestProto;
 
 /**
  * Unit tests for protos that doesn't support field presence test for optional
  * non-message fields.
  */
-public class FieldPresenceTest extends TestCase {
-  private static boolean hasMethod(Class clazz, String name) {
+@RunWith(JUnit4.class)
+public class FieldPresenceTest {
+  private static boolean hasMethod(Class<?> clazz, String name) {
     try {
-      if (clazz.getMethod(name, new Class[]{}) != null) {
-        return true;
-      } else {
-        return false;
-      }
+      return clazz.getMethod(name) != null;
     } catch (NoSuchMethodException e) {
       return false;
     }
@@ -66,6 +70,7 @@ public class FieldPresenceTest extends TestCase {
         && !hasMethod(classWithoutFieldPresence, "has" + camelName);
   }
 
+  @Test
   public void testHasMethod() {
     // Optional non-message fields don't have a hasFoo() method generated.
     assertTrue(isHasMethodRemoved(
@@ -142,6 +147,7 @@ public class FieldPresenceTest extends TestCase {
         "OneofNestedMessage"));
   }
 
+  @Test
   public void testOneofEquals() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TestAllTypes message1 = builder.build();
@@ -152,6 +158,7 @@ public class FieldPresenceTest extends TestCase {
     assertFalse(message1.equals(message2));
   }
 
+  @Test
   public void testFieldPresence() {
     // Optional non-message fields set to their default value are treated the
     // same way as not set.
@@ -191,6 +198,7 @@ public class FieldPresenceTest extends TestCase {
     assertEquals(empty.hashCode(), message.hashCode());
   }
 
+  @Test
   public void testFieldPresenceByReflection() {
     Descriptor descriptor = TestAllTypes.getDescriptor();
     FieldDescriptor optionalInt32Field = descriptor.findFieldByName("optional_int32");
@@ -233,6 +241,7 @@ public class FieldPresenceTest extends TestCase {
     assertEquals(4, message.getAllFields().size());
   }
   
+  @Test
   public void testMessageField() {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     assertFalse(builder.hasOptionalNestedMessage());
@@ -257,6 +266,7 @@ public class FieldPresenceTest extends TestCase {
     assertTrue(builder.build().hasOptionalNestedMessage());
   }
 
+  @Test
   public void testSerializeAndParse() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.setOptionalInt32(1234);
@@ -283,6 +293,7 @@ public class FieldPresenceTest extends TestCase {
 
   // Regression test for b/16173397
   // Make sure we haven't screwed up the code generation for repeated fields.
+  @Test
   public void testRepeatedFields() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.setOptionalInt32(1234);
@@ -308,6 +319,7 @@ public class FieldPresenceTest extends TestCase {
     assertEquals(0, repeatedOnlyMessage.getRepeatedNestedMessage(0).getValue());
   }
 
+  @Test
   public void testIsInitialized() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
 
@@ -342,6 +354,7 @@ public class FieldPresenceTest extends TestCase {
 
   
   // Test that unknown fields are dropped.
+  @Test
   public void testUnknownFields() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.setOptionalInt32(1234);

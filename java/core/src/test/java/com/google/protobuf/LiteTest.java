@@ -32,8 +32,11 @@ package com.google.protobuf;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import com.google.protobuf.UnittestLite;
 import com.google.protobuf.UnittestLite.ForeignEnumLite;
 import com.google.protobuf.UnittestLite.ForeignMessageLite;
 import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
@@ -42,10 +45,12 @@ import com.google.protobuf.UnittestLite.TestAllTypesLite.NestedMessage;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.OneofFieldCase;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.OptionalGroup;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.RepeatedGroup;
-import com.google.protobuf.UnittestLite.TestAllTypesLiteOrBuilder;
 import com.google.protobuf.UnittestLite.TestNestedExtensionLite;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -57,7 +62,9 @@ import java.io.ObjectOutputStream;
  *
  * @author kenton@google.com Kenton Varda
  */
-public class LiteTest extends TestCase {
+@RunWith(JUnit4.class)
+public class LiteTest {
+  @Before
   public void setUp() throws Exception {
     // Test that nested extensions are initialized correctly even if the outer
     // class has not been accessed directly.  This was once a bug with lite
@@ -68,6 +75,7 @@ public class LiteTest extends TestCase {
     assertTrue(TestNestedExtensionLite.nestedExtension != null);
   }
 
+  @Test
   public void testLite() throws Exception {
     // Since lite messages are a subset of regular messages, we can mostly
     // assume that the functionality of lite messages is already thoroughly
@@ -95,6 +103,7 @@ public class LiteTest extends TestCase {
     assertEquals(7, message2.getOptionalNestedMessage().getBb());
   }
 
+  @Test
   public void testLiteExtensions() throws Exception {
     // TODO(kenton):  Unlike other features of the lite library, extensions are
     //   implemented completely differently from the regular library.  We
@@ -129,6 +138,7 @@ public class LiteTest extends TestCase {
         UnittestLite.optionalNestedMessageExtensionLite).getBb());
   }
 
+  @Test
   public void testSerialize() throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     TestAllTypesLite expected =
@@ -156,6 +166,7 @@ public class LiteTest extends TestCase {
         actual.getOptionalNestedMessage().getBb());
   }
   
+  @Test
   public void testClone() {
     TestAllTypesLite.Builder expected = TestAllTypesLite.newBuilder()
         .setOptionalInt32(123);
@@ -169,6 +180,7 @@ public class LiteTest extends TestCase {
         expected2.clone().getExtension(UnittestLite.optionalInt32ExtensionLite));
   }
   
+  @Test
   public void testAddAll() {
     try {
       TestAllTypesLite.newBuilder()
@@ -179,6 +191,7 @@ public class LiteTest extends TestCase {
     }
   }
   
+  @Test
   public void testSanityCopyOnWrite() throws InvalidProtocolBufferException {
     // Since builders are implemented as a thin wrapper around a message
     // instance, we attempt to verify that we can't cause the builder to modify
@@ -238,14 +251,14 @@ public class LiteTest extends TestCase {
     
     message = builder.build();
     builder.setOptionalDouble(1);
-    assertEquals(0D, message.getOptionalDouble());
-    assertEquals(1D, builder.getOptionalDouble());
+    assertEquals(0D, message.getOptionalDouble(), 0);
+    assertEquals(1D, builder.getOptionalDouble(), 0);
     messageAfterBuild = builder.build();
-    assertEquals(1D, messageAfterBuild.getOptionalDouble());
-    assertEquals(0D, message.getOptionalDouble());
+    assertEquals(1D, messageAfterBuild.getOptionalDouble(), 0);
+    assertEquals(0D, message.getOptionalDouble(), 0);
     builder.clearOptionalDouble();
-    assertEquals(0D, builder.getOptionalDouble());
-    assertEquals(1D, messageAfterBuild.getOptionalDouble());
+    assertEquals(0D, builder.getOptionalDouble(), 0);
+    assertEquals(1D, messageAfterBuild.getOptionalDouble(), 0);
     
     message = builder.build();
     builder.setOptionalFixed32(1);
@@ -271,14 +284,14 @@ public class LiteTest extends TestCase {
 
     message = builder.build();
     builder.setOptionalFloat(1);
-    assertEquals(0F, message.getOptionalFloat());
-    assertEquals(1F, builder.getOptionalFloat());
+    assertEquals(0F, message.getOptionalFloat(), 0);
+    assertEquals(1F, builder.getOptionalFloat(), 0);
     messageAfterBuild = builder.build();
-    assertEquals(1F, messageAfterBuild.getOptionalFloat());
-    assertEquals(0F, message.getOptionalFloat());
+    assertEquals(1F, messageAfterBuild.getOptionalFloat(), 0);
+    assertEquals(0F, message.getOptionalFloat(), 0);
     builder.clearOptionalFloat();
-    assertEquals(0F, builder.getOptionalFloat());
-    assertEquals(1F, messageAfterBuild.getOptionalFloat());
+    assertEquals(0F, builder.getOptionalFloat(), 0);
+    assertEquals(1F, messageAfterBuild.getOptionalFloat(), 0);
 
     message = builder.build();
     builder.setOptionalForeignEnum(ForeignEnumLite.FOREIGN_LITE_BAR);
@@ -1063,8 +1076,8 @@ public class LiteTest extends TestCase {
     messageAfterBuild = builder.build();
     assertEquals(0, message.getRepeatedDoubleCount());
     builder.setRepeatedDouble(0, 0D);
-    assertEquals(1D, messageAfterBuild.getRepeatedDouble(0));
-    assertEquals(0D, builder.getRepeatedDouble(0));
+    assertEquals(1D, messageAfterBuild.getRepeatedDouble(0), 0);
+    assertEquals(0D, builder.getRepeatedDouble(0), 0);
     builder.clearRepeatedDouble();
 
     message = builder.build();
@@ -1090,8 +1103,8 @@ public class LiteTest extends TestCase {
     messageAfterBuild = builder.build();
     assertEquals(0, message.getRepeatedFloatCount());
     builder.setRepeatedFloat(0, 0F);
-    assertEquals(1F, messageAfterBuild.getRepeatedFloat(0));
-    assertEquals(0F, builder.getRepeatedFloat(0));
+    assertEquals(1F, messageAfterBuild.getRepeatedFloat(0), 0);
+    assertEquals(0F, builder.getRepeatedFloat(0), 0);
     builder.clearRepeatedFloat();
 
     message = builder.build();
@@ -1401,8 +1414,6 @@ public class LiteTest extends TestCase {
     assertEquals("hi", messageAfterBuild.getOneofString());
     assertEquals(OneofFieldCase.ONEOF_UINT32, builder.getOneofFieldCase());
     assertEquals(1, builder.getOneofUint32());
-    TestAllTypesLiteOrBuilder messageOrBuilder = builder;
-    assertEquals(OneofFieldCase.ONEOF_UINT32, messageOrBuilder.getOneofFieldCase());
     
     TestAllExtensionsLite.Builder extendableMessageBuilder =
         TestAllExtensionsLite.newBuilder();

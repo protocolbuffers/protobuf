@@ -30,13 +30,22 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
-
-import junit.framework.TestCase;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -46,8 +55,10 @@ import java.io.IOException;
  *
  * @author dweis@google.com (Daniel Weis)
  */
-public class UnknownFieldSetLiteTest extends TestCase {
+@RunWith(JUnit4.class)
+public class UnknownFieldSetLiteTest {
 
+  @Test
   public void testNoDataIsDefaultInstance() {
     assertSame(
         UnknownFieldSetLite.getDefaultInstance(),
@@ -55,6 +66,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
             .build());
   }
   
+  @Test
   public void testBuilderReuse() throws IOException {
     UnknownFieldSetLite.Builder builder = UnknownFieldSetLite.newBuilder();
     builder.mergeVarintField(10, 2);
@@ -82,12 +94,14 @@ public class UnknownFieldSetLiteTest extends TestCase {
     }
   }
 
+  @Test
   public void testBuilderReuse_empty() {
     UnknownFieldSetLite.Builder builder = UnknownFieldSetLite.newBuilder();
     builder.build();
     builder.build();
   }
   
+  @Test
   public void testDefaultInstance() {
     UnknownFieldSetLite unknownFields = UnknownFieldSetLite.getDefaultInstance();
 
@@ -95,6 +109,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     assertEquals(ByteString.EMPTY, toByteString(unknownFields));
   }
 
+  @Test
   public void testMergeFieldFrom() throws IOException {
     Foo foo = Foo.newBuilder()
       .setValue(2)
@@ -108,6 +123,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     assertEquals(foo.toByteString(), toByteString(instance));
   }
 
+  @Test
   public void testSerializedSize() throws IOException {
     Foo foo = Foo.newBuilder()
       .setValue(2)
@@ -121,6 +137,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     assertEquals(foo.toByteString().size(), instance.getSerializedSize());
   }
 
+  @Test
   public void testMergeVarintField() throws IOException {
     UnknownFieldSetLite unknownFields = UnknownFieldSetLite.newInstance();
     unknownFields.mergeVarintField(10, 2);
@@ -135,6 +152,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     assertTrue(input.isAtEnd());
   }
 
+  @Test
   public void testMergeVarintField_negative() throws IOException {
     UnknownFieldSetLite builder = UnknownFieldSetLite.newInstance();
     builder.mergeVarintField(10, -6);
@@ -149,6 +167,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     assertTrue(input.isAtEnd());
   }
 
+  @Test
   public void testEqualsAndHashCode() {
     UnknownFieldSetLite unknownFields1 = UnknownFieldSetLite.newInstance();
     unknownFields1.mergeVarintField(10, 2);
@@ -162,6 +181,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     assertFalse(unknownFields1.hashCode() == UnknownFieldSetLite.getDefaultInstance().hashCode());
   }
 
+  @Test
   public void testMutableCopyOf() throws IOException {
     UnknownFieldSetLite unknownFields = UnknownFieldSetLite.newInstance();
     unknownFields.mergeVarintField(10, 2);
@@ -183,6 +203,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     assertTrue(input.isAtEnd());
   }
 
+  @Test
   public void testMutableCopyOf_empty() {
     UnknownFieldSetLite unknownFields = UnknownFieldSetLite.mutableCopyOf(
         UnknownFieldSetLite.getDefaultInstance(), UnknownFieldSetLite.getDefaultInstance());
@@ -192,6 +213,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     assertEquals(ByteString.EMPTY, toByteString(unknownFields));
   }
 
+  @Test
   public void testRoundTrips() throws InvalidProtocolBufferException {
     Foo foo = Foo.newBuilder()
         .setValue(1)
@@ -221,6 +243,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     assertEquals(foo, copyOfCopy);
   }
 
+  @Test
   public void testMalformedBytes() throws Exception {
     try {
       Foo.parseFrom("this is a malformed protocol buffer".getBytes(Internal.UTF_8));
@@ -230,6 +253,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     }
   }
 
+  @Test
   public void testMissingStartGroupTag() throws IOException {
     ByteString.Output byteStringOutput = ByteString.newOutput();
     CodedOutputStream output = CodedOutputStream.newInstance(byteStringOutput);
@@ -245,6 +269,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     }
   }
 
+  @Test
   public void testMissingEndGroupTag() throws IOException {
     ByteString.Output byteStringOutput = ByteString.newOutput();
     CodedOutputStream output = CodedOutputStream.newInstance(byteStringOutput);
@@ -260,6 +285,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     }
   }
 
+  @Test
   public void testMismatchingGroupTags() throws IOException {
     ByteString.Output byteStringOutput = ByteString.newOutput();
     CodedOutputStream output = CodedOutputStream.newInstance(byteStringOutput);
@@ -276,6 +302,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     }
   }
 
+  @Test
   public void testTruncatedInput() {
     Foo foo = Foo.newBuilder()
         .setValue(1)
@@ -296,6 +323,7 @@ public class UnknownFieldSetLiteTest extends TestCase {
     }
   }
   
+  @Test
   public void testMakeImmutable() throws Exception {
     UnknownFieldSetLite unknownFields = UnknownFieldSetLite.newInstance();
     unknownFields.makeImmutable();
@@ -303,37 +331,50 @@ public class UnknownFieldSetLiteTest extends TestCase {
     try {
       unknownFields.mergeVarintField(1, 1);
       fail();
-    } catch (UnsupportedOperationException expected) {}
+    } catch (UnsupportedOperationException expected) {
+      // Expected
+    }
     
     try {
       unknownFields.mergeLengthDelimitedField(2, ByteString.copyFromUtf8("hello"));
       fail();
-    } catch (UnsupportedOperationException expected) {}
+    } catch (UnsupportedOperationException expected) {
+      // Expected.
+    }
     
     try {
       unknownFields.mergeFieldFrom(1, CodedInputStream.newInstance(new byte[0]));
       fail();
-    } catch (UnsupportedOperationException expected) {}
+    } catch (UnsupportedOperationException expected) {
+      // Expected
+    }
   }
   
+  @Test
   public void testEndToEnd() throws Exception {
     TestAllTypesLite testAllTypes = TestAllTypesLite.getDefaultInstance();
     try {
       testAllTypes.unknownFields.checkMutable();
       fail();
-    } catch (UnsupportedOperationException expected) {}
+    } catch (UnsupportedOperationException expected) {
+      // Expected
+    }
     
     testAllTypes = TestAllTypesLite.parseFrom(new byte[0]);
     try {
       testAllTypes.unknownFields.checkMutable();
       fail();
-    } catch (UnsupportedOperationException expected) {}
+    } catch (UnsupportedOperationException expected) {
+      // Expected
+    }
     
     testAllTypes = TestAllTypesLite.newBuilder().build();
     try {
       testAllTypes.unknownFields.checkMutable();
       fail();
-    } catch (UnsupportedOperationException expected) {}
+    } catch (UnsupportedOperationException expected) {
+      // Expected
+    }
     
     testAllTypes = TestAllTypesLite.newBuilder()
         .setDefaultBool(true)
@@ -341,7 +382,9 @@ public class UnknownFieldSetLiteTest extends TestCase {
     try {
       testAllTypes.unknownFields.checkMutable();
       fail();
-    } catch (UnsupportedOperationException expected) {}
+    } catch (UnsupportedOperationException expected) {
+      // Expected
+    }
     
     TestAllExtensionsLite testAllExtensions = TestAllExtensionsLite.newBuilder()
         .mergeFrom(TestAllExtensionsLite.newBuilder()
@@ -351,7 +394,9 @@ public class UnknownFieldSetLiteTest extends TestCase {
     try {
       testAllExtensions.unknownFields.checkMutable();
       fail();
-    } catch (UnsupportedOperationException expected) {}
+    } catch (UnsupportedOperationException expected) {
+      // Expected
+    }
   }
 
   private ByteString toByteString(UnknownFieldSetLite unknownFields) {

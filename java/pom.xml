@@ -64,7 +64,7 @@
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.4</version>
+        <version>4.12</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -142,9 +142,21 @@
         </plugin>
       </plugins>
     </pluginManagement>
+
+    <plugins>
+      <!-- Add the generated sources to the build for each submodule -->
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <generatedSourcesDirectory>${generated.sources.dir}</generatedSourcesDirectory>
+          <generatedTestSourcesDirectory>${generated.testsources.dir}</generatedTestSourcesDirectory>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
   <profiles>
+    <!-- Settings for releasing protobuf -->
     <profile>
       <id>release</id>
       <build>

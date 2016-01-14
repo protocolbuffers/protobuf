@@ -30,9 +30,14 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.google.protobuf.IsValidUtf8TestUtil.Shard;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.io.UnsupportedEncodingException;
 
@@ -44,17 +49,17 @@ import java.io.UnsupportedEncodingException;
  * java's UTF-8 string encoding/decoding such that the method returns true for
  * any sequence that will round trip when converted to a String and then back to
  * bytes and will return false for any sequence that will not round trip.
- * See also {@link IsValidUtf8FourByteTest}. It also includes some
- * other more targeted tests.
  *
  * @author jonp@google.com (Jon Perlow)
  * @author martinrb@google.com (Martin Buchholz)
  */
-public class IsValidUtf8Test extends TestCase {
+@RunWith(JUnit4.class)
+public class IsValidUtf8Test {
 
   /**
    * Tests that round tripping of all two byte permutations work.
    */
+  @Test
   public void testIsValidUtf8_1Byte() throws UnsupportedEncodingException {
     IsValidUtf8TestUtil.testBytes(1,
         IsValidUtf8TestUtil.EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT);
@@ -63,6 +68,7 @@ public class IsValidUtf8Test extends TestCase {
   /**
    * Tests that round tripping of all two byte permutations work.
    */
+  @Test
   public void testIsValidUtf8_2Bytes() throws UnsupportedEncodingException {
     IsValidUtf8TestUtil.testBytes(2,
         IsValidUtf8TestUtil.EXPECTED_TWO_BYTE_ROUNDTRIPPABLE_COUNT);
@@ -71,6 +77,7 @@ public class IsValidUtf8Test extends TestCase {
   /**
    * Tests that round tripping of all three byte permutations work.
    */
+  @Test
   public void testIsValidUtf8_3Bytes() throws UnsupportedEncodingException {
     // Travis' OOM killer doesn't like this test
     if (System.getenv("TRAVIS") == null) {
@@ -81,10 +88,10 @@ public class IsValidUtf8Test extends TestCase {
 
   /**
    * Tests that round tripping of a sample of four byte permutations work.
-   * All permutations are prohibitively expensive to test for automated runs;
-   * {@link IsValidUtf8FourByteTest} is used for full coverage. This method
-   * tests specific four-byte cases.
+   * All permutations are prohibitively expensive to test for automated runs. As a result,
+   * this method tests specific four-byte cases.
    */
+  @Test
   public void testIsValidUtf8_4BytesSamples()
       throws UnsupportedEncodingException {
     // Valid 4 byte.
@@ -102,6 +109,7 @@ public class IsValidUtf8Test extends TestCase {
   /**
    * Tests some hard-coded test cases.
    */
+  @Test
   public void testSomeSequences() {
     // Empty
     assertTrue(asBytes("").isValidUtf8());
@@ -133,10 +141,6 @@ public class IsValidUtf8Test extends TestCase {
       realBytes[i] = (byte) bytes[i];
     }
     return realBytes;
-  }
-
-  private ByteString toByteString(int... bytes) {
-    return ByteString.copyFrom(toByteArray(bytes));
   }
 
   private void assertValidUtf8(int[] bytes, boolean not) {
@@ -171,6 +175,7 @@ public class IsValidUtf8Test extends TestCase {
     return ByteString.copyFromUtf8(s);
   }
 
+  @Test
   public void testShardsHaveExpectedRoundTrippables() {
     // A sanity check.
     int actual = 0;

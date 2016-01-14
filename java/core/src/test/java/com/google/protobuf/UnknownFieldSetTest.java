@@ -30,6 +30,17 @@
 
 package com.google.protobuf;
 
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.ForeignEnum;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
@@ -39,8 +50,6 @@ import protobuf_unittest.UnittestProto.TestEmptyMessageWithExtensions;
 import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 
-import junit.framework.TestCase;
-
 import java.util.Arrays;
 import java.util.Map;
 
@@ -49,7 +58,9 @@ import java.util.Map;
  *
  * @author kenton@google.com (Kenton Varda)
  */
-public class UnknownFieldSetTest extends TestCase {
+@RunWith(JUnit4.class)
+public class UnknownFieldSetTest {
+  @Before
   public void setUp() throws Exception {
     descriptor = TestAllTypes.getDescriptor();
     allFields = TestUtil.getAllSet();
@@ -100,6 +111,7 @@ public class UnknownFieldSetTest extends TestCase {
 
   // =================================================================
 
+  @Test
   public void testVarint() throws Exception {
     UnknownFieldSet.Field field = getField("optional_int32");
     assertEquals(1, field.getVarintList().size());
@@ -107,6 +119,7 @@ public class UnknownFieldSetTest extends TestCase {
                  (long) field.getVarintList().get(0));
   }
 
+  @Test
   public void testFixed32() throws Exception {
     UnknownFieldSet.Field field = getField("optional_fixed32");
     assertEquals(1, field.getFixed32List().size());
@@ -114,6 +127,7 @@ public class UnknownFieldSetTest extends TestCase {
                  (int) field.getFixed32List().get(0));
   }
 
+  @Test
   public void testFixed64() throws Exception {
     UnknownFieldSet.Field field = getField("optional_fixed64");
     assertEquals(1, field.getFixed64List().size());
@@ -121,6 +135,7 @@ public class UnknownFieldSetTest extends TestCase {
                  (long) field.getFixed64List().get(0));
   }
 
+  @Test
   public void testLengthDelimited() throws Exception {
     UnknownFieldSet.Field field = getField("optional_bytes");
     assertEquals(1, field.getLengthDelimitedList().size());
@@ -128,6 +143,7 @@ public class UnknownFieldSetTest extends TestCase {
                  field.getLengthDelimitedList().get(0));
   }
 
+  @Test
   public void testGroup() throws Exception {
     Descriptors.FieldDescriptor nestedFieldDescriptor =
       TestAllTypes.OptionalGroup.getDescriptor().findFieldByName("a");
@@ -147,6 +163,7 @@ public class UnknownFieldSetTest extends TestCase {
                  (long) nestedField.getVarintList().get(0));
   }
 
+  @Test
   public void testSerialize() throws Exception {
     // Check that serializing the UnknownFieldSet produces the original data
     // again.
@@ -154,6 +171,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(allFieldsData, data);
   }
 
+  @Test
   public void testCopyFrom() throws Exception {
     TestEmptyMessage message =
       TestEmptyMessage.newBuilder().mergeFrom(emptyMessage).build();
@@ -161,6 +179,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(emptyMessage.toString(), message.toString());
   }
 
+  @Test
   public void testMergeFrom() throws Exception {
     TestEmptyMessage source =
       TestEmptyMessage.newBuilder()
@@ -196,18 +215,21 @@ public class UnknownFieldSetTest extends TestCase {
       destination.toString());
   }
 
+  @Test
   public void testClear() throws Exception {
     UnknownFieldSet fields =
       UnknownFieldSet.newBuilder().mergeFrom(unknownFields).clear().build();
     assertTrue(fields.asMap().isEmpty());
   }
 
+  @Test
   public void testClearMessage() throws Exception {
     TestEmptyMessage message =
       TestEmptyMessage.newBuilder().mergeFrom(emptyMessage).clear().build();
     assertEquals(0, message.getSerializedSize());
   }
   
+  @Test
   public void testClearField() throws Exception {
     int fieldNumber = unknownFields.asMap().keySet().iterator().next();
     UnknownFieldSet fields =
@@ -215,6 +237,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertFalse(fields.hasField(fieldNumber));
   }
 
+  @Test
   public void testParseKnownAndUnknown() throws Exception {
     // Test mixing known and unknown fields when parsing.
 
@@ -236,6 +259,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(654321, (long) field.getVarintList().get(0));
   }
 
+  @Test
   public void testWrongTypeTreatedAsUnknown() throws Exception {
     // Test that fields of the wrong wire type are treated like unknown fields
     // when parsing.
@@ -249,6 +273,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(emptyMessage.toString(), allTypesMessage.toString());
   }
 
+  @Test
   public void testUnknownExtensions() throws Exception {
     // Make sure fields are properly parsed to the UnknownFieldSet even when
     // they are declared as extension numbers.
@@ -261,6 +286,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(allFieldsData, message.toByteString());
   }
 
+  @Test
   public void testWrongExtensionTypeTreatedAsUnknown() throws Exception {
     // Test that fields of the wrong wire type are treated like unknown fields
     // when parsing extensions.
@@ -276,6 +302,7 @@ public class UnknownFieldSetTest extends TestCase {
                  allExtensionsMessage.toString());
   }
 
+  @Test
   public void testParseUnknownEnumValue() throws Exception {
     Descriptors.FieldDescriptor singularField =
       TestAllTypes.getDescriptor().findFieldByName("optional_nested_enum");
@@ -308,7 +335,7 @@ public class UnknownFieldSetTest extends TestCase {
       assertEquals(
         Arrays.asList(TestAllTypes.NestedEnum.FOO, TestAllTypes.NestedEnum.BAZ),
         message.getRepeatedNestedEnumList());
-      assertEquals(Arrays.asList(5L),
+      assertEquals(singletonList(5L),
                    message.getUnknownFields()
                           .getField(singularField.getNumber())
                           .getVarintList());
@@ -326,7 +353,7 @@ public class UnknownFieldSetTest extends TestCase {
       assertEquals(
         Arrays.asList(TestAllTypes.NestedEnum.FOO, TestAllTypes.NestedEnum.BAZ),
         message.getExtension(UnittestProto.repeatedNestedEnumExtension));
-      assertEquals(Arrays.asList(5L),
+      assertEquals(singletonList(5L),
                    message.getUnknownFields()
                           .getField(singularField.getNumber())
                           .getVarintList());
@@ -337,6 +364,7 @@ public class UnknownFieldSetTest extends TestCase {
     }
   }
 
+  @Test
   public void testLargeVarint() throws Exception {
     ByteString data =
       UnknownFieldSet.newBuilder()
@@ -352,6 +380,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(0x7FFFFFFFFFFFFFFFL, (long)field.getVarintList().get(0));
   }
 
+  @Test
   public void testEqualsAndHashCode() {
     UnknownFieldSet.Field fixed32Field =
         UnknownFieldSet.Field.newBuilder()
@@ -414,12 +443,10 @@ public class UnknownFieldSetTest extends TestCase {
   }
 
   /**
-   * Asserts that the given field sets are not equal and have different
-   * hash codes.
+   * Asserts that the given field sets are not equal and have different hash codes.
    *
-   * @warning It's valid for non-equal objects to have the same hash code, so
-   *   this test is stricter than it needs to be. However, this should happen
-   *   relatively rarely.
+   * <p/><strong>WARNING:</strong> It's valid for non-equal objects to have the same hash code, so
+   * this test is stricter than it needs to be. However, this should happen relatively rarely.
    */
   private void checkNotEqual(UnknownFieldSet s1, UnknownFieldSet s2) {
     String equalsError = String.format("%s should not be equal to %s", s1, s2);
@@ -447,6 +474,7 @@ public class UnknownFieldSetTest extends TestCase {
 
   // =================================================================
 
+  @Test
   public void testSerializeLite() throws Exception {
     UnittestLite.TestEmptyMessageLite emptyMessageLite =
         UnittestLite.TestEmptyMessageLite.parseFrom(allFieldsData);
@@ -457,6 +485,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(allFieldsData, data);
   }
 
+  @Test
   public void testAllExtensionsLite() throws Exception {
     TestAllExtensions allExtensions = TestUtil.getAllExtensionsSet();
     ByteString allExtensionsData = allExtensions.toByteString();
@@ -469,6 +498,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(allExtensionsData, data);
   }
 
+  @Test
   public void testAllPackedFieldsLite() throws Exception {
     TestPackedTypes allPackedFields = TestUtil.getPackedSet();
     ByteString allPackedData = allPackedFields.toByteString();
@@ -481,6 +511,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(allPackedData, data);
   }
 
+  @Test
   public void testAllPackedExtensionsLite() throws Exception {
     TestPackedExtensions allPackedExtensions = TestUtil.getPackedExtensionsSet();
     ByteString allPackedExtensionsData = allPackedExtensions.toByteString();
@@ -493,6 +524,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(allPackedExtensionsData, data);
   }
 
+  @Test
   public void testCopyFromLite() throws Exception {
     UnittestLite.TestEmptyMessageLite emptyMessageLite =
         UnittestLite.TestEmptyMessageLite.parseFrom(allFieldsData);
@@ -502,6 +534,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(emptyMessageLite.toByteString(), emptyMessageLite2.toByteString());
   }
 
+  @Test
   public void testMergeFromLite() throws Exception {
     TestAllTypes message1 = TestAllTypes.newBuilder()
         .setOptionalInt32(1)
@@ -534,6 +567,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(message1, message2);
   }
 
+  @Test
   public void testWrongTypeTreatedAsUnknownLite() throws Exception {
     // Test that fields of the wrong wire type are treated like unknown fields
     // when parsing.
@@ -548,6 +582,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(allTypesMessage.toString(), allTypesMessage2.toString());
   }
 
+  @Test
   public void testUnknownExtensionsLite() throws Exception {
     // Make sure fields are properly parsed to the UnknownFieldSet even when
     // they are declared as extension numbers.
@@ -558,6 +593,7 @@ public class UnknownFieldSetTest extends TestCase {
     assertEquals(allFieldsData, message.toByteString());
   }
 
+  @Test
   public void testWrongExtensionTypeTreatedAsUnknownLite() throws Exception {
     // Test that fields of the wrong wire type are treated like unknown fields
     // when parsing extensions.
@@ -574,6 +610,7 @@ public class UnknownFieldSetTest extends TestCase {
                  allExtensionsMessage.toByteString());
   }
 
+  @Test
   public void testParseUnknownEnumValueLite() throws Exception {
     Descriptors.FieldDescriptor singularField =
       TestAllTypes.getDescriptor().findFieldByName("optional_nested_enum");
@@ -610,7 +647,7 @@ public class UnknownFieldSetTest extends TestCase {
       assertEquals(
         Arrays.asList(TestAllTypes.NestedEnum.FOO, TestAllTypes.NestedEnum.BAZ),
         message.getRepeatedNestedEnumList());
-      assertEquals(Arrays.asList(5L),
+      assertEquals(singletonList(5L),
                    message.getUnknownFields()
                           .getField(singularField.getNumber())
                           .getVarintList());
@@ -628,7 +665,7 @@ public class UnknownFieldSetTest extends TestCase {
       assertEquals(
         Arrays.asList(TestAllTypes.NestedEnum.FOO, TestAllTypes.NestedEnum.BAZ),
         message.getExtension(UnittestProto.repeatedNestedEnumExtension));
-      assertEquals(Arrays.asList(5L),
+      assertEquals(singletonList(5L),
                    message.getUnknownFields()
                           .getField(singularField.getNumber())
                           .getVarintList());
@@ -639,6 +676,7 @@ public class UnknownFieldSetTest extends TestCase {
     }
   }
 
+  @Test
   public void testClearLite() throws Exception {
     UnittestLite.TestEmptyMessageLite emptyMessageLite1 =
         UnittestLite.TestEmptyMessageLite.parseFrom(allFieldsData);
@@ -649,5 +687,4 @@ public class UnknownFieldSetTest extends TestCase {
     ByteString data = emptyMessageLite2.toByteString();
     assertEquals(0, data.size());
   }
-
 }

@@ -30,12 +30,18 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.LazyFieldsLite.LazyExtension;
 import protobuf_unittest.LazyFieldsLite.LazyInnerMessageLite;
 import protobuf_unittest.LazyFieldsLite.LazyMessageLite;
 import protobuf_unittest.LazyFieldsLite.LazyNestedInnerMessageLite;
-
-import junit.framework.TestCase;
 
 import java.util.ArrayList;
 
@@ -44,20 +50,9 @@ import java.util.ArrayList;
  *
  * @author niwasaki@google.com (Naoki Iwasaki)
  */
-public class LazyMessageLiteTest extends TestCase {
-
-  private Parser<LazyInnerMessageLite> originalLazyInnerMessageLiteParser;
-
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-  }
-
-  @Override
-  protected void tearDown() throws Exception {
-    super.tearDown();
-  }
-
+@RunWith(JUnit4.class)
+public class LazyMessageLiteTest {
+  @Test
   public void testSetValues() {
     LazyNestedInnerMessageLite nested = LazyNestedInnerMessageLite.newBuilder()
         .setNum(3)
@@ -91,6 +86,7 @@ public class LazyMessageLiteTest extends TestCase {
     assertEquals(4, outer.getOneofInner().getNested().getNumWithDefault());
   }
 
+  @Test
   public void testSetRepeatedValues() {
     LazyMessageLite outer = LazyMessageLite.newBuilder()
         .setNum(1)
@@ -104,6 +100,7 @@ public class LazyMessageLiteTest extends TestCase {
     assertEquals(122, outer.getRepeatedInner(1).getNum());
   }
 
+  @Test
   public void testAddAll() {
     ArrayList<LazyInnerMessageLite> inners = new ArrayList<LazyInnerMessageLite>();
     int count = 4;
@@ -123,6 +120,7 @@ public class LazyMessageLiteTest extends TestCase {
     }
   }
 
+  @Test
   public void testGetDefaultValues() {
     LazyMessageLite outer = LazyMessageLite.newBuilder()
         .build();
@@ -144,6 +142,7 @@ public class LazyMessageLiteTest extends TestCase {
     assertEquals(4, outer.getOneofInner().getNested().getNumWithDefault());
   }
 
+  @Test
   public void testClearValues() {
     LazyInnerMessageLite inner = LazyInnerMessageLite.newBuilder()
         .setNum(115)
@@ -198,6 +197,7 @@ public class LazyMessageLiteTest extends TestCase {
     assertEquals(0, outer.getOneofInner().getNum());
   }
 
+  @Test
   public void testMergeValues() {
     LazyMessageLite outerBase = LazyMessageLite.newBuilder()
         .setNumWithDefault(122)
@@ -224,6 +224,7 @@ public class LazyMessageLiteTest extends TestCase {
     assertEquals(42, merged.getOneofInner().getNumWithDefault());
   }
 
+  @Test
   public void testMergeDefaultValues() {
     LazyInnerMessageLite innerBase = LazyInnerMessageLite.newBuilder()
         .setNum(115)
@@ -251,6 +252,7 @@ public class LazyMessageLiteTest extends TestCase {
     assertEquals(42, merged.getOneofInner().getNumWithDefault());
   }
 
+  @Test
   public void testSerialize() throws InvalidProtocolBufferException {
     LazyNestedInnerMessageLite nested = LazyNestedInnerMessageLite.newBuilder()
         .setNum(3)
@@ -287,6 +289,7 @@ public class LazyMessageLiteTest extends TestCase {
     assertEquals(bytes, deserialized.toByteString());
   }
 
+  @Test
   public void testExtensions() throws Exception {
     LazyInnerMessageLite.Builder innerBuilder = LazyInnerMessageLite.newBuilder();
     innerBuilder.setExtension(

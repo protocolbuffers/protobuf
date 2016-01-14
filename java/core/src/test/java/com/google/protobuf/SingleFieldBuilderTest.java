@@ -30,10 +30,16 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypesOrBuilder;
-
-import junit.framework.TestCase;
 
 /**
  * Tests for {@link SingleFieldBuilder}. This tests basic functionality.
@@ -42,8 +48,10 @@ import junit.framework.TestCase;
  *
  * @author jonp@google.com (Jon Perlow)
  */
-public class SingleFieldBuilderTest extends TestCase {
+@RunWith(JUnit4.class)
+public class SingleFieldBuilderTest {
 
+  @Test
   public void testBasicUseAndInvalidations() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
     SingleFieldBuilder<TestAllTypes, TestAllTypes.Builder,
@@ -74,6 +82,7 @@ public class SingleFieldBuilderTest extends TestCase {
 
   }
 
+  @Test
   public void testSetMessage() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
     SingleFieldBuilder<TestAllTypes, TestAllTypes.Builder,
@@ -100,6 +109,7 @@ public class SingleFieldBuilderTest extends TestCase {
     assertSame(builder.getMessage(), builder.getMessage());
   }
 
+  @Test
   public void testClear() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
     SingleFieldBuilder<TestAllTypes, TestAllTypes.Builder,
@@ -120,6 +130,7 @@ public class SingleFieldBuilderTest extends TestCase {
     assertSame(TestAllTypes.getDefaultInstance(), builder.getMessage());
   }
 
+  @Test
   public void testMerge() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
     SingleFieldBuilder<TestAllTypes, TestAllTypes.Builder,
@@ -140,7 +151,7 @@ public class SingleFieldBuilderTest extends TestCase {
         .setOptionalDouble(4.0)
         .buildPartial());
     assertEquals(2, builder.getMessage().getOptionalInt32());
-    assertEquals(4.0, builder.getMessage().getOptionalDouble());
+    assertEquals(4.0, builder.getMessage().getOptionalDouble(), 0);
 
     // Merge into non-default field on existing message
     builder.setMessage(TestAllTypes.newBuilder()
@@ -150,6 +161,6 @@ public class SingleFieldBuilderTest extends TestCase {
         .setOptionalDouble(5.0)
         .buildPartial());
     assertEquals(10, builder.getMessage().getOptionalInt32());
-    assertEquals(5.0, builder.getMessage().getOptionalDouble());
+    assertEquals(5.0, builder.getMessage().getOptionalDouble(), 0);
   }
 }

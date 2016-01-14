@@ -30,10 +30,17 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypesOrBuilder;
-
-import junit.framework.TestCase;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,8 +52,10 @@ import java.util.List;
  *
  * @author jonp@google.com (Jon Perlow)
  */
-public class RepeatedFieldBuilderTest extends TestCase {
+@RunWith(JUnit4.class)
+public class RepeatedFieldBuilderTest {
 
+  @Test
   public void testBasicUse() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
     RepeatedFieldBuilder<TestAllTypes, TestAllTypes.Builder,
@@ -68,6 +77,7 @@ public class RepeatedFieldBuilderTest extends TestCase {
     assertEquals(0, mockParent.getInvalidationCount());
   }
 
+  @Test
   public void testGoingBackAndForth() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
     RepeatedFieldBuilder<TestAllTypes, TestAllTypes.Builder,
@@ -97,6 +107,7 @@ public class RepeatedFieldBuilderTest extends TestCase {
     assertEquals(1, mockParent.getInvalidationCount());
   }
 
+  @Test
   public void testVariousMethods() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
     RepeatedFieldBuilder<TestAllTypes, TestAllTypes.Builder,
@@ -139,6 +150,7 @@ public class RepeatedFieldBuilderTest extends TestCase {
     assertTrue(builder.isEmpty());
   }
 
+  @Test
   public void testLists() {
     TestUtil.MockBuilderParent mockParent = new TestUtil.MockBuilderParent();
     RepeatedFieldBuilder<TestAllTypes, TestAllTypes.Builder,
@@ -168,9 +180,8 @@ public class RepeatedFieldBuilderTest extends TestCase {
   }
 
   private void assertIsUnmodifiable(List<?> list) {
-    if (list == Collections.emptyList()) {
-      // OKAY -- Need to check this b/c EmptyList allows you to call clear.
-    } else {
+    // Need to check this b/c EmptyList allows you to call clear. If it's empty, it's OK.
+    if (list != Collections.emptyList()) {
       try {
         list.clear();
         fail("List wasn't immutable");

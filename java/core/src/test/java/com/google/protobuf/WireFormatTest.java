@@ -30,12 +30,22 @@
 
 package com.google.protobuf;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.List;
+import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
+import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
+import protobuf_unittest.UnittestMset.RawMessageSet;
+import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
+import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
@@ -44,19 +54,18 @@ import protobuf_unittest.UnittestProto.TestOneof2;
 import protobuf_unittest.UnittestProto.TestOneofBackwardsCompatible;
 import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
-import protobuf_unittest.UnittestMset.RawMessageSet;
-import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
-import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
-import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
-import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
-import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 /**
  * Tests related to parsing and serialization.
  *
  * @author kenton@google.com (Kenton Varda)
  */
-public class WireFormatTest extends TestCase {
+@RunWith(JUnit4.class)
+public class WireFormatTest {
+  @Test
   public void testSerialization() throws Exception {
     TestAllTypes message = TestUtil.getAllSet();
 
@@ -68,6 +77,7 @@ public class WireFormatTest extends TestCase {
     TestUtil.assertAllFieldsSet(message2);
   }
 
+  @Test
   public void testSerializationPacked() throws Exception {
     TestPackedTypes message = TestUtil.getPackedSet();
 
@@ -79,6 +89,7 @@ public class WireFormatTest extends TestCase {
     TestUtil.assertPackedFieldsSet(message2);
   }
 
+  @Test
   public void testSerializeExtensions() throws Exception {
     // TestAllTypes and TestAllExtensions should have compatible wire formats,
     // so if we serialize a TestAllExtensions then parse it as TestAllTypes
@@ -93,6 +104,7 @@ public class WireFormatTest extends TestCase {
     TestUtil.assertAllFieldsSet(message2);
   }
 
+  @Test
   public void testSerializePackedExtensions() throws Exception {
     // TestPackedTypes and TestPackedExtensions should have compatible wire
     // formats; check that they serialize to the same string.
@@ -105,6 +117,7 @@ public class WireFormatTest extends TestCase {
     assertEquals(rawBytes, rawBytes2);
   }
 
+  @Test
   public void testSerializationPackedWithoutGetSerializedSize()
       throws Exception {
     // Write directly to an OutputStream, without invoking getSerializedSize()
@@ -127,6 +140,7 @@ public class WireFormatTest extends TestCase {
     TestUtil.assertPackedFieldsSet(message2);
   }
 
+  @Test
   public void testSerializeExtensionsLite() throws Exception {
     // TestAllTypes and TestAllExtensions should have compatible wire formats,
     // so if we serialize a TestAllExtensions then parse it as TestAllTypes
@@ -141,6 +155,7 @@ public class WireFormatTest extends TestCase {
     TestUtil.assertAllFieldsSet(message2);
   }
 
+  @Test
   public void testSerializePackedExtensionsLite() throws Exception {
     // TestPackedTypes and TestPackedExtensions should have compatible wire
     // formats; check that they serialize to the same string.
@@ -153,6 +168,7 @@ public class WireFormatTest extends TestCase {
     assertEquals(rawBytes, rawBytes2);
   }
 
+  @Test
   public void testParseExtensions() throws Exception {
     // TestAllTypes and TestAllExtensions should have compatible wire formats,
     // so if we serialize a TestAllTypes then parse it as TestAllExtensions
@@ -169,6 +185,7 @@ public class WireFormatTest extends TestCase {
     TestUtil.assertAllExtensionsSet(message2);
   }
 
+  @Test
   public void testParsePackedExtensions() throws Exception {
     // Ensure that packed extensions can be properly parsed.
     TestPackedExtensions message = TestUtil.getPackedExtensionsSet();
@@ -182,6 +199,7 @@ public class WireFormatTest extends TestCase {
     TestUtil.assertPackedExtensionsSet(message2);
   }
 
+  @Test
   public void testParseExtensionsLite() throws Exception {
     // TestAllTypes and TestAllExtensions should have compatible wire formats,
     // so if we serialize a TestAllTypes then parse it as TestAllExtensions
@@ -206,6 +224,7 @@ public class WireFormatTest extends TestCase {
     TestUtil.assertAllExtensionsSet(message3);
   }
 
+  @Test
   public void testParsePackedExtensionsLite() throws Exception {
     // Ensure that packed extensions can be properly parsed.
     TestPackedExtensionsLite message = TestUtil.getLitePackedExtensionsSet();
@@ -219,11 +238,13 @@ public class WireFormatTest extends TestCase {
     TestUtil.assertPackedExtensionsSet(message2);
   }
 
+  @Test
   public void testExtensionsSerializedSize() throws Exception {
     assertNotSame(TestUtil.getAllSet().getSerializedSize(),
                   TestUtil.getAllExtensionsSet().getSerializedSize());
   }
 
+  @Test
   public void testSerializeDelimited() throws Exception {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     TestUtil.getAllSet().writeDelimitedTo(output);
@@ -259,6 +280,7 @@ public class WireFormatTest extends TestCase {
     }
   }
 
+  @Test
   public void testInterleavedFieldsAndExtensions() throws Exception {
     // Tests that fields are written in order even when extension ranges
     // are interleaved with field numbers.
@@ -291,6 +313,7 @@ public class WireFormatTest extends TestCase {
     return result;
   }
 
+  @Test
   public void testParseMultipleExtensionRanges() throws Exception {
     // Make sure we can parse a message that contains multiple extensions
     // ranges.
@@ -308,6 +331,7 @@ public class WireFormatTest extends TestCase {
     assertEquals(source, dest);
   }
 
+  @Test
   public void testParseMultipleExtensionRangesDynamic() throws Exception {
     // Same as above except with DynamicMessage.
     Descriptors.Descriptor descriptor = TestFieldOrderings.getDescriptor();
@@ -331,10 +355,12 @@ public class WireFormatTest extends TestCase {
   private static final int TYPE_ID_2 =
     TestMessageSetExtension2.getDescriptor().getExtensions().get(0).getNumber();
 
+  @Test
   public void testSerializeMessageSetEagerly() throws Exception {
     testSerializeMessageSetWithFlag(true);
   }
 
+  @Test
   public void testSerializeMessageSetNotEagerly() throws Exception {
     testSerializeMessageSetWithFlag(false);
   }
@@ -385,10 +411,12 @@ public class WireFormatTest extends TestCase {
     assertEquals("bar", raw.getItem(2).getMessage().toStringUtf8());
   }
 
+  @Test
   public void testParseMessageSetEagerly() throws Exception {
     testParseMessageSetWithFlag(true);
   }
 
+  @Test
   public void testParseMessageSetNotEagerly()throws Exception {
     testParseMessageSetWithFlag(false);
   }
@@ -448,10 +476,12 @@ public class WireFormatTest extends TestCase {
     assertEquals("bar", field.getLengthDelimitedList().get(0).toStringUtf8());
   }
 
+  @Test
   public void testParseMessageSetExtensionEagerly() throws Exception {
     testParseMessageSetExtensionWithFlag(true);
   }
 
+  @Test
   public void testParseMessageSetExtensionNotEagerly() throws Exception {
     testParseMessageSetExtensionWithFlag(false);
   }
@@ -487,10 +517,12 @@ public class WireFormatTest extends TestCase {
         TestMessageSetExtension1.messageSetExtension).getI());
   }
 
+  @Test
   public void testMergeLazyMessageSetExtensionEagerly() throws Exception {
     testMergeLazyMessageSetExtensionWithFlag(true);
   }
 
+  @Test
   public void testMergeLazyMessageSetExtensionNotEagerly() throws Exception {
     testMergeLazyMessageSetExtensionWithFlag(false);
   }
@@ -529,10 +561,12 @@ public class WireFormatTest extends TestCase {
         TestMessageSetExtension1.messageSetExtension).getI());
   }
 
+  @Test
   public void testMergeMessageSetExtensionEagerly() throws Exception {
     testMergeMessageSetExtensionWithFlag(true);
   }
 
+  @Test
   public void testMergeMessageSetExtensionNotEagerly() throws Exception {
     testMergeMessageSetExtensionWithFlag(false);
   }
@@ -563,9 +597,7 @@ public class WireFormatTest extends TestCase {
     ByteString.CodedBuilder out = ByteString.newCodedBuilder(
         raw.getSerializedSize());
     CodedOutputStream output = out.getCodedOutput();
-    List<RawMessageSet.Item> items = raw.getItemList();
-    for (int i = 0; i < items.size(); i++) {
-      RawMessageSet.Item item = items.get(i);
+    for (RawMessageSet.Item item : raw.getItemList()) {
       output.writeTag(1, WireFormat.WIRETYPE_START_GROUP);
       output.writeBytes(3, item.getMessage());
       output.writeInt32(2, item.getTypeId());
@@ -582,6 +614,7 @@ public class WireFormatTest extends TestCase {
 
   // ================================================================
   // oneof
+  @Test
   public void testOneofWireFormat() throws Exception {
     TestOneof2.Builder builder = TestOneof2.newBuilder();
     TestUtil.setOneof(builder);
@@ -594,6 +627,7 @@ public class WireFormatTest extends TestCase {
     TestUtil.assertOneofSet(message2);
   }
 
+  @Test
   public void testOneofOnlyLastSet() throws Exception {
     TestOneofBackwardsCompatible source = TestOneofBackwardsCompatible
         .newBuilder().setFooInt(100).setFooString("101").build();

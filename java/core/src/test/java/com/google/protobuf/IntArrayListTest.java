@@ -31,8 +31,17 @@
 package com.google.protobuf;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -43,7 +52,8 @@ import java.util.Iterator;
  * 
  * @author dweis@google.com (Daniel Weis)
  */
-public class IntArrayListTest extends TestCase {
+@RunWith(JUnit4.class)
+public class IntArrayListTest {
   
   private static final IntArrayList UNARY_LIST = newImmutableIntArrayList(1);
   private static final IntArrayList TERTIARY_LIST =
@@ -51,19 +61,22 @@ public class IntArrayListTest extends TestCase {
   
   private IntArrayList list;
   
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     list = new IntArrayList();
   }
   
+  @Test
   public void testEmptyListReturnsSameInstance() {
     assertSame(IntArrayList.emptyList(), IntArrayList.emptyList());
   }
   
+  @Test
   public void testEmptyListIsImmutable() {
     assertImmutable(IntArrayList.emptyList());
   }
   
+  @Test
   public void testMakeImmutable() {
     list.addInt(2);
     list.addInt(4);
@@ -73,6 +86,7 @@ public class IntArrayListTest extends TestCase {
     assertImmutable(list);
   }
   
+  @Test
   public void testCopyConstructor() {
     IntArrayList copy = new IntArrayList(TERTIARY_LIST);
     assertEquals(TERTIARY_LIST, copy);
@@ -87,6 +101,7 @@ public class IntArrayListTest extends TestCase {
     assertEquals(IntArrayList.emptyList(), copy);
   }
 
+  @Test
   public void testModificationWithIteration() {
     list.addAll(asList(1, 2, 3, 4));
     Iterator<Integer> iterator = list.iterator();
@@ -114,6 +129,7 @@ public class IntArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testGet() {
     assertEquals(1, (int) TERTIARY_LIST.get(0));
     assertEquals(2, (int) TERTIARY_LIST.get(1));
@@ -134,6 +150,7 @@ public class IntArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testGetInt() {
     assertEquals(1, TERTIARY_LIST.getInt(0));
     assertEquals(2, TERTIARY_LIST.getInt(1));
@@ -154,6 +171,7 @@ public class IntArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testSize() {
     assertEquals(0, IntArrayList.emptyList().size());
     assertEquals(1, UNARY_LIST.size());
@@ -172,6 +190,7 @@ public class IntArrayListTest extends TestCase {
     assertEquals(4, list.size());
   }
   
+  @Test
   public void testSet() {
     list.addInt(2);
     list.addInt(4);
@@ -197,6 +216,7 @@ public class IntArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testSetInt() {
     list.addInt(2);
     list.addInt(4);
@@ -222,11 +242,12 @@ public class IntArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testAdd() {
     assertEquals(0, list.size());
 
     assertTrue(list.add(2));
-    assertEquals(asList(2), list);
+    assertEquals(singletonList(2), list);
 
     assertTrue(list.add(3));
     list.add(0, 4);
@@ -253,16 +274,18 @@ public class IntArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testAddInt() {
     assertEquals(0, list.size());
 
     list.addInt(2);
-    assertEquals(asList(2), list);
+    assertEquals(singletonList(2), list);
 
     list.addInt(3);
     assertEquals(asList(2, 3), list);
   }
   
+  @Test
   public void testAddAll() {
     assertEquals(0, list.size());
 
@@ -281,19 +304,20 @@ public class IntArrayListTest extends TestCase {
     assertFalse(list.addAll(IntArrayList.emptyList()));
   }
   
+  @Test
   public void testRemove() {
     list.addAll(TERTIARY_LIST);
     assertEquals(1, (int) list.remove(0));
     assertEquals(asList(2, 3), list);
 
     assertTrue(list.remove(Integer.valueOf(3)));
-    assertEquals(asList(2), list);
+    assertEquals(singletonList(2), list);
 
     assertFalse(list.remove(Integer.valueOf(3)));
-    assertEquals(asList(2), list);
+    assertEquals(singletonList(2), list);
 
     assertEquals(2, (int) list.remove(0));
-    assertEquals(asList(), list);
+    assertEquals(Collections.<Integer>emptyList(), list);
     
     try {
       list.remove(-1);
@@ -336,7 +360,7 @@ public class IntArrayListTest extends TestCase {
     }
     
     try {
-      list.addAll(Collections.singletonList(1));
+      list.addAll(singletonList(1));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
