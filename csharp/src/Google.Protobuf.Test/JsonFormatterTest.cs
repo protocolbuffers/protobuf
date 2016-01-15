@@ -315,6 +315,15 @@ namespace Google.Protobuf
 
         [Test]
         [TestCase("1970-01-01T00:00:00Z", 0)]
+        [TestCase("1970-01-01T00:00:00.000000001Z", 1)]
+        [TestCase("1970-01-01T00:00:00.000000010Z", 10)]
+        [TestCase("1970-01-01T00:00:00.000000100Z", 100)]
+        [TestCase("1970-01-01T00:00:00.000001Z", 1000)]
+        [TestCase("1970-01-01T00:00:00.000010Z", 10000)]
+        [TestCase("1970-01-01T00:00:00.000100Z", 100000)]
+        [TestCase("1970-01-01T00:00:00.001Z", 1000000)]
+        [TestCase("1970-01-01T00:00:00.010Z", 10000000)]
+        [TestCase("1970-01-01T00:00:00.100Z", 100000000)]
         [TestCase("1970-01-01T00:00:00.100Z", 100000000)]
         [TestCase("1970-01-01T00:00:00.120Z", 120000000)]
         [TestCase("1970-01-01T00:00:00.123Z", 123000000)]
@@ -350,6 +359,14 @@ namespace Google.Protobuf
         [TestCase(0, 0, "0s")]
         [TestCase(1, 0, "1s")]
         [TestCase(-1, 0, "-1s")]
+        [TestCase(0, 1, "0.000000001s")]
+        [TestCase(0, 10, "0.000000010s")]
+        [TestCase(0, 100, "0.000000100s")]
+        [TestCase(0, 1000, "0.000001s")]
+        [TestCase(0, 10000, "0.000010s")]
+        [TestCase(0, 100000, "0.000100s")]
+        [TestCase(0, 1000000, "0.001s")]
+        [TestCase(0, 10000000, "0.010s")]
         [TestCase(0, 100000000, "0.100s")]
         [TestCase(0, 120000000, "0.120s")]
         [TestCase(0, 123000000, "0.123s")]
@@ -362,12 +379,17 @@ namespace Google.Protobuf
         [TestCase(0, -100000000, "-0.100s")]
         [TestCase(1, 100000000, "1.100s")]
         [TestCase(-1, -100000000, "-1.100s")]
-        // Non-normalized examples
-        [TestCase(1, 2123456789, "3.123456789s")]
-        [TestCase(1, -100000000, "0.900s")]
         public void DurationStandalone(long seconds, int nanoseconds, string expected)
         {
             Assert.AreEqual(WrapInQuotes(expected), new Duration { Seconds = seconds, Nanos = nanoseconds }.ToString());
+        }
+
+        [Test]
+        [TestCase(1, 2123456789)]
+        [TestCase(1, -100000000)]
+        public void DurationStandalone_NonNormalized(long seconds, int nanoseconds, string expected)
+        {
+            Assert.Throws<InvalidOperationException>(() => new Duration { Seconds = seconds, Nanos = nanoseconds }.ToString());
         }
 
         [Test]

@@ -745,7 +745,6 @@ namespace Google.Protobuf
         [TestCase("--0.123456789s", Description = "Double minus sign")]
         // Violate upper/lower bounds in various ways
         [TestCase("315576000001s", Description = "Integer part too large")]
-        [TestCase("315576000000.000000001s", Description = "Integer part is upper bound; non-zero fraction")]
         [TestCase("3155760000000s", Description = "Integer part too long (positive)")]
         [TestCase("-3155760000000s", Description = "Integer part too long (negative)")]
         public void Duration_Invalid(string jsonValue)

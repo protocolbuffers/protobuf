@@ -854,28 +854,24 @@ namespace Google.Protobuf
 
             try
             {
-                long seconds = long.Parse(secondsText, CultureInfo.InvariantCulture);
+                long seconds = long.Parse(secondsText, CultureInfo.InvariantCulture) * multiplier;
                 int nanos = 0;
                 if (subseconds != "")
                 {
                     // This should always work, as we've got 1-9 digits.
                     int parsedFraction = int.Parse(subseconds.Substring(1));
-                    nanos = parsedFraction * SubsecondScalingFactors[subseconds.Length];
+                    nanos = parsedFraction * SubsecondScalingFactors[subseconds.Length] * multiplier;
                 }
-                if (seconds >= Duration.MaxSeconds)
+                if (!Duration.IsNormalized(seconds, nanos))
                 {
-                    // Allow precisely 315576000000 seconds, but prohibit even 1ns more.
-                    if (seconds > Duration.MaxSeconds || nanos > 0)
-                    {
-                        throw new InvalidProtocolBufferException("Invalid Duration value: " + token.StringValue);
-                    }
+                    throw new InvalidProtocolBufferException($"Invalid Duration value: {token.StringValue}");
                 }
-                message.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.SetValue(message, seconds * multiplier);
-                message.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.SetValue(message, nanos * multiplier);
+                message.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.SetValue(message, seconds);
+                message.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.SetValue(message, nanos);
             }
             catch (FormatException)
             {
-                throw new InvalidProtocolBufferException("Invalid Duration value: " + token.StringValue);
+                throw new InvalidProtocolBufferException($"Invalid Duration value: {token.StringValue}");
             }
         }
 
