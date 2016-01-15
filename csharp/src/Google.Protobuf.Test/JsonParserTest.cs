@@ -779,6 +779,14 @@ namespace Google.Protobuf
         }
 
         [Test]
+        [TestCase("foo_bar")]
+        public void FieldMask_Invalid(string jsonValue)
+        {
+            string json = WrapInQuotes(jsonValue);
+            Assert.Throws<InvalidProtocolBufferException>(() => FieldMask.Parser.ParseJson(json));
+        }
+
+        [Test]
         public void Any_RegularMessage()
         {
             var registry = TypeRegistry.FromMessages(TestAllTypes.Descriptor);

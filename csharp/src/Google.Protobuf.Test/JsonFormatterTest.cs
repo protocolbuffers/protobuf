@@ -418,6 +418,16 @@ namespace Google.Protobuf
         }
 
         [Test]
+        [TestCase("foo__bar")]
+        [TestCase("foo_3_ar")]
+        [TestCase("fooBar")]
+        public void FieldMaskInvalid(string input)
+        {
+            var mask = new FieldMask { Paths = { input } };
+            Assert.Throws<InvalidOperationException>(() => JsonFormatter.Default.Format(mask));
+        }
+
+        [Test]
         public void FieldMaskStandalone()
         {
             var fieldMask = new FieldMask { Paths = { "", "single", "with_underscore", "nested.field.name", "nested..double_dot" } };

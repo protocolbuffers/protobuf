@@ -224,6 +224,31 @@ namespace Google.Protobuf
             return !first;
         }
 
+        /// <summary>
+        /// Camel-case converter with added strictness for field mask formatting.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The field mask is invalid for JSON representation</exception>
+        private static string ToCamelCaseForFieldMask(string input)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                char c = input[i];
+                if (c >= 'A' && c <= 'Z')
+                {
+                    throw new InvalidOperationException($"Invalid field mask to be converted to JSON: {input}");
+                }
+                if (c == '_' && i < input.Length - 1)
+                {
+                    char next = input[i + 1];
+                    if (next < 'a' || next > 'z')
+                    {
+                        throw new InvalidOperationException($"Invalid field mask to be converted to JSON: {input}");
+                    }
+                }
+            }
+            return ToCamelCase(input);
+        }
+
         // Converted from src/google/protobuf/util/internal/utility.cc ToCamelCase
         // TODO: Use the new field in FieldDescriptor.
         internal static string ToCamelCase(string input)
@@ -525,7 +550,7 @@ namespace Google.Protobuf
         private void WriteFieldMask(StringBuilder builder, IMessage value)
         {
             IList paths = (IList) value.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor.GetValue(value);
-            WriteString(builder, string.Join(",", paths.Cast<string>().Select(ToCamelCase)));
+            WriteString(builder, string.Join(",", paths.Cast<string>().Select(ToCamelCaseForFieldMask)));
         }
 
         private void WriteAny(StringBuilder builder, IMessage value)

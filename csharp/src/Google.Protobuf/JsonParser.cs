@@ -894,6 +894,8 @@ namespace Google.Protobuf
         private static string ToSnakeCase(string text)
         {
             var builder = new StringBuilder(text.Length * 2);
+            // Note: this is probably unnecessary now, but currently retained to be as close as possible to the
+            // C++, whilst still throwing an exception on underscores.
             bool wasNotUnderscore = false;  // Initialize to false for case 1 (below)
             bool wasNotCap = false;
 
@@ -927,7 +929,11 @@ namespace Google.Protobuf
                 else
                 {
                     builder.Append(c);
-                    wasNotUnderscore = c != '_';
+                    if (c == '_')
+                    {
+                        throw new InvalidProtocolBufferException($"Invalid field mask: {text}");
+                    }
+                    wasNotUnderscore = true;
                     wasNotCap = true;
                 }
             }
