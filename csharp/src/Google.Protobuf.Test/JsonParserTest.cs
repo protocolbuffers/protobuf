@@ -822,6 +822,15 @@ namespace Google.Protobuf
         }
 
         [Test]
+        [TestCase("AQI")]
+        [TestCase("_-==")]
+        public void Bytes_InvalidBase64(string badBase64)
+        {
+            string json = "{ \"singleBytes\": \"" + badBase64 + "\" }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
         [TestCase("\"FOREIGN_BAR\"")]
         [TestCase("5")]
         public void EnumValid(string value)

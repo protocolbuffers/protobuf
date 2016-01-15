@@ -647,7 +647,14 @@ namespace Google.Protobuf
                 case FieldType.String:
                     return text;
                 case FieldType.Bytes:
-                    return ByteString.FromBase64(text);
+                    try
+                    {
+                        return ByteString.FromBase64(text);
+                    }
+                    catch (FormatException e)
+                    {
+                        throw InvalidProtocolBufferException.InvalidBase64(e);
+                    }
                 case FieldType.Int32:
                 case FieldType.SInt32:
                 case FieldType.SFixed32:
