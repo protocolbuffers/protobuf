@@ -149,6 +149,30 @@ namespace Google.Protobuf.WellKnownTypes
         }
 
         [Test]
+        public void RepeatedWrappersBinaryFormat()
+        {
+            // At one point we accidentally used a packed format for repeated wrappers, which is wrong (and weird).
+            // This test is just to prove that we use the right format.
+
+            var rawOutput = new MemoryStream();
+            var output = new CodedOutputStream(rawOutput);
+            // Write a value of 5
+            output.WriteTag(RepeatedWellKnownTypes.Int32FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            output.WriteLength(2);
+            output.WriteTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.Varint);
+            output.WriteInt32(5);
+            // Write a value of 0 (empty message)
+            output.WriteTag(RepeatedWellKnownTypes.Int32FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            output.WriteLength(0);
+            output.Flush();
+            var expectedBytes = rawOutput.ToArray();
+
+            var message = new RepeatedWellKnownTypes { Int32Field = { 5, 0 } };
+            var actualBytes = message.ToByteArray();
+            Assert.AreEqual(expectedBytes, actualBytes);
+        }
+
+        [Test]
         public void MapWrappersSerializeDeserialize()
         {
             // Note: no null values here, as they are prohibited in map fields
