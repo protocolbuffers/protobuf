@@ -384,7 +384,7 @@ namespace Google.Protobuf
         [Test]
         [TestCase(1, 2123456789)]
         [TestCase(1, -100000000)]
-        public void DurationStandalone_NonNormalized(long seconds, int nanoseconds, string expected)
+        public void DurationStandalone_NonNormalized(long seconds, int nanoseconds)
         {
             Assert.Throws<InvalidOperationException>(() => new Duration { Seconds = seconds, Nanos = nanoseconds }.ToString());
         }
