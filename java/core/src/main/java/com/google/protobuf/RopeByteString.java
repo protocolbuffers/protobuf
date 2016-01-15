@@ -187,7 +187,7 @@ final class RopeByteString extends ByteString {
           && leftRope.getTreeDepth() > right.getTreeDepth()) {
         // Typically for concatenate-built strings the left-side is deeper than
         // the right.  This is our final attempt to concatenate without
-        // increasing the tree depth.  We'll redo the the node on the RHS.  This
+        // increasing the tree depth.  We'll redo the node on the RHS.  This
         // is yet another optimization for building the string by repeatedly
         // concatenating on the right.
         ByteString newRight = new RopeByteString(leftRope.right, right);

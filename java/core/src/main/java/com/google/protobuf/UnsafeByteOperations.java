@@ -38,7 +38,7 @@ import java.nio.ByteBuffer;
  * potentially expose the backing buffer of a {@link ByteString} to the application.
  *
  * <p><strong>DISCLAIMER:</strong> The methods in this class should only be called if it is
- * guaranteed that the the buffer backing the {@link ByteString} will never change! Mutation of a
+ * guaranteed that the buffer backing the {@link ByteString} will never change! Mutation of a
  * {@link ByteString} can lead to unexpected and undesirable consequences in your application,
  * and will likely be difficult to debug. Proceed with caution!
  */
