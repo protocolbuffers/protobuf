@@ -72,6 +72,14 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void OriginalFieldNameAccepted()
+        {
+            var json = "{ \"single_int32\": 10 }";
+            var expected = new TestAllTypes { SingleInt32 = 10 };
+            Assert.AreEqual(expected, TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
         public void SourceContextRoundtrip()
         {
             AssertRoundtrip(new SourceContext { FileName = "foo.proto" });
