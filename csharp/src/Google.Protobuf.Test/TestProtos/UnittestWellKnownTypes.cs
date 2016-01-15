@@ -31,7 +31,7 @@ namespace Google.Protobuf.TestProtos {
             "L3Byb3RvYnVmL3NvdXJjZV9jb250ZXh0LnByb3RvGhxnb29nbGUvcHJvdG9i",
             "dWYvc3RydWN0LnByb3RvGh9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1wLnBy",
             "b3RvGhpnb29nbGUvcHJvdG9idWYvdHlwZS5wcm90bxoeZ29vZ2xlL3Byb3Rv",
-            "YnVmL3dyYXBwZXJzLnByb3RvIpEHChJUZXN0V2VsbEtub3duVHlwZXMSJwoJ",
+            "YnVmL3dyYXBwZXJzLnByb3RvIr4HChJUZXN0V2VsbEtub3duVHlwZXMSJwoJ",
             "YW55X2ZpZWxkGAEgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueRInCglhcGlf",
             "ZmllbGQYAiABKAsyFC5nb29nbGUucHJvdG9idWYuQXBpEjEKDmR1cmF0aW9u",
             "X2ZpZWxkGAMgASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uEisKC2Vt",
@@ -51,7 +51,8 @@ namespace Google.Protobuf.TestProtos {
             "cm90b2J1Zi5VSW50MzJWYWx1ZRIuCgpib29sX2ZpZWxkGBAgASgLMhouZ29v",
             "Z2xlLnByb3RvYnVmLkJvb2xWYWx1ZRIyCgxzdHJpbmdfZmllbGQYESABKAsy",
             "HC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSMAoLYnl0ZXNfZmllbGQY",
-            "EiABKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZSKVBwoWUmVwZWF0",
+            "EiABKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZRIrCgt2YWx1ZV9m",
+            "aWVsZBgTIAEoCzIWLmdvb2dsZS5wcm90b2J1Zi5WYWx1ZSKVBwoWUmVwZWF0",
             "ZWRXZWxsS25vd25UeXBlcxInCglhbnlfZmllbGQYASADKAsyFC5nb29nbGUu",
             "cHJvdG9idWYuQW55EicKCWFwaV9maWVsZBgCIAMoCzIULmdvb2dsZS5wcm90",
             "b2J1Zi5BcGkSMQoOZHVyYXRpb25fZmllbGQYAyADKAsyGS5nb29nbGUucHJv",
@@ -162,7 +163,7 @@ namespace Google.Protobuf.TestProtos {
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.ApiReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
           new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestWellKnownTypes), global::Google.Protobuf.TestProtos.TestWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null),
+            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestWellKnownTypes), global::Google.Protobuf.TestProtos.TestWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField", "ValueField" }, null, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes), global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.OneofWellKnownTypes), global::Google.Protobuf.TestProtos.OneofWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, new[]{ "OneofField" }, null, null),
             new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.MapWellKnownTypes), global::Google.Protobuf.TestProtos.MapWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, new pbr::GeneratedCodeInfo[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, })
@@ -215,6 +216,7 @@ namespace Google.Protobuf.TestProtos {
       BoolField = other.BoolField;
       StringField = other.StringField;
       BytesField = other.BytesField;
+      ValueField = other.valueField_ != null ? other.ValueField.Clone() : null;
     }
 
     public TestWellKnownTypes Clone() {
@@ -410,6 +412,19 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "value_field" field.</summary>
+    public const int ValueFieldFieldNumber = 19;
+    private global::Google.Protobuf.WellKnownTypes.Value valueField_;
+    /// <summary>
+    ///  Part of struct, but useful to be able to test separately
+    /// </summary>
+    public global::Google.Protobuf.WellKnownTypes.Value ValueField {
+      get { return valueField_; }
+      set {
+        valueField_ = value;
+      }
+    }
+
     public override bool Equals(object other) {
       return Equals(other as TestWellKnownTypes);
     }
@@ -439,6 +454,7 @@ namespace Google.Protobuf.TestProtos {
       if (BoolField != other.BoolField) return false;
       if (StringField != other.StringField) return false;
       if (BytesField != other.BytesField) return false;
+      if (!object.Equals(ValueField, other.ValueField)) return false;
       return true;
     }
 
@@ -462,6 +478,7 @@ namespace Google.Protobuf.TestProtos {
       if (boolField_ != null) hash ^= BoolField.GetHashCode();
       if (stringField_ != null) hash ^= StringField.GetHashCode();
       if (bytesField_ != null) hash ^= BytesField.GetHashCode();
+      if (valueField_ != null) hash ^= ValueField.GetHashCode();
       return hash;
     }
 
@@ -533,6 +550,10 @@ namespace Google.Protobuf.TestProtos {
       if (bytesField_ != null) {
         _single_bytesField_codec.WriteTagAndValue(output, BytesField);
       }
+      if (valueField_ != null) {
+        output.WriteRawTag(154, 1);
+        output.WriteMessage(ValueField);
+      }
     }
 
     public int CalculateSize() {
@@ -590,6 +611,9 @@ namespace Google.Protobuf.TestProtos {
       }
       if (bytesField_ != null) {
         size += _single_bytesField_codec.CalculateSizeWithTag(BytesField);
+      }
+      if (valueField_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(ValueField);
       }
       return size;
     }
@@ -696,6 +720,12 @@ namespace Google.Protobuf.TestProtos {
         if (bytesField_ == null || other.BytesField != pb::ByteString.Empty) {
           BytesField = other.BytesField;
         }
+      }
+      if (other.valueField_ != null) {
+        if (valueField_ == null) {
+          valueField_ = new global::Google.Protobuf.WellKnownTypes.Value();
+        }
+        ValueField.MergeFrom(other.ValueField);
       }
     }
 
@@ -830,6 +860,13 @@ namespace Google.Protobuf.TestProtos {
             if (bytesField_ == null || value != pb::ByteString.Empty) {
               BytesField = value;
             }
+            break;
+          }
+          case 154: {
+            if (valueField_ == null) {
+              valueField_ = new global::Google.Protobuf.WellKnownTypes.Value();
+            }
+            input.ReadMessage(valueField_);
             break;
           }
         }

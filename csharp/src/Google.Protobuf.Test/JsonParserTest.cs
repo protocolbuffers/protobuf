@@ -124,7 +124,9 @@ namespace Google.Protobuf
         [Test]
         public void SingularWrappers_ExplicitNulls()
         {
-            var message = new TestWellKnownTypes();
+            // When we parse the "valueField": null part, we remember it... basically, it's one case
+            // where explicit default values don't fully roundtrip.
+            var message = new TestWellKnownTypes { ValueField = Value.ForNull() };
             var json = new JsonFormatter(new JsonFormatter.Settings(true)).Format(message);
             var parsed = JsonParser.Default.Parse<TestWellKnownTypes>(json);
             Assert.AreEqual(message, parsed);
@@ -148,6 +150,14 @@ namespace Google.Protobuf
             JsonParser.Default.Merge(parsed, json);
             expected.Descriptor.Fields[WrappersReflection.WrapperValueFieldNumber].Accessor.SetValue(expected, expectedValue);
             Assert.AreEqual(expected, parsed);
+        }
+
+        [Test]
+        public void ExplicitNullValue()
+        {
+            string json = "{\"valueField\": null}";
+            var message = JsonParser.Default.Parse<TestWellKnownTypes>(json);
+            Assert.AreEqual(new TestWellKnownTypes { ValueField = Value.ForNull() }, message);
         }
 
         [Test]

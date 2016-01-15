@@ -39,6 +39,8 @@ message TestWellKnownTypes {
   google.protobuf.BoolValue bool_field = 16;
   google.protobuf.StringValue string_field = 17;
   google.protobuf.BytesValue bytes_field = 18;
+  // Part of struct, but useful to be able to test separately
+  google.protobuf.Value value_field = 19;
 }
 
 // A repeated field for each well-known type.

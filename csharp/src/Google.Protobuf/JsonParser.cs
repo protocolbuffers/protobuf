@@ -215,10 +215,15 @@ namespace Google.Protobuf
             var token = tokenizer.Next();
             if (token.Type == JsonToken.TokenType.Null)
             {
+                // Clear the field if we see a null token, unless it's for a singular field of type
+                // google.protobuf.Value.
                 // Note: different from Java API, which just ignores it.
                 // TODO: Bring it more in line? Discuss...
-                field.Accessor.Clear(message);
-                return;
+                if (field.IsMap || field.IsRepeated || !IsGoogleProtobufValueField(field))
+                {
+                    field.Accessor.Clear(message);
+                    return;
+                }
             }
             tokenizer.PushBack(token);
 
@@ -297,14 +302,22 @@ namespace Google.Protobuf
             }
         }
 
+        private static bool IsGoogleProtobufValueField(FieldDescriptor field)
+        {
+            return field.FieldType == FieldType.Message &&
+                field.MessageType.FullName == Value.Descriptor.FullName;
+        }
+
         private object ParseSingleValue(FieldDescriptor field, JsonTokenizer tokenizer)
         {
             var token = tokenizer.Next();
             if (token.Type == JsonToken.TokenType.Null)
             {
-                if (field.FieldType == FieldType.Message && field.MessageType.FullName == Value.Descriptor.FullName)
+                // TODO: In order to support dynamic messages, we should really build this up
+                // dynamically.
+                if (IsGoogleProtobufValueField(field))
                 {
-                    return new Value { NullValue = NullValue.NULL_VALUE };
+                    return Value.ForNull();
                 }
                 return null;
             }
