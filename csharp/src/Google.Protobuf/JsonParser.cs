@@ -168,6 +168,10 @@ namespace Google.Protobuf
             }
             var descriptor = message.Descriptor;
             var jsonFieldMap = descriptor.Fields.ByJsonName();
+            // All the oneof fields we've already accounted for - we can only see each of them once.
+            // The set is created lazily to avoid the overhead of creating a set for every message
+            // we parsed, when oneofs are relatively rare.
+            HashSet<OneofDescriptor> seenOneofs = null;
             while (true)
             {
                 token = tokenizer.Next();
@@ -183,6 +187,17 @@ namespace Google.Protobuf
                 FieldDescriptor field;
                 if (jsonFieldMap.TryGetValue(name, out field))
                 {
+                    if (field.ContainingOneof != null)
+                    {
+                        if (seenOneofs == null)
+                        {
+                            seenOneofs = new HashSet<OneofDescriptor>();
+                        }
+                        if (!seenOneofs.Add(field.ContainingOneof))
+                        {
+                            throw new InvalidProtocolBufferException($"Multiple values specified for oneof {field.ContainingOneof.Name}");
+                        }
+                    }
                     MergeField(message, field, tokenizer);
                 }
                 else

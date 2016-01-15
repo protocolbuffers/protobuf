@@ -895,6 +895,13 @@ namespace Google.Protobuf
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
         }
 
+        [Test]
+        public void OneofDuplicate_Invalid()
+        {
+            string json = "{ \"oneofString\": \"x\", \"oneofUint32\": 10 }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
         /// <summary>
         /// Various tests use strings which have quotes round them for parsing or as the result
         /// of formatting, but without those quotes being specified in the tests (for the sake of readability).
