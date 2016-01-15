@@ -171,6 +171,36 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void RepeatedField_NullElementProhibited()
+        {
+            string json = "{ \"repeated_foreign_message\": [null] }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void RepeatedField_NullOverallValueAllowed()
+        {
+            string json = "{ \"repeated_foreign_message\": null }";
+            Assert.AreEqual(new TestAllTypes(), TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        [TestCase("{ \"mapInt32Int32\": { \"10\": null }")]
+        [TestCase("{ \"mapStringString\": { \"abc\": null }")]
+        [TestCase("{ \"mapInt32ForeignMessage\": { \"10\": null }")]
+        public void MapField_NullValueProhibited(string json)
+        {
+            Assert.Throws<InvalidProtocolBufferException>(() => TestMap.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void MapField_NullOverallValueAllowed()
+        {
+            string json = "{ \"mapInt32Int32\": null }";
+            Assert.AreEqual(new TestMap(), TestMap.Parser.ParseJson(json));
+        }
+
+        [Test]
         public void IndividualWrapperTypes()
         {
             Assert.AreEqual(new StringValue { Value = "foo" }, StringValue.Parser.ParseJson("\"foo\""));

@@ -239,6 +239,10 @@ namespace Google.Protobuf
                     return;
                 }
                 tokenizer.PushBack(token);
+                if (token.Type == JsonToken.TokenType.Null)
+                {
+                    throw new InvalidProtocolBufferException("Repeated field elements cannot be null");
+                }
                 list.Add(ParseSingleValue(field, tokenizer));
             }
         }
@@ -270,7 +274,10 @@ namespace Google.Protobuf
                 }
                 object key = ParseMapKey(keyField, token.StringValue);
                 object value = ParseSingleValue(valueField, tokenizer);
-                // TODO: Null handling
+                if (value == null)
+                {
+                    throw new InvalidProtocolBufferException("Map values must not be null");
+                }
                 dictionary[key] = value;
             }
         }
