@@ -608,6 +608,15 @@ namespace Google.Protobuf
                                 throw new InvalidProtocolBufferException($"Value out of range: {value}");
                             }
                             return (float) value;
+                        case FieldType.Enum:
+                            CheckInteger(value);
+                            var enumValue = field.EnumType.FindValueByNumber((int) value);
+                            if (enumValue == null)
+                            {
+                                throw new InvalidProtocolBufferException($"Invalid enum value: {value} for enum type: {field.EnumType.FullName}");
+                            }
+                            // Just return it as an int, and let the CLR convert it.
+                            return enumValue.Number;
                         default:
                             throw new InvalidProtocolBufferException($"Unsupported conversion from JSON number for field type {field.FieldType}");
                     }

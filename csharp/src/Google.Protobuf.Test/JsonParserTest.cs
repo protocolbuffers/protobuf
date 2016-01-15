@@ -821,6 +821,26 @@ namespace Google.Protobuf
             Assert.Throws<InvalidProtocolBufferException>(() => parser63.Parse<TestRecursiveMessage>(data64));
         }
 
+        [Test]
+        [TestCase("\"FOREIGN_BAR\"")]
+        [TestCase("5")]
+        public void EnumValid(string value)
+        {
+            string json = "{ \"singleForeignEnum\": " + value + " }";
+            var parsed = TestAllTypes.Parser.ParseJson(json);
+            Assert.AreEqual(new TestAllTypes { SingleForeignEnum = ForeignEnum.FOREIGN_BAR }, parsed);
+        }
+
+        [Test]
+        [TestCase("\"NOT_A_VALID_VALUE\"")]
+        [TestCase("100")]
+        [TestCase("5.5")]
+        public void Enum_Invalid(string value)
+        {
+            string json = "{ \"singleForeignEnum\": " + value + " }";
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
         /// <summary>
         /// Various tests use strings which have quotes round them for parsing or as the result
         /// of formatting, but without those quotes being specified in the tests (for the sake of readability).
