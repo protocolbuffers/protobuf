@@ -205,11 +205,6 @@ namespace Google.Protobuf
                 {
                     continue;
                 }
-                // Omit awkward (single) values such as unknown enum values
-                if (!field.IsRepeated && !field.IsMap && !CanWriteSingleValue(value))
-                {
-                    continue;
-                }
 
                 // Okay, all tests complete: let's write the field value...
                 if (!first)
@@ -397,7 +392,14 @@ namespace Google.Protobuf
             }
             else if (value is System.Enum)
             {
-                WriteString(builder, value.ToString());
+                if (System.Enum.IsDefined(value.GetType(), value))
+                {
+                    WriteString(builder, value.ToString());
+                }
+                else
+                {
+                    WriteValue(builder, (int) value);
+                }
             }
             else if (value is float || value is double)
             {
@@ -704,10 +706,6 @@ namespace Google.Protobuf
             bool first = true;
             foreach (var value in list)
             {
-                if (!CanWriteSingleValue(value))
-                {
-                    continue;
-                }
                 if (!first)
                 {
                     builder.Append(PropertySeparator);
@@ -725,10 +723,6 @@ namespace Google.Protobuf
             // This will box each pair. Could use IDictionaryEnumerator, but that's ugly in terms of disposal.
             foreach (DictionaryEntry pair in dictionary)
             {
-                if (!CanWriteSingleValue(pair.Value))
-                {
-                    continue;
-                }
                 if (!first)
                 {
                     builder.Append(PropertySeparator);

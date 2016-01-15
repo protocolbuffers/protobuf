@@ -165,34 +165,31 @@ namespace Google.Protobuf
         }
 
         [Test]
-        public void UnknownEnumValueOmitted_SingleField()
+        public void UnknownEnumValueNumeric_SingleField()
         {
             var message = new TestAllTypes { SingleForeignEnum = (ForeignEnum) 100 };
-            AssertJson("{ }", JsonFormatter.Default.Format(message));
+            AssertJson("{ 'singleForeignEnum': 100 }", JsonFormatter.Default.Format(message));
         }
 
         [Test]
-        public void UnknownEnumValueOmitted_RepeatedField()
+        public void UnknownEnumValueNumeric_RepeatedField()
         {
             var message = new TestAllTypes { RepeatedForeignEnum = { ForeignEnum.FOREIGN_BAZ, (ForeignEnum) 100, ForeignEnum.FOREIGN_FOO } };
-            AssertJson("{ 'repeatedForeignEnum': [ 'FOREIGN_BAZ', 'FOREIGN_FOO' ] }", JsonFormatter.Default.Format(message));
+            AssertJson("{ 'repeatedForeignEnum': [ 'FOREIGN_BAZ', 100, 'FOREIGN_FOO' ] }", JsonFormatter.Default.Format(message));
         }
 
         [Test]
-        public void UnknownEnumValueOmitted_MapField()
+        public void UnknownEnumValueNumeric_MapField()
         {
-            // This matches the C++ behaviour.
             var message = new TestMap { MapInt32Enum = { { 1, MapEnum.MAP_ENUM_FOO }, { 2, (MapEnum) 100 }, { 3, MapEnum.MAP_ENUM_BAR } } };
-            AssertJson("{ 'mapInt32Enum': { '1': 'MAP_ENUM_FOO', '3': 'MAP_ENUM_BAR' } }", JsonFormatter.Default.Format(message));
+            AssertJson("{ 'mapInt32Enum': { '1': 'MAP_ENUM_FOO', '2': 100, '3': 'MAP_ENUM_BAR' } }", JsonFormatter.Default.Format(message));
         }
 
         [Test]
-        public void UnknownEnumValueOmitted_RepeatedField_AllEntriesUnknown()
+        public void UnknownEnumValue_RepeatedField_AllEntriesUnknown()
         {
-            // *Maybe* we should hold off on writing the "[" until we find that we've got at least one value to write...
-            // but this is what happens at the moment, and it doesn't seem too awful.
             var message = new TestAllTypes { RepeatedForeignEnum = { (ForeignEnum) 200, (ForeignEnum) 100 } };
-            AssertJson("{ 'repeatedForeignEnum': [ ] }", JsonFormatter.Default.Format(message));
+            AssertJson("{ 'repeatedForeignEnum': [ 200, 100 ] }", JsonFormatter.Default.Format(message));
         }
 
         [Test]

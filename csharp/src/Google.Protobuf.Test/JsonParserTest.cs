@@ -876,18 +876,18 @@ namespace Google.Protobuf
         }
 
         [Test]
-        [TestCase("\"FOREIGN_BAR\"")]
-        [TestCase("5")]
-        public void EnumValid(string value)
+        [TestCase("\"FOREIGN_BAR\"", ForeignEnum.FOREIGN_BAR)]
+        [TestCase("5", ForeignEnum.FOREIGN_BAR)]
+        [TestCase("100", (ForeignEnum) 100)]
+        public void EnumValid(string value, ForeignEnum expectedValue)
         {
             string json = "{ \"singleForeignEnum\": " + value + " }";
             var parsed = TestAllTypes.Parser.ParseJson(json);
-            Assert.AreEqual(new TestAllTypes { SingleForeignEnum = ForeignEnum.FOREIGN_BAR }, parsed);
+            Assert.AreEqual(new TestAllTypes { SingleForeignEnum = expectedValue }, parsed);
         }
 
         [Test]
         [TestCase("\"NOT_A_VALID_VALUE\"")]
-        [TestCase("100")]
         [TestCase("5.5")]
         public void Enum_Invalid(string value)
         {
