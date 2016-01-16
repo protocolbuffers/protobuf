@@ -797,7 +797,7 @@ static PyMethodDef MessageMapMethods[] = {
 
   PyType_Spec MessageMapContainer_Type_spec = {
       FULL_MODULE_NAME ".MessageMapContainer",
-      sizeof(MapContainer),
+      sizeof(MessageMapContainer),
       0,
       Py_TPFLAGS_DEFAULT,
       MessageMapContainer_Type_slots
