@@ -168,6 +168,10 @@ namespace Google.Protobuf
             }
             var descriptor = message.Descriptor;
             var jsonFieldMap = descriptor.Fields.ByJsonName();
+            // All the oneof fields we've already accounted for - we can only see each of them once.
+            // The set is created lazily to avoid the overhead of creating a set for every message
+            // we parsed, when oneofs are relatively rare.
+            HashSet<OneofDescriptor> seenOneofs = null;
             while (true)
             {
                 token = tokenizer.Next();
@@ -183,6 +187,17 @@ namespace Google.Protobuf
                 FieldDescriptor field;
                 if (jsonFieldMap.TryGetValue(name, out field))
                 {
+                    if (field.ContainingOneof != null)
+                    {
+                        if (seenOneofs == null)
+                        {
+                            seenOneofs = new HashSet<OneofDescriptor>();
+                        }
+                        if (!seenOneofs.Add(field.ContainingOneof))
+                        {
+                            throw new InvalidProtocolBufferException($"Multiple values specified for oneof {field.ContainingOneof.Name}");
+                        }
+                    }
                     MergeField(message, field, tokenizer);
                 }
                 else
@@ -200,10 +215,15 @@ namespace Google.Protobuf
             var token = tokenizer.Next();
             if (token.Type == JsonToken.TokenType.Null)
             {
+                // Clear the field if we see a null token, unless it's for a singular field of type
+                // google.protobuf.Value.
                 // Note: different from Java API, which just ignores it.
                 // TODO: Bring it more in line? Discuss...
-                field.Accessor.Clear(message);
-                return;
+                if (field.IsMap || field.IsRepeated || !IsGoogleProtobufValueField(field))
+                {
+                    field.Accessor.Clear(message);
+                    return;
+                }
             }
             tokenizer.PushBack(token);
 
@@ -239,6 +259,10 @@ namespace Google.Protobuf
                     return;
                 }
                 tokenizer.PushBack(token);
+                if (token.Type == JsonToken.TokenType.Null)
+                {
+                    throw new InvalidProtocolBufferException("Repeated field elements cannot be null");
+                }
                 list.Add(ParseSingleValue(field, tokenizer));
             }
         }
@@ -270,9 +294,18 @@ namespace Google.Protobuf
                 }
                 object key = ParseMapKey(keyField, token.StringValue);
                 object value = ParseSingleValue(valueField, tokenizer);
-                // TODO: Null handling
+                if (value == null)
+                {
+                    throw new InvalidProtocolBufferException("Map values must not be null");
+                }
                 dictionary[key] = value;
             }
+        }
+
+        private static bool IsGoogleProtobufValueField(FieldDescriptor field)
+        {
+            return field.FieldType == FieldType.Message &&
+                field.MessageType.FullName == Value.Descriptor.FullName;
         }
 
         private object ParseSingleValue(FieldDescriptor field, JsonTokenizer tokenizer)
@@ -280,9 +313,11 @@ namespace Google.Protobuf
             var token = tokenizer.Next();
             if (token.Type == JsonToken.TokenType.Null)
             {
-                if (field.FieldType == FieldType.Message && field.MessageType.FullName == Value.Descriptor.FullName)
+                // TODO: In order to support dynamic messages, we should really build this up
+                // dynamically.
+                if (IsGoogleProtobufValueField(field))
                 {
-                    return new Value { NullValue = NullValue.NULL_VALUE };
+                    return Value.ForNull();
                 }
                 return null;
             }
@@ -464,6 +499,11 @@ namespace Google.Protobuf
             {
                 tokens.Add(token);
                 token = tokenizer.Next();
+
+                if (tokenizer.ObjectDepth < typeUrlObjectDepth)
+                {
+                    throw new InvalidProtocolBufferException("Any message with no @type");
+                }
             }
 
             // Don't add the @type property or its value to the recorded token list
@@ -603,6 +643,11 @@ namespace Google.Protobuf
                                 throw new InvalidProtocolBufferException($"Value out of range: {value}");
                             }
                             return (float) value;
+                        case FieldType.Enum:
+                            CheckInteger(value);
+                            // Just return it as an int, and let the CLR convert it.
+                            // Note that we deliberately don't check that it's a known value.
+                            return (int) value;
                         default:
                             throw new InvalidProtocolBufferException($"Unsupported conversion from JSON number for field type {field.FieldType}");
                     }
@@ -633,7 +678,14 @@ namespace Google.Protobuf
                 case FieldType.String:
                     return text;
                 case FieldType.Bytes:
-                    return ByteString.FromBase64(text);
+                    try
+                    {
+                        return ByteString.FromBase64(text);
+                    }
+                    catch (FormatException e)
+                    {
+                        throw InvalidProtocolBufferException.InvalidBase64(e);
+                    }
                 case FieldType.Int32:
                 case FieldType.SInt32:
                 case FieldType.SFixed32:
@@ -826,28 +878,24 @@ namespace Google.Protobuf
 
             try
             {
-                long seconds = long.Parse(secondsText, CultureInfo.InvariantCulture);
+                long seconds = long.Parse(secondsText, CultureInfo.InvariantCulture) * multiplier;
                 int nanos = 0;
                 if (subseconds != "")
                 {
                     // This should always work, as we've got 1-9 digits.
                     int parsedFraction = int.Parse(subseconds.Substring(1));
-                    nanos = parsedFraction * SubsecondScalingFactors[subseconds.Length];
+                    nanos = parsedFraction * SubsecondScalingFactors[subseconds.Length] * multiplier;
                 }
-                if (seconds >= Duration.MaxSeconds)
+                if (!Duration.IsNormalized(seconds, nanos))
                 {
-                    // Allow precisely 315576000000 seconds, but prohibit even 1ns more.
-                    if (seconds > Duration.MaxSeconds || nanos > 0)
-                    {
-                        throw new InvalidProtocolBufferException("Invalid Duration value: " + token.StringValue);
-                    }
+                    throw new InvalidProtocolBufferException($"Invalid Duration value: {token.StringValue}");
                 }
-                message.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.SetValue(message, seconds * multiplier);
-                message.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.SetValue(message, nanos * multiplier);
+                message.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.SetValue(message, seconds);
+                message.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.SetValue(message, nanos);
             }
             catch (FormatException)
             {
-                throw new InvalidProtocolBufferException("Invalid Duration value: " + token.StringValue);
+                throw new InvalidProtocolBufferException($"Invalid Duration value: {token.StringValue}");
             }
         }
 
@@ -870,6 +918,8 @@ namespace Google.Protobuf
         private static string ToSnakeCase(string text)
         {
             var builder = new StringBuilder(text.Length * 2);
+            // Note: this is probably unnecessary now, but currently retained to be as close as possible to the
+            // C++, whilst still throwing an exception on underscores.
             bool wasNotUnderscore = false;  // Initialize to false for case 1 (below)
             bool wasNotCap = false;
 
@@ -903,7 +953,11 @@ namespace Google.Protobuf
                 else
                 {
                     builder.Append(c);
-                    wasNotUnderscore = c != '_';
+                    if (c == '_')
+                    {
+                        throw new InvalidProtocolBufferException($"Invalid field mask: {text}");
+                    }
+                    wasNotUnderscore = true;
                     wasNotCap = true;
                 }
             }

@@ -37,9 +37,17 @@ namespace Google.Protobuf.WellKnownTypes
     public partial class Timestamp
     {
         private static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        private static readonly long BclSecondsAtUnixEpoch = UnixEpoch.Ticks / TimeSpan.TicksPerSecond;
-        internal static readonly long UnixSecondsAtBclMinValue = -BclSecondsAtUnixEpoch;
-        internal static readonly long UnixSecondsAtBclMaxValue = (DateTime.MaxValue.Ticks / TimeSpan.TicksPerSecond) - BclSecondsAtUnixEpoch;
+        // Constants determined programmatically, but then hard-coded so they can be constant expressions.
+        private const long BclSecondsAtUnixEpoch = 62135596800;
+        internal const long UnixSecondsAtBclMaxValue = 253402300799;
+        internal const long UnixSecondsAtBclMinValue = -BclSecondsAtUnixEpoch;
+        internal const int MaxNanos = Duration.NanosecondsPerSecond - 1;
+
+        private bool IsNormalized =>
+            Nanos >= 0 &&
+            Nanos <= MaxNanos &&
+            Seconds >= UnixSecondsAtBclMinValue &&
+            Seconds <= UnixSecondsAtBclMaxValue;
 
         /// <summary>
         /// Returns the difference between one <see cref="Timestamp"/> and another, as a <see cref="Duration"/>.
@@ -99,8 +107,14 @@ namespace Google.Protobuf.WellKnownTypes
         /// <see cref="DateTime"/> value precisely on a second.
         /// </remarks>
         /// <returns>This timestamp as a <c>DateTime</c>.</returns>
+        /// <exception cref="InvalidOperationException">The timestamp contains invalid values; either it is
+        /// incorrectly normalized or is outside the valid range.</exception>
         public DateTime ToDateTime()
         {
+            if (!IsNormalized)
+            {
+                throw new InvalidOperationException(@"Timestamp contains invalid values: Seconds={Seconds}; Nanos={Nanos}");
+            }
             return UnixEpoch.AddSeconds(Seconds).AddTicks(Nanos / Duration.NanosecondsPerTick);
         }
 
@@ -114,6 +128,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <see cref="DateTimeOffset"/> value precisely on a second.
         /// </remarks>
         /// <returns>This timestamp as a <c>DateTimeOffset</c>.</returns>
+        /// <exception cref="InvalidOperationException">The timestamp contains invalid values; either it is
+        /// incorrectly normalized or is outside the valid range.</exception>
         public DateTimeOffset ToDateTimeOffset()
         {
             return new DateTimeOffset(ToDateTime(), TimeSpan.Zero);

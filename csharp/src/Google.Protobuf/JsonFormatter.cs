@@ -205,11 +205,6 @@ namespace Google.Protobuf
                 {
                     continue;
                 }
-                // Omit awkward (single) values such as unknown enum values
-                if (!field.IsRepeated && !field.IsMap && !CanWriteSingleValue(value))
-                {
-                    continue;
-                }
 
                 // Okay, all tests complete: let's write the field value...
                 if (!first)
@@ -222,6 +217,31 @@ namespace Google.Protobuf
                 first = false;
             }            
             return !first;
+        }
+
+        /// <summary>
+        /// Camel-case converter with added strictness for field mask formatting.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The field mask is invalid for JSON representation</exception>
+        private static string ToCamelCaseForFieldMask(string input)
+        {
+            for (int i = 0; i < input.Length; i++)
+            {
+                char c = input[i];
+                if (c >= 'A' && c <= 'Z')
+                {
+                    throw new InvalidOperationException($"Invalid field mask to be converted to JSON: {input}");
+                }
+                if (c == '_' && i < input.Length - 1)
+                {
+                    char next = input[i + 1];
+                    if (next < 'a' || next > 'z')
+                    {
+                        throw new InvalidOperationException($"Invalid field mask to be converted to JSON: {input}");
+                    }
+                }
+            }
+            return ToCamelCase(input);
         }
 
         // Converted from src/google/protobuf/util/internal/utility.cc ToCamelCase
@@ -372,7 +392,14 @@ namespace Google.Protobuf
             }
             else if (value is System.Enum)
             {
-                WriteString(builder, value.ToString());
+                if (System.Enum.IsDefined(value.GetType(), value))
+                {
+                    WriteString(builder, value.ToString());
+                }
+                else
+                {
+                    WriteValue(builder, (int) value);
+                }
             }
             else if (value is float || value is double)
             {
@@ -485,13 +512,14 @@ namespace Google.Protobuf
             int nanos = (int) value.Descriptor.Fields[Timestamp.NanosFieldNumber].Accessor.GetValue(value);
             long seconds = (long) value.Descriptor.Fields[Timestamp.SecondsFieldNumber].Accessor.GetValue(value);
 
-            // Even if the original message isn't using the built-in classes, we can still build one... and then
-            // rely on it being normalized.
-            Timestamp normalized = Timestamp.Normalize(seconds, nanos);
+            // Even if the original message isn't using the built-in classes, we can still build one... and its
+            // conversion will check whether or not it's normalized.
+            // TODO: Perhaps the diagnostic-only formatter should not throw for non-normalized values?
+            Timestamp ts = new Timestamp { Seconds = seconds, Nanos = nanos };
             // Use .NET's formatting for the value down to the second, including an opening double quote (as it's a string value)
-            DateTime dateTime = normalized.ToDateTime();
+            DateTime dateTime = ts.ToDateTime();
             builder.Append(dateTime.ToString("yyyy'-'MM'-'dd'T'HH:mm:ss", CultureInfo.InvariantCulture));
-            AppendNanoseconds(builder, Math.Abs(normalized.Nanos));
+            AppendNanoseconds(builder, Math.Abs(ts.Nanos));
             builder.Append("Z\"");
         }
 
@@ -502,25 +530,29 @@ namespace Google.Protobuf
             int nanos = (int) value.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.GetValue(value);
             long seconds = (long) value.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.GetValue(value);
 
+            // TODO: Perhaps the diagnostic-only formatter should not throw for non-normalized values?
             // Even if the original message isn't using the built-in classes, we can still build one... and then
             // rely on it being normalized.
-            Duration normalized = Duration.Normalize(seconds, nanos);
+            if (!Duration.IsNormalized(seconds, nanos))
+            {
+                throw new InvalidOperationException("Non-normalized duration value");
+            }
 
             // The seconds part will normally provide the minus sign if we need it, but not if it's 0...
-            if (normalized.Seconds == 0 && normalized.Nanos < 0)
+            if (seconds == 0 && nanos < 0)
             {
                 builder.Append('-');
             }
 
-            builder.Append(normalized.Seconds.ToString("d", CultureInfo.InvariantCulture));
-            AppendNanoseconds(builder, Math.Abs(normalized.Nanos));
+            builder.Append(seconds.ToString("d", CultureInfo.InvariantCulture));
+            AppendNanoseconds(builder, Math.Abs(nanos));
             builder.Append("s\"");
         }
 
         private void WriteFieldMask(StringBuilder builder, IMessage value)
         {
             IList paths = (IList) value.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor.GetValue(value);
-            WriteString(builder, string.Join(",", paths.Cast<string>().Select(ToCamelCase)));
+            WriteString(builder, string.Join(",", paths.Cast<string>().Select(ToCamelCaseForFieldMask)));
         }
 
         private void WriteAny(StringBuilder builder, IMessage value)
@@ -598,15 +630,15 @@ namespace Google.Protobuf
                 // Output to 3, 6 or 9 digits.
                 if (nanos % 1000000 == 0)
                 {
-                    builder.Append((nanos / 1000000).ToString("d", CultureInfo.InvariantCulture));
+                    builder.Append((nanos / 1000000).ToString("d3", CultureInfo.InvariantCulture));
                 }
                 else if (nanos % 1000 == 0)
                 {
-                    builder.Append((nanos / 1000).ToString("d", CultureInfo.InvariantCulture));
+                    builder.Append((nanos / 1000).ToString("d6", CultureInfo.InvariantCulture));
                 }
                 else
                 {
-                    builder.Append(nanos.ToString("d", CultureInfo.InvariantCulture));
+                    builder.Append(nanos.ToString("d9", CultureInfo.InvariantCulture));
                 }
             }
         }
@@ -674,10 +706,6 @@ namespace Google.Protobuf
             bool first = true;
             foreach (var value in list)
             {
-                if (!CanWriteSingleValue(value))
-                {
-                    continue;
-                }
                 if (!first)
                 {
                     builder.Append(PropertySeparator);
@@ -695,10 +723,6 @@ namespace Google.Protobuf
             // This will box each pair. Could use IDictionaryEnumerator, but that's ugly in terms of disposal.
             foreach (DictionaryEntry pair in dictionary)
             {
-                if (!CanWriteSingleValue(pair.Value))
-                {
-                    continue;
-                }
                 if (!first)
                 {
                     builder.Append(PropertySeparator);

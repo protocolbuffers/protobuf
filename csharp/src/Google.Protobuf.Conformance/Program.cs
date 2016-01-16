@@ -101,15 +101,26 @@ namespace Google.Protobuf.Conformance
             {
                 return new ConformanceResponse { ParseError = e.Message };
             }
-            switch (request.RequestedOutputFormat)
+            catch (InvalidJsonException e)
             {
-                case global::Conformance.WireFormat.JSON:
-                    var formatter = new JsonFormatter(new JsonFormatter.Settings(false, typeRegistry));
-                    return new ConformanceResponse { JsonPayload = formatter.Format(message) };
-                case global::Conformance.WireFormat.PROTOBUF:
-                    return new ConformanceResponse { ProtobufPayload = message.ToByteString() };
-                default:
-                    throw new Exception("Unsupported request output format: " + request.PayloadCase);
+                return new ConformanceResponse { ParseError = e.Message };
+            }
+            try
+            {
+                switch (request.RequestedOutputFormat)
+                {
+                    case global::Conformance.WireFormat.JSON:
+                        var formatter = new JsonFormatter(new JsonFormatter.Settings(false, typeRegistry));
+                        return new ConformanceResponse { JsonPayload = formatter.Format(message) };
+                    case global::Conformance.WireFormat.PROTOBUF:
+                        return new ConformanceResponse { ProtobufPayload = message.ToByteString() };
+                    default:
+                        throw new Exception("Unsupported request output format: " + request.PayloadCase);
+                }
+            }
+            catch (InvalidOperationException e)
+            {
+                return new ConformanceResponse { SerializeError = e.Message };
             }
         }
 

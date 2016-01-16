@@ -57,15 +57,38 @@ namespace Google.Protobuf.WellKnownTypes
         /// </summary>
         public const long MinSeconds = -315576000000L;
 
+        internal const int MaxNanoseconds = NanosecondsPerSecond - 1;
+        internal const int MinNanoseconds = -NanosecondsPerSecond + 1;
+
+        internal static bool IsNormalized(long seconds, int nanoseconds)
+        {
+            // Simple boundaries
+            if (seconds < MinSeconds || seconds > MaxSeconds ||
+                nanoseconds < MinNanoseconds || nanoseconds > MaxNanoseconds)
+            {
+                return false;
+            }
+            // We only have a problem is one is strictly negative and the other is
+            // strictly positive.
+            return Math.Sign(seconds) * Math.Sign(nanoseconds) != -1;
+        }
+
+
         /// <summary>
         /// Converts this <see cref="Duration"/> to a <see cref="TimeSpan"/>.
         /// </summary>
         /// <remarks>If the duration is not a precise number of ticks, it is truncated towards 0.</remarks>
         /// <returns>The value of this duration, as a <c>TimeSpan</c>.</returns>
+        /// <exception cref="InvalidOperationException">This value isn't a valid normalized duration, as
+        /// described in the documentation.</exception>
         public TimeSpan ToTimeSpan()
         {
             checked
             {
+                if (!IsNormalized(Seconds, Nanos))
+                {
+                    throw new InvalidOperationException("Duration was not a valid normalized duration");
+                }
                 long ticks = Seconds * TimeSpan.TicksPerSecond + Nanos / NanosecondsPerTick;
                 return TimeSpan.FromTicks(ticks);
             }
