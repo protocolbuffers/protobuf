@@ -36,15 +36,13 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
-import com.google.protobuf.GeneratedMessageLite.ExtendableMessage;
-import com.google.protobuf.GeneratedMessageLite.GeneratedExtension;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -274,6 +272,60 @@ public abstract class GeneratedMessage extends AbstractMessage
       ExtensionRegistryLite extensionRegistry,
       int tag) throws IOException {
     return unknownFields.mergeFieldFrom(tag, input);
+  }
+
+  protected static <M extends Message> M parseWithIOException(Parser<M> parser, InputStream input)
+      throws IOException {
+    try {
+      return parser.parseFrom(input);
+    } catch (InvalidProtocolBufferException e) {
+      throw e.unwrapIOException();
+    }
+  }
+
+  protected static <M extends Message> M parseWithIOException(Parser<M> parser, InputStream input,
+      ExtensionRegistryLite extensions) throws IOException {
+    try {
+      return parser.parseFrom(input, extensions);
+    } catch (InvalidProtocolBufferException e) {
+      throw e.unwrapIOException();
+    }
+  }
+
+  protected static <M extends Message> M parseWithIOException(Parser<M> parser,
+      CodedInputStream input) throws IOException {
+    try {
+      return parser.parseFrom(input);
+    } catch (InvalidProtocolBufferException e) {
+      throw e.unwrapIOException();
+    }
+  }
+
+  protected static <M extends Message> M parseWithIOException(Parser<M> parser,
+      CodedInputStream input, ExtensionRegistryLite extensions) throws IOException {
+    try {
+      return parser.parseFrom(input, extensions);
+    } catch (InvalidProtocolBufferException e) {
+      throw e.unwrapIOException();
+    }
+  }
+
+  protected static <M extends Message> M parseDelimitedWithIOException(Parser<M> parser,
+      InputStream input) throws IOException {
+    try {
+      return parser.parseDelimitedFrom(input);
+    } catch (InvalidProtocolBufferException e) {
+      throw e.unwrapIOException();
+    }
+  }
+
+  protected static <M extends Message> M parseDelimitedWithIOException(Parser<M> parser,
+      InputStream input, ExtensionRegistryLite extensions) throws IOException {
+    try {
+      return parser.parseDelimitedFrom(input, extensions);
+    } catch (InvalidProtocolBufferException e) {
+      throw e.unwrapIOException();
+    }
   }
 
   @Override
@@ -667,7 +719,7 @@ public abstract class GeneratedMessage extends AbstractMessage
           "No map fields found in " + getClass().getName());
     }
 
-    /** Like {@link internalGetMapField} but return a mutable version. */
+    /** Like {@link #internalGetMapField} but return a mutable version. */
     @SuppressWarnings({"unused", "rawtypes"})
     protected MapField internalGetMutableMapField(int fieldNumber) {
       // Note that we can't use descriptor names here because this method will
