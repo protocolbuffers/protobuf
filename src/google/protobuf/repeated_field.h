@@ -692,7 +692,7 @@ class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
 class StringTypeHandler : public StringTypeHandlerBase {
  public:
   static int SpaceUsed(const string& value)  {
-    return sizeof(value) + StringSpaceUsedExcludingSelf(value);
+    return static_cast<int>(sizeof(value)) + StringSpaceUsedExcludingSelf(value);
   }
 };
 
