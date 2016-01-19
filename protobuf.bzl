@@ -1,14 +1,5 @@
 # -*- mode: python; -*- PYTHON-PREPROCESSING-REQUIRED
 
-def _GenDir(ctx):
-  if not ctx.attr.includes:
-    return ""
-  if not ctx.attr.includes[0]:
-    return ctx.label.package
-  if not ctx.label.package:
-    return ctx.attr.includes[0]
-  return ctx.label.package + '/' + ctx.attr.includes[0]
-
 def _CcOuts(srcs):
   return [s[:-len(".proto")] +  ".pb.h" for s in srcs] + \
          [s[:-len(".proto")] + ".pb.cc" for s in srcs]
@@ -43,21 +34,22 @@ def _proto_gen_impl(ctx):
   srcs = ctx.files.srcs
   deps = []
   deps += ctx.files.srcs
-  gen_dir = _GenDir(ctx)
-  if gen_dir:
-    import_flags = ["-I" + gen_dir]
-  else:
-    import_flags = ["-I."]
+  includes = ctx.attr.includes
+  import_flags = []
 
   for dep in ctx.attr.deps:
-    import_flags += dep.proto.import_flags
     deps += dep.proto.deps
+    includes += dep.proto.includes
+
+  for include in includes:
+    for f in include.files:
+      import_flags += ["-I" + f.path]
 
   args = []
   if ctx.attr.gen_cc:
-    args += ["--cpp_out=" + ctx.var["GENDIR"] + "/" + gen_dir]
+    args += ["--cpp_out=" + ctx.var["GENDIR"] + "/" + ctx.label.package]
   if ctx.attr.gen_py:
-    args += ["--python_out=" + ctx.var["GENDIR"] + "/" + gen_dir]
+    args += ["--python_out=" + ctx.var["GENDIR"] + "/" + ctx.label.package]
 
   if args:
     ctx.action(
@@ -70,8 +62,8 @@ def _proto_gen_impl(ctx):
   return struct(
       proto=struct(
           srcs=srcs,
-          import_flags=import_flags,
           deps=deps,
+          includes=includes,
       ),
   )
 
@@ -79,7 +71,7 @@ _proto_gen = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = ["proto"]),
-        "includes": attr.string_list(),
+        "includes": attr.label_list(allow_files = True),
         "protoc": attr.label(
             cfg = HOST_CFG,
             executable = True,
@@ -128,7 +120,7 @@ def cc_proto_library(
 
   """
 
-  includes = []
+  includes = ["."]
   if include != None:
     includes = [include]
 
