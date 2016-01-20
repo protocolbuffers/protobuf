@@ -132,6 +132,7 @@
     <Compile Include="WellKnownTypes\DurationPartial.cs" />
     <Compile Include="WellKnownTypes\Empty.cs" />
     <Compile Include="WellKnownTypes\FieldMask.cs" />
+    <Compile Include="WellKnownTypes\FieldMaskPartial.cs" />
     <Compile Include="WellKnownTypes\SourceContext.cs" />
     <Compile Include="WellKnownTypes\Struct.cs" />
     <Compile Include="WellKnownTypes\TimeExtensions.cs" />

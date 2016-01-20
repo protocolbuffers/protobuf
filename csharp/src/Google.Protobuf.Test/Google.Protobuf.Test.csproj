@@ -115,6 +115,7 @@
     <Compile Include="TestProtos\UnittestWellKnownTypes.cs" />
     <Compile Include="WellKnownTypes\AnyTest.cs" />
     <Compile Include="WellKnownTypes\DurationTest.cs" />
+    <Compile Include="WellKnownTypes\FieldMaskTest.cs" />
     <Compile Include="WellKnownTypes\TimestampTest.cs" />
     <Compile Include="WellKnownTypes\WrappersTest.cs" />
   </ItemGroup>

@@ -31,12 +31,14 @@
 #endregion
 
 using System;
+using System.Globalization;
+using System.Text;
 
 namespace Google.Protobuf.WellKnownTypes
 {
     // Manually-written partial class for the Duration well-known type,
     // providing a conversion to TimeSpan and convenience operators.
-    public partial class Duration
+    public partial class Duration : ICustomDiagnosticMessage
     {
         /// <summary>
         /// The number of nanoseconds in a second.
@@ -72,7 +74,6 @@ namespace Google.Protobuf.WellKnownTypes
             // strictly positive.
             return Math.Sign(seconds) * Math.Sign(nanoseconds) != -1;
         }
-
 
         /// <summary>
         /// Converts this <see cref="Duration"/> to a <see cref="TimeSpan"/>.
@@ -179,6 +180,91 @@ namespace Google.Protobuf.WellKnownTypes
                 nanoseconds += NanosecondsPerSecond;
             }
             return new Duration { Seconds = seconds, Nanos = nanoseconds };
+        }
+
+        /// <summary>
+        /// Converts a duration specified in seconds/nanoseconds to a string.
+        /// </summary>
+        /// <remarks>
+        /// If the value is a normalized duration in the range described in <c>duration.proto</c>,
+        /// <paramref name="diagnosticOnly"/> is ignored. Otherwise, if the parameter is <c>true</c>,
+        /// a JSON object with a warning is returned; if it is <c>false</c>, an <see cref="InvalidOperationException"/> is thrown.
+        /// </remarks>
+        /// <param name="seconds">Seconds portion of the duration.</param>
+        /// <param name="nanoseconds">Nanoseconds portion of the duration.</param>
+        /// <param name="diagnosticOnly">Determines the handling of non-normalized values</param>
+        /// <exception cref="InvalidOperationException">The represented duration is invalid, and <paramref name="diagnosticOnly"/> is <c>false</c>.</exception>
+        internal static string ToJson(long seconds, int nanoseconds, bool diagnosticOnly)
+        {
+            if (IsNormalized(seconds, nanoseconds))
+            {
+                var builder = new StringBuilder();
+                builder.Append('"');
+                // The seconds part will normally provide the minus sign if we need it, but not if it's 0...
+                if (seconds == 0 && nanoseconds < 0)
+                {
+                    builder.Append('-');
+                }
+
+                builder.Append(seconds.ToString("d", CultureInfo.InvariantCulture));
+                AppendNanoseconds(builder, Math.Abs(nanoseconds));
+                builder.Append("s\"");
+                return builder.ToString();
+            }
+            if (diagnosticOnly)
+            {
+                // Note: the double braces here are escaping for braces in format strings.
+                return string.Format(CultureInfo.InvariantCulture,
+                    "{{ \"@warning\": \"Invalid Duration\", \"seconds\": \"{0}\", \"nanos\": {1} }}",
+                    seconds,
+                    nanoseconds);
+            }
+            else
+            {
+                throw new InvalidOperationException("Non-normalized duration value");
+            }
+        }
+
+        /// <summary>
+        /// Returns a string representation of this <see cref="Duration"/> for diagnostic purposes.
+        /// </summary>
+        /// <remarks>
+        /// Normally the returned value will be a JSON string value (including leading and trailing quotes) but
+        /// when the value is non-normalized or out of range, a JSON object representation will be returned
+        /// instead, including a warning. This is to avoid exceptions being thrown when trying to
+        /// diagnose problems - the regular JSON formatter will still throw an exception for non-normalized
+        /// values.
+        /// </remarks>
+        /// <returns>A string representation of this value.</returns>
+        public string ToDiagnosticString()
+        {
+            return ToJson(Seconds, Nanos, true);
+        }
+
+        /// <summary>
+        /// Appends a number of nanoseconds to a StringBuilder. Either 0 digits are added (in which
+        /// case no "." is appended), or 3 6 or 9 digits. This is internal for use in Timestamp as well
+        /// as Duration.
+        /// </summary>
+        internal static void AppendNanoseconds(StringBuilder builder, int nanos)
+        {
+            if (nanos != 0)
+            {
+                builder.Append('.');
+                // Output to 3, 6 or 9 digits.
+                if (nanos % 1000000 == 0)
+                {
+                    builder.Append((nanos / 1000000).ToString("d3", CultureInfo.InvariantCulture));
+                }
+                else if (nanos % 1000 == 0)
+                {
+                    builder.Append((nanos / 1000).ToString("d6", CultureInfo.InvariantCulture));
+                }
+                else
+                {
+                    builder.Append(nanos.ToString("d9", CultureInfo.InvariantCulture));
+                }
+            }
         }
     }
 }

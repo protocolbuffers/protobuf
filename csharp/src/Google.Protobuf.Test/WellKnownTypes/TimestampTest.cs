@@ -103,5 +103,13 @@ namespace Google.Protobuf.WellKnownTypes
             Assert.AreEqual(t1, t2 + difference);
             Assert.AreEqual(t2, t1 - difference);
         }
+
+        [Test]
+        public void ToString_NonNormalized()
+        {
+            // Just a single example should be sufficient...
+            var duration = new Timestamp { Seconds = 1, Nanos = -1 };
+            Assert.AreEqual("{ \"@warning\": \"Invalid Timestamp\", \"seconds\": \"1\", \"nanos\": -1 }", duration.ToString());
+        }
     }
 }
