@@ -65,10 +65,18 @@
 #define GOOGLE_PROTOBUF_ARCH_32_BIT 1
 #elif defined(sparc)
 #define GOOGLE_PROTOBUF_ARCH_SPARC 1
-#ifdef SOLARIS_64BIT_ENABLED
-#define GOOGLE_PROTOBUF_ARCH_64_BIT 1
-#else
-#define GOOGLE_PROTOBUF_ARCH_32_BIT 1
+#ifdef sun
+# ifdef SOLARIS_64BIT_ENABLED
+#  define GOOGLE_PROTOBUF_ARCH_64_BIT 1
+# else
+#  define GOOGLE_PROTOBUF_ARCH_32_BIT 1
+# endif
+#else // sparc but not solaris
+# if __LP64__
+#  define GOOGLE_PROTOBUF_ARCH_64_BIT 1
+# else
+#  define GOOGLE_PROTOBUF_ARCH_32_BIT 1
+# endif
 #endif
 #elif defined(_POWER) || defined(__powerpc64__) || defined(__PPC64__)
 #define GOOGLE_PROTOBUF_ARCH_POWER 1
