@@ -695,5 +695,21 @@ namespace Google.Protobuf
             var parsed = TestAllTypes.Parser.ParseFrom(stream);
             Assert.AreEqual(new TestAllTypes { SingleFixed32 = 123 }, parsed);
         }
+
+        [Test]
+        public void CustomDiagnosticMessage_DirectToStringCall()
+        {
+            var message = new ForeignMessage { C = 31 };
+            Assert.AreEqual("{ \"c\": 31, \"@cInHex\": \"1f\" }", message.ToString());
+            Assert.AreEqual("{ \"c\": 31 }", JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void CustomDiagnosticMessage_Nested()
+        {
+            var message = new TestAllTypes { SingleForeignMessage = new ForeignMessage { C = 16 } };
+            Assert.AreEqual("{ \"singleForeignMessage\": { \"c\": 16, \"@cInHex\": \"10\" } }", message.ToString());
+            Assert.AreEqual("{ \"singleForeignMessage\": { \"c\": 16 } }", JsonFormatter.Default.Format(message));
+        }
     }
 }

@@ -181,6 +181,15 @@ namespace Google.Protobuf
                 WriteNull(builder);
                 return;
             }
+            if (ReferenceEquals(this, diagnosticFormatter))
+            {
+                ICustomDiagnosticMessage customDiagnosticMessage = message as ICustomDiagnosticMessage;
+                if (customDiagnosticMessage != null)
+                {
+                    builder.Append(customDiagnosticMessage.ToDiagnosticString());
+                    return;
+                }
+            }
             builder.Append("{ ");
             bool writtenFields = WriteMessageFields(builder, message, false);
             builder.Append(writtenFields ? " }" : "}");
