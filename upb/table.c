@@ -86,7 +86,11 @@ static upb_tabent *mutable_entries(upb_table *t) {
 }
 
 static bool isfull(upb_table *t) {
-  return (double)(t->count + 1) / upb_table_size(t) > MAX_LOAD;
+  if (upb_table_size(t) == 0) {
+    return true;
+  } else {
+    return ((double)(t->count + 1) / upb_table_size(t)) > MAX_LOAD;
+  }
 }
 
 static bool init(upb_table *t, upb_ctype_t ctype, uint8_t size_lg2) {
@@ -580,54 +584,49 @@ bool upb_inttable_removeptr(upb_inttable *t, const void *key, upb_value *val) {
 }
 
 void upb_inttable_compact(upb_inttable *t) {
-  /* Create a power-of-two histogram of the table keys. */
-  int counts[UPB_MAXARRSIZE + 1] = {0};
-  uintptr_t max_key = 0;
+  /* A power-of-two histogram of the table keys. */
+  size_t counts[UPB_MAXARRSIZE + 1] = {0};
+
+  /* The max key in each bucket. */
+  uintptr_t max[UPB_MAXARRSIZE + 1] = {0};
+
   upb_inttable_iter i;
-  size_t arr_size;
-  int arr_count;
+  size_t arr_count;
+  int size_lg2;
   upb_inttable new_t;
 
   upb_inttable_begin(&i, t);
   for (; !upb_inttable_done(&i); upb_inttable_next(&i)) {
     uintptr_t key = upb_inttable_iter_key(&i);
-    if (key > max_key) {
-      max_key = key;
-    }
-    counts[log2ceil(key)]++;
+    int bucket = log2ceil(key);
+    max[bucket] = UPB_MAX(max[bucket], key);
+    counts[bucket]++;
   }
 
-  arr_size = 1;
+  /* Find the largest power of two that satisfies the MIN_DENSITY
+   * definition (while actually having some keys). */
   arr_count = upb_inttable_count(t);
 
-  if (upb_inttable_count(t) >= max_key * MIN_DENSITY) {
-    /* We can put 100% of the entries in the array part. */
-    arr_size = max_key + 1;
-  } else {
-    /* Find the largest power of two that satisfies the MIN_DENSITY
-     * definition. */
-    int size_lg2;
-    for (size_lg2 = ARRAY_SIZE(counts) - 1; size_lg2 > 1; size_lg2--) {
-      arr_size = 1 << size_lg2;
-      arr_count -= counts[size_lg2];
-      if (arr_count >= arr_size * MIN_DENSITY) {
-        break;
-      }
+  for (size_lg2 = ARRAY_SIZE(counts) - 1; size_lg2 > 0; size_lg2--) {
+    if (counts[size_lg2] == 0) {
+      /* We can halve again without losing any entries. */
+      continue;
+    } else if (arr_count >= (1 << size_lg2) * MIN_DENSITY) {
+      break;
     }
+
+    arr_count -= counts[size_lg2];
   }
 
-  /* Array part must always be at least 1 entry large to catch lookups of key
-   * 0.  Key 0 must always be in the array part because "0" in the hash part
-   * denotes an empty entry. */
-  arr_size = UPB_MAX(arr_size, 1);
+  assert(arr_count <= upb_inttable_count(t));
 
   {
     /* Insert all elements into new, perfectly-sized table. */
-    int hash_count = upb_inttable_count(t) - arr_count;
-    int hash_size = hash_count ? (hash_count / MAX_LOAD) + 1 : 0;
-    int hashsize_lg2 = log2ceil(hash_size);
+    size_t arr_size = max[size_lg2] + 1;
+    size_t hash_count = upb_inttable_count(t) - arr_count;
+    size_t hash_size = hash_count ? (hash_count / MAX_LOAD) + 1 : 0;
+    size_t hashsize_lg2 = log2ceil(hash_size);
 
-    assert(hash_count >= 0);
     upb_inttable_sizedinit(&new_t, t->t.ctype, arr_size, hashsize_lg2);
     upb_inttable_begin(&i, t);
     for (; !upb_inttable_done(&i); upb_inttable_next(&i)) {
