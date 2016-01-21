@@ -477,7 +477,7 @@ namespace Google.Protobuf
         [TestCase("-1", -1L)]
         // long.MaxValue isn't actually representable as a double. This string value is the highest
         // representable value which isn't greater than long.MaxValue.
-        [TestCase("9223372036854769664", 9223372036854769664)]
+        [TestCase("9223372036854774784", 9223372036854774784)]
         [TestCase("-9223372036854775808", -9223372036854775808)]
         public void NumberToInt64_Valid(string jsonValue, long expectedParsedValue)
         {
@@ -504,7 +504,7 @@ namespace Google.Protobuf
         [TestCase("1", 1UL)]
         // ulong.MaxValue isn't representable as a double. This value is the largest double within
         // the range of ulong.
-        [TestCase("18446744073709500416", 18446744073709500416UL)]
+        [TestCase("18446744073709549568", 18446744073709549568UL)]
         public void NumberToUInt64_Valid(string jsonValue, ulong expectedParsedValue)
         {
             string json = "{ \"singleUint64\": " + jsonValue + "}";
