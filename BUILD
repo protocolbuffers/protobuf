@@ -459,19 +459,23 @@ cc_test(
 # Java support
 ################################################################################
 genrule(
-    name = "generate_java_descriptor_proto",
-    srcs = ["src/google/protobuf/descriptor.proto"],
-    outs = ["com/google/protobuf/DescriptorProtos.java"],
-    cmd = "$(location :protoc) --java_out=$(@D)/../../.. $<",
+    name = "gen_well_known_protos_java",
+    srcs = WELL_KNOWN_PROTOS,
+    outs = [
+        "wellknown.srcjar"
+    ],
+    cmd = "$(location :protoc) --java_out=$(@D)/wellknown.jar" +
+        " -Isrc $(SRCS) " +
+        " && mv $(@D)/wellknown.jar $(@D)/wellknown.srcjar",
     tools = [":protoc"],
 )
 
 java_library(
     name = "protobuf_java",
     srcs = glob([
-        "java/src/main/java/com/google/protobuf/*.java",
+        "java/core/src/main/java/com/google/protobuf/*.java",
     ]) + [
-        ":generate_java_descriptor_proto",
+        ":gen_well_known_protos_java",
     ],
     visibility = ["//visibility:public"],
 )
