@@ -43,9 +43,8 @@ address_book = addressbook_pb2.AddressBook()
 
 # Read the existing address book.
 try:
-  f = open(sys.argv[1], "rb")
-  address_book.ParseFromString(f.read())
-  f.close()
+  with open(sys.argv[1], "rb") as f:
+    address_book.ParseFromString(f.read())
 except IOError:
   print sys.argv[1] + ": File not found.  Creating a new file."
 
@@ -53,6 +52,5 @@ except IOError:
 PromptForAddress(address_book.people.add())
 
 # Write the new address book back to disk.
-f = open(sys.argv[1], "wb")
-f.write(address_book.SerializeToString())
-f.close()
+with open(sys.argv[1], "wb") as f:
+  f.write(address_book.SerializeToString())
