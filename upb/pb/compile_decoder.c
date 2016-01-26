@@ -918,10 +918,15 @@ const mgroup *mgroup_new(const upb_handlers *dest, bool allowjit, bool lazy,
 
 #ifdef UPB_DUMP_BYTECODE
   {
-    FILE *f = fopen("/tmp/upb-bytecode", "wb");
+    FILE *f = fopen("/tmp/upb-bytecode", "w");
     assert(f);
     dumpbc(g->bytecode, g->bytecode_end, stderr);
     dumpbc(g->bytecode, g->bytecode_end, f);
+    fclose(f);
+
+    f = fopen("/tmp/upb-bytecode.bin", "wb");
+    assert(f);
+    fwrite(g->bytecode, 1, g->bytecode_end - g->bytecode, f);
     fclose(f);
   }
 #endif
