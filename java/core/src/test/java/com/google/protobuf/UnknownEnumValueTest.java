@@ -30,6 +30,11 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
@@ -37,13 +42,17 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.FieldPresenceTestProto.TestAllTypes;
 import com.google.protobuf.TextFormat.ParseException;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /**
  * Unit tests for protos that keep unknown enum values rather than discard
  * them as unknown fields.
  */
-public class UnknownEnumValueTest extends TestCase {
+@RunWith(JUnit4.class)
+public class UnknownEnumValueTest {
+  @Test
   public void testUnknownEnumValues() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.setOptionalNestedEnumValue(4321);
@@ -125,6 +134,7 @@ public class UnknownEnumValueTest extends TestCase {
     }
   }
   
+  @Test
   public void testUnknownEnumValueInReflectionApi() throws Exception {
     Descriptor descriptor = TestAllTypes.getDescriptor();
     FieldDescriptor optionalNestedEnumField = descriptor.findFieldByName("optional_nested_enum");
@@ -175,6 +185,7 @@ public class UnknownEnumValueTest extends TestCase {
     assertTrue(unknown5432 == message.getRepeatedField(packedNestedEnumField, 0));
   }
   
+  @Test
   public void testUnknownEnumValueWithDynamicMessage() throws Exception {
     Descriptor descriptor = TestAllTypes.getDescriptor();
     FieldDescriptor optionalNestedEnumField = descriptor.findFieldByName("optional_nested_enum");
@@ -229,6 +240,7 @@ public class UnknownEnumValueTest extends TestCase {
     assertFalse(message.equals(differentMessage));
   }
   
+  @Test
   public void testUnknownEnumValuesInTextFormat() {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.setOptionalNestedEnumValue(4321);

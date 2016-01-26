@@ -30,14 +30,22 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.google.protobuf.Descriptors.FieldDescriptor;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import map_test.MapForProto2TestProto.TestMap;
 import map_test.MapForProto2TestProto.TestMap.MessageValue;
 import map_test.MapForProto2TestProto.TestMap.MessageWithRequiredFields;
 import map_test.MapForProto2TestProto.TestRecursiveMap;
 import map_test.MapForProto2TestProto.TestUnknownEnumValue;
-
-import junit.framework.TestCase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +56,8 @@ import java.util.Map;
 /**
  * Unit tests for map fields in proto2 protos.
  */
-public class MapForProto2Test extends TestCase {
+@RunWith(JUnit4.class)
+public class MapForProto2Test {
   private void setMapValues(TestMap.Builder builder) {
     builder.getMutableInt32ToInt32Field().put(1, 11);
     builder.getMutableInt32ToInt32Field().put(2, 22);
@@ -189,6 +198,7 @@ public class MapForProto2Test extends TestCase {
     assertEquals(0, message.getStringToInt32Field().size());
   }
   
+  @Test
   public void testMutableMapLifecycle() {
     TestMap.Builder builder = TestMap.newBuilder();
     Map<Integer, Integer> intMap = builder.getMutableInt32ToInt32Field();
@@ -253,6 +263,7 @@ public class MapForProto2Test extends TestCase {
         builder.getInt32ToMessageField());
   }
 
+  @Test
   public void testMutableMapLifecycle_collections() {
     TestMap.Builder builder = TestMap.newBuilder();
     Map<Integer, Integer> intMap = builder.getMutableInt32ToInt32Field();
@@ -299,6 +310,7 @@ public class MapForProto2Test extends TestCase {
     assertEquals(newMap(1, 2), builder.build().getInt32ToInt32Field());
   }
 
+  @Test
   public void testGettersAndSetters() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     TestMap message = builder.build();
@@ -320,6 +332,7 @@ public class MapForProto2Test extends TestCase {
     assertMapValuesCleared(message);
   }
 
+  @Test
   public void testPutAll() throws Exception {
     TestMap.Builder sourceBuilder = TestMap.newBuilder();
     setMapValues(sourceBuilder);
@@ -330,6 +343,7 @@ public class MapForProto2Test extends TestCase {
     assertMapValuesSet(destination.build());
   }
 
+  @Test
   public void testSerializeAndParse() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
@@ -353,6 +367,7 @@ public class MapForProto2Test extends TestCase {
     assertMapValuesCleared(message);
   }
   
+  @Test
   public void testMergeFrom() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
@@ -363,6 +378,7 @@ public class MapForProto2Test extends TestCase {
     assertMapValuesSet(other.build());
   }
 
+  @Test
   public void testEqualsAndHashCode() throws Exception {
     // Test that generated equals() and hashCode() will disregard the order
     // of map entries when comparing/hashing map fields.
@@ -459,6 +475,7 @@ public class MapForProto2Test extends TestCase {
     return map;
   }
 
+  @Test
   public void testReflectionApi() throws Exception {
     // In reflection API, map fields are just repeated message fields.
     TestMap.Builder builder = TestMap.newBuilder();
@@ -521,8 +538,8 @@ public class MapForProto2Test extends TestCase {
     // Test setRepeatedField
     for (int i = 0; i < builder.getRepeatedFieldCount(f("int32_to_int32_field")); i++) {
       Message mapEntry = (Message) builder.getRepeatedField(f("int32_to_int32_field"), i);
-      int oldKey = ((Integer) getFieldValue(mapEntry, "key")).intValue();
-      int oldValue = ((Integer) getFieldValue(mapEntry, "value")).intValue();
+      int oldKey = (Integer) getFieldValue(mapEntry, "key");
+      int oldValue = (Integer) getFieldValue(mapEntry, "value");
       // Swap key with value for each entry.
       Message.Builder mapEntryBuilder = mapEntry.toBuilder();
       setFieldValue(mapEntryBuilder, "key", oldValue);
@@ -535,6 +552,7 @@ public class MapForProto2Test extends TestCase {
     assertEquals(55, message.getInt32ToInt32Field().get(55).intValue());
   }
   
+  @Test
   public void testTextFormat() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
@@ -549,6 +567,7 @@ public class MapForProto2Test extends TestCase {
     assertMapValuesSet(message);
   }
   
+  @Test
   public void testDynamicMessage() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
@@ -563,6 +582,7 @@ public class MapForProto2Test extends TestCase {
     assertEquals(message.hashCode(), dynamicMessage.hashCode());
   }
   
+  @Test
   public void testReflectionEqualsAndHashCode() throws Exception {
     // Test that generated equals() and hashCode() will disregard the order
     // of map entries when comparing/hashing map fields.
@@ -595,6 +615,7 @@ public class MapForProto2Test extends TestCase {
     // to be different.
   }
   
+  @Test
   public void testUnknownEnumValues() throws Exception {
     TestUnknownEnumValue.Builder builder =
         TestUnknownEnumValue.newBuilder();
@@ -619,6 +640,7 @@ public class MapForProto2Test extends TestCase {
   }
 
 
+  @Test
   public void testRequiredMessage() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     builder.getMutableRequiredMessageMap().put(0,
@@ -632,6 +654,7 @@ public class MapForProto2Test extends TestCase {
     assertTrue(message.isInitialized());
   }
 
+  @Test
   public void testRecursiveMap() throws Exception {
     TestRecursiveMap.Builder builder = TestRecursiveMap.newBuilder();
     builder.getMutableRecursiveMapField().put(
@@ -645,6 +668,7 @@ public class MapForProto2Test extends TestCase {
     assertEquals(4, message.getRecursiveMapField().get(3).getValue());
   }
 
+  @Test
   public void testIterationOrder() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
@@ -655,6 +679,7 @@ public class MapForProto2Test extends TestCase {
   }
 
   // Regression test for b/20494788
+  @Test
   public void testMapInitializationOrder() throws Exception {
     assertEquals("RedactAllTypes", map_test.RedactAllTypes
         .getDefaultInstance().getDescriptorForType().getName());

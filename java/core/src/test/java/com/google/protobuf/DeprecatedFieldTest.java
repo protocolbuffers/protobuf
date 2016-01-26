@@ -30,9 +30,13 @@
 
 package com.google.protobuf;
 
-import protobuf_unittest.UnittestProto.TestDeprecatedFields;
+import static org.junit.Assert.assertTrue;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import protobuf_unittest.UnittestProto.TestDeprecatedFields;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
@@ -41,7 +45,8 @@ import java.lang.reflect.Method;
  * 
  * @author birdo@google.com (Roberto Scaramuzzi)
  */
-public class DeprecatedFieldTest extends TestCase {
+@RunWith(JUnit4.class)
+public class DeprecatedFieldTest {
   private String[] deprecatedGetterNames = {
       "hasDeprecatedInt32",
       "getDeprecatedInt32"};
@@ -53,7 +58,8 @@ public class DeprecatedFieldTest extends TestCase {
   
   private String[] deprecatedBuilderSetterNames = {
       "setDeprecatedInt32"}; 
-  
+
+  @Test
   public void testDeprecatedField() throws Exception {
     Class<?> deprecatedFields = TestDeprecatedFields.class;
     Class<?> deprecatedFieldsBuilder = TestDeprecatedFields.Builder.class;

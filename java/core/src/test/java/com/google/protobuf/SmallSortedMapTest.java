@@ -30,7 +30,15 @@
 
 package com.google.protobuf;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +52,8 @@ import java.util.TreeSet;
 /**
  * @author darick@google.com Darick Tong
  */
-public class SmallSortedMapTest extends TestCase {
+@RunWith(JUnit4.class)
+public class SmallSortedMapTest {
   // java.util.AbstractMap.SimpleEntry is private in JDK 1.5. We re-implement it
   // here for JDK 1.5 users.
   private static class SimpleEntry<K, V> implements Map.Entry<K, V> {
@@ -89,10 +98,12 @@ public class SmallSortedMapTest extends TestCase {
     }
   }
 
+  @Test
   public void testPutAndGetArrayEntriesOnly() {
     runPutAndGetTest(3);
   }
 
+  @Test
   public void testPutAndGetOverflowEntries() {
     runPutAndGetTest(6);
   }
@@ -143,6 +154,7 @@ public class SmallSortedMapTest extends TestCase {
     assertEquals(map3, map4);
   }
 
+  @Test
   public void testReplacingPut() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
@@ -154,6 +166,7 @@ public class SmallSortedMapTest extends TestCase {
     }
   }
 
+  @Test
   public void testRemove() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
@@ -195,6 +208,7 @@ public class SmallSortedMapTest extends TestCase {
     assertEquals(2, map.size());
   }
 
+  @Test
   public void testClear() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
@@ -206,6 +220,7 @@ public class SmallSortedMapTest extends TestCase {
     assertEquals(0, map.size());
   }
 
+  @Test
   public void testGetArrayEntryAndOverflowEntries() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
@@ -228,6 +243,7 @@ public class SmallSortedMapTest extends TestCase {
     assertFalse(it.hasNext());
   }
 
+  @Test
   public void testEntrySetContains() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
@@ -242,6 +258,7 @@ public class SmallSortedMapTest extends TestCase {
     }
   }
 
+  @Test
   public void testEntrySetAdd() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     Set<Map.Entry<Integer, Integer>> entrySet = map.entrySet();
@@ -259,6 +276,7 @@ public class SmallSortedMapTest extends TestCase {
     assertEquals(6, map.size());
   }
 
+  @Test
   public void testEntrySetRemove() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     Set<Map.Entry<Integer, Integer>> entrySet = map.entrySet();
@@ -277,6 +295,7 @@ public class SmallSortedMapTest extends TestCase {
     assertEquals(0, map.size());
   }
 
+  @Test
   public void testEntrySetClear() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
@@ -289,6 +308,7 @@ public class SmallSortedMapTest extends TestCase {
     assertEquals(0, map.size());
   }
 
+  @Test
   public void testEntrySetIteratorNext() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
@@ -304,6 +324,7 @@ public class SmallSortedMapTest extends TestCase {
     assertFalse(it.hasNext());
   }
 
+  @Test
   public void testEntrySetIteratorRemove() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
@@ -319,6 +340,7 @@ public class SmallSortedMapTest extends TestCase {
     }
   }
 
+  @Test
   public void testMapEntryModification() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
@@ -334,6 +356,7 @@ public class SmallSortedMapTest extends TestCase {
     }
   }
 
+  @Test
   public void testMakeImmutable() {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     for (int i = 0; i < 6; i++) {
@@ -347,6 +370,7 @@ public class SmallSortedMapTest extends TestCase {
       map.put(23, 23);
       fail("Expected UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
+      // Expected
     }
 
     Map<Integer, Integer> other = new HashMap<Integer, Integer>();
@@ -355,18 +379,21 @@ public class SmallSortedMapTest extends TestCase {
       map.putAll(other);
       fail("Expected UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
+      // Expected
     }
 
     try {
       map.remove(0);
       fail("Expected UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
+      // Expected
     }
 
     try {
       map.clear();
       fail("Expected UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
+      // Expected
     }
 
     Set<Map.Entry<Integer, Integer>> entrySet = map.entrySet();
@@ -374,6 +401,7 @@ public class SmallSortedMapTest extends TestCase {
       entrySet.clear();
       fail("Expected UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
+      // Expected
     }
 
     Iterator<Map.Entry<Integer, Integer>> it = entrySet.iterator();
@@ -383,11 +411,13 @@ public class SmallSortedMapTest extends TestCase {
         entry.setValue(0);
         fail("Expected UnsupportedOperationException");
       } catch (UnsupportedOperationException expected) {
+        // Expected
       }
       try {
         it.remove();
         fail("Expected UnsupportedOperationException");
       } catch (UnsupportedOperationException expected) {
+        // Expected
       }
     }
 
@@ -396,6 +426,7 @@ public class SmallSortedMapTest extends TestCase {
       keySet.clear();
       fail("Expected UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
+      // Expected
     }
 
     Iterator<Integer> keys = keySet.iterator();
@@ -405,16 +436,18 @@ public class SmallSortedMapTest extends TestCase {
         keySet.remove(key);
         fail("Expected UnsupportedOperationException");
       } catch (UnsupportedOperationException expected) {
+        // Expected
       }
       try {
         keys.remove();
         fail("Expected UnsupportedOperationException");
       } catch (UnsupportedOperationException expected) {
+        // Expected
       }
     }
   }
 
   private Set<Integer> makeSortedKeySet(Integer... keys) {
-    return new TreeSet<Integer>(Arrays.<Integer>asList(keys));
+    return new TreeSet<Integer>(Arrays.asList(keys));
   }
 }

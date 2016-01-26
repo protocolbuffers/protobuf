@@ -30,6 +30,13 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 
@@ -39,10 +46,11 @@ import java.util.Iterator;
  *
  * @author carlanton@google.com (Carl Haverl)
  */
+@RunWith(JUnit4.class)
 public class RopeByteStringSubstringTest extends LiteralByteStringTest {
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     classUnderTest = "RopeByteString";
     byte[] sourceBytes = ByteStringTest.getTestBytes(22341, 22337766L);
     Iterator<ByteString> iter = ByteStringTest.makeConcretePieces(sourceBytes).iterator();
@@ -60,12 +68,14 @@ public class RopeByteStringSubstringTest extends LiteralByteStringTest {
   }
 
   @Override
+  @Test
   public void testGetTreeDepth() {
     assertEquals(classUnderTest + " must have the expected tree depth",
         3, stringUnderTest.getTreeDepth());
   }
 
   @Override
+  @Test
   public void testToString() throws UnsupportedEncodingException {
     String sourceString = "I love unicode \u1234\u5678 characters";
     ByteString sourceByteString = ByteString.copyFromUtf8(sourceString);
@@ -96,6 +106,7 @@ public class RopeByteStringSubstringTest extends LiteralByteStringTest {
   }
 
   @Override
+  @Test
   public void testCharsetToString() {
     String sourceString = "I love unicode \u1234\u5678 characters";
     ByteString sourceByteString = ByteString.copyFromUtf8(sourceString);

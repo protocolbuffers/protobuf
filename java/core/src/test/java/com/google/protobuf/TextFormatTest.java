@@ -30,8 +30,19 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.TextFormat.Parser.SingularOverwritePolicy;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
 import protobuf_unittest.UnittestProto.OneString;
@@ -40,9 +51,6 @@ import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestOneof2;
-import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
-
-import junit.framework.TestCase;
 
 import java.io.StringReader;
 
@@ -53,7 +61,8 @@ import java.io.StringReader;
  *
  * @author wenboz@google.com (Wenbo Zhu)
  */
-public class TextFormatTest extends TestCase {
+@RunWith(JUnit4.class)
+public class TextFormatTest {
 
   // A basic string with different escapable characters for testing.
   private final static String kEscapeTestString =
@@ -130,6 +139,7 @@ public class TextFormatTest extends TestCase {
       TextFormat.Parser.newBuilder().build();
 
   /** Print TestAllTypes and compare with golden file. */
+  @Test
   public void testPrintMessage() throws Exception {
     String javaText = TextFormat.printToString(TestUtil.getAllSet());
 
@@ -142,6 +152,7 @@ public class TextFormatTest extends TestCase {
   }
 
   /** Print TestAllTypes as Builder and compare with golden file. */
+  @Test
   public void testPrintMessageBuilder() throws Exception {
     String javaText = TextFormat.printToString(TestUtil.getAllSetBuilder());
 
@@ -154,6 +165,7 @@ public class TextFormatTest extends TestCase {
   }
 
   /** Print TestAllExtensions and compare with golden file. */
+  @Test
   public void testPrintExtensions() throws Exception {
     String javaText = TextFormat.printToString(TestUtil.getAllExtensionsSet());
 
@@ -197,6 +209,7 @@ public class TextFormatTest extends TestCase {
         .build();
   }
 
+  @Test
   public void testPrintUnknownFields() throws Exception {
     // Test printing of unknown fields in a message.
 
@@ -222,6 +235,7 @@ public class TextFormatTest extends TestCase {
       TextFormat.printToString(message));
   }
 
+  @Test
   public void testPrintField() throws Exception {
     final FieldDescriptor dataField =
       OneString.getDescriptor().findFieldByName("data");
@@ -260,6 +274,7 @@ public class TextFormatTest extends TestCase {
     return ByteString.copyFrom(bytes);
   }
 
+  @Test
   public void testPrintExotic() throws Exception {
     Message message = TestAllTypes.newBuilder()
       // Signed vs. unsigned numbers.
@@ -299,6 +314,7 @@ public class TextFormatTest extends TestCase {
     assertEquals(canonicalExoticText, message.toString());
   }
 
+  @Test
   public void testPrintMessageSet() throws Exception {
     TestMessageSet messageSet =
       TestMessageSet.newBuilder()
@@ -315,18 +331,21 @@ public class TextFormatTest extends TestCase {
 
   // =================================================================
 
+  @Test
   public void testParse() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge(allFieldsSetText, builder);
     TestUtil.assertAllFieldsSet(builder.build());
   }
 
+  @Test
   public void testParseReader() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge(new StringReader(allFieldsSetText), builder);
     TestUtil.assertAllFieldsSet(builder.build());
   }
 
+  @Test
   public void testParseExtensions() throws Exception {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
     TextFormat.merge(allExtensionsSetText,
@@ -335,6 +354,7 @@ public class TextFormatTest extends TestCase {
     TestUtil.assertAllExtensionsSet(builder.build());
   }
 
+  @Test
   public void testParseCompatibility() throws Exception {
     String original = "repeated_float: inf\n" +
                       "repeated_float: -inf\n" +
@@ -365,6 +385,7 @@ public class TextFormatTest extends TestCase {
     assertEquals(canonical, builder.build().toString());
   }
 
+  @Test
   public void testParseExotic() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge(exoticText, builder);
@@ -374,6 +395,7 @@ public class TextFormatTest extends TestCase {
     assertEquals(canonicalExoticText, builder.build().toString());
   }
 
+  @Test
   public void testParseMessageSet() throws Exception {
     ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
     extensionRegistry.add(TestMessageSetExtension1.messageSetExtension);
@@ -400,6 +422,7 @@ public class TextFormatTest extends TestCase {
       TestMessageSetExtension1.messageSetExtension).getI());
   }
 
+  @Test
   public void testParseMessageSetWithOverwriteForbidden() throws Exception {
     ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
     extensionRegistry.add(TestMessageSetExtension1.messageSetExtension);
@@ -427,12 +450,14 @@ public class TextFormatTest extends TestCase {
     }
   }
 
+  @Test
   public void testParseNumericEnum() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge("optional_nested_enum: 2", builder);
     assertEquals(TestAllTypes.NestedEnum.BAR, builder.getOptionalNestedEnum());
   }
 
+  @Test
   public void testParseAngleBrackets() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge("OptionalGroup: < a: 1 >", builder);
@@ -440,6 +465,7 @@ public class TextFormatTest extends TestCase {
     assertEquals(1, builder.getOptionalGroup().getA());
   }
 
+  @Test
   public void testParseComment() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge(
@@ -482,6 +508,7 @@ public class TextFormatTest extends TestCase {
     return builder.build();
   }
 
+  @Test
   public void testParseErrors() throws Exception {
     assertParseError(
       "1:16: Expected \":\".",
@@ -553,6 +580,7 @@ public class TextFormatTest extends TestCase {
 
   // =================================================================
 
+  @Test
   public void testEscape() throws Exception {
     // Escape sequences.
     assertEquals("\\000\\001\\a\\b\\f\\n\\r\\t\\v\\\\\\'\\\"\\177",
@@ -607,6 +635,7 @@ public class TextFormatTest extends TestCase {
     }
   }
 
+  @Test
   public void testParseInteger() throws Exception {
     assertEquals(          0, TextFormat.parseInt32(          "0"));
     assertEquals(          1, TextFormat.parseInt32(          "1"));
@@ -725,6 +754,7 @@ public class TextFormatTest extends TestCase {
     }
   }
 
+  @Test
   public void testParseString() throws Exception {
     final String zh = "\u9999\u6e2f\u4e0a\u6d77\ud84f\udf80\u8c50\u9280\u884c";
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -732,6 +762,7 @@ public class TextFormatTest extends TestCase {
     assertEquals(zh, builder.getOptionalString());
   }
 
+  @Test
   public void testParseLongString() throws Exception {
     String longText =
       "123456789012345678901234567890123456789012345678901234567890" +
@@ -760,6 +791,7 @@ public class TextFormatTest extends TestCase {
     assertEquals(longText, builder.getOptionalString());
   }
 
+  @Test
   public void testParseBoolean() throws Exception {
     String goodText =
         "repeated_bool: t  repeated_bool : 0\n" +
@@ -789,12 +821,14 @@ public class TextFormatTest extends TestCase {
     }
   }
 
+  @Test
   public void testParseAdjacentStringLiterals() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge("optional_string: \"foo\" 'corge' \"grault\"", builder);
     assertEquals("foocorgegrault", builder.getOptionalString());
   }
 
+  @Test
   public void testPrintFieldValue() throws Exception {
     assertPrintFieldValue("\"Hello\"", "Hello", "repeated_string");
     assertPrintFieldValue("123.0",  123f, "repeated_float");
@@ -811,7 +845,6 @@ public class TextFormatTest extends TestCase {
 
   private void assertPrintFieldValue(String expect, Object value,
       String fieldName) throws Exception {
-    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     StringBuilder sb = new StringBuilder();
     TextFormat.printFieldValue(
         TestAllTypes.getDescriptor().findFieldByName(fieldName),
@@ -819,6 +852,7 @@ public class TextFormatTest extends TestCase {
     assertEquals(expect, sb.toString());
   }
 
+  @Test
   public void testShortDebugString() {
     assertEquals("optional_nested_message { bb: 42 } repeated_int32: 1"
         + " repeated_uint32: 2",
@@ -830,6 +864,7 @@ public class TextFormatTest extends TestCase {
             .build()));
   }
 
+  @Test
   public void testShortDebugString_field() {
     final FieldDescriptor dataField =
       OneString.getDescriptor().findFieldByName("data");
@@ -846,6 +881,7 @@ public class TextFormatTest extends TestCase {
       TextFormat.shortDebugString(optionalField, value));
   }
 
+  @Test
   public void testShortDebugString_unknown() {
     assertEquals("5: 1 5: 0x00000002 5: 0x0000000000000003 5: \"4\" 5 { 10: 5 }"
         + " 8: 1 8: 2 8: 3 15: 12379813812177893520 15: 0xabcd1234 15:"
@@ -853,6 +889,7 @@ public class TextFormatTest extends TestCase {
         TextFormat.shortDebugString(makeUnknownFieldSet()));
   }
 
+  @Test
   public void testPrintToUnicodeString() throws Exception {
     assertEquals(
         "optional_string: \"abc\u3042efg\"\n" +
@@ -880,6 +917,7 @@ public class TextFormatTest extends TestCase {
     assertEquals(message.getOptionalString(), builder.getOptionalString());
   }
 
+  @Test
   public void testPrintToUnicodeStringWithNewlines() throws Exception {
     // No newlines at start and end
     assertEquals("optional_string: \"test newlines\\n\\nin\\nstring\"\n",
@@ -916,6 +954,7 @@ public class TextFormatTest extends TestCase {
     assertEquals(message.getOptionalString(), builder.getOptionalString());
   }
 
+  @Test
   public void testPrintToUnicodeString_unknown() {
     assertEquals(
         "1: \"\\343\\201\\202\"\n",
@@ -927,6 +966,7 @@ public class TextFormatTest extends TestCase {
   }
 
 
+  @Test
   public void testParseNonRepeatedFields() throws Exception {
     assertParseSuccessWithOverwriteForbidden(
         "repeated_int32: 1\n" +
@@ -970,6 +1010,7 @@ public class TextFormatTest extends TestCase {
         "default_string: \"asdf\"\n");
   }
 
+  @Test
   public void testParseShortRepeatedFormOfRepeatedFields() throws Exception {
     assertParseSuccessWithOverwriteForbidden("repeated_foreign_enum: [FOREIGN_FOO, FOREIGN_BAR]");
     assertParseSuccessWithOverwriteForbidden("repeated_int32: [ 1, 2 ]\n");
@@ -977,6 +1018,7 @@ public class TextFormatTest extends TestCase {
     assertParseSuccessWithOverwriteForbidden("repeated_nested_message [{ bb: 1 }, { bb: 2 }]\n");
   }
 
+  @Test
   public void testParseShortRepeatedFormOfNonRepeatedFields() throws Exception {
     assertParseErrorWithOverwriteForbidden(
         "1:17: Couldn't parse integer: For input string: \"[\"",
@@ -986,6 +1028,7 @@ public class TextFormatTest extends TestCase {
   // =======================================================================
   // test oneof
 
+  @Test
   public void testOneofTextFormat() throws Exception {
     TestOneof2.Builder builder = TestOneof2.newBuilder();
     TestUtil.setOneof(builder);
@@ -995,6 +1038,7 @@ public class TextFormatTest extends TestCase {
     TestUtil.assertOneofSet(dest.build());
   }
 
+  @Test
   public void testOneofOverwriteForbidden() throws Exception {
     String input = "foo_string: \"stringvalue\" foo_int: 123";
     TestOneof2.Builder builder = TestOneof2.newBuilder();
@@ -1009,6 +1053,7 @@ public class TextFormatTest extends TestCase {
     }
   }
 
+  @Test
   public void testOneofOverwriteAllowed() throws Exception {
     String input = "foo_string: \"stringvalue\" foo_int: 123";
     TestOneof2.Builder builder = TestOneof2.newBuilder();

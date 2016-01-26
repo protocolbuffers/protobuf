@@ -30,7 +30,17 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.google.protobuf.Descriptors.FieldDescriptor;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.UnittestOptimizeFor.TestOptimizedForSize;
 import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.ForeignMessage;
@@ -41,8 +51,6 @@ import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestRequiredForeign;
 import protobuf_unittest.UnittestProto.TestUnpackedTypes;
 
-import junit.framework.TestCase;
-
 import java.util.Map;
 
 /**
@@ -50,7 +58,8 @@ import java.util.Map;
  *
  * @author kenton@google.com Kenton Varda
  */
-public class AbstractMessageTest extends TestCase {
+@RunWith(JUnit4.class)
+public class AbstractMessageTest {
   /**
    * Extends AbstractMessage and wraps some other message object.  The methods
    * of the Message interface which aren't explicitly implemented by
@@ -180,13 +189,7 @@ public class AbstractMessageTest extends TestCase {
 
   // =================================================================
 
-  TestUtil.ReflectionTester reflectionTester =
-    new TestUtil.ReflectionTester(TestAllTypes.getDescriptor(), null);
-
-  TestUtil.ReflectionTester extensionsReflectionTester =
-    new TestUtil.ReflectionTester(TestAllExtensions.getDescriptor(),
-                                  TestUtil.getExtensionRegistry());
-
+  @Test
   public void testClear() throws Exception {
     AbstractMessageWrapper message =
       new AbstractMessageWrapper.Builder(
@@ -195,6 +198,7 @@ public class AbstractMessageTest extends TestCase {
     TestUtil.assertClear((TestAllTypes) message.wrappedMessage);
   }
 
+  @Test
   public void testCopy() throws Exception {
     AbstractMessageWrapper message =
       new AbstractMessageWrapper.Builder(TestAllTypes.newBuilder())
@@ -202,6 +206,7 @@ public class AbstractMessageTest extends TestCase {
     TestUtil.assertAllFieldsSet((TestAllTypes) message.wrappedMessage);
   }
 
+  @Test
   public void testSerializedSize() throws Exception {
     TestAllTypes message = TestUtil.getAllSet();
     Message abstractMessage = new AbstractMessageWrapper(TestUtil.getAllSet());
@@ -210,6 +215,7 @@ public class AbstractMessageTest extends TestCase {
                  abstractMessage.getSerializedSize());
   }
 
+  @Test
   public void testSerialization() throws Exception {
     Message abstractMessage = new AbstractMessageWrapper(TestUtil.getAllSet());
 
@@ -220,6 +226,7 @@ public class AbstractMessageTest extends TestCase {
                  abstractMessage.toByteString());
   }
 
+  @Test
   public void testParsing() throws Exception {
     AbstractMessageWrapper.Builder builder =
       new AbstractMessageWrapper.Builder(TestAllTypes.newBuilder());
@@ -228,6 +235,7 @@ public class AbstractMessageTest extends TestCase {
     TestUtil.assertAllFieldsSet((TestAllTypes) message.wrappedMessage);
   }
 
+  @Test
   public void testParsingUninitialized() throws Exception {
     TestRequiredForeign.Builder builder = TestRequiredForeign.newBuilder();
     builder.getOptionalMessageBuilder().setDummy2(10);
@@ -256,6 +264,7 @@ public class AbstractMessageTest extends TestCase {
     }
   }
 
+  @Test
   public void testPackedSerialization() throws Exception {
     Message abstractMessage =
         new AbstractMessageWrapper(TestUtil.getPackedSet());
@@ -267,6 +276,7 @@ public class AbstractMessageTest extends TestCase {
                  abstractMessage.toByteString());
   }
 
+  @Test
   public void testPackedParsing() throws Exception {
     AbstractMessageWrapper.Builder builder =
       new AbstractMessageWrapper.Builder(TestPackedTypes.newBuilder());
@@ -275,6 +285,7 @@ public class AbstractMessageTest extends TestCase {
     TestUtil.assertPackedFieldsSet((TestPackedTypes) message.wrappedMessage);
   }
 
+  @Test
   public void testUnpackedSerialization() throws Exception {
     Message abstractMessage =
       new AbstractMessageWrapper(TestUtil.getUnpackedSet());
@@ -286,6 +297,7 @@ public class AbstractMessageTest extends TestCase {
                  abstractMessage.toByteString());
   }
 
+  @Test
   public void testParsePackedToUnpacked() throws Exception {
     AbstractMessageWrapper.Builder builder =
       new AbstractMessageWrapper.Builder(TestUnpackedTypes.newBuilder());
@@ -295,6 +307,7 @@ public class AbstractMessageTest extends TestCase {
       (TestUnpackedTypes) message.wrappedMessage);
   }
 
+  @Test
   public void testParseUnpackedToPacked() throws Exception {
     AbstractMessageWrapper.Builder builder =
       new AbstractMessageWrapper.Builder(TestPackedTypes.newBuilder());
@@ -303,6 +316,7 @@ public class AbstractMessageTest extends TestCase {
     TestUtil.assertPackedFieldsSet((TestPackedTypes) message.wrappedMessage);
   }
 
+  @Test
   public void testUnpackedParsing() throws Exception {
     AbstractMessageWrapper.Builder builder =
       new AbstractMessageWrapper.Builder(TestUnpackedTypes.newBuilder());
@@ -312,6 +326,7 @@ public class AbstractMessageTest extends TestCase {
       (TestUnpackedTypes) message.wrappedMessage);
   }
 
+  @Test
   public void testOptimizedForSize() throws Exception {
     // We're mostly only checking that this class was compiled successfully.
     TestOptimizedForSize message =
@@ -328,6 +343,7 @@ public class AbstractMessageTest extends TestCase {
   private static final TestRequired TEST_REQUIRED_INITIALIZED =
     TestRequired.newBuilder().setA(1).setB(2).setC(3).build();
 
+  @Test
   public void testIsInitialized() throws Exception {
     TestRequired.Builder builder = TestRequired.newBuilder();
     AbstractMessageWrapper.Builder abstractBuilder =
@@ -346,6 +362,7 @@ public class AbstractMessageTest extends TestCase {
     assertEquals("", abstractBuilder.getInitializationErrorString());
   }
 
+  @Test
   public void testForeignIsInitialized() throws Exception {
     TestRequiredForeign.Builder builder = TestRequiredForeign.newBuilder();
     AbstractMessageWrapper.Builder abstractBuilder =
@@ -404,6 +421,7 @@ public class AbstractMessageTest extends TestCase {
       "repeated_string: \"qux\"\n" +
       "repeated_string: \"bar\"\n";
 
+  @Test
   public void testMergeFrom() throws Exception {
     AbstractMessageWrapper result =
       new AbstractMessageWrapper.Builder(
@@ -416,6 +434,7 @@ public class AbstractMessageTest extends TestCase {
   // -----------------------------------------------------------------
   // Tests for equals and hashCode
 
+  @Test
   public void testEqualsAndHashCode() throws Exception {
     TestAllTypes a = TestUtil.getAllSet();
     TestAllTypes b = TestAllTypes.newBuilder().build();
@@ -493,9 +512,8 @@ public class AbstractMessageTest extends TestCase {
   /**
    * Asserts that the given protos are not equal and have different hash codes.
    *
-   * @warning It's valid for non-equal objects to have the same hash code, so
-   *   this test is stricter than it needs to be. However, this should happen
-   *   relatively rarely.
+   * <p/><strong>WARNING:</strong> It's valid for non-equal objects to have the same hash code, so
+   * this test is stricter than it needs to be. However, this should happen relatively rarely.
    */
   private void checkNotEqual(Message m1, Message m2) {
     String equalsError = String.format("%s should not be equal to %s", m1, m2);
@@ -507,12 +525,14 @@ public class AbstractMessageTest extends TestCase {
         m1.hashCode() == m2.hashCode());
   }
 
+  @Test
   public void testCheckByteStringIsUtf8OnUtf8() {
     ByteString byteString = ByteString.copyFromUtf8("some text");
     AbstractMessageLite.checkByteStringIsUtf8(byteString);
     // No exception thrown.
   }
 
+  @Test
   public void testCheckByteStringIsUtf8OnNonUtf8() {
     ByteString byteString =
         ByteString.copyFrom(new byte[]{(byte) 0x80}); // A lone continuation byte.
@@ -523,5 +543,4 @@ public class AbstractMessageTest extends TestCase {
       assertEquals("Byte string is not UTF-8.", exception.getMessage());
     }
   }
-
 }

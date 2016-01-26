@@ -31,10 +31,18 @@
 package com.google.protobuf;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
@@ -44,7 +52,8 @@ import java.util.List;
  *
  * @author jonp@google.com (Jon Perlow)
  */
-public class LazyStringArrayListTest extends TestCase {
+@RunWith(JUnit4.class)
+public class LazyStringArrayListTest {
 
   private static String STRING_A = "A";
   private static String STRING_B = "B";
@@ -54,6 +63,7 @@ public class LazyStringArrayListTest extends TestCase {
   private static ByteString BYTE_STRING_B = ByteString.copyFromUtf8("B");
   private static ByteString BYTE_STRING_C = ByteString.copyFromUtf8("C");
 
+  @Test
   public void testJustStrings() {
     LazyStringArrayList list = new LazyStringArrayList();
     list.add(STRING_A);
@@ -81,6 +91,7 @@ public class LazyStringArrayListTest extends TestCase {
     assertSame(byteStringList.get(1), list.getByteString(1));
   }
 
+  @Test
   public void testJustByteString() {
     LazyStringArrayList list = new LazyStringArrayList();
     list.add(BYTE_STRING_A);
@@ -101,6 +112,7 @@ public class LazyStringArrayListTest extends TestCase {
     assertSame(BYTE_STRING_C, byteStringList.get(1));
   }
 
+  @Test
   public void testConversionBackAndForth() {
     LazyStringArrayList list = new LazyStringArrayList();
     list.add(STRING_A);
@@ -135,6 +147,7 @@ public class LazyStringArrayListTest extends TestCase {
     assertSame(bPrimeByteString, list.getByteString(1));
   }
 
+  @Test
   public void testCopyConstructorCopiesByReference() {
     LazyStringArrayList list1 = new LazyStringArrayList();
     list1.add(STRING_A);
@@ -148,6 +161,7 @@ public class LazyStringArrayListTest extends TestCase {
     assertSame(BYTE_STRING_C, list2.getByteString(2));
   }
 
+  @Test
   public void testListCopyConstructor() {
     List<String> list1 = new ArrayList<String>();
     list1.add(STRING_A);
@@ -161,6 +175,7 @@ public class LazyStringArrayListTest extends TestCase {
     assertSame(STRING_C, list2.get(2));
   }
 
+  @Test
   public void testAddAllCopiesByReferenceIfPossible() {
     LazyStringArrayList list1 = new LazyStringArrayList();
     list1.add(STRING_A);
@@ -176,6 +191,7 @@ public class LazyStringArrayListTest extends TestCase {
     assertSame(BYTE_STRING_C, list2.getByteString(2));
   }
   
+  @Test
   public void testModificationWithIteration() {
     LazyStringArrayList list = new LazyStringArrayList();
     list.addAll(asList(STRING_A, STRING_B, STRING_C));
@@ -207,6 +223,7 @@ public class LazyStringArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testMakeImmutable() {
     LazyStringArrayList list = new LazyStringArrayList();
     list.add(STRING_A);
@@ -240,7 +257,7 @@ public class LazyStringArrayListTest extends TestCase {
     }
     
     try {
-      list.addAllByteString(asList(BYTE_STRING_A));
+      list.addAllByteString(singletonList(BYTE_STRING_A));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
@@ -268,6 +285,7 @@ public class LazyStringArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testImmutabilityPropagation() {
     LazyStringArrayList list = new LazyStringArrayList();
     list.add(STRING_A);
@@ -297,14 +315,14 @@ public class LazyStringArrayListTest extends TestCase {
     }
     
     try {
-      list.addAll(asList(value));
+      list.addAll(singletonList(value));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
     
     try {
-      list.addAll(0, asList(value));
+      list.addAll(0, singletonList(value));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
@@ -332,21 +350,21 @@ public class LazyStringArrayListTest extends TestCase {
     }
     
     try {
-      list.removeAll(asList(value));
+      list.removeAll(singletonList(value));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
     
     try {
-      list.retainAll(asList());
+      list.retainAll(Collections.<String>emptyList());
       fail();
     } catch (UnsupportedOperationException e) {
       // expected
     }
     
     try {
-      list.retainAll(asList());
+      list.retainAll(Collections.<String>emptyList());
       fail();
     } catch (UnsupportedOperationException e) {
       // expected

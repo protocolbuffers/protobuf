@@ -30,12 +30,18 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.UnittestProto.SparseEnumMessage;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestSparseEnum;
-
-import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -49,7 +55,8 @@ import java.util.List;
  *
  * @author kenton@google.com Kenton Varda
  */
-public class CodedOutputStreamTest extends TestCase {
+@RunWith(JUnit4.class)
+public class CodedOutputStreamTest {
   /**
    * Helper to construct a byte array from a bunch of bytes.  The inputs are
    * actually ints so that I can use hex notation and not get stupid errors
@@ -154,6 +161,7 @@ public class CodedOutputStreamTest extends TestCase {
   }
 
   /** Checks that invariants are maintained for varint round trip input and output. */
+  @Test
   public void testVarintRoundTrips() throws Exception {
     assertVarintRoundTrip(0L);
     for (int bits = 0; bits < 64; bits++) {
@@ -166,32 +174,33 @@ public class CodedOutputStreamTest extends TestCase {
   }
 
   /** Tests writeRawVarint32() and writeRawVarint64(). */
+  @Test
   public void testWriteVarint() throws Exception {
     assertWriteVarint(bytes(0x00), 0);
     assertWriteVarint(bytes(0x01), 1);
     assertWriteVarint(bytes(0x7f), 127);
     // 14882
-    assertWriteVarint(bytes(0xa2, 0x74), (0x22 << 0) | (0x74 << 7));
+    assertWriteVarint(bytes(0xa2, 0x74), 0x22 | (0x74 << 7));
     // 2961488830
     assertWriteVarint(bytes(0xbe, 0xf7, 0x92, 0x84, 0x0b),
-      (0x3e << 0) | (0x77 << 7) | (0x12 << 14) | (0x04 << 21) |
+      0x3e | (0x77 << 7) | (0x12 << 14) | (0x04 << 21) |
       (0x0bL << 28));
 
     // 64-bit
     // 7256456126
     assertWriteVarint(bytes(0xbe, 0xf7, 0x92, 0x84, 0x1b),
-      (0x3e << 0) | (0x77 << 7) | (0x12 << 14) | (0x04 << 21) |
+      0x3e | (0x77 << 7) | (0x12 << 14) | (0x04 << 21) |
       (0x1bL << 28));
     // 41256202580718336
     assertWriteVarint(
       bytes(0x80, 0xe6, 0xeb, 0x9c, 0xc3, 0xc9, 0xa4, 0x49),
-      (0x00 << 0) | (0x66 << 7) | (0x6b << 14) | (0x1c << 21) |
+      (0x66 << 7) | (0x6b << 14) | (0x1c << 21) |
       (0x43L << 28) | (0x49L << 35) | (0x24L << 42) | (0x49L << 49));
     // 11964378330978735131
     assertWriteVarint(
       bytes(0x9b, 0xa8, 0xf9, 0xc2, 0xbb, 0xd6, 0x80, 0x85, 0xa6, 0x01),
-      (0x1b << 0) | (0x28 << 7) | (0x79 << 14) | (0x42 << 21) |
-      (0x3bL << 28) | (0x56L << 35) | (0x00L << 42) |
+      0x1b | (0x28 << 7) | (0x79 << 14) | (0x42 << 21) |
+      (0x3bL << 28) | (0x56L << 35) |
       (0x05L << 49) | (0x26L << 56) | (0x01L << 63));
   }
 
@@ -240,6 +249,7 @@ public class CodedOutputStreamTest extends TestCase {
   }
 
   /** Tests writeRawLittleEndian32() and writeRawLittleEndian64(). */
+  @Test
   public void testWriteLittleEndian() throws Exception {
     assertWriteLittleEndian32(bytes(0x78, 0x56, 0x34, 0x12), 0x12345678);
     assertWriteLittleEndian32(bytes(0xf0, 0xde, 0xbc, 0x9a), 0x9abcdef0);
@@ -253,6 +263,7 @@ public class CodedOutputStreamTest extends TestCase {
   }
 
   /** Test encodeZigZag32() and encodeZigZag64(). */
+  @Test
   public void testEncodeZigZag() throws Exception {
     assertEquals(0, CodedOutputStream.encodeZigZag32( 0));
     assertEquals(1, CodedOutputStream.encodeZigZag32(-1));
@@ -315,6 +326,7 @@ public class CodedOutputStreamTest extends TestCase {
   }
 
   /** Tests writing a whole message with every field type. */
+  @Test
   public void testWriteWholeMessage() throws Exception {
     TestAllTypes message = TestUtil.getAllSet();
 
@@ -334,6 +346,7 @@ public class CodedOutputStreamTest extends TestCase {
 
   /** Tests writing a whole message with every packed field type. Ensures the
    * wire format of packed fields is compatible with C++. */
+  @Test
   public void testWriteWholePackedFieldsMessage() throws Exception {
     TestPackedTypes message = TestUtil.getPackedSet();
 
@@ -345,6 +358,7 @@ public class CodedOutputStreamTest extends TestCase {
   /** Test writing a message containing a negative enum value. This used to
    * fail because the size was not properly computed as a sign-extended varint.
    */
+  @Test
   public void testWriteMessageWithNegativeEnumValue() throws Exception {
     SparseEnumMessage message = SparseEnumMessage.newBuilder()
         .setSparseEnum(TestSparseEnum.SPARSE_E) .build();
@@ -355,6 +369,7 @@ public class CodedOutputStreamTest extends TestCase {
   }
 
   /** Test getTotalBytesWritten() */
+  @Test
   public void testGetTotalBytesWritten() throws Exception {
     final int BUFFER_SIZE = 4 * 1024;
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream(BUFFER_SIZE);
@@ -382,6 +397,7 @@ public class CodedOutputStreamTest extends TestCase {
   
   // TODO(dweis): Write a comprehensive test suite for CodedOutputStream that covers more than just
   //    this case.
+  @Test
   public void testWriteStringNoTag_fastpath() throws Exception {
     int bufferSize = 153;
     String threeBytesPer = "\u0981";
@@ -400,6 +416,7 @@ public class CodedOutputStreamTest extends TestCase {
     output.writeStringNoTag(string);
   }
 
+  @Test
   public void testWriteToByteBuffer() throws Exception {
     final int bufferSize = 16 * 1024;
     ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
@@ -435,6 +452,7 @@ public class CodedOutputStreamTest extends TestCase {
     }
   }
 
+  @Test
   public void testWriteByteBuffer() throws Exception {
     byte[] value = "abcde".getBytes(Internal.UTF_8);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -459,6 +477,7 @@ public class CodedOutputStreamTest extends TestCase {
     assertEquals(value[2], result[5]);
   }
 
+  @Test
   public void testWriteByteArrayWithOffsets() throws Exception {
     byte[] fullArray = bytes(0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88);
     byte[] destination = new byte[4];
@@ -467,7 +486,8 @@ public class CodedOutputStreamTest extends TestCase {
     assertEqualBytes(bytes(0x02, 0x33, 0x44, 0x00), destination);
     assertEquals(3, codedStream.getTotalBytesWritten());
   }
-  
+
+  @Test
   public void testSerializeInvalidUtf8() throws Exception {
     String[] invalidStrings = new String[] {
         newString(Character.MIN_HIGH_SURROGATE),
@@ -492,6 +512,7 @@ public class CodedOutputStreamTest extends TestCase {
   }
 
   /** Regression test for https://github.com/google/protobuf/issues/292 */
+  @Test
   public void testCorrectExceptionThrowWhenEncodingStringsWithoutEnoughSpace() throws Exception {
     String testCase = "Foooooooo";
     assertEquals(CodedOutputStream.computeRawVarint32Size(testCase.length()),
@@ -504,10 +525,13 @@ public class CodedOutputStreamTest extends TestCase {
       try {
         output.writeString(1, testCase);
         fail("Should have thrown an out of space exception");
-      } catch (CodedOutputStream.OutOfSpaceException expected) {}
+      } catch (CodedOutputStream.OutOfSpaceException expected) {
+        // Expected.
+      }
     }
   }
-  
+
+  @Test
   public void testDifferentStringLengths() throws Exception {
     // Test string serialization roundtrip using strings of the following lengths,
     // with ASCII and Unicode characters requiring different UTF-8 byte counts per

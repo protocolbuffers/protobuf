@@ -30,15 +30,23 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import any_test.AnyTestProto.TestAny;
 import protobuf_unittest.UnittestProto.TestAllTypes;
-
-import junit.framework.TestCase;
 
 /**
  * Unit tests for Any message.
  */
-public class AnyTest extends TestCase {
+@RunWith(JUnit4.class)
+public class AnyTest {
+  @Test
   public void testAnyGeneratedApi() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TestUtil.setAllFields(builder);
@@ -56,7 +64,7 @@ public class AnyTest extends TestCase {
 
     // Unpacking to a wrong type will throw an exception.
     try {
-      TestAny wrongMessage = container.getValue().unpack(TestAny.class);
+      container.getValue().unpack(TestAny.class);
       fail("Exception is expected.");
     } catch (InvalidProtocolBufferException e) {
       // expected.
@@ -68,13 +76,14 @@ public class AnyTest extends TestCase {
         ByteString.copyFrom(new byte[]{0x11}));
     container = containerBuilder.build();
     try {
-      TestAllTypes parsingFailed = container.getValue().unpack(TestAllTypes.class);
+      container.getValue().unpack(TestAllTypes.class);
       fail("Exception is expected.");
     } catch (InvalidProtocolBufferException e) {
       // expected.
     }
   }
 
+  @Test
   public void testCachedUnpackResult() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TestUtil.setAllFields(builder);

@@ -30,15 +30,23 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import map_test.MapTestProto.TestMap;
 import map_test.MapTestProto.TestMap.MessageValue;
 import map_test.MapTestProto.TestOnChangeEventPropagation;
-
-import junit.framework.TestCase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +57,8 @@ import java.util.Map;
 /**
  * Unit tests for map fields.
  */
-public class MapTest extends TestCase {
+@RunWith(JUnit4.class)
+public class MapTest {
   private void setMapValues(TestMap.Builder builder) {
     builder.getMutableInt32ToInt32Field().put(1, 11);
     builder.getMutableInt32ToInt32Field().put(2, 22);
@@ -190,6 +199,7 @@ public class MapTest extends TestCase {
     assertEquals(0, message.getStringToInt32Field().size());
   }
   
+  @Test
   public void testMutableMapLifecycle() {
     TestMap.Builder builder = TestMap.newBuilder();
     Map<Integer, Integer> intMap = builder.getMutableInt32ToInt32Field();
@@ -254,6 +264,7 @@ public class MapTest extends TestCase {
         builder.getInt32ToMessageField());
   }
 
+  @Test
   public void testMutableMapLifecycle_collections() {
     TestMap.Builder builder = TestMap.newBuilder();
     Map<Integer, Integer> intMap = builder.getMutableInt32ToInt32Field();
@@ -300,6 +311,7 @@ public class MapTest extends TestCase {
     assertEquals(newMap(1, 2), builder.build().getInt32ToInt32Field());
   }
   
+  @Test
   public void testGettersAndSetters() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     TestMap message = builder.build();
@@ -321,6 +333,7 @@ public class MapTest extends TestCase {
     assertMapValuesCleared(message);
   }
 
+  @Test
   public void testPutAll() throws Exception {
     TestMap.Builder sourceBuilder = TestMap.newBuilder();
     setMapValues(sourceBuilder);
@@ -331,6 +344,7 @@ public class MapTest extends TestCase {
     assertMapValuesSet(destination.build());
   }
 
+  @Test
   public void testPutAllForUnknownEnumValues() throws Exception {
     TestMap.Builder sourceBuilder = TestMap.newBuilder();
     sourceBuilder.getMutableInt32ToEnumFieldValue().put(0, 0);
@@ -347,6 +361,7 @@ public class MapTest extends TestCase {
     assertEquals(1000, destination.getInt32ToEnumFieldValue().get(2).intValue());
   }
 
+  @Test
   public void testSerializeAndParse() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
@@ -370,6 +385,7 @@ public class MapTest extends TestCase {
     assertMapValuesCleared(message);
   }
 
+  @Test
   public void testMergeFrom() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
@@ -380,6 +396,7 @@ public class MapTest extends TestCase {
     assertMapValuesSet(other.build());
   }
 
+  @Test
   public void testEqualsAndHashCode() throws Exception {
     // Test that generated equals() and hashCode() will disregard the order
     // of map entries when comparing/hashing map fields.
@@ -416,6 +433,7 @@ public class MapTest extends TestCase {
     assertFalse(m2.equals(m1));
   }
 
+  @Test
   public void testNestedBuilderOnChangeEventPropagation() {
     TestOnChangeEventPropagation.Builder parent =
         TestOnChangeEventPropagation.newBuilder();
@@ -447,6 +465,7 @@ public class MapTest extends TestCase {
     assertEquals(0, message.getOptionalMessage().getInt32ToInt32Field().size());
   }
 
+  @Test
   public void testNestedBuilderOnChangeEventPropagationReflection() {
     FieldDescriptor intMapField = f("int32_to_int32_field");
     // Create an outer message builder with nested builder.
@@ -552,6 +571,7 @@ public class MapTest extends TestCase {
     return map;
   }
 
+  @Test
   public void testReflectionApi() throws Exception {
     // In reflection API, map fields are just repeated message fields.
     TestMap.Builder builder = TestMap.newBuilder();
@@ -614,8 +634,8 @@ public class MapTest extends TestCase {
     // Test setRepeatedField
     for (int i = 0; i < builder.getRepeatedFieldCount(f("int32_to_int32_field")); i++) {
       Message mapEntry = (Message) builder.getRepeatedField(f("int32_to_int32_field"), i);
-      int oldKey = ((Integer) getFieldValue(mapEntry, "key")).intValue();
-      int oldValue = ((Integer) getFieldValue(mapEntry, "value")).intValue();
+      int oldKey = (Integer) getFieldValue(mapEntry, "key");
+      int oldValue = (Integer) getFieldValue(mapEntry, "value");
       // Swap key with value for each entry.
       Message.Builder mapEntryBuilder = mapEntry.toBuilder();
       setFieldValue(mapEntryBuilder, "key", oldValue);
@@ -628,6 +648,7 @@ public class MapTest extends TestCase {
     assertEquals(55, message.getInt32ToInt32Field().get(55).intValue());
   }
 
+  @Test
   public void testTextFormat() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
@@ -642,6 +663,7 @@ public class MapTest extends TestCase {
     assertMapValuesSet(message);
   }
 
+  @Test
   public void testDynamicMessage() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
@@ -656,6 +678,7 @@ public class MapTest extends TestCase {
     assertEquals(message.hashCode(), dynamicMessage.hashCode());
   }
 
+  @Test
   public void testReflectionEqualsAndHashCode() throws Exception {
     // Test that generated equals() and hashCode() will disregard the order
     // of map entries when comparing/hashing map fields.
@@ -688,6 +711,7 @@ public class MapTest extends TestCase {
     // to be different.
   }
 
+  @Test
   public void testUnknownEnumValues() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     builder.getMutableInt32ToEnumFieldValue().put(0, 0);
@@ -724,6 +748,7 @@ public class MapTest extends TestCase {
     assertTrue(message.getInt32ToEnumField().equals(message2.getInt32ToEnumField()));
   }
 
+  @Test
   public void testUnknownEnumValuesInReflectionApi() throws Exception {
     Descriptor descriptor = TestMap.getDescriptor();
     EnumDescriptor enumDescriptor = TestMap.EnumValue.getDescriptor();
@@ -742,7 +767,7 @@ public class MapTest extends TestCase {
     // Try to read unknown enum values using reflection API.
     for (int i = 0; i < builder.getRepeatedFieldCount(field); i++) {
       Message mapEntry = (Message) builder.getRepeatedField(field, i);
-      int key = ((Integer) getFieldValue(mapEntry, "key")).intValue();
+      int key = (Integer) getFieldValue(mapEntry, "key");
       int value = ((EnumValueDescriptor) getFieldValue(mapEntry, "value")).getNumber();
       assertEquals(data.get(key).intValue(), value);
       Message.Builder mapEntryBuilder = mapEntry.toBuilder();
@@ -759,6 +784,7 @@ public class MapTest extends TestCase {
     }
   }
 
+  @Test
   public void testIterationOrder() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);

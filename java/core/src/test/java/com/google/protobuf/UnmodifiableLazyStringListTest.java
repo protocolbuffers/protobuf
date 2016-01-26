@@ -30,7 +30,13 @@
 
 package com.google.protobuf;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +47,8 @@ import java.util.ListIterator;
  *
  * @author jonp@google.com (Jon Perlow)
  */
-public class UnmodifiableLazyStringListTest extends TestCase {
+@RunWith(JUnit4.class)
+public class UnmodifiableLazyStringListTest {
 
   private static String STRING_A = "A";
   private static String STRING_B = "B";
@@ -51,6 +58,7 @@ public class UnmodifiableLazyStringListTest extends TestCase {
   private static ByteString BYTE_STRING_B = ByteString.copyFromUtf8("B");
   private static ByteString BYTE_STRING_C = ByteString.copyFromUtf8("C");
 
+  @Test
   public void testReadOnlyMethods() {
     LazyStringArrayList rawList = createSampleList();
     UnmodifiableLazyStringList list = new UnmodifiableLazyStringList(rawList);
@@ -68,6 +76,7 @@ public class UnmodifiableLazyStringListTest extends TestCase {
     assertSame(list.getByteString(2), byteStringList.get(2));
   }
 
+  @Test
   public void testModifyMethods() {
     LazyStringArrayList rawList = createSampleList();
     UnmodifiableLazyStringList list = new UnmodifiableLazyStringList(rawList);
@@ -125,6 +134,7 @@ public class UnmodifiableLazyStringListTest extends TestCase {
     assertEquals(3, byteStringList.size());
   }
 
+  @Test
   public void testIterator() {
     LazyStringArrayList rawList = createSampleList();
     UnmodifiableLazyStringList list = new UnmodifiableLazyStringList(rawList);
@@ -159,6 +169,7 @@ public class UnmodifiableLazyStringListTest extends TestCase {
     assertEquals(3, count);
   }
 
+  @Test
   public void testListIterator() {
     LazyStringArrayList rawList = createSampleList();
     UnmodifiableLazyStringList list = new UnmodifiableLazyStringList(rawList);

@@ -30,13 +30,20 @@
 
 package com.google.protobuf;
 
-import protobuf_unittest.UnittestProto.TestAllTypes;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
+import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestRequiredForeign;
-import protobuf_unittest.UnittestProto.ForeignMessage;
-
-import junit.framework.TestCase;
 
 import java.util.List;
 
@@ -46,7 +53,8 @@ import java.util.List;
  *
  * @author kenton@google.com Kenton Varda
  */
-public class MessageTest extends TestCase {
+@RunWith(JUnit4.class)
+public class MessageTest {
   // =================================================================
   // Message-merging tests.
 
@@ -76,6 +84,7 @@ public class MessageTest extends TestCase {
       "repeated_string: \"qux\"\n" +
       "repeated_string: \"bar\"\n";
 
+  @Test
   public void testMergeFrom() throws Exception {
     TestAllTypes result =
       TestAllTypes.newBuilder(MERGE_DEST)
@@ -89,6 +98,7 @@ public class MessageTest extends TestCase {
    * have the same descriptor, this should work, but it is an entirely different
    * code path.
    */
+  @Test
   public void testMergeFromDynamic() throws Exception {
     TestAllTypes result =
       TestAllTypes.newBuilder(MERGE_DEST)
@@ -99,6 +109,7 @@ public class MessageTest extends TestCase {
   }
 
   /** Test merging two DynamicMessages. */
+  @Test
   public void testDynamicMergeFrom() throws Exception {
     DynamicMessage result =
       DynamicMessage.newBuilder(MERGE_DEST)
@@ -116,6 +127,7 @@ public class MessageTest extends TestCase {
   private static final TestRequired TEST_REQUIRED_INITIALIZED =
     TestRequired.newBuilder().setA(1).setB(2).setC(3).build();
 
+  @Test
   public void testRequired() throws Exception {
     TestRequired.Builder builder = TestRequired.newBuilder();
 
@@ -128,6 +140,7 @@ public class MessageTest extends TestCase {
     assertTrue(builder.isInitialized());
   }
 
+  @Test
   public void testRequiredForeign() throws Exception {
     TestRequiredForeign.Builder builder = TestRequiredForeign.newBuilder();
 
@@ -146,6 +159,7 @@ public class MessageTest extends TestCase {
     assertTrue(builder.isInitialized());
   }
 
+  @Test
   public void testRequiredExtension() throws Exception {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
 
@@ -164,6 +178,7 @@ public class MessageTest extends TestCase {
     assertTrue(builder.isInitialized());
   }
 
+  @Test
   public void testRequiredDynamic() throws Exception {
     Descriptors.Descriptor descriptor = TestRequired.getDescriptor();
     DynamicMessage.Builder builder = DynamicMessage.newBuilder(descriptor);
@@ -177,6 +192,7 @@ public class MessageTest extends TestCase {
     assertTrue(builder.isInitialized());
   }
 
+  @Test
   public void testRequiredDynamicForeign() throws Exception {
     Descriptors.Descriptor descriptor = TestRequiredForeign.getDescriptor();
     DynamicMessage.Builder builder = DynamicMessage.newBuilder(descriptor);
@@ -200,6 +216,7 @@ public class MessageTest extends TestCase {
     assertTrue(builder.isInitialized());
   }
 
+  @Test
   public void testUninitializedException() throws Exception {
     try {
       TestRequired.newBuilder().build();
@@ -209,12 +226,14 @@ public class MessageTest extends TestCase {
     }
   }
 
+  @Test
   public void testBuildPartial() throws Exception {
     // We're mostly testing that no exception is thrown.
     TestRequired message = TestRequired.newBuilder().buildPartial();
     assertFalse(message.isInitialized());
   }
 
+  @Test
   public void testNestedUninitializedException() throws Exception {
     try {
       TestRequiredForeign.newBuilder()
@@ -239,6 +258,7 @@ public class MessageTest extends TestCase {
     }
   }
 
+  @Test
   public void testBuildNestedPartial() throws Exception {
     // We're mostly testing that no exception is thrown.
     TestRequiredForeign message =
@@ -250,6 +270,7 @@ public class MessageTest extends TestCase {
     assertFalse(message.isInitialized());
   }
 
+  @Test
   public void testParseUnititialized() throws Exception {
     try {
       TestRequired.parseFrom(ByteString.EMPTY);
@@ -259,6 +280,7 @@ public class MessageTest extends TestCase {
     }
   }
 
+  @Test
   public void testParseNestedUnititialized() throws Exception {
     ByteString data =
       TestRequiredForeign.newBuilder()
@@ -286,6 +308,7 @@ public class MessageTest extends TestCase {
     }
   }
 
+  @Test
   public void testDynamicUninitializedException() throws Exception {
     try {
       DynamicMessage.newBuilder(TestRequired.getDescriptor()).build();
@@ -295,6 +318,7 @@ public class MessageTest extends TestCase {
     }
   }
 
+  @Test
   public void testDynamicBuildPartial() throws Exception {
     // We're mostly testing that no exception is thrown.
     DynamicMessage message =
@@ -303,6 +327,7 @@ public class MessageTest extends TestCase {
     assertFalse(message.isInitialized());
   }
 
+  @Test
   public void testDynamicParseUnititialized() throws Exception {
     try {
       Descriptors.Descriptor descriptor = TestRequired.getDescriptor();
@@ -314,8 +339,8 @@ public class MessageTest extends TestCase {
   }
   
   /** Test reading unset repeated message from DynamicMessage. */
+  @Test
   public void testDynamicRepeatedMessageNull() throws Exception {
-    Descriptors.Descriptor descriptor = TestRequired.getDescriptor();
     DynamicMessage result =
       DynamicMessage.newBuilder(TestAllTypes.getDescriptor())
         .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
@@ -328,6 +353,7 @@ public class MessageTest extends TestCase {
   }
   
   /** Test reading repeated message from DynamicMessage. */
+  @Test
   public void testDynamicRepeatedMessageNotNull() throws Exception {
 
     TestAllTypes REPEATED_NESTED =
@@ -339,7 +365,6 @@ public class MessageTest extends TestCase {
         .addRepeatedForeignMessage(ForeignMessage.getDefaultInstance())
         .addRepeatedForeignMessage(ForeignMessage.getDefaultInstance())
         .build();
-    Descriptors.Descriptor descriptor = TestRequired.getDescriptor();
     DynamicMessage result =
       DynamicMessage.newBuilder(TestAllTypes.getDescriptor())
         .mergeFrom(DynamicMessage.newBuilder(REPEATED_NESTED).build())

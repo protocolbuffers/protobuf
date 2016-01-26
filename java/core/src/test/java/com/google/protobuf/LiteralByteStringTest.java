@@ -30,7 +30,16 @@
 
 package com.google.protobuf;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -53,7 +62,8 @@ import java.util.NoSuchElementException;
  *
  * @author carlanton@google.com (Carl Haverl)
  */
-public class LiteralByteStringTest extends TestCase {
+@RunWith(JUnit4.class)
+public class LiteralByteStringTest {
   protected static final String UTF_8 = "UTF-8";
 
   protected String classUnderTest;
@@ -61,14 +71,15 @@ public class LiteralByteStringTest extends TestCase {
   protected ByteString stringUnderTest;
   protected int expectedHashCode;
 
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     classUnderTest = "LiteralByteString";
     referenceBytes = ByteStringTest.getTestBytes(1234, 11337766L);
     stringUnderTest = ByteString.copyFrom(referenceBytes);
     expectedHashCode = 331161852;
   }
 
+  @Test
   public void testExpectedType() {
     String actualClassName = getActualClassName(stringUnderTest);
     assertEquals(classUnderTest + " should match type exactly", classUnderTest, actualClassName);
@@ -80,6 +91,7 @@ public class LiteralByteStringTest extends TestCase {
     return actualClassName;
   }
 
+  @Test
   public void testByteAt() {
     boolean stillEqual = true;
     for (int i = 0; stillEqual && i < referenceBytes.length; ++i) {
@@ -88,6 +100,7 @@ public class LiteralByteStringTest extends TestCase {
     assertTrue(classUnderTest + " must capture the right bytes", stillEqual);
   }
 
+  @Test
   public void testByteIterator() {
     boolean stillEqual = true;
     ByteString.ByteIterator iter = stringUnderTest.iterator();
@@ -105,6 +118,7 @@ public class LiteralByteStringTest extends TestCase {
     }
   }
 
+  @Test
   public void testByteIterable() {
     boolean stillEqual = true;
     int j = 0;
@@ -116,19 +130,23 @@ public class LiteralByteStringTest extends TestCase {
     assertEquals(classUnderTest + " iterable character count", referenceBytes.length, j);
   }
 
+  @Test
   public void testSize() {
     assertEquals(classUnderTest + " must have the expected size", referenceBytes.length,
         stringUnderTest.size());
   }
 
+  @Test
   public void testGetTreeDepth() {
     assertEquals(classUnderTest + " must have depth 0", 0, stringUnderTest.getTreeDepth());
   }
 
+  @Test
   public void testIsBalanced() {
     assertTrue(classUnderTest + " is technically balanced", stringUnderTest.isBalanced());
   }
 
+  @Test
   public void testCopyTo_ByteArrayOffsetLength() {
     int destinationOffset = 50;
     int length = 100;
@@ -142,6 +160,7 @@ public class LiteralByteStringTest extends TestCase {
     assertTrue(classUnderTest + ".copyTo(4 arg) must give the expected bytes", stillEqual);
   }
 
+  @Test
   public void testCopyTo_ByteArrayOffsetLengthErrors() {
     int destinationOffset = 50;
     int length = 100;
@@ -203,6 +222,7 @@ public class LiteralByteStringTest extends TestCase {
     }
   }
 
+  @Test
   public void testCopyTo_ByteBuffer() {
     ByteBuffer myBuffer = ByteBuffer.allocate(referenceBytes.length);
     stringUnderTest.copyTo(myBuffer);
@@ -210,11 +230,13 @@ public class LiteralByteStringTest extends TestCase {
         Arrays.equals(referenceBytes, myBuffer.array()));
   }
 
+  @Test
   public void testMarkSupported() {
     InputStream stream = stringUnderTest.newInput();
     assertTrue(classUnderTest + ".newInput() must support marking", stream.markSupported());
   }
 
+  @Test
   public void testMarkAndReset() throws IOException {
     int fraction = stringUnderTest.size() / 3;
 
@@ -266,6 +288,7 @@ public class LiteralByteStringTest extends TestCase {
     }
   }
 
+  @Test
   public void testAsReadOnlyByteBuffer() {
     ByteBuffer byteBuffer = stringUnderTest.asReadOnlyByteBuffer();
     byte[] roundTripBytes = new byte[referenceBytes.length];
@@ -276,6 +299,7 @@ public class LiteralByteStringTest extends TestCase {
         Arrays.equals(referenceBytes, roundTripBytes));
   }
 
+  @Test
   public void testAsReadOnlyByteBufferList() {
     List<ByteBuffer> byteBuffers = stringUnderTest.asReadOnlyByteBufferList();
     int bytesSeen = 0;
@@ -292,12 +316,14 @@ public class LiteralByteStringTest extends TestCase {
         Arrays.equals(referenceBytes, roundTripBytes));
   }
 
+  @Test
   public void testToByteArray() {
     byte[] roundTripBytes = stringUnderTest.toByteArray();
     assertTrue(classUnderTest + ".toByteArray() must give back the same bytes",
         Arrays.equals(referenceBytes, roundTripBytes));
   }
 
+  @Test
   public void testWriteTo() throws IOException {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     stringUnderTest.writeTo(bos);
@@ -306,6 +332,7 @@ public class LiteralByteStringTest extends TestCase {
         Arrays.equals(referenceBytes, roundTripBytes));
   }
 
+  @Test
   public void testWriteTo_mutating() throws IOException {
     OutputStream os = new OutputStream() {
       @Override
@@ -327,6 +354,7 @@ public class LiteralByteStringTest extends TestCase {
         Arrays.equals(referenceBytes, newBytes));
   }
 
+  @Test
   public void testNewOutput() throws IOException {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     ByteString.Output output = ByteString.newOutput();
@@ -348,6 +376,7 @@ public class LiteralByteStringTest extends TestCase {
         ByteString.EMPTY, output.toByteString());
   }
 
+  @Test
   public void testToString() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
     LiteralByteString unicode = new LiteralByteString(testString.getBytes(Internal.UTF_8));
@@ -355,6 +384,7 @@ public class LiteralByteStringTest extends TestCase {
     assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
   }
 
+  @Test
   public void testCharsetToString() {
     String testString = "I love unicode \u1234\u5678 characters";
     LiteralByteString unicode = new LiteralByteString(testString.getBytes(Internal.UTF_8));
@@ -362,12 +392,14 @@ public class LiteralByteStringTest extends TestCase {
     assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
   }
 
+  @Test
   public void testToString_returnsCanonicalEmptyString() {
     assertSame(classUnderTest + " must be the same string references",
         ByteString.EMPTY.toString(Internal.UTF_8),
         new LiteralByteString(new byte[]{}).toString(Internal.UTF_8));
   }
 
+  @Test
   public void testToString_raisesException() {
     try {
       ByteString.EMPTY.toString("invalid");
@@ -384,6 +416,7 @@ public class LiteralByteStringTest extends TestCase {
     }
   }
 
+  @Test
   public void testEquals() {
     assertEquals(classUnderTest + " must not equal null", false, stringUnderTest.equals(null));
     assertEquals(classUnderTest + " must equal self", stringUnderTest, stringUnderTest);
@@ -401,19 +434,22 @@ public class LiteralByteStringTest extends TestCase {
         stringUnderTest.equals(new LiteralByteString(mungedBytes)));
   }
 
+  @Test
   public void testHashCode() {
     int hash = stringUnderTest.hashCode();
     assertEquals(classUnderTest + " must have expected hashCode", expectedHashCode, hash);
   }
 
+  @Test
   public void testPeekCachedHashCode() {
     assertEquals(classUnderTest + ".peekCachedHashCode() should return zero at first", 0,
         stringUnderTest.peekCachedHashCode());
-    stringUnderTest.hashCode();
+    assertEquals(expectedHashCode, stringUnderTest.hashCode());
     assertEquals(classUnderTest + ".peekCachedHashCode should return zero at first",
         expectedHashCode, stringUnderTest.peekCachedHashCode());
   }
 
+  @Test
   public void testPartialHash() {
     // partialHash() is more strenuously tested elsewhere by testing hashes of substrings.
     // This test would fail if the expected hash were 1.  It's not.
@@ -422,6 +458,7 @@ public class LiteralByteStringTest extends TestCase {
         expectedHashCode, hash);
   }
 
+  @Test
   public void testNewInput() throws IOException {
     InputStream input = stringUnderTest.newInput();
     assertEquals("InputStream.available() returns correct value",
@@ -437,6 +474,7 @@ public class LiteralByteStringTest extends TestCase {
     assertEquals(classUnderTest + " InputStream must now be exhausted", -1, input.read());
   }
 
+  @Test
   public void testNewInput_skip() throws IOException {
     InputStream input = stringUnderTest.newInput();
     int stringSize = stringUnderTest.size();
@@ -463,6 +501,7 @@ public class LiteralByteStringTest extends TestCase {
         stringUnderTest.byteAt(nearEndIndex) & 0xFF, input.read());
   }
 
+  @Test
   public void testNewCodedInput() throws IOException {
     CodedInputStream cis = stringUnderTest.newCodedInput();
     byte[] roundTripBytes = cis.readRawBytes(referenceBytes.length);
@@ -475,6 +514,7 @@ public class LiteralByteStringTest extends TestCase {
    * Make sure we keep things simple when concatenating with empty. See also
    * {@link ByteStringTest#testConcat_empty()}.
    */
+  @Test
   public void testConcat_empty() {
     assertSame(classUnderTest + " concatenated with empty must give " + classUnderTest,
         stringUnderTest.concat(ByteString.EMPTY), stringUnderTest);
@@ -482,6 +522,7 @@ public class LiteralByteStringTest extends TestCase {
         ByteString.EMPTY.concat(stringUnderTest), stringUnderTest);
   }
 
+  @Test
   public void testJavaSerialization() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(out);

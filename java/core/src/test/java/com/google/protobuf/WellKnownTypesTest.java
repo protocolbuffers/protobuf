@@ -30,24 +30,21 @@
 
 package com.google.protobuf;
 
-import com.google.protobuf.Descriptors.Descriptor;
-import com.google.protobuf.Descriptors.EnumDescriptor;
-import com.google.protobuf.Descriptors.EnumValueDescriptor;
-import com.google.protobuf.Descriptors.FieldDescriptor;
+import static org.junit.Assert.assertEquals;
+
 import com.google.protobuf.test.TestWellKnownTypes;
 
-import junit.framework.TestCase;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /**
  * This test ensures that well-known types are included in protobuf Java
  * runtime library.
  */
-public class WellKnownTypesTest extends TestCase {
+@RunWith(JUnit4.class)
+public class WellKnownTypesTest {
+  @Test
   public void testWellKnownTypes() {
     // The test passes if it compiles.
     TestWellKnownTypes message = TestWellKnownTypes.newBuilder().build();

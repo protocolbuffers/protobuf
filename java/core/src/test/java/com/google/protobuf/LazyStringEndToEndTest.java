@@ -31,9 +31,15 @@
 package com.google.protobuf;
 
 
-import protobuf_unittest.UnittestProto;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import protobuf_unittest.UnittestProto;
 
 import java.io.IOException;
 
@@ -43,7 +49,8 @@ import java.io.IOException;
  *
  * @author jonp@google.com (Jon Perlow)
  */
-public class LazyStringEndToEndTest extends TestCase {
+@RunWith(JUnit4.class)
+public class LazyStringEndToEndTest {
 
   private static ByteString TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8 =
       ByteString.copyFrom(new byte[] {
@@ -52,9 +59,8 @@ public class LazyStringEndToEndTest extends TestCase {
 
   private ByteString encodedTestAllTypes;
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setUp() throws Exception {
     this.encodedTestAllTypes = UnittestProto.TestAllTypes.newBuilder()
         .setOptionalString("foo")
         .addRepeatedString("bar")
@@ -67,6 +73,7 @@ public class LazyStringEndToEndTest extends TestCase {
    * Tests that an invalid UTF8 string will roundtrip through a parse
    * and serialization.
    */
+  @Test
   public void testParseAndSerialize() throws InvalidProtocolBufferException {
     UnittestProto.TestAllTypes tV2 = UnittestProto.TestAllTypes.parseFrom(
         TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8);
@@ -78,6 +85,7 @@ public class LazyStringEndToEndTest extends TestCase {
     assertEquals(TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8, bytes);
   }
 
+  @Test
   public void testParseAndWrite() throws IOException {
     UnittestProto.TestAllTypes tV2 = UnittestProto.TestAllTypes.parseFrom(
         TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8);
@@ -90,6 +98,7 @@ public class LazyStringEndToEndTest extends TestCase {
         ByteString.copyFrom(sink));
   }
   
+  @Test
   public void testCaching() {
     String a = "a";
     String b = "b";
@@ -115,6 +124,7 @@ public class LazyStringEndToEndTest extends TestCase {
     assertSame(c, proto.getRepeatedString(1));
   }
 
+  @Test
   public void testNoStringCachingIfOnlyBytesAccessed() throws Exception {
     UnittestProto.TestAllTypes proto =
         UnittestProto.TestAllTypes.parseFrom(encodedTestAllTypes);

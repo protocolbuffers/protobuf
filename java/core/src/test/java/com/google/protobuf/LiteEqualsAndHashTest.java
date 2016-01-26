@@ -30,19 +30,26 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
-
-import junit.framework.TestCase;
 
 /**
  * Test generate equal and hash methods for the lite runtime.
  *
  * @author pbogle@google.com Phil Bogle
  */
-public class LiteEqualsAndHashTest extends TestCase {
+@RunWith(JUnit4.class)
+public class LiteEqualsAndHashTest {
 
+  @Test
   public void testEquals() throws Exception {
     // Since the generated equals and hashCode methods for lite messages are a
     // mostly complete subset of those for regular messages, we can mostly assume
@@ -83,6 +90,7 @@ public class LiteEqualsAndHashTest extends TestCase {
     assertFalse(bar.equals(barPrime));
   }
 
+  @Test
   public void testEqualsAndHashCodeWithUnknownFields() throws InvalidProtocolBufferException {
     Foo fooWithOnlyValue = Foo.newBuilder()
         .setValue(1)

@@ -30,19 +30,24 @@
 
 package com.google.protobuf.util;
 
+import static org.junit.Assert.assertEquals;
+
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Unit tests for {@link TimeUtil}. */
-public class TimeUtilTest extends TestCase {
+@RunWith(JUnit4.class)
+public class TimeUtilTest {
+  @Test
   public void testTimestampStringFormat() throws Exception {
     Timestamp start = TimeUtil.parseTimestamp("0001-01-01T00:00:00Z");
     Timestamp end = TimeUtil.parseTimestamp("9999-12-31T23:59:59.999999999Z");
@@ -111,6 +116,7 @@ public class TimeUtilTest extends TestCase {
     }
   }
 
+  @Test
   public void testTimestampConcurrentParsing() throws Exception {
     String[] timestampStrings = new String[]{
       "0001-01-01T00:00:00Z",
@@ -140,9 +146,10 @@ public class TimeUtilTest extends TestCase {
     for (Thread thread : threads) {
       thread.join();
     }
-    Assert.assertEquals("", errorMessage);
+    assertEquals("", errorMessage);
   }
 
+  @Test
   public void testTimetampInvalidFormat() throws Exception {
     try {
       // Value too small.
@@ -239,6 +246,7 @@ public class TimeUtilTest extends TestCase {
     }
   }
 
+  @Test
   public void testDurationStringFormat() throws Exception {
     Timestamp start = TimeUtil.parseTimestamp("0001-01-01T00:00:00Z");
     Timestamp end = TimeUtil.parseTimestamp("9999-12-31T23:59:59.999999999Z");
@@ -276,6 +284,7 @@ public class TimeUtilTest extends TestCase {
     assertEquals(-999999999, duration.getNanos());
   }
 
+  @Test
   public void testDurationInvalidFormat() throws Exception {
     try {
       // Value too small.
@@ -366,6 +375,7 @@ public class TimeUtilTest extends TestCase {
     }
   }
 
+  @Test
   public void testTimestampConversion() throws Exception {
     Timestamp timestamp =
       TimeUtil.parseTimestamp("1970-01-01T00:00:01.111111111Z");
@@ -391,6 +401,7 @@ public class TimeUtilTest extends TestCase {
     assertEquals("1969-12-31T23:59:59.111Z", TimeUtil.toString(timestamp));
   }
 
+  @Test
   public void testDurationConversion() throws Exception {
     Duration duration = TimeUtil.parseDuration("1.111111111s");
     assertEquals(1111111111, TimeUtil.toNanos(duration));
@@ -415,6 +426,7 @@ public class TimeUtilTest extends TestCase {
     assertEquals("-1.111s", TimeUtil.toString(duration));
   }
 
+  @Test
   public void testTimeOperations() throws Exception {
     Timestamp start = TimeUtil.parseTimestamp("0001-01-01T00:00:00Z");
     Timestamp end = TimeUtil.parseTimestamp("9999-12-31T23:59:59.999999999Z");
@@ -436,7 +448,7 @@ public class TimeUtilTest extends TestCase {
     // Result is larger than Long.MAX_VALUE.
     try {
       duration = TimeUtil.parseDuration("315537897599.999999999s");
-      duration = TimeUtil.multiply(duration, 315537897599.999999999);
+      TimeUtil.multiply(duration, 315537897599.999999999);
       Assert.fail("Exception is expected.");
     } catch (IllegalArgumentException e) {
       // Expected.
@@ -445,7 +457,7 @@ public class TimeUtilTest extends TestCase {
     // Result is lesser than Long.MIN_VALUE.
     try {
       duration = TimeUtil.parseDuration("315537897599.999999999s");
-      duration = TimeUtil.multiply(duration, -315537897599.999999999);
+      TimeUtil.multiply(duration, -315537897599.999999999);
       Assert.fail("Exception is expected.");
     } catch (IllegalArgumentException e) {
       // Expected.

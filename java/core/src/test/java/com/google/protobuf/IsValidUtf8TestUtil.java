@@ -30,7 +30,11 @@
 
 package com.google.protobuf;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -46,8 +50,7 @@ import java.util.Random;
 import java.util.logging.Logger;
 
 /**
- * Shared testing code for {@link IsValidUtf8Test} and
- * {@link IsValidUtf8FourByteTest}.
+ * Shared testing code for UTF-8 validation tests.
  *
  * @author jonp@google.com (Jon Perlow)
  * @author martinrb@google.com (Martin Buchholz)
@@ -57,7 +60,7 @@ class IsValidUtf8TestUtil {
       IsValidUtf8TestUtil.class.getName());
 
   // 128 - [chars 0x0000 to 0x007f]
-  static long ONE_BYTE_ROUNDTRIPPABLE_CHARACTERS = 0x007f - 0x0000 + 1;
+  static long ONE_BYTE_ROUNDTRIPPABLE_CHARACTERS = 0x007f + 1;
 
   // 128
   static long EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT =

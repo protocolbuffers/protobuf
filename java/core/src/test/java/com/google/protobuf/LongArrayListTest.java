@@ -31,8 +31,17 @@
 package com.google.protobuf;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -43,7 +52,8 @@ import java.util.Iterator;
  * 
  * @author dweis@google.com (Daniel Weis)
  */
-public class LongArrayListTest extends TestCase {
+@RunWith(JUnit4.class)
+public class LongArrayListTest {
   
   private static final LongArrayList UNARY_LIST = newImmutableLongArrayList(1);
   private static final LongArrayList TERTIARY_LIST =
@@ -51,19 +61,22 @@ public class LongArrayListTest extends TestCase {
   
   private LongArrayList list;
   
-  @Override
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     list = new LongArrayList();
   }
   
+  @Test
   public void testEmptyListReturnsSameInstance() {
     assertSame(LongArrayList.emptyList(), LongArrayList.emptyList());
   }
   
+  @Test
   public void testEmptyListIsImmutable() {
     assertImmutable(LongArrayList.emptyList());
   }
   
+  @Test
   public void testMakeImmutable() {
     list.addLong(2);
     list.addLong(4);
@@ -73,6 +86,7 @@ public class LongArrayListTest extends TestCase {
     assertImmutable(list);
   }
   
+  @Test
   public void testCopyConstructor() {
     LongArrayList copy = new LongArrayList(TERTIARY_LIST);
     assertEquals(TERTIARY_LIST, copy);
@@ -87,6 +101,7 @@ public class LongArrayListTest extends TestCase {
     assertEquals(LongArrayList.emptyList(), copy);
   }
   
+  @Test
   public void testModificationWithIteration() {
     list.addAll(asList(1L, 2L, 3L, 4L));
     Iterator<Long> iterator = list.iterator();
@@ -114,6 +129,7 @@ public class LongArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testGet() {
     assertEquals(1, (long) TERTIARY_LIST.get(0));
     assertEquals(2, (long) TERTIARY_LIST.get(1));
@@ -134,6 +150,7 @@ public class LongArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testGetLong() {
     assertEquals(1, TERTIARY_LIST.getLong(0));
     assertEquals(2, TERTIARY_LIST.getLong(1));
@@ -154,6 +171,7 @@ public class LongArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testSize() {
     assertEquals(0, LongArrayList.emptyList().size());
     assertEquals(1, UNARY_LIST.size());
@@ -172,6 +190,7 @@ public class LongArrayListTest extends TestCase {
     assertEquals(4, list.size());
   }
   
+  @Test
   public void testSet() {
     list.addLong(2);
     list.addLong(4);
@@ -197,6 +216,7 @@ public class LongArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testSetLong() {
     list.addLong(2);
     list.addLong(4);
@@ -222,11 +242,12 @@ public class LongArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testAdd() {
     assertEquals(0, list.size());
 
     assertTrue(list.add(2L));
-    assertEquals(asList(2L), list);
+    assertEquals(singletonList(2L), list);
 
     assertTrue(list.add(3L));
     list.add(0, 4L);
@@ -236,7 +257,7 @@ public class LongArrayListTest extends TestCase {
     list.add(0, 0L);
     // Force a resize by getting up to 11 elements.
     for (int i = 0; i < 6; i++) {
-      list.add(Long.valueOf(5 + i));
+      list.add(5L + i);
     }
     assertEquals(asList(0L, 1L, 4L, 2L, 3L, 5L, 6L, 7L, 8L, 9L, 10L), list);
     
@@ -253,16 +274,18 @@ public class LongArrayListTest extends TestCase {
     }
   }
   
+  @Test
   public void testAddLong() {
     assertEquals(0, list.size());
 
     list.addLong(2);
-    assertEquals(asList(2L), list);
+    assertEquals(singletonList(2L), list);
 
     list.addLong(3);
     assertEquals(asList(2L, 3L), list);
   }
   
+  @Test
   public void testAddAll() {
     assertEquals(0, list.size());
 
@@ -281,19 +304,20 @@ public class LongArrayListTest extends TestCase {
     assertFalse(list.addAll(LongArrayList.emptyList()));
   }
   
+  @Test
   public void testRemove() {
     list.addAll(TERTIARY_LIST);
     assertEquals(1, (long) list.remove(0));
     assertEquals(asList(2L, 3L), list);
 
     assertTrue(list.remove(3L));
-    assertEquals(asList(2L), list);
+    assertEquals(singletonList(2L), list);
 
     assertFalse(list.remove(3L));
-    assertEquals(asList(2L), list);
+    assertEquals(singletonList(2L), list);
 
     assertEquals(2, (long) list.remove(0));
-    assertEquals(asList(), list);
+    assertEquals(Collections.<Long>emptyList(), list);
     
     try {
       list.remove(-1);
@@ -336,7 +360,7 @@ public class LongArrayListTest extends TestCase {
     }
     
     try {
-      list.addAll(Collections.singletonList(1L));
+      list.addAll(singletonList(1L));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected

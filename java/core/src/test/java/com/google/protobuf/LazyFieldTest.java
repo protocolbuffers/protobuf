@@ -30,18 +30,25 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
-
-import java.io.IOException;
-import junit.framework.TestCase;
 
 /**
  * Unit test for {@link LazyField}.
  *
  * @author xiangl@google.com (Xiang Li)
  */
-public class LazyFieldTest extends TestCase {
+@RunWith(JUnit4.class)
+public class LazyFieldTest {
+  @Test
   public void testHashCode() {
     MessageLite message = TestUtil.getAllSet();
     LazyField lazyField =
@@ -54,6 +61,7 @@ public class LazyFieldTest extends TestCase {
     assertNotEqual(message.hashCode(), lazyField.hashCode());
   }
 
+  @Test
   public void testHashCodeEx() throws Exception {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     LazyField lazyField = createLazyFieldFromMessage(message);
@@ -65,6 +73,7 @@ public class LazyFieldTest extends TestCase {
     assertNotEqual(message.hashCode(), lazyField.hashCode());
   }
 
+  @Test
   public void testGetValue() {
     MessageLite message = TestUtil.getAllSet();
     LazyField lazyField = createLazyFieldFromMessage(message);
@@ -73,6 +82,7 @@ public class LazyFieldTest extends TestCase {
     assertNotEqual(message, lazyField.getValue());
   }
 
+  @Test
   public void testGetValueEx() throws Exception {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     LazyField lazyField = createLazyFieldFromMessage(message);
@@ -81,6 +91,7 @@ public class LazyFieldTest extends TestCase {
     assertNotEqual(message, lazyField.getValue());
   }
 
+  @Test
   public void testEqualsObject() {
     MessageLite message = TestUtil.getAllSet();
     LazyField lazyField = createLazyFieldFromMessage(message);
@@ -90,6 +101,7 @@ public class LazyFieldTest extends TestCase {
     assertFalse(message.equals(lazyField.getValue()));
   }
 
+  @Test
   public void testEqualsObjectEx() throws Exception {
     TestAllExtensions message = TestUtil.getAllExtensionsSet();
     LazyField lazyField = createLazyFieldFromMessage(message);

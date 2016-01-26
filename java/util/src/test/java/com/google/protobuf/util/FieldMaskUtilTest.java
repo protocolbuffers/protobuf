@@ -30,14 +30,24 @@
 
 package com.google.protobuf.util;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.google.protobuf.FieldMask;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import protobuf_unittest.UnittestProto.NestedTestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 
-import junit.framework.TestCase;
-
 /** Unit tests for {@link FieldMaskUtil}. */
-public class FieldMaskUtilTest extends TestCase {
+@RunWith(JUnit4.class)
+public class FieldMaskUtilTest {
+  @Test
   public void testIsValid() throws Exception {
     assertTrue(FieldMaskUtil.isValid(NestedTestAllTypes.class, "payload"));
     assertFalse(FieldMaskUtil.isValid(NestedTestAllTypes.class, "nonexist"));
@@ -77,6 +87,7 @@ public class FieldMaskUtilTest extends TestCase {
         NestedTestAllTypes.class, "payload.optional_int32.bb"));
   }
   
+  @Test
   public void testToString() throws Exception {
     assertEquals("", FieldMaskUtil.toString(FieldMask.getDefaultInstance()));
     FieldMask mask = FieldMask.newBuilder().addPaths("foo").build();
@@ -90,6 +101,7 @@ public class FieldMaskUtilTest extends TestCase {
     assertEquals("foo,bar", FieldMaskUtil.toString(mask));
   }
 
+  @Test
   public void testFromString() throws Exception {
     FieldMask mask = FieldMaskUtil.fromString("");
     assertEquals(0, mask.getPathsCount());
@@ -108,10 +120,10 @@ public class FieldMaskUtilTest extends TestCase {
     assertEquals("bar", mask.getPaths(1));
 
     // Check whether the field paths are valid if a class parameter is provided.
-    mask = FieldMaskUtil.fromString(NestedTestAllTypes.class, ",payload");
+    FieldMaskUtil.fromString(NestedTestAllTypes.class, ",payload");
 
     try {
-      mask = FieldMaskUtil.fromString(
+      FieldMaskUtil.fromString(
           NestedTestAllTypes.class, "payload,nonexist");
       fail("Exception is expected.");
     } catch (IllegalArgumentException e) {
@@ -119,6 +131,7 @@ public class FieldMaskUtilTest extends TestCase {
     }
   }
 
+  @Test
   public void testFromFieldNumbers() throws Exception {
     FieldMask mask = FieldMaskUtil.fromFieldNumbers(TestAllTypes.class);
     assertEquals(0, mask.getPathsCount());
@@ -138,12 +151,14 @@ public class FieldMaskUtilTest extends TestCase {
 
     try {
       int invalidFieldNumber = 1000;
-      mask = FieldMaskUtil.fromFieldNumbers(TestAllTypes.class, invalidFieldNumber);
+      FieldMaskUtil.fromFieldNumbers(TestAllTypes.class, invalidFieldNumber);
       fail("Exception is expected.");
     } catch (IllegalArgumentException expected) {
+      // Expected.
     }
   }
   
+  @Test
   public void testUnion() throws Exception {
     // Only test a simple case here and expect
     // {@link FieldMaskTreeTest#testAddFieldPath} to cover all scenarios.
@@ -153,6 +168,7 @@ public class FieldMaskUtilTest extends TestCase {
     assertEquals("bar,foo", FieldMaskUtil.toString(result));
   }
   
+  @Test
   public void testIntersection() throws Exception {
     // Only test a simple case here and expect
     // {@link FieldMaskTreeTest#testIntersectFieldPath} to cover all scenarios.
@@ -162,6 +178,7 @@ public class FieldMaskUtilTest extends TestCase {
     assertEquals("bar.baz,bar.quz,foo.bar", FieldMaskUtil.toString(result));
   }
   
+  @Test
   public void testMerge() throws Exception {
     // Only test a simple case here and expect
     // {@link FieldMaskTreeTest#testMerge} to cover all scenarios.

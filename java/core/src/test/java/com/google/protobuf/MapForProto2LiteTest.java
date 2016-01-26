@@ -30,11 +30,18 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import map_lite_test.MapForProto2TestProto.TestMap;
 import map_lite_test.MapForProto2TestProto.TestMap.MessageValue;
 import map_lite_test.MapForProto2TestProto.TestUnknownEnumValue;
-
-import junit.framework.TestCase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,7 +51,8 @@ import java.util.Map;
 /**
  * Unit tests for map fields.
  */
-public class MapForProto2LiteTest extends TestCase {
+@RunWith(JUnit4.class)
+public class MapForProto2LiteTest {
   private void setMapValues(TestMap.Builder builder) {
     builder.getMutableInt32ToInt32Field().put(1, 11);
     builder.getMutableInt32ToInt32Field().put(2, 22);
@@ -185,6 +193,7 @@ public class MapForProto2LiteTest extends TestCase {
     assertEquals(0, message.getStringToInt32Field().size());
   }
 
+  @Test
   public void testSanityCopyOnWrite() throws InvalidProtocolBufferException {
     // Since builders are implemented as a thin wrapper around a message
     // instance, we attempt to verify that we can't cause the builder to modify
@@ -209,6 +218,7 @@ public class MapForProto2LiteTest extends TestCase {
     assertEquals(newMap(1, 2, 2, 3), builder.getInt32ToInt32Field());
   }
   
+  @Test
   public void testMutableMapLifecycle() {
     TestMap.Builder builder = TestMap.newBuilder();
     Map<Integer, Integer> intMap = builder.getMutableInt32ToInt32Field();
@@ -273,6 +283,7 @@ public class MapForProto2LiteTest extends TestCase {
         builder.getInt32ToMessageField());
   }
 
+  @Test
   public void testMutableMapLifecycle_collections() {
     TestMap.Builder builder = TestMap.newBuilder();
     Map<Integer, Integer> intMap = builder.getMutableInt32ToInt32Field();
@@ -319,6 +330,7 @@ public class MapForProto2LiteTest extends TestCase {
     assertEquals(newMap(1, 2), builder.build().getInt32ToInt32Field());
   }
 
+  @Test
   public void testGettersAndSetters() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     TestMap message = builder.build();
@@ -340,6 +352,7 @@ public class MapForProto2LiteTest extends TestCase {
     assertMapValuesCleared(message);
   }
 
+  @Test
   public void testPutAll() throws Exception {
     TestMap.Builder sourceBuilder = TestMap.newBuilder();
     setMapValues(sourceBuilder);
@@ -350,6 +363,7 @@ public class MapForProto2LiteTest extends TestCase {
     assertMapValuesSet(destination.build());
   }
 
+  @Test
   public void testSerializeAndParse() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
@@ -373,6 +387,7 @@ public class MapForProto2LiteTest extends TestCase {
     assertMapValuesCleared(message);
   }
   
+  @Test
   public void testMergeFrom() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);
@@ -383,6 +398,7 @@ public class MapForProto2LiteTest extends TestCase {
     assertMapValuesSet(other.build());
   }
 
+  @Test
   public void testEqualsAndHashCode() throws Exception {
     // Test that generated equals() and hashCode() will disregard the order
     // of map entries when comparing/hashing map fields.
@@ -412,6 +428,7 @@ public class MapForProto2LiteTest extends TestCase {
     // to be different.
   }
 
+  @Test
   public void testUnknownEnumValues() throws Exception {
     TestUnknownEnumValue.Builder builder =
         TestUnknownEnumValue.newBuilder();
@@ -434,6 +451,7 @@ public class MapForProto2LiteTest extends TestCase {
   }
   
 
+  @Test
   public void testIterationOrder() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValues(builder);

@@ -30,11 +30,17 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import proto2_test_check_utf8.TestCheckUtf8.BytesWrapper;
 import proto2_test_check_utf8.TestCheckUtf8.StringWrapper;
 import proto2_test_check_utf8_size.TestCheckUtf8Size.BytesWrapperSize;
 import proto2_test_check_utf8_size.TestCheckUtf8Size.StringWrapperSize;
-import junit.framework.TestCase;
 
 /**
  * Test that protos generated with file option java_string_check_utf8 do in
@@ -42,7 +48,8 @@ import junit.framework.TestCase;
  *
  * @author jbaum@google.com (Jacob Butcher)
  */
-public class CheckUtf8Test extends TestCase {
+@RunWith(JUnit4.class)
+public class CheckUtf8Test {
 
   private static final String UTF8_BYTE_STRING_TEXT = "some text";
   private static final ByteString UTF8_BYTE_STRING =
@@ -50,17 +57,20 @@ public class CheckUtf8Test extends TestCase {
   private static final ByteString NON_UTF8_BYTE_STRING =
       ByteString.copyFrom(new byte[]{(byte) 0x80}); // A lone continuation byte.
 
+  @Test
   public void testBuildRequiredStringWithGoodUtf8() throws Exception {
     assertEquals(UTF8_BYTE_STRING_TEXT,
                  StringWrapper.newBuilder().setReqBytes(UTF8_BYTE_STRING).getReq());
   }
 
+  @Test
   public void testParseRequiredStringWithGoodUtf8() throws Exception {
     ByteString serialized =
         BytesWrapper.newBuilder().setReq(UTF8_BYTE_STRING).build().toByteString();
     assertEquals(UTF8_BYTE_STRING_TEXT, StringWrapper.parser().parseFrom(serialized).getReq());
   }
 
+  @Test
   public void testBuildRequiredStringWithBadUtf8() throws Exception {
     try {
       StringWrapper.newBuilder().setReqBytes(NON_UTF8_BYTE_STRING);
@@ -70,6 +80,7 @@ public class CheckUtf8Test extends TestCase {
     }
   }
 
+  @Test
   public void testBuildOptionalStringWithBadUtf8() throws Exception {
     try {
       StringWrapper.newBuilder().setOptBytes(NON_UTF8_BYTE_STRING);
@@ -79,6 +90,7 @@ public class CheckUtf8Test extends TestCase {
     }
   }
 
+  @Test
   public void testBuildRepeatedStringWithBadUtf8() throws Exception {
     try {
       StringWrapper.newBuilder().addRepBytes(NON_UTF8_BYTE_STRING);
@@ -88,6 +100,7 @@ public class CheckUtf8Test extends TestCase {
     }
   }
 
+  @Test
   public void testParseRequiredStringWithBadUtf8() throws Exception {
     ByteString serialized =
         BytesWrapper.newBuilder().setReq(NON_UTF8_BYTE_STRING).build().toByteString();
@@ -99,6 +112,7 @@ public class CheckUtf8Test extends TestCase {
     }
   }
 
+  @Test
   public void testBuildRequiredStringWithBadUtf8Size() throws Exception {
     try {
       StringWrapperSize.newBuilder().setReqBytes(NON_UTF8_BYTE_STRING);
@@ -108,6 +122,7 @@ public class CheckUtf8Test extends TestCase {
     }
   }
 
+  @Test
   public void testBuildOptionalStringWithBadUtf8Size() throws Exception {
     try {
       StringWrapperSize.newBuilder().setOptBytes(NON_UTF8_BYTE_STRING);
@@ -117,6 +132,7 @@ public class CheckUtf8Test extends TestCase {
     }
   }
 
+  @Test
   public void testBuildRepeatedStringWithBadUtf8Size() throws Exception {
     try {
       StringWrapperSize.newBuilder().addRepBytes(NON_UTF8_BYTE_STRING);
@@ -126,6 +142,7 @@ public class CheckUtf8Test extends TestCase {
     }
   }
 
+  @Test
   public void testParseRequiredStringWithBadUtf8Size() throws Exception {
     ByteString serialized =
         BytesWrapperSize.newBuilder().setReq(NON_UTF8_BYTE_STRING).build().toByteString();
@@ -136,5 +153,4 @@ public class CheckUtf8Test extends TestCase {
       assertEquals("Protocol message had invalid UTF-8.", exception.getMessage());
     }
   }
-
 }

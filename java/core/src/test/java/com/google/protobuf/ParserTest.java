@@ -30,20 +30,26 @@
 
 package com.google.protobuf;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
 import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
 import com.google.protobuf.UnittestLite.TestParsingMergeLite;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import protobuf_unittest.UnittestOptimizeFor;
 import protobuf_unittest.UnittestOptimizeFor.TestOptimizedForSize;
 import protobuf_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
-import protobuf_unittest.UnittestOptimizeFor;
+import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestParsingMerge;
 import protobuf_unittest.UnittestProto.TestRequired;
-import protobuf_unittest.UnittestProto;
-
-import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -55,7 +61,9 @@ import java.io.InputStream;
  *
  * @author liujisi@google.com (Pherl Liu)
  */
-public class ParserTest extends TestCase {
+@RunWith(JUnit4.class)
+public class ParserTest {
+  @Test
   public void testGeneratedMessageParserSingleton() throws Exception {
     for (int i = 0; i < 10; i++) {
       assertEquals(TestAllTypes.parser(), TestUtil.getAllSet().getParserForType());
@@ -118,11 +126,13 @@ public class ParserTest extends TestCase {
     return result;
   }
 
+  @Test
   public void testNormalMessage() throws Exception {
     assertRoundTripEquals(TestUtil.getAllSet());
   }
 
 
+  @Test
   public void testParsePartial() throws Exception {
     assertParsePartial(TestRequired.parser(), TestRequired.newBuilder().setA(1).buildPartial());
   }
@@ -176,6 +186,7 @@ public class ParserTest extends TestCase {
     }
   }
 
+  @Test
   public void testParseExtensions() throws Exception {
     assertRoundTripEquals(TestUtil.getAllExtensionsSet(),
                           TestUtil.getExtensionRegistry());
@@ -183,6 +194,7 @@ public class ParserTest extends TestCase {
                           TestUtil.getExtensionRegistryLite());
   }
 
+  @Test
   public void testParsePacked() throws Exception {
     assertRoundTripEquals(TestUtil.getPackedSet());
     assertRoundTripEquals(TestUtil.getPackedExtensionsSet(),
@@ -191,6 +203,7 @@ public class ParserTest extends TestCase {
                           TestUtil.getExtensionRegistryLite());
   }
 
+  @Test
   public void testParseDelimitedTo() throws Exception {
     // Write normal Message.
     TestAllTypes normalMessage = TestUtil.getAllSet();
@@ -212,6 +225,7 @@ public class ParserTest extends TestCase {
             input, TestUtil.getExtensionRegistryLite()));
   }
 
+  @Test
   public void testParseUnknownFields() throws Exception {
     // All fields will be treated as unknown fields in emptyMessage.
     TestEmptyMessage emptyMessage =
@@ -222,6 +236,7 @@ public class ParserTest extends TestCase {
   }
 
 
+  @Test
   public void testOptimizeForSize() throws Exception {
     TestOptimizedForSize.Builder builder = TestOptimizedForSize.newBuilder();
     builder.setI(12).setMsg(ForeignMessage.newBuilder().setC(34).build());
@@ -252,6 +267,7 @@ public class ParserTest extends TestCase {
     assertEquals("hello", allTypes.getOptionalString());
   }
 
+  @Test
   public void testParsingMerge() throws Exception {
     // Build messages.
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -313,6 +329,7 @@ public class ParserTest extends TestCase {
         TestParsingMerge.repeatedExt));
   }
 
+  @Test
   public void testParsingMergeLite() throws Exception {
     // Build messages.
     TestAllTypesLite.Builder builder =
