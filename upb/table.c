@@ -622,7 +622,7 @@ void upb_inttable_compact(upb_inttable *t) {
 
   {
     /* Insert all elements into new, perfectly-sized table. */
-    size_t arr_size = max[size_lg2] + 1;
+    size_t arr_size = max[size_lg2] + 1;  /* +1 so arr[max] will fit. */
     size_t hash_count = upb_inttable_count(t) - arr_count;
     size_t hash_size = hash_count ? (hash_count / MAX_LOAD) + 1 : 0;
     size_t hashsize_lg2 = log2ceil(hash_size);
