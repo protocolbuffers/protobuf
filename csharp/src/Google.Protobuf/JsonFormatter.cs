@@ -37,6 +37,7 @@ using System.Text;
 using Google.Protobuf.Reflection;
 using Google.Protobuf.WellKnownTypes;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Google.Protobuf
 {
@@ -122,6 +123,8 @@ namespace Google.Protobuf
 
         private readonly Settings settings;
 
+        private bool DiagnosticOnly => ReferenceEquals(this, diagnosticFormatter);
+
         /// <summary>
         /// Creates a new formatted with the given settings.
         /// </summary>
@@ -181,7 +184,7 @@ namespace Google.Protobuf
                 WriteNull(builder);
                 return;
             }
-            if (ReferenceEquals(this, diagnosticFormatter))
+            if (DiagnosticOnly)
             {
                 ICustomDiagnosticMessage customDiagnosticMessage = message as ICustomDiagnosticMessage;
                 if (customDiagnosticMessage != null)
@@ -513,60 +516,32 @@ namespace Google.Protobuf
 
         private void WriteTimestamp(StringBuilder builder, IMessage value)
         {
-            builder.Append('"');
             // TODO: In the common case where this *is* using the built-in Timestamp type, we could
             // avoid all the reflection at this point, by casting to Timestamp. In the interests of
             // avoiding subtle bugs, don't do that until we've implemented DynamicMessage so that we can prove
             // it still works in that case.
             int nanos = (int) value.Descriptor.Fields[Timestamp.NanosFieldNumber].Accessor.GetValue(value);
             long seconds = (long) value.Descriptor.Fields[Timestamp.SecondsFieldNumber].Accessor.GetValue(value);
-
-            // Even if the original message isn't using the built-in classes, we can still build one... and its
-            // conversion will check whether or not it's normalized.
-            // TODO: Perhaps the diagnostic-only formatter should not throw for non-normalized values?
-            Timestamp ts = new Timestamp { Seconds = seconds, Nanos = nanos };
-            // Use .NET's formatting for the value down to the second, including an opening double quote (as it's a string value)
-            DateTime dateTime = ts.ToDateTime();
-            builder.Append(dateTime.ToString("yyyy'-'MM'-'dd'T'HH:mm:ss", CultureInfo.InvariantCulture));
-            AppendNanoseconds(builder, Math.Abs(ts.Nanos));
-            builder.Append("Z\"");
+            builder.Append(Timestamp.ToJson(seconds, nanos, DiagnosticOnly));
         }
 
         private void WriteDuration(StringBuilder builder, IMessage value)
         {
-            builder.Append('"');
             // TODO: Same as for WriteTimestamp
             int nanos = (int) value.Descriptor.Fields[Duration.NanosFieldNumber].Accessor.GetValue(value);
             long seconds = (long) value.Descriptor.Fields[Duration.SecondsFieldNumber].Accessor.GetValue(value);
-
-            // TODO: Perhaps the diagnostic-only formatter should not throw for non-normalized values?
-            // Even if the original message isn't using the built-in classes, we can still build one... and then
-            // rely on it being normalized.
-            if (!Duration.IsNormalized(seconds, nanos))
-            {
-                throw new InvalidOperationException("Non-normalized duration value");
-            }
-
-            // The seconds part will normally provide the minus sign if we need it, but not if it's 0...
-            if (seconds == 0 && nanos < 0)
-            {
-                builder.Append('-');
-            }
-
-            builder.Append(seconds.ToString("d", CultureInfo.InvariantCulture));
-            AppendNanoseconds(builder, Math.Abs(nanos));
-            builder.Append("s\"");
+            builder.Append(Duration.ToJson(seconds, nanos, DiagnosticOnly));
         }
 
         private void WriteFieldMask(StringBuilder builder, IMessage value)
         {
-            IList paths = (IList) value.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor.GetValue(value);
-            WriteString(builder, string.Join(",", paths.Cast<string>().Select(ToCamelCaseForFieldMask)));
+            var paths = (IList<string>) value.Descriptor.Fields[FieldMask.PathsFieldNumber].Accessor.GetValue(value);
+            builder.Append(FieldMask.ToJson(paths, DiagnosticOnly));
         }
 
         private void WriteAny(StringBuilder builder, IMessage value)
         {
-            if (ReferenceEquals(this, diagnosticFormatter))
+            if (DiagnosticOnly)
             {
                 WriteDiagnosticOnlyAny(builder, value);
                 return;
@@ -625,31 +600,6 @@ namespace Google.Protobuf
                 throw new InvalidProtocolBufferException($"Invalid type url: {typeUrl}");
             }
             return parts[1];
-        }
-
-        /// <summary>
-        /// Appends a number of nanoseconds to a StringBuilder. Either 0 digits are added (in which
-        /// case no "." is appended), or 3 6 or 9 digits.
-        /// </summary>
-        private static void AppendNanoseconds(StringBuilder builder, int nanos)
-        {
-            if (nanos != 0)
-            {
-                builder.Append('.');
-                // Output to 3, 6 or 9 digits.
-                if (nanos % 1000000 == 0)
-                {
-                    builder.Append((nanos / 1000000).ToString("d3", CultureInfo.InvariantCulture));
-                }
-                else if (nanos % 1000 == 0)
-                {
-                    builder.Append((nanos / 1000).ToString("d6", CultureInfo.InvariantCulture));
-                }
-                else
-                {
-                    builder.Append(nanos.ToString("d9", CultureInfo.InvariantCulture));
-                }
-            }
         }
 
         private void WriteStruct(StringBuilder builder, IMessage message)
@@ -785,7 +735,7 @@ namespace Google.Protobuf
         /// <remarks>
         /// Other than surrogate pair handling, this code is mostly taken from src/google/protobuf/util/internal/json_escaping.cc.
         /// </remarks>
-        private void WriteString(StringBuilder builder, string text)
+        internal static void WriteString(StringBuilder builder, string text)
         {
             builder.Append('"');
             for (int i = 0; i < text.Length; i++)

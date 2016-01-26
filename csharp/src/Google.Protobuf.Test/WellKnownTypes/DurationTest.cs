@@ -120,5 +120,13 @@ namespace Google.Protobuf.WellKnownTypes
             var duration = new Duration { Seconds = seconds, Nanos = nanoseconds };
             duration.ToTimeSpan();
         }
+
+        [Test]
+        public void ToString_NonNormalized()
+        {
+            // Just a single example should be sufficient...
+            var duration = new Duration { Seconds = 1, Nanos = -1 };
+            Assert.AreEqual("{ \"@warning\": \"Invalid Duration\", \"seconds\": \"1\", \"nanos\": -1 }", duration.ToString());
+        }
     }
 }

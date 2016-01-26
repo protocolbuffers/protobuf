@@ -346,6 +346,17 @@ namespace Google.Protobuf
         }
 
         [Test]
+        [TestCase(-1, -1)] // Would be valid as duration
+        [TestCase(1, Timestamp.MaxNanos + 1)]
+        [TestCase(Timestamp.UnixSecondsAtBclMaxValue + 1, 0)]
+        [TestCase(Timestamp.UnixSecondsAtBclMinValue - 1, 0)]
+        public void TimestampStandalone_NonNormalized(long seconds, int nanoseconds)
+        {
+            var timestamp = new Timestamp { Seconds = seconds, Nanos = nanoseconds };
+            Assert.Throws<InvalidOperationException>(() => JsonFormatter.Default.Format(timestamp));
+        }
+
+        [Test]
         public void TimestampField()
         {
             var message = new TestWellKnownTypes { TimestampField = new Timestamp() };
@@ -378,7 +389,8 @@ namespace Google.Protobuf
         [TestCase(-1, -100000000, "-1.100s")]
         public void DurationStandalone(long seconds, int nanoseconds, string expected)
         {
-            Assert.AreEqual(WrapInQuotes(expected), new Duration { Seconds = seconds, Nanos = nanoseconds }.ToString());
+            var json = JsonFormatter.Default.Format(new Duration { Seconds = seconds, Nanos = nanoseconds });
+            Assert.AreEqual(WrapInQuotes(expected), json);
         }
 
         [Test]
@@ -386,7 +398,8 @@ namespace Google.Protobuf
         [TestCase(1, -100000000)]
         public void DurationStandalone_NonNormalized(long seconds, int nanoseconds)
         {
-            Assert.Throws<InvalidOperationException>(() => new Duration { Seconds = seconds, Nanos = nanoseconds }.ToString());
+            var duration = new Duration { Seconds = seconds, Nanos = nanoseconds };
+            Assert.Throws<InvalidOperationException>(() => JsonFormatter.Default.Format(duration));
         }
 
         [Test]
