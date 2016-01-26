@@ -128,6 +128,12 @@ To create *Visual Studio* solution file:
      -DCMAKE_INSTALL_PREFIX=../../../../install ^
      ../..
 
+Note: this must correspond to the version of Visual Studio installed:
+
+     C:\Path\to\protobuf\cmake\build\solution>cmake -G "Visual Studio 14 2015 Win64" ^
+     -DCMAKE_INSTALL_PREFIX=../../../../install ^
+     ../..
+
 It will generate *Visual Studio* solution file *protobuf.sln* in current directory.
 
 If the *gmock* directory does not exist, and you do not want to build protobuf unit tests,
