@@ -75,6 +75,7 @@ typedef struct GPBAny__storage_ {
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBAny class]
                                      rootClass:[GPBAnyRoot class]
+                                     protoName:@"Any"
                                           file:GPBAnyRoot_FileDescriptor()
                                         fields:fields
                                     fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)

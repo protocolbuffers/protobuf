@@ -786,6 +786,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
     descriptor = [GPBDescriptor allocDescriptorForClass:[GPBMessage class]
                                               rootClass:Nil
+                                              protoName:nil
                                                    file:fileDescriptor
                                                  fields:NULL
                                              fieldCount:0

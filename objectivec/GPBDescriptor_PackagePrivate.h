@@ -153,6 +153,7 @@ typedef struct GPBExtensionDescription {
 + (instancetype)
     allocDescriptorForClass:(Class)messageClass
                   rootClass:(Class)rootClass
+                  protoName:(NSString *)protoName
                        file:(GPBFileDescriptor *)file
                      fields:(GPBMessageFieldDescription *)fieldDescriptions
                  fieldCount:(NSUInteger)fieldCount
@@ -167,6 +168,7 @@ typedef struct GPBExtensionDescription {
 + (instancetype)
     allocDescriptorForClass:(Class)messageClass
                   rootClass:(Class)rootClass
+                  protoName:(NSString *)protoName
                        file:(GPBFileDescriptor *)file
                      fields:(GPBMessageFieldDescription *)fieldDescriptions
                  fieldCount:(NSUInteger)fieldCount
@@ -181,6 +183,7 @@ typedef struct GPBExtensionDescription {
         extraTextFormatInfo:(const char *)extraTextFormatInfo;
 
 - (instancetype)initWithClass:(Class)messageClass
+                    protoName:(NSString *)protoName
                          file:(GPBFileDescriptor *)file
                        fields:(NSArray *)fields
                        oneofs:(NSArray *)oneofs

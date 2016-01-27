@@ -33,7 +33,9 @@
 #import <objc/runtime.h>
 
 #import "GPBDescriptor.h"
+#import "google/protobuf/Any.pbobjc.h"
 #import "google/protobuf/Unittest.pbobjc.h"
+#import "google/protobuf/UnittestNoPackage.pbobjc.h"
 
 @interface DescriptorTests : GPBTestCase
 @end
@@ -227,6 +229,21 @@
       [descriptor fieldWithNumber:TestOneof2_FieldNumber_BazString];
   XCTAssertNotNil(bazString);
   XCTAssertNil(bazString.containingOneof);
+}
+
+- (void)testDescriptor {
+  // Simple message
+  XCTAssertEqualObjects([[TestAllTypes descriptor] fullName],
+                        @"protobuf_unittest.TestAllTypes");
+  // Nested message
+  XCTAssertEqualObjects([[TestAllTypes_NestedMessage descriptor] fullName],
+                        @"protobuf_unittest.TestAllTypes.NestedMessage");
+  // Message with prefix
+  XCTAssertEqualObjects([[GPBAny descriptor] fullName],
+                        @"google.protobuf.Any");
+  // Message without package
+  XCTAssertEqualObjects([[MessageNoPackage descriptor] fullName],
+                        @"MessageNoPackage");
 }
 
 @end

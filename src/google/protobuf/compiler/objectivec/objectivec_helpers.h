@@ -72,6 +72,9 @@ string FileClassName(const FileDescriptor* file);
 string ClassName(const Descriptor* descriptor);
 string EnumName(const EnumDescriptor* descriptor);
 
+// Gets the fully-qualified message name without package in proto file.
+string ProtoName(const Descriptor* descriptor);
+
 // Returns the fully-qualified name of the enum value corresponding to the
 // the descriptor.
 string EnumValueName(const EnumValueDescriptor* descriptor);

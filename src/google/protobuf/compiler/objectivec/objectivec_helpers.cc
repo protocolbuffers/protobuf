@@ -361,6 +361,17 @@ string EnumName(const EnumDescriptor* descriptor) {
   return SanitizeNameForObjC(name, "_Enum");
 }
 
+string ProtoName(const Descriptor* descriptor) {
+  string fullProtoName = descriptor->full_name();
+  string packageName = descriptor->file()->package();
+  if (packageName.empty()) {
+    return fullProtoName;
+  } else {
+    return fullProtoName.substr(packageName.length() + 1);
+  }
+}
+
+
 string EnumValueName(const EnumValueDescriptor* descriptor) {
   // Because of the Switch enum compatibility, the name on the enum has to have
   // the suffix handing, so it slightly diverges from how nested classes work.

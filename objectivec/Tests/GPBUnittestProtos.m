@@ -51,6 +51,7 @@
 #import "google/protobuf/UnittestNoArena.pbobjc.m"
 #import "google/protobuf/UnittestNoArenaImport.pbobjc.m"
 #import "google/protobuf/UnittestNoGenericServices.pbobjc.m"
+#import "google/protobuf/UnittestNoPackage.pbobjc.m"
 #import "google/protobuf/UnittestObjc.pbobjc.m"
 #import "google/protobuf/UnittestObjcStartup.pbobjc.m"
 #import "google/protobuf/UnittestOptimizeFor.pbobjc.m"

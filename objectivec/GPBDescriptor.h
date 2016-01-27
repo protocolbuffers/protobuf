@@ -55,6 +55,7 @@ typedef NS_ENUM(NSInteger, GPBFieldType) {
 @interface GPBDescriptor : NSObject<NSCopying>
 
 @property(nonatomic, readonly, copy) NSString *name;
+@property(nonatomic, readonly, copy) NSString *fullName;
 @property(nonatomic, readonly, strong, nullable) NSArray *fields;
 @property(nonatomic, readonly, strong, nullable) NSArray *oneofs;
 @property(nonatomic, readonly, strong, nullable) NSArray *enums;
