@@ -265,6 +265,7 @@ void ConformanceTestSuite::RunValidInputTest(
   }
 
   request.set_requested_output_format(requested_output);
+  request.set_test_name(test_name);
 
   RunTest(test_name, request, &response);
 
@@ -358,6 +359,7 @@ void ConformanceTestSuite::ExpectParseFailureForProto(
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
   request.set_requested_output_format(conformance::PROTOBUF);
+  request.set_test_name(effective_test_name);
 
   RunTest(effective_test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kParseError) {
@@ -407,12 +409,14 @@ void ConformanceTestSuite::RunValidJsonTestWithProtobufInput(
 void ConformanceTestSuite::RunValidJsonTestWithValidator(
     const string& test_name, const string& input_json,
     const Validator& validator) {
+
+  string effective_test_name = "JsonInput." + test_name + ".Validator";
+
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_json_payload(input_json);
   request.set_requested_output_format(conformance::JSON);
-
-  string effective_test_name = "JsonInput." + test_name + ".Validator";
+  request.set_test_name(effective_test_name);
 
   RunTest(effective_test_name, request, &response);
 
@@ -445,14 +449,17 @@ void ConformanceTestSuite::RunValidJsonTestWithValidator(
 
 void ConformanceTestSuite::ExpectParseFailureForJson(
     const string& test_name, const string& input_json) {
+
+  string effective_test_name = "JsonInput." + test_name;
+
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_json_payload(input_json);
-  string effective_test_name = "JsonInput." + test_name;
 
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
   request.set_requested_output_format(conformance::JSON);
+  request.set_test_name(effective_test_name);
 
   RunTest(effective_test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kParseError) {
@@ -472,11 +479,13 @@ void ConformanceTestSuite::ExpectSerializeFailureForJson(
       TextFormat::ParseFromString(text_format, &payload_message))
           << "Failed to parse: " << text_format;
 
+  string effective_test_name = test_name + ".JsonOutput";
+
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_protobuf_payload(payload_message.SerializeAsString());
-  string effective_test_name = test_name + ".JsonOutput";
   request.set_requested_output_format(conformance::JSON);
+  request.set_test_name(effective_test_name);
 
   RunTest(effective_test_name, request, &response);
   if (response.result_case() == ConformanceResponse::kSerializeError) {
