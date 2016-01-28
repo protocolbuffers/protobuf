@@ -76,7 +76,7 @@ template<typename T> void arena_destruct_object(void* object) {
 template<typename T> void arena_delete_object(void* object) {
   delete reinterpret_cast<T*>(object);
 }
-inline void arena_free(void* object, size_t size) {
+inline void arena_free(void* object, size_t /* size */) {
   free(object);
 }
 
