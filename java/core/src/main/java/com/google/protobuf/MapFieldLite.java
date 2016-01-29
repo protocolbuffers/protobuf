@@ -136,7 +136,7 @@ public final class MapFieldLite<K, V> implements MutabilityOracle {
   
   private static int calculateHashCodeForObject(Object a) {
     if (a instanceof byte[]) {
-      return LiteralByteString.hashCode((byte[]) a);
+      return Internal.hashCode((byte[]) a);
     }
     // Enums should be stored as integers internally.
     if (a instanceof EnumLite) {

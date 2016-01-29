@@ -1,32 +1,4 @@
-// Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Copyright 2007 Google Inc. All rights reserved.
 
 package com.google.protobuf;
 
@@ -283,9 +255,31 @@ public class Internal {
     // ByteString with the same content. This is to ensure that the generated
     // hashCode() method will return the same value as the pure reflection
     // based hashCode() method.
-    return LiteralByteString.hashCode(bytes);
+    return Internal.hashCode(bytes, 0, bytes.length);
+  }
+  
+  /**
+   * Helper method for implementing {@link LiteralByteString#hashCode()}.
+   */
+  static int hashCode(byte[] bytes, int offset, int length) {
+    // The hash code for a byte array should be the same as the hash code for a
+    // ByteString with the same content. This is to ensure that the generated
+    // hashCode() method will return the same value as the pure reflection
+    // based hashCode() method.
+    int h = Internal.partialHash(length, bytes, offset, length);
+    return h == 0 ? 1 : h;
   }
 
+  /**
+   * Helper method for continuously hashing bytes.
+   */
+  static int partialHash(int h, byte[] bytes, int offset, int length) {
+    for (int i = offset; i < offset + length; i++) {
+      h = h * 31 + bytes[i];
+    }
+    return h;
+  }
+  
   /**
    * Helper method for implementing {@link Message#equals(Object)} for bytes
    * field.
@@ -337,8 +331,7 @@ public class Internal {
   public static int hashCodeByteBuffer(ByteBuffer bytes) {
     if (bytes.hasArray()) {
       // Fast path.
-      int h = LiteralByteString.hashCode(bytes.capacity(), bytes.array(),
-          bytes.arrayOffset(), bytes.capacity());
+      int h = partialHash(bytes.capacity(), bytes.array(), bytes.arrayOffset(), bytes.capacity());
       return h == 0 ? 1 : h;
     } else {
       // Read the data into a temporary byte array before calculating the
@@ -353,7 +346,7 @@ public class Internal {
         final int length = duplicated.remaining() <= bufferSize ?
             duplicated.remaining() : bufferSize;
         duplicated.get(buffer, 0, length);
-        h = LiteralByteString.hashCode(h, buffer, 0, length);
+        h = partialHash(h, buffer, 0, length);
       }
       return h == 0 ? 1 : h;
     }
@@ -384,7 +377,6 @@ public class Internal {
   /** An empty coded input stream constant used in generated code. */
   public static final CodedInputStream EMPTY_CODED_INPUT_STREAM =
       CodedInputStream.newInstance(EMPTY_BYTE_ARRAY);
-
 
   /**
    * Provides an immutable view of {@code List<T>} around a {@code List<F>}.

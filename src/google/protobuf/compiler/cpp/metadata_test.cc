@@ -28,28 +28,31 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package com.google.protobuf;
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
-import java.nio.ByteBuffer;
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/compiler/cpp/cpp_generator.h>
+#include <google/protobuf/compiler/command_line_interface.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/descriptor.pb.h>
 
-/**
- * Provides unsafe factory methods for {@link ByteString} instances.
- *
- * <p><strong>DISCLAIMER:</strong> The methods in this class should only be called if it is
- * guaranteed that the the buffer backing the {@link ByteString} will never change! Mutation of a
- * {@link ByteString} can lead to unexpected and undesirable consequences in your application,
- * and will likely be difficult to debug. Proceed with caution!
- */
-public final class UnsafeByteStrings {
-  private UnsafeByteStrings() {}
+#include <google/protobuf/testing/googletest.h>
+#include <gtest/gtest.h>
+#include <google/protobuf/testing/file.h>
 
-  /**
-   * An unsafe operation that returns a {@link ByteString} that is backed by the provided buffer.
-   *
-   * @param buffer the Java NIO buffer to be wrapped.
-   * @return a {@link ByteString} backed by the provided buffer.
-   */
-  public static ByteString unsafeWrap(ByteBuffer buffer) {
-    return new NioByteString(buffer);
-  }
-}
+namespace google {
+namespace protobuf {
+namespace compiler {
+namespace cpp {
+namespace {
+
+}  // namespace
+}  // namespace cpp
+}  // namespace compiler
+}  // namespace protobuf
+}  // namespace google
