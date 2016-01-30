@@ -45,10 +45,11 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 import base64
 import json
 import math
-from six import text_type
+import six
 import sys
 
 from google.protobuf import descriptor
+from google.protobuf import symbol_database
 
 _TIMESTAMPFOMAT = '%Y-%m-%dT%H:%M:%S'
 _INT_TYPES = frozenset([descriptor.FieldDescriptor.CPPTYPE_INT32,
@@ -96,11 +97,15 @@ def MessageToJson(message, including_default_value_fields=False):
 def _MessageToJsonObject(message, including_default_value_fields):
   """Converts message to an object according to Proto3 JSON Specification."""
   message_descriptor = message.DESCRIPTOR
-  if hasattr(message, 'ToJsonString'):
-    return message.ToJsonString()
+  full_name = message_descriptor.full_name
   if _IsWrapperMessage(message_descriptor):
     return _WrapperMessageToJsonObject(message)
-  return _RegularMessageToJsonObject(message, including_default_value_fields)
+  if full_name in _WKTJSONMETHODS:
+    return _WKTJSONMETHODS[full_name][0](
+        message, including_default_value_fields)
+  js = {}
+  return _RegularMessageToJsonObject(
+      message, js, including_default_value_fields)
 
 
 def _IsMapEntry(field):
@@ -109,9 +114,8 @@ def _IsMapEntry(field):
           field.message_type.GetOptions().map_entry)
 
 
-def _RegularMessageToJsonObject(message, including_default_value_fields):
+def _RegularMessageToJsonObject(message, js, including_default_value_fields):
   """Converts normal message according to Proto3 JSON Specification."""
-  js = {}
   fields = message.ListFields()
   include_default = including_default_value_fields
 
@@ -200,6 +204,79 @@ def _FieldToJsonObject(
   return value
 
 
+def _AnyMessageToJsonObject(message, including_default):
+  """Converts Any message according to Proto3 JSON Specification."""
+  if not message.ListFields():
+    return {}
+  js = {}
+  type_url = message.type_url
+  js['@type'] = type_url
+  sub_message = _CreateMessageFromTypeUrl(type_url)
+  sub_message.ParseFromString(message.value)
+  message_descriptor = sub_message.DESCRIPTOR
+  full_name = message_descriptor.full_name
+  if _IsWrapperMessage(message_descriptor):
+    js['value'] = _WrapperMessageToJsonObject(sub_message)
+    return js
+  if full_name in _WKTJSONMETHODS:
+    js['value'] = _WKTJSONMETHODS[full_name][0](sub_message, including_default)
+    return js
+  return _RegularMessageToJsonObject(sub_message, js, including_default)
+
+
+def _CreateMessageFromTypeUrl(type_url):
+  # TODO(jieluo): Should add a way that users can register the type resolver
+  # instead of the default one.
+  db = symbol_database.Default()
+  type_name = type_url.split('/')[-1]
+  try:
+    message_descriptor = db.pool.FindMessageTypeByName(type_name)
+  except KeyError:
+    raise TypeError(
+        'Can not find message descriptor by type_url: {0}.'.format(type_url))
+  message_class = db.GetPrototype(message_descriptor)
+  return message_class()
+
+
+def _GenericMessageToJsonObject(message, unused_including_default):
+  """Converts message by ToJsonString according to Proto3 JSON Specification."""
+  # Duration, Timestamp and FieldMask have ToJsonString method to do the
+  # convert. Users can also call the method directly.
+  return message.ToJsonString()
+
+
+def _ValueMessageToJsonObject(message, unused_including_default=False):
+  """Converts Value message according to Proto3 JSON Specification."""
+  which = message.WhichOneof('kind')
+  # If the Value message is not set treat as null_value when serialize
+  # to JSON. The parse back result will be different from original message.
+  if which is None or which == 'null_value':
+    return None
+  if which == 'list_value':
+    return _ListValueMessageToJsonObject(message.list_value)
+  if which == 'struct_value':
+    value = message.struct_value
+  else:
+    value = getattr(message, which)
+  oneof_descriptor = message.DESCRIPTOR.fields_by_name[which]
+  return _FieldToJsonObject(oneof_descriptor, value)
+
+
+def _ListValueMessageToJsonObject(message, unused_including_default=False):
+  """Converts ListValue message according to Proto3 JSON Specification."""
+  return [_ValueMessageToJsonObject(value)
+          for value in message.values]
+
+
+def _StructMessageToJsonObject(message, unused_including_default=False):
+  """Converts Struct message according to Proto3 JSON Specification."""
+  fields = message.fields
+  js = {}
+  for key in fields.keys():
+    js[key] = _ValueMessageToJsonObject(fields[key])
+  return js
+
+
 def _IsWrapperMessage(message_descriptor):
   return message_descriptor.file.name == 'google/protobuf/wrappers.proto'
 
@@ -231,7 +308,7 @@ def Parse(text, message):
   Raises::
     ParseError: On JSON parsing problems.
   """
-  if not isinstance(text, text_type): text = text.decode('utf-8')
+  if not isinstance(text, six.text_type): text = text.decode('utf-8')
   try:
     if sys.version_info < (2, 7):
       # object_pair_hook is not supported before python2.7
@@ -240,7 +317,7 @@ def Parse(text, message):
       js = json.loads(text, object_pairs_hook=_DuplicateChecker)
   except ValueError as e:
     raise ParseError('Failed to load JSON: {0}.'.format(str(e)))
-  _ConvertFieldValuePair(js, message)
+  _ConvertMessage(js, message)
   return message
 
 
@@ -291,13 +368,22 @@ def _ConvertFieldValuePair(js, message):
         if not isinstance(value, list):
           raise ParseError('repeated field {0} must be in [] which is '
                            '{1}.'.format(name, value))
-        for item in value:
-          if item is None:
-            continue
-          if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
+        if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
+          # Repeated message field.
+          for item in value:
             sub_message = getattr(message, field.name).add()
+            # None is a null_value in Value.
+            if (item is None and
+                sub_message.DESCRIPTOR.full_name != 'google.protobuf.Value'):
+              raise ParseError('null is not allowed to be used as an element'
+                               ' in a repeated field.')
             _ConvertMessage(item, sub_message)
-          else:
+        else:
+          # Repeated scalar field.
+          for item in value:
+            if item is None:
+              raise ParseError('null is not allowed to be used as an element'
+                               ' in a repeated field.')
             getattr(message, field.name).append(
                 _ConvertScalarFieldValue(item, field))
       elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
@@ -327,12 +413,86 @@ def _ConvertMessage(value, message):
     ParseError: In case of convert problems.
   """
   message_descriptor = message.DESCRIPTOR
-  if hasattr(message, 'FromJsonString'):
-    message.FromJsonString(value)
-  elif _IsWrapperMessage(message_descriptor):
+  full_name = message_descriptor.full_name
+  if _IsWrapperMessage(message_descriptor):
     _ConvertWrapperMessage(value, message)
+  elif full_name in _WKTJSONMETHODS:
+    _WKTJSONMETHODS[full_name][1](value, message)
   else:
     _ConvertFieldValuePair(value, message)
+
+
+def _ConvertAnyMessage(value, message):
+  """Convert a JSON representation into Any message."""
+  if isinstance(value, dict) and not value:
+    return
+  try:
+    type_url = value['@type']
+  except KeyError:
+    raise ParseError('@type is missing when parsing any message.')
+
+  sub_message = _CreateMessageFromTypeUrl(type_url)
+  message_descriptor = sub_message.DESCRIPTOR
+  full_name = message_descriptor.full_name
+  if _IsWrapperMessage(message_descriptor):
+    _ConvertWrapperMessage(value['value'], sub_message)
+  elif full_name in _WKTJSONMETHODS:
+    _WKTJSONMETHODS[full_name][1](value['value'], sub_message)
+  else:
+    del value['@type']
+    _ConvertFieldValuePair(value, sub_message)
+  # Sets Any message
+  message.value = sub_message.SerializeToString()
+  message.type_url = type_url
+
+
+def _ConvertGenericMessage(value, message):
+  """Convert a JSON representation into message with FromJsonString."""
+  # Durantion, Timestamp, FieldMask have FromJsonString method to do the
+  # convert. Users can also call the method directly.
+  message.FromJsonString(value)
+
+
+_INT_OR_FLOAT = six.integer_types + (float,)
+
+
+def _ConvertValueMessage(value, message):
+  """Convert a JSON representation into Value message."""
+  if isinstance(value, dict):
+    _ConvertStructMessage(value, message.struct_value)
+  elif isinstance(value, list):
+    _ConvertListValueMessage(value, message.list_value)
+  elif value is None:
+    message.null_value = 0
+  elif isinstance(value, bool):
+    message.bool_value = value
+  elif isinstance(value, six.string_types):
+    message.string_value = value
+  elif isinstance(value, _INT_OR_FLOAT):
+    message.number_value = value
+  else:
+    raise ParseError('Unexpected type for Value message.')
+
+
+def _ConvertListValueMessage(value, message):
+  """Convert a JSON representation into ListValue message."""
+  if not isinstance(value, list):
+    raise ParseError(
+        'ListValue must be in [] which is {0}.'.format(value))
+  message.ClearField('values')
+  for item in value:
+    _ConvertValueMessage(item, message.values.add())
+
+
+def _ConvertStructMessage(value, message):
+  """Convert a JSON representation into Struct message."""
+  if not isinstance(value, dict):
+    raise ParseError(
+        'Struct must be in a dict which is {0}.'.format(value))
+  for key in value:
+    _ConvertValueMessage(value[key], message.fields[key])
+  return
+
 
 def _ConvertWrapperMessage(value, message):
   """Convert a JSON representation into Wrapper message."""
@@ -353,7 +513,8 @@ def _ConvertMapFieldValue(value, message, field):
   """
   if not isinstance(value, dict):
     raise ParseError(
-        'Map fieled {0} must be in {} which is {1}.'.format(field.name, value))
+        'Map field {0} must be in a dict which is {1}.'.format(
+            field.name, value))
   key_field = field.message_type.fields_by_name['key']
   value_field = field.message_type.fields_by_name['value']
   for key in value:
@@ -416,7 +577,7 @@ def _ConvertInteger(value):
   if isinstance(value, float):
     raise ParseError('Couldn\'t parse integer: {0}.'.format(value))
 
-  if isinstance(value, text_type) and value.find(' ') != -1:
+  if isinstance(value, six.text_type) and value.find(' ') != -1:
     raise ParseError('Couldn\'t parse integer: "{0}".'.format(value))
 
   return int(value)
@@ -465,3 +626,20 @@ def _ConvertBool(value, require_str):
   if not isinstance(value, bool):
     raise ParseError('Expected true or false without quotes.')
   return value
+
+_WKTJSONMETHODS = {
+    'google.protobuf.Any': [_AnyMessageToJsonObject,
+                            _ConvertAnyMessage],
+    'google.protobuf.Duration': [_GenericMessageToJsonObject,
+                                 _ConvertGenericMessage],
+    'google.protobuf.FieldMask': [_GenericMessageToJsonObject,
+                                  _ConvertGenericMessage],
+    'google.protobuf.ListValue': [_ListValueMessageToJsonObject,
+                                  _ConvertListValueMessage],
+    'google.protobuf.Struct': [_StructMessageToJsonObject,
+                               _ConvertStructMessage],
+    'google.protobuf.Timestamp': [_GenericMessageToJsonObject,
+                                  _ConvertGenericMessage],
+    'google.protobuf.Value': [_ValueMessageToJsonObject,
+                              _ConvertValueMessage]
+}

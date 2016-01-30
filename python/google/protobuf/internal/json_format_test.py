@@ -42,6 +42,12 @@ try:
   import unittest2 as unittest
 except ImportError:
   import unittest
+from google.protobuf import any_pb2
+from google.protobuf import duration_pb2
+from google.protobuf import field_mask_pb2
+from google.protobuf import struct_pb2
+from google.protobuf import timestamp_pb2
+from google.protobuf import wrappers_pb2
 from google.protobuf.internal import well_known_types
 from google.protobuf import json_format
 from google.protobuf.util import json_format_proto3_pb2
@@ -326,6 +332,7 @@ class JsonFormatTest(JsonFormatBase):
     message.bytes_value.value = b''
     message.repeated_bool_value.add().value = True
     message.repeated_bool_value.add().value = False
+    message.repeated_int32_value.add()
     self.assertEqual(
         json.loads(json_format.MessageToJson(message, True)),
         json.loads('{\n'
@@ -334,7 +341,7 @@ class JsonFormatTest(JsonFormatBase):
                    '  "stringValue": "",'
                    '  "bytesValue": "",'
                    '  "repeatedBoolValue": [true, false],'
-                   '  "repeatedInt32Value": [],'
+                   '  "repeatedInt32Value": [0],'
                    '  "repeatedUint32Value": [],'
                    '  "repeatedFloatValue": [],'
                    '  "repeatedDoubleValue": [],'
@@ -346,11 +353,192 @@ class JsonFormatTest(JsonFormatBase):
     parsed_message = json_format_proto3_pb2.TestWrapper()
     self.CheckParseBack(message, parsed_message)
 
+  def testStructMessage(self):
+    message = json_format_proto3_pb2.TestStruct()
+    message.value['name'] = 'Jim'
+    message.value['age'] = 10
+    message.value['attend'] = True
+    message.value['email'] = None
+    message.value.get_or_create_struct('address')['city'] = 'SFO'
+    message.value['address']['house_number'] = 1024
+    struct_list = message.value.get_or_create_list('list')
+    struct_list.extend([6, 'seven', True, False, None])
+    struct_list.add_struct()['subkey2'] = 9
+    message.repeated_value.add()['age'] = 11
+    message.repeated_value.add()
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(message, False)),
+        json.loads(
+            '{'
+            '  "value": {'
+            '    "address": {'
+            '      "city": "SFO", '
+            '      "house_number": 1024'
+            '    }, '
+            '    "age": 10, '
+            '    "name": "Jim", '
+            '    "attend": true, '
+            '    "email": null, '
+            '    "list": [6, "seven", true, false, null, {"subkey2": 9}]'
+            '  },'
+            '  "repeatedValue": [{"age": 11}, {}]'
+            '}'))
+    parsed_message = json_format_proto3_pb2.TestStruct()
+    self.CheckParseBack(message, parsed_message)
+
+  def testValueMessage(self):
+    message = json_format_proto3_pb2.TestValue()
+    message.value.string_value = 'hello'
+    message.repeated_value.add().number_value = 11.1
+    message.repeated_value.add().bool_value = False
+    message.repeated_value.add().null_value = 0
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(message, False)),
+        json.loads(
+            '{'
+            '  "value": "hello",'
+            '  "repeatedValue": [11.1, false, null]'
+            '}'))
+    parsed_message = json_format_proto3_pb2.TestValue()
+    self.CheckParseBack(message, parsed_message)
+    # Can't parse back if the Value message is not set.
+    message.repeated_value.add()
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(message, False)),
+        json.loads(
+            '{'
+            '  "value": "hello",'
+            '  "repeatedValue": [11.1, false, null, null]'
+            '}'))
+
+  def testListValueMessage(self):
+    message = json_format_proto3_pb2.TestListValue()
+    message.value.values.add().number_value = 11.1
+    message.value.values.add().null_value = 0
+    message.value.values.add().bool_value = True
+    message.value.values.add().string_value = 'hello'
+    message.value.values.add().struct_value['name'] = 'Jim'
+    message.repeated_value.add().values.add().number_value = 1
+    message.repeated_value.add()
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(message, False)),
+        json.loads(
+            '{"value": [11.1, null, true, "hello", {"name": "Jim"}]\n,'
+            '"repeatedValue": [[1], []]}'))
+    parsed_message = json_format_proto3_pb2.TestListValue()
+    self.CheckParseBack(message, parsed_message)
+
+  def testAnyMessage(self):
+    message = json_format_proto3_pb2.TestAny()
+    value1 = json_format_proto3_pb2.MessageType()
+    value2 = json_format_proto3_pb2.MessageType()
+    value1.value = 1234
+    value2.value = 5678
+    message.value.Pack(value1)
+    message.repeated_value.add().Pack(value1)
+    message.repeated_value.add().Pack(value2)
+    message.repeated_value.add()
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(message, True)),
+        json.loads(
+            '{\n'
+            '  "repeatedValue": [ {\n'
+            '    "@type": "type.googleapis.com/proto3.MessageType",\n'
+            '    "value": 1234\n'
+            '  }, {\n'
+            '    "@type": "type.googleapis.com/proto3.MessageType",\n'
+            '    "value": 5678\n'
+            '  },\n'
+            '  {}],\n'
+            '  "value": {\n'
+            '    "@type": "type.googleapis.com/proto3.MessageType",\n'
+            '    "value": 1234\n'
+            '  }\n'
+            '}\n'))
+    parsed_message = json_format_proto3_pb2.TestAny()
+    self.CheckParseBack(message, parsed_message)
+
+  def testWellKnownInAnyMessage(self):
+    message = any_pb2.Any()
+    int32_value = wrappers_pb2.Int32Value()
+    int32_value.value = 1234
+    message.Pack(int32_value)
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(message, True)),
+        json.loads(
+            '{\n'
+            '  "@type": \"type.googleapis.com/google.protobuf.Int32Value\",\n'
+            '  "value": 1234\n'
+            '}\n'))
+    parsed_message = any_pb2.Any()
+    self.CheckParseBack(message, parsed_message)
+
+    timestamp = timestamp_pb2.Timestamp()
+    message.Pack(timestamp)
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(message, True)),
+        json.loads(
+            '{\n'
+            '  "@type": "type.googleapis.com/google.protobuf.Timestamp",\n'
+            '  "value": "1970-01-01T00:00:00Z"\n'
+            '}\n'))
+    self.CheckParseBack(message, parsed_message)
+
+    duration = duration_pb2.Duration()
+    duration.seconds = 1
+    message.Pack(duration)
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(message, True)),
+        json.loads(
+            '{\n'
+            '  "@type": "type.googleapis.com/google.protobuf.Duration",\n'
+            '  "value": "1s"\n'
+            '}\n'))
+    self.CheckParseBack(message, parsed_message)
+
+    field_mask = field_mask_pb2.FieldMask()
+    field_mask.paths.append('foo.bar')
+    field_mask.paths.append('bar')
+    message.Pack(field_mask)
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(message, True)),
+        json.loads(
+            '{\n'
+            '  "@type": "type.googleapis.com/google.protobuf.FieldMask",\n'
+            '  "value": "foo.bar,bar"\n'
+            '}\n'))
+    self.CheckParseBack(message, parsed_message)
+
+    struct_message = struct_pb2.Struct()
+    struct_message['name'] = 'Jim'
+    message.Pack(struct_message)
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(message, True)),
+        json.loads(
+            '{\n'
+            '  "@type": "type.googleapis.com/google.protobuf.Struct",\n'
+            '  "value": {"name": "Jim"}\n'
+            '}\n'))
+    self.CheckParseBack(message, parsed_message)
+
+    nested_any = any_pb2.Any()
+    int32_value.value = 5678
+    nested_any.Pack(int32_value)
+    message.Pack(nested_any)
+    self.assertEqual(
+        json.loads(json_format.MessageToJson(message, True)),
+        json.loads(
+            '{\n'
+            '  "@type": "type.googleapis.com/google.protobuf.Any",\n'
+            '  "value": {\n'
+            '    "@type": "type.googleapis.com/google.protobuf.Int32Value",\n'
+            '    "value": 5678\n'
+            '  }\n'
+            '}\n'))
+    self.CheckParseBack(message, parsed_message)
+
   def testParseNull(self):
     message = json_format_proto3_pb2.TestMessage()
-    message.repeated_int32_value.append(1)
-    message.repeated_int32_value.append(2)
-    message.repeated_int32_value.append(3)
     parsed_message = json_format_proto3_pb2.TestMessage()
     self.FillAllFields(parsed_message)
     json_format.Parse('{"int32Value": null, '
@@ -364,7 +552,7 @@ class JsonFormatTest(JsonFormatBase):
                       '"bytesValue": null,'
                       '"messageValue": null,'
                       '"enumValue": null,'
-                      '"repeatedInt32Value": [1, 2, null, 3],'
+                      '"repeatedInt32Value": null,'
                       '"repeatedInt64Value": null,'
                       '"repeatedUint32Value": null,'
                       '"repeatedUint64Value": null,'
@@ -378,6 +566,13 @@ class JsonFormatTest(JsonFormatBase):
                       '}',
                       parsed_message)
     self.assertEqual(message, parsed_message)
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        'Failed to parse repeatedInt32Value field: '
+        'null is not allowed to be used as an element in a repeated field.',
+        json_format.Parse,
+        '{"repeatedInt32Value":[1, null]}',
+        parsed_message)
 
   def testNanFloat(self):
     message = json_format_proto3_pb2.TestMessage()
@@ -528,6 +723,45 @@ class JsonFormatTest(JsonFormatBase):
         'Message type "proto3.TestOneof"'
         ' should not have multiple "oneof_value" oneof fields.',
         json_format.Parse, text, message)
+
+  def testInvalidListValue(self):
+    message = json_format_proto3_pb2.TestListValue()
+    text = '{"value": 1234}'
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        r'Failed to parse value field: ListValue must be in \[\] which is 1234',
+        json_format.Parse, text, message)
+
+  def testInvalidStruct(self):
+    message = json_format_proto3_pb2.TestStruct()
+    text = '{"value": 1234}'
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        'Failed to parse value field: Struct must be in a dict which is 1234',
+        json_format.Parse, text, message)
+
+  def testInvalidAny(self):
+    message = any_pb2.Any()
+    text = '{"@type": "type.googleapis.com/google.protobuf.Int32Value"}'
+    self.assertRaisesRegexp(
+        KeyError,
+        'value',
+        json_format.Parse, text, message)
+    text = '{"value": 1234}'
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        '@type is missing when parsing any message.',
+        json_format.Parse, text, message)
+    text = '{"@type": "type.googleapis.com/MessageNotExist", "value": 1234}'
+    self.assertRaisesRegexp(
+        TypeError,
+        'Can not find message descriptor by type_url: '
+        'type.googleapis.com/MessageNotExist.',
+        json_format.Parse, text, message)
+    # Only last part is to be used.
+    text = (r'{"@type": "incorrect.googleapis.com/google.protobuf.Int32Value",'
+            r'"value": 1234}')
+    json_format.Parse(text, message)
 
 
 if __name__ == '__main__':
