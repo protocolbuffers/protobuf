@@ -34,6 +34,7 @@ This files defines well known classes which need extra maintenance including:
   - Any
   - Duration
   - FieldMask
+  - Struct
   - Timestamp
 """
 
@@ -41,6 +42,7 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 
 from datetime import datetime
 from datetime import timedelta
+import six
 
 from google.protobuf.descriptor import FieldDescriptor
 
@@ -64,9 +66,12 @@ class ParseError(Error):
 class Any(object):
   """Class for Any Message type."""
 
-  def Pack(self, msg):
+  def Pack(self, msg, type_url_prefix='type.googleapis.com/'):
     """Packs the specified message into current Any message."""
-    self.type_url = 'type.googleapis.com/%s' % msg.DESCRIPTOR.full_name
+    if len(type_url_prefix) < 1 or type_url_prefix[-1] != '/':
+      self.type_url = '%s/%s' % (type_url_prefix, msg.DESCRIPTOR.full_name)
+    else:
+      self.type_url = '%s%s' % (type_url_prefix, msg.DESCRIPTOR.full_name)
     self.value = msg.SerializeToString()
 
   def Unpack(self, msg):
@@ -614,9 +619,102 @@ def _AddFieldPaths(node, prefix, field_mask):
     _AddFieldPaths(node[name], child_path, field_mask)
 
 
+_INT_OR_FLOAT = six.integer_types + (float,)
+
+
+def _SetStructValue(struct_value, value):
+  if value is None:
+    struct_value.null_value = 0
+  elif isinstance(value, bool):
+    # Note: this check must come before the number check because in Python
+    # True and False are also considered numbers.
+    struct_value.bool_value = value
+  elif isinstance(value, six.string_types):
+    struct_value.string_value = value
+  elif isinstance(value, _INT_OR_FLOAT):
+    struct_value.number_value = value
+  else:
+    raise ValueError('Unexpected type')
+
+
+def _GetStructValue(struct_value):
+  which = struct_value.WhichOneof('kind')
+  if which == 'struct_value':
+    return struct_value.struct_value
+  elif which == 'null_value':
+    return None
+  elif which == 'number_value':
+    return struct_value.number_value
+  elif which == 'string_value':
+    return struct_value.string_value
+  elif which == 'bool_value':
+    return struct_value.bool_value
+  elif which == 'list_value':
+    return struct_value.list_value
+  elif which is None:
+    raise ValueError('Value not set')
+
+
+class Struct(object):
+  """Class for Struct message type."""
+
+  __slots__ = []
+
+  def __getitem__(self, key):
+    return _GetStructValue(self.fields[key])
+
+  def __setitem__(self, key, value):
+    _SetStructValue(self.fields[key], value)
+
+  def get_or_create_list(self, key):
+    """Returns a list for this key, creating if it didn't exist already."""
+    return self.fields[key].list_value
+
+  def get_or_create_struct(self, key):
+    """Returns a struct for this key, creating if it didn't exist already."""
+    return self.fields[key].struct_value
+
+  # TODO(haberman): allow constructing/merging from dict.
+
+
+class ListValue(object):
+  """Class for ListValue message type."""
+
+  def __len__(self):
+    return len(self.values)
+
+  def append(self, value):
+    _SetStructValue(self.values.add(), value)
+
+  def extend(self, elem_seq):
+    for value in elem_seq:
+      self.append(value)
+
+  def __getitem__(self, index):
+    """Retrieves item by the specified index."""
+    return _GetStructValue(self.values.__getitem__(index))
+
+  def __setitem__(self, index, value):
+    _SetStructValue(self.values.__getitem__(index), value)
+
+  def items(self):
+    for i in range(len(self)):
+      yield self[i]
+
+  def add_struct(self):
+    """Appends and returns a struct value as the next value in the list."""
+    return self.values.add().struct_value
+
+  def add_list(self):
+    """Appends and returns a list value as the next value in the list."""
+    return self.values.add().list_value
+
+
 WKTBASES = {
     'google.protobuf.Any': Any,
     'google.protobuf.Duration': Duration,
     'google.protobuf.FieldMask': FieldMask,
+    'google.protobuf.ListValue': ListValue,
+    'google.protobuf.Struct': Struct,
     'google.protobuf.Timestamp': Timestamp,
 }
