@@ -1153,6 +1153,58 @@ typedef GPB_ENUM(GPBSourceCodeInfo_Location_FieldNumber) {
 
 @end
 
+#pragma mark - GPBGeneratedCodeInfo
+
+typedef GPB_ENUM(GPBGeneratedCodeInfo_FieldNumber) {
+  GPBGeneratedCodeInfo_FieldNumber_AnnotationArray = 1,
+};
+
+// Describes the relationship between generated code and its original source
+// file. A GeneratedCodeInfo message is associated with only one generated
+// source file, but may contain references to different source .proto files.
+@interface GPBGeneratedCodeInfo : GPBMessage
+
+// An Annotation connects some span of text in generated code to an element
+// of its generating .proto file.
+// |annotationArray| contains |GPBGeneratedCodeInfo_Annotation|
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *annotationArray;
+@property(nonatomic, readonly) NSUInteger annotationArray_Count;
+
+@end
+
+#pragma mark - GPBGeneratedCodeInfo_Annotation
+
+typedef GPB_ENUM(GPBGeneratedCodeInfo_Annotation_FieldNumber) {
+  GPBGeneratedCodeInfo_Annotation_FieldNumber_PathArray = 1,
+  GPBGeneratedCodeInfo_Annotation_FieldNumber_SourceFile = 2,
+  GPBGeneratedCodeInfo_Annotation_FieldNumber_Begin = 3,
+  GPBGeneratedCodeInfo_Annotation_FieldNumber_End = 4,
+};
+
+@interface GPBGeneratedCodeInfo_Annotation : GPBMessage
+
+// Identifies the element in the original source .proto file. This field
+// is formatted the same as SourceCodeInfo.Location.path.
+@property(nonatomic, readwrite, strong, null_resettable) GPBInt32Array *pathArray;
+@property(nonatomic, readonly) NSUInteger pathArray_Count;
+
+// Identifies the filesystem path to the original source .proto.
+@property(nonatomic, readwrite) BOOL hasSourceFile;
+@property(nonatomic, readwrite, copy, null_resettable) NSString *sourceFile;
+
+// Identifies the starting offset in bytes in the generated code
+// that relates to the identified object.
+@property(nonatomic, readwrite) BOOL hasBegin;
+@property(nonatomic, readwrite) int32_t begin;
+
+// Identifies the ending offset in bytes in the generated code that
+// relates to the identified offset. The end offset should be one past
+// the last relevant byte (so the length of the text = end - begin).
+@property(nonatomic, readwrite) BOOL hasEnd;
+@property(nonatomic, readwrite) int32_t end;
+
+@end
+
 NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END

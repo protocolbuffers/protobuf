@@ -28,59 +28,36 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Proto to test proto3 maps.
-syntax = "proto3";
+package com.google.protobuf;
 
-package google.protobuf.testing.maps;
-option java_package = "com.google.protobuf.testing.maps";
+import java.nio.ByteBuffer;
 
-message MapIn {
-  string other = 1;
-  repeated string things = 2;
-  map<string, string> map_input = 3;
-}
+/**
+ * Provides a number of unsafe byte operations to be used by advanced applications with high
+ * performance requirements. These methods are referred to as "unsafe" due to the fact that they
+ * potentially expose the backing buffer of a {@link ByteString} to the application.
+ *
+ * <p><strong>DISCLAIMER:</strong> The methods in this class should only be called if it is
+ * guaranteed that the the buffer backing the {@link ByteString} will never change! Mutation of a
+ * {@link ByteString} can lead to unexpected and undesirable consequences in your application,
+ * and will likely be difficult to debug. Proceed with caution!
+ */
+@ExperimentalApi
+public final class UnsafeByteOperations {
+  private UnsafeByteOperations() {}
 
-message MapOut {
-  map<string, MapM> map1 = 1;
-  map<string, MapOut> map2 = 2;
-  map<int32, string> map3 = 3;
-  map<bool, string> map4 = 5;
-  string bar = 4;
-}
-
-// A message with exactly the same wire representation as MapOut, but using
-// repeated message fields instead of map fields. We use this message to test
-// the wire-format compatibility of the JSON transcoder (e.g., whether it
-// handles missing keys correctly).
-message MapOutWireFormat {
-  message Map1Entry {
-    string key = 1;
-    MapM value = 2;
+  /**
+   * An unsafe operation that returns a {@link ByteString} that is backed by the provided buffer.
+   *
+   * @param buffer the Java NIO buffer to be wrapped.
+   * @return a {@link ByteString} backed by the provided buffer.
+   */
+  public static ByteString unsafeWrap(ByteBuffer buffer) {
+    if (buffer.hasArray()) {
+      final int offset = buffer.arrayOffset();
+      return ByteString.wrap(buffer.array(), offset + buffer.position(), buffer.remaining());
+    } else {
+      return new NioByteString(buffer);
+    }
   }
-  repeated Map1Entry map1 = 1;
-  message Map2Entry {
-    string key = 1;
-    MapOut value = 2;
-  }
-  repeated Map2Entry map2 = 2;
-  message Map3Entry {
-    int32 key = 1;
-    string value = 2;
-  }
-  repeated Map3Entry map3 = 3;
-  message Map4Entry {
-    bool key = 1;
-    string value = 2;
-  }
-  repeated Map4Entry map4 = 5;
-  string bar = 4;
-}
-
-message MapM {
-  string foo = 1;
-}
-
-service TestService {
-  rpc Call1(MapIn) returns (MapOut);
-  rpc Call2(MapIn) returns (MapOut);
 }

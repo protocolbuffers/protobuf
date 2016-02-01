@@ -52,13 +52,12 @@ import java.util.NoSuchElementException;
  * Tests for {@link NioByteString}.
  */
 public class NioByteStringTest extends TestCase {
-  private static final ByteString EMPTY = UnsafeByteStrings.unsafeWrap(
-      ByteBuffer.wrap(new byte[0]));
+  private static final ByteString EMPTY = new NioByteString(ByteBuffer.wrap(new byte[0]));
   private static final String CLASSNAME = NioByteString.class.getSimpleName();
   private static final byte[] BYTES = ByteStringTest.getTestBytes(1234, 11337766L);
-  private static final int EXPECTED_HASH = new LiteralByteString(BYTES).hashCode();
+  private static final int EXPECTED_HASH = ByteString.wrap(BYTES).hashCode();
   private static final ByteBuffer BUFFER = ByteBuffer.wrap(BYTES.clone());
-  private static final ByteString TEST_STRING = UnsafeByteStrings.unsafeWrap(BUFFER);
+  private static final ByteString TEST_STRING = new NioByteString(BUFFER);
 
   public void testExpectedType() {
     String actualClassName = getActualClassName(TEST_STRING);
@@ -362,7 +361,7 @@ public class NioByteStringTest extends TestCase {
   public void testToString_returnsCanonicalEmptyString() {
     assertSame(CLASSNAME + " must be the same string references",
         EMPTY.toString(UTF_8),
-        UnsafeByteStrings.unsafeWrap(ByteBuffer.wrap(new byte[0])).toString(UTF_8));
+        new NioByteString(ByteBuffer.wrap(new byte[0])).toString(UTF_8));
   }
 
   public void testToString_raisesException() {
@@ -389,11 +388,11 @@ public class NioByteStringTest extends TestCase {
     assertEquals(CLASSNAME + " empty strings must be equal",
         EMPTY, TEST_STRING.substring(55, 55));
     assertEquals(CLASSNAME + " must equal another string with the same value",
-        TEST_STRING, UnsafeByteStrings.unsafeWrap(BUFFER));
+        TEST_STRING, new NioByteString(BUFFER));
 
     byte[] mungedBytes = mungedBytes();
     assertFalse(CLASSNAME + " must not equal every string with the same length",
-        TEST_STRING.equals(UnsafeByteStrings.unsafeWrap(ByteBuffer.wrap(mungedBytes))));
+        TEST_STRING.equals(new NioByteString(ByteBuffer.wrap(mungedBytes))));
   }
 
   public void testEqualsLiteralByteString() {
@@ -451,7 +450,7 @@ public class NioByteStringTest extends TestCase {
   }
 
   public void testPeekCachedHashCode() {
-    ByteString newString = UnsafeByteStrings.unsafeWrap(BUFFER);
+    ByteString newString = new NioByteString(BUFFER);
     assertEquals(CLASSNAME + ".peekCachedHashCode() should return zero at first", 0,
         newString.peekCachedHashCode());
     newString.hashCode();
@@ -541,6 +540,6 @@ public class NioByteStringTest extends TestCase {
   }
 
   private static ByteString forString(String str) {
-    return UnsafeByteStrings.unsafeWrap(ByteBuffer.wrap(str.getBytes(UTF_8)));
+    return new NioByteString(ByteBuffer.wrap(str.getBytes(UTF_8)));
   }
 }

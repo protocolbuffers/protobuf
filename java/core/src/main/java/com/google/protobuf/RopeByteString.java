@@ -213,14 +213,14 @@ final class RopeByteString extends ByteString {
    * @param right string on the right
    * @return string formed by copying data bytes
    */
-  private static LiteralByteString concatenateBytes(ByteString left,
+  private static ByteString concatenateBytes(ByteString left,
       ByteString right) {
     int leftSize = left.size();
     int rightSize = right.size();
     byte[] bytes = new byte[leftSize + rightSize];
     left.copyTo(bytes, 0, 0, leftSize);
     right.copyTo(bytes, 0, leftSize, rightSize);
-    return new LiteralByteString(bytes);  // Constructor wraps bytes
+    return ByteString.wrap(bytes);  // Constructor wraps bytes
   }
 
   /**
@@ -735,7 +735,7 @@ final class RopeByteString extends ByteString {
   private static final long serialVersionUID = 1L;
 
   Object writeReplace() {
-    return new LiteralByteString(toByteArray());
+    return ByteString.wrap(toByteArray());
   }
 
   private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {

@@ -655,11 +655,11 @@ public class ByteStringTest extends TestCase {
     // trees of empty leaves, to make a string that will fail this test.
     for (int i = 1; i < duo.size(); ++i) {
       assertTrue("Substrings of size() < 2 must not be RopeByteStrings",
-          duo.substring(i - 1, i) instanceof LiteralByteString);
+          duo.substring(i - 1, i) instanceof ByteString.LeafByteString);
     }
     for (int i = 1; i < quintet.size(); ++i) {
       assertTrue("Substrings of size() < 2 must not be RopeByteStrings",
-          quintet.substring(i - 1, i) instanceof LiteralByteString);
+          quintet.substring(i - 1, i) instanceof ByteString.LeafByteString);
     }
   }
 
@@ -724,7 +724,7 @@ public class ByteStringTest extends TestCase {
     }
     data1[1] = (byte) 11;
     // Test LiteralByteString.writeTo(OutputStream,int,int)
-    LiteralByteString left = new LiteralByteString(data1);
+    ByteString left = ByteString.wrap(data1);
     byte[] result = substringUsingWriteTo(left, 1, 1);
     assertEquals(1, result.length);
     assertEquals((byte) 11, result[0]);
@@ -733,7 +733,7 @@ public class ByteStringTest extends TestCase {
     for (int i = 0; i < data1.length; i++) {
       data2[i] = (byte) 2;
     }
-    LiteralByteString right = new LiteralByteString(data2);
+    ByteString right = ByteString.wrap(data2);
     // Concatenate two ByteStrings to create a RopeByteString.
     ByteString root = left.concat(right);
     // Make sure we are actually testing a RopeByteString with a simple tree

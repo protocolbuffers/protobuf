@@ -193,7 +193,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/BlockingRpcChannel.java              \
   java/core/src/main/java/com/google/protobuf/BlockingService.java                 \
   java/core/src/main/java/com/google/protobuf/BooleanArrayList.java                \
-  java/core/src/main/java/com/google/protobuf/BoundedByteString.java               \
   java/core/src/main/java/com/google/protobuf/ByteString.java                      \
   java/core/src/main/java/com/google/protobuf/CodedInputStream.java                \
   java/core/src/main/java/com/google/protobuf/CodedOutputStream.java               \
@@ -215,7 +214,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/LazyFieldLite.java                   \
   java/core/src/main/java/com/google/protobuf/LazyStringArrayList.java             \
   java/core/src/main/java/com/google/protobuf/LazyStringList.java                  \
-  java/core/src/main/java/com/google/protobuf/LiteralByteString.java               \
   java/core/src/main/java/com/google/protobuf/LongArrayList.java                   \
   java/core/src/main/java/com/google/protobuf/MapEntry.java                        \
   java/core/src/main/java/com/google/protobuf/MapEntryLite.java                    \
@@ -249,7 +247,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/UnknownFieldSet.java                 \
   java/core/src/main/java/com/google/protobuf/UnknownFieldSetLite.java             \
   java/core/src/main/java/com/google/protobuf/UnmodifiableLazyStringList.java      \
-  java/core/src/main/java/com/google/protobuf/UnsafeByteStrings.java               \
+  java/core/src/main/java/com/google/protobuf/UnsafeByteOperations.java            \
   java/core/src/main/java/com/google/protobuf/Utf8.java                            \
   java/core/src/main/java/com/google/protobuf/WireFormat.java                      \
   java/core/src/test/java/com/google/protobuf/AbstractMessageTest.java             \

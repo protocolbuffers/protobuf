@@ -84,7 +84,6 @@
             <include>**/AbstractMessageLite.java</include>
             <include>**/AbstractParser.java</include>
             <include>**/AbstractProtobufList.java</include>
-            <include>**/BoundedByteString.java</include>
             <include>**/BooleanArrayList.java</include>
             <include>**/ByteString.java</include>
             <include>**/CodedInputStream.java</include>
@@ -101,7 +100,6 @@
             <include>**/LazyFieldLite.java</include>
             <include>**/LazyStringArrayList.java</include>
             <include>**/LazyStringList.java</include>
-            <include>**/LiteralByteString.java</include>
             <include>**/LongArrayList.java</include>
             <include>**/MapEntryLite.java</include>
             <include>**/MapFieldLite.java</include>
@@ -119,7 +117,7 @@
             <include>**/UninitializedMessageException.java</include>
             <include>**/UnknownFieldSetLite.java</include>
             <include>**/UnmodifiableLazyStringList.java</include>
-            <include>**/UnsafeByteStrings.java</include>
+            <include>**/UnsafeByteOperations.java</include>
             <include>**/Utf8.java</include>
             <include>**/WireFormat.java</include>
           </includes>
