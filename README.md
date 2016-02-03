@@ -12,7 +12,7 @@ Overview
 
 Protocol Buffers (a.k.a., protobuf) are Google's language-neutral,
 platform-neutral, extensible mechanism for serializing structured data. You
-can find [protobuf's documentaion on the Google Developers site](https://developers.google.com/protocol-buffers/).
+can find [protobuf's documentation on the Google Developers site](https://developers.google.com/protocol-buffers/).
 
 This README file contains protobuf installation instructions. To install
 protobuf, you need to install the protocol compiler (used to compile .proto
@@ -40,11 +40,10 @@ page, check out the maven repo here:
   [http://repo1.maven.org/maven2/com/google/protobuf/protoc/](http://repo1.maven.org/maven2/com/google/protobuf/protoc/)
 
 These pre-built binaries are only provided for released versions. If you want
-to use the github master version at HEAD, or you need to modify protobuf code,
-or you are using C++, it's recommended to build your own protoc binary from
-source.
+to use the GitHub master version at HEAD, or you need to modify protobuf code,
+or you are using C++, you should build your own protoc binary from source.
 
-If you would like to build protoc binary from source, see the [C++ Installaton
+If you would like to build a protoc binary from source, see the [C++ installation
 Instructions](src/README.md).
 
 Protobuf Runtime Installation
