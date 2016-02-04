@@ -123,7 +123,7 @@
     <Compile Include="Reflection\RepeatedFieldAccessor.cs" />
     <Compile Include="Reflection\ServiceDescriptor.cs" />
     <Compile Include="Reflection\SingleFieldAccessor.cs" />
-    <Compile Include="Preconditions.cs" />
+    <Compile Include="ProtoPreconditions.cs" />
     <Compile Include="Reflection\TypeRegistry.cs" />
     <Compile Include="WellKnownTypes\Any.cs" />
     <Compile Include="WellKnownTypes\AnyPartial.cs" />

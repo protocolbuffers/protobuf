@@ -124,7 +124,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string TypeUrl {
       get { return typeUrl_; }
       set {
-        typeUrl_ = pb::Preconditions.CheckNotNull(value, "value");
+        typeUrl_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -137,7 +137,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public pb::ByteString Value {
       get { return value_; }
       set {
-        value_ = pb::Preconditions.CheckNotNull(value, "value");
+        value_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 

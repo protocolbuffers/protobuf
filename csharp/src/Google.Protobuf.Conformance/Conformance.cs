@@ -261,7 +261,7 @@ namespace Conformance {
     public pb::ByteString ProtobufPayload {
       get { return payloadCase_ == PayloadOneofCase.ProtobufPayload ? (pb::ByteString) payload_ : pb::ByteString.Empty; }
       set {
-        payload_ = pb::Preconditions.CheckNotNull(value, "value");
+        payload_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         payloadCase_ = PayloadOneofCase.ProtobufPayload;
       }
     }
@@ -271,7 +271,7 @@ namespace Conformance {
     public string JsonPayload {
       get { return payloadCase_ == PayloadOneofCase.JsonPayload ? (string) payload_ : ""; }
       set {
-        payload_ = pb::Preconditions.CheckNotNull(value, "value");
+        payload_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         payloadCase_ = PayloadOneofCase.JsonPayload;
       }
     }
@@ -471,7 +471,7 @@ namespace Conformance {
     public string ParseError {
       get { return resultCase_ == ResultOneofCase.ParseError ? (string) result_ : ""; }
       set {
-        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.ParseError;
       }
     }
@@ -486,7 +486,7 @@ namespace Conformance {
     public string SerializeError {
       get { return resultCase_ == ResultOneofCase.SerializeError ? (string) result_ : ""; }
       set {
-        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.SerializeError;
       }
     }
@@ -501,7 +501,7 @@ namespace Conformance {
     public string RuntimeError {
       get { return resultCase_ == ResultOneofCase.RuntimeError ? (string) result_ : ""; }
       set {
-        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.RuntimeError;
       }
     }
@@ -515,7 +515,7 @@ namespace Conformance {
     public pb::ByteString ProtobufPayload {
       get { return resultCase_ == ResultOneofCase.ProtobufPayload ? (pb::ByteString) result_ : pb::ByteString.Empty; }
       set {
-        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.ProtobufPayload;
       }
     }
@@ -529,7 +529,7 @@ namespace Conformance {
     public string JsonPayload {
       get { return resultCase_ == ResultOneofCase.JsonPayload ? (string) result_ : ""; }
       set {
-        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.JsonPayload;
       }
     }
@@ -543,7 +543,7 @@ namespace Conformance {
     public string Skipped {
       get { return resultCase_ == ResultOneofCase.Skipped ? (string) result_ : ""; }
       set {
-        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.Skipped;
       }
     }
@@ -1008,7 +1008,7 @@ namespace Conformance {
     public string OptionalString {
       get { return optionalString_; }
       set {
-        optionalString_ = pb::Preconditions.CheckNotNull(value, "value");
+        optionalString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1018,7 +1018,7 @@ namespace Conformance {
     public pb::ByteString OptionalBytes {
       get { return optionalBytes_; }
       set {
-        optionalBytes_ = pb::Preconditions.CheckNotNull(value, "value");
+        optionalBytes_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1068,7 +1068,7 @@ namespace Conformance {
     public string OptionalStringPiece {
       get { return optionalStringPiece_; }
       set {
-        optionalStringPiece_ = pb::Preconditions.CheckNotNull(value, "value");
+        optionalStringPiece_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1078,7 +1078,7 @@ namespace Conformance {
     public string OptionalCord {
       get { return optionalCord_; }
       set {
-        optionalCord_ = pb::Preconditions.CheckNotNull(value, "value");
+        optionalCord_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1483,7 +1483,7 @@ namespace Conformance {
     public string OneofString {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofString ? (string) oneofField_ : ""; }
       set {
-        oneofField_ = pb::Preconditions.CheckNotNull(value, "value");
+        oneofField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         oneofFieldCase_ = OneofFieldOneofCase.OneofString;
       }
     }
@@ -1493,7 +1493,7 @@ namespace Conformance {
     public pb::ByteString OneofBytes {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofBytes ? (pb::ByteString) oneofField_ : pb::ByteString.Empty; }
       set {
-        oneofField_ = pb::Preconditions.CheckNotNull(value, "value");
+        oneofField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         oneofFieldCase_ = OneofFieldOneofCase.OneofBytes;
       }
     }

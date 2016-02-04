@@ -459,7 +459,7 @@ namespace Google.Protobuf.TestProtos {
     public string SingleString {
       get { return singleString_; }
       set {
-        singleString_ = pb::Preconditions.CheckNotNull(value, "value");
+        singleString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -469,7 +469,7 @@ namespace Google.Protobuf.TestProtos {
     public pb::ByteString SingleBytes {
       get { return singleBytes_; }
       set {
-        singleBytes_ = pb::Preconditions.CheckNotNull(value, "value");
+        singleBytes_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -775,7 +775,7 @@ namespace Google.Protobuf.TestProtos {
     public string OneofString {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofString ? (string) oneofField_ : ""; }
       set {
-        oneofField_ = pb::Preconditions.CheckNotNull(value, "value");
+        oneofField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         oneofFieldCase_ = OneofFieldOneofCase.OneofString;
       }
     }
@@ -785,7 +785,7 @@ namespace Google.Protobuf.TestProtos {
     public pb::ByteString OneofBytes {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofBytes ? (pb::ByteString) oneofField_ : pb::ByteString.Empty; }
       set {
-        oneofField_ = pb::Preconditions.CheckNotNull(value, "value");
+        oneofField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         oneofFieldCase_ = OneofFieldOneofCase.OneofBytes;
       }
     }
@@ -2787,7 +2787,7 @@ namespace Google.Protobuf.TestProtos {
     public string StringField {
       get { return stringField_; }
       set {
-        stringField_ = pb::Preconditions.CheckNotNull(value, "value");
+        stringField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -3045,7 +3045,7 @@ namespace Google.Protobuf.TestProtos {
     public string MyString {
       get { return myString_; }
       set {
-        myString_ = pb::Preconditions.CheckNotNull(value, "value");
+        myString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -3480,7 +3480,7 @@ namespace Google.Protobuf.TestProtos {
     public string Data {
       get { return data_; }
       set {
-        data_ = pb::Preconditions.CheckNotNull(value, "value");
+        data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -3678,7 +3678,7 @@ namespace Google.Protobuf.TestProtos {
     public pb::ByteString Data {
       get { return data_; }
       set {
-        data_ = pb::Preconditions.CheckNotNull(value, "value");
+        data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -3781,7 +3781,7 @@ namespace Google.Protobuf.TestProtos {
     public pb::ByteString Data {
       get { return data_; }
       set {
-        data_ = pb::Preconditions.CheckNotNull(value, "value");
+        data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -4425,7 +4425,7 @@ namespace Google.Protobuf.TestProtos {
     public string FooString {
       get { return fooCase_ == FooOneofCase.FooString ? (string) foo_ : ""; }
       set {
-        foo_ = pb::Preconditions.CheckNotNull(value, "value");
+        foo_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         fooCase_ = FooOneofCase.FooString;
       }
     }
@@ -5528,7 +5528,7 @@ namespace Google.Protobuf.TestProtos {
     public string A {
       get { return a_; }
       set {
-        a_ = pb::Preconditions.CheckNotNull(value, "value");
+        a_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 

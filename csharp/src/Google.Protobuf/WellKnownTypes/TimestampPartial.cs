@@ -59,8 +59,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The difference between the two specified timestamps.</returns>
         public static Duration operator -(Timestamp lhs, Timestamp rhs)
         {
-            Preconditions.CheckNotNull(lhs, "lhs");
-            Preconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, "lhs");
+            ProtoPreconditions.CheckNotNull(rhs, "rhs");
             checked
             {
                 return Duration.Normalize(lhs.Seconds - rhs.Seconds, lhs.Nanos - rhs.Nanos);
@@ -75,8 +75,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The result of adding the duration to the timestamp.</returns>
         public static Timestamp operator +(Timestamp lhs, Duration rhs)
         {
-            Preconditions.CheckNotNull(lhs, "lhs");
-            Preconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, "lhs");
+            ProtoPreconditions.CheckNotNull(rhs, "rhs");
             checked
             {
                 return Normalize(lhs.Seconds + rhs.Seconds, lhs.Nanos + rhs.Nanos);
@@ -91,8 +91,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The result of subtracting the duration from the timestamp.</returns>
         public static Timestamp operator -(Timestamp lhs, Duration rhs)
         {
-            Preconditions.CheckNotNull(lhs, "lhs");
-            Preconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, "lhs");
+            ProtoPreconditions.CheckNotNull(rhs, "rhs");
             checked
             {
                 return Normalize(lhs.Seconds - rhs.Seconds, lhs.Nanos - rhs.Nanos);
