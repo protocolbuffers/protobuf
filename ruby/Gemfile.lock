@@ -10,6 +10,7 @@ GEM
     rake (10.4.2)
     rake-compiler (0.9.5)
       rake
+    rake-compiler-dock (0.5.1)
     rubygems-tasks (0.2.4)
     test-unit (3.0.9)
       power_assert
@@ -21,6 +22,7 @@ PLATFORMS
 DEPENDENCIES
   google-protobuf!
   rake-compiler
+  rake-compiler-dock
   rubygems-tasks
   test-unit
 
