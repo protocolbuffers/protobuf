@@ -29,8 +29,8 @@ namespace Google.Protobuf.WellKnownTypes {
             "bGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Any), global::Google.Protobuf.WellKnownTypes.Any.Parser, new[]{ "TypeUrl", "Value" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Any), global::Google.Protobuf.WellKnownTypes.Any.Parser, new[]{ "TypeUrl", "Value" }, null, null, null)
           }));
     }
     #endregion
