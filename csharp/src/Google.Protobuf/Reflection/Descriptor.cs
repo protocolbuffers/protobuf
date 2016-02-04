@@ -317,7 +317,7 @@ namespace Google.Protobuf.Reflection {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -330,7 +330,7 @@ namespace Google.Protobuf.Reflection {
     public string Package {
       get { return package_; }
       set {
-        package_ = pb::Preconditions.CheckNotNull(value, "value");
+        package_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -446,7 +446,7 @@ namespace Google.Protobuf.Reflection {
     public string Syntax {
       get { return syntax_; }
       set {
-        syntax_ = pb::Preconditions.CheckNotNull(value, "value");
+        syntax_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -702,7 +702,7 @@ namespace Google.Protobuf.Reflection {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1275,7 +1275,7 @@ namespace Google.Protobuf.Reflection {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1326,7 +1326,7 @@ namespace Google.Protobuf.Reflection {
     public string TypeName {
       get { return typeName_; }
       set {
-        typeName_ = pb::Preconditions.CheckNotNull(value, "value");
+        typeName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1340,7 +1340,7 @@ namespace Google.Protobuf.Reflection {
     public string Extendee {
       get { return extendee_; }
       set {
-        extendee_ = pb::Preconditions.CheckNotNull(value, "value");
+        extendee_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1357,7 +1357,7 @@ namespace Google.Protobuf.Reflection {
     public string DefaultValue {
       get { return defaultValue_; }
       set {
-        defaultValue_ = pb::Preconditions.CheckNotNull(value, "value");
+        defaultValue_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1387,7 +1387,7 @@ namespace Google.Protobuf.Reflection {
     public string JsonName {
       get { return jsonName_; }
       set {
-        jsonName_ = pb::Preconditions.CheckNotNull(value, "value");
+        jsonName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1720,7 +1720,7 @@ namespace Google.Protobuf.Reflection {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1828,7 +1828,7 @@ namespace Google.Protobuf.Reflection {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1986,7 +1986,7 @@ namespace Google.Protobuf.Reflection {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2152,7 +2152,7 @@ namespace Google.Protobuf.Reflection {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2313,7 +2313,7 @@ namespace Google.Protobuf.Reflection {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2327,7 +2327,7 @@ namespace Google.Protobuf.Reflection {
     public string InputType {
       get { return inputType_; }
       set {
-        inputType_ = pb::Preconditions.CheckNotNull(value, "value");
+        inputType_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2337,7 +2337,7 @@ namespace Google.Protobuf.Reflection {
     public string OutputType {
       get { return outputType_; }
       set {
-        outputType_ = pb::Preconditions.CheckNotNull(value, "value");
+        outputType_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2583,7 +2583,7 @@ namespace Google.Protobuf.Reflection {
     public string JavaPackage {
       get { return javaPackage_; }
       set {
-        javaPackage_ = pb::Preconditions.CheckNotNull(value, "value");
+        javaPackage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2600,7 +2600,7 @@ namespace Google.Protobuf.Reflection {
     public string JavaOuterClassname {
       get { return javaOuterClassname_; }
       set {
-        javaOuterClassname_ = pb::Preconditions.CheckNotNull(value, "value");
+        javaOuterClassname_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2687,7 +2687,7 @@ namespace Google.Protobuf.Reflection {
     public string GoPackage {
       get { return goPackage_; }
       set {
-        goPackage_ = pb::Preconditions.CheckNotNull(value, "value");
+        goPackage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2773,7 +2773,7 @@ namespace Google.Protobuf.Reflection {
     public string ObjcClassPrefix {
       get { return objcClassPrefix_; }
       set {
-        objcClassPrefix_ = pb::Preconditions.CheckNotNull(value, "value");
+        objcClassPrefix_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -2786,7 +2786,7 @@ namespace Google.Protobuf.Reflection {
     public string CsharpNamespace {
       get { return csharpNamespace_; }
       set {
-        csharpNamespace_ = pb::Preconditions.CheckNotNull(value, "value");
+        csharpNamespace_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -4369,7 +4369,7 @@ namespace Google.Protobuf.Reflection {
     public string IdentifierValue {
       get { return identifierValue_; }
       set {
-        identifierValue_ = pb::Preconditions.CheckNotNull(value, "value");
+        identifierValue_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -4409,7 +4409,7 @@ namespace Google.Protobuf.Reflection {
     public pb::ByteString StringValue {
       get { return stringValue_; }
       set {
-        stringValue_ = pb::Preconditions.CheckNotNull(value, "value");
+        stringValue_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -4419,7 +4419,7 @@ namespace Google.Protobuf.Reflection {
     public string AggregateValue {
       get { return aggregateValue_; }
       set {
-        aggregateValue_ = pb::Preconditions.CheckNotNull(value, "value");
+        aggregateValue_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -4621,7 +4621,7 @@ namespace Google.Protobuf.Reflection {
         public string NamePart_ {
           get { return namePart_; }
           set {
-            namePart_ = pb::Preconditions.CheckNotNull(value, "value");
+            namePart_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
           }
         }
 
@@ -5004,7 +5004,7 @@ namespace Google.Protobuf.Reflection {
         public string LeadingComments {
           get { return leadingComments_; }
           set {
-            leadingComments_ = pb::Preconditions.CheckNotNull(value, "value");
+            leadingComments_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
           }
         }
 
@@ -5014,7 +5014,7 @@ namespace Google.Protobuf.Reflection {
         public string TrailingComments {
           get { return trailingComments_; }
           set {
-            trailingComments_ = pb::Preconditions.CheckNotNull(value, "value");
+            trailingComments_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
           }
         }
 

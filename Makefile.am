@@ -133,7 +133,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/LimitedInputStream.cs                           \
   csharp/src/Google.Protobuf/MessageExtensions.cs                            \
   csharp/src/Google.Protobuf/MessageParser.cs                                \
-  csharp/src/Google.Protobuf/Preconditions.cs                                \
+  csharp/src/Google.Protobuf/ProtoPreconditions.cs                           \
   csharp/src/Google.Protobuf/Properties/AssemblyInfo.cs                      \
   csharp/src/Google.Protobuf/Reflection/Descriptor.cs                        \
   csharp/src/Google.Protobuf/Reflection/DescriptorBase.cs                    \
