@@ -34,17 +34,25 @@ goog.setTestOnly();
 
 goog.require('goog.json');
 goog.require('goog.testing.asserts');
+
+// CommonJS-LoadFromFile: google-protobuf
 goog.require('jspb.Message');
+
+// CommonJS-LoadFromFile: test5_pb
 goog.require('proto.jspb.exttest.beta.floatingStrField');
+
+// CommonJS-LoadFromFile: test3_pb
 goog.require('proto.jspb.exttest.floatingMsgField');
+
+// CommonJS-LoadFromFile: test4_pb
 goog.require('proto.jspb.exttest.floatingMsgFieldTwo');
+
+// CommonJS-LoadFromFile: test_pb
 goog.require('proto.jspb.test.CloneExtension');
 goog.require('proto.jspb.test.Complex');
 goog.require('proto.jspb.test.DefaultValues');
 goog.require('proto.jspb.test.Empty');
 goog.require('proto.jspb.test.EnumContainer');
-goog.require('proto.jspb.test.ExtensionMessage');
-goog.require('proto.jspb.test.floatingMsgField');
 goog.require('proto.jspb.test.floatingStrField');
 goog.require('proto.jspb.test.HasExtensions');
 goog.require('proto.jspb.test.IndirectExtension');
@@ -56,13 +64,16 @@ goog.require('proto.jspb.test.Simple1');
 goog.require('proto.jspb.test.Simple2');
 goog.require('proto.jspb.test.SpecialCases');
 goog.require('proto.jspb.test.TestClone');
-goog.require('proto.jspb.test.TestExtensionsMessage');
 goog.require('proto.jspb.test.TestGroup');
 goog.require('proto.jspb.test.TestGroup1');
 goog.require('proto.jspb.test.TestMessageWithOneof');
 goog.require('proto.jspb.test.TestReservedNames');
 goog.require('proto.jspb.test.TestReservedNamesExtension');
 
+// CommonJS-LoadFromFile: test2_pb
+goog.require('proto.jspb.test.ExtensionMessage');
+goog.require('proto.jspb.test.TestExtensionsMessage');
+goog.require('proto.jspb.test.floatingMsgField');
 
 
 

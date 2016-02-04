@@ -31,11 +31,14 @@
 goog.setTestOnly();
 
 goog.require('goog.testing.asserts');
+
+// CommonJS-LoadFromFile: google-protobuf
 goog.require('jspb.debug');
+
+// CommonJS-LoadFromFile: test_pb
 goog.require('proto.jspb.test.HasExtensions');
 goog.require('proto.jspb.test.IsExtension');
 goog.require('proto.jspb.test.Simple1');
-
 
 
 describe('debugTest', function() {

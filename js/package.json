@@ -9,10 +9,11 @@
     "jasmine": "~2.4.1"
   },
   "devDependencies": {
-    "google-closure-compiler": "~20151216.2.0"
+    "google-closure-compiler": "~20151216.2.0",
+    "glob": "~6.0.4"
   },
   "scripts": {
-    "test": "./node_modules/gulp/bin/gulp.js test"
+    "test": "./node_modules/gulp/bin/gulp.js test_closure"
   },
   "repository": {
     "type": "git",

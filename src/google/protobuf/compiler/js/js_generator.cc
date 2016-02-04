@@ -2516,6 +2516,10 @@ void Generator::GenerateFile(const GeneratorOptions& options,
 
   // Generate "require" statements.
   if (options.import_style == GeneratorOptions::IMPORT_COMMONJS) {
+    printer->Print("var jspb = require('google-protobuf');\n");
+    printer->Print("var goog = jspb;\n");
+    printer->Print("var global = Function('return this')();\n\n");
+
     for (int i = 0; i < file->dependency_count(); i++) {
       const std::string& name = file->dependency(i)->name();
       printer->Print(
@@ -2537,7 +2541,7 @@ void Generator::GenerateFile(const GeneratorOptions& options,
   //FindProvidesForFields(options, printer, extensions, &provided);
   for (std::set<string>::iterator it = provided.begin();
        it != provided.end(); ++it) {
-    printer->Print("goog.exportSymbol('$name$', null, this);\n",
+    printer->Print("goog.exportSymbol('$name$', null, global);\n",
                    "name", *it);
   }
 
