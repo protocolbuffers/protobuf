@@ -82,7 +82,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -105,7 +105,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     public string Email {
       get { return email_; }
       set {
-        email_ = pb::Preconditions.CheckNotNull(value, "value");
+        email_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -267,7 +267,7 @@ namespace Google.Protobuf.Examples.AddressBook {
         public string Number {
           get { return number_; }
           set {
-            number_ = pb::Preconditions.CheckNotNull(value, "value");
+            number_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
           }
         }
 

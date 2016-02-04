@@ -262,7 +262,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string StringValue {
       get { return kindCase_ == KindOneofCase.StringValue ? (string) kind_ : ""; }
       set {
-        kind_ = pb::Preconditions.CheckNotNull(value, "value");
+        kind_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         kindCase_ = KindOneofCase.StringValue;
       }
     }

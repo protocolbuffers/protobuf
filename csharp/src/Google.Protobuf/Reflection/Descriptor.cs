@@ -5301,7 +5301,7 @@ namespace Google.Protobuf.Reflection {
         public string SourceFile {
           get { return sourceFile_; }
           set {
-            sourceFile_ = pb::Preconditions.CheckNotNull(value, "value");
+            sourceFile_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
           }
         }
 

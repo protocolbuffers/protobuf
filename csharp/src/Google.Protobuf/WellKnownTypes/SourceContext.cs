@@ -79,7 +79,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string FileName {
       get { return fileName_; }
       set {
-        fileName_ = pb::Preconditions.CheckNotNull(value, "value");
+        fileName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 

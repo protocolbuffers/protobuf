@@ -97,7 +97,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -153,7 +153,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Version {
       get { return version_; }
       set {
-        version_ = pb::Preconditions.CheckNotNull(value, "value");
+        version_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -388,7 +388,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -401,7 +401,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string RequestTypeUrl {
       get { return requestTypeUrl_; }
       set {
-        requestTypeUrl_ = pb::Preconditions.CheckNotNull(value, "value");
+        requestTypeUrl_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -427,7 +427,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string ResponseTypeUrl {
       get { return responseTypeUrl_; }
       set {
-        responseTypeUrl_ = pb::Preconditions.CheckNotNull(value, "value");
+        responseTypeUrl_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -740,7 +740,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -754,7 +754,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Root {
       get { return root_; }
       set {
-        root_ = pb::Preconditions.CheckNotNull(value, "value");
+        root_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 

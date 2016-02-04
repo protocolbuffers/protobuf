@@ -1164,7 +1164,7 @@ namespace UnitTest.Issues.TestProtos {
     public string O1String {
       get { return o1Case_ == O1OneofCase.O1String ? (string) o1_ : ""; }
       set {
-        o1_ = pb::Preconditions.CheckNotNull(value, "value");
+        o1_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         o1Case_ = O1OneofCase.O1String;
       }
     }
@@ -1185,7 +1185,7 @@ namespace UnitTest.Issues.TestProtos {
     public string PlainString {
       get { return plainString_; }
       set {
-        plainString_ = pb::Preconditions.CheckNotNull(value, "value");
+        plainString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1204,7 +1204,7 @@ namespace UnitTest.Issues.TestProtos {
     public string O2String {
       get { return o2Case_ == O2OneofCase.O2String ? (string) o2_ : ""; }
       set {
-        o2_ = pb::Preconditions.CheckNotNull(value, "value");
+        o2_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         o2Case_ = O2OneofCase.O2String;
       }
     }

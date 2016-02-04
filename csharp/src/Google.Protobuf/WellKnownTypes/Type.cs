@@ -133,7 +133,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -417,7 +417,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -431,7 +431,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string TypeUrl {
       get { return typeUrl_; }
       set {
-        typeUrl_ = pb::Preconditions.CheckNotNull(value, "value");
+        typeUrl_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -483,7 +483,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string JsonName {
       get { return jsonName_; }
       set {
-        jsonName_ = pb::Preconditions.CheckNotNull(value, "value");
+        jsonName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -496,7 +496,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string DefaultValue {
       get { return defaultValue_; }
       set {
-        defaultValue_ = pb::Preconditions.CheckNotNull(value, "value");
+        defaultValue_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -857,7 +857,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1074,7 +1074,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1235,7 +1235,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
