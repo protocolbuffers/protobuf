@@ -1,11 +1,17 @@
 /**
- * @fileoverview Description of this file.
+ * @fileoverview Exports symbols needed only by tests.
+ *
+ * This file exports several Closure Library symbols that are only
+ * used by tests.  It is used to generate a file
+ * closure_asserts_commonjs.js that is only used at testing time.
  */
 
 goog.require('goog.testing.asserts');
 
 var global = Function('return this')();
 
+// All of the closure "assert" functions are exported at the global level.
+//
 // The Google Closure assert functions start with assert, eg.
 //   assertThrows
 //   assertNotThrows
