@@ -182,7 +182,7 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
     }
   }
   printer->Print("},\n"
-      "    new pbr::GeneratedCodeInfo(");
+      "    new pbr::GeneratedClrTypeInfo(");
   // Specify all the generated code information, recursively.
   if (file_->enum_type_count() > 0) {
       printer->Print("new[] {");
@@ -195,7 +195,7 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
       printer->Print("null, ");
   }
   if (file_->message_type_count() > 0) {
-      printer->Print("new pbr::GeneratedCodeInfo[] {\n");
+      printer->Print("new pbr::GeneratedClrTypeInfo[] {\n");
       printer->Indent();
       printer->Indent();
       printer->Indent();
@@ -232,7 +232,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
     return;
   }
   // Generated message type
-  printer->Print("new pbr::GeneratedCodeInfo(typeof($type_name$), $type_name$.Parser, ", "type_name", GetClassName(descriptor));
+  printer->Print("new pbr::GeneratedClrTypeInfo(typeof($type_name$), $type_name$.Parser, ", "type_name", GetClassName(descriptor));
   
   // Fields
   if (descriptor->field_count() > 0) {
@@ -273,7 +273,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
   // Nested types
   if (descriptor->nested_type_count() > 0) {
       // Need to specify array type explicitly here, as all elements may be null. 
-      printer->Print("new pbr::GeneratedCodeInfo[] { ");
+      printer->Print("new pbr::GeneratedClrTypeInfo[] { ");
       for (int i = 0; i < descriptor->nested_type_count(); i++) {
           WriteGeneratedCodeInfo(descriptor->nested_type(i), printer, i == descriptor->nested_type_count() - 1);
       }
