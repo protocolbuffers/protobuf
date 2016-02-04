@@ -109,7 +109,7 @@
     <Compile Include="Reflection\FieldDescriptor.cs" />
     <Compile Include="Reflection\FieldType.cs" />
     <Compile Include="Reflection\FileDescriptor.cs" />
-    <Compile Include="Reflection\GeneratedCodeInfo.cs" />
+    <Compile Include="Reflection\GeneratedClrTypeInfo.cs" />
     <Compile Include="Reflection\IDescriptor.cs" />
     <Compile Include="Reflection\IFieldAccessor.cs" />
     <Compile Include="Reflection\MapFieldAccessor.cs" />
