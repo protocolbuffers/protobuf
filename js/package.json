@@ -4,7 +4,7 @@
   "description": "Protocol Buffers for JavaScript",
   "main": "debug.js",
   "dependencies": {
-    "google-closure-library": "~20151015.0.0",
+    "google-closure-library": "~20160125.0.0",
     "gulp": "~3.9.0",
     "jasmine": "~2.4.1"
   },
