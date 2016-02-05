@@ -10,5 +10,7 @@ exports.BinaryReader = jspb.BinaryReader;
 exports.BinaryWriter = jspb.BinaryWriter;
 exports.ExtensionFieldInfo = jspb.ExtensionFieldInfo;
 
+// These are used by generated code but should not be used directly by clients.
 exports.exportSymbol = goog.exportSymbol;
 exports.inherits = goog.inherits;
+exports.object = {extend: goog.object.extend};

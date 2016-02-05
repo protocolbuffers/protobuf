@@ -1466,13 +1466,6 @@ void Generator::GenerateClass(const GeneratorOptions& options,
       GenerateClassExtensionFieldInfo(options, printer, desc);
     }
 
-    if (options.import_style == GeneratorOptions::IMPORT_COMMONJS) {
-      printer->Print(
-          "exports.$name$ = $fullName$;\n",
-          "name", desc->name(),
-          "fullName", GetPath(options, desc));
-    }
-
     if (options.import_style != GeneratorOptions:: IMPORT_CLOSURE) {
       for (int i = 0; i < desc->extension_count(); i++) {
         GenerateExtension(options, printer, desc->extension(i));
@@ -2551,6 +2544,11 @@ void Generator::GenerateFile(const GeneratorOptions& options,
   // GenerateClassesAndEnums().
   for (int i = 0; i < file->extension_count(); i++) {
     GenerateExtension(options, printer, file->extension(i));
+  }
+
+  if (options.import_style == GeneratorOptions::IMPORT_COMMONJS) {
+    printer->Print("goog.object.extend(exports, $package$);\n",
+                   "package", GetPath(options, file));
   }
 }
 
