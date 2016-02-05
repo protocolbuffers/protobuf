@@ -2530,8 +2530,15 @@ void Generator::GenerateFile(const GeneratorOptions& options,
   //   // Later generated code expects foo.bar = {} to exist:
   //   foo.bar.Baz = function() { /* ... */ }
   std::set<std::string> provided;
+
+  // Cover the case where this file declares extensions but no messages.
+  // This will ensure that the file-level object will be declared to hold
+  // the extensions.
+  for (int i = 0; i < file->extension_count(); i++) {
+    provided.insert(file->extension(i)->full_name());
+  }
+
   FindProvidesForFile(options, printer, file, &provided);
-  //FindProvidesForFields(options, printer, extensions, &provided);
   for (std::set<string>::iterator it = provided.begin();
        it != provided.end(); ++it) {
     printer->Print("goog.exportSymbol('$name$', null, global);\n",

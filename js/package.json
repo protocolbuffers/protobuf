@@ -13,7 +13,7 @@
     "glob": "~6.0.4"
   },
   "scripts": {
-    "test": "./node_modules/gulp/bin/gulp.js test_closure"
+    "test": "./node_modules/gulp/bin/gulp.js test"
   },
   "repository": {
     "type": "git",

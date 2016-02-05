@@ -88,3 +88,7 @@ gulp.task('test_commonjs', ['make_commonjs_out'], function (cb) {
     cb(err);
   });
 });
+
+gulp.task('test', ['test_closure', 'test_commonjs'], function(cb) {
+  cb();
+});
