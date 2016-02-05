@@ -45,7 +45,7 @@ gulp.task('make_commonjs_out', ['dist', 'genproto_commonjs', 'commonjs_asserts']
   // Will require proper externs/exports.
   var cmd = "mkdir -p commonjs_out/binary && ";
   function addTestFile(file) {
-    cmd += 'nodejs commonjs/rewrite_tests_for_commonjs.js < ' + file +
+    cmd += 'node commonjs/rewrite_tests_for_commonjs.js < ' + file +
            ' > commonjs_out/' + file + '&& ';
   }
 
