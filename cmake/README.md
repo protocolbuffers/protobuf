@@ -157,7 +157,8 @@ And wait for the compilation to finish.
 Testing
 =======
 
-To run unit-tests:
+To run unit-tests, first you must compile protobuf as described above.
+Then run:
 
      C:\Path\to\protobuf\cmake\build\release>nmake check
 
