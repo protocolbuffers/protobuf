@@ -477,7 +477,7 @@ namespace Google.Protobuf.Collections
         {
             var writer = new StringWriter();
             JsonFormatter.Default.WriteDictionary(writer, this);
-            return writer.GetStringBuilder().ToString();
+            return writer.ToString();
         }
 
         #region IDictionary explicit interface implementation

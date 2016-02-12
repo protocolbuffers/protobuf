@@ -141,17 +141,9 @@ namespace Google.Protobuf
         /// <returns>The formatted message.</returns>
         public string Format(IMessage message)
         {
-            Preconditions.CheckNotNull(message, nameof(message));
             var writer = new StringWriter();
-            if (message.Descriptor.IsWellKnownType)
-            {
-                WriteWellKnownTypeValue(writer, message.Descriptor, message);
-            }
-            else
-            {
-                WriteMessage(writer, message);
-            }
-            return writer.GetStringBuilder().ToString();
+            Format(message, writer);
+            return writer.ToString();
         }
 
         /// <summary>

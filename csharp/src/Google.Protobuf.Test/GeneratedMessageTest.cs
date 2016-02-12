@@ -718,7 +718,7 @@ namespace Google.Protobuf
             var message = new ForeignMessage { C = 31 };
             var writer = new StringWriter();
             JsonFormatter.Default.Format(message, writer);
-            Assert.AreEqual("{ \"c\": 31 }", writer.GetStringBuilder().ToString());
+            Assert.AreEqual("{ \"c\": 31 }", writer.ToString());
         }
     }
 }

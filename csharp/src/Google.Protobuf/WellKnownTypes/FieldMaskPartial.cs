@@ -70,7 +70,7 @@ namespace Google.Protobuf.WellKnownTypes
                     writer.Write("{ \"@warning\": \"Invalid FieldMask\", \"paths\": ");
                     JsonFormatter.Default.WriteList(writer, (IList)paths);
                     writer.Write(" }");
-                    return writer.GetStringBuilder().ToString();
+                    return writer.ToString();
                 }
                 else
                 {
