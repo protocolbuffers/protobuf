@@ -64,7 +64,7 @@ string FilePath(const FileDescriptor* file);
 
 // Gets the name of the root class we'll generate in the file.  This class
 // is not meant for external consumption, but instead contains helpers that
-// the rest of the the classes need
+// the rest of the classes need
 string FileClassName(const FileDescriptor* file);
 
 // These return the fully-qualified class name corresponding to the given
@@ -148,7 +148,7 @@ string BuildCommentsString(const SourceLocation& location);
 bool ValidateObjCClassPrefix(const FileDescriptor* file, string *out_error);
 
 // Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform
-// the input into the the expected output.
+// the input into the expected output.
 class LIBPROTOC_EXPORT TextFormatDecodeData {
  public:
   TextFormatDecodeData() {}

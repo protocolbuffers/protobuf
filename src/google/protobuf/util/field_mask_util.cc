@@ -103,7 +103,7 @@ class FieldMaskTree {
   // Add a field path into the tree. In a FieldMask, each field path matches
   // the specified field and also all its sub-fields. If the field path to
   // add is a sub-path of an existing field path in the tree (i.e., a leaf
-  // node), it means the tree already matchesthe the given path so nothing will
+  // node), it means the tree already matches the given path so nothing will
   // be added to the tree. If the path matches an existing non-leaf node in the
   // tree, that non-leaf node will be turned into a leaf node with all its
   // children removed because the path matches all the node's children.

@@ -35,7 +35,7 @@ build with all the other examples.  See:
   https://github.com/golang/protobuf
 for more information about Go protocol buffer support.
 
-First, install the the Protocol Buffers compiler (protoc).
+First, install the Protocol Buffers compiler (protoc).
 Then, install the Go Protocol Buffers plugin
 ($GOPATH/bin must be in your $PATH for protoc to find it):
   go get github.com/golang/protobuf/protoc-gen-go
