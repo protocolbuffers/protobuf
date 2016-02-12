@@ -115,7 +115,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given byte array.
         /// </summary>
-        public CodedInputStream(byte[] buffer) : this(null, Preconditions.CheckNotNull(buffer, "buffer"), 0, buffer.Length)
+        public CodedInputStream(byte[] buffer) : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), 0, buffer.Length)
         {            
         }
 
@@ -123,7 +123,7 @@ namespace Google.Protobuf
         /// Creates a new CodedInputStream that reads from the given byte array slice.
         /// </summary>
         public CodedInputStream(byte[] buffer, int offset, int length)
-            : this(null, Preconditions.CheckNotNull(buffer, "buffer"), offset, offset + length)
+            : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), offset, offset + length)
         {            
             if (offset < 0 || offset > buffer.Length)
             {
@@ -140,7 +140,7 @@ namespace Google.Protobuf
         /// </summary>
         public CodedInputStream(Stream input) : this(input, new byte[BufferSize], 0, 0)
         {
-            Preconditions.CheckNotNull(input, "input");
+            ProtoPreconditions.CheckNotNull(input, "input");
         }
 
         /// <summary>

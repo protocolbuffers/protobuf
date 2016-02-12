@@ -43,7 +43,7 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class FileDescriptor : IDescriptor
     {
-        private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
+        private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedClrTypeInfo generatedCodeInfo)
         {
             SerializedData = descriptorData;
             DescriptorPool = pool;
@@ -223,7 +223,7 @@ namespace Google.Protobuf.Reflection
         /// <exception cref="DescriptorValidationException">If <paramref name="proto"/> is not
         /// a valid descriptor. This can occur for a number of reasons, such as a field
         /// having an undefined type or because two messages were defined with the same name.</exception>
-        private static FileDescriptor BuildFrom(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies, GeneratedCodeInfo generatedCodeInfo)
+        private static FileDescriptor BuildFrom(ByteString descriptorData, FileDescriptorProto proto, FileDescriptor[] dependencies, bool allowUnknownDependencies, GeneratedClrTypeInfo generatedCodeInfo)
         {
             // Building descriptors involves two steps: translating and linking.
             // In the translation step (implemented by FileDescriptor's
@@ -291,7 +291,7 @@ namespace Google.Protobuf.Reflection
         public static FileDescriptor FromGeneratedCode(
             byte[] descriptorData,
             FileDescriptor[] dependencies,
-            GeneratedCodeInfo generatedCodeInfo)
+            GeneratedClrTypeInfo generatedCodeInfo)
         {
             FileDescriptorProto proto;
             try

@@ -124,7 +124,7 @@ namespace Google.Protobuf.Collections
         /// <returns><c>true</c> if the map contains the given key; <c>false</c> otherwise.</returns>
         public bool ContainsKey(TKey key)
         {
-            Preconditions.CheckNotNullUnconstrained(key, "key");
+            ProtoPreconditions.CheckNotNullUnconstrained(key, "key");
             return map.ContainsKey(key);
         }
 
@@ -141,7 +141,7 @@ namespace Google.Protobuf.Collections
         /// <returns><c>true</c> if the map contained the given key before the entry was removed; <c>false</c> otherwise.</returns>
         public bool Remove(TKey key)
         {
-            Preconditions.CheckNotNullUnconstrained(key, "key");
+            ProtoPreconditions.CheckNotNullUnconstrained(key, "key");
             LinkedListNode<KeyValuePair<TKey, TValue>> node;
             if (map.TryGetValue(key, out node))
             {
@@ -189,7 +189,7 @@ namespace Google.Protobuf.Collections
         {
             get
             {
-                Preconditions.CheckNotNullUnconstrained(key, "key");
+                ProtoPreconditions.CheckNotNullUnconstrained(key, "key");
                 TValue value;
                 if (TryGetValue(key, out value))
                 {
@@ -199,11 +199,11 @@ namespace Google.Protobuf.Collections
             }
             set
             {
-                Preconditions.CheckNotNullUnconstrained(key, "key");
+                ProtoPreconditions.CheckNotNullUnconstrained(key, "key");
                 // value == null check here is redundant, but avoids boxing.
                 if (value == null)
                 {
-                    Preconditions.CheckNotNullUnconstrained(value, "value");
+                    ProtoPreconditions.CheckNotNullUnconstrained(value, "value");
                 }
                 LinkedListNode<KeyValuePair<TKey, TValue>> node;
                 var pair = new KeyValuePair<TKey, TValue>(key, value);
@@ -235,7 +235,7 @@ namespace Google.Protobuf.Collections
         /// <param name="entries">The entries to add to the map.</param>
         public void Add(IDictionary<TKey, TValue> entries)
         {
-            Preconditions.CheckNotNull(entries, "entries");
+            ProtoPreconditions.CheckNotNull(entries, "entries");
             foreach (var pair in entries)
             {
                 Add(pair.Key, pair.Value);
@@ -502,7 +502,7 @@ namespace Google.Protobuf.Collections
 
         void IDictionary.Remove(object key)
         {
-            Preconditions.CheckNotNull(key, "key");
+            ProtoPreconditions.CheckNotNull(key, "key");
             if (!(key is TKey))
             {
                 return;
@@ -531,7 +531,7 @@ namespace Google.Protobuf.Collections
         {
             get
             {
-                Preconditions.CheckNotNull(key, "key");
+                ProtoPreconditions.CheckNotNull(key, "key");
                 if (!(key is TKey))
                 {
                     return null;

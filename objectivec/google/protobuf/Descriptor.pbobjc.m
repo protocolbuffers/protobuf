@@ -1434,7 +1434,11 @@ typedef struct GPBFileOptions__storage_ {
         .offset = offsetof(GPBFileOptions__storage_, javananoUseDeprecatedPackage),
         .defaultValue.valueBool = NO,
         .dataTypeSpecific.className = NULL,
+      #if GPBOBJC_INCLUDE_FIELD_OPTIONS
+        .fieldOptions = "\000\000\000\002\030\001",
+      #else
         .fieldOptions = NULL,
+      #endif  // GPBOBJC_INCLUDE_FIELD_OPTIONS
       },
       {
         .name = "uninterpretedOptionArray",
@@ -2432,6 +2436,151 @@ typedef struct GPBSourceCodeInfo_Location__storage_ {
                                         ranges:NULL
                                     rangeCount:0
                                    storageSize:sizeof(GPBSourceCodeInfo_Location__storage_)
+                                    wireFormat:NO];
+    NSAssert(descriptor == nil, @"Startup recursed!");
+    descriptor = localDescriptor;
+  }
+  return descriptor;
+}
+
+@end
+
+#pragma mark - GPBGeneratedCodeInfo
+
+@implementation GPBGeneratedCodeInfo
+
+@dynamic annotationArray, annotationArray_Count;
+
+typedef struct GPBGeneratedCodeInfo__storage_ {
+  uint32_t _has_storage_[1];
+  NSMutableArray *annotationArray;
+} GPBGeneratedCodeInfo__storage_;
+
+// This method is threadsafe because it is initially called
+// in +initialize for each subclass.
++ (GPBDescriptor *)descriptor {
+  static GPBDescriptor *descriptor = nil;
+  if (!descriptor) {
+    static GPBMessageFieldDescription fields[] = {
+      {
+        .name = "annotationArray",
+        .number = GPBGeneratedCodeInfo_FieldNumber_AnnotationArray,
+        .hasIndex = GPBNoHasBit,
+        .flags = GPBFieldRepeated,
+        .dataType = GPBDataTypeMessage,
+        .offset = offsetof(GPBGeneratedCodeInfo__storage_, annotationArray),
+        .defaultValue.valueMessage = nil,
+        .dataTypeSpecific.className = GPBStringifySymbol(GPBGeneratedCodeInfo_Annotation),
+        .fieldOptions = NULL,
+      },
+    };
+    GPBDescriptor *localDescriptor =
+        [GPBDescriptor allocDescriptorForClass:[GPBGeneratedCodeInfo class]
+                                     rootClass:[GPBDescriptorRoot class]
+                                          file:GPBDescriptorRoot_FileDescriptor()
+                                        fields:fields
+                                    fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
+                                        oneofs:NULL
+                                    oneofCount:0
+                                         enums:NULL
+                                     enumCount:0
+                                        ranges:NULL
+                                    rangeCount:0
+                                   storageSize:sizeof(GPBGeneratedCodeInfo__storage_)
+                                    wireFormat:NO];
+    NSAssert(descriptor == nil, @"Startup recursed!");
+    descriptor = localDescriptor;
+  }
+  return descriptor;
+}
+
+@end
+
+#pragma mark - GPBGeneratedCodeInfo_Annotation
+
+@implementation GPBGeneratedCodeInfo_Annotation
+
+@dynamic pathArray, pathArray_Count;
+@dynamic hasSourceFile, sourceFile;
+@dynamic hasBegin, begin;
+@dynamic hasEnd, end;
+
+typedef struct GPBGeneratedCodeInfo_Annotation__storage_ {
+  uint32_t _has_storage_[1];
+  int32_t begin;
+  int32_t end;
+  GPBInt32Array *pathArray;
+  NSString *sourceFile;
+} GPBGeneratedCodeInfo_Annotation__storage_;
+
+// This method is threadsafe because it is initially called
+// in +initialize for each subclass.
++ (GPBDescriptor *)descriptor {
+  static GPBDescriptor *descriptor = nil;
+  if (!descriptor) {
+    static GPBMessageFieldDescription fields[] = {
+      {
+        .name = "pathArray",
+        .number = GPBGeneratedCodeInfo_Annotation_FieldNumber_PathArray,
+        .hasIndex = GPBNoHasBit,
+        .flags = GPBFieldRepeated | GPBFieldPacked,
+        .dataType = GPBDataTypeInt32,
+        .offset = offsetof(GPBGeneratedCodeInfo_Annotation__storage_, pathArray),
+        .defaultValue.valueMessage = nil,
+        .dataTypeSpecific.className = NULL,
+      #if GPBOBJC_INCLUDE_FIELD_OPTIONS
+        .fieldOptions = "\000\000\000\002\020\001",
+      #else
+        .fieldOptions = NULL,
+      #endif  // GPBOBJC_INCLUDE_FIELD_OPTIONS
+      },
+      {
+        .name = "sourceFile",
+        .number = GPBGeneratedCodeInfo_Annotation_FieldNumber_SourceFile,
+        .hasIndex = 1,
+        .flags = GPBFieldOptional,
+        .dataType = GPBDataTypeString,
+        .offset = offsetof(GPBGeneratedCodeInfo_Annotation__storage_, sourceFile),
+        .defaultValue.valueString = nil,
+        .dataTypeSpecific.className = NULL,
+        .fieldOptions = NULL,
+      },
+      {
+        .name = "begin",
+        .number = GPBGeneratedCodeInfo_Annotation_FieldNumber_Begin,
+        .hasIndex = 2,
+        .flags = GPBFieldOptional,
+        .dataType = GPBDataTypeInt32,
+        .offset = offsetof(GPBGeneratedCodeInfo_Annotation__storage_, begin),
+        .defaultValue.valueInt32 = 0,
+        .dataTypeSpecific.className = NULL,
+        .fieldOptions = NULL,
+      },
+      {
+        .name = "end",
+        .number = GPBGeneratedCodeInfo_Annotation_FieldNumber_End,
+        .hasIndex = 3,
+        .flags = GPBFieldOptional,
+        .dataType = GPBDataTypeInt32,
+        .offset = offsetof(GPBGeneratedCodeInfo_Annotation__storage_, end),
+        .defaultValue.valueInt32 = 0,
+        .dataTypeSpecific.className = NULL,
+        .fieldOptions = NULL,
+      },
+    };
+    GPBDescriptor *localDescriptor =
+        [GPBDescriptor allocDescriptorForClass:[GPBGeneratedCodeInfo_Annotation class]
+                                     rootClass:[GPBDescriptorRoot class]
+                                          file:GPBDescriptorRoot_FileDescriptor()
+                                        fields:fields
+                                    fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
+                                        oneofs:NULL
+                                    oneofCount:0
+                                         enums:NULL
+                                     enumCount:0
+                                        ranges:NULL
+                                    rangeCount:0
+                                   storageSize:sizeof(GPBGeneratedCodeInfo_Annotation__storage_)
                                     wireFormat:NO];
     NSAssert(descriptor == nil, @"Startup recursed!");
     descriptor = localDescriptor;

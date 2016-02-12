@@ -118,7 +118,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The negated value of this duration.</returns>
         public static Duration operator -(Duration value)
         {
-            Preconditions.CheckNotNull(value, "value");
+            ProtoPreconditions.CheckNotNull(value, "value");
             checked
             {
                 return Normalize(-value.Seconds, -value.Nanos);
@@ -133,8 +133,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns></returns>
         public static Duration operator +(Duration lhs, Duration rhs)
         {
-            Preconditions.CheckNotNull(lhs, "lhs");
-            Preconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, "lhs");
+            ProtoPreconditions.CheckNotNull(rhs, "rhs");
             checked
             {
                 return Normalize(lhs.Seconds + rhs.Seconds, lhs.Nanos + rhs.Nanos);
@@ -149,8 +149,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The difference between the two specified durations.</returns>
         public static Duration operator -(Duration lhs, Duration rhs)
         {
-            Preconditions.CheckNotNull(lhs, "lhs");
-            Preconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, "lhs");
+            ProtoPreconditions.CheckNotNull(rhs, "rhs");
             checked
             {
                 return Normalize(lhs.Seconds - rhs.Seconds, lhs.Nanos - rhs.Nanos);

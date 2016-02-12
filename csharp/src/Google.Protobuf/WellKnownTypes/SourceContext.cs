@@ -30,8 +30,8 @@ namespace Google.Protobuf.WellKnownTypes {
             "cHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.SourceContext), global::Google.Protobuf.WellKnownTypes.SourceContext.Parser, new[]{ "FileName" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.SourceContext), global::Google.Protobuf.WellKnownTypes.SourceContext.Parser, new[]{ "FileName" }, null, null, null)
           }));
     }
     #endregion
@@ -79,7 +79,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public string FileName {
       get { return fileName_; }
       set {
-        fileName_ = pb::Preconditions.CheckNotNull(value, "value");
+        fileName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 

@@ -70,7 +70,15 @@ public final class CodedInputStream {
    */
   public static CodedInputStream newInstance(final byte[] buf, final int off,
                                              final int len) {
-    CodedInputStream result = new CodedInputStream(buf, off, len);
+    return newInstance(buf, off, len, false);
+  }
+
+  /**
+   * Create a new CodedInputStream wrapping the given byte array slice.
+   */
+  public static CodedInputStream newInstance(final byte[] buf, final int off,
+                                             final int len, boolean bufferIsImmutable) {
+    CodedInputStream result = new CodedInputStream(buf, off, len, bufferIsImmutable);
     try {
       // Some uses of CodedInputStream can be more efficient if they know
       // exactly how many bytes are available.  By pushing the end point of the
@@ -111,31 +119,6 @@ public final class CodedInputStream {
       temp.get(buffer);
       return newInstance(buffer);
     }
-  }
-
-  /**
-   * Create a new CodedInputStream wrapping a LiteralByteString.
-   */
-  static CodedInputStream newInstance(LiteralByteString byteString) {
-    CodedInputStream result = new CodedInputStream(byteString);
-    try {
-      // Some uses of CodedInputStream can be more efficient if they know
-      // exactly how many bytes are available.  By pushing the end point of the
-      // buffer as a limit, we allow them to get this information via
-      // getBytesUntilLimit().  Pushing a limit that we know is at the end of
-      // the stream can never hurt, since we can never past that point anyway.
-      result.pushLimit(byteString.size());
-    } catch (InvalidProtocolBufferException ex) {
-      // The only reason pushLimit() might throw an exception here is if len
-      // is negative. Normally pushLimit()'s parameter comes directly off the
-      // wire, so it's important to catch exceptions in case of corrupt or
-      // malicious data. However, in this case, we expect that len is not a
-      // user-supplied value, so we can assume that it being negative indicates
-      // a programming error. Therefore, throwing an unchecked exception is
-      // appropriate.
-      throw new IllegalArgumentException(ex);
-    }
-    return result;
   }
 
   // -----------------------------------------------------------------
@@ -506,7 +489,7 @@ public final class CodedInputStream {
       // Fast path:  We already have the bytes in a contiguous buffer, so
       //   just copy directly from it.
       final ByteString result = bufferIsImmutable && enableAliasing
-          ? new BoundedByteString(buffer, bufferPos, size)
+          ? ByteString.wrap(buffer, bufferPos, size)
           : ByteString.copyFrom(buffer, bufferPos, size);
       bufferPos += size;
       return result;
@@ -514,7 +497,7 @@ public final class CodedInputStream {
       return ByteString.EMPTY;
     } else {
       // Slow path:  Build a byte array first then copy it.
-      return new LiteralByteString(readRawBytesSlowPath(size));
+      return ByteString.wrap(readRawBytesSlowPath(size));
     }
   }
 
@@ -886,13 +869,13 @@ public final class CodedInputStream {
   private static final int DEFAULT_SIZE_LIMIT = 64 << 20;  // 64MB
   private static final int BUFFER_SIZE = 4096;
 
-  private CodedInputStream(final byte[] buffer, final int off, final int len) {
+  private CodedInputStream(final byte[] buffer, final int off, final int len, boolean bufferIsImmutable) {
     this.buffer = buffer;
     bufferSize = off + len;
     bufferPos = off;
     totalBytesRetired = -off;
     input = null;
-    bufferIsImmutable = false;
+    this.bufferIsImmutable = bufferIsImmutable;
   }
 
   private CodedInputStream(final InputStream input) {
@@ -902,15 +885,6 @@ public final class CodedInputStream {
     totalBytesRetired = 0;
     this.input = input;
     bufferIsImmutable = false;
-  }
-
-  private CodedInputStream(final LiteralByteString byteString) {
-    buffer = byteString.bytes;
-    bufferPos = byteString.getOffsetIntoBytes();
-    bufferSize = bufferPos + byteString.size();
-    totalBytesRetired = -bufferPos;
-    input = null;
-    bufferIsImmutable = true;
   }
 
   public void enableAliasing(boolean enabled) {

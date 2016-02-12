@@ -75,9 +75,7 @@ public class LiteralByteStringTest extends TestCase {
   }
 
   protected String getActualClassName(Object object) {
-    String actualClassName = object.getClass().getName();
-    actualClassName = actualClassName.substring(actualClassName.lastIndexOf('.') + 1);
-    return actualClassName;
+    return object.getClass().getSimpleName();
   }
 
   public void testByteAt() {
@@ -350,14 +348,14 @@ public class LiteralByteStringTest extends TestCase {
 
   public void testToString() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
-    LiteralByteString unicode = new LiteralByteString(testString.getBytes(Internal.UTF_8));
+    ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
     String roundTripString = unicode.toString(UTF_8);
     assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
   }
 
   public void testCharsetToString() {
     String testString = "I love unicode \u1234\u5678 characters";
-    LiteralByteString unicode = new LiteralByteString(testString.getBytes(Internal.UTF_8));
+    ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
     String roundTripString = unicode.toString(Internal.UTF_8);
     assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
   }
@@ -365,7 +363,7 @@ public class LiteralByteStringTest extends TestCase {
   public void testToString_returnsCanonicalEmptyString() {
     assertSame(classUnderTest + " must be the same string references",
         ByteString.EMPTY.toString(Internal.UTF_8),
-        new LiteralByteString(new byte[]{}).toString(Internal.UTF_8));
+        ByteString.wrap(new byte[]{}).toString(Internal.UTF_8));
   }
 
   public void testToString_raisesException() {
@@ -377,7 +375,7 @@ public class LiteralByteStringTest extends TestCase {
     }
 
     try {
-      new LiteralByteString(referenceBytes).toString("invalid");
+      ByteString.wrap(referenceBytes).toString("invalid");
       fail("Should have thrown an exception.");
     } catch (UnsupportedEncodingException expected) {
       // This is success
@@ -390,15 +388,15 @@ public class LiteralByteStringTest extends TestCase {
     assertFalse(classUnderTest + " must not equal the empty string",
         stringUnderTest.equals(ByteString.EMPTY));
     assertEquals(classUnderTest + " empty strings must be equal",
-        new LiteralByteString(new byte[]{}), stringUnderTest.substring(55, 55));
+        ByteString.wrap(new byte[]{}), stringUnderTest.substring(55, 55));
     assertEquals(classUnderTest + " must equal another string with the same value",
-        stringUnderTest, new LiteralByteString(referenceBytes));
+        stringUnderTest, ByteString.wrap(referenceBytes));
 
     byte[] mungedBytes = new byte[referenceBytes.length];
     System.arraycopy(referenceBytes, 0, mungedBytes, 0, referenceBytes.length);
     mungedBytes[mungedBytes.length - 5] = (byte) (mungedBytes[mungedBytes.length - 5] ^ 0xFF);
     assertFalse(classUnderTest + " must not equal every string with the same length",
-        stringUnderTest.equals(new LiteralByteString(mungedBytes)));
+        stringUnderTest.equals(ByteString.wrap(mungedBytes)));
   }
 
   public void testHashCode() {

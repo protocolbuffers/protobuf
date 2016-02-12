@@ -133,7 +133,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/LimitedInputStream.cs                           \
   csharp/src/Google.Protobuf/MessageExtensions.cs                            \
   csharp/src/Google.Protobuf/MessageParser.cs                                \
-  csharp/src/Google.Protobuf/Preconditions.cs                                \
+  csharp/src/Google.Protobuf/ProtoPreconditions.cs                           \
   csharp/src/Google.Protobuf/Properties/AssemblyInfo.cs                      \
   csharp/src/Google.Protobuf/Reflection/Descriptor.cs                        \
   csharp/src/Google.Protobuf/Reflection/DescriptorBase.cs                    \
@@ -146,7 +146,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Reflection/FieldDescriptor.cs                   \
   csharp/src/Google.Protobuf/Reflection/FieldType.cs                         \
   csharp/src/Google.Protobuf/Reflection/FileDescriptor.cs                    \
-  csharp/src/Google.Protobuf/Reflection/GeneratedCodeInfo.cs                 \
+  csharp/src/Google.Protobuf/Reflection/GeneratedClrTypeInfo.cs              \
   csharp/src/Google.Protobuf/Reflection/IDescriptor.cs                       \
   csharp/src/Google.Protobuf/Reflection/IFieldAccessor.cs                    \
   csharp/src/Google.Protobuf/Reflection/MapFieldAccessor.cs                  \
@@ -193,7 +193,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/BlockingRpcChannel.java              \
   java/core/src/main/java/com/google/protobuf/BlockingService.java                 \
   java/core/src/main/java/com/google/protobuf/BooleanArrayList.java                \
-  java/core/src/main/java/com/google/protobuf/BoundedByteString.java               \
   java/core/src/main/java/com/google/protobuf/ByteString.java                      \
   java/core/src/main/java/com/google/protobuf/CodedInputStream.java                \
   java/core/src/main/java/com/google/protobuf/CodedOutputStream.java               \
@@ -215,7 +214,6 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/LazyFieldLite.java                   \
   java/core/src/main/java/com/google/protobuf/LazyStringArrayList.java             \
   java/core/src/main/java/com/google/protobuf/LazyStringList.java                  \
-  java/core/src/main/java/com/google/protobuf/LiteralByteString.java               \
   java/core/src/main/java/com/google/protobuf/LongArrayList.java                   \
   java/core/src/main/java/com/google/protobuf/MapEntry.java                        \
   java/core/src/main/java/com/google/protobuf/MapEntryLite.java                    \
@@ -249,7 +247,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/UnknownFieldSet.java                 \
   java/core/src/main/java/com/google/protobuf/UnknownFieldSetLite.java             \
   java/core/src/main/java/com/google/protobuf/UnmodifiableLazyStringList.java      \
-  java/core/src/main/java/com/google/protobuf/UnsafeByteStrings.java               \
+  java/core/src/main/java/com/google/protobuf/UnsafeByteOperations.java            \
   java/core/src/main/java/com/google/protobuf/Utf8.java                            \
   java/core/src/main/java/com/google/protobuf/WireFormat.java                      \
   java/core/src/test/java/com/google/protobuf/AbstractMessageTest.java             \

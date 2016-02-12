@@ -15,6 +15,16 @@
     <copyright>Copyright 2015, Google Inc.</copyright>
     <tags>Protocol Buffers Binary Serialization Format Google proto proto3</tags>
     <dependencies>
+      <!-- Dependencies for older, monolithic-assembly platforms -->
+      <group targetFramework="net45" />
+      <group targetFramework="wp8" />
+      <group targetFramework="win8" />
+      <group targetFramework="wpa81" />
+      <group targetFramework="xamarin.ios" />
+      <group targetFramework="monotouch" />
+      <group targetFramework="monoandroid" />
+
+      <!-- Dependencies for newer, more granular platforms (.NET Core etc) -->
       <group targetFramework="dotnet">
         <dependency id="System.Collections" version="4.0.0" />
         <dependency id="System.Diagnostics.Debug" version="4.0.0" />

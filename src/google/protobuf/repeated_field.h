@@ -574,7 +574,7 @@ class GenericTypeHandler {
 
 template <typename GenericType>
 GenericType* GenericTypeHandler<GenericType>::NewFromPrototype(
-    const GenericType* prototype, ::google::protobuf::Arena* arena) {
+    const GenericType* /* prototype */, ::google::protobuf::Arena* arena) {
   return New(arena);
 }
 template <typename GenericType>
@@ -627,7 +627,7 @@ void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
 // Message specialization bodies defined in message.cc. This split is necessary
 // to allow proto2-lite (which includes this header) to be independent of
 // Message.
-DECLARE_SPECIALIZATIONS_FOR_BASE_PROTO_TYPES(Message);
+DECLARE_SPECIALIZATIONS_FOR_BASE_PROTO_TYPES(Message)
 
 
 #undef DECLARE_SPECIALIZATIONS_FOR_BASE_PROTO_TYPES
@@ -674,7 +674,7 @@ class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
   static inline ::google::protobuf::Arena* GetArena(string*) {
     return NULL;
   }
-  static inline void* GetMaybeArenaPointer(string* value) {
+  static inline void* GetMaybeArenaPointer(string* /* value */) {
     return NULL;
   }
   static inline void Delete(string* value, Arena* arena) {

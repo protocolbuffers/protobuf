@@ -739,9 +739,9 @@ class LIBPROTOBUF_EXPORT Reflection {
   // specifyed by 'field' passing ownership to the message.
   // TODO(tmarek): Make virtual after all subclasses have been
   // updated.
-  virtual void AddAllocatedMessage(Message* message,
-                                   const FieldDescriptor* field,
-                                   Message* new_entry) const {}
+  virtual void AddAllocatedMessage(Message* /* message */,
+                                   const FieldDescriptor* /*field */,
+                                   Message* /* new_entry */) const {}
 
 
   // Get a RepeatedFieldRef object that can be used to read the underlying
@@ -947,27 +947,27 @@ class LIBPROTOBUF_EXPORT Reflection {
   // TODO(jieluo) - make the map APIs pure virtual after updating
   // all the subclasses.
   // Returns true if key is in map. Returns false if key is not in map field.
-  virtual bool ContainsMapKey(const Message& message,
-                              const FieldDescriptor* field,
-                              const MapKey& key) const {
+  virtual bool ContainsMapKey(const Message& /* message*/,
+                              const FieldDescriptor* /* field */,
+                              const MapKey& /* key */) const {
     return false;
   }
 
   // If key is in map field: Saves the value pointer to val and returns
   // false. If key in not in map field: Insert the key into map, saves
   // value pointer to val and retuns true.
-  virtual bool InsertOrLookupMapValue(Message* message,
-                                      const FieldDescriptor* field,
-                                      const MapKey& key,
-                                      MapValueRef* val) const {
+  virtual bool InsertOrLookupMapValue(Message* /* message */,
+                                      const FieldDescriptor* /* field */,
+                                      const MapKey& /* key */,
+                                      MapValueRef* /* val */) const {
     return false;
   }
 
   // Delete and returns true if key is in the map field. Returns false
   // otherwise.
-  virtual bool DeleteMapValue(Message* message,
-                              const FieldDescriptor* field,
-                              const MapKey& key) const {
+  virtual bool DeleteMapValue(Message* /* mesage */,
+                              const FieldDescriptor* /* field */,
+                              const MapKey& /* key */) const {
     return false;
   }
 
@@ -987,15 +987,15 @@ class LIBPROTOBUF_EXPORT Reflection {
 
   // Get the number of <key, value> pair of a map field. The result may be
   // different from FieldSize which can have duplicate keys.
-  virtual int MapSize(const Message& message,
-                      const FieldDescriptor* field) const {
+  virtual int MapSize(const Message& /* message */,
+                      const FieldDescriptor* /* field */) const {
     return 0;
   }
 
   // Help method for MapIterator.
   friend class MapIterator;
   virtual internal::MapFieldBase* MapData(
-      Message* message, const FieldDescriptor* field) const {
+      Message* /* message */, const FieldDescriptor* /* field */) const {
     return NULL;
   }
 

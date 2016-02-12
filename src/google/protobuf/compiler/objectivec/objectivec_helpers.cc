@@ -883,7 +883,7 @@ bool Parser::ParseLoop() {
     StringPiece prefix(line, offset + 1, line.length() - offset - 1);
     TrimWhitespace(&package);
     TrimWhitespace(&prefix);
-    // Don't really worry about error checking the the package/prefix for
+    // Don't really worry about error checking the package/prefix for
     // being valid.  Assume the file is validated when it is created/edited.
     (*prefix_map_)[package.ToString()] = prefix.ToString();
   }

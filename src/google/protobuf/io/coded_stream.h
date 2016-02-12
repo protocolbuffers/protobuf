@@ -117,7 +117,7 @@
   #if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
     #define PROTOBUF_LITTLE_ENDIAN 1
   #endif
-  #if _MSC_VER >= 1300
+  #if _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
     // If MSVC has "/RTCc" set, it will complain about truncating casts at
     // runtime.  This file contains some intentional truncating casts.
     #pragma runtime_checks("c", off)
@@ -1286,9 +1286,9 @@ inline bool CodedInputStream::IsFlat() const {
 }  // namespace protobuf
 
 
-#if defined(_MSC_VER) && _MSC_VER >= 1300
+#if _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
   #pragma runtime_checks("c", restore)
-#endif  // _MSC_VER
+#endif  // _MSC_VER && !defined(__INTEL_COMPILER)
 
 }  // namespace google
 #endif  // GOOGLE_PROTOBUF_IO_CODED_STREAM_H__

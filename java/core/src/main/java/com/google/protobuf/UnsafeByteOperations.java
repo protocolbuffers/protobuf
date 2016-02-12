@@ -33,15 +33,18 @@ package com.google.protobuf;
 import java.nio.ByteBuffer;
 
 /**
- * Provides unsafe factory methods for {@link ByteString} instances.
+ * Provides a number of unsafe byte operations to be used by advanced applications with high
+ * performance requirements. These methods are referred to as "unsafe" due to the fact that they
+ * potentially expose the backing buffer of a {@link ByteString} to the application.
  *
  * <p><strong>DISCLAIMER:</strong> The methods in this class should only be called if it is
- * guaranteed that the the buffer backing the {@link ByteString} will never change! Mutation of a
+ * guaranteed that the buffer backing the {@link ByteString} will never change! Mutation of a
  * {@link ByteString} can lead to unexpected and undesirable consequences in your application,
  * and will likely be difficult to debug. Proceed with caution!
  */
-public final class UnsafeByteStrings {
-  private UnsafeByteStrings() {}
+@ExperimentalApi
+public final class UnsafeByteOperations {
+  private UnsafeByteOperations() {}
 
   /**
    * An unsafe operation that returns a {@link ByteString} that is backed by the provided buffer.
@@ -50,6 +53,11 @@ public final class UnsafeByteStrings {
    * @return a {@link ByteString} backed by the provided buffer.
    */
   public static ByteString unsafeWrap(ByteBuffer buffer) {
-    return new NioByteString(buffer);
+    if (buffer.hasArray()) {
+      final int offset = buffer.arrayOffset();
+      return ByteString.wrap(buffer.array(), offset + buffer.position(), buffer.remaining());
+    } else {
+      return new NioByteString(buffer);
+    }
   }
 }

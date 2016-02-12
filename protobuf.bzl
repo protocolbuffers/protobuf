@@ -1,13 +1,19 @@
 # -*- mode: python; -*- PYTHON-PREPROCESSING-REQUIRED
 
+def _GetPath(ctx, path):
+  if ctx.label.workspace_root:
+    return ctx.label.workspace_root + '/' + path
+  else:
+    return path
+
 def _GenDir(ctx):
   if not ctx.attr.includes:
-    return ""
+    return ctx.label.workspace_root
   if not ctx.attr.includes[0]:
-    return ctx.label.package
+    return _GetPath(ctx, ctx.label.package)
   if not ctx.label.package:
-    return ctx.attr.includes[0]
-  return ctx.label.package + '/' + ctx.attr.includes[0]
+    return _GetPath(ctx, ctx.attr.includes[0])
+  return _GetPath(ctx, ctx.label.package + '/' + ctx.attr.includes[0])
 
 def _CcOuts(srcs):
   return [s[:-len(".proto")] +  ".pb.h" for s in srcs] + \
@@ -35,8 +41,6 @@ def _RelativeOutputPath(path, include):
     return path
 
   return path[len(PACKAGE_NAME)+1:]
-
-
 
 def _proto_gen_impl(ctx):
   """General implementation for generating protos"""
