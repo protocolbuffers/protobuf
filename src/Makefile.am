@@ -342,6 +342,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_enum_lite.h               \
   google/protobuf/compiler/java/java_extension.cc              \
   google/protobuf/compiler/java/java_extension.h               \
+  google/protobuf/compiler/java/java_extension_lite.cc         \
+  google/protobuf/compiler/java/java_extension_lite.h          \
   google/protobuf/compiler/java/java_field.cc                  \
   google/protobuf/compiler/java/java_field.h                   \
   google/protobuf/compiler/java/java_file.cc                   \
@@ -727,6 +729,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/cpp/cpp_unittest.h                  \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
   google/protobuf/compiler/cpp/cpp_plugin_unittest.cc          \
+  google/protobuf/compiler/cpp/metadata_test.cc                \
   google/protobuf/compiler/java/java_plugin_unittest.cc        \
   google/protobuf/compiler/java/java_doc_comment_unittest.cc   \
   google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc \

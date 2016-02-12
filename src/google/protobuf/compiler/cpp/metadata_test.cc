@@ -1,4 +1,3 @@
-﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -28,47 +27,32 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#endregion
 
-using System;
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
-namespace Google.Protobuf
-{
-    /// <summary>
-    /// Helper methods for throwing exceptions
-    /// </summary>
-    public static class Preconditions
-    {
-        /// <summary>
-        /// Throws an ArgumentNullException if the given value is null, otherwise
-        /// return the value to the caller.
-        /// </summary>
-        public static T CheckNotNull<T>(T value, string name) where T : class
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException(name);
-            }
-            return value;
-        }
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/compiler/cpp/cpp_generator.h>
+#include <google/protobuf/compiler/command_line_interface.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/descriptor.pb.h>
 
-        /// <summary>
-        /// Throws an ArgumentNullException if the given value is null, otherwise
-        /// return the value to the caller.
-        /// </summary>
-        /// <remarks>
-        /// This is equivalent to <see cref="CheckNotNull{T}(T, string)"/> but without the type parameter
-        /// constraint. In most cases, the constraint is useful to prevent you from calling CheckNotNull
-        /// with a value type - but it gets in the way if either you want to use it with a nullable
-        /// value type, or you want to use it with an unconstrained type parameter.
-        /// </remarks>
-        internal static T CheckNotNullUnconstrained<T>(T value, string name)
-        {
-            if (value == null)
-            {
-                throw new ArgumentNullException(name);
-            }
-            return value;
-        }
-    }
-}
+#include <google/protobuf/testing/googletest.h>
+#include <gtest/gtest.h>
+#include <google/protobuf/testing/file.h>
+
+namespace google {
+namespace protobuf {
+namespace compiler {
+namespace cpp {
+namespace {
+
+}  // namespace
+}  // namespace cpp
+}  // namespace compiler
+}  // namespace protobuf
+}  // namespace google

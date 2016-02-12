@@ -8537,7 +8537,7 @@ bool upb_pbdecoder_setmaxnesting(upb_pbdecoder *d, size_t max) {
 **       to perfectly match the output of reference encoders that always use the
 **       optimal amount of space for each length.
 **
-**   (2) requires guessing the the size upfront, and if multiple lengths are
+**   (2) requires guessing the size upfront, and if multiple lengths are
 **       guessed wrong the minimum required number of memmove() operations may
 **       be complicated to compute correctly.  Implemented properly, it may have
 **       a useful amortized or average cost, but more investigation is required

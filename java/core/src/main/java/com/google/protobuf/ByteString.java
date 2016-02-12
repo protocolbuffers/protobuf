@@ -1,38 +1,13 @@
-// Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google Inc. nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Copyright 2007 Google Inc.  All rights reserved.
 
 package com.google.protobuf;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -41,6 +16,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -81,7 +57,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   /**
    * Empty {@code ByteString}.
    */
-  public static final ByteString EMPTY = new LiteralByteString(new byte[0]);
+  public static final ByteString EMPTY = new LiteralByteString(Internal.EMPTY_BYTE_ARRAY);
 
   /**
    * Cached hash value. Intentionally accessed via a data race, which
@@ -257,6 +233,24 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   public static ByteString copyFrom(byte[] bytes) {
     return copyFrom(bytes, 0, bytes.length);
+  }
+  
+  /**
+   * Wraps the given bytes into a {@code ByteString}. Intended for internal only
+   * usage to force a classload of ByteString before LiteralByteString.
+   */
+  static ByteString wrap(byte[] bytes) {
+    // TODO(dweis): Return EMPTY when bytes are empty to reduce allocations?
+    return new LiteralByteString(bytes);
+  }
+
+  /**
+   * Wraps the given bytes into a {@code ByteString}. Intended for internal only
+   * usage to force a classload of ByteString before BoundedByteString and
+   * LiteralByteString.
+   */
+  static ByteString wrap(byte[] bytes, int offset, int length) {
+    return new BoundedByteString(bytes, offset, length);
   }
 
   /**
@@ -1148,5 +1142,315 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   public final String toString() {
     return String.format("<ByteString@%s size=%d>",
         Integer.toHexString(System.identityHashCode(this)), size());
+  }
+  
+  /**
+   * This class implements a {@link com.google.protobuf.ByteString} backed by a
+   * single array of bytes, contiguous in memory. It supports substring by
+   * pointing to only a sub-range of the underlying byte array, meaning that a
+   * substring will reference the full byte-array of the string it's made from,
+   * exactly as with {@link String}.
+   *
+   * @author carlanton@google.com (Carl Haverl)
+   */
+  // Keep this class private to avoid deadlocks in classloading across threads as ByteString's
+  // static initializer loads LiteralByteString and another thread loads LiteralByteString.
+  private static class LiteralByteString extends ByteString.LeafByteString {
+    private static final long serialVersionUID = 1L;
+
+    protected final byte[] bytes;
+
+    /**
+     * Creates a {@code LiteralByteString} backed by the given array, without
+     * copying.
+     *
+     * @param bytes array to wrap
+     */
+    LiteralByteString(byte[] bytes) {
+      this.bytes = bytes;
+    }
+
+    @Override
+    public byte byteAt(int index) {
+      // Unlike most methods in this class, this one is a direct implementation
+      // ignoring the potential offset because we need to do range-checking in the
+      // substring case anyway.
+      return bytes[index];
+    }
+
+    @Override
+    public int size() {
+      return bytes.length;
+    }
+
+    // =================================================================
+    // ByteString -> substring
+
+    @Override
+    public final ByteString substring(int beginIndex, int endIndex) {
+      final int length = checkRange(beginIndex, endIndex, size());
+
+      if (length == 0) {
+        return ByteString.EMPTY;
+      }
+
+      return new BoundedByteString(bytes, getOffsetIntoBytes() + beginIndex, length);
+    }
+
+    // =================================================================
+    // ByteString -> byte[]
+
+    @Override
+    protected void copyToInternal(
+        byte[] target, int sourceOffset, int targetOffset, int numberToCopy) {
+      // Optimized form, not for subclasses, since we don't call
+      // getOffsetIntoBytes() or check the 'numberToCopy' parameter.
+      // TODO(nathanmittler): Is not calling getOffsetIntoBytes really saving that much?
+      System.arraycopy(bytes, sourceOffset, target, targetOffset, numberToCopy);
+    }
+
+    @Override
+    public final void copyTo(ByteBuffer target) {
+      target.put(bytes, getOffsetIntoBytes(), size()); // Copies bytes
+    }
+
+    @Override
+    public final ByteBuffer asReadOnlyByteBuffer() {
+      return ByteBuffer.wrap(bytes, getOffsetIntoBytes(), size()).asReadOnlyBuffer();
+    }
+
+    @Override
+    public final List<ByteBuffer> asReadOnlyByteBufferList() {
+      return Collections.singletonList(asReadOnlyByteBuffer());
+    }
+
+    @Override
+    public final void writeTo(OutputStream outputStream) throws IOException {
+      outputStream.write(toByteArray());
+    }
+
+    @Override
+    final void writeToInternal(OutputStream outputStream, int sourceOffset, int numberToWrite)
+        throws IOException {
+      outputStream.write(bytes, getOffsetIntoBytes() + sourceOffset, numberToWrite);
+    }
+
+    @Override
+    protected final String toStringInternal(Charset charset) {
+      return new String(bytes, getOffsetIntoBytes(), size(), charset);
+    }
+
+    // =================================================================
+    // UTF-8 decoding
+
+    @Override
+    public final boolean isValidUtf8() {
+      int offset = getOffsetIntoBytes();
+      return Utf8.isValidUtf8(bytes, offset, offset + size());
+    }
+
+    @Override
+    protected final int partialIsValidUtf8(int state, int offset, int length) {
+      int index = getOffsetIntoBytes() + offset;
+      return Utf8.partialIsValidUtf8(state, bytes, index, index + length);
+    }
+
+    // =================================================================
+    // equals() and hashCode()
+
+    @Override
+    public final boolean equals(Object other) {
+      if (other == this) {
+        return true;
+      }
+      if (!(other instanceof ByteString)) {
+        return false;
+      }
+
+      if (size() != ((ByteString) other).size()) {
+        return false;
+      }
+      if (size() == 0) {
+        return true;
+      }
+
+      if (other instanceof LiteralByteString) {
+        LiteralByteString otherAsLiteral = (LiteralByteString) other;
+        // If we know the hash codes and they are not equal, we know the byte
+        // strings are not equal.
+        int thisHash = peekCachedHashCode();
+        int thatHash = otherAsLiteral.peekCachedHashCode();
+        if (thisHash != 0 && thatHash != 0 && thisHash != thatHash) {
+          return false;
+        }
+
+        return equalsRange((LiteralByteString) other, 0, size());
+      } else {
+        // RopeByteString and NioByteString.
+        return other.equals(this);
+      }
+    }
+
+    /**
+     * Check equality of the substring of given length of this object starting at
+     * zero with another {@code LiteralByteString} substring starting at offset.
+     *
+     * @param other  what to compare a substring in
+     * @param offset offset into other
+     * @param length number of bytes to compare
+     * @return true for equality of substrings, else false.
+     */
+    @Override
+    final boolean equalsRange(ByteString other, int offset, int length) {
+      if (length > other.size()) {
+        throw new IllegalArgumentException("Length too large: " + length + size());
+      }
+      if (offset + length > other.size()) {
+        throw new IllegalArgumentException(
+            "Ran off end of other: " + offset + ", " + length + ", " + other.size());
+      }
+
+      if (other instanceof LiteralByteString) {
+        LiteralByteString lbsOther = (LiteralByteString) other;
+        byte[] thisBytes = bytes;
+        byte[] otherBytes = lbsOther.bytes;
+        int thisLimit = getOffsetIntoBytes() + length;
+        for (
+            int thisIndex = getOffsetIntoBytes(),
+                otherIndex = lbsOther.getOffsetIntoBytes() + offset;
+            (thisIndex < thisLimit); ++thisIndex, ++otherIndex) {
+          if (thisBytes[thisIndex] != otherBytes[otherIndex]) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      return other.substring(offset, offset + length).equals(substring(0, length));
+    }
+
+    @Override
+    protected final int partialHash(int h, int offset, int length) {
+      return Internal.partialHash(h, bytes, getOffsetIntoBytes() + offset, length);
+    }
+
+    // =================================================================
+    // Input stream
+
+    @Override
+    public final InputStream newInput() {
+      return new ByteArrayInputStream(bytes, getOffsetIntoBytes(), size()); // No copy
+    }
+
+    @Override
+    public final CodedInputStream newCodedInput() {
+      // We trust CodedInputStream not to modify the bytes, or to give anyone
+      // else access to them.
+      return CodedInputStream.newInstance(
+          bytes, getOffsetIntoBytes(), size(), true /* bufferIsImmutable */);
+    }
+
+    // =================================================================
+    // Internal methods
+
+    /**
+     * Offset into {@code bytes[]} to use, non-zero for substrings.
+     *
+     * @return always 0 for this class
+     */
+    protected int getOffsetIntoBytes() {
+      return 0;
+    }
+  }
+  
+  /**
+   * This class is used to represent the substring of a {@link ByteString} over a
+   * single byte array. In terms of the public API of {@link ByteString}, you end
+   * up here by calling {@link ByteString#copyFrom(byte[])} followed by {@link
+   * ByteString#substring(int, int)}.
+   *
+   * <p>This class contains most of the overhead involved in creating a substring
+   * from a {@link LiteralByteString}.  The overhead involves some range-checking
+   * and two extra fields.
+   *
+   * @author carlanton@google.com (Carl Haverl)
+   */
+  // Keep this class private to avoid deadlocks in classloading across threads as ByteString's
+  // static initializer loads LiteralByteString and another thread loads BoundedByteString.
+  private static final class BoundedByteString extends LiteralByteString {
+
+    private final int bytesOffset;
+    private final int bytesLength;
+
+    /**
+     * Creates a {@code BoundedByteString} backed by the sub-range of given array,
+     * without copying.
+     *
+     * @param bytes  array to wrap
+     * @param offset index to first byte to use in bytes
+     * @param length number of bytes to use from bytes
+     * @throws IllegalArgumentException if {@code offset < 0}, {@code length < 0},
+     *                                  or if {@code offset + length >
+     *                                  bytes.length}.
+     */
+    BoundedByteString(byte[] bytes, int offset, int length) {
+      super(bytes);
+      checkRange(offset, offset + length, bytes.length);
+
+      this.bytesOffset = offset;
+      this.bytesLength = length;
+    }
+
+    /**
+     * Gets the byte at the given index.
+     * Throws {@link ArrayIndexOutOfBoundsException}
+     * for backwards-compatibility reasons although it would more properly be
+     * {@link IndexOutOfBoundsException}.
+     *
+     * @param index index of byte
+     * @return the value
+     * @throws ArrayIndexOutOfBoundsException {@code index} is < 0 or >= size
+     */
+    @Override
+    public byte byteAt(int index) {
+      // We must check the index ourselves as we cannot rely on Java array index
+      // checking for substrings.
+      checkIndex(index, size());
+      return bytes[bytesOffset + index];
+    }
+
+    @Override
+    public int size() {
+      return bytesLength;
+    }
+
+    @Override
+    protected int getOffsetIntoBytes() {
+      return bytesOffset;
+    }
+
+    // =================================================================
+    // ByteString -> byte[]
+
+    @Override
+    protected void copyToInternal(byte[] target, int sourceOffset, int targetOffset,
+        int numberToCopy) {
+      System.arraycopy(bytes, getOffsetIntoBytes() + sourceOffset, target,
+          targetOffset, numberToCopy);
+    }
+
+    // =================================================================
+    // Serializable
+
+    private static final long serialVersionUID = 1L;
+
+    Object writeReplace() {
+      return ByteString.wrap(toByteArray());
+    }
+
+    private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {
+      throw new InvalidObjectException(
+          "BoundedByteStream instances are not to be serialized directly");
+    }
   }
 }

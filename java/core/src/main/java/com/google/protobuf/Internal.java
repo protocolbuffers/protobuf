@@ -283,9 +283,31 @@ public class Internal {
     // ByteString with the same content. This is to ensure that the generated
     // hashCode() method will return the same value as the pure reflection
     // based hashCode() method.
-    return LiteralByteString.hashCode(bytes);
+    return Internal.hashCode(bytes, 0, bytes.length);
+  }
+  
+  /**
+   * Helper method for implementing {@link LiteralByteString#hashCode()}.
+   */
+  static int hashCode(byte[] bytes, int offset, int length) {
+    // The hash code for a byte array should be the same as the hash code for a
+    // ByteString with the same content. This is to ensure that the generated
+    // hashCode() method will return the same value as the pure reflection
+    // based hashCode() method.
+    int h = Internal.partialHash(length, bytes, offset, length);
+    return h == 0 ? 1 : h;
   }
 
+  /**
+   * Helper method for continuously hashing bytes.
+   */
+  static int partialHash(int h, byte[] bytes, int offset, int length) {
+    for (int i = offset; i < offset + length; i++) {
+      h = h * 31 + bytes[i];
+    }
+    return h;
+  }
+  
   /**
    * Helper method for implementing {@link Message#equals(Object)} for bytes
    * field.
@@ -337,8 +359,7 @@ public class Internal {
   public static int hashCodeByteBuffer(ByteBuffer bytes) {
     if (bytes.hasArray()) {
       // Fast path.
-      int h = LiteralByteString.hashCode(bytes.capacity(), bytes.array(),
-          bytes.arrayOffset(), bytes.capacity());
+      int h = partialHash(bytes.capacity(), bytes.array(), bytes.arrayOffset(), bytes.capacity());
       return h == 0 ? 1 : h;
     } else {
       // Read the data into a temporary byte array before calculating the
@@ -353,7 +374,7 @@ public class Internal {
         final int length = duplicated.remaining() <= bufferSize ?
             duplicated.remaining() : bufferSize;
         duplicated.get(buffer, 0, length);
-        h = LiteralByteString.hashCode(h, buffer, 0, length);
+        h = partialHash(h, buffer, 0, length);
       }
       return h == 0 ? 1 : h;
     }
@@ -384,7 +405,6 @@ public class Internal {
   /** An empty coded input stream constant used in generated code. */
   public static final CodedInputStream EMPTY_CODED_INPUT_STREAM =
       CodedInputStream.newInstance(EMPTY_BYTE_ARRAY);
-
 
   /**
    * Provides an immutable view of {@code List<T>} around a {@code List<F>}.

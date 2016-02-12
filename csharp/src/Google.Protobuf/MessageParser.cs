@@ -64,7 +64,7 @@ namespace Google.Protobuf
         /// <returns>The newly parsed message.</returns>
         public IMessage ParseFrom(byte[] data)
         {
-            Preconditions.CheckNotNull(data, "data");
+            ProtoPreconditions.CheckNotNull(data, "data");
             IMessage message = factory();
             message.MergeFrom(data);
             return message;
@@ -77,7 +77,7 @@ namespace Google.Protobuf
         /// <returns>The parsed message.</returns>
         public IMessage ParseFrom(ByteString data)
         {
-            Preconditions.CheckNotNull(data, "data");
+            ProtoPreconditions.CheckNotNull(data, "data");
             IMessage message = factory();
             message.MergeFrom(data);
             return message;
@@ -191,7 +191,7 @@ namespace Google.Protobuf
         /// <returns>The newly parsed message.</returns>
         public new T ParseFrom(byte[] data)
         {
-            Preconditions.CheckNotNull(data, "data");
+            ProtoPreconditions.CheckNotNull(data, "data");
             T message = factory();
             message.MergeFrom(data);
             return message;
@@ -204,7 +204,7 @@ namespace Google.Protobuf
         /// <returns>The parsed message.</returns>
         public new T ParseFrom(ByteString data)
         {
-            Preconditions.CheckNotNull(data, "data");
+            ProtoPreconditions.CheckNotNull(data, "data");
             T message = factory();
             message.MergeFrom(data);
             return message;

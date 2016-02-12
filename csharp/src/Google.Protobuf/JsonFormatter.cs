@@ -141,7 +141,7 @@ namespace Google.Protobuf
         /// <returns>The formatted message.</returns>
         public string Format(IMessage message)
         {
-            Preconditions.CheckNotNull(message, nameof(message));
+            ProtoPreconditions.CheckNotNull(message, nameof(message));
             StringBuilder builder = new StringBuilder();
             if (message.Descriptor.IsWellKnownType)
             {
@@ -173,7 +173,7 @@ namespace Google.Protobuf
         /// <returns>The diagnostic-only JSON representation of the message</returns>
         public static string ToDiagnosticString(IMessage message)
         {
-            Preconditions.CheckNotNull(message, nameof(message));
+            ProtoPreconditions.CheckNotNull(message, nameof(message));
             return diagnosticFormatter.Format(message);
         }
 
@@ -858,7 +858,7 @@ namespace Google.Protobuf
             public Settings(bool formatDefaultValues, TypeRegistry typeRegistry)
             {
                 FormatDefaultValues = formatDefaultValues;
-                TypeRegistry = Preconditions.CheckNotNull(typeRegistry, nameof(typeRegistry));
+                TypeRegistry = ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry));
             }
         }
     }

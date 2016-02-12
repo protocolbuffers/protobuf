@@ -72,7 +72,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>An Any message with the content and type URL of <paramref name="message"/>.</returns>
         public static Any Pack(IMessage message)
         {
-            Preconditions.CheckNotNull(message, "message");
+            ProtoPreconditions.CheckNotNull(message, "message");
             return new Any { TypeUrl = GetTypeUrl(message.Descriptor), Value = message.ToByteString() };
         }
     }

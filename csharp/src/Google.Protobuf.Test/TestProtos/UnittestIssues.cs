@@ -48,14 +48,14 @@ namespace UnitTest.Issues.TestProtos {
             "Qh9IAaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedCodeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307), global::UnitTest.Issues.TestProtos.Issue307.Parser, null, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce), global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Parser, null, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice), global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice.Parser, null, null, null, null)})}),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.NegativeEnumMessage), global::UnitTest.Issues.TestProtos.NegativeEnumMessage.Parser, new[]{ "Value", "Values", "PackedValues" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.DeprecatedChild), global::UnitTest.Issues.TestProtos.DeprecatedChild.Parser, null, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage), global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage.Parser, new[]{ "PrimitiveValue", "PrimitiveArray", "MessageValue", "MessageArray", "EnumValue", "EnumArray" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ItemField), global::UnitTest.Issues.TestProtos.ItemField.Parser, new[]{ "Item" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames), global::UnitTest.Issues.TestProtos.ReservedNames.Parser, new[]{ "Types_", "Descriptor_" }, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType), global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType.Parser, null, null, null, null)}),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering), global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering.Parser, new[]{ "PlainInt32", "O1String", "O1Int32", "PlainString", "O2Int32", "O2String" }, new[]{ "O1", "O2" }, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307), global::UnitTest.Issues.TestProtos.Issue307.Parser, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce), global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Parser, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice), global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice.Parser, null, null, null, null)})}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NegativeEnumMessage), global::UnitTest.Issues.TestProtos.NegativeEnumMessage.Parser, new[]{ "Value", "Values", "PackedValues" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.DeprecatedChild), global::UnitTest.Issues.TestProtos.DeprecatedChild.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage), global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage.Parser, new[]{ "PrimitiveValue", "PrimitiveArray", "MessageValue", "MessageArray", "EnumValue", "EnumArray" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ItemField), global::UnitTest.Issues.TestProtos.ItemField.Parser, new[]{ "Item" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames), global::UnitTest.Issues.TestProtos.ReservedNames.Parser, new[]{ "Types_", "Descriptor_" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType), global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType.Parser, null, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering), global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering.Parser, new[]{ "PlainInt32", "O1String", "O1Int32", "PlainString", "O2Int32", "O2String" }, new[]{ "O1", "O2" }, null, null)
           }));
     }
     #endregion
@@ -1164,7 +1164,7 @@ namespace UnitTest.Issues.TestProtos {
     public string O1String {
       get { return o1Case_ == O1OneofCase.O1String ? (string) o1_ : ""; }
       set {
-        o1_ = pb::Preconditions.CheckNotNull(value, "value");
+        o1_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         o1Case_ = O1OneofCase.O1String;
       }
     }
@@ -1185,7 +1185,7 @@ namespace UnitTest.Issues.TestProtos {
     public string PlainString {
       get { return plainString_; }
       set {
-        plainString_ = pb::Preconditions.CheckNotNull(value, "value");
+        plainString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1204,7 +1204,7 @@ namespace UnitTest.Issues.TestProtos {
     public string O2String {
       get { return o2Case_ == O2OneofCase.O2String ? (string) o2_ : ""; }
       set {
-        o2_ = pb::Preconditions.CheckNotNull(value, "value");
+        o2_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         o2Case_ = O2OneofCase.O2String;
       }
     }

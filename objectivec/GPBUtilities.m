@@ -1253,7 +1253,7 @@ static void AppendTextFormatForMessageField(GPBMessage *message,
   if ([fieldName length] == 0) {
     fieldName = [NSString stringWithFormat:@"%u", GPBFieldNumber(field)];
     // If there is only one entry, put the objc name as a comment, other wise
-    // add it before the the repeated values.
+    // add it before the repeated values.
     if (count > 1) {
       [toStr appendFormat:@"%@# %@\n", lineIndent, field.name];
     } else {

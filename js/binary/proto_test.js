@@ -67,10 +67,6 @@ function fillAllFields(msg) {
   submsg.setC(16);
   msg.setOptionalForeignMessage(submsg);
   msg.setOptionalForeignEnum(proto.jspb.test.ForeignEnum.FOREIGN_FOO);
-  msg.setOptionalInt32String('-12345');
-  msg.setOptionalUint32String('12345');
-  msg.setOptionalInt64String('-123456789012345');
-  msg.setOptionalUint64String('987654321098765');
   msg.setOneofString('oneof');
 
   msg.setRepeatedInt32List([-42]);
@@ -108,15 +104,6 @@ function fillAllFields(msg) {
   msg.setPackedRepeatedFloatList([1.5]);
   msg.setPackedRepeatedDoubleList([-1.5]);
   msg.setPackedRepeatedBoolList([true]);
-
-  msg.setRepeatedInt32StringList(['-12345']);
-  msg.setRepeatedUint32StringList(['12345']);
-  msg.setRepeatedInt64StringList(['-123456789012345']);
-  msg.setRepeatedUint64StringList(['987654321098765']);
-  msg.setPackedRepeatedInt32StringList(['-12345']);
-  msg.setPackedRepeatedUint32StringList(['12345']);
-  msg.setPackedRepeatedInt64StringList(['-123456789012345']);
-  msg.setPackedRepeatedUint64StringList(['987654321098765']);
 }
 
 
@@ -173,10 +160,6 @@ function checkAllFields(msg) {
   assertEquals(msg.getOptionalForeignMessage().getC(), 16);
   assertEquals(msg.getOptionalForeignEnum(),
       proto.jspb.test.ForeignEnum.FOREIGN_FOO);
-  assertEquals(msg.getOptionalInt32String(), '-12345');
-  assertEquals(msg.getOptionalUint32String(), '12345');
-  assertEquals(msg.getOptionalInt64String(), '-123456789012345');
-  assertEquals(msg.getOptionalUint64String(), '987654321098765');
   assertEquals(msg.getOneofString(), 'oneof');
   assertEquals(msg.getOneofFieldCase(),
       proto.jspb.test.TestAllTypes.OneofFieldCase.ONEOF_STRING);
@@ -221,26 +204,6 @@ function checkAllFields(msg) {
   assertElementsEquals(msg.getPackedRepeatedFloatList(), [1.5]);
   assertElementsEquals(msg.getPackedRepeatedDoubleList(), [-1.5]);
   assertElementsEquals(msg.getPackedRepeatedBoolList(), [true]);
-
-  assertEquals(msg.getRepeatedInt32StringList().length, 1);
-  assertElementsEquals(msg.getRepeatedInt32StringList(), ['-12345']);
-  assertEquals(msg.getRepeatedUint32StringList().length, 1);
-  assertElementsEquals(msg.getRepeatedUint32StringList(), ['12345']);
-  assertEquals(msg.getRepeatedInt64StringList().length, 1);
-  assertElementsEquals(msg.getRepeatedInt64StringList(), ['-123456789012345']);
-  assertEquals(msg.getRepeatedUint64StringList().length, 1);
-  assertElementsEquals(msg.getRepeatedUint64StringList(), ['987654321098765']);
-
-  assertEquals(msg.getPackedRepeatedInt32StringList().length, 1);
-  assertElementsEquals(msg.getPackedRepeatedInt32StringList(), ['-12345']);
-  assertEquals(msg.getPackedRepeatedUint32StringList().length, 1);
-  assertElementsEquals(msg.getPackedRepeatedUint32StringList(), ['12345']);
-  assertEquals(msg.getPackedRepeatedInt64StringList().length, 1);
-  assertElementsEquals(msg.getPackedRepeatedInt64StringList(),
-      ['-123456789012345']);
-  assertEquals(msg.getPackedRepeatedUint64StringList().length, 1);
-  assertElementsEquals(msg.getPackedRepeatedUint64StringList(),
-      ['987654321098765']);
 }
 
 
@@ -285,14 +248,6 @@ function checkExtensions(msg) {
           proto.jspb.test.ExtendsWithMessage.optionalExtension).getFoo());
   assertEquals(proto.jspb.test.ForeignEnum.FOREIGN_FOO,
       msg.getExtension(proto.jspb.test.extendOptionalForeignEnum));
-  assertEquals('-12345',
-      msg.getExtension(proto.jspb.test.extendOptionalInt32String));
-  assertEquals('12345',
-      msg.getExtension(proto.jspb.test.extendOptionalUint32String));
-  assertEquals('-123456789012345',
-      msg.getExtension(proto.jspb.test.extendOptionalInt64String));
-  assertEquals('987654321098765',
-      msg.getExtension(proto.jspb.test.extendOptionalUint64String));
 
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedInt32List),
@@ -349,19 +304,6 @@ function checkExtensions(msg) {
       [proto.jspb.test.ForeignEnum.FOREIGN_FOO]);
 
   assertElementsEquals(
-      msg.getExtension(proto.jspb.test.extendRepeatedInt32StringList),
-      ['-12345']);
-  assertElementsEquals(
-      msg.getExtension(proto.jspb.test.extendRepeatedUint32StringList),
-      ['12345']);
-  assertElementsEquals(
-      msg.getExtension(proto.jspb.test.extendRepeatedInt64StringList),
-      ['-123456789012345']);
-  assertElementsEquals(
-      msg.getExtension(proto.jspb.test.extendRepeatedUint64StringList),
-      ['987654321098765']);
-
-  assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedInt32List),
       [-42]);
   assertElementsEquals(
@@ -403,19 +345,6 @@ function checkExtensions(msg) {
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedForeignEnumList),
       [proto.jspb.test.ForeignEnum.FOREIGN_FOO]);
-
-  assertElementsEquals(
-      msg.getExtension(proto.jspb.test.extendPackedRepeatedInt32StringList),
-      ['-12345']);
-  assertElementsEquals(
-      msg.getExtension(proto.jspb.test.extendPackedRepeatedUint32StringList),
-      ['12345']);
-  assertElementsEquals(
-      msg.getExtension(proto.jspb.test.extendPackedRepeatedInt64StringList),
-      ['-123456789012345']);
-  assertElementsEquals(
-      msg.getExtension(proto.jspb.test.extendPackedRepeatedUint64StringList),
-      ['987654321098765']);
 }
 
 
@@ -475,14 +404,6 @@ describe('protoBinaryTest', function() {
     msg.setExtension(
         proto.jspb.test.extendOptionalForeignEnum,
         proto.jspb.test.ForeignEnum.FOREIGN_FOO);
-    msg.setExtension(
-        proto.jspb.test.extendOptionalInt32String, '-12345');
-    msg.setExtension(
-        proto.jspb.test.extendOptionalUint32String, '12345');
-    msg.setExtension(
-        proto.jspb.test.extendOptionalInt64String, '-123456789012345');
-    msg.setExtension(
-        proto.jspb.test.extendOptionalUint64String, '987654321098765');
 
     msg.setExtension(
         proto.jspb.test.extendRepeatedInt32List, [-42]);
@@ -522,15 +443,6 @@ describe('protoBinaryTest', function() {
         [proto.jspb.test.ForeignEnum.FOREIGN_FOO]);
 
     msg.setExtension(
-        proto.jspb.test.extendRepeatedInt32StringList, ['-12345']);
-    msg.setExtension(
-        proto.jspb.test.extendRepeatedUint32StringList, ['12345']);
-    msg.setExtension(
-        proto.jspb.test.extendRepeatedInt64StringList, ['-123456789012345']);
-    msg.setExtension(
-        proto.jspb.test.extendRepeatedUint64StringList, ['987654321098765']);
-
-    msg.setExtension(
         proto.jspb.test.extendPackedRepeatedInt32List, [-42]);
     msg.setExtension(
         proto.jspb.test.extendPackedRepeatedInt64List, [-0x7fffffff00000000]);
@@ -559,19 +471,6 @@ describe('protoBinaryTest', function() {
         proto.jspb.test.extendPackedRepeatedBoolList, [true]);
     msg.setExtension(proto.jspb.test.extendPackedRepeatedForeignEnumList,
         [proto.jspb.test.ForeignEnum.FOREIGN_FOO]);
-
-    msg.setExtension(
-        proto.jspb.test.extendPackedRepeatedInt32StringList,
-        ['-12345']);
-    msg.setExtension(
-        proto.jspb.test.extendPackedRepeatedUint32StringList,
-        ['12345']);
-    msg.setExtension(
-        proto.jspb.test.extendPackedRepeatedInt64StringList,
-        ['-123456789012345']);
-    msg.setExtension(
-        proto.jspb.test.extendPackedRepeatedUint64StringList,
-        ['987654321098765']);
   }
 
 

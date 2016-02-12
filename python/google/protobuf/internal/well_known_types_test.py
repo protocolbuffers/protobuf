@@ -41,13 +41,17 @@ try:
 except ImportError:
   import unittest
 
+from google.protobuf import any_pb2
 from google.protobuf import duration_pb2
 from google.protobuf import field_mask_pb2
+from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
 from google.protobuf import unittest_pb2
+from google.protobuf.internal import any_test_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import well_known_types
 from google.protobuf import descriptor
+from google.protobuf import text_format
 
 
 class TimeUtilTestBase(unittest.TestCase):
@@ -508,6 +512,125 @@ class FieldMaskTest(unittest.TestCase):
     mask.MergeMessage(nested_src, nested_dst, False, True)
     self.assertEqual(1, len(nested_dst.payload.repeated_int32))
     self.assertEqual(1234, nested_dst.payload.repeated_int32[0])
+
+
+class StructTest(unittest.TestCase):
+
+  def testStruct(self):
+    struct = struct_pb2.Struct()
+    struct_class = struct.__class__
+
+    struct['key1'] = 5
+    struct['key2'] = 'abc'
+    struct['key3'] = True
+    struct.get_or_create_struct('key4')['subkey'] = 11.0
+    struct_list = struct.get_or_create_list('key5')
+    struct_list.extend([6, 'seven', True, False, None])
+    struct_list.add_struct()['subkey2'] = 9
+
+    self.assertTrue(isinstance(struct, well_known_types.Struct))
+    self.assertEquals(5, struct['key1'])
+    self.assertEquals('abc', struct['key2'])
+    self.assertIs(True, struct['key3'])
+    self.assertEquals(11, struct['key4']['subkey'])
+    inner_struct = struct_class()
+    inner_struct['subkey2'] = 9
+    self.assertEquals([6, 'seven', True, False, None, inner_struct],
+                      list(struct['key5'].items()))
+
+    serialized = struct.SerializeToString()
+
+    struct2 = struct_pb2.Struct()
+    struct2.ParseFromString(serialized)
+
+    self.assertEquals(struct, struct2)
+
+    self.assertTrue(isinstance(struct2, well_known_types.Struct))
+    self.assertEquals(5, struct2['key1'])
+    self.assertEquals('abc', struct2['key2'])
+    self.assertIs(True, struct2['key3'])
+    self.assertEquals(11, struct2['key4']['subkey'])
+    self.assertEquals([6, 'seven', True, False, None, inner_struct],
+                      list(struct2['key5'].items()))
+
+    struct_list = struct2['key5']
+    self.assertEquals(6, struct_list[0])
+    self.assertEquals('seven', struct_list[1])
+    self.assertEquals(True, struct_list[2])
+    self.assertEquals(False, struct_list[3])
+    self.assertEquals(None, struct_list[4])
+    self.assertEquals(inner_struct, struct_list[5])
+
+    struct_list[1] = 7
+    self.assertEquals(7, struct_list[1])
+
+    struct_list.add_list().extend([1, 'two', True, False, None])
+    self.assertEquals([1, 'two', True, False, None],
+                      list(struct_list[6].items()))
+
+    text_serialized = str(struct)
+    struct3 = struct_pb2.Struct()
+    text_format.Merge(text_serialized, struct3)
+    self.assertEquals(struct, struct3)
+
+    struct.get_or_create_struct('key3')['replace'] = 12
+    self.assertEquals(12, struct['key3']['replace'])
+
+
+class AnyTest(unittest.TestCase):
+
+  def testAnyMessage(self):
+    # Creates and sets message.
+    msg = any_test_pb2.TestAny()
+    msg_descriptor = msg.DESCRIPTOR
+    all_types = unittest_pb2.TestAllTypes()
+    all_descriptor = all_types.DESCRIPTOR
+    all_types.repeated_string.append(u'\u00fc\ua71f')
+    # Packs to Any.
+    msg.value.Pack(all_types)
+    self.assertEqual(msg.value.type_url,
+                     'type.googleapis.com/%s' % all_descriptor.full_name)
+    self.assertEqual(msg.value.value,
+                     all_types.SerializeToString())
+    # Tests Is() method.
+    self.assertTrue(msg.value.Is(all_descriptor))
+    self.assertFalse(msg.value.Is(msg_descriptor))
+    # Unpacks Any.
+    unpacked_message = unittest_pb2.TestAllTypes()
+    self.assertTrue(msg.value.Unpack(unpacked_message))
+    self.assertEqual(all_types, unpacked_message)
+    # Unpacks to different type.
+    self.assertFalse(msg.value.Unpack(msg))
+    # Only Any messages have Pack method.
+    try:
+      msg.Pack(all_types)
+    except AttributeError:
+      pass
+    else:
+      raise AttributeError('%s should not have Pack method.' %
+                           msg_descriptor.full_name)
+
+  def testPackWithCustomTypeUrl(self):
+    submessage = any_test_pb2.TestAny()
+    submessage.int_value = 12345
+    msg = any_pb2.Any()
+    # Pack with a custom type URL prefix.
+    msg.Pack(submessage, 'type.myservice.com')
+    self.assertEqual(msg.type_url,
+                     'type.myservice.com/%s' % submessage.DESCRIPTOR.full_name)
+    # Pack with a custom type URL prefix ending with '/'.
+    msg.Pack(submessage, 'type.myservice.com/')
+    self.assertEqual(msg.type_url,
+                     'type.myservice.com/%s' % submessage.DESCRIPTOR.full_name)
+    # Pack with an empty type URL prefix.
+    msg.Pack(submessage, '')
+    self.assertEqual(msg.type_url,
+                     '/%s' % submessage.DESCRIPTOR.full_name)
+    # Test unpacking the type.
+    unpacked_message = any_test_pb2.TestAny()
+    self.assertTrue(msg.Unpack(unpacked_message))
+    self.assertEqual(submessage, unpacked_message)
+
 
 if __name__ == '__main__':
   unittest.main()

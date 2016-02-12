@@ -20,6 +20,17 @@ else
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
     ext.ext_dir = "ext/google/protobuf_c"
     ext.lib_dir = "lib/google"
+    ext.cross_compile = true
+    ext.cross_platform = [
+      'x86-mingw32', 'x64-mingw32',
+      'x86_64-linux', 'x86-linux',
+      'universal-darwin'
+    ]
+  end
+
+  task 'gem:windows' do
+    require 'rake_compiler_dock'
+    RakeCompilerDock.sh "bundle && rake cross native gem RUBY_CC_VERSION=2.3.0:2.2.2:2.1.6"
   end
 end
 

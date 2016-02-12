@@ -64,7 +64,7 @@
     <NoStdLib>true</NoStdLib>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>C:\keys\Google.Protobuf.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
@@ -109,7 +109,7 @@
     <Compile Include="Reflection\FieldDescriptor.cs" />
     <Compile Include="Reflection\FieldType.cs" />
     <Compile Include="Reflection\FileDescriptor.cs" />
-    <Compile Include="Reflection\GeneratedCodeInfo.cs" />
+    <Compile Include="Reflection\GeneratedClrTypeInfo.cs" />
     <Compile Include="Reflection\IDescriptor.cs" />
     <Compile Include="Reflection\IFieldAccessor.cs" />
     <Compile Include="Reflection\MapFieldAccessor.cs" />
@@ -123,7 +123,7 @@
     <Compile Include="Reflection\RepeatedFieldAccessor.cs" />
     <Compile Include="Reflection\ServiceDescriptor.cs" />
     <Compile Include="Reflection\SingleFieldAccessor.cs" />
-    <Compile Include="Preconditions.cs" />
+    <Compile Include="ProtoPreconditions.cs" />
     <Compile Include="Reflection\TypeRegistry.cs" />
     <Compile Include="WellKnownTypes\Any.cs" />
     <Compile Include="WellKnownTypes\AnyPartial.cs" />

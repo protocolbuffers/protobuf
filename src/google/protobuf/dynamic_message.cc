@@ -419,7 +419,7 @@ DynamicMessage::~DynamicMessage() {
   }
 
   // We need to manually run the destructors for repeated fields and strings,
-  // just as we ran their constructors in the the DynamicMessage constructor.
+  // just as we ran their constructors in the DynamicMessage constructor.
   // We also need to manually delete oneof fields if it is set and is string
   // or message.
   // Additionally, if any singular embedded messages have been allocated, we

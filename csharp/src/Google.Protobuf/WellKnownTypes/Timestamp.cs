@@ -30,8 +30,8 @@ namespace Google.Protobuf.WellKnownTypes {
             "c2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Timestamp), global::Google.Protobuf.WellKnownTypes.Timestamp.Parser, new[]{ "Seconds", "Nanos" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Timestamp), global::Google.Protobuf.WellKnownTypes.Timestamp.Parser, new[]{ "Seconds", "Nanos" }, null, null, null)
           }));
     }
     #endregion

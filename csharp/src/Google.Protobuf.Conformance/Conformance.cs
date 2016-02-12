@@ -186,12 +186,12 @@ namespace Conformance {
             "dG9idWYuY29uZm9ybWFuY2ViBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
-          new pbr::GeneratedCodeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.ForeignEnum), }, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat" }, new[]{ "Payload" }, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped" }, new[]{ "Result" }, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Conformance.TestAllTypes), global::Conformance.TestAllTypes.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OptionalBoolWrapper", "OptionalInt32Wrapper", "OptionalInt64Wrapper", "OptionalUint32Wrapper", "OptionalUint64Wrapper", "OptionalFloatWrapper", "OptionalDoubleWrapper", "OptionalStringWrapper", "OptionalBytesWrapper", "RepeatedBoolWrapper", "RepeatedInt32Wrapper", "RepeatedInt64Wrapper", "RepeatedUint32Wrapper", "RepeatedUint64Wrapper", "RepeatedFloatWrapper", "RepeatedDoubleWrapper", "RepeatedStringWrapper", "RepeatedBytesWrapper", "OptionalDuration", "OptionalTimestamp", "OptionalFieldMask", "OptionalStruct", "OptionalAny", "OptionalValue", "RepeatedDuration", "RepeatedTimestamp", "RepeatedFieldmask", "RepeatedStruct", "RepeatedAny", "RepeatedValue", "Fieldname1", "FieldName2", "FieldName3", "FieldName4", "Field0Name5", "Field0Name6", "FieldName7", "FieldName8", "FieldName9", "FieldName10", "FIELDNAME11", "FIELDName12" }, new[]{ "OneofField" }, new[]{ typeof(global::Conformance.TestAllTypes.Types.NestedEnum) }, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::Conformance.TestAllTypes.Types.NestedMessage), global::Conformance.TestAllTypes.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null),
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.ForeignEnum), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat" }, new[]{ "Payload" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped" }, new[]{ "Result" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.TestAllTypes), global::Conformance.TestAllTypes.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OptionalBoolWrapper", "OptionalInt32Wrapper", "OptionalInt64Wrapper", "OptionalUint32Wrapper", "OptionalUint64Wrapper", "OptionalFloatWrapper", "OptionalDoubleWrapper", "OptionalStringWrapper", "OptionalBytesWrapper", "RepeatedBoolWrapper", "RepeatedInt32Wrapper", "RepeatedInt64Wrapper", "RepeatedUint32Wrapper", "RepeatedUint64Wrapper", "RepeatedFloatWrapper", "RepeatedDoubleWrapper", "RepeatedStringWrapper", "RepeatedBytesWrapper", "OptionalDuration", "OptionalTimestamp", "OptionalFieldMask", "OptionalStruct", "OptionalAny", "OptionalValue", "RepeatedDuration", "RepeatedTimestamp", "RepeatedFieldmask", "RepeatedStruct", "RepeatedAny", "RepeatedValue", "Fieldname1", "FieldName2", "FieldName3", "FieldName4", "Field0Name5", "Field0Name6", "FieldName7", "FieldName8", "FieldName9", "FieldName10", "FIELDNAME11", "FIELDName12" }, new[]{ "OneofField" }, new[]{ typeof(global::Conformance.TestAllTypes.Types.NestedEnum) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.TestAllTypes.Types.NestedMessage), global::Conformance.TestAllTypes.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null),
             null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, }),
-            new pbr::GeneratedCodeInfo(typeof(global::Conformance.ForeignMessage), global::Conformance.ForeignMessage.Parser, new[]{ "C" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ForeignMessage), global::Conformance.ForeignMessage.Parser, new[]{ "C" }, null, null, null)
           }));
     }
     #endregion
@@ -261,7 +261,7 @@ namespace Conformance {
     public pb::ByteString ProtobufPayload {
       get { return payloadCase_ == PayloadOneofCase.ProtobufPayload ? (pb::ByteString) payload_ : pb::ByteString.Empty; }
       set {
-        payload_ = pb::Preconditions.CheckNotNull(value, "value");
+        payload_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         payloadCase_ = PayloadOneofCase.ProtobufPayload;
       }
     }
@@ -271,7 +271,7 @@ namespace Conformance {
     public string JsonPayload {
       get { return payloadCase_ == PayloadOneofCase.JsonPayload ? (string) payload_ : ""; }
       set {
-        payload_ = pb::Preconditions.CheckNotNull(value, "value");
+        payload_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         payloadCase_ = PayloadOneofCase.JsonPayload;
       }
     }
@@ -471,7 +471,7 @@ namespace Conformance {
     public string ParseError {
       get { return resultCase_ == ResultOneofCase.ParseError ? (string) result_ : ""; }
       set {
-        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.ParseError;
       }
     }
@@ -486,7 +486,7 @@ namespace Conformance {
     public string SerializeError {
       get { return resultCase_ == ResultOneofCase.SerializeError ? (string) result_ : ""; }
       set {
-        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.SerializeError;
       }
     }
@@ -501,7 +501,7 @@ namespace Conformance {
     public string RuntimeError {
       get { return resultCase_ == ResultOneofCase.RuntimeError ? (string) result_ : ""; }
       set {
-        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.RuntimeError;
       }
     }
@@ -515,7 +515,7 @@ namespace Conformance {
     public pb::ByteString ProtobufPayload {
       get { return resultCase_ == ResultOneofCase.ProtobufPayload ? (pb::ByteString) result_ : pb::ByteString.Empty; }
       set {
-        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.ProtobufPayload;
       }
     }
@@ -529,7 +529,7 @@ namespace Conformance {
     public string JsonPayload {
       get { return resultCase_ == ResultOneofCase.JsonPayload ? (string) result_ : ""; }
       set {
-        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.JsonPayload;
       }
     }
@@ -543,7 +543,7 @@ namespace Conformance {
     public string Skipped {
       get { return resultCase_ == ResultOneofCase.Skipped ? (string) result_ : ""; }
       set {
-        result_ = pb::Preconditions.CheckNotNull(value, "value");
+        result_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         resultCase_ = ResultOneofCase.Skipped;
       }
     }
@@ -1008,7 +1008,7 @@ namespace Conformance {
     public string OptionalString {
       get { return optionalString_; }
       set {
-        optionalString_ = pb::Preconditions.CheckNotNull(value, "value");
+        optionalString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1018,7 +1018,7 @@ namespace Conformance {
     public pb::ByteString OptionalBytes {
       get { return optionalBytes_; }
       set {
-        optionalBytes_ = pb::Preconditions.CheckNotNull(value, "value");
+        optionalBytes_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1068,7 +1068,7 @@ namespace Conformance {
     public string OptionalStringPiece {
       get { return optionalStringPiece_; }
       set {
-        optionalStringPiece_ = pb::Preconditions.CheckNotNull(value, "value");
+        optionalStringPiece_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1078,7 +1078,7 @@ namespace Conformance {
     public string OptionalCord {
       get { return optionalCord_; }
       set {
-        optionalCord_ = pb::Preconditions.CheckNotNull(value, "value");
+        optionalCord_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1483,7 +1483,7 @@ namespace Conformance {
     public string OneofString {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofString ? (string) oneofField_ : ""; }
       set {
-        oneofField_ = pb::Preconditions.CheckNotNull(value, "value");
+        oneofField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         oneofFieldCase_ = OneofFieldOneofCase.OneofString;
       }
     }
@@ -1493,7 +1493,7 @@ namespace Conformance {
     public pb::ByteString OneofBytes {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofBytes ? (pb::ByteString) oneofField_ : pb::ByteString.Empty; }
       set {
-        oneofField_ = pb::Preconditions.CheckNotNull(value, "value");
+        oneofField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         oneofFieldCase_ = OneofFieldOneofCase.OneofBytes;
       }
     }

@@ -91,7 +91,7 @@ namespace Google.Protobuf.Reflection
         /// <returns>A type registry for the given files.</returns>
         public static TypeRegistry FromFiles(IEnumerable<FileDescriptor> fileDescriptors)
         {
-            Preconditions.CheckNotNull(fileDescriptors, nameof(fileDescriptors));
+            ProtoPreconditions.CheckNotNull(fileDescriptors, nameof(fileDescriptors));
             var builder = new Builder();
             foreach (var file in fileDescriptors)
             {
@@ -128,7 +128,7 @@ namespace Google.Protobuf.Reflection
         /// <returns>A type registry for the given files.</returns>
         public static TypeRegistry FromMessages(IEnumerable<MessageDescriptor> messageDescriptors)
         {
-            Preconditions.CheckNotNull(messageDescriptors, nameof(messageDescriptors));
+            ProtoPreconditions.CheckNotNull(messageDescriptors, nameof(messageDescriptors));
             return FromFiles(messageDescriptors.Select(md => md.File));
         }
 

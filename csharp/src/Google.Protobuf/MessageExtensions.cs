@@ -46,8 +46,8 @@ namespace Google.Protobuf
         /// <param name="data">The data to merge, which must be protobuf-encoded binary data.</param>
         public static void MergeFrom(this IMessage message, byte[] data)
         {
-            Preconditions.CheckNotNull(message, "message");
-            Preconditions.CheckNotNull(data, "data");
+            ProtoPreconditions.CheckNotNull(message, "message");
+            ProtoPreconditions.CheckNotNull(data, "data");
             CodedInputStream input = new CodedInputStream(data);
             message.MergeFrom(input);
             input.CheckReadEndOfStreamTag();
@@ -60,8 +60,8 @@ namespace Google.Protobuf
         /// <param name="data">The data to merge, which must be protobuf-encoded binary data.</param>
         public static void MergeFrom(this IMessage message, ByteString data)
         {
-            Preconditions.CheckNotNull(message, "message");
-            Preconditions.CheckNotNull(data, "data");
+            ProtoPreconditions.CheckNotNull(message, "message");
+            ProtoPreconditions.CheckNotNull(data, "data");
             CodedInputStream input = data.CreateCodedInput();
             message.MergeFrom(input);
             input.CheckReadEndOfStreamTag();
@@ -74,8 +74,8 @@ namespace Google.Protobuf
         /// <param name="input">Stream containing the data to merge, which must be protobuf-encoded binary data.</param>
         public static void MergeFrom(this IMessage message, Stream input)
         {
-            Preconditions.CheckNotNull(message, "message");
-            Preconditions.CheckNotNull(input, "input");
+            ProtoPreconditions.CheckNotNull(message, "message");
+            ProtoPreconditions.CheckNotNull(input, "input");
             CodedInputStream codedInput = new CodedInputStream(input);
             message.MergeFrom(codedInput);
             codedInput.CheckReadEndOfStreamTag();
@@ -92,8 +92,8 @@ namespace Google.Protobuf
         /// <param name="input">Stream containing the data to merge, which must be protobuf-encoded binary data.</param>
         public static void MergeDelimitedFrom(this IMessage message, Stream input)
         {
-            Preconditions.CheckNotNull(message, "message");
-            Preconditions.CheckNotNull(input, "input");
+            ProtoPreconditions.CheckNotNull(message, "message");
+            ProtoPreconditions.CheckNotNull(input, "input");
             int size = (int) CodedInputStream.ReadRawVarint32(input);
             Stream limitedStream = new LimitedInputStream(input, size);
             message.MergeFrom(limitedStream);
@@ -106,7 +106,7 @@ namespace Google.Protobuf
         /// <returns>The message data as a byte array.</returns>
         public static byte[] ToByteArray(this IMessage message)
         {
-            Preconditions.CheckNotNull(message, "message");
+            ProtoPreconditions.CheckNotNull(message, "message");
             byte[] result = new byte[message.CalculateSize()];
             CodedOutputStream output = new CodedOutputStream(result);
             message.WriteTo(output);
@@ -121,8 +121,8 @@ namespace Google.Protobuf
         /// <param name="output">The stream to write to.</param>
         public static void WriteTo(this IMessage message, Stream output)
         {
-            Preconditions.CheckNotNull(message, "message");
-            Preconditions.CheckNotNull(output, "output");
+            ProtoPreconditions.CheckNotNull(message, "message");
+            ProtoPreconditions.CheckNotNull(output, "output");
             CodedOutputStream codedOutput = new CodedOutputStream(output);
             message.WriteTo(codedOutput);
             codedOutput.Flush();
@@ -135,8 +135,8 @@ namespace Google.Protobuf
         /// <param name="output">The output stream to write to.</param>
         public static void WriteDelimitedTo(this IMessage message, Stream output)
         {
-            Preconditions.CheckNotNull(message, "message");
-            Preconditions.CheckNotNull(output, "output");
+            ProtoPreconditions.CheckNotNull(message, "message");
+            ProtoPreconditions.CheckNotNull(output, "output");
             CodedOutputStream codedOutput = new CodedOutputStream(output);
             codedOutput.WriteRawVarint32((uint)message.CalculateSize());
             message.WriteTo(codedOutput);
@@ -150,7 +150,7 @@ namespace Google.Protobuf
         /// <returns>The message data as a byte string.</returns>
         public static ByteString ToByteString(this IMessage message)
         {
-            Preconditions.CheckNotNull(message, "message");
+            ProtoPreconditions.CheckNotNull(message, "message");
             return ByteString.AttachBytes(message.ToByteArray());
         }        
     }
