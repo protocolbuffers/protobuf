@@ -34,6 +34,8 @@
 #include <sanitizer/asan_interface.h>
 #endif
 
+#define HALF_SIZE_T (((size_t) 1) << (8 * sizeof (size_t) / 2))
+
 namespace google {
 namespace protobuf {
 
@@ -125,6 +127,11 @@ Arena::Block* Arena::NewBlock(void* me, Block* my_last_block, size_t n,
   }
   if (n > size - kHeaderSize) {
     // TODO(sanjay): Check if n + kHeaderSize would overflow
+    if ((kHeaderSize | n) >= HALF_SIZE_T) {
+      if (n != 0 && max_block_size / n != kHeaderSize) {
+        return NULL;
+      }
+    }
     size = kHeaderSize + n;
   }
 
