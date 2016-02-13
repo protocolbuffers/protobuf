@@ -44,11 +44,6 @@ build_csharp() {
   internal_build_cpp
 
   # Install latest version of Mono
-  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-  echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
-  echo "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main" | sudo tee -a /etc/apt/sources.list.d/mono-xamarin.list
-  sudo apt-get update -qq
-  sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
   wget www.nuget.org/NuGet.exe -O nuget.exe
 
   (cd csharp/src; mono ../../nuget.exe restore)
@@ -78,19 +73,12 @@ use_java() {
   version=$1
   case "$version" in
     jdk6)
-      sudo apt-get install openjdk-6-jdk
       export PATH=/usr/lib/jvm/java-6-openjdk-amd64/bin:$PATH
       ;;
     jdk7)
-      sudo apt-get install openjdk-7-jdk
       export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:$PATH
       ;;
     oracle7)
-      sudo apt-get install python-software-properties # for apt-add-repository
-      echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | \
-        sudo debconf-set-selections
-      yes | sudo apt-add-repository ppa:webupd8team/java
-      yes | sudo apt-get install oracle-java7-installer
       export PATH=/usr/lib/jvm/java-7-oracle/bin:$PATH
       ;;
   esac
@@ -221,7 +209,6 @@ build_objectivec_osx() {
 
 build_python() {
   internal_build_cpp
-  internal_install_python_deps
   cd python
   # Only test Python 2.6/3.x on Linux
   if [ $(uname -s) == "Linux" ]; then
@@ -235,7 +222,6 @@ build_python() {
 
 build_python_cpp() {
   internal_build_cpp
-  internal_install_python_deps
   export LD_LIBRARY_PATH=../src/.libs # for Linux
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
