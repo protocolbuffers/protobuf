@@ -470,6 +470,52 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void SkipGroup_WrongEndGroupTag()
+        {
+            // Create an output stream with:
+            // Field 1: string "field 1"
+            // Start group 2
+            //   Field 3: fixed int32
+            // End group 4 (should give an error)
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(1, WireFormat.WireType.LengthDelimited);
+            output.WriteString("field 1");
+
+            // The outer group...
+            output.WriteTag(2, WireFormat.WireType.StartGroup);
+            output.WriteTag(3, WireFormat.WireType.Fixed32);
+            output.WriteFixed32(100);
+            output.WriteTag(4, WireFormat.WireType.EndGroup);
+            output.Flush();
+            stream.Position = 0;
+
+            // Now act like a generated client
+            var input = new CodedInputStream(stream);
+            Assert.AreEqual(WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited), input.ReadTag());
+            Assert.AreEqual("field 1", input.ReadString());
+            Assert.AreEqual(WireFormat.MakeTag(2, WireFormat.WireType.StartGroup), input.ReadTag());
+            Assert.Throws<InvalidProtocolBufferException>(input.SkipLastField);
+        }
+
+        [Test]
+        public void RogueEndGroupTag()
+        {
+            // If we have an end-group tag without a leading start-group tag, generated
+            // code will just call SkipLastField... so that should fail.
+
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(1, WireFormat.WireType.EndGroup);
+            output.Flush();
+            stream.Position = 0;
+
+            var input = new CodedInputStream(stream);
+            Assert.AreEqual(WireFormat.MakeTag(1, WireFormat.WireType.EndGroup), input.ReadTag());
+            Assert.Throws<InvalidProtocolBufferException>(input.SkipLastField);
+        }
+
+        [Test]
         public void EndOfStreamReachedWhileSkippingGroup()
         {
             var stream = new MemoryStream();
@@ -484,7 +530,7 @@ namespace Google.Protobuf
             // Now act like a generated client
             var input = new CodedInputStream(stream);
             input.ReadTag();
-            Assert.Throws<InvalidProtocolBufferException>(() => input.SkipLastField());
+            Assert.Throws<InvalidProtocolBufferException>(input.SkipLastField);
         }
 
         [Test]
@@ -506,7 +552,7 @@ namespace Google.Protobuf
             // Now act like a generated client
             var input = new CodedInputStream(stream);
             Assert.AreEqual(WireFormat.MakeTag(1, WireFormat.WireType.StartGroup), input.ReadTag());
-            Assert.Throws<InvalidProtocolBufferException>(() => input.SkipLastField());
+            Assert.Throws<InvalidProtocolBufferException>(input.SkipLastField);
         }
 
         [Test]

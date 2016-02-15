@@ -679,21 +679,20 @@ namespace Google.Protobuf
         /// for details; we may want to change this.
         /// </summary>
         [Test]
-        public void ExtraEndGroupSkipped()
+        public void ExtraEndGroupThrows()
         {
             var message = SampleMessages.CreateFullTestAllTypes();
             var stream = new MemoryStream();
             var output = new CodedOutputStream(stream);
 
-            output.WriteTag(100, WireFormat.WireType.EndGroup);
             output.WriteTag(TestAllTypes.SingleFixed32FieldNumber, WireFormat.WireType.Fixed32);
             output.WriteFixed32(123);
+            output.WriteTag(100, WireFormat.WireType.EndGroup);
 
             output.Flush();
 
             stream.Position = 0;
-            var parsed = TestAllTypes.Parser.ParseFrom(stream);
-            Assert.AreEqual(new TestAllTypes { SingleFixed32 = 123 }, parsed);
+            Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseFrom(stream));
         }
 
         [Test]
