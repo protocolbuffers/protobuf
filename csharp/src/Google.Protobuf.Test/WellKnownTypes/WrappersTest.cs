@@ -319,9 +319,10 @@ namespace Google.Protobuf.WellKnownTypes
 
         // Merging is odd with wrapper types, due to the way that default values aren't emitted in
         // the binary stream. In fact we cheat a little bit - a message with an explicitly present default
-        // value will have that default value ignored.
+        // value will have that default value ignored. See issue 615. Fixing this would require significant upheaval to
+        // the FieldCodec side of things.
         [Test]
-        public void MergingCornerCase()
+        public void MergingStreamExplicitValue()
         {
             var message = new TestWellKnownTypes { Int32Field = 5 };
 
@@ -343,7 +344,45 @@ namespace Google.Protobuf.WellKnownTypes
 
             message.MergeFrom(bytes);
             // A normal implementation would have 0 now, as the explicit default would have been overwritten the 5.
+            // With the FieldCodec for Nullable<int>, we can't tell the difference between an implicit 0 and an explicit 0.
             Assert.AreEqual(5, message.Int32Field);
+        }
+
+        [Test]
+        public void MergingStreamNoValue()
+        {
+            var message = new TestWellKnownTypes { Int32Field = 5 };
+
+            // Create a byte array which an Int32 field, but with no value.
+            var bytes = new TestWellKnownTypes { Int32Field = 0 }.ToByteArray();
+            Assert.AreEqual(2, bytes.Length); // The tag for Int32Field is a single byte, then a byte indicating a 0-length message.
+            message.MergeFrom(bytes);
+
+            // The "implicit" 0 did *not* overwrite the value.
+            // (This is the correct behaviour.)
+            Assert.AreEqual(5, message.Int32Field);
+        }
+
+        // All permutations of origin/merging value being null, zero (default) or non-default.
+        // As this is the in-memory version, we don't need to worry about the difference between implicit and explicit 0.
+        [Test]
+        [TestCase(null, null, null)]
+        [TestCase(null, 0, 0)]
+        [TestCase(null, 5, 5)]
+        [TestCase(0, null, 0)]
+        [TestCase(0, 0, 0)]
+        [TestCase(0, 5, 5)]
+        [TestCase(5, null, 5)]
+        [TestCase(5, 0, 5)]
+        [TestCase(5, 10, 10)]
+        public void MergingMessageWithZero(int? originValue, int? mergingValue, int? expectedResult)
+        {
+            // This differs from the MergingStreamCornerCase because when we merge message *objects*,
+            // we ignore default values from the "source".
+            var message1 = new TestWellKnownTypes { Int32Field = originValue };
+            var message2 = new TestWellKnownTypes { Int32Field = mergingValue };
+            message1.MergeFrom(message2);
+            Assert.AreEqual(expectedResult, message1.Int32Field);
         }
 
         [Test]
