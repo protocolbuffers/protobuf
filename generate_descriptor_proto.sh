@@ -96,3 +96,8 @@ if test -x objectivec/generate_descriptors_proto.sh; then
   echo "Generating messages for objc."
   objectivec/generate_descriptors_proto.sh $@
 fi
+
+if test -x csharp/generate_protos.sh; then
+  echo "Generating messages for C#."
+  csharp/generate_protos.sh $@
+fi
