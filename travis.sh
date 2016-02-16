@@ -179,8 +179,10 @@ internal_objectivec_common () {
 }
 
 internal_xctool_debug_and_release() {
-  xctool -configuration Debug "$@"
-  xctool -configuration Release "$@"
+  # Always use -reporter plain to avoid escape codes in output (makes travis
+  # logs easier to read).
+  xctool -reporter plain -configuration Debug "$@"
+  xctool -reporter plain -configuration Release "$@"
 }
 
 build_objectivec_ios() {
@@ -202,14 +204,11 @@ build_objectivec_ios() {
   for i in "${IOS_DESTINATIONS[@]}" ; do
     # Throw -newSimulatorInstance in incase it helps with the flake that
     # started happening after xctool 0.2.8 got released.
-    # Use -reporter plain to avoid escape codes in output while sorting out
-    # flake that doesn't seem source related.
     internal_xctool_debug_and_release \
       -project objectivec/ProtocolBuffers_iOS.xcodeproj \
       -scheme ProtocolBuffers \
       -sdk iphonesimulator \
       -destination "${i}" \
-      -reporter plain \
       run-tests \
       -newSimulatorInstance
   done
