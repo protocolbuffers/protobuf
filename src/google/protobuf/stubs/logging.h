@@ -144,7 +144,7 @@ inline bool IsOk(bool status) { return status; }
 #define GOOGLE_LOG(LEVEL)                                                 \
   ::google::protobuf::internal::LogFinisher() =                           \
     ::google::protobuf::internal::LogMessage(                             \
-      ::google::protobuf::LOGLEVEL_##LEVEL, __FILE__, __LINE__)
+      ::google::protobuf::LOGLEVEL_##LEVEL, GOOGLE_FILE, __LINE__)
 #define GOOGLE_LOG_IF(LEVEL, CONDITION) \
   !(CONDITION) ? (void)0 : GOOGLE_LOG(LEVEL)
 
@@ -170,7 +170,7 @@ T* CheckNotNull(const char* /* file */, int /* line */,
 }  // namespace internal
 #define GOOGLE_CHECK_NOTNULL(A) \
   ::google::protobuf::internal::CheckNotNull(\
-      __FILE__, __LINE__, "'" #A "' must not be NULL", (A))
+      GOOGLE_FILE, __LINE__, "'" #A "' must not be NULL", (A))
 
 #ifdef NDEBUG
 

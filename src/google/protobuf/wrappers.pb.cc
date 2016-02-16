@@ -301,7 +301,7 @@ namespace {
 
 static void MergeFromFail(int line) GOOGLE_ATTRIBUTE_COLD;
 static void MergeFromFail(int line) {
-  GOOGLE_CHECK(false) << __FILE__ << ":" << line;
+  GOOGLE_CHECK(false) << GOOGLE_FILE << ":" << line;
 }
 
 }  // namespace

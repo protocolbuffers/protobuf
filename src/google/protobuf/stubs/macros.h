@@ -162,6 +162,10 @@ struct CompileAssert {
 //   causes ((0.0) ? 1 : -1) to incorrectly evaluate to 1.
 #endif  // __cplusplus >= 201103L
 
+#ifndef GOOGLE_FILE
+#define GOOGLE_FILE __FILE__
+#endif
+
 }  // namespace protobuf
 }  // namespace google
 
