@@ -195,9 +195,9 @@ build_objectivec_ios() {
     build-tests
   IOS_DESTINATIONS=(
     "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
-    "platform=iOS Simulator,name=iPhone 6,OS=9.1" # 64bit
+    "platform=iOS Simulator,name=iPhone 6,OS=9.2" # 64bit
     "platform=iOS Simulator,name=iPad 2,OS=8.1" # 32bit
-    "platform=iOS Simulator,name=iPad Air,OS=9.1" # 64bit
+    "platform=iOS Simulator,name=iPad Air,OS=9.2" # 64bit
   )
   for i in "${IOS_DESTINATIONS[@]}" ; do
     internal_xctool_debug_and_release \

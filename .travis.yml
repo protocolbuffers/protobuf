@@ -7,8 +7,8 @@ language: cpp
 os:
   - linux
   - osx
-# The Objective C build needs Xcode 6.4 or later.
-osx_image: xcode7.1
+# The Objective C build needs Xcode 7.0 or later.
+osx_image: xcode7.2
 script:
   - ./travis.sh $CONFIG
 env:
@@ -67,5 +67,8 @@ matrix:
       env: CONFIG=ruby22
     - os: osx
       env: CONFIG=jruby
+    # Currently showing flake randomly, doesn't trace back to a single commit.
+    - os: osx
+      env: CONFIG=objectivec_ios
 notifications:
   email: false

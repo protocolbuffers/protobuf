@@ -234,12 +234,20 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
       echo "ERROR: Xcode 6.3/6.4 no longer supported for building, please use 7.0 or higher." 1>&2
       exit 10
       ;;
-    7.* )
+    7.1* )
       XCODEBUILD_TEST_BASE_IOS+=(
           -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
           -destination "platform=iOS Simulator,name=iPhone 6,OS=9.0" # 64bit
           -destination "platform=iOS Simulator,name=iPad 2,OS=8.1" # 32bit
           -destination "platform=iOS Simulator,name=iPad Air,OS=9.0" # 64bit
+      )
+      ;;
+    7.* )
+      XCODEBUILD_TEST_BASE_IOS+=(
+          -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
+          -destination "platform=iOS Simulator,name=iPhone 6,OS=9.2" # 64bit
+          -destination "platform=iOS Simulator,name=iPad 2,OS=8.1" # 32bit
+          -destination "platform=iOS Simulator,name=iPad Air,OS=9.2" # 64bit
       )
       ;;
     * )
