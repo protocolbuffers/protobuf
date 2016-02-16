@@ -200,12 +200,18 @@ build_objectivec_ios() {
     "platform=iOS Simulator,name=iPad Air,OS=9.2" # 64bit
   )
   for i in "${IOS_DESTINATIONS[@]}" ; do
+    # Throw -newSimulatorInstance in incase it helps with the flake that
+    # started happening after xctool 0.2.8 got released.
+    # Use -reporter plain to avoid escape codes in output while sorting out
+    # flake that doesn't seem source related.
     internal_xctool_debug_and_release \
       -project objectivec/ProtocolBuffers_iOS.xcodeproj \
       -scheme ProtocolBuffers \
       -sdk iphonesimulator \
       -destination "${i}" \
-      run-tests
+      -reporter plain \
+      run-tests \
+      -newSimulatorInstance
   done
 }
 
