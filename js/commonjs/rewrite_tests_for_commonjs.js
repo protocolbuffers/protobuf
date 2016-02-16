@@ -46,21 +46,21 @@ lineReader.on('line', function(line) {
     if (module) {  // Skip goog.require() lines before the first directive.
       var full_sym = is_require[1];
       var sym = tryStripPrefix(full_sym, pkg);
-      console.log("google_protobuf.exportSymbol('" + full_sym + "', " + module + sym + ', global);');
+      console.log("googleProtobuf.exportSymbol('" + full_sym + "', " + module + sym + ', global);');
     }
   } else if (is_loadfromfile) {
     if (!module) {
-      console.log("var google_protobuf = require('google-protobuf');");
+      console.log("var googleProtobuf = require('google-protobuf');");
       console.log("var asserts = require('closure_asserts_commonjs');");
       console.log("var global = Function('return this')();");
       console.log("");
       console.log("// Bring asserts into the global namespace.");
-      console.log("google_protobuf.object.extend(global, asserts);");
+      console.log("googleProtobuf.object.extend(global, asserts);");
     }
     module = is_loadfromfile[1].replace("-", "_");
     pkg = is_loadfromfile[2];
 
-    if (module != "google_protobuf") {  // We unconditionally require this in the header.
+    if (module != "googleProtobuf") {  // We unconditionally require this in the header.
       console.log("var " + module + " = require('" + is_loadfromfile[1] + "');");
     }
   } else {

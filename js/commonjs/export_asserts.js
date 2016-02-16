@@ -30,4 +30,8 @@ for (var key in global) {
   }
 }
 
+// The COMPILED variable is set by Closure compiler to "true" when it compiles
+// JavaScript, so in practice this is equivalent to "exports.COMPILED = true".
+// This will disable some debugging functionality in debug.js.  We could
+// investigate whether this can/should be enabled in CommonJS builds.
 exports.COMPILED = COMPILED

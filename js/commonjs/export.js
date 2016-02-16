@@ -5,6 +5,12 @@
  * the google-protobuf.js file that we build at distribution time.
  */
 
+goog.require('goog.object');
+goog.require('jspb.BinaryReader');
+goog.require('jspb.BinaryWriter');
+goog.require('jspb.ExtensionFieldInfo');
+goog.require('jspb.Message');
+
 exports.Message = jspb.Message;
 exports.BinaryReader = jspb.BinaryReader;
 exports.BinaryWriter = jspb.BinaryWriter;

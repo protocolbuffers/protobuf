@@ -22,7 +22,9 @@ To use Protocol Buffers with JavaScript, you need two main components:
    `npm install google-protobuf`, or use the files in this directory.
 2. The Protocol Compiler `protoc`.  This translates `.proto` files
    into `.js` files.  The compiler is not currently available via
-   npm -- you must download and compile it from GitHub or a tarball.
+   npm, but you can download a pre-built binary
+   [on GitHub](https://github.com/google/protobuf/releases)
+   (look for the `protoc-*.zip` files under **Downloads**).
 
 
 Setup
