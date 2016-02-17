@@ -210,7 +210,10 @@ build_objectivec_ios() {
       -sdk iphonesimulator \
       -destination "${i}" \
       run-tests \
-      -newSimulatorInstance
+      -logicTestBucketSize 1 \
+      -appTestBucketSize 1 \
+      -freshInstall \
+      -resetSimulator
   done
 }
 
