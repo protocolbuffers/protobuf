@@ -47,9 +47,10 @@ void freestrpc(void *ptr) {
 strpc *newstrpc(upb_handlers *h, const upb_fielddef *f) {
   /* TODO(haberman): handle malloc failure. */
   strpc *ret = malloc(sizeof(*ret));
-  ret->ptr = malloc(strlen(upb_fielddef_name(f)) + 1);
-  upb_fielddef_getjsonname(f, ret->ptr);
-  ret->len = strlen(ret->ptr);
+  ret->len = upb_fielddef_getjsonname(f, NULL, 0);
+  ret->ptr = malloc(ret->len);
+  upb_fielddef_getjsonname(f, ret->ptr, ret->len);
+  ret->len--;  /* NULL */
 
   upb_handlers_addcleanup(h, ret, freestrpc);
   return ret;

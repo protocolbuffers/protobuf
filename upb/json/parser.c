@@ -1609,6 +1609,11 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
   upb_msg_field_iter i;
   upb_strtable *t;
 
+  /* It would be nice to stack-allocate this, but protobufs do not limit the
+   * length of fields to any reasonable limit. */
+  char *buf = NULL;
+  size_t len = 0;
+
   if (upb_inttable_lookupptr(&m->name_tables, md, NULL)) {
     return;
   }
@@ -1622,17 +1627,20 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
       !upb_msg_field_done(&i);
       upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
-    /* It would be nice to stack-allocate this, but protobufs do not limit the
-     * length of fields to any reasonable limit. */
-    char *buf = malloc(strlen(upb_fielddef_name(f)) + 1);
-    upb_fielddef_getjsonname(f, buf);
+    size_t field_len = upb_fielddef_getjsonname(f, buf, len);
+    if (field_len > len) {
+      buf = realloc(buf, field_len);
+      len = field_len;
+      upb_fielddef_getjsonname(f, buf, len);
+    }
     upb_strtable_insert(t, buf, upb_value_constptr(f));
-    free(buf);
 
     if (upb_fielddef_issubmsg(f)) {
       add_jsonname_table(m, upb_fielddef_msgsubdef(f));
     }
   }
+
+  free(buf);
 }
 
 /* Public API *****************************************************************/

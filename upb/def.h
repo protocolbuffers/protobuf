@@ -307,11 +307,26 @@ class upb::FieldDef {
   uint32_t number() const;   /* Returns 0 if uninitialized. */
   bool is_extension() const;
 
-  /* Get the JSON name for this field.  This will copy the JSON name into the
-   * given buffer, which must have size of at least "strlen(name()) + 1".
-   * The string will be NULL-terminated.  Returns false if uninitialized.
+  /* Copies the JSON name for this field into the given buffer.  Returns the
+   * actual size of the JSON name, including the NULL terminator.  If the
+   * return value is 0, the JSON name is unset.  If the return value is
+   * greater than len, the JSON name was truncated.  The buffer is always
+   * NULL-terminated if len > 0.
+   *
+   * The JSON name always defaults to a camelCased version of the regular
+   * name.  However if the regular name is unset, the JSON name will be unset
+   * also.
    */
-  bool GetJsonName(char* buf) const;
+  size_t GetJsonName(char* buf, size_t len) const;
+
+  /* Convenience version of the above function which copies the JSON name
+   * into the given string, returning false if the name is not set. */
+  template <class T>
+  bool GetJsonName(T* str) {
+    str->resize(GetJsonName(NULL, 0));
+    GetJsonName(&(*str)[0], str->size());
+    return str->size() > 0;
+  }
 
   /* For UPB_TYPE_MESSAGE fields only where is_tag_delimited() == false,
    * indicates whether this field should have lazy parsing handlers that yield
@@ -552,7 +567,7 @@ const char *upb_fielddef_name(const upb_fielddef *f);
 bool upb_fielddef_isextension(const upb_fielddef *f);
 bool upb_fielddef_lazy(const upb_fielddef *f);
 bool upb_fielddef_packed(const upb_fielddef *f);
-bool upb_fielddef_getjsonname(const upb_fielddef *f, char *buf);
+size_t upb_fielddef_getjsonname(const upb_fielddef *f, char *buf, size_t len);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
 const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f);
 upb_msgdef *upb_fielddef_containingtype_mutable(upb_fielddef *f);
@@ -1334,6 +1349,9 @@ inline uint32_t FieldDef::number() const { return upb_fielddef_number(this); }
 inline const char* FieldDef::name() const { return upb_fielddef_name(this); }
 inline bool FieldDef::is_extension() const {
   return upb_fielddef_isextension(this);
+}
+inline size_t FieldDef::GetJsonName(char* buf, size_t len) const {
+  return upb_fielddef_getjsonname(this, buf, len);
 }
 inline bool FieldDef::lazy() const {
   return upb_fielddef_lazy(this);
