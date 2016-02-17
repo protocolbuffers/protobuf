@@ -1364,9 +1364,11 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
     size_t field_len = upb_fielddef_getjsonname(f, buf, len);
     if (field_len > len) {
+      size_t len2;
       buf = realloc(buf, field_len);
       len = field_len;
-      upb_fielddef_getjsonname(f, buf, len);
+      len2 = upb_fielddef_getjsonname(f, buf, len);
+      UPB_ASSERT_VAR(len2, len == len2);
     }
     upb_strtable_insert(t, buf, upb_value_constptr(f));
 
