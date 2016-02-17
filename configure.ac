@@ -155,6 +155,8 @@ AM_CONDITIONAL([HAVE_PTHREAD], [test "x$acx_pthread_ok" = "xyes"])
 # We still keep this for improving pbconfig.h for unsupported platforms.
 AC_CXX_STL_HASH
 
+AC_SEARCH_LIBS([__atomic_load_4], [atomic])
+
 case "$target_os" in
   mingw* | cygwin* | win*)
     ;;
