@@ -127,13 +127,15 @@
   template <>                                                     \
   class Pointer<cppname> : public PointerBase<cppname, cppbase> { \
    public:                                                        \
-    explicit Pointer(cppname* ptr) : PointerBase(ptr) {}          \
+    explicit Pointer(cppname* ptr)                                \
+        : PointerBase<cppname, cppbase>(ptr) {}                   \
   };                                                              \
   template <>                                                     \
   class Pointer<const cppname>                                    \
       : public PointerBase<const cppname, const cppbase> {        \
    public:                                                        \
-    explicit Pointer(const cppname* ptr) : PointerBase(ptr) {}    \
+    explicit Pointer(const cppname* ptr)                          \
+        : PointerBase<const cppname, const cppbase>(ptr) {}       \
   };                                                              \
   }
 
@@ -145,13 +147,15 @@
   template <>                                                                \
   class Pointer<cppname> : public PointerBase2<cppname, cppbase, cppbase2> { \
    public:                                                                   \
-    explicit Pointer(cppname* ptr) : PointerBase2(ptr) {}                    \
+    explicit Pointer(cppname* ptr)                                           \
+        : PointerBase2<cppname, cppbase, cppbase2>(ptr) {}                   \
   };                                                                         \
   template <>                                                                \
   class Pointer<const cppname>                                               \
       : public PointerBase2<const cppname, const cppbase, const cppbase2> {  \
    public:                                                                   \
-    explicit Pointer(const cppname* ptr) : PointerBase2(ptr) {}              \
+    explicit Pointer(const cppname* ptr)                                     \
+        : PointerBase2<const cppname, const cppbase, const cppbase2>(ptr) {} \
   };                                                                         \
   }
 
