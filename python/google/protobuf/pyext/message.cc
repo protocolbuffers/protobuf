@@ -1921,6 +1921,15 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   AssureWritable(self);
   io::CodedInputStream input(
       reinterpret_cast<const uint8*>(data), data_length);
+#if PROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS
+  // Protobuf has a 64MB limit built in, this code will override this. Please do
+  // not enable this unless you fully understand the implications: protobufs
+  // must all be kept in memory at the same time, so if they grow too big you
+  // may get OOM errors. The protobuf APIs do not provide any tools for
+  // processing protobufs in chunks.  If you have protos this big you should
+  // break them up if it is at all convenient to do so.
+  input.SetTotalBytesLimit(INT_MAX, INT_MAX);
+#endif  // PROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS
   PyDescriptorPool* pool = GetDescriptorPoolForMessage(self);
   input.SetExtensionRegistry(pool->pool, pool->message_factory);
   bool success = self->message->MergePartialFromCodedStream(&input);

@@ -462,11 +462,11 @@ genrule(
     name = "gen_well_known_protos_java",
     srcs = WELL_KNOWN_PROTOS,
     outs = [
-        "wellknown.srcjar"
+        "wellknown.srcjar",
     ],
     cmd = "$(location :protoc) --java_out=$(@D)/wellknown.jar" +
-        " -Isrc $(SRCS) " +
-        " && mv $(@D)/wellknown.jar $(@D)/wellknown.srcjar",
+          " -Isrc $(SRCS) " +
+          " && mv $(@D)/wellknown.jar $(@D)/wellknown.srcjar",
     tools = [":protoc"],
 )
 
@@ -539,7 +539,10 @@ cc_binary(
     ]),
     copts = COPTS + [
         "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
-    ],
+    ] + select({
+        "//conditions:default": [],
+        ":allow_oversize_protos": ["-DPROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS=1"],
+    }),
     includes = [
         "python/",
         "src/",
@@ -558,6 +561,13 @@ config_setting(
     name = "use_fast_cpp_protos",
     values = {
         "define": "use_fast_cpp_protos=true",
+    },
+)
+
+config_setting(
+    name = "allow_oversize_protos",
+    values = {
+        "define": "allow_oversize_protos=true",
     },
 )
 
