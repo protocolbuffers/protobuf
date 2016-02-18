@@ -721,33 +721,43 @@ const char *upb_fielddef_name(const upb_fielddef *f) {
   return upb_def_fullname(upb_fielddef_upcast(f));
 }
 
-bool upb_fielddef_getjsonname(const upb_fielddef *f, char *buf) {
+size_t upb_fielddef_getjsonname(const upb_fielddef *f, char *buf, size_t len) {
   const char *name = upb_fielddef_name(f);
-  size_t i, j;
+  size_t src, dst = 0;
   bool ucase_next = false;
 
-  if (!name) return false;
+#define WRITE(byte) \
+  ++dst; \
+  if (dst < len) buf[dst - 1] = byte; \
+  else if (dst == len) buf[dst - 1] = '\0'
+
+  if (!name) {
+    WRITE('\0');
+    return 0;
+  }
 
   /* Implement the transformation as described in the spec:
    *   1. upper case all letters after an underscore.
    *   2. remove all underscores.
    */
-  for (i = 0, j = 0; name[i]; i++) {
-    if (name[i] == '_') {
+  for (src = 0; name[src]; src++) {
+    if (name[src] == '_') {
       ucase_next = true;
       continue;
     }
 
     if (ucase_next) {
-      buf[j++] = toupper(name[i]);
+      WRITE(toupper(name[src]));
       ucase_next = false;
     } else {
-      buf[j++] = name[i];
+      WRITE(name[src]);
     }
   }
 
-  buf[j] = '\0';
-  return true;
+  WRITE('\0');
+  return dst;
+
+#undef WRITE
 }
 
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f) {
@@ -4146,7 +4156,11 @@ static upb_tabent *mutable_entries(upb_table *t) {
 }
 
 static bool isfull(upb_table *t) {
-  return (double)(t->count + 1) / upb_table_size(t) > MAX_LOAD;
+  if (upb_table_size(t) == 0) {
+    return true;
+  } else {
+    return ((double)(t->count + 1) / upb_table_size(t)) > MAX_LOAD;
+  }
 }
 
 static bool init(upb_table *t, upb_ctype_t ctype, uint8_t size_lg2) {
@@ -4640,54 +4654,49 @@ bool upb_inttable_removeptr(upb_inttable *t, const void *key, upb_value *val) {
 }
 
 void upb_inttable_compact(upb_inttable *t) {
-  /* Create a power-of-two histogram of the table keys. */
-  int counts[UPB_MAXARRSIZE + 1] = {0};
-  uintptr_t max_key = 0;
+  /* A power-of-two histogram of the table keys. */
+  size_t counts[UPB_MAXARRSIZE + 1] = {0};
+
+  /* The max key in each bucket. */
+  uintptr_t max[UPB_MAXARRSIZE + 1] = {0};
+
   upb_inttable_iter i;
-  size_t arr_size;
-  int arr_count;
+  size_t arr_count;
+  int size_lg2;
   upb_inttable new_t;
 
   upb_inttable_begin(&i, t);
   for (; !upb_inttable_done(&i); upb_inttable_next(&i)) {
     uintptr_t key = upb_inttable_iter_key(&i);
-    if (key > max_key) {
-      max_key = key;
-    }
-    counts[log2ceil(key)]++;
+    int bucket = log2ceil(key);
+    max[bucket] = UPB_MAX(max[bucket], key);
+    counts[bucket]++;
   }
 
-  arr_size = 1;
+  /* Find the largest power of two that satisfies the MIN_DENSITY
+   * definition (while actually having some keys). */
   arr_count = upb_inttable_count(t);
 
-  if (upb_inttable_count(t) >= max_key * MIN_DENSITY) {
-    /* We can put 100% of the entries in the array part. */
-    arr_size = max_key + 1;
-  } else {
-    /* Find the largest power of two that satisfies the MIN_DENSITY
-     * definition. */
-    int size_lg2;
-    for (size_lg2 = ARRAY_SIZE(counts) - 1; size_lg2 > 1; size_lg2--) {
-      arr_size = 1 << size_lg2;
-      arr_count -= counts[size_lg2];
-      if (arr_count >= arr_size * MIN_DENSITY) {
-        break;
-      }
+  for (size_lg2 = ARRAY_SIZE(counts) - 1; size_lg2 > 0; size_lg2--) {
+    if (counts[size_lg2] == 0) {
+      /* We can halve again without losing any entries. */
+      continue;
+    } else if (arr_count >= (1 << size_lg2) * MIN_DENSITY) {
+      break;
     }
+
+    arr_count -= counts[size_lg2];
   }
 
-  /* Array part must always be at least 1 entry large to catch lookups of key
-   * 0.  Key 0 must always be in the array part because "0" in the hash part
-   * denotes an empty entry. */
-  arr_size = UPB_MAX(arr_size, 1);
+  assert(arr_count <= upb_inttable_count(t));
 
   {
     /* Insert all elements into new, perfectly-sized table. */
-    int hash_count = upb_inttable_count(t) - arr_count;
-    int hash_size = hash_count ? (hash_count / MAX_LOAD) + 1 : 0;
-    int hashsize_lg2 = log2ceil(hash_size);
+    size_t arr_size = max[size_lg2] + 1;  /* +1 so arr[max] will fit. */
+    size_t hash_count = upb_inttable_count(t) - arr_count;
+    size_t hash_size = hash_count ? (hash_count / MAX_LOAD) + 1 : 0;
+    size_t hashsize_lg2 = log2ceil(hash_size);
 
-    assert(hash_count >= 0);
     upb_inttable_sizedinit(&new_t, t->t.ctype, arr_size, hashsize_lg2);
     upb_inttable_begin(&i, t);
     for (; !upb_inttable_done(&i); upb_inttable_next(&i)) {
@@ -5034,7 +5043,7 @@ static const upb_fielddef fields[105];
 static const upb_enumdef enums[5];
 static const upb_tabent strentries[268];
 static const upb_tabent intentries[18];
-static const upb_tabval arrays[342];
+static const upb_tabval arrays[184];
 
 #ifdef UPB_DEBUG_REFS
 static upb_inttable reftables[266];
@@ -5045,24 +5054,24 @@ static const upb_msgdef msgs[22] = {
   UPB_MSGDEF_INIT("google.protobuf.DescriptorProto.ExtensionRange", 4, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[11], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[16]),&reftables[2], &reftables[3]),
   UPB_MSGDEF_INIT("google.protobuf.DescriptorProto.ReservedRange", 4, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[14], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[20]),&reftables[4], &reftables[5]),
   UPB_MSGDEF_INIT("google.protobuf.EnumDescriptorProto", 11, 2, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[17], 4, 3), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[24]),&reftables[6], &reftables[7]),
-  UPB_MSGDEF_INIT("google.protobuf.EnumOptions", 8, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[0], &arrays[21], 16, 2), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[28]),&reftables[8], &reftables[9]),
-  UPB_MSGDEF_INIT("google.protobuf.EnumValueDescriptorProto", 8, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[37], 4, 3), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[32]),&reftables[10], &reftables[11]),
-  UPB_MSGDEF_INIT("google.protobuf.EnumValueOptions", 7, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[2], &arrays[41], 8, 1), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[36]),&reftables[12], &reftables[13]),
-  UPB_MSGDEF_INIT("google.protobuf.FieldDescriptorProto", 23, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[49], 11, 10), UPB_STRTABLE_INIT(10, 15, UPB_CTYPE_PTR, 4, &strentries[40]),&reftables[14], &reftables[15]),
-  UPB_MSGDEF_INIT("google.protobuf.FieldOptions", 12, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[4], &arrays[60], 32, 6), UPB_STRTABLE_INIT(7, 15, UPB_CTYPE_PTR, 4, &strentries[56]),&reftables[16], &reftables[17]),
-  UPB_MSGDEF_INIT("google.protobuf.FileDescriptorProto", 42, 6, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[92], 13, 12), UPB_STRTABLE_INIT(12, 15, UPB_CTYPE_PTR, 4, &strentries[72]),&reftables[18], &reftables[19]),
-  UPB_MSGDEF_INIT("google.protobuf.FileDescriptorSet", 6, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[105], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[88]),&reftables[20], &reftables[21]),
-  UPB_MSGDEF_INIT("google.protobuf.FileOptions", 31, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[6], &arrays[107], 128, 15), UPB_STRTABLE_INIT(16, 31, UPB_CTYPE_PTR, 5, &strentries[92]),&reftables[22], &reftables[23]),
-  UPB_MSGDEF_INIT("google.protobuf.MessageOptions", 10, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[8], &arrays[235], 32, 4), UPB_STRTABLE_INIT(5, 7, UPB_CTYPE_PTR, 3, &strentries[124]),&reftables[24], &reftables[25]),
-  UPB_MSGDEF_INIT("google.protobuf.MethodDescriptorProto", 15, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[267], 7, 6), UPB_STRTABLE_INIT(6, 7, UPB_CTYPE_PTR, 3, &strentries[132]),&reftables[26], &reftables[27]),
-  UPB_MSGDEF_INIT("google.protobuf.MethodOptions", 7, 1, UPB_INTTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &intentries[10], &arrays[274], 4, 0), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[140]),&reftables[28], &reftables[29]),
-  UPB_MSGDEF_INIT("google.protobuf.OneofDescriptorProto", 5, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[278], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[144]),&reftables[30], &reftables[31]),
-  UPB_MSGDEF_INIT("google.protobuf.ServiceDescriptorProto", 11, 2, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[280], 4, 3), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[148]),&reftables[32], &reftables[33]),
-  UPB_MSGDEF_INIT("google.protobuf.ServiceOptions", 7, 1, UPB_INTTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &intentries[14], &arrays[284], 4, 0), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[152]),&reftables[34], &reftables[35]),
-  UPB_MSGDEF_INIT("google.protobuf.SourceCodeInfo", 6, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[288], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[156]),&reftables[36], &reftables[37]),
-  UPB_MSGDEF_INIT("google.protobuf.SourceCodeInfo.Location", 19, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[290], 7, 5), UPB_STRTABLE_INIT(5, 7, UPB_CTYPE_PTR, 3, &strentries[160]),&reftables[38], &reftables[39]),
-  UPB_MSGDEF_INIT("google.protobuf.UninterpretedOption", 18, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[297], 9, 7), UPB_STRTABLE_INIT(7, 15, UPB_CTYPE_PTR, 4, &strentries[168]),&reftables[40], &reftables[41]),
-  UPB_MSGDEF_INIT("google.protobuf.UninterpretedOption.NamePart", 6, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[306], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[184]),&reftables[42], &reftables[43]),
+  UPB_MSGDEF_INIT("google.protobuf.EnumOptions", 8, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[0], &arrays[21], 4, 2), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[28]),&reftables[8], &reftables[9]),
+  UPB_MSGDEF_INIT("google.protobuf.EnumValueDescriptorProto", 8, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[25], 4, 3), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[32]),&reftables[10], &reftables[11]),
+  UPB_MSGDEF_INIT("google.protobuf.EnumValueOptions", 7, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[2], &arrays[29], 2, 1), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[36]),&reftables[12], &reftables[13]),
+  UPB_MSGDEF_INIT("google.protobuf.FieldDescriptorProto", 23, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[31], 11, 10), UPB_STRTABLE_INIT(10, 15, UPB_CTYPE_PTR, 4, &strentries[40]),&reftables[14], &reftables[15]),
+  UPB_MSGDEF_INIT("google.protobuf.FieldOptions", 12, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[4], &arrays[42], 11, 6), UPB_STRTABLE_INIT(7, 15, UPB_CTYPE_PTR, 4, &strentries[56]),&reftables[16], &reftables[17]),
+  UPB_MSGDEF_INIT("google.protobuf.FileDescriptorProto", 42, 6, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[53], 13, 12), UPB_STRTABLE_INIT(12, 15, UPB_CTYPE_PTR, 4, &strentries[72]),&reftables[18], &reftables[19]),
+  UPB_MSGDEF_INIT("google.protobuf.FileDescriptorSet", 6, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[66], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[88]),&reftables[20], &reftables[21]),
+  UPB_MSGDEF_INIT("google.protobuf.FileOptions", 31, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[6], &arrays[68], 39, 15), UPB_STRTABLE_INIT(16, 31, UPB_CTYPE_PTR, 5, &strentries[92]),&reftables[22], &reftables[23]),
+  UPB_MSGDEF_INIT("google.protobuf.MessageOptions", 10, 1, UPB_INTTABLE_INIT(1, 1, UPB_CTYPE_PTR, 1, &intentries[8], &arrays[107], 8, 4), UPB_STRTABLE_INIT(5, 7, UPB_CTYPE_PTR, 3, &strentries[124]),&reftables[24], &reftables[25]),
+  UPB_MSGDEF_INIT("google.protobuf.MethodDescriptorProto", 15, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[115], 7, 6), UPB_STRTABLE_INIT(6, 7, UPB_CTYPE_PTR, 3, &strentries[132]),&reftables[26], &reftables[27]),
+  UPB_MSGDEF_INIT("google.protobuf.MethodOptions", 7, 1, UPB_INTTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &intentries[10], &arrays[122], 1, 0), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[140]),&reftables[28], &reftables[29]),
+  UPB_MSGDEF_INIT("google.protobuf.OneofDescriptorProto", 5, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[123], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[144]),&reftables[30], &reftables[31]),
+  UPB_MSGDEF_INIT("google.protobuf.ServiceDescriptorProto", 11, 2, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[125], 4, 3), UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_PTR, 2, &strentries[148]),&reftables[32], &reftables[33]),
+  UPB_MSGDEF_INIT("google.protobuf.ServiceOptions", 7, 1, UPB_INTTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &intentries[14], &arrays[129], 1, 0), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[152]),&reftables[34], &reftables[35]),
+  UPB_MSGDEF_INIT("google.protobuf.SourceCodeInfo", 6, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[130], 2, 1), UPB_STRTABLE_INIT(1, 3, UPB_CTYPE_PTR, 2, &strentries[156]),&reftables[36], &reftables[37]),
+  UPB_MSGDEF_INIT("google.protobuf.SourceCodeInfo.Location", 19, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[132], 7, 5), UPB_STRTABLE_INIT(5, 7, UPB_CTYPE_PTR, 3, &strentries[160]),&reftables[38], &reftables[39]),
+  UPB_MSGDEF_INIT("google.protobuf.UninterpretedOption", 18, 1, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[139], 9, 7), UPB_STRTABLE_INIT(7, 15, UPB_CTYPE_PTR, 4, &strentries[168]),&reftables[40], &reftables[41]),
+  UPB_MSGDEF_INIT("google.protobuf.UninterpretedOption.NamePart", 6, 0, UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_PTR, 0, NULL, &arrays[148], 3, 2), UPB_STRTABLE_INIT(2, 3, UPB_CTYPE_PTR, 2, &strentries[184]),&reftables[42], &reftables[43]),
 };
 
 static const upb_fielddef fields[105] = {
@@ -5174,11 +5183,11 @@ static const upb_fielddef fields[105] = {
 };
 
 static const upb_enumdef enums[5] = {
-  UPB_ENUMDEF_INIT("google.protobuf.FieldDescriptorProto.Label", UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_INT32, 2, &strentries[188]), UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_CSTR, 0, NULL, &arrays[309], 4, 3), 0, &reftables[254], &reftables[255]),
-  UPB_ENUMDEF_INIT("google.protobuf.FieldDescriptorProto.Type", UPB_STRTABLE_INIT(18, 31, UPB_CTYPE_INT32, 5, &strentries[192]), UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_CSTR, 0, NULL, &arrays[313], 19, 18), 0, &reftables[256], &reftables[257]),
-  UPB_ENUMDEF_INIT("google.protobuf.FieldOptions.CType", UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_INT32, 2, &strentries[224]), UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_CSTR, 0, NULL, &arrays[332], 3, 3), 0, &reftables[258], &reftables[259]),
-  UPB_ENUMDEF_INIT("google.protobuf.FieldOptions.JSType", UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_INT32, 2, &strentries[228]), UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_CSTR, 0, NULL, &arrays[335], 3, 3), 0, &reftables[260], &reftables[261]),
-  UPB_ENUMDEF_INIT("google.protobuf.FileOptions.OptimizeMode", UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_INT32, 2, &strentries[232]), UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_CSTR, 0, NULL, &arrays[338], 4, 3), 0, &reftables[262], &reftables[263]),
+  UPB_ENUMDEF_INIT("google.protobuf.FieldDescriptorProto.Label", UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_INT32, 2, &strentries[188]), UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_CSTR, 0, NULL, &arrays[151], 4, 3), 0, &reftables[254], &reftables[255]),
+  UPB_ENUMDEF_INIT("google.protobuf.FieldDescriptorProto.Type", UPB_STRTABLE_INIT(18, 31, UPB_CTYPE_INT32, 5, &strentries[192]), UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_CSTR, 0, NULL, &arrays[155], 19, 18), 0, &reftables[256], &reftables[257]),
+  UPB_ENUMDEF_INIT("google.protobuf.FieldOptions.CType", UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_INT32, 2, &strentries[224]), UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_CSTR, 0, NULL, &arrays[174], 3, 3), 0, &reftables[258], &reftables[259]),
+  UPB_ENUMDEF_INIT("google.protobuf.FieldOptions.JSType", UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_INT32, 2, &strentries[228]), UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_CSTR, 0, NULL, &arrays[177], 3, 3), 0, &reftables[260], &reftables[261]),
+  UPB_ENUMDEF_INIT("google.protobuf.FileOptions.OptimizeMode", UPB_STRTABLE_INIT(3, 3, UPB_CTYPE_INT32, 2, &strentries[232]), UPB_INTTABLE_INIT(0, 0, UPB_CTYPE_CSTR, 0, NULL, &arrays[180], 4, 3), 0, &reftables[262], &reftables[263]),
 };
 
 static const upb_tabent strentries[268] = {
@@ -5473,7 +5482,7 @@ static const upb_tabent intentries[18] = {
   {UPB_TABKEY_NUM(999), UPB_TABVALUE_PTR_INIT(&fields[95]), NULL},
 };
 
-static const upb_tabval arrays[342] = {
+static const upb_tabval arrays[184] = {
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_PTR_INIT(&fields[52]),
   UPB_TABVALUE_PTR_INIT(&fields[25]),
@@ -5500,29 +5509,11 @@ static const upb_tabval arrays[342] = {
   UPB_TABVALUE_PTR_INIT(&fields[1]),
   UPB_TABVALUE_PTR_INIT(&fields[10]),
   UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_PTR_INIT(&fields[50]),
   UPB_TABVALUE_PTR_INIT(&fields[63]),
   UPB_TABVALUE_PTR_INIT(&fields[71]),
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_PTR_INIT(&fields[9]),
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_PTR_INIT(&fields[56]),
   UPB_TABVALUE_PTR_INIT(&fields[21]),
@@ -5545,27 +5536,6 @@ static const upb_tabval arrays[342] = {
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_PTR_INIT(&fields[103]),
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_PTR_INIT(&fields[49]),
   UPB_TABVALUE_PTR_INIT(&fields[76]),
@@ -5621,95 +5591,6 @@ static const upb_tabval arrays[342] = {
   UPB_TABVALUE_PTR_INIT(&fields[5]),
   UPB_TABVALUE_PTR_INIT(&fields[37]),
   UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_PTR_INIT(&fields[46]),
   UPB_TABVALUE_PTR_INIT(&fields[61]),
   UPB_TABVALUE_PTR_INIT(&fields[14]),
@@ -5717,30 +5598,6 @@ static const upb_tabval arrays[342] = {
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_PTR_INIT(&fields[45]),
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_PTR_INIT(&fields[51]),
   UPB_TABVALUE_PTR_INIT(&fields[29]),
@@ -5750,17 +5607,11 @@ static const upb_tabval arrays[342] = {
   UPB_TABVALUE_PTR_INIT(&fields[84]),
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_PTR_INIT(&fields[54]),
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_PTR_INIT(&fields[55]),
   UPB_TABVALUE_PTR_INIT(&fields[48]),
   UPB_TABVALUE_PTR_INIT(&fields[73]),
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
-  UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_EMPTY_INIT,
   UPB_TABVALUE_PTR_INIT(&fields[44]),
@@ -7711,10 +7562,15 @@ const mgroup *mgroup_new(const upb_handlers *dest, bool allowjit, bool lazy,
 
 #ifdef UPB_DUMP_BYTECODE
   {
-    FILE *f = fopen("/tmp/upb-bytecode", "wb");
+    FILE *f = fopen("/tmp/upb-bytecode", "w");
     assert(f);
     dumpbc(g->bytecode, g->bytecode_end, stderr);
     dumpbc(g->bytecode, g->bytecode_end, f);
+    fclose(f);
+
+    f = fopen("/tmp/upb-bytecode.bin", "wb");
+    assert(f);
+    fwrite(g->bytecode, 1, g->bytecode_end - g->bytecode, f);
     fclose(f);
   }
 #endif
@@ -8892,7 +8748,7 @@ bool upb_pbdecoder_setmaxnesting(upb_pbdecoder *d, size_t max) {
 **       to perfectly match the output of reference encoders that always use the
 **       optimal amount of space for each length.
 **
-**   (2) requires guessing the size upfront, and if multiple lengths are
+**   (2) requires guessing the the size upfront, and if multiple lengths are
 **       guessed wrong the minimum required number of memmove() operations may
 **       be complicated to compute correctly.  Implemented properly, it may have
 **       a useful amortized or average cost, but more investigation is required
@@ -11578,6 +11434,11 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
   upb_msg_field_iter i;
   upb_strtable *t;
 
+  /* It would be nice to stack-allocate this, but protobufs do not limit the
+   * length of fields to any reasonable limit. */
+  char *buf = NULL;
+  size_t len = 0;
+
   if (upb_inttable_lookupptr(&m->name_tables, md, NULL)) {
     return;
   }
@@ -11591,17 +11452,20 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
       !upb_msg_field_done(&i);
       upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
-    /* It would be nice to stack-allocate this, but protobufs do not limit the
-     * length of fields to any reasonable limit. */
-    char *buf = malloc(strlen(upb_fielddef_name(f)) + 1);
-    upb_fielddef_getjsonname(f, buf);
+    size_t field_len = upb_fielddef_getjsonname(f, buf, len);
+    if (field_len > len) {
+      buf = realloc(buf, field_len);
+      len = field_len;
+      upb_fielddef_getjsonname(f, buf, len);
+    }
     upb_strtable_insert(t, buf, upb_value_constptr(f));
-    free(buf);
 
     if (upb_fielddef_issubmsg(f)) {
       add_jsonname_table(m, upb_fielddef_msgsubdef(f));
     }
   }
+
+  free(buf);
 }
 
 /* Public API *****************************************************************/
@@ -11710,9 +11574,12 @@ void freestrpc(void *ptr) {
 strpc *newstrpc(upb_handlers *h, const upb_fielddef *f) {
   /* TODO(haberman): handle malloc failure. */
   strpc *ret = malloc(sizeof(*ret));
-  ret->ptr = malloc(strlen(upb_fielddef_name(f)) + 1);
-  upb_fielddef_getjsonname(f, ret->ptr);
-  ret->len = strlen(ret->ptr);
+  size_t len;
+  ret->len = upb_fielddef_getjsonname(f, NULL, 0);
+  ret->ptr = malloc(ret->len);
+  len = upb_fielddef_getjsonname(f, ret->ptr, ret->len);
+  UPB_ASSERT_VAR(len, len == ret->len);
+  ret->len--;  /* NULL */
 
   upb_handlers_addcleanup(h, ret, freestrpc);
   return ret;
@@ -11745,7 +11612,7 @@ UPB_INLINE bool is_json_escaped(char c) {
   return uc < kControlCharLimit || uc == '"' || uc == '\\';
 }
 
-UPB_INLINE char* json_nice_escape(char c) {
+UPB_INLINE const char* json_nice_escape(char c) {
   switch (c) {
     case '"':  return "\\\"";
     case '\\': return "\\\\";
