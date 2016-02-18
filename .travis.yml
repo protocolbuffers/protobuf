@@ -67,8 +67,5 @@ matrix:
       env: CONFIG=ruby22
     - os: osx
       env: CONFIG=jruby
-    # Currently showing flake randomly, doesn't trace back to a single commit.
-    - os: osx
-      env: CONFIG=objectivec_ios
 notifications:
   email: false
