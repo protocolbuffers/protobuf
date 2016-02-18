@@ -43,6 +43,22 @@ function tryStripPrefix(str, prefix) {
   return str.substr(prefix.length);
 }
 
+function camelCase(str) {
+  var ret = '';
+  var ucaseNext = false;
+  for (var i = 0; i < str.length; i++) {
+    if (str[i] == '-') {
+      ucaseNext = true;
+    } else if (ucaseNext) {
+      ret += str[i].toUpperCase();
+      ucaseNext = false;
+    } else {
+      ret += str[i];
+    }
+  }
+  return ret;
+}
+
 var module = null;
 var pkg = null;
 lineReader.on('line', function(line) {
@@ -64,7 +80,7 @@ lineReader.on('line', function(line) {
       console.log("// Bring asserts into the global namespace.");
       console.log("googleProtobuf.object.extend(global, asserts);");
     }
-    module = isLoadFromFile[1].replace("-", "_");
+    module = camelCase(isLoadFromFile[1])
     pkg = isLoadFromFile[2];
 
     if (module != "googleProtobuf") {  // We unconditionally require this in the header.
