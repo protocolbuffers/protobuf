@@ -85,7 +85,7 @@ UPB_INLINE bool is_json_escaped(char c) {
   return uc < kControlCharLimit || uc == '"' || uc == '\\';
 }
 
-UPB_INLINE char* json_nice_escape(char c) {
+UPB_INLINE const char* json_nice_escape(char c) {
   switch (c) {
     case '"':  return "\\\"";
     case '\\': return "\\\\";
