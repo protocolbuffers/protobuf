@@ -1,6 +1,7 @@
 
 #include "upb/def.h"
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include "upb/structdefs.int.h"
@@ -719,6 +720,45 @@ bool upb_fielddef_packed(const upb_fielddef *f) {
 
 const char *upb_fielddef_name(const upb_fielddef *f) {
   return upb_def_fullname(upb_fielddef_upcast(f));
+}
+
+size_t upb_fielddef_getjsonname(const upb_fielddef *f, char *buf, size_t len) {
+  const char *name = upb_fielddef_name(f);
+  size_t src, dst = 0;
+  bool ucase_next = false;
+
+#define WRITE(byte) \
+  ++dst; \
+  if (dst < len) buf[dst - 1] = byte; \
+  else if (dst == len) buf[dst - 1] = '\0'
+
+  if (!name) {
+    WRITE('\0');
+    return 0;
+  }
+
+  /* Implement the transformation as described in the spec:
+   *   1. upper case all letters after an underscore.
+   *   2. remove all underscores.
+   */
+  for (src = 0; name[src]; src++) {
+    if (name[src] == '_') {
+      ucase_next = true;
+      continue;
+    }
+
+    if (ucase_next) {
+      WRITE(toupper(name[src]));
+      ucase_next = false;
+    } else {
+      WRITE(name[src]);
+    }
+  }
+
+  WRITE('\0');
+  return dst;
+
+#undef WRITE
 }
 
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f) {
