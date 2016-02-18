@@ -19,7 +19,16 @@
  *
  * This script parses that special comment and uses it to generate proper
  * CommonJS require() statements so that the tests can run and pass using
- * CommonJS imports.
+ * CommonJS imports.  The script will change the above statements into:
+ *
+ *   var test_pb = require('test_pb');
+ *   googleProtobuf.exportSymbol('proto.jspb.test.CloneExtension', test_pb.CloneExtension, global);
+ *   googleProtobuf.exportSymbol('proto.jspb.test.Complex', test_pb.Complex, global);
+ *   googleProtobuf.exportSymbol('proto.jspb.test.DefaultValues', test_pb.DefaultValues, global);
+ *
+ * (The "exportSymbol" function will define the given names in the global
+ * namespace, taking care not to overwrite any previous value for
+ * "proto.jspb.test").
  */
 
 var lineReader = require('readline').createInterface({
@@ -37,18 +46,16 @@ function tryStripPrefix(str, prefix) {
 var module = null;
 var pkg = null;
 lineReader.on('line', function(line) {
-  var is_require = line.match(/goog\.require\('([^']*)'\)/);
-  var is_loadfromfile = line.match(/CommonJS-LoadFromFile: ([^ ]*) (.*)/);
-  var is_settestonly = line.match(/goog.setTestOnly()/);
-  if (is_settestonly) {
-    // Remove this line.
-  } else if (is_require) {
+  var isRequire = line.match(/goog\.require\('([^']*)'\)/);
+  var isLoadFromFile = line.match(/CommonJS-LoadFromFile: (\S*) (.*)/);
+  var isSetTestOnly = line.match(/goog.setTestOnly()/);
+  if (isRequire) {
     if (module) {  // Skip goog.require() lines before the first directive.
-      var full_sym = is_require[1];
-      var sym = tryStripPrefix(full_sym, pkg);
-      console.log("googleProtobuf.exportSymbol('" + full_sym + "', " + module + sym + ', global);');
+      var fullSym = isRequire[1];
+      var sym = tryStripPrefix(fullSym, pkg);
+      console.log("googleProtobuf.exportSymbol('" + fullSym + "', " + module + sym + ', global);');
     }
-  } else if (is_loadfromfile) {
+  } else if (isLoadFromFile) {
     if (!module) {
       console.log("var googleProtobuf = require('google-protobuf');");
       console.log("var asserts = require('closure_asserts_commonjs');");
@@ -57,13 +64,13 @@ lineReader.on('line', function(line) {
       console.log("// Bring asserts into the global namespace.");
       console.log("googleProtobuf.object.extend(global, asserts);");
     }
-    module = is_loadfromfile[1].replace("-", "_");
-    pkg = is_loadfromfile[2];
+    module = isLoadFromFile[1].replace("-", "_");
+    pkg = isLoadFromFile[2];
 
     if (module != "googleProtobuf") {  // We unconditionally require this in the header.
-      console.log("var " + module + " = require('" + is_loadfromfile[1] + "');");
+      console.log("var " + module + " = require('" + isLoadFromFile[1] + "');");
     }
-  } else {
+  } else if (!isSetTestOnly) {  // Remove goog.setTestOnly() lines.
     console.log(line);
   }
 });

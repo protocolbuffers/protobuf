@@ -30,17 +30,16 @@ To use Protocol Buffers with JavaScript, you need two main components:
 Setup
 =====
 
-First, compile the Protocol Compiler.
-You can compile `protoc` from GitHub or a source tarball.  From the
-top level directory type:
+First, obtain the Protocol Compiler.  The easiest way is to download
+a pre-built binary from [https://github.com/google/protobuf/releases](https://github.com/google/protobuf/releases).
 
-    $ ./autogen.sh  (only necessary for GitHub)
-    $ ./configure
-    $ make
-
+If you want, you can compile `protoc` from source instead.  To do this
+follow the instructions in [the top-level
+README](https://github.com/google/protobuf/blob/master/src/README.md).
 
 Once you have `protoc` compiled, you can run the tests by typing:
 
+    $ cd js
     $ npm install
     $ npm test
 
