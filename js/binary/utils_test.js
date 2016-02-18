@@ -38,8 +38,6 @@
 
 goog.require('goog.crypt.base64');
 goog.require('goog.testing.asserts');
-
-// CommonJS-LoadFromFile: googleProtobuf
 goog.require('jspb.BinaryConstants');
 goog.require('jspb.BinaryWriter');
 goog.require('jspb.utils');
