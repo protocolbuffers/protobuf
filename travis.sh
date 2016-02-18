@@ -171,7 +171,13 @@ internal_objectivec_common () {
   #  http://docs.travis-ci.com/user/osx-ci-environment/
   # We don't use a before_install because we test multiple OSes.
   brew update
-  brew outdated xctool || brew upgrade xctool
+  # xctool 0.2.8 seems to have a bug where it randomly kills tests saying
+  # they failed. Disabling the updates, but letting it report about being
+  # updates as a hint that this needs to eventually get re-enabled.
+  #   https://github.com/facebook/xctool/issues/619
+  #   https://github.com/google/protobuf/issues/1232
+  brew outdated xctool || true
+  #brew outdated xctool || brew upgrade xctool
   # Reused the build script that takes care of configuring and ensuring things
   # are up to date. Xcode and conformance tests will be directly invoked.
   objectivec/DevTools/full_mac_build.sh \
@@ -202,15 +208,12 @@ build_objectivec_ios() {
     "platform=iOS Simulator,name=iPad Air,OS=9.2" # 64bit
   )
   for i in "${IOS_DESTINATIONS[@]}" ; do
-    # Throw -newSimulatorInstance in incase it helps with the flake that
-    # started happening after xctool 0.2.8 got released.
     internal_xctool_debug_and_release \
       -project objectivec/ProtocolBuffers_iOS.xcodeproj \
       -scheme ProtocolBuffers \
       -sdk iphonesimulator \
       -destination "${i}" \
-      run-tests \
-      -newSimulatorInstance
+      run-tests
   done
 }
 
