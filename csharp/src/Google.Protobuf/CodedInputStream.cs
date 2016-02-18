@@ -349,6 +349,14 @@ namespace Google.Protobuf
         /// This should be called directly after <see cref="ReadTag"/>, when
         /// the caller wishes to skip an unknown field.
         /// </summary>
+        /// <remarks>
+        /// This method throws <see cref="InvalidProtocolBufferException"/> if the last-read tag was an end-group tag.
+        /// If a caller wishes to skip a group, they should skip the whole group, by calling this method after reading the
+        /// start-group tag. This behavior allows callers to call this method on any field they don't understand, correctly
+        /// resulting in an error if an end-group tag has not been paired with an earlier start-group tag.
+        /// </remarks>
+        /// <exception cref="InvalidProtocolBufferException">The last tag was an end-group tag</exception>
+        /// <exception cref="InvalidOperationException">The last read operation read to the end of the logical stream</exception>
         public void SkipLastField()
         {
             if (lastTag == 0)
@@ -358,11 +366,11 @@ namespace Google.Protobuf
             switch (WireFormat.GetTagWireType(lastTag))
             {
                 case WireFormat.WireType.StartGroup:
-                    SkipGroup();
+                    SkipGroup(lastTag);
                     break;
                 case WireFormat.WireType.EndGroup:
-                    // Just ignore; there's no data following the tag.
-                    break;
+                    throw new InvalidProtocolBufferException(
+                        "SkipLastField called on an end-group tag, indicating that the corresponding start-group was missing");
                 case WireFormat.WireType.Fixed32:
                     ReadFixed32();
                     break;
@@ -379,7 +387,7 @@ namespace Google.Protobuf
             }
         }
 
-        private void SkipGroup()
+        private void SkipGroup(uint startGroupTag)
         {
             // Note: Currently we expect this to be the way that groups are read. We could put the recursion
             // depth changes into the ReadTag method instead, potentially...
@@ -389,16 +397,28 @@ namespace Google.Protobuf
                 throw InvalidProtocolBufferException.RecursionLimitExceeded();
             }
             uint tag;
-            do
+            while (true)
             {
                 tag = ReadTag();
                 if (tag == 0)
                 {
                     throw InvalidProtocolBufferException.TruncatedMessage();
                 }
+                // Can't call SkipLastField for this case- that would throw.
+                if (WireFormat.GetTagWireType(tag) == WireFormat.WireType.EndGroup)
+                {
+                    break;
+                }
                 // This recursion will allow us to handle nested groups.
                 SkipLastField();
-            } while (WireFormat.GetTagWireType(tag) != WireFormat.WireType.EndGroup);
+            }
+            int startField = WireFormat.GetTagFieldNumber(startGroupTag);
+            int endField = WireFormat.GetTagFieldNumber(tag);
+            if (startField != endField)
+            {
+                throw new InvalidProtocolBufferException(
+                    $"Mismatched end-group tag. Started with field {startField}; ended with field {endField}");
+            }
             recursionDepth--;
         }
 
