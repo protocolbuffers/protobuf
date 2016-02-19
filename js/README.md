@@ -43,6 +43,10 @@ Once you have `protoc` compiled, you can run the tests by typing:
     $ npm install
     $ npm test
 
+    # If your protoc is somewhere else than ../src/protoc, instead do this.
+    # But make sure your protoc is the same version as this (or compatible)!
+    $ PROTOC=/usr/local/bin/protoc npm test
+
 This will run two separate copies of the tests: one that uses
 Closure Compiler style imports and one that uses CommonJS imports.
 You can see all the CommonJS files in `commonjs_out/`.
@@ -112,6 +116,26 @@ statements like:
     var messages = require('./messages_pb');
 
     var message = new messages.MyMessage();
+
+The `--js_out` flag
+-------------------
+
+The syntax of the `--js_out` flag is:
+
+    --js_out=[OPTIONS:]output_dir
+
+Where `OPTIONS` are separated by commas.  Options are either `opt=val` or
+just `opt` (for options that don't take a value).  The available options
+are specified and documented in the `GeneratorOptions` struct in
+[src/google/protobuf/compiler/js/js_generator.h](https://github.com/google/protobuf/blob/master/src/google/protobuf/compiler/js/js_generator.h#L53).
+
+Some examples:
+
+- `--js_out=library=myprotos_lib.js,binary:.`: this contains the options
+  `library=myprotos.lib.js` and `binary` and outputs to the current directory.
+  The `import_style` option is left to the default, which is `closure`.
+- `--js_out=import_style=commonjs,binary:protos`: this contains the options
+  `import_style=commonjs` and `binary` and outputs to the directory `protos`.
 
 API
 ===

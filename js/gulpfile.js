@@ -2,8 +2,10 @@ var gulp = require('gulp');
 var exec = require('child_process').exec;
 var glob = require('glob');
 
+var protoc = process.env.PROTOC || '../src/protoc';
+
 gulp.task('genproto_closure', function (cb) {
-  exec('../src/protoc --js_out=library=testproto_libs,binary:. -I ../src -I . *.proto ../src/google/protobuf/descriptor.proto',
+  exec(protoc + ' --js_out=library=testproto_libs,binary:. -I ../src -I . *.proto ../src/google/protobuf/descriptor.proto',
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
@@ -12,7 +14,7 @@ gulp.task('genproto_closure', function (cb) {
 });
 
 gulp.task('genproto_commonjs', function (cb) {
-  exec('mkdir -p commonjs_out && ../src/protoc --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I . *.proto ../src/google/protobuf/descriptor.proto',
+  exec('mkdir -p commonjs_out && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I . *.proto ../src/google/protobuf/descriptor.proto',
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
