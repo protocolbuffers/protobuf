@@ -74,7 +74,7 @@ const char* PrimitiveTypeName(const FieldDescriptor* descriptor) {
     case OBJECTIVECTYPE_ENUM:
       return "int32_t";
     case OBJECTIVECTYPE_MESSAGE:
-      return NULL;
+      return NULL;  // Messages go through objectivec_message_field.cc|h.
   }
 
   // Some compilers report reaching end of function even though all cases of
@@ -107,7 +107,8 @@ const char* PrimitiveArrayTypeName(const FieldDescriptor* descriptor) {
     case OBJECTIVECTYPE_ENUM:
       return "Enum";
     case OBJECTIVECTYPE_MESSAGE:
-      return "";  // Want NSArray
+      // Want NSArray (but goes through objectivec_message_field.cc|h).
+      return "";
   }
 
   // Some compilers report reaching end of function even though all cases of
@@ -126,16 +127,16 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
 }  // namespace
 
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
-    const FieldDescriptor* descriptor)
-    : SingleFieldGenerator(descriptor) {
+    const FieldDescriptor* descriptor, const Options& options)
+    : SingleFieldGenerator(descriptor, options) {
   SetPrimitiveVariables(descriptor, &variables_);
 }
 
 PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {}
 
 PrimitiveObjFieldGenerator::PrimitiveObjFieldGenerator(
-    const FieldDescriptor* descriptor)
-    : ObjCObjFieldGenerator(descriptor) {
+    const FieldDescriptor* descriptor, const Options& options)
+    : ObjCObjFieldGenerator(descriptor, options) {
   SetPrimitiveVariables(descriptor, &variables_);
   variables_["property_storage_attribute"] = "copy";
 }
@@ -143,8 +144,8 @@ PrimitiveObjFieldGenerator::PrimitiveObjFieldGenerator(
 PrimitiveObjFieldGenerator::~PrimitiveObjFieldGenerator() {}
 
 RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
-    const FieldDescriptor* descriptor)
-    : RepeatedFieldGenerator(descriptor) {
+    const FieldDescriptor* descriptor, const Options& options)
+    : RepeatedFieldGenerator(descriptor, options) {
   SetPrimitiveVariables(descriptor, &variables_);
 
   string base_name = PrimitiveArrayTypeName(descriptor);
@@ -152,18 +153,12 @@ RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
     variables_["array_storage_type"] = "GPB" + base_name + "Array";
   } else {
     variables_["array_storage_type"] = "NSMutableArray";
+    variables_["array_property_type"] =
+        "NSMutableArray<" + variables_["storage_type"] + "*>";
   }
 }
 
 RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {}
-
-void RepeatedPrimitiveFieldGenerator::FinishInitialization(void) {
-  RepeatedFieldGenerator::FinishInitialization();
-  if (IsPrimitiveType(descriptor_)) {
-    // No comment needed for primitive types.
-    variables_["array_comment"] = "";
-  }
-}
 
 }  // namespace objectivec
 }  // namespace compiler

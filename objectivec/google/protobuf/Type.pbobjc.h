@@ -12,6 +12,9 @@
 CF_EXTERN_C_BEGIN
 
 @class GPBAny;
+@class GPBEnumValue;
+@class GPBField;
+@class GPBOption;
 @class GPBSourceContext;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -150,18 +153,15 @@ typedef GPB_ENUM(GPBType_FieldNumber) {
 @property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
 // The list of fields.
-// |fieldsArray| contains |GPBField|
-@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *fieldsArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBField*> *fieldsArray;
 @property(nonatomic, readonly) NSUInteger fieldsArray_Count;
 
 // The list of types appearing in `oneof` definitions in this type.
-// |oneofsArray| contains |NSString|
-@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *oneofsArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<NSString*> *oneofsArray;
 @property(nonatomic, readonly) NSUInteger oneofsArray_Count;
 
 // The protocol buffer options.
-// |optionsArray| contains |GPBOption|
-@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *optionsArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBOption*> *optionsArray;
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 // The source context.
@@ -218,8 +218,7 @@ typedef GPB_ENUM(GPBField_FieldNumber) {
 @property(nonatomic, readwrite) BOOL packed;
 
 // The protocol buffer options.
-// |optionsArray| contains |GPBOption|
-@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *optionsArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBOption*> *optionsArray;
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 // The field JSON name.
@@ -253,13 +252,11 @@ typedef GPB_ENUM(GPBEnum_FieldNumber) {
 @property(nonatomic, readwrite, copy, null_resettable) NSString *name;
 
 // Enum value definitions.
-// |enumvalueArray| contains |GPBEnumValue|
-@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *enumvalueArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBEnumValue*> *enumvalueArray;
 @property(nonatomic, readonly) NSUInteger enumvalueArray_Count;
 
 // Protocol buffer options.
-// |optionsArray| contains |GPBOption|
-@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *optionsArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBOption*> *optionsArray;
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 // The source context.
@@ -292,8 +289,7 @@ typedef GPB_ENUM(GPBEnumValue_FieldNumber) {
 @property(nonatomic, readwrite) int32_t number;
 
 // Protocol buffer options.
-// |optionsArray| contains |GPBOption|
-@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray *optionsArray;
+@property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBOption*> *optionsArray;
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 @end

@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 
   // Objective C
   google::protobuf::compiler::objectivec::ObjectiveCGenerator objc_generator;
-  cli.RegisterGenerator("--objc_out", &objc_generator,
+  cli.RegisterGenerator("--objc_out", "--objc_opt", &objc_generator,
                         "Generate Objective C header and source.");
 
   // JavaScript
