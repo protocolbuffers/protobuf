@@ -4,7 +4,7 @@
 # For when some other test needs the C++ main build, including protoc and
 # libprotobuf.
 internal_build_cpp() {
-  if [ $(uname -s) == "Linux" && "$TRAVIS" == "true" ]; then
+  if [[ $(uname -s) == "Linux" && "$TRAVIS" == "true" ]]; then
     # Install GCC 4.8 to replace the default GCC 4.6. We need 4.8 for more
     # decent C++ 11 support in order to compile conformance tests.
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -15,19 +15,19 @@ internal_build_cpp() {
 
   ./autogen.sh
   ./configure
-  make -j2
+  make $PARALLELISM
 }
 
 build_cpp() {
   internal_build_cpp
-  make check -j2
+  make check $PARALLELISM
   cd conformance && make test_cpp && cd ..
 }
 
 build_cpp_distcheck() {
   ./autogen.sh
   ./configure
-  make distcheck -j2
+  make distcheck $PARALLELISM
 }
 
 build_csharp() {

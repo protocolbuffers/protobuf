@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-my_dir="$(dirname "$0")"
+MY_DIR="$(dirname "$0")"
 
-source $my_dir/tests.sh
+source $MY_DIR/tests.sh
 
 # Note: travis currently does not support testing more than one language so the
 # .travis.yml cheats and claims to only be cpp.  If they add multiple language
@@ -13,6 +13,9 @@ source $my_dir/tests.sh
 # use to install things.
 
 # -------- main --------
+
+# Set value used in tests.sh.
+PARALLELISM=-j2
 
 if [ "$#" -ne 1 ]; then
   echo "
