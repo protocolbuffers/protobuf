@@ -34,35 +34,47 @@ goog.setTestOnly();
 
 goog.require('goog.json');
 goog.require('goog.testing.asserts');
+
+// CommonJS-LoadFromFile: google-protobuf jspb
 goog.require('jspb.Message');
+
+// CommonJS-LoadFromFile: test5_pb proto.jspb.exttest.beta
 goog.require('proto.jspb.exttest.beta.floatingStrField');
+
+// CommonJS-LoadFromFile: test3_pb proto.jspb.exttest
 goog.require('proto.jspb.exttest.floatingMsgField');
+
+// CommonJS-LoadFromFile: test4_pb proto.jspb.exttest
 goog.require('proto.jspb.exttest.floatingMsgFieldTwo');
+
+// CommonJS-LoadFromFile: test_pb proto.jspb.test
 goog.require('proto.jspb.test.CloneExtension');
 goog.require('proto.jspb.test.Complex');
 goog.require('proto.jspb.test.DefaultValues');
 goog.require('proto.jspb.test.Empty');
 goog.require('proto.jspb.test.EnumContainer');
-goog.require('proto.jspb.test.ExtensionMessage');
-goog.require('proto.jspb.test.floatingMsgField');
 goog.require('proto.jspb.test.floatingStrField');
 goog.require('proto.jspb.test.HasExtensions');
 goog.require('proto.jspb.test.IndirectExtension');
 goog.require('proto.jspb.test.IsExtension');
 goog.require('proto.jspb.test.OptionalFields');
 goog.require('proto.jspb.test.OuterEnum');
+goog.require('proto.jspb.test.OuterMessage.Complex');
 goog.require('proto.jspb.test.simple1');
 goog.require('proto.jspb.test.Simple1');
 goog.require('proto.jspb.test.Simple2');
 goog.require('proto.jspb.test.SpecialCases');
 goog.require('proto.jspb.test.TestClone');
-goog.require('proto.jspb.test.TestExtensionsMessage');
 goog.require('proto.jspb.test.TestGroup');
 goog.require('proto.jspb.test.TestGroup1');
 goog.require('proto.jspb.test.TestMessageWithOneof');
 goog.require('proto.jspb.test.TestReservedNames');
 goog.require('proto.jspb.test.TestReservedNamesExtension');
 
+// CommonJS-LoadFromFile: test2_pb proto.jspb.test
+goog.require('proto.jspb.test.ExtensionMessage');
+goog.require('proto.jspb.test.TestExtensionsMessage');
+goog.require('proto.jspb.test.floatingMsgField');
 
 
 
@@ -84,6 +96,12 @@ describe('Message test suite', function() {
     var data = new proto.jspb.test.DefaultValues([]);
     data.setBytesField('some_bytes');
     assertEquals('some_bytes', data.getBytesField());
+  });
+
+  it('testNestedMessage', function() {
+    var msg = new proto.jspb.test.OuterMessage.Complex();
+    msg.setInnerComplexField(5);
+    assertObjectEquals({innerComplexField: 5}, msg.toObject());
   });
 
   it('testComplexConversion', function() {

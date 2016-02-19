@@ -100,6 +100,13 @@ message Complex {
   repeated string a_repeated_string = 7;
 }
 
+message OuterMessage {
+  // Make sure this doesn't conflict with the other Complex message.
+  message Complex {
+    optional int32 inner_complex_field = 1;
+  }
+}
+
 message IsExtension {
   extend HasExtensions {
     optional IsExtension ext_field = 100;

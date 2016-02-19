@@ -31,6 +31,8 @@
 // Test suite is written using Jasmine -- see http://jasmine.github.io/
 
 goog.require('goog.testing.asserts');
+
+// CommonJS-LoadFromFile: testbinary_pb proto.jspb.test
 goog.require('proto.jspb.test.ExtendsWithMessage');
 goog.require('proto.jspb.test.ForeignEnum');
 goog.require('proto.jspb.test.ForeignMessage');

@@ -2,13 +2,16 @@
   "name": "google-protobuf",
   "version": "3.0.0-alpha.5",
   "description": "Protocol Buffers for JavaScript",
-  "main": "debug.js",
+  "main": "google-protobuf.js",
   "dependencies": {
     "google-closure-library": "~20160125.0.0",
     "gulp": "~3.9.0",
     "jasmine": "~2.4.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "google-closure-compiler": "~20151216.2.0",
+    "glob": "~6.0.4"
+  },
   "scripts": {
     "test": "./node_modules/gulp/bin/gulp.js test"
   },
