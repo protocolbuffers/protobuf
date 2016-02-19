@@ -5,10 +5,10 @@ The packaging work for this is still in-progress.  For now you can just run the
 tests.  First you need to build the main C++ distribution because the code
 generator for JavaScript is written in C++:
 
-   $ ./autogen.sh
-   $ ./configure
-   $ make
+    $ ./autogen.sh
+    $ ./configure
+    $ make
 
 Then you can run the JavaScript tests in this directory:
 
-   $ cd js && gulp test
+    $ cd js && gulp test
