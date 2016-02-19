@@ -26,5 +26,10 @@ $TEST_SCRIPT cpp | tee $OUTPUT_DIR/1/cpp
 # Other tests are run in parallel.  The overall run fails if any one of them
 # fails.
 
-# java_jdk6
-parallel $TEST_SCRIPT ::: java_jdk7 javanano_jdk7
+parallel $TEST_SCRIPT ::: \
+  java_jdk7 \
+  javanano_jdk7 \
+  python \
+  python_cpp
+
+# java_jdk6 \

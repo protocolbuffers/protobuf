@@ -152,6 +152,9 @@ build_javanano_oracle7() {
 }
 
 internal_install_python_deps() {
+  if [ "$TRAVIS" != "true" ]; then
+    return;
+  fi
   # Install tox (OS X doesn't have pip).
   if [ $(uname -s) == "Darwin" ]; then
     sudo easy_install tox

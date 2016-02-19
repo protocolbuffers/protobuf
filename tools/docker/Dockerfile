@@ -30,6 +30,10 @@
 # Base Dockerfile for gRPC dev images
 FROM debian:latest
 
+RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu trusty main' > /etc/apt/sources.list.d/deadsnakes.list && \
+  gpg --keyserver keyserver.ubuntu.com --recv-keys DB82666C && \
+  gpg --export DB82666C | apt-key add -
+
 # Install dependencies.  We start with the basic ones require to build protoc
 # and the C++ build
 RUN apt-get update && apt-get install -y \
@@ -48,19 +52,19 @@ RUN apt-get update && apt-get install -y \
   libtool \
   make \
   parallel \
-  strace \
-  python-dev \
-  python-setuptools \
-  telnet \
-  unzip \
-  wget \
-  zip \
-  # For all Java builds \
+  # -- For all Java builds -- \
   maven \
-  # For java_jdk6 \
-  # oops! not in Jessie. Too old? openjdk-6-jdk \
-  # For java_jdk7 \
+  # -- For java_jdk6 -- \
+  #   oops! not in jessie. too old? openjdk-6-jdk \
+  # -- For java_jdk7 -- \
   openjdk-7-jdk \
+  # -- For python / python_cpp -- \
+  python-setuptools \
+  python-tox \
+  python-dev \
+  python2.6-dev \
+  python3.3-dev \
+  python3.4-dev \
   && apt-get clean
 
 # Prepare ccache
