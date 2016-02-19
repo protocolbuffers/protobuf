@@ -47,6 +47,7 @@ RUN apt-get update && apt-get install -y \
   libgtest-dev \
   libtool \
   make \
+  parallel \
   strace \
   python-dev \
   python-setuptools \

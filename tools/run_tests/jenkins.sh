@@ -7,6 +7,7 @@ BUILD_DIR=/tmp/protobuf
 # Set value used in tests.sh.
 PARALLELISM=-j8
 
+set -e  # exit immediately on error
 set -x  # display all commands
 
 rm -rf $BUILD_DIR
@@ -15,9 +16,15 @@ cd $BUILD_DIR
 git clone /var/local/jenkins/protobuf
 cd protobuf
 
-# If protoc fails to build, we can't test anything else.
-$TEST_SCRIPT cpp || exit 1
+OUTPUT_DIR=`mktemp -d`
+mkdir -p $OUTPUT_DIR/1
 
-# Other tests can fail and we keep on going.
-#$TEST_SCRIPT java_jdk6
-$TEST_SCRIPT java_jdk7
+# cpp build needs to run first, non-parallelized, so that protoc is available
+# for other builds.
+$TEST_SCRIPT cpp | tee $OUTPUT_DIR/1/cpp
+
+# Other tests are run in parallel.  The overall run fails if any one of them
+# fails.
+
+# java_jdk6
+parallel $TEST_SCRIPT ::: java_jdk7 javanano_jdk7
