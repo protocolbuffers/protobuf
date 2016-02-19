@@ -30,7 +30,8 @@
 # Base Dockerfile for gRPC dev images
 FROM debian:latest
 
-# Install Git.
+# Install dependencies.  We start with the basic ones require to build protoc
+# and the C++ build
 RUN apt-get update && apt-get install -y \
   autoconf \
   autotools-dev \
@@ -52,7 +53,14 @@ RUN apt-get update && apt-get install -y \
   telnet \
   unzip \
   wget \
-  zip && apt-get clean
+  zip \
+  # For all Java builds \
+  maven \
+  # For java_jdk6 \
+  # oops! not in Jessie. Too old? openjdk-6-jdk \
+  # For java_jdk7 \
+  openjdk-7-jdk \
+  && apt-get clean
 
 # Prepare ccache
 RUN ln -s /usr/bin/ccache /usr/local/bin/gcc

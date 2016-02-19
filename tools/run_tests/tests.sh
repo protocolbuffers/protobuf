@@ -1,5 +1,11 @@
 #!/bin/bash
 
+on_travis() {
+  if [ "$TRAVIS" == "true" ]; then
+    "$@"
+  fi
+}
+
 # For when some other test needs the C++ main build, including protoc and
 # libprotobuf.
 internal_build_cpp() {
@@ -75,11 +81,11 @@ use_java() {
   version=$1
   case "$version" in
     jdk6)
-      sudo apt-get install openjdk-6-jdk
+      on_travis sudo apt-get install openjdk-6-jdk
       export PATH=/usr/lib/jvm/java-6-openjdk-amd64/bin:$PATH
       ;;
     jdk7)
-      sudo apt-get install openjdk-7-jdk
+      on_travis sudo apt-get install openjdk-7-jdk
       export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:$PATH
       ;;
     oracle7)

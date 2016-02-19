@@ -19,5 +19,5 @@ cd protobuf
 $TEST_SCRIPT cpp || exit 1
 
 # Other tests can fail and we keep on going.
-$TEST_SCRIPT java_jdk6
+#$TEST_SCRIPT java_jdk6
 $TEST_SCRIPT java_jdk7
