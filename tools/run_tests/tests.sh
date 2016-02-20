@@ -103,7 +103,7 @@ use_java() {
 }
 
 # --batch-mode supresses download progress output that spams the logs.
-MVN=mvn --batch-mode
+MVN="mvn --batch-mode"
 
 build_java() {
   # Java build needs `protoc`.
@@ -125,7 +125,7 @@ build_java_with_conformance_tests() {
 build_javanano() {
   # Java build needs `protoc`.
   internal_build_cpp
-  cd javanano && mvn test && cd ..
+  cd javanano && $MVN test && cd ..
 }
 
 build_java_jdk6() {

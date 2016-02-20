@@ -52,12 +52,18 @@ docker build -t $DOCKER_IMAGE_NAME $DOCKERFILE_DIR
 # Choose random name for docker container
 CONTAINER_NAME="build_and_run_docker_$(uuidgen)"
 
+# Ensure existence of ccache directory
+CCACHE_DIR=/tmp/protobuf-ccache
+mkdir -p $CCACHE_DIR
+
 # Run command inside docker
 docker run \
   "$@" \
+  -e CCACHE_DIR=$CCACHE_DIR \
   -e EXTERNAL_GIT_ROOT="/var/local/jenkins/protobuf" \
   -e THIS_IS_REALLY_NEEDED='see https://github.com/docker/docker/issues/14203 for why docker is awful' \
   -v "$git_root:/var/local/jenkins/protobuf:ro" \
+  -v $CCACHE_DIR:$CCACHE_DIR \
   -w /var/local/git/protobuf \
   --name=$CONTAINER_NAME \
   $DOCKER_IMAGE_NAME \
