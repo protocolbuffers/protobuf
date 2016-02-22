@@ -60,12 +60,18 @@ RUN apt-get update && apt-get install -y \
   openjdk-7-jdk \
   # -- For python / python_cpp -- \
   python-setuptools \
-  python-tox \
+  python-pip \
   python-dev \
   python2.6-dev \
   python3.3-dev \
   python3.4-dev \
   && apt-get clean
+
+# These packages exist in apt-get, but their versions are too old, so we have
+# to get updates from pip.
+
+RUN pip install pip --upgrade
+RUN pip install virtualenv tox
 
 # Prepare ccache
 RUN ln -s /usr/bin/ccache /usr/local/bin/gcc
