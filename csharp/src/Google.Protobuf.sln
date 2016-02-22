@@ -1,7 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2015
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 14.0.24720.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf", "Google.Protobuf\Google.Protobuf.csproj", "{6908BDCE-D925-43F3-94AC-A531E6DF2591}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf.Test", "Google.Protobuf.Test\Google.Protobuf.Test.csproj", "{DD01ED24-3750-4567-9A23-1DB676A15610}"
