@@ -63,6 +63,10 @@ def _proto_gen_impl(ctx):
   if ctx.attr.gen_py:
     args += ["--python_out=" + ctx.var["GENDIR"] + "/" + gen_dir]
 
+  if ctx.executable.grpc_cpp_plugin:
+    args += ["--plugin=protoc-gen-grpc=" + ctx.executable.grpc_cpp_plugin.path]
+    args += ["--grpc_out=" + ctx.var["GENDIR"] + "/" + gen_dir]
+
   if args:
     ctx.action(
         inputs=srcs + deps,
@@ -90,6 +94,11 @@ _proto_gen = rule(
             single_file = True,
             mandatory = True,
         ),
+        "grpc_cpp_plugin": attr.label(
+            cfg = HOST_CFG,
+            executable = True,
+            single_file = True,
+        ),
         "gen_cc": attr.bool(),
         "gen_py": attr.bool(),
         "outs": attr.output_list(),
@@ -106,6 +115,7 @@ def cc_proto_library(
         include=None,
         protoc="//google/protobuf:protoc",
         internal_bootstrap_hack=False,
+        use_grpc_plugin=False,
         default_runtime="//google/protobuf:protobuf",
         **kargs):
   """Bazel rule to create a C++ protobuf library from proto source files
@@ -126,6 +136,8 @@ def cc_proto_library(
         for bootstraping. When it is set to True, no files will be generated.
         The rule will simply be a provider for .proto files, so that other
         cc_proto_library can depend on it.
+    use_grpc_plugin: a flag to indicate whether to call the grpc C++ plugin
+        when processing the proto files.
     default_runtime: the implicitly default runtime which will be depended on by
         the generated cc_library target.
     **kargs: other keyword arguments that are passed to cc_library.
@@ -153,6 +165,10 @@ def cc_proto_library(
         **kargs)
     return
 
+  grpc_cpp_plugin = None
+  if use_grpc_plugin:
+    grpc_cpp_plugin = "//external:grpc_cpp_plugin"
+
   outs = _CcOuts(srcs)
   _proto_gen(
       name=name + "_genproto",
@@ -160,6 +176,7 @@ def cc_proto_library(
       deps=[s + "_genproto" for s in deps],
       includes=includes,
       protoc=protoc,
+      grpc_cpp_plugin=grpc_cpp_plugin,
       gen_cc=1,
       outs=outs,
       visibility=["//visibility:public"],
