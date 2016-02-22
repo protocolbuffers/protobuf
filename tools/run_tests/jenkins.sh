@@ -26,10 +26,16 @@ $TEST_SCRIPT cpp | tee $OUTPUT_DIR/1/cpp
 # Other tests are run in parallel.  The overall run fails if any one of them
 # fails.
 
-parallel $TEST_SCRIPT ::: \
+parallel --results $OUTPUT_DIR $TEST_SCRIPT ::: \
+  csharp \
   java_jdk7 \
   javanano_jdk7 \
+  java_oracle7 \
+  javanano_oracle7 \
   python \
-  python_cpp
+  python_cpp \
+  ruby21
 
 # java_jdk6 \
+
+find $OUTPUT_DIR

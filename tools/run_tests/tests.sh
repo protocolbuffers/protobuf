@@ -45,16 +45,20 @@ build_csharp() {
   # need to really build protoc, but it's simplest to keep with the
   # conventions of the other builds.
   internal_build_cpp
+  NUGET=/usr/local/bin/nuget.exe
 
-  # Install latest version of Mono
-  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-  echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
-  echo "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main" | sudo tee -a /etc/apt/sources.list.d/mono-xamarin.list
-  sudo apt-get update -qq
-  sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
-  wget www.nuget.org/NuGet.exe -O nuget.exe
+  if [ "$TRAVIS" == "true" ]; then
+    # Install latest version of Mono
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+    echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
+    echo "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main" | sudo tee -a /etc/apt/sources.list.d/mono-xamarin.list
+    sudo apt-get update -qq
+    sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
+    wget www.nuget.org/NuGet.exe -O nuget.exe
+    NUGET=../../nuget.exe
+  fi
 
-  (cd csharp/src; mono ../../nuget.exe restore)
+  (cd csharp/src; mono $NUGET restore)
   csharp/buildall.sh
   cd conformance && make test_csharp && cd ..
 }
@@ -89,11 +93,13 @@ use_java() {
       export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:$PATH
       ;;
     oracle7)
-      sudo apt-get install python-software-properties # for apt-add-repository
-      echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | \
-        sudo debconf-set-selections
-      yes | sudo apt-add-repository ppa:webupd8team/java
-      yes | sudo apt-get install oracle-java7-installer
+      if [ "$TRAVIS" == "true" ]; then
+        sudo apt-get install python-software-properties # for apt-add-repository
+        echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | \
+          sudo debconf-set-selections
+        yes | sudo apt-add-repository ppa:webupd8team/java
+        yes | sudo apt-get install oracle-java7-installer
+      fi;
       export PATH=/usr/lib/jvm/java-7-oracle/bin:$PATH
       ;;
   esac
@@ -322,10 +328,10 @@ Usage: $0 { cpp |
             objectivec_osx |
             python |
             python_cpp |
-            ruby_19 |
-            ruby_20 |
-            ruby_21 |
-            ruby_22 |
+            ruby19 |
+            ruby20 |
+            ruby21 |
+            ruby22 |
             jruby }
 "
   exit 1
