@@ -98,7 +98,7 @@ RUN wget www.nuget.org/NuGet.exe -O /usr/local/bin/nuget.exe
 # to get updates from pip.
 
 RUN pip install pip --upgrade
-RUN pip install virtualenv tox
+RUN pip install virtualenv tox yattag
 
 
 ##################
