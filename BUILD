@@ -26,6 +26,25 @@ load(
     "internal_protobuf_py_tests",
 )
 
+config_setting(
+    name = "ios_arm",
+    values = {
+        "ios_cpu": "armv7",
+        "ios_cpu": "armv7s",
+        "ios_cpu": "arm64",
+    },
+)
+
+IOS_ARM_COPTS = COPTS + [
+    "-DOS_IOS",
+    "-miphoneos-version-min=7.0",
+    "-arch armv7",
+    "-arch armv7s",
+    "-arch arm64",
+    "-D__thread=",
+    "-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.2.sdk/",
+]
+
 cc_library(
     name = "protobuf_lite",
     srcs = [
@@ -55,7 +74,10 @@ cc_library(
         "src/google/protobuf/wire_format_lite.cc",
     ],
     hdrs = glob(["src/google/protobuf/**/*.h"]),
-    copts = COPTS,
+    copts = select({
+        ":ios_arm": IOS_ARM_COPTS,
+        "//conditions:default": COPTS,
+    }),
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
@@ -120,7 +142,10 @@ cc_library(
         "src/google/protobuf/wrappers.pb.cc",
     ],
     hdrs = glob(["src/**/*.h"]),
-    copts = COPTS,
+    copts = select({
+        ":ios_arm": IOS_ARM_COPTS,
+        "//conditions:default": COPTS,
+    }),
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
