@@ -30,16 +30,18 @@
 
 // Test suite is written using Jasmine -- see http://jasmine.github.io/
 
-goog.setTestOnly();
 
-goog.require('goog.json');
-goog.require('goog.testing.asserts');
 
-// CommonJS-LoadFromFile: google-protobuf jspb
-goog.require('jspb.Message');
+var googleProtobuf = require('google-protobuf');
+var asserts = require('closure_asserts_commonjs');
+var global = Function('return this')();
 
-// CommonJS-LoadFromFile: test7/test7_pb proto.jspb.test.framing
-goog.require('proto.jspb.test.framing.FramingMessage');
+// Bring asserts into the global namespace.
+googleProtobuf.object.extend(global, asserts);
+googleProtobuf.exportSymbol('jspb.Message', googleProtobuf.Message, global);
+
+var test7_pb = require('./test7/test7_pb');
+googleProtobuf.exportSymbol('proto.jspb.test.framing.FramingMessage', test7_pb.FramingMessage, global);
 
 describe('Import test suite', function() {
   it('testImportedMessage', function() {

@@ -33,8 +33,10 @@ syntax = "proto3";
 option java_package = "com.google.apps.jspb.proto";
 option java_multiple_files = true;
 
-package jspb.test.importing;
+package jspb.test.framing;
 
-message ImportedMessage {
-  string string_value = 1;
+import "test6/test6.proto";
+
+message FramingMessage {
+  jspb.test.importing.ImportedMessage imported_message = 1;
 }
