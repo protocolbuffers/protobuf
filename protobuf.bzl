@@ -15,9 +15,13 @@ def _GenDir(ctx):
     return _GetPath(ctx, ctx.attr.includes[0])
   return _GetPath(ctx, ctx.label.package + '/' + ctx.attr.includes[0])
 
-def _CcOuts(srcs):
-  return [s[:-len(".proto")] +  ".pb.h" for s in srcs] + \
-         [s[:-len(".proto")] + ".pb.cc" for s in srcs]
+def _CcOuts(srcs, use_grpc_plugin=False):
+  ret = [s[:-len(".proto")] + ".pb.h" for s in srcs] + \
+        [s[:-len(".proto")] + ".pb.cc" for s in srcs]
+  if use_grpc_plugin:
+    ret += [s[:-len(".proto")] + ".grpc.pb.h" for s in srcs] + \
+           [s[:-len(".proto")] + ".grpc.pb.cc" for s in srcs]
+  return ret
 
 def _PyOuts(srcs):
   return [s[:-len(".proto")] + "_pb2.py" for s in srcs]
@@ -169,7 +173,8 @@ def cc_proto_library(
   if use_grpc_plugin:
     grpc_cpp_plugin = "//external:grpc_cpp_plugin"
 
-  outs = _CcOuts(srcs)
+  outs = _CcOuts(srcs, use_grpc_plugin)
+
   _proto_gen(
       name=name + "_genproto",
       srcs=srcs,
@@ -184,6 +189,8 @@ def cc_proto_library(
 
   if default_runtime and not default_runtime in cc_libs:
     cc_libs += [default_runtime]
+  if use_grpc_plugin:
+    cc_libs += ["//external:grpc_lib"]
 
   native.cc_library(
       name=name,
@@ -191,7 +198,6 @@ def cc_proto_library(
       deps=cc_libs + deps,
       includes=includes,
       **kargs)
-
 
 def internal_copied_filegroup(
         name,
@@ -221,7 +227,6 @@ def internal_copied_filegroup(
       name=name,
       srcs=outs,
       **kargs)
-
 
 def py_proto_library(
         name,
