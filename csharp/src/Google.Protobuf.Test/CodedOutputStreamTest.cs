@@ -387,5 +387,33 @@ namespace Google.Protobuf
                 Assert.IsTrue(cin.IsAtEnd);
             }
         }
+
+        [Test]
+        public void Dispose_DisposesUnderlyingStream()
+        {
+            var memoryStream = new MemoryStream();
+            Assert.IsTrue(memoryStream.CanWrite);
+            using (var cos = new CodedOutputStream(memoryStream))
+            {
+                cos.WriteRawByte(0);
+                Assert.AreEqual(0, memoryStream.Position); // Not flushed yet
+            }
+            Assert.AreEqual(1, memoryStream.ToArray().Length); // Flushed data from CodedOutputStream to MemoryStream
+            Assert.IsFalse(memoryStream.CanWrite); // Disposed
+        }
+
+        [Test]
+        public void Dispose_WithLeaveOpen()
+        {
+            var memoryStream = new MemoryStream();
+            Assert.IsTrue(memoryStream.CanWrite);
+            using (var cos = new CodedOutputStream(memoryStream, true))
+            {
+                cos.WriteRawByte(0);
+                Assert.AreEqual(0, memoryStream.Position); // Not flushed yet
+            }
+            Assert.AreEqual(1, memoryStream.Position); // Flushed data from CodedOutputStream to MemoryStream
+            Assert.IsTrue(memoryStream.CanWrite); // We left the stream open
+        }
     }
 }

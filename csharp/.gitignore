@@ -33,3 +33,4 @@ mono/.libs
 mono/*.exe
 mono/*.dll
 lib/protoc.exe
+*.ncrunch*
