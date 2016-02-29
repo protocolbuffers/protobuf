@@ -149,6 +149,20 @@ string GetJSFilename(const string& filename) {
   return StripSuffixString(filename, suffix) + "_pb.js";
 }
 
+// Given a filename like foo/bar/baz.proto, returns the root directory
+// path ../../
+string GetRootPath(const string& filename) {
+  size_t slashes = std::count(filename.begin(), filename.end(), '/');
+  if (slashes == 0) {
+    return "./";
+  }
+  string result = "";
+  for (size_t i = 0; i < slashes; i++) {
+    result += "../";
+  }
+  return result;
+}
+
 // Returns the alias we assign to the module of the given .proto filename
 // when importing.
 string ModuleAlias(const string& filename) {
@@ -2518,7 +2532,7 @@ void Generator::GenerateFile(const GeneratorOptions& options,
       printer->Print(
           "var $alias$ = require('$file$');\n",
           "alias", ModuleAlias(name),
-          "file", GetJSFilename(name));
+          "file", GetRootPath(file->name()) + GetJSFilename(name));
     }
   }
 
