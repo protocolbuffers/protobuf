@@ -112,18 +112,22 @@ use_java() {
 MVN="mvn --batch-mode"
 
 build_java() {
+  version=$1
+  dir=java_$version
   # Java build needs `protoc`.
   internal_build_cpp
-  cd java && $MVN test && $MVN install
-  cd util && $MVN test
+  cp -r java $dir
+  cd $dir && $MVN clean && $MVN test
   cd ../..
 }
 
+# The conformance tests are hard-coded to work with the $ROOT/java directory.
+# So this can't run in parallel with two different sets of tests.
 build_java_with_conformance_tests() {
   # Java build needs `protoc`.
   internal_build_cpp
   cd java && $MVN test && $MVN install
-  cd util && $MVN test && $MVN assembly:single
+  cd util && $MVN package assembly:single
   cd ../..
   cd conformance && make test_java && cd ..
 }
@@ -136,7 +140,7 @@ build_javanano() {
 
 build_java_jdk6() {
   use_java jdk6
-  build_java
+  build_java jdk6
 }
 build_java_jdk7() {
   use_java jdk7
@@ -144,7 +148,7 @@ build_java_jdk7() {
 }
 build_java_oracle7() {
   use_java oracle7
-  build_java
+  build_java oracle7
 }
 
 build_javanano_jdk6() {
