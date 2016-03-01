@@ -589,7 +589,7 @@ namespace Google.Protobuf
         {
             var memoryStream = new MemoryStream();
             Assert.IsTrue(memoryStream.CanRead);
-            using (var cos = new CodedOutputStream(memoryStream, true))
+            using (var cis = new CodedInputStream(memoryStream, true))
             {
             }
             Assert.IsTrue(memoryStream.CanRead); // We left the stream open
