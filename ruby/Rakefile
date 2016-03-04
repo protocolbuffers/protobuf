@@ -34,6 +34,49 @@ else
   end
 end
 
+well_known_protos = %w[
+  google/protobuf/any.proto
+  google/protobuf/api.proto
+  google/protobuf/duration.proto
+  google/protobuf/empty.proto
+  google/protobuf/field_mask.proto
+  google/protobuf/source_context.proto
+  google/protobuf/struct.proto
+  google/protobuf/timestamp.proto
+  google/protobuf/type.proto
+  google/protobuf/wrappers.proto
+]
+
+# These are omitted for now because we don't support proto2.
+proto2_protos = %w[
+  google/protobuf/descriptor.proto
+  google/protobuf/compiler/plugin.proto
+]
+
+genproto_output = []
+
+well_known_protos.each do |proto_file|
+  input_file = "../src/" + proto_file
+  output_file = "lib/" + proto_file.sub(/\.proto$/, ".rb")
+  genproto_output << output_file
+  file output_file => input_file do |file_task|
+    sh "../src/protoc -I../src --ruby_out=lib #{input_file}"
+  end
+end
+
+
+# Proto for tests.
+genproto_output << "tests/generated_code.rb"
+file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
+  sh "../src/protoc --ruby_out=. tests/generated_code.proto"
+end
+
+task :genproto => genproto_output
+
+task :clean do
+  sh "rm -f #{genproto_output.join(' ')}"
+end
+
 Gem::PackageTask.new(spec) do |pkg|
 end
 
@@ -41,7 +84,7 @@ Rake::TestTask.new(:test => :build) do |t|
   t.test_files = FileList["tests/*.rb"]
 end
 
-task :build => [:clean, :compile]
+task :build => [:clean, :compile, :genproto]
 task :default => [:build]
 
 # vim:sw=2:et
