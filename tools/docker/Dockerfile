@@ -62,6 +62,7 @@ RUN apt-get update && apt-get install -y \
   libtool \
   make \
   parallel \
+  time \
   wget \
   # -- For csharp --
   mono-devel \
@@ -117,19 +118,6 @@ RUN /bin/bash -l -c "echo 'rvm --default use ruby-2.1' >> ~/.bashrc"
 RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
 
 ##################
-# Prepare ccache
-
-# We do this BEFORE the Java dependency step below, so the build of protoc
-# can benefit from it.
-RUN ln -s /usr/bin/ccache /usr/local/bin/gcc
-RUN ln -s /usr/bin/ccache /usr/local/bin/g++
-RUN ln -s /usr/bin/ccache /usr/local/bin/cc
-RUN ln -s /usr/bin/ccache /usr/local/bin/c++
-RUN ln -s /usr/bin/ccache /usr/local/bin/clang
-RUN ln -s /usr/bin/ccache /usr/local/bin/clang++
-
-
-##################
 # Java dependencies
 
 # This step requires compiling protoc. :(
@@ -149,6 +137,15 @@ RUN cd /tmp && \
   cd ../javanano && \
   $MVN install dependency:go-offline -Dmaven.repo.local=$MAVEN_REPO
 
+##################
+# Prepare ccache
+
+RUN ln -s /usr/bin/ccache /usr/local/bin/gcc
+RUN ln -s /usr/bin/ccache /usr/local/bin/g++
+RUN ln -s /usr/bin/ccache /usr/local/bin/cc
+RUN ln -s /usr/bin/ccache /usr/local/bin/c++
+RUN ln -s /usr/bin/ccache /usr/local/bin/clang
+RUN ln -s /usr/bin/ccache /usr/local/bin/clang++
 
 # Define the default command.
 CMD ["bash"]

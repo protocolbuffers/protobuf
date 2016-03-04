@@ -44,8 +44,6 @@ $TIME_CMD $TEST_SCRIPT cpp > >(tee $CPP_STDOUT) 2> >(tee $CPP_STDERR >&2)
 # Other tests are run in parallel.  The overall run fails if any one of them
 # fails.
 
-FAILED=false
-
 parallel --results $LOG_OUTPUT_DIR --joblog $OUTPUT_DIR/joblog $TEST_SCRIPT ::: \
   csharp \
   java_jdk7 \
