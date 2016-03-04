@@ -46,15 +46,17 @@ cd -
 # Use image name based on Dockerfile location checksum
 DOCKER_IMAGE_NAME=$(basename $DOCKERFILE_DIR)_$(sha1sum $DOCKERFILE_DIR/Dockerfile | cut -f1 -d\ )
 
-# Make sure docker image has been built. Should be instantaneous if so.
-docker build -t $DOCKER_IMAGE_NAME $DOCKERFILE_DIR
-
-# Choose random name for docker container
-CONTAINER_NAME="build_and_run_docker_$(uuidgen)"
-
 # Ensure existence of ccache directory
 CCACHE_DIR=/tmp/protobuf-ccache
 mkdir -p $CCACHE_DIR
+
+# Make sure docker image has been built. Should be instantaneous if so.
+docker build \
+  -v $CCACHE_DIR:$CCACHE_DIR \
+  -t $DOCKER_IMAGE_NAME $DOCKERFILE_DIR
+
+# Choose random name for docker container
+CONTAINER_NAME="build_and_run_docker_$(uuidgen)"
 
 # Run command inside docker
 docker run \

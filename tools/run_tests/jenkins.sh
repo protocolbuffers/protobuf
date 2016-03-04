@@ -34,7 +34,12 @@ mkdir -p $LOG_OUTPUT_DIR/1/cpp
 #  $DIR/logs/1/java_jdk7/stderr
 CPP_STDOUT=$LOG_OUTPUT_DIR/1/cpp/stdout
 CPP_STDERR=$LOG_OUTPUT_DIR/1/cpp/stderr
-$TEST_SCRIPT cpp > >(tee $CPP_STDOUT) 2> >(tee $CPP_STDERR >&2)
+
+# It's important that we get /usr/bin/time (which supports -f and -o) and not
+# the bash builtin "time" which doesn't.
+TIME_CMD="/usr/bin/time -f %e -o $LOG_OUTPUT_DIR/1/cpp/build_time"
+
+$TIME_CMD $TEST_SCRIPT cpp > >(tee $CPP_STDOUT) 2> >(tee $CPP_STDERR >&2)
 
 # Other tests are run in parallel.  The overall run fails if any one of them
 # fails.

@@ -58,8 +58,8 @@ def readtests(basedir):
   # up in the job log.
   tests["cpp"]["name"] = "cpp"
 
-  # TODO
-  tests["cpp"]["time"] = "0"
+  with open(basedir + '/logs/1/cpp/build_time', 'r') as f:
+    tests["cpp"]["time"] = f.read().strip()
   tests["cpp"]["failure"] = False
 
   ret = tests.values()
