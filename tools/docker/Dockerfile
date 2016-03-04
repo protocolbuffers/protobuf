@@ -116,13 +116,39 @@ RUN /bin/bash -l -c "echo 'export PATH=/usr/local/rvm/bin:$PATH' >> ~/.bashrc"
 RUN /bin/bash -l -c "echo 'rvm --default use ruby-2.1' >> ~/.bashrc"
 RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
 
+##################
 # Prepare ccache
+
+# We do this BEFORE the Java dependency step below, so the build of protoc
+# can benefit from it.
 RUN ln -s /usr/bin/ccache /usr/local/bin/gcc
 RUN ln -s /usr/bin/ccache /usr/local/bin/g++
 RUN ln -s /usr/bin/ccache /usr/local/bin/cc
 RUN ln -s /usr/bin/ccache /usr/local/bin/c++
 RUN ln -s /usr/bin/ccache /usr/local/bin/clang
 RUN ln -s /usr/bin/ccache /usr/local/bin/clang++
+
+
+##################
+# Java dependencies
+
+# This step requires compiling protoc. :(
+
+ENV MAVEN_REPO /var/maven_local_repository
+ENV MVN mvn --batch-mode
+
+RUN cd /tmp && \
+  git clone https://github.com/google/protobuf.git && \
+  cd protobuf && \
+  ./autogen.sh && \
+  ./configure && \
+  make -j6 && \
+  cd java && \
+  $MVN install dependency:go-offline -Dmaven.repo.local=$MAVEN_REPO -P lite && \
+  $MVN install dependency:go-offline -Dmaven.repo.local=$MAVEN_REPO && \
+  cd ../javanano && \
+  $MVN install dependency:go-offline -Dmaven.repo.local=$MAVEN_REPO
+
 
 # Define the default command.
 CMD ["bash"]

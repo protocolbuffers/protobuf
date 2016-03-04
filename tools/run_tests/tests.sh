@@ -104,6 +104,11 @@ use_java() {
       ;;
   esac
 
+  if [ "$TRAVIS" != "true" ]; then
+    MAVEN_LOCAL_REPOSITORY=/var/maven_local_repository
+    MVN="$MVN -e -X --offline -Dmaven.repo.local=$MAVEN_LOCAL_REPOSITORY"
+  fi;
+
   which java
   java -version
 }
