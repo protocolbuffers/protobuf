@@ -653,7 +653,6 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/repeated_field_test.rb                                          \
   ruby/tests/stress.rb                                                       \
   ruby/tests/generated_code.proto                                            \
-  ruby/tests/generated_code.rb                                               \
   ruby/tests/generated_code_test.rb                                          \
   ruby/travis-test.sh
 
