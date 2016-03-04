@@ -1,9 +1,9 @@
-"""Gather output from test runs and create an XML file in JUnit format.
+"""Gathers output from test runs and create an XML file in JUnit format.
 
 The output files from the individual tests have been written in a directory
 structure like:
 
-  $DIR/joblog  (--joblog from "parallel")
+  $DIR/joblog  (output from "parallel --joblog joblog")
   $DIR/logs/1/cpp/stdout
   $DIR/logs/1/cpp/stderr
   $DIR/logs/1/csharp/stdout
@@ -13,7 +13,8 @@ structure like:
   etc.
 
 This script bundles them into a single output XML file so Jenkins can show
-detailed test results.
+detailed test results.  It runs as the last step before the Jenkins build
+finishes.
 """
 
 import os;

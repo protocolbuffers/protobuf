@@ -10,7 +10,7 @@ os:
 # The Objective C build needs Xcode 7.0 or later.
 osx_image: xcode7.2
 script:
-  - ./tools/run_tests/tests.sh $CONFIG
+  - ./tests.sh $CONFIG
 env:
   - CONFIG=cpp
   - CONFIG=cpp_distcheck

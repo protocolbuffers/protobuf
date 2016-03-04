@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# Build and runs tests for the protobuf project.  The tests as written here are
+# used by both Jenkins and Travis, though some specialized logic is required to
+# handle the differences between them.
 
 on_travis() {
   if [ "$TRAVIS" == "true" ]; then
@@ -25,19 +29,19 @@ internal_build_cpp() {
 
   ./autogen.sh
   ./configure
-  make $PARALLELISM
+  make -j2
 }
 
 build_cpp() {
   internal_build_cpp
-  make check $PARALLELISM
+  make check -j2
   cd conformance && make test_cpp && cd ..
 }
 
 build_cpp_distcheck() {
   ./autogen.sh
   ./configure
-  make distcheck $PARALLELISM
+  make distcheck -j2
 }
 
 build_csharp() {
@@ -308,8 +312,6 @@ build_javascript() {
   cd js && npm install && npm test && cd ..
 }
 
-[ -n "${PARALLELISM}" ] && PARALLELISM=-j8
-
 # Note: travis currently does not support testing more than one language so the
 # .travis.yml cheats and claims to only be cpp.  If they add multiple language
 # support, this should probably get updated to install steps and/or
@@ -319,9 +321,6 @@ build_javascript() {
 # use to install things.
 
 # -------- main --------
-
-# Set value used in tests.sh.
-PARALLELISM=-j2
 
 if [ "$#" -ne 1 ]; then
   echo "
