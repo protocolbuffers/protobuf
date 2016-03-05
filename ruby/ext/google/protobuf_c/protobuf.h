@@ -112,6 +112,7 @@ struct Descriptor {
   VALUE klass;  // begins as nil
   const upb_handlers* fill_handlers;
   const upb_pbdecodermethod* fill_method;
+  const upb_json_parsermethod* json_fill_method;
   const upb_handlers* pb_serialize_handlers;
   const upb_handlers* json_serialize_handlers;
   // Handlers hold type class references for sub-message fields directly in some
