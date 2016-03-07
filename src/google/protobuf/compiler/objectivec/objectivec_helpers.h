@@ -146,6 +146,7 @@ string DefaultValue(const FieldDescriptor* field);
 
 string BuildFlagsString(const vector<string>& strings);
 
+// Builds a HeaderDoc style comment out of the comments in the .proto file.
 string BuildCommentsString(const SourceLocation& location);
 
 // Checks the prefix for a given file and outputs any warnings needed, if

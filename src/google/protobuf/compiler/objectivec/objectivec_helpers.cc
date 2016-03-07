@@ -771,16 +771,14 @@ string BuildCommentsString(const SourceLocation& location) {
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
-  string prefix("//");
+  string prefix("///");
   string suffix("\n");
   string final_comments;
   for (int i = 0; i < lines.size(); i++) {
-    // We use $ for delimiters, so replace comments with dollars with
-    // html escaped version.
-    // None of the other compilers handle this (as of this writing) but we
-    // ran into it once, so just to be safe.
+    // HeaderDoc uses '\' and '@' for markers; escape them.
+    const string line = StringReplace(lines[i], "\\", "\\\\", true);
     final_comments +=
-        prefix + StringReplace(lines[i], "$", "&#36;", true) + suffix;
+        prefix + StringReplace(line, "@", "\\@", true) + suffix;
   }
   return final_comments;
 }
