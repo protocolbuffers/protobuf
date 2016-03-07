@@ -80,10 +80,12 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
   if (HasPreservingUnknownEnumSemantics(descriptor_->file())) {
     // Include the unknown value.
     printer->Print(
+      "/// Value used if any message's field encounters a value that is not defined\n"
+      "/// by this enum. The message will also have C functions to get/set the rawValue\n"
+      "/// of the field.\n"
       "$name$_GPBUnrecognizedEnumeratorValue = kGPBUnrecognizedEnumeratorValue,\n",
       "name", name_);
   }
-
   for (int i = 0; i < all_values_.size(); i++) {
     SourceLocation location;
     if (all_values_[i]->GetSourceLocation(&location)) {
@@ -107,6 +109,8 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
       "\n"
       "GPBEnumDescriptor *$name$_EnumDescriptor(void);\n"
       "\n"
+      "/// Checks to see if the given value is defined by the enum or was not known at\n"
+      "/// the time this source was generated.\n"
       "BOOL $name$_IsValidValue(int32_t value);\n"
       "\n",
       "name", name_);

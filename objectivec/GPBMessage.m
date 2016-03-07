@@ -35,7 +35,7 @@
 
 #import "GPBArray_PackagePrivate.h"
 #import "GPBCodedInputStream_PackagePrivate.h"
-#import "GPBCodedOutputStream.h"
+#import "GPBCodedOutputStream_PackagePrivate.h"
 #import "GPBDescriptor_PackagePrivate.h"
 #import "GPBDictionary_PackagePrivate.h"
 #import "GPBExtensionInternals.h"
