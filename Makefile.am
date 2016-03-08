@@ -413,6 +413,7 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBCodedInputStream_PackagePrivate.h                            \
   objectivec/GPBCodedOutputStream.h                                          \
   objectivec/GPBCodedOutputStream.m                                          \
+  objectivec/GPBCodedOutputStream_PackagePrivate.h                           \
   objectivec/GPBDescriptor.h                                                 \
   objectivec/GPBDescriptor.m                                                 \
   objectivec/GPBDescriptor_PackagePrivate.h                                  \
