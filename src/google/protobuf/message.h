@@ -490,6 +490,13 @@ class LIBPROTOBUF_EXPORT Reflection {
       const Message& message,
       std::vector<const FieldDescriptor*>* output) const = 0;
 
+  // List all the extension fields which are currently set.  Fields
+  // will not be in any particular order.  This is much faster than ListFields
+  // for retrieving just this information.
+  virtual void ListExtensionFields(
+      const Message &message,
+      vector<const FieldDescriptor *> *output) const = 0;
+
   // Singular field getters ------------------------------------------
   // These get the value of a non-repeated field.  They return the default
   // value for fields that aren't set.

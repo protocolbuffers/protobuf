@@ -1020,6 +1020,17 @@ void GeneratedMessageReflection::ListFields(
   std::sort(output->begin(), output->end(), FieldNumberSorter());
 }
 
+void GeneratedMessageReflection::ListExtensionFields(
+    const Message& message,
+    vector<const FieldDescriptor*>* output) const {
+  output->clear();
+
+  if (extensions_offset_ != -1) {
+    GetExtensionSet(message).AppendToList(descriptor_, descriptor_pool_,
+                                          output);
+  }
+}
+
 // -------------------------------------------------------------------
 
 #undef DEFINE_PRIMITIVE_ACCESSORS
