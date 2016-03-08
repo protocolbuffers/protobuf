@@ -124,9 +124,14 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
   }
   values.push_back(current);
 
+  string result;
+  bool first_segment_forces_upper = false;
   for (vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
     string value = *i;
     bool all_upper = (kUpperSegments.count(value) > 0);
+    if (all_upper && (result.length() == 0)) {
+      first_segment_forces_upper = true;
+    }
     for (int j = 0; j < value.length(); j++) {
       if (j == 0 || all_upper) {
         value[j] = ascii_toupper(value[j]);
@@ -134,13 +139,11 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
         // Nothing, already in lower.
       }
     }
-    *i = value;
+    result += value;
   }
-  string result;
-  for (vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
-    result += *i;
-  }
-  if ((result.length() != 0) && !first_capitalized) {
+  if ((result.length() != 0) &&
+      !first_capitalized &&
+      !first_segment_forces_upper) {
     result[0] = ascii_tolower(result[0]);
   }
   return result;
