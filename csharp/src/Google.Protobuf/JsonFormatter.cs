@@ -148,6 +148,19 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Formats the specified field of the message as JSON.
+        /// </summary>
+        /// <param name="message">The message to format.</param>
+        /// <param name="field">The field in the message to format.</param>
+        /// <returns>The formatted field.</returns>
+        public string Format(IMessage message, FieldDescriptor field)
+        {
+            var writer = new StringWriter();
+            Format(message, field, writer);
+            return writer.ToString();
+        }
+
+        /// <summary>
         /// Formats the specified message as JSON.
         /// </summary>
         /// <param name="message">The message to format.</param>
@@ -166,6 +179,24 @@ namespace Google.Protobuf
             {
                 WriteMessage(writer, message);
             }
+        }
+
+        /// <summary>
+        /// Formats the specified field of the message as JSON.
+        /// </summary>
+        /// <param name="message">The message to format.</param>
+        /// <param name="field">The field of the message to format.</param>
+        /// <param name="writer">The TextWriter to write the formatted message to.</param>
+        /// <returns>The formatted field.</returns>
+        public void Format(IMessage message, FieldDescriptor field, TextWriter writer)
+        {
+            ProtoPreconditions.CheckNotNull(message, nameof(message));
+            ProtoPreconditions.CheckNotNull(field, nameof(field));
+            ProtoPreconditions.CheckNotNull(writer, nameof(writer));
+
+            writer.Write("{ ");
+            bool nothingWritten = WriteMessageField(writer, message, field, true);
+            writer.Write(nothingWritten ? "}" : " }");
         }
 
         /// <summary>
@@ -191,6 +222,31 @@ namespace Google.Protobuf
             return diagnosticFormatter.Format(message);
         }
 
+        /// <summary>
+        /// Converts a message to JSON for diagnostic purposes with no extra context.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This differs from calling <see cref="Format(IMessage, FieldDescriptor)"/> on the default JSON
+        /// formatter in its handling of <see cref="Any"/>. As no type registry is available
+        /// in <see cref="object.ToString"/> calls, the normal way of resolving the type of
+        /// an <c>Any</c> message cannot be applied. Instead, a JSON property named <c>@value</c>
+        /// is included with the base64 data from the <see cref="Any.Value"/> property of the message.
+        /// </para>
+        /// <para>The value returned by this method is only designed to be used for diagnostic
+        /// purposes. It may not be parsable by <see cref="JsonParser"/>, and may not be parsable
+        /// by other Protocol Buffer implementations.</para>
+        /// </remarks>
+        /// <param name="message">The message to format for diagnostic purposes.</param>
+        /// <param name="field">The field in the message to format for diagnostic purposes.</param>
+        /// <returns>The diagnostic-only JSON representation of the message</returns>
+        public static string ToDiagnosticString(IMessage message, FieldDescriptor field)
+        {
+            ProtoPreconditions.CheckNotNull(message, nameof(message));
+            ProtoPreconditions.CheckNotNull(field, nameof(field));
+            return diagnosticFormatter.Format(message, field);
+        }
+
         private void WriteMessage(TextWriter writer, IMessage message)
         {
             if (message == null)
@@ -208,41 +264,45 @@ namespace Google.Protobuf
                 }
             }
             writer.Write("{ ");
-            bool writtenFields = WriteMessageFields(writer, message, false);
-            writer.Write(writtenFields ? " }" : "}");
+            bool nothingWritten = WriteMessageFields(writer, message, true);
+            writer.Write(nothingWritten ? "}" : " }");
         }
 
-        private bool WriteMessageFields(TextWriter writer, IMessage message, bool assumeFirstFieldWritten)
+        private bool WriteMessageFields(TextWriter writer, IMessage message, bool firstField)
         {
             var fields = message.Descriptor.Fields;
-            bool first = !assumeFirstFieldWritten;
             // First non-oneof fields
             foreach (var field in fields.InFieldNumberOrder())
             {
-                var accessor = field.Accessor;
-                if (field.ContainingOneof != null && field.ContainingOneof.Accessor.GetCaseFieldDescriptor(message) != field)
-                {
-                    continue;
-                }
-                // Omit default values unless we're asked to format them, or they're oneofs (where the default
-                // value is still formatted regardless, because that's how we preserve the oneof case).
-                object value = accessor.GetValue(message);
-                if (field.ContainingOneof == null && !settings.FormatDefaultValues && IsDefaultValue(accessor, value))
-                {
-                    continue;
-                }
-
-                // Okay, all tests complete: let's write the field value...
-                if (!first)
-                {
-                    writer.Write(PropertySeparator);
-                }
-                WriteString(writer, ToCamelCase(accessor.Descriptor.Name));
-                writer.Write(NameValueSeparator);
-                WriteValue(writer, value);
-                first = false;
+                firstField = WriteMessageField(writer, message, field, firstField);
             }            
-            return !first;
+            return firstField;
+        }
+
+        private bool WriteMessageField(TextWriter writer, IMessage message, FieldDescriptor field, bool firstField)
+        {
+            var accessor = field.Accessor;
+            if (field.ContainingOneof != null && field.ContainingOneof.Accessor.GetCaseFieldDescriptor(message) != field)
+            {
+                return firstField;
+            }
+            // Omit default values unless we're asked to format them, or they're oneofs (where the default
+            // value is still formatted regardless, because that's how we preserve the oneof case).
+            object value = accessor.GetValue(message);
+            if (field.ContainingOneof == null && !settings.FormatDefaultValues && IsDefaultValue(accessor, value))
+            {
+                return firstField;
+            }
+
+            // Okay, all tests complete: let's write the field value...
+            if (!firstField)
+            {
+                writer.Write(PropertySeparator);
+            }
+            WriteString(writer, ToCamelCase(accessor.Descriptor.Name));
+            writer.Write(NameValueSeparator);
+            WriteValue(writer, value);
+            return false;
         }
 
         /// <summary>
@@ -584,7 +644,7 @@ namespace Google.Protobuf
             }
             else
             {
-                WriteMessageFields(writer, message, true);
+                WriteMessageFields(writer, message, false);
             }
             writer.Write(" }");
         }
