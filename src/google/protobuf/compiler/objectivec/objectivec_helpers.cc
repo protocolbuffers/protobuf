@@ -124,9 +124,14 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
   }
   values.push_back(current);
 
+  string result;
+  bool first_segment_forces_upper = false;
   for (vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
     string value = *i;
     bool all_upper = (kUpperSegments.count(value) > 0);
+    if (all_upper && (result.length() == 0)) {
+      first_segment_forces_upper = true;
+    }
     for (int j = 0; j < value.length(); j++) {
       if (j == 0 || all_upper) {
         value[j] = ascii_toupper(value[j]);
@@ -134,13 +139,11 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
         // Nothing, already in lower.
       }
     }
-    *i = value;
+    result += value;
   }
-  string result;
-  for (vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
-    result += *i;
-  }
-  if ((result.length() != 0) && !first_capitalized) {
+  if ((result.length() != 0) &&
+      !first_capitalized &&
+      !first_segment_forces_upper) {
     result[0] = ascii_tolower(result[0]);
   }
   return result;
@@ -771,16 +774,14 @@ string BuildCommentsString(const SourceLocation& location) {
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
-  string prefix("//");
+  string prefix("///");
   string suffix("\n");
   string final_comments;
   for (int i = 0; i < lines.size(); i++) {
-    // We use $ for delimiters, so replace comments with dollars with
-    // html escaped version.
-    // None of the other compilers handle this (as of this writing) but we
-    // ran into it once, so just to be safe.
+    // HeaderDoc uses '\' and '@' for markers; escape them.
+    const string line = StringReplace(lines[i], "\\", "\\\\", true);
     final_comments +=
-        prefix + StringReplace(lines[i], "$", "&#36;", true) + suffix;
+        prefix + StringReplace(line, "@", "\\@", true) + suffix;
   }
   return final_comments;
 }

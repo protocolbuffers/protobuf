@@ -30,10 +30,29 @@
 
 #import "GPBTestUtilities.h"
 
-#import "GPBCodedOutputStream.h"
+#import "GPBCodedOutputStream_PackagePrivate.h"
 #import "GPBCodedInputStream.h"
 #import "GPBUtilities_PackagePrivate.h"
 #import "google/protobuf/Unittest.pbobjc.h"
+
+@interface GPBCodedOutputStream (InternalMethods)
+// Declared in the .m file, expose for testing.
+- (instancetype)initWithOutputStream:(NSOutputStream *)output
+                                data:(NSMutableData *)data;
+@end
+
+@interface GPBCodedOutputStream (Helper)
++ (instancetype)streamWithOutputStream:(NSOutputStream *)output
+                            bufferSize:(size_t)bufferSize;
+@end
+
+@implementation GPBCodedOutputStream (Helper)
++ (instancetype)streamWithOutputStream:(NSOutputStream *)output
+                            bufferSize:(size_t)bufferSize {
+  NSMutableData *data = [NSMutableData dataWithLength:bufferSize];
+  return [[[self alloc] initWithOutputStream:output data:data] autorelease];
+}
+@end
 
 @interface CodedOutputStreamTests : GPBTestCase
 @end

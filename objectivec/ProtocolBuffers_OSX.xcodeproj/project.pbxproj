@@ -188,6 +188,7 @@
 		F4487C7C1AAE06AC00531423 /* GPBUtilities_PackagePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBUtilities_PackagePrivate.h; sourceTree = "<group>"; };
 		F4487C7E1AAF62CD00531423 /* GPBMessageTests+Serialization.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GPBMessageTests+Serialization.m"; sourceTree = "<group>"; };
 		F4487C821AAF6AB300531423 /* GPBMessageTests+Merge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GPBMessageTests+Merge.m"; sourceTree = "<group>"; };
+		F44929001C866B1900C2548A /* GPBCodedOutputStream_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBCodedOutputStream_PackagePrivate.h; sourceTree = "<group>"; };
 		F451D3F51A8AAE8700B8A22C /* GPBProtocolBuffers_RuntimeSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBProtocolBuffers_RuntimeSupport.h; sourceTree = "<group>"; };
 		F45C69CB16DFD08D0081955B /* GPBExtensionInternals.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBExtensionInternals.m; sourceTree = "<group>"; };
 		F45E57C61AE6DC6A000B7D99 /* text_format_map_unittest_data.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = text_format_map_unittest_data.txt; sourceTree = "<group>"; };
@@ -368,9 +369,10 @@
 		7461B4860F94F96B00A0C422 /* IO */ = {
 			isa = PBXGroup;
 			children = (
-				7461B48E0F94F99000A0C422 /* GPBCodedInputStream.h */,
 				51457B5F18D0B7AF00CCC606 /* GPBCodedInputStream_PackagePrivate.h */,
+				7461B48E0F94F99000A0C422 /* GPBCodedInputStream.h */,
 				7461B48F0F94F99000A0C422 /* GPBCodedInputStream.m */,
+				F44929001C866B1900C2548A /* GPBCodedOutputStream_PackagePrivate.h */,
 				7461B4900F94F99000A0C422 /* GPBCodedOutputStream.h */,
 				7461B4910F94F99000A0C422 /* GPBCodedOutputStream.m */,
 				7461B4E70F94F99000A0C422 /* GPBWireFormat.h */,

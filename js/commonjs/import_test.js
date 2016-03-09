@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2016 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,20 +28,25 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#import <Foundation/Foundation.h>
+// Test suite is written using Jasmine -- see http://jasmine.github.io/
 
-@class GPBExtensionRegistry;
 
-NS_ASSUME_NONNULL_BEGIN
 
-/// Every generated proto file defines a local "Root" class that exposes a
-/// @c GPBExtensionRegistry for all the extensions defined by that file and
-/// the files it depends on.
-@interface GPBRootObject : NSObject
+var googleProtobuf = require('google-protobuf');
+var asserts = require('closure_asserts_commonjs');
+var global = Function('return this')();
 
-/// An extension registry for the given file and all the files it depends on.
-+ (GPBExtensionRegistry *)extensionRegistry;
+// Bring asserts into the global namespace.
+googleProtobuf.object.extend(global, asserts);
+googleProtobuf.exportSymbol('jspb.Message', googleProtobuf.Message, global);
 
-@end
+var test7_pb = require('./test7/test7_pb');
+googleProtobuf.exportSymbol('proto.jspb.test.framing.FramingMessage', test7_pb.FramingMessage, global);
 
-NS_ASSUME_NONNULL_END
+describe('Import test suite', function() {
+  it('testImportedMessage', function() {
+    var framing1 = new proto.jspb.test.framing.FramingMessage([]);
+    var framing2 = new proto.jspb.test.framing.FramingMessage([]);
+    assertObjectEquals(framing1.toObject(), framing2.toObject());
+  });
+});

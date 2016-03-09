@@ -572,5 +572,27 @@ namespace Google.Protobuf
             Assert.Throws<ArgumentOutOfRangeException>(() => CodedInputStream.CreateWithLimits(stream, 0, 1));
             Assert.Throws<ArgumentOutOfRangeException>(() => CodedInputStream.CreateWithLimits(stream, 1, 0));
         }
+
+        [Test]
+        public void Dispose_DisposesUnderlyingStream()
+        {
+            var memoryStream = new MemoryStream();
+            Assert.IsTrue(memoryStream.CanRead);
+            using (var cis = new CodedInputStream(memoryStream))
+            {
+            }
+            Assert.IsFalse(memoryStream.CanRead); // Disposed
+        }
+
+        [Test]
+        public void Dispose_WithLeaveOpen()
+        {
+            var memoryStream = new MemoryStream();
+            Assert.IsTrue(memoryStream.CanRead);
+            using (var cis = new CodedInputStream(memoryStream, true))
+            {
+            }
+            Assert.IsTrue(memoryStream.CanRead); // We left the stream open
+        }
     }
 }

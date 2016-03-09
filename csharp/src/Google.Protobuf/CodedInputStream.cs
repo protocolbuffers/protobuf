@@ -51,8 +51,14 @@ namespace Google.Protobuf
     /// and <see cref="MapField{TKey, TValue}"/> to serialize such fields.
     /// </para>
     /// </remarks>
-    public sealed class CodedInputStream
+    public sealed class CodedInputStream : IDisposable
     {
+        /// <summary>
+        /// Whether to leave the underlying stream open when disposing of this stream.
+        /// This is always true when there's no stream.
+        /// </summary>
+        private readonly bool leaveOpen;
+
         /// <summary>
         /// Buffer of data read from the stream or provided at construction time.
         /// </summary>
@@ -120,7 +126,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Creates a new CodedInputStream that reads from the given byte array slice.
+        /// Creates a new <see cref="CodedInputStream"/> that reads from the given byte array slice.
         /// </summary>
         public CodedInputStream(byte[] buffer, int offset, int length)
             : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), offset, offset + length)
@@ -136,13 +142,27 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Creates a new CodedInputStream reading data from the given stream.
+        /// Creates a new <see cref="CodedInputStream"/> reading data from the given stream, which will be disposed
+        /// when the returned object is disposed.
         /// </summary>
-        public CodedInputStream(Stream input) : this(input, new byte[BufferSize], 0, 0)
+        /// <param name="input">The stream to read from.</param>
+        public CodedInputStream(Stream input) : this(input, false)
         {
-            ProtoPreconditions.CheckNotNull(input, "input");
         }
 
+        /// <summary>
+        /// Creates a new <see cref="CodedInputStream"/> reading data from the given stream.
+        /// </summary>
+        /// <param name="input">The stream to read from.</param>
+        /// <param name="leaveOpen"><c>true</c> to leave <paramref name="input"/> open when the returned
+        /// <c cref="CodedInputStream"/> is disposed; <c>false</c> to dispose of the given stream when the
+        /// returned object is disposed.</param>
+        public CodedInputStream(Stream input, bool leaveOpen)
+            : this(ProtoPreconditions.CheckNotNull(input, "input"), new byte[BufferSize], 0, 0)
+        {
+            this.leaveOpen = leaveOpen;
+        }
+        
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given
         /// stream and buffer, using the default limits.
@@ -245,6 +265,22 @@ namespace Google.Protobuf
         /// The recursion limit for this stream.
         /// </value>
         public int RecursionLimit { get { return recursionLimit; } }
+
+        /// <summary>
+        /// Disposes of this instance, potentially closing any underlying stream.
+        /// </summary>
+        /// <remarks>
+        /// As there is no flushing to perform here, disposing of a <see cref="CodedInputStream"/> which
+        /// was constructed with the <c>leaveOpen</c> option parameter set to <c>true</c> (or one which
+        /// was constructed to read from a byte array) has no effect.
+        /// </remarks>
+        public void Dispose()
+        {
+            if (!leaveOpen)
+            {
+                input.Dispose();
+            }
+        }
 
         #region Validation
         /// <summary>

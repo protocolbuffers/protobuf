@@ -15,13 +15,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - GPBSourceContextRoot
 
+/// Exposes the extension registry for this file.
+///
+/// The base class provides:
+/// @code
+///   + (GPBExtensionRegistry *)extensionRegistry;
+/// @endcode
+/// which is a @c GPBExtensionRegistry that includes all the extensions defined by
+/// this file and all files that it depends on.
 @interface GPBSourceContextRoot : GPBRootObject
-
-// The base class provides:
-//   + (GPBExtensionRegistry *)extensionRegistry;
-// which is an GPBExtensionRegistry that includes all the extensions defined by
-// this file and all files that it depends on.
-
 @end
 
 #pragma mark - GPBSourceContext
@@ -30,12 +32,12 @@ typedef GPB_ENUM(GPBSourceContext_FieldNumber) {
   GPBSourceContext_FieldNumber_FileName = 1,
 };
 
-// `SourceContext` represents information about the source of a
-// protobuf element, like the file in which it is defined.
+/// `SourceContext` represents information about the source of a
+/// protobuf element, like the file in which it is defined.
 @interface GPBSourceContext : GPBMessage
 
-// The path-qualified name of the .proto file that contained the associated
-// protobuf element.  For example: `"google/protobuf/source.proto"`.
+/// The path-qualified name of the .proto file that contained the associated
+/// protobuf element.  For example: `"google/protobuf/source.proto"`.
 @property(nonatomic, readwrite, copy, null_resettable) NSString *fileName;
 
 @end

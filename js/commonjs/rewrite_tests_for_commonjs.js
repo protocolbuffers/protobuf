@@ -80,11 +80,12 @@ lineReader.on('line', function(line) {
       console.log("// Bring asserts into the global namespace.");
       console.log("googleProtobuf.object.extend(global, asserts);");
     }
-    module = camelCase(isLoadFromFile[1])
+    var module_path = isLoadFromFile[1].split('/');
+    module = camelCase(module_path[module_path.length - 1]);
     pkg = isLoadFromFile[2];
 
     if (module != "googleProtobuf") {  // We unconditionally require this in the header.
-      console.log("var " + module + " = require('" + isLoadFromFile[1] + "');");
+      console.log("var " + module + " = require('./" + isLoadFromFile[1] + "');");
     }
   } else if (!isSetTestOnly) {  // Remove goog.setTestOnly() lines.
     console.log(line);

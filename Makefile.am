@@ -413,6 +413,7 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBCodedInputStream_PackagePrivate.h                            \
   objectivec/GPBCodedOutputStream.h                                          \
   objectivec/GPBCodedOutputStream.m                                          \
+  objectivec/GPBCodedOutputStream_PackagePrivate.h                           \
   objectivec/GPBDescriptor.h                                                 \
   objectivec/GPBDescriptor.m                                                 \
   objectivec/GPBDescriptor_PackagePrivate.h                                  \
@@ -653,7 +654,6 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/repeated_field_test.rb                                          \
   ruby/tests/stress.rb                                                       \
   ruby/tests/generated_code.proto                                            \
-  ruby/tests/generated_code.rb                                               \
   ruby/tests/generated_code_test.rb                                          \
   ruby/travis-test.sh
 
