@@ -150,15 +150,16 @@ struct upb_enumdef {
 /* upb_oneofdef ***************************************************************/
 
 struct upb_oneofdef {
-  upb_def base;
+  upb_refcounted base;
 
+  const char *name;
   upb_strtable ntof;
   upb_inttable itof;
   const upb_msgdef *parent;
 };
 
 #define UPB_ONEOFDEF_INIT(name, ntof, itof, refs, ref2s) \
-  { UPB_DEF_INIT(name, UPB_DEF_ENUM, refs, ref2s), ntof, itof }
+  { UPB_REFCOUNT_INIT(refs, ref2s), name, ntof, itof }
 
 
 /* upb_symtab *****************************************************************/
