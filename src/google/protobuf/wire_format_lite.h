@@ -197,7 +197,7 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
 // type-safe, though, so prefer it if possible.
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(FIELD_NUMBER, TYPE)                  \
   static_cast<uint32>(                                                   \
-    ((FIELD_NUMBER) << ::google::protobuf::internal::WireFormatLite::kTagTypeBits) \
+    (static_cast<uint32>(FIELD_NUMBER) << ::google::protobuf::internal::WireFormatLite::kTagTypeBits) \
       | (TYPE))
 
   // These are the tags for the old MessageSet format, which was defined as:
