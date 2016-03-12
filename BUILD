@@ -22,6 +22,7 @@ load(
     "protobuf",
     "cc_proto_library",
     "py_proto_library",
+    "internal_gen_well_known_protos_java",
     "internal_protobuf_py_tests",
 )
 
@@ -457,16 +458,8 @@ cc_test(
 ################################################################################
 # Java support
 ################################################################################
-genrule(
-    name = "gen_well_known_protos_java",
+internal_gen_well_known_protos_java(
     srcs = WELL_KNOWN_PROTOS,
-    outs = [
-        "wellknown.srcjar",
-    ],
-    cmd = "$(location :protoc) --java_out=$(@D)/wellknown.jar" +
-          " -Isrc $(SRCS) " +
-          " && mv $(@D)/wellknown.jar $(@D)/wellknown.srcjar",
-    tools = [":protoc"],
 )
 
 java_library(
