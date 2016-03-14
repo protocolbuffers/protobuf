@@ -31,3 +31,23 @@ bind(
     name = "six",
     actual = "@six_archive//:six",
 )
+
+maven_jar(
+  name = "guava_maven",
+  artifact = "com.google.guava:guava:18.0",
+)
+
+bind(
+    name = "guava",
+    actual = "@guava_maven//jar",
+)
+
+maven_jar(
+  name = "gson_maven",
+  artifact = "com.google.code.gson:gson:2.3",
+)
+
+bind(
+    name = "gson",
+    actual = "@gson_maven//jar",
+)

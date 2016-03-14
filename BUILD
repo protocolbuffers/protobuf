@@ -513,6 +513,19 @@ java_library(
     visibility = ["//visibility:public"],
 )
 
+java_library(
+    name = "protobuf_java_util",
+    srcs = glob([
+        "java/util/src/main/java/com/google/protobuf/util/*.java",
+    ]),
+    deps = [
+      "protobuf_java",
+      "//external:gson",
+      "//external:guava",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 ################################################################################
 # Python support
 ################################################################################
