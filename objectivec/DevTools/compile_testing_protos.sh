@@ -67,29 +67,36 @@ fi
 # Ensure the output dir exists
 mkdir -p "${OUTPUT_DIR}/google/protobuf"
 
-CORE_PROTO_FILES=(                                         \
-  src/google/protobuf/unittest_arena.proto                 \
-  src/google/protobuf/unittest_custom_options.proto        \
-  src/google/protobuf/unittest_enormous_descriptor.proto   \
-  src/google/protobuf/unittest_embed_optimize_for.proto    \
-  src/google/protobuf/unittest_empty.proto                 \
-  src/google/protobuf/unittest_import.proto                \
-  src/google/protobuf/unittest_import_lite.proto           \
-  src/google/protobuf/unittest_lite.proto                  \
-  src/google/protobuf/unittest_mset.proto                  \
-  src/google/protobuf/unittest_mset_wire_format.proto      \
-  src/google/protobuf/unittest_no_arena.proto              \
-  src/google/protobuf/unittest_no_arena_import.proto       \
-  src/google/protobuf/unittest_no_generic_services.proto   \
-  src/google/protobuf/unittest_optimize_for.proto          \
-  src/google/protobuf/unittest.proto                       \
-  src/google/protobuf/unittest_import_public.proto         \
-  src/google/protobuf/unittest_import_public_lite.proto    \
-  src/google/protobuf/unittest_drop_unknown_fields.proto   \
-  src/google/protobuf/unittest_preserve_unknown_enum.proto \
-  src/google/protobuf/map_lite_unittest.proto              \
-  src/google/protobuf/map_proto2_unittest.proto            \
-  src/google/protobuf/map_unittest.proto                   \
+CORE_PROTO_FILES=(
+  src/google/protobuf/unittest_arena.proto
+  src/google/protobuf/unittest_custom_options.proto
+  src/google/protobuf/unittest_enormous_descriptor.proto
+  src/google/protobuf/unittest_embed_optimize_for.proto
+  src/google/protobuf/unittest_empty.proto
+  src/google/protobuf/unittest_import.proto
+  src/google/protobuf/unittest_import_lite.proto
+  src/google/protobuf/unittest_lite.proto
+  src/google/protobuf/unittest_mset.proto
+  src/google/protobuf/unittest_mset_wire_format.proto
+  src/google/protobuf/unittest_no_arena.proto
+  src/google/protobuf/unittest_no_arena_import.proto
+  src/google/protobuf/unittest_no_generic_services.proto
+  src/google/protobuf/unittest_optimize_for.proto
+  src/google/protobuf/unittest.proto
+  src/google/protobuf/unittest_import_public.proto
+  src/google/protobuf/unittest_import_public_lite.proto
+  src/google/protobuf/unittest_drop_unknown_fields.proto
+  src/google/protobuf/unittest_preserve_unknown_enum.proto
+  src/google/protobuf/map_lite_unittest.proto
+  src/google/protobuf/map_proto2_unittest.proto
+  src/google/protobuf/map_unittest.proto
+)
+
+# The unittest_custom_options.proto extends the messages in descriptor.proto
+# so we build it in to test extending in general. The library doesn't provide
+# a descriptor as it doesn't use the classes/enums.
+CORE_PROTO_FILES+=(
+  src/google/protobuf/descriptor.proto
 )
 
 compile_proto() {
@@ -104,12 +111,12 @@ for a_proto in "${CORE_PROTO_FILES[@]}" ; do
   compile_proto "${a_proto}"
 done
 
-OBJC_PROTO_FILES=(                               \
-  objectivec/Tests/unittest_cycle.proto          \
-  objectivec/Tests/unittest_runtime_proto2.proto \
-  objectivec/Tests/unittest_runtime_proto3.proto \
-  objectivec/Tests/unittest_objc.proto           \
-  objectivec/Tests/unittest_objc_startup.proto   \
+OBJC_PROTO_FILES=(
+  objectivec/Tests/unittest_cycle.proto
+  objectivec/Tests/unittest_runtime_proto2.proto
+  objectivec/Tests/unittest_runtime_proto3.proto
+  objectivec/Tests/unittest_objc.proto
+  objectivec/Tests/unittest_objc_startup.proto
 )
 
 for a_proto in "${OBJC_PROTO_FILES[@]}" ; do

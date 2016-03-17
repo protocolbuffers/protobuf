@@ -134,6 +134,32 @@ PrimitiveFieldGenerator::PrimitiveFieldGenerator(
 
 PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {}
 
+void PrimitiveFieldGenerator::GenerateFieldStorageDeclaration(
+    io::Printer* printer) const {
+  if (GetObjectiveCType(descriptor_) == OBJECTIVECTYPE_BOOLEAN) {
+    // Nothing, BOOLs are stored in the has bits.
+  } else {
+    SingleFieldGenerator::GenerateFieldStorageDeclaration(printer);
+  }
+}
+
+int PrimitiveFieldGenerator::ExtraRuntimeHasBitsNeeded(void) const {
+  if (GetObjectiveCType(descriptor_) == OBJECTIVECTYPE_BOOLEAN) {
+    // Reserve a bit for the storage of the boolean.
+    return 1;
+  }
+  return 0;
+}
+
+void PrimitiveFieldGenerator::SetExtraRuntimeHasBitsBase(int has_base) {
+  if (GetObjectiveCType(descriptor_) == OBJECTIVECTYPE_BOOLEAN) {
+    // Set into the offset the has bit to use for the actual value.
+    variables_["storage_offset_value"] = SimpleItoa(has_base);
+    variables_["storage_offset_comment"] =
+        "  // Stored in _has_storage_ to save space.";
+  }
+}
+
 PrimitiveObjFieldGenerator::PrimitiveObjFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
     : ObjCObjFieldGenerator(descriptor, options) {

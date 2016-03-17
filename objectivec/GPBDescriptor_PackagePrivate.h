@@ -36,13 +36,19 @@
 #import "GPBWireFormat.h"
 
 // Describes attributes of the field.
-typedef NS_OPTIONS(uint32_t, GPBFieldFlags) {
+typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
   // These map to standard protobuf concepts.
   GPBFieldRequired        = 1 << 0,
   GPBFieldRepeated        = 1 << 1,
   GPBFieldPacked          = 1 << 2,
   GPBFieldOptional        = 1 << 3,
   GPBFieldHasDefaultValue = 1 << 4,
+
+  // Indicates the field needs custom handling for the TextFormat name, if not
+  // set, the name can be derived from the ObjC name.
+  GPBFieldTextFormatNameCustom = 1 << 6,
+  // Indicates the field has an enum descriptor.
+  GPBFieldHasEnumDescriptor = 1 << 7,
 
   // These are not standard protobuf concepts, they are specific to the
   // Objective C runtime.
@@ -62,35 +68,16 @@ typedef NS_OPTIONS(uint32_t, GPBFieldFlags) {
   GPBFieldMapKeySFixed64 = 10 << 8,
   GPBFieldMapKeyBool     = 11 << 8,
   GPBFieldMapKeyString   = 12 << 8,
-
-  // Indicates the field needs custom handling for the TextFormat name, if not
-  // set, the name can be derived from the ObjC name.
-  GPBFieldTextFormatNameCustom = 1 << 16,
-  // Indicates the field has an enum descriptor.
-  GPBFieldHasEnumDescriptor = 1 << 17,
 };
+
+// NOTE: The structures defined here have their members ordered to minimize
+// their size. This directly impacts the size of apps since these exist per
+// field/extension.
 
 // Describes a single field in a protobuf as it is represented as an ivar.
 typedef struct GPBMessageFieldDescription {
   // Name of ivar.
   const char *name;
-  // The field number for the ivar.
-  uint32_t number;
-  // The index (in bits) into _has_storage_.
-  //   > 0: the bit to use for a value being set.
-  //   = 0: no storage used.
-  //   < 0: in a oneOf, use a full int32 to record the field active.
-  int32_t hasIndex;
-  // Field flags. Use accessor functions below.
-  GPBFieldFlags flags;
-  // Data type of the ivar.
-  GPBDataType dataType;
-  // Offset of the variable into it's structure struct.
-  size_t offset;
-  // FieldOptions protobuf, serialized as string.
-  const char *fieldOptions;
-
-  GPBGenericValue defaultValue;  // Default value for the ivar.
   union {
     const char *className;  // Name for message class.
     // For enums only: If EnumDescriptors are compiled in, it will be that,
@@ -98,31 +85,32 @@ typedef struct GPBMessageFieldDescription {
     GPBEnumDescriptorFunc enumDescFunc;
     GPBEnumValidationFunc enumVerifier;
   } dataTypeSpecific;
+  // The field number for the ivar.
+  uint32_t number;
+  // The index (in bits) into _has_storage_.
+  //   >= 0: the bit to use for a value being set.
+  //   = GPBNoHasBit(INT32_MAX): no storage used.
+  //   < 0: in a oneOf, use a full int32 to record the field active.
+  int32_t hasIndex;
+  // Offset of the variable into it's structure struct.
+  uint32_t offset;
+  // Field flags. Use accessor functions below.
+  GPBFieldFlags flags;
+  // Data type of the ivar.
+  GPBDataType dataType;
 } GPBMessageFieldDescription;
 
-// Describes a oneof.
-typedef struct GPBMessageOneofDescription {
-  // Name of this enum oneof.
-  const char *name;
-  // The index of this oneof in the has_storage.
-  int32_t index;
-} GPBMessageOneofDescription;
+// Fields in messages defined in a 'proto2' syntax file can provide a default
+// value. This struct provides the default along with the field info.
+typedef struct GPBMessageFieldDescriptionWithDefault {
+  // Default value for the ivar.
+  GPBGenericValue defaultValue;
 
-// Describes an enum type defined in a .proto file.
-typedef struct GPBMessageEnumDescription {
-  GPBEnumDescriptorFunc enumDescriptorFunc;
-} GPBMessageEnumDescription;
-
-// Describes an individual enum constant of a particular type.
-typedef struct GPBMessageEnumValueDescription {
-  // Name of this enum constant.
-  const char *name;
-  // Numeric value of this enum constant.
-  int32_t number;
-} GPBMessageEnumValueDescription;
+  GPBMessageFieldDescription core;
+} GPBMessageFieldDescriptionWithDefault;
 
 // Describes attributes of the extension.
-typedef NS_OPTIONS(uint32_t, GPBExtensionOptions) {
+typedef NS_OPTIONS(uint8_t, GPBExtensionOptions) {
   // These map to standard protobuf concepts.
   GPBExtensionRepeated      = 1 << 0,
   GPBExtensionPacked        = 1 << 1,
@@ -131,64 +119,52 @@ typedef NS_OPTIONS(uint32_t, GPBExtensionOptions) {
 
 // An extension
 typedef struct GPBExtensionDescription {
-  const char *singletonName;
-  GPBDataType dataType;
-  const char *extendedClass;
-  int32_t fieldNumber;
   GPBGenericValue defaultValue;
+  const char *singletonName;
+  const char *extendedClass;
   const char *messageOrGroupClassName;
-  GPBExtensionOptions options;
   GPBEnumDescriptorFunc enumDescriptorFunc;
+  int32_t fieldNumber;
+  GPBDataType dataType;
+  GPBExtensionOptions options;
 } GPBExtensionDescription;
+
+typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
+  GPBDescriptorInitializationFlag_FieldsWithDefault = 1 << 0,
+  GPBDescriptorInitializationFlag_WireFormat        = 1 << 1,
+};
 
 @interface GPBDescriptor () {
  @package
   NSArray *fields_;
   NSArray *oneofs_;
-  size_t storageSize_;
+  uint32_t storageSize_;
 }
 
-// fieldDescriptions, enumDescriptions, rangeDescriptions, and
-// extraTextFormatInfo have to be long lived, they are held as raw pointers.
+// fieldDescriptions have to be long lived, they are held as raw pointers.
 + (instancetype)
     allocDescriptorForClass:(Class)messageClass
                   rootClass:(Class)rootClass
                        file:(GPBFileDescriptor *)file
-                     fields:(GPBMessageFieldDescription *)fieldDescriptions
-                 fieldCount:(NSUInteger)fieldCount
-                     oneofs:(GPBMessageOneofDescription *)oneofDescriptions
-                 oneofCount:(NSUInteger)oneofCount
-                      enums:(GPBMessageEnumDescription *)enumDescriptions
-                  enumCount:(NSUInteger)enumCount
-                     ranges:(const GPBExtensionRange *)ranges
-                 rangeCount:(NSUInteger)rangeCount
-                storageSize:(size_t)storageSize
-                 wireFormat:(BOOL)wireFormat;
-+ (instancetype)
-    allocDescriptorForClass:(Class)messageClass
-                  rootClass:(Class)rootClass
-                       file:(GPBFileDescriptor *)file
-                     fields:(GPBMessageFieldDescription *)fieldDescriptions
-                 fieldCount:(NSUInteger)fieldCount
-                     oneofs:(GPBMessageOneofDescription *)oneofDescriptions
-                 oneofCount:(NSUInteger)oneofCount
-                      enums:(GPBMessageEnumDescription *)enumDescriptions
-                  enumCount:(NSUInteger)enumCount
-                     ranges:(const GPBExtensionRange *)ranges
-                 rangeCount:(NSUInteger)rangeCount
-                storageSize:(size_t)storageSize
-                 wireFormat:(BOOL)wireFormat
-        extraTextFormatInfo:(const char *)extraTextFormatInfo;
+                     fields:(void *)fieldDescriptions
+                 fieldCount:(uint32_t)fieldCount
+                storageSize:(uint32_t)storageSize
+                      flags:(GPBDescriptorInitializationFlags)flags;
 
 - (instancetype)initWithClass:(Class)messageClass
                          file:(GPBFileDescriptor *)file
                        fields:(NSArray *)fields
-                       oneofs:(NSArray *)oneofs
-                        enums:(NSArray *)enums
-              extensionRanges:(const GPBExtensionRange *)ranges
-         extensionRangesCount:(NSUInteger)rangeCount
-                  storageSize:(size_t)storage
+                  storageSize:(uint32_t)storage
                    wireFormat:(BOOL)wireFormat;
+
+// Called right after init to provide extra information to avoid init having
+// an explosion of args. These pointers are recorded, so they are expected
+// to live for the lifetime of the app.
+- (void)setupOneofs:(const char **)oneofNames
+              count:(uint32_t)count
+      firstHasIndex:(int32_t)firstHasIndex;
+- (void)setupExtraTextInfo:(const char *)extraTextFormatInfo;
+- (void)setupExtensionRanges:(const GPBExtensionRange *)ranges count:(int32_t)count;
 
 @end
 
@@ -199,14 +175,12 @@ typedef struct GPBExtensionDescription {
 
 @interface GPBOneofDescriptor () {
  @package
-  GPBMessageOneofDescription *oneofDescription_;
+  const char *name_;
   NSArray *fields_;
-
   SEL caseSel_;
 }
-- (instancetype)initWithOneofDescription:
-                    (GPBMessageOneofDescription *)oneofDescription
-                                  fields:(NSArray *)fields;
+// name must be long lived.
+- (instancetype)initWithName:(const char *)name fields:(NSArray *)fields;
 @end
 
 @interface GPBFieldDescriptor () {
@@ -222,30 +196,32 @@ typedef struct GPBExtensionDescription {
 
 // Single initializer
 // description has to be long lived, it is held as a raw pointer.
-- (instancetype)initWithFieldDescription:
-                    (GPBMessageFieldDescription *)description
-                               rootClass:(Class)rootClass
+- (instancetype)initWithFieldDescription:(void *)description
+                         includesDefault:(BOOL)includesDefault
                                   syntax:(GPBFileSyntax)syntax;
 @end
 
 @interface GPBEnumDescriptor ()
-// valueDescriptions and extraTextFormatInfo have to be long lived, they are
+// valueNames, values and extraTextFormatInfo have to be long lived, they are
 // held as raw pointers.
 + (instancetype)
     allocDescriptorForName:(NSString *)name
-                    values:(GPBMessageEnumValueDescription *)valueDescriptions
-                valueCount:(NSUInteger)valueCount
+                valueNames:(const char *)valueNames
+                    values:(const int32_t *)values
+                     count:(uint32_t)valueCount
               enumVerifier:(GPBEnumValidationFunc)enumVerifier;
 + (instancetype)
     allocDescriptorForName:(NSString *)name
-                    values:(GPBMessageEnumValueDescription *)valueDescriptions
-                valueCount:(NSUInteger)valueCount
+                valueNames:(const char *)valueNames
+                    values:(const int32_t *)values
+                     count:(uint32_t)valueCount
               enumVerifier:(GPBEnumValidationFunc)enumVerifier
        extraTextFormatInfo:(const char *)extraTextFormatInfo;
 
 - (instancetype)initWithName:(NSString *)name
-                      values:(GPBMessageEnumValueDescription *)valueDescriptions
-                  valueCount:(NSUInteger)valueCount
+                  valueNames:(const char *)valueNames
+                      values:(const int32_t *)values
+                       count:(uint32_t)valueCount
                 enumVerifier:(GPBEnumValidationFunc)enumVerifier;
 @end
 
@@ -314,5 +290,24 @@ GPB_INLINE BOOL GPBExtensionIsWireFormat(GPBExtensionDescription *description) {
   return (description->options & GPBExtensionSetWireFormat) != 0;
 }
 
+// Helper for compile time assets.
+#ifndef _GPBCompileAssert
+  #if __has_feature(c_static_assert) || __has_extension(c_static_assert)
+    #define _GPBCompileAssert(test, msg) _Static_assert((test), #msg)
+  #else
+    // Pre-Xcode 7 support.
+    #define _GPBCompileAssertSymbolInner(line, msg) _GPBCompileAssert ## line ## __ ## msg
+    #define _GPBCompileAssertSymbol(line, msg) _GPBCompileAssertSymbolInner(line, msg)
+    #define _GPBCompileAssert(test, msg) \
+        typedef char _GPBCompileAssertSymbol(__LINE__, msg) [ ((test) ? 1 : -1) ]
+  #endif  // __has_feature(c_static_assert) || __has_extension(c_static_assert)
+#endif // _GPBCompileAssert
+
+// Sanity check that there isn't padding between the field description
+// structures with and without a default.
+_GPBCompileAssert(sizeof(GPBMessageFieldDescriptionWithDefault) ==
+                  (sizeof(GPBGenericValue) +
+                   sizeof(GPBMessageFieldDescription)),
+                  DescriptionsWithDefault_different_size_than_expected);
 
 CF_EXTERN_C_END

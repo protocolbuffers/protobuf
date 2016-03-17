@@ -190,7 +190,7 @@ header "Ensuring the ObjC descriptors are current."
 readonly NewestInput=$(find \
    src/google/protobuf/*.proto \
    src/.libs src/*.la src/protoc \
-   objectivec/generate_descriptors_proto.sh \
+   objectivec/generate_well_known_types.sh \
       -type f -print0 \
       | xargs -0 stat -f "%m %N" \
       | sort -n | tail -n1 | cut -f2- -d" ")
@@ -203,7 +203,7 @@ readonly OldestOutput=$(find \
 # If the newest input is newer than the oldest output, regenerate.
 if [[ "${NewestInput}" -nt "${OldestOutput}" ]] ; then
   echo ">> Newest input is newer than oldest output, regenerating."
-  objectivec/generate_descriptors_proto.sh -j "${NUM_MAKE_JOBS}"
+  objectivec/generate_well_known_types.sh -j "${NUM_MAKE_JOBS}"
 else
   echo ">> Newest input is older than oldest output, no need to regenerating."
 fi
