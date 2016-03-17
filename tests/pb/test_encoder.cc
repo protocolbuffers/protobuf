@@ -1,10 +1,30 @@
 
 #include "tests/upb_test.h"
 #include "upb/bindings/stdc++/string.h"
-#include "upb/descriptor/descriptor.upb.h"
+#include "upb/descriptor/descriptor.upbdefs.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/encoder.h"
 #include "upb/pb/glue.h"
+
+static char *upb_readfile(const char *filename, size_t *len) {
+  long size;
+  char *buf;
+  FILE *f = fopen(filename, "rb");
+  if(!f) return NULL;
+  if(fseek(f, 0, SEEK_END) != 0) goto error;
+  size = ftell(f);
+  if(size < 0) goto error;
+  if(fseek(f, 0, SEEK_SET) != 0) goto error;
+  buf = (char*)malloc(size + 1);
+  if(size && fread(buf, size, 1, f) != 1) goto error;
+  fclose(f);
+  if (len) *len = size;
+  return buf;
+
+error:
+  fclose(f);
+  return NULL;
+}
 
 std::string read_string(const char *filename) {
   size_t len;
@@ -18,7 +38,7 @@ std::string read_string(const char *filename) {
 
 void test_pb_roundtrip() {
   upb::reffed_ptr<const upb::MessageDef> md(
-      upbdefs::google::protobuf::FileDescriptorSet::MessageDef());
+      upbdefs::google::protobuf::FileDescriptorSet::get());
   upb::reffed_ptr<const upb::Handlers> encoder_handlers(
       upb::pb::Encoder::NewHandlers(md.get()));
   upb::reffed_ptr<const upb::pb::DecoderMethod> method(

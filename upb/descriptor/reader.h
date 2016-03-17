@@ -39,14 +39,9 @@ class upb::descriptor::Reader {
   /* The reader's input; this is where descriptor.proto data should be sent. */
   Sink* input();
 
-  /* Returns an array of all defs that have been parsed, and transfers ownership
-   * of them to "owner".  The number of defs is stored in *n.  Ownership of the
-   * returned array is retained and is invalidated by any other call into
-   * Reader.
-   *
-   * These defs are not frozen or resolved; they are ready to be added to a
-   * symtab. */
-  upb::Def** GetDefs(void* owner, int* n);
+  /* Use to get the FileDefs that have been parsed. */
+  size_t file_count() const;
+  FileDef* file(size_t i) const;
 
   /* Builds and returns handlers for the reader, owned by "owner." */
   static Handlers* NewHandlers(const void* owner);
@@ -62,7 +57,8 @@ UPB_BEGIN_EXTERN_C
 /* C API. */
 upb_descreader *upb_descreader_create(upb_env *e, const upb_handlers *h);
 upb_sink *upb_descreader_input(upb_descreader *r);
-upb_def **upb_descreader_getdefs(upb_descreader *r, void *owner, int *n);
+size_t upb_descreader_filecount(const upb_descreader *r);
+upb_filedef *upb_descreader_file(const upb_descreader *r, size_t i);
 const upb_handlers *upb_descreader_newhandlers(const void *owner);
 
 UPB_END_EXTERN_C
@@ -75,8 +71,11 @@ inline Reader* Reader::Create(Environment* e, const Handlers *h) {
   return upb_descreader_create(e, h);
 }
 inline Sink* Reader::input() { return upb_descreader_input(this); }
-inline upb::Def** Reader::GetDefs(void* owner, int* n) {
-  return upb_descreader_getdefs(this, owner, n);
+inline size_t Reader::file_count() const {
+  return upb_descreader_filecount(this);
+}
+inline FileDef* Reader::file(size_t i) const {
+  return upb_descreader_file(this, i);
 }
 }  /* namespace descriptor */
 }  /* namespace upb */

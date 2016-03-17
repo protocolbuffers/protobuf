@@ -73,6 +73,24 @@ upb_deftype_t upb_def_type(const upb_def *d) { return d->type; }
 
 const char *upb_def_fullname(const upb_def *d) { return d->fullname; }
 
+const char *upb_def_name(const upb_def *d) {
+  /* Return one past the last '.'. */
+  const char *ret = d->fullname;
+  const char *p = ret;
+
+  if (ret == NULL) {
+    return NULL;
+  }
+
+  for (p = ret; *p; ++p) {
+    if (*p == '.') {
+      ret = p + 1;
+    }
+  }
+
+  return ret;
+}
+
 bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s) {
   assert(!upb_def_isfrozen(def));
   if (!upb_isident(fullname, strlen(fullname), true, s)) return false;
@@ -80,6 +98,8 @@ bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s) {
   def->fullname = upb_strdup(fullname);
   return true;
 }
+
+const upb_filedef *upb_def_file(const upb_def *d) { return d->file; }
 
 upb_def *upb_def_dup(const upb_def *def, const void *o) {
   switch (def->type) {
@@ -103,6 +123,7 @@ static bool upb_def_init(upb_def *def, upb_deftype_t type,
   def->type = type;
   def->fullname = NULL;
   def->came_from_user = false;
+  def->file = NULL;
   return true;
 }
 
@@ -318,16 +339,17 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   return true;
 }
 
-bool upb_def_freeze(upb_def *const* defs, int n, upb_status *s) {
-  int i;
-  int maxdepth;
+bool upb_def_freeze2(upb_refcounted *const* objs, size_t defs_n,
+                     size_t freeze_n, upb_status *s) {
+  size_t i;
+  size_t maxdepth;
   bool ret;
   upb_status_clear(s);
 
   /* First perform validation, in two passes so we can check that we have a
    * transitive closure without needing to search. */
-  for (i = 0; i < n; i++) {
-    upb_def *def = defs[i];
+  for (i = 0; i < defs_n; i++) {
+    upb_def *def = (upb_def*)objs[i];
     if (upb_def_isfrozen(def)) {
       /* Could relax this requirement if it's annoying. */
       upb_status_seterrmsg(s, "def is already frozen");
@@ -347,9 +369,10 @@ bool upb_def_freeze(upb_def *const* defs, int n, upb_status *s) {
 
   /* Second pass of validation.  Also assign selector bases and indexes, and
    * compact tables. */
-  for (i = 0; i < n; i++) {
-    upb_msgdef *m = upb_dyncast_msgdef_mutable(defs[i]);
-    upb_enumdef *e = upb_dyncast_enumdef_mutable(defs[i]);
+  for (i = 0; i < defs_n; i++) {
+    upb_def *def = (upb_def*)objs[i];
+    upb_msgdef *m = upb_dyncast_msgdef_mutable(def);
+    upb_enumdef *e = upb_dyncast_enumdef_mutable(def);
     if (m) {
       upb_inttable_compact(&m->itof);
       if (!assign_msg_indices(m, s)) {
@@ -364,17 +387,22 @@ bool upb_def_freeze(upb_def *const* defs, int n, upb_status *s) {
    * limit. */
   maxdepth = UPB_MAX_MESSAGE_DEPTH * 2;
 
-  /* Validation all passed; freeze the defs. */
-  ret = upb_refcounted_freeze((upb_refcounted * const *)defs, n, s, maxdepth);
+  /* Validation all passed; freeze the objects. */
+  ret = upb_refcounted_freeze(objs, freeze_n, s, maxdepth);
   assert(!(s && ret != upb_ok(s)));
   return ret;
 
 err:
-  for (i = 0; i < n; i++) {
-    defs[i]->came_from_user = false;
+  for (i = 0; i < defs_n; i++) {
+    upb_def *def = (upb_def*)objs[i];
+    def->came_from_user = false;
   }
   assert(!(s && upb_ok(s)));
   return false;
+}
+
+bool upb_def_freeze(upb_def *const* defs, size_t n, upb_status *s) {
+  return upb_def_freeze2((upb_refcounted *const*)defs, n, n, s);
 }
 
 
@@ -433,6 +461,10 @@ bool upb_enumdef_freeze(upb_enumdef *e, upb_status *status) {
 
 const char *upb_enumdef_fullname(const upb_enumdef *e) {
   return upb_def_fullname(upb_enumdef_upcast(e));
+}
+
+const char *upb_enumdef_name(const upb_enumdef *e) {
+  return upb_def_name(upb_enumdef_upcast(e));
 }
 
 bool upb_enumdef_setfullname(upb_enumdef *e, const char *fullname,
@@ -1264,7 +1296,7 @@ bool upb_fielddef_haspresence(const upb_fielddef *f) {
   /* Primitive field: return true unless there is a message that specifies
    * presence should not exist. */
   if (f->msg_is_symbolic || !f->msg.def) return true;
-  return f->msg.def->primitives_have_presence;
+  return f->msg.def->syntax == UPB_SYNTAX_PROTO2;
 }
 
 bool upb_fielddef_hassubdef(const upb_fielddef *f) {
@@ -1323,7 +1355,7 @@ upb_msgdef *upb_msgdef_new(const void *owner) {
   if (!upb_strtable_init(&m->ntof, UPB_CTYPE_PTR)) goto err2;
   if (!upb_strtable_init(&m->ntoo, UPB_CTYPE_PTR)) goto err1;
   m->map_entry = false;
-  m->primitives_have_presence = true;
+  m->syntax = UPB_SYNTAX_PROTO2;
   return m;
 
 err1:
@@ -1346,7 +1378,7 @@ upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner) {
                            upb_def_fullname(upb_msgdef_upcast(m)),
                            NULL);
   newm->map_entry = m->map_entry;
-  newm->primitives_have_presence = m->primitives_have_presence;
+  newm->syntax = m->syntax;
   UPB_ASSERT_VAR(ok, ok);
   for(upb_msg_field_begin(&i, m);
       !upb_msg_field_done(&i);
@@ -1378,6 +1410,10 @@ bool upb_msgdef_freeze(upb_msgdef *m, upb_status *status) {
 
 const char *upb_msgdef_fullname(const upb_msgdef *m) {
   return upb_def_fullname(upb_msgdef_upcast(m));
+}
+
+const char *upb_msgdef_name(const upb_msgdef *m) {
+  return upb_def_name(upb_msgdef_upcast(m));
 }
 
 bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname,
@@ -1493,7 +1529,8 @@ bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
 
 void upb_msgdef_setprimitiveshavepresence(upb_msgdef *m, bool have_presence) {
   assert(!upb_msgdef_isfrozen(m));
-  m->primitives_have_presence = have_presence;
+  assert(!m->base.file);
+  m->syntax = have_presence ? UPB_SYNTAX_PROTO2 : UPB_SYNTAX_PROTO3;
 }
 
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i) {
@@ -1756,4 +1793,180 @@ upb_fielddef *upb_oneof_iter_field(const upb_oneof_iter *iter) {
 
 void upb_oneof_iter_setdone(upb_oneof_iter *iter) {
   upb_inttable_iter_setdone(iter);
+}
+
+/* upb_filedef ****************************************************************/
+
+static void visitfiledef(const upb_refcounted *r, upb_refcounted_visit *visit,
+                         void *closure) {
+  const upb_filedef *f = (const upb_filedef*)r;
+  size_t i;
+
+  for(i = 0; i < upb_filedef_defcount(f); i++) {
+    visit(r, upb_def_upcast(upb_filedef_def(f, i)), closure);
+  }
+}
+
+static void freefiledef(upb_refcounted *r) {
+  upb_filedef *f = (upb_filedef*)r;
+  size_t i;
+
+  for(i = 0; i < upb_filedef_depcount(f); i++) {
+    upb_filedef_unref(upb_filedef_dep(f, i), f);
+  }
+
+  upb_inttable_uninit(&f->defs);
+  upb_inttable_uninit(&f->deps);
+  free((void*)f->name);
+  free((void*)f->package);
+  free(f);
+}
+
+upb_filedef *upb_filedef_new(const void *owner) {
+  static const struct upb_refcounted_vtbl vtbl = {visitfiledef, freefiledef};
+  upb_filedef *f = malloc(sizeof(*f));
+
+  if (!f) {
+    return NULL;
+  }
+
+  f->package = NULL;
+  f->name = NULL;
+  f->syntax = UPB_SYNTAX_PROTO2;
+
+  if (!upb_refcounted_init(upb_filedef_upcast_mutable(f), &vtbl, owner)) {
+    goto err;
+  }
+
+  if (!upb_inttable_init(&f->defs, UPB_CTYPE_CONSTPTR)) {
+    goto err;
+  }
+
+  if (!upb_inttable_init(&f->deps, UPB_CTYPE_CONSTPTR)) {
+    goto err2;
+  }
+
+  return f;
+
+
+err2:
+  upb_inttable_uninit(&f->defs);
+
+err:
+  free(f);
+  return NULL;
+}
+
+const char *upb_filedef_name(const upb_filedef *f) {
+  return f->name;
+}
+
+const char *upb_filedef_package(const upb_filedef *f) {
+  return f->package;
+}
+
+upb_syntax_t upb_filedef_syntax(const upb_filedef *f) {
+  return f->syntax;
+}
+
+size_t upb_filedef_defcount(const upb_filedef *f) {
+  return upb_inttable_count(&f->defs);
+}
+
+size_t upb_filedef_depcount(const upb_filedef *f) {
+  return upb_inttable_count(&f->deps);
+}
+
+const upb_def *upb_filedef_def(const upb_filedef *f, size_t i) {
+  upb_value v;
+
+  if (upb_inttable_lookup32(&f->defs, i, &v)) {
+    return upb_value_getconstptr(v);
+  } else {
+    return NULL;
+  }
+}
+
+const upb_filedef *upb_filedef_dep(const upb_filedef *f, size_t i) {
+  upb_value v;
+
+  if (upb_inttable_lookup32(&f->deps, i, &v)) {
+    return upb_value_getconstptr(v);
+  } else {
+    return NULL;
+  }
+}
+
+bool upb_filedef_setname(upb_filedef *f, const char *name, upb_status *s) {
+  UPB_UNUSED(s);
+  free((void*)f->name);
+  f->name = upb_strdup(name);
+  return true;
+}
+
+bool upb_filedef_setpackage(upb_filedef *f, const char *package,
+                            upb_status *s) {
+  if (!upb_isident(package, strlen(package), true, s)) return false;
+  free((void*)f->package);
+  f->package = upb_strdup(package);
+  return true;
+}
+
+bool upb_filedef_setsyntax(upb_filedef *f, upb_syntax_t syntax,
+                           upb_status *s) {
+  UPB_UNUSED(s);
+  if (syntax != UPB_SYNTAX_PROTO2 &&
+      syntax != UPB_SYNTAX_PROTO3) {
+    upb_status_seterrmsg(s, "Unknown syntax value.");
+    return false;
+  }
+  f->syntax = syntax;
+
+  {
+    /* Set all messages in this file to match. */
+    size_t i;
+    for (i = 0; i < upb_filedef_defcount(f); i++) {
+      /* Casting const away is safe since all defs in mutable filedef must
+       * also be mutable. */
+      upb_def *def = (upb_def*)upb_filedef_def(f, i);
+
+      upb_msgdef *m = upb_dyncast_msgdef_mutable(def);
+      if (m) {
+        m->syntax = syntax;
+      }
+    }
+  }
+
+  return true;
+}
+
+bool upb_filedef_adddef(upb_filedef *f, upb_def *def, const void *ref_donor,
+                        upb_status *s) {
+  if (def->file) {
+    upb_status_seterrmsg(s, "Def is already part of another filedef.");
+    return false;
+  }
+
+  if (upb_inttable_push(&f->defs, upb_value_constptr(def))) {
+    def->file = f;
+    upb_ref2(def, f);
+    if (ref_donor) upb_def_unref(def, ref_donor);
+    if (def->type == UPB_DEF_MSG) {
+      upb_downcast_msgdef_mutable(def)->syntax = f->syntax;
+    }
+    return true;
+  } else {
+    upb_status_seterrmsg(s, "Out of memory.");
+    return false;
+  }
+}
+
+bool upb_filedef_adddep(upb_filedef *f, const upb_filedef *dep) {
+  if (upb_inttable_push(&f->deps, upb_value_constptr(dep))) {
+    /* Regular ref instead of ref2 because files can't form cycles. */
+    upb_filedef_ref(dep, f);
+    return true;
+  } else {
+    return false;
+  }
 }

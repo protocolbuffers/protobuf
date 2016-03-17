@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <fstream>
 #include <iostream>
 #include <set>
 #include <sstream>
@@ -144,12 +145,22 @@ static void TestCastsConst10() {
 }
 
 static void TestSymbolTable(const char *descriptor_file) {
-  upb::reffed_ptr<upb::SymbolTable> s(upb::SymbolTable::New());
   upb::Status status;
-  if (!upb::LoadDescriptorFileIntoSymtab(s.get(), descriptor_file, &status)) {
+  std::ifstream file_in(descriptor_file, std::ios::binary);
+  std::string descriptor((std::istreambuf_iterator<char>(file_in)),
+                         (std::istreambuf_iterator<char>()));
+  std::vector<upb::reffed_ptr<upb::FileDef> > files;
+  if (!upb::LoadDescriptor(descriptor, &status, &files)) {
     std::cerr << "Couldn't load descriptor: " << status.error_message();
     exit(1);
   }
+
+  upb::reffed_ptr<upb::SymbolTable> s(upb::SymbolTable::New());
+
+  for (size_t i = 0; i < files.size(); i++) {
+    ASSERT(s->AddFile(files[i].get(), &status));
+  }
+
   ASSERT(!s->IsFrozen());
   s->Freeze();
   ASSERT(s->IsFrozen());

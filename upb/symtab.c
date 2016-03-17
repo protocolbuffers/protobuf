@@ -194,11 +194,15 @@ oom:
 
 /* TODO(haberman): we need a lot more testing of error conditions.
  * The came_from_user stuff in particular is not tested. */
-bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
-                    upb_status *status) {
-  int i;
+static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
+                       void *ref_donor, upb_refcounted *freeze_also,
+                       upb_status *status) {
+  size_t i;
+  size_t add_n;
+  size_t freeze_n;
   upb_strtable_iter iter;
-  upb_def **add_defs = NULL;
+  upb_refcounted **add_objs = NULL;
+  size_t add_objs_size;
   upb_strtable addtab;
   upb_inttable seen;
 
@@ -344,14 +348,25 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
   }
 
   /* We need an array of the defs in addtab, for passing to upb_def_freeze. */
-  add_defs = malloc(sizeof(void*) * upb_strtable_count(&addtab));
-  if (add_defs == NULL) goto oom_err;
-  upb_strtable_begin(&iter, &addtab);
-  for (n = 0; !upb_strtable_done(&iter); upb_strtable_next(&iter)) {
-    add_defs[n++] = upb_value_getptr(upb_strtable_iter_value(&iter));
+  add_objs_size = upb_strtable_count(&addtab);
+  if (freeze_also) {
+    add_objs_size++;
   }
 
-  if (!upb_def_freeze(add_defs, n, status)) goto err;
+  add_objs = malloc(sizeof(void*) * add_objs_size);
+  if (add_objs == NULL) goto oom_err;
+  upb_strtable_begin(&iter, &addtab);
+  for (add_n = 0; !upb_strtable_done(&iter); upb_strtable_next(&iter)) {
+    add_objs[add_n++] = upb_value_getptr(upb_strtable_iter_value(&iter));
+  }
+
+  freeze_n = add_n;
+  if (freeze_also) {
+    add_objs[freeze_n++] = freeze_also;
+  }
+
+  if (!upb_def_freeze2(add_objs, add_n, freeze_n, status))
+    goto err;
 
   /* This must be delayed until all errors have been detected, since error
    * recovery code uses this table to cleanup defs. */
@@ -359,8 +374,8 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
 
   /* TODO(haberman) we don't properly handle errors after this point (like
    * OOM in upb_strtable_insert() below). */
-  for (i = 0; i < n; i++) {
-    upb_def *def = add_defs[i];
+  for (i = 0; i < add_n; i++) {
+    upb_def *def = (upb_def*)add_objs[i];
     const char *name = upb_def_fullname(def);
     upb_value v;
     bool success;
@@ -372,7 +387,7 @@ bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
     success = upb_strtable_insert(&s->symtab, name, upb_value_ptr(def));
     UPB_ASSERT_VAR(success, success == true);
   }
-  free(add_defs);
+  free(add_objs);
   return true;
 
 oom_err:
@@ -393,9 +408,33 @@ err: {
     }
   }
   upb_strtable_uninit(&addtab);
-  free(add_defs);
+  free(add_objs);
   assert(!upb_ok(status));
   return false;
+}
+
+bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
+                    void *ref_donor, upb_status *status) {
+  return symtab_add(s, defs, n, ref_donor, NULL, status);
+}
+
+bool upb_symtab_addfile(upb_symtab *s, upb_filedef *file, upb_status *status) {
+  size_t n;
+  size_t i;
+  upb_def **defs;
+  bool ret;
+
+  n = upb_filedef_defcount(file);
+  defs = malloc(sizeof(*defs) * n);
+
+  for (i = 0; i < n; i++) {
+    defs[i] = upb_filedef_mutabledef(file, i);
+  }
+
+  ret = symtab_add(s, defs, n, NULL, upb_filedef_upcast_mutable(file), status);
+
+  free(defs);
+  return ret;
 }
 
 /* Iteration. */

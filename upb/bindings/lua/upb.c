@@ -36,6 +36,7 @@
 #define LUPB_MSGDEF "lupb.msgdef"
 #define LUPB_ENUMDEF "lupb.enumdef"
 #define LUPB_FIELDDEF "lupb.fielddef"
+#define LUPB_FILEDEF "lupb.filedef"
 #define LUPB_SYMTAB "lupb.symtab"
 
 /* Other table constants. */
@@ -485,6 +486,12 @@ static int lupb_def_fullname(lua_State *L) {
   return 1;
 }
 
+static int lupb_def_name(lua_State *L) {
+  const upb_def *def = lupb_def_check(L, 1);
+  lua_pushstring(L, upb_def_name(def));
+  return 1;
+}
+
 static int lupb_def_setfullname(lua_State *L) {
   const char *name = lupb_checkname(L, 2);
   CHK(upb_def_setfullname(lupb_def_checkmutable(L, 1), name, &status));
@@ -496,6 +503,7 @@ static int lupb_def_setfullname(lua_State *L) {
   {"full_name", lupb_def_fullname}, \
   {"freeze", lupb_def_freeze}, \
   {"is_frozen", lupb_def_isfrozen}, \
+  {"name", lupb_def_name}, \
   {"set_full_name", lupb_def_setfullname}, \
 
 
@@ -1056,6 +1064,128 @@ static const struct luaL_Reg lupb_enumdef_m[] = {
 };
 
 
+/* lupb_filedef ***************************************************************/
+
+void lupb_filedef_pushwrapper(lua_State *L, const upb_filedef *f,
+                              const void *ref_donor) {
+  lupb_refcounted_pushwrapper(L, upb_filedef_upcast(f), LUPB_FILEDEF, ref_donor,
+                              sizeof(void *));
+}
+
+void lupb_filedef_pushnewrapper(lua_State *L, const upb_filedef *f,
+                                const void *ref_donor) {
+  lupb_refcounted_pushnewrapper(L, upb_filedef_upcast(f), LUPB_FILEDEF,
+                                ref_donor);
+}
+
+const upb_filedef *lupb_filedef_check(lua_State *L, int narg) {
+  return lupb_refcounted_check(L, narg, LUPB_FILEDEF);
+}
+
+static upb_filedef *lupb_filedef_checkmutable(lua_State *L, int narg) {
+  const upb_filedef *f = lupb_filedef_check(L, narg);
+  if (upb_filedef_isfrozen(f))
+    luaL_error(L, "not allowed on frozen value");
+  return (upb_filedef*)f;
+}
+
+static int lupb_filedef_new(lua_State *L) {
+  upb_filedef *f = upb_filedef_new(&f);
+  lupb_filedef_pushnewrapper(L, f, &f);
+  return 1;
+}
+
+static int lupb_filedef_def(lua_State *L) {
+  const upb_filedef *f = lupb_filedef_check(L, 1);
+  int index = luaL_checkint(L, 2);
+  const upb_def *def = upb_filedef_def(f, index);
+
+  if (!def) {
+    return luaL_error(L, "index out of range");
+  }
+
+  lupb_def_pushwrapper(L, def, NULL);
+  return 1;
+}
+
+static int lupb_filedef_name(lua_State *L) {
+  const upb_filedef *f = lupb_filedef_check(L, 1);
+  lua_pushstring(L, upb_filedef_name(f));
+  return 1;
+}
+
+static int lupb_filedef_package(lua_State *L) {
+  const upb_filedef *f = lupb_filedef_check(L, 1);
+  lua_pushstring(L, upb_filedef_package(f));
+  return 1;
+}
+
+static int lupb_filedef_len(lua_State *L) {
+  const upb_filedef *f = lupb_filedef_check(L, 1);
+  lua_pushinteger(L, upb_filedef_defcount(f));
+  return 1;
+}
+
+static int lupb_filedef_setname(lua_State *L) {
+  upb_filedef *f = lupb_filedef_checkmutable(L, 1);
+  CHK(upb_filedef_setname(f, lupb_checkname(L, 2), &status));
+  return 0;
+}
+
+static int lupb_filedef_setpackage(lua_State *L) {
+  upb_filedef *f = lupb_filedef_checkmutable(L, 1);
+  CHK(upb_filedef_setpackage(f, lupb_checkname(L, 2), &status));
+  return 0;
+}
+
+static int lupb_filedefiter_next(lua_State *L) {
+  const upb_filedef *f = lupb_filedef_check(L, lua_upvalueindex(1));
+  int type = lua_tointeger(L, lua_upvalueindex(2));
+  size_t i = lua_tointeger(L, lua_upvalueindex(3));
+  size_t n = upb_filedef_defcount(f);
+
+  for (; i < n; i++) {
+    const upb_def *def;
+
+    def = upb_filedef_def(f, i);
+    assert(def);
+
+    if (type == UPB_DEF_ANY || upb_def_type(def) == type) {
+      lua_pushinteger(L, i + 1);
+      lua_replace(L, lua_upvalueindex(3));
+      lupb_def_pushwrapper(L, def, NULL);
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+static int lupb_filedef_defs(lua_State *L) {
+  lupb_filedef_check(L, 1);
+  luaL_checkinteger(L, 2);   /* Def type.  Could make this optional. */
+  lua_pushnumber(L, 0);      /* Index, starts at zero. */
+  lua_pushcclosure(L, &lupb_filedefiter_next, 3);
+  return 1;
+}
+
+static const struct luaL_Reg lupb_filedef_mm[] = {
+  {"__len", lupb_filedef_len},
+  {NULL, NULL}
+};
+
+static const struct luaL_Reg lupb_filedef_m[] = {
+  {"def", lupb_filedef_def},
+  {"defs", lupb_filedef_defs},
+  {"name", lupb_filedef_name},
+  {"package", lupb_filedef_package},
+
+  {"set_name", lupb_filedef_setname},
+  {"set_package", lupb_filedef_setpackage},
+
+  {NULL, NULL}
+};
+
 /* lupb_symtab ****************************************************************/
 
 /* Inherits a ref on the symtab.
@@ -1128,6 +1258,13 @@ static int lupb_symtab_add(lua_State *L) {
   return 0;
 }
 
+static int lupb_symtab_addfile(lua_State *L) {
+  upb_symtab *s = lupb_symtab_checkmutable(L, 1);
+  upb_filedef *f = lupb_filedef_checkmutable(L, 2);
+  CHK(upb_symtab_addfile(s, f, &status));
+  return 0;
+}
+
 static int lupb_symtab_lookup(lua_State *L) {
   const upb_symtab *s = lupb_symtab_check(L, 1);
   int i;
@@ -1158,24 +1295,13 @@ static int lupb_symtab_defs(lua_State *L) {
   return 1;
 }
 
-/* This is a *temporary* API that will be removed once pending refactorings are
- * complete (it does not belong here in core because it depends on both
- * the descriptor.proto schema and the protobuf binary format. */
-static int lupb_symtab_load_descriptor(lua_State *L) {
-  size_t len;
-  upb_symtab *s = lupb_symtab_checkmutable(L, 1);
-  const char *str = luaL_checklstring(L, 2, &len);
-  CHK(upb_load_descriptor_into_symtab(s, str, len, &status));
-  return 0;
-}
-
 static const struct luaL_Reg lupb_symtab_m[] = {
   {"add", lupb_symtab_add},
+  {"add_file", lupb_symtab_addfile},
   {"defs", lupb_symtab_defs},
   {"freeze", lupb_symtab_freeze},
   {"is_frozen", lupb_symtab_isfrozen},
   {"lookup", lupb_symtab_lookup},
-  {"load_descriptor", lupb_symtab_load_descriptor},
   {NULL, NULL}
 };
 
@@ -1287,7 +1413,7 @@ static const struct luaL_Reg lupb_array_mm[] = {
 /* lupb_msg **************************************************************/
 
 /* A lupb_msg is a userdata where:
- * 
+ *
  * - the userdata's memory contains hasbits and primitive fields.
  * - the userdata's environment table / uservalue contains references to string
  *   fields, submessage fields, and array fields. */
@@ -1734,14 +1860,35 @@ static int lupb_freeze(lua_State *L) {
   return 0;
 }
 
+/* This is a *temporary* API that will be removed once pending refactorings are
+ * complete (it does not belong here in core because it depends on both
+ * the descriptor.proto schema and the protobuf binary format. */
+static int lupb_loaddescriptor(lua_State *L) {
+  size_t len;
+  const char *str = luaL_checklstring(L, 1, &len);
+  size_t i;
+  upb_filedef **files = NULL;
+  CHK(files = upb_loaddescriptor(str, len, &files, &status));
+
+  lua_newtable(L);
+  for (i = 1; *files; i++, files++) {
+    lupb_filedef_pushnewrapper(L, *files, &files);
+    lua_rawseti(L, -2, i);
+  }
+
+  return 1;
+}
+
 static const struct luaL_Reg lupb_toplevel_m[] = {
   {"Array", lupb_array_new},
   {"EnumDef", lupb_enumdef_new},
   {"FieldDef", lupb_fielddef_new},
+  {"FileDef", lupb_filedef_new},
   {"Message", lupb_msg_new},
   {"MessageDef", lupb_msgdef_new},
   {"SymbolTable", lupb_symtab_new},
   {"freeze", lupb_freeze},
+  {"load_descriptor", lupb_loaddescriptor},
 
   {NULL, NULL}
 };
@@ -1791,6 +1938,7 @@ int luaopen_upb_c(lua_State *L) {
   /* Refcounted types. */
   lupb_register_type(L, LUPB_ENUMDEF,  lupb_enumdef_m,  lupb_enumdef_mm,  true);
   lupb_register_type(L, LUPB_FIELDDEF, lupb_fielddef_m, NULL,             true);
+  lupb_register_type(L, LUPB_FILEDEF,  lupb_filedef_m,  lupb_filedef_mm,  true);
   lupb_register_type(L, LUPB_SYMTAB,   lupb_symtab_m,   NULL,             true);
 
   /* Refcounted but with custom __gc. */

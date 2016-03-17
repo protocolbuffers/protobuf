@@ -157,7 +157,7 @@ upb_SRCS = \
   upb/upb.c \
 
 upb_descriptor_SRCS = \
-  upb/descriptor/descriptor.upb.c \
+  upb/descriptor/descriptor.upbdefs.c \
   upb/descriptor/reader.c \
 
 upb_pb_SRCS = \
@@ -254,7 +254,7 @@ upb/descriptor/descriptor.pb: upb/descriptor/descriptor.proto
 	protoc upb/descriptor/descriptor.proto -oupb/descriptor/descriptor.pb
 
 genfiles: upb/descriptor/descriptor.pb tools/upbc
-	./tools/upbc upb/descriptor/descriptor.pb upb/descriptor/descriptor google_protobuf_descriptor
+	./tools/upbc upb/descriptor/descriptor.pb
 	$(LUA) third_party/dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
 
 # upbc depends on these Lua extensions.

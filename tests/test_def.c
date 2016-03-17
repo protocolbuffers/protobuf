@@ -38,15 +38,45 @@ static void test_noreftracking() {
   upb_msgdef_unref(md, &md);
 }
 
+static char *upb_readfile(const char *filename, size_t *len) {
+  long size;
+  char *buf;
+  FILE *f = fopen(filename, "rb");
+  if(!f) return NULL;
+  if(fseek(f, 0, SEEK_END) != 0) goto error;
+  size = ftell(f);
+  if(size < 0) goto error;
+  if(fseek(f, 0, SEEK_SET) != 0) goto error;
+  buf = malloc(size + 1);
+  if(size && fread(buf, size, 1, f) != 1) goto error;
+  fclose(f);
+  if (len) *len = size;
+  return buf;
+
+error:
+  fclose(f);
+  return NULL;
+}
+
 static upb_symtab *load_test_proto(void *owner) {
   upb_symtab *s = upb_symtab_new(owner);
   upb_status status = UPB_STATUS_INIT;
+  size_t len;
+  char *data = upb_readfile(descriptor_file, &len);
+  upb_filedef **files;
   ASSERT(s);
-  if (!upb_load_descriptor_file_into_symtab(s, descriptor_file, &status)) {
-    fprintf(stderr, "Error loading descriptor file: %s\n",
-            upb_status_errmsg(&status));
-    ASSERT(false);
+  ASSERT(data);
+  files = upb_loaddescriptor(data, len, &files, &status);
+  ASSERT(files);
+  free(data);
+
+  while (*files) {
+    bool ok = upb_symtab_addfile(s, *files, &status);
+    ASSERT(ok);
+    upb_filedef_unref(*files, &files);
+    files++;
   }
+
   ASSERT(!upb_symtab_isfrozen(s));
   upb_symtab_freeze(s);
   ASSERT(upb_symtab_isfrozen(s));

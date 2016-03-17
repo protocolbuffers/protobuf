@@ -13,21 +13,12 @@
 #include <string.h>
 #include "upb/def.h"
 #include "upb/sink.h"
-#include "upb/descriptor/descriptor.upb.h"
+#include "upb/descriptor/descriptor.upbdefs.h"
 
 /* Compares a NULL-terminated string with a non-NULL-terminated string. */
 static bool upb_streq(const char *str, const char *buf, size_t n) {
   return strlen(str) == n && memcmp(str, buf, n) == 0;
 }
-
-/* upb_deflist is an internal-only dynamic array for storing a growing list of
- * upb_defs. */
-typedef struct {
-  upb_def **defs;
-  size_t len;
-  size_t size;
-  bool owned;
-} upb_deflist;
 
 /* We keep a stack of all the messages scopes we are currently in, as well as
  * the top-level file scope.  This is necessary to correctly qualify the
@@ -54,12 +45,10 @@ typedef struct {
 
 struct upb_descreader {
   upb_sink sink;
-  upb_deflist defs;
+  upb_inttable files;
+  upb_filedef *file;  /* The last file in files. */
   upb_descreader_frame stack[UPB_MAX_MESSAGE_NESTING];
   int stack_len;
-
-  bool primitives_have_presence;
-  int file_start;
 
   uint32_t number;
   char *name;
@@ -97,53 +86,11 @@ static char *upb_join(const char *base, const char *name) {
   }
 }
 
-
-/* upb_deflist ****************************************************************/
-
-void upb_deflist_init(upb_deflist *l) {
-  l->size = 0;
-  l->defs = NULL;
-  l->len = 0;
-  l->owned = true;
-}
-
-void upb_deflist_uninit(upb_deflist *l) {
-  size_t i;
-  if (l->owned)
-    for(i = 0; i < l->len; i++)
-      upb_def_unref(l->defs[i], l);
-  free(l->defs);
-}
-
-bool upb_deflist_push(upb_deflist *l, upb_def *d) {
-  if(++l->len >= l->size) {
-    size_t new_size = UPB_MAX(l->size, 4);
-    new_size *= 2;
-    l->defs = realloc(l->defs, new_size * sizeof(void *));
-    if (!l->defs) return false;
-    l->size = new_size;
-  }
-  l->defs[l->len - 1] = d;
-  return true;
-}
-
-void upb_deflist_donaterefs(upb_deflist *l, void *owner) {
-  size_t i;
-  assert(l->owned);
-  for (i = 0; i < l->len; i++)
-    upb_def_donateref(l->defs[i], l, owner);
-  l->owned = false;
-}
-
-static upb_def *upb_deflist_last(upb_deflist *l) {
-  return l->defs[l->len-1];
-}
-
 /* Qualify the defname for all defs starting with offset "start" with "str". */
-static void upb_deflist_qualify(upb_deflist *l, char *str, int32_t start) {
-  uint32_t i;
-  for (i = start; i < l->len; i++) {
-    upb_def *def = l->defs[i];
+static void upb_descreader_qualify(upb_filedef *f, char *str, int32_t start) {
+  size_t i;
+  for (i = start; i < upb_filedef_defcount(f); i++) {
+    upb_def *def = upb_filedef_mutabledef(f, i);
     char *name = upb_join(str, upb_def_fullname(def));
     upb_def_setfullname(def, name, NULL);
     free(name);
@@ -158,24 +105,24 @@ static upb_msgdef *upb_descreader_top(upb_descreader *r) {
   assert(r->stack_len > 1);
   index = r->stack[r->stack_len-1].start - 1;
   assert(index >= 0);
-  return upb_downcast_msgdef_mutable(r->defs.defs[index]);
+  return upb_downcast_msgdef_mutable(upb_filedef_mutabledef(r->file, index));
 }
 
 static upb_def *upb_descreader_last(upb_descreader *r) {
-  return upb_deflist_last(&r->defs);
+  return upb_filedef_mutabledef(r->file, upb_filedef_defcount(r->file) - 1);
 }
 
 /* Start/end handlers for FileDescriptorProto and DescriptorProto (the two
  * entities that have names and can contain sub-definitions. */
 void upb_descreader_startcontainer(upb_descreader *r) {
   upb_descreader_frame *f = &r->stack[r->stack_len++];
-  f->start = r->defs.len;
+  f->start = upb_filedef_defcount(r->file);
   f->name = NULL;
 }
 
 void upb_descreader_endcontainer(upb_descreader *r) {
   upb_descreader_frame *f = &r->stack[--r->stack_len];
-  upb_deflist_qualify(&r->defs, f->name, f->start);
+  upb_descreader_qualify(r->file, f->name, f->start);
   free(f->name);
   f->name = NULL;
 }
@@ -186,17 +133,26 @@ void upb_descreader_setscopename(upb_descreader *r, char *str) {
   f->name = str;
 }
 
-/* Handlers for google.protobuf.FileDescriptorProto. */
-static bool file_startmsg(void *closure, const void *hd) {
+/** Handlers for google.protobuf.FileDescriptorSet. ***************************/
+
+static void *fileset_startfile(void *closure, const void *hd) {
+  upb_descreader *r = closure;
+  UPB_UNUSED(hd);
+  r->file = upb_filedef_new(&r->files);
+  upb_inttable_push(&r->files, upb_value_ptr(r->file));
+  return r;
+}
+
+/** Handlers for google.protobuf.FileDescriptorProto. *************************/
+
+static bool file_start(void *closure, const void *hd) {
   upb_descreader *r = closure;
   UPB_UNUSED(hd);
   upb_descreader_startcontainer(r);
-  r->primitives_have_presence = true;
-  r->file_start = r->defs.len;
   return true;
 }
 
-static bool file_endmsg(void *closure, const void *hd, upb_status *status) {
+static bool file_end(void *closure, const void *hd, upb_status *status) {
   upb_descreader *r = closure;
   UPB_UNUSED(hd);
   UPB_UNUSED(status);
@@ -204,46 +160,86 @@ static bool file_endmsg(void *closure, const void *hd, upb_status *status) {
   return true;
 }
 
+static size_t file_onname(void *closure, const void *hd, const char *buf,
+                          size_t n, const upb_bufhandle *handle) {
+  upb_descreader *r = closure;
+  char *name;
+  bool ok;
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+
+  name = upb_strndup(buf, n);
+  /* XXX: see comment at the top of the file. */
+  ok = upb_filedef_setname(r->file, name, NULL);
+  UPB_ASSERT_VAR(ok, ok);
+  return n;
+}
+
 static size_t file_onpackage(void *closure, const void *hd, const char *buf,
                              size_t n, const upb_bufhandle *handle) {
   upb_descreader *r = closure;
+  char *package;
+  bool ok;
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
+
+  package = upb_strndup(buf, n);
   /* XXX: see comment at the top of the file. */
-  upb_descreader_setscopename(r, upb_strndup(buf, n));
+  upb_descreader_setscopename(r, package);
+  ok = upb_filedef_setpackage(r->file, package, NULL);
+  UPB_ASSERT_VAR(ok, ok);
   return n;
 }
 
 static size_t file_onsyntax(void *closure, const void *hd, const char *buf,
                             size_t n, const upb_bufhandle *handle) {
   upb_descreader *r = closure;
+  bool ok;
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
   /* XXX: see comment at the top of the file. */
   if (upb_streq("proto2", buf, n)) {
-    /* Technically we could verify that proto3 hadn't previously been seen. */
+    ok = upb_filedef_setsyntax(r->file, UPB_SYNTAX_PROTO2, NULL);
   } else if (upb_streq("proto3", buf, n)) {
-    uint32_t i;
-    /* Update messages created before the syntax was read. */
-    for (i = r->file_start; i < r->defs.len; i++) {
-      upb_msgdef *m = upb_dyncast_msgdef_mutable(r->defs.defs[i]);
-      if (m) {
-        upb_msgdef_setprimitiveshavepresence(m, false);
-      }
-    }
-
-    /* Set a flag for any future messages that will be created. */
-    r->primitives_have_presence = false;
+    ok = upb_filedef_setsyntax(r->file, UPB_SYNTAX_PROTO3, NULL);
   } else {
-    /* Error: neither proto3 nor proto3.
-     * TODO(haberman): there should be a status object we can report this to. */
-    return 0;
+    ok = false;
   }
 
+  UPB_ASSERT_VAR(ok, ok);
   return n;
 }
 
-/* Handlers for google.protobuf.EnumValueDescriptorProto. */
+static void *file_startmsg(void *closure, const void *hd) {
+  upb_descreader *r = closure;
+  upb_msgdef *m = upb_msgdef_new(&m);
+  bool ok = upb_filedef_addmsg(r->file, m, &m, NULL);
+  UPB_UNUSED(hd);
+  UPB_ASSERT_VAR(ok, ok);
+  return r;
+}
+
+static void *file_startenum(void *closure, const void *hd) {
+  upb_descreader *r = closure;
+  upb_enumdef *e = upb_enumdef_new(&e);
+  bool ok = upb_filedef_addenum(r->file, e, &e, NULL);
+  UPB_UNUSED(hd);
+  UPB_ASSERT_VAR(ok, ok);
+  return r;
+}
+
+static void *file_startext(void *closure, const void *hd) {
+  upb_descreader *r = closure;
+  bool ok;
+  r->f = upb_fielddef_new(r);
+  ok = upb_filedef_addext(r->file, r->f, r, NULL);
+  UPB_UNUSED(hd);
+  UPB_ASSERT_VAR(ok, ok);
+  return r;
+}
+
+/** Handlers for google.protobuf.EnumValueDescriptorProto. *********************/
+
 static bool enumval_startmsg(void *closure, const void *hd) {
   upb_descreader *r = closure;
   UPB_UNUSED(hd);
@@ -288,15 +284,7 @@ static bool enumval_endmsg(void *closure, const void *hd, upb_status *status) {
   return true;
 }
 
-
-/* Handlers for google.protobuf.EnumDescriptorProto. */
-static bool enum_startmsg(void *closure, const void *hd) {
-  upb_descreader *r = closure;
-  UPB_UNUSED(hd);
-  upb_deflist_push(&r->defs,
-                   upb_enumdef_upcast_mutable(upb_enumdef_new(&r->defs)));
-  return true;
-}
+/** Handlers for google.protobuf.EnumDescriptorProto. *************************/
 
 static bool enum_endmsg(void *closure, const void *hd, upb_status *status) {
   upb_descreader *r = closure;
@@ -327,11 +315,12 @@ static size_t enum_onname(void *closure, const void *hd, const char *buf,
   return n;
 }
 
-/* Handlers for google.protobuf.FieldDescriptorProto */
+/** Handlers for google.protobuf.FieldDescriptorProto *************************/
+
 static bool field_startmsg(void *closure, const void *hd) {
   upb_descreader *r = closure;
   UPB_UNUSED(hd);
-  r->f = upb_fielddef_new(&r->defs);
+  assert(r->f);
   free(r->default_string);
   r->default_string = NULL;
 
@@ -474,9 +463,10 @@ static bool field_onlabel(void *closure, const void *hd, int32_t val) {
 
 static bool field_onnumber(void *closure, const void *hd, int32_t val) {
   upb_descreader *r = closure;
-  bool ok = upb_fielddef_setnumber(r->f, val, NULL);
+  bool ok;
   UPB_UNUSED(hd);
 
+  ok = upb_fielddef_setnumber(r->f, val, NULL);
   UPB_ASSERT_VAR(ok, ok);
   return true;
 }
@@ -534,20 +524,17 @@ static size_t field_ondefaultval(void *closure, const void *hd, const char *buf,
   return n;
 }
 
-/* Handlers for google.protobuf.DescriptorProto (representing a message). */
-static bool msg_startmsg(void *closure, const void *hd) {
+/** Handlers for google.protobuf.DescriptorProto ******************************/
+
+static bool msg_start(void *closure, const void *hd) {
   upb_descreader *r = closure;
-  upb_msgdef *m;
   UPB_UNUSED(hd);
 
-  m = upb_msgdef_new(&r->defs);
-  upb_msgdef_setprimitiveshavepresence(m, r->primitives_have_presence);
-  upb_deflist_push(&r->defs, upb_msgdef_upcast_mutable(m));
   upb_descreader_startcontainer(r);
   return true;
 }
 
-static bool msg_endmsg(void *closure, const void *hd, upb_status *status) {
+static bool msg_end(void *closure, const void *hd, upb_status *status) {
   upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
   UPB_UNUSED(hd);
@@ -560,8 +547,8 @@ static bool msg_endmsg(void *closure, const void *hd, upb_status *status) {
   return true;
 }
 
-static size_t msg_onname(void *closure, const void *hd, const char *buf,
-                         size_t n, const upb_bufhandle *handle) {
+static size_t msg_name(void *closure, const void *hd, const char *buf,
+                       size_t n, const upb_bufhandle *handle) {
   upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
   /* XXX: see comment at the top of the file. */
@@ -574,89 +561,130 @@ static size_t msg_onname(void *closure, const void *hd, const char *buf,
   return n;
 }
 
-static bool msg_onendfield(void *closure, const void *hd) {
+static void *msg_startmsg(void *closure, const void *hd) {
+  upb_descreader *r = closure;
+  upb_msgdef *m = upb_msgdef_new(&m);
+  bool ok = upb_filedef_addmsg(r->file, m, &m, NULL);
+  UPB_UNUSED(hd);
+  UPB_ASSERT_VAR(ok, ok);
+  return r;
+}
+
+static void *msg_startext(void *closure, const void *hd) {
+  upb_descreader *r = closure;
+  upb_fielddef *f = upb_fielddef_new(&f);
+  bool ok = upb_filedef_addext(r->file, f, &f, NULL);
+  UPB_UNUSED(hd);
+  UPB_ASSERT_VAR(ok, ok);
+  return r;
+}
+
+static void *msg_startfield(void *closure, const void *hd) {
+  upb_descreader *r = closure;
+  r->f = upb_fielddef_new(&r->f);
+  /* We can't add the new field to the message until its name/number are
+   * filled in. */
+  UPB_UNUSED(hd);
+  return r;
+}
+
+static bool msg_endfield(void *closure, const void *hd) {
   upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
   UPB_UNUSED(hd);
 
-  upb_msgdef_addfield(m, r->f, &r->defs, NULL);
+  upb_msgdef_addfield(m, r->f, &r->f, NULL);
   r->f = NULL;
   return true;
 }
 
-static bool pushextension(void *closure, const void *hd) {
-  upb_descreader *r = closure;
-  UPB_UNUSED(hd);
 
-  assert(upb_fielddef_containingtypename(r->f));
-  upb_fielddef_setisextension(r->f, true);
-  upb_deflist_push(&r->defs, upb_fielddef_upcast_mutable(r->f));
-  r->f = NULL;
-  return true;
-}
+/** Code to register handlers *************************************************/
 
-#define D(name) upbdefs_google_protobuf_ ## name(s)
+#define F(msg, field) upbdefs_google_protobuf_ ## msg ## _f_ ## field(m)
 
 static void reghandlers(const void *closure, upb_handlers *h) {
-  const upb_symtab *s = closure;
   const upb_msgdef *m = upb_handlers_msgdef(h);
+  UPB_UNUSED(closure);
 
-  if (m == D(DescriptorProto)) {
-    upb_handlers_setstartmsg(h, &msg_startmsg, NULL);
-    upb_handlers_setendmsg(h, &msg_endmsg, NULL);
-    upb_handlers_setstring(h, D(DescriptorProto_name), &msg_onname, NULL);
-    upb_handlers_setendsubmsg(h, D(DescriptorProto_field), &msg_onendfield,
-                              NULL);
-    upb_handlers_setendsubmsg(h, D(DescriptorProto_extension), &pushextension,
-                              NULL);
-  } else if (m == D(FileDescriptorProto)) {
-    upb_handlers_setstartmsg(h, &file_startmsg, NULL);
-    upb_handlers_setendmsg(h, &file_endmsg, NULL);
-    upb_handlers_setstring(h, D(FileDescriptorProto_package), &file_onpackage,
+  if (upbdefs_google_protobuf_FileDescriptorSet_is(m)) {
+    upb_handlers_setstartsubmsg(h, F(FileDescriptorSet, file),
+                                &fileset_startfile, NULL);
+  } else if (upbdefs_google_protobuf_DescriptorProto_is(m)) {
+    upb_handlers_setstartmsg(h, &msg_start, NULL);
+    upb_handlers_setendmsg(h, &msg_end, NULL);
+    upb_handlers_setstring(h, F(DescriptorProto, name), &msg_name, NULL);
+    upb_handlers_setstartsubmsg(h, F(DescriptorProto, extension), &msg_startext,
+                                NULL);
+    upb_handlers_setstartsubmsg(h, F(DescriptorProto, nested_type),
+                                &msg_startmsg, NULL);
+    upb_handlers_setstartsubmsg(h, F(DescriptorProto, field),
+                                &msg_startfield, NULL);
+    upb_handlers_setendsubmsg(h, F(DescriptorProto, field),
+                              &msg_endfield, NULL);
+    upb_handlers_setstartsubmsg(h, F(DescriptorProto, enum_type),
+                                &file_startenum, NULL);
+  } else if (upbdefs_google_protobuf_FileDescriptorProto_is(m)) {
+    upb_handlers_setstartmsg(h, &file_start, NULL);
+    upb_handlers_setendmsg(h, &file_end, NULL);
+    upb_handlers_setstring(h, F(FileDescriptorProto, name), &file_onname,
                            NULL);
-    upb_handlers_setstring(h, D(FileDescriptorProto_syntax), &file_onsyntax,
+    upb_handlers_setstring(h, F(FileDescriptorProto, package), &file_onpackage,
                            NULL);
-    upb_handlers_setendsubmsg(h, D(FileDescriptorProto_extension), &pushextension,
-                              NULL);
-  } else if (m == D(EnumValueDescriptorProto)) {
+    upb_handlers_setstring(h, F(FileDescriptorProto, syntax), &file_onsyntax,
+                           NULL);
+    upb_handlers_setstartsubmsg(h, F(FileDescriptorProto, message_type),
+                                &file_startmsg, NULL);
+    upb_handlers_setstartsubmsg(h, F(FileDescriptorProto, enum_type),
+                                &file_startenum, NULL);
+    upb_handlers_setstartsubmsg(h, F(FileDescriptorProto, extension),
+                                &file_startext, NULL);
+  } else if (upbdefs_google_protobuf_EnumValueDescriptorProto_is(m)) {
     upb_handlers_setstartmsg(h, &enumval_startmsg, NULL);
     upb_handlers_setendmsg(h, &enumval_endmsg, NULL);
-    upb_handlers_setstring(h, D(EnumValueDescriptorProto_name), &enumval_onname, NULL);
-    upb_handlers_setint32(h, D(EnumValueDescriptorProto_number), &enumval_onnumber,
+    upb_handlers_setstring(h, F(EnumValueDescriptorProto, name), &enumval_onname, NULL);
+    upb_handlers_setint32(h, F(EnumValueDescriptorProto, number), &enumval_onnumber,
                           NULL);
-  } else if (m == D(EnumDescriptorProto)) {
-    upb_handlers_setstartmsg(h, &enum_startmsg, NULL);
+  } else if (upbdefs_google_protobuf_EnumDescriptorProto_is(m)) {
     upb_handlers_setendmsg(h, &enum_endmsg, NULL);
-    upb_handlers_setstring(h, D(EnumDescriptorProto_name), &enum_onname, NULL);
-  } else if (m == D(FieldDescriptorProto)) {
+    upb_handlers_setstring(h, F(EnumDescriptorProto, name), &enum_onname, NULL);
+  } else if (upbdefs_google_protobuf_FieldDescriptorProto_is(m)) {
     upb_handlers_setstartmsg(h, &field_startmsg, NULL);
     upb_handlers_setendmsg(h, &field_endmsg, NULL);
-    upb_handlers_setint32(h, D(FieldDescriptorProto_type), &field_ontype,
+    upb_handlers_setint32(h, F(FieldDescriptorProto, type), &field_ontype,
                           NULL);
-    upb_handlers_setint32(h, D(FieldDescriptorProto_label), &field_onlabel,
+    upb_handlers_setint32(h, F(FieldDescriptorProto, label), &field_onlabel,
                           NULL);
-    upb_handlers_setint32(h, D(FieldDescriptorProto_number), &field_onnumber,
+    upb_handlers_setint32(h, F(FieldDescriptorProto, number), &field_onnumber,
                           NULL);
-    upb_handlers_setstring(h, D(FieldDescriptorProto_name), &field_onname,
+    upb_handlers_setstring(h, F(FieldDescriptorProto, name), &field_onname,
                            NULL);
-    upb_handlers_setstring(h, D(FieldDescriptorProto_type_name),
+    upb_handlers_setstring(h, F(FieldDescriptorProto, type_name),
                            &field_ontypename, NULL);
-    upb_handlers_setstring(h, D(FieldDescriptorProto_extendee),
+    upb_handlers_setstring(h, F(FieldDescriptorProto, extendee),
                            &field_onextendee, NULL);
-    upb_handlers_setstring(h, D(FieldDescriptorProto_default_value),
+    upb_handlers_setstring(h, F(FieldDescriptorProto, default_value),
                            &field_ondefaultval, NULL);
-  } else if (m == D(FieldOptions)) {
-    upb_handlers_setbool(h, D(FieldOptions_lazy), &field_onlazy, NULL);
-    upb_handlers_setbool(h, D(FieldOptions_packed), &field_onpacked, NULL);
+  } else if (upbdefs_google_protobuf_FieldOptions_is(m)) {
+    upb_handlers_setbool(h, F(FieldOptions, lazy), &field_onlazy, NULL);
+    upb_handlers_setbool(h, F(FieldOptions, packed), &field_onpacked, NULL);
   }
+
+  assert(upb_ok(upb_handlers_status(h)));
 }
 
-#undef D
+#undef F
 
 void descreader_cleanup(void *_r) {
   upb_descreader *r = _r;
+  size_t i;
+
+  for (i = 0; i < upb_descreader_filecount(r); i++) {
+    upb_filedef_unref(upb_descreader_file(r, i), &r->files);
+  }
+
   free(r->name);
-  upb_deflist_uninit(&r->defs);
+  upb_inttable_uninit(&r->files);
   free(r->default_string);
   while (r->stack_len > 0) {
     upb_descreader_frame *f = &r->stack[--r->stack_len];
@@ -673,7 +701,7 @@ upb_descreader *upb_descreader_create(upb_env *e, const upb_handlers *h) {
     return NULL;
   }
 
-  upb_deflist_init(&r->defs);
+  upb_inttable_init(&r->files, UPB_CTYPE_PTR);
   upb_sink_reset(upb_descreader_input(r), h, r);
   r->stack_len = 0;
   r->name = NULL;
@@ -682,10 +710,17 @@ upb_descreader *upb_descreader_create(upb_env *e, const upb_handlers *h) {
   return r;
 }
 
-upb_def **upb_descreader_getdefs(upb_descreader *r, void *owner, int *n) {
-  *n = r->defs.len;
-  upb_deflist_donaterefs(&r->defs, owner);
-  return r->defs.defs;
+size_t upb_descreader_filecount(const upb_descreader *r) {
+  return upb_inttable_count(&r->files);
+}
+
+upb_filedef *upb_descreader_file(const upb_descreader *r, size_t i) {
+  upb_value v;
+  if (upb_inttable_lookup(&r->files, i, &v)) {
+    return upb_value_getptr(v);
+  } else {
+    return NULL;
+  }
 }
 
 upb_sink *upb_descreader_input(upb_descreader *r) {
@@ -693,9 +728,8 @@ upb_sink *upb_descreader_input(upb_descreader *r) {
 }
 
 const upb_handlers *upb_descreader_newhandlers(const void *owner) {
-  const upb_symtab *s = upbdefs_google_protobuf_descriptor(&s);
-  const upb_handlers *h = upb_handlers_newfrozen(
-      upbdefs_google_protobuf_FileDescriptorSet(s), owner, reghandlers, s);
-  upb_symtab_unref(s, &s);
+  const upb_msgdef *m = upbdefs_google_protobuf_FileDescriptorSet_get(&m);
+  const upb_handlers *h = upb_handlers_newfrozen(m, owner, reghandlers, NULL);
+  upb_msgdef_unref(m, &m);
   return h;
 }
