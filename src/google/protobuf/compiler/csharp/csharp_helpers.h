@@ -69,6 +69,8 @@ CSharpType GetCSharpType(FieldDescriptor::Type type);
 
 std::string StripDotProto(const std::string& proto_file);
 
+std::string EnumValueName(const EnumValueDescriptor* descriptor);
+
 // Gets unqualified name of the reflection class
 std::string GetReflectionClassUnqualifiedName(const FileDescriptor* descriptor);
 
