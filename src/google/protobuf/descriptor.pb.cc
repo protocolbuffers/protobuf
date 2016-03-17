@@ -319,7 +319,7 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, _internal_metadata_),
       -1);
   FileOptions_descriptor_ = file->message_type(9);
-  static const int FileOptions_offsets_[16] = {
+  static const int FileOptions_offsets_[17] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_package_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_outer_classname_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_multiple_files_),
@@ -335,6 +335,7 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, objc_class_prefix_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, csharp_namespace_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, javanano_use_deprecated_package_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, auto_strip_enum_prefixes_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, uninterpreted_option_),
   };
   FileOptions_reflection_ =
@@ -746,7 +747,7 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     "_type\030\003 \001(\t\022/\n\007options\030\004 \001(\0132\036.google.pr"
     "otobuf.MethodOptions\022\037\n\020client_streaming"
     "\030\005 \001(\010:\005false\022\037\n\020server_streaming\030\006 \001(\010:"
-    "\005false\"\256\005\n\013FileOptions\022\024\n\014java_package\030\001"
+    "\005false\"\320\005\n\013FileOptions\022\024\n\014java_package\030\001"
     " \001(\t\022\034\n\024java_outer_classname\030\010 \001(\t\022\"\n\023ja"
     "va_multiple_files\030\n \001(\010:\005false\022,\n\035java_g"
     "enerate_equals_and_hash\030\024 \001(\010:\005false\022%\n\026"
@@ -759,59 +760,60 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     "\ndeprecated\030\027 \001(\010:\005false\022\037\n\020cc_enable_ar"
     "enas\030\037 \001(\010:\005false\022\031\n\021objc_class_prefix\030$"
     " \001(\t\022\030\n\020csharp_namespace\030% \001(\t\022+\n\037javana"
-    "no_use_deprecated_package\030& \001(\010B\002\030\001\022C\n\024u"
-    "ninterpreted_option\030\347\007 \003(\0132$.google.prot"
-    "obuf.UninterpretedOption\":\n\014OptimizeMode"
-    "\022\t\n\005SPEED\020\001\022\r\n\tCODE_SIZE\020\002\022\020\n\014LITE_RUNTI"
-    "ME\020\003*\t\010\350\007\020\200\200\200\200\002\"\346\001\n\016MessageOptions\022&\n\027me"
-    "ssage_set_wire_format\030\001 \001(\010:\005false\022.\n\037no"
-    "_standard_descriptor_accessor\030\002 \001(\010:\005fal"
-    "se\022\031\n\ndeprecated\030\003 \001(\010:\005false\022\021\n\tmap_ent"
-    "ry\030\007 \001(\010\022C\n\024uninterpreted_option\030\347\007 \003(\0132"
-    "$.google.protobuf.UninterpretedOption*\t\010"
-    "\350\007\020\200\200\200\200\002\"\230\003\n\014FieldOptions\022:\n\005ctype\030\001 \001(\016"
-    "2#.google.protobuf.FieldOptions.CType:\006S"
-    "TRING\022\016\n\006packed\030\002 \001(\010\022\?\n\006jstype\030\006 \001(\0162$."
-    "google.protobuf.FieldOptions.JSType:\tJS_"
-    "NORMAL\022\023\n\004lazy\030\005 \001(\010:\005false\022\031\n\ndeprecate"
-    "d\030\003 \001(\010:\005false\022\023\n\004weak\030\n \001(\010:\005false\022C\n\024u"
-    "ninterpreted_option\030\347\007 \003(\0132$.google.prot"
-    "obuf.UninterpretedOption\"/\n\005CType\022\n\n\006STR"
-    "ING\020\000\022\010\n\004CORD\020\001\022\020\n\014STRING_PIECE\020\002\"5\n\006JST"
-    "ype\022\r\n\tJS_NORMAL\020\000\022\r\n\tJS_STRING\020\001\022\r\n\tJS_"
-    "NUMBER\020\002*\t\010\350\007\020\200\200\200\200\002\"\215\001\n\013EnumOptions\022\023\n\013a"
-    "llow_alias\030\002 \001(\010\022\031\n\ndeprecated\030\003 \001(\010:\005fa"
-    "lse\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.goo"
-    "gle.protobuf.UninterpretedOption*\t\010\350\007\020\200\200"
-    "\200\200\002\"}\n\020EnumValueOptions\022\031\n\ndeprecated\030\001 "
-    "\001(\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003("
-    "\0132$.google.protobuf.UninterpretedOption*"
-    "\t\010\350\007\020\200\200\200\200\002\"{\n\016ServiceOptions\022\031\n\ndeprecat"
-    "ed\030! \001(\010:\005false\022C\n\024uninterpreted_option\030"
-    "\347\007 \003(\0132$.google.protobuf.UninterpretedOp"
-    "tion*\t\010\350\007\020\200\200\200\200\002\"z\n\rMethodOptions\022\031\n\ndepr"
-    "ecated\030! \001(\010:\005false\022C\n\024uninterpreted_opt"
-    "ion\030\347\007 \003(\0132$.google.protobuf.Uninterpret"
-    "edOption*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023UninterpretedOpt"
-    "ion\022;\n\004name\030\002 \003(\0132-.google.protobuf.Unin"
-    "terpretedOption.NamePart\022\030\n\020identifier_v"
-    "alue\030\003 \001(\t\022\032\n\022positive_int_value\030\004 \001(\004\022\032"
-    "\n\022negative_int_value\030\005 \001(\003\022\024\n\014double_val"
-    "ue\030\006 \001(\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017aggreg"
-    "ate_value\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname_part"
-    "\030\001 \002(\t\022\024\n\014is_extension\030\002 \002(\010\"\325\001\n\016SourceC"
-    "odeInfo\022:\n\010location\030\001 \003(\0132(.google.proto"
-    "buf.SourceCodeInfo.Location\032\206\001\n\010Location"
-    "\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020"
-    "leading_comments\030\003 \001(\t\022\031\n\021trailing_comme"
-    "nts\030\004 \001(\t\022!\n\031leading_detached_comments\030\006"
-    " \003(\t\"\247\001\n\021GeneratedCodeInfo\022A\n\nannotation"
-    "\030\001 \003(\0132-.google.protobuf.GeneratedCodeIn"
-    "fo.Annotation\032O\n\nAnnotation\022\020\n\004path\030\001 \003("
-    "\005B\002\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001("
-    "\005\022\013\n\003end\030\004 \001(\005BX\n\023com.google.protobufB\020D"
-    "escriptorProtosH\001Z\ndescriptor\242\002\003GPB\252\002\032Go"
-    "ogle.Protobuf.Reflection", 5184);
+    "no_use_deprecated_package\030& \001(\010B\002\030\001\022 \n\030a"
+    "uto_strip_enum_prefixes\030\' \001(\010\022C\n\024uninter"
+    "preted_option\030\347\007 \003(\0132$.google.protobuf.U"
+    "ninterpretedOption\":\n\014OptimizeMode\022\t\n\005SP"
+    "EED\020\001\022\r\n\tCODE_SIZE\020\002\022\020\n\014LITE_RUNTIME\020\003*\t"
+    "\010\350\007\020\200\200\200\200\002\"\346\001\n\016MessageOptions\022&\n\027message_"
+    "set_wire_format\030\001 \001(\010:\005false\022.\n\037no_stand"
+    "ard_descriptor_accessor\030\002 \001(\010:\005false\022\031\n\n"
+    "deprecated\030\003 \001(\010:\005false\022\021\n\tmap_entry\030\007 \001"
+    "(\010\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.goog"
+    "le.protobuf.UninterpretedOption*\t\010\350\007\020\200\200\200"
+    "\200\002\"\230\003\n\014FieldOptions\022:\n\005ctype\030\001 \001(\0162#.goo"
+    "gle.protobuf.FieldOptions.CType:\006STRING\022"
+    "\016\n\006packed\030\002 \001(\010\022\?\n\006jstype\030\006 \001(\0162$.google"
+    ".protobuf.FieldOptions.JSType:\tJS_NORMAL"
+    "\022\023\n\004lazy\030\005 \001(\010:\005false\022\031\n\ndeprecated\030\003 \001("
+    "\010:\005false\022\023\n\004weak\030\n \001(\010:\005false\022C\n\024uninter"
+    "preted_option\030\347\007 \003(\0132$.google.protobuf.U"
+    "ninterpretedOption\"/\n\005CType\022\n\n\006STRING\020\000\022"
+    "\010\n\004CORD\020\001\022\020\n\014STRING_PIECE\020\002\"5\n\006JSType\022\r\n"
+    "\tJS_NORMAL\020\000\022\r\n\tJS_STRING\020\001\022\r\n\tJS_NUMBER"
+    "\020\002*\t\010\350\007\020\200\200\200\200\002\"\215\001\n\013EnumOptions\022\023\n\013allow_a"
+    "lias\030\002 \001(\010\022\031\n\ndeprecated\030\003 \001(\010:\005false\022C\n"
+    "\024uninterpreted_option\030\347\007 \003(\0132$.google.pr"
+    "otobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"}\n"
+    "\020EnumValueOptions\022\031\n\ndeprecated\030\001 \001(\010:\005f"
+    "alse\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.go"
+    "ogle.protobuf.UninterpretedOption*\t\010\350\007\020\200"
+    "\200\200\200\002\"{\n\016ServiceOptions\022\031\n\ndeprecated\030! \001"
+    "(\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003(\013"
+    "2$.google.protobuf.UninterpretedOption*\t"
+    "\010\350\007\020\200\200\200\200\002\"z\n\rMethodOptions\022\031\n\ndeprecated"
+    "\030! \001(\010:\005false\022C\n\024uninterpreted_option\030\347\007"
+    " \003(\0132$.google.protobuf.UninterpretedOpti"
+    "on*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023UninterpretedOption\022;\n"
+    "\004name\030\002 \003(\0132-.google.protobuf.Uninterpre"
+    "tedOption.NamePart\022\030\n\020identifier_value\030\003"
+    " \001(\t\022\032\n\022positive_int_value\030\004 \001(\004\022\032\n\022nega"
+    "tive_int_value\030\005 \001(\003\022\024\n\014double_value\030\006 \001"
+    "(\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017aggregate_va"
+    "lue\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname_part\030\001 \002(\t"
+    "\022\024\n\014is_extension\030\002 \002(\010\"\325\001\n\016SourceCodeInf"
+    "o\022:\n\010location\030\001 \003(\0132(.google.protobuf.So"
+    "urceCodeInfo.Location\032\206\001\n\010Location\022\020\n\004pa"
+    "th\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020leadin"
+    "g_comments\030\003 \001(\t\022\031\n\021trailing_comments\030\004 "
+    "\001(\t\022!\n\031leading_detached_comments\030\006 \003(\t\"\247"
+    "\001\n\021GeneratedCodeInfo\022A\n\nannotation\030\001 \003(\013"
+    "2-.google.protobuf.GeneratedCodeInfo.Ann"
+    "otation\032O\n\nAnnotation\022\020\n\004path\030\001 \003(\005B\002\020\001\022"
+    "\023\n\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003e"
+    "nd\030\004 \001(\005BX\n\023com.google.protobufB\020Descrip"
+    "torProtosH\001Z\ndescriptor\242\002\003GPB\252\002\032Google.P"
+    "rotobuf.Reflection", 5218);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/descriptor.proto", &protobuf_RegisterTypes);
   FileDescriptorSet::default_instance_ = new FileDescriptorSet();
@@ -7771,6 +7773,7 @@ const int FileOptions::kCcEnableArenasFieldNumber;
 const int FileOptions::kObjcClassPrefixFieldNumber;
 const int FileOptions::kCsharpNamespaceFieldNumber;
 const int FileOptions::kJavananoUseDeprecatedPackageFieldNumber;
+const int FileOptions::kAutoStripEnumPrefixesFieldNumber;
 const int FileOptions::kUninterpretedOptionFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
@@ -7809,6 +7812,7 @@ void FileOptions::SharedCtor() {
   objc_class_prefix_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   csharp_namespace_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   javanano_use_deprecated_package_ = false;
+  auto_strip_enum_prefixes_ = false;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -7875,8 +7879,8 @@ void FileOptions::Clear() {
       go_package_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
   }
-  if (_has_bits_[8 / 32] & 32512u) {
-    ZR_(java_generic_services_, javanano_use_deprecated_package_);
+  if (_has_bits_[8 / 32] & 65280u) {
+    ZR_(java_generic_services_, auto_strip_enum_prefixes_);
     if (has_objc_class_prefix()) {
       objc_class_prefix_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
@@ -8140,6 +8144,21 @@ bool FileOptions::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(312)) goto parse_auto_strip_enum_prefixes;
+        break;
+      }
+
+      // optional bool auto_strip_enum_prefixes = 39;
+      case 39: {
+        if (tag == 312) {
+         parse_auto_strip_enum_prefixes:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &auto_strip_enum_prefixes_)));
+          set_has_auto_strip_enum_prefixes();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectTag(7994)) goto parse_uninterpreted_option;
         break;
       }
@@ -8292,6 +8311,11 @@ void FileOptions::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(38, this->javanano_use_deprecated_package(), output);
   }
 
+  // optional bool auto_strip_enum_prefixes = 39;
+  if (has_auto_strip_enum_prefixes()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(39, this->auto_strip_enum_prefixes(), output);
+  }
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned int i = 0, n = this->uninterpreted_option_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
@@ -8418,6 +8442,11 @@ void FileOptions::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(38, this->javanano_use_deprecated_package(), target);
   }
 
+  // optional bool auto_strip_enum_prefixes = 39;
+  if (has_auto_strip_enum_prefixes()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(39, this->auto_strip_enum_prefixes(), target);
+  }
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned int i = 0, n = this->uninterpreted_option_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
@@ -8489,7 +8518,7 @@ int FileOptions::ByteSize() const {
     }
 
   }
-  if (_has_bits_[8 / 32] & 32512u) {
+  if (_has_bits_[8 / 32] & 65280u) {
     // optional bool java_generic_services = 17 [default = false];
     if (has_java_generic_services()) {
       total_size += 2 + 1;
@@ -8526,6 +8555,11 @@ int FileOptions::ByteSize() const {
 
     // optional bool javanano_use_deprecated_package = 38 [deprecated = true];
     if (has_javanano_use_deprecated_package()) {
+      total_size += 2 + 1;
+    }
+
+    // optional bool auto_strip_enum_prefixes = 39;
+    if (has_auto_strip_enum_prefixes()) {
       total_size += 2 + 1;
     }
 
@@ -8619,6 +8653,9 @@ void FileOptions::MergeFrom(const FileOptions& from) {
     if (from.has_javanano_use_deprecated_package()) {
       set_javanano_use_deprecated_package(from.javanano_use_deprecated_package());
     }
+    if (from.has_auto_strip_enum_prefixes()) {
+      set_auto_strip_enum_prefixes(from.auto_strip_enum_prefixes());
+    }
   }
   _extensions_.MergeFrom(from._extensions_);
   if (from._internal_metadata_.have_unknown_fields()) {
@@ -8665,6 +8702,7 @@ void FileOptions::InternalSwap(FileOptions* other) {
   objc_class_prefix_.Swap(&other->objc_class_prefix_);
   csharp_namespace_.Swap(&other->csharp_namespace_);
   std::swap(javanano_use_deprecated_package_, other->javanano_use_deprecated_package_);
+  std::swap(auto_strip_enum_prefixes_, other->auto_strip_enum_prefixes_);
   uninterpreted_option_.UnsafeArenaSwap(&other->uninterpreted_option_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -9187,6 +9225,30 @@ void FileOptions::clear_javanano_use_deprecated_package() {
   set_has_javanano_use_deprecated_package();
   javanano_use_deprecated_package_ = value;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.javanano_use_deprecated_package)
+}
+
+// optional bool auto_strip_enum_prefixes = 39;
+bool FileOptions::has_auto_strip_enum_prefixes() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+void FileOptions::set_has_auto_strip_enum_prefixes() {
+  _has_bits_[0] |= 0x00008000u;
+}
+void FileOptions::clear_has_auto_strip_enum_prefixes() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+void FileOptions::clear_auto_strip_enum_prefixes() {
+  auto_strip_enum_prefixes_ = false;
+  clear_has_auto_strip_enum_prefixes();
+}
+ bool FileOptions::auto_strip_enum_prefixes() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.auto_strip_enum_prefixes)
+  return auto_strip_enum_prefixes_;
+}
+ void FileOptions::set_auto_strip_enum_prefixes(bool value) {
+  set_has_auto_strip_enum_prefixes();
+  auto_strip_enum_prefixes_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.auto_strip_enum_prefixes)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;

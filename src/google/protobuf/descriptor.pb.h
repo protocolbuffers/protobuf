@@ -2024,6 +2024,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   bool javanano_use_deprecated_package() const PROTOBUF_DEPRECATED;
   void set_javanano_use_deprecated_package(bool value) PROTOBUF_DEPRECATED;
 
+  // optional bool auto_strip_enum_prefixes = 39;
+  bool has_auto_strip_enum_prefixes() const;
+  void clear_auto_strip_enum_prefixes();
+  static const int kAutoStripEnumPrefixesFieldNumber = 39;
+  bool auto_strip_enum_prefixes() const;
+  void set_auto_strip_enum_prefixes(bool value);
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
   void clear_uninterpreted_option();
@@ -2069,6 +2076,8 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline void clear_has_csharp_namespace();
   inline void set_has_javanano_use_deprecated_package();
   inline void clear_has_javanano_use_deprecated_package();
+  inline void set_has_auto_strip_enum_prefixes();
+  inline void clear_has_auto_strip_enum_prefixes();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -2088,6 +2097,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   bool deprecated_;
   bool cc_enable_arenas_;
   bool javanano_use_deprecated_package_;
+  bool auto_strip_enum_prefixes_;
   ::google::protobuf::internal::ArenaStringPtr objc_class_prefix_;
   ::google::protobuf::internal::ArenaStringPtr csharp_namespace_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
@@ -6216,6 +6226,30 @@ inline void FileOptions::set_javanano_use_deprecated_package(bool value) {
   set_has_javanano_use_deprecated_package();
   javanano_use_deprecated_package_ = value;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.javanano_use_deprecated_package)
+}
+
+// optional bool auto_strip_enum_prefixes = 39;
+inline bool FileOptions::has_auto_strip_enum_prefixes() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void FileOptions::set_has_auto_strip_enum_prefixes() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void FileOptions::clear_has_auto_strip_enum_prefixes() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+inline void FileOptions::clear_auto_strip_enum_prefixes() {
+  auto_strip_enum_prefixes_ = false;
+  clear_has_auto_strip_enum_prefixes();
+}
+inline bool FileOptions::auto_strip_enum_prefixes() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.auto_strip_enum_prefixes)
+  return auto_strip_enum_prefixes_;
+}
+inline void FileOptions::set_auto_strip_enum_prefixes(bool value) {
+  set_has_auto_strip_enum_prefixes();
+  auto_strip_enum_prefixes_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.auto_strip_enum_prefixes)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
