@@ -104,6 +104,8 @@ namespace Google.Protobuf.Reflection
             {
                 map[JsonFormatter.ToCamelCase(field.Name)] = field;
                 map[field.Name] = field;
+                if (!string.IsNullOrEmpty(field.JsonName))
+                    map[field.JsonName] = field;
             }
             return new ReadOnlyDictionary<string, FieldDescriptor>(map);
         }
