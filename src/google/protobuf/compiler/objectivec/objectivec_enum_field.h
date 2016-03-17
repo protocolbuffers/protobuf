@@ -45,7 +45,6 @@ class EnumFieldGenerator : public SingleFieldGenerator {
                                               const Options& options);
 
  public:
-  virtual void GenerateFieldDescriptionTypeSpecific(io::Printer* printer) const;
   virtual void GenerateCFunctionDeclarations(io::Printer* printer) const;
   virtual void GenerateCFunctionImplementations(io::Printer* printer) const;
   virtual void DetermineForwardDeclarations(set<string>* fwd_decls) const;
@@ -64,7 +63,6 @@ class RepeatedEnumFieldGenerator : public RepeatedFieldGenerator {
 
  public:
   virtual void FinishInitialization();
-  virtual void GenerateFieldDescriptionTypeSpecific(io::Printer* printer) const;
 
  protected:
   RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,

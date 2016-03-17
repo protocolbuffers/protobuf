@@ -48,6 +48,9 @@ struct Options {
   string expected_prefixes_path;
 };
 
+// Escape C++ trigraphs by escaping question marks to "\?".
+string EscapeTrigraphs(const string& to_escape);
+
 // Strips ".proto" or ".protodevel" from the end of a filename.
 string StripProto(const string& filename);
 
@@ -143,6 +146,7 @@ bool IsReferenceType(const FieldDescriptor* field);
 
 string GPBGenericValueFieldName(const FieldDescriptor* field);
 string DefaultValue(const FieldDescriptor* field);
+bool HasNonZeroDefaultValue(const FieldDescriptor* field);
 
 string BuildFlagsString(const vector<string>& strings);
 

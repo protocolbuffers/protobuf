@@ -54,18 +54,6 @@ NSString *const GPBExceptionMessageKey =
 
 static NSString *const kGPBDataCoderKey = @"GPBData";
 
-#ifndef _GPBCompileAssert
-  #if __has_feature(c_static_assert) || __has_extension(c_static_assert)
-    #define _GPBCompileAssert(test, msg) _Static_assert((test), #msg)
-  #else
-    // Pre-Xcode 7 support.
-    #define _GPBCompileAssertSymbolInner(line, msg) _GPBCompileAssert ## line ## __ ## msg
-    #define _GPBCompileAssertSymbol(line, msg) _GPBCompileAssertSymbolInner(line, msg)
-    #define _GPBCompileAssert(test, msg) \
-        typedef char _GPBCompileAssertSymbol(__LINE__, msg) [ ((test) ? 1 : -1) ]
-  #endif  // __has_feature(c_static_assert) || __has_extension(c_static_assert)
-#endif // _GPBCompileAssert
-
 //
 // PLEASE REMEMBER:
 //
@@ -789,14 +777,8 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
                                                    file:fileDescriptor
                                                  fields:NULL
                                              fieldCount:0
-                                                 oneofs:NULL
-                                             oneofCount:0
-                                                  enums:NULL
-                                              enumCount:0
-                                                 ranges:NULL
-                                             rangeCount:0
                                             storageSize:0
-                                             wireFormat:NO];
+                                                  flags:0];
   }
   return descriptor;
 }
@@ -3096,7 +3078,7 @@ static void ResolveIvarSet(GPBFieldDescriptor *field,
       } else {
         GPBOneofDescriptor *oneof = field->containingOneof_;
         if (oneof && (sel == oneof->caseSel_)) {
-          int32_t index = oneof->oneofDescription_->index;
+          int32_t index = GPBFieldHasIndex(field);
           result.impToAdd = imp_implementationWithBlock(^(id obj) {
             return GPBGetHasOneof(obj, index);
           });

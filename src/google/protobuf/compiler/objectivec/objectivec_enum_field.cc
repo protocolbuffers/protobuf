@@ -59,6 +59,9 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   (*variables)["enum_verifier"] = type + "_IsValidValue";
   (*variables)["enum_desc_func"] = type + "_EnumDescriptor";
 
+  (*variables)["dataTypeSpecific_name"] = "enumDescFunc";
+  (*variables)["dataTypeSpecific_value"] = (*variables)["enum_desc_func"];
+
   const Descriptor* msg_descriptor = descriptor->containing_type();
   (*variables)["owning_message_class"] = ClassName(msg_descriptor);
 }
@@ -71,13 +74,6 @@ EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor,
 }
 
 EnumFieldGenerator::~EnumFieldGenerator() {}
-
-void EnumFieldGenerator::GenerateFieldDescriptionTypeSpecific(
-    io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "  .dataTypeSpecific.enumDescFunc = $enum_desc_func$,\n");
-}
 
 void EnumFieldGenerator::GenerateCFunctionDeclarations(
     io::Printer* printer) const {
@@ -143,13 +139,6 @@ void RepeatedEnumFieldGenerator::FinishInitialization(void) {
   RepeatedFieldGenerator::FinishInitialization();
   variables_["array_comment"] =
       "// |" + variables_["name"] + "| contains |" + variables_["storage_type"] + "|\n";
-}
-
-void RepeatedEnumFieldGenerator::GenerateFieldDescriptionTypeSpecific(
-    io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "  .dataTypeSpecific.enumDescFunc = $enum_desc_func$,\n");
 }
 
 }  // namespace objectivec
