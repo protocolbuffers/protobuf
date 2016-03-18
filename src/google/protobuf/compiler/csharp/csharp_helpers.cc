@@ -111,6 +111,10 @@ std::string StripDotProto(const std::string& proto_file) {
 }
 
 std::string EnumValueName(const EnumValueDescriptor* enum_value) {
+  // If a scoped alias was specified, just use that
+  if (enum_value->options().has_scoped_alias())
+    return enum_value->options().scoped_alias();
+  // Otherwise, if auto strip prefixes was specified, do that
   bool strip_prefix = enum_value->type()->file()->options()
     .auto_strip_enum_prefixes();
   string value_name = enum_value->name();
