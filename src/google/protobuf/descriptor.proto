@@ -570,6 +570,10 @@ message EnumValueOptions {
   // this is a formalization for deprecating enum values.
   optional bool deprecated = 1 [default=false];
 
+  // Provide a hint to language generators with enum-scoped enum values to
+  // use an alias instead of the canonical name.
+  optional string scoped_alias = 2;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
