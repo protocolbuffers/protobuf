@@ -160,6 +160,16 @@ LIBPROTOBUF_EXPORT void StripString(string* s, const char* remove,
 
 LIBPROTOBUF_EXPORT void StripWhitespace(string* s);
 
+// ----------------------------------------------------------------------
+// StripPrefixInsensitive()
+//    If "subject" begins with "prefix" (ignoring case and underscores)
+//    strips the matching sequence of "subject" and returns the rest.
+// ----------------------------------------------------------------------
+
+LIBPROTOBUF_EXPORT std::string StripPrefixInsensitive(
+    std::string subject,
+    std::string prefix);
+
 
 // ----------------------------------------------------------------------
 // LowerString()
