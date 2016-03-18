@@ -347,7 +347,7 @@ namespace Google.Protobuf
     public sealed class FieldCodec<T>
     {
         private static readonly T DefaultDefault;
-        private static readonly bool TypeSupportsPacking = typeof(T).IsValueType() && Nullable.GetUnderlyingType(typeof(T)) == null;
+        private static readonly bool TypeSupportsPacking = typeof(T).IsValueType && Nullable.GetUnderlyingType(typeof(T)) == null;
 
         static FieldCodec()
         {
