@@ -412,6 +412,7 @@ id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
     return field.defaultValue.valueMessage;
   }
 
+  GPBPrepareReadOnlySemaphore(self);
   dispatch_semaphore_wait(self->readOnlySemaphore_, DISPATCH_TIME_FOREVER);
   GPBMessage *result = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
   if (!result) {

@@ -556,6 +556,7 @@ static id GetArrayIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
   id array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
   if (!array) {
     // Check again after getting the lock.
+    GPBPrepareReadOnlySemaphore(self);
     dispatch_semaphore_wait(self->readOnlySemaphore_, DISPATCH_TIME_FOREVER);
     array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
     if (!array) {
@@ -586,6 +587,7 @@ static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
   id dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
   if (!dict) {
     // Check again after getting the lock.
+    GPBPrepareReadOnlySemaphore(self);
     dispatch_semaphore_wait(self->readOnlySemaphore_, DISPATCH_TIME_FOREVER);
     dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
     if (!dict) {
@@ -791,8 +793,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   if ((self = [super init])) {
     messageStorage_ = (GPBMessage_StoragePtr)(
         ((uint8_t *)self) + class_getInstanceSize([self class]));
-
-    readOnlySemaphore_ = dispatch_semaphore_create(1);
   }
 
   return self;
@@ -868,7 +868,9 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 - (void)dealloc {
   [self internalClear:NO];
   NSCAssert(!autocreator_, @"Autocreator was not cleared before dealloc.");
-  dispatch_release(readOnlySemaphore_);
+  if (readOnlySemaphore_) {
+    dispatch_release(readOnlySemaphore_);
+  }
   [super dealloc];
 }
 
@@ -1706,6 +1708,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   }
 
   // Check for an autocreated value.
+  GPBPrepareReadOnlySemaphore(self);
   dispatch_semaphore_wait(readOnlySemaphore_, DISPATCH_TIME_FOREVER);
   value = [autocreatedExtensionMap_ objectForKey:extension];
   if (!value) {
