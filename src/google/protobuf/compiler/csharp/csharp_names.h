@@ -95,6 +95,13 @@ string GetOutputFile(
     const string base_namespace,
     string* error);
 
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
+//   The access level to use for given file descriptor.
+string GetAccessLevel(const FileDescriptor* descriptor);
+
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf

@@ -18,6 +18,7 @@ option java_outer_classname = "AddressBookProtos";
 
 // [START csharp_declaration]
 option csharp_namespace = "Google.Protobuf.Examples.AddressBook";
+option csharp_access_level = "internal";
 // [END csharp_declaration]
 
 // [START messages]

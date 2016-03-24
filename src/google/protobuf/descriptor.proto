@@ -381,6 +381,9 @@ message FileOptions {
   // suffixed package.
   optional bool javanano_use_deprecated_package = 38 [deprecated = true];
 
+  // Access level for generated class; defaults to "public"
+  optional string csharp_access_level = 39;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 

@@ -2024,6 +2024,18 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   bool javanano_use_deprecated_package() const PROTOBUF_DEPRECATED;
   void set_javanano_use_deprecated_package(bool value) PROTOBUF_DEPRECATED;
 
+  // optional string csharp_access_level = 39;
+  bool has_csharp_access_level() const;
+  void clear_csharp_access_level();
+  static const int kCsharpAccessLevelFieldNumber = 39;
+  const ::std::string& csharp_access_level() const;
+  void set_csharp_access_level(const ::std::string& value);
+  void set_csharp_access_level(const char* value);
+  void set_csharp_access_level(const char* value, size_t size);
+  ::std::string* mutable_csharp_access_level();
+  ::std::string* release_csharp_access_level();
+  void set_allocated_csharp_access_level(::std::string* csharp_access_level);
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
   void clear_uninterpreted_option();
@@ -2069,6 +2081,8 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   inline void clear_has_csharp_namespace();
   inline void set_has_javanano_use_deprecated_package();
   inline void clear_has_javanano_use_deprecated_package();
+  inline void set_has_csharp_access_level();
+  inline void clear_has_csharp_access_level();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -2090,6 +2104,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
   bool javanano_use_deprecated_package_;
   ::google::protobuf::internal::ArenaStringPtr objc_class_prefix_;
   ::google::protobuf::internal::ArenaStringPtr csharp_namespace_;
+  ::google::protobuf::internal::ArenaStringPtr csharp_access_level_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
@@ -6216,6 +6231,59 @@ inline void FileOptions::set_javanano_use_deprecated_package(bool value) {
   set_has_javanano_use_deprecated_package();
   javanano_use_deprecated_package_ = value;
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.javanano_use_deprecated_package)
+}
+
+// optional string csharp_access_level = 39;
+inline bool FileOptions::has_csharp_access_level() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void FileOptions::set_has_csharp_access_level() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void FileOptions::clear_has_csharp_access_level() {
+  _has_bits_[0] &= ~0x00008000u;
+}
+inline void FileOptions::clear_csharp_access_level() {
+  csharp_access_level_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_csharp_access_level();
+}
+inline const ::std::string& FileOptions::csharp_access_level() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.csharp_access_level)
+  return csharp_access_level_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void FileOptions::set_csharp_access_level(const ::std::string& value) {
+  set_has_csharp_access_level();
+  csharp_access_level_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_access_level)
+}
+inline void FileOptions::set_csharp_access_level(const char* value) {
+  set_has_csharp_access_level();
+  csharp_access_level_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.csharp_access_level)
+}
+inline void FileOptions::set_csharp_access_level(const char* value, size_t size) {
+  set_has_csharp_access_level();
+  csharp_access_level_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.csharp_access_level)
+}
+inline ::std::string* FileOptions::mutable_csharp_access_level() {
+  set_has_csharp_access_level();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.csharp_access_level)
+  return csharp_access_level_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* FileOptions::release_csharp_access_level() {
+  clear_has_csharp_access_level();
+  return csharp_access_level_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void FileOptions::set_allocated_csharp_access_level(::std::string* csharp_access_level) {
+  if (csharp_access_level != NULL) {
+    set_has_csharp_access_level();
+  } else {
+    clear_has_csharp_access_level();
+  }
+  csharp_access_level_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), csharp_access_level);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_access_level)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
