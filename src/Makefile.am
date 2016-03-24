@@ -455,6 +455,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_message.h             \
   google/protobuf/compiler/csharp/csharp_message_field.cc      \
   google/protobuf/compiler/csharp/csharp_message_field.h       \
+  google/protobuf/compiler/csharp/csharp_options.h             \
   google/protobuf/compiler/csharp/csharp_primitive_field.cc    \
   google/protobuf/compiler/csharp/csharp_primitive_field.h     \
   google/protobuf/compiler/csharp/csharp_reflection_class.cc     \

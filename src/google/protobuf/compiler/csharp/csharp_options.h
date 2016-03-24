@@ -28,45 +28,33 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <sstream>
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
+#include <string>
 
-#include <google/protobuf/compiler/csharp/csharp_source_generator_base.h>
-#include <google/protobuf/compiler/csharp/csharp_helpers.h>
-#include <google/protobuf/compiler/csharp/csharp_names.h>
-#include <google/protobuf/compiler/csharp/csharp_options.h>
-
+#include <google/protobuf/stubs/common.h>
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-SourceGeneratorBase::SourceGeneratorBase(const FileDescriptor* descriptor, const Options *options)
-    : descriptor_(descriptor), options_(options) {
-}
-
-SourceGeneratorBase::~SourceGeneratorBase() {
-}
-
-void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
-  // This hook can be used to reintroduce generated code attributes in the future.
-}
-
-std::string SourceGeneratorBase::class_access_level() {
-  return IsDescriptorProto(descriptor_) ? "internal" : "public";  // public_classes is always on.
-}
-
-const Options* SourceGeneratorBase::options() {
-  return this->options_;
-}
+// Generator options (used by csharp_generator.cc):
+struct Options {
+  Options() : file_extension(".cs"), base_namespace(""), generate_directories(false) {
+  }
+  // Extension of the generated file. Defaults to ".cs"
+  string file_extension;
+  // Base namespace to use to create directory hierarchy. Defaults to ""
+  string base_namespace;
+  // Whether or not to generate directory hierarchy. Defaults to false
+  bool generate_directories;
+};
 
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
+
+
 }  // namespace google
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__
