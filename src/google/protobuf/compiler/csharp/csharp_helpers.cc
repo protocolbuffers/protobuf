@@ -117,6 +117,13 @@ std::string GetFileNamespace(const FileDescriptor* descriptor) {
   return UnderscoresToCamelCase(descriptor->package(), true, true);
 }
 
+std::string GetAccessLevel(const FileDescriptor* descriptor) {
+  if (descriptor->options().has_csharp_access_level()) {
+    return descriptor->options().csharp_access_level();
+  }
+  return "public";
+}
+
 // Returns the Pascal-cased last part of the proto file. For example,
 // input of "google/protobuf/foo_bar.proto" would result in "FooBar".
 std::string GetFileNameBase(const FileDescriptor* descriptor) {

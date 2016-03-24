@@ -39,6 +39,7 @@
 
 #include <google/protobuf/compiler/csharp/csharp_source_generator_base.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_names.h>
 
 namespace google {
 namespace protobuf {
@@ -57,7 +58,8 @@ void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
 }
 
 std::string SourceGeneratorBase::class_access_level() {
-  return IsDescriptorProto(descriptor_) ? "internal" : "public";  // public_classes is always on.
+  //internal for descriptor.proto, from option csharp_access_level otherwise
+  return IsDescriptorProto(descriptor_) ? "internal" : GetAccessLevel(descriptor_);
 }
 
 }  // namespace csharp
