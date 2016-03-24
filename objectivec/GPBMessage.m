@@ -1920,7 +1920,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     }
   }
   @catch (NSException *exception) {
-    [message release];
     message = nil;
     if (errorPtr) {
       *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
@@ -1929,7 +1928,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   }
 #ifdef DEBUG
   if (message && !message.initialized) {
-    [message release];
     message = nil;
     if (errorPtr) {
       *errorPtr = MessageError(GPBMessageErrorCodeMissingRequiredField, nil);
