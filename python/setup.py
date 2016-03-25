@@ -157,13 +157,28 @@ class test_conformance(_build_py):
     status = subprocess.check_call(cmd, shell=True)
 
 
+def get_option_from_sys_argv(option_str):
+  if option_str in sys.argv:
+    sys.argv.remove(option_str)
+    return True
+  return False
+
+
 if __name__ == '__main__':
   ext_module_list = []
-  cpp_impl = '--cpp_implementation'
   warnings_as_errors = '--warnings_as_errors'
-  if cpp_impl in sys.argv:
-    sys.argv.remove(cpp_impl)
+  if get_option_from_sys_argv('--cpp_implementation'):
+    # Link libprotobuf.a and libprotobuf-lite.a statically with the
+    # extension. Note that those libraries have to be compiled with
+    # -fPIC for this to work.
+    compile_static_ext = get_option_from_sys_argv('--compile_static_extension')
     extra_compile_args = ['-Wno-write-strings', '-Wno-invalid-offsetof']
+    libraries = ['protobuf']
+    extra_objects = None
+    if compile_static_ext:
+      libraries = None
+      extra_objects = ['../src/.libs/libprotobuf.a',
+                       '../src/.libs/libprotobuf-lite.a']
     test_conformance.target = 'test_python_cpp'
 
     if "clang" in os.popen('$CC --version 2> /dev/null').read():
@@ -174,16 +189,22 @@ if __name__ == '__main__':
       sys.argv.remove(warnings_as_errors)
 
     # C++ implementation extension
-    ext_module_list.append(
+    ext_module_list.extend([
         Extension(
             "google.protobuf.pyext._message",
             glob.glob('google/protobuf/pyext/*.cc'),
             include_dirs=[".", "../src"],
-            libraries=['protobuf'],
+            libraries=libraries,
+            extra_objects=extra_objects,
             library_dirs=['../src/.libs'],
             extra_compile_args=extra_compile_args,
-        )
-    )
+        ),
+        Extension(
+            "google.protobuf.internal._api_implementation",
+            glob.glob('google/protobuf/internal/api_implementation.cc'),
+            extra_compile_args=['-DPYTHON_PROTO2_CPP_IMPL_V2'],
+        ),
+    ])
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
 
   # Keep this list of dependencies in sync with tox.ini.
