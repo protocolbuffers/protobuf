@@ -171,13 +171,7 @@ internal_objectivec_common () {
   #  http://docs.travis-ci.com/user/osx-ci-environment/
   # We don't use a before_install because we test multiple OSes.
   brew update
-  # xctool 0.2.8 seems to have a bug where it randomly kills tests saying
-  # they failed. Disabling the updates, but letting it report about being
-  # updates as a hint that this needs to eventually get re-enabled.
-  #   https://github.com/facebook/xctool/issues/619
-  #   https://github.com/google/protobuf/issues/1232
-  brew outdated xctool || true
-  #brew outdated xctool || brew upgrade xctool
+  brew outdated xctool || brew upgrade xctool
   # Reused the build script that takes care of configuring and ensuring things
   # are up to date. Xcode and conformance tests will be directly invoked.
   objectivec/DevTools/full_mac_build.sh \
