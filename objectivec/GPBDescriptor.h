@@ -34,19 +34,18 @@
 
 @class GPBEnumDescriptor;
 @class GPBFieldDescriptor;
-@class GPBFieldOptions;
 @class GPBFileDescriptor;
 @class GPBOneofDescriptor;
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSInteger, GPBFileSyntax) {
+typedef NS_ENUM(uint8_t, GPBFileSyntax) {
   GPBFileSyntaxUnknown = 0,
   GPBFileSyntaxProto2 = 2,
   GPBFileSyntaxProto3 = 3,
 };
 
-typedef NS_ENUM(NSInteger, GPBFieldType) {
+typedef NS_ENUM(uint8_t, GPBFieldType) {
   GPBFieldTypeSingle,    // optional/required
   GPBFieldTypeRepeated,  // repeated
   GPBFieldTypeMap,       // map<K,V>
@@ -57,9 +56,8 @@ typedef NS_ENUM(NSInteger, GPBFieldType) {
 @property(nonatomic, readonly, copy) NSString *name;
 @property(nonatomic, readonly, strong, nullable) NSArray<GPBFieldDescriptor*> *fields;
 @property(nonatomic, readonly, strong, nullable) NSArray<GPBOneofDescriptor*> *oneofs;
-@property(nonatomic, readonly, strong, nullable) NSArray<GPBEnumDescriptor*> *enums;
 @property(nonatomic, readonly, nullable) const GPBExtensionRange *extensionRanges;
-@property(nonatomic, readonly) NSUInteger extensionRangesCount;
+@property(nonatomic, readonly) uint32_t extensionRangesCount;
 @property(nonatomic, readonly, assign) GPBFileDescriptor *file;
 
 @property(nonatomic, readonly, getter=isWireFormat) BOOL wireFormat;
@@ -68,7 +66,6 @@ typedef NS_ENUM(NSInteger, GPBFieldType) {
 - (nullable GPBFieldDescriptor *)fieldWithNumber:(uint32_t)fieldNumber;
 - (nullable GPBFieldDescriptor *)fieldWithName:(NSString *)name;
 - (nullable GPBOneofDescriptor *)oneofWithName:(NSString *)name;
-- (nullable GPBEnumDescriptor *)enumWithName:(NSString *)name;
 
 @end
 
@@ -102,8 +99,6 @@ typedef NS_ENUM(NSInteger, GPBFieldType) {
 @property(nonatomic, readonly, getter=isPackable) BOOL packable;
 
 @property(nonatomic, readonly, assign, nullable) GPBOneofDescriptor *containingOneof;
-
-@property(nonatomic, readonly, nullable) GPBFieldOptions *fieldOptions;
 
 // Message properties
 @property(nonatomic, readonly, assign, nullable) Class msgClass;

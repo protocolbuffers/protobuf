@@ -185,7 +185,7 @@ GPB_INLINE void GPBSetHasIvarField(GPBMessage *self, GPBFieldDescriptor *field,
 }
 
 void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
-                        uint32_t fieldNumberNotToClear);
+                        int32_t oneofHasIndex, uint32_t fieldNumberNotToClear);
 
 //%PDDM-DEFINE GPB_IVAR_SET_DECL(NAME, TYPE)
 //%void GPBSet##NAME##IvarWithFieldInternal(GPBMessage *self,

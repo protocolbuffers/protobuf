@@ -67,7 +67,7 @@ typedef union {
 
 // Do not change the order of this enum (or add things to it) without thinking
 // about it very carefully. There are several things that depend on the order.
-typedef enum {
+typedef NS_ENUM(uint8_t, GPBDataType) {
   GPBDataTypeBool = 0,
   GPBDataTypeFixed32,
   GPBDataTypeSFixed32,
@@ -86,7 +86,7 @@ typedef enum {
   GPBDataTypeMessage,
   GPBDataTypeGroup,
   GPBDataTypeEnum,
-} GPBDataType;
+};
 
 enum {
   // A count of the number of types in GPBDataType. Separated out from the

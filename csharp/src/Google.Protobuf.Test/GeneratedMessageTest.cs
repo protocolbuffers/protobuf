@@ -710,5 +710,14 @@ namespace Google.Protobuf
             Assert.AreEqual("{ \"singleForeignMessage\": { \"c\": 16, \"@cInHex\": \"10\" } }", message.ToString());
             Assert.AreEqual("{ \"singleForeignMessage\": { \"c\": 16 } }", JsonFormatter.Default.Format(message));
         }
+
+        [Test]
+        public void CustomDiagnosticMessage_DirectToTextWriterCall()
+        {
+            var message = new ForeignMessage { C = 31 };
+            var writer = new StringWriter();
+            JsonFormatter.Default.Format(message, writer);
+            Assert.AreEqual("{ \"c\": 31 }", writer.ToString());
+        }
     }
 }

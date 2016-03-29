@@ -22,8 +22,40 @@ load(
     "protobuf",
     "cc_proto_library",
     "py_proto_library",
+    "internal_gen_well_known_protos_java",
     "internal_protobuf_py_tests",
 )
+
+config_setting(
+    name = "ios_armv7",
+    values = {
+        "ios_cpu": "armv7",
+    },
+)
+
+config_setting(
+    name = "ios_armv7s",
+    values = {
+        "ios_cpu": "armv7s",
+    },
+)
+
+config_setting(
+    name = "ios_arm64",
+    values = {
+        "ios_cpu": "arm64",
+    },
+)
+
+IOS_ARM_COPTS = COPTS + [
+    "-DOS_IOS",
+    "-miphoneos-version-min=7.0",
+    "-arch armv7",
+    "-arch armv7s",
+    "-arch arm64",
+    "-D__thread=",
+    "-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.2.sdk/",
+]
 
 cc_library(
     name = "protobuf_lite",
@@ -54,7 +86,12 @@ cc_library(
         "src/google/protobuf/wire_format_lite.cc",
     ],
     hdrs = glob(["src/google/protobuf/**/*.h"]),
-    copts = COPTS,
+    copts = select({
+        ":ios_armv7": IOS_ARM_COPTS,
+        ":ios_armv7s": IOS_ARM_COPTS,
+        ":ios_arm64": IOS_ARM_COPTS,
+        "//conditions:default": COPTS,
+    }),
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
@@ -119,7 +156,12 @@ cc_library(
         "src/google/protobuf/wrappers.pb.cc",
     ],
     hdrs = glob(["src/**/*.h"]),
-    copts = COPTS,
+    copts = select({
+        ":ios_armv7": IOS_ARM_COPTS,
+        ":ios_armv7s": IOS_ARM_COPTS,
+        ":ios_arm64": IOS_ARM_COPTS,
+        "//conditions:default": COPTS,
+    }),
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
@@ -151,6 +193,12 @@ RELATIVE_WELL_KNOWN_PROTOS = [
 ]
 
 WELL_KNOWN_PROTOS = ["src/" + s for s in RELATIVE_WELL_KNOWN_PROTOS]
+
+filegroup(
+    name = "well_known_protos",
+    srcs = WELL_KNOWN_PROTOS,
+    visibility = ["//visibility:public"],
+)
 
 cc_proto_library(
     name = "cc_wkt_protos",
@@ -457,16 +505,8 @@ cc_test(
 ################################################################################
 # Java support
 ################################################################################
-genrule(
-    name = "gen_well_known_protos_java",
+internal_gen_well_known_protos_java(
     srcs = WELL_KNOWN_PROTOS,
-    outs = [
-        "wellknown.srcjar",
-    ],
-    cmd = "$(location :protoc) --java_out=$(@D)/wellknown.jar" +
-          " -Isrc $(SRCS) " +
-          " && mv $(@D)/wellknown.jar $(@D)/wellknown.srcjar",
-    tools = [":protoc"],
 )
 
 java_library(
@@ -475,6 +515,19 @@ java_library(
         "java/core/src/main/java/com/google/protobuf/*.java",
     ]) + [
         ":gen_well_known_protos_java",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "protobuf_java_util",
+    srcs = glob([
+        "java/util/src/main/java/com/google/protobuf/util/*.java",
+    ]),
+    deps = [
+      "protobuf_java",
+      "//external:gson",
+      "//external:guava",
     ],
     visibility = ["//visibility:public"],
 )

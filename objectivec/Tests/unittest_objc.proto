@@ -112,6 +112,18 @@ enum retain {
   serializedSize = 6;
 }
 
+message ObjCPropertyNaming {
+  // Test that the properties properly get things all caps.
+  optional string url           = 1;
+  optional string thumbnail_url = 2;
+  optional string url_foo       = 3;
+  optional string some_url_blah = 4;
+  optional string http          = 5;
+  optional string https         = 6;
+  // This one doesn't.
+  repeated string urls          = 7;
+}
+
 // EnumValueShortName: The short names shouldn't get suffixes/prefixes.
 enum Foo {
   SERIALIZED_SIZE = 1;
