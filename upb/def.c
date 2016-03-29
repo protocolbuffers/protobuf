@@ -538,7 +538,7 @@ static void visitfield(const upb_refcounted *r, upb_refcounted_visit *visit,
     visit(r, upb_msgdef_upcast2(upb_fielddef_containingtype(f)), closure);
   }
   if (upb_fielddef_containingoneof(f)) {
-    visit(r, upb_oneofdef_upcast2(upb_fielddef_containingoneof(f)), closure);
+    visit(r, upb_oneofdef_upcast(upb_fielddef_containingoneof(f)), closure);
   }
   if (upb_fielddef_subdef(f)) {
     visit(r, upb_def_upcast(upb_fielddef_subdef(f)), closure);
@@ -1300,7 +1300,7 @@ static void visitmsg(const upb_refcounted *r, upb_refcounted_visit *visit,
       !upb_msg_oneof_done(&o);
       upb_msg_oneof_next(&o)) {
     upb_oneofdef *f = upb_msg_iter_oneof(&o);
-    visit(r, upb_oneofdef_upcast2(f), closure);
+    visit(r, upb_oneofdef_upcast(f), closure);
   }
 }
 
@@ -1588,7 +1588,7 @@ static void freeoneof(upb_refcounted *r) {
   upb_oneofdef *o = (upb_oneofdef*)r;
   upb_strtable_uninit(&o->ntof);
   upb_inttable_uninit(&o->itof);
-  upb_def_uninit(upb_oneofdef_upcast_mutable(o));
+  free((void*)o->name);
   free(o);
 }
 
@@ -1597,9 +1597,9 @@ upb_oneofdef *upb_oneofdef_new(const void *owner) {
   upb_oneofdef *o = malloc(sizeof(*o));
   o->parent = NULL;
   if (!o) return NULL;
-  if (!upb_def_init(upb_oneofdef_upcast_mutable(o), UPB_DEF_ONEOF, &vtbl,
-                    owner))
+  if (!upb_refcounted_init(upb_oneofdef_upcast_mutable(o), &vtbl, owner))
     goto err2;
+  o->name = NULL;
   if (!upb_inttable_init(&o->itof, UPB_CTYPE_PTR)) goto err2;
   if (!upb_strtable_init(&o->ntof, UPB_CTYPE_PTR)) goto err1;
   return o;
@@ -1616,8 +1616,7 @@ upb_oneofdef *upb_oneofdef_dup(const upb_oneofdef *o, const void *owner) {
   upb_oneof_iter i;
   upb_oneofdef *newo = upb_oneofdef_new(owner);
   if (!newo) return NULL;
-  ok = upb_def_setfullname(upb_oneofdef_upcast_mutable(newo),
-                           upb_def_fullname(upb_oneofdef_upcast(o)), NULL);
+  ok = upb_oneofdef_setname(newo, upb_oneofdef_name(o), NULL);
   UPB_ASSERT_VAR(ok, ok);
   for (upb_oneof_begin(&i, o); !upb_oneof_done(&i); upb_oneof_next(&i)) {
     upb_fielddef *f = upb_fielddef_dup(upb_oneof_iter_field(&i), &f);
@@ -1629,17 +1628,18 @@ upb_oneofdef *upb_oneofdef_dup(const upb_oneofdef *o, const void *owner) {
   return newo;
 }
 
-const char *upb_oneofdef_name(const upb_oneofdef *o) {
-  return upb_def_fullname(upb_oneofdef_upcast(o));
-}
+const char *upb_oneofdef_name(const upb_oneofdef *o) { return o->name; }
 
-bool upb_oneofdef_setname(upb_oneofdef *o, const char *fullname,
-                             upb_status *s) {
+bool upb_oneofdef_setname(upb_oneofdef *o, const char *name, upb_status *s) {
+  assert(!upb_oneofdef_isfrozen(o));
   if (upb_oneofdef_containingtype(o)) {
     upb_status_seterrmsg(s, "oneof already added to a message");
     return false;
   }
-  return upb_def_setfullname(upb_oneofdef_upcast_mutable(o), fullname, s);
+  if (!upb_isident(name, strlen(name), true, s)) return false;
+  free((void*)o->name);
+  o->name = upb_strdup(name);
+  return true;
 }
 
 const upb_msgdef *upb_oneofdef_containingtype(const upb_oneofdef *o) {

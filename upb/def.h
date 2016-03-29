@@ -37,6 +37,8 @@ class OneofDef;
 #endif
 
 UPB_DECLARE_DERIVED_TYPE(upb::Def, upb::RefCounted, upb_def, upb_refcounted)
+UPB_DECLARE_DERIVED_TYPE(upb::OneofDef, upb::RefCounted, upb_oneofdef,
+                         upb_refcounted)
 
 /* The maximum message depth that the type graph can have.  This is a resource
  * limit for the C stack since we sometimes need to recursively traverse the
@@ -48,15 +50,16 @@ UPB_DECLARE_DERIVED_TYPE(upb::Def, upb::RefCounted, upb_def, upb_refcounted)
 #define UPB_MAX_MESSAGE_DEPTH 64
 
 
-/* upb::Def: base class for defs  *********************************************/
+/* upb::Def: base class for top-level defs  ***********************************/
 
-/* All the different kind of defs we support.  These correspond 1:1 with
- * declarations in a .proto file. */
+/* All the different kind of defs that can be defined at the top-level and put
+ * in a SymbolTable or appear in a FileDef::defs() list.  This excludes some
+ * defs (like oneofs and files).  It only includes fields because they can be
+ * defined as extensions. */
 typedef enum {
   UPB_DEF_MSG,
   UPB_DEF_FIELD,
   UPB_DEF_ENUM,
-  UPB_DEF_ONEOF,
   UPB_DEF_SERVICE,   /* Not yet implemented. */
   UPB_DEF_ANY = -1   /* Wildcard for upb_symtab_get*() */
 } upb_deftype_t;
@@ -190,7 +193,6 @@ UPB_END_EXTERN_C
 UPB_DECLARE_DEF_TYPE(upb::FieldDef, fielddef, FIELD)
 UPB_DECLARE_DEF_TYPE(upb::MessageDef, msgdef, MSG)
 UPB_DECLARE_DEF_TYPE(upb::EnumDef, enumdef, ENUM)
-UPB_DECLARE_DEF_TYPE(upb::OneofDef, oneofdef, ONEOF)
 
 #undef UPB_DECLARE_DEF_TYPE
 #undef UPB_DEF_CASTS
@@ -1226,7 +1228,7 @@ upb_oneofdef *upb_oneofdef_new(const void *owner);
 upb_oneofdef *upb_oneofdef_dup(const upb_oneofdef *o, const void *owner);
 
 /* Include upb_refcounted methods like upb_oneofdef_ref(). */
-UPB_REFCOUNTED_CMETHODS(upb_oneofdef, upb_oneofdef_upcast2)
+UPB_REFCOUNTED_CMETHODS(upb_oneofdef, upb_oneofdef_upcast)
 
 const char *upb_oneofdef_name(const upb_oneofdef *o);
 bool upb_oneofdef_setname(upb_oneofdef *o, const char *name, upb_status *s);
