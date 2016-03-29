@@ -194,6 +194,12 @@ RELATIVE_WELL_KNOWN_PROTOS = [
 
 WELL_KNOWN_PROTOS = ["src/" + s for s in RELATIVE_WELL_KNOWN_PROTOS]
 
+filegroup(
+    name = "well_known_protos",
+    srcs = WELL_KNOWN_PROTOS,
+    visibility = ["//visibility:public"],
+)
+
 cc_proto_library(
     name = "cc_wkt_protos",
     srcs = WELL_KNOWN_PROTOS,
