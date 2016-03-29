@@ -66,6 +66,7 @@ namespace Google.Protobuf
             var settings = new JsonParser.Settings(10, TypeRegistry.FromFiles(UnittestIssuesReflection.Descriptor));
             var parser = new JsonParser(settings);
 
+            // It is safe to use either original field name or explicitly specified json_name
             Assert.AreEqual(new TestJsonName { Name = "test", Description = "test2", Guid = "test3" },
                 parser.Parse<TestJsonName>("{ \"name\": \"test\", \"desc\": \"test2\", \"guid\": \"test3\" }"));
         }

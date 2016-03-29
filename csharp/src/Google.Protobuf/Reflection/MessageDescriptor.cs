@@ -102,10 +102,8 @@ namespace Google.Protobuf.Reflection
             var map = new Dictionary<string, FieldDescriptor>();
             foreach (var field in fields)
             {
-                map[JsonFormatter.ToCamelCase(field.Name)] = field;
                 map[field.Name] = field;
-                if (!string.IsNullOrEmpty(field.JsonName))
-                    map[field.JsonName] = field;
+                map[field.JsonName] = field;
             }
             return new ReadOnlyDictionary<string, FieldDescriptor>(map);
         }
