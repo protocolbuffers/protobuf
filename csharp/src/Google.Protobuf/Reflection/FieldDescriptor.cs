@@ -90,6 +90,12 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public override string Name { get { return proto.Name; } }
 
+
+        /// <summary>
+        /// The json_name option of the descriptor's target.
+        /// </summary>
+        public string JsonName { get { return proto.JsonName == "" ? JsonFormatter.ToCamelCase(proto.Name) : proto.JsonName; } }
+
         internal FieldDescriptorProto Proto { get { return proto; } }
 
         /// <summary>

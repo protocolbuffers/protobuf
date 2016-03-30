@@ -237,11 +237,13 @@ namespace Google.Protobuf
                 {
                     writer.Write(PropertySeparator);
                 }
-                WriteString(writer, ToCamelCase(accessor.Descriptor.Name));
+
+                WriteString(writer, accessor.Descriptor.JsonName);
                 writer.Write(NameValueSeparator);
                 WriteValue(writer, value);
+
                 first = false;
-            }            
+            }
             return !first;
         }
 

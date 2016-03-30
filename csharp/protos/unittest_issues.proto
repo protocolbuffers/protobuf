@@ -117,3 +117,10 @@ message TestJsonFieldOrdering {
   }
   
 }
+
+message TestJsonName {
+  // Message for testing the effects for of the json_name option
+  string name = 1;
+  string description = 2 [json_name = "desc"];
+  string guid = 3 [json_name = "exid"];
+}
