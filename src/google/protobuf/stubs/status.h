@@ -62,6 +62,11 @@ enum Code {
 };
 }  // namespace error
 
+struct StatusPod {
+  error::Code error_code;
+  const char* error_message;
+};
+
 class LIBPROTOBUF_EXPORT Status {
  public:
   // Creates a "successful" status.
@@ -73,13 +78,14 @@ class LIBPROTOBUF_EXPORT Status {
   // constructed.
   Status(error::Code error_code, StringPiece error_message);
   Status(const Status&);
+  Status(const StatusPod&);
   Status& operator=(const Status& x);
   ~Status() {}
 
   // Some pre-defined Status objects
-  static const Status OK;             // Identical to 0-arg constructor
-  static const Status CANCELLED;
-  static const Status UNKNOWN;
+  static const StatusPod OK;  // Identical to 0-arg constructor
+  static const StatusPod CANCELLED;
+  static const StatusPod UNKNOWN;
 
   // Accessor
   bool ok() const {

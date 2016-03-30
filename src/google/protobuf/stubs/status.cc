@@ -82,9 +82,9 @@ inline string CodeEnumToString(error::Code code) {
 }
 }  // namespace error.
 
-const Status Status::OK = Status();
-const Status Status::CANCELLED = Status(error::CANCELLED, "");
-const Status Status::UNKNOWN = Status(error::UNKNOWN, "");
+const StatusPod Status::OK = { error::OK, "" };
+const StatusPod Status::CANCELLED = { error::CANCELLED, "" };
+const StatusPod Status::UNKNOWN = { error::UNKNOWN, "" };
 
 Status::Status() : error_code_(error::OK) {
 }
@@ -98,6 +98,11 @@ Status::Status(error::Code error_code, StringPiece error_message)
 
 Status::Status(const Status& other)
     : error_code_(other.error_code_), error_message_(other.error_message_) {
+}
+
+Status::Status(const StatusPod& status_pod)
+    : error_code_(status_pod.error_code),
+      error_message_(status_pod.error_message) {
 }
 
 Status& Status::operator=(const Status& other) {
