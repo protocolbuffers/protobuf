@@ -70,8 +70,6 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   // by the proto compiler
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? "@java.lang.Deprecated " : "";
-  (*variables)["on_changed"] =
-      HasDescriptorMethods(descriptor->containing_type()) ? "onChanged();" : "";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -867,7 +865,6 @@ GenerateMergingCode(io::Printer* printer) const {
     "    ensure$capitalized_name$IsMutable();\n"
     "    $name$_.addAll(other.$name$_);\n"
     "  }\n"
-    "  $on_changed$\n"
     "}\n");
 }
 

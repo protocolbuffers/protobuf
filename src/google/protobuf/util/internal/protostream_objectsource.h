@@ -82,6 +82,34 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
   virtual util::Status NamedWriteTo(StringPiece name, ObjectWriter* ow) const;
 
+  // Sets whether or not to use lowerCamelCase casing for enum values. If set to
+  // false, enum values are output without any case conversions.
+  //
+  // For example, if we have an enum:
+  // enum Type {
+  //   ACTION_AND_ADVENTURE = 1;
+  // }
+  // Type type = 20;
+  //
+  // And this option is set to true. Then the rendered "type" field will have
+  // the string "actionAndAdventure".
+  // {
+  //   ...
+  //   "type": "actionAndAdventure",
+  //   ...
+  // }
+  //
+  // If set to false, the rendered "type" field will have the string
+  // "ACTION_AND_ADVENTURE".
+  // {
+  //   ...
+  //   "type": "ACTION_AND_ADVENTURE",
+  //   ...
+  // }
+  void set_use_lower_camel_for_enums(bool value) {
+    use_lower_camel_for_enums_ = value;
+  }
+
  protected:
   // Writes a proto2 Message to the ObjectWriter. When the given end_tag is
   // found this method will complete, allowing it to be used for parsing both
@@ -236,6 +264,9 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // google::protobuf::Type of the message source.
   const google::protobuf::Type& type_;
 
+
+  // Whether to render enums using lowerCamelCase. Defaults to false.
+  bool use_lower_camel_for_enums_;
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoStreamObjectSource);
 };

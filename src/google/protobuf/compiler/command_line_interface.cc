@@ -49,7 +49,7 @@
 #include <iostream>
 #include <ctype.h>
 
-#ifdef GOOGLE_PROTOBUF_ARCH_SPARC 
+#ifdef GOOGLE_PROTOBUF_ARCH_SPARC
 #include <limits.h> //For PATH_MAX
 #endif
 

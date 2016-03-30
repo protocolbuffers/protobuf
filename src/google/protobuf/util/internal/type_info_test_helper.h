@@ -39,8 +39,8 @@
 
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/internal/default_value_objectwriter.h>
+#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/internal/protostream_objectsource.h>
 #include <google/protobuf/util/internal/protostream_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
@@ -77,9 +77,9 @@ class TypeInfoTestHelper {
   ProtoStreamObjectSource* NewProtoSource(io::CodedInputStream* coded_input,
                                           const string& type_url);
 
-  ProtoStreamObjectWriter* NewProtoWriter(const string& type_url,
-                                          strings::ByteSink* output,
-                                          ErrorListener* listener);
+  ProtoStreamObjectWriter* NewProtoWriter(
+      const string& type_url, strings::ByteSink* output,
+      ErrorListener* listener, const ProtoStreamObjectWriter::Options& options);
 
   DefaultValueObjectWriter* NewDefaultValueWriter(const string& type_url,
                                                   ObjectWriter* writer);

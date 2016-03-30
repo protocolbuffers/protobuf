@@ -648,6 +648,9 @@ struct LIBPROTOBUF_EXPORT AlphaNum {
   AlphaNum(StringPiece str)
       : piece_data_(str.data()), piece_size_(str.size()) {}
 
+  AlphaNum(internal::StringPiecePod str)
+      : piece_data_(str.data()), piece_size_(str.size()) {}
+
   size_t size() const { return piece_size_; }
   const char *data() const { return piece_data_; }
 
@@ -846,6 +849,11 @@ LIBPROTOBUF_EXPORT void Base64Escape(const unsigned char* src, int szsrc,
                                      string* dest, bool do_padding);
 LIBPROTOBUF_EXPORT void WebSafeBase64Escape(const unsigned char* src, int szsrc,
                                             string* dest, bool do_padding);
+
+inline bool IsValidCodePoint(uint32 code_point) {
+  return code_point < 0xD800 ||
+         (code_point >= 0xE000 && code_point <= 0x10FFFF);
+}
 
 static const int UTFmax = 4;
 // ----------------------------------------------------------------------

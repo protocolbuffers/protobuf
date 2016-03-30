@@ -53,14 +53,14 @@ import six
 import sys
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+
 from google.protobuf.internal import _parameterized
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
-from google.protobuf.internal import any_test_pb2
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import test_util
@@ -68,6 +68,7 @@ from google.protobuf import message
 
 if six.PY3:
   long = int
+
 
 # Python pre-2.6 does not have isinf() or isnan() functions, so we have
 # to provide our own.
@@ -1157,6 +1158,7 @@ class Proto2Test(unittest.TestCase):
       unittest_pb2.TestAllTypes(repeated_nested_enum='FOO')
 
 
+
 # Class to test proto3-only features/behavior (updated field presence & enums)
 class Proto3Test(unittest.TestCase):
 
@@ -1448,6 +1450,22 @@ class Proto3Test(unittest.TestCase):
     del msg2.map_int32_foreign_message[222]
     self.assertFalse(222 in msg2.map_int32_foreign_message)
 
+  def testMergeFromBadType(self):
+    msg = map_unittest_pb2.TestMap()
+    with self.assertRaisesRegexp(
+        TypeError,
+        r'Parameter to MergeFrom\(\) must be instance of same class: expected '
+        r'.*TestMap got int\.'):
+      msg.MergeFrom(1)
+
+  def testCopyFromBadType(self):
+    msg = map_unittest_pb2.TestMap()
+    with self.assertRaisesRegexp(
+        TypeError,
+        r'Parameter to [A-Za-z]*From\(\) must be instance of same class: '
+        r'expected .*TestMap got int\.'):
+      msg.CopyFrom(1)
+
   def testIntegerMapWithLongs(self):
     msg = map_unittest_pb2.TestMap()
     msg.map_int32_int32[long(-123)] = long(-456)
@@ -1665,37 +1683,6 @@ class Proto3Test(unittest.TestCase):
     msg.map_int32_int32[35] = 64
     msg.map_string_foreign_message['foo'].c = 5
     self.assertEqual(0, len(msg.FindInitializationErrors()))
-
-  def testAnyMessage(self):
-    # Creates and sets message.
-    msg = any_test_pb2.TestAny()
-    msg_descriptor = msg.DESCRIPTOR
-    all_types = unittest_pb2.TestAllTypes()
-    all_descriptor = all_types.DESCRIPTOR
-    all_types.repeated_string.append(u'\u00fc\ua71f')
-    # Packs to Any.
-    msg.value.Pack(all_types)
-    self.assertEqual(msg.value.type_url,
-                     'type.googleapis.com/%s' % all_descriptor.full_name)
-    self.assertEqual(msg.value.value,
-                     all_types.SerializeToString())
-    # Tests Is() method.
-    self.assertTrue(msg.value.Is(all_descriptor))
-    self.assertFalse(msg.value.Is(msg_descriptor))
-    # Unpacks Any.
-    unpacked_message = unittest_pb2.TestAllTypes()
-    self.assertTrue(msg.value.Unpack(unpacked_message))
-    self.assertEqual(all_types, unpacked_message)
-    # Unpacks to different type.
-    self.assertFalse(msg.value.Unpack(msg))
-    # Only Any messages have Pack method.
-    try:
-      msg.Pack(all_types)
-    except AttributeError:
-      pass
-    else:
-      raise AttributeError('%s should not have Pack method.' %
-                           msg_descriptor.full_name)
 
 
 

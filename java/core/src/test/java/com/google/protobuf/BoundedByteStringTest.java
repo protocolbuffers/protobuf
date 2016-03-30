@@ -37,7 +37,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 
-
 /**
  * This class tests {@link BoundedByteString}, which extends {@link LiteralByteString},
  * by inheriting the tests from {@link LiteralByteStringTest}.  The only method which

@@ -547,6 +547,56 @@ public class CodedInputStreamTest extends TestCase {
     }
   }
 
+  public void testReadString() throws Exception {
+    String lorem = "Lorem ipsum dolor sit amet ";
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < 4096; i += lorem.length()) {
+      builder.append(lorem);
+    }
+    lorem = builder.toString().substring(0, 4096);
+    byte[] bytes = lorem.getBytes("UTF-8");
+    ByteString.Output rawOutput = ByteString.newOutput();
+    CodedOutputStream output = CodedOutputStream.newInstance(rawOutput, bytes.length);
+
+    int tag = WireFormat.makeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    output.writeRawVarint32(tag);
+    output.writeRawVarint32(bytes.length);
+    output.writeRawBytes(bytes);
+    output.flush();
+
+    CodedInputStream input =
+        CodedInputStream.newInstance(
+            new ByteArrayInputStream(rawOutput.toByteString().toByteArray()));
+    assertEquals(tag, input.readTag());
+    String text = input.readString();
+    assertEquals(lorem, text);
+  }
+
+  public void testReadStringRequireUtf8() throws Exception {
+    String lorem = "Lorem ipsum dolor sit amet ";
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < 4096; i += lorem.length()) {
+      builder.append(lorem);
+    }
+    lorem = builder.toString().substring(0, 4096);
+    byte[] bytes = lorem.getBytes("UTF-8");
+    ByteString.Output rawOutput = ByteString.newOutput();
+    CodedOutputStream output = CodedOutputStream.newInstance(rawOutput, bytes.length);
+
+    int tag = WireFormat.makeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    output.writeRawVarint32(tag);
+    output.writeRawVarint32(bytes.length);
+    output.writeRawBytes(bytes);
+    output.flush();
+
+    CodedInputStream input =
+        CodedInputStream.newInstance(
+            new ByteArrayInputStream(rawOutput.toByteString().toByteArray()));
+    assertEquals(tag, input.readTag());
+    String text = input.readStringRequireUtf8();
+    assertEquals(lorem, text);
+  }
+
   /**
    * Tests that if we readString invalid UTF-8 bytes, no exception
    * is thrown.  Instead, the invalid bytes are replaced with the Unicode

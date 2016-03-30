@@ -19,6 +19,7 @@ protoc_outputs =                                               \
 other_language_protoc_outputs =                                \
   conformance.rb                                               \
   com/google/protobuf/conformance/Conformance.java             \
+  lite/com/google/protobuf/conformance/Conformance.java        \
   conformance_pb2.py                                           \
   Conformance.pbobjc.h                                         \
   Conformance.pbobjc.m
@@ -30,6 +31,7 @@ bin_PROGRAMS = conformance-test-runner conformance-cpp
 # automatically.
 EXTRA_DIST =                  \
   ConformanceJava.java        \
+  ConformanceJavaLite.java    \
   README.md                   \
   conformance.proto           \
   conformance_python.py       \
@@ -88,6 +90,7 @@ if USE_EXTERNAL_PROTOC
 protoc_middleman: $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. $(conformance_protoc_inputs)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --python_out=. $(well_known_type_protoc_inputs)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --java_out=lite:lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	touch protoc_middleman
 
 else
@@ -98,6 +101,8 @@ else
 protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd $(conformance_protoc_inputs) )
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --python_out=$$oldpwd $(well_known_type_protoc_inputs) )
+	@mkdir -p lite
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --java_out=lite:$$oldpwd/lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) )
 	touch protoc_middleman
 
 endif
@@ -108,7 +113,7 @@ $(other_language_protoc_outputs): protoc_middleman
 
 BUILT_SOURCES = $(protoc_outputs) $(other_language_protoc_outputs)
 
-CLEANFILES = $(protoc_outputs) protoc_middleman javac_middleman conformance-java conformance-csharp $(other_language_protoc_outputs)
+CLEANFILES = $(protoc_outputs) protoc_middleman javac_middleman conformance-java javac_middleman_lite conformance-java-lite conformance-csharp $(other_language_protoc_outputs)
 
 MAINTAINERCLEANFILES =   \
   Makefile.in
@@ -122,6 +127,16 @@ conformance-java: javac_middleman
 	@echo '#! /bin/sh' > conformance-java
 	@jar=`ls ../java/util/target/*jar-with-dependencies.jar` && echo java -classpath .:../java/target/classes:$$jar ConformanceJava '$$@' >> conformance-java
 	@chmod +x conformance-java
+
+javac_middleman_lite: ConformanceJavaLite.java protoc_middleman $(other_language_protoc_outputs)
+	javac -classpath ../java/lite/target/classes:lite ConformanceJavaLite.java lite/com/google/protobuf/conformance/Conformance.java
+	@touch javac_middleman_lite
+
+conformance-java-lite: javac_middleman_lite
+	@echo "Writing shortcut script conformance-java-lite..."
+	@echo '#! /bin/sh' > conformance-java-lite
+	@echo java -classpath .:../java/lite/target/classes:lite ConformanceJavaLite '$$@' >> conformance-java-lite
+	@chmod +x conformance-java-lite
 
 # Currently the conformance code is alongside the rest of the C#
 # source, as it's easier to maintain there. We assume we've already
@@ -138,6 +153,9 @@ test_cpp: protoc_middleman conformance-test-runner conformance-cpp
 
 test_java: protoc_middleman conformance-test-runner conformance-java
 	./conformance-test-runner --failure_list failure_list_java.txt ./conformance-java
+
+test_java_lite: protoc_middleman conformance-test-runner conformance-java-lite
+	./conformance-test-runner ./conformance-java-lite
 
 test_csharp: protoc_middleman conformance-test-runner conformance-csharp
 	./conformance-test-runner --failure_list failure_list_csharp.txt ./conformance-csharp

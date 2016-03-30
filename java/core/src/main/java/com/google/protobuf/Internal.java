@@ -51,10 +51,12 @@ import java.util.Set;
  *
  * @author kenton@google.com (Kenton Varda)
  */
-public class Internal {
+public final class Internal {
 
-  protected static final Charset UTF_8 = Charset.forName("UTF-8");
-  protected static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
+  private Internal() {}
+
+  static final Charset UTF_8 = Charset.forName("UTF-8");
+  static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 
   /**
    * Helper called by generated code to construct default values for string
@@ -405,6 +407,7 @@ public class Internal {
   /** An empty coded input stream constant used in generated code. */
   public static final CodedInputStream EMPTY_CODED_INPUT_STREAM =
       CodedInputStream.newInstance(EMPTY_BYTE_ARRAY);
+
 
   /**
    * Provides an immutable view of {@code List<T>} around a {@code List<F>}.

@@ -43,7 +43,7 @@ namespace compiler {
 namespace java {
 
 Context::Context(const FileDescriptor* file)
-    : name_resolver_(new ClassNameResolver) {
+    : name_resolver_(new ClassNameResolver), enforce_lite_(false) {
   InitializeFieldGeneratorInfo(file);
 }
 
@@ -187,6 +187,13 @@ const OneofGeneratorInfo* Context::GetOneofGeneratorInfo(
                << oneof->name();
   }
   return result;
+}
+
+// Does this message class have generated parsing, serialization, and other
+// standard methods for which reflection-based fallback implementations exist?
+bool Context::HasGeneratedMethods(const Descriptor* descriptor) const {
+  return enforce_lite_ || descriptor->file()->options().optimize_for() !=
+           FileOptions::CODE_SIZE;
 }
 
 }  // namespace java

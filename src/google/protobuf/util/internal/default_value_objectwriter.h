@@ -38,6 +38,7 @@
 #include <stack>
 #include <vector>
 
+#include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/internal/datapiece.h>
@@ -59,6 +60,25 @@ namespace converter {
 // with their default values (0 for numbers, "" for strings, etc).
 class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
  public:
+  // A Callback function to check whether a field needs to be scrubbed.
+  //
+  // Returns true if the field should not be present in the output. Returns
+  // false otherwise.
+  //
+  // The 'path' parameter is a vector of path to the field from root. For
+  // example: if a nested field "a.b.c" (b is the parent message field of c and
+  // a is the parent message field of b), then the vector should contain { "a",
+  // "b", "c" }.
+  //
+  // The Field* should point to the google::protobuf::Field of "c".
+  typedef ResultCallback2<bool /*return*/,
+                          const std::vector<string>& /*path of the field*/,
+                          const google::protobuf::Field* /*field*/>
+      FieldScrubCallBack;
+
+  // A unique pointer to a DefaultValueObjectWriter::FieldScrubCallBack.
+  typedef google::protobuf::scoped_ptr<FieldScrubCallBack> FieldScrubCallBackPtr;
+
   DefaultValueObjectWriter(TypeResolver* type_resolver,
                            const google::protobuf::Type& type,
                            ObjectWriter* ow);
@@ -98,6 +118,10 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
 
   virtual DefaultValueObjectWriter* RenderNull(StringPiece name);
 
+  // Register the callback for scrubbing of fields. Owership of
+  // field_scrub_callback pointer is also transferred to this class
+  void RegisterFieldScrubCallBack(FieldScrubCallBackPtr field_scrub_callback);
+
  private:
   enum NodeKind {
     PRIMITIVE = 0,
@@ -111,7 +135,8 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   class LIBPROTOBUF_EXPORT Node {
    public:
     Node(const string& name, const google::protobuf::Type* type, NodeKind kind,
-         const DataPiece& data, bool is_placeholder);
+         const DataPiece& data, bool is_placeholder, const vector<string>& path,
+         FieldScrubCallBack* field_scrub_callback);
     virtual ~Node() {
       for (int i = 0; i < children_.size(); ++i) {
         delete children_[i];
@@ -137,17 +162,19 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     // Accessors
     const string& name() const { return name_; }
 
-    const google::protobuf::Type* type() { return type_; }
+    const vector<string>& path() const { return path_; }
+
+    const google::protobuf::Type* type() const { return type_; }
 
     void set_type(const google::protobuf::Type* type) { type_ = type; }
 
-    NodeKind kind() { return kind_; }
+    NodeKind kind() const { return kind_; }
 
-    int number_of_children() { return children_.size(); }
+    int number_of_children() const { return children_.size(); }
 
     void set_data(const DataPiece& data) { data_ = data; }
 
-    bool is_any() { return is_any_; }
+    bool is_any() const { return is_any_; }
 
     void set_is_any(bool is_any) { is_any_ = is_any; }
 
@@ -181,6 +208,15 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     // the parent node's StartObject()/StartList() method is called with this
     // node's name.
     bool is_placeholder_;
+
+    // Path of the field of this node
+    std::vector<string> path_;
+
+    // Pointer to function for determining whether a field needs to be scrubbed
+    // or not. This callback is owned by the creator of this node.
+    FieldScrubCallBack* field_scrub_callback_;
+
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Node);
   };
 
   // Populates children of "node" if it is an "any" Node and its real type has
@@ -220,6 +256,10 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   google::protobuf::scoped_ptr<Node> root_;
   // The stack to hold the path of Nodes from current_ to root_;
   std::stack<Node*> stack_;
+
+  // Unique Pointer to function for determining whether a field needs to be
+  // scrubbed or not.
+  FieldScrubCallBackPtr field_scrub_callback_;
 
   ObjectWriter* ow_;
 

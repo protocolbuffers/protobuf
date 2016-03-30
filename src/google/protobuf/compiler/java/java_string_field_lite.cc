@@ -84,8 +84,6 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   // by the proto compiler
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? "@java.lang.Deprecated " : "";
-  (*variables)["on_changed"] =
-      HasDescriptorMethods(descriptor->containing_type()) ? "onChanged();" : "";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -103,7 +101,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
     (*variables)["clear_has_field_bit_message"] = "";
 
     (*variables)["is_field_present_message"] =
-        "!get" + (*variables)["capitalized_name"] + ".isEmpty()";
+        "!" + (*variables)["name"] + "_.isEmpty()";
   }
 
   // For repeated builders, the underlying list tracks mutability state.
@@ -309,13 +307,11 @@ GenerateMergingCode(io::Printer* printer) const {
       "if (other.has$capitalized_name$()) {\n"
       "  $set_has_field_bit_message$\n"
       "  $name$_ = other.$name$_;\n"
-      "  $on_changed$\n"
       "}\n");
   } else {
     printer->Print(variables_,
       "if (!other.get$capitalized_name$().isEmpty()) {\n"
       "  $name$_ = other.$name$_;\n"
-      "  $on_changed$\n"
       "}\n");
   }
 }
@@ -528,8 +524,7 @@ GenerateMergingCode(io::Printer* printer) const {
   // all string fields to Strings when copying fields from a Message.
   printer->Print(variables_,
     "$set_oneof_case_message$;\n"
-    "$oneof_name$_ = other.$oneof_name$_;\n"
-    "$on_changed$\n");
+    "$oneof_name$_ = other.$oneof_name$_;\n");
 }
 
 void ImmutableStringOneofFieldLiteGenerator::
@@ -792,7 +787,6 @@ GenerateMergingCode(io::Printer* printer) const {
     "    ensure$capitalized_name$IsMutable();\n"
     "    $name$_.addAll(other.$name$_);\n"
     "  }\n"
-    "  $on_changed$\n"
     "}\n");
 }
 
@@ -819,13 +813,8 @@ GenerateParsingCode(io::Printer* printer) const {
     "if (!$is_mutable$) {\n"
     "  $name$_ = com.google.protobuf.GeneratedMessageLite.newProtobufList();\n"
     "}\n");
-  if (CheckUtf8(descriptor_) || !HasDescriptorMethods(descriptor_->file())) {
-    printer->Print(variables_,
-      "$name$_.add(s);\n");
-  } else {
-    printer->Print(variables_,
-      "$name$_.add(bs);\n");
-  }
+  printer->Print(variables_,
+    "$name$_.add(s);\n");
 }
 
 void RepeatedImmutableStringFieldLiteGenerator::

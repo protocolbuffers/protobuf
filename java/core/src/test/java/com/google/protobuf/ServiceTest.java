@@ -35,21 +35,21 @@ import com.google.protobuf.Descriptors.MethodDescriptor;
 import google.protobuf.no_generic_services_test.UnittestNoGenericServices;
 import protobuf_unittest.MessageWithNoOuter;
 import protobuf_unittest.ServiceWithNoOuter;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestService;
-import protobuf_unittest.UnittestProto.FooRequest;
-import protobuf_unittest.UnittestProto.FooResponse;
 import protobuf_unittest.UnittestProto.BarRequest;
 import protobuf_unittest.UnittestProto.BarResponse;
+import protobuf_unittest.UnittestProto.FooRequest;
+import protobuf_unittest.UnittestProto.FooResponse;
+import protobuf_unittest.UnittestProto.TestAllTypes;
+import protobuf_unittest.UnittestProto.TestService;
+
+import junit.framework.TestCase;
 
 import org.easymock.classextension.EasyMock;
-import org.easymock.classextension.IMocksControl;
 import org.easymock.IArgumentMatcher;
+import org.easymock.classextension.IMocksControl;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import junit.framework.TestCase;
 
 /**
  * Tests services and stubs.

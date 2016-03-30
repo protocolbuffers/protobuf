@@ -39,14 +39,14 @@ import java.util.Map.Entry;
  *
  * Most of key methods are implemented in {@link LazyFieldLite} but this class
  * can contain default instance of the message to provide {@code hashCode()},
- * {@code equals()} and {@code toString()}.
+ * {@code euqals()} and {@code toString()}.
  *
  * @author xiangl@google.com (Xiang Li)
  */
 public class LazyField extends LazyFieldLite {
 
   /**
-   * Carry a message's default instance which is used by {@code hashCode()}, {@code equals()} and
+   * Carry a message's default instance which is used by {@code hashCode()}, {@code euqals()} and
    * {@code toString()}.
    */
   private final MessageLite defaultInstance;

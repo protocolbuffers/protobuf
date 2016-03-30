@@ -271,10 +271,8 @@ def _ListValueMessageToJsonObject(message, unused_including_default=False):
 def _StructMessageToJsonObject(message, unused_including_default=False):
   """Converts Struct message according to Proto3 JSON Specification."""
   fields = message.fields
-  js = {}
-  for key in fields.keys():
-    js[key] = _ValueMessageToJsonObject(fields[key])
-  return js
+  return {key: _ValueMessageToJsonObject(fields[key])
+          for key in fields}
 
 
 def _IsWrapperMessage(message_descriptor):

@@ -105,10 +105,27 @@ class LIBPROTOBUF_EXPORT ObjectWriter {
   static void RenderDataPieceTo(const DataPiece& data, StringPiece name,
                                 ObjectWriter* ow);
 
+  // Indicates whether this ObjectWriter has completed writing the root message,
+  // usually this means writing of one complete object. Subclasses must override
+  // this behavior appropriately.
+  virtual bool done() { return false; }
+
+  void set_use_strict_base64_decoding(bool value) {
+    use_strict_base64_decoding_ = value;
+  }
+
+  bool use_strict_base64_decoding() const {
+    return use_strict_base64_decoding_;
+  }
+
  protected:
-  ObjectWriter() {}
+  ObjectWriter() : use_strict_base64_decoding_(true) {}
 
  private:
+  // If set to true, we use the stricter version of base64 decoding for byte
+  // fields by making sure decoded version encodes back to the original string.
+  bool use_strict_base64_decoding_;
+
   // Do not add any data members to this class.
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ObjectWriter);
 };

@@ -361,7 +361,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   string output_data;
 
   int input_pos = 0;
-  int max_fd = max(child_stdin_, child_stdout_);
+  int max_fd = std::max(child_stdin_, child_stdout_);
 
   while (child_stdout_ != -1) {
     fd_set read_fds;

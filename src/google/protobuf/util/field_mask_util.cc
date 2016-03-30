@@ -52,6 +52,82 @@ void FieldMaskUtil::FromString(StringPiece str, FieldMask* out) {
   }
 }
 
+bool FieldMaskUtil::SnakeCaseToCamelCase(StringPiece input, string* output) {
+  output->clear();
+  bool after_underscore = false;
+  for (int i = 0; i < input.size(); ++i) {
+    if (input[i] >= 'A' && input[i] <= 'Z') {
+      // The field name must not contain uppercase letters.
+      return false;
+    }
+    if (after_underscore) {
+      if (input[i] >= 'a' && input[i] <= 'z') {
+        output->push_back(input[i] + 'A' - 'a');
+        after_underscore = false;
+      } else {
+        // The character after a "_" must be a lowercase letter.
+        return false;
+      }
+    } else if (input[i] == '_') {
+      after_underscore = true;
+    } else {
+      output->push_back(input[i]);
+    }
+  }
+  if (after_underscore) {
+    // Trailing "_".
+    return false;
+  }
+  return true;
+}
+
+bool FieldMaskUtil::CamelCaseToSnakeCase(StringPiece input, string* output) {
+  output->clear();
+  for (int i = 0; i < input.size(); ++i) {
+    if (input[i] == '_') {
+      // The field name must not contain "_"s.
+      return false;
+    }
+    if (input[i] >= 'A' && input[i] <= 'Z') {
+      output->push_back('_');
+      output->push_back(input[i] + 'a' - 'A');
+    } else {
+      output->push_back(input[i]);
+    }
+  }
+  return true;
+}
+
+bool FieldMaskUtil::ToJsonString(const FieldMask& mask, string* out) {
+  out->clear();
+  for (int i = 0; i < mask.paths_size(); ++i) {
+    const string& path = mask.paths(i);
+    string camelcase_path;
+    if (!SnakeCaseToCamelCase(path, &camelcase_path)) {
+      return false;
+    }
+    if (i > 0) {
+      out->push_back(',');
+    }
+    out->append(camelcase_path);
+  }
+  return true;
+}
+
+bool FieldMaskUtil::FromJsonString(StringPiece str, FieldMask* out) {
+  out->Clear();
+  vector<string> paths = Split(str, ",");
+  for (int i = 0; i < paths.size(); ++i) {
+    if (paths[i].empty()) continue;
+    string snakecase_path;
+    if (!CamelCaseToSnakeCase(paths[i], &snakecase_path)) {
+      return false;
+    }
+    out->add_paths(snakecase_path);
+  }
+  return true;
+}
+
 bool FieldMaskUtil::InternalIsValidPath(const Descriptor* descriptor,
                                         StringPiece path) {
   vector<string> parts = Split(path, ".");

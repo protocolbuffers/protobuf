@@ -47,6 +47,7 @@
 
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/any.h>
 #include <google/protobuf/io/printer.h>
@@ -1021,7 +1022,7 @@ bool MessageDifferencer::UnpackAny(const Message& any,
       any.GetDescriptor()->file()->pool()->FindMessageTypeByName(
           full_type_name);
   if (desc == NULL) {
-    GOOGLE_LOG(ERROR) << "Proto type '" << full_type_name << "' not found";
+    GOOGLE_DLOG(ERROR) << "Proto type '" << full_type_name << "' not found";
     return false;
   }
 
@@ -1031,7 +1032,7 @@ bool MessageDifferencer::UnpackAny(const Message& any,
   data->reset(dynamic_message_factory_->GetPrototype(desc)->New());
   string serialized_value = reflection->GetString(any, value_field);
   if (!(*data)->ParseFromString(serialized_value)) {
-    GOOGLE_LOG(ERROR) << "Failed to parse value for " << full_type_name;
+    GOOGLE_DLOG(ERROR) << "Failed to parse value for " << full_type_name;
     return false;
   }
   return true;
