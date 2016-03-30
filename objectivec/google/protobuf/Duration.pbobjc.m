@@ -46,25 +46,21 @@ typedef struct GPBDuration__storage_ {
     static GPBMessageFieldDescription fields[] = {
       {
         .name = "seconds",
+        .dataTypeSpecific.className = NULL,
         .number = GPBDuration_FieldNumber_Seconds,
         .hasIndex = 0,
+        .offset = (uint32_t)offsetof(GPBDuration__storage_, seconds),
         .flags = GPBFieldOptional,
         .dataType = GPBDataTypeInt64,
-        .offset = offsetof(GPBDuration__storage_, seconds),
-        .defaultValue.valueInt64 = 0LL,
-        .dataTypeSpecific.className = NULL,
-        .fieldOptions = NULL,
       },
       {
         .name = "nanos",
+        .dataTypeSpecific.className = NULL,
         .number = GPBDuration_FieldNumber_Nanos,
         .hasIndex = 1,
+        .offset = (uint32_t)offsetof(GPBDuration__storage_, nanos),
         .flags = GPBFieldOptional,
         .dataType = GPBDataTypeInt32,
-        .offset = offsetof(GPBDuration__storage_, nanos),
-        .defaultValue.valueInt32 = 0,
-        .dataTypeSpecific.className = NULL,
-        .fieldOptions = NULL,
       },
     };
     GPBDescriptor *localDescriptor =
@@ -72,15 +68,9 @@ typedef struct GPBDuration__storage_ {
                                      rootClass:[GPBDurationRoot class]
                                           file:GPBDurationRoot_FileDescriptor()
                                         fields:fields
-                                    fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
-                                        oneofs:NULL
-                                    oneofCount:0
-                                         enums:NULL
-                                     enumCount:0
-                                        ranges:NULL
-                                    rangeCount:0
+                                    fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBDuration__storage_)
-                                    wireFormat:NO];
+                                         flags:0];
     NSAssert(descriptor == nil, @"Startup recursed!");
     descriptor = localDescriptor;
   }

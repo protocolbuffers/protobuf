@@ -59,6 +59,9 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   (*variables)["enum_verifier"] = type + "_IsValidValue";
   (*variables)["enum_desc_func"] = type + "_EnumDescriptor";
 
+  (*variables)["dataTypeSpecific_name"] = "enumDescFunc";
+  (*variables)["dataTypeSpecific_value"] = (*variables)["enum_desc_func"];
+
   const Descriptor* msg_descriptor = descriptor->containing_type();
   (*variables)["owning_message_class"] = ClassName(msg_descriptor);
 }
@@ -72,13 +75,6 @@ EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor,
 
 EnumFieldGenerator::~EnumFieldGenerator() {}
 
-void EnumFieldGenerator::GenerateFieldDescriptionTypeSpecific(
-    io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "  .dataTypeSpecific.enumDescFunc = $enum_desc_func$,\n");
-}
-
 void EnumFieldGenerator::GenerateCFunctionDeclarations(
     io::Printer* printer) const {
   if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
@@ -87,7 +83,12 @@ void EnumFieldGenerator::GenerateCFunctionDeclarations(
 
   printer->Print(
       variables_,
+      "/// Fetches the raw value of a @c $owning_message_class$'s @c $name$ property, even\n"
+      "/// if the value was not defined by the enum at the time the code was generated.\n"
       "int32_t $owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message);\n"
+      "/// Sets the raw value of an @c $owning_message_class$'s @c $name$ property, allowing\n"
+      "/// it to be set to a value that was not defined by the enum at the time the code\n"
+      "/// was generated.\n"
       "void Set$owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message, int32_t value);\n"
       "\n");
 }
@@ -138,13 +139,6 @@ void RepeatedEnumFieldGenerator::FinishInitialization(void) {
   RepeatedFieldGenerator::FinishInitialization();
   variables_["array_comment"] =
       "// |" + variables_["name"] + "| contains |" + variables_["storage_type"] + "|\n";
-}
-
-void RepeatedEnumFieldGenerator::GenerateFieldDescriptionTypeSpecific(
-    io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "  .dataTypeSpecific.enumDescFunc = $enum_desc_func$,\n");
 }
 
 }  // namespace objectivec

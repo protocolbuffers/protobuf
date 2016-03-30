@@ -389,13 +389,11 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/DevTools/full_mac_build.sh                                      \
   objectivec/DevTools/pddm.py                                                \
   objectivec/DevTools/pddm_tests.py                                          \
-  objectivec/generate_descriptors_proto.sh                                   \
+  objectivec/generate_well_known_types.sh                                    \
   objectivec/google/protobuf/Any.pbobjc.h                                    \
   objectivec/google/protobuf/Any.pbobjc.m                                    \
   objectivec/google/protobuf/Api.pbobjc.h                                    \
   objectivec/google/protobuf/Api.pbobjc.m                                    \
-  objectivec/google/protobuf/Descriptor.pbobjc.h                             \
-  objectivec/google/protobuf/Descriptor.pbobjc.m                             \
   objectivec/google/protobuf/Duration.pbobjc.h                               \
   objectivec/google/protobuf/Duration.pbobjc.m                               \
   objectivec/google/protobuf/Empty.pbobjc.h                                  \
@@ -421,6 +419,7 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBCodedInputStream_PackagePrivate.h                            \
   objectivec/GPBCodedOutputStream.h                                          \
   objectivec/GPBCodedOutputStream.m                                          \
+  objectivec/GPBCodedOutputStream_PackagePrivate.h                           \
   objectivec/GPBDescriptor.h                                                 \
   objectivec/GPBDescriptor.m                                                 \
   objectivec/GPBDescriptor_PackagePrivate.h                                  \
@@ -661,7 +660,6 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/repeated_field_test.rb                                          \
   ruby/tests/stress.rb                                                       \
   ruby/tests/generated_code.proto                                            \
-  ruby/tests/generated_code.rb                                               \
   ruby/tests/generated_code_test.rb                                          \
   ruby/travis-test.sh
 

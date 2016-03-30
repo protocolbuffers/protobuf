@@ -1820,6 +1820,24 @@
   XCTAssertEqualObjects(enumDescriptor, expectedDescriptor);
 }
 
+- (void)testPropertyNaming {
+  // objectivec_helpers.cc has some special handing to get proper all caps
+  // for a few cases to meet objc developer expectations.
+  //
+  // This "test" confirms that the expected names are generated, otherwise the
+  // test itself will fail to compile.
+  ObjCPropertyNaming *msg = [ObjCPropertyNaming message];
+  // On their own, at the end, in the middle.
+  msg.URL = @"good";
+  msg.thumbnailURL = @"good";
+  msg.URLFoo = @"good";
+  msg.someURLBlah = @"good";
+  msg.HTTP = @"good";
+  msg.HTTPS = @"good";
+  // No caps since it was "urls".
+  [msg.urlsArray addObject:@"good"];
+}
+
 - (void)testEnumNaming {
   // objectivec_helpers.cc has some interesting cases to deal with in
   // EnumValueName/EnumValueShortName.  Confirm that things generated as

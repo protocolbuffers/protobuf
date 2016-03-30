@@ -17,7 +17,6 @@ Pod::Spec.new do |s|
   s.source_files = 'objectivec/*.{h,m}',
                    'objectivec/google/protobuf/Any.pbobjc.{h,m}',
                    'objectivec/google/protobuf/Api.pbobjc.{h,m}',
-                   'objectivec/google/protobuf/Descriptor.pbobjc.{h,m}',
                    'objectivec/google/protobuf/Duration.pbobjc.h',
                    'objectivec/google/protobuf/Empty.pbobjc.{h,m}',
                    'objectivec/google/protobuf/FieldMask.pbobjc.{h,m}',

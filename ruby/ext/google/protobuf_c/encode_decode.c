@@ -640,6 +640,14 @@ static const upb_pbdecodermethod *msgdef_decodermethod(Descriptor* desc) {
   return desc->fill_method;
 }
 
+static const upb_json_parsermethod *msgdef_jsonparsermethod(Descriptor* desc) {
+  if (desc->json_fill_method == NULL) {
+    desc->json_fill_method =
+        upb_json_parsermethod_new(desc->msgdef, &desc->json_fill_method);
+  }
+  return desc->json_fill_method;
+}
+
 
 // Stack-allocated context during an encode/decode operation. Contains the upb
 // environment and its stack-based allocator, an initial buffer for allocations
@@ -752,13 +760,14 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
   {
+    const upb_json_parsermethod* method = msgdef_jsonparsermethod(desc);
     stackenv se;
     upb_sink sink;
     upb_json_parser* parser;
     stackenv_init(&se, "Error occurred during parsing: %s");
 
     upb_sink_reset(&sink, get_fill_handlers(desc), msg);
-    parser = upb_json_parser_create(&se.env, &sink);
+    parser = upb_json_parser_create(&se.env, method, &sink);
     upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
                       upb_json_parser_input(parser));
 
@@ -1041,6 +1050,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
        !upb_msg_field_done(&i);
        upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
+    bool is_matching_oneof = false;
     uint32_t offset =
         desc->layout->fields[upb_fielddef_index(f)].offset +
         sizeof(MessageHeader);
@@ -1057,6 +1067,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
       }
       // Otherwise, fall through to the appropriate singular-field handler
       // below.
+      is_matching_oneof = true;
     }
 
     if (is_map_field(f)) {
@@ -1071,7 +1082,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
       }
     } else if (upb_fielddef_isstring(f)) {
       VALUE str = DEREF(msg, offset, VALUE);
-      if (RSTRING_LEN(str) > 0) {
+      if (is_matching_oneof || RSTRING_LEN(str) > 0) {
         putstr(str, f, sink);
       }
     } else if (upb_fielddef_issubmsg(f)) {
@@ -1082,7 +1093,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
 #define T(upbtypeconst, upbtype, ctype, default_value)                \
   case upbtypeconst: {                                                \
       ctype value = DEREF(msg, offset, ctype);                        \
-      if (value != default_value) {                                   \
+      if (is_matching_oneof || value != default_value) {              \
         upb_sink_put##upbtype(sink, sel, value);                      \
       }                                                               \
     }                                                                 \
@@ -1189,7 +1200,7 @@ VALUE Message_encode_json(VALUE klass, VALUE msg_rb) {
 
     putmsg(msg_rb, desc, upb_json_printer_input(printer), 0);
 
-    ret = rb_str_new(sink.ptr, sink.len);
+    ret = rb_enc_str_new(sink.ptr, sink.len, rb_utf8_encoding());
 
     stackenv_uninit(&se);
     stringsink_uninit(&sink);

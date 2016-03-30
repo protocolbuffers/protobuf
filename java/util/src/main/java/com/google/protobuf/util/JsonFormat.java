@@ -952,16 +952,15 @@ public class JsonFormat {
     }
   }
   
-  private static final String TYPE_URL_PREFIX = "type.googleapis.com";
-  
+
   private static String getTypeName(String typeUrl)
       throws InvalidProtocolBufferException {
     String[] parts = typeUrl.split("/");
-    if (parts.length != 2 || !parts[0].equals(TYPE_URL_PREFIX)) {
+    if (parts.length == 1) {
       throw new InvalidProtocolBufferException(
           "Invalid type url found: " + typeUrl);
     }
-    return parts[1];
+    return parts[parts.length - 1];
   }
   
   private static class ParserImpl {

@@ -153,19 +153,6 @@
   XCTAssertFalse([fieldDescriptor isValidEnumValue:-2]);
 }
 
-- (void)testEnumDescriptorLookup {
-  GPBDescriptor *descriptor = [TestAllTypes descriptor];
-  GPBEnumDescriptor *enumDescriptor =
-      [descriptor enumWithName:@"TestAllTypes_NestedEnum"];
-  XCTAssertNotNil(enumDescriptor);
-
-  // Descriptor cannot find foreign or imported enums.
-  enumDescriptor = [descriptor enumWithName:@"ForeignEnumEnum"];
-  XCTAssertNil(enumDescriptor);
-  enumDescriptor = [descriptor enumWithName:@"ImportEnumEnum"];
-  XCTAssertNil(enumDescriptor);
-}
-
 - (void)testOneofDescriptor {
   GPBDescriptor *descriptor = [TestOneof2 descriptor];
 

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Run this script to regenerate descriptor.pbobjc.{h,m} after the protocol
-# compiler changes.
+# Run this script to regenerate *.pbobjc.{h,m} for the well known types after
+# the protocol compiler changes.
 
-# HINT:  Flags passed to generate_descriptor_proto.sh will be passed directly
+# HINT:  Flags passed to generate_well_known_types.sh will be passed directly
 #   to make when building protoc.  This is particularly useful for passing
 #   -j4 to run 4 jobs simultaneously.
 
@@ -37,7 +37,6 @@ make $@ protoc
 declare -a RUNTIME_PROTO_FILES=( \
   google/protobuf/any.proto \
   google/protobuf/api.proto \
-  google/protobuf/descriptor.proto \
   google/protobuf/duration.proto \
   google/protobuf/empty.proto \
   google/protobuf/field_mask.proto \

@@ -49,6 +49,11 @@ class PrimitiveFieldGenerator : public SingleFieldGenerator {
                           const Options& options);
   virtual ~PrimitiveFieldGenerator();
 
+  virtual void GenerateFieldStorageDeclaration(io::Printer* printer) const;
+
+  virtual int ExtraRuntimeHasBitsNeeded(void) const;
+  virtual void SetExtraRuntimeHasBitsBase(int index_base);
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PrimitiveFieldGenerator);
 };

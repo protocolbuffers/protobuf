@@ -45,7 +45,7 @@ namespace protobuf {
 // This is also found in GPBBootstrap.h, and needs to be kept in sync.  It
 // is the version check done to ensure generated code works with the current
 // runtime being used.
-const int32 GOOGLE_PROTOBUF_OBJC_GEN_VERSION = 30000;
+const int32 GOOGLE_PROTOBUF_OBJC_GEN_VERSION = 30001;
 
 namespace compiler {
 namespace objectivec {
@@ -151,13 +151,15 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
   printer->Print(
       "#pragma mark - $root_class_name$\n"
       "\n"
+      "/// Exposes the extension registry for this file.\n"
+      "///\n"
+      "/// The base class provides:\n"
+      "/// @code\n"
+      "///   + (GPBExtensionRegistry *)extensionRegistry;\n"
+      "/// @endcode\n"
+      "/// which is a @c GPBExtensionRegistry that includes all the extensions defined by\n"
+      "/// this file and all files that it depends on.\n"
       "@interface $root_class_name$ : GPBRootObject\n"
-      "\n"
-      "// The base class provides:\n"
-      "//   + (GPBExtensionRegistry *)extensionRegistry;\n"
-      "// which is an GPBExtensionRegistry that includes all the extensions defined by\n"
-      "// this file and all files that it depends on.\n"
-      "\n"
       "@end\n"
       "\n",
       "root_class_name", root_class_name_);

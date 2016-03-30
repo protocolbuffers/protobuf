@@ -199,6 +199,31 @@ def cc_proto_library(
       includes=includes,
       **kargs)
 
+
+def internal_gen_well_known_protos_java(srcs):
+  """Bazel rule to generate the gen_well_known_protos_java genrule
+
+  Args:
+    srcs: the well known protos
+  """
+  root = Label("%s//protobuf_java" % (REPOSITORY_NAME)).workspace_root
+  if root == "":
+    include = " -Isrc "
+  else:
+    include = " -I%s/src " % root
+  native.genrule(
+    name = "gen_well_known_protos_java",
+    srcs = srcs,
+    outs = [
+        "wellknown.srcjar",
+    ],
+    cmd = "$(location :protoc) --java_out=$(@D)/wellknown.jar" +
+          " %s $(SRCS) " % include +
+          " && mv $(@D)/wellknown.jar $(@D)/wellknown.srcjar",
+    tools = [":protoc"],
+  )
+
+
 def py_proto_library(
         name,
         srcs=[],

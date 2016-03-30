@@ -124,9 +124,14 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
   }
   values.push_back(current);
 
+  string result;
+  bool first_segment_forces_upper = false;
   for (vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
     string value = *i;
     bool all_upper = (kUpperSegments.count(value) > 0);
+    if (all_upper && (result.length() == 0)) {
+      first_segment_forces_upper = true;
+    }
     for (int j = 0; j < value.length(); j++) {
       if (j == 0 || all_upper) {
         value[j] = ascii_toupper(value[j]);
@@ -134,13 +139,11 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
         // Nothing, already in lower.
       }
     }
-    *i = value;
+    result += value;
   }
-  string result;
-  for (vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
-    result += *i;
-  }
-  if ((result.length() != 0) && !first_capitalized) {
+  if ((result.length() != 0) &&
+      !first_capitalized &&
+      !first_segment_forces_upper) {
     result[0] = ascii_tolower(result[0]);
   }
   return result;
@@ -217,11 +220,6 @@ string NameFromFieldDescriptor(const FieldDescriptor* field) {
   }
 }
 
-// Escape C++ trigraphs by escaping question marks to \?
-string EscapeTrigraphs(const string& to_escape) {
-  return StringReplace(to_escape, "?", "\\?", true);
-}
-
 void PathSplit(const string& path, string* directory, string* basename) {
   string::size_type last_slash = path.rfind('/');
   if (last_slash == string::npos) {
@@ -260,6 +258,11 @@ bool IsSpecialName(const string& name, const string* special_names,
 }
 
 }  // namespace
+
+// Escape C++ trigraphs by escaping question marks to \?
+string EscapeTrigraphs(const string& to_escape) {
+  return StringReplace(to_escape, "?", "\\?", true);
+}
 
 string StripProto(const string& filename) {
   if (HasSuffixString(filename, ".protodevel")) {
@@ -731,7 +734,7 @@ string DefaultValue(const FieldDescriptor* field) {
         uint32 length = ghtonl(default_string.length());
         string bytes((const char*)&length, sizeof(length));
         bytes.append(default_string);
-        return "(NSData*)\"" + CEscape(bytes) + "\"";
+        return "(NSData*)\"" + EscapeTrigraphs(CEscape(bytes)) + "\"";
       } else {
         return "@\"" + EscapeTrigraphs(CEscape(default_string)) + "\"";
       }
@@ -746,6 +749,50 @@ string DefaultValue(const FieldDescriptor* field) {
   // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return NULL;
+}
+
+bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
+  // Repeated fields don't have defaults.
+  if (field->is_repeated()) {
+    return false;
+  }
+
+  if (!field->has_default_value()) {
+    // No custom default set in the proto file.
+    return false;
+  }
+
+  // Some proto file set the default to the zero value, so make sure the value
+  // isn't the zero case.
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return field->default_value_int32() != 0;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return field->default_value_uint32() != 0U;
+    case FieldDescriptor::CPPTYPE_INT64:
+      return field->default_value_int64() != 0LL;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return field->default_value_uint64() != 0ULL;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return field->default_value_double() != 0.0;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return field->default_value_float() != 0.0f;
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool();
+    case FieldDescriptor::CPPTYPE_STRING: {
+      const string& default_string = field->default_value_string();
+      return default_string.length() != 0;
+    }
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return field->default_value_enum()->number() != 0;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return false;
+  }
+
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return false;
 }
 
 string BuildFlagsString(const vector<string>& strings) {
@@ -771,16 +818,14 @@ string BuildCommentsString(const SourceLocation& location) {
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
-  string prefix("//");
+  string prefix("///");
   string suffix("\n");
   string final_comments;
   for (int i = 0; i < lines.size(); i++) {
-    // We use $ for delimiters, so replace comments with dollars with
-    // html escaped version.
-    // None of the other compilers handle this (as of this writing) but we
-    // ran into it once, so just to be safe.
+    // HeaderDoc uses '\' and '@' for markers; escape them.
+    const string line = StringReplace(lines[i], "\\", "\\\\", true);
     final_comments +=
-        prefix + StringReplace(lines[i], "$", "&#36;", true) + suffix;
+        prefix + StringReplace(line, "@", "\\@", true) + suffix;
   }
   return final_comments;
 }
@@ -968,7 +1013,8 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
     } else {
       // ...it didn't match!
       *out_error = "error: Expected 'option objc_class_prefix = \"" +
-                   package_match->second + "\";' in '" + file->name() + "'";
+                   package_match->second + "\";' for package '" + package +
+                   "' in '" + file->name() + "'";
       if (prefix.length()) {
         *out_error += "; but found '" + prefix + "' instead";
       }
