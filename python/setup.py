@@ -163,7 +163,9 @@ if __name__ == '__main__':
   warnings_as_errors = '--warnings_as_errors'
   if cpp_impl in sys.argv:
     sys.argv.remove(cpp_impl)
-    extra_compile_args = ['-Wno-write-strings', '-Wno-invalid-offsetof']
+    extra_compile_args = ['-Wno-write-strings',
+                          '-Wno-invalid-offsetof',
+                          '-Wno-sign-compare']
     test_conformance.target = 'test_python_cpp'
 
     if "clang" in os.popen('$CC --version 2> /dev/null').read():
