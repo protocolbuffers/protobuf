@@ -1911,6 +1911,30 @@ static PyObject* CopyFrom(CMessage* self, PyObject* arg) {
   Py_RETURN_NONE;
 }
 
+// Protobuf has a 64MB limit built in, this variable will override this. Please
+// do not enable this unless you fully understand the implications: protobufs
+// must all be kept in memory at the same time, so if they grow too big you may
+// get OOM errors. The protobuf APIs do not provide any tools for processing
+// protobufs in chunks.  If you have protos this big you should break them up if
+// it is at all convenient to do so.
+static bool allow_oversize_protos = false;
+
+// Provide a method in the module to set allow_oversize_protos to a boolean
+// value. This method returns the newly value of allow_oversize_protos.
+static PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
+  if (!arg || !PyBool_Check(arg)) {
+    PyErr_SetString(PyExc_TypeError,
+                    "Argument to SetAllowOversizeProtos must be boolean");
+    return NULL;
+  }
+  allow_oversize_protos = PyObject_IsTrue(arg);
+  if (allow_oversize_protos) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
+}
+
 static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   const void* data;
   Py_ssize_t data_length;
@@ -1921,15 +1945,9 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   AssureWritable(self);
   io::CodedInputStream input(
       reinterpret_cast<const uint8*>(data), data_length);
-#if PROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS
-  // Protobuf has a 64MB limit built in, this code will override this. Please do
-  // not enable this unless you fully understand the implications: protobufs
-  // must all be kept in memory at the same time, so if they grow too big you
-  // may get OOM errors. The protobuf APIs do not provide any tools for
-  // processing protobufs in chunks.  If you have protos this big you should
-  // break them up if it is at all convenient to do so.
-  input.SetTotalBytesLimit(INT_MAX, INT_MAX);
-#endif  // PROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS
+  if (allow_oversize_protos) {
+    input.SetTotalBytesLimit(INT_MAX, INT_MAX);
+  }
   PyDescriptorPool* pool = GetDescriptorPoolForMessage(self);
   input.SetExtensionRegistry(pool->pool, pool->message_factory);
   bool success = self->message->MergePartialFromCodedStream(&input);
@@ -3046,6 +3064,11 @@ bool InitProto2MessageModule(PyObject *m) {
 }  // namespace python
 }  // namespace protobuf
 
+static PyMethodDef ModuleMethods[] = {
+    {"SetAllowOversizeProtos",
+     (PyCFunction)google::protobuf::python::cmessage::SetAllowOversizeProtos,
+     METH_O, "Enable/disable oversize proto parsing."},
+};
 
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef _module = {
@@ -3053,7 +3076,7 @@ static struct PyModuleDef _module = {
   "_message",
   google::protobuf::python::module_docstring,
   -1,
-  NULL,
+  ModuleMethods,  /* m_methods */
   NULL,
   NULL,
   NULL,
@@ -3072,7 +3095,8 @@ extern "C" {
 #if PY_MAJOR_VERSION >= 3
     m = PyModule_Create(&_module);
 #else
-    m = Py_InitModule3("_message", NULL, google::protobuf::python::module_docstring);
+    m = Py_InitModule3("_message", ModuleMethods,
+                       google::protobuf::python::module_docstring);
 #endif
     if (m == NULL) {
       return INITFUNC_ERRORVAL;
