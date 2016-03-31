@@ -68,6 +68,9 @@ void UpdateParamsRecursively(Params& params,
   }
   if (file->options().has_java_package()) {
     string result = file->options().java_package();
+    if (!result.empty()) {
+      result += ".";
+    }
     result += "nano";
     params.set_java_package(
       file->name(), result);
