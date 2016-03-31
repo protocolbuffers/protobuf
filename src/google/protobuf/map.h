@@ -935,7 +935,7 @@ class Map {
     const hasher& hash_function() const { return *this; }
 
     static size_type max_size() {
-      return static_cast<size_type>(1) << (sizeof(table_) >= 8 ? 60 : 28);
+      return static_cast<size_type>(1) << (sizeof(void**) >= 8 ? 60 : 28);
     }
     size_type size() const { return num_elements_; }
     bool empty() const { return size() == 0; }
