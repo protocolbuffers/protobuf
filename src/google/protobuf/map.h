@@ -663,7 +663,7 @@ class Map {
   // custom class here and for Node, below, to ensure that k_ is at offset 0,
   // allowing safe conversion from pointer to Node to pointer to Key, and vice
   // versa when appropriate.
-  class LIBPROTOBUF_EXPORT KeyValuePair {
+  class KeyValuePair {
    public:
     KeyValuePair(const Key& k, value_type* v) : k_(k), v_(v) {}
 
@@ -708,7 +708,7 @@ class Map {
   // 8. Mutations to a map do not invalidate the map's iterators, pointers to
   //    elements, or references to elements.
   // 9. Except for erase(iterator), any non-const method can reorder iterators.
-  class LIBPROTOBUF_EXPORT InnerMap : private hasher {
+  class InnerMap : private hasher {
    public:
     typedef value_type* Value;
 
@@ -1340,7 +1340,7 @@ class Map {
 
  public:
   // Iterators
-  class LIBPROTOBUF_EXPORT iterator_base {
+  class iterator_base {
    public:
     // We support "old style" and "new style" iterators for now. This is
     // temporary.  Also, for "iterator()" we have an unknown category.
