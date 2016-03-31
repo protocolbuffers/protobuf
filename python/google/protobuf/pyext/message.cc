@@ -2140,7 +2140,7 @@ static PyObject* ListFields(CMessage* self) {
     PyList_SET_ITEM(all_fields.get(), actual_size, t.release());
     ++actual_size;
   }
-  if (actual_size != fields.size() &&
+  if (static_cast<size_t>(actual_size) != fields.size() &&
       (PyList_SetSlice(all_fields.get(), actual_size, fields.size(), NULL) <
        0)) {
     return NULL;
