@@ -36,8 +36,9 @@ import static protobuf_unittest.UnittestProto.optionalInt64Extension;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 
-import java.io.IOException;
 import junit.framework.TestCase;
+
+import java.io.IOException;
 
 /**
  * Unit test for {@link LazyFieldLite}.

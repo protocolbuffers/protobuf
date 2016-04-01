@@ -35,11 +35,13 @@
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import os
+import sys
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_import_public_pb2
 from google.protobuf import unittest_pb2
@@ -49,7 +51,6 @@ from google.protobuf.internal import descriptor_pool_test1_pb2
 from google.protobuf.internal import descriptor_pool_test2_pb2
 from google.protobuf.internal import factory_test1_pb2
 from google.protobuf.internal import factory_test2_pb2
-from google.protobuf.internal import test_util
 from google.protobuf import descriptor
 from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool
@@ -350,7 +351,7 @@ class DescriptorPoolTest(unittest.TestCase):
 
 
 @unittest.skipIf(api_implementation.Type() != 'cpp',
-                            'explicit tests of the C++ implementation')
+                 'explicit tests of the C++ implementation')
 class CppDescriptorPoolTest(DescriptorPoolTest):
   # TODO(amauryfa): remove when descriptor_pool.DescriptorPool() creates true
   # C++ descriptor pool object for C++ implementation.
@@ -555,7 +556,7 @@ class AddDescriptorTest(unittest.TestCase):
             prefix + 'protobuf_unittest.TestAllTypes.NestedMessage').name)
 
   @unittest.skipIf(api_implementation.Type() == 'cpp',
-                    'With the cpp implementation, Add() must be called first')
+                   'With the cpp implementation, Add() must be called first')
   def testMessage(self):
     self._TestMessage('')
     self._TestMessage('.')
@@ -591,13 +592,13 @@ class AddDescriptorTest(unittest.TestCase):
             prefix + 'protobuf_unittest.TestAllTypes.NestedEnum').name)
 
   @unittest.skipIf(api_implementation.Type() == 'cpp',
-                    'With the cpp implementation, Add() must be called first')
+                   'With the cpp implementation, Add() must be called first')
   def testEnum(self):
     self._TestEnum('')
     self._TestEnum('.')
 
   @unittest.skipIf(api_implementation.Type() == 'cpp',
-                    'With the cpp implementation, Add() must be called first')
+                   'With the cpp implementation, Add() must be called first')
   def testFile(self):
     pool = descriptor_pool.DescriptorPool()
     pool.AddFileDescriptor(unittest_pb2.DESCRIPTOR)

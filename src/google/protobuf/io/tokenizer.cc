@@ -881,9 +881,11 @@ bool Tokenizer::ParseInteger(const string& text, uint64 max_value,
   uint64 result = 0;
   for (; *ptr != '\0'; ptr++) {
     int digit = DigitValue(*ptr);
-    GOOGLE_LOG_IF(DFATAL, digit < 0 || digit >= base)
-      << " Tokenizer::ParseInteger() passed text that could not have been"
-         " tokenized as an integer: " << CEscape(text);
+    if (digit < 0 || digit >= base) {
+      // The token provided by Tokenizer is invalid. i.e., 099 is an invalid
+      // token, but Tokenizer still think it's integer.
+      return false;
+    }
     if (digit > max_value || result > (max_value - digit) / base) {
       // Overflow.
       return false;

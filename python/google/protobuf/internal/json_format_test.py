@@ -39,9 +39,10 @@ import math
 import sys
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+
 from google.protobuf import any_pb2
 from google.protobuf import duration_pb2
 from google.protobuf import field_mask_pb2
@@ -758,7 +759,7 @@ class JsonFormatTest(JsonFormatBase):
         'Can not find message descriptor by type_url: '
         'type.googleapis.com/MessageNotExist.',
         json_format.Parse, text, message)
-    # Only last part is to be used.
+    # Only last part is to be used: b/25630112
     text = (r'{"@type": "incorrect.googleapis.com/google.protobuf.Int32Value",'
             r'"value": 1234}')
     json_format.Parse(text, message)

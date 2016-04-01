@@ -33,15 +33,15 @@ package com.google.protobuf;
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
 import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
 import com.google.protobuf.UnittestLite.TestParsingMergeLite;
+import protobuf_unittest.UnittestOptimizeFor;
 import protobuf_unittest.UnittestOptimizeFor.TestOptimizedForSize;
 import protobuf_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
-import protobuf_unittest.UnittestOptimizeFor;
+import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestParsingMerge;
 import protobuf_unittest.UnittestProto.TestRequired;
-import protobuf_unittest.UnittestProto;
 
 import junit.framework.TestCase;
 

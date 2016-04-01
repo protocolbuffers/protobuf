@@ -432,7 +432,7 @@ public class MapForProto2LiteTest extends TestCase {
     assertEquals(1, messageWithUnknownEnums.getInt32ToInt32Field().get(1).intValue());
     assertEquals(54321, messageWithUnknownEnums.getInt32ToInt32Field().get(2).intValue());
   }
-  
+
 
   public void testIterationOrder() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();

@@ -124,8 +124,9 @@ class JsonStreamParserTest : public ::testing::Test {
     EXPECT_OK(result);
   }
 
-  void DoErrorTest(StringPiece json, int split, StringPiece error_prefix) {
-    util::Status result = RunTest(json, split);
+  void DoErrorTest(StringPiece json, int split, StringPiece error_prefix,
+                   bool coerce_utf8 = false) {
+    util::Status result = RunTest(json, split, coerce_utf8);
     EXPECT_EQ(util::error::INVALID_ARGUMENT, result.error_code());
     StringPiece error_message(result.error_message());
     EXPECT_EQ(error_prefix, error_message.substr(0, error_prefix.size()));
@@ -227,6 +228,32 @@ TEST_F(JsonStreamParserTest, SimpleUnsignedInt) {
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderUint64("", 11779497823553162765ULL);
     DoTest(str, i);
+  }
+}
+
+TEST_F(JsonStreamParserTest, OctalNumberIsInvalid) {
+  StringPiece str = "01234";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Octal/hex numbers are not valid JSON values.");
+  }
+  str = "-01234";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Octal/hex numbers are not valid JSON values.");
+  }
+}
+
+TEST_F(JsonStreamParserTest, HexNumberIsInvalid) {
+  StringPiece str = "0x1234";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Octal/hex numbers are not valid JSON values.");
+  }
+  str = "-0x1234";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Octal/hex numbers are not valid JSON values.");
+  }
+  str = "12x34";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Unable to parse number.");
   }
 }
 
@@ -351,19 +378,62 @@ TEST_F(JsonStreamParserTest, RejectNonUtf8WhenNotCoerced) {
   DoErrorTest("\xFF{}", 0, "Encountered non UTF-8 code points.");
 }
 
-#ifndef _MSC_VER
 // - unicode handling in strings
 TEST_F(JsonStreamParserTest, UnicodeEscaping) {
   StringPiece str = "[\"\\u0639\\u0631\\u0628\\u0649\"]";
   for (int i = 0; i <= str.length(); ++i) {
-    // TODO(xiaofeng): Figure out what default encoding to use for JSON strings.
-    // In protobuf we use UTF-8 for strings, but for JSON we probably should
-    // allow different encodings?
-    ow_.StartList("")->RenderString("", "\u0639\u0631\u0628\u0649")->EndList();
+    ow_.StartList("")
+        ->RenderString("", "\xD8\xB9\xD8\xB1\xD8\xA8\xD9\x89")
+        ->EndList();
     DoTest(str, i);
   }
 }
-#endif
+
+// - unicode UTF-16 surrogate pair handling in strings
+TEST_F(JsonStreamParserTest, UnicodeSurrogatePairEscaping) {
+  StringPiece str =
+      "[\"\\u0bee\\ud800\\uddf1\\uD80C\\uDDA4\\uD83d\\udC1D\\uD83C\\uDF6F\"]";
+  for (int i = 0; i <= str.length(); ++i) {
+    ow_.StartList("")
+        ->RenderString("",
+                       "\xE0\xAF\xAE\xF0\x90\x87\xB1\xF0\x93\x86\xA4\xF0"
+                       "\x9F\x90\x9D\xF0\x9F\x8D\xAF")
+        ->EndList();
+    DoTest(str, i);
+  }
+}
+
+
+TEST_F(JsonStreamParserTest, UnicodeEscapingInvalidCodePointWhenNotCoerced) {
+  // A low surrogate alone.
+  StringPiece str = "[\"\\ude36\"]";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Invalid unicode code point.");
+  }
+}
+
+TEST_F(JsonStreamParserTest, UnicodeEscapingMissingLowSurrogateWhenNotCoerced) {
+  // A high surrogate alone.
+  StringPiece str = "[\"\\ud83d\"]";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Missing low surrogate.");
+  }
+  // A high surrogate with some trailing characters.
+  str = "[\"\\ud83d|ude36\"]";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Missing low surrogate.");
+  }
+  // A high surrogate with half a low surrogate.
+  str = "[\"\\ud83d\\ude--\"]";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Invalid escape sequence.");
+  }
+  // Two high surrogates.
+  str = "[\"\\ud83d\\ud83d\"]";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Invalid low surrogate.");
+  }
+}
 
 // - ascii escaping (\b, \f, \n, \r, \t, \v)
 TEST_F(JsonStreamParserTest, AsciiEscaping) {
@@ -629,6 +699,22 @@ TEST_F(JsonStreamParserTest, DoubleTooBig) {
 }
 */
 
+// invalid bare backslash.
+TEST_F(JsonStreamParserTest, UnfinishedEscape) {
+  StringPiece str = "\"\\";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Closing quote expected in string.");
+  }
+}
+
+// invalid bare backslash u.
+TEST_F(JsonStreamParserTest, UnfinishedUnicodeEscape) {
+  StringPiece str = "\"\\u";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Illegal hex string.");
+  }
+}
+
 // invalid unicode sequence.
 TEST_F(JsonStreamParserTest, UnicodeEscapeCutOff) {
   StringPiece str = "\"\\u12";
@@ -637,8 +723,25 @@ TEST_F(JsonStreamParserTest, UnicodeEscapeCutOff) {
   }
 }
 
+// invalid unicode sequence (valid in modern EcmaScript but not in JSON).
+TEST_F(JsonStreamParserTest, BracketedUnicodeEscape) {
+  StringPiece str = "\"\\u{1f36f}\"";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Invalid escape sequence.");
+  }
+}
+
+
 TEST_F(JsonStreamParserTest, UnicodeEscapeInvalidCharacters) {
   StringPiece str = "\"\\u12$4hello";
+  for (int i = 0; i <= str.length(); ++i) {
+    DoErrorTest(str, i, "Invalid escape sequence.");
+  }
+}
+
+// invalid unicode sequence in low half surrogate: g is not a hex digit.
+TEST_F(JsonStreamParserTest, UnicodeEscapeLowHalfSurrogateInvalidCharacters) {
+  StringPiece str = "\"\\ud800\\udcfg\"";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Invalid escape sequence.");
   }

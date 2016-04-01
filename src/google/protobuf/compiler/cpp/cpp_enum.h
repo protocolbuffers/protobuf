@@ -64,8 +64,10 @@ class EnumGenerator {
   // Fills the name to use when declaring the enum. This is for use when
   // generating other .proto.h files. This code should be placed within the
   // enum's package namespace, but NOT within any class, even for nested
-  // enums.
-  void FillForwardDeclaration(set<string>* enum_names);
+  // enums. A given key in enum_names will map from an enum class name to the
+  // EnumDescriptor that was responsible for its inclusion in the map. This can
+  // be used to associate the descriptor with the code generated for it.
+  void FillForwardDeclaration(map<string, const EnumDescriptor*>* enum_names);
 
   // Generate header code defining the enum.  This code should be placed
   // within the enum's package namespace, but NOT within any class, even for

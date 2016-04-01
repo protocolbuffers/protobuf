@@ -620,6 +620,21 @@ public class GeneratedMessageTest extends TestCase {
     TestUtil.assertExtensionsClear(TestAllExtensions.newBuilder().build());
   }
 
+  public void testUnsetRepeatedExtensionGetField() {
+    TestAllExtensions message = TestAllExtensions.getDefaultInstance();
+    Object value;
+
+    value = message.getField(UnittestProto.repeatedStringExtension.getDescriptor());
+    assertTrue(value instanceof List);
+    assertTrue(((List<?>) value).isEmpty());
+    assertIsUnmodifiable((List<?>) value);
+
+    value = message.getField(UnittestProto.repeatedNestedMessageExtension.getDescriptor());
+    assertTrue(value instanceof List);
+    assertTrue(((List<?>) value).isEmpty());
+    assertIsUnmodifiable((List<?>) value);
+  }
+
   public void testExtensionReflectionGetters() throws Exception {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
     TestUtil.setAllExtensions(builder);

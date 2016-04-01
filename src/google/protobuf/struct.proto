@@ -33,6 +33,7 @@ syntax = "proto3";
 package google.protobuf;
 
 option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+option go_package = "github.com/golang/protobuf/ptypes/struct;structpb";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "StructProto";
 option java_multiple_files = true;
@@ -49,7 +50,7 @@ option objc_class_prefix = "GPB";
 //
 // The JSON representation for `Struct` is JSON object.
 message Struct {
-  // Map of dynamically typed values.
+  // Unordered map of dynamically typed values.
   map<string, Value> fields = 1;
 }
 

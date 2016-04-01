@@ -69,11 +69,12 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
 
 EnumGenerator::~EnumGenerator() {}
 
-void EnumGenerator::FillForwardDeclaration(set<string>* enum_names) {
+void EnumGenerator::FillForwardDeclaration(
+    map<string, const EnumDescriptor*>* enum_names) {
   if (!options_.proto_h) {
     return;
   }
-  enum_names->insert(classname_);
+  (*enum_names)[classname_] = descriptor_;
 }
 
 void EnumGenerator::GenerateDefinition(io::Printer* printer) {
@@ -83,6 +84,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   vars["enumbase"] = classname_ + (options_.proto_h ? " : int" : "");
 
   printer->Print(vars, "enum $enumbase$ {\n");
+  printer->Annotate("enumbase", descriptor_);
   printer->Indent();
 
   const EnumValueDescriptor* min_value = descriptor_->value(0);

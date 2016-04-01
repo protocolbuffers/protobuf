@@ -272,7 +272,7 @@ public final class Descriptors {
      *           because a field has an undefined type or because two messages
      *           were defined with the same name.
      */
-    private static FileDescriptor buildFrom(
+    public static FileDescriptor buildFrom(
         final FileDescriptorProto proto, final FileDescriptor[] dependencies,
         final boolean allowUnknownDependencies)
         throws DescriptorValidationException {
@@ -1123,7 +1123,7 @@ public final class Descriptors {
       private JavaType javaType;
 
       public FieldDescriptorProto.Type toProto() {
-        return FieldDescriptorProto.Type.valueOf(ordinal() + 1);
+        return FieldDescriptorProto.Type.forNumber(ordinal() + 1);
       }
       public JavaType getJavaType() { return javaType; }
 

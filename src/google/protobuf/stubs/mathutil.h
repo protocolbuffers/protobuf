@@ -83,7 +83,7 @@ class MathUtil {
     if (value == T(0) || ::google::protobuf::internal::IsNan<T>(value)) {
       return value;
     }
-    return value > T(0) ? value : -value;
+    return value > T(0) ? 1 : -1;
   }
 
   template<typename T>

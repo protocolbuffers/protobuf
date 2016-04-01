@@ -146,19 +146,19 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
                         io::Printer* printer) const;
 
   // Generate goog.requires() calls.
-  void GenerateRequires(const GeneratorOptions& options,
-                        io::Printer* printer,
-                        const vector<const FileDescriptor*>& file,
-                        std::set<string>* provided) const;
-  void GenerateRequires(const GeneratorOptions& options,
+  void GenerateRequiresForLibrary(const GeneratorOptions& options,
+                                  io::Printer* printer,
+                                  const vector<const FileDescriptor*>& files,
+                                  std::set<string>* provided) const;
+  void GenerateRequiresForMessage(const GeneratorOptions& options,
                         io::Printer* printer,
                         const Descriptor* desc,
                         std::set<string>* provided) const;
   // For extension fields at file scope.
-  void GenerateRequires(const GeneratorOptions& options,
-                        io::Printer* printer,
-                        const vector<const FieldDescriptor*>& fields,
-                        std::set<string>* provided) const;
+  void GenerateRequiresForExtensions(
+      const GeneratorOptions& options, io::Printer* printer,
+      const vector<const FieldDescriptor*>& fields,
+      std::set<string>* provided) const;
   void GenerateRequiresImpl(const GeneratorOptions& options,
                             io::Printer* printer,
                             std::set<string>* required,

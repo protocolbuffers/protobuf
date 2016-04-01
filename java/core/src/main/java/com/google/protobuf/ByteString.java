@@ -1,4 +1,32 @@
-// Copyright 2007 Google Inc.  All rights reserved.
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.google.protobuf;
 
@@ -15,6 +43,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -58,6 +87,54 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * Empty {@code ByteString}.
    */
   public static final ByteString EMPTY = new LiteralByteString(Internal.EMPTY_BYTE_ARRAY);
+  
+  /** 
+   * An interface to efficiently copy {@code byte[]}.
+   * 
+   * <p>One of the noticable costs of copying a byte[] into a new array using 
+   * {@code System.arraycopy} is nullification of a new buffer before the copy. It has been shown 
+   * the Hotspot VM is capable to intrisicfy {@code Arrays.copyOfRange} operation to avoid this
+   * expensive nullification and provide substantial performance gain. Unfortunately this does not
+   * hold on Android runtimes and could make the copy slightly slower due to additional code in
+   * the {@code Arrays.copyOfRange}. Thus we provide two different implementation for array copier
+   * for Hotspot and Android runtimes. 
+   */
+  private interface ByteArrayCopier {
+    /**
+     * Copies the specified range of the specified array into a new array
+     */
+    byte[] copyFrom(byte[] bytes, int offset, int size);
+  }
+  
+  /** Implementation of {@code ByteArrayCopier} which uses {@link System#arraycopy}. */
+  private static final class SystemByteArrayCopier implements ByteArrayCopier {
+    @Override
+    public byte[] copyFrom(byte[] bytes, int offset, int size) {
+      byte[] copy = new byte[size];
+      System.arraycopy(bytes, offset, copy, 0, size);
+      return copy;
+    }
+  }
+  
+  /** Implementation of {@code ByteArrayCopier} which uses {@link Arrays#copyOfRange}. */
+  private static final class ArraysByteArrayCopier implements ByteArrayCopier {
+    @Override
+    public byte[] copyFrom(byte[] bytes, int offset, int size) {
+      return Arrays.copyOfRange(bytes, offset, offset + size);
+    }
+  }
+  
+  private static final ByteArrayCopier byteArrayCopier;
+  static {
+    boolean isAndroid = true;
+    try {
+      Class.forName("android.content.Context");
+    } catch (ClassNotFoundException e) {
+      isAndroid = false;
+    }
+    
+    byteArrayCopier = isAndroid ? new SystemByteArrayCopier() : new ArraysByteArrayCopier();
+  }
 
   /**
    * Cached hash value. Intentionally accessed via a data race, which
@@ -77,7 +154,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * @param index index of byte
    * @return the value
-   * @throws ArrayIndexOutOfBoundsException {@code index < 0 or index >= size}
+   * @throws IndexOutOfBoundsException {@code index < 0 or index >= size}
    */
   public abstract byte byteAt(int index);
 
@@ -109,7 +186,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       public byte nextByte() {
         try {
           return byteAt(position++);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException e) {
           throw new NoSuchElementException(e.getMessage());
         }
       }
@@ -220,9 +297,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new {@code ByteString}
    */
   public static ByteString copyFrom(byte[] bytes, int offset, int size) {
-    byte[] copy = new byte[size];
-    System.arraycopy(bytes, offset, copy, 0, size);
-    return new LiteralByteString(copy);
+    return new LiteralByteString(byteArrayCopier.copyFrom(bytes, offset, size));
   }
 
   /**
@@ -559,12 +634,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
-   * Writes the complete contents of this byte string to
-   * the specified output stream argument.
-   *
-   * <p>It is assumed that the {@link OutputStream} will not modify the contents passed it
-   * it. It may be possible for a malicious {@link OutputStream} to corrupt
-   * the data underlying the {@link ByteString}.
+   * Writes a copy of the contents of this byte string to the specified output stream argument.
    *
    * @param  out  the output stream to which to write the data.
    * @throws IOException  if an I/O error occurs.
@@ -578,8 +648,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param  sourceOffset offset within these bytes
    * @param  numberToWrite number of bytes to write
    * @throws IOException  if an I/O error occurs.
-   * @throws IndexOutOfBoundsException if an offset or size is negative or too
-   *     large
+   * @throws IndexOutOfBoundsException if an offset or size is negative or too large
    */
   final void writeTo(OutputStream out, int sourceOffset, int numberToWrite)
       throws IOException {
@@ -595,6 +664,20 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   abstract void writeToInternal(OutputStream out, int sourceOffset, int numberToWrite)
       throws IOException;
+
+  /**
+   * Writes this {@link ByteString} to the provided {@link ByteOutput}. Calling
+   * this method may result in multiple operations on the target {@link ByteOutput}.
+   *
+   * <p>This method may expose internal backing buffers of the {@link ByteString} to the {@link
+   * ByteOutput} in order to avoid additional copying overhead. It would be possible for a malicious
+   * {@link ByteOutput} to corrupt the {@link ByteString}. Use with caution!
+   *
+   * @param  byteOutput  the output target to receive the bytes
+   * @throws IOException  if an I/O error occurs
+   * @see UnsafeByteOperations#unsafeWriteTo(ByteString, ByteOutput)
+   */
+  abstract void writeTo(ByteOutput byteOutput) throws IOException;
 
   /**
    * Constructs a read-only {@code java.nio.ByteBuffer} whose content
@@ -1102,7 +1185,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *
    * @param index the index position to be tested
    * @param size the length of the array
-   * @throws ArrayIndexOutOfBoundsException if the index does not fall within the array.
+   * @throws IndexOutOfBoundsException if the index does not fall within the array.
    */
   static void checkIndex(int index, int size) {
     if ((index | (size - (index + 1))) < 0) {
@@ -1120,7 +1203,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @param endIndex the end index of the range (exclusive)
    * @param size the size of the array.
    * @return the length of the range.
-   * @throws ArrayIndexOutOfBoundsException some or all of the range falls outside of the array.
+   * @throws IndexOutOfBoundsException some or all of the range falls outside of the array.
    */
   static int checkRange(int startIndex, int endIndex, int size) {
     final int length = endIndex - startIndex;
@@ -1233,6 +1316,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     final void writeToInternal(OutputStream outputStream, int sourceOffset, int numberToWrite)
         throws IOException {
       outputStream.write(bytes, getOffsetIntoBytes() + sourceOffset, numberToWrite);
+    }
+
+    @Override
+    final void writeTo(ByteOutput output) throws IOException {
+      output.writeLazy(bytes, getOffsetIntoBytes(), size());
     }
 
     @Override

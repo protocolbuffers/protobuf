@@ -222,6 +222,7 @@ string ToCamelCase(const StringPiece input) {
       if (!result.empty() && is_cap &&
           (!was_cap || (i + 1 < input.size() && ascii_islower(input[i + 1])))) {
         first_word = false;
+        result.push_back(input[i]);
       } else {
         result.push_back(ascii_tolower(input[i]));
         continue;
@@ -231,9 +232,13 @@ string ToCamelCase(const StringPiece input) {
       if (ascii_islower(input[i])) {
         result.push_back(ascii_toupper(input[i]));
         continue;
+      } else {
+        result.push_back(input[i]);
+        continue;
       }
+    } else {
+      result.push_back(ascii_tolower(input[i]));
     }
-    result.push_back(input[i]);
   }
   return result;
 }
