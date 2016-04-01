@@ -109,6 +109,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// or until an endgroup tag, whichever comes first.
 - (void)skipMessage;
 
+/// Check to see if the logical end of the stream has been reached.
+///
+/// This can return NO when there is no more data, but the current parsing
+/// expected more data.
+- (BOOL)isAtEnd;
+
+/// The offset into the stream.
+- (size_t)position;
+
 /// Verifies that the last call to @c -readTag returned the given tag value.
 /// This is used to verify that a nested group ended with the correct end tag.
 /// Throws @c NSParseErrorException if value does not match the last tag.
