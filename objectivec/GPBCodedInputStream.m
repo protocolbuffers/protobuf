@@ -359,6 +359,14 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
   }
 }
 
+- (BOOL)isAtEnd {
+  return GPBCodedInputStreamIsAtEnd(&state_);
+}
+
+- (size_t)position {
+  return state_.bufferPos;
+}
+
 - (double)readDouble {
   return GPBCodedInputStreamReadDouble(&state_);
 }

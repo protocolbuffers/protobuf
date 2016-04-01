@@ -123,13 +123,5 @@ C++ Implementation
 The C++ implementation for Python messages is built as a Python extension to
 improve the overall protobuf Python performance.
 
-To use the C++ implementation, you need to:
-1) Install the C++ protobuf runtime library, please see instructions in the
-   parent directory.
-2) Export an environment variable:
-
-    $ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
-
-You must set this variable at runtime, before running your program, otherwise
-the pure-Python implementation will be used. In a future release, we will
-change the default so that C++ implementation is used whenever it is available.
+To use the C++ implementation, you need to install the C++ protobuf runtime
+library, please see instructions in the parent directory.

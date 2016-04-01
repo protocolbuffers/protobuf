@@ -58,7 +58,11 @@ except ImportError:
   import unittest
 
 from google.protobuf.internal import _parameterized
+from google.protobuf import descriptor_pb2
+from google.protobuf import descriptor_pool
 from google.protobuf import map_unittest_pb2
+from google.protobuf import message_factory
+from google.protobuf import text_format
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf.internal import api_implementation
@@ -1762,6 +1766,61 @@ class PackedFieldTest(unittest.TestCase):
                    b'\x68\x01'
                    b'\x70\x01')
     self.assertEqual(golden_data, message.SerializeToString())
+
+
+@unittest.skipIf(api_implementation.Type() != 'cpp',
+                 'explicit tests of the C++ implementation')
+class OversizeProtosTest(unittest.TestCase):
+
+  def setUp(self):
+    self.file_desc = """
+      name: "f/f.msg2"
+      package: "f"
+      message_type {
+        name: "msg1"
+        field {
+          name: "payload"
+          number: 1
+          label: LABEL_OPTIONAL
+          type: TYPE_STRING
+        }
+      }
+      message_type {
+        name: "msg2"
+        field {
+          name: "field"
+          number: 1
+          label: LABEL_OPTIONAL
+          type: TYPE_MESSAGE
+          type_name: "msg1"
+        }
+      }
+    """
+    pool = descriptor_pool.DescriptorPool()
+    desc = descriptor_pb2.FileDescriptorProto()
+    text_format.Parse(self.file_desc, desc)
+    pool.Add(desc)
+    self.proto_cls = message_factory.MessageFactory(pool).GetPrototype(
+        pool.FindMessageTypeByName('f.msg2'))
+    self.p = self.proto_cls()
+    self.p.field.payload = 'c' * (1024 * 1024 * 64 + 1)
+    self.p_serialized = self.p.SerializeToString()
+
+  def testAssertOversizeProto(self):
+    from google.protobuf.pyext._message import SetAllowOversizeProtos
+    SetAllowOversizeProtos(False)
+    q = self.proto_cls()
+    try:
+      q.ParseFromString(self.p_serialized)
+    except message.DecodeError as e:
+      self.assertEqual(str(e), 'Error parsing message')
+
+  def testSucceedOversizeProto(self):
+    from google.protobuf.pyext._message import SetAllowOversizeProtos
+    SetAllowOversizeProtos(True)
+    q = self.proto_cls()
+    q.ParseFromString(self.p_serialized)
+    self.assertEqual(self.p.field.payload, q.field.payload)
 
 if __name__ == '__main__':
   unittest.main()
