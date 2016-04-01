@@ -392,7 +392,7 @@ TEST_F(JsonStreamParserTest, UnicodeEscaping) {
 // - unicode UTF-16 surrogate pair handling in strings
 TEST_F(JsonStreamParserTest, UnicodeSurrogatePairEscaping) {
   StringPiece str =
-      "[\"\\u0bee\\ud800\\uddf1\\uD80C\\uDDA4\\uD83d\\udC1D\U0001F36F\"]";
+      "[\"\\u0bee\\ud800\\uddf1\\uD80C\\uDDA4\\uD83d\\udC1D\\uD83C\\uDF6F\"]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")
         ->RenderString("",
