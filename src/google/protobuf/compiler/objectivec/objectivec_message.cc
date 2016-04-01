@@ -321,8 +321,9 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
   }
 
   printer->Print(
-      "$comments$@interface $classname$ : GPBMessage\n\n",
+      "$comments$$deprecated_attribute$@interface $classname$ : GPBMessage\n\n",
       "classname", class_name_,
+      "deprecated_attribute", GetOptionalDeprecatedAttribute(descriptor_, false, true),
       "comments", message_comments);
 
   vector<char> seen_oneofs(descriptor_->oneof_decl_count(), 0);
