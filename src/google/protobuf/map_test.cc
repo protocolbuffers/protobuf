@@ -31,6 +31,7 @@
 // A hack to include windows.h first, which ensures the GetMessage macro can
 // be undefined when we include <google/protobuf/stubs/common.h>
 #if defined(_WIN32)
+#define _WINSOCKAPI_  // to avoid re-definition in WinSock2.h
 #include <windows.h>
 #endif  // _WIN32
 
