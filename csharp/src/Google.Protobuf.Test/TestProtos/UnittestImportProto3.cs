@@ -42,10 +42,10 @@ namespace Google.Protobuf.TestProtos {
   }
   #region Enums
   public enum ImportEnum {
-    IMPORT_ENUM_UNSPECIFIED = 0,
-    IMPORT_FOO = 7,
-    IMPORT_BAR = 8,
-    IMPORT_BAZ = 9,
+    [pbr::OriginalName("IMPORT_ENUM_UNSPECIFIED")] Unspecified = 0,
+    [pbr::OriginalName("IMPORT_FOO")] ImportFoo = 7,
+    [pbr::OriginalName("IMPORT_BAR")] ImportBar = 8,
+    [pbr::OriginalName("IMPORT_BAZ")] ImportBaz = 9,
   }
 
   #endregion
