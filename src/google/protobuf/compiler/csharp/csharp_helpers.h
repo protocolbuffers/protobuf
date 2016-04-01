@@ -48,6 +48,12 @@ namespace csharp {
 
 class FieldGeneratorBase;
 
+enum CSharpEnumNaming {
+    CSHARPENUMNAMING_PRESERVE = 1,
+    CSHARPENUMNAMING_PASCAL = 2,
+    CSHARPENUMNAMING_PASCAL_TRIM_PREFIX = 3,
+};
+
 // TODO: start using this enum.
 enum CSharpType {
   CSHARPTYPE_INT32 = 1,
@@ -79,6 +85,8 @@ std::string GetFieldName(const FieldDescriptor* descriptor);
 std::string GetFieldConstantName(const FieldDescriptor* field);
 
 std::string GetPropertyName(const FieldDescriptor* descriptor);
+
+std::string GetEnumValueName(const std::string& enum_name, const std::string& enum_value_name, CSharpEnumNaming namingStyle);
 
 int GetFixedSize(FieldDescriptor::Type type);
 

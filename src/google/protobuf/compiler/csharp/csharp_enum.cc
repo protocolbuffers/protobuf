@@ -66,8 +66,9 @@ void EnumGenerator::Generate(io::Printer* printer) {
   printer->Indent();
   for (int i = 0; i < descriptor_->value_count(); i++) {
       WriteEnumValueDocComment(printer, descriptor_->value(i));
-      printer->Print("$name$ = $number$,\n",
-                   "name", descriptor_->value(i)->name(),
+      printer->Print("[pbr::OriginalName(\"$original_name$\")] $name$ = $number$,\n",
+                   "original_name", descriptor_->value(i)->name(),
+                   "name", GetEnumValueName(descriptor_->name(), descriptor_->value(i)->name(), CSHARPENUMNAMING_PASCAL_TRIM_PREFIX),
                    "number", SimpleItoa(descriptor_->value(i)->number()));
   }
   printer->Outdent();
