@@ -32,6 +32,7 @@
 // be undefined when we include <google/protobuf/stubs/common.h>
 #if defined(_WIN32)
 #define _WINSOCKAPI_  // to avoid re-definition in WinSock2.h
+#define NOMINMAX      // to avoid defining min/max macros
 #include <windows.h>
 #endif  // _WIN32
 
