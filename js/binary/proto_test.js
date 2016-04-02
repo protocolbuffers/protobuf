@@ -30,7 +30,9 @@
 
 // Test suite is written using Jasmine -- see http://jasmine.github.io/
 
+goog.require('goog.crypt.base64');
 goog.require('goog.testing.asserts');
+goog.require('jspb.Message');
 
 // CommonJS-LoadFromFile: ../testbinary_pb proto.jspb.test
 goog.require('proto.jspb.test.ExtendsWithMessage');
@@ -38,8 +40,60 @@ goog.require('proto.jspb.test.ForeignEnum');
 goog.require('proto.jspb.test.ForeignMessage');
 goog.require('proto.jspb.test.TestAllTypes');
 goog.require('proto.jspb.test.TestExtendable');
+goog.require('proto.jspb.test.extendOptionalBool');
+goog.require('proto.jspb.test.extendOptionalBytes');
+goog.require('proto.jspb.test.extendOptionalDouble');
+goog.require('proto.jspb.test.extendOptionalFixed32');
+goog.require('proto.jspb.test.extendOptionalFixed64');
+goog.require('proto.jspb.test.extendOptionalFloat');
+goog.require('proto.jspb.test.extendOptionalForeignEnum');
+goog.require('proto.jspb.test.extendOptionalInt32');
+goog.require('proto.jspb.test.extendOptionalInt64');
+goog.require('proto.jspb.test.extendOptionalSfixed32');
+goog.require('proto.jspb.test.extendOptionalSfixed64');
+goog.require('proto.jspb.test.extendOptionalSint32');
+goog.require('proto.jspb.test.extendOptionalSint64');
+goog.require('proto.jspb.test.extendOptionalString');
+goog.require('proto.jspb.test.extendOptionalUint32');
+goog.require('proto.jspb.test.extendOptionalUint64');
+goog.require('proto.jspb.test.extendPackedRepeatedBoolList');
+goog.require('proto.jspb.test.extendPackedRepeatedDoubleList');
+goog.require('proto.jspb.test.extendPackedRepeatedFixed32List');
+goog.require('proto.jspb.test.extendPackedRepeatedFixed64List');
+goog.require('proto.jspb.test.extendPackedRepeatedFloatList');
+goog.require('proto.jspb.test.extendPackedRepeatedForeignEnumList');
+goog.require('proto.jspb.test.extendPackedRepeatedInt32List');
+goog.require('proto.jspb.test.extendPackedRepeatedInt64List');
+goog.require('proto.jspb.test.extendPackedRepeatedSfixed32List');
+goog.require('proto.jspb.test.extendPackedRepeatedSfixed64List');
+goog.require('proto.jspb.test.extendPackedRepeatedSint32List');
+goog.require('proto.jspb.test.extendPackedRepeatedSint64List');
+goog.require('proto.jspb.test.extendPackedRepeatedUint32List');
+goog.require('proto.jspb.test.extendPackedRepeatedUint64List');
+goog.require('proto.jspb.test.extendRepeatedBoolList');
+goog.require('proto.jspb.test.extendRepeatedBytesList');
+goog.require('proto.jspb.test.extendRepeatedDoubleList');
+goog.require('proto.jspb.test.extendRepeatedFixed32List');
+goog.require('proto.jspb.test.extendRepeatedFixed64List');
+goog.require('proto.jspb.test.extendRepeatedFloatList');
+goog.require('proto.jspb.test.extendRepeatedForeignEnumList');
+goog.require('proto.jspb.test.extendRepeatedInt32List');
+goog.require('proto.jspb.test.extendRepeatedInt64List');
+goog.require('proto.jspb.test.extendRepeatedSfixed32List');
+goog.require('proto.jspb.test.extendRepeatedSfixed64List');
+goog.require('proto.jspb.test.extendRepeatedSint32List');
+goog.require('proto.jspb.test.extendRepeatedSint64List');
+goog.require('proto.jspb.test.extendRepeatedStringList');
+goog.require('proto.jspb.test.extendRepeatedUint32List');
+goog.require('proto.jspb.test.extendRepeatedUint64List');
+
 
 var suite = {};
+
+var BYTES = new Uint8Array([1, 2, 8, 9]);
+
+var BYTES_B64 = goog.crypt.base64.encodeByteArray(BYTES);
+
 
 /**
  * Helper: fill all fields on a TestAllTypes message.
@@ -62,7 +116,7 @@ function fillAllFields(msg) {
   msg.setOptionalDouble(-1.5);
   msg.setOptionalBool(true);
   msg.setOptionalString('hello world');
-  msg.setOptionalBytes('bytes');
+  msg.setOptionalBytes(BYTES);
   msg.setOptionalGroup(new proto.jspb.test.TestAllTypes.OptionalGroup());
   msg.getOptionalGroup().setA(100);
   var submsg = new proto.jspb.test.ForeignMessage();
@@ -70,6 +124,7 @@ function fillAllFields(msg) {
   msg.setOptionalForeignMessage(submsg);
   msg.setOptionalForeignEnum(proto.jspb.test.ForeignEnum.FOREIGN_FOO);
   msg.setOneofString('oneof');
+
 
   msg.setRepeatedInt32List([-42]);
   msg.setRepeatedInt64List([-0x7fffffff00000000]);
@@ -85,7 +140,7 @@ function fillAllFields(msg) {
   msg.setRepeatedDoubleList([-1.5]);
   msg.setRepeatedBoolList([true]);
   msg.setRepeatedStringList(['hello world']);
-  msg.setRepeatedBytesList(['bytes']);
+  msg.setRepeatedBytesList([BYTES, BYTES]);
   msg.setRepeatedGroupList([new proto.jspb.test.TestAllTypes.RepeatedGroup()]);
   msg.getRepeatedGroupList()[0].setA(100);
   submsg = new proto.jspb.test.ForeignMessage();
@@ -106,106 +161,115 @@ function fillAllFields(msg) {
   msg.setPackedRepeatedFloatList([1.5]);
   msg.setPackedRepeatedDoubleList([-1.5]);
   msg.setPackedRepeatedBoolList([true]);
+
 }
 
 
 /**
- * Helper: compare a bytes field to a string with codepoints 0--255.
+ * Helper: compare a bytes field to an expected value
  * @param {Uint8Array|string} arr
- * @param {string} str
+ * @param {Uint8Array} expected
  * @return {boolean}
  */
-function bytesCompare(arr, str) {
-  if (arr.length != str.length) {
+function bytesCompare(arr, expected) {
+  if (goog.isString(arr)) {
+    arr = goog.crypt.base64.decodeStringToUint8Array(arr);
+  }
+  if (arr.length != expected.length) {
     return false;
   }
-  if (typeof arr == 'string') {
-    for (var i = 0; i < arr.length; i++) {
-      if (arr.charCodeAt(i) != str.charCodeAt(i)) {
-        return false;
-      }
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i] != expected[i]) {
+      return false;
     }
-    return true;
-  } else {
-    for (var i = 0; i < arr.length; i++) {
-      if (arr[i] != str.charCodeAt(i)) {
-        return false;
-      }
-    }
-    return true;
   }
+  return true;
 }
 
 
 /**
  * Helper: verify contents of given TestAllTypes message as set by
  * fillAllFields().
- * @param {proto.jspb.test.TestAllTypes} msg
+ * @param {proto.jspb.test.TestAllTypes} original
+ * @param {proto.jspb.test.TestAllTypes} copy
  */
-function checkAllFields(msg) {
-  assertEquals(msg.getOptionalInt32(), -42);
-  assertEquals(msg.getOptionalInt64(), -0x7fffffff00000000);
-  assertEquals(msg.getOptionalUint32(), 0x80000000);
-  assertEquals(msg.getOptionalUint64(), 0xf000000000000000);
-  assertEquals(msg.getOptionalSint32(), -100);
-  assertEquals(msg.getOptionalSint64(), -0x8000000000000000);
-  assertEquals(msg.getOptionalFixed32(), 1234);
-  assertEquals(msg.getOptionalFixed64(), 0x1234567800000000);
-  assertEquals(msg.getOptionalSfixed32(), -1234);
-  assertEquals(msg.getOptionalSfixed64(), -0x1234567800000000);
-  assertEquals(msg.getOptionalFloat(), 1.5);
-  assertEquals(msg.getOptionalDouble(), -1.5);
-  assertEquals(msg.getOptionalBool(), true);
-  assertEquals(msg.getOptionalString(), 'hello world');
-  assertEquals(true, bytesCompare(msg.getOptionalBytes(), 'bytes'));
-  assertEquals(msg.getOptionalGroup().getA(), 100);
-  assertEquals(msg.getOptionalForeignMessage().getC(), 16);
-  assertEquals(msg.getOptionalForeignEnum(),
+function checkAllFields(original, copy) {
+  assertTrue(jspb.Message.equals(original, copy));
+
+  assertEquals(copy.getOptionalInt32(), -42);
+  assertEquals(copy.getOptionalInt64(), -0x7fffffff00000000);
+  assertEquals(copy.getOptionalUint32(), 0x80000000);
+  assertEquals(copy.getOptionalUint64(), 0xf000000000000000);
+  assertEquals(copy.getOptionalSint32(), -100);
+  assertEquals(copy.getOptionalSint64(), -0x8000000000000000);
+  assertEquals(copy.getOptionalFixed32(), 1234);
+  assertEquals(copy.getOptionalFixed64(), 0x1234567800000000);
+  assertEquals(copy.getOptionalSfixed32(), -1234);
+  assertEquals(copy.getOptionalSfixed64(), -0x1234567800000000);
+  assertEquals(copy.getOptionalFloat(), 1.5);
+  assertEquals(copy.getOptionalDouble(), -1.5);
+  assertEquals(copy.getOptionalBool(), true);
+  assertEquals(copy.getOptionalString(), 'hello world');
+  assertEquals(true, bytesCompare(copy.getOptionalBytes(), BYTES));
+  assertEquals(true, bytesCompare(copy.getOptionalBytes_asU8(), BYTES));
+  assertEquals(
+      copy.getOptionalBytes_asB64(), goog.crypt.base64.encodeByteArray(BYTES));
+
+  assertEquals(copy.getOptionalGroup().getA(), 100);
+  assertEquals(copy.getOptionalForeignMessage().getC(), 16);
+  assertEquals(copy.getOptionalForeignEnum(),
       proto.jspb.test.ForeignEnum.FOREIGN_FOO);
-  assertEquals(msg.getOneofString(), 'oneof');
-  assertEquals(msg.getOneofFieldCase(),
+
+
+  assertEquals(copy.getOneofString(), 'oneof');
+  assertEquals(copy.getOneofFieldCase(),
       proto.jspb.test.TestAllTypes.OneofFieldCase.ONEOF_STRING);
 
-  assertElementsEquals(msg.getRepeatedInt32List(), [-42]);
-  assertElementsEquals(msg.getRepeatedInt64List(), [-0x7fffffff00000000]);
-  assertElementsEquals(msg.getRepeatedUint32List(), [0x80000000]);
-  assertElementsEquals(msg.getRepeatedUint64List(), [0xf000000000000000]);
-  assertElementsEquals(msg.getRepeatedSint32List(), [-100]);
-  assertElementsEquals(msg.getRepeatedSint64List(), [-0x8000000000000000]);
-  assertElementsEquals(msg.getRepeatedFixed32List(), [1234]);
-  assertElementsEquals(msg.getRepeatedFixed64List(), [0x1234567800000000]);
-  assertElementsEquals(msg.getRepeatedSfixed32List(), [-1234]);
-  assertElementsEquals(msg.getRepeatedSfixed64List(), [-0x1234567800000000]);
-  assertElementsEquals(msg.getRepeatedFloatList(), [1.5]);
-  assertElementsEquals(msg.getRepeatedDoubleList(), [-1.5]);
-  assertElementsEquals(msg.getRepeatedBoolList(), [true]);
-  assertElementsEquals(msg.getRepeatedStringList(), ['hello world']);
-  assertEquals(msg.getRepeatedBytesList().length, 1);
-  assertEquals(true, bytesCompare(msg.getRepeatedBytesList()[0], 'bytes'));
-  assertEquals(msg.getRepeatedGroupList().length, 1);
-  assertEquals(msg.getRepeatedGroupList()[0].getA(), 100);
-  assertEquals(msg.getRepeatedForeignMessageList().length, 1);
-  assertEquals(msg.getRepeatedForeignMessageList()[0].getC(), 1000);
-  assertElementsEquals(msg.getRepeatedForeignEnumList(),
+  assertElementsEquals(copy.getRepeatedInt32List(), [-42]);
+  assertElementsEquals(copy.getRepeatedInt64List(), [-0x7fffffff00000000]);
+  assertElementsEquals(copy.getRepeatedUint32List(), [0x80000000]);
+  assertElementsEquals(copy.getRepeatedUint64List(), [0xf000000000000000]);
+  assertElementsEquals(copy.getRepeatedSint32List(), [-100]);
+  assertElementsEquals(copy.getRepeatedSint64List(), [-0x8000000000000000]);
+  assertElementsEquals(copy.getRepeatedFixed32List(), [1234]);
+  assertElementsEquals(copy.getRepeatedFixed64List(), [0x1234567800000000]);
+  assertElementsEquals(copy.getRepeatedSfixed32List(), [-1234]);
+  assertElementsEquals(copy.getRepeatedSfixed64List(), [-0x1234567800000000]);
+  assertElementsEquals(copy.getRepeatedFloatList(), [1.5]);
+  assertElementsEquals(copy.getRepeatedDoubleList(), [-1.5]);
+  assertElementsEquals(copy.getRepeatedBoolList(), [true]);
+  assertElementsEquals(copy.getRepeatedStringList(), ['hello world']);
+  assertEquals(copy.getRepeatedBytesList().length, 2);
+  assertEquals(true, bytesCompare(copy.getRepeatedBytesList_asU8()[0], BYTES));
+  assertEquals(true, bytesCompare(copy.getRepeatedBytesList()[0], BYTES));
+  assertEquals(true, bytesCompare(copy.getRepeatedBytesList_asU8()[1], BYTES));
+  assertEquals(copy.getRepeatedBytesList_asB64()[0], BYTES_B64);
+  assertEquals(copy.getRepeatedBytesList_asB64()[1], BYTES_B64);
+  assertEquals(copy.getRepeatedGroupList().length, 1);
+  assertEquals(copy.getRepeatedGroupList()[0].getA(), 100);
+  assertEquals(copy.getRepeatedForeignMessageList().length, 1);
+  assertEquals(copy.getRepeatedForeignMessageList()[0].getC(), 1000);
+  assertElementsEquals(copy.getRepeatedForeignEnumList(),
       [proto.jspb.test.ForeignEnum.FOREIGN_FOO]);
 
-  assertElementsEquals(msg.getPackedRepeatedInt32List(), [-42]);
-  assertElementsEquals(msg.getPackedRepeatedInt64List(),
+  assertElementsEquals(copy.getPackedRepeatedInt32List(), [-42]);
+  assertElementsEquals(copy.getPackedRepeatedInt64List(),
       [-0x7fffffff00000000]);
-  assertElementsEquals(msg.getPackedRepeatedUint32List(), [0x80000000]);
-  assertElementsEquals(msg.getPackedRepeatedUint64List(), [0xf000000000000000]);
-  assertElementsEquals(msg.getPackedRepeatedSint32List(), [-100]);
-  assertElementsEquals(msg.getPackedRepeatedSint64List(),
+  assertElementsEquals(copy.getPackedRepeatedUint32List(), [0x80000000]);
+  assertElementsEquals(copy.getPackedRepeatedUint64List(),
+      [0xf000000000000000]);
+  assertElementsEquals(copy.getPackedRepeatedSint32List(), [-100]);
+  assertElementsEquals(copy.getPackedRepeatedSint64List(),
       [-0x8000000000000000]);
-  assertElementsEquals(msg.getPackedRepeatedFixed32List(), [1234]);
-  assertElementsEquals(msg.getPackedRepeatedFixed64List(),
+  assertElementsEquals(copy.getPackedRepeatedFixed32List(), [1234]);
+  assertElementsEquals(copy.getPackedRepeatedFixed64List(),
       [0x1234567800000000]);
-  assertElementsEquals(msg.getPackedRepeatedSfixed32List(), [-1234]);
-  assertElementsEquals(msg.getPackedRepeatedSfixed64List(),
+  assertElementsEquals(copy.getPackedRepeatedSfixed32List(), [-1234]);
+  assertElementsEquals(copy.getPackedRepeatedSfixed64List(),
       [-0x1234567800000000]);
-  assertElementsEquals(msg.getPackedRepeatedFloatList(), [1.5]);
-  assertElementsEquals(msg.getPackedRepeatedDoubleList(), [-1.5]);
-  assertElementsEquals(msg.getPackedRepeatedBoolList(), [true]);
+  assertElementsEquals(copy.getPackedRepeatedFloatList(), [1.5]);
+  assertElementsEquals(copy.getPackedRepeatedDoubleList(), [-1.5]);
+
 }
 
 
@@ -242,14 +306,13 @@ function checkExtensions(msg) {
       msg.getExtension(proto.jspb.test.extendOptionalBool));
   assertEquals('hello world',
       msg.getExtension(proto.jspb.test.extendOptionalString));
-  assertEquals(true,
-      bytesCompare(msg.getExtension(proto.jspb.test.extendOptionalBytes),
-        'bytes'));
+  assertEquals(
+      true, bytesCompare(
+                msg.getExtension(proto.jspb.test.extendOptionalBytes), BYTES));
   assertEquals(16,
       msg.getExtension(
           proto.jspb.test.ExtendsWithMessage.optionalExtension).getFoo());
-  assertEquals(proto.jspb.test.ForeignEnum.FOREIGN_FOO,
-      msg.getExtension(proto.jspb.test.extendOptionalForeignEnum));
+
 
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedInt32List),
@@ -293,10 +356,10 @@ function checkExtensions(msg) {
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedStringList),
       ['hello world']);
-  assertEquals(true,
+  assertEquals(
+      true,
       bytesCompare(
-          msg.getExtension(proto.jspb.test.extendRepeatedBytesList)[0],
-          'bytes'));
+          msg.getExtension(proto.jspb.test.extendRepeatedBytesList)[0], BYTES));
   assertEquals(1000,
       msg.getExtension(
           proto.jspb.test.ExtendsWithMessage.repeatedExtensionList)[0]
@@ -304,6 +367,7 @@ function checkExtensions(msg) {
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedForeignEnumList),
       [proto.jspb.test.ForeignEnum.FOREIGN_FOO]);
+
 
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedInt32List),
@@ -347,6 +411,7 @@ function checkExtensions(msg) {
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedForeignEnumList),
       [proto.jspb.test.ForeignEnum.FOREIGN_FOO]);
+
 }
 
 
@@ -360,9 +425,82 @@ describe('protoBinaryTest', function() {
     fillAllFields(msg);
     var encoded = msg.serializeBinary();
     var decoded = proto.jspb.test.TestAllTypes.deserializeBinary(encoded);
-    checkAllFields(decoded);
+    checkAllFields(msg, decoded);
   });
 
+  /**
+   * Test that base64 string and Uint8Array are interchangeable in bytes fields.
+   */
+  it('testBytesFieldsGettersInterop', function() {
+    var msg = new proto.jspb.test.TestAllTypes();
+    // Set from a base64 string and check all the getters work.
+    msg.setOptionalBytes(BYTES_B64);
+    assertTrue(bytesCompare(msg.getOptionalBytes_asU8(), BYTES));
+    assertTrue(bytesCompare(msg.getOptionalBytes_asB64(), BYTES));
+    assertTrue(bytesCompare(msg.getOptionalBytes(), BYTES));
+
+    // Test binary serialize round trip doesn't break it.
+    msg = proto.jspb.test.TestAllTypes.deserializeBinary(msg.serializeBinary());
+    assertTrue(bytesCompare(msg.getOptionalBytes_asU8(), BYTES));
+    assertTrue(bytesCompare(msg.getOptionalBytes_asB64(), BYTES));
+    assertTrue(bytesCompare(msg.getOptionalBytes(), BYTES));
+
+    msg = new proto.jspb.test.TestAllTypes();
+    // Set from a Uint8Array and check all the getters work.
+    msg.setOptionalBytes(BYTES);
+    assertTrue(bytesCompare(msg.getOptionalBytes_asU8(), BYTES));
+    assertTrue(bytesCompare(msg.getOptionalBytes_asB64(), BYTES));
+    assertTrue(bytesCompare(msg.getOptionalBytes(), BYTES));
+
+  });
+
+  /**
+   * Test that bytes setters will receive result of any of the getters.
+   */
+  it('testBytesFieldsSettersInterop', function() {
+    var msg = new proto.jspb.test.TestAllTypes();
+    msg.setOptionalBytes(BYTES);
+    assertTrue(bytesCompare(msg.getOptionalBytes(), BYTES));
+
+    msg.setOptionalBytes(msg.getOptionalBytes());
+    assertTrue(bytesCompare(msg.getOptionalBytes(), BYTES));
+    msg.setOptionalBytes(msg.getOptionalBytes_asB64());
+    assertTrue(bytesCompare(msg.getOptionalBytes(), BYTES));
+    msg.setOptionalBytes(msg.getOptionalBytes_asU8());
+    assertTrue(bytesCompare(msg.getOptionalBytes(), BYTES));
+  });
+
+  /**
+   * Test that bytes setters will receive result of any of the getters.
+   */
+  it('testRepeatedBytesGetters', function() {
+    var msg = new proto.jspb.test.TestAllTypes();
+
+    function assertGetters() {
+      assertTrue(goog.isString(msg.getRepeatedBytesList_asB64()[0]));
+      assertTrue(goog.isString(msg.getRepeatedBytesList_asB64()[1]));
+      assertTrue(msg.getRepeatedBytesList_asU8()[0] instanceof Uint8Array);
+      assertTrue(msg.getRepeatedBytesList_asU8()[1] instanceof Uint8Array);
+
+      assertTrue(bytesCompare(msg.getRepeatedBytesList()[0], BYTES));
+      assertTrue(bytesCompare(msg.getRepeatedBytesList()[1], BYTES));
+      assertTrue(bytesCompare(msg.getRepeatedBytesList_asB64()[0], BYTES));
+      assertTrue(bytesCompare(msg.getRepeatedBytesList_asB64()[1], BYTES));
+      assertTrue(bytesCompare(msg.getRepeatedBytesList_asU8()[0], BYTES));
+      assertTrue(bytesCompare(msg.getRepeatedBytesList_asU8()[1], BYTES));
+    }
+
+    msg.setRepeatedBytesList([BYTES, BYTES]);
+    assertGetters();
+
+    msg.setRepeatedBytesList([BYTES_B64, BYTES_B64]);
+    assertGetters();
+
+    msg.setRepeatedBytesList(null);
+    assertEquals(0, msg.getRepeatedBytesList().length);
+    assertEquals(0, msg.getRepeatedBytesList_asB64().length);
+    assertEquals(0, msg.getRepeatedBytesList_asU8().length);
+  });
 
   /**
    * Helper: fill all extension values.
@@ -397,8 +535,7 @@ describe('protoBinaryTest', function() {
         proto.jspb.test.extendOptionalBool, true);
     msg.setExtension(
         proto.jspb.test.extendOptionalString, 'hello world');
-    msg.setExtension(
-        proto.jspb.test.extendOptionalBytes, 'bytes');
+    msg.setExtension(proto.jspb.test.extendOptionalBytes, BYTES);
     var submsg = new proto.jspb.test.ExtendsWithMessage();
     submsg.setFoo(16);
     msg.setExtension(
@@ -406,6 +543,7 @@ describe('protoBinaryTest', function() {
     msg.setExtension(
         proto.jspb.test.extendOptionalForeignEnum,
         proto.jspb.test.ForeignEnum.FOREIGN_FOO);
+
 
     msg.setExtension(
         proto.jspb.test.extendRepeatedInt32List, [-42]);
@@ -435,14 +573,14 @@ describe('protoBinaryTest', function() {
         proto.jspb.test.extendRepeatedBoolList, [true]);
     msg.setExtension(
         proto.jspb.test.extendRepeatedStringList, ['hello world']);
-    msg.setExtension(
-        proto.jspb.test.extendRepeatedBytesList, ['bytes']);
+    msg.setExtension(proto.jspb.test.extendRepeatedBytesList, [BYTES]);
     submsg = new proto.jspb.test.ExtendsWithMessage();
     submsg.setFoo(1000);
     msg.setExtension(
         proto.jspb.test.ExtendsWithMessage.repeatedExtensionList, [submsg]);
     msg.setExtension(proto.jspb.test.extendRepeatedForeignEnumList,
         [proto.jspb.test.ForeignEnum.FOREIGN_FOO]);
+
 
     msg.setExtension(
         proto.jspb.test.extendPackedRepeatedInt32List, [-42]);
@@ -473,6 +611,7 @@ describe('protoBinaryTest', function() {
         proto.jspb.test.extendPackedRepeatedBoolList, [true]);
     msg.setExtension(proto.jspb.test.extendPackedRepeatedForeignEnumList,
         [proto.jspb.test.ForeignEnum.FOREIGN_FOO]);
+
   }
 
 

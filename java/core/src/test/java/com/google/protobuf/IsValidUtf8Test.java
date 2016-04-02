@@ -30,11 +30,17 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.IsValidUtf8TestUtil.DIRECT_NIO_FACTORY;
+import static com.google.protobuf.IsValidUtf8TestUtil.EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT;
+import static com.google.protobuf.IsValidUtf8TestUtil.EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT;
+import static com.google.protobuf.IsValidUtf8TestUtil.HEAP_NIO_FACTORY;
+import static com.google.protobuf.IsValidUtf8TestUtil.LITERAL_FACTORY;
+import static com.google.protobuf.IsValidUtf8TestUtil.testBytes;
+
+import com.google.protobuf.IsValidUtf8TestUtil.ByteStringFactory;
 import com.google.protobuf.IsValidUtf8TestUtil.Shard;
 
 import junit.framework.TestCase;
-
-import java.io.UnsupportedEncodingException;
 
 /**
  * Tests cases for {@link ByteString#isValidUtf8()}. This includes three
@@ -51,31 +57,33 @@ import java.io.UnsupportedEncodingException;
  * @author martinrb@google.com (Martin Buchholz)
  */
 public class IsValidUtf8Test extends TestCase {
-
   /**
    * Tests that round tripping of all two byte permutations work.
    */
-  public void testIsValidUtf8_1Byte() throws UnsupportedEncodingException {
-    IsValidUtf8TestUtil.testBytes(1,
-        IsValidUtf8TestUtil.EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT);
+  public void testIsValidUtf8_1Byte() {
+    testBytes(LITERAL_FACTORY, 1, EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT);
+    testBytes(HEAP_NIO_FACTORY, 1, EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT);
+    testBytes(DIRECT_NIO_FACTORY, 1, EXPECTED_ONE_BYTE_ROUNDTRIPPABLE_COUNT);
   }
 
   /**
    * Tests that round tripping of all two byte permutations work.
    */
-  public void testIsValidUtf8_2Bytes() throws UnsupportedEncodingException {
-    IsValidUtf8TestUtil.testBytes(2,
-        IsValidUtf8TestUtil.EXPECTED_TWO_BYTE_ROUNDTRIPPABLE_COUNT);
+  public void testIsValidUtf8_2Bytes() {
+    testBytes(LITERAL_FACTORY, 2, IsValidUtf8TestUtil.EXPECTED_TWO_BYTE_ROUNDTRIPPABLE_COUNT);
+    testBytes(HEAP_NIO_FACTORY, 2, IsValidUtf8TestUtil.EXPECTED_TWO_BYTE_ROUNDTRIPPABLE_COUNT);
+    testBytes(DIRECT_NIO_FACTORY, 2, IsValidUtf8TestUtil.EXPECTED_TWO_BYTE_ROUNDTRIPPABLE_COUNT);
   }
 
   /**
    * Tests that round tripping of all three byte permutations work.
    */
-  public void testIsValidUtf8_3Bytes() throws UnsupportedEncodingException {
+  public void testIsValidUtf8_3Bytes() {
     // Travis' OOM killer doesn't like this test
     if (System.getenv("TRAVIS") == null) {
-      IsValidUtf8TestUtil.testBytes(3,
-          IsValidUtf8TestUtil.EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
+      testBytes(LITERAL_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
+      testBytes(HEAP_NIO_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
+      testBytes(DIRECT_NIO_FACTORY, 3, EXPECTED_THREE_BYTE_ROUNDTRIPPABLE_COUNT);
     }
   }
 
@@ -85,8 +93,7 @@ public class IsValidUtf8Test extends TestCase {
    * {@link IsValidUtf8FourByteTest} is used for full coverage. This method
    * tests specific four-byte cases.
    */
-  public void testIsValidUtf8_4BytesSamples()
-      throws UnsupportedEncodingException {
+  public void testIsValidUtf8_4BytesSamples() {
     // Valid 4 byte.
     assertValidUtf8(0xF0, 0xA4, 0xAD, 0xA2);
 
@@ -119,9 +126,7 @@ public class IsValidUtf8Test extends TestCase {
     assertTrue(asBytes("\u024B62\u024B62").isValidUtf8());
 
     // Mixed string
-    assertTrue(
-        asBytes("a\u020ac\u00a2b\\u024B62u020acc\u00a2de\u024B62")
-        .isValidUtf8());
+    assertTrue(asBytes("a\u020ac\u00a2b\\u024B62u020acc\u00a2de\u024B62").isValidUtf8());
 
     // Not a valid string
     assertInvalidUtf8(-1, 0, -1, 0);
@@ -135,36 +140,35 @@ public class IsValidUtf8Test extends TestCase {
     return realBytes;
   }
 
-  private ByteString toByteString(int... bytes) {
-    return ByteString.copyFrom(toByteArray(bytes));
-  }
-
-  private void assertValidUtf8(int[] bytes, boolean not) {
+  private void assertValidUtf8(ByteStringFactory factory, int[] bytes, boolean not) {
     byte[] realBytes = toByteArray(bytes);
     assertTrue(not ^ Utf8.isValidUtf8(realBytes));
     assertTrue(not ^ Utf8.isValidUtf8(realBytes, 0, bytes.length));
-    ByteString lit = ByteString.copyFrom(realBytes);
-    ByteString sub = lit.substring(0, bytes.length);
-    assertTrue(not ^ lit.isValidUtf8());
+    ByteString leaf = factory.newByteString(realBytes);
+    ByteString sub = leaf.substring(0, bytes.length);
+    assertTrue(not ^ leaf.isValidUtf8());
     assertTrue(not ^ sub.isValidUtf8());
     ByteString[] ropes = {
-      RopeByteString.newInstanceForTest(ByteString.EMPTY, lit),
-      RopeByteString.newInstanceForTest(ByteString.EMPTY, sub),
-      RopeByteString.newInstanceForTest(lit, ByteString.EMPTY),
-      RopeByteString.newInstanceForTest(sub, ByteString.EMPTY),
-      RopeByteString.newInstanceForTest(sub, lit)
-    };
+        RopeByteString.newInstanceForTest(ByteString.EMPTY, leaf),
+        RopeByteString.newInstanceForTest(ByteString.EMPTY, sub),
+        RopeByteString.newInstanceForTest(leaf, ByteString.EMPTY),
+        RopeByteString.newInstanceForTest(sub, ByteString.EMPTY),
+        RopeByteString.newInstanceForTest(sub, leaf)};
     for (ByteString rope : ropes) {
       assertTrue(not ^ rope.isValidUtf8());
     }
   }
 
   private void assertValidUtf8(int... bytes) {
-    assertValidUtf8(bytes, false);
+    assertValidUtf8(LITERAL_FACTORY, bytes, false);
+    assertValidUtf8(HEAP_NIO_FACTORY, bytes, false);
+    assertValidUtf8(DIRECT_NIO_FACTORY, bytes, false);
   }
 
   private void assertInvalidUtf8(int... bytes) {
-    assertValidUtf8(bytes, true);
+    assertValidUtf8(LITERAL_FACTORY, bytes, true);
+    assertValidUtf8(HEAP_NIO_FACTORY, bytes, true);
+    assertValidUtf8(DIRECT_NIO_FACTORY, bytes, true);
   }
 
   private static ByteString asBytes(String s) {
@@ -177,7 +181,6 @@ public class IsValidUtf8Test extends TestCase {
     for (Shard shard : IsValidUtf8TestUtil.FOUR_BYTE_SHARDS) {
       actual += shard.expected;
     }
-    assertEquals(IsValidUtf8TestUtil.EXPECTED_FOUR_BYTE_ROUNDTRIPPABLE_COUNT,
-        actual);
+    assertEquals(IsValidUtf8TestUtil.EXPECTED_FOUR_BYTE_ROUNDTRIPPABLE_COUNT, actual);
   }
 }

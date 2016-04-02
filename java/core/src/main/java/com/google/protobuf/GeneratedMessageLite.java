@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+import com.google.protobuf.AbstractMessageLite.Builder.LimitedInputStream;
 import com.google.protobuf.Internal.BooleanList;
 import com.google.protobuf.Internal.DoubleList;
 import com.google.protobuf.Internal.FloatList;
@@ -39,6 +40,7 @@ import com.google.protobuf.Internal.ProtobufList;
 import com.google.protobuf.WireFormat.FieldType;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
@@ -57,10 +59,7 @@ import java.util.Map;
 public abstract class GeneratedMessageLite<
     MessageType extends GeneratedMessageLite<MessageType, BuilderType>,
     BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>> 
-        extends AbstractMessageLite
-        implements Serializable {
-
-  private static final long serialVersionUID = 1L;
+        extends AbstractMessageLite {
 
   /** For use by generated code only. Lazily initialized to reduce allocations. */
   protected UnknownFieldSetLite unknownFields = null;
@@ -82,6 +81,24 @@ public abstract class GeneratedMessageLite<
   public final BuilderType newBuilderForType() {
     return (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER);
   }
+
+  /**
+   * A reflective toString function. This is primarily intended as a developer aid, while keeping
+   * binary size down. The first line of the {@code toString()} representation includes a commented
+   * version of {@code super.toString()} to act as an indicator that this should not be relied on
+   * for comparisons.
+   * <p>
+   * NOTE: This method relies on the field getter methods not being stripped or renamed by proguard.
+   * If they are, the fields will not be included in the returned string representation.
+   * <p>
+   * NOTE: This implementation is liable to change in the future, and should not be relied on in
+   * code.
+   */
+  @Override
+  public String toString() {
+    return MessageLiteToString.toString(this, super.toString());
+  }
+
 
   // The general strategy for unknown fields is to use an UnknownFieldSetLite that is treated as
   // mutable during the parsing constructor and immutable after. This allows us to avoid
@@ -303,10 +320,9 @@ public abstract class GeneratedMessageLite<
         throws java.io.IOException {
       MessageType parsedMessage = null;
       try {
-        parsedMessage =
-            (MessageType) getDefaultInstanceForType().getParserForType().parsePartialFrom(
-                input, extensionRegistry);
-      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        parsedMessage = parsePartialFrom(
+            (MessageType) getDefaultInstanceForType(), input, extensionRegistry);
+      } catch (InvalidProtocolBufferException e) {
         parsedMessage = (MessageType) e.getUnfinishedMessage();
         throw e;
       } finally {
@@ -561,7 +577,6 @@ public abstract class GeneratedMessageLite<
     protected boolean extensionsAreInitialized() {
       return extensions.isInitialized();
     }
-
 
     @Override
     protected final void doneParsing() {
@@ -1049,7 +1064,12 @@ public abstract class GeneratedMessageLite<
    * A serialized (serializable) form of the generated message.  Stores the
    * message as a class name and a byte array.
    */
-  static final class SerializedForm implements Serializable {
+  protected static final class SerializedForm implements Serializable {
+
+    public static SerializedForm of(MessageLite message) {
+      return new SerializedForm(message);
+    }
+    
     private static final long serialVersionUID = 0L;
 
     private final String messageClassName;
@@ -1093,16 +1113,6 @@ public abstract class GeneratedMessageLite<
       }
     }
   }
-
-  /**
-   * Replaces this object in the output stream with a serialized form.
-   * Part of Java's serialization magic.  Generated sub-classes must override
-   * this method by calling {@code return super.writeReplace();}
-   * @return a SerializedForm of this message
-   */
-  protected Object writeReplace() throws ObjectStreamException {
-    return new SerializedForm(this);
-  }
   
   /**
    * Checks that the {@link Extension} is Lite and returns it as a
@@ -1133,45 +1143,6 @@ public abstract class GeneratedMessageLite<
   
   protected static final <T extends GeneratedMessageLite<T, ?>> void makeImmutable(T message) {
     message.dynamicMethod(MethodToInvoke.MAKE_IMMUTABLE);
-  }
-  
-  /**
-   * A static helper method for parsing a partial from input using the extension registry and the
-   * instance.
-   */
-  static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
-      T instance, CodedInputStream input, ExtensionRegistryLite extensionRegistry)
-          throws InvalidProtocolBufferException {
-    try {
-      return (T) instance.dynamicMethod(
-          MethodToInvoke.PARSE_PARTIAL_FROM, input, extensionRegistry);
-    } catch (RuntimeException e) {
-      if (e.getCause() instanceof InvalidProtocolBufferException) {
-        throw (InvalidProtocolBufferException) e.getCause();
-      }
-      throw e;
-    }
-  }
-  
-  /**
-   * A {@link Parser} implementation that delegates to the default instance.
-   * <p>
-   * For use by generated code only.
-   */
-  protected static class DefaultInstanceBasedParser<T extends GeneratedMessageLite<T, ?>>
-      extends AbstractParser<T> {
-    
-    private T defaultInstance;
-    
-    public DefaultInstanceBasedParser(T defaultInstance) {
-      this.defaultInstance = defaultInstance;
-    }
-    
-    @Override
-    public T parsePartialFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
-        throws InvalidProtocolBufferException {
-      return GeneratedMessageLite.parsePartialFrom(defaultInstance, input, extensionRegistry);
-    }
   }
   
   protected static IntList newIntList() {
@@ -1269,8 +1240,218 @@ public abstract class GeneratedMessageLite<
   protected static <E> ProtobufList<E> emptyProtobufList() {
     return ProtobufArrayList.emptyList();
   }
-  
+
   protected static LazyStringArrayList emptyLazyStringArrayList() {
     return LazyStringArrayList.emptyList();
+  }
+  
+  /**
+   * A {@link Parser} implementation that delegates to the default instance.
+   * <p>
+   * For use by generated code only.
+   */
+  protected static class DefaultInstanceBasedParser<T extends GeneratedMessageLite<T, ?>>
+      extends AbstractParser<T> {
+    
+    private T defaultInstance;
+    
+    public DefaultInstanceBasedParser(T defaultInstance) {
+      this.defaultInstance = defaultInstance;
+    }
+    
+    @Override
+    public T parsePartialFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+        throws InvalidProtocolBufferException {
+      return GeneratedMessageLite.parsePartialFrom(defaultInstance, input, extensionRegistry);
+    }
+  }
+  
+  /**
+   * A static helper method for parsing a partial from input using the extension registry and the
+   * instance.
+   */
+  // TODO(dweis): Should this verify that the last tag was 0?
+  static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
+      T instance, CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+          throws InvalidProtocolBufferException {
+    T result;
+    try {
+      result = (T) instance.dynamicMethod(
+          MethodToInvoke.PARSE_PARTIAL_FROM, input, extensionRegistry);
+    } catch (RuntimeException e) {
+      if (e.getCause() instanceof InvalidProtocolBufferException) {
+        throw (InvalidProtocolBufferException) e.getCause();
+      }
+      throw e;
+    }
+    return result;
+  }
+  
+  protected static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
+      T defaultInstance,
+      CodedInputStream input)
+      throws InvalidProtocolBufferException {
+    return parsePartialFrom(defaultInstance, input, ExtensionRegistryLite.getEmptyRegistry());
+  }
+  
+  /**
+   * Helper method to check if message is initialized.
+   *
+   * @throws InvalidProtocolBufferException if it is not initialized.
+   * @return The message to check.
+   */
+  private static <T extends GeneratedMessageLite<T, ?>> T checkMessageInitialized(T message)
+      throws InvalidProtocolBufferException {
+    if (message != null && !message.isInitialized()) {
+      throw message.newUninitializedMessageException()
+          .asInvalidProtocolBufferException()
+          .setUnfinishedMessage(message);
+    }
+    return message;
+  }
+
+  // Validates last tag.
+  protected static <T extends GeneratedMessageLite<T, ?>> T parseFrom(
+      T defaultInstance, ByteString data)
+      throws InvalidProtocolBufferException {
+    return checkMessageInitialized(
+        parseFrom(defaultInstance, data, ExtensionRegistryLite.getEmptyRegistry()));
+  }
+
+  // Validates last tag.
+  protected static <T extends GeneratedMessageLite<T, ?>> T parseFrom(
+      T defaultInstance, ByteString data, ExtensionRegistryLite extensionRegistry)
+      throws InvalidProtocolBufferException {
+    return checkMessageInitialized(parsePartialFrom(defaultInstance, data, extensionRegistry));
+  }
+  
+  // This is a special case since we want to verify that the last tag is 0. We assume we exhaust the
+  // ByteString.
+  private static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
+      T defaultInstance, ByteString data, ExtensionRegistryLite extensionRegistry)
+      throws InvalidProtocolBufferException {
+    T message;
+    try {
+      CodedInputStream input = data.newCodedInput();
+      message = parsePartialFrom(defaultInstance, input, extensionRegistry);
+      try {
+        input.checkLastTagWas(0);
+      } catch (InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(message);
+      }
+      return message;
+    } catch (InvalidProtocolBufferException e) {
+      throw e;
+    }
+  }
+  
+  // This is a special case since we want to verify that the last tag is 0. We assume we exhaust the
+  // ByteString.
+  private static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
+      T defaultInstance, byte[] data, ExtensionRegistryLite extensionRegistry)
+      throws InvalidProtocolBufferException {
+    T message;
+    try {
+      CodedInputStream input = CodedInputStream.newInstance(data);
+      message = parsePartialFrom(defaultInstance, input, extensionRegistry);
+      try {
+        input.checkLastTagWas(0);
+      } catch (InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(message);
+      }
+      return message;
+    } catch (InvalidProtocolBufferException e) {
+      throw e;
+    }
+  }
+
+  // Validates last tag.
+  protected static <T extends GeneratedMessageLite<T, ?>> T parseFrom(
+      T defaultInstance, byte[] data)
+      throws InvalidProtocolBufferException {
+    return checkMessageInitialized(
+        parsePartialFrom(defaultInstance, data, ExtensionRegistryLite.getEmptyRegistry()));
+  }
+
+  // Validates last tag.
+  protected static <T extends GeneratedMessageLite<T, ?>> T parseFrom(
+      T defaultInstance, byte[] data, ExtensionRegistryLite extensionRegistry)
+      throws InvalidProtocolBufferException {
+    return checkMessageInitialized(parsePartialFrom(defaultInstance, data, extensionRegistry));
+  }
+
+  // Does not validate last tag.
+  protected static <T extends GeneratedMessageLite<T, ?>> T parseFrom(
+      T defaultInstance, InputStream input)
+      throws InvalidProtocolBufferException {
+    return checkMessageInitialized(
+        parsePartialFrom(defaultInstance, CodedInputStream.newInstance(input),
+            ExtensionRegistryLite.getEmptyRegistry()));
+  }
+
+  // Does not validate last tag.
+  protected static <T extends GeneratedMessageLite<T, ?>> T parseFrom(
+      T defaultInstance, InputStream input, ExtensionRegistryLite extensionRegistry)
+      throws InvalidProtocolBufferException {
+    return checkMessageInitialized(
+        parsePartialFrom(defaultInstance, CodedInputStream.newInstance(input), extensionRegistry));
+  }
+
+  // Does not validate last tag.
+  protected static <T extends GeneratedMessageLite<T, ?>> T parseFrom(
+      T defaultInstance, CodedInputStream input)
+      throws InvalidProtocolBufferException {
+    return parseFrom(defaultInstance, input, ExtensionRegistryLite.getEmptyRegistry());
+  }
+
+  // Does not validate last tag.
+  protected static <T extends GeneratedMessageLite<T, ?>> T parseFrom(
+      T defaultInstance, CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+      throws InvalidProtocolBufferException {
+    return checkMessageInitialized(
+        parsePartialFrom(defaultInstance, input, extensionRegistry));
+  }
+
+  // Validates last tag.
+  protected static <T extends GeneratedMessageLite<T, ?>> T parseDelimitedFrom(
+      T defaultInstance, InputStream input)
+      throws InvalidProtocolBufferException {
+    return checkMessageInitialized(
+        parsePartialDelimitedFrom(defaultInstance, input,
+            ExtensionRegistryLite.getEmptyRegistry()));
+  }
+
+  // Validates last tag.
+  protected static <T extends GeneratedMessageLite<T, ?>> T parseDelimitedFrom(
+      T defaultInstance, InputStream input, ExtensionRegistryLite extensionRegistry)
+      throws InvalidProtocolBufferException {
+    return checkMessageInitialized(
+        parsePartialDelimitedFrom(defaultInstance, input, extensionRegistry));
+  }
+  
+  private static <T extends GeneratedMessageLite<T, ?>> T parsePartialDelimitedFrom(
+      T defaultInstance,
+      InputStream input,
+      ExtensionRegistryLite extensionRegistry)
+      throws InvalidProtocolBufferException {
+    int size;
+    try {
+      int firstByte = input.read();
+      if (firstByte == -1) {
+        return null;
+      }
+      size = CodedInputStream.readRawVarint32(firstByte, input);
+    } catch (IOException e) {
+      throw new InvalidProtocolBufferException(e.getMessage());
+    }
+    InputStream limitedInput = new LimitedInputStream(input, size);
+    CodedInputStream codedInput = CodedInputStream.newInstance(limitedInput);
+    T message = parsePartialFrom(defaultInstance, codedInput, extensionRegistry);
+    try {
+      codedInput.checkLastTagWas(0);
+    } catch (InvalidProtocolBufferException e) {
+      throw e.setUnfinishedMessage(message);
+    }
+    return message;
   }
 }

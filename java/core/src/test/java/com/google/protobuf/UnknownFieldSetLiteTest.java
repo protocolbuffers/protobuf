@@ -47,46 +47,6 @@ import java.io.IOException;
  * @author dweis@google.com (Daniel Weis)
  */
 public class UnknownFieldSetLiteTest extends TestCase {
-
-  public void testNoDataIsDefaultInstance() {
-    assertSame(
-        UnknownFieldSetLite.getDefaultInstance(),
-        UnknownFieldSetLite.newBuilder()
-            .build());
-  }
-  
-  public void testBuilderReuse() throws IOException {
-    UnknownFieldSetLite.Builder builder = UnknownFieldSetLite.newBuilder();
-    builder.mergeVarintField(10, 2);
-    builder.build();
-
-    try {
-      builder.build();
-      fail();
-    } catch (UnsupportedOperationException e) {
-      // Expected.
-    }
-
-    try {
-      builder.mergeFieldFrom(0, CodedInputStream.newInstance(new byte[0]));
-      fail();
-    } catch (UnsupportedOperationException e) {
-      // Expected.
-    }
-
-    try {
-      builder.mergeVarintField(5, 1);
-      fail();
-    } catch (UnsupportedOperationException e) {
-      // Expected.
-    }
-  }
-
-  public void testBuilderReuse_empty() {
-    UnknownFieldSetLite.Builder builder = UnknownFieldSetLite.newBuilder();
-    builder.build();
-    builder.build();
-  }
   
   public void testDefaultInstance() {
     UnknownFieldSetLite unknownFields = UnknownFieldSetLite.getDefaultInstance();

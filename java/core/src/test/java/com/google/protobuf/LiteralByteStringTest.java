@@ -47,9 +47,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * Test {@link LiteralByteString} by setting up a reference string in {@link #setUp()}.
- * This class is designed to be extended for testing extensions of {@link LiteralByteString}
- * such as {@link BoundedByteString}, see {@link BoundedByteStringTest}.
+ * Test {@code LiteralByteString} by setting up a reference string in {@link #setUp()}.
+ * This class is designed to be extended for testing extensions of {@code LiteralByteString}
+ * such as {@code BoundedByteString}, see {@link BoundedByteStringTest}.
  *
  * @author carlanton@google.com (Carl Haverl)
  */
@@ -304,25 +304,75 @@ public class LiteralByteStringTest extends TestCase {
         Arrays.equals(referenceBytes, roundTripBytes));
   }
 
-  public void testWriteTo_mutating() throws IOException {
+  public void testWriteToShouldNotExposeInternalBufferToOutputStream() throws IOException {
     OutputStream os = new OutputStream() {
       @Override
       public void write(byte[] b, int off, int len) {
-        for (int x = 0; x < len; ++x) {
-          b[off + x] = (byte) 0;
-        }
+        Arrays.fill(b, off, off + len, (byte) 0);
       }
 
       @Override
       public void write(int b) {
-        // Purposefully left blank.
+        throw new UnsupportedOperationException();
       }
     };
 
     stringUnderTest.writeTo(os);
-    byte[] newBytes = stringUnderTest.toByteArray();
     assertTrue(classUnderTest + ".writeTo() must not grant access to underlying array",
-        Arrays.equals(referenceBytes, newBytes));
+        Arrays.equals(referenceBytes, stringUnderTest.toByteArray()));
+  }
+
+  public void testWriteToInternalShouldExposeInternalBufferToOutputStream() throws IOException {
+    OutputStream os = new OutputStream() {
+      @Override
+      public void write(byte[] b, int off, int len) {
+        Arrays.fill(b, off, off + len, (byte) 0);
+      }
+
+      @Override
+      public void write(int b) {
+        throw new UnsupportedOperationException();
+      }
+    };
+
+    stringUnderTest.writeToInternal(os, 0, stringUnderTest.size());
+    byte[] allZeros = new byte[stringUnderTest.size()];
+    assertTrue(classUnderTest + ".writeToInternal() must grant access to underlying array",
+        Arrays.equals(allZeros, stringUnderTest.toByteArray()));
+  }
+
+  public void testWriteToShouldExposeInternalBufferToByteOutput() throws IOException {
+    ByteOutput out = new ByteOutput() {
+      @Override
+      public void write(byte value) throws IOException {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void write(byte[] value, int offset, int length) throws IOException {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void writeLazy(byte[] value, int offset, int length) throws IOException {
+        Arrays.fill(value, offset, offset + length, (byte) 0);
+      }
+
+      @Override
+      public void write(ByteBuffer value) throws IOException {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
+      public void writeLazy(ByteBuffer value) throws IOException {
+        throw new UnsupportedOperationException();
+      }
+    };
+
+    stringUnderTest.writeTo(out);
+    byte[] allZeros = new byte[stringUnderTest.size()];
+    assertTrue(classUnderTest + ".writeToInternal() must grant access to underlying array",
+        Arrays.equals(allZeros, stringUnderTest.toByteArray()));
   }
 
   public void testNewOutput() throws IOException {

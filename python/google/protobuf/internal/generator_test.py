@@ -42,9 +42,10 @@ further ensures that we can use Python protocol message objects as we expect.
 __author__ = 'robinson@google.com (Will Robinson)'
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+
 from google.protobuf.internal import test_bad_identifiers_pb2
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2

@@ -839,62 +839,16 @@ jspb.utils.countDelimitedFields = function(buffer, start, end, field) {
 
 
 /**
- * Clones a scalar field. Pulling this out to a helper method saves us a few
- * bytes of generated code.
- * @param {Array} array
- * @return {Array}
- */
-jspb.utils.cloneRepeatedScalarField = function(array) {
-  return array ? array.slice() : null;
-};
-
-
-/**
- * Clones an array of messages using the provided cloner function.
- * @param {Array.<jspb.BinaryMessage>} messages
- * @param {jspb.ClonerFunction} cloner
- * @return {Array.<jspb.BinaryMessage>}
- */
-jspb.utils.cloneRepeatedMessageField = function(messages, cloner) {
-  if (messages === null) return null;
-  var result = [];
-  for (var i = 0; i < messages.length; i++) {
-    result.push(cloner(messages[i]));
-  }
-  return result;
-};
-
-
-/**
- * Clones an array of byte blobs.
- * @param {Array.<Uint8Array>} blobs
- * @return {Array.<Uint8Array>}
- */
-jspb.utils.cloneRepeatedBlobField = function(blobs) {
-  if (blobs === null) return null;
-  var result = [];
-  for (var i = 0; i < blobs.length; i++) {
-    result.push(new Uint8Array(blobs[i]));
-  }
-  return result;
-};
-
-
-/**
  * String-ify bytes for text format. Should be optimized away in non-debug.
  * The returned string uses \xXX escapes for all values and is itself quoted.
  * [1, 31] serializes to '"\x01\x1f"'.
  * @param {jspb.ByteSource} byteSource The bytes to serialize.
- * @param {boolean=} opt_stringIsRawBytes The string is interpreted as a series
- * of raw bytes rather than base64 data.
  * @return {string} Stringified bytes for text format.
  */
-jspb.utils.debugBytesToTextFormat = function(byteSource,
-                                                opt_stringIsRawBytes) {
+jspb.utils.debugBytesToTextFormat = function(byteSource) {
   var s = '"';
   if (byteSource) {
-    var bytes =
-        jspb.utils.byteSourceToUint8Array(byteSource, opt_stringIsRawBytes);
+    var bytes = jspb.utils.byteSourceToUint8Array(byteSource);
     for (var i = 0; i < bytes.length; i++) {
       s += '\\x';
       if (bytes[i] < 16) s += '0';
@@ -925,9 +879,8 @@ jspb.utils.debugScalarToTextFormat = function(scalar) {
  * exception.
  * @param {string} str
  * @return {!Uint8Array}
- * @private
  */
-jspb.utils.stringToByteArray_ = function(str) {
+jspb.utils.stringToByteArray = function(str) {
   var arr = new Uint8Array(str.length);
   for (var i = 0; i < str.length; i++) {
     var codepoint = str.charCodeAt(i);
@@ -944,13 +897,10 @@ jspb.utils.stringToByteArray_ = function(str) {
 /**
  * Converts any type defined in jspb.ByteSource into a Uint8Array.
  * @param {!jspb.ByteSource} data
- * @param {boolean=} opt_stringIsRawBytes Interpret a string as a series of raw
- * bytes (encoded as codepoints 0--255 inclusive) rather than base64 data
- * (default behavior).
  * @return {!Uint8Array}
  * @suppress {invalidCasts}
  */
-jspb.utils.byteSourceToUint8Array = function(data, opt_stringIsRawBytes) {
+jspb.utils.byteSourceToUint8Array = function(data) {
   if (data.constructor === Uint8Array) {
     return /** @type {!Uint8Array} */(data);
   }
@@ -967,11 +917,7 @@ jspb.utils.byteSourceToUint8Array = function(data, opt_stringIsRawBytes) {
 
   if (data.constructor === String) {
     data = /** @type {string} */(data);
-    if (opt_stringIsRawBytes) {
-      return jspb.utils.stringToByteArray_(data);
-    } else {
-      return goog.crypt.base64.decodeStringToUint8Array(data);
-    }
+    return goog.crypt.base64.decodeStringToUint8Array(data);
   }
 
   goog.asserts.fail('Type not convertible to Uint8Array.');

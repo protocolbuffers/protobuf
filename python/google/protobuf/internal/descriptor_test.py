@@ -37,9 +37,10 @@ __author__ = 'robinson@google.com (Will Robinson)'
 import sys
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
@@ -596,7 +597,7 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
       """
 
     self._InternalTestCopyToProto(
-        unittest_pb2._FOREIGNENUM,
+        unittest_pb2.ForeignEnum.DESCRIPTOR,
         descriptor_pb2.EnumDescriptorProto,
         TEST_FOREIGN_ENUM_ASCII)
 

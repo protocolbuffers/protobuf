@@ -223,7 +223,7 @@ jspb.BinaryIterator.prototype.next = function() {
 jspb.BinaryDecoder = function(opt_bytes, opt_start, opt_length) {
   /**
    * Typed byte-wise view of the source buffer.
-   * @private {Uint8Array}
+   * @private {?Uint8Array}
    */
   this.bytes_ = null;
 
@@ -335,7 +335,7 @@ jspb.BinaryDecoder.prototype.clear = function() {
 
 /**
  * Returns the raw buffer.
- * @return {Uint8Array} The raw buffer.
+ * @return {?Uint8Array} The raw buffer.
  */
 jspb.BinaryDecoder.prototype.getBuffer = function() {
   return this.bytes_;
@@ -630,6 +630,7 @@ jspb.BinaryDecoder.prototype.readUnsignedVarint32String = function() {
   var value = this.readUnsignedVarint32();
   return value.toString();
 };
+
 
 /**
  * Reads a 32-bit signed variant and returns its value as a string.
@@ -950,14 +951,15 @@ jspb.BinaryDecoder.prototype.readStringWithLength = function() {
  * Reads a block of raw bytes from the binary stream.
  *
  * @param {number} length The number of bytes to read.
- * @return {Uint8Array} The decoded block of bytes, or null if the length was
- *     invalid.
+ * @return {!Uint8Array} The decoded block of bytes, or an empty block if the
+ *     length was invalid.
  */
 jspb.BinaryDecoder.prototype.readBytes = function(length) {
   if (length < 0 ||
       this.cursor_ + length > this.bytes_.length) {
     this.error_ = true;
-    return null;
+    goog.asserts.fail('Invalid byte length!');
+    return new Uint8Array(0);
   }
 
   var result = this.bytes_.subarray(this.cursor_, this.cursor_ + length);

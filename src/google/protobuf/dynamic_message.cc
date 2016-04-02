@@ -267,6 +267,16 @@ class DynamicMessage : public Message {
 
   Metadata GetMetadata() const;
 
+  // We actually allocate more memory than sizeof(*this) when this
+  // class's memory is allocated via the global operator new. Thus, we need to
+  // manually call the global operator delete. Calling the destructor is taken
+  // care of for us. This makes DynamicMessage compatible with -fsized-delete.
+  // It doesn't work for MSVC though.
+#ifndef _MSC_VER
+  static void operator delete(void* ptr) {
+    ::operator delete(ptr);
+  }
+#endif  // !_MSC_VER
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMessage);
@@ -442,8 +452,10 @@ DynamicMessage::~DynamicMessage() {
             case FieldOptions::STRING: {
               const ::std::string* default_value =
                   &(reinterpret_cast<const ArenaStringPtr*>(
-                      type_info_->prototype->OffsetToPointer(
-                          type_info_->offsets[i]))->Get(NULL));
+                      reinterpret_cast<uint8*>(
+                          type_info_->default_oneof_instance)
+                      + type_info_->offsets[i])
+                    ->Get(NULL));
               reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(
                   default_value, NULL);
               break;
@@ -704,7 +716,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     // Oneof fields do not use any space.
     if (!type->field(i)->containing_oneof()) {
       int field_size = FieldSpaceUsed(type->field(i));
-      size = AlignTo(size, min(kSafeAlignment, field_size));
+      size = AlignTo(size, std::min(kSafeAlignment, field_size));
       offsets[i] = size;
       size += field_size;
     }
@@ -748,7 +760,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       for (int j = 0; j < type->oneof_decl(i)->field_count(); j++) {
         const FieldDescriptor* field = type->oneof_decl(i)->field(j);
         int field_size = OneofFieldSpaceUsed(field);
-        oneof_size = AlignTo(oneof_size, min(kSafeAlignment, field_size));
+        oneof_size = AlignTo(oneof_size, std::min(kSafeAlignment, field_size));
         offsets[field->index()] = oneof_size;
         oneof_size += field_size;
       }

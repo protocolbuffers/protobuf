@@ -72,6 +72,10 @@ class SharedCodeGenerator {
   void Generate(GeneratorContext* generator_context,
                 vector<string>* file_list);
 
+  void SetEnforceLite(bool value) {
+    enforce_lite_ = value;
+  }
+
   void GenerateDescriptors(io::Printer* printer);
 
  private:
@@ -81,6 +85,7 @@ class SharedCodeGenerator {
   bool ShouldIncludeDependency(const FileDescriptor* descriptor);
 
   google::protobuf::scoped_ptr<ClassNameResolver> name_resolver_;
+  bool enforce_lite_;
   const FileDescriptor* file_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SharedCodeGenerator);
 };

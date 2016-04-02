@@ -1019,7 +1019,9 @@ public abstract class GeneratedMessage extends AbstractMessage
         verifyContainingType(field);
         final Object value = extensions.getField(field);
         if (value == null) {
-          if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+          if (field.isRepeated()) {
+            return Collections.emptyList();
+          } else if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
             // Lacking an ExtensionRegistry, we have no way to determine the
             // extension's real type, so we return a DynamicMessage.
             return DynamicMessage.getDefaultInstance(field.getMessageType());

@@ -51,7 +51,7 @@ template <typename T>
 T ConvertTo(StringPiece value, StatusOr<T> (DataPiece::*converter_fn)() const,
             T default_value) {
   if (value.empty()) return default_value;
-  StatusOr<T> result = (DataPiece(value).*converter_fn)();
+  StatusOr<T> result = (DataPiece(value, true).*converter_fn)();
   return result.ok() ? result.ValueOrDie() : default_value;
 }
 }  // namespace
@@ -64,6 +64,7 @@ DefaultValueObjectWriter::DefaultValueObjectWriter(
       type_(type),
       current_(NULL),
       root_(NULL),
+      field_scrub_callback_(NULL),
       ow_(ow) {}
 
 DefaultValueObjectWriter::~DefaultValueObjectWriter() {
@@ -153,7 +154,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderString(
     // Since StringPiece is essentially a pointer, takes a copy of "value" to
     // avoid ownership issues.
     string_values_.push_back(new string(value.ToString()));
-    RenderDataPiece(name, DataPiece(*string_values_.back()));
+    RenderDataPiece(name, DataPiece(*string_values_.back(), true));
   }
   return this;
 }
@@ -163,7 +164,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderBytes(
   if (current_ == NULL) {
     ow_->RenderBytes(name, value);
   } else {
-    RenderDataPiece(name, DataPiece(value));
+    RenderDataPiece(name, DataPiece(value, false, true));
   }
   return this;
 }
@@ -178,16 +179,25 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderNull(
   return this;
 }
 
+void DefaultValueObjectWriter::RegisterFieldScrubCallBack(
+    FieldScrubCallBackPtr field_scrub_callback) {
+  field_scrub_callback_.reset(field_scrub_callback.release());
+}
+
 DefaultValueObjectWriter::Node::Node(const string& name,
                                      const google::protobuf::Type* type,
                                      NodeKind kind, const DataPiece& data,
-                                     bool is_placeholder)
+                                     bool is_placeholder,
+                                     const vector<string>& path,
+                                     FieldScrubCallBack* field_scrub_callback)
     : name_(name),
       type_(type),
       kind_(kind),
       is_any_(false),
       data_(data),
-      is_placeholder_(is_placeholder) {}
+      is_placeholder_(is_placeholder),
+      path_(path),
+      field_scrub_callback_(field_scrub_callback) {}
 
 DefaultValueObjectWriter::Node* DefaultValueObjectWriter::Node::FindChild(
     StringPiece name) {
@@ -291,6 +301,19 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
 
   for (int i = 0; i < type_->fields_size(); ++i) {
     const google::protobuf::Field& field = type_->fields(i);
+
+    // This code is checking if the field to be added to the tree should be
+    // scrubbed or not by calling the field_scrub_callback_ callback function.
+    vector<string> path;
+    if (!path_.empty()) {
+      path.insert(path.begin(), path_.begin(), path_.end());
+    }
+    path.push_back(field.name());
+    if (field_scrub_callback_ != NULL &&
+        field_scrub_callback_->Run(path, &field)) {
+      continue;
+    }
+
     hash_map<string, int>::iterator found =
         orig_children_map.find(field.name());
     // If the child field has already been set, we just add it to the new list
@@ -343,7 +366,7 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
         field.json_name(), field_type, kind,
         kind == PRIMITIVE ? CreateDefaultDataPieceForField(field, typeinfo)
                           : DataPiece::NullData(),
-        true));
+        true, path, field_scrub_callback_));
     new_children.push_back(child.release());
   }
   // Adds all leftover nodes in children_ to the beginning of new_child.
@@ -368,7 +391,8 @@ void DefaultValueObjectWriter::MaybePopulateChildrenOfAny(Node* node) {
 
 DataPiece DefaultValueObjectWriter::FindEnumDefault(
     const google::protobuf::Field& field, const TypeInfo* typeinfo) {
-  if (!field.default_value().empty()) return DataPiece(field.default_value());
+  if (!field.default_value().empty())
+    return DataPiece(field.default_value(), true);
 
   const google::protobuf::Enum* enum_type =
       typeinfo->GetEnumByTypeUrl(field.type_url());
@@ -379,7 +403,7 @@ DataPiece DefaultValueObjectWriter::FindEnumDefault(
   }
   // We treat the first value as the default if none is specified.
   return enum_type->enumvalue_size() > 0
-             ? DataPiece(enum_type->enumvalue(0).name())
+             ? DataPiece(enum_type->enumvalue(0).name(), true)
              : DataPiece::NullData();
 }
 
@@ -416,10 +440,10 @@ DataPiece DefaultValueObjectWriter::CreateDefaultDataPieceForField(
           ConvertTo<bool>(field.default_value(), &DataPiece::ToBool, false));
     }
     case google::protobuf::Field_Kind_TYPE_STRING: {
-      return DataPiece(field.default_value());
+      return DataPiece(field.default_value(), true);
     }
     case google::protobuf::Field_Kind_TYPE_BYTES: {
-      return DataPiece(field.default_value(), false);
+      return DataPiece(field.default_value(), false, true);
     }
     case google::protobuf::Field_Kind_TYPE_UINT32:
     case google::protobuf::Field_Kind_TYPE_FIXED32: {
@@ -436,8 +460,9 @@ DataPiece DefaultValueObjectWriter::CreateDefaultDataPieceForField(
 DefaultValueObjectWriter* DefaultValueObjectWriter::StartObject(
     StringPiece name) {
   if (current_ == NULL) {
+    vector<string> path;
     root_.reset(new Node(name.ToString(), &type_, OBJECT, DataPiece::NullData(),
-                         false));
+                         false, path, field_scrub_callback_.get()));
     root_->PopulateChildren(typeinfo_);
     current_ = root_.get();
     return this;
@@ -451,7 +476,9 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::StartObject(
         name.ToString(), ((current_->kind() == LIST || current_->kind() == MAP)
                               ? current_->type()
                               : NULL),
-        OBJECT, DataPiece::NullData(), false));
+        OBJECT, DataPiece::NullData(), false,
+        child == NULL ? current_->path() : child->path(),
+        field_scrub_callback_.get()));
     child = node.get();
     current_->AddChild(node.release());
   }
@@ -480,8 +507,9 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::EndObject() {
 DefaultValueObjectWriter* DefaultValueObjectWriter::StartList(
     StringPiece name) {
   if (current_ == NULL) {
-    root_.reset(
-        new Node(name.ToString(), &type_, LIST, DataPiece::NullData(), false));
+    vector<string> path;
+    root_.reset(new Node(name.ToString(), &type_, LIST, DataPiece::NullData(),
+                         false, path, field_scrub_callback_.get()));
     current_ = root_.get();
     return this;
   }
@@ -489,7 +517,9 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::StartList(
   Node* child = current_->FindChild(name);
   if (child == NULL || child->kind() != LIST) {
     google::protobuf::scoped_ptr<Node> node(
-        new Node(name.ToString(), NULL, LIST, DataPiece::NullData(), false));
+        new Node(name.ToString(), NULL, LIST, DataPiece::NullData(), false,
+                 child == NULL ? current_->path() : child->path(),
+                 field_scrub_callback_.get()));
     child = node.get();
     current_->AddChild(node.release());
   }
@@ -545,7 +575,9 @@ void DefaultValueObjectWriter::RenderDataPiece(StringPiece name,
   if (child == NULL || child->kind() != PRIMITIVE) {
     // No children are found, creates a new child.
     google::protobuf::scoped_ptr<Node> node(
-        new Node(name.ToString(), NULL, PRIMITIVE, data, false));
+        new Node(name.ToString(), NULL, PRIMITIVE, data, false,
+                 child == NULL ? current_->path() : child->path(),
+                 field_scrub_callback_.get()));
     child = node.get();
     current_->AddChild(node.release());
   } else {

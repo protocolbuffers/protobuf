@@ -83,9 +83,10 @@ void protobuf_AddDesc_google_2fprotobuf_2ftimestamp_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\037google/protobuf/timestamp.proto\022\017googl"
     "e.protobuf\"+\n\tTimestamp\022\017\n\007seconds\030\001 \001(\003"
-    "\022\r\n\005nanos\030\002 \001(\005BT\n\023com.google.protobufB\016"
-    "TimestampProtoP\001\240\001\001\370\001\001\242\002\003GPB\252\002\036Google.Pr"
-    "otobuf.WellKnownTypesb\006proto3", 189);
+    "\022\r\n\005nanos\030\002 \001(\005B\201\001\n\023com.google.protobufB"
+    "\016TimestampProtoP\001Z+github.com/golang/pro"
+    "tobuf/ptypes/timestamp\240\001\001\370\001\001\242\002\003GPB\252\002\036Goo"
+    "gle.Protobuf.WellKnownTypesb\006proto3", 235);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/timestamp.proto", &protobuf_RegisterTypes);
   Timestamp::default_instance_ = new Timestamp();

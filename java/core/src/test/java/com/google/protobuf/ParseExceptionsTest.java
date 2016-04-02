@@ -1,17 +1,51 @@
-package com.google.protobuf;
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import com.google.protobuf.DescriptorProtos.DescriptorProto;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import org.junit.Test;
+package com.google.protobuf;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import com.google.protobuf.DescriptorProtos.DescriptorProto;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Tests the exceptions thrown when parsing from a stream. The methods on the {@link Parser}
@@ -22,6 +56,7 @@ import static org.junit.Assert.fail;
  *
  * @author jh@squareup.com (Joshua Humphries)
  */
+@RunWith(JUnit4.class)
 public class ParseExceptionsTest {
 
   private interface ParseTester {
@@ -46,116 +81,143 @@ public class ParseExceptionsTest {
 
   @Test public void message_parseFrom_InputStream() {
     setup();
-    verifyExceptions(new ParseTester() {
-      public DescriptorProto parse(InputStream in) throws IOException {
-        return DescriptorProto.parseFrom(in);
-      }
-    });
+    verifyExceptions(
+        new ParseTester() {
+          @Override
+          public DescriptorProto parse(InputStream in) throws IOException {
+            return DescriptorProto.parseFrom(in);
+          }
+        });
   }
 
   @Test public void message_parseFrom_InputStreamAndExtensionRegistry() {
     setup();
-    verifyExceptions(new ParseTester() {
-      public DescriptorProto parse(InputStream in) throws IOException {
-        return DescriptorProto.parseFrom(in, ExtensionRegistry.newInstance());
-      }
-    });
+    verifyExceptions(
+        new ParseTester() {
+          @Override
+          public DescriptorProto parse(InputStream in) throws IOException {
+            return DescriptorProto.parseFrom(in, ExtensionRegistry.newInstance());
+          }
+        });
   }
 
   @Test public void message_parseFrom_CodedInputStream() {
     setup();
-    verifyExceptions(new ParseTester() {
-      public DescriptorProto parse(InputStream in) throws IOException {
-        return DescriptorProto.parseFrom(CodedInputStream.newInstance(in));
-      }
-    });
+    verifyExceptions(
+        new ParseTester() {
+          @Override
+          public DescriptorProto parse(InputStream in) throws IOException {
+            return DescriptorProto.parseFrom(CodedInputStream.newInstance(in));
+          }
+        });
   }
 
   @Test public void message_parseFrom_CodedInputStreamAndExtensionRegistry() {
     setup();
-    verifyExceptions(new ParseTester() {
-      public DescriptorProto parse(InputStream in) throws IOException {
-        return DescriptorProto.parseFrom(CodedInputStream.newInstance(in),
-            ExtensionRegistry.newInstance());
-      }
-    });
+    verifyExceptions(
+        new ParseTester() {
+          @Override
+          public DescriptorProto parse(InputStream in) throws IOException {
+            return DescriptorProto.parseFrom(
+                CodedInputStream.newInstance(in), ExtensionRegistry.newInstance());
+          }
+        });
   }
 
   @Test public void message_parseDelimitedFrom_InputStream() {
     setupDelimited();
-    verifyExceptions(new ParseTester() {
-      public DescriptorProto parse(InputStream in) throws IOException {
-        return DescriptorProto.parseDelimitedFrom(in);
-      }
-    });
+    verifyExceptions(
+        new ParseTester() {
+          @Override
+          public DescriptorProto parse(InputStream in) throws IOException {
+            return DescriptorProto.parseDelimitedFrom(in);
+          }
+        });
   }
 
   @Test public void message_parseDelimitedFrom_InputStreamAndExtensionRegistry() {
     setupDelimited();
-    verifyExceptions(new ParseTester() {
-      public DescriptorProto parse(InputStream in) throws IOException {
-        return DescriptorProto.parseDelimitedFrom(in, ExtensionRegistry.newInstance());
-      }
-    });
+    verifyExceptions(
+        new ParseTester() {
+          @Override
+          public DescriptorProto parse(InputStream in) throws IOException {
+            return DescriptorProto.parseDelimitedFrom(in, ExtensionRegistry.newInstance());
+          }
+        });
   }
 
   @Test public void messageBuilder_mergeFrom_InputStream() {
     setup();
-    verifyExceptions(new ParseTester() {
-      public DescriptorProto parse(InputStream in) throws IOException {
-        return DescriptorProto.newBuilder().mergeFrom(in).build();
-      }
-    });
+    verifyExceptions(
+        new ParseTester() {
+          @Override
+          public DescriptorProto parse(InputStream in) throws IOException {
+            return DescriptorProto.newBuilder().mergeFrom(in).build();
+          }
+        });
   }
 
   @Test public void messageBuilder_mergeFrom_InputStreamAndExtensionRegistry() {
     setup();
-    verifyExceptions(new ParseTester() {
-      public DescriptorProto parse(InputStream in) throws IOException {
-        return DescriptorProto.newBuilder().mergeFrom(in, ExtensionRegistry.newInstance()).build();
-      }
-    });
+    verifyExceptions(
+        new ParseTester() {
+          @Override
+          public DescriptorProto parse(InputStream in) throws IOException {
+            return DescriptorProto.newBuilder()
+                .mergeFrom(in, ExtensionRegistry.newInstance())
+                .build();
+          }
+        });
   }
 
   @Test public void messageBuilder_mergeFrom_CodedInputStream() {
     setup();
-    verifyExceptions(new ParseTester() {
-      public DescriptorProto parse(InputStream in) throws IOException {
-        return DescriptorProto.newBuilder().mergeFrom(CodedInputStream.newInstance(in)).build();
-      }
-    });
+    verifyExceptions(
+        new ParseTester() {
+          @Override
+          public DescriptorProto parse(InputStream in) throws IOException {
+            return DescriptorProto.newBuilder().mergeFrom(CodedInputStream.newInstance(in)).build();
+          }
+        });
   }
 
   @Test public void messageBuilder_mergeFrom_CodedInputStreamAndExtensionRegistry() {
     setup();
-    verifyExceptions(new ParseTester() {
-      public DescriptorProto parse(InputStream in) throws IOException {
-        return DescriptorProto.newBuilder()
-            .mergeFrom(CodedInputStream.newInstance(in), ExtensionRegistry.newInstance()).build();
-      }
-    });
+    verifyExceptions(
+        new ParseTester() {
+          @Override
+          public DescriptorProto parse(InputStream in) throws IOException {
+            return DescriptorProto.newBuilder()
+                .mergeFrom(CodedInputStream.newInstance(in), ExtensionRegistry.newInstance())
+                .build();
+          }
+        });
   }
 
   @Test public void messageBuilder_mergeDelimitedFrom_InputStream() {
     setupDelimited();
-    verifyExceptions(new ParseTester() {
-      public DescriptorProto parse(InputStream in) throws IOException {
-        DescriptorProto.Builder builder = DescriptorProto.newBuilder();
-        builder.mergeDelimitedFrom(in);
-        return builder.build();
-      }
-    });
+    verifyExceptions(
+        new ParseTester() {
+          @Override
+          public DescriptorProto parse(InputStream in) throws IOException {
+            DescriptorProto.Builder builder = DescriptorProto.newBuilder();
+            builder.mergeDelimitedFrom(in);
+            return builder.build();
+          }
+        });
   }
 
   @Test public void messageBuilder_mergeDelimitedFrom_InputStreamAndExtensionRegistry() {
     setupDelimited();
-    verifyExceptions(new ParseTester() {
-      public DescriptorProto parse(InputStream in) throws IOException {
-        DescriptorProto.Builder builder = DescriptorProto.newBuilder();
-        builder.mergeDelimitedFrom(in, ExtensionRegistry.newInstance());
-        return builder.build();
-      }
-    });
+    verifyExceptions(
+        new ParseTester() {
+          @Override
+          public DescriptorProto parse(InputStream in) throws IOException {
+            DescriptorProto.Builder builder = DescriptorProto.newBuilder();
+            builder.mergeDelimitedFrom(in, ExtensionRegistry.newInstance());
+            return builder.build();
+          }
+        });
   }
 
   private void verifyExceptions(ParseTester parseTester) {

@@ -38,6 +38,8 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import os.path
 
+import sys
+
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2

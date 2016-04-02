@@ -193,7 +193,7 @@ GenerateMergingCode(io::Printer* printer) const {
 void ImmutableLazyMessageFieldLiteGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "$name$_.setByteString(input.readBytes(), extensionRegistry);\n");
+    "$name$_.mergeFrom(input, extensionRegistry);\n");
   printer->Print(variables_,
     "$set_has_field_bit_message$;\n");
 }
@@ -378,8 +378,7 @@ GenerateParsingCode(io::Printer* printer) const {
     "if (!($has_oneof_case_message$)) {\n"
     "  $oneof_name$_ = new $lazy_type$();\n"
     "}\n"
-    "(($lazy_type$) $oneof_name$_).setByteString(\n"
-    "    input.readBytes(), extensionRegistry);\n"
+    "(($lazy_type$) $oneof_name$_).mergeFrom(input, extensionRegistry);\n"
     "$set_oneof_case_message$;\n");
 }
 

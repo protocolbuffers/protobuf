@@ -34,6 +34,7 @@ import proto2_test_check_utf8.TestCheckUtf8.BytesWrapper;
 import proto2_test_check_utf8.TestCheckUtf8.StringWrapper;
 import proto2_test_check_utf8_size.TestCheckUtf8Size.BytesWrapperSize;
 import proto2_test_check_utf8_size.TestCheckUtf8Size.StringWrapperSize;
+
 import junit.framework.TestCase;
 
 /**

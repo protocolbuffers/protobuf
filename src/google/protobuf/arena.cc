@@ -37,6 +37,7 @@
 namespace google {
 namespace protobuf {
 
+
 google::protobuf::internal::SequenceNumber Arena::lifecycle_id_generator_;
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
 Arena::ThreadCache& Arena::thread_cache() {

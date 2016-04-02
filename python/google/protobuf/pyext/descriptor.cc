@@ -92,11 +92,10 @@ PyObject* PyString_FromCppString(const string& str) {
 // TODO(amauryfa): Change the proto2 compiler to remove the assignments, and
 // remove this hack.
 bool _CalledFromGeneratedFile(int stacklevel) {
-  PyThreadState *state = PyThreadState_GET();
-  if (state == NULL) {
-    return false;
-  }
-  PyFrameObject* frame = state->frame;
+#ifndef PYPY_VERSION
+  // This check is not critical and is somewhat difficult to implement correctly
+  // in PyPy.
+  PyFrameObject* frame = PyEval_GetFrame();
   if (frame == NULL) {
     return false;
   }
@@ -130,6 +129,7 @@ bool _CalledFromGeneratedFile(int stacklevel) {
     // Filename is not ending with _pb2.
     return false;
   }
+#endif
   return true;
 }
 

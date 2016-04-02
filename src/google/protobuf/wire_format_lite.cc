@@ -412,7 +412,7 @@ void WireFormatLite::WriteString(int field_number, const string& value,
                                  io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK(value.size() <= kint32max);
+  GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -421,14 +421,14 @@ void WireFormatLite::WriteStringMaybeAliased(
     io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK(value.size() <= kint32max);
+  GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
 void WireFormatLite::WriteBytes(int field_number, const string& value,
                                 io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK(value.size() <= kint32max);
+  GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -436,7 +436,7 @@ void WireFormatLite::WriteBytesMaybeAliased(
     int field_number, const string& value,
     io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK(value.size() <= kint32max);
+  GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
