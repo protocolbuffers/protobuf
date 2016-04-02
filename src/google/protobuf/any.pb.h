@@ -60,6 +60,8 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message {
   // implements Any -----------------------------------------------
 
   void PackFrom(const ::google::protobuf::Message& message);
+  void PackFrom(const ::google::protobuf::Message& message,
+                const ::std::string& type_url_prefix);
   bool UnpackTo(::google::protobuf::Message* message) const;
   template<typename T> bool Is() const {
     return _any_metadata_.Is<T>();

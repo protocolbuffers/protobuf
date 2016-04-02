@@ -58,7 +58,7 @@ class JsonObjectWriterTest : public ::testing::Test {
   string output_;
   StringOutputStream* const str_stream_;
   CodedOutputStream* const out_stream_;
-  ObjectWriter* ow_;
+  JsonObjectWriter* ow_;
 };
 
 TEST_F(JsonObjectWriterTest, EmptyRootObject) {
@@ -281,6 +281,30 @@ TEST_F(JsonObjectWriterTest, Stringification) {
       "\"double_neg\":\"-Infinity\","
       "\"float_neg\":\"-Infinity\"}",
       output_.substr(0, out_stream_->ByteCount()));
+}
+
+TEST_F(JsonObjectWriterTest, TestRegularByteEncoding) {
+  ow_ = new JsonObjectWriter("", out_stream_);
+  ow_->StartObject("")
+      ->RenderBytes("bytes", "\x03\xef\xc0")
+      ->EndObject();
+
+  // Test that we get regular (non websafe) base64 encoding on byte fields by
+  // default.
+  EXPECT_EQ("{\"bytes\":\"A+/A\"}",
+            output_.substr(0, out_stream_->ByteCount()));
+}
+
+TEST_F(JsonObjectWriterTest, TestWebsafeByteEncoding) {
+  ow_ = new JsonObjectWriter("", out_stream_);
+  ow_->set_use_websafe_base64_for_bytes(true);
+  ow_->StartObject("")
+      ->RenderBytes("bytes", "\x03\xef\xc0")
+      ->EndObject();
+
+  // Test that we get websafe base64 encoding when explicitly asked.
+  EXPECT_EQ("{\"bytes\":\"A-_A\"}",
+            output_.substr(0, out_stream_->ByteCount()));
 }
 
 }  // namespace converter

@@ -425,7 +425,7 @@ public final class TextFormat {
         case STRING:
           generator.print("\"");
           generator.print(escapeNonAscii
-              ? escapeText((String) value)
+              ? TextFormatEscaper.escapeText((String) value)
               : escapeDoubleQuotesAndBackslashes((String) value)
                   .replace("\n", "\\n"));
           generator.print("\"");
@@ -659,6 +659,14 @@ public final class TextFormat {
       this.matcher = WHITESPACE.matcher(text);
       skipWhitespace();
       nextToken();
+    }
+
+    int getLine() {
+      return line;
+    }
+
+    int getColumn() {
+      return column;
     }
 
     /** Are we at the end of the input? */
@@ -1074,7 +1082,7 @@ public final class TextFormat {
     private ParseException floatParseException(final NumberFormatException e) {
       return parseException("Couldn't parse number: " + e.getMessage());
     }
-    
+
     /**
      * Returns a {@link UnknownFieldParseException} with the line and column
      * numbers of the previous token in the description, and the unknown field
@@ -1133,7 +1141,7 @@ public final class TextFormat {
       return column;
     }
   }
-  
+
   /**
    * Thrown when encountering an unknown field while parsing
    * a text format message.
@@ -1257,11 +1265,14 @@ public final class TextFormat {
 
     private final boolean allowUnknownFields;
     private final SingularOverwritePolicy singularOverwritePolicy;
+    private TextFormatParseInfoTree.Builder parseInfoTreeBuilder;
 
-    private Parser(boolean allowUnknownFields,
-        SingularOverwritePolicy singularOverwritePolicy) {
+    private Parser(
+        boolean allowUnknownFields, SingularOverwritePolicy singularOverwritePolicy,
+        TextFormatParseInfoTree.Builder parseInfoTreeBuilder) {
       this.allowUnknownFields = allowUnknownFields;
       this.singularOverwritePolicy = singularOverwritePolicy;
+      this.parseInfoTreeBuilder = parseInfoTreeBuilder;
     }
 
     /**
@@ -1278,6 +1289,7 @@ public final class TextFormat {
       private boolean allowUnknownFields = false;
       private SingularOverwritePolicy singularOverwritePolicy =
           SingularOverwritePolicy.ALLOW_SINGULAR_OVERWRITES;
+      private TextFormatParseInfoTree.Builder parseInfoTreeBuilder = null;
 
 
       /**
@@ -1288,8 +1300,15 @@ public final class TextFormat {
         return this;
       }
 
+      public Builder setParseInfoTreeBuilder(
+          TextFormatParseInfoTree.Builder parseInfoTreeBuilder) {
+        this.parseInfoTreeBuilder = parseInfoTreeBuilder;
+        return this;
+      }
+
       public Parser build() {
-        return new Parser(allowUnknownFields, singularOverwritePolicy);
+        return new Parser(
+            allowUnknownFields, singularOverwritePolicy, parseInfoTreeBuilder);
       }
     }
 
@@ -1380,7 +1399,21 @@ public final class TextFormat {
                             final ExtensionRegistry extensionRegistry,
                             final MessageReflection.MergeTarget target)
                             throws ParseException {
+      mergeField(tokenizer, extensionRegistry, target, parseInfoTreeBuilder);
+    }
+
+    /**
+     * Parse a single field from {@code tokenizer} and merge it into
+     * {@code builder}.
+     */
+    private void mergeField(final Tokenizer tokenizer,
+                            final ExtensionRegistry extensionRegistry,
+                            final MessageReflection.MergeTarget target,
+                            TextFormatParseInfoTree.Builder parseTreeBuilder)
+                            throws ParseException {
       FieldDescriptor field = null;
+      int startLine = tokenizer.getLine();
+      int startColumn = tokenizer.getColumn();
       final Descriptor type = target.getDescriptorForType();
       ExtensionRegistry.ExtensionInfo extension = null;
 
@@ -1472,14 +1505,51 @@ public final class TextFormat {
       // Handle potential ':'.
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
         tokenizer.tryConsume(":");  // optional
+        if (parseTreeBuilder != null) {
+          TextFormatParseInfoTree.Builder childParseTreeBuilder =
+              parseTreeBuilder.getBuilderForSubMessageField(field);
+          consumeFieldValues(tokenizer, extensionRegistry, target, field, extension,
+              childParseTreeBuilder);
+        } else {
+          consumeFieldValues(tokenizer, extensionRegistry, target, field, extension,
+              parseTreeBuilder);
+        }
       } else {
         tokenizer.consume(":");  // required
+        consumeFieldValues(
+            tokenizer, extensionRegistry, target, field, extension, parseTreeBuilder);
       }
+
+      if (parseTreeBuilder != null) {
+        parseTreeBuilder.setLocation(
+            field, TextFormatParseLocation.create(startLine, startColumn));
+      }
+
+      // For historical reasons, fields may optionally be separated by commas or
+      // semicolons.
+      if (!tokenizer.tryConsume(";")) {
+        tokenizer.tryConsume(",");
+      }
+    }
+
+    /**
+     * Parse a one or more field values from {@code tokenizer} and merge it into
+     * {@code builder}.
+     */
+    private void consumeFieldValues(
+        final Tokenizer tokenizer,
+        final ExtensionRegistry extensionRegistry,
+        final MessageReflection.MergeTarget target,
+        final FieldDescriptor field,
+        final ExtensionRegistry.ExtensionInfo extension,
+        final TextFormatParseInfoTree.Builder parseTreeBuilder)
+        throws ParseException {
       // Support specifying repeated field values as a comma-separated list.
       // Ex."foo: [1, 2, 3]"
       if (field.isRepeated() && tokenizer.tryConsume("[")) {
         while (true) {
-          consumeFieldValue(tokenizer, extensionRegistry, target, field, extension);
+          consumeFieldValue(tokenizer, extensionRegistry, target, field, extension,
+              parseTreeBuilder);
           if (tokenizer.tryConsume("]")) {
             // End of list.
             break;
@@ -1487,13 +1557,8 @@ public final class TextFormat {
           tokenizer.consume(",");
         }
       } else {
-        consumeFieldValue(tokenizer, extensionRegistry, target, field, extension);
-      }
-
-      // For historical reasons, fields may optionally be separated by commas or
-      // semicolons.
-      if (!tokenizer.tryConsume(";")) {
-        tokenizer.tryConsume(",");
+        consumeFieldValue(
+            tokenizer, extensionRegistry, target, field, extension, parseTreeBuilder);
       }
     }
 
@@ -1506,7 +1571,8 @@ public final class TextFormat {
         final ExtensionRegistry extensionRegistry,
         final MessageReflection.MergeTarget target,
         final FieldDescriptor field,
-        final ExtensionRegistry.ExtensionInfo extension)
+        final ExtensionRegistry.ExtensionInfo extension,
+        final TextFormatParseInfoTree.Builder parseTreeBuilder)
         throws ParseException {
       Object value = null;
 
@@ -1528,7 +1594,7 @@ public final class TextFormat {
             throw tokenizer.parseException(
               "Expected \"" + endToken + "\".");
           }
-          mergeField(tokenizer, extensionRegistry, subField);
+          mergeField(tokenizer, extensionRegistry, subField, parseTreeBuilder);
         }
 
         value = subField.finish();
@@ -1704,11 +1770,6 @@ public final class TextFormat {
   // Some of these methods are package-private because Descriptors.java uses
   // them.
 
-  private interface ByteSequence {
-    int size();
-    byte byteAt(int offset);
-  }
-
   /**
    * Escapes bytes in the format used in protocol buffer text format, which
    * is the same as the format used for C string literals.  All bytes
@@ -1717,74 +1778,15 @@ public final class TextFormat {
    * which no defined short-hand escape sequence is defined will be escaped
    * using 3-digit octal sequences.
    */
-  public static String escapeBytes(final ByteSequence input) {
-    final StringBuilder builder = new StringBuilder(input.size());
-    for (int i = 0; i < input.size(); i++) {
-      final byte b = input.byteAt(i);
-      switch (b) {
-        // Java does not recognize \a or \v, apparently.
-        case 0x07: builder.append("\\a"); break;
-        case '\b': builder.append("\\b"); break;
-        case '\f': builder.append("\\f"); break;
-        case '\n': builder.append("\\n"); break;
-        case '\r': builder.append("\\r"); break;
-        case '\t': builder.append("\\t"); break;
-        case 0x0b: builder.append("\\v"); break;
-        case '\\': builder.append("\\\\"); break;
-        case '\'': builder.append("\\\'"); break;
-        case '"' : builder.append("\\\""); break;
-        default:
-          // Only ASCII characters between 0x20 (space) and 0x7e (tilde) are
-          // printable.  Other byte values must be escaped.
-          if (b >= 0x20 && b <= 0x7e) {
-            builder.append((char) b);
-          } else {
-            builder.append('\\');
-            builder.append((char) ('0' + ((b >>> 6) & 3)));
-            builder.append((char) ('0' + ((b >>> 3) & 7)));
-            builder.append((char) ('0' + (b & 7)));
-          }
-          break;
-      }
-    }
-    return builder.toString();
-  }
-
-  /**
-   * Escapes bytes in the format used in protocol buffer text format, which
-   * is the same as the format used for C string literals.  All bytes
-   * that are not printable 7-bit ASCII characters are escaped, as well as
-   * backslash, single-quote, and double-quote characters.  Characters for
-   * which no defined short-hand escape sequence is defined will be escaped
-   * using 3-digit octal sequences.
-   */
-  public static String escapeBytes(final ByteString input) {
-    return escapeBytes(new ByteSequence() {
-      @Override
-      public int size() {
-        return input.size();
-      }
-      @Override
-      public byte byteAt(int offset) {
-        return input.byteAt(offset);
-      }
-    });
+  public static String escapeBytes(ByteString input) {
+    return TextFormatEscaper.escapeBytes(input);
   }
 
   /**
    * Like {@link #escapeBytes(ByteString)}, but used for byte array.
    */
-  public static String escapeBytes(final byte[] input) {
-    return escapeBytes(new ByteSequence() {
-      @Override
-      public int size() {
-        return input.length;
-      }
-      @Override
-      public byte byteAt(int offset) {
-        return input[offset];
-      }
-    });
+  public static String escapeBytes(byte[] input) {
+    return TextFormatEscaper.escapeBytes(input);
   }
 
   /**
@@ -1868,7 +1870,9 @@ public final class TextFormat {
       }
     }
 
-    return ByteString.copyFrom(result, 0, pos);
+    return result.length == pos
+        ? ByteString.wrap(result)  // This reference has not been out of our control.
+        : ByteString.copyFrom(result, 0, pos);
   }
 
   /**
@@ -1896,7 +1900,7 @@ public final class TextFormat {
    * Escape double quotes and backslashes in a String for unicode output of a message.
    */
   public static String escapeDoubleQuotesAndBackslashes(final String input) {
-    return input.replace("\\", "\\\\").replace("\"", "\\\"");
+    return TextFormatEscaper.escapeDoubleQuotesAndBackslashes(input);
   }
 
   /**

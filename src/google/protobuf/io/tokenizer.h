@@ -52,6 +52,12 @@ class ZeroCopyInputStream;     // zero_copy_stream.h
 class ErrorCollector;
 class Tokenizer;
 
+// By "column number", the proto compiler refers to a count of the number
+// of bytes before a given byte, except that a tab character advances to
+// the next multiple of 8 bytes.  Note in particular that column numbers
+// are zero-based, while many user interfaces use one-based column numbers.
+typedef int ColumnNumber;
+
 // Abstract interface for an object which collects the errors that occur
 // during parsing.  A typical implementation might simply print the errors
 // to stdout.
@@ -63,13 +69,14 @@ class LIBPROTOBUF_EXPORT ErrorCollector {
   // Indicates that there was an error in the input at the given line and
   // column numbers.  The numbers are zero-based, so you may want to add
   // 1 to each before printing them.
-  virtual void AddError(int line, int column, const string& message) = 0;
+  virtual void AddError(int line, ColumnNumber column,
+                        const string& message) = 0;
 
   // Indicates that there was a warning in the input at the given line and
   // column numbers.  The numbers are zero-based, so you may want to add
   // 1 to each before printing them.
-  virtual void AddWarning(int /* line */, int /* column */,
-                          const string& /* message */) { }
+  virtual void AddWarning(int line, ColumnNumber column,
+                          const string& message) { }
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ErrorCollector);
@@ -124,8 +131,8 @@ class LIBPROTOBUF_EXPORT Tokenizer {
     // "line" and "column" specify the position of the first character of
     // the token within the input stream.  They are zero-based.
     int line;
-    int column;
-    int end_column;
+    ColumnNumber column;
+    ColumnNumber end_column;
   };
 
   // Get the current token.  This is updated when Next() is called.  Before
@@ -263,7 +270,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
 
   // Line and column number of current_char_ within the whole input stream.
   int line_;
-  int column_;
+  ColumnNumber column_;
 
   // String to which text should be appended as we advance through it.
   // Call RecordTo(&str) to start recording and StopRecording() to stop.
@@ -280,6 +287,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
 
   // Since we count columns we need to interpret tabs somehow.  We'll take
   // the standard 8-character definition for lack of any way to do better.
+  // This must match the documentation of ColumnNumber.
   static const int kTabWidth = 8;
 
   // -----------------------------------------------------------------

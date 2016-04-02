@@ -106,10 +106,12 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     return RenderDataPiece(name, DataPiece(value));
   }
   virtual ProtoWriter* RenderString(StringPiece name, StringPiece value) {
-    return RenderDataPiece(name, DataPiece(value));
+    return RenderDataPiece(name,
+                           DataPiece(value, use_strict_base64_decoding()));
   }
   virtual ProtoWriter* RenderBytes(StringPiece name, StringPiece value) {
-    return RenderDataPiece(name, DataPiece(value, false));
+    return RenderDataPiece(
+        name, DataPiece(value, false, use_strict_base64_decoding()));
   }
   virtual ProtoWriter* RenderNull(StringPiece name) {
     return RenderDataPiece(name, DataPiece::NullData());
@@ -126,7 +128,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   }
 
   // When true, we finished writing to output a complete message.
-  bool done() const { return done_; }
+  bool done() { return done_; }
 
   // Returns the proto stream object.
   google::protobuf::io::CodedOutputStream* stream() { return stream_.get(); }
@@ -265,6 +267,19 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
   // Returns true if the field is repeated.
   bool IsRepeated(const google::protobuf::Field& field);
+
+  // Starts an object given the field and the enclosing type.
+  ProtoWriter* StartObjectField(const google::protobuf::Field& field,
+                                const google::protobuf::Type& type);
+
+  // Starts a list given the field and the enclosing type.
+  ProtoWriter* StartListField(const google::protobuf::Field& field,
+                              const google::protobuf::Type& type);
+
+  // Renders a primitve field given the field and the enclosing type.
+  ProtoWriter* RenderPrimitiveField(const google::protobuf::Field& field,
+                                    const google::protobuf::Type& type,
+                                    const DataPiece& value);
 
  private:
   // Variables for describing the structure of the input tree:

@@ -98,6 +98,7 @@ class ClassNameResolver {
   // For example:
   //   com.package.OuterClass$OuterMessage$InnerMessage
   string GetJavaImmutableClassName(const Descriptor* descriptor);
+  string GetJavaImmutableClassName(const EnumDescriptor* descriptor);
  private:
   // Get the full name of a Java class by prepending the Java package name
   // or outer class name.

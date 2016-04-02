@@ -30,15 +30,14 @@
 
 package com.google.protobuf;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.InvalidMarkException;
-import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
@@ -54,7 +53,7 @@ final class NioByteString extends ByteString.LeafByteString {
       throw new NullPointerException("buffer");
     }
 
-    this.buffer = buffer.slice();
+    this.buffer = buffer.slice().order(ByteOrder.nativeOrder());
   }
 
   // =================================================================
@@ -119,7 +118,7 @@ final class NioByteString extends ByteString.LeafByteString {
 
   @Override
   public void writeTo(OutputStream out) throws IOException {
-    writeToInternal(out, buffer.position(), buffer.remaining());
+    out.write(toByteArray());
   }
 
   @Override
@@ -137,14 +136,12 @@ final class NioByteString extends ByteString.LeafByteString {
       return;
     }
 
-    // Slow path
-    if (out instanceof FileOutputStream || numberToWrite >= 8192) {
-      // Use a channel to write out the ByteBuffer.
-      Channels.newChannel(out).write(slice(sourceOffset, sourceOffset + numberToWrite));
-    } else {
-      // Just copy the data to an array and write it.
-      out.write(toByteArray());
-    }
+    ByteBufferWriter.write(slice(sourceOffset, sourceOffset + numberToWrite), out);
+  }
+
+  @Override
+  void writeTo(ByteOutput output) throws IOException {
+    output.writeLazy(buffer.slice());
   }
 
   @Override
@@ -159,46 +156,30 @@ final class NioByteString extends ByteString.LeafByteString {
 
   @Override
   protected String toStringInternal(Charset charset) {
-    byte[] bytes;
-    int offset;
+    final byte[] bytes;
+    final int offset;
+    final int length;
     if (buffer.hasArray()) {
       bytes = buffer.array();
       offset = buffer.arrayOffset() + buffer.position();
+      length = buffer.remaining();
     } else {
+      // TODO(nathanmittler): Can we optimize this?
       bytes = toByteArray();
       offset = 0;
+      length = bytes.length;
     }
-    return new String(bytes, offset, size(), charset);
+    return new String(bytes, offset, length, charset);
   }
 
   @Override
   public boolean isValidUtf8() {
-    // TODO(nathanmittler): add a ByteBuffer fork for Utf8.isValidUtf8 to avoid the copy
-    byte[] bytes;
-    int startIndex;
-    if (buffer.hasArray()) {
-      bytes = buffer.array();
-      startIndex = buffer.arrayOffset() + buffer.position();
-    } else {
-      bytes = toByteArray();
-      startIndex = 0;
-    }
-    return Utf8.isValidUtf8(bytes, startIndex, startIndex + size());
+    return Utf8.isValidUtf8(buffer);
   }
 
   @Override
   protected int partialIsValidUtf8(int state, int offset, int length) {
-    // TODO(nathanmittler): TODO add a ByteBuffer fork for Utf8.partialIsValidUtf8 to avoid the copy
-    byte[] bytes;
-    int startIndex;
-    if (buffer.hasArray()) {
-      bytes = buffer.array();
-      startIndex = buffer.arrayOffset() + buffer.position();
-    } else {
-      bytes = toByteArray();
-      startIndex = 0;
-    }
-    return Utf8.partialIsValidUtf8(state, bytes, startIndex, startIndex + size());
+    return Utf8.partialIsValidUtf8(state, buffer, offset, offset + length);
   }
 
   @Override

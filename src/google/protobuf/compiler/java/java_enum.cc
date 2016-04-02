@@ -64,6 +64,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
                              bool immutable_api,
                              Context* context)
   : descriptor_(descriptor), immutable_api_(immutable_api),
+    context_(context),
     name_resolver_(context->GetNameResolver())  {
   for (int i = 0; i < descriptor_->value_count(); i++) {
     const EnumValueDescriptor* value = descriptor_->value(i);
@@ -150,7 +151,15 @@ void EnumGenerator::Generate(io::Printer* printer) {
     "  return value;\n"
     "}\n"
     "\n"
+    "/**\n"
+    " * @deprecated Use {@link #forNumber(int)} instead.\n"
+    " */\n"
+    "@java.lang.Deprecated\n"
     "public static $classname$ valueOf(int value) {\n"
+    "  return forNumber(value);\n"
+    "}\n"
+    "\n"
+    "public static $classname$ forNumber(int value) {\n"
     "  switch (value) {\n",
     "classname", descriptor_->name());
   printer->Indent();
@@ -178,7 +187,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     "    $classname$> internalValueMap =\n"
     "      new com.google.protobuf.Internal.EnumLiteMap<$classname$>() {\n"
     "        public $classname$ findValueByNumber(int number) {\n"
-    "          return $classname$.valueOf(number);\n"
+    "          return $classname$.forNumber(number);\n"
     "        }\n"
     "      };\n"
     "\n",
@@ -187,7 +196,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   // -----------------------------------------------------------------
   // Reflection
 
-  if (HasDescriptorMethods(descriptor_)) {
+  if (HasDescriptorMethods(descriptor_, context_->EnforceLite())) {
     printer->Print(
       "public final com.google.protobuf.Descriptors.EnumValueDescriptor\n"
       "    getValueDescriptor() {\n"
@@ -229,7 +238,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
             "      (com.google.protobuf.Descriptors.FileDescriptor)\n"
             "          m.invoke(immutableFileClass);\n"
             "  return file.getEnumTypes().get($index$);\n"
-            "} catch (Exception e) {\n"
+            "} catch (java.lang.Exception e) {\n"
             // Immutable classes cannot be found. Proceed as if custom options
             // don't exist.
             "}\n",
@@ -313,7 +322,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     "private final int value;\n\n"
     "private $classname$(int index, int value) {\n",
     "classname", descriptor_->name());
-  if (HasDescriptorMethods(descriptor_)) {
+  if (HasDescriptorMethods(descriptor_, context_->EnforceLite())) {
     printer->Print("  this.index = index;\n");
   }
   printer->Print(

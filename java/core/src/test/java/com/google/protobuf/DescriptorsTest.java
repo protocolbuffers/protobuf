@@ -59,7 +59,6 @@ import protobuf_unittest.UnittestProto.TestMultipleExtensionRanges;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestReservedFields;
 import protobuf_unittest.UnittestProto.TestService;
-
 import junit.framework.TestCase;
 
 import java.util.Arrays;
@@ -571,6 +570,42 @@ public class DescriptorsTest extends TestCase {
       assertTrue(
           e.getMessage().indexOf("Invalid public dependency index.") != -1);
     }
+  }
+
+  public void testUnknownFieldsDenied() throws Exception {
+    FileDescriptorProto fooProto = FileDescriptorProto.newBuilder()
+        .setName("foo.proto")
+        .addMessageType(DescriptorProto.newBuilder()
+            .setName("Foo")
+            .addField(FieldDescriptorProto.newBuilder()
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setTypeName("Bar")
+                .setName("bar")
+                .setNumber(1)))
+        .build();
+
+    try {
+      Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0]);
+      fail("DescriptorValidationException expected");
+    } catch (DescriptorValidationException e) {
+      assertTrue(e.getMessage().indexOf("Bar") != -1);
+      assertTrue(e.getMessage().indexOf("is not defined") != -1);
+    }
+  }
+
+  public void testUnknownFieldsAllowed() throws Exception {
+    FileDescriptorProto fooProto = FileDescriptorProto.newBuilder()
+        .setName("foo.proto")
+        .addDependency("bar.proto")
+        .addMessageType(DescriptorProto.newBuilder()
+            .setName("Foo")
+            .addField(FieldDescriptorProto.newBuilder()
+                .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                .setTypeName("Bar")
+                .setName("bar")
+                .setNumber(1)))
+        .build();
+    Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0], true);
   }
 
   public void testHiddenDependency() throws Exception {

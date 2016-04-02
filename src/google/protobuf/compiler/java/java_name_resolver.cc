@@ -259,6 +259,13 @@ string ClassNameResolver::GetJavaImmutableClassName(
       descriptor->file(), true);
 }
 
+string ClassNameResolver::GetJavaImmutableClassName(
+    const EnumDescriptor* descriptor) {
+  return GetJavaClassFullName(
+      ClassNameWithoutPackage(descriptor, true),
+      descriptor->file(), true);
+}
+
 
 }  // namespace java
 }  // namespace compiler

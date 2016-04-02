@@ -83,9 +83,10 @@ void protobuf_AddDesc_google_2fprotobuf_2fany_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\031google/protobuf/any.proto\022\017google.prot"
     "obuf\"&\n\003Any\022\020\n\010type_url\030\001 \001(\t\022\r\n\005value\030\002"
-    " \001(\014BK\n\023com.google.protobufB\010AnyProtoP\001\240"
-    "\001\001\242\002\003GPB\252\002\036Google.Protobuf.WellKnownType"
-    "sb\006proto3", 169);
+    " \001(\014Br\n\023com.google.protobufB\010AnyProtoP\001Z"
+    "%github.com/golang/protobuf/ptypes/any\240\001"
+    "\001\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTypes"
+    "b\006proto3", 208);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/any.proto", &protobuf_RegisterTypes);
   Any::default_instance_ = new Any();
@@ -114,6 +115,11 @@ static void MergeFromFail(int line) {
 
 void Any::PackFrom(const ::google::protobuf::Message& message) {
   _any_metadata_.PackFrom(message);
+}
+
+void Any::PackFrom(const ::google::protobuf::Message& message,
+                           const ::std::string& type_url_prefix) {
+  _any_metadata_.PackFrom(message, type_url_prefix);
 }
 
 bool Any::UnpackTo(::google::protobuf::Message* message) const {

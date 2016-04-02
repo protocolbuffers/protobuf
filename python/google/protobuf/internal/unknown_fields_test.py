@@ -36,7 +36,7 @@
 __author__ = 'bohdank@google.com (Bohdan Koval)'
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
 from google.protobuf import unittest_mset_pb2

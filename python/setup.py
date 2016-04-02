@@ -172,7 +172,9 @@ if __name__ == '__main__':
     # extension. Note that those libraries have to be compiled with
     # -fPIC for this to work.
     compile_static_ext = get_option_from_sys_argv('--compile_static_extension')
-    extra_compile_args = ['-Wno-write-strings', '-Wno-invalid-offsetof']
+    extra_compile_args = ['-Wno-write-strings',
+                          '-Wno-invalid-offsetof',
+                          '-Wno-sign-compare']
     libraries = ['protobuf']
     extra_objects = None
     if compile_static_ext:

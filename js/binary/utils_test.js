@@ -310,7 +310,7 @@ describe('binaryUtilsTest', function() {
     // NaN.
     jspb.utils.splitFloat32(NaN);
     if (!isNaN(jspb.utils.joinFloat32(jspb.utils.split64Low,
-                                         jspb.utils.split64High))) {
+                                      jspb.utils.split64High))) {
       throw 'fail!';
     }
 
@@ -324,7 +324,7 @@ describe('binaryUtilsTest', function() {
         if (opt_bits != jspb.utils.split64Low) throw 'fail!';
       }
       if (truncate(x) != jspb.utils.joinFloat32(jspb.utils.split64Low,
-                                                   jspb.utils.split64High)) {
+          jspb.utils.split64High)) {
         throw 'fail!';
       }
     }
@@ -376,7 +376,7 @@ describe('binaryUtilsTest', function() {
     // NaN.
     jspb.utils.splitFloat64(NaN);
     if (!isNaN(jspb.utils.joinFloat64(jspb.utils.split64Low,
-                                         jspb.utils.split64High))) {
+        jspb.utils.split64High))) {
       throw 'fail!';
     }
 
@@ -394,7 +394,7 @@ describe('binaryUtilsTest', function() {
         if (opt_lowBits != jspb.utils.split64Low) throw 'fail!';
       }
       if (x != jspb.utils.joinFloat64(jspb.utils.split64Low,
-                                         jspb.utils.split64High)) {
+          jspb.utils.split64High)) {
         throw 'fail!';
       }
     }
@@ -439,16 +439,20 @@ describe('binaryUtilsTest', function() {
    * Tests counting packed varints.
    */
   it('testCountVarints', function() {
-    var writer = new jspb.BinaryWriter();
-
-    var count = 0;
+    var values = [];
     for (var i = 1; i < 1000000000; i *= 1.1) {
-      writer.rawWriteVarint(Math.floor(i));
-      count++;
+      values.push(Math.floor(i));
     }
 
+    var writer = new jspb.BinaryWriter();
+    writer.writePackedUint64(1, values);
+
     var buffer = new Uint8Array(writer.getResultBuffer());
-    assertEquals(count, jspb.utils.countVarints(buffer, 0, buffer.length));
+
+    // We should have two more varints than we started with - one for the field
+    // tag, one for the packed length.
+    assertEquals(values.length + 2,
+                 jspb.utils.countVarints(buffer, 0, buffer.length));
   });
 
 
@@ -625,8 +629,5 @@ describe('binaryUtilsTest', function() {
 
     // Converting base64-encoded strings into Uint8Arrays should work.
     check(convert(sourceBase64));
-
-    // Converting binary-data strings into Uint8Arrays should work.
-    check(convert(sourceString, /* opt_stringIsRawBytes = */ true));
   });
 });

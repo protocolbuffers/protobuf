@@ -49,6 +49,7 @@ import junit.framework.TestCase;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -128,33 +129,7 @@ public class LiteTest extends TestCase {
     assertEquals(7, message2.getExtension(
         UnittestLite.optionalNestedMessageExtensionLite).getBb());
   }
-
-  public void testSerialize() throws Exception {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    TestAllTypesLite expected =
-      TestAllTypesLite.newBuilder()
-                      .setOptionalInt32(123)
-                      .addRepeatedString("hello")
-                      .setOptionalNestedMessage(
-                          TestAllTypesLite.NestedMessage.newBuilder().setBb(7))
-                      .build();
-    ObjectOutputStream out = new ObjectOutputStream(baos);
-    try {
-      out.writeObject(expected);
-    } finally {
-      out.close();
-    }
-    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    ObjectInputStream in = new ObjectInputStream(bais);
-    TestAllTypesLite actual = (TestAllTypesLite) in.readObject();
-    assertEquals(expected.getOptionalInt32(), actual.getOptionalInt32());
-    assertEquals(expected.getRepeatedStringCount(),
-        actual.getRepeatedStringCount());
-    assertEquals(expected.getRepeatedString(0),
-        actual.getRepeatedString(0));
-    assertEquals(expected.getOptionalNestedMessage().getBb(),
-        actual.getOptionalNestedMessage().getBb());
-  }
+  
   
   public void testClone() {
     TestAllTypesLite.Builder expected = TestAllTypesLite.newBuilder()
@@ -1458,5 +1433,169 @@ public class LiteTest extends TestCase {
     assertEquals(
         11, (int) extendableMessage.getExtension(
             UnittestLite.optionalFixed32ExtensionLite));
+  }
+
+  public void testToStringDefaultInstance() throws Exception {
+    assertToStringEquals("", TestAllTypesLite.getDefaultInstance());
+  }
+
+  public void testToStringPrimitives() throws Exception {
+    TestAllTypesLite proto = TestAllTypesLite.newBuilder()
+        .setOptionalInt32(1)
+        .setOptionalInt64(9223372036854775807L)
+        .build();
+    assertToStringEquals("optional_int32: 1\noptional_int64: 9223372036854775807", proto);
+
+    proto = TestAllTypesLite.newBuilder()
+        .setOptionalBool(true)
+        .setOptionalNestedEnum(TestAllTypesLite.NestedEnum.BAZ)
+        .build();
+    assertToStringEquals("optional_bool: true\noptional_nested_enum: BAZ", proto);
+
+    proto = TestAllTypesLite.newBuilder()
+        .setOptionalFloat(2.72f)
+        .setOptionalDouble(3.14)
+        .build();
+    assertToStringEquals("optional_float: 2.72\noptional_double: 3.14", proto);
+  }
+
+  public void testToStringStringFields() throws Exception {
+    TestAllTypesLite proto = TestAllTypesLite.newBuilder()
+        .setOptionalString("foo\"bar\nbaz\\")
+        .build();
+    assertToStringEquals("optional_string: \"foo\\\"bar\\nbaz\\\\\"", proto);
+
+    proto = TestAllTypesLite.newBuilder()
+        .setOptionalString("\u6587")
+        .build();
+    assertToStringEquals("optional_string: \"\\346\\226\\207\"", proto);
+  }
+
+  public void testToStringNestedMessage() throws Exception {
+    TestAllTypesLite proto = TestAllTypesLite.newBuilder()
+        .setOptionalNestedMessage(TestAllTypesLite.NestedMessage.getDefaultInstance())
+        .build();
+    assertToStringEquals("optional_nested_message {\n}", proto);
+
+    proto = TestAllTypesLite.newBuilder()
+        .setOptionalNestedMessage(
+            TestAllTypesLite.NestedMessage.newBuilder().setBb(7))
+        .build();
+    assertToStringEquals("optional_nested_message {\n  bb: 7\n}", proto);
+  }
+
+  public void testToStringRepeatedFields() throws Exception {
+    TestAllTypesLite proto = TestAllTypesLite.newBuilder()
+        .addRepeatedInt32(32)
+        .addRepeatedInt32(32)
+        .addRepeatedInt64(64)
+        .build();
+    assertToStringEquals("repeated_int32: 32\nrepeated_int32: 32\nrepeated_int64: 64", proto);
+
+    proto = TestAllTypesLite.newBuilder()
+        .addRepeatedLazyMessage(
+            TestAllTypesLite.NestedMessage.newBuilder().setBb(7))
+        .addRepeatedLazyMessage(
+            TestAllTypesLite.NestedMessage.newBuilder().setBb(8))
+        .build();
+    assertToStringEquals(
+        "repeated_lazy_message {\n  bb: 7\n}\nrepeated_lazy_message {\n  bb: 8\n}",
+        proto);
+  }
+
+  public void testToStringForeignFields() throws Exception {
+    TestAllTypesLite proto = TestAllTypesLite.newBuilder()
+        .setOptionalForeignEnum(ForeignEnumLite.FOREIGN_LITE_BAR)
+        .setOptionalForeignMessage(
+            ForeignMessageLite.newBuilder()
+            .setC(3))
+        .build();
+    assertToStringEquals(
+        "optional_foreign_message {\n  c: 3\n}\noptional_foreign_enum: FOREIGN_LITE_BAR",
+        proto);
+  }
+
+  public void testToStringExtensions() throws Exception {
+    TestAllExtensionsLite message = TestAllExtensionsLite.newBuilder()
+        .setExtension(UnittestLite.optionalInt32ExtensionLite, 123)
+        .addExtension(UnittestLite.repeatedStringExtensionLite, "spam")
+        .addExtension(UnittestLite.repeatedStringExtensionLite, "eggs")
+        .setExtension(UnittestLite.optionalNestedEnumExtensionLite,
+            TestAllTypesLite.NestedEnum.BAZ)
+        .setExtension(UnittestLite.optionalNestedMessageExtensionLite,
+            TestAllTypesLite.NestedMessage.newBuilder().setBb(7).build())
+        .build();
+    assertToStringEquals(
+        "[1]: 123\n[18] {\n  bb: 7\n}\n[21]: 3\n[44]: \"spam\"\n[44]: \"eggs\"",
+        message);
+  }
+
+  public void testToStringUnknownFields() throws Exception {
+    TestAllExtensionsLite messageWithExtensions = TestAllExtensionsLite.newBuilder()
+        .setExtension(UnittestLite.optionalInt32ExtensionLite, 123)
+        .addExtension(UnittestLite.repeatedStringExtensionLite, "spam")
+        .addExtension(UnittestLite.repeatedStringExtensionLite, "eggs")
+        .setExtension(UnittestLite.optionalNestedEnumExtensionLite,
+            TestAllTypesLite.NestedEnum.BAZ)
+        .setExtension(UnittestLite.optionalNestedMessageExtensionLite,
+            TestAllTypesLite.NestedMessage.newBuilder().setBb(7).build())
+        .build();
+    TestAllExtensionsLite messageWithUnknownFields = TestAllExtensionsLite.parseFrom(
+        messageWithExtensions.toByteArray());
+    assertToStringEquals(
+        "1: 123\n18: \"\\b\\a\"\n21: 3\n44: \"spam\"\n44: \"eggs\"",
+        messageWithUnknownFields);
+  }
+
+  // Asserts that the toString() representation of the message matches the expected. This verifies
+  // the first line starts with a comment; but, does not factor in said comment as part of the
+  // comparison as it contains unstable addresses.
+  private static void assertToStringEquals(String expected, MessageLite message) {
+    String toString = message.toString();
+    assertEquals('#', toString.charAt(0));
+    if (toString.indexOf("\n") >= 0) {
+      toString = toString.substring(toString.indexOf("\n") + 1);
+    } else {
+      toString = "";
+    }
+    assertEquals(expected, toString);
+  }
+  
+  public void testParseLazy() throws Exception {
+    ByteString bb = TestAllTypesLite.newBuilder()
+        .setOptionalLazyMessage(NestedMessage.newBuilder()
+            .setBb(11)
+            .build())
+        .build().toByteString();
+    ByteString cc = TestAllTypesLite.newBuilder()
+        .setOptionalLazyMessage(NestedMessage.newBuilder()
+            .setCc(22)
+            .build())
+        .build().toByteString();
+    
+    ByteString concat = bb.concat(cc);
+    TestAllTypesLite message = TestAllTypesLite.parseFrom(concat);
+
+    assertEquals(11, message.getOptionalLazyMessage().getBb());
+    assertEquals(22L, message.getOptionalLazyMessage().getCc());
+  }
+  
+  public void testParseLazy_oneOf() throws Exception {
+    ByteString bb = TestAllTypesLite.newBuilder()
+        .setOneofLazyNestedMessage(NestedMessage.newBuilder()
+            .setBb(11)
+            .build())
+        .build().toByteString();
+    ByteString cc = TestAllTypesLite.newBuilder()
+        .setOneofLazyNestedMessage(NestedMessage.newBuilder()
+            .setCc(22)
+            .build())
+        .build().toByteString();
+    
+    ByteString concat = bb.concat(cc);
+    TestAllTypesLite message = TestAllTypesLite.parseFrom(concat);
+
+    assertEquals(11, message.getOneofLazyNestedMessage().getBb());
+    assertEquals(22L, message.getOneofLazyNestedMessage().getCc());
   }
 }
