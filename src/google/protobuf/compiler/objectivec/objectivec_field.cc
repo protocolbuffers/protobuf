@@ -78,6 +78,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
       classname + "_FieldNumber_" + capitalized_name;
   (*variables)["field_number"] = SimpleItoa(descriptor->number());
   (*variables)["field_type"] = GetCapitalizedType(descriptor);
+  (*variables)["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor);
   std::vector<string> field_flags;
   if (descriptor->is_repeated()) field_flags.push_back("GPBFieldRepeated");
   if (descriptor->is_required()) field_flags.push_back("GPBFieldRequired");
@@ -266,12 +267,12 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
   printer->Print(variables_, "$comments$");
   printer->Print(
       variables_,
-      "@property(nonatomic, readwrite) $property_type$ $name$;\n"
+      "@property(nonatomic, readwrite) $property_type$ $name$$deprecated_attribute$;\n"
       "\n");
   if (WantsHasProperty()) {
     printer->Print(
         variables_,
-        "@property(nonatomic, readwrite) BOOL has$capitalized_name$;\n");
+        "@property(nonatomic, readwrite) BOOL has$capitalized_name$$deprecated_attribute$;\n");
   }
 }
 
@@ -330,18 +331,18 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   printer->Print(variables_, "$comments$");
   printer->Print(
       variables_,
-      "@property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$ *$name$$storage_attribute$;\n");
+      "@property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$ *$name$$storage_attribute$$deprecated_attribute$;\n");
   if (WantsHasProperty()) {
     printer->Print(
         variables_,
         "/// Test to see if @c $name$ has been set.\n"
-        "@property(nonatomic, readwrite) BOOL has$capitalized_name$;\n");
+        "@property(nonatomic, readwrite) BOOL has$capitalized_name$$deprecated_attribute$;\n");
   }
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
     printer->Print(variables_,
-                   "- ($property_type$ *)$name$ GPB_METHOD_FAMILY_NONE;\n");
+                   "- ($property_type$ *)$name$ GPB_METHOD_FAMILY_NONE$deprecated_attribute$;\n");
   }
   printer->Print("\n");
 }
@@ -385,14 +386,14 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
       variables_,
       "$comments$"
       "$array_comment$"
-      "@property(nonatomic, readwrite, strong, null_resettable) $array_property_type$ *$name$$storage_attribute$;\n"
+      "@property(nonatomic, readwrite, strong, null_resettable) $array_property_type$ *$name$$storage_attribute$$deprecated_attribute$;\n"
       "/// The number of items in @c $name$ without causing the array to be created.\n"
-      "@property(nonatomic, readonly) NSUInteger $name$_Count;\n");
+      "@property(nonatomic, readonly) NSUInteger $name$_Count$deprecated_attribute$;\n");
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
     printer->Print(variables_,
-                   "- ($array_property_type$ *)$name$ GPB_METHOD_FAMILY_NONE;\n");
+                   "- ($array_property_type$ *)$name$ GPB_METHOD_FAMILY_NONE$deprecated_attribute$;\n");
   }
   printer->Print("\n");
 }
