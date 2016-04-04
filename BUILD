@@ -15,8 +15,18 @@ COPTS = [
     "-Wno-error=unused-function",
 ]
 
-# Bazel should provide portable link_opts for pthread.
-LINK_OPTS = ["-lpthread"]
+config_setting(
+    name = "android",
+    values = {
+        "crosstool_top": "//external:android/crosstool",
+    },
+)
+
+# Android builds do not need to link in a separate pthread library.
+LINK_OPTS = select({
+    "//tensorflow:android": [],
+    "//conditions:default": ["-lpthread"],
+})
 
 load(
     "protobuf",
