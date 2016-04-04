@@ -24,7 +24,7 @@ config_setting(
 
 # Android builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
-    "//tensorflow:android": [],
+    ":android": [],
     "//conditions:default": ["-lpthread"],
 })
 
