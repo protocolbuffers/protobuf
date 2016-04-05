@@ -283,16 +283,15 @@
   [output writeRawData:[NSData dataWithBytes:bytes length:sizeof(bytes)]];
   [output flush];
 
-  NSData* data =
+  NSData *data =
       [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
   GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+  NSError *error = nil;
   TestAllTypes* message = [TestAllTypes parseFromCodedInputStream:input
                                                 extensionRegistry:nil
-                                                            error:NULL];
-  XCTAssertNotNil(message);
-  // Make sure we can read string properties twice without crashing.
-  XCTAssertEqual([message.defaultString length], (NSUInteger)0);
-  XCTAssertEqualObjects(@"", message.defaultString);
+                                                            error:&error];
+  XCTAssertNotNil(error);
+  XCTAssertNil(message);
 }
 
 - (void)testBOMWithinStrings {
