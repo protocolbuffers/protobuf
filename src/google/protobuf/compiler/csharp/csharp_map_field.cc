@@ -48,8 +48,9 @@ namespace compiler {
 namespace csharp {
 
 MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
-                                             int fieldOrdinal)
-    : FieldGeneratorBase(descriptor, fieldOrdinal) {
+                                     int fieldOrdinal,
+                                     const Options* options)
+    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
 }
 
 MapFieldGenerator::~MapFieldGenerator() {
@@ -62,8 +63,8 @@ void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
       descriptor_->message_type()->FindFieldByName("value");
   variables_["key_type_name"] = type_name(key_descriptor);
   variables_["value_type_name"] = type_name(value_descriptor);
-  scoped_ptr<FieldGeneratorBase> key_generator(CreateFieldGenerator(key_descriptor, 1));  
-  scoped_ptr<FieldGeneratorBase> value_generator(CreateFieldGenerator(value_descriptor, 2));
+  scoped_ptr<FieldGeneratorBase> key_generator(CreateFieldGenerator(key_descriptor, 1, this->options()));
+  scoped_ptr<FieldGeneratorBase> value_generator(CreateFieldGenerator(value_descriptor, 2, this->options()));
 
   printer->Print(
     variables_,

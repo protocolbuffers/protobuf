@@ -23,6 +23,7 @@ copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\command_line_
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\cpp\cpp_generator.h include\google\protobuf\compiler\cpp\cpp_generator.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_generator.h include\google\protobuf\compiler\csharp\csharp_generator.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_names.h include\google\protobuf\compiler\csharp\csharp_names.h
+copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_options.h include\google\protobuf\compiler\csharp\csharp_options.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\importer.h include\google\protobuf\compiler\importer.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_generator.h include\google\protobuf\compiler\java\java_generator.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_names.h include\google\protobuf\compiler\java\java_names.h

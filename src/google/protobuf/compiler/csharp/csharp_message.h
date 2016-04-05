@@ -47,7 +47,7 @@ class FieldGeneratorBase;
 
 class MessageGenerator : public SourceGeneratorBase {
  public:
-  MessageGenerator(const Descriptor* descriptor);
+  MessageGenerator(const Descriptor* descriptor, const Options* options);
   ~MessageGenerator();
 
   void GenerateCloningCode(io::Printer* printer);

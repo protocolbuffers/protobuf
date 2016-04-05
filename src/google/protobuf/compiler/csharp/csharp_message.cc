@@ -60,8 +60,8 @@ bool CompareFieldNumbers(const FieldDescriptor* d1, const FieldDescriptor* d2) {
   return d1->number() < d2->number();
 }
 
-MessageGenerator::MessageGenerator(const Descriptor* descriptor)
-    : SourceGeneratorBase(descriptor->file()),
+MessageGenerator::MessageGenerator(const Descriptor* descriptor, const Options* options)
+    : SourceGeneratorBase(descriptor->file(), options),
       descriptor_(descriptor) {
 
   // sorted field names
@@ -214,13 +214,13 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print("public static partial class Types {\n");
     printer->Indent();
     for (int i = 0; i < descriptor_->enum_type_count(); i++) {
-      EnumGenerator enumGenerator(descriptor_->enum_type(i));
+      EnumGenerator enumGenerator(descriptor_->enum_type(i), this->options());
       enumGenerator.Generate(printer);
     }
     for (int i = 0; i < descriptor_->nested_type_count(); i++) {
       // Don't generate nested types for maps...
       if (!IsMapEntryMessage(descriptor_->nested_type(i))) {
-        MessageGenerator messageGenerator(descriptor_->nested_type(i));
+        MessageGenerator messageGenerator(descriptor_->nested_type(i), this->options());
         messageGenerator.Generate(printer);
       }
     }
@@ -490,7 +490,7 @@ int MessageGenerator::GetFieldOrdinal(const FieldDescriptor* descriptor) {
 
 FieldGeneratorBase* MessageGenerator::CreateFieldGeneratorInternal(
     const FieldDescriptor* descriptor) {
-  return CreateFieldGenerator(descriptor, GetFieldOrdinal(descriptor));
+  return CreateFieldGenerator(descriptor, GetFieldOrdinal(descriptor), this->options());
 }
 
 }  // namespace csharp

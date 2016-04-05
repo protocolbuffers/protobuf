@@ -46,6 +46,7 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
+struct Options;
 class FieldGeneratorBase;
 
 // TODO: start using this enum.
@@ -95,7 +96,7 @@ std::string StringToBase64(const std::string& input);
 
 std::string FileDescriptorToBase64(const FileDescriptor* descriptor);
 
-FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal, const Options* options);
 
 // Determines whether the given message is a map entry message, i.e. one implicitly created
 // by protoc due to a map<key, value> field.
