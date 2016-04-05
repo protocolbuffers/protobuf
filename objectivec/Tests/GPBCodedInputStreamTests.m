@@ -295,4 +295,42 @@
   XCTAssertEqualObjects(@"", message.defaultString);
 }
 
+- (void)testBOMWithinStrings {
+  // We've seen servers that end up with BOMs within strings (not always at the
+  // start, and sometimes in multiple places), make sure they always parse
+  // correctly. (Again, this is inpart incase a custom string class is ever
+  // used again.)
+  const char* strs[] = {
+    "\xEF\xBB\xBF String with BOM",
+    "String with \xEF\xBB\xBF in middle",
+    "String with end bom \xEF\xBB\xBF",
+    "\xEF\xBB\xBF\xe2\x99\xa1",  // BOM White Heart
+    "\xEF\xBB\xBF\xEF\xBB\xBF String with Two BOM",
+  };
+  for (size_t i = 0; i < GPBARRAYSIZE(strs); ++i) {
+    NSOutputStream* rawOutput = [NSOutputStream outputStreamToMemory];
+    GPBCodedOutputStream* output =
+        [GPBCodedOutputStream streamWithOutputStream:rawOutput];
+
+    int32_t tag = GPBWireFormatMakeTag(TestAllTypes_FieldNumber_DefaultString,
+                                       GPBWireFormatLengthDelimited);
+    [output writeRawVarint32:tag];
+    size_t length = strlen(strs[i]);
+    [output writeRawVarint32:(int32_t)length];
+    [output writeRawData:[NSData dataWithBytes:strs[i] length:length]];
+    [output flush];
+
+    NSData* data =
+        [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+    TestAllTypes* message = [TestAllTypes parseFromCodedInputStream:input
+                                                  extensionRegistry:nil
+                                                              error:NULL];
+    XCTAssertNotNil(message, @"Loop %zd", i);
+    // Ensure the string is there. NSString can consume the BOM in some
+    // cases, so don't actually check the string for exact equality.
+    XCTAssertTrue(message.defaultString.length > 0, @"Loop %zd", i);
+  }
+}
+
 @end
