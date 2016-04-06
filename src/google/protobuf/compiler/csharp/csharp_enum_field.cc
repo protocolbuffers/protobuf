@@ -81,8 +81,8 @@ void EnumFieldGenerator::GenerateCodecCode(io::Printer* printer) {
         "pb::FieldCodec.ForEnum($tag$, x => (int) x, x => ($type_name$) x)");
 }
 
-EnumOneofFieldGenerator::EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
-						 int fieldOrdinal, const Options *options)
+EnumOneofFieldGenerator::EnumOneofFieldGenerator(
+    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
   : PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal, options) {
 }
 

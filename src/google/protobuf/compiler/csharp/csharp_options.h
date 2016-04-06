@@ -41,7 +41,10 @@ namespace csharp {
 
 // Generator options (used by csharp_generator.cc):
 struct Options {
-  Options() : file_extension(".cs"), base_namespace(""), generate_directories(false) {
+  Options() :
+      file_extension(".cs"),
+      base_namespace(""),
+      generate_directories(false) {
   }
   // Extension of the generated file. Defaults to ".cs"
   string file_extension;

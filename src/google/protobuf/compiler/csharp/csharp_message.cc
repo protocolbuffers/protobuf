@@ -60,7 +60,8 @@ bool CompareFieldNumbers(const FieldDescriptor* d1, const FieldDescriptor* d2) {
   return d1->number() < d2->number();
 }
 
-MessageGenerator::MessageGenerator(const Descriptor* descriptor, const Options* options)
+MessageGenerator::MessageGenerator(const Descriptor* descriptor,
+                                   const Options* options)
     : SourceGeneratorBase(descriptor->file(), options),
       descriptor_(descriptor) {
 
@@ -185,7 +186,8 @@ void MessageGenerator::Generate(io::Printer* printer) {
     }
     printer->Outdent();
     printer->Print("}\n");
-    // TODO: Should we put the oneof .proto comments here? It's unclear exactly where they should go.
+    // TODO: Should we put the oneof .proto comments here?
+    // It's unclear exactly where they should go.
     printer->Print(
       vars,
       "private $property_name$OneofCase $name$Case_ = $property_name$OneofCase.None;\n"
@@ -220,7 +222,8 @@ void MessageGenerator::Generate(io::Printer* printer) {
     for (int i = 0; i < descriptor_->nested_type_count(); i++) {
       // Don't generate nested types for maps...
       if (!IsMapEntryMessage(descriptor_->nested_type(i))) {
-        MessageGenerator messageGenerator(descriptor_->nested_type(i), this->options());
+        MessageGenerator messageGenerator(
+            descriptor_->nested_type(i), this->options());
         messageGenerator.Generate(printer);
       }
     }
@@ -268,7 +271,8 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
   // Clone just the right field for each oneof
   for (int i = 0; i < descriptor_->oneof_decl_count(); ++i) {
     vars["name"] = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), false);
-    vars["property_name"] = UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true);
+    vars["property_name"] = UnderscoresToCamelCase(
+        descriptor_->oneof_decl(i)->name(), true);
     printer->Print(vars, "switch (other.$property_name$Case) {\n");
     printer->Indent();
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
@@ -449,7 +453,8 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     uint32 tag = internal::WireFormatLite::MakeTag(field->number(), wt);
     // Handle both packed and unpacked repeated fields with the same Read*Array call;
     // the two generated cases are the packed and unpacked tags.
-    // TODO(jonskeet): Check that is_packable is equivalent to is_repeated && wt in { VARINT, FIXED32, FIXED64 }.
+    // TODO(jonskeet): Check that is_packable is equivalent to
+    // is_repeated && wt in { VARINT, FIXED32, FIXED64 }.
     // It looks like it is...
     if (field->is_packable()) {
       printer->Print(

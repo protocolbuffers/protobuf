@@ -128,7 +128,8 @@ std::string GetFileNameBase(const FileDescriptor* descriptor) {
 }
 
 std::string GetReflectionClassUnqualifiedName(const FileDescriptor* descriptor) {
-  // TODO: Detect collisions with existing messages, and append an underscore if necessary.
+  // TODO: Detect collisions with existing messages,
+  // and append an underscore if necessary.
   return GetFileNameBase(descriptor) + "Reflection";
 }
 
@@ -352,7 +353,8 @@ std::string FileDescriptorToBase64(const FileDescriptor* descriptor) {
 }
 
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
-                                         int fieldOrdinal, const Options* options) {
+                                         int fieldOrdinal,
+                                         const Options* options) {
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_GROUP:
     case FieldDescriptor::TYPE_MESSAGE:
