@@ -4,6 +4,7 @@
 **
 ** - upb::MessageDef (upb_msgdef): describes a "message" construct.
 ** - upb::FieldDef (upb_fielddef): describes a message field.
+** - upb::FileDef (upb_filedef): describes a .proto file and its defs.
 ** - upb::EnumDef (upb_enumdef): describes an enum.
 ** - upb::OneofDef (upb_oneofdef): describes a oneof.
 ** - upb::Def (upb_def): base class of all the others.
@@ -31,6 +32,7 @@ namespace upb {
 class Def;
 class EnumDef;
 class FieldDef;
+class FileDef;
 class MessageDef;
 class OneofDef;
 }
@@ -38,6 +40,8 @@ class OneofDef;
 
 UPB_DECLARE_DERIVED_TYPE(upb::Def, upb::RefCounted, upb_def, upb_refcounted)
 UPB_DECLARE_DERIVED_TYPE(upb::OneofDef, upb::RefCounted, upb_oneofdef,
+                         upb_refcounted)
+UPB_DECLARE_DERIVED_TYPE(upb::FileDef, upb::RefCounted, upb_filedef,
                          upb_refcounted)
 
 /* The maximum message depth that the type graph can have.  This is a resource
@@ -82,12 +86,20 @@ class upb::Def {
   /* "fullname" is the def's fully-qualified name (eg. foo.bar.Message). */
   const char *full_name() const;
 
+  /* The final part of a def's name (eg. Message). */
+  const char *name() const;
+
   /* The def must be mutable.  Caller retains ownership of fullname.  Defs are
    * not required to have a name; if a def has no name when it is frozen, it
    * will remain an anonymous def.  On failure, returns false and details in "s"
    * if non-NULL. */
   bool set_full_name(const char* fullname, upb::Status* s);
   bool set_full_name(const std::string &fullname, upb::Status* s);
+
+  /* The file in which this def appears.  It is not necessary to add a def to a
+   * file (and consequently the accessor may return NULL).  Set this by calling
+   * file->Add(def). */
+  FileDef* file() const;
 
   /* Freezes the given defs; this validates all constraints and marks the defs
    * as frozen (read-only).  "defs" may not contain any fielddefs, but fields
@@ -100,7 +112,7 @@ class upb::Def {
    *
    * After this operation succeeds, the finalized defs must only be accessed
    * through a const pointer! */
-  static bool Freeze(Def* const* defs, int n, Status* status);
+  static bool Freeze(Def* const* defs, size_t n, Status* status);
   static bool Freeze(const std::vector<Def*>& defs, Status* status);
 
  private:
@@ -119,8 +131,13 @@ UPB_REFCOUNTED_CMETHODS(upb_def, upb_def_upcast)
 
 upb_deftype_t upb_def_type(const upb_def *d);
 const char *upb_def_fullname(const upb_def *d);
+const char *upb_def_name(const upb_def *d);
+const upb_filedef *upb_def_file(const upb_def *d);
 bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s);
-bool upb_def_freeze(upb_def *const *defs, int n, upb_status *s);
+bool upb_def_freeze(upb_def *const *defs, size_t n, upb_status *s);
+
+/* Temporary API: for internal use only. */
+bool _upb_def_validate(upb_def *const*defs, size_t n, upb_status *s);
 
 UPB_END_EXTERN_C
 
@@ -661,6 +678,7 @@ class upb::MessageDef {
 
   /* Functionality from upb::Def. */
   const char* full_name() const;
+  const char* name() const;
   bool set_full_name(const char* fullname, Status* s);
   bool set_full_name(const std::string& fullname, Status* s);
 
@@ -894,6 +912,7 @@ UPB_REFCOUNTED_CMETHODS(upb_msgdef, upb_msgdef_upcast2)
 bool upb_msgdef_freeze(upb_msgdef *m, upb_status *status);
 
 const char *upb_msgdef_fullname(const upb_msgdef *m);
+const char *upb_msgdef_name(const upb_msgdef *m);
 bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname, upb_status *s);
 
 upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner);
@@ -901,7 +920,6 @@ bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f, const void *ref_donor,
                          upb_status *s);
 bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
                          upb_status *s);
-void upb_msgdef_setprimitiveshavepresence(upb_msgdef *m, bool have_presence);
 
 /* Field lookup in a couple of different variations:
  *   - itof = int to field
@@ -1000,6 +1018,7 @@ class upb::EnumDef {
 
   /* Functionality from upb::Def. */
   const char* full_name() const;
+  const char* name() const;
   bool set_full_name(const char* fullname, Status* s);
   bool set_full_name(const std::string& fullname, Status* s);
 
@@ -1074,6 +1093,7 @@ bool upb_enumdef_freeze(upb_enumdef *e, upb_status *status);
 
 /* From upb_def. */
 const char *upb_enumdef_fullname(const upb_enumdef *e);
+const char *upb_enumdef_name(const upb_enumdef *e);
 bool upb_enumdef_setfullname(upb_enumdef *e, const char *fullname,
                              upb_status *s);
 
@@ -1115,8 +1135,7 @@ typedef upb_inttable_iter upb_oneof_iter;
 
 #ifdef __cplusplus
 
-/* Class that represents a oneof.  Its base class is upb::Def (convert with
- * upb::upcast()). */
+/* Class that represents a oneof. */
 class upb::OneofDef {
  public:
   /* Returns NULL if memory allocation failed. */
@@ -1125,9 +1144,6 @@ class upb::OneofDef {
   /* upb::RefCounted methods like Ref()/Unref(). */
   UPB_REFCOUNTED_CPPMETHODS
 
-  /* Functionality from upb::Def. */
-  const char* full_name() const;
-
   /* Returns the MessageDef that owns this OneofDef. */
   const MessageDef* containing_type() const;
 
@@ -1135,6 +1151,7 @@ class upb::OneofDef {
    * by name once added to a message def. */
   const char* name() const;
   bool set_name(const char* name, Status* s);
+  bool set_name(const std::string& name, Status* s);
 
   /* Returns the number of fields currently defined in the oneof. */
   int field_count() const;
@@ -1264,6 +1281,125 @@ void upb_oneof_iter_setdone(upb_oneof_iter *iter);
 
 UPB_END_EXTERN_C
 
+
+/* upb::FileDef ***************************************************************/
+
+typedef enum {
+  UPB_SYNTAX_PROTO2 = 2,
+  UPB_SYNTAX_PROTO3 = 3
+} upb_syntax_t;
+
+#ifdef __cplusplus
+
+/* Class that represents a .proto file with some things defined in it.
+ *
+ * Many users won't care about FileDefs, but they are necessary if you want to
+ * read the values of file-level options. */
+class upb::FileDef {
+ public:
+  /* Returns NULL if memory allocation failed. */
+  static reffed_ptr<FileDef> New();
+
+  /* upb::RefCounted methods like Ref()/Unref(). */
+  UPB_REFCOUNTED_CPPMETHODS
+
+  /* Get/set name of the file (eg. "foo/bar.proto"). */
+  const char* name() const;
+  bool set_name(const char* name, Status* s);
+  bool set_name(const std::string& name, Status* s);
+
+  /* Package name for definitions inside the file (eg. "foo.bar"). */
+  const char* package() const;
+  bool set_package(const char* package, Status* s);
+
+  /* Syntax for the file.  Defaults to proto2. */
+  upb_syntax_t syntax() const;
+  void set_syntax(upb_syntax_t syntax);
+
+  /* Get the list of defs from the file.  These are returned in the order that
+   * they were added to the FileDef. */
+  int def_count() const;
+  const Def* def(int index) const;
+  Def* def(int index);
+
+  /* Get the list of dependencies from the file.  These are returned in the
+   * order that they were added to the FileDef. */
+  int dependency_count() const;
+  const FileDef* dependency(int index) const;
+
+  /* Adds defs to this file.  The def must not already belong to another
+   * file.
+   *
+   * Note: this does *not* ensure that this def's name is unique in this file!
+   * Use a SymbolTable if you want to check this property.  Especially since
+   * properly checking uniqueness would require a check across *all* files
+   * (including dependencies). */
+  bool AddDef(Def* def, Status* s);
+  bool AddMessage(MessageDef* m, Status* s);
+  bool AddEnum(EnumDef* e, Status* s);
+  bool AddExtension(FieldDef* f, Status* s);
+
+  /* Adds a dependency of this file. */
+  bool AddDependency(const FileDef* file);
+
+  /* Freezes this FileDef and all messages/enums under it.  All subdefs must be
+   * resolved and all messages/enums must validate.  Returns true if this
+   * succeeded.
+   *
+   * TODO(haberman): should we care whether the file's dependencies are frozen
+   * already? */
+  bool Freeze(Status* s);
+
+ private:
+  UPB_DISALLOW_POD_OPS(FileDef, upb::FileDef)
+};
+
+#endif
+
+UPB_BEGIN_EXTERN_C
+
+upb_filedef *upb_filedef_new(const void *owner);
+
+/* Include upb_refcounted methods like upb_msgdef_ref(). */
+UPB_REFCOUNTED_CMETHODS(upb_filedef, upb_filedef_upcast)
+
+const char *upb_filedef_name(const upb_filedef *f);
+const char *upb_filedef_package(const upb_filedef *f);
+upb_syntax_t upb_filedef_syntax(const upb_filedef *f);
+size_t upb_filedef_defcount(const upb_filedef *f);
+size_t upb_filedef_depcount(const upb_filedef *f);
+const upb_def *upb_filedef_def(const upb_filedef *f, size_t i);
+const upb_filedef *upb_filedef_dep(const upb_filedef *f, size_t i);
+
+bool upb_filedef_freeze(upb_filedef *f, upb_status *s);
+bool upb_filedef_setname(upb_filedef *f, const char *name, upb_status *s);
+bool upb_filedef_setpackage(upb_filedef *f, const char *package, upb_status *s);
+bool upb_filedef_setsyntax(upb_filedef *f, upb_syntax_t syntax, upb_status *s);
+
+bool upb_filedef_adddef(upb_filedef *f, upb_def *def, const void *ref_donor,
+                        upb_status *s);
+bool upb_filedef_adddep(upb_filedef *f, const upb_filedef *dep);
+
+UPB_INLINE bool upb_filedef_addmsg(upb_filedef *f, upb_msgdef *m,
+                                   const void *ref_donor, upb_status *s) {
+  return upb_filedef_adddef(f, upb_msgdef_upcast_mutable(m), ref_donor, s);
+}
+
+UPB_INLINE bool upb_filedef_addenum(upb_filedef *f, upb_enumdef *e,
+                                    const void *ref_donor, upb_status *s) {
+  return upb_filedef_adddef(f, upb_enumdef_upcast_mutable(e), ref_donor, s);
+}
+
+UPB_INLINE bool upb_filedef_addext(upb_filedef *file, upb_fielddef *f,
+                                   const void *ref_donor, upb_status *s) {
+  return upb_filedef_adddef(file, upb_fielddef_upcast_mutable(f), ref_donor, s);
+}
+UPB_INLINE upb_def *upb_filedef_mutabledef(upb_filedef *f, int i) {
+  return (upb_def*)upb_filedef_def(f, i);
+}
+
+UPB_END_EXTERN_C
+
 #ifdef __cplusplus
 
 UPB_INLINE const char* upb_safecstr(const std::string& str) {
@@ -1279,13 +1415,14 @@ inline Def* Def::Dup(const void* owner) const {
 }
 inline Def::Type Def::def_type() const { return upb_def_type(this); }
 inline const char* Def::full_name() const { return upb_def_fullname(this); }
+inline const char* Def::name() const { return upb_def_name(this); }
 inline bool Def::set_full_name(const char* fullname, Status* s) {
   return upb_def_setfullname(this, fullname, s);
 }
 inline bool Def::set_full_name(const std::string& fullname, Status* s) {
   return upb_def_setfullname(this, upb_safecstr(fullname), s);
 }
-inline bool Def::Freeze(Def* const* defs, int n, Status* status) {
+inline bool Def::Freeze(Def* const* defs, size_t n, Status* status) {
   return upb_def_freeze(defs, n, status);
 }
 inline bool Def::Freeze(const std::vector<Def*>& defs, Status* status) {
@@ -1511,6 +1648,9 @@ inline reffed_ptr<MessageDef> MessageDef::New() {
 inline const char *MessageDef::full_name() const {
   return upb_msgdef_fullname(this);
 }
+inline const char *MessageDef::name() const {
+  return upb_msgdef_name(this);
+}
 inline bool MessageDef::set_full_name(const char* fullname, Status* s) {
   return upb_msgdef_setfullname(this, fullname, s);
 }
@@ -1698,6 +1838,9 @@ inline reffed_ptr<EnumDef> EnumDef::New() {
 inline const char* EnumDef::full_name() const {
   return upb_enumdef_fullname(this);
 }
+inline const char* EnumDef::name() const {
+  return upb_enumdef_name(this);
+}
 inline bool EnumDef::set_full_name(const char* fullname, Status* s) {
   return upb_enumdef_setfullname(this, fullname, s);
 }
@@ -1747,9 +1890,6 @@ inline reffed_ptr<OneofDef> OneofDef::New() {
   upb_oneofdef *o = upb_oneofdef_new(&o);
   return reffed_ptr<OneofDef>(o, &o);
 }
-inline const char* OneofDef::full_name() const {
-  return upb_oneofdef_name(this);
-}
 
 inline const MessageDef* OneofDef::containing_type() const {
   return upb_oneofdef_containingtype(this);
@@ -1759,6 +1899,9 @@ inline const char* OneofDef::name() const {
 }
 inline bool OneofDef::set_name(const char* name, Status* s) {
   return upb_oneofdef_setname(this, name, s);
+}
+inline bool OneofDef::set_name(const std::string& name, Status* s) {
+  return upb_oneofdef_setname(this, upb_safecstr(name), s);
 }
 inline int OneofDef::field_count() const {
   return upb_oneofdef_numfields(this);
@@ -1826,6 +1969,57 @@ inline bool OneofDef::const_iterator::operator==(
 inline bool OneofDef::const_iterator::operator!=(
     const const_iterator &other) const {
   return !(*this == other);
+}
+
+inline reffed_ptr<FileDef> FileDef::New() {
+  upb_filedef *f = upb_filedef_new(&f);
+  return reffed_ptr<FileDef>(f, &f);
+}
+
+inline const char* FileDef::name() const {
+  return upb_filedef_name(this);
+}
+inline bool FileDef::set_name(const char* name, Status* s) {
+  return upb_filedef_setname(this, name, s);
+}
+inline bool FileDef::set_name(const std::string& name, Status* s) {
+  return upb_filedef_setname(this, upb_safecstr(name), s);
+}
+inline const char* FileDef::package() const {
+  return upb_filedef_package(this);
+}
+inline bool FileDef::set_package(const char* package, Status* s) {
+  return upb_filedef_setpackage(this, package, s);
+}
+inline int FileDef::def_count() const {
+  return upb_filedef_defcount(this);
+}
+inline const Def* FileDef::def(int index) const {
+  return upb_filedef_def(this, index);
+}
+inline Def* FileDef::def(int index) {
+  return const_cast<Def*>(upb_filedef_def(this, index));
+}
+inline int FileDef::dependency_count() const {
+  return upb_filedef_depcount(this);
+}
+inline const FileDef* FileDef::dependency(int index) const {
+  return upb_filedef_dep(this, index);
+}
+inline bool FileDef::AddDef(Def* def, Status* s) {
+  return upb_filedef_adddef(this, def, NULL, s);
+}
+inline bool FileDef::AddMessage(MessageDef* m, Status* s) {
+  return upb_filedef_addmsg(this, m, NULL, s);
+}
+inline bool FileDef::AddEnum(EnumDef* e, Status* s) {
+  return upb_filedef_addenum(this, e, NULL, s);
+}
+inline bool FileDef::AddExtension(FieldDef* f, Status* s) {
+  return upb_filedef_addext(this, f, NULL, s);
+}
+inline bool FileDef::AddDependency(const FileDef* file) {
+  return upb_filedef_adddep(this, file);
 }
 
 }  /* namespace upb */

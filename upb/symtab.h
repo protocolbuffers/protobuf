@@ -108,11 +108,16 @@ class upb::SymbolTable {
    * only a few messages are changing.  We may want to add a way of adding a
    * tree of frozen defs to the symtab (perhaps an alternate constructor where
    * you pass the root of the tree?) */
-  bool Add(Def*const* defs, int n, void* ref_donor, upb_status* status);
+  bool Add(Def*const* defs, size_t n, void* ref_donor, Status* status);
 
   bool Add(const std::vector<Def*>& defs, void *owner, Status* status) {
     return Add((Def*const*)&defs[0], defs.size(), owner, status);
   }
+
+  /* Resolves all subdefs for messages in this file and attempts to freeze the
+   * file.  If this succeeds, adds all the symbols to this SymbolTable
+   * (replacing any existing ones with the same names). */
+  bool AddFile(FileDef* file, Status* s);
 
  private:
   UPB_DISALLOW_POD_OPS(SymbolTable, upb::SymbolTable)
@@ -134,8 +139,9 @@ const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
 const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym);
 const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym);
 const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
-bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, int n, void *ref_donor,
-                    upb_status *status);
+bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
+                    void *ref_donor, upb_status *status);
+bool upb_symtab_addfile(upb_symtab *s, upb_filedef *file, upb_status* status);
 
 /* upb_symtab_iter i;
  * for(upb_symtab_begin(&i, s, type); !upb_symtab_done(&i);
@@ -177,8 +183,11 @@ inline const MessageDef *SymbolTable::LookupMessage(const char *sym) const {
   return upb_symtab_lookupmsg(this, sym);
 }
 inline bool SymbolTable::Add(
-    Def*const* defs, int n, void* ref_donor, upb_status* status) {
+    Def*const* defs, size_t n, void* ref_donor, Status* status) {
   return upb_symtab_add(this, (upb_def*const*)defs, n, ref_donor, status);
+}
+inline bool SymbolTable::AddFile(FileDef* file, Status* s) {
+  return upb_symtab_addfile(this, file, s);
 }
 }  /* namespace upb */
 #endif

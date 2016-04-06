@@ -3,6 +3,7 @@
 ** (like attempts to link defs that don't have required properties set).
 */
 
+#include "tests/test_util.h"
 #include "upb/def.h"
 #include "upb/pb/glue.h"
 #include "upb_test.h"
@@ -41,12 +42,22 @@ static void test_noreftracking() {
 static upb_symtab *load_test_proto(void *owner) {
   upb_symtab *s = upb_symtab_new(owner);
   upb_status status = UPB_STATUS_INIT;
+  size_t len;
+  char *data = upb_readfile(descriptor_file, &len);
+  upb_filedef **files;
   ASSERT(s);
-  if (!upb_load_descriptor_file_into_symtab(s, descriptor_file, &status)) {
-    fprintf(stderr, "Error loading descriptor file: %s\n",
-            upb_status_errmsg(&status));
-    ASSERT(false);
+  ASSERT(data);
+  files = upb_loaddescriptor(data, len, &files, &status);
+  ASSERT(files);
+  free(data);
+
+  while (*files) {
+    bool ok = upb_symtab_addfile(s, *files, &status);
+    ASSERT(ok);
+    upb_filedef_unref(*files, &files);
+    files++;
   }
+
   ASSERT(!upb_symtab_isfrozen(s));
   upb_symtab_freeze(s);
   ASSERT(upb_symtab_isfrozen(s));
@@ -391,6 +402,7 @@ static void test_mapentry_check() {
   /* Should not have succeeded: non-repeated field pointing to a MapEntry. */
   ASSERT(!upb_ok(&s));
 
+  upb_status_clear(&s);
   upb_fielddef_setlabel(f, UPB_LABEL_REPEATED);
   upb_symtab_add(symtab, defs, 2, NULL, &s);
   ASSERT(upb_ok(&s));

@@ -299,6 +299,11 @@ template <class T> class reffed_ptr {
     if (ptr_) ptr_->Ref(this);
   }
 
+  reffed_ptr(const reffed_ptr& other)
+      : ptr_(upb::upcast(other.get())) {
+    if (ptr_) ptr_->Ref(this);
+  }
+
   ~reffed_ptr() { if (ptr_) ptr_->Unref(this); }
 
   template <class U>

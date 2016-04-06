@@ -33,6 +33,7 @@ struct upb_def {
   upb_refcounted base;
 
   const char *fullname;
+  const upb_filedef* file;
   char type;  /* A upb_deftype_t (char to save space) */
 
   /* Used as a flag during the def's mutable stage.  Must be false unless
@@ -43,7 +44,7 @@ struct upb_def {
 };
 
 #define UPB_DEF_INIT(name, type, refs, ref2s) \
-    { UPB_REFCOUNT_INIT(refs, ref2s), name, type, false }
+    { UPB_REFCOUNT_INIT(refs, ref2s), name, NULL, type, false }
 
 
 /* upb_fielddef ***************************************************************/
@@ -114,10 +115,10 @@ struct upb_msgdef {
    * descriptor.upb.c. */
   bool map_entry;
 
-  /* Do primitive values in this message have explicit presence or not?
+  /* Whether this message has proto2 or proto3 semantics.
    * TODO: set this flag properly for static descriptors; regenerate
    * descriptor.upb.c. */
-  bool primitives_have_presence;
+  upb_syntax_t syntax;
 
   /* TODO(haberman): proper extension ranges (there can be multiple). */
 };
@@ -173,5 +174,15 @@ struct upb_symtab {
 #define UPB_SYMTAB_INIT(symtab, refs, ref2s) \
   { UPB_REFCOUNT_INIT(refs, ref2s), symtab }
 
+struct upb_filedef {
+  upb_refcounted base;
+
+  const char *name;
+  const char *package;
+  upb_syntax_t syntax;
+
+  upb_inttable defs;
+  upb_inttable deps;
+};
 
 #endif  /* UPB_STATICINIT_H_ */

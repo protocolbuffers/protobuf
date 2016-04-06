@@ -1,6 +1,6 @@
 
 #include "upb/handlers.h"
-#include "upb/descriptor/descriptor.upb.h"
+#include "upb/descriptor/descriptor.upbdefs.h"
 #include "upb_test.h"
 #include <stdlib.h>
 #include <string.h>
@@ -13,10 +13,9 @@ static bool startmsg(void *c, const void *hd) {
 
 static void test_error() {
   /* Test creating handlers of a static msgdef. */
-  const upb_symtab *s = upbdefs_google_protobuf_descriptor(&s);
-  upb_handlers *h =
-      upb_handlers_new(upbdefs_google_protobuf_DescriptorProto(s), &h);
-  upb_symtab_unref(s, &s);
+  const upb_msgdef *m = upbdefs_google_protobuf_DescriptorProto_get(&m);
+  upb_handlers *h = upb_handlers_new(m, &h);
+  upb_msgdef_unref(m, &m);
 
   /* Attempt to set the same handler twice causes error. */
   ASSERT(upb_ok(upb_handlers_status(h)));

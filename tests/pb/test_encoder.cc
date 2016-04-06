@@ -1,7 +1,8 @@
 
+#include "tests/test_util.h"
 #include "tests/upb_test.h"
 #include "upb/bindings/stdc++/string.h"
-#include "upb/descriptor/descriptor.upb.h"
+#include "upb/descriptor/descriptor.upbdefs.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/encoder.h"
 #include "upb/pb/glue.h"
@@ -18,7 +19,7 @@ std::string read_string(const char *filename) {
 
 void test_pb_roundtrip() {
   upb::reffed_ptr<const upb::MessageDef> md(
-      upbdefs::google::protobuf::FileDescriptorSet::MessageDef());
+      upbdefs::google::protobuf::FileDescriptorSet::get());
   upb::reffed_ptr<const upb::Handlers> encoder_handlers(
       upb::pb::Encoder::NewHandlers(md.get()));
   upb::reffed_ptr<const upb::pb::DecoderMethod> method(
