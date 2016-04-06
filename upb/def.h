@@ -137,8 +137,7 @@ bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s);
 bool upb_def_freeze(upb_def *const *defs, size_t n, upb_status *s);
 
 /* Temporary API: for internal use only. */
-bool upb_def_freeze2(upb_refcounted *const *objs, size_t defs_n,
-                     size_t freeze_n, upb_status *s);
+bool _upb_def_validate(upb_def *const*defs, size_t n, upb_status *s);
 
 UPB_END_EXTERN_C
 

@@ -838,8 +838,11 @@ void upb_refcounted_checkref(const upb_refcounted *r, const void *owner) {
 bool upb_refcounted_freeze(upb_refcounted *const*roots, int n, upb_status *s,
                            int maxdepth) {
   int i;
+  bool ret;
   for (i = 0; i < n; i++) {
     assert(!roots[i]->is_frozen);
   }
-  return freeze(roots, n, s, maxdepth);
+  ret = freeze(roots, n, s, maxdepth);
+  assert(!s || ret == upb_ok(s));
+  return ret;
 }

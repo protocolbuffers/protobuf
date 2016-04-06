@@ -335,17 +335,13 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   return true;
 }
 
-bool upb_def_freeze2(upb_refcounted *const* objs, size_t defs_n,
-                     size_t freeze_n, upb_status *s) {
+bool _upb_def_validate(upb_def *const*defs, size_t n, upb_status *s) {
   size_t i;
-  size_t maxdepth;
-  bool ret;
-  upb_status_clear(s);
 
   /* First perform validation, in two passes so we can check that we have a
    * transitive closure without needing to search. */
-  for (i = 0; i < defs_n; i++) {
-    upb_def *def = (upb_def*)objs[i];
+  for (i = 0; i < n; i++) {
+    upb_def *def = defs[i];
     if (upb_def_isfrozen(def)) {
       /* Could relax this requirement if it's annoying. */
       upb_status_seterrmsg(s, "def is already frozen");
@@ -365,8 +361,8 @@ bool upb_def_freeze2(upb_refcounted *const* objs, size_t defs_n,
 
   /* Second pass of validation.  Also assign selector bases and indexes, and
    * compact tables. */
-  for (i = 0; i < defs_n; i++) {
-    upb_def *def = (upb_def*)objs[i];
+  for (i = 0; i < n; i++) {
+    upb_def *def = defs[i];
     upb_msgdef *m = upb_dyncast_msgdef_mutable(def);
     upb_enumdef *e = upb_dyncast_enumdef_mutable(def);
     if (m) {
@@ -379,18 +375,11 @@ bool upb_def_freeze2(upb_refcounted *const* objs, size_t defs_n,
     }
   }
 
-  /* Def graph contains FieldDefs between each MessageDef, so double the
-   * limit. */
-  maxdepth = UPB_MAX_MESSAGE_DEPTH * 2;
-
-  /* Validation all passed; freeze the objects. */
-  ret = upb_refcounted_freeze(objs, freeze_n, s, maxdepth);
-  assert(!(s && ret != upb_ok(s)));
-  return ret;
+  return true;
 
 err:
-  for (i = 0; i < defs_n; i++) {
-    upb_def *def = (upb_def*)objs[i];
+  for (i = 0; i < n; i++) {
+    upb_def *def = defs[i];
     def->came_from_user = false;
   }
   assert(!(s && upb_ok(s)));
@@ -398,7 +387,17 @@ err:
 }
 
 bool upb_def_freeze(upb_def *const* defs, size_t n, upb_status *s) {
-  return upb_def_freeze2((upb_refcounted *const*)defs, n, n, s);
+  /* Def graph contains FieldDefs between each MessageDef, so double the
+   * limit. */
+  const size_t maxdepth = UPB_MAX_MESSAGE_DEPTH * 2;
+
+  if (!_upb_def_validate(defs, n, s)) {
+    return false;
+  }
+
+
+  /* Validation all passed; freeze the objects. */
+  return upb_refcounted_freeze((upb_refcounted *const*)defs, n, s, maxdepth);
 }
 
 

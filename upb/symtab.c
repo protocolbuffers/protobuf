@@ -202,6 +202,7 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
   size_t freeze_n;
   upb_strtable_iter iter;
   upb_refcounted **add_objs = NULL;
+  upb_def **add_defs = NULL;
   size_t add_objs_size;
   upb_strtable addtab;
   upb_inttable seen;
@@ -347,26 +348,38 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
     }
   }
 
-  /* We need an array of the defs in addtab, for passing to upb_def_freeze. */
+  /* We need an array of the defs in addtab, for passing to
+   * upb_refcounted_freeze(). */
   add_objs_size = upb_strtable_count(&addtab);
   if (freeze_also) {
     add_objs_size++;
   }
 
-  add_objs = malloc(sizeof(void*) * add_objs_size);
-  if (add_objs == NULL) goto oom_err;
+  add_defs = malloc(sizeof(void*) * add_objs_size);
+  if (add_defs == NULL) goto oom_err;
   upb_strtable_begin(&iter, &addtab);
   for (add_n = 0; !upb_strtable_done(&iter); upb_strtable_next(&iter)) {
-    add_objs[add_n++] = upb_value_getptr(upb_strtable_iter_value(&iter));
+    add_defs[add_n++] = upb_value_getptr(upb_strtable_iter_value(&iter));
   }
+
+  /* Validate defs. */
+  if (!_upb_def_validate(add_defs, add_n, status)) {
+    goto err;
+  }
+
+  /* Cheat a little and give the array a new type.
+   * This is probably undefined behavior, but this code will be deleted soon. */
+  add_objs = (upb_refcounted**)add_defs;
 
   freeze_n = add_n;
   if (freeze_also) {
     add_objs[freeze_n++] = freeze_also;
   }
 
-  if (!upb_def_freeze2(add_objs, add_n, freeze_n, status))
+  if (!upb_refcounted_freeze(add_objs, freeze_n, status,
+                             UPB_MAX_MESSAGE_DEPTH * 2)) {
     goto err;
+  }
 
   /* This must be delayed until all errors have been detected, since error
    * recovery code uses this table to cleanup defs. */

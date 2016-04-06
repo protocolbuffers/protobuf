@@ -402,6 +402,7 @@ static void test_mapentry_check() {
   /* Should not have succeeded: non-repeated field pointing to a MapEntry. */
   ASSERT(!upb_ok(&s));
 
+  upb_status_clear(&s);
   upb_fielddef_setlabel(f, UPB_LABEL_REPEATED);
   upb_symtab_add(symtab, defs, 2, NULL, &s);
   ASSERT(upb_ok(&s));
