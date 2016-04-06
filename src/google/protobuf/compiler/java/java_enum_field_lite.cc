@@ -179,7 +179,7 @@ GenerateMembers(io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$() {\n"
-    "  $type$ result = $type$.valueOf($name$_);\n"
+    "  $type$ result = $type$.forNumber($name$_);\n"
     "  return result == null ? $unknown$ : result;\n"
     "}\n");
 
@@ -295,7 +295,7 @@ GenerateParsingCode(io::Printer* printer) const {
   } else {
     printer->Print(variables_,
       "int rawValue = input.readEnum();\n"
-      "$type$ value = $type$.valueOf(rawValue);\n"
+      "$type$ value = $type$.forNumber(rawValue);\n"
       "if (value == null) {\n");
     if (PreserveUnknownFields(descriptor_->containing_type())) {
       printer->Print(variables_,
@@ -389,7 +389,7 @@ GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$() {\n"
     "  if ($has_oneof_case_message$) {\n"
-    "    $type$ result =  $type$.valueOf((java.lang.Integer) $oneof_name$_);\n"
+    "    $type$ result =  $type$.forNumber((java.lang.Integer) $oneof_name$_);\n"
     "    return result == null ? $unknown$ : result;\n"
     "  }\n"
     "  return $default$;\n"
@@ -488,7 +488,7 @@ GenerateParsingCode(io::Printer* printer) const {
   } else {
     printer->Print(variables_,
       "int rawValue = input.readEnum();\n"
-      "$type$ value = $type$.valueOf(rawValue);\n"
+      "$type$ value = $type$.forNumber(rawValue);\n"
       "if (value == null) {\n");
     if (PreserveUnknownFields(descriptor_->containing_type())) {
       printer->Print(variables_,
@@ -604,7 +604,7 @@ GenerateMembers(io::Printer* printer) const {
     "        new com.google.protobuf.Internal.ListAdapter.Converter<\n"
     "            java.lang.Integer, $type$>() {\n"
     "          public $type$ convert(java.lang.Integer from) {\n"
-    "            $type$ result = $type$.valueOf(from);\n"
+    "            $type$ result = $type$.forNumber(from);\n"
     "            return result == null ? $unknown$ : result;\n"
     "          }\n"
     "        };\n");
@@ -846,7 +846,7 @@ GenerateParsingCode(io::Printer* printer) const {
   } else {
     printer->Print(variables_,
       "int rawValue = input.readEnum();\n"
-      "$type$ value = $type$.valueOf(rawValue);\n"
+      "$type$ value = $type$.forNumber(rawValue);\n"
         "if (value == null) {\n");
     if (PreserveUnknownFields(descriptor_->containing_type())) {
       printer->Print(variables_,
