@@ -11,23 +11,26 @@
 #include "upb/env.h"
 #include "upb/sink.h"
 
+#ifdef __cplusplus
+
 upb::BufferHandle global_handle;
 
-// A convenience class for parser tests.  Provides some useful features:
-//
-//   - can support multiple calls to parse, to test the parser's handling
-//     of buffer seams.
-//
-//   - can output verbose output about each parse call when requested, for
-//     ease of debugging.
-//
-//   - can pass NULL for skipped regions of the input if requested.
-//
-//   - allocates and passes a separate buffer for each parsed region, to
-//     ensure that the parser is not erroneously overreading its buffer.
+/* A convenience class for parser tests.  Provides some useful features:
+ *
+ *   - can support multiple calls to parse, to test the parser's handling
+ *     of buffer seams.
+ *
+ *   - can output verbose output about each parse call when requested, for
+ *     ease of debugging.
+ *
+ *   - can pass NULL for skipped regions of the input if requested.
+ *
+ *   - allocates and passes a separate buffer for each parsed region, to
+ *     ensure that the parser is not erroneously overreading its buffer.
+ */
 class VerboseParserEnvironment {
  public:
-  // Pass verbose=true to print detailed diagnostics to stderr.
+  /* Pass verbose=true to print detailed diagnostics to stderr. */
   VerboseParserEnvironment(bool verbose) : verbose_(verbose) {
     env_.SetErrorFunction(&VerboseParserEnvironment::OnError, this);
   }
@@ -60,15 +63,16 @@ class VerboseParserEnvironment {
     skipped_with_null_ = false;
   }
 
-  // The user should call a series of:
-  //
-  // Reset(buf, len, may_skip);
-  // Start()
-  // ParseBuffer(X);
-  // ParseBuffer(Y);
-  // // Repeat ParseBuffer as desired, but last call should pass -1.
-  // ParseBuffer(-1);
-  // End();
+  /* The user should call a series of:
+   *
+   * Reset(buf, len, may_skip);
+   * Start()
+   * ParseBuffer(X);
+   * ParseBuffer(Y);
+   * // Repeat ParseBuffer as desired, but last call should pass -1.
+   * ParseBuffer(-1);
+   * End();
+   */
 
 
   bool Start() {
@@ -111,9 +115,9 @@ class VerboseParserEnvironment {
 
     ASSERT((size_t)bytes <= (len_ - ofs_));
 
-    // Copy buffer into a separate, temporary buffer.
-    // This is necessary to verify that the parser is not erroneously
-    // reading outside the specified bounds.
+    /* Copy buffer into a separate, temporary buffer.
+     * This is necessary to verify that the parser is not erroneously
+     * reading outside the specified bounds. */
     char *buf2 = NULL;
 
     if ((int)(ofs_ + bytes) <= skip_until_) {
@@ -125,7 +129,7 @@ class VerboseParserEnvironment {
     }
 
     if (buf2 == NULL && bytes == 0) {
-      // Decoders dont' support buf=NULL, bytes=0.
+      /* Decoders dont' support buf=NULL, bytes=0. */
       return true;
     }
 
@@ -189,18 +193,41 @@ class VerboseParserEnvironment {
   bool end_ok_;
   bool end_ok_set_;
 
-  // When our parse call returns a value greater than the number of bytes
-  // we passed in, the decoder is indicating to us that the next N bytes
-  // in the stream are not needed and can be skipped.  The user is allowed
-  // to pass a NULL buffer for those N bytes.
-  //
-  // skip_until_ is initially set to 0 if we should do this NULL-buffer
-  // skipping or -1 if we should not.  If we are open to doing NULL-buffer
-  // skipping and we get an opportunity to do it, we set skip_until to the
-  // stream offset where we can skip until.  The user can then test whether
-  // this happened by testing SkippedWithNull().
+  /* When our parse call returns a value greater than the number of bytes
+   * we passed in, the decoder is indicating to us that the next N bytes
+   * in the stream are not needed and can be skipped.  The user is allowed
+   * to pass a NULL buffer for those N bytes.
+   *
+   * skip_until_ is initially set to 0 if we should do this NULL-buffer
+   * skipping or -1 if we should not.  If we are open to doing NULL-buffer
+   * skipping and we get an opportunity to do it, we set skip_until to the
+   * stream offset where we can skip until.  The user can then test whether
+   * this happened by testing SkippedWithNull(). */
   int skip_until_;
   bool skipped_with_null_;
 };
+
+#endif  /* __cplusplus */
+
+UPB_INLINE char *upb_readfile(const char *filename, size_t *len) {
+  long size;
+  char *buf;
+  FILE *f = fopen(filename, "rb");
+  if(!f) return NULL;
+  if(fseek(f, 0, SEEK_END) != 0) goto error;
+  size = ftell(f);
+  if(size < 0) goto error;
+  if(fseek(f, 0, SEEK_SET) != 0) goto error;
+  buf = (char*)malloc(size + 1);
+  if(size && fread(buf, size, 1, f) != 1) goto error;
+  fclose(f);
+  if (len) *len = size;
+  buf[size] = '\0';
+  return buf;
+
+error:
+  fclose(f);
+  return NULL;
+}
 
 #endif

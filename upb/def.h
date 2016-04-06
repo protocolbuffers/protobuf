@@ -921,7 +921,6 @@ bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f, const void *ref_donor,
                          upb_status *s);
 bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
                          upb_status *s);
-void upb_msgdef_setprimitiveshavepresence(upb_msgdef *m, bool have_presence);
 
 /* Field lookup in a couple of different variations:
  *   - itof = int to field
@@ -1153,6 +1152,7 @@ class upb::OneofDef {
    * by name once added to a message def. */
   const char* name() const;
   bool set_name(const char* name, Status* s);
+  bool set_name(const std::string& name, Status* s);
 
   /* Returns the number of fields currently defined in the oneof. */
   int field_count() const;
@@ -1306,7 +1306,8 @@ class upb::FileDef {
 
   /* Get/set name of the file (eg. "foo/bar.proto"). */
   const char* name() const;
-  bool set_name(const char* fullname, Status* s);
+  bool set_name(const char* name, Status* s);
+  bool set_name(const std::string& name, Status* s);
 
   /* Package name for definitions inside the file (eg. "foo.bar"). */
   const char* package() const;
@@ -1900,6 +1901,9 @@ inline const char* OneofDef::name() const {
 inline bool OneofDef::set_name(const char* name, Status* s) {
   return upb_oneofdef_setname(this, name, s);
 }
+inline bool OneofDef::set_name(const std::string& name, Status* s) {
+  return upb_oneofdef_setname(this, upb_safecstr(name), s);
+}
 inline int OneofDef::field_count() const {
   return upb_oneofdef_numfields(this);
 }
@@ -1978,6 +1982,9 @@ inline const char* FileDef::name() const {
 }
 inline bool FileDef::set_name(const char* name, Status* s) {
   return upb_filedef_setname(this, name, s);
+}
+inline bool FileDef::set_name(const std::string& name, Status* s) {
+  return upb_filedef_setname(this, upb_safecstr(name), s);
 }
 inline const char* FileDef::package() const {
   return upb_filedef_package(this);

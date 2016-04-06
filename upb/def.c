@@ -74,21 +74,17 @@ upb_deftype_t upb_def_type(const upb_def *d) { return d->type; }
 const char *upb_def_fullname(const upb_def *d) { return d->fullname; }
 
 const char *upb_def_name(const upb_def *d) {
-  /* Return one past the last '.'. */
-  const char *ret = d->fullname;
-  const char *p = ret;
+  const char *p;
 
-  if (ret == NULL) {
+  if (d->fullname == NULL) {
     return NULL;
+  } else if ((p = strrchr(d->fullname, '.')) == NULL) {
+    /* No '.' in the name, return the full string. */
+    return d->fullname;
+  } else {
+    /* Return one past the last '.'. */
+    return p + 1;
   }
-
-  for (p = ret; *p; ++p) {
-    if (*p == '.') {
-      ret = p + 1;
-    }
-  }
-
-  return ret;
 }
 
 bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s) {
@@ -1527,12 +1523,6 @@ bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
   return true;
 }
 
-void upb_msgdef_setprimitiveshavepresence(upb_msgdef *m, bool have_presence) {
-  assert(!upb_msgdef_isfrozen(m));
-  assert(!m->base.file);
-  m->syntax = have_presence ? UPB_SYNTAX_PROTO2 : UPB_SYNTAX_PROTO3;
-}
-
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i) {
   upb_value val;
   return upb_inttable_lookup32(&m->itof, i, &val) ?
@@ -1898,17 +1888,26 @@ const upb_filedef *upb_filedef_dep(const upb_filedef *f, size_t i) {
 }
 
 bool upb_filedef_setname(upb_filedef *f, const char *name, upb_status *s) {
-  UPB_UNUSED(s);
+  name = upb_strdup(name);
+  if (!name) {
+    upb_status_seterrmsg(s, "Out of memory");
+    return false;
+  }
   free((void*)f->name);
-  f->name = upb_strdup(name);
+  f->name = name;
   return true;
 }
 
 bool upb_filedef_setpackage(upb_filedef *f, const char *package,
                             upb_status *s) {
   if (!upb_isident(package, strlen(package), true, s)) return false;
+  package = upb_strdup(package);
+  if (!package) {
+    upb_status_seterrmsg(s, "Out of memory");
+    return false;
+  }
   free((void*)f->package);
-  f->package = upb_strdup(package);
+  f->package = package;
   return true;
 }
 

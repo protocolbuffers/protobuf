@@ -427,6 +427,11 @@ bool upb_symtab_addfile(upb_symtab *s, upb_filedef *file, upb_status *status) {
   n = upb_filedef_defcount(file);
   defs = malloc(sizeof(*defs) * n);
 
+  if (defs == NULL) {
+    upb_status_seterrmsg(status, "Out of memory");
+    return false;
+  }
+
   for (i = 0; i < n; i++) {
     defs[i] = upb_filedef_mutabledef(file, i);
   }

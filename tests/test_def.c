@@ -3,6 +3,7 @@
 ** (like attempts to link defs that don't have required properties set).
 */
 
+#include "tests/test_util.h"
 #include "upb/def.h"
 #include "upb/pb/glue.h"
 #include "upb_test.h"
@@ -36,26 +37,6 @@ static void test_noreftracking() {
   ASSERT(!upb_msgdef_isfrozen(md));
 
   upb_msgdef_unref(md, &md);
-}
-
-static char *upb_readfile(const char *filename, size_t *len) {
-  long size;
-  char *buf;
-  FILE *f = fopen(filename, "rb");
-  if(!f) return NULL;
-  if(fseek(f, 0, SEEK_END) != 0) goto error;
-  size = ftell(f);
-  if(size < 0) goto error;
-  if(fseek(f, 0, SEEK_SET) != 0) goto error;
-  buf = malloc(size + 1);
-  if(size && fread(buf, size, 1, f) != 1) goto error;
-  fclose(f);
-  if (len) *len = size;
-  return buf;
-
-error:
-  fclose(f);
-  return NULL;
 }
 
 static upb_symtab *load_test_proto(void *owner) {

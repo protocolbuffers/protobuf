@@ -1,30 +1,11 @@
 
+#include "tests/test_util.h"
 #include "tests/upb_test.h"
 #include "upb/bindings/stdc++/string.h"
 #include "upb/descriptor/descriptor.upbdefs.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/encoder.h"
 #include "upb/pb/glue.h"
-
-static char *upb_readfile(const char *filename, size_t *len) {
-  long size;
-  char *buf;
-  FILE *f = fopen(filename, "rb");
-  if(!f) return NULL;
-  if(fseek(f, 0, SEEK_END) != 0) goto error;
-  size = ftell(f);
-  if(size < 0) goto error;
-  if(fseek(f, 0, SEEK_SET) != 0) goto error;
-  buf = (char*)malloc(size + 1);
-  if(size && fread(buf, size, 1, f) != 1) goto error;
-  fclose(f);
-  if (len) *len = size;
-  return buf;
-
-error:
-  fclose(f);
-  return NULL;
-}
 
 std::string read_string(const char *filename) {
   size_t len;

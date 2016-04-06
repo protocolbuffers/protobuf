@@ -560,7 +560,7 @@ local function dump_defs_for_type(format, defs, append)
 end
 
 local function make_children_map(file)
-  -- Maps full_name -> children.
+  -- Maps file:package() or msg:full_name() -> children.
   local map = {}
   for def in file:defs(upb.DEF_ANY) do
     local container = remove_name(def:full_name())
