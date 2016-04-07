@@ -60,7 +60,7 @@ void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
 }
 
 std::string SourceGeneratorBase::class_access_level() {
-  return IsDescriptorProto(descriptor_) ? "internal" : "public";  // public_classes is always on.
+  return (IsDescriptorProto(descriptor_) || this->options()->internal_access) ? "internal" : "public";
 }
 
 const Options* SourceGeneratorBase::options() {
