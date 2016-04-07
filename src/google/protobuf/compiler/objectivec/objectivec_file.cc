@@ -115,6 +115,9 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
   printer->Print(
       "// @@protoc_insertion_point(imports)\n"
       "\n"
+      "#pragma clang diagnostic push\n"
+      "#pragma clang diagnostic ignored \"-Wdeprecated-declarations\"\n"
+      "\n"
       "CF_EXTERN_C_BEGIN\n"
       "\n");
 
@@ -189,6 +192,8 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
       "\n"
       "CF_EXTERN_C_END\n"
       "\n"
+      "#pragma clang diagnostic pop\n"
+      "\n"
       "// @@protoc_insertion_point(global_scope)\n");
 }
 
@@ -216,6 +221,9 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
   }
   printer->Print(
       "// @@protoc_insertion_point(imports)\n"
+      "\n"
+      "#pragma clang diagnostic push\n"
+      "#pragma clang diagnostic ignored \"-Wdeprecated-declarations\"\n"
       "\n");
 
   printer->Print(
@@ -342,6 +350,8 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
   }
 
   printer->Print(
+    "\n"
+    "#pragma clang diagnostic pop\n"
     "\n"
     "// @@protoc_insertion_point(global_scope)\n");
 }

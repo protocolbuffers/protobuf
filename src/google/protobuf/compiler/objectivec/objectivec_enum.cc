@@ -72,8 +72,9 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
       "\n",
       "name", name_);
 
-  printer->Print("$comments$typedef GPB_ENUM($name$) {\n",
+  printer->Print("$comments$typedef$deprecated_attribute$ GPB_ENUM($name$) {\n",
                  "comments", enum_comments,
+                 "deprecated_attribute", GetOptionalDeprecatedAttribute(descriptor_),
                  "name", name_);
   printer->Indent();
 
@@ -99,8 +100,9 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
     }
 
     printer->Print(
-        "$name$ = $value$,\n",
+        "$name$$deprecated_attribute$ = $value$,\n",
         "name", EnumValueName(all_values_[i]),
+        "deprecated_attribute", GetOptionalDeprecatedAttribute(all_values_[i]),
         "value", SimpleItoa(all_values_[i]->number()));
   }
   printer->Outdent();

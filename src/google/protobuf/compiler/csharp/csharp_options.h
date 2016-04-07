@@ -28,41 +28,48 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_SOURCE_GENERATOR_BASE_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_SOURCE_GENERATOR_BASE_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__
 
 #include <string>
 
-#include <google/protobuf/compiler/code_generator.h>
-
+#include <google/protobuf/stubs/common.h>
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-struct Options;
-
-class SourceGeneratorBase {
- protected:
-  SourceGeneratorBase(const FileDescriptor* descriptor, const Options* options);
-  virtual ~SourceGeneratorBase();
-
-  std::string class_access_level();
-  const Options* options();
-
-  void WriteGeneratedCodeAttributes(io::Printer* printer);
-
- private:
-  const FileDescriptor* descriptor_;
-  const Options *options_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SourceGeneratorBase);
+// Generator options (used by csharp_generator.cc):
+struct Options {
+  Options() :
+      file_extension(".cs"),
+      base_namespace(""),
+      base_namespace_specified(false) {
+  }
+  // Extension of the generated file. Defaults to ".cs"
+  string file_extension;
+  // Base namespace to use to create directory hierarchy. Defaults to "".
+  // This option allows the simple creation of a conventional C# file layout,
+  // where directories are created relative to a project-specific base
+  // namespace. For example, in a project with a base namespace of PetShop, a
+  // proto of user.proto with a C# namespace of PetShop.Model.Shared would
+  // generate Model/Shared/User.cs underneath the specified --csharp_out
+  // directory.
+  //
+  // If no base namespace is specified, all files are generated in the
+  // --csharp_out directory, with no subdirectories created automatically.
+  string base_namespace;
+  // Whether the base namespace has been explicitly specified by the user.
+  // This is required as the base namespace can be explicitly set to the empty
+  // string, meaning "create a full directory hierarchy, starting from the first
+  // segment of the namespace."
+  bool base_namespace_specified;
 };
 
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
+
+
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_SOURCE_GENERATOR_BASE_H__
-
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__

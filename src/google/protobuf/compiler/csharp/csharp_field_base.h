@@ -44,7 +44,9 @@ namespace csharp {
 
 class FieldGeneratorBase : public SourceGeneratorBase {
  public:
-  FieldGeneratorBase(const FieldDescriptor* descriptor, int fieldOrdinal);
+  FieldGeneratorBase(const FieldDescriptor* descriptor,
+                     int fieldOrdinal,
+                     const Options* options);
   ~FieldGeneratorBase();
 
   virtual void GenerateCloningCode(io::Printer* printer) = 0;

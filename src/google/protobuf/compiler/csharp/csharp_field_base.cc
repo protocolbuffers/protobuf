@@ -94,14 +94,15 @@ void FieldGeneratorBase::SetCommonFieldVariables(
 void FieldGeneratorBase::SetCommonOneofFieldVariables(
     map<string, string>* variables) {
   (*variables)["oneof_name"] = oneof_name();
-  (*variables)["has_property_check"] = oneof_name() + "Case_ == " + oneof_property_name() +
+  (*variables)["has_property_check"] =
+    oneof_name() + "Case_ == " + oneof_property_name() +
     "OneofCase." + property_name();
   (*variables)["oneof_property_name"] = oneof_property_name();
 }
 
 FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
-                                       int fieldOrdinal)
-    : SourceGeneratorBase(descriptor->file()),
+                                       int fieldOrdinal, const Options* options)
+    : SourceGeneratorBase(descriptor->file(), options),
       descriptor_(descriptor),
       fieldOrdinal_(fieldOrdinal) {
   SetCommonFieldVariables(&variables_);
@@ -158,10 +159,11 @@ std::string FieldGeneratorBase::type_name(const FieldDescriptor* descriptor) {
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_GROUP:
       if (IsWrapperType(descriptor)) {
-        const FieldDescriptor* wrapped_field = descriptor->message_type()->field(0);
+        const FieldDescriptor* wrapped_field =
+            descriptor->message_type()->field(0);
         string wrapped_field_type_name = type_name(wrapped_field);
-        // String and ByteString go to the same type; other wrapped types go to the
-        // nullable equivalent.
+        // String and ByteString go to the same type; other wrapped types
+        // go to the nullable equivalent.
         if (wrapped_field->type() == FieldDescriptor::TYPE_STRING ||
             wrapped_field->type() == FieldDescriptor::TYPE_BYTES) {
           return wrapped_field_type_name;

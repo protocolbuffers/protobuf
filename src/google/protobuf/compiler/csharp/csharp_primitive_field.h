@@ -41,9 +41,13 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
+struct Options;
+
 class PrimitiveFieldGenerator : public FieldGeneratorBase {
  public:
-  PrimitiveFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+  PrimitiveFieldGenerator(const FieldDescriptor* descriptor,
+                          int fieldOrdinal,
+                          const Options *options);
   ~PrimitiveFieldGenerator();
 
   virtual void GenerateCodecCode(io::Printer* printer);
@@ -67,7 +71,9 @@ class PrimitiveFieldGenerator : public FieldGeneratorBase {
 
 class PrimitiveOneofFieldGenerator : public PrimitiveFieldGenerator {
  public:
-  PrimitiveOneofFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+  PrimitiveOneofFieldGenerator(const FieldDescriptor* descriptor,
+                               int fieldOrdinal,
+                               const Options *options);
   ~PrimitiveOneofFieldGenerator();
 
   virtual void GenerateCloningCode(io::Printer* printer);

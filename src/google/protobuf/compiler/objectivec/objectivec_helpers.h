@@ -133,6 +133,22 @@ enum ObjectiveCType {
   OBJECTIVECTYPE_MESSAGE
 };
 
+template<class TDescriptor>
+string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor, bool preSpace = true, bool postNewline = false) {
+  if (descriptor->options().deprecated()) {
+    string result = "DEPRECATED_ATTRIBUTE";
+    if (preSpace) {
+      result.insert(0, " ");
+    }
+    if (postNewline) {
+      result.append("\n");
+    }
+    return result;
+  } else {
+    return "";
+  }
+}
+
 string GetCapitalizedType(const FieldDescriptor* field);
 
 ObjectiveCType GetObjectiveCType(FieldDescriptor::Type field_type);
