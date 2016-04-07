@@ -265,6 +265,10 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
       "}\n");
     printer->Print(vars,
       "public static $oneof_capitalized_name$Case valueOf(int value) {\n"
+      "  return forNumber(value);\n"
+      "}\n"
+      "\n"
+      "public static $oneof_capitalized_name$Case forNumber(int value) {\n"
       "  switch (value) {\n");
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
@@ -291,7 +295,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     printer->Print(vars,
       "public $oneof_capitalized_name$Case\n"
       "get$oneof_capitalized_name$Case() {\n"
-      "  return $oneof_capitalized_name$Case.valueOf(\n"
+      "  return $oneof_capitalized_name$Case.forNumber(\n"
       "      $oneof_name$Case_);\n"
       "}\n"
       "\n"

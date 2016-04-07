@@ -134,7 +134,7 @@ Generate(io::Printer* printer) {
     printer->Print(vars,
       "public $oneof_capitalized_name$Case\n"
       "    get$oneof_capitalized_name$Case() {\n"
-      "  return $oneof_capitalized_name$Case.valueOf(\n"
+      "  return $oneof_capitalized_name$Case.forNumber(\n"
       "      $oneof_name$Case_);\n"
       "}\n"
       "\n"
