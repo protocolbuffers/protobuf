@@ -80,7 +80,7 @@ bool Generator::Generate(
       cli_options.file_extension = options[i].second;
     } else if (options[i].first == "base_namespace") {
       cli_options.base_namespace = options[i].second;
-      cli_options.generate_directories = true;
+      cli_options.base_namespace_specified = true;
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
@@ -90,7 +90,7 @@ bool Generator::Generate(
   string filename_error = "";
   std::string filename = GetOutputFile(file,
       cli_options.file_extension,
-      cli_options.generate_directories,
+      cli_options.base_namespace_specified,
       cli_options.base_namespace,
       &filename_error);
 

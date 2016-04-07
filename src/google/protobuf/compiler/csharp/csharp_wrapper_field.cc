@@ -152,8 +152,8 @@ void WrapperFieldGenerator::GenerateCodecCode(io::Printer* printer) {
   }
 }
 
-WrapperOneofFieldGenerator::WrapperOneofFieldGenerator(const FieldDescriptor* descriptor,
-    int fieldOrdinal, const Options *options)
+WrapperOneofFieldGenerator::WrapperOneofFieldGenerator(
+    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
     : WrapperFieldGenerator(descriptor, fieldOrdinal, options) {
     SetCommonOneofFieldVariables(&variables_);
 }
