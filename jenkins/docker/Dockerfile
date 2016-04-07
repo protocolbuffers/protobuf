@@ -96,6 +96,19 @@ RUN /bin/bash -l -c "echo 'export PATH=/usr/local/rvm/bin:$PATH' >> ~/.bashrc"
 RUN /bin/bash -l -c "echo 'rvm --default use ruby-2.1' >> ~/.bashrc"
 RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
 
+# Install other Ruby versions.
+RUN /bin/bash -l -c "rvm install ruby-1.9"
+RUN /bin/bash -l -c "rvm use ruby-1.9"
+RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
+
+RUN /bin/bash -l -c "rvm install ruby-2.0"
+RUN /bin/bash -l -c "rvm use ruby-2.0"
+RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
+
+RUN /bin/bash -l -c "rvm install ruby-2.2"
+RUN /bin/bash -l -c "rvm use ruby-2.2"
+RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
+
 ##################
 # Java dependencies
 
