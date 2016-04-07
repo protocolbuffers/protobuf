@@ -253,12 +253,6 @@ class DynamicMessage : public Message {
   DynamicMessage(const TypeInfo* type_info);
   ~DynamicMessage();
 
-#ifndef _MSC_VER
-  void operator delete(void *p) {
-    ::operator delete(p); // non-sized deallocation
-  }
-#endif
-
   // Called on the prototype after construction to initialize message fields.
   void CrossLinkPrototypes();
 
