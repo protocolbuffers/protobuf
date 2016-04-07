@@ -81,6 +81,8 @@ bool Generator::Generate(
     } else if (options[i].first == "base_namespace") {
       cli_options.base_namespace = options[i].second;
       cli_options.base_namespace_specified = true;
+    } else if (options[i].first == "internal_access") {
+      cli_options.internal_access = true;
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
