@@ -228,9 +228,9 @@ namespace Google.Protobuf.Examples.AddressBook {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       public enum PhoneType {
-        MOBILE = 0,
-        HOME = 1,
-        WORK = 2,
+        [pbr::OriginalName("MOBILE")] Mobile = 0,
+        [pbr::OriginalName("HOME")] Home = 1,
+        [pbr::OriginalName("WORK")] Work = 2,
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -273,7 +273,7 @@ namespace Google.Protobuf.Examples.AddressBook {
 
         /// <summary>Field number for the "type" field.</summary>
         public const int TypeFieldNumber = 2;
-        private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE;
+        private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = 0;
         public global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType Type {
           get { return type_; }
           set {
@@ -300,7 +300,7 @@ namespace Google.Protobuf.Examples.AddressBook {
         public override int GetHashCode() {
           int hash = 1;
           if (Number.Length != 0) hash ^= Number.GetHashCode();
-          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE) hash ^= Type.GetHashCode();
+          if (Type != 0) hash ^= Type.GetHashCode();
           return hash;
         }
 
@@ -313,7 +313,7 @@ namespace Google.Protobuf.Examples.AddressBook {
             output.WriteRawTag(10);
             output.WriteString(Number);
           }
-          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE) {
+          if (Type != 0) {
             output.WriteRawTag(16);
             output.WriteEnum((int) Type);
           }
@@ -324,7 +324,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           if (Number.Length != 0) {
             size += 1 + pb::CodedOutputStream.ComputeStringSize(Number);
           }
-          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE) {
+          if (Type != 0) {
             size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
           }
           return size;
@@ -337,7 +337,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           if (other.Number.Length != 0) {
             Number = other.Number;
           }
-          if (other.Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE) {
+          if (other.Type != 0) {
             Type = other.Type;
           }
         }

@@ -79,11 +79,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>
     ///  Syntax `proto2`.
     /// </summary>
-    SYNTAX_PROTO2 = 0,
+    [pbr::OriginalName("SYNTAX_PROTO2")] Proto2 = 0,
     /// <summary>
     ///  Syntax `proto3`.
     /// </summary>
-    SYNTAX_PROTO3 = 1,
+    [pbr::OriginalName("SYNTAX_PROTO3")] Proto3 = 1,
   }
 
   #endregion
@@ -188,7 +188,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "syntax" field.</summary>
     public const int SyntaxFieldNumber = 6;
-    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2;
+    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = 0;
     /// <summary>
     ///  The source syntax.
     /// </summary>
@@ -226,7 +226,7 @@ namespace Google.Protobuf.WellKnownTypes {
       hash ^= oneofs_.GetHashCode();
       hash ^= options_.GetHashCode();
       if (sourceContext_ != null) hash ^= SourceContext.GetHashCode();
-      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) hash ^= Syntax.GetHashCode();
+      if (Syntax != 0) hash ^= Syntax.GetHashCode();
       return hash;
     }
 
@@ -246,7 +246,7 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(42);
         output.WriteMessage(SourceContext);
       }
-      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+      if (Syntax != 0) {
         output.WriteRawTag(48);
         output.WriteEnum((int) Syntax);
       }
@@ -263,7 +263,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (sourceContext_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(SourceContext);
       }
-      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+      if (Syntax != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Syntax);
       }
       return size;
@@ -285,7 +285,7 @@ namespace Google.Protobuf.WellKnownTypes {
         }
         SourceContext.MergeFrom(other.SourceContext);
       }
-      if (other.Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+      if (other.Syntax != 0) {
         Syntax = other.Syntax;
       }
     }
@@ -371,7 +371,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "kind" field.</summary>
     public const int KindFieldNumber = 1;
-    private global::Google.Protobuf.WellKnownTypes.Field.Types.Kind kind_ = global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TYPE_UNKNOWN;
+    private global::Google.Protobuf.WellKnownTypes.Field.Types.Kind kind_ = 0;
     /// <summary>
     ///  The field type.
     /// </summary>
@@ -384,7 +384,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "cardinality" field.</summary>
     public const int CardinalityFieldNumber = 2;
-    private global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality cardinality_ = global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality.CARDINALITY_UNKNOWN;
+    private global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality cardinality_ = 0;
     /// <summary>
     ///  The field cardinality.
     /// </summary>
@@ -526,8 +526,8 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public override int GetHashCode() {
       int hash = 1;
-      if (Kind != global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TYPE_UNKNOWN) hash ^= Kind.GetHashCode();
-      if (Cardinality != global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality.CARDINALITY_UNKNOWN) hash ^= Cardinality.GetHashCode();
+      if (Kind != 0) hash ^= Kind.GetHashCode();
+      if (Cardinality != 0) hash ^= Cardinality.GetHashCode();
       if (Number != 0) hash ^= Number.GetHashCode();
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (TypeUrl.Length != 0) hash ^= TypeUrl.GetHashCode();
@@ -544,11 +544,11 @@ namespace Google.Protobuf.WellKnownTypes {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Kind != global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TYPE_UNKNOWN) {
+      if (Kind != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Kind);
       }
-      if (Cardinality != global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality.CARDINALITY_UNKNOWN) {
+      if (Cardinality != 0) {
         output.WriteRawTag(16);
         output.WriteEnum((int) Cardinality);
       }
@@ -585,10 +585,10 @@ namespace Google.Protobuf.WellKnownTypes {
 
     public int CalculateSize() {
       int size = 0;
-      if (Kind != global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TYPE_UNKNOWN) {
+      if (Kind != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Kind);
       }
-      if (Cardinality != global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality.CARDINALITY_UNKNOWN) {
+      if (Cardinality != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Cardinality);
       }
       if (Number != 0) {
@@ -620,10 +620,10 @@ namespace Google.Protobuf.WellKnownTypes {
       if (other == null) {
         return;
       }
-      if (other.Kind != global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TYPE_UNKNOWN) {
+      if (other.Kind != 0) {
         Kind = other.Kind;
       }
-      if (other.Cardinality != global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality.CARDINALITY_UNKNOWN) {
+      if (other.Cardinality != 0) {
         Cardinality = other.Cardinality;
       }
       if (other.Number != 0) {
@@ -712,79 +712,79 @@ namespace Google.Protobuf.WellKnownTypes {
         /// <summary>
         ///  Field type unknown.
         /// </summary>
-        TYPE_UNKNOWN = 0,
+        [pbr::OriginalName("TYPE_UNKNOWN")] TypeUnknown = 0,
         /// <summary>
         ///  Field type double.
         /// </summary>
-        TYPE_DOUBLE = 1,
+        [pbr::OriginalName("TYPE_DOUBLE")] TypeDouble = 1,
         /// <summary>
         ///  Field type float.
         /// </summary>
-        TYPE_FLOAT = 2,
+        [pbr::OriginalName("TYPE_FLOAT")] TypeFloat = 2,
         /// <summary>
         ///  Field type int64.
         /// </summary>
-        TYPE_INT64 = 3,
+        [pbr::OriginalName("TYPE_INT64")] TypeInt64 = 3,
         /// <summary>
         ///  Field type uint64.
         /// </summary>
-        TYPE_UINT64 = 4,
+        [pbr::OriginalName("TYPE_UINT64")] TypeUint64 = 4,
         /// <summary>
         ///  Field type int32.
         /// </summary>
-        TYPE_INT32 = 5,
+        [pbr::OriginalName("TYPE_INT32")] TypeInt32 = 5,
         /// <summary>
         ///  Field type fixed64.
         /// </summary>
-        TYPE_FIXED64 = 6,
+        [pbr::OriginalName("TYPE_FIXED64")] TypeFixed64 = 6,
         /// <summary>
         ///  Field type fixed32.
         /// </summary>
-        TYPE_FIXED32 = 7,
+        [pbr::OriginalName("TYPE_FIXED32")] TypeFixed32 = 7,
         /// <summary>
         ///  Field type bool.
         /// </summary>
-        TYPE_BOOL = 8,
+        [pbr::OriginalName("TYPE_BOOL")] TypeBool = 8,
         /// <summary>
         ///  Field type string.
         /// </summary>
-        TYPE_STRING = 9,
+        [pbr::OriginalName("TYPE_STRING")] TypeString = 9,
         /// <summary>
         ///  Field type group. Proto2 syntax only, and deprecated.
         /// </summary>
-        TYPE_GROUP = 10,
+        [pbr::OriginalName("TYPE_GROUP")] TypeGroup = 10,
         /// <summary>
         ///  Field type message.
         /// </summary>
-        TYPE_MESSAGE = 11,
+        [pbr::OriginalName("TYPE_MESSAGE")] TypeMessage = 11,
         /// <summary>
         ///  Field type bytes.
         /// </summary>
-        TYPE_BYTES = 12,
+        [pbr::OriginalName("TYPE_BYTES")] TypeBytes = 12,
         /// <summary>
         ///  Field type uint32.
         /// </summary>
-        TYPE_UINT32 = 13,
+        [pbr::OriginalName("TYPE_UINT32")] TypeUint32 = 13,
         /// <summary>
         ///  Field type enum.
         /// </summary>
-        TYPE_ENUM = 14,
+        [pbr::OriginalName("TYPE_ENUM")] TypeEnum = 14,
         /// <summary>
         ///  Field type sfixed32.
         /// </summary>
-        TYPE_SFIXED32 = 15,
+        [pbr::OriginalName("TYPE_SFIXED32")] TypeSfixed32 = 15,
         /// <summary>
         ///  Field type sfixed64.
         /// </summary>
-        TYPE_SFIXED64 = 16,
+        [pbr::OriginalName("TYPE_SFIXED64")] TypeSfixed64 = 16,
         /// <summary>
         ///  Field type sint32.
         /// </summary>
-        TYPE_SINT32 = 17,
+        [pbr::OriginalName("TYPE_SINT32")] TypeSint32 = 17,
         /// <summary>
         ///  Field type sint64.
         /// </summary>
-        TYPE_SINT64 = 18,
+        [pbr::OriginalName("TYPE_SINT64")] TypeSint64 = 18,
       }
 
       /// <summary>
@@ -794,19 +794,19 @@ namespace Google.Protobuf.WellKnownTypes {
         /// <summary>
         ///  For fields with unknown cardinality.
         /// </summary>
-        CARDINALITY_UNKNOWN = 0,
+        [pbr::OriginalName("CARDINALITY_UNKNOWN")] Unknown = 0,
         /// <summary>
         ///  For optional fields.
         /// </summary>
-        CARDINALITY_OPTIONAL = 1,
+        [pbr::OriginalName("CARDINALITY_OPTIONAL")] Optional = 1,
         /// <summary>
         ///  For required fields. Proto2 syntax only.
         /// </summary>
-        CARDINALITY_REQUIRED = 2,
+        [pbr::OriginalName("CARDINALITY_REQUIRED")] Required = 2,
         /// <summary>
         ///  For repeated fields.
         /// </summary>
-        CARDINALITY_REPEATED = 3,
+        [pbr::OriginalName("CARDINALITY_REPEATED")] Repeated = 3,
       }
 
     }
@@ -900,7 +900,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "syntax" field.</summary>
     public const int SyntaxFieldNumber = 5;
-    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2;
+    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = 0;
     /// <summary>
     ///  The source syntax.
     /// </summary>
@@ -936,7 +936,7 @@ namespace Google.Protobuf.WellKnownTypes {
       hash ^= enumvalue_.GetHashCode();
       hash ^= options_.GetHashCode();
       if (sourceContext_ != null) hash ^= SourceContext.GetHashCode();
-      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) hash ^= Syntax.GetHashCode();
+      if (Syntax != 0) hash ^= Syntax.GetHashCode();
       return hash;
     }
 
@@ -955,7 +955,7 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteRawTag(34);
         output.WriteMessage(SourceContext);
       }
-      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+      if (Syntax != 0) {
         output.WriteRawTag(40);
         output.WriteEnum((int) Syntax);
       }
@@ -971,7 +971,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (sourceContext_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(SourceContext);
       }
-      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+      if (Syntax != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Syntax);
       }
       return size;
@@ -992,7 +992,7 @@ namespace Google.Protobuf.WellKnownTypes {
         }
         SourceContext.MergeFrom(other.SourceContext);
       }
-      if (other.Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+      if (other.Syntax != 0) {
         Syntax = other.Syntax;
       }
     }

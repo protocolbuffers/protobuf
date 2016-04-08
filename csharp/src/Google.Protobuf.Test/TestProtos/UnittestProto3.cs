@@ -193,39 +193,39 @@ namespace Google.Protobuf.TestProtos {
   }
   #region Enums
   public enum ForeignEnum {
-    FOREIGN_UNSPECIFIED = 0,
-    FOREIGN_FOO = 4,
-    FOREIGN_BAR = 5,
-    FOREIGN_BAZ = 6,
+    [pbr::OriginalName("FOREIGN_UNSPECIFIED")] ForeignUnspecified = 0,
+    [pbr::OriginalName("FOREIGN_FOO")] ForeignFoo = 4,
+    [pbr::OriginalName("FOREIGN_BAR")] ForeignBar = 5,
+    [pbr::OriginalName("FOREIGN_BAZ")] ForeignBaz = 6,
   }
 
   /// <summary>
   ///  Test an enum that has multiple values with the same number.
   /// </summary>
   public enum TestEnumWithDupValue {
-    TEST_ENUM_WITH_DUP_VALUE_UNSPECIFIED = 0,
-    FOO1 = 1,
-    BAR1 = 2,
-    BAZ = 3,
-    FOO2 = 1,
-    BAR2 = 2,
+    [pbr::OriginalName("TEST_ENUM_WITH_DUP_VALUE_UNSPECIFIED")] Unspecified = 0,
+    [pbr::OriginalName("FOO1")] Foo1 = 1,
+    [pbr::OriginalName("BAR1")] Bar1 = 2,
+    [pbr::OriginalName("BAZ")] Baz = 3,
+    [pbr::OriginalName("FOO2")] Foo2 = 1,
+    [pbr::OriginalName("BAR2")] Bar2 = 2,
   }
 
   /// <summary>
   ///  Test an enum with large, unordered values.
   /// </summary>
   public enum TestSparseEnum {
-    TEST_SPARSE_ENUM_UNSPECIFIED = 0,
-    SPARSE_A = 123,
-    SPARSE_B = 62374,
-    SPARSE_C = 12589234,
-    SPARSE_D = -15,
-    SPARSE_E = -53452,
+    [pbr::OriginalName("TEST_SPARSE_ENUM_UNSPECIFIED")] Unspecified = 0,
+    [pbr::OriginalName("SPARSE_A")] SparseA = 123,
+    [pbr::OriginalName("SPARSE_B")] SparseB = 62374,
+    [pbr::OriginalName("SPARSE_C")] SparseC = 12589234,
+    [pbr::OriginalName("SPARSE_D")] SparseD = -15,
+    [pbr::OriginalName("SPARSE_E")] SparseE = -53452,
     /// <summary>
     ///  In proto3, value 0 must be the first one specified
     ///  SPARSE_F = 0;
     /// </summary>
-    SPARSE_G = 2,
+    [pbr::OriginalName("SPARSE_G")] SparseG = 2,
   }
 
   #endregion
@@ -505,7 +505,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "single_nested_enum" field.</summary>
     public const int SingleNestedEnumFieldNumber = 21;
-    private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum singleNestedEnum_ = global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED;
+    private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum singleNestedEnum_ = 0;
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum SingleNestedEnum {
       get { return singleNestedEnum_; }
       set {
@@ -515,7 +515,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "single_foreign_enum" field.</summary>
     public const int SingleForeignEnumFieldNumber = 22;
-    private global::Google.Protobuf.TestProtos.ForeignEnum singleForeignEnum_ = global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED;
+    private global::Google.Protobuf.TestProtos.ForeignEnum singleForeignEnum_ = 0;
     public global::Google.Protobuf.TestProtos.ForeignEnum SingleForeignEnum {
       get { return singleForeignEnum_; }
       set {
@@ -525,7 +525,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "single_import_enum" field.</summary>
     public const int SingleImportEnumFieldNumber = 23;
-    private global::Google.Protobuf.TestProtos.ImportEnum singleImportEnum_ = global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED;
+    private global::Google.Protobuf.TestProtos.ImportEnum singleImportEnum_ = 0;
     public global::Google.Protobuf.TestProtos.ImportEnum SingleImportEnum {
       get { return singleImportEnum_; }
       set {
@@ -892,9 +892,9 @@ namespace Google.Protobuf.TestProtos {
       if (singleNestedMessage_ != null) hash ^= SingleNestedMessage.GetHashCode();
       if (singleForeignMessage_ != null) hash ^= SingleForeignMessage.GetHashCode();
       if (singleImportMessage_ != null) hash ^= SingleImportMessage.GetHashCode();
-      if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED) hash ^= SingleNestedEnum.GetHashCode();
-      if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) hash ^= SingleForeignEnum.GetHashCode();
-      if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED) hash ^= SingleImportEnum.GetHashCode();
+      if (SingleNestedEnum != 0) hash ^= SingleNestedEnum.GetHashCode();
+      if (SingleForeignEnum != 0) hash ^= SingleForeignEnum.GetHashCode();
+      if (SingleImportEnum != 0) hash ^= SingleImportEnum.GetHashCode();
       if (singlePublicImportMessage_ != null) hash ^= SinglePublicImportMessage.GetHashCode();
       hash ^= repeatedInt32_.GetHashCode();
       hash ^= repeatedInt64_.GetHashCode();
@@ -1003,15 +1003,15 @@ namespace Google.Protobuf.TestProtos {
         output.WriteRawTag(162, 1);
         output.WriteMessage(SingleImportMessage);
       }
-      if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED) {
+      if (SingleNestedEnum != 0) {
         output.WriteRawTag(168, 1);
         output.WriteEnum((int) SingleNestedEnum);
       }
-      if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
+      if (SingleForeignEnum != 0) {
         output.WriteRawTag(176, 1);
         output.WriteEnum((int) SingleForeignEnum);
       }
-      if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED) {
+      if (SingleImportEnum != 0) {
         output.WriteRawTag(184, 1);
         output.WriteEnum((int) SingleImportEnum);
       }
@@ -1115,13 +1115,13 @@ namespace Google.Protobuf.TestProtos {
       if (singleImportMessage_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(SingleImportMessage);
       }
-      if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED) {
+      if (SingleNestedEnum != 0) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SingleNestedEnum);
       }
-      if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
+      if (SingleForeignEnum != 0) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SingleForeignEnum);
       }
-      if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED) {
+      if (SingleImportEnum != 0) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SingleImportEnum);
       }
       if (singlePublicImportMessage_ != null) {
@@ -1231,13 +1231,13 @@ namespace Google.Protobuf.TestProtos {
         }
         SingleImportMessage.MergeFrom(other.SingleImportMessage);
       }
-      if (other.SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED) {
+      if (other.SingleNestedEnum != 0) {
         SingleNestedEnum = other.SingleNestedEnum;
       }
-      if (other.SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
+      if (other.SingleForeignEnum != 0) {
         SingleForeignEnum = other.SingleForeignEnum;
       }
-      if (other.SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED) {
+      if (other.SingleImportEnum != 0) {
         SingleImportEnum = other.SingleImportEnum;
       }
       if (other.singlePublicImportMessage_ != null) {
@@ -1526,14 +1526,14 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       public enum NestedEnum {
-        NESTED_ENUM_UNSPECIFIED = 0,
-        FOO = 1,
-        BAR = 2,
-        BAZ = 3,
+        [pbr::OriginalName("NESTED_ENUM_UNSPECIFIED")] Unspecified = 0,
+        [pbr::OriginalName("FOO")] Foo = 1,
+        [pbr::OriginalName("BAR")] Bar = 2,
+        [pbr::OriginalName("BAZ")] Baz = 3,
         /// <summary>
         ///  Intentionally negative.
         /// </summary>
-        NEG = -1,
+        [pbr::OriginalName("NEG")] Neg = -1,
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -2793,7 +2793,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "EnumField" field.</summary>
     public const int EnumFieldFieldNumber = 3;
-    private global::Google.Protobuf.TestProtos.ForeignEnum enumField_ = global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED;
+    private global::Google.Protobuf.TestProtos.ForeignEnum enumField_ = 0;
     public global::Google.Protobuf.TestProtos.ForeignEnum EnumField {
       get { return enumField_; }
       set {
@@ -2873,7 +2873,7 @@ namespace Google.Protobuf.TestProtos {
       int hash = 1;
       if (PrimitiveField != 0) hash ^= PrimitiveField.GetHashCode();
       if (StringField.Length != 0) hash ^= StringField.GetHashCode();
-      if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) hash ^= EnumField.GetHashCode();
+      if (EnumField != 0) hash ^= EnumField.GetHashCode();
       if (messageField_ != null) hash ^= MessageField.GetHashCode();
       hash ^= repeatedPrimitiveField_.GetHashCode();
       hash ^= repeatedStringField_.GetHashCode();
@@ -2895,7 +2895,7 @@ namespace Google.Protobuf.TestProtos {
         output.WriteRawTag(18);
         output.WriteString(StringField);
       }
-      if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
+      if (EnumField != 0) {
         output.WriteRawTag(24);
         output.WriteEnum((int) EnumField);
       }
@@ -2917,7 +2917,7 @@ namespace Google.Protobuf.TestProtos {
       if (StringField.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(StringField);
       }
-      if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
+      if (EnumField != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EnumField);
       }
       if (messageField_ != null) {
@@ -2940,7 +2940,7 @@ namespace Google.Protobuf.TestProtos {
       if (other.StringField.Length != 0) {
         StringField = other.StringField;
       }
-      if (other.EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
+      if (other.EnumField != 0) {
         EnumField = other.EnumField;
       }
       if (other.messageField_ != null) {
@@ -3370,7 +3370,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "sparse_enum" field.</summary>
     public const int SparseEnumFieldNumber = 1;
-    private global::Google.Protobuf.TestProtos.TestSparseEnum sparseEnum_ = global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED;
+    private global::Google.Protobuf.TestProtos.TestSparseEnum sparseEnum_ = 0;
     public global::Google.Protobuf.TestProtos.TestSparseEnum SparseEnum {
       get { return sparseEnum_; }
       set {
@@ -3395,7 +3395,7 @@ namespace Google.Protobuf.TestProtos {
 
     public override int GetHashCode() {
       int hash = 1;
-      if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) hash ^= SparseEnum.GetHashCode();
+      if (SparseEnum != 0) hash ^= SparseEnum.GetHashCode();
       return hash;
     }
 
@@ -3404,7 +3404,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) {
+      if (SparseEnum != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) SparseEnum);
       }
@@ -3412,7 +3412,7 @@ namespace Google.Protobuf.TestProtos {
 
     public int CalculateSize() {
       int size = 0;
-      if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) {
+      if (SparseEnum != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) SparseEnum);
       }
       return size;
@@ -3422,7 +3422,7 @@ namespace Google.Protobuf.TestProtos {
       if (other == null) {
         return;
       }
-      if (other.SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) {
+      if (other.SparseEnum != 0) {
         SparseEnum = other.SparseEnum;
       }
     }

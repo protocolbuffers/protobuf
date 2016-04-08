@@ -199,15 +199,15 @@ namespace Conformance {
   }
   #region Enums
   public enum WireFormat {
-    UNSPECIFIED = 0,
-    PROTOBUF = 1,
-    JSON = 2,
+    [pbr::OriginalName("UNSPECIFIED")] Unspecified = 0,
+    [pbr::OriginalName("PROTOBUF")] Protobuf = 1,
+    [pbr::OriginalName("JSON")] Json = 2,
   }
 
   public enum ForeignEnum {
-    FOREIGN_FOO = 0,
-    FOREIGN_BAR = 1,
-    FOREIGN_BAZ = 2,
+    [pbr::OriginalName("FOREIGN_FOO")] ForeignFoo = 0,
+    [pbr::OriginalName("FOREIGN_BAR")] ForeignBar = 1,
+    [pbr::OriginalName("FOREIGN_BAZ")] ForeignBaz = 2,
   }
 
   #endregion
@@ -278,7 +278,7 @@ namespace Conformance {
 
     /// <summary>Field number for the "requested_output_format" field.</summary>
     public const int RequestedOutputFormatFieldNumber = 3;
-    private global::Conformance.WireFormat requestedOutputFormat_ = global::Conformance.WireFormat.UNSPECIFIED;
+    private global::Conformance.WireFormat requestedOutputFormat_ = 0;
     /// <summary>
     ///  Which format should the testee serialize its message to?
     /// </summary>
@@ -328,7 +328,7 @@ namespace Conformance {
       int hash = 1;
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
-      if (RequestedOutputFormat != global::Conformance.WireFormat.UNSPECIFIED) hash ^= RequestedOutputFormat.GetHashCode();
+      if (RequestedOutputFormat != 0) hash ^= RequestedOutputFormat.GetHashCode();
       hash ^= (int) payloadCase_;
       return hash;
     }
@@ -346,7 +346,7 @@ namespace Conformance {
         output.WriteRawTag(18);
         output.WriteString(JsonPayload);
       }
-      if (RequestedOutputFormat != global::Conformance.WireFormat.UNSPECIFIED) {
+      if (RequestedOutputFormat != 0) {
         output.WriteRawTag(24);
         output.WriteEnum((int) RequestedOutputFormat);
       }
@@ -360,7 +360,7 @@ namespace Conformance {
       if (payloadCase_ == PayloadOneofCase.JsonPayload) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(JsonPayload);
       }
-      if (RequestedOutputFormat != global::Conformance.WireFormat.UNSPECIFIED) {
+      if (RequestedOutputFormat != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) RequestedOutputFormat);
       }
       return size;
@@ -370,7 +370,7 @@ namespace Conformance {
       if (other == null) {
         return;
       }
-      if (other.RequestedOutputFormat != global::Conformance.WireFormat.UNSPECIFIED) {
+      if (other.RequestedOutputFormat != 0) {
         RequestedOutputFormat = other.RequestedOutputFormat;
       }
       switch (other.PayloadCase) {
@@ -1044,7 +1044,7 @@ namespace Conformance {
 
     /// <summary>Field number for the "optional_nested_enum" field.</summary>
     public const int OptionalNestedEnumFieldNumber = 21;
-    private global::Conformance.TestAllTypes.Types.NestedEnum optionalNestedEnum_ = global::Conformance.TestAllTypes.Types.NestedEnum.FOO;
+    private global::Conformance.TestAllTypes.Types.NestedEnum optionalNestedEnum_ = 0;
     public global::Conformance.TestAllTypes.Types.NestedEnum OptionalNestedEnum {
       get { return optionalNestedEnum_; }
       set {
@@ -1054,7 +1054,7 @@ namespace Conformance {
 
     /// <summary>Field number for the "optional_foreign_enum" field.</summary>
     public const int OptionalForeignEnumFieldNumber = 22;
-    private global::Conformance.ForeignEnum optionalForeignEnum_ = global::Conformance.ForeignEnum.FOREIGN_FOO;
+    private global::Conformance.ForeignEnum optionalForeignEnum_ = 0;
     public global::Conformance.ForeignEnum OptionalForeignEnum {
       get { return optionalForeignEnum_; }
       set {
@@ -2079,8 +2079,8 @@ namespace Conformance {
       if (OptionalBytes.Length != 0) hash ^= OptionalBytes.GetHashCode();
       if (optionalNestedMessage_ != null) hash ^= OptionalNestedMessage.GetHashCode();
       if (optionalForeignMessage_ != null) hash ^= OptionalForeignMessage.GetHashCode();
-      if (OptionalNestedEnum != global::Conformance.TestAllTypes.Types.NestedEnum.FOO) hash ^= OptionalNestedEnum.GetHashCode();
-      if (OptionalForeignEnum != global::Conformance.ForeignEnum.FOREIGN_FOO) hash ^= OptionalForeignEnum.GetHashCode();
+      if (OptionalNestedEnum != 0) hash ^= OptionalNestedEnum.GetHashCode();
+      if (OptionalForeignEnum != 0) hash ^= OptionalForeignEnum.GetHashCode();
       if (OptionalStringPiece.Length != 0) hash ^= OptionalStringPiece.GetHashCode();
       if (OptionalCord.Length != 0) hash ^= OptionalCord.GetHashCode();
       if (recursiveMessage_ != null) hash ^= RecursiveMessage.GetHashCode();
@@ -2247,11 +2247,11 @@ namespace Conformance {
         output.WriteRawTag(154, 1);
         output.WriteMessage(OptionalForeignMessage);
       }
-      if (OptionalNestedEnum != global::Conformance.TestAllTypes.Types.NestedEnum.FOO) {
+      if (OptionalNestedEnum != 0) {
         output.WriteRawTag(168, 1);
         output.WriteEnum((int) OptionalNestedEnum);
       }
-      if (OptionalForeignEnum != global::Conformance.ForeignEnum.FOREIGN_FOO) {
+      if (OptionalForeignEnum != 0) {
         output.WriteRawTag(176, 1);
         output.WriteEnum((int) OptionalForeignEnum);
       }
@@ -2492,10 +2492,10 @@ namespace Conformance {
       if (optionalForeignMessage_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalForeignMessage);
       }
-      if (OptionalNestedEnum != global::Conformance.TestAllTypes.Types.NestedEnum.FOO) {
+      if (OptionalNestedEnum != 0) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) OptionalNestedEnum);
       }
-      if (OptionalForeignEnum != global::Conformance.ForeignEnum.FOREIGN_FOO) {
+      if (OptionalForeignEnum != 0) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) OptionalForeignEnum);
       }
       if (OptionalStringPiece.Length != 0) {
@@ -2719,10 +2719,10 @@ namespace Conformance {
         }
         OptionalForeignMessage.MergeFrom(other.OptionalForeignMessage);
       }
-      if (other.OptionalNestedEnum != global::Conformance.TestAllTypes.Types.NestedEnum.FOO) {
+      if (other.OptionalNestedEnum != 0) {
         OptionalNestedEnum = other.OptionalNestedEnum;
       }
-      if (other.OptionalForeignEnum != global::Conformance.ForeignEnum.FOREIGN_FOO) {
+      if (other.OptionalForeignEnum != 0) {
         OptionalForeignEnum = other.OptionalForeignEnum;
       }
       if (other.OptionalStringPiece.Length != 0) {
@@ -3448,13 +3448,13 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       public enum NestedEnum {
-        FOO = 0,
-        BAR = 1,
-        BAZ = 2,
+        [pbr::OriginalName("FOO")] Foo = 0,
+        [pbr::OriginalName("BAR")] Bar = 1,
+        [pbr::OriginalName("BAZ")] Baz = 2,
         /// <summary>
         ///  Intentionally negative.
         /// </summary>
-        NEG = -1,
+        [pbr::OriginalName("NEG")] Neg = -1,
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
