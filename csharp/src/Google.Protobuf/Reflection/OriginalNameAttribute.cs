@@ -1,5 +1,6 @@
+﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2014 Google Inc.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,44 +28,31 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#endregion
 
-#include <memory>
+using System;
 
-#include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/csharp/csharp_helpers.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/printer.h>
+namespace Google.Protobuf.Reflection
+{
+    /// <summary>
+    /// Specifies the original name (in the .proto file) of a named element,
+    /// such as an enum value.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Field)]
+    public class OriginalNameAttribute : Attribute
+    {
+        /// <summary>
+        /// The name of the element in the .proto file.
+        /// </summary>
+        public string Name { get; set; }
 
-#include <google/protobuf/testing/googletest.h>
-#include <gtest/gtest.h>
-#include <google/protobuf/testing/file.h>
-
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace csharp {
-namespace {
-
-TEST(CSharpEnumValue, PascalCasedPrefixStripping) {
-  EXPECT_EQ("Bar", GetEnumValueName("Foo", "BAR"));
-  EXPECT_EQ("BarBaz", GetEnumValueName("Foo", "BAR_BAZ"));
-  EXPECT_EQ("Bar", GetEnumValueName("Foo", "FOO_BAR"));
-  EXPECT_EQ("Bar", GetEnumValueName("Foo", "FOO__BAR"));
-  EXPECT_EQ("BarBaz", GetEnumValueName("Foo", "FOO_BAR_BAZ"));
-  EXPECT_EQ("BarBaz", GetEnumValueName("Foo", "Foo_BarBaz"));
-  EXPECT_EQ("Bar", GetEnumValueName("FO_O", "FOO_BAR"));
-  EXPECT_EQ("Bar", GetEnumValueName("FOO", "F_O_O_BAR"));
-  EXPECT_EQ("Bar", GetEnumValueName("Foo", "BAR"));
-  EXPECT_EQ("BarBaz", GetEnumValueName("Foo", "BAR_BAZ"));
-  EXPECT_EQ("Foo", GetEnumValueName("Foo", "FOO"));
-  EXPECT_EQ("Foo", GetEnumValueName("Foo", "FOO___"));
-  // Identifiers can't start with digits
-  EXPECT_EQ("_2Bar", GetEnumValueName("Foo", "FOO_2_BAR"));
-  EXPECT_EQ("_2", GetEnumValueName("Foo", "FOO___2"));
+        /// <summary>
+        /// Constructs a new attribute instance for the given name.
+        /// </summary>
+        /// <param name="name">The name of the element in the .proto file.</param>
+        public OriginalNameAttribute(string name)
+        {
+            Name = ProtoPreconditions.CheckNotNull(name, nameof(name));
+        }
+    }
 }
-
-}  // namespace
-}  // namespace csharp
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google

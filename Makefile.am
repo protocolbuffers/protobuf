@@ -154,6 +154,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Reflection/MethodDescriptor.cs                  \
   csharp/src/Google.Protobuf/Reflection/OneofAccessor.cs                     \
   csharp/src/Google.Protobuf/Reflection/OneofDescriptor.cs                   \
+  csharp/src/Google.Protobuf/Reflection/OriginalNameAttribute.cs             \
   csharp/src/Google.Protobuf/Reflection/PackageDescriptor.cs                 \
   csharp/src/Google.Protobuf/Reflection/PartialClasses.cs                    \
   csharp/src/Google.Protobuf/Reflection/ReflectionUtil.cs                    \

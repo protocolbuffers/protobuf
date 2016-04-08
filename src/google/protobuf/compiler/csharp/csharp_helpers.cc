@@ -178,6 +178,99 @@ std::string UnderscoresToPascalCase(const std::string& input) {
   return UnderscoresToCamelCase(input, true);
 }
 
+// Convert a string which is expected to be SHOUTY_CASE (but may not be *precisely* shouty)
+// into a PascalCase string. Precise rules implemented:
+
+// Previous input character      Current character         Case
+// Any                           Non-alphanumeric          Skipped
+// None - first char of input    Alphanumeric              Upper
+// Non-letter (e.g. _ or 1)      Alphanumeric              Upper
+// Numeric                       Alphanumeric              Upper
+// Lower letter                  Alphanumeric              Same as current
+// Upper letter                  Alphanumeric              Lower
+std::string ShoutyToPascalCase(const std::string& input) {
+  string result;
+  // Simple way of implementing "always start with upper"
+  char previous = '_';
+  for (int i = 0; i < input.size(); i++) {
+    char current = input[i];
+    if (!ascii_isalnum(current)) {
+      previous = current;
+      continue;      
+    }
+    if (!ascii_isalnum(previous)) {
+      result += ascii_toupper(current);
+    } else if (ascii_isdigit(previous)) {
+      result += ascii_toupper(current);
+    } else if (ascii_islower(previous)) {
+      result += current;
+    } else {
+      result += ascii_tolower(current);
+    }
+    previous = current;
+  }
+  return result;
+}
+
+// Attempt to remove a prefix from a value, ignoring casing and skipping underscores.
+// (foo, foo_bar) => bar - underscore after prefix is skipped
+// (FOO, foo_bar) => bar - casing is ignored
+// (foo_bar, foobarbaz) => baz - underscore in prefix is ignored
+// (foobar, foo_barbaz) => baz - underscore in value is ignored
+// (foo, bar) => bar - prefix isn't matched; return original value
+std::string TryRemovePrefix(const std::string& prefix, const std::string& value) {
+  // First normalize to a lower-case no-underscores prefix to match against
+  std::string prefix_to_match = "";
+  for (size_t i = 0; i < prefix.size(); i++) {
+    if (prefix[i] != '_') {
+      prefix_to_match += ascii_tolower(prefix[i]);
+    }
+  }
+  
+  // This keeps track of how much of value we've consumed
+  size_t prefix_index, value_index;
+  for (prefix_index = 0, value_index = 0;
+      prefix_index < prefix_to_match.size() && value_index < value.size();
+      value_index++) {
+    // Skip over underscores in the value
+    if (value[value_index] == '_') {
+      continue;
+    }
+    if (ascii_tolower(value[value_index]) != prefix_to_match[prefix_index++]) {
+      // Failed to match the prefix - bail out early.
+      return value;
+    }
+  }
+
+  // If we didn't finish looking through the prefix, we can't strip it.
+  if (prefix_index < prefix_to_match.size()) {
+    return value;
+  }
+
+  // Step over any underscores after the prefix
+  while (value_index < value.size() && value[value_index] == '_') {
+    value_index++;
+  }
+
+  // If there's nothing left (e.g. it was a prefix with only underscores afterwards), don't strip.
+  if (value_index == value.size()) {
+    return value;
+  }
+
+  return value.substr(value_index);
+}
+
+std::string GetEnumValueName(const std::string& enum_name, const std::string& enum_value_name) {
+  std::string stripped = TryRemovePrefix(enum_name, enum_value_name);
+  std::string result = ShoutyToPascalCase(stripped);
+  // Just in case we have an enum name of FOO and a value of FOO_2... make sure the returned
+  // string is a valid identifier.
+  if (ascii_isdigit(result[0])) {
+    result = "_" + result;
+  }
+  return result;
+}
+
 std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
   std::string result = GetFileNamespace(file);
   if (result != "") {

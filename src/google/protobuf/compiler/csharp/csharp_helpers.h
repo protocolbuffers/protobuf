@@ -93,6 +93,8 @@ inline std::string UnderscoresToCamelCase(const std::string& input, bool cap_nex
 
 std::string UnderscoresToPascalCase(const std::string& input);
 
+std::string GetEnumValueName(const std::string& enum_name, const std::string& enum_value_name);
+
 // TODO(jtattermusch): perhaps we could move this to strutil
 std::string StringToBase64(const std::string& input);
 

@@ -117,6 +117,7 @@
     <Compile Include="Reflection\MethodDescriptor.cs" />
     <Compile Include="Reflection\OneofAccessor.cs" />
     <Compile Include="Reflection\OneofDescriptor.cs" />
+    <Compile Include="Reflection\OriginalNameAttribute.cs" />
     <Compile Include="Reflection\PackageDescriptor.cs" />
     <Compile Include="Reflection\PartialClasses.cs" />
     <Compile Include="Reflection\ReflectionUtil.cs" />
