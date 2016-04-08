@@ -44,7 +44,8 @@ struct Options {
   Options() :
       file_extension(".cs"),
       base_namespace(""),
-      base_namespace_specified(false) {
+      base_namespace_specified(false),
+      internal_access(false) {
   }
   // Extension of the generated file. Defaults to ".cs"
   string file_extension;
