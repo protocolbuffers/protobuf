@@ -93,7 +93,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
 
   for (int i = 0; i < canonical_values_.size(); i++) {
     map<string, string> vars;
-    vars["name"] = canonical_values_[i]->name();
+    vars["name"] = EnumValueName(canonical_values_[i]);
     vars["index"] = SimpleItoa(canonical_values_[i]->index());
     vars["number"] = SimpleItoa(canonical_values_[i]->number());
     WriteEnumValueDocComment(printer, canonical_values_[i]);
@@ -117,8 +117,9 @@ void EnumGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < aliases_.size(); i++) {
     map<string, string> vars;
     vars["classname"] = descriptor_->name();
-    vars["name"] = aliases_[i].value->name();
-    vars["canonical_name"] = aliases_[i].canonical_value->name();
+    vars["name"] = EnumValueName(aliases_[i].value);
+    vars["canonical_name"] =
+      EnumValueName(aliases_[i].canonical_value);
     WriteEnumValueDocComment(printer, aliases_[i].value);
     printer->Print(vars,
       "public static final $classname$ $name$ = $canonical_name$;\n");
@@ -126,7 +127,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->value_count(); i++) {
     map<string, string> vars;
-    vars["name"] = descriptor_->value(i)->name();
+    vars["name"] = EnumValueName(descriptor_->value(i));
     vars["number"] = SimpleItoa(descriptor_->value(i)->number());
     WriteEnumValueDocComment(printer, descriptor_->value(i));
     printer->Print(vars,
@@ -163,7 +164,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < canonical_values_.size(); i++) {
     printer->Print(
       "case $number$: return $name$;\n",
-      "name", canonical_values_[i]->name(),
+      "name", EnumValueName(canonical_values_[i]),
       "number", SimpleItoa(canonical_values_[i]->number()));
   }
 
@@ -281,7 +282,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
         "  ");
       for (int i = 0; i < descriptor_->value_count(); i++) {
         printer->Print("$name$, ",
-          "name", descriptor_->value(i)->name());
+          "name", EnumValueName(descriptor_->value(i)));
       }
       printer->Print(
           "\n"
@@ -338,7 +339,7 @@ bool EnumGenerator::CanUseEnumValues() {
     return false;
   }
   for (int i = 0; i < descriptor_->value_count(); i++) {
-    if (descriptor_->value(i)->name() != canonical_values_[i]->name()) {
+    if (EnumValueName(descriptor_->value(i)) != EnumValueName(canonical_values_[i])) {
       return false;
     }
   }

@@ -67,7 +67,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < descriptor_->value_count(); i++) {
       WriteEnumValueDocComment(printer, descriptor_->value(i));
       printer->Print("$name$ = $number$,\n",
-                   "name", descriptor_->value(i)->name(),
+                   "name", EnumValueName(descriptor_->value(i)),
                    "number", SimpleItoa(descriptor_->value(i)->number()));
   }
   printer->Outdent();

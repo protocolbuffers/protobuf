@@ -38,6 +38,7 @@
 
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/compiler/java/java_helpers.h>
 
 namespace google {
 namespace protobuf {
@@ -202,7 +203,8 @@ void WriteEnumValueDocComment(io::Printer* printer,
   printer->Print(
     "/**\n"
     " * <code>$def$</code>\n",
-    "def", EscapeJavadoc(FirstLineOf(value->DebugString())));
+    "def", EscapeJavadoc(FirstLineOf(
+      EnumValueName(value) + " = " + SimpleItoa(value->number()))));
   WriteDocCommentBody(printer, value);
   printer->Print(" */\n");
 }

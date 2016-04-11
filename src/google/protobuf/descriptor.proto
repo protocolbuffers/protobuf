@@ -381,6 +381,10 @@ message FileOptions {
   // suffixed package.
   optional bool javanano_use_deprecated_package = 38 [deprecated = true];
 
+  // For languages in which enum values are scoped to the enum, detect when
+  // enum values have been prefixed with the enum name and remove
+  optional bool auto_strip_enum_prefixes = 39;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -565,6 +569,10 @@ message EnumValueOptions {
   // for the enum value, or it will be completely ignored; in the very least,
   // this is a formalization for deprecating enum values.
   optional bool deprecated = 1 [default=false];
+
+  // Provide a hint to language generators with enum-scoped enum values to
+  // use an alias instead of the canonical name.
+  optional string scoped_alias = 2;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

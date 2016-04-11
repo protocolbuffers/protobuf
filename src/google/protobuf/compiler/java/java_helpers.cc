@@ -101,6 +101,26 @@ string FieldName(const FieldDescriptor* field) {
 
 }  // namespace
 
+string EnumValueName(const EnumValueDescriptor* enum_value) {
+  // If a scoped alias was specified, just use that
+  if (enum_value->options().has_scoped_alias())
+    return enum_value->options().scoped_alias();
+  // Otherwise, if auto strip prefixes was specified, do that
+  bool strip_prefix = enum_value->type()->file()->options()
+    .auto_strip_enum_prefixes();
+  string value_name = enum_value->name();
+  if (!strip_prefix)
+    return value_name;
+  string stripped = StripPrefixInsensitive(
+    value_name, enum_value->type()->name());
+  // If we did remove the prefix, we need to check to make sure some
+  // other enum value doesn't already have this name
+  if (enum_value->type()->FindValueByName(stripped))
+    return value_name; // return the unstripped value because the stripped
+                       // value collides with something else
+  return stripped;
+}
+
 string UnderscoresToCamelCase(const string& input, bool cap_next_letter) {
   string result;
   // Note:  I distrust ctype.h due to locales.
@@ -449,7 +469,7 @@ string DefaultValue(const FieldDescriptor* field, bool immutable,
 
     case FieldDescriptor::CPPTYPE_ENUM:
       return name_resolver->GetClassName(field->enum_type(), immutable) + "." +
-          field->default_value_enum()->name();
+          EnumValueName(field->default_value_enum());
 
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return name_resolver->GetClassName(field->message_type(), immutable) +

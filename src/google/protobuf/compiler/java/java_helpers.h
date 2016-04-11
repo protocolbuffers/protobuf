@@ -89,6 +89,8 @@ string JavaPackageToDir(string package_name);
 string ToJavaName(const string& full_name,
                   const FileDescriptor* file);
 
+string EnumValueName(const EnumValueDescriptor* enum_value);
+
 // TODO(xiaofeng): the following methods are kept for they are exposed
 // publicly in //google/protobuf/compiler/java/names.h. They return
 // immutable names only and should be removed after mutable API is

@@ -122,6 +122,37 @@ void StripWhitespace(string* str) {
 }
 
 // ----------------------------------------------------------------------
+// StripPrefixInsensitive()
+//    If "subject" begins with "prefix" (ignoring case and underscores)
+//    strips the matching sequence of "subject" and returns the rest.
+// ----------------------------------------------------------------------
+
+std::string StripPrefixInsensitive(std::string subject, std::string prefix) {
+  string::const_iterator s1 = subject.begin(), s2 = subject.end();
+  string::const_iterator p1 = prefix.begin(), p2 = prefix.end();
+  while (s1 != s2 && p1 != p2) {
+    if (*s1 == '_') {
+      s1++;
+      continue;
+    }
+    if (*p1 == '_') {
+      p1++;
+      continue;
+    }
+    if (ascii_toupper(*s1) != ascii_toupper(*p1))
+      break;
+    s1++;
+    p1++;
+  }
+  while (s1 != s2 && *s1 == '_')
+    s1++;
+  if (p1 != p2) // prefix was not a complete match
+    return subject;
+  return string(s1, s2);
+}
+
+
+// ----------------------------------------------------------------------
 // StringReplace()
 //    Replace the "old" pattern with the "new" pattern in a string,
 //    and append the result to "res".  If replace_all is false,
