@@ -36,6 +36,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_CSHARP_HELPERS_H__
 
 #include <string>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/compiler/code_generator.h>
@@ -93,7 +94,9 @@ inline std::string UnderscoresToCamelCase(const std::string& input, bool cap_nex
 
 std::string UnderscoresToPascalCase(const std::string& input);
 
-std::string GetEnumValueName(const std::string& enum_name, const std::string& enum_value_name);
+// Note that we wouldn't normally want to export this (we're not expecting
+// it to be used outside libprotoc itself) but this exposes it for testing.
+std::string LIBPROTOBUF_EXPORT GetEnumValueName(const std::string& enum_name, const std::string& enum_value_name);
 
 // TODO(jtattermusch): perhaps we could move this to strutil
 std::string StringToBase64(const std::string& input);
