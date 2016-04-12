@@ -82,51 +82,85 @@ inline string CodeEnumToString(error::Code code) {
 }
 }  // namespace error.
 
-const StatusPod Status::OK = { error::OK, "" };
-const StatusPod Status::CANCELLED = { error::CANCELLED, "" };
-const StatusPod Status::UNKNOWN = { error::UNKNOWN, "" };
+// Representation for global objects.
+struct Status::Pod {
+  // Structured exactly like Status, but has no constructor so
+  // it can be statically initialized
+  Rep* rep_;
+};
 
-Status::Status() : error_code_(error::OK) {
-}
+Status::Rep Status::global_reps[3] = {
+  { true /* is_global_ */, error::OK, NULL },
+  { true /* is_global_ */, error::CANCELLED, NULL },
+  { true /* is_global_ */, error::UNKNOWN, NULL },
+};
 
+const Status::Pod Status::globals[3] = {
+  { &Status::global_reps[0] },
+  { &Status::global_reps[1] },
+  { &Status::global_reps[2] }
+};
+
+const Status& Status::OK = *reinterpret_cast<const Status*>(&globals[0]);
+const Status& Status::CANCELLED = *reinterpret_cast<const Status*>(&globals[1]);
+const Status& Status::UNKNOWN = *reinterpret_cast<const Status*>(&globals[2]);
+
+Status::Status() : rep_(NewRep(error::OK, "")) {}
 Status::Status(error::Code error_code, StringPiece error_message)
-    : error_code_(error_code) {
+    : rep_(NewRep(error_code, "")) {
   if (error_code != error::OK) {
-    error_message_ = error_message.ToString();
+    *rep_->error_message_ = error_message.ToString();
   }
 }
-
 Status::Status(const Status& other)
-    : error_code_(other.error_code_), error_message_(other.error_message_) {
-}
-
-Status::Status(const StatusPod& status_pod)
-    : error_code_(status_pod.error_code),
-      error_message_(status_pod.error_message) {
-}
+    : rep_(NewRep(other.rep_->error_code_,
+                  StringPiece(other.rep_->error_message_ != NULL ?
+                              *other.rep_->error_message_ : ""))) {}
 
 Status& Status::operator=(const Status& other) {
-  error_code_ = other.error_code_;
-  error_message_ = other.error_message_;
+  rep_->error_code_ = other.rep_->error_code_;
+  if (rep_->error_message_ == NULL) {
+    rep_->error_message_ = new string();
+  }
+  *rep_->error_message_ = other.rep_->error_message_ != NULL ?
+      *other.rep_->error_message_ : "";
   return *this;
 }
 
 bool Status::operator==(const Status& x) const {
-  return error_code_ == x.error_code_ &&
-      error_message_ == x.error_message_;
+  return rep_ == x.rep_ ||
+      (this->error_code() == x.error_code() &&
+       this->error_message() == x.error_message());
 }
 
 string Status::ToString() const {
-  if (error_code_ == error::OK) {
+  if (rep_->error_code_ == error::OK) {
     return "OK";
   } else {
-    if (error_message_.empty()) {
-      return error::CodeEnumToString(error_code_);
+    if (rep_->error_message_ == NULL || rep_->error_message_->empty()) {
+      return error::CodeEnumToString(rep_->error_code_);
     } else {
-      return error::CodeEnumToString(error_code_) + ":" +
-          error_message_;
+      return error::CodeEnumToString(rep_->error_code_) + ":" +
+          *rep_->error_message_;
     }
   }
+}
+
+Status::Rep* Status::NewRep(error::Code error_code, StringPiece error_message) {
+  Rep* rep = new Rep;
+  rep->is_global_ = false;
+  rep->error_code_ = error_code;
+  rep->error_message_ = new string(error_message.data(), error_message.size());
+  return rep;
+}
+
+void Status::DeleteRep(Rep* rep) {
+  GOOGLE_DCHECK(!rep->is_global_);
+
+  if (rep->error_message_ != NULL) {
+    delete rep->error_message_;
+  }
+  delete rep;
 }
 
 ostream& operator<<(ostream& os, const Status& x) {

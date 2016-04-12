@@ -62,11 +62,6 @@ enum Code {
 };
 }  // namespace error
 
-struct StatusPod {
-  error::Code error_code;
-  const char* error_message;
-};
-
 class LIBPROTOBUF_EXPORT Status {
  public:
   // Creates a "successful" status.
@@ -78,24 +73,23 @@ class LIBPROTOBUF_EXPORT Status {
   // constructed.
   Status(error::Code error_code, StringPiece error_message);
   Status(const Status&);
-  Status(const StatusPod&);
   Status& operator=(const Status& x);
-  ~Status() {}
+  ~Status() { DeleteRep(rep_); }
 
   // Some pre-defined Status objects
-  static const StatusPod OK;  // Identical to 0-arg constructor
-  static const StatusPod CANCELLED;
-  static const StatusPod UNKNOWN;
+  static const Status& OK;  // Identical to 0-arg constructor
+  static const Status& CANCELLED;
+  static const Status& UNKNOWN;
 
   // Accessor
   bool ok() const {
-    return error_code_ == error::OK;
+    return rep_->error_code_ == error::OK;
   }
   int error_code() const {
-    return error_code_;
+    return rep_->error_code_;
   }
   StringPiece error_message() const {
-    return error_message_;
+    return rep_->error_message_ ? *rep_->error_message_ : "";
   }
 
   bool operator==(const Status& x) const;
@@ -107,8 +101,20 @@ class LIBPROTOBUF_EXPORT Status {
   string ToString() const;
 
  private:
-  error::Code error_code_;
-  string error_message_;
+  struct Rep {
+    bool is_global_;  // All instances must either be global or heap-allocated.
+    error::Code error_code_;
+    string* error_message_;  // NULL means empty.
+  };
+  Rep* rep_;  // Never NULL
+
+  static Rep* NewRep(error::Code error_code, StringPiece error_message);
+  static void DeleteRep(Rep* rep);
+
+  // Machinery for linker initialization of the global Status objects.
+  struct Pod;
+  static Rep global_reps[];
+  static const Pod globals[];
 };
 
 // Prints a human-readable representation of 'x' to 'os'.
