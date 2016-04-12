@@ -42,7 +42,16 @@ gulp.task('commonjs_asserts', function (cb) {
   });
 });
 
-gulp.task('make_commonjs_out', ['dist', 'genproto_commonjs', 'commonjs_asserts'], function (cb) {
+gulp.task('commonjs_testdeps', function (cb) {
+  exec('mkdir -p commonjs_out/test_node_modules && ./node_modules/google-closure-library/closure/bin/calcdeps.py -i commonjs/export_testdeps.js -p . -p node_modules/google-closure-library/closure -o compiled --compiler_jar node_modules/google-closure-compiler/compiler.jar > commonjs_out/test_node_modules/testdeps_commonjs.js',
+       function (err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+});
+
+gulp.task('make_commonjs_out', ['dist', 'genproto_commonjs', 'commonjs_asserts', 'commonjs_testdeps'], function (cb) {
   // TODO(haberman): minify this more aggressively.
   // Will require proper externs/exports.
   var cmd = "mkdir -p commonjs_out/binary && mkdir -p commonjs_out/test_node_modules && ";

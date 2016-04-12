@@ -77,8 +77,11 @@ class JsonUtilTest : public testing::Test {
 
   bool FromJson(const string& json, Message* message) {
     string binary;
-    GOOGLE_CHECK_OK(JsonToBinaryString(
-        resolver_.get(), GetTypeUrl(message->GetDescriptor()), json, &binary));
+    if (!JsonToBinaryString(resolver_.get(),
+                            GetTypeUrl(message->GetDescriptor()), json, &binary)
+             .ok()) {
+      return false;
+    }
     return message->ParseFromString(binary);
   }
 
@@ -99,28 +102,36 @@ TEST_F(JsonUtilTest, TestWhitespaces) {
       ToJson(m, options));
 }
 
-// TODO(skarvaje): Uncomment after cl/96232915 is submitted.
-// TEST_F(JsonUtilTest, TestDefaultValues) {
-  // TestMessage m;
-  // JsonOptions options;
-  // EXPECT_EQ("{}", ToJson(m, options));
-  // options.always_print_primitive_fields = true;
-  // EXPECT_EQ(
-      // "{\"boolValue\":false,"
-      // "\"int32Value\":0,"
-      // "\"int64Value\":\"0\","
-      // "\"uint32Value\":0,"
-      // "\"uint64Value\":\"0\","
-      // "\"floatValue\":0,"
-      // "\"doubleValue\":0,"
-      // "\"stringValue\":\"\","
-      // "\"bytesValue\":\"\","
-      // // TODO(xiaofeng): The default enum value should be FOO. I believe
-      // // this is a bug in DefaultValueObjectWriter.
-      // "\"enumValue\":null"
-      // "}",
-      // ToJson(m, options));
-// }
+TEST_F(JsonUtilTest, TestDefaultValues) {
+  TestMessage m;
+  JsonOptions options;
+  EXPECT_EQ("{}", ToJson(m, options));
+  options.always_print_primitive_fields = true;
+  EXPECT_EQ(
+      "{\"boolValue\":false,"
+      "\"int32Value\":0,"
+      "\"int64Value\":\"0\","
+      "\"uint32Value\":0,"
+      "\"uint64Value\":\"0\","
+      "\"floatValue\":0,"
+      "\"doubleValue\":0,"
+      "\"stringValue\":\"\","
+      "\"bytesValue\":\"\","
+      "\"enumValue\":\"FOO\","
+      "\"repeatedBoolValue\":[],"
+      "\"repeatedInt32Value\":[],"
+      "\"repeatedInt64Value\":[],"
+      "\"repeatedUint32Value\":[],"
+      "\"repeatedUint64Value\":[],"
+      "\"repeatedFloatValue\":[],"
+      "\"repeatedDoubleValue\":[],"
+      "\"repeatedStringValue\":[],"
+      "\"repeatedBytesValue\":[],"
+      "\"repeatedEnumValue\":[],"
+      "\"repeatedMessageValue\":[]"
+      "}",
+      ToJson(m, options));
+}
 
 TEST_F(JsonUtilTest, ParseMessage) {
   // Some random message but good enough to verify that the parsing warpper
@@ -156,6 +167,15 @@ TEST_F(JsonUtilTest, ParseMap) {
   TestMap other;
   ASSERT_TRUE(FromJson(ToJson(message, options), &other));
   EXPECT_EQ(message.DebugString(), other.DebugString());
+}
+
+TEST_F(JsonUtilTest, TestParseErrors) {
+  TestMessage m;
+  JsonOptions options;
+  // Parsing should fail if the field name can not be recognized.
+  EXPECT_FALSE(FromJson("{\"unknownName\":0}", &m));
+  // Parsing should fail if the value is invalid.
+  EXPECT_FALSE(FromJson("{\"int32Value\":2147483648}", &m));
 }
 
 typedef pair<char*, int> Segment;

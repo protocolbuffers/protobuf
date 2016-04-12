@@ -118,75 +118,38 @@ void ImmutableExtensionGenerator::Generate(io::Printer* printer) {
       "public static final int $constant_name$ = $number$;\n");
 
   WriteFieldDocComment(printer, descriptor_);
-  if (HasDescriptorMethods(descriptor_->file())) {
-    // Non-lite extensions
-    if (descriptor_->extension_scope() == NULL) {
-      // Non-nested
-      printer->Print(
-          vars,
-          "public static final\n"
-          "  com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
-          "    $containing_type$,\n"
-          "    $type$> $name$ = com.google.protobuf.GeneratedMessage\n"
-          "        .newFileScopedGeneratedExtension(\n"
-          "      $singular_type$.class,\n"
-          "      $prototype$);\n");
-    } else {
-      // Nested
-      printer->Print(
-          vars,
-          "public static final\n"
-          "  com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
-          "    $containing_type$,\n"
-          "    $type$> $name$ = com.google.protobuf.GeneratedMessage\n"
-          "        .newMessageScopedGeneratedExtension(\n"
-          "      $scope$.getDefaultInstance(),\n"
-          "      $index$,\n"
-          "      $singular_type$.class,\n"
-          "      $prototype$);\n");
-    }
+  if (descriptor_->extension_scope() == NULL) {
+    // Non-nested
+    printer->Print(
+        vars,
+        "public static final\n"
+        "  com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+        "    $containing_type$,\n"
+        "    $type$> $name$ = com.google.protobuf.GeneratedMessage\n"
+        "        .newFileScopedGeneratedExtension(\n"
+        "      $singular_type$.class,\n"
+        "      $prototype$);\n");
   } else {
-    // Lite extensions
-    if (descriptor_->is_repeated()) {
-      printer->Print(
-          vars,
-          "public static final\n"
-          "  com.google.protobuf.GeneratedMessageLite.GeneratedExtension<\n"
-          "    $containing_type$,\n"
-          "    $type$> $name$ = com.google.protobuf.GeneratedMessageLite\n"
-          "        .newRepeatedGeneratedExtension(\n"
-          "      $containing_type$.getDefaultInstance(),\n"
-          "      $prototype$,\n"
-          "      $enum_map$,\n"
-          "      $number$,\n"
-          "      com.google.protobuf.WireFormat.FieldType.$type_constant$,\n"
-          "      $packed$,\n"
-          "      $singular_type$.class);\n");
-    } else {
-      printer->Print(
-          vars,
-          "public static final\n"
-          "  com.google.protobuf.GeneratedMessageLite.GeneratedExtension<\n"
-          "    $containing_type$,\n"
-          "    $type$> $name$ = com.google.protobuf.GeneratedMessageLite\n"
-          "        .newSingularGeneratedExtension(\n"
-          "      $containing_type$.getDefaultInstance(),\n"
-          "      $default$,\n"
-          "      $prototype$,\n"
-          "      $enum_map$,\n"
-          "      $number$,\n"
-          "      com.google.protobuf.WireFormat.FieldType.$type_constant$,\n"
-          "      $singular_type$.class);\n");
-    }
+    // Nested
+    printer->Print(
+        vars,
+        "public static final\n"
+        "  com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+        "    $containing_type$,\n"
+        "    $type$> $name$ = com.google.protobuf.GeneratedMessage\n"
+        "        .newMessageScopedGeneratedExtension(\n"
+        "      $scope$.getDefaultInstance(),\n"
+        "      $index$,\n"
+        "      $singular_type$.class,\n"
+        "      $prototype$);\n");
   }
 }
 
 int ImmutableExtensionGenerator::GenerateNonNestedInitializationCode(
     io::Printer* printer) {
   int bytecode_estimate = 0;
-  if (descriptor_->extension_scope() == NULL &&
-      HasDescriptorMethods(descriptor_->file())) {
-    // Only applies to non-nested, non-lite extensions.
+  if (descriptor_->extension_scope() == NULL) {
+    // Only applies to non-nested extensions.
     printer->Print(
         "$name$.internalInit(descriptor.getExtensions().get($index$));\n",
         "name", UnderscoresToCamelCase(descriptor_),

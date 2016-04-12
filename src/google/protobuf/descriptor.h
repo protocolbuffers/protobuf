@@ -127,6 +127,11 @@ namespace descriptor_unittest {
 class DescriptorTest;
 }  // namespace descriptor_unittest
 
+// Defined in printer.h
+namespace io {
+class Printer;
+}  // namespace io
+
 // NB, all indices are zero-based.
 struct SourceLocation {
   int start_line;
@@ -358,6 +363,9 @@ class LIBPROTOBUF_EXPORT Descriptor {
 
   // Allows tests to test CopyTo(proto, true).
   friend class ::google::protobuf::descriptor_unittest::DescriptorTest;
+
+  // Allows access to GetLocationPath for annotations.
+  friend class ::google::protobuf::io::Printer;
 
   // Fill the json_name field of FieldDescriptorProto.
   void CopyJsonNameTo(DescriptorProto* proto) const;
@@ -644,6 +652,9 @@ class LIBPROTOBUF_EXPORT FieldDescriptor {
  private:
   typedef FieldOptions OptionsType;
 
+  // Allows access to GetLocationPath for annotations.
+  friend class ::google::protobuf::io::Printer;
+
   // Fill the json_name field of FieldDescriptorProto.
   void CopyJsonNameTo(FieldDescriptorProto* proto) const;
 
@@ -756,6 +767,9 @@ class LIBPROTOBUF_EXPORT OneofDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  // Allows access to GetLocationPath for annotations.
+  friend class ::google::protobuf::io::Printer;
+
   // See Descriptor::DebugString().
   void DebugString(int depth, string* contents,
                    const DebugStringOptions& options) const;
@@ -845,6 +859,9 @@ class LIBPROTOBUF_EXPORT EnumDescriptor {
 
  private:
   typedef EnumOptions OptionsType;
+
+  // Allows access to GetLocationPath for annotations.
+  friend class ::google::protobuf::io::Printer;
 
   // Looks up a value by number.  If the value does not exist, dynamically
   // creates a new EnumValueDescriptor for that value, assuming that it was
@@ -942,6 +959,9 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptor {
  private:
   typedef EnumValueOptions OptionsType;
 
+  // Allows access to GetLocationPath for annotations.
+  friend class ::google::protobuf::io::Printer;
+
   // See Descriptor::DebugString().
   void DebugString(int depth, string *contents,
                    const DebugStringOptions& options) const;
@@ -1017,6 +1037,9 @@ class LIBPROTOBUF_EXPORT ServiceDescriptor {
 
  private:
   typedef ServiceOptions OptionsType;
+
+  // Allows access to GetLocationPath for annotations.
+  friend class ::google::protobuf::io::Printer;
 
   // See Descriptor::DebugString().
   void DebugString(string *contents, const DebugStringOptions& options) const;
@@ -1095,6 +1118,9 @@ class LIBPROTOBUF_EXPORT MethodDescriptor {
 
  private:
   typedef MethodOptions OptionsType;
+
+  // Allows access to GetLocationPath for annotations.
+  friend class ::google::protobuf::io::Printer;
 
   // See Descriptor::DebugString().
   void DebugString(int depth, string *contents,

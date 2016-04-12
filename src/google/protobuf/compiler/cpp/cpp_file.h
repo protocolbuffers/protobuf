@@ -69,8 +69,14 @@ class FileGenerator {
                          const Options& options);
   ~FileGenerator();
 
-  void GenerateProtoHeader(io::Printer* printer);
-  void GeneratePBHeader(io::Printer* printer);
+  // info_path, if non-empty, should be the path (relative to printer's output)
+  // to the metadata file describing this proto header.
+  void GenerateProtoHeader(io::Printer* printer,
+                           const string& info_path);
+  // info_path, if non-empty, should be the path (relative to printer's output)
+  // to the metadata file describing this PB header.
+  void GeneratePBHeader(io::Printer* printer,
+                        const string& info_path);
   void GenerateSource(io::Printer* printer);
 
  private:
@@ -101,6 +107,10 @@ class FileGenerator {
   // Generates #include directives.
   void GenerateLibraryIncludes(io::Printer* printer);
   void GenerateDependencyIncludes(io::Printer* printer);
+
+  // Generate a pragma to pull in metadata using the given info_path (if
+  // non-empty). info_path should be relative to printer's output.
+  void GenerateMetadataPragma(io::Printer* printer, const string& info_path);
 
   // Generates a couple of different pieces before definitions:
   void GenerateGlobalStateFunctionDeclarations(io::Printer* printer);

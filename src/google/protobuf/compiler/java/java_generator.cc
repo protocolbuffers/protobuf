@@ -75,6 +75,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
   bool generate_immutable_code = false;
   bool generate_mutable_code = false;
   bool generate_shared_code = false;
+  bool enforce_lite = false;
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "output_list_file") {
       output_list_file = options[i].second;
@@ -84,10 +85,19 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
       generate_mutable_code = true;
     } else if (options[i].first == "shared") {
       generate_shared_code = true;
+    } else if (options[i].first == "lite") {
+      // When set, the protoc will generate the current files and all the
+      // transitive dependencies as lite runtime.
+      enforce_lite = true;
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
     }
+  }
+
+  if (enforce_lite && generate_mutable_code) {
+    *error = "lite runtime generator option cannot be used with mutable API.";
+    return false;
   }
 
   // By default we generate immutable code and shared code for immutable API.
@@ -105,10 +115,12 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
 
   vector<FileGenerator*> file_generators;
   if (generate_immutable_code) {
-    file_generators.push_back(new FileGenerator(file, /* immutable = */ true));
+    file_generators.push_back(
+        new FileGenerator(file, /* immutable = */ true, enforce_lite));
   }
   if (generate_mutable_code) {
-    file_generators.push_back(new FileGenerator(file, /* mutable = */ false));
+    file_generators.push_back(
+        new FileGenerator(file, /* mutable = */ false, enforce_lite));
   }
   for (int i = 0; i < file_generators.size(); ++i) {
     if (!file_generators[i]->Validate(error)) {

@@ -75,8 +75,6 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   // by the proto compiler
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? "@java.lang.Deprecated " : "";
-  (*variables)["on_changed"] =
-      HasDescriptorMethods(descriptor->containing_type()) ? "onChanged();" : "";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -228,7 +226,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     printer->Print(variables_,
       "$deprecation$public Builder set$capitalized_name$Value(int value) {\n"
       "  copyOnWrite();\n"
-      "  instance.set$capitalized_name$Value(int value);\n"
+      "  instance.set$capitalized_name$Value(value);\n"
       "  return this;\n"
       "}\n");
   }
@@ -389,7 +387,7 @@ GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$() {\n"
     "  if ($has_oneof_case_message$) {\n"
-    "    $type$ result =  $type$.forNumber((java.lang.Integer) $oneof_name$_);\n"
+    "    $type$ result = $type$.forNumber((java.lang.Integer) $oneof_name$_);\n"
     "    return result == null ? $unknown$ : result;\n"
     "  }\n"
     "  return $default$;\n"
@@ -638,7 +636,7 @@ GenerateMembers(io::Printer* printer) const {
   }
 
   if (descriptor_->options().packed() &&
-      HasGeneratedMethods(descriptor_->containing_type())) {
+      context_->HasGeneratedMethods(descriptor_->containing_type())) {
     printer->Print(variables_,
       "private int $name$MemoizedSerializedSize;\n");
   }
@@ -821,7 +819,6 @@ GenerateMergingCode(io::Printer* printer) const {
     "    ensure$capitalized_name$IsMutable();\n"
     "    $name$_.addAll(other.$name$_);\n"
     "  }\n"
-    "  $on_changed$\n"
     "}\n");
 }
 

@@ -55,7 +55,14 @@ public final class CodedInputStream {
    * Create a new CodedInputStream wrapping the given InputStream.
    */
   public static CodedInputStream newInstance(final InputStream input) {
-    return new CodedInputStream(input);
+    return new CodedInputStream(input, BUFFER_SIZE);
+  }
+  
+  /**
+   * Create a new CodedInputStream wrapping the given InputStream.
+   */
+  static CodedInputStream newInstance(final InputStream input, int bufferSize) {
+    return new CodedInputStream(input, bufferSize);
   }
 
   /**
@@ -70,14 +77,14 @@ public final class CodedInputStream {
    */
   public static CodedInputStream newInstance(final byte[] buf, final int off,
                                              final int len) {
-    return newInstance(buf, off, len, false);
+    return newInstance(buf, off, len, false /* bufferIsImmutable */);
   }
-
+  
   /**
    * Create a new CodedInputStream wrapping the given byte array slice.
    */
-  public static CodedInputStream newInstance(final byte[] buf, final int off,
-                                             final int len, boolean bufferIsImmutable) {
+  static CodedInputStream newInstance(
+      final byte[] buf, final int off, final int len, final boolean bufferIsImmutable) {
     CodedInputStream result = new CodedInputStream(buf, off, len, bufferIsImmutable);
     try {
       // Some uses of CodedInputStream can be more efficient if they know
@@ -361,6 +368,11 @@ public final class CodedInputStream {
       return result;
     } else if (size == 0) {
       return "";
+    } else if (size <= bufferSize) {
+      refillBuffer(size);
+      String result = new String(buffer, bufferPos, size, Internal.UTF_8);
+      bufferPos += size;
+      return result;
     } else {
       // Slow path:  Build a byte array first then copy it.
       return new String(readRawBytesSlowPath(size), Internal.UTF_8);
@@ -375,14 +387,21 @@ public final class CodedInputStream {
   public String readStringRequireUtf8() throws IOException {
     final int size = readRawVarint32();
     final byte[] bytes;
-    int pos = bufferPos;
-    if (size <= (bufferSize - pos) && size > 0) {
+    final int oldPos = bufferPos;
+    final int pos;
+    if (size <= (bufferSize - oldPos) && size > 0) {
       // Fast path:  We already have the bytes in a contiguous buffer, so
       //   just copy directly from it.
       bytes = buffer;
-      bufferPos = pos + size;
+      bufferPos = oldPos + size;
+      pos = oldPos;
     } else if (size == 0) {
       return "";
+    } else if (size <= bufferSize) {
+      refillBuffer(size);
+      bytes = buffer;
+      pos = 0;
+      bufferPos = pos + size;
     } else {
       // Slow path:  Build a byte array first then copy it.
       bytes = readRawBytesSlowPath(size);
@@ -869,7 +888,8 @@ public final class CodedInputStream {
   private static final int DEFAULT_SIZE_LIMIT = 64 << 20;  // 64MB
   private static final int BUFFER_SIZE = 4096;
 
-  private CodedInputStream(final byte[] buffer, final int off, final int len, boolean bufferIsImmutable) {
+  private CodedInputStream(
+      final byte[] buffer, final int off, final int len, boolean bufferIsImmutable) {
     this.buffer = buffer;
     bufferSize = off + len;
     bufferPos = off;
@@ -878,8 +898,8 @@ public final class CodedInputStream {
     this.bufferIsImmutable = bufferIsImmutable;
   }
 
-  private CodedInputStream(final InputStream input) {
-    buffer = new byte[BUFFER_SIZE];
+  private CodedInputStream(final InputStream input, int bufferSize) {
+    buffer = new byte[bufferSize];
     bufferSize = 0;
     bufferPos = 0;
     totalBytesRetired = 0;

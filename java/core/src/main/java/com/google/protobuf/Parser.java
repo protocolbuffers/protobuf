@@ -30,7 +30,6 @@
 
 package com.google.protobuf;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 /**

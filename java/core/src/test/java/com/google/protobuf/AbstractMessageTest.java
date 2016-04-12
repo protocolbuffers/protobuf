@@ -40,7 +40,6 @@ import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestRequiredForeign;
 import protobuf_unittest.UnittestProto.TestUnpackedTypes;
-
 import junit.framework.TestCase;
 
 import java.util.Map;

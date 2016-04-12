@@ -83,6 +83,29 @@ const google::protobuf::EnumValue* FindEnumValueByNumber(
 
 // Utility function to format nanos.
 const string FormatNanos(uint32 nanos);
+
+StatusOr<string> MapKeyDefaultValueAsString(
+    const google::protobuf::Field& field) {
+  switch (field.kind()) {
+    case google::protobuf::Field_Kind_TYPE_BOOL:
+      return string("false");
+    case google::protobuf::Field_Kind_TYPE_INT32:
+    case google::protobuf::Field_Kind_TYPE_INT64:
+    case google::protobuf::Field_Kind_TYPE_UINT32:
+    case google::protobuf::Field_Kind_TYPE_UINT64:
+    case google::protobuf::Field_Kind_TYPE_SINT32:
+    case google::protobuf::Field_Kind_TYPE_SINT64:
+    case google::protobuf::Field_Kind_TYPE_SFIXED32:
+    case google::protobuf::Field_Kind_TYPE_SFIXED64:
+    case google::protobuf::Field_Kind_TYPE_FIXED32:
+    case google::protobuf::Field_Kind_TYPE_FIXED64:
+      return string("0");
+    case google::protobuf::Field_Kind_TYPE_STRING:
+      return string();
+    default:
+      return Status(util::error::INTERNAL, "Invalid map key type.");
+  }
+}
 }  // namespace
 
 
@@ -92,14 +115,19 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
     : stream_(stream),
       typeinfo_(TypeInfo::NewTypeInfo(type_resolver)),
       own_typeinfo_(true),
-      type_(type) {
+      type_(type),
+      use_lower_camel_for_enums_(false) {
   GOOGLE_LOG_IF(DFATAL, stream == NULL) << "Input stream is NULL.";
 }
 
 ProtoStreamObjectSource::ProtoStreamObjectSource(
     google::protobuf::io::CodedInputStream* stream, const TypeInfo* typeinfo,
     const google::protobuf::Type& type)
-    : stream_(stream), typeinfo_(typeinfo), own_typeinfo_(false), type_(type) {
+    : stream_(stream),
+      typeinfo_(typeinfo),
+      own_typeinfo_(false),
+      type_(type),
+      use_lower_camel_for_enums_(false) {
   GOOGLE_LOG_IF(DFATAL, stream == NULL) << "Input stream is NULL.";
 }
 
@@ -238,9 +266,21 @@ StatusOr<uint32> ProtoStreamObjectSource::RenderMap(
         map_key = ReadFieldValueAsString(*field);
       } else if (field->number() == 2) {
         if (map_key.empty()) {
-          return Status(util::error::INTERNAL, "Map key must be non-empty");
+          // An absent map key is treated as the default.
+          const google::protobuf::Field* key_field =
+              FindFieldByNumber(*field_type, 1);
+          if (key_field == NULL) {
+            // The Type info for this map entry is incorrect. It should always
+            // have a field named "key" and with field number 1.
+            return Status(util::error::INTERNAL, "Invalid map entry.");
+          }
+          ASSIGN_OR_RETURN(map_key, MapKeyDefaultValueAsString(*key_field));
         }
         RETURN_IF_ERROR(RenderField(field, map_key, ow));
+      } else {
+        // The Type info for this map entry is incorrect. It should contain
+        // exactly two fields with field number 1 and 2.
+        return Status(util::error::INTERNAL, "Invalid map entry.");
       }
     }
     stream_->PopLimit(old_limit);
@@ -266,7 +306,7 @@ Status ProtoStreamObjectSource::RenderTimestamp(
   pair<int64, int32> p = os->ReadSecondsAndNanos(type);
   int64 seconds = p.first;
   int32 nanos = p.second;
-  if (seconds > kMaxSeconds || seconds < kMinSeconds) {
+  if (seconds > kTimestampMaxSeconds || seconds < kTimestampMinSeconds) {
     return Status(
         util::error::INTERNAL,
         StrCat("Timestamp seconds exceeds limit for field: ", field_name));
@@ -290,7 +330,7 @@ Status ProtoStreamObjectSource::RenderDuration(
   pair<int64, int32> p = os->ReadSecondsAndNanos(type);
   int64 seconds = p.first;
   int32 nanos = p.second;
-  if (seconds > kMaxSeconds || seconds < kMinSeconds) {
+  if (seconds > kDurationMaxSeconds || seconds < kDurationMinSeconds) {
     return Status(
         util::error::INTERNAL,
         StrCat("Duration seconds exceeds limit for field: ", field_name));
@@ -807,7 +847,10 @@ Status ProtoStreamObjectSource::RenderNonMessageField(
         const google::protobuf::EnumValue* enum_value =
             FindEnumValueByNumber(*en, buffer32);
         if (enum_value != NULL) {
-          ow->RenderString(field_name, enum_value->name());
+          if (use_lower_camel_for_enums_)
+            ow->RenderString(field_name, ToCamelCase(enum_value->name()));
+          else
+            ow->RenderString(field_name, enum_value->name());
         }
       } else {
         GOOGLE_LOG(INFO) << "Unknown enum skipped: " << field->type_url();

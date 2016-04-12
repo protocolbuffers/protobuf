@@ -91,9 +91,9 @@ class LIBPROTOBUF_EXPORT FieldComparator {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldComparator);
 };
 
-// Basic implementation of FieldComparator.  Supports four modes of floating
+// Basic implementation of FieldComparator.  Supports three modes of floating
 // point value comparison: exact, approximate using MathUtil::AlmostEqual
-// method, and arbitrarilly precise using MathUtil::WithinFractionOrMargin.
+// method, and arbitrarily precise using MathUtil::WithinFractionOrMargin.
 class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
  public:
   enum FloatComparison {

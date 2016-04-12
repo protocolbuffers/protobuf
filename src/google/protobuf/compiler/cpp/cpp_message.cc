@@ -423,8 +423,8 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
 MessageGenerator::~MessageGenerator() {}
 
 void MessageGenerator::
-FillMessageForwardDeclarations(set<string>* class_names) {
-  class_names->insert(classname_);
+FillMessageForwardDeclarations(map<string, const Descriptor*>* class_names) {
+  (*class_names)[classname_] = descriptor_;
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     // map entry message doesn't need forward declaration. Since map entry
@@ -436,7 +436,7 @@ FillMessageForwardDeclarations(set<string>* class_names) {
 }
 
 void MessageGenerator::
-FillEnumForwardDeclarations(set<string>* enum_names) {
+FillEnumForwardDeclarations(map<string, const EnumDescriptor*>* enum_names) {
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     nested_generators_[i]->FillEnumForwardDeclarations(enum_names);
   }
@@ -892,6 +892,7 @@ GenerateClassDefinition(io::Printer* printer) {
   }
   printer->Print(vars,
     "class $dllexport$$classname$ : public $superclass$ {\n");
+  printer->Annotate("classname", descriptor_);
   if (use_dependent_base_) {
     printer->Print(vars, "  friend class $superclass$;\n");
   }
@@ -1027,6 +1028,8 @@ GenerateClassDefinition(io::Printer* printer) {
       "// implements Any -----------------------------------------------\n"
       "\n"
       "void PackFrom(const ::google::protobuf::Message& message);\n"
+      "void PackFrom(const ::google::protobuf::Message& message,\n"
+      "              const ::std::string& type_url_prefix);\n"
       "bool UnpackTo(::google::protobuf::Message* message) const;\n"
       "template<typename T> bool Is() const {\n"
       "  return _any_metadata_.Is<T>();\n"
@@ -1789,6 +1792,11 @@ GenerateClassMethods(io::Printer* printer) {
       "  _any_metadata_.PackFrom(message);\n"
       "}\n"
       "\n"
+      "void $classname$::PackFrom(const ::google::protobuf::Message& message,\n"
+      "                           const ::std::string& type_url_prefix) {\n"
+      "  _any_metadata_.PackFrom(message, type_url_prefix);\n"
+      "}\n"
+      "\n"
       "bool $classname$::UnpackTo(::google::protobuf::Message* message) const {\n"
       "  return _any_metadata_.UnpackTo(message);\n"
       "}\n"
@@ -1899,11 +1907,10 @@ GenerateClassMethods(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateOffsets(io::Printer* printer) {
-  printer->Print(
-    "static const int $classname$_offsets_[$field_count$] = {\n",
-    "classname", classname_,
-    "field_count", SimpleItoa(max(
-        1, descriptor_->field_count() + descriptor_->oneof_decl_count())));
+  printer->Print("static const int $classname$_offsets_[$field_count$] = {\n",
+                 "classname", classname_, "field_count",
+                 SimpleItoa(std::max(1, descriptor_->field_count() +
+                                            descriptor_->oneof_decl_count())));
   printer->Indent();
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -2907,7 +2914,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     // on the CodedOutputStream.
     printer->Print(
       "  ::google::protobuf::io::LazyStringOutputStream unknown_fields_string(\n"
-      "      ::google::protobuf::internal::NewPermanentCallback(\n"
+      "      google::protobuf::internal::NewPermanentCallback(\n"
       "          &MutableUnknownFieldsFor$classname$, this));\n"
       "  ::google::protobuf::io::CodedOutputStream unknown_fields_stream(\n"
       "      &unknown_fields_string, false);\n",

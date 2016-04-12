@@ -44,11 +44,11 @@
 goog.require('goog.testing.asserts');
 goog.require('jspb.BinaryConstants');
 goog.require('jspb.BinaryDecoder');
-goog.require('jspb.BinaryWriter');
+goog.require('jspb.BinaryEncoder');
 
 
 /**
- * Tests raw encoding and decoding of unsigned types.
+ * Tests encoding and decoding of unsigned types.
  * @param {Function} readValue
  * @param {Function} writeValue
  * @param {number} epsilon
@@ -58,34 +58,38 @@ goog.require('jspb.BinaryWriter');
  */
 function doTestUnsignedValue(readValue,
     writeValue, epsilon, upperLimit, filter) {
-  var writer = new jspb.BinaryWriter();
+  var encoder = new jspb.BinaryEncoder();
 
   // Encode zero and limits.
-  writeValue.call(writer, filter(0));
-  writeValue.call(writer, filter(epsilon));
-  writeValue.call(writer, filter(upperLimit));
+  writeValue.call(encoder, filter(0));
+  writeValue.call(encoder, filter(epsilon));
+  writeValue.call(encoder, filter(upperLimit));
 
   // Encode positive values.
   for (var cursor = epsilon; cursor < upperLimit; cursor *= 1.1) {
-    writeValue.call(writer, filter(cursor));
+    writeValue.call(encoder, filter(cursor));
   }
 
-  var reader = jspb.BinaryDecoder.alloc(writer.getResultBuffer());
+  var decoder = jspb.BinaryDecoder.alloc(encoder.end());
 
   // Check zero and limits.
-  assertEquals(filter(0), readValue.call(reader));
-  assertEquals(filter(epsilon), readValue.call(reader));
-  assertEquals(filter(upperLimit), readValue.call(reader));
+  assertEquals(filter(0), readValue.call(decoder));
+  assertEquals(filter(epsilon), readValue.call(decoder));
+  assertEquals(filter(upperLimit), readValue.call(decoder));
 
   // Check positive values.
   for (var cursor = epsilon; cursor < upperLimit; cursor *= 1.1) {
-    if (filter(cursor) != readValue.call(reader)) throw 'fail!';
+    if (filter(cursor) != readValue.call(decoder)) throw 'fail!';
   }
+
+  // Encoding values outside the valid range should assert.
+  assertThrows(function() {writeValue.call(encoder, -1);});
+  assertThrows(function() {writeValue.call(encoder, upperLimit * 1.1);});
 }
 
 
 /**
- * Tests raw encoding and decoding of signed types.
+ * Tests encoding and decoding of signed types.
  * @param {Function} readValue
  * @param {Function} writeValue
  * @param {number} epsilon
@@ -96,44 +100,48 @@ function doTestUnsignedValue(readValue,
  */
 function doTestSignedValue(readValue,
     writeValue, epsilon, lowerLimit, upperLimit, filter) {
-  var writer = new jspb.BinaryWriter();
+  var encoder = new jspb.BinaryEncoder();
 
   // Encode zero and limits.
-  writeValue.call(writer, filter(lowerLimit));
-  writeValue.call(writer, filter(-epsilon));
-  writeValue.call(writer, filter(0));
-  writeValue.call(writer, filter(epsilon));
-  writeValue.call(writer, filter(upperLimit));
+  writeValue.call(encoder, filter(lowerLimit));
+  writeValue.call(encoder, filter(-epsilon));
+  writeValue.call(encoder, filter(0));
+  writeValue.call(encoder, filter(epsilon));
+  writeValue.call(encoder, filter(upperLimit));
 
   var inputValues = [];
 
   // Encode negative values.
   for (var cursor = lowerLimit; cursor < -epsilon; cursor /= 1.1) {
     var val = filter(cursor);
-    writeValue.call(writer, val);
+    writeValue.call(encoder, val);
     inputValues.push(val);
   }
 
   // Encode positive values.
   for (var cursor = epsilon; cursor < upperLimit; cursor *= 1.1) {
     var val = filter(cursor);
-    writeValue.call(writer, val);
+    writeValue.call(encoder, val);
     inputValues.push(val);
   }
 
-  var reader = jspb.BinaryDecoder.alloc(writer.getResultBuffer());
+  var decoder = jspb.BinaryDecoder.alloc(encoder.end());
 
   // Check zero and limits.
-  assertEquals(filter(lowerLimit), readValue.call(reader));
-  assertEquals(filter(-epsilon), readValue.call(reader));
-  assertEquals(filter(0), readValue.call(reader));
-  assertEquals(filter(epsilon), readValue.call(reader));
-  assertEquals(filter(upperLimit), readValue.call(reader));
+  assertEquals(filter(lowerLimit), readValue.call(decoder));
+  assertEquals(filter(-epsilon), readValue.call(decoder));
+  assertEquals(filter(0), readValue.call(decoder));
+  assertEquals(filter(epsilon), readValue.call(decoder));
+  assertEquals(filter(upperLimit), readValue.call(decoder));
 
   // Verify decoded values.
   for (var i = 0; i < inputValues.length; i++) {
-    assertEquals(inputValues[i], readValue.call(reader));
+    assertEquals(inputValues[i], readValue.call(decoder));
   }
+
+  // Encoding values outside the valid range should assert.
+  assertThrows(function() {writeValue.call(encoder, lowerLimit * 1.1);});
+  assertThrows(function() {writeValue.call(encoder, upperLimit * 1.1);});
 }
 
 describe('binaryDecoderTest', function() {
@@ -169,7 +177,7 @@ describe('binaryDecoderTest', function() {
    * Tests reading 64-bit integers as hash strings.
    */
   it('testHashStrings', function() {
-    var writer = new jspb.BinaryWriter();
+    var encoder = new jspb.BinaryEncoder();
 
     var hashA = String.fromCharCode(0x00, 0x00, 0x00, 0x00,
                                     0x00, 0x00, 0x00, 0x00);
@@ -180,17 +188,17 @@ describe('binaryDecoderTest', function() {
     var hashD = String.fromCharCode(0xFF, 0xFF, 0xFF, 0xFF,
                                     0xFF, 0xFF, 0xFF, 0xFF);
 
-    writer.rawWriteVarintHash64(hashA);
-    writer.rawWriteVarintHash64(hashB);
-    writer.rawWriteVarintHash64(hashC);
-    writer.rawWriteVarintHash64(hashD);
+    encoder.writeVarintHash64(hashA);
+    encoder.writeVarintHash64(hashB);
+    encoder.writeVarintHash64(hashC);
+    encoder.writeVarintHash64(hashD);
 
-    writer.rawWriteFixedHash64(hashA);
-    writer.rawWriteFixedHash64(hashB);
-    writer.rawWriteFixedHash64(hashC);
-    writer.rawWriteFixedHash64(hashD);
+    encoder.writeFixedHash64(hashA);
+    encoder.writeFixedHash64(hashB);
+    encoder.writeFixedHash64(hashC);
+    encoder.writeFixedHash64(hashD);
 
-    var decoder = jspb.BinaryDecoder.alloc(writer.getResultBuffer());
+    var decoder = jspb.BinaryDecoder.alloc(encoder.end());
 
     assertEquals(hashA, decoder.readVarintHash64());
     assertEquals(hashB, decoder.readVarintHash64());
@@ -214,8 +222,8 @@ describe('binaryDecoderTest', function() {
     assertThrows(function() {decoder.readUint64()});
 
     // Overlong varints should trigger assertions.
-    decoder.setBlock(
-        [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0]);
+    decoder.setBlock([255, 255, 255, 255, 255, 255,
+                      255, 255, 255, 255, 255, 0]);
     assertThrows(function() {decoder.readUnsignedVarint64()});
     decoder.reset();
     assertThrows(function() {decoder.readSignedVarint64()});
@@ -244,61 +252,61 @@ describe('binaryDecoderTest', function() {
 
 
   /**
-   * Tests raw encoding and decoding of unsigned integers.
+   * Tests encoding and decoding of unsigned integers.
    */
-  it('testRawUnsigned', function() {
+  it('testUnsignedIntegers', function() {
     doTestUnsignedValue(
         jspb.BinaryDecoder.prototype.readUint8,
-        jspb.BinaryWriter.prototype.rawWriteUint8,
+        jspb.BinaryEncoder.prototype.writeUint8,
         1, 0xFF, Math.round);
 
     doTestUnsignedValue(
         jspb.BinaryDecoder.prototype.readUint16,
-        jspb.BinaryWriter.prototype.rawWriteUint16,
+        jspb.BinaryEncoder.prototype.writeUint16,
         1, 0xFFFF, Math.round);
 
     doTestUnsignedValue(
         jspb.BinaryDecoder.prototype.readUint32,
-        jspb.BinaryWriter.prototype.rawWriteUint32,
+        jspb.BinaryEncoder.prototype.writeUint32,
         1, 0xFFFFFFFF, Math.round);
 
     doTestUnsignedValue(
         jspb.BinaryDecoder.prototype.readUint64,
-        jspb.BinaryWriter.prototype.rawWriteUint64,
+        jspb.BinaryEncoder.prototype.writeUint64,
         1, Math.pow(2, 64) - 1025, Math.round);
   });
 
 
   /**
-   * Tests raw encoding and decoding of signed integers.
+   * Tests encoding and decoding of signed integers.
    */
-  it('testRawSigned', function() {
+  it('testSignedIntegers', function() {
     doTestSignedValue(
         jspb.BinaryDecoder.prototype.readInt8,
-        jspb.BinaryWriter.prototype.rawWriteInt8,
+        jspb.BinaryEncoder.prototype.writeInt8,
         1, -0x80, 0x7F, Math.round);
 
     doTestSignedValue(
         jspb.BinaryDecoder.prototype.readInt16,
-        jspb.BinaryWriter.prototype.rawWriteInt16,
+        jspb.BinaryEncoder.prototype.writeInt16,
         1, -0x8000, 0x7FFF, Math.round);
 
     doTestSignedValue(
         jspb.BinaryDecoder.prototype.readInt32,
-        jspb.BinaryWriter.prototype.rawWriteInt32,
+        jspb.BinaryEncoder.prototype.writeInt32,
         1, -0x80000000, 0x7FFFFFFF, Math.round);
 
     doTestSignedValue(
         jspb.BinaryDecoder.prototype.readInt64,
-        jspb.BinaryWriter.prototype.rawWriteInt64,
+        jspb.BinaryEncoder.prototype.writeInt64,
         1, -Math.pow(2, 63), Math.pow(2, 63) - 513, Math.round);
   });
 
 
   /**
-   * Tests raw encoding and decoding of floats.
+   * Tests encoding and decoding of floats.
    */
-  it('testRawFloats', function() {
+  it('testFloats', function() {
     /**
      * @param {number} x
      * @return {number}
@@ -310,7 +318,7 @@ describe('binaryDecoderTest', function() {
     }
     doTestSignedValue(
         jspb.BinaryDecoder.prototype.readFloat,
-        jspb.BinaryWriter.prototype.rawWriteFloat,
+        jspb.BinaryEncoder.prototype.writeFloat,
         jspb.BinaryConstants.FLOAT32_EPS,
         -jspb.BinaryConstants.FLOAT32_MAX,
         jspb.BinaryConstants.FLOAT32_MAX,
@@ -318,7 +326,7 @@ describe('binaryDecoderTest', function() {
 
     doTestSignedValue(
         jspb.BinaryDecoder.prototype.readDouble,
-        jspb.BinaryWriter.prototype.rawWriteDouble,
+        jspb.BinaryEncoder.prototype.writeDouble,
         jspb.BinaryConstants.FLOAT64_EPS * 10,
         -jspb.BinaryConstants.FLOAT64_MAX,
         jspb.BinaryConstants.FLOAT64_MAX,

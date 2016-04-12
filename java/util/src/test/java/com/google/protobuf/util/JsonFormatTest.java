@@ -122,11 +122,11 @@ public class JsonFormatTest extends TestCase {
     builder.addRepeatedNestedEnum(NestedEnum.BAZ);
     builder.addRepeatedNestedMessageBuilder().setValue(200);
   }
-  
+
   private void assertRoundTripEquals(Message message) throws Exception {
     assertRoundTripEquals(message, TypeRegistry.getEmptyTypeRegistry());
   }
-  
+
   private void assertRoundTripEquals(Message message, TypeRegistry registry) throws Exception {
     JsonFormat.Printer printer = JsonFormat.printer().usingTypeRegistry(registry);
     JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(registry);
@@ -135,68 +135,68 @@ public class JsonFormatTest extends TestCase {
     Message parsedMessage = builder.build();
     assertEquals(message.toString(), parsedMessage.toString());
   }
-  
+
   private String toJsonString(Message message) throws IOException {
     return JsonFormat.printer().print(message);
   }
-  
+
   private void mergeFromJson(String json, Message.Builder builder) throws IOException {
     JsonFormat.parser().merge(json, builder);
   }
-  
+
   public void testAllFields() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     setAllFields(builder);
     TestAllTypes message = builder.build();
-    
-    assertEquals(        
+
+    assertEquals(
         "{\n"
-        + "  \"optionalInt32\": 1234,\n"
-        + "  \"optionalInt64\": \"1234567890123456789\",\n"
-        + "  \"optionalUint32\": 5678,\n"
-        + "  \"optionalUint64\": \"2345678901234567890\",\n"
-        + "  \"optionalSint32\": 9012,\n"
-        + "  \"optionalSint64\": \"3456789012345678901\",\n"
-        + "  \"optionalFixed32\": 3456,\n"
-        + "  \"optionalFixed64\": \"4567890123456789012\",\n"
-        + "  \"optionalSfixed32\": 7890,\n"
-        + "  \"optionalSfixed64\": \"5678901234567890123\",\n"
-        + "  \"optionalFloat\": 1.5,\n"
-        + "  \"optionalDouble\": 1.25,\n"
-        + "  \"optionalBool\": true,\n"
-        + "  \"optionalString\": \"Hello world!\",\n"
-        + "  \"optionalBytes\": \"AAEC\",\n"
-        + "  \"optionalNestedMessage\": {\n"
-        + "    \"value\": 100\n"
-        + "  },\n"
-        + "  \"optionalNestedEnum\": \"BAR\",\n"
-        + "  \"repeatedInt32\": [1234, 234],\n"
-        + "  \"repeatedInt64\": [\"1234567890123456789\", \"234567890123456789\"],\n"
-        + "  \"repeatedUint32\": [5678, 678],\n"
-        + "  \"repeatedUint64\": [\"2345678901234567890\", \"345678901234567890\"],\n"
-        + "  \"repeatedSint32\": [9012, 10],\n"
-        + "  \"repeatedSint64\": [\"3456789012345678901\", \"456789012345678901\"],\n"
-        + "  \"repeatedFixed32\": [3456, 456],\n"
-        + "  \"repeatedFixed64\": [\"4567890123456789012\", \"567890123456789012\"],\n"
-        + "  \"repeatedSfixed32\": [7890, 890],\n"
-        + "  \"repeatedSfixed64\": [\"5678901234567890123\", \"678901234567890123\"],\n"
-        + "  \"repeatedFloat\": [1.5, 11.5],\n"
-        + "  \"repeatedDouble\": [1.25, 11.25],\n"
-        + "  \"repeatedBool\": [true, true],\n"
-        + "  \"repeatedString\": [\"Hello world!\", \"ello world!\"],\n"
-        + "  \"repeatedBytes\": [\"AAEC\", \"AQI=\"],\n"
-        + "  \"repeatedNestedMessage\": [{\n"
-        + "    \"value\": 100\n"
-        + "  }, {\n"
-        + "    \"value\": 200\n"
-        + "  }],\n"
-        + "  \"repeatedNestedEnum\": [\"BAR\", \"BAZ\"]\n"
-        + "}",
+            + "  \"optionalInt32\": 1234,\n"
+            + "  \"optionalInt64\": \"1234567890123456789\",\n"
+            + "  \"optionalUint32\": 5678,\n"
+            + "  \"optionalUint64\": \"2345678901234567890\",\n"
+            + "  \"optionalSint32\": 9012,\n"
+            + "  \"optionalSint64\": \"3456789012345678901\",\n"
+            + "  \"optionalFixed32\": 3456,\n"
+            + "  \"optionalFixed64\": \"4567890123456789012\",\n"
+            + "  \"optionalSfixed32\": 7890,\n"
+            + "  \"optionalSfixed64\": \"5678901234567890123\",\n"
+            + "  \"optionalFloat\": 1.5,\n"
+            + "  \"optionalDouble\": 1.25,\n"
+            + "  \"optionalBool\": true,\n"
+            + "  \"optionalString\": \"Hello world!\",\n"
+            + "  \"optionalBytes\": \"AAEC\",\n"
+            + "  \"optionalNestedMessage\": {\n"
+            + "    \"value\": 100\n"
+            + "  },\n"
+            + "  \"optionalNestedEnum\": \"BAR\",\n"
+            + "  \"repeatedInt32\": [1234, 234],\n"
+            + "  \"repeatedInt64\": [\"1234567890123456789\", \"234567890123456789\"],\n"
+            + "  \"repeatedUint32\": [5678, 678],\n"
+            + "  \"repeatedUint64\": [\"2345678901234567890\", \"345678901234567890\"],\n"
+            + "  \"repeatedSint32\": [9012, 10],\n"
+            + "  \"repeatedSint64\": [\"3456789012345678901\", \"456789012345678901\"],\n"
+            + "  \"repeatedFixed32\": [3456, 456],\n"
+            + "  \"repeatedFixed64\": [\"4567890123456789012\", \"567890123456789012\"],\n"
+            + "  \"repeatedSfixed32\": [7890, 890],\n"
+            + "  \"repeatedSfixed64\": [\"5678901234567890123\", \"678901234567890123\"],\n"
+            + "  \"repeatedFloat\": [1.5, 11.5],\n"
+            + "  \"repeatedDouble\": [1.25, 11.25],\n"
+            + "  \"repeatedBool\": [true, true],\n"
+            + "  \"repeatedString\": [\"Hello world!\", \"ello world!\"],\n"
+            + "  \"repeatedBytes\": [\"AAEC\", \"AQI=\"],\n"
+            + "  \"repeatedNestedMessage\": [{\n"
+            + "    \"value\": 100\n"
+            + "  }, {\n"
+            + "    \"value\": 200\n"
+            + "  }],\n"
+            + "  \"repeatedNestedEnum\": [\"BAR\", \"BAZ\"]\n"
+            + "}",
         toJsonString(message));
-    
+
     assertRoundTripEquals(message);
   }
-  
+
   public void testUnknownEnumValues() throws Exception {
     TestAllTypes message = TestAllTypes.newBuilder()
         .setOptionalNestedEnumValue(12345)
@@ -209,21 +209,22 @@ public class JsonFormatTest extends TestCase {
         + "  \"repeatedNestedEnum\": [12345, \"FOO\"]\n"
         + "}", toJsonString(message));
     assertRoundTripEquals(message);
-    
+
     TestMap.Builder mapBuilder = TestMap.newBuilder();
     mapBuilder.getMutableInt32ToEnumMapValue().put(1, 0);
     mapBuilder.getMutableInt32ToEnumMapValue().put(2, 12345);
     TestMap mapMessage = mapBuilder.build();
     assertEquals(
-        "{\n" 
-        + "  \"int32ToEnumMap\": {\n" 
-        + "    \"1\": \"FOO\",\n"
-        + "    \"2\": 12345\n"
-        + "  }\n" 
-        + "}", toJsonString(mapMessage));
+        "{\n"
+            + "  \"int32ToEnumMap\": {\n"
+            + "    \"1\": \"FOO\",\n"
+            + "    \"2\": 12345\n"
+            + "  }\n"
+            + "}",
+        toJsonString(mapMessage));
     assertRoundTripEquals(mapMessage);
   }
-  
+
   public void testSpecialFloatValues() throws Exception {
     TestAllTypes message = TestAllTypes.newBuilder()
         .addRepeatedFloat(Float.NaN)
@@ -238,10 +239,10 @@ public class JsonFormatTest extends TestCase {
         + "  \"repeatedFloat\": [\"NaN\", \"Infinity\", \"-Infinity\"],\n"
         + "  \"repeatedDouble\": [\"NaN\", \"Infinity\", \"-Infinity\"]\n"
         + "}", toJsonString(message));
-    
+
     assertRoundTripEquals(message);
   }
-  
+
   public void testParserAcceptStringForNumbericField() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     mergeFromJson(
@@ -265,7 +266,7 @@ public class JsonFormatTest extends TestCase {
     assertEquals(1.25, message.getOptionalDouble());
     assertEquals(true, message.getOptionalBool());
   }
-  
+
   public void testParserAcceptFloatingPointValueForIntegerField() throws Exception {
     // Test that numeric values like "1.000", "1e5" will also be accepted.
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -287,14 +288,14 @@ public class JsonFormatTest extends TestCase {
       assertEquals(expectedValues[i], builder.getRepeatedInt64(i));
       assertEquals(expectedValues[i], builder.getRepeatedUint64(i));
     }
-    
+
     // Non-integers will still be rejected.
     assertRejects("optionalInt32", "1.5");
     assertRejects("optionalUint32", "1.5");
     assertRejects("optionalInt64", "1.5");
     assertRejects("optionalUint64", "1.5");
   }
-  
+
   private void assertRejects(String name, String value) {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     try {
@@ -312,7 +313,7 @@ public class JsonFormatTest extends TestCase {
       // Expected.
     }
   }
-  
+
   private void assertAccepts(String name, String value) throws IOException {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     // Both numeric form and string form are accepted.
@@ -320,17 +321,17 @@ public class JsonFormatTest extends TestCase {
     builder.clear();
     mergeFromJson("{\"" + name + "\":\"" + value + "\"}", builder);
   }
-  
+
   public void testParserRejectOutOfRangeNumericValues() throws Exception {
     assertAccepts("optionalInt32", String.valueOf(Integer.MAX_VALUE));
     assertAccepts("optionalInt32", String.valueOf(Integer.MIN_VALUE));
     assertRejects("optionalInt32", String.valueOf(Integer.MAX_VALUE + 1L));
     assertRejects("optionalInt32", String.valueOf(Integer.MIN_VALUE - 1L));
-    
+
     assertAccepts("optionalUint32", String.valueOf(Integer.MAX_VALUE + 1L));
     assertRejects("optionalUint32", "123456789012345");
     assertRejects("optionalUint32", "-1");
-    
+
     BigInteger one = new BigInteger("1");
     BigInteger maxLong = new BigInteger(String.valueOf(Long.MAX_VALUE));
     BigInteger minLong = new BigInteger(String.valueOf(Long.MIN_VALUE));
@@ -351,7 +352,7 @@ public class JsonFormatTest extends TestCase {
     assertAccepts("optionalFloat", String.valueOf(-Float.MAX_VALUE));
     assertRejects("optionalFloat", String.valueOf(Double.MAX_VALUE));
     assertRejects("optionalFloat", String.valueOf(-Double.MAX_VALUE));
-    
+
     BigDecimal moreThanOne = new BigDecimal("1.000001");
     BigDecimal maxDouble = new BigDecimal(Double.MAX_VALUE);
     BigDecimal minDouble = new BigDecimal(-Double.MAX_VALUE);
@@ -360,7 +361,7 @@ public class JsonFormatTest extends TestCase {
     assertRejects("optionalDouble", maxDouble.multiply(moreThanOne).toString());
     assertRejects("optionalDouble", minDouble.multiply(moreThanOne).toString());
   }
-  
+
   public void testParserAcceptNull() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     mergeFromJson(
@@ -402,7 +403,7 @@ public class JsonFormatTest extends TestCase {
         + "}", builder);
     TestAllTypes message = builder.build();
     assertEquals(TestAllTypes.getDefaultInstance(), message);
-    
+
     // Repeated field elements cannot be null.
     try {
       builder = TestAllTypes.newBuilder();
@@ -414,7 +415,7 @@ public class JsonFormatTest extends TestCase {
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
     }
-    
+
     try {
       builder = TestAllTypes.newBuilder();
       mergeFromJson(
@@ -426,14 +427,14 @@ public class JsonFormatTest extends TestCase {
       // Exception expected.
     }
   }
-  
+
   public void testParserRejectDuplicatedFields() throws Exception {
     // TODO(xiaofeng): The parser we are currently using (GSON) will accept and keep the last
     // one if multiple entries have the same name. This is not the desired behavior but it can
     // only be fixed by using our own parser. Here we only test the cases where the names are
     // different but still referring to the same field.
-    
-    // Duplicated optional fields. 
+
+    // Duplicated optional fields.
     try {
       TestAllTypes.Builder builder = TestAllTypes.newBuilder();
       mergeFromJson(
@@ -445,7 +446,7 @@ public class JsonFormatTest extends TestCase {
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
     }
-    
+
     // Duplicated repeated fields.
     try {
       TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -458,7 +459,7 @@ public class JsonFormatTest extends TestCase {
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
     }
-    
+
     // Duplicated oneof fields.
     try {
       TestOneof.Builder builder = TestOneof.newBuilder();
@@ -472,7 +473,7 @@ public class JsonFormatTest extends TestCase {
       // Exception expected.
     }
   }
-  
+
   public void testMapFields() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     builder.getMutableInt32ToInt32Map().put(1, 10);
@@ -507,7 +508,7 @@ public class JsonFormatTest extends TestCase {
         8, NestedMessage.newBuilder().setValue(1234).build());
     builder.getMutableInt32ToEnumMap().put(9, NestedEnum.BAR);
     TestMap message = builder.build();
-    
+
     assertEquals(
         "{\n"
         + "  \"int32ToInt32Map\": {\n"
@@ -598,13 +599,13 @@ public class JsonFormatTest extends TestCase {
         + "  }\n"
         + "}", toJsonString(message));
     assertRoundTripEquals(message);
-    
+
     // Test multiple entries.
     builder = TestMap.newBuilder();
     builder.getMutableInt32ToInt32Map().put(1, 2);
     builder.getMutableInt32ToInt32Map().put(3, 4);
     message = builder.build();
-    
+
     assertEquals(
         "{\n"
         + "  \"int32ToInt32Map\": {\n"
@@ -614,7 +615,7 @@ public class JsonFormatTest extends TestCase {
         + "}", toJsonString(message));
     assertRoundTripEquals(message);
   }
-  
+
   public void testMapNullValueIsRejected() throws Exception {
     try {
       TestMap.Builder builder = TestMap.newBuilder();
@@ -627,7 +628,7 @@ public class JsonFormatTest extends TestCase {
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
     }
-    
+
     try {
       TestMap.Builder builder = TestMap.newBuilder();
       mergeFromJson(
@@ -640,7 +641,7 @@ public class JsonFormatTest extends TestCase {
       // Exception expected.
     }
   }
-  
+
   public void testParserAcceptNonQuotedObjectKey() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     mergeFromJson(
@@ -652,7 +653,7 @@ public class JsonFormatTest extends TestCase {
     assertEquals(2, message.getInt32ToInt32Map().get(1).intValue());
     assertEquals(3, message.getStringToInt32Map().get("hello").intValue());
   }
-  
+
   public void testWrappers() throws Exception {
     TestWrappers.Builder builder = TestWrappers.newBuilder();
     builder.getBoolValueBuilder().setValue(false);
@@ -665,7 +666,7 @@ public class JsonFormatTest extends TestCase {
     builder.getStringValueBuilder().setValue("");
     builder.getBytesValueBuilder().setValue(ByteString.EMPTY);
     TestWrappers message = builder.build();
-    
+
     assertEquals(
         "{\n"
         + "  \"int32Value\": 0,\n"
@@ -691,7 +692,7 @@ public class JsonFormatTest extends TestCase {
     builder.getStringValueBuilder().setValue("7");
     builder.getBytesValueBuilder().setValue(ByteString.copyFrom(new byte[]{8}));
     message = builder.build();
-    
+
     assertEquals(
         "{\n"
         + "  \"int32Value\": 1,\n"
@@ -706,43 +707,43 @@ public class JsonFormatTest extends TestCase {
         + "}", toJsonString(message));
     assertRoundTripEquals(message);
   }
-  
+
   public void testTimestamp() throws Exception {
     TestTimestamp message = TestTimestamp.newBuilder()
         .setTimestampValue(TimeUtil.parseTimestamp("1970-01-01T00:00:00Z"))
         .build();
-    
+
     assertEquals(
         "{\n"
         + "  \"timestampValue\": \"1970-01-01T00:00:00Z\"\n"
         + "}", toJsonString(message));
     assertRoundTripEquals(message);
   }
-  
+
   public void testDuration() throws Exception {
     TestDuration message = TestDuration.newBuilder()
         .setDurationValue(TimeUtil.parseDuration("12345s"))
         .build();
-    
+
     assertEquals(
         "{\n"
         + "  \"durationValue\": \"12345s\"\n"
         + "}", toJsonString(message));
     assertRoundTripEquals(message);
   }
-  
+
   public void testFieldMask() throws Exception {
     TestFieldMask message = TestFieldMask.newBuilder()
         .setFieldMaskValue(FieldMaskUtil.fromString("foo.bar,baz"))
         .build();
-    
+
     assertEquals(
         "{\n"
         + "  \"fieldMaskValue\": \"foo.bar,baz\"\n"
         + "}", toJsonString(message));
     assertRoundTripEquals(message);
   }
-  
+
   public void testStruct() throws Exception {
     // Build a struct with all possible values.
     TestStruct.Builder builder = TestStruct.newBuilder();
@@ -764,7 +765,7 @@ public class JsonFormatTest extends TestCase {
     structBuilder.getMutableFields().put(
         "list_value", Value.newBuilder().setListValue(listBuilder.build()).build());
     TestStruct message = builder.build();
-    
+
     assertEquals(
         "{\n"
         + "  \"structValue\": {\n"
@@ -778,7 +779,7 @@ public class JsonFormatTest extends TestCase {
         + "  }\n"
         + "}", toJsonString(message));
     assertRoundTripEquals(message);
-    
+
     builder = TestStruct.newBuilder();
     builder.setValue(Value.newBuilder().setNullValueValue(0).build());
     message = builder.build();
@@ -787,12 +788,23 @@ public class JsonFormatTest extends TestCase {
         + "  \"value\": null\n"
         + "}", toJsonString(message));
     assertRoundTripEquals(message);
+
+    builder = TestStruct.newBuilder();
+    listBuilder = builder.getListValueBuilder();
+    listBuilder.addValues(Value.newBuilder().setNumberValue(31831.125).build());
+    listBuilder.addValues(Value.newBuilder().setNullValueValue(0).build());
+    message = builder.build();
+    assertEquals(
+        "{\n"
+        + "  \"listValue\": [31831.125, null]\n"
+        + "}", toJsonString(message));
+    assertRoundTripEquals(message);
   }
-  
+
   public void testAnyFields() throws Exception {
     TestAllTypes content = TestAllTypes.newBuilder().setOptionalInt32(1234).build();
     TestAny message = TestAny.newBuilder().setAnyValue(Any.pack(content)).build();
-    
+
     // A TypeRegistry must be provided in order to convert Any types.
     try {
       toJsonString(message);
@@ -800,11 +812,11 @@ public class JsonFormatTest extends TestCase {
     } catch (IOException e) {
       // Expected.
     }
-    
+
     JsonFormat.TypeRegistry registry = JsonFormat.TypeRegistry.newBuilder()
         .add(TestAllTypes.getDescriptor()).build();
     JsonFormat.Printer printer = JsonFormat.printer().usingTypeRegistry(registry);
-    
+
     assertEquals(
         "{\n"
         + "  \"anyValue\": {\n"
@@ -813,8 +825,8 @@ public class JsonFormatTest extends TestCase {
         + "  }\n"
         + "}" , printer.print(message));
     assertRoundTripEquals(message, registry);
-    
-    
+
+
     // Well-known types have a special formatting when embedded in Any.
     //
     // 1. Any in Any.
@@ -828,7 +840,7 @@ public class JsonFormatTest extends TestCase {
         + "  }\n"
         + "}", printer.print(anyMessage));
     assertRoundTripEquals(anyMessage, registry);
-    
+
     // 2. Wrappers in Any.
     anyMessage = Any.pack(Int32Value.newBuilder().setValue(12345).build());
     assertEquals(
@@ -894,7 +906,7 @@ public class JsonFormatTest extends TestCase {
         + "  \"value\": \"AQI=\"\n"
         + "}", printer.print(anyMessage));
     assertRoundTripEquals(anyMessage, registry);
-    
+
     // 3. Timestamp in Any.
     anyMessage = Any.pack(TimeUtil.parseTimestamp("1969-12-31T23:59:59Z"));
     assertEquals(
@@ -903,7 +915,7 @@ public class JsonFormatTest extends TestCase {
         + "  \"value\": \"1969-12-31T23:59:59Z\"\n"
         + "}", printer.print(anyMessage));
     assertRoundTripEquals(anyMessage, registry);
-    
+
     // 4. Duration in Any
     anyMessage = Any.pack(TimeUtil.parseDuration("12345.10s"));
     assertEquals(
@@ -945,7 +957,7 @@ public class JsonFormatTest extends TestCase {
         + "}", printer.print(anyMessage));
     assertRoundTripEquals(anyMessage, registry);
   }
-  
+
   public void testParserMissingTypeUrl() throws Exception {
     try {
       Any.Builder builder = Any.newBuilder();
@@ -958,7 +970,7 @@ public class JsonFormatTest extends TestCase {
       // Expected.
     }
   }
-  
+
   public void testParserUnexpectedTypeUrl() throws Exception {
     try {
       TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -970,9 +982,9 @@ public class JsonFormatTest extends TestCase {
       fail("Exception is expected.");
     } catch (IOException e) {
       // Expected.
-    } 
+    }
   }
-  
+
   public void testParserRejectTrailingComma() throws Exception {
     try {
       TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -1000,13 +1012,13 @@ public class JsonFormatTest extends TestCase {
     //   // Expected.
     // }
   }
-  
+
   public void testParserRejectInvalidBase64() throws Exception {
     assertRejects("optionalBytes", "!@#$");
     // We use standard BASE64 with paddings.
     assertRejects("optionalBytes", "AQI");
   }
-  
+
   public void testParserRejectInvalidEnumValue() throws Exception {
     try {
       TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -1017,13 +1029,19 @@ public class JsonFormatTest extends TestCase {
       fail("Exception is expected.");
     } catch (InvalidProtocolBufferException e) {
       // Expected.
-    } 
+    }
   }
 
   public void testCustomJsonName() throws Exception {
     TestCustomJsonName message = TestCustomJsonName.newBuilder().setValue(12345).build();
     assertEquals("{\n" + "  \"@value\": 12345\n" + "}", JsonFormat.printer().print(message));
     assertRoundTripEquals(message);
+  }
+
+  public void testDefaultGsonDoesNotHtmlEscape() throws Exception {
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalString("=").build();
+    assertEquals(
+        "{\n" + "  \"optionalString\": \"=\"" + "\n}", JsonFormat.printer().print(message));
   }
 
   public void testIncludingDefaultValueFields() throws Exception {

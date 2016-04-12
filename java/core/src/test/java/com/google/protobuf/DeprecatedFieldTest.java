@@ -36,6 +36,7 @@ import junit.framework.TestCase;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
+
 /**
  * Test field deprecation
  * 

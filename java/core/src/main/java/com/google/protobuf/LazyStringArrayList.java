@@ -30,12 +30,12 @@
 
 package com.google.protobuf;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.RandomAccess;
 
 /**

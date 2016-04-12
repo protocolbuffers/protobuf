@@ -193,6 +193,8 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/BlockingRpcChannel.java              \
   java/core/src/main/java/com/google/protobuf/BlockingService.java                 \
   java/core/src/main/java/com/google/protobuf/BooleanArrayList.java                \
+  java/core/src/main/java/com/google/protobuf/ByteBufferWriter.java                \
+  java/core/src/main/java/com/google/protobuf/ByteOutput.java                      \
   java/core/src/main/java/com/google/protobuf/ByteString.java                      \
   java/core/src/main/java/com/google/protobuf/CodedInputStream.java                \
   java/core/src/main/java/com/google/protobuf/CodedOutputStream.java               \
@@ -243,6 +245,8 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/SmallSortedMap.java                  \
   java/core/src/main/java/com/google/protobuf/TextFormat.java                      \
   java/core/src/main/java/com/google/protobuf/TextFormatEscaper.java               \
+  java/core/src/main/java/com/google/protobuf/TextFormatParseInfoTree.java         \
+  java/core/src/main/java/com/google/protobuf/TextFormatParseLocation.java         \
   java/core/src/main/java/com/google/protobuf/UninitializedMessageException.java   \
   java/core/src/main/java/com/google/protobuf/UnknownFieldSet.java                 \
   java/core/src/main/java/com/google/protobuf/UnknownFieldSetLite.java             \
@@ -254,6 +258,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/AnyTest.java                         \
   java/core/src/test/java/com/google/protobuf/BooleanArrayListTest.java            \
   java/core/src/test/java/com/google/protobuf/BoundedByteStringTest.java           \
+  java/core/src/test/java/com/google/protobuf/ByteBufferWriterTest.java            \
   java/core/src/test/java/com/google/protobuf/ByteStringTest.java                  \
   java/core/src/test/java/com/google/protobuf/CheckUtf8Test.java                   \
   java/core/src/test/java/com/google/protobuf/CodedInputStreamTest.java            \
@@ -262,6 +267,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/DescriptorsTest.java                 \
   java/core/src/test/java/com/google/protobuf/DoubleArrayListTest.java             \
   java/core/src/test/java/com/google/protobuf/DynamicMessageTest.java              \
+  java/core/src/test/java/com/google/protobuf/EnumTest.java                        \
   java/core/src/test/java/com/google/protobuf/FieldPresenceTest.java               \
   java/core/src/test/java/com/google/protobuf/FloatArrayListTest.java              \
   java/core/src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java        \
@@ -294,6 +300,8 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/SmallSortedMapTest.java              \
   java/core/src/test/java/com/google/protobuf/TestBadIdentifiers.java              \
   java/core/src/test/java/com/google/protobuf/TestUtil.java                        \
+  java/core/src/test/java/com/google/protobuf/TextFormatParseInfoTreeTest.java     \
+  java/core/src/test/java/com/google/protobuf/TextFormatParseLocationTest.java     \
   java/core/src/test/java/com/google/protobuf/TextFormatTest.java                  \
   java/core/src/test/java/com/google/protobuf/UnknownEnumValueTest.java            \
   java/core/src/test/java/com/google/protobuf/UnknownFieldSetLiteTest.java         \

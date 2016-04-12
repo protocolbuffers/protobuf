@@ -39,8 +39,8 @@ goog.provide('jspb.Message');
 
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.crypt.base64');
 goog.require('goog.json');
-goog.require('goog.object');
 
 // Not needed in compilation units that have no protos with xids.
 goog.forwardDeclare('xid.String');
@@ -120,6 +120,14 @@ jspb.ExtensionFieldInfo = function(fieldNumber, fieldName, ctor, toObjectFn,
 
 
 /**
+ * @return {boolean} Does this field represent a sub Message?
+ */
+jspb.ExtensionFieldInfo.prototype.isMessageType = function() {
+  return !!this.ctor;
+};
+
+
+/**
  * Base class for all JsPb messages.
  * @constructor
  * @struct
@@ -166,6 +174,14 @@ goog.define('jspb.Message.MINIMIZE_MEMORY_ALLOCATIONS', COMPILED);
 
 
 /**
+ * Does this browser support Uint8Aray typed arrays?
+ * @type {boolean}
+ * @private
+ */
+jspb.Message.SUPPORTS_UINT8ARRAY_ = (typeof Uint8Array == 'function');
+
+
+/**
  * The internal data array.
  * @type {!Array}
  * @protected
@@ -208,6 +224,14 @@ jspb.Message.prototype.pivot_;
  * @private
  */
 jspb.Message.prototype.messageId_;
+
+
+/**
+ * Repeated float or double fields which have been converted to include only
+ * numbers and not strings holding "NaN", "Infinity" and "-Infinity".
+ * @private {!Object<number,boolean>|undefined}
+ */
+jspb.Message.prototype.convertedFloatingPointFields_;
 
 
 /**
@@ -284,6 +308,8 @@ jspb.Message.initialize = function(
   msg.arrayIndexOffset_ = messageId === 0 ? -1 : 0;
   msg.array = data;
   jspb.Message.materializeExtensionObject_(msg, suggestedPivot);
+  msg.convertedFloatingPointFields_ = {};
+
   if (repeatedFields) {
     for (var i = 0; i < repeatedFields.length; i++) {
       var fieldNumber = repeatedFields[i];
@@ -419,8 +445,9 @@ jspb.Message.toObjectList = function(field, toObjectFn, opt_includeInstance) {
  * @param {!jspb.Message} proto The proto whose extensions to convert.
  * @param {!Object} obj The Soy object to add converted extension data to.
  * @param {!Object} extensions The proto class' registered extensions.
- * @param {function(jspb.ExtensionFieldInfo) : *} getExtensionFn The proto
- *     class' getExtension function. Passed for effective dead code removal.
+ * @param {function(this:?, jspb.ExtensionFieldInfo) : *} getExtensionFn
+ *     The proto class' getExtension function. Passed for effective dead code
+ *     removal.
  * @param {boolean=} opt_includeInstance Whether to include the JSPB instance
  *     for transitional soy proto support: http://goto/soy-param-migration
  */
@@ -472,7 +499,7 @@ jspb.Message.serializeBinaryExtensions = function(proto, writer, extensions,
     }
     var value = getExtensionFn.call(proto, fieldInfo);
     if (value) {
-      if (fieldInfo.ctor) {  // is this a message type?
+      if (fieldInfo.isMessageType()) {
         // If the message type of the extension was generated without binary
         // support, there may not be a binary message serializer function, and
         // we can't know when we codegen the extending message that the extended
@@ -517,8 +544,7 @@ jspb.Message.readBinaryExtension = function(msg, reader, extensions,
   }
 
   var value;
-  if (fieldInfo.ctor) {
-    // Message type.
+  if (fieldInfo.isMessageType()) {
     value = new fieldInfo.ctor();
     fieldInfo.binaryReaderFn.call(
         reader, value, fieldInfo.binaryMessageDeserializeFn);
@@ -562,6 +588,130 @@ jspb.Message.getField = function(msg, fieldNumber) {
       return msg.extensionObject_[fieldNumber] = [];
     }
     return val;
+  }
+};
+
+
+/**
+ * Gets the value of an optional float or double field.
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @return {?number|undefined} The field's value.
+ * @protected
+ */
+jspb.Message.getOptionalFloatingPointField = function(msg, fieldNumber) {
+  var value = jspb.Message.getField(msg, fieldNumber);
+  // Converts "NaN", "Infinity" and "-Infinity" to their corresponding numbers.
+  return value == null ? value : +value;
+};
+
+
+/**
+ * Gets the value of a repeated float or double field.
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @return {!Array<number>} The field's value.
+ * @protected
+ */
+jspb.Message.getRepeatedFloatingPointField = function(msg, fieldNumber) {
+  var values = jspb.Message.getField(msg, fieldNumber);
+  if (!msg.convertedFloatingPointFields_) {
+    msg.convertedFloatingPointFields_ = {};
+  }
+  if (!msg.convertedFloatingPointFields_[fieldNumber]) {
+    for (var i = 0; i < values.length; i++) {
+      // Converts "NaN", "Infinity" and "-Infinity" to their corresponding
+      // numbers.
+      values[i] = +values[i];
+    }
+    msg.convertedFloatingPointFields_[fieldNumber] = true;
+  }
+  return /** @type {!Array<number>} */ (values);
+};
+
+
+/**
+ * Coerce a 'bytes' field to a base 64 string.
+ * @param {string|Uint8Array|null} value
+ * @return {?string} The field's coerced value.
+ */
+jspb.Message.bytesAsB64 = function(value) {
+  if (value == null || goog.isString(value)) {
+    return value;
+  }
+  if (jspb.Message.SUPPORTS_UINT8ARRAY_ && value instanceof Uint8Array) {
+    return goog.crypt.base64.encodeByteArray(value);
+  }
+  goog.asserts.fail('Cannot coerce to b64 string: ' + goog.typeOf(value));
+  return null;
+};
+
+
+/**
+ * Coerce a 'bytes' field to a Uint8Array byte buffer.
+ * Note that Uint8Array is not supported on IE versions before 10 nor on Opera
+ * Mini. @see http://caniuse.com/Uint8Array
+ * @param {string|Uint8Array|null} value
+ * @return {?Uint8Array} The field's coerced value.
+ */
+jspb.Message.bytesAsU8 = function(value) {
+  if (value == null || value instanceof Uint8Array) {
+    return value;
+  }
+  if (goog.isString(value)) {
+    return goog.crypt.base64.decodeStringToUint8Array(value);
+  }
+  goog.asserts.fail('Cannot coerce to Uint8Array: ' + goog.typeOf(value));
+  return null;
+};
+
+
+/**
+ * Coerce a repeated 'bytes' field to an array of base 64 strings.
+ * Note: the returned array should be treated as immutable.
+ * @param {!Array<string>|!Array<!Uint8Array>} value
+ * @return {!Array<string?>} The field's coerced value.
+ */
+jspb.Message.bytesListAsB64 = function(value) {
+  jspb.Message.assertConsistentTypes_(value);
+  if (!value.length || goog.isString(value[0])) {
+    return /** @type {!Array<string>} */ (value);
+  }
+  return goog.array.map(value, jspb.Message.bytesAsB64);
+};
+
+
+/**
+ * Coerce a repeated 'bytes' field to an array of Uint8Array byte buffers.
+ * Note: the returned array should be treated as immutable.
+ * Note that Uint8Array is not supported on IE versions before 10 nor on Opera
+ * Mini. @see http://caniuse.com/Uint8Array
+ * @param {!Array<string>|!Array<!Uint8Array>} value
+ * @return {!Array<Uint8Array?>} The field's coerced value.
+ */
+jspb.Message.bytesListAsU8 = function(value) {
+  jspb.Message.assertConsistentTypes_(value);
+  if (!value.length || value[0] instanceof Uint8Array) {
+    return /** @type {!Array<!Uint8Array>} */ (value);
+  }
+  return goog.array.map(value, jspb.Message.bytesAsU8);
+};
+
+
+/**
+ * Asserts that all elements of an array are of the same type.
+ * @param {Array?} array The array to test.
+ * @private
+ */
+jspb.Message.assertConsistentTypes_ = function(array) {
+  if (goog.DEBUG && array && array.length > 1) {
+    var expected = goog.typeOf(array[0]);
+    goog.array.forEach(array, function(e) {
+      if (goog.typeOf(e) != expected) {
+        goog.asserts.fail('Inconsistent type in JSPB repeated field array. ' +
+            'Got ' + goog.typeOf(e) + ' expected ' + expected);
+      }
+    });
   }
 };
 
@@ -841,7 +991,7 @@ jspb.Message.prototype.getExtension = function(fieldInfo) {
   }
   var fieldNumber = fieldInfo.fieldIndex;
   if (fieldInfo.isRepeated) {
-    if (fieldInfo.ctor) {
+    if (fieldInfo.isMessageType()) {
       if (!this.wrappers_[fieldNumber]) {
         this.wrappers_[fieldNumber] =
             goog.array.map(this.extensionObject_[fieldNumber] || [],
@@ -854,7 +1004,7 @@ jspb.Message.prototype.getExtension = function(fieldInfo) {
       return this.extensionObject_[fieldNumber];
     }
   } else {
-    if (fieldInfo.ctor) {
+    if (fieldInfo.isMessageType()) {
       if (!this.wrappers_[fieldNumber] && this.extensionObject_[fieldNumber]) {
         this.wrappers_[fieldNumber] = new fieldInfo.ctor(
             /** @type {Array|undefined} */ (
@@ -871,7 +1021,8 @@ jspb.Message.prototype.getExtension = function(fieldInfo) {
 /**
  * Sets the value of the extension field in the extended object.
  * @param {jspb.ExtensionFieldInfo} fieldInfo Specifies the field to set.
- * @param {jspb.Message|string|number|boolean|Array} value The value to set.
+ * @param {jspb.Message|string|Uint8Array|number|boolean|Array?} value The value
+ *     to set.
  */
 jspb.Message.prototype.setExtension = function(fieldInfo, value) {
   if (!this.wrappers_) {
@@ -881,7 +1032,7 @@ jspb.Message.prototype.setExtension = function(fieldInfo, value) {
   var fieldNumber = fieldInfo.fieldIndex;
   if (fieldInfo.isRepeated) {
     value = value || [];
-    if (fieldInfo.ctor) {
+    if (fieldInfo.isMessageType()) {
       this.wrappers_[fieldNumber] = value;
       this.extensionObject_[fieldNumber] = goog.array.map(
           /** @type {Array<jspb.Message>} */ (value), function(msg) {
@@ -891,7 +1042,7 @@ jspb.Message.prototype.setExtension = function(fieldInfo, value) {
       this.extensionObject_[fieldNumber] = value;
     }
   } else {
-    if (fieldInfo.ctor) {
+    if (fieldInfo.isMessageType()) {
       this.wrappers_[fieldNumber] = value;
       this.extensionObject_[fieldNumber] = value ? value.toArray() : value;
     } else {
@@ -958,49 +1109,110 @@ jspb.Message.equals = function(m1, m2) {
 
 
 /**
+ * Compares two message extension fields recursively.
+ * @param {!Object} extension1 The first field.
+ * @param {!Object} extension2 The second field.
+ * @return {boolean} true if the extensions are null/undefined, or otherwise
+ *     equal.
+ */
+jspb.Message.compareExtensions = function(extension1, extension2) {
+  extension1 = extension1 || {};
+  extension2 = extension2 || {};
+
+  var keys = {};
+  for (var name in extension1) {
+    keys[name] = 0;
+  }
+  for (var name in extension2) {
+    keys[name] = 0;
+  }
+  for (name in keys) {
+    if (!jspb.Message.compareFields(extension1[name], extension2[name])) {
+      return false;
+    }
+  }
+  return true;
+};
+
+
+/**
  * Compares two message fields recursively.
  * @param {*} field1 The first field.
  * @param {*} field2 The second field.
  * @return {boolean} true if the fields are null/undefined, or otherwise equal.
  */
 jspb.Message.compareFields = function(field1, field2) {
-  if (goog.isObject(field1) && goog.isObject(field2)) {
-    var keys = {}, name, extensionObject1, extensionObject2;
-    for (name in field1) {
-      field1.hasOwnProperty(name) && (keys[name] = 0);
+  // If the fields are trivially equal, they're equal.
+  if (field1 == field2) return true;
+
+  // If the fields aren't trivially equal and one of them isn't an object,
+  // they can't possibly be equal.
+  if (!goog.isObject(field1) || !goog.isObject(field2)) {
+    return false;
+  }
+
+  // We have two objects. If they're different types, they're not equal.
+  field1 = /** @type {!Object} */(field1);
+  field2 = /** @type {!Object} */(field2);
+  if (field1.constructor != field2.constructor) return false;
+
+  // If both are Uint8Arrays, compare them element-by-element.
+  if (jspb.Message.SUPPORTS_UINT8ARRAY_ && field1.constructor === Uint8Array) {
+    var bytes1 = /** @type {!Uint8Array} */(field1);
+    var bytes2 = /** @type {!Uint8Array} */(field2);
+    if (bytes1.length != bytes2.length) return false;
+    for (var i = 0; i < bytes1.length; i++) {
+      if (bytes1[i] != bytes2[i]) return false;
     }
-    for (name in field2) {
-      field2.hasOwnProperty(name) && (keys[name] = 0);
-    }
-    for (name in keys) {
-      var val1 = field1[name], val2 = field2[name];
-      if (goog.isObject(val1) && !goog.isArray(val1)) {
-        if (extensionObject1 !== undefined) {
-          throw new Error('invalid jspb state');
-        }
-        extensionObject1 = goog.object.isEmpty(val1) ? undefined : val1;
+    return true;
+  }
+
+  // If they're both Arrays, compare them element by element except for the
+  // optional extension objects at the end, which we compare separately.
+  if (field1.constructor === Array) {
+    var extension1 = undefined;
+    var extension2 = undefined;
+
+    var length = Math.max(field1.length, field2.length);
+    for (var i = 0; i < length; i++) {
+      var val1 = field1[i];
+      var val2 = field2[i];
+
+      if (val1 && (val1.constructor == Object)) {
+        goog.asserts.assert(extension1 === undefined);
+        goog.asserts.assert(i === field1.length - 1);
+        extension1 = val1;
         val1 = undefined;
       }
-      if (goog.isObject(val2) && !goog.isArray(val2)) {
-        if (extensionObject2 !== undefined) {
-          throw new Error('invalid jspb state');
-        }
-        extensionObject2 = goog.object.isEmpty(val2) ? undefined : val2;
+
+      if (val2 && (val2.constructor == Object)) {
+        goog.asserts.assert(extension2 === undefined);
+        goog.asserts.assert(i === field2.length - 1);
+        extension2 = val2;
         val2 = undefined;
       }
+
       if (!jspb.Message.compareFields(val1, val2)) {
         return false;
       }
     }
-    if (extensionObject1 || extensionObject2) {
-      return jspb.Message.compareFields(extensionObject1, extensionObject2);
+
+    if (extension1 || extension2) {
+      extension1 = extension1 || {};
+      extension2 = extension2 || {};
+      return jspb.Message.compareExtensions(extension1, extension2);
     }
+
     return true;
   }
-  // Primitive fields, null and undefined compare as equal.
-  // This also forces booleans and 0/1 to compare as equal to ensure
-  // compatibility with the jspb serializer.
-  return field1 == field2;
+
+  // If they're both plain Objects (i.e. extensions), compare them as
+  // extensions.
+  if (field1.constructor === Object) {
+    return jspb.Message.compareExtensions(field1, field2);
+  }
+
+  throw new Error('Invalid type in JSPB array');
 };
 
 
