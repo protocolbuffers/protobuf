@@ -7,6 +7,74 @@ we recommend using protoc's Ruby generation support with .proto files. The
 build process in this directory only installs the extension; you need to
 install protoc as well to have Ruby code generation functionality.
 
+JSON Migration Note
+-------------------
+
+Users who were using the protobuf Gem `<= 3.0.0.alpha.5.0.4` will notice that
+the JSON format has changed slightly and is incompatible with previous
+versions.
+
+The change concerns field names.  Prior to the change, field names from the
+.proto file were used verbatim.  Take this `.proto` file:
+
+```protobuf
+syntax = "proto3";
+
+message M {
+  int32 my_int_field = 1;
+  bool my_bool_field = 2;
+}
+```
+
+Serializing to JSON used to give you something like this:
+
+```json
+{"my_int_field":1, "my_bool_field":true}
+```
+
+However this format was not compatible with the proto3 JSON spec.  To be
+compliant with proto3 JSON, we need to camel-case the names:
+
+```json
+{"myIntField":1, "myBoolField":true}
+```
+
+Starting with `3.0.0.alpha.5.0.5`, this bug was fixed and we now produce the
+correct camelCased names.  However this may cause compatibility problems for
+JSON users who can't upgrade everything at the same time, or who store
+serialized JSON payloads.  To mitigate this and allow time for migration, the
+library currently recognizes two environment variables:
+
+  - `UPB_JSON_ACCEPT_LEGACY_FIELD_NAMES`: set this variable to instruct the
+    JSON parser that the old names should be accepted in addition to the new,
+    compliant ones.  This will make the parser compatible with both formats.
+  - `UPB_JSON_WRITE_LEGACY_FIELD_NAMES`: set this variable to instruct the
+    JSON serializer to encode the old, non-compliant names.
+
+These options will be removed in a future version of Ruby protobuf.  All
+users shoud migrate to the standard names.
+
+If users have existing payloads in the old format and cannot easily migrate,
+the best solution would be to specify the old names explicitly in the
+`.proto` file using the `json_name` option.  For example, for the .proto
+file above, the user could specify:
+
+```protobuf
+syntax = "proto3";
+
+message M {
+  int32 my_int_field = 1 [json_name="my_int_field"];
+  bool my_bool_field = 2 [json_name="my_bool_field"];
+}
+```
+
+This will make all compliant proto3 JSON parsers/serializers use the
+non-camel-cased names forever.  Note that protobuf Ruby does *not yet*
+support this option properly, but support is forthcoming.  It will
+certainly be supported before the environment variables above are
+removed.
+
+
 Installation from Gem
 ---------------------
 
@@ -32,23 +100,25 @@ documentation may be found in the RubyDoc comments (`call-seq` tags) in the
 source, and we plan to release separate, more detailed, documentation at a
 later date.
 
-    require 'google/protobuf'
+```ruby
+require 'google/protobuf'
 
-    # generated from my_proto_types.proto with protoc:
-    #  $ protoc --ruby_out=. my_proto_types.proto
-    require 'my_proto_types'
+# generated from my_proto_types.proto with protoc:
+#  $ protoc --ruby_out=. my_proto_types.proto
+require 'my_proto_types'
 
-    mymessage = MyTestMessage.new(:field1 => 42, :field2 => ["a", "b", "c"])
-    mymessage.field1 = 43
-    mymessage.field2.push("d")
-    mymessage.field3 = SubMessage.new(:foo => 100)
+mymessage = MyTestMessage.new(:field1 => 42, :field2 => ["a", "b", "c"])
+mymessage.field1 = 43
+mymessage.field2.push("d")
+mymessage.field3 = SubMessage.new(:foo => 100)
 
-    encoded_data = MyTestMessage.encode(mymessage)
-    decoded = MyTestMessage.decode(encoded_data)
-    assert decoded == mymessage
+encoded_data = MyTestMessage.encode(mymessage)
+decoded = MyTestMessage.decode(encoded_data)
+assert decoded == mymessage
 
-    puts "JSON:"
-    puts MyTestMessage.encode_json(mymessage)
+puts "JSON:"
+puts MyTestMessage.encode_json(mymessage)
+```
 
 Installation from Source (Building Gem)
 ---------------------------------------
