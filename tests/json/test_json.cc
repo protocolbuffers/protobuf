@@ -36,6 +36,17 @@ static TestCase kTestRoundtripMessages[] = {
          "{\"foo\":2}]}"),
     EXPECT_SAME
   },
+  // We must also recognize raw proto names.
+  {
+    TEST("{\"optional_int32\":-42,\"optional_string\":\"Test\\u0001Message\","
+         "\"optional_msg\":{\"foo\":42},"
+         "\"optional_bool\":true,\"repeated_msg\":[{\"foo\":1},"
+         "{\"foo\":2}]}"),
+    EXPECT("{\"optionalInt32\":-42,\"optionalString\":\"Test\\u0001Message\","
+           "\"optionalMsg\":{\"foo\":42},"
+           "\"optionalBool\":true,\"repeatedMsg\":[{\"foo\":1},"
+           "{\"foo\":2}]}")
+  },
   // Test special escapes in strings.
   {
     TEST("{\"repeatedString\":[\"\\b\",\"\\r\",\"\\n\",\"\\f\",\"\\t\","
@@ -107,6 +118,18 @@ static TestCase kTestRoundtripMessages[] = {
   },
   {
     TEST("{\"mapStringMsg\":{\"asdf\":{\"foo\":42},\"jkl;\":{\"foo\":84}}}"),
+    EXPECT_SAME
+  },
+  TEST_SENTINEL
+};
+
+static TestCase kTestRoundtripMessagesPreserve[] = {
+  // Test most fields here.
+  {
+    TEST("{\"optional_int32\":-42,\"optional_string\":\"Test\\u0001Message\","
+         "\"optional_msg\":{\"foo\":42},"
+         "\"optional_bool\":true,\"repeated_msg\":[{\"foo\":1},"
+         "{\"foo\":2}]}"),
     EXPECT_SAME
   },
   TEST_SENTINEL
@@ -323,11 +346,27 @@ void test_json_roundtrip() {
   upb::reffed_ptr<upb::SymbolTable> symtab(upb::SymbolTable::New());
   const upb::MessageDef* md = BuildTestMessage(symtab.get());
   upb::reffed_ptr<const upb::Handlers> serialize_handlers(
-      upb::json::Printer::NewHandlers(md));
+      upb::json::Printer::NewHandlers(md, false));
   upb::reffed_ptr<const upb::json::ParserMethod> parser_method(
       upb::json::ParserMethod::New(md));
 
   for (const TestCase* test_case = kTestRoundtripMessages;
+       test_case->input != NULL; test_case++) {
+    const char *expected =
+        (test_case->expected == EXPECT_SAME) ?
+        test_case->input :
+        test_case->expected;
+
+    for (size_t i = 0; i < strlen(test_case->input); i++) {
+      test_json_roundtrip_message(test_case->input, expected,
+                                  serialize_handlers.get(), parser_method.get(),
+                                  i);
+    }
+  }
+
+  serialize_handlers = upb::json::Printer::NewHandlers(md, true);
+
+  for (const TestCase* test_case = kTestRoundtripMessagesPreserve;
        test_case->input != NULL; test_case++) {
     const char *expected =
         (test_case->expected == EXPECT_SAME) ?

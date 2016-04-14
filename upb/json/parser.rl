@@ -1269,7 +1269,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   %% write exec;
 
   if (p != pe) {
-    upb_status_seterrf(&parser->status, "Parse error at %s\n", p);
+    upb_status_seterrf(&parser->status, "Parse error at '%.*s'\n", p, pe - p);
     upb_env_reporterror(parser->env, &parser->status);
   } else {
     capture_suspend(parser, &p);
@@ -1363,6 +1363,7 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
       upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
 
+    /* Add an entry for the JSON name. */
     size_t field_len = upb_fielddef_getjsonname(f, buf, len);
     if (field_len > len) {
       size_t len2;
@@ -1373,10 +1374,10 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
     }
     upb_strtable_insert(t, buf, upb_value_constptr(f));
 
-    if (getenv("UPB_JSON_ACCEPT_LEGACY_FIELD_NAMES")) {
-      /* Temporary code to help people migrate if they were depending on the
-       * old, non-proto3-json-compliant field names.  In this case we
-       * recognize both old names and new names. */
+    if (strcmp(buf, upb_fielddef_name(f)) != 0) {
+      /* Since the JSON name is different from the regular field name, add an
+       * entry for the raw name (compliant proto3 JSON parsers must accept
+       * both). */
       upb_strtable_insert(t, upb_fielddef_name(f), upb_value_constptr(f));
     }
 
