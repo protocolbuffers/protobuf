@@ -686,6 +686,33 @@ int main(int argc, char* argv[]) {
     EXPECT_TRUE(map_message.IsInitialized());
   }
 
+  {
+      // Check that adding more values to enum does not corrupt message
+      // when passed through an old client.
+      protobuf_unittest::V2MessageLite v2_message;
+      v2_message.set_int_field(800);
+      // Set enum field to the value not understood by the old client.
+      v2_message.set_enum_field(protobuf_unittest::V2_SECOND);
+      string v2_bytes = v2_message.SerializeAsString();
+
+      protobuf_unittest::V1MessageLite v1_message;
+      v1_message.ParseFromString(v2_bytes);
+      EXPECT_TRUE(v1_message.IsInitialized());
+      EXPECT_EQ(v1_message.int_field(), v2_message.int_field());
+      // V1 client does not understand V2_SECOND value, so it discards it and
+      // uses default value instead.
+      EXPECT_EQ(v1_message.enum_field(), protobuf_unittest::V1_FIRST);
+
+      // However, when re-serialized, it should preserve enum value.
+      string v1_bytes = v1_message.SerializeAsString();
+
+      protobuf_unittest::V2MessageLite same_v2_message;
+      same_v2_message.ParseFromString(v1_bytes);
+
+      EXPECT_EQ(v2_message.int_field(), same_v2_message.int_field());
+      EXPECT_EQ(v2_message.enum_field(), same_v2_message.enum_field());
+  }
+
   std::cout << "PASS" << std::endl;
   return 0;
 }
