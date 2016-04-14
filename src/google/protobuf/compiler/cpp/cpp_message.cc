@@ -3080,7 +3080,10 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
         } else {
           const FieldDescriptor* next_field = ordered_fields[i + 1];
           printer->Print(
-            "if (input->ExpectTag($next_tag$)) goto parse_$next_name$;\n",
+            "if (input->ExpectTag($next_tag$)) {\n"
+            "    tag = $next_tag$;\n"
+            "    goto parse_$next_name$;\n"
+            "}\n",
             "next_tag", SimpleItoa(WireFormat::MakeTag(next_field)),
             "next_name", next_field->name());
           need_label = true;
