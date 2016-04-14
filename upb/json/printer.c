@@ -47,12 +47,19 @@ void freestrpc(void *ptr) {
 strpc *newstrpc(upb_handlers *h, const upb_fielddef *f) {
   /* TODO(haberman): handle malloc failure. */
   strpc *ret = malloc(sizeof(*ret));
-  size_t len;
-  ret->len = upb_fielddef_getjsonname(f, NULL, 0);
-  ret->ptr = malloc(ret->len);
-  len = upb_fielddef_getjsonname(f, ret->ptr, ret->len);
-  UPB_ASSERT_VAR(len, len == ret->len);
-  ret->len--;  /* NULL */
+  if (getenv("UPB_JSON_WRITE_LEGACY_FIELD_NAMES")) {
+    /* Temporary code to help people migrate if they were depending on the
+     * old, non-proto3-json-compliant field names. */
+    ret->ptr = upb_strdup(upb_fielddef_name(f));
+    ret->len = strlen(ret->ptr);
+  } else {
+    size_t len;
+    ret->len = upb_fielddef_getjsonname(f, NULL, 0);
+    ret->ptr = malloc(ret->len);
+    len = upb_fielddef_getjsonname(f, ret->ptr, ret->len);
+    UPB_ASSERT_VAR(len, len == ret->len);
+    ret->len--;  /* NULL */
+  }
 
   upb_handlers_addcleanup(h, ret, freestrpc);
   return ret;
