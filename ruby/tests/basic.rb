@@ -1161,7 +1161,12 @@ module BasicTest
       return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
       expected = '{"mapStringInt32":{"a":1},"mapStringMsg":{}}'
+      expected_preserve = '{"map_string_int32":{"a":1},"map_string_msg":{}}'
       assert MapMessage.encode_json(m) == expected
+
+      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true)
+      assert json == expected_preserve
+
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
       assert m == m2
     end

@@ -255,6 +255,10 @@ void Descriptor_free(void* _self) {
     upb_handlers_unref(self->json_serialize_handlers,
                        &self->json_serialize_handlers);
   }
+  if (self->json_serialize_handlers_preserve) {
+    upb_handlers_unref(self->json_serialize_handlers_preserve,
+                       &self->json_serialize_handlers_preserve);
+  }
   xfree(self);
 }
 
@@ -278,6 +282,7 @@ VALUE Descriptor_alloc(VALUE klass) {
   self->json_fill_method = NULL;
   self->pb_serialize_handlers = NULL;
   self->json_serialize_handlers = NULL;
+  self->json_serialize_handlers_preserve = NULL;
   self->typeclass_references = rb_ary_new();
   return ret;
 }
