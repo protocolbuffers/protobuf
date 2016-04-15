@@ -1269,7 +1269,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   %% write exec;
 
   if (p != pe) {
-    upb_status_seterrf(&parser->status, "Parse error at '%.*s'\n", p, pe - p);
+    upb_status_seterrf(&parser->status, "Parse error at '%.*s'\n", pe - p, p);
     upb_env_reporterror(parser->env, &parser->status);
   } else {
     capture_suspend(parser, &p);
