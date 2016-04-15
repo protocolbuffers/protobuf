@@ -8370,8 +8370,12 @@ class upb::json::Printer {
   /* The input to the printer. */
   Sink* input();
 
-  /* Returns handlers for printing according to the specified schema. */
-  static reffed_ptr<const Handlers> NewHandlers(const upb::MessageDef* md);
+  /* Returns handlers for printing according to the specified schema.
+   * If preserve_proto_fieldnames is true, the output JSON will use the
+   * original .proto field names (ie. {"my_field":3}) instead of using
+   * camelCased names, which is the default: (eg. {"myField":3}). */
+  static reffed_ptr<const Handlers> NewHandlers(const upb::MessageDef* md,
+                                                bool preserve_proto_fieldnames);
 
   static const size_t kSize = UPB_JSON_PRINTER_SIZE;
 
@@ -8388,6 +8392,7 @@ upb_json_printer *upb_json_printer_create(upb_env *e, const upb_handlers *h,
                                           upb_bytessink *output);
 upb_sink *upb_json_printer_input(upb_json_printer *p);
 const upb_handlers *upb_json_printer_newhandlers(const upb_msgdef *md,
+                                                 bool preserve_fieldnames,
                                                  const void *owner);
 
 UPB_END_EXTERN_C
@@ -8402,8 +8407,9 @@ inline Printer* Printer::Create(Environment* env, const upb::Handlers* handlers,
 }
 inline Sink* Printer::input() { return upb_json_printer_input(this); }
 inline reffed_ptr<const Handlers> Printer::NewHandlers(
-    const upb::MessageDef *md) {
-  const Handlers* h = upb_json_printer_newhandlers(md, &h);
+    const upb::MessageDef *md, bool preserve_proto_fieldnames) {
+  const Handlers* h = upb_json_printer_newhandlers(
+      md, preserve_proto_fieldnames, &h);
   return reffed_ptr<const Handlers>(h, &h);
 }
 }  /* namespace json */

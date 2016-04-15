@@ -11624,7 +11624,7 @@ _again:
 #line 1270 "upb/json/parser.rl"
 
   if (p != pe) {
-    upb_status_seterrf(&parser->status, "Parse error at %s\n", p);
+    upb_status_seterrf(&parser->status, "Parse error at '%.*s'\n", p, pe - p);
     upb_env_reporterror(parser->env, &parser->status);
   } else {
     capture_suspend(parser, &p);
@@ -11725,6 +11725,7 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
       upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
 
+    /* Add an entry for the JSON name. */
     size_t field_len = upb_fielddef_getjsonname(f, buf, len);
     if (field_len > len) {
       size_t len2;
@@ -11735,10 +11736,10 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
     }
     upb_strtable_insert(t, buf, upb_value_constptr(f));
 
-    if (getenv("UPB_JSON_ACCEPT_LEGACY_FIELD_NAMES")) {
-      /* Temporary code to help people migrate if they were depending on the
-       * old, non-proto3-json-compliant field names.  In this case we
-       * recognize both old names and new names. */
+    if (strcmp(buf, upb_fielddef_name(f)) != 0) {
+      /* Since the JSON name is different from the regular field name, add an
+       * entry for the raw name (compliant proto3 JSON parsers must accept
+       * both). */
       upb_strtable_insert(t, upb_fielddef_name(f), upb_value_constptr(f));
     }
 
@@ -11853,12 +11854,11 @@ void freestrpc(void *ptr) {
 }
 
 /* Convert fielddef name to JSON name and return as a string piece. */
-strpc *newstrpc(upb_handlers *h, const upb_fielddef *f) {
+strpc *newstrpc(upb_handlers *h, const upb_fielddef *f,
+                bool preserve_fieldnames) {
   /* TODO(haberman): handle malloc failure. */
   strpc *ret = malloc(sizeof(*ret));
-  if (getenv("UPB_JSON_WRITE_LEGACY_FIELD_NAMES")) {
-    /* Temporary code to help people migrate if they were depending on the
-     * old, non-proto3-json-compliant field names. */
+  if (preserve_fieldnames) {
     ret->ptr = upb_strdup(upb_fielddef_name(f));
     ret->len = strlen(ret->ptr);
   } else {
@@ -12374,10 +12374,11 @@ static size_t mapkey_bytes(void *closure, const void *handler_data,
 
 static void set_enum_hd(upb_handlers *h,
                         const upb_fielddef *f,
+                        bool preserve_fieldnames,
                         upb_handlerattr *attr) {
   EnumHandlerData *hd = malloc(sizeof(EnumHandlerData));
   hd->enumdef = (const upb_enumdef *)upb_fielddef_subdef(f);
-  hd->keyname = newstrpc(h, f);
+  hd->keyname = newstrpc(h, f, preserve_fieldnames);
   upb_handlers_addcleanup(h, hd, free);
   upb_handlerattr_sethandlerdata(attr, hd);
 }
@@ -12394,7 +12395,8 @@ static void set_enum_hd(upb_handlers *h,
  * our sources that emit mapentry messages do so canonically (with one key
  * field, and then one value field), so this is not a pressing concern at the
  * moment. */
-void printer_sethandlers_mapentry(const void *closure, upb_handlers *h) {
+void printer_sethandlers_mapentry(const void *closure, bool preserve_fieldnames,
+                                  upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
 
   /* A mapentry message is printed simply as '"key": value'. Rather than
@@ -12468,7 +12470,7 @@ void printer_sethandlers_mapentry(const void *closure, upb_handlers *h) {
       break;
     case UPB_TYPE_ENUM: {
       upb_handlerattr enum_attr = UPB_HANDLERATTR_INITIALIZER;
-      set_enum_hd(h, value_field, &enum_attr);
+      set_enum_hd(h, value_field, preserve_fieldnames, &enum_attr);
       upb_handlers_setint32(h, value_field, mapvalue_enum, &enum_attr);
       upb_handlerattr_uninit(&enum_attr);
       break;
@@ -12487,13 +12489,13 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
   bool is_mapentry = upb_msgdef_mapentry(md);
   upb_handlerattr empty_attr = UPB_HANDLERATTR_INITIALIZER;
   upb_msg_field_iter i;
-
-  UPB_UNUSED(closure);
+  const bool *preserve_fieldnames_ptr = closure;
+  const bool preserve_fieldnames = *preserve_fieldnames_ptr;
 
   if (is_mapentry) {
     /* mapentry messages are sufficiently different that we handle them
      * separately. */
-    printer_sethandlers_mapentry(closure, h);
+    printer_sethandlers_mapentry(closure, preserve_fieldnames, h);
     return;
   }
 
@@ -12514,7 +12516,8 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
 
     upb_handlerattr name_attr = UPB_HANDLERATTR_INITIALIZER;
-    upb_handlerattr_sethandlerdata(&name_attr, newstrpc(h, f));
+    upb_handlerattr_sethandlerdata(&name_attr,
+                                   newstrpc(h, f, preserve_fieldnames));
 
     if (upb_fielddef_ismap(f)) {
       upb_handlers_setstartseq(h, f, startmap, &name_attr);
@@ -12537,7 +12540,7 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
          * option later to control this behavior, but we will wait for a real
          * need first. */
         upb_handlerattr enum_attr = UPB_HANDLERATTR_INITIALIZER;
-        set_enum_hd(h, f, &enum_attr);
+        set_enum_hd(h, f, preserve_fieldnames, &enum_attr);
 
         if (upb_fielddef_isseq(f)) {
           upb_handlers_setint32(h, f, repeated_enum, &enum_attr);
@@ -12614,6 +12617,8 @@ upb_sink *upb_json_printer_input(upb_json_printer *p) {
 }
 
 const upb_handlers *upb_json_printer_newhandlers(const upb_msgdef *md,
+                                                 bool preserve_fieldnames,
                                                  const void *owner) {
-  return upb_handlers_newfrozen(md, owner, printer_sethandlers, NULL);
+  return upb_handlers_newfrozen(
+      md, owner, printer_sethandlers, &preserve_fieldnames);
 }
