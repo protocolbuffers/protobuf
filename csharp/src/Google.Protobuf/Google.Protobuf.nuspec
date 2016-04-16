@@ -33,6 +33,7 @@
         <dependency id="System.Linq.Expressions" version="4.0.0" />
         <dependency id="System.ObjectModel" version="4.0.0" />
         <dependency id="System.Reflection" version="4.0.0" />
+        <dependency id="System.Reflection.Extensions" version="4.0.0" />
         <dependency id="System.Runtime" version="4.0.0" />
         <dependency id="System.Runtime.Extensions" version="4.0.0" />
         <dependency id="System.Text.Encoding" version="4.0.0" />

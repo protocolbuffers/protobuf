@@ -58,7 +58,7 @@ namespace Google.Protobuf
             new FieldCodecTestData<float>(FieldCodec.ForFloat(100), 1234.5f, "Float"),
             new FieldCodecTestData<double>(FieldCodec.ForDouble(100), 1234567890.5d, "Double"),
             new FieldCodecTestData<ForeignEnum>(
-                FieldCodec.ForEnum(100, t => (int) t, t => (ForeignEnum) t), ForeignEnum.FOREIGN_BAZ, "Enum"),
+                FieldCodec.ForEnum(100, t => (int) t, t => (ForeignEnum) t), ForeignEnum.ForeignBaz, "Enum"),
             new FieldCodecTestData<ForeignMessage>(
                 FieldCodec.ForMessage(100, ForeignMessage.Parser), new ForeignMessage { C = 10 }, "Message"),
         };

@@ -185,7 +185,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "syntax" field.</summary>
     public const int SyntaxFieldNumber = 7;
-    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2;
+    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = 0;
     /// <summary>
     ///  The source syntax of the service.
     /// </summary>
@@ -225,7 +225,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (Version.Length != 0) hash ^= Version.GetHashCode();
       if (sourceContext_ != null) hash ^= SourceContext.GetHashCode();
       hash ^= mixins_.GetHashCode();
-      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) hash ^= Syntax.GetHashCode();
+      if (Syntax != 0) hash ^= Syntax.GetHashCode();
       return hash;
     }
 
@@ -249,7 +249,7 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteMessage(SourceContext);
       }
       mixins_.WriteTo(output, _repeated_mixins_codec);
-      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+      if (Syntax != 0) {
         output.WriteRawTag(56);
         output.WriteEnum((int) Syntax);
       }
@@ -269,7 +269,7 @@ namespace Google.Protobuf.WellKnownTypes {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(SourceContext);
       }
       size += mixins_.CalculateSize(_repeated_mixins_codec);
-      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+      if (Syntax != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Syntax);
       }
       return size;
@@ -294,7 +294,7 @@ namespace Google.Protobuf.WellKnownTypes {
         SourceContext.MergeFrom(other.SourceContext);
       }
       mixins_.Add(other.mixins_);
-      if (other.Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+      if (other.Syntax != 0) {
         Syntax = other.Syntax;
       }
     }
@@ -458,7 +458,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     /// <summary>Field number for the "syntax" field.</summary>
     public const int SyntaxFieldNumber = 7;
-    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2;
+    private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = 0;
     /// <summary>
     ///  The source syntax of this method.
     /// </summary>
@@ -498,7 +498,7 @@ namespace Google.Protobuf.WellKnownTypes {
       if (ResponseTypeUrl.Length != 0) hash ^= ResponseTypeUrl.GetHashCode();
       if (ResponseStreaming != false) hash ^= ResponseStreaming.GetHashCode();
       hash ^= options_.GetHashCode();
-      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) hash ^= Syntax.GetHashCode();
+      if (Syntax != 0) hash ^= Syntax.GetHashCode();
       return hash;
     }
 
@@ -528,7 +528,7 @@ namespace Google.Protobuf.WellKnownTypes {
         output.WriteBool(ResponseStreaming);
       }
       options_.WriteTo(output, _repeated_options_codec);
-      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+      if (Syntax != 0) {
         output.WriteRawTag(56);
         output.WriteEnum((int) Syntax);
       }
@@ -552,7 +552,7 @@ namespace Google.Protobuf.WellKnownTypes {
         size += 1 + 1;
       }
       size += options_.CalculateSize(_repeated_options_codec);
-      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+      if (Syntax != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Syntax);
       }
       return size;
@@ -578,7 +578,7 @@ namespace Google.Protobuf.WellKnownTypes {
         ResponseStreaming = other.ResponseStreaming;
       }
       options_.Add(other.options_);
-      if (other.Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.SYNTAX_PROTO2) {
+      if (other.Syntax != 0) {
         Syntax = other.Syntax;
       }
     }

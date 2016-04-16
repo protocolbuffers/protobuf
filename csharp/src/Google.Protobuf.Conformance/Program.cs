@@ -109,10 +109,10 @@ namespace Google.Protobuf.Conformance
             {
                 switch (request.RequestedOutputFormat)
                 {
-                    case global::Conformance.WireFormat.JSON:
+                    case global::Conformance.WireFormat.Json:
                         var formatter = new JsonFormatter(new JsonFormatter.Settings(false, typeRegistry));
                         return new ConformanceResponse { JsonPayload = formatter.Format(message) };
-                    case global::Conformance.WireFormat.PROTOBUF:
+                    case global::Conformance.WireFormat.Protobuf:
                         return new ConformanceResponse { ProtobufPayload = message.ToByteString() };
                     default:
                         throw new Exception("Unsupported request output format: " + request.PayloadCase);

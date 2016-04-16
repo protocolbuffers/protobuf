@@ -104,6 +104,7 @@
     <Compile Include="Reflection\DescriptorUtil.cs" />
     <Compile Include="Reflection\DescriptorValidationException.cs" />
     <Compile Include="Reflection\EnumDescriptor.cs" />
+    <Compile Include="Reflection\OriginalNameAttribute.cs" />
     <Compile Include="Reflection\EnumValueDescriptor.cs" />
     <Compile Include="Reflection\FieldAccessorBase.cs" />
     <Compile Include="Reflection\FieldDescriptor.cs" />

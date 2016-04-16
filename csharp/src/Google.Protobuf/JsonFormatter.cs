@@ -39,6 +39,7 @@ using Google.Protobuf.WellKnownTypes;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Google.Protobuf
 {
@@ -420,9 +421,10 @@ namespace Google.Protobuf
             }
             else if (value is System.Enum)
             {
-                if (System.Enum.IsDefined(value.GetType(), value))
+                string name = GetOriginalEnumValueName(value);
+                if (name != null)
                 {
-                    WriteString(writer, value.ToString());
+                    WriteString(writer, name);
                 }
                 else
                 {
@@ -459,6 +461,25 @@ namespace Google.Protobuf
             {
                 throw new ArgumentException("Unable to format value of type " + value.GetType());
             }
+        }
+
+        // TODO: Cache this! (Build a map of int to string for the whole enum, once. Beware locking etc...)
+        private static string GetOriginalEnumValueName(object value)
+        {
+            int actualValue = (int) value;
+            var fields = value.GetType().GetTypeInfo().DeclaredFields.Where(f => f.IsStatic);
+            foreach (var field in fields)
+            {
+                int fieldValue = (int) field.GetValue(null);
+                if (fieldValue == actualValue)
+                {
+                    var attribute = field.GetCustomAttributes<OriginalNameAttribute>().FirstOrDefault();
+                    // If the attribute hasn't been applied, fall back to the name of the field.
+                    return attribute?.Name ?? field.Name;
+                }
+            }
+            // Undefined value
+            return null;
         }
 
         /// <summary>

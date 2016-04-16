@@ -886,8 +886,8 @@ namespace Google.Protobuf
         }
 
         [Test]
-        [TestCase("\"FOREIGN_BAR\"", ForeignEnum.FOREIGN_BAR)]
-        [TestCase("5", ForeignEnum.FOREIGN_BAR)]
+        [TestCase("\"FOREIGN_BAR\"", ForeignEnum.ForeignBar)]
+        [TestCase("5", ForeignEnum.ForeignBar)]
         [TestCase("100", (ForeignEnum) 100)]
         public void EnumValid(string value, ForeignEnum expectedValue)
         {

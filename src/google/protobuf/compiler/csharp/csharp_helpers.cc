@@ -31,7 +31,6 @@
 // Author: kenton@google.com (Kenton Varda)
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
-
 #include <algorithm>
 #include <google/protobuf/stubs/hash.h>
 #include <limits>
@@ -240,6 +239,121 @@ std::string GetPropertyName(const FieldDescriptor* descriptor) {
     property_name += "_";
   }
   return property_name;
+}
+
+// Utility functions for all case handling. Not using ctype.h due to locale complications.
+// TODO: Use in other code in this file.
+bool IsLowerLetter(char c) {
+    return 'a' <= c && c <= 'z';
+}
+
+bool IsUpperLetter(char c) {
+    return 'A' <= c && c <= 'Z';
+}
+
+bool IsNumeric(char c) {
+  return '0' <= c && c <= '9';
+}
+
+bool IsAlphaNumeric(char c) {
+    return IsLowerLetter(c) || IsUpperLetter(c) || IsNumeric(c);
+}
+
+// Upper-cases any lower-case letter; non-lower-letters are preserved as they were
+char ToUpper(char c) {
+    return IsLowerLetter(c) ? (c + 'A' - 'a') : c;
+}
+
+// Lower-cases any upper-case letter; non-upper-letters are preserved as they were
+char ToLower(char c) {
+    return IsUpperLetter(c) ? (c + 'a' - 'A') : c;
+}
+
+// Convert a string which is expected to be SHOUTY_CASE (but may not be *precisely* shouty)
+// into a PascalCase string. Precise rules implemented:
+
+// Previous input character      Current character         Case
+// Any                           Non-alphanumeric          Skipped
+// None - first char of input    Alphanumeric              Upper
+// Non-letter (e.g. _ or 1)      Alphanumeric              Upper
+// Numeric                       Alphanumeric              Upper
+// Lower letter                  Alphanumeric              Same as current
+// Upper letter                  Alphanumeric              Lower
+std::string ShoutyToPascalCase(const std::string& input) {
+  string result;
+  // Simple way of implementing "always start with upper"
+  char previous = '_';
+  for (int i = 0; i < input.size(); i++) {
+    char current = input[i];
+    if (!IsAlphaNumeric(current)) {
+      previous = current;
+      continue;
+    }
+    if (!IsAlphaNumeric(previous)) {
+      result += ToUpper(current);
+    } else if (IsNumeric(previous)) {
+      result += ToUpper(current);
+    } else if (IsLowerLetter(previous)) {
+      result += current;
+    } else {
+      result += ToLower(current);
+    }
+    previous = current;
+  }
+  return result;
+}
+
+// Generate the name to use in a generated C# enum from the enum name, the enum value name, and the naming style.
+std::string GetEnumValueName(const std::string& enum_name, const std::string& enum_value_name, CSharpEnumNaming namingStyle) {
+  if (namingStyle == CSHARPENUMNAMING_PRESERVE) {
+    return enum_value_name;
+  }
+  std:string effective_value_name = enum_value_name;
+  if (namingStyle == CSHARPENUMNAMING_PASCAL_TRIM_PREFIX) {
+    // Essentially, we want to case-insensitively match the start of enum_value_name from alphanumeric characters in enum_name,
+    // ignoring any non-alphanumeric input in either, and remember how many characters we matched in enum_value_name.
+    int prefix_length = 0;
+    for (int name_index = 0; name_index < enum_name.size() && prefix_length < enum_value_name.size(); name_index++) {
+      // Skip over any non-letter/number value name characters, upper-case others.
+      while (prefix_length < enum_value_name.size() && !IsAlphaNumeric(enum_value_name[prefix_length])) {
+        prefix_length++;
+      }
+      if (prefix_length == enum_value_name.size()) {
+        break;
+      }
+
+      // Nothing to match if the enum name itself isn't alpha-numeric at this point
+      if (!IsAlphaNumeric(enum_name[name_index])) {
+        continue;
+      }
+
+      // Check for a case-insensitive match of the enum name to the enum value name
+      if (ToUpper(enum_name[name_index]) != ToUpper(enum_value_name[prefix_length])) {
+        prefix_length = enum_value_name.size();
+        break;
+      }
+
+      // Matched, so advance our cursor through the enum value name, and let the loop
+      // go onto the next character in the enum name.
+      prefix_length++;
+    }
+    // Skip over any trailing non-alphanumeric characters in the enum value name.
+    while (prefix_length < enum_value_name.size() && !IsAlphaNumeric(enum_value_name[prefix_length])) {
+      prefix_length++;
+    }
+
+    // ... and now we can truncate to just what comes after the prefix.
+    if (prefix_length > 0 && prefix_length < enum_value_name.size() - 1) {
+      effective_value_name = enum_value_name.substr(prefix_length);
+    }
+  }
+  std::string result = ShoutyToPascalCase(effective_value_name);
+  // Example: enum Foo, value FOO_2_GO. We can't prepend the _ before calling ShoutyToPascalCase
+  // as that trims all non-alphanumeric characters
+  if (IsNumeric(result[0])) {
+    result = "_" + result;
+  }
+  return result;
 }
 
 std::string GetOutputFile(

@@ -30,7 +30,7 @@
 
 #include <memory>
 
-#include <google/protobuf/compiler/ruby/ruby_generator.h>
+#include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/printer.h>
@@ -45,8 +45,41 @@ namespace compiler {
 namespace csharp {
 namespace {
 
-// TODO(jtattermusch): add some tests.
+TEST(CSharpEnumValue, Preserve) {
+  // There's only so much you can test about an identity transformation 
+  EXPECT_EQ("FOO_BAR", GetEnumValueName("Foo", "FOO_BAR", CSHARPENUMNAMING_PRESERVE));
+  EXPECT_EQ("FOO_BAR", GetEnumValueName("FOO", "FOO_BAR", CSHARPENUMNAMING_PRESERVE));
+  EXPECT_EQ("BAR", GetEnumValueName("Foo", "BAR", CSHARPENUMNAMING_PRESERVE));
+}
 
+TEST(CSharpEnumValue, Pascal) {
+  // Effectively just testing ShoutyCaseToPascal
+  EXPECT_EQ("FooBar", GetEnumValueName("Foo", "FOO_BAR", CSHARPENUMNAMING_PASCAL));
+  EXPECT_EQ("FooBarBaz", GetEnumValueName("Foo", "FOO_BAR_BAZ", CSHARPENUMNAMING_PASCAL));
+  EXPECT_EQ("FooBarBaz", GetEnumValueName("Foo", "foo_bar_baz", CSHARPENUMNAMING_PASCAL));
+  EXPECT_EQ("FooBarBaz", GetEnumValueName("Foo", "FOO_BarBaz", CSHARPENUMNAMING_PASCAL));
+  EXPECT_EQ("FooBar", GetEnumValueName("FOO", "FOO_BAR", CSHARPENUMNAMING_PASCAL));
+  EXPECT_EQ("Foo2Bar3Baz", GetEnumValueName("Foo", "FOO2BAR3BAZ", CSHARPENUMNAMING_PASCAL));
+  EXPECT_EQ("Foo2Bar3Baz", GetEnumValueName("Foo", "foo2bar3baz", CSHARPENUMNAMING_PASCAL));
+  EXPECT_EQ("Bar", GetEnumValueName("Foo", "BAR", CSHARPENUMNAMING_PASCAL));
+  EXPECT_EQ("BarBaz", GetEnumValueName("Foo", "BAR_BAZ", CSHARPENUMNAMING_PASCAL));
+}
+
+TEST(CSharpEnumValue, PascalTrimPrefix) {
+  // Mostly testing the prefix matching
+  EXPECT_EQ("Bar", GetEnumValueName("Foo", "FOO_BAR", CSHARPENUMNAMING_PASCAL_TRIM_PREFIX));
+  EXPECT_EQ("Bar", GetEnumValueName("Foo", "FOO__BAR", CSHARPENUMNAMING_PASCAL_TRIM_PREFIX));
+  // Identifiers can't start with digits
+  EXPECT_EQ("_2Bar", GetEnumValueName("Foo", "FOO_2_BAR", CSHARPENUMNAMING_PASCAL_TRIM_PREFIX));
+  EXPECT_EQ("BarBaz", GetEnumValueName("Foo", "FOO_BAR_BAZ", CSHARPENUMNAMING_PASCAL_TRIM_PREFIX));
+  EXPECT_EQ("BarBaz", GetEnumValueName("Foo", "Foo_BarBaz", CSHARPENUMNAMING_PASCAL_TRIM_PREFIX));
+  EXPECT_EQ("Bar", GetEnumValueName("FO_O", "FOO_BAR", CSHARPENUMNAMING_PASCAL_TRIM_PREFIX));
+  EXPECT_EQ("Bar", GetEnumValueName("FOO", "F_O_O_BAR", CSHARPENUMNAMING_PASCAL_TRIM_PREFIX));
+  EXPECT_EQ("Bar", GetEnumValueName("Foo", "BAR", CSHARPENUMNAMING_PASCAL_TRIM_PREFIX));
+  EXPECT_EQ("BarBaz", GetEnumValueName("Foo", "BAR_BAZ", CSHARPENUMNAMING_PASCAL_TRIM_PREFIX));
+  EXPECT_EQ("Foo", GetEnumValueName("Foo", "FOO", CSHARPENUMNAMING_PASCAL_TRIM_PREFIX));
+  EXPECT_EQ("Foo", GetEnumValueName("Foo", "FOO___", CSHARPENUMNAMING_PASCAL_TRIM_PREFIX));
+}
 }  // namespace
 }  // namespace csharp
 }  // namespace compiler
