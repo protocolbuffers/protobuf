@@ -166,7 +166,7 @@ if [ "$CC" != "gcc" ] && [ "$UPB_TRAVIS_BUILD" == "coverage" ]; then
 fi
 
 # Enable asserts and ref debugging (though some configurations override this).
-export USER_CPPFLAGS="-UNDEBUG -DUPB_DEBUG_REFS -DUPB_THREAD_UNSAFE -g"
+export USER_CPPFLAGS="-UNDEBUG -DUPB_DEBUG_REFS -DUPB_THREAD_UNSAFE -DUPB_DEBUG_TABLE -g"
 
 if [ "$CC" == "gcc" ]; then
   # For the GCC build test loading JIT code via SO.  For the Clang build test

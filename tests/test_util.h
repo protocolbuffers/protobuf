@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "tests/upb_test.h"
-#include "upb/env.h"
 #include "upb/sink.h"
 
 #ifdef __cplusplus

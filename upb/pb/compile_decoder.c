@@ -31,8 +31,8 @@ static void freegroup(upb_refcounted *r) {
 #ifdef UPB_USE_JIT_X64
   upb_pbdecoder_freejit(g);
 #endif
-  free(g->bytecode);
-  free(g);
+  upb_gfree(g->bytecode);
+  upb_gfree(g);
 }
 
 static void visitgroup(const upb_refcounted *r, upb_refcounted_visit *visit,
@@ -47,7 +47,7 @@ static void visitgroup(const upb_refcounted *r, upb_refcounted_visit *visit,
 }
 
 mgroup *newgroup(const void *owner) {
-  mgroup *g = malloc(sizeof(*g));
+  mgroup *g = upb_gmalloc(sizeof(*g));
   static const struct upb_refcounted_vtbl vtbl = {visitgroup, freegroup};
   upb_refcounted_init(mgroup_upcast_mutable(g), &vtbl, owner);
   upb_inttable_init(&g->methods, UPB_CTYPE_PTR);
@@ -67,7 +67,7 @@ static void freemethod(upb_refcounted *r) {
   }
 
   upb_inttable_uninit(&method->dispatch);
-  free(method);
+  upb_gfree(method);
 }
 
 static void visitmethod(const upb_refcounted *r, upb_refcounted_visit *visit,
@@ -79,7 +79,7 @@ static void visitmethod(const upb_refcounted *r, upb_refcounted_visit *visit,
 static upb_pbdecodermethod *newmethod(const upb_handlers *dest_handlers,
                                       mgroup *group) {
   static const struct upb_refcounted_vtbl vtbl = {visitmethod, freemethod};
-  upb_pbdecodermethod *ret = malloc(sizeof(*ret));
+  upb_pbdecodermethod *ret = upb_gmalloc(sizeof(*ret));
   upb_refcounted_init(upb_pbdecodermethod_upcast_mutable(ret), &vtbl, &ret);
   upb_byteshandler_init(&ret->input_handler_);
 
@@ -142,7 +142,7 @@ typedef struct {
 } compiler;
 
 static compiler *newcompiler(mgroup *group, bool lazy) {
-  compiler *ret = malloc(sizeof(*ret));
+  compiler *ret = upb_gmalloc(sizeof(*ret));
   int i;
 
   ret->group = group;
@@ -155,7 +155,7 @@ static compiler *newcompiler(mgroup *group, bool lazy) {
 }
 
 static void freecompiler(compiler *c) {
-  free(c);
+  upb_gfree(c);
 }
 
 const size_t ptr_words = sizeof(void*) / sizeof(uint32_t);
@@ -259,7 +259,8 @@ static void put32(compiler *c, uint32_t v) {
     size_t oldsize = g->bytecode_end - g->bytecode;
     size_t newsize = UPB_MAX(oldsize * 2, 64);
     /* TODO(haberman): handle OOM. */
-    g->bytecode = realloc(g->bytecode, newsize * sizeof(uint32_t));
+    g->bytecode = upb_grealloc(g->bytecode, oldsize * sizeof(uint32_t),
+                                            newsize * sizeof(uint32_t));
     g->bytecode_end = g->bytecode + newsize;
     c->pc = g->bytecode + ofs;
   }

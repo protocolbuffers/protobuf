@@ -6,11 +6,17 @@
 #include "upb/handlers.h"
 #include "upb/structdefs.int.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 #include "upb/sink.h"
 
+static void *upb_calloc(size_t size) {
+  void *mem = upb_gmalloc(size);
+  if (mem) {
+    memset(mem, 0, size);
+  }
+  return mem;
+}
 
 /* Defined for the sole purpose of having a unique pointer value for
  * UPB_NO_CLOSURE. */
@@ -30,8 +36,8 @@ static void freehandlers(upb_refcounted *r) {
 
   upb_inttable_uninit(&h->cleanup_);
   upb_msgdef_unref(h->msg, h);
-  free(h->sub);
-  free(h);
+  upb_gfree(h->sub);
+  upb_gfree(h);
 }
 
 static void visithandlers(const upb_refcounted *r, upb_refcounted_visit *visit,
@@ -281,14 +287,20 @@ upb_handlers *upb_handlers_new(const upb_msgdef *md, const void *owner) {
   assert(upb_msgdef_isfrozen(md));
 
   extra = sizeof(upb_handlers_tabent) * (md->selector_count - 1);
-  h = calloc(sizeof(*h) + extra, 1);
+  h = upb_calloc(sizeof(*h) + extra);
   if (!h) return NULL;
 
   h->msg = md;
   upb_msgdef_ref(h->msg, h);
   upb_status_clear(&h->status_);
-  h->sub = calloc(md->submsg_field_count, sizeof(*h->sub));
-  if (!h->sub) goto oom;
+
+  if (md->submsg_field_count > 0) {
+    h->sub = upb_calloc(md->submsg_field_count * sizeof(*h->sub));
+    if (!h->sub) goto oom;
+  } else {
+    h->sub = 0;
+  }
+
   if (!upb_refcounted_init(upb_handlers_upcast_mutable(h), &vtbl, owner))
     goto oom;
   if (!upb_inttable_init(&h->cleanup_, UPB_CTYPE_FPTR)) goto oom;

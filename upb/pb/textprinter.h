@@ -7,7 +7,6 @@
 #ifndef UPB_TEXT_H_
 #define UPB_TEXT_H_
 
-#include "upb/env.h"
 #include "upb/sink.h"
 
 #ifdef __cplusplus

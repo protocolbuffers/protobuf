@@ -1,8 +1,6 @@
 
 #include "upb/shim/shim.h"
 
-#include <stdlib.h>
-
 /* Fallback implementation if the shim is not specialized by the JIT. */
 #define SHIM_WRITER(type, ctype)                                              \
   bool upb_shim_set ## type (void *c, const void *hd, ctype val) {            \
@@ -28,14 +26,14 @@ bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
   bool ok;
 
-  upb_shim_data *d = malloc(sizeof(*d));
+  upb_shim_data *d = upb_gmalloc(sizeof(*d));
   if (!d) return false;
   d->offset = offset;
   d->hasbit = hasbit;
 
   upb_handlerattr_sethandlerdata(&attr, d);
   upb_handlerattr_setalwaysok(&attr, true);
-  upb_handlers_addcleanup(h, d, free);
+  upb_handlers_addcleanup(h, d, upb_gfree);
 
 #define TYPE(u, l) \
   case UPB_TYPE_##u: \

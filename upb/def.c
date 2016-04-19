@@ -13,7 +13,7 @@ typedef struct {
 } str_t;
 
 static str_t *newstr(const char *data, size_t len) {
-  str_t *ret = malloc(sizeof(*ret) + len);
+  str_t *ret = upb_gmalloc(sizeof(*ret) + len);
   if (!ret) return NULL;
   ret->len = len;
   memcpy(ret->str, data, len);
@@ -21,7 +21,7 @@ static str_t *newstr(const char *data, size_t len) {
   return ret;
 }
 
-static void freestr(str_t *s) { free(s); }
+static void freestr(str_t *s) { upb_gfree(s); }
 
 /* isalpha() etc. from <ctype.h> are locale-dependent, which we don't want. */
 static bool upb_isbetween(char c, char low, char high) {
@@ -89,9 +89,18 @@ const char *upb_def_name(const upb_def *d) {
 
 bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s) {
   assert(!upb_def_isfrozen(def));
-  if (!upb_isident(fullname, strlen(fullname), true, s)) return false;
-  free((void*)def->fullname);
-  def->fullname = upb_strdup(fullname);
+  if (!upb_isident(fullname, strlen(fullname), true, s)) {
+    return false;
+  }
+
+  fullname = upb_gstrdup(fullname);
+  if (!fullname) {
+    upb_upberr_setoom(s);
+    return false;
+  }
+
+  upb_gfree((void*)def->fullname);
+  def->fullname = fullname;
   return true;
 }
 
@@ -124,7 +133,7 @@ static bool upb_def_init(upb_def *def, upb_deftype_t type,
 }
 
 static void upb_def_uninit(upb_def *def) {
-  free((void*)def->fullname);
+  upb_gfree((void*)def->fullname);
 }
 
 static const char *msgdef_name(const upb_msgdef *m) {
@@ -261,8 +270,19 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   int i;
   uint32_t selector;
   int n = upb_msgdef_numfields(m);
-  upb_fielddef **fields = malloc(n * sizeof(*fields));
-  if (!fields) return false;
+  upb_fielddef **fields;
+
+  if (n == 0) {
+    m->selector_count = UPB_STATIC_SELECTOR_COUNT;
+    m->submsg_field_count = 0;
+    return true;
+  }
+
+  fields = upb_gmalloc(n * sizeof(*fields));
+  if (!fields) {
+    upb_upberr_setoom(s);
+    return false;
+  }
 
   m->submsg_field_count = 0;
   for(i = 0, upb_msg_field_begin(&j, m);
@@ -271,7 +291,7 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
     upb_fielddef *f = upb_msg_iter_field(&j);
     assert(f->msg.def == m);
     if (!upb_validate_field(f, s)) {
-      free(fields);
+      upb_gfree(fields);
       return false;
     }
     if (upb_fielddef_issubmsg(f)) {
@@ -331,7 +351,7 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
 #undef TRY
 #endif
 
-  free(fields);
+  upb_gfree(fields);
   return true;
 }
 
@@ -408,18 +428,18 @@ static void upb_enumdef_free(upb_refcounted *r) {
   upb_inttable_iter i;
   upb_inttable_begin(&i, &e->iton);
   for( ; !upb_inttable_done(&i); upb_inttable_next(&i)) {
-    /* To clean up the upb_strdup() from upb_enumdef_addval(). */
-    free(upb_value_getcstr(upb_inttable_iter_value(&i)));
+    /* To clean up the upb_gstrdup() from upb_enumdef_addval(). */
+    upb_gfree(upb_value_getcstr(upb_inttable_iter_value(&i)));
   }
   upb_strtable_uninit(&e->ntoi);
   upb_inttable_uninit(&e->iton);
   upb_def_uninit(upb_enumdef_upcast_mutable(e));
-  free(e);
+  upb_gfree(e);
 }
 
 upb_enumdef *upb_enumdef_new(const void *owner) {
   static const struct upb_refcounted_vtbl vtbl = {NULL, &upb_enumdef_free};
-  upb_enumdef *e = malloc(sizeof(*e));
+  upb_enumdef *e = upb_gmalloc(sizeof(*e));
   if (!e) return NULL;
   if (!upb_def_init(upb_enumdef_upcast_mutable(e), UPB_DEF_ENUM, &vtbl, owner))
     goto err2;
@@ -430,7 +450,7 @@ upb_enumdef *upb_enumdef_new(const void *owner) {
 err1:
   upb_strtable_uninit(&e->ntoi);
 err2:
-  free(e);
+  upb_gfree(e);
   return NULL;
 }
 
@@ -469,27 +489,36 @@ bool upb_enumdef_setfullname(upb_enumdef *e, const char *fullname,
 
 bool upb_enumdef_addval(upb_enumdef *e, const char *name, int32_t num,
                         upb_status *status) {
+  char *name2;
+
   if (!upb_isident(name, strlen(name), false, status)) {
     return false;
   }
+
   if (upb_enumdef_ntoiz(e, name, NULL)) {
     upb_status_seterrf(status, "name '%s' is already defined", name);
     return false;
   }
+
   if (!upb_strtable_insert(&e->ntoi, name, upb_value_int32(num))) {
     upb_status_seterrmsg(status, "out of memory");
     return false;
   }
-  if (!upb_inttable_lookup(&e->iton, num, NULL) &&
-      !upb_inttable_insert(&e->iton, num, upb_value_cstr(upb_strdup(name)))) {
-    upb_status_seterrmsg(status, "out of memory");
-    upb_strtable_remove(&e->ntoi, name, NULL);
-    return false;
+
+  if (!upb_inttable_lookup(&e->iton, num, NULL)) {
+    name2 = upb_gstrdup(name);
+    if (!name2 || !upb_inttable_insert(&e->iton, num, upb_value_cstr(name2))) {
+      upb_status_seterrmsg(status, "out of memory");
+      upb_strtable_remove(&e->ntoi, name, NULL);
+      return false;
+    }
   }
+
   if (upb_enumdef_numvals(e) == 1) {
     bool ok = upb_enumdef_setdefault(e, num, NULL);
     UPB_ASSERT_VAR(ok, ok);
   }
+
   return true;
 }
 
@@ -576,9 +605,9 @@ static void freefield(upb_refcounted *r) {
   upb_fielddef *f = (upb_fielddef*)r;
   upb_fielddef_uninit_default(f);
   if (f->subdef_is_symbolic)
-    free(f->sub.name);
+    upb_gfree(f->sub.name);
   upb_def_uninit(upb_fielddef_upcast_mutable(f));
-  free(f);
+  upb_gfree(f);
 }
 
 static const char *enumdefaultstr(const upb_fielddef *f) {
@@ -636,10 +665,10 @@ static bool enumdefaultint32(const upb_fielddef *f, int32_t *val) {
 
 upb_fielddef *upb_fielddef_new(const void *o) {
   static const struct upb_refcounted_vtbl vtbl = {visitfield, freefield};
-  upb_fielddef *f = malloc(sizeof(*f));
+  upb_fielddef *f = upb_gmalloc(sizeof(*f));
   if (!f) return NULL;
   if (!upb_def_init(upb_fielddef_upcast_mutable(f), UPB_DEF_FIELD, &vtbl, o)) {
-    free(f);
+    upb_gfree(f);
     return NULL;
   }
   f->msg.def = NULL;
@@ -690,7 +719,7 @@ upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner) {
     srcname = f->sub.def ? upb_def_fullname(f->sub.def) : NULL;
   }
   if (srcname) {
-    char *newname = malloc(strlen(f->sub.def->fullname) + 2);
+    char *newname = upb_gmalloc(strlen(f->sub.def->fullname) + 2);
     if (!newname) {
       upb_fielddef_unref(newf, owner);
       return NULL;
@@ -698,7 +727,7 @@ upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner) {
     strcpy(newname, ".");
     strcat(newname, f->sub.def->fullname);
     upb_fielddef_setsubdefname(newf, newname, NULL);
-    free(newname);
+    upb_gfree(newname);
   }
 
   return newf;
@@ -805,11 +834,12 @@ const char *upb_fielddef_containingtypename(upb_fielddef *f) {
 }
 
 static void release_containingtype(upb_fielddef *f) {
-  if (f->msg_is_symbolic) free(f->msg.name);
+  if (f->msg_is_symbolic) upb_gfree(f->msg.name);
 }
 
 bool upb_fielddef_setcontainingtypename(upb_fielddef *f, const char *name,
                                         upb_status *s) {
+  char *name_copy;
   assert(!upb_fielddef_isfrozen(f));
   if (upb_fielddef_containingtype(f)) {
     upb_status_seterrmsg(s, "field has already been added to a message.");
@@ -817,8 +847,15 @@ bool upb_fielddef_setcontainingtypename(upb_fielddef *f, const char *name,
   }
   /* TODO: validate name (upb_isident() doesn't quite work atm because this name
    * may have a leading "."). */
+
+  name_copy = upb_gstrdup(name);
+  if (!name_copy) {
+    upb_upberr_setoom(s);
+    return false;
+  }
+
   release_containingtype(f);
-  f->msg.name = upb_strdup(name);
+  f->msg.name = name_copy;
   f->msg_is_symbolic = true;
   return true;
 }
@@ -1219,7 +1256,7 @@ static bool upb_subdef_typecheck(upb_fielddef *f, const upb_def *subdef,
 
 static void release_subdef(upb_fielddef *f) {
   if (f->subdef_is_symbolic) {
-    free(f->sub.name);
+    upb_gfree(f->sub.name);
   } else if (f->sub.def) {
     upb_unref2(f->sub.def, f);
   }
@@ -1249,15 +1286,23 @@ bool upb_fielddef_setenumsubdef(upb_fielddef *f, const upb_enumdef *subdef,
 
 bool upb_fielddef_setsubdefname(upb_fielddef *f, const char *name,
                                 upb_status *s) {
+  char *name_copy;
   assert(!upb_fielddef_isfrozen(f));
   if (!upb_fielddef_hassubdef(f)) {
     upb_status_seterrmsg(s, "field type does not accept a subdef");
     return false;
   }
+
+  name_copy = upb_gstrdup(name);
+  if (!name_copy) {
+    upb_upberr_setoom(s);
+    return false;
+  }
+
   /* TODO: validate name (upb_isident() doesn't quite work atm because this name
    * may have a leading "."). */
   release_subdef(f);
-  f->sub.name = upb_strdup(name);
+  f->sub.name = name_copy;
   f->subdef_is_symbolic = true;
   return true;
 }
@@ -1337,12 +1382,12 @@ static void freemsg(upb_refcounted *r) {
   upb_strtable_uninit(&m->ntof);
   upb_inttable_uninit(&m->itof);
   upb_def_uninit(upb_msgdef_upcast_mutable(m));
-  free(m);
+  upb_gfree(m);
 }
 
 upb_msgdef *upb_msgdef_new(const void *owner) {
   static const struct upb_refcounted_vtbl vtbl = {visitmsg, freemsg};
-  upb_msgdef *m = malloc(sizeof(*m));
+  upb_msgdef *m = upb_gmalloc(sizeof(*m));
   if (!m) return NULL;
   if (!upb_def_init(upb_msgdef_upcast_mutable(m), UPB_DEF_MSG, &vtbl, owner))
     goto err2;
@@ -1358,7 +1403,7 @@ err1:
 err2:
   upb_inttable_uninit(&m->itof);
 err3:
-  free(m);
+  upb_gfree(m);
   return NULL;
 }
 
@@ -1614,13 +1659,13 @@ static void freeoneof(upb_refcounted *r) {
   upb_oneofdef *o = (upb_oneofdef*)r;
   upb_strtable_uninit(&o->ntof);
   upb_inttable_uninit(&o->itof);
-  free((void*)o->name);
-  free(o);
+  upb_gfree((void*)o->name);
+  upb_gfree(o);
 }
 
 upb_oneofdef *upb_oneofdef_new(const void *owner) {
   static const struct upb_refcounted_vtbl vtbl = {visitoneof, freeoneof};
-  upb_oneofdef *o = malloc(sizeof(*o));
+  upb_oneofdef *o = upb_gmalloc(sizeof(*o));
   o->parent = NULL;
   if (!o) return NULL;
   if (!upb_refcounted_init(upb_oneofdef_upcast_mutable(o), &vtbl, owner))
@@ -1633,7 +1678,7 @@ upb_oneofdef *upb_oneofdef_new(const void *owner) {
 err1:
   upb_inttable_uninit(&o->itof);
 err2:
-  free(o);
+  upb_gfree(o);
   return NULL;
 }
 
@@ -1662,9 +1707,19 @@ bool upb_oneofdef_setname(upb_oneofdef *o, const char *name, upb_status *s) {
     upb_status_seterrmsg(s, "oneof already added to a message");
     return false;
   }
-  if (!upb_isident(name, strlen(name), true, s)) return false;
-  free((void*)o->name);
-  o->name = upb_strdup(name);
+
+  if (!upb_isident(name, strlen(name), true, s)) {
+    return false;
+  }
+
+  name = upb_gstrdup(name);
+  if (!name) {
+    upb_status_seterrmsg(s, "One of memory");
+    return false;
+  }
+
+  upb_gfree((void*)o->name);
+  o->name = name;
   return true;
 }
 
@@ -1806,14 +1861,14 @@ static void freefiledef(upb_refcounted *r) {
 
   upb_inttable_uninit(&f->defs);
   upb_inttable_uninit(&f->deps);
-  free((void*)f->name);
-  free((void*)f->package);
-  free(f);
+  upb_gfree((void*)f->name);
+  upb_gfree((void*)f->package);
+  upb_gfree(f);
 }
 
 upb_filedef *upb_filedef_new(const void *owner) {
   static const struct upb_refcounted_vtbl vtbl = {visitfiledef, freefiledef};
-  upb_filedef *f = malloc(sizeof(*f));
+  upb_filedef *f = upb_gmalloc(sizeof(*f));
 
   if (!f) {
     return NULL;
@@ -1842,7 +1897,7 @@ err2:
   upb_inttable_uninit(&f->defs);
 
 err:
-  free(f);
+  upb_gfree(f);
   return NULL;
 }
 
@@ -1887,12 +1942,12 @@ const upb_filedef *upb_filedef_dep(const upb_filedef *f, size_t i) {
 }
 
 bool upb_filedef_setname(upb_filedef *f, const char *name, upb_status *s) {
-  name = upb_strdup(name);
+  name = upb_gstrdup(name);
   if (!name) {
-    upb_status_seterrmsg(s, "Out of memory");
+    upb_upberr_setoom(s);
     return false;
   }
-  free((void*)f->name);
+  upb_gfree((void*)f->name);
   f->name = name;
   return true;
 }
@@ -1900,12 +1955,12 @@ bool upb_filedef_setname(upb_filedef *f, const char *name, upb_status *s) {
 bool upb_filedef_setpackage(upb_filedef *f, const char *package,
                             upb_status *s) {
   if (!upb_isident(package, strlen(package), true, s)) return false;
-  package = upb_strdup(package);
+  package = upb_gstrdup(package);
   if (!package) {
-    upb_status_seterrmsg(s, "Out of memory");
+    upb_upberr_setoom(s);
     return false;
   }
-  free((void*)f->package);
+  upb_gfree((void*)f->package);
   f->package = package;
   return true;
 }
@@ -1954,7 +2009,7 @@ bool upb_filedef_adddef(upb_filedef *f, upb_def *def, const void *ref_donor,
     }
     return true;
   } else {
-    upb_status_seterrmsg(s, "Out of memory.");
+    upb_upberr_setoom(s);
     return false;
   }
 }

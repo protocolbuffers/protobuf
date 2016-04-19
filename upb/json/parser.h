@@ -8,7 +8,6 @@
 #ifndef UPB_JSON_PARSER_H_
 #define UPB_JSON_PARSER_H_
 
-#include "upb/env.h"
 #include "upb/sink.h"
 
 #ifdef __cplusplus
@@ -30,7 +29,7 @@ UPB_DECLARE_DERIVED_TYPE(upb::json::ParserMethod, upb::RefCounted,
  * constructed.  This hint may be an overestimate for some build configurations.
  * But if the parser library is upgraded without recompiling the application,
  * it may be an underestimate. */
-#define UPB_JSON_PARSER_SIZE 4104
+#define UPB_JSON_PARSER_SIZE 4112
 
 #ifdef __cplusplus
 

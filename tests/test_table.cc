@@ -15,6 +15,318 @@
 #include "tests/upb_test.h"
 #include "upb/table.int.h"
 
+// Convenience interface for C++.  We don't put this in upb itself because
+// the table is not exposed to users.
+
+namespace upb {
+
+template <class T> upb_value MakeUpbValue(T val);
+template <class T> T GetUpbValue(upb_value val);
+template <class T> upb_ctype_t GetUpbValueType();
+
+#define FUNCS(name, type_t, enumval) \
+  template<> upb_value MakeUpbValue<type_t>(type_t val) { return upb_value_ ## name(val); } \
+  template<> type_t GetUpbValue<type_t>(upb_value val) { return upb_value_get ## name(val); } \
+  template<> upb_ctype_t GetUpbValueType<type_t>() { return enumval; }
+
+FUNCS(int32,    int32_t,      UPB_CTYPE_INT32)
+FUNCS(int64,    int64_t,      UPB_CTYPE_INT64)
+FUNCS(uint32,   uint32_t,     UPB_CTYPE_UINT32)
+FUNCS(uint64,   uint64_t,     UPB_CTYPE_UINT64)
+FUNCS(bool,     bool,         UPB_CTYPE_BOOL)
+FUNCS(cstr,     char*,        UPB_CTYPE_CSTR)
+FUNCS(ptr,      void*,        UPB_CTYPE_PTR)
+FUNCS(constptr, const void*,  UPB_CTYPE_CONSTPTR)
+FUNCS(fptr,     upb_func*,    UPB_CTYPE_FPTR)
+
+#undef FUNCS
+
+class IntTable {
+ public:
+  IntTable(upb_ctype_t value_type) { upb_inttable_init(&table_, value_type); }
+  ~IntTable() { upb_inttable_uninit(&table_); }
+
+  size_t count() { return upb_inttable_count(&table_); }
+
+  bool Insert(uintptr_t key, upb_value val) {
+    return upb_inttable_insert(&table_, key, val);
+  }
+
+  bool Replace(uintptr_t key, upb_value val) {
+    return upb_inttable_replace(&table_, key, val);
+  }
+
+  std::pair<bool, upb_value> Remove(uintptr_t key) {
+    std::pair<bool, upb_value> ret;
+    ret.first = upb_inttable_remove(&table_, key, &ret.second);
+    return ret;
+  }
+
+  std::pair<bool, upb_value> Lookup(uintptr_t key) const {
+    std::pair<bool, upb_value> ret;
+    ret.first = upb_inttable_lookup(&table_, key, &ret.second);
+    return ret;
+  }
+
+  std::pair<bool, upb_value> Lookup32(uint32_t key) const {
+    std::pair<bool, upb_value> ret;
+    ret.first = upb_inttable_lookup32(&table_, key, &ret.second);
+    return ret;
+  }
+
+  void Compact() { upb_inttable_compact(&table_); }
+
+  class iterator : public std::iterator<std::forward_iterator_tag,
+                                        std::pair<uintptr_t, upb_value> > {
+   public:
+    explicit iterator(IntTable* table) {
+      upb_inttable_begin(&iter_, &table->table_);
+    }
+
+    static iterator end(IntTable* table) {
+      iterator iter(table);
+      upb_inttable_iter_setdone(&iter.iter_);
+      return iter;
+    }
+
+    void operator++() {
+      return upb_inttable_next(&iter_);
+    }
+
+    std::pair<uintptr_t, upb_value> operator*() const {
+      std::pair<uintptr_t, upb_value> ret;
+      ret.first = upb_inttable_iter_key(&iter_);
+      ret.second = upb_inttable_iter_value(&iter_);
+      return ret;
+    }
+
+    bool operator==(const iterator& other) const {
+      return upb_inttable_iter_isequal(&iter_, &other.iter_);
+    }
+
+    bool operator!=(const iterator& other) const {
+      return !(*this == other);
+    }
+
+   private:
+    upb_inttable_iter iter_;
+  };
+
+  upb_inttable table_;
+};
+
+class StrTable {
+ public:
+  StrTable(upb_ctype_t value_type) { upb_strtable_init(&table_, value_type); }
+  ~StrTable() { upb_strtable_uninit(&table_); }
+
+  size_t count() { return upb_strtable_count(&table_); }
+
+  bool Insert(const std::string& key, upb_value val) {
+    return upb_strtable_insert2(&table_, key.c_str(), key.size(), val);
+  }
+
+  std::pair<bool, upb_value> Remove(const std::string& key) {
+    std::pair<bool, upb_value> ret;
+    ret.first =
+        upb_strtable_remove2(&table_, key.c_str(), key.size(), &ret.second);
+    return ret;
+  }
+
+  std::pair<bool, upb_value> Lookup(const std::string& key) const {
+    std::pair<bool, upb_value> ret;
+    ret.first =
+        upb_strtable_lookup2(&table_, key.c_str(), key.size(), &ret.second);
+    return ret;
+  }
+
+  void Resize(size_t size_lg2) {
+    upb_strtable_resize(&table_, size_lg2, &upb_alloc_global);
+  }
+
+  class iterator : public std::iterator<std::forward_iterator_tag,
+                                        std::pair<std::string, upb_value> > {
+   public:
+    explicit iterator(StrTable* table) {
+      upb_strtable_begin(&iter_, &table->table_);
+    }
+
+    static iterator end(StrTable* table) {
+      iterator iter(table);
+      upb_strtable_iter_setdone(&iter.iter_);
+      return iter;
+    }
+
+    void operator++() {
+      return upb_strtable_next(&iter_);
+    }
+
+    std::pair<std::string, upb_value> operator*() const {
+      std::pair<std::string, upb_value> ret;
+      ret.first.assign(upb_strtable_iter_key(&iter_));
+      ret.second = upb_strtable_iter_value(&iter_);
+      return ret;
+    }
+
+    bool operator==(const iterator& other) const {
+      return upb_strtable_iter_isequal(&iter_, &other.iter_);
+    }
+
+    bool operator!=(const iterator& other) const {
+      return !(*this == other);
+    }
+
+   private:
+    upb_strtable_iter iter_;
+  };
+
+  upb_strtable table_;
+};
+
+template <class T> class TypedStrTable {
+ public:
+  TypedStrTable() : table_(GetUpbValueType<T>()) {}
+
+  size_t count() { return table_.count(); }
+
+  bool Insert(const std::string &key, T val) {
+    return table_.Insert(key, MakeUpbValue<T>(val));
+  }
+
+  std::pair<bool, T> Remove(const std::string& key) {
+    std::pair<bool, upb_value> found = table_.Remove(key);
+    std::pair<bool, T> ret;
+    ret.first = found.first;
+    if (ret.first) {
+      ret.second = GetUpbValue<T>(found.second);
+    }
+    return ret;
+  }
+
+  std::pair<bool, T> Lookup(const std::string& key) const {
+    std::pair<bool, upb_value> found = table_.Lookup(key);
+    std::pair<bool, T> ret;
+    ret.first = found.first;
+    if (ret.first) {
+      ret.second = GetUpbValue<T>(found.second);
+    }
+    return ret;
+  }
+
+  void Resize(size_t size_lg2) {
+    table_.Resize(size_lg2);
+  }
+
+  class iterator : public std::iterator<std::forward_iterator_tag, std::pair<std::string, T> > {
+   public:
+    explicit iterator(TypedStrTable* table) : iter_(&table->table_) {}
+    static iterator end(TypedStrTable* table) {
+      iterator iter(table);
+      iter.iter_ = StrTable::iterator::end(&table->table_);
+      return iter;
+    }
+
+    void operator++() { ++iter_; }
+
+    std::pair<std::string, T> operator*() const {
+      std::pair<std::string, upb_value> val = *iter_;
+      std::pair<std::string, T> ret;
+      ret.first = val.first;
+      ret.second = GetUpbValue<T>(val.second);
+      return ret;
+    }
+
+    bool operator==(const iterator& other) const {
+      return iter_ == other.iter_;
+    }
+
+    bool operator!=(const iterator& other) const {
+      return iter_ != other.iter_;
+    }
+
+   private:
+    StrTable::iterator iter_;
+  };
+
+  iterator begin() { return iterator(this); }
+  iterator end() { return iterator::end(this); }
+
+  StrTable table_;
+};
+
+template <class T> class TypedIntTable {
+ public:
+  TypedIntTable() : table_(GetUpbValueType<T>()) {}
+
+  size_t count() { return table_.count(); }
+
+  bool Insert(uintptr_t key, T val) {
+    return table_.Insert(key, MakeUpbValue<T>(val));
+  }
+
+  bool Replace(uintptr_t key, T val) {
+    return table_.Replace(key, MakeUpbValue<T>(val));
+  }
+
+  std::pair<bool, T> Remove(uintptr_t key) {
+    std::pair<bool, upb_value> found = table_.Remove(key);
+    std::pair<bool, T> ret;
+    ret.first = found.first;
+    if (ret.first) {
+      ret.second = GetUpbValue<T>(found.second);
+    }
+    return ret;
+  }
+
+  std::pair<bool, T> Lookup(uintptr_t key) const {
+    std::pair<bool, upb_value> found = table_.Lookup(key);
+    std::pair<bool, T> ret;
+    ret.first = found.first;
+    if (ret.first) {
+      ret.second = GetUpbValue<T>(found.second);
+    }
+    return ret;
+  }
+
+  void Compact() { table_.Compact(); }
+
+  class iterator : public std::iterator<std::forward_iterator_tag, std::pair<uintptr_t, T> > {
+   public:
+    explicit iterator(TypedIntTable* table) : iter_(&table->table_) {}
+    static iterator end(TypedIntTable* table) {
+      return IntTable::iterator::end(&table->table_);
+    }
+
+    void operator++() { ++iter_; }
+
+    std::pair<uintptr_t, T> operator*() const {
+      std::pair<uintptr_t, upb_value> val = *iter_;
+      std::pair<uintptr_t, T> ret;
+      ret.first = val.first;
+      ret.second = GetUpbValue<T>(val.second);
+      return ret;
+    }
+
+    bool operator==(const iterator& other) const {
+      return iter_ == other.iter_;
+    }
+
+    bool operator!=(const iterator& other) const {
+      return iter_ != other.iter_;
+    }
+
+   private:
+    IntTable::iterator iter_;
+  };
+
+  iterator begin() { return iterator(this); }
+  iterator end() { return iterator::end(this); }
+
+  IntTable table_;
+};
+
+}
+
 bool benchmark = false;
 #define CPU_TIME_PER_TEST 0.5
 
@@ -29,38 +341,32 @@ double get_usertime() {
 /* num_entries must be a power of 2. */
 void test_strtable(const vector<std::string>& keys, uint32_t num_to_insert) {
   /* Initialize structures. */
-  upb_strtable table;
   std::map<std::string, int32_t> m;
-  upb_strtable_init(&table, UPB_CTYPE_INT32);
+  typedef upb::TypedStrTable<int32_t> Table;
+  Table table;
   std::set<std::string> all;
   for(size_t i = 0; i < num_to_insert; i++) {
     const std::string& key = keys[i];
     all.insert(key);
-    upb_strtable_insert(&table, key.c_str(), upb_value_int32(key[0]));
+    table.Insert(key, key[0]);
     m[key] = key[0];
   }
 
   /* Test correctness. */
   for(uint32_t i = 0; i < keys.size(); i++) {
     const std::string& key = keys[i];
-    upb_value v;
-    bool found = upb_strtable_lookup(&table, key.c_str(), &v);
+    std::pair<bool, int32_t> found = table.Lookup(key);
     if(m.find(key) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(found);
-      ASSERT(upb_value_getint32(v) == key[0]);
+      ASSERT(found.first);
+      ASSERT(found.second == key[0]);
       ASSERT(m[key] == key[0]);
     } else {
-      ASSERT(!found);
+      ASSERT(!found.first);
     }
   }
 
-  upb_strtable_iter iter;
-  for(upb_strtable_begin(&iter, &table); !upb_strtable_done(&iter);
-      upb_strtable_next(&iter)) {
-    const char *key = upb_strtable_iter_key(&iter);
-    std::string tmp(key, strlen(key));
-    ASSERT(strlen(key) == upb_strtable_iter_keylength(&iter));
-    std::set<std::string>::iterator i = all.find(tmp);
+  for (Table::iterator it = table.begin(); it != table.end(); ++it) {
+    std::set<std::string>::iterator i = all.find((*it).first);
     ASSERT(i != all.end());
     all.erase(i);
   }
@@ -69,84 +375,76 @@ void test_strtable(const vector<std::string>& keys, uint32_t num_to_insert) {
   // Test iteration with resizes.
 
   for (int i = 0; i < 10; i++) {
-    for(upb_strtable_begin(&iter, &table); !upb_strtable_done(&iter);
-        upb_strtable_next(&iter)) {
+    for (Table::iterator it = table.begin(); it != table.end(); ++it) {
       // Even if we invalidate the iterator it should only return real elements.
-      const char *key = upb_strtable_iter_key(&iter);
-      std::string tmp(key, strlen(key));
-      ASSERT(upb_value_getint32(upb_strtable_iter_value(&iter)) == m[tmp]);
+      ASSERT((*it).second == m[(*it).first]);
 
       // Force a resize even though the size isn't changing.
       // Also forces the table size to grow so some new buckets end up empty.
-      int new_lg2 = table.t.size_lg2 + 1;
+      int new_lg2 = table.table_.table_.t.size_lg2 + 1;
       // Don't use more than 64k tables, to avoid exhausting memory.
       new_lg2 = UPB_MIN(new_lg2, 16);
-      upb_strtable_resize(&table, new_lg2);
+      table.Resize(new_lg2);
     }
   }
 
-  upb_strtable_uninit(&table);
 }
 
 /* num_entries must be a power of 2. */
 void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
   /* Initialize structures. */
-  upb_inttable table;
+  typedef upb::TypedIntTable<uint32_t> Table;
+  Table table;
   uint32_t largest_key = 0;
   std::map<uint32_t, uint32_t> m;
   __gnu_cxx::hash_map<uint32_t, uint32_t> hm;
-  upb_inttable_init(&table, UPB_CTYPE_UINT32);
   for(size_t i = 0; i < num_entries; i++) {
     int32_t key = keys[i];
     largest_key = UPB_MAX((int32_t)largest_key, key);
-    upb_inttable_insert(&table, key, upb_value_uint32(key * 2));
+    table.Insert(key, key * 2);
     m[key] = key*2;
     hm[key] = key*2;
   }
 
   /* Test correctness. */
   for(uint32_t i = 0; i <= largest_key; i++) {
-    upb_value v;
-    bool found = upb_inttable_lookup(&table, i, &v);
+    std::pair<bool, uint32_t> found = table.Lookup(i);
     if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(found);
-      ASSERT(upb_value_getuint32(v) == i*2);
+      ASSERT(found.first);
+      ASSERT(found.second == i*2);
       ASSERT(m[i] == i*2);
       ASSERT(hm[i] == i*2);
     } else {
-      ASSERT(!found);
+      ASSERT(!found.first);
     }
   }
 
   for(uint16_t i = 0; i < num_entries; i += 2) {
-    upb_value val;
-    bool ret = upb_inttable_remove(&table, keys[i], &val);
-    ASSERT(ret == (m.erase(keys[i]) == 1));
-    if (ret) ASSERT(upb_value_getuint32(val) == (uint32_t)keys[i] * 2);
+    std::pair<bool, uint32_t> found = table.Remove(keys[i]);
+    ASSERT(found.first == (m.erase(keys[i]) == 1));
+    if (found.first) ASSERT(found.second == (uint32_t)keys[i] * 2);
     hm.erase(keys[i]);
     m.erase(keys[i]);
   }
 
-  ASSERT(upb_inttable_count(&table) == hm.size());
+  ASSERT(table.count() == hm.size());
 
   /* Test correctness. */
   for(uint32_t i = 0; i <= largest_key; i++) {
-    upb_value v;
-    bool found = upb_inttable_lookup(&table, i, &v);
+    std::pair<bool, uint32_t> found = table.Lookup(i);
     if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(found);
-      ASSERT(upb_value_getuint32(v) == i*2);
+      ASSERT(found.first);
+      ASSERT(found.second == i*2);
       ASSERT(m[i] == i*2);
       ASSERT(hm[i] == i*2);
     } else {
-      ASSERT(!found);
+      ASSERT(!found.first);
     }
   }
 
   // Test replace.
   for(uint32_t i = 0; i <= largest_key; i++) {
-    upb_value v = upb_value_uint32(i*3);
-    bool replaced = upb_inttable_replace(&table, i, v);
+    bool replaced = table.Replace(i, i*3);
     if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
       ASSERT(replaced);
       m[i] = i * 3;
@@ -157,22 +455,20 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
   }
 
   // Compact and test correctness again.
-  upb_inttable_compact(&table);
+  table.Compact();
   for(uint32_t i = 0; i <= largest_key; i++) {
-    upb_value v;
-    bool found = upb_inttable_lookup(&table, i, &v);
+    std::pair<bool, uint32_t> found = table.Lookup(i);
     if(m.find(i) != m.end()) { /* Assume map implementation is correct. */
-      ASSERT(found);
-      ASSERT(upb_value_getuint32(v) == i*3);
+      ASSERT(found.first);
+      ASSERT(found.second == i*3);
       ASSERT(m[i] == i*3);
       ASSERT(hm[i] == i*3);
     } else {
-      ASSERT(!found);
+      ASSERT(!found.first);
     }
   }
 
   if(!benchmark) {
-    upb_inttable_uninit(&table);
     return;
   }
 
@@ -207,7 +503,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     MAYBE_BREAK;
     int32_t key = keys[i & mask];
     upb_value v;
-    bool ok = upb_inttable_lookup32(&table, key, &v);
+    bool ok = upb_inttable_lookup32(&table.table_.table_, key, &v);
     x += (uintptr_t)ok;
   }
   double total = get_usertime() - before;
@@ -221,7 +517,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     MAYBE_BREAK;
     int32_t key = keys[rand_order[i & mask]];
     upb_value v;
-    bool ok = upb_inttable_lookup32(&table, key, &v);
+    bool ok = upb_inttable_lookup32(&table.table_.table_, key, &v);
     x += (uintptr_t)ok;
   }
   total = get_usertime() - before;
@@ -272,8 +568,23 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
   total = get_usertime() - before;
   if (x == INT_MAX) abort();
   printf("%ld/s (%0.1f%% of upb)\n\n", (long)(i/total), i / upb_rand_i);
-  upb_inttable_uninit(&table);
   delete[] rand_order;
+}
+
+/*
+ * This test can't pass right now because the table can't store a value of
+ * (uint64_t)-1.
+ */
+void test_int64_max_value() {
+/*
+  typedef upb::TypedIntTable<uint64_t> Table;
+  Table table;
+  uintptr_t uint64_max = (uint64_t)-1;
+  table.Insert(1, uint64_max);
+  std::pair<bool, uint64_t> found = table.Lookup(1);
+  ASSERT(found.first);
+  ASSERT(found.second == uint64_max);
+*/
 }
 
 int32_t *get_contiguous_keys(int32_t num) {
@@ -357,6 +668,7 @@ int run_tests(int argc, char *argv[]) {
   delete[] keys4;
 
   test_delete();
+  test_int64_max_value();
 
   return 0;
 }

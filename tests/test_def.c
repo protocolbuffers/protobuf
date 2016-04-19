@@ -44,19 +44,22 @@ static upb_symtab *load_test_proto(void *owner) {
   upb_status status = UPB_STATUS_INIT;
   size_t len;
   char *data = upb_readfile(descriptor_file, &len);
-  upb_filedef **files;
+  upb_filedef **files, **files_ptr;
   ASSERT(s);
   ASSERT(data);
   files = upb_loaddescriptor(data, len, &files, &status);
   ASSERT(files);
   free(data);
 
-  while (*files) {
+  files_ptr = files;
+  while (*files_ptr) {
     bool ok = upb_symtab_addfile(s, *files, &status);
     ASSERT(ok);
     upb_filedef_unref(*files, &files);
-    files++;
+    files_ptr++;
   }
+
+  upb_gfree(files);
 
   ASSERT(!upb_symtab_isfrozen(s));
   upb_symtab_freeze(s);

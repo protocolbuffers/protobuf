@@ -31,7 +31,8 @@ extern "C" {
 #endif
 
 /* Loads a binary descriptor and returns a NULL-terminated array of unfrozen
- * filedefs.  The caller owns the returned array. */
+ * filedefs.  The caller owns the returned array, which must be freed with
+ * upb_gfree(). */
 upb_filedef **upb_loaddescriptor(const char *buf, size_t n, const void *owner,
                                  upb_status *status);
 

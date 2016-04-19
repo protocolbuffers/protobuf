@@ -31,7 +31,10 @@
 /* #define UPB_DEBUG_REFS */
 
 #ifdef __cplusplus
-namespace upb { class RefCounted; }
+namespace upb {
+class RefCounted;
+template <class T> class reffed_ptr;
+}
 #endif
 
 UPB_DECLARE_TYPE(upb::RefCounted, upb_refcounted)
@@ -99,6 +102,7 @@ struct upb_refcounted {
 };
 
 #ifdef UPB_DEBUG_REFS
+extern upb_alloc upb_alloc_debugrefs;
 #define UPB_REFCOUNT_INIT(refs, ref2s) \
     {&static_refcount, NULL, NULL, 0, true, refs, ref2s}
 #else
@@ -234,5 +238,110 @@ inline void RefCounted::CheckRef(const void *owner) const {
 }
 }  /* namespace upb */
 #endif
+
+
+/* upb::reffed_ptr ************************************************************/
+
+#ifdef __cplusplus
+
+#include <algorithm>  /* For std::swap(). */
+
+/* Provides RAII semantics for upb refcounted objects.  Each reffed_ptr owns a
+ * ref on whatever object it points to (if any). */
+template <class T> class upb::reffed_ptr {
+ public:
+  reffed_ptr() : ptr_(NULL) {}
+
+  /* If ref_donor is NULL, takes a new ref, otherwise adopts from ref_donor. */
+  template <class U>
+  reffed_ptr(U* val, const void* ref_donor = NULL)
+      : ptr_(upb::upcast(val)) {
+    if (ref_donor) {
+      assert(ptr_);
+      ptr_->DonateRef(ref_donor, this);
+    } else if (ptr_) {
+      ptr_->Ref(this);
+    }
+  }
+
+  template <class U>
+  reffed_ptr(const reffed_ptr<U>& other)
+      : ptr_(upb::upcast(other.get())) {
+    if (ptr_) ptr_->Ref(this);
+  }
+
+  reffed_ptr(const reffed_ptr& other)
+      : ptr_(upb::upcast(other.get())) {
+    if (ptr_) ptr_->Ref(this);
+  }
+
+  ~reffed_ptr() { if (ptr_) ptr_->Unref(this); }
+
+  template <class U>
+  reffed_ptr& operator=(const reffed_ptr<U>& other) {
+    reset(other.get());
+    return *this;
+  }
+
+  reffed_ptr& operator=(const reffed_ptr& other) {
+    reset(other.get());
+    return *this;
+  }
+
+  /* TODO(haberman): add C++11 move construction/assignment for greater
+   * efficiency. */
+
+  void swap(reffed_ptr& other) {
+    if (ptr_ == other.ptr_) {
+      return;
+    }
+
+    if (ptr_) ptr_->DonateRef(this, &other);
+    if (other.ptr_) other.ptr_->DonateRef(&other, this);
+    std::swap(ptr_, other.ptr_);
+  }
+
+  T& operator*() const {
+    assert(ptr_);
+    return *ptr_;
+  }
+
+  T* operator->() const {
+    assert(ptr_);
+    return ptr_;
+  }
+
+  T* get() const { return ptr_; }
+
+  /* If ref_donor is NULL, takes a new ref, otherwise adopts from ref_donor. */
+  template <class U>
+  void reset(U* ptr = NULL, const void* ref_donor = NULL) {
+    reffed_ptr(ptr, ref_donor).swap(*this);
+  }
+
+  template <class U>
+  reffed_ptr<U> down_cast() {
+    return reffed_ptr<U>(upb::down_cast<U*>(get()));
+  }
+
+  template <class U>
+  reffed_ptr<U> dyn_cast() {
+    return reffed_ptr<U>(upb::dyn_cast<U*>(get()));
+  }
+
+  /* Plain release() is unsafe; if we were the only owner, it would leak the
+   * object.  Instead we provide this: */
+  T* ReleaseTo(const void* new_owner) {
+    T* ret = NULL;
+    ptr_->DonateRef(this, new_owner);
+    std::swap(ret, ptr_);
+    return ret;
+  }
+
+ private:
+  T* ptr_;
+};
+
+#endif  /* __cplusplus */
 
 #endif  /* UPB_REFCOUNT_H_ */

@@ -61,7 +61,7 @@ struct upb_descreader {
 };
 
 static char *upb_strndup(const char *buf, size_t n) {
-  char *ret = malloc(n + 1);
+  char *ret = upb_gmalloc(n + 1);
   if (!ret) return NULL;
   memcpy(ret, buf, n);
   ret[n] = '\0';
@@ -75,9 +75,12 @@ static char *upb_strndup(const char *buf, size_t n) {
  * Caller owns a ref on the returned string. */
 static char *upb_join(const char *base, const char *name) {
   if (!base || strlen(base) == 0) {
-    return upb_strdup(name);
+    return upb_gstrdup(name);
   } else {
-    char *ret = malloc(strlen(base) + strlen(name) + 2);
+    char *ret = upb_gmalloc(strlen(base) + strlen(name) + 2);
+    if (!ret) {
+      return NULL;
+    }
     ret[0] = '\0';
     strcat(ret, base);
     strcat(ret, ".");
@@ -87,14 +90,20 @@ static char *upb_join(const char *base, const char *name) {
 }
 
 /* Qualify the defname for all defs starting with offset "start" with "str". */
-static void upb_descreader_qualify(upb_filedef *f, char *str, int32_t start) {
+static bool upb_descreader_qualify(upb_filedef *f, char *str, int32_t start) {
   size_t i;
   for (i = start; i < upb_filedef_defcount(f); i++) {
     upb_def *def = upb_filedef_mutabledef(f, i);
     char *name = upb_join(str, upb_def_fullname(def));
+    if (!name) {
+      /* Need better logic here; at this point we've qualified some names but
+       * not others. */
+      return false;
+    }
     upb_def_setfullname(def, name, NULL);
-    free(name);
+    upb_gfree(name);
   }
+  return true;
 }
 
 
@@ -120,16 +129,19 @@ void upb_descreader_startcontainer(upb_descreader *r) {
   f->name = NULL;
 }
 
-void upb_descreader_endcontainer(upb_descreader *r) {
+bool upb_descreader_endcontainer(upb_descreader *r) {
   upb_descreader_frame *f = &r->stack[--r->stack_len];
-  upb_descreader_qualify(r->file, f->name, f->start);
-  free(f->name);
+  if (!upb_descreader_qualify(r->file, f->name, f->start)) {
+    return false;
+  }
+  upb_gfree(f->name);
   f->name = NULL;
+  return true;
 }
 
 void upb_descreader_setscopename(upb_descreader *r, char *str) {
   upb_descreader_frame *f = &r->stack[r->stack_len-1];
-  free(f->name);
+  upb_gfree(f->name);
   f->name = str;
 }
 
@@ -156,8 +168,7 @@ static bool file_end(void *closure, const void *hd, upb_status *status) {
   upb_descreader *r = closure;
   UPB_UNUSED(hd);
   UPB_UNUSED(status);
-  upb_descreader_endcontainer(r);
-  return true;
+  return upb_descreader_endcontainer(r);
 }
 
 static size_t file_onname(void *closure, const void *hd, const char *buf,
@@ -171,6 +182,7 @@ static size_t file_onname(void *closure, const void *hd, const char *buf,
   name = upb_strndup(buf, n);
   /* XXX: see comment at the top of the file. */
   ok = upb_filedef_setname(r->file, name, NULL);
+  upb_gfree(name);
   UPB_ASSERT_VAR(ok, ok);
   return n;
 }
@@ -254,7 +266,7 @@ static size_t enumval_onname(void *closure, const void *hd, const char *buf,
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
   /* XXX: see comment at the top of the file. */
-  free(r->name);
+  upb_gfree(r->name);
   r->name = upb_strndup(buf, n);
   r->saw_name = true;
   return n;
@@ -279,7 +291,7 @@ static bool enumval_endmsg(void *closure, const void *hd, upb_status *status) {
   }
   e = upb_downcast_enumdef_mutable(upb_descreader_last(r));
   upb_enumdef_addval(e, r->name, r->number, status);
-  free(r->name);
+  upb_gfree(r->name);
   r->name = NULL;
   return true;
 }
@@ -311,7 +323,7 @@ static size_t enum_onname(void *closure, const void *hd, const char *buf,
   UPB_UNUSED(handle);
   /* XXX: see comment at the top of the file. */
   upb_def_setfullname(upb_descreader_last(r), fullname, NULL);
-  free(fullname);
+  upb_gfree(fullname);
   return n;
 }
 
@@ -321,7 +333,7 @@ static bool field_startmsg(void *closure, const void *hd) {
   upb_descreader *r = closure;
   UPB_UNUSED(hd);
   assert(r->f);
-  free(r->default_string);
+  upb_gfree(r->default_string);
   r->default_string = NULL;
 
   /* fielddefs default to packed, but descriptors default to non-packed. */
@@ -480,7 +492,7 @@ static size_t field_onname(void *closure, const void *hd, const char *buf,
 
   /* XXX: see comment at the top of the file. */
   upb_fielddef_setname(r->f, name, NULL);
-  free(name);
+  upb_gfree(name);
   return n;
 }
 
@@ -493,7 +505,7 @@ static size_t field_ontypename(void *closure, const void *hd, const char *buf,
 
   /* XXX: see comment at the top of the file. */
   upb_fielddef_setsubdefname(r->f, name, NULL);
-  free(name);
+  upb_gfree(name);
   return n;
 }
 
@@ -506,7 +518,7 @@ static size_t field_onextendee(void *closure, const void *hd, const char *buf,
 
   /* XXX: see comment at the top of the file. */
   upb_fielddef_setcontainingtypename(r->f, name, NULL);
-  free(name);
+  upb_gfree(name);
   return n;
 }
 
@@ -519,7 +531,7 @@ static size_t field_ondefaultval(void *closure, const void *hd, const char *buf,
   /* Have to convert from string to the correct type, but we might not know the
    * type yet, so we save it as a string until the end of the field.
    * XXX: see comment at the top of the file. */
-  free(r->default_string);
+  upb_gfree(r->default_string);
   r->default_string = upb_strndup(buf, n);
   return n;
 }
@@ -543,8 +555,7 @@ static bool msg_end(void *closure, const void *hd, upb_status *status) {
     upb_status_seterrmsg(status, "Encountered message with no name.");
     return false;
   }
-  upb_descreader_endcontainer(r);
-  return true;
+  return upb_descreader_endcontainer(r);
 }
 
 static size_t msg_name(void *closure, const void *hd, const char *buf,
@@ -683,12 +694,12 @@ void descreader_cleanup(void *_r) {
     upb_filedef_unref(upb_descreader_file(r, i), &r->files);
   }
 
-  free(r->name);
+  upb_gfree(r->name);
   upb_inttable_uninit(&r->files);
-  free(r->default_string);
+  upb_gfree(r->default_string);
   while (r->stack_len > 0) {
     upb_descreader_frame *f = &r->stack[--r->stack_len];
-    free(f->name);
+    upb_gfree(f->name);
   }
 }
 

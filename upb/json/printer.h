@@ -7,7 +7,6 @@
 #ifndef UPB_JSON_TYPED_PRINTER_H_
 #define UPB_JSON_TYPED_PRINTER_H_
 
-#include "upb/env.h"
 #include "upb/sink.h"
 
 #ifdef __cplusplus
@@ -23,7 +22,7 @@ UPB_DECLARE_TYPE(upb::json::Printer, upb_json_printer)
 
 /* upb::json::Printer *********************************************************/
 
-#define UPB_JSON_PRINTER_SIZE 168
+#define UPB_JSON_PRINTER_SIZE 176
 
 #ifdef __cplusplus
 

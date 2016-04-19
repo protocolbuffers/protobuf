@@ -12,7 +12,6 @@
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "upb/sink.h"
@@ -109,14 +108,14 @@ bool putf(upb_textprinter *p, const char *fmt, ...) {
   va_end(args_copy);
 
   /* + 1 for NULL terminator (vsprintf() requires it even if we don't). */
-  str = malloc(len + 1);
+  str = upb_gmalloc(len + 1);
   if (!str) return false;
   written = vsprintf(str, fmt, args);
   va_end(args);
   UPB_ASSERT_VAR(written, written == len);
 
   ok = upb_bytessink_putbuf(p->output_, p->subc, str, len, NULL);
-  free(str);
+  upb_gfree(str);
   return ok;
 }
 

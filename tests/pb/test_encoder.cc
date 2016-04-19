@@ -26,10 +26,7 @@ void test_pb_roundtrip() {
       upb::pb::DecoderMethod::New(
           upb::pb::DecoderMethodOptions(encoder_handlers.get())));
 
-  char buf[512];
-  upb::SeededAllocator alloc(buf, sizeof(buf));
-  upb::Environment env;
-  env.SetAllocator(&alloc);
+  upb::InlinedEnvironment<512> env;
   std::string input = read_string("upb/descriptor/descriptor.pb");
   std::string output;
   upb::StringSink string_sink(&output);

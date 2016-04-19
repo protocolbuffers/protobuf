@@ -6,7 +6,6 @@
 
 #include "upb/table.int.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 #define UPB_MAXARRSIZE 16  /* 64k. */
@@ -14,6 +13,17 @@
 /* From Chromium. */
 #define ARRAY_SIZE(x) \
     ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+
+#ifdef NDEBUG
+static void upb_check_alloc(upb_table *t, upb_alloc *a) {
+  UPB_UNUSED(t);
+  UPB_UNUSED(a);
+}
+#else
+static void upb_check_alloc(upb_table *t, upb_alloc *a) {
+  assert(t->alloc == a);
+}
+#endif
 
 static const double MAX_LOAD = 0.85;
 
@@ -32,11 +42,11 @@ int log2ceil(uint64_t v) {
   return UPB_MIN(UPB_MAXARRSIZE, ret);
 }
 
-char *upb_strdup(const char *s) {
-  return upb_strdup2(s, strlen(s));
+char *upb_strdup(const char *s, upb_alloc *a) {
+  return upb_strdup2(s, strlen(s), a);
 }
 
-char *upb_strdup2(const char *s, size_t len) {
+char *upb_strdup2(const char *s, size_t len, upb_alloc *a) {
   size_t n;
   char *p;
 
@@ -45,7 +55,7 @@ char *upb_strdup2(const char *s, size_t len) {
   /* Always null-terminate, even if binary data; but don't rely on the input to
    * have a null-terminating byte since it may be a raw binary buffer. */
   n = len + 1;
-  p = malloc(n);
+  p = upb_malloc(a, n);
   if (p) {
     memcpy(p, s, len);
     p[len] = 0;
@@ -93,16 +103,20 @@ static bool isfull(upb_table *t) {
   }
 }
 
-static bool init(upb_table *t, upb_ctype_t ctype, uint8_t size_lg2) {
+static bool init(upb_table *t, upb_ctype_t ctype, uint8_t size_lg2,
+                 upb_alloc *a) {
   size_t bytes;
 
   t->count = 0;
   t->ctype = ctype;
   t->size_lg2 = size_lg2;
   t->mask = upb_table_size(t) ? upb_table_size(t) - 1 : 0;
+#ifndef NDEBUG
+  t->alloc = a;
+#endif
   bytes = upb_table_size(t) * sizeof(upb_tabent);
   if (bytes > 0) {
-    t->entries = malloc(bytes);
+    t->entries = upb_malloc(a, bytes);
     if (!t->entries) return false;
     memset(mutable_entries(t), 0, bytes);
   } else {
@@ -111,7 +125,10 @@ static bool init(upb_table *t, upb_ctype_t ctype, uint8_t size_lg2) {
   return true;
 }
 
-static void uninit(upb_table *t) { free(mutable_entries(t)); }
+static void uninit(upb_table *t, upb_alloc *a) {
+  upb_check_alloc(t, a);
+  upb_free(a, mutable_entries(t));
+}
 
 static upb_tabent *emptyent(upb_table *t) {
   upb_tabent *e = mutable_entries(t) + upb_table_size(t);
@@ -264,8 +281,8 @@ static size_t begin(const upb_table *t) {
 
 /* A simple "subclass" of upb_table that only adds a hash function for strings. */
 
-static upb_tabkey strcopy(lookupkey_t k2) {
-  char *str = malloc(k2.str.len + sizeof(uint32_t) + 1);
+static upb_tabkey strcopy(lookupkey_t k2, upb_alloc *a) {
+  char *str = upb_malloc(a, k2.str.len + sizeof(uint32_t) + 1);
   if (str == NULL) return 0;
   memcpy(str, &k2.str.len, sizeof(uint32_t));
   memcpy(str + sizeof(uint32_t), k2.str.str, k2.str.len + 1);
@@ -284,51 +301,56 @@ static bool streql(upb_tabkey k1, lookupkey_t k2) {
   return len == k2.str.len && memcmp(str, k2.str.str, len) == 0;
 }
 
-bool upb_strtable_init(upb_strtable *t, upb_ctype_t ctype) {
-  return init(&t->t, ctype, 2);
+bool upb_strtable_init2(upb_strtable *t, upb_ctype_t ctype, upb_alloc *a) {
+  return init(&t->t, ctype, 2, a);
 }
 
-void upb_strtable_uninit(upb_strtable *t) {
+void upb_strtable_uninit2(upb_strtable *t, upb_alloc *a) {
   size_t i;
   for (i = 0; i < upb_table_size(&t->t); i++)
-    free((void*)t->t.entries[i].key);
-  uninit(&t->t);
+    upb_free(a, (void*)t->t.entries[i].key);
+  uninit(&t->t, a);
 }
 
-bool upb_strtable_resize(upb_strtable *t, size_t size_lg2) {
+bool upb_strtable_resize(upb_strtable *t, size_t size_lg2, upb_alloc *a) {
   upb_strtable new_table;
   upb_strtable_iter i;
 
-  if (!init(&new_table.t, t->t.ctype, size_lg2))
+  upb_check_alloc(&t->t, a);
+
+  if (!init(&new_table.t, t->t.ctype, size_lg2, a))
     return false;
   upb_strtable_begin(&i, t);
   for ( ; !upb_strtable_done(&i); upb_strtable_next(&i)) {
-    upb_strtable_insert2(
+    upb_strtable_insert3(
         &new_table,
         upb_strtable_iter_key(&i),
         upb_strtable_iter_keylength(&i),
-        upb_strtable_iter_value(&i));
+        upb_strtable_iter_value(&i),
+        a);
   }
-  upb_strtable_uninit(t);
+  upb_strtable_uninit2(t, a);
   *t = new_table;
   return true;
 }
 
-bool upb_strtable_insert2(upb_strtable *t, const char *k, size_t len,
-                          upb_value v) {
+bool upb_strtable_insert3(upb_strtable *t, const char *k, size_t len,
+                          upb_value v, upb_alloc *a) {
   lookupkey_t key;
   upb_tabkey tabkey;
   uint32_t hash;
 
+  upb_check_alloc(&t->t, a);
+
   if (isfull(&t->t)) {
     /* Need to resize.  New table of double the size, add old elements to it. */
-    if (!upb_strtable_resize(t, t->t.size_lg2 + 1)) {
+    if (!upb_strtable_resize(t, t->t.size_lg2 + 1, a)) {
       return false;
     }
   }
 
   key = strkey2(k, len);
-  tabkey = strcopy(key);
+  tabkey = strcopy(key, a);
   if (tabkey == 0) return false;
 
   hash = MurmurHash2(key.str.str, key.str.len, 0);
@@ -342,12 +364,12 @@ bool upb_strtable_lookup2(const upb_strtable *t, const char *key, size_t len,
   return lookup(&t->t, strkey2(key, len), v, hash, &streql);
 }
 
-bool upb_strtable_remove2(upb_strtable *t, const char *key, size_t len,
-                         upb_value *val) {
+bool upb_strtable_remove3(upb_strtable *t, const char *key, size_t len,
+                         upb_value *val, upb_alloc *alloc) {
   uint32_t hash = MurmurHash2(key, strlen(key), 0);
   upb_tabkey tabkey;
   if (rm(&t->t, strkey2(key, len), val, &tabkey, hash, &streql)) {
-    free((void*)tabkey);
+    upb_free(alloc, (void*)tabkey);
     return true;
   } else {
     return false;
@@ -374,12 +396,12 @@ bool upb_strtable_done(const upb_strtable_iter *i) {
          upb_tabent_isempty(str_tabent(i));
 }
 
-const char *upb_strtable_iter_key(upb_strtable_iter *i) {
+const char *upb_strtable_iter_key(const upb_strtable_iter *i) {
   assert(!upb_strtable_done(i));
   return upb_tabstr(str_tabent(i)->key, NULL);
 }
 
-size_t upb_strtable_iter_keylength(upb_strtable_iter *i) {
+size_t upb_strtable_iter_keylength(const upb_strtable_iter *i) {
   uint32_t len;
   assert(!upb_strtable_done(i));
   upb_tabstr(str_tabent(i)->key, &len);
@@ -454,18 +476,18 @@ static void check(upb_inttable *t) {
 }
 
 bool upb_inttable_sizedinit(upb_inttable *t, upb_ctype_t ctype,
-                            size_t asize, int hsize_lg2) {
+                            size_t asize, int hsize_lg2, upb_alloc *a) {
   size_t array_bytes;
 
-  if (!init(&t->t, ctype, hsize_lg2)) return false;
+  if (!init(&t->t, ctype, hsize_lg2, a)) return false;
   /* Always make the array part at least 1 long, so that we know key 0
    * won't be in the hash part, which simplifies things. */
   t->array_size = UPB_MAX(1, asize);
   t->array_count = 0;
   array_bytes = t->array_size * sizeof(upb_value);
-  t->array = malloc(array_bytes);
+  t->array = upb_malloc(a, array_bytes);
   if (!t->array) {
-    uninit(&t->t);
+    uninit(&t->t, a);
     return false;
   }
   memset(mutable_array(t), 0xff, array_bytes);
@@ -473,22 +495,23 @@ bool upb_inttable_sizedinit(upb_inttable *t, upb_ctype_t ctype,
   return true;
 }
 
-bool upb_inttable_init(upb_inttable *t, upb_ctype_t ctype) {
-  return upb_inttable_sizedinit(t, ctype, 0, 4);
+bool upb_inttable_init2(upb_inttable *t, upb_ctype_t ctype, upb_alloc *a) {
+  return upb_inttable_sizedinit(t, ctype, 0, 4, a);
 }
 
-void upb_inttable_uninit(upb_inttable *t) {
-  uninit(&t->t);
-  free(mutable_array(t));
+void upb_inttable_uninit2(upb_inttable *t, upb_alloc *a) {
+  uninit(&t->t, a);
+  upb_free(a, mutable_array(t));
 }
 
-bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val) {
-  /* XXX: Table can't store value (uint64_t)-1.  Need to somehow statically
-   * guarantee that this is not necessary, or fix the limitation. */
+bool upb_inttable_insert2(upb_inttable *t, uintptr_t key, upb_value val,
+                          upb_alloc *a) {
   upb_tabval tabval;
   tabval.val = val.val;
   UPB_UNUSED(tabval);
-  assert(upb_arrhas(tabval));
+  assert(upb_arrhas(tabval));  /* This will reject (uint64_t)-1.  Fix this. */
+
+  upb_check_alloc(&t->t, a);
 
   if (key < t->array_size) {
     assert(!upb_arrhas(t->array[key]));
@@ -499,8 +522,11 @@ bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val) {
       /* Need to resize the hash part, but we re-use the array part. */
       size_t i;
       upb_table new_table;
-      if (!init(&new_table, t->t.ctype, t->t.size_lg2 + 1))
+
+      if (!init(&new_table, t->t.ctype, t->t.size_lg2 + 1, a)) {
         return false;
+      }
+
       for (i = begin(&t->t); i < upb_table_size(&t->t); i = next(&t->t, i)) {
         const upb_tabent *e = &t->t.entries[i];
         uint32_t hash;
@@ -513,7 +539,7 @@ bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val) {
 
       assert(t->t.count == new_table.count);
 
-      uninit(&t->t);
+      uninit(&t->t, a);
       t->t = new_table;
     }
     insert(&t->t, intkey(key), key, val, upb_inthash(key), &inthash, &inteql);
@@ -559,8 +585,9 @@ bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val) {
   return success;
 }
 
-bool upb_inttable_push(upb_inttable *t, upb_value val) {
-  return upb_inttable_insert(t, upb_inttable_count(t), val);
+bool upb_inttable_push2(upb_inttable *t, upb_value val, upb_alloc *a) {
+  upb_check_alloc(&t->t, a);
+  return upb_inttable_insert2(t, upb_inttable_count(t), val, a);
 }
 
 upb_value upb_inttable_pop(upb_inttable *t) {
@@ -570,8 +597,10 @@ upb_value upb_inttable_pop(upb_inttable *t) {
   return val;
 }
 
-bool upb_inttable_insertptr(upb_inttable *t, const void *key, upb_value val) {
-  return upb_inttable_insert(t, (uintptr_t)key, val);
+bool upb_inttable_insertptr2(upb_inttable *t, const void *key, upb_value val,
+                             upb_alloc *a) {
+  upb_check_alloc(&t->t, a);
+  return upb_inttable_insert2(t, (uintptr_t)key, val, a);
 }
 
 bool upb_inttable_lookupptr(const upb_inttable *t, const void *key,
@@ -583,7 +612,7 @@ bool upb_inttable_removeptr(upb_inttable *t, const void *key, upb_value *val) {
   return upb_inttable_remove(t, (uintptr_t)key, val);
 }
 
-void upb_inttable_compact(upb_inttable *t) {
+void upb_inttable_compact2(upb_inttable *t, upb_alloc *a) {
   /* A power-of-two histogram of the table keys. */
   size_t counts[UPB_MAXARRSIZE + 1] = {0};
 
@@ -594,6 +623,8 @@ void upb_inttable_compact(upb_inttable *t) {
   size_t arr_count;
   int size_lg2;
   upb_inttable new_t;
+
+  upb_check_alloc(&t->t, a);
 
   upb_inttable_begin(&i, t);
   for (; !upb_inttable_done(&i); upb_inttable_next(&i)) {
@@ -627,16 +658,16 @@ void upb_inttable_compact(upb_inttable *t) {
     size_t hash_size = hash_count ? (hash_count / MAX_LOAD) + 1 : 0;
     size_t hashsize_lg2 = log2ceil(hash_size);
 
-    upb_inttable_sizedinit(&new_t, t->t.ctype, arr_size, hashsize_lg2);
+    upb_inttable_sizedinit(&new_t, t->t.ctype, arr_size, hashsize_lg2, a);
     upb_inttable_begin(&i, t);
     for (; !upb_inttable_done(&i); upb_inttable_next(&i)) {
       uintptr_t k = upb_inttable_iter_key(&i);
-      upb_inttable_insert(&new_t, k, upb_inttable_iter_value(&i));
+      upb_inttable_insert2(&new_t, k, upb_inttable_iter_value(&i), a);
     }
     assert(new_t.array_size == arr_size);
     assert(new_t.t.size_lg2 == hashsize_lg2);
   }
-  upb_inttable_uninit(t);
+  upb_inttable_uninit2(t, a);
   *t = new_t;
 }
 

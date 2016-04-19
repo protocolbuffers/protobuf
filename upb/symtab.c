@@ -2,7 +2,6 @@
 #include "upb/structdefs.int.h"
 #include "upb/symtab.h"
 
-#include <stdlib.h>
 #include <string.h>
 
 static void upb_symtab_free(upb_refcounted *r) {
@@ -14,13 +13,17 @@ static void upb_symtab_free(upb_refcounted *r) {
     upb_def_unref(def, s);
   }
   upb_strtable_uninit(&s->symtab);
-  free(s);
+  upb_gfree(s);
 }
-
 
 upb_symtab *upb_symtab_new(const void *owner) {
   static const struct upb_refcounted_vtbl vtbl = {NULL, &upb_symtab_free};
-  upb_symtab *s = malloc(sizeof(*s));
+
+  upb_symtab *s = upb_gmalloc(sizeof(*s));
+  if (!s) {
+    return NULL;
+  }
+
   upb_refcounted_init(upb_symtab_upcast_mutable(s), &vtbl, owner);
   upb_strtable_init(&s->symtab, UPB_CTYPE_PTR);
   return s;
@@ -207,6 +210,10 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
   upb_strtable addtab;
   upb_inttable seen;
 
+  if (n == 0 && !freeze_also) {
+    return true;
+  }
+
   assert(!upb_symtab_isfrozen(s));
   if (!upb_strtable_init(&addtab, UPB_CTYPE_PTR)) {
     upb_status_seterrmsg(status, "out of memory");
@@ -355,7 +362,7 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
     add_objs_size++;
   }
 
-  add_defs = malloc(sizeof(void*) * add_objs_size);
+  add_defs = upb_gmalloc(sizeof(void*) * add_objs_size);
   if (add_defs == NULL) goto oom_err;
   upb_strtable_begin(&iter, &addtab);
   for (add_n = 0; !upb_strtable_done(&iter); upb_strtable_next(&iter)) {
@@ -400,7 +407,7 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
     success = upb_strtable_insert(&s->symtab, name, upb_value_ptr(def));
     UPB_ASSERT_VAR(success, success == true);
   }
-  free(add_objs);
+  upb_gfree(add_defs);
   return true;
 
 oom_err:
@@ -421,7 +428,7 @@ err: {
     }
   }
   upb_strtable_uninit(&addtab);
-  free(add_objs);
+  upb_gfree(add_defs);
   assert(!upb_ok(status));
   return false;
 }
@@ -438,7 +445,7 @@ bool upb_symtab_addfile(upb_symtab *s, upb_filedef *file, upb_status *status) {
   bool ret;
 
   n = upb_filedef_defcount(file);
-  defs = malloc(sizeof(*defs) * n);
+  defs = upb_gmalloc(sizeof(*defs) * n);
 
   if (defs == NULL) {
     upb_status_seterrmsg(status, "Out of memory");
@@ -451,7 +458,7 @@ bool upb_symtab_addfile(upb_symtab *s, upb_filedef *file, upb_status *status) {
 
   ret = symtab_add(s, defs, n, NULL, upb_filedef_upcast_mutable(file), status);
 
-  free(defs);
+  upb_gfree(defs);
   return ret;
 }
 

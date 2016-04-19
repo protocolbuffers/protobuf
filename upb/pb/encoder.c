@@ -57,7 +57,6 @@
 #include "upb/pb/encoder.h"
 #include "upb/pb/varint.int.h"
 
-#include <stdlib.h>
 
 /* The output buffer is divided into segments; a segment is a string of data
  * that is "ready to go" -- it does not need any varint lengths inserted into
@@ -302,12 +301,12 @@ static void new_tag(upb_handlers *h, const upb_fielddef *f, upb_wiretype_t wt,
                     upb_handlerattr *attr) {
   uint32_t n = upb_fielddef_number(f);
 
-  tag_t *tag = malloc(sizeof(tag_t));
+  tag_t *tag = upb_gmalloc(sizeof(tag_t));
   tag->bytes = upb_vencode64((n << 3) | wt, tag->tag);
 
   upb_handlerattr_init(attr);
   upb_handlerattr_sethandlerdata(attr, tag);
-  upb_handlers_addcleanup(h, tag, free);
+  upb_handlers_addcleanup(h, tag, upb_gfree);
 }
 
 static bool encode_tag(upb_pb_encoder *e, const tag_t *tag) {

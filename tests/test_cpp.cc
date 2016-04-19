@@ -12,7 +12,6 @@
 #include <sstream>
 
 #include "upb/def.h"
-#include "upb/env.h"
 #include "upb/descriptor/reader.h"
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"

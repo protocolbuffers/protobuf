@@ -5,7 +5,6 @@
 #ifndef UPB_DECODER_INT_H_
 #define UPB_DECODER_INT_H_
 
-#include <stdlib.h>
 #include "upb/def.h"
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"

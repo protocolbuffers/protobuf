@@ -18,7 +18,6 @@
 #include "upb/refcounted.h"
 
 #include <setjmp.h>
-#include <stdlib.h>
 
 static void freeobj(upb_refcounted *o);
 
@@ -94,8 +93,31 @@ void upb_unlock();
 /* UPB_DEBUG_REFS mode counts on being able to malloc() memory in some
  * code-paths that can normally never fail, like upb_refcounted_ref().  Since
  * we have no way to propagage out-of-memory errors back to the user, and since
- * these errors can only occur in UPB_DEBUG_REFS mode, we immediately fail. */
-#define CHECK_OOM(predicate) if (!(predicate)) { assert(predicate); exit(1); }
+ * these errors can only occur in UPB_DEBUG_REFS mode, we use an allocator that
+ * immediately aborts on failure (avoiding the global allocator, which might
+ * inject failures). */
+
+#include <stdlib.h>
+
+static void *upb_debugrefs_allocfunc(upb_alloc *alloc, void *ptr,
+                                     size_t oldsize, size_t size) {
+  UPB_UNUSED(alloc);
+  UPB_UNUSED(oldsize);
+  if (size == 0) {
+    free(ptr);
+    return NULL;
+  } else {
+    void *ret = realloc(ptr, size);
+
+    if (!ret) {
+      abort();
+    }
+
+    return ret;
+  }
+}
+
+upb_alloc upb_alloc_debugrefs = {&upb_debugrefs_allocfunc};
 
 typedef struct {
   int count;  /* How many refs there are (duplicates only allowed for ref2). */
@@ -103,8 +125,7 @@ typedef struct {
 } trackedref;
 
 static trackedref *trackedref_new(bool is_ref2) {
-  trackedref *ret = malloc(sizeof(*ret));
-  CHECK_OOM(ret);
+  trackedref *ret = upb_malloc(&upb_alloc_debugrefs, sizeof(*ret));
   ret->count = 1;
   ret->is_ref2 = is_ref2;
   return ret;
@@ -129,15 +150,15 @@ static void track(const upb_refcounted *r, const void *owner, bool ref2) {
     ref->count++;
   } else {
     trackedref *ref = trackedref_new(ref2);
-    bool ok = upb_inttable_insertptr(r->refs, owner, upb_value_ptr(ref));
-    CHECK_OOM(ok);
+    upb_inttable_insertptr2(r->refs, owner, upb_value_ptr(ref),
+                            &upb_alloc_debugrefs);
     if (ref2) {
       /* We know this cast is safe when it is a ref2, because it's coming from
        * another refcounted object. */
       const upb_refcounted *from = owner;
       assert(!upb_inttable_lookupptr(from->ref2s, r, NULL));
-      ok = upb_inttable_insertptr(from->ref2s, r, upb_value_ptr(NULL));
-      CHECK_OOM(ok);
+      upb_inttable_insertptr2(from->ref2s, r, upb_value_ptr(NULL),
+                              &upb_alloc_debugrefs);
     }
   }
   upb_unlock();
@@ -195,7 +216,6 @@ static void getref2s(const upb_refcounted *owner, upb_inttable *tab) {
     upb_value v;
     upb_value count;
     trackedref *ref;
-    bool ok;
     bool found;
 
     upb_refcounted *to = (upb_refcounted*)upb_inttable_iter_key(&i);
@@ -206,8 +226,7 @@ static void getref2s(const upb_refcounted *owner, upb_inttable *tab) {
     ref = upb_value_getptr(v);
     count = upb_value_int32(ref->count);
 
-    ok = upb_inttable_insertptr(tab, to, count);
-    CHECK_OOM(ok);
+    upb_inttable_insertptr2(tab, to, count, &upb_alloc_debugrefs);
   }
   upb_unlock();
 }
@@ -233,21 +252,19 @@ static void visit_check(const upb_refcounted *obj, const upb_refcounted *subobj,
   assert(removed);
   newcount = upb_value_getint32(v) - 1;
   if (newcount > 0) {
-    upb_inttable_insert(ref2, (uintptr_t)subobj, upb_value_int32(newcount));
+    upb_inttable_insert2(ref2, (uintptr_t)subobj, upb_value_int32(newcount),
+                         &upb_alloc_debugrefs);
   }
 }
 
 static void visit(const upb_refcounted *r, upb_refcounted_visit *v,
                   void *closure) {
-  bool ok;
-
   /* In DEBUG_REFS mode we know what existing ref2 refs there are, so we know
    * exactly the set of nodes that visit() should visit.  So we verify visit()'s
    * correctness here. */
   check_state state;
   state.obj = r;
-  ok = upb_inttable_init(&state.ref2, UPB_CTYPE_INT32);
-  CHECK_OOM(ok);
+  upb_inttable_init2(&state.ref2, UPB_CTYPE_INT32, &upb_alloc_debugrefs);
   getref2s(r, &state.ref2);
 
   /* This should visit any children in the ref2 table. */
@@ -255,32 +272,22 @@ static void visit(const upb_refcounted *r, upb_refcounted_visit *v,
 
   /* This assertion will fail if the visit() function missed any children. */
   assert(upb_inttable_count(&state.ref2) == 0);
-  upb_inttable_uninit(&state.ref2);
+  upb_inttable_uninit2(&state.ref2, &upb_alloc_debugrefs);
   if (r->vtbl->visit) r->vtbl->visit(r, v, closure);
 }
 
-static bool trackinit(upb_refcounted *r) {
-  r->refs = malloc(sizeof(*r->refs));
-  r->ref2s = malloc(sizeof(*r->ref2s));
-  if (!r->refs || !r->ref2s) goto err1;
-
-  if (!upb_inttable_init(r->refs, UPB_CTYPE_PTR)) goto err1;
-  if (!upb_inttable_init(r->ref2s, UPB_CTYPE_PTR)) goto err2;
-  return true;
-
-err2:
-  upb_inttable_uninit(r->refs);
-err1:
-  free(r->refs);
-  free(r->ref2s);
-  return false;
+static void trackinit(upb_refcounted *r) {
+  r->refs = upb_malloc(&upb_alloc_debugrefs, sizeof(*r->refs));
+  r->ref2s = upb_malloc(&upb_alloc_debugrefs, sizeof(*r->ref2s));
+  upb_inttable_init2(r->refs, UPB_CTYPE_PTR, &upb_alloc_debugrefs);
+  upb_inttable_init2(r->ref2s, UPB_CTYPE_PTR, &upb_alloc_debugrefs);
 }
 
 static void trackfree(const upb_refcounted *r) {
-  upb_inttable_uninit(r->refs);
-  upb_inttable_uninit(r->ref2s);
-  free(r->refs);
-  free(r->ref2s);
+  upb_inttable_uninit2(r->refs, &upb_alloc_debugrefs);
+  upb_inttable_uninit2(r->ref2s, &upb_alloc_debugrefs);
+  upb_free(&upb_alloc_debugrefs, r->refs);
+  upb_free(&upb_alloc_debugrefs, r->ref2s);
 }
 
 #else
@@ -303,9 +310,8 @@ static void checkref(const upb_refcounted *r, const void *owner, bool ref2) {
   UPB_UNUSED(ref2);
 }
 
-static bool trackinit(upb_refcounted *r) {
+static void trackinit(upb_refcounted *r) {
   UPB_UNUSED(r);
-  return true;
 }
 
 static void trackfree(const upb_refcounted *r) {
@@ -415,12 +421,12 @@ static upb_refcounted *pop(tarjan *t) {
 }
 
 static void tarjan_newgroup(tarjan *t) {
-  uint32_t *group = malloc(sizeof(*group));
+  uint32_t *group = upb_gmalloc(sizeof(*group));
   if (!group) oom(t);
   /* Push group and empty group leader (we'll fill in leader later). */
   if (!upb_inttable_push(&t->groups, upb_value_ptr(group)) ||
       !upb_inttable_push(&t->groups, upb_value_ptr(NULL))) {
-    free(group);
+    upb_gfree(group);
     oom(t);
   }
   *group = 0;
@@ -595,7 +601,7 @@ static bool freeze(upb_refcounted *const*roots, int n, upb_status *s,
       if (obj == move) {
         /* Removing the last object from a group. */
         assert(*obj->group == obj->individual_count);
-        free(obj->group);
+        upb_gfree(obj->group);
       } else {
         obj->next = move->next;
         /* This may decrease to zero; we'll collect GRAY objects (if any) that
@@ -651,7 +657,7 @@ static bool freeze(upb_refcounted *const*roots, int n, upb_status *s,
         /* We eagerly free() the group's count (since we can't easily determine
          * the group's remaining size it's the easiest way to ensure it gets
          * done). */
-        free(obj->group);
+        upb_gfree(obj->group);
 
         /* Visit to release ref2's (done in a separate pass since release_ref2
          * depends on o->group being unmodified so it can test merged()). */
@@ -671,7 +677,7 @@ err4:
   if (!ret) {
     upb_inttable_begin(&iter, &t.groups);
     for(; !upb_inttable_done(&iter); upb_inttable_next(&iter))
-      free(upb_value_getptr(upb_inttable_iter_value(&iter)));
+      upb_gfree(upb_value_getptr(upb_inttable_iter_value(&iter)));
   }
   upb_inttable_uninit(&t.groups);
 err3:
@@ -695,7 +701,7 @@ static void merge(upb_refcounted *r, upb_refcounted *from) {
 
   if (merged(r, from)) return;
   *r->group += *from->group;
-  free(from->group);
+  upb_gfree(from->group);
   base = from;
 
   /* Set all refcount pointers in the "from" chain to the merged refcount.
@@ -729,7 +735,7 @@ static void unref(const upb_refcounted *r) {
   if (unrefgroup(r->group)) {
     const upb_refcounted *o;
 
-    free(r->group);
+    upb_gfree(r->group);
 
     /* In two passes, since release_ref2 needs a guarantee that any subobjs
      * are alive. */
@@ -773,13 +779,10 @@ bool upb_refcounted_init(upb_refcounted *r,
   r->vtbl = vtbl;
   r->individual_count = 0;
   r->is_frozen = false;
-  r->group = malloc(sizeof(*r->group));
+  r->group = upb_gmalloc(sizeof(*r->group));
   if (!r->group) return false;
   *r->group = 0;
-  if (!trackinit(r)) {
-    free(r->group);
-    return false;
-  }
+  trackinit(r);
   upb_refcounted_ref(r, owner);
   return true;
 }
