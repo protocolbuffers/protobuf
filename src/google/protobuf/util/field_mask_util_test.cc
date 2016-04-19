@@ -30,6 +30,8 @@
 
 #include <google/protobuf/util/field_mask_util.h>
 
+#include <algorithm>
+
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/field_mask.pb.h>
