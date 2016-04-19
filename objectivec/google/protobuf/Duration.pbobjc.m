@@ -5,6 +5,9 @@
 #import "google/protobuf/Duration.pbobjc.h"
 // @@protoc_insertion_point(imports)
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 #pragma mark - GPBDurationRoot
 
 @implementation GPBDurationRoot
@@ -79,5 +82,7 @@ typedef struct GPBDuration__storage_ {
 
 @end
 
+
+#pragma clang diagnostic pop
 
 // @@protoc_insertion_point(global_scope)

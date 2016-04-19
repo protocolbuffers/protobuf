@@ -5,6 +5,9 @@
 #import "google/protobuf/FieldMask.pbobjc.h"
 // @@protoc_insertion_point(imports)
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 #pragma mark - GPBFieldMaskRoot
 
 @implementation GPBFieldMaskRoot
@@ -68,5 +71,7 @@ typedef struct GPBFieldMask__storage_ {
 
 @end
 
+
+#pragma clang diagnostic pop
 
 // @@protoc_insertion_point(global_scope)

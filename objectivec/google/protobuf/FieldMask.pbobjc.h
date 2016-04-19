@@ -9,6 +9,9 @@
 
 // @@protoc_insertion_point(imports)
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 CF_EXTERN_C_BEGIN
 
 NS_ASSUME_NONNULL_BEGIN
@@ -154,6 +157,33 @@ typedef GPB_ENUM(GPBFieldMask_FieldNumber) {
 ///     {
 ///       mask: "user.displayName,photo"
 ///     }
+///
+/// # Field Masks and Oneof Fields
+///
+/// Field masks treat fields in oneofs just as regular fields. Consider the
+/// following message:
+///
+///     message SampleMessage {
+///       oneof test_oneof {
+///         string name = 4;
+///         SubMessage sub_message = 9;
+///       }
+///     }
+///
+/// The field mask can be:
+///
+///     mask {
+///       paths: "name"
+///     }
+///
+/// Or:
+///
+///     mask {
+///       paths: "sub_message"
+///     }
+///
+/// Note that oneof type names ("test_oneof" in this case) cannot be used in
+/// paths.
 @interface GPBFieldMask : GPBMessage
 
 /// The set of field mask paths.
@@ -166,5 +196,7 @@ typedef GPB_ENUM(GPBFieldMask_FieldNumber) {
 NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END
+
+#pragma clang diagnostic pop
 
 // @@protoc_insertion_point(global_scope)
