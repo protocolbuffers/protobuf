@@ -959,6 +959,18 @@ static int lupb_msgdef_fields(lua_State *L) {
   return 1;
 }
 
+static int lupb_msgdef_mapentry(lua_State *L) {
+  const upb_msgdef *m = lupb_msgdef_check(L, 1);
+  lua_pushboolean(L, upb_msgdef_mapentry(m));
+  return 1;
+}
+
+static int lupb_msgdef_syntax(lua_State *L) {
+  const upb_msgdef *m = lupb_msgdef_check(L, 1);
+  lua_pushinteger(L, upb_msgdef_syntax(m));
+  return 1;
+}
+
 static const struct luaL_Reg lupb_msgdef_mm[] = {
   {"__gc", lupb_msgdef_gc},
   {"__len", lupb_msgdef_len},
@@ -970,6 +982,8 @@ static const struct luaL_Reg lupb_msgdef_m[] = {
   {"add", lupb_msgdef_add},
   {"field", lupb_msgdef_field},
   {"fields", lupb_msgdef_fields},
+  {"syntax", lupb_msgdef_syntax},
+  {"_map_entry", lupb_msgdef_mapentry},
 
   {NULL, NULL}
 };
@@ -2012,6 +2026,9 @@ int luaopen_upb_c(lua_State *L) {
   lupb_setfieldi(L, "HANDLER_ENDSUBMSG",   UPB_HANDLER_ENDSUBMSG);
   lupb_setfieldi(L, "HANDLER_STARTSEQ",    UPB_HANDLER_STARTSEQ);
   lupb_setfieldi(L, "HANDLER_ENDSEQ",      UPB_HANDLER_ENDSEQ);
+
+  lupb_setfieldi(L, "SYNTAX_PROTO2",  UPB_SYNTAX_PROTO2);
+  lupb_setfieldi(L, "SYNTAX_PROTO3",  UPB_SYNTAX_PROTO3);
 
   return 1;  /* Return package table. */
 }

@@ -1461,6 +1461,19 @@ bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname,
   return upb_def_setfullname(upb_msgdef_upcast_mutable(m), fullname, s);
 }
 
+bool upb_msgdef_setsyntax(upb_msgdef *m, upb_syntax_t syntax) {
+  if (syntax != UPB_SYNTAX_PROTO2 && syntax != UPB_SYNTAX_PROTO3) {
+    return false;
+  }
+
+  m->syntax = syntax;
+  return true;
+}
+
+upb_syntax_t upb_msgdef_syntax(const upb_msgdef *m) {
+  return m->syntax;
+}
+
 /* Helper: check that the field |f| is safe to add to msgdef |m|. Set an error
  * on status |s| and return false if not. */
 static bool check_field_add(const upb_msgdef *m, const upb_fielddef *f,

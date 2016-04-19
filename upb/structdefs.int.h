@@ -110,14 +110,10 @@ struct upb_msgdef {
   /* Tables for looking up oneofs by name. */
   upb_strtable ntoo;  /* name to oneof */
 
-  /* Is this a map-entry message?
-   * TODO: set this flag properly for static descriptors; regenerate
-   * descriptor.upb.c. */
+  /* Is this a map-entry message? */
   bool map_entry;
 
-  /* Whether this message has proto2 or proto3 semantics.
-   * TODO: set this flag properly for static descriptors; regenerate
-   * descriptor.upb.c. */
+  /* Whether this message has proto2 or proto3 semantics. */
   upb_syntax_t syntax;
 
   /* TODO(haberman): proper extension ranges (there can be multiple). */
@@ -126,11 +122,11 @@ struct upb_msgdef {
 /* TODO: also support static initialization of the oneofs table. This will be
  * needed if we compile in descriptors that contain oneofs. */
 #define UPB_MSGDEF_INIT(name, selector_count, submsg_field_count, itof, ntof, \
-                        refs, ref2s)                                          \
+                        map_entry, syntax, refs, ref2s)                       \
   {                                                                           \
     UPB_DEF_INIT(name, UPB_DEF_MSG, refs, ref2s), selector_count,             \
         submsg_field_count, itof, ntof,                                       \
-        UPB_EMPTY_STRTABLE_INIT(UPB_CTYPE_PTR), false, true                   \
+        UPB_EMPTY_STRTABLE_INIT(UPB_CTYPE_PTR), map_entry, syntax             \
   }
 
 

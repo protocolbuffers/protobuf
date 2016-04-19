@@ -16,7 +16,7 @@
 # * -DUPB_THREAD_UNSAFE: remove all thread-safety.
 
 .PHONY: all lib clean tests test descriptorgen amalgamate
-.PHONY: clean_leave_profile
+.PHONY: clean_leave_profile genfiles
 
 # Prevents the deletion of intermediate files.
 .SECONDARY:
@@ -249,12 +249,23 @@ obj/upb/%.lo: upb/%.cc | $$(@D)/.
 
 # Regenerating the auto-generated files in upb/.
 upb/descriptor/descriptor.pb: upb/descriptor/descriptor.proto
-	@# TODO: replace with upbc
-	protoc upb/descriptor/descriptor.proto -oupb/descriptor/descriptor.pb
 
-genfiles: upb/descriptor/descriptor.pb tools/upbc
-	./tools/upbc upb/descriptor/descriptor.pb
-	$(LUA) third_party/dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
+# "genfiles" includes Proto schemas we need for tests
+# For the moment we check in the *.upbdefs.* generated files so that people
+# can build and run the tests without Lua as a build dependency.
+
+genfiles: tools/upbc
+	@# TODO: replace protoc with upbc when upb can parse .proto files
+	$(E) PROTOC upb/descriptor/descriptor.proto
+	$(Q) protoc upb/descriptor/descriptor.proto -oupb/descriptor/descriptor.pb
+	$(E) UPBC upb/descriptor/descriptor.pb
+	$(Q) ./tools/upbc upb/descriptor/descriptor.pb
+	$(E) PROTOC tests/json/test.proto
+	$(Q) protoc tests/json/test.proto -otests/json/test.proto.pb
+	$(E) UPBC tests/json/test.proto.pb
+	$(Q) ./tools/upbc tests/json/test.proto.pb
+	$(E) DYNASM upb/pb/compile_decoder_x64.dasc
+	$(Q) $(LUA) third_party/dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
 
 # upbc depends on these Lua extensions.
 UPBC_LUA_EXTS = \
@@ -295,6 +306,10 @@ CC_TESTS = \
 TESTS=$(C_TESTS) $(CC_TESTS)
 tests: $(TESTS)
 
+tests/json/test.upbdefs.o: tests/json/test.upbdefs.c
+	$(E) CC $<
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -c -o $@ $<
+
 tests/testmain.o: tests/testmain.cc
 	$(E) CXX $<
 	$(Q) $(CXX) $(OPT) $(CXXSTD) $(WARNFLAGS_CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
@@ -319,7 +334,7 @@ tests/pb/test_decoder: LIBS = lib/libupb.pb.a lib/libupb.a $(EXTRA_LIBS)
 tests/pb/test_encoder: LIBS = lib/libupb.pb.a lib/libupb.descriptor.a lib/libupb.a $(EXTRA_LIBS)
 tests/test_cpp: LIBS = $(LOAD_DESCRIPTOR_LIBS) lib/libupb.a $(EXTRA_LIBS)
 tests/test_table: LIBS = lib/libupb.a $(EXTRA_LIBS)
-tests/json/test_json: LIBS = lib/libupb.a lib/libupb.json.a $(EXTRA_LIBS)
+tests/json/test_json: LIBS = lib/libupb.a lib/libupb.json.a tests/json/test.upbdefs.o $(EXTRA_LIBS)
 
 tests/test.proto.pb: tests/test.proto
 	@# TODO: add .proto file parser to upb so this isn't necessary.

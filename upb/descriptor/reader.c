@@ -609,6 +609,17 @@ static bool msg_endfield(void *closure, const void *hd) {
   return true;
 }
 
+static bool msg_onmapentry(void *closure, const void *hd, bool mapentry) {
+  upb_descreader *r = closure;
+  upb_msgdef *m = upb_descreader_top(r);
+  UPB_UNUSED(hd);
+
+  upb_msgdef_setmapentry(m, mapentry);
+  r->f = NULL;
+  return true;
+}
+
+
 
 /** Code to register handlers *************************************************/
 
@@ -679,6 +690,8 @@ static void reghandlers(const void *closure, upb_handlers *h) {
   } else if (upbdefs_google_protobuf_FieldOptions_is(m)) {
     upb_handlers_setbool(h, F(FieldOptions, lazy), &field_onlazy, NULL);
     upb_handlers_setbool(h, F(FieldOptions, packed), &field_onpacked, NULL);
+  } else if (upbdefs_google_protobuf_MessageOptions_is(m)) {
+    upb_handlers_setbool(h, F(MessageOptions, map_entry), &msg_onmapentry, NULL);
   }
 
   assert(upb_ok(upb_handlers_status(h)));

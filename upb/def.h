@@ -272,6 +272,11 @@ typedef enum {
   UPB_DESCRIPTOR_TYPE_SINT64   = 18
 } upb_descriptortype_t;
 
+typedef enum {
+  UPB_SYNTAX_PROTO2 = 2,
+  UPB_SYNTAX_PROTO3 = 3
+} upb_syntax_t;
+
 /* Maximum field number allowed for FieldDefs.  This is an inherent limit of the
  * protobuf wire format. */
 #define UPB_MAX_FIELDNUMBER ((1 << 29) - 1)
@@ -721,6 +726,11 @@ class upb::MessageDef {
   bool AddOneof(OneofDef* o, Status* s);
   bool AddOneof(const reffed_ptr<OneofDef>& o, Status* s);
 
+  upb_syntax_t syntax() const;
+
+  /* Returns false if we don't support this syntax value. */
+  bool set_syntax(upb_syntax_t syntax);
+
   /* Set this to false to indicate that primitive fields should not have
    * explicit presence information associated with them.  This will affect all
    * fields added to this message.  Defaults to true. */
@@ -913,6 +923,7 @@ bool upb_msgdef_freeze(upb_msgdef *m, upb_status *status);
 
 const char *upb_msgdef_fullname(const upb_msgdef *m);
 const char *upb_msgdef_name(const upb_msgdef *m);
+upb_syntax_t upb_msgdef_syntax(const upb_msgdef *m);
 bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname, upb_status *s);
 
 upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner);
@@ -963,6 +974,7 @@ UPB_INLINE upb_oneofdef *upb_msgdef_ntoo_mutable(upb_msgdef *m,
 
 void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
 bool upb_msgdef_mapentry(const upb_msgdef *m);
+bool upb_msgdef_setsyntax(upb_msgdef *m, upb_syntax_t syntax);
 
 /* Well-known field tag numbers for map-entry messages. */
 #define UPB_MAPENTRY_KEY   1
@@ -1283,11 +1295,6 @@ UPB_END_EXTERN_C
 
 
 /* upb::FileDef ***************************************************************/
-
-typedef enum {
-  UPB_SYNTAX_PROTO2 = 2,
-  UPB_SYNTAX_PROTO3 = 3
-} upb_syntax_t;
 
 #ifdef __cplusplus
 
@@ -1651,11 +1658,17 @@ inline const char *MessageDef::full_name() const {
 inline const char *MessageDef::name() const {
   return upb_msgdef_name(this);
 }
+inline upb_syntax_t MessageDef::syntax() const {
+  return upb_msgdef_syntax(this);
+}
 inline bool MessageDef::set_full_name(const char* fullname, Status* s) {
   return upb_msgdef_setfullname(this, fullname, s);
 }
 inline bool MessageDef::set_full_name(const std::string& fullname, Status* s) {
   return upb_msgdef_setfullname(this, upb_safecstr(fullname), s);
+}
+inline bool MessageDef::set_syntax(upb_syntax_t syntax) {
+  return upb_msgdef_setsyntax(this, syntax);
 }
 inline bool MessageDef::Freeze(Status* status) {
   return upb_msgdef_freeze(this, status);

@@ -3,12 +3,12 @@
  * A set of tests for JSON parsing and serialization.
  */
 
+#include "tests/json/test.upbdefs.h"
 #include "tests/test_util.h"
 #include "tests/upb_test.h"
 #include "upb/handlers.h"
-#include "upb/symtab.h"
-#include "upb/json/printer.h"
 #include "upb/json/parser.h"
+#include "upb/json/printer.h"
 #include "upb/upb.h"
 
 #include <string>
@@ -135,147 +135,6 @@ static TestCase kTestRoundtripMessagesPreserve[] = {
   TEST_SENTINEL
 };
 
-static void AddField(upb::MessageDef* message,
-                     int number,
-                     const char* name,
-                     upb_fieldtype_t type,
-                     bool is_repeated,
-                     const upb::Def* subdef = NULL) {
-  upb::reffed_ptr<upb::FieldDef> field(upb::FieldDef::New());
-  upb::Status st;
-  field->set_name(name, &st);
-  field->set_type(type);
-  field->set_label(is_repeated ? UPB_LABEL_REPEATED : UPB_LABEL_OPTIONAL);
-  field->set_number(number, &st);
-  if (subdef) {
-    field->set_subdef(subdef, &st);
-  }
-  message->AddField(field, &st);
-}
-
-static const upb::MessageDef* BuildTestMessage(
-    upb::reffed_ptr<upb::SymbolTable> symtab) {
-  upb::Status st;
-
-  // Create SubMessage.
-  upb::reffed_ptr<upb::MessageDef> submsg(upb::MessageDef::New());
-  submsg->set_full_name("SubMessage", &st);
-  AddField(submsg.get(), 1, "foo", UPB_TYPE_INT32, false);
-
-  // Create MapEntryStringString.
-  upb::reffed_ptr<upb::MessageDef> mapentry_string_string(
-      upb::MessageDef::New());
-  mapentry_string_string->set_full_name("MapEntry_String_String", &st);
-  mapentry_string_string->setmapentry(true);
-  AddField(mapentry_string_string.get(), 1, "key", UPB_TYPE_STRING, false);
-  AddField(mapentry_string_string.get(), 2, "value", UPB_TYPE_STRING, false);
-
-  // Create MapEntryInt32String.
-  upb::reffed_ptr<upb::MessageDef> mapentry_int32_string(
-      upb::MessageDef::New());
-  mapentry_int32_string->set_full_name("MapEntry_Int32_String", &st);
-  mapentry_int32_string->setmapentry(true);
-  AddField(mapentry_int32_string.get(), 1, "key", UPB_TYPE_INT32, false);
-  AddField(mapentry_int32_string.get(), 2, "value", UPB_TYPE_STRING, false);
-
-  // Create MapEntryBoolString.
-  upb::reffed_ptr<upb::MessageDef> mapentry_bool_string(
-      upb::MessageDef::New());
-  mapentry_bool_string->set_full_name("MapEntry_Bool_String", &st);
-  mapentry_bool_string->setmapentry(true);
-  AddField(mapentry_bool_string.get(), 1, "key", UPB_TYPE_BOOL, false);
-  AddField(mapentry_bool_string.get(), 2, "value", UPB_TYPE_STRING, false);
-
-  // Create MapEntryStringInt32.
-  upb::reffed_ptr<upb::MessageDef> mapentry_string_int32(
-      upb::MessageDef::New());
-  mapentry_string_int32->set_full_name("MapEntry_String_Int32", &st);
-  mapentry_string_int32->setmapentry(true);
-  AddField(mapentry_string_int32.get(), 1, "key", UPB_TYPE_STRING, false);
-  AddField(mapentry_string_int32.get(), 2, "value", UPB_TYPE_INT32, false);
-
-  // Create MapEntryStringBool.
-  upb::reffed_ptr<upb::MessageDef> mapentry_string_bool(upb::MessageDef::New());
-  mapentry_string_bool->set_full_name("MapEntry_String_Bool", &st);
-  mapentry_string_bool->setmapentry(true);
-  AddField(mapentry_string_bool.get(), 1, "key", UPB_TYPE_STRING, false);
-  AddField(mapentry_string_bool.get(), 2, "value", UPB_TYPE_BOOL, false);
-
-  // Create MapEntryStringMessage.
-  upb::reffed_ptr<upb::MessageDef> mapentry_string_msg(upb::MessageDef::New());
-  mapentry_string_msg->set_full_name("MapEntry_String_Message", &st);
-  mapentry_string_msg->setmapentry(true);
-  AddField(mapentry_string_msg.get(), 1, "key", UPB_TYPE_STRING, false);
-  AddField(mapentry_string_msg.get(), 2, "value", UPB_TYPE_MESSAGE, false,
-           upb::upcast(submsg.get()));
-
-  // Create MyEnum.
-  upb::reffed_ptr<upb::EnumDef> myenum(upb::EnumDef::New());
-  myenum->set_full_name("MyEnum", &st);
-  myenum->AddValue("A", 0, &st);
-  myenum->AddValue("B", 1, &st);
-  myenum->AddValue("C", 2, &st);
-
-  // Create TestMessage.
-  upb::reffed_ptr<upb::MessageDef> md(upb::MessageDef::New());
-  md->set_full_name("TestMessage", &st);
-
-  AddField(md.get(), 1, "optional_int32",  UPB_TYPE_INT32, false);
-  AddField(md.get(), 2, "optional_int64",  UPB_TYPE_INT64, false);
-  AddField(md.get(), 3, "optional_uint32", UPB_TYPE_UINT32, false);
-  AddField(md.get(), 4, "optional_uint64", UPB_TYPE_UINT64, false);
-  AddField(md.get(), 5, "optional_string", UPB_TYPE_STRING, false);
-  AddField(md.get(), 6, "optional_bytes",  UPB_TYPE_BYTES, false);
-  AddField(md.get(), 7, "optional_bool" ,  UPB_TYPE_BOOL, false);
-  AddField(md.get(), 8, "optional_msg" ,   UPB_TYPE_MESSAGE, false,
-           upb::upcast(submsg.get()));
-  AddField(md.get(), 9, "optional_enum",   UPB_TYPE_ENUM, false,
-           upb::upcast(myenum.get()));
-
-  AddField(md.get(), 11, "repeated_int32",  UPB_TYPE_INT32, true);
-  AddField(md.get(), 12, "repeated_int64",  UPB_TYPE_INT64, true);
-  AddField(md.get(), 13, "repeated_uint32", UPB_TYPE_UINT32, true);
-  AddField(md.get(), 14, "repeated_uint64", UPB_TYPE_UINT64, true);
-  AddField(md.get(), 15, "repeated_string", UPB_TYPE_STRING, true);
-  AddField(md.get(), 16, "repeated_bytes",  UPB_TYPE_BYTES, true);
-  AddField(md.get(), 17, "repeated_bool" ,  UPB_TYPE_BOOL, true);
-  AddField(md.get(), 18, "repeated_msg" ,   UPB_TYPE_MESSAGE, true,
-           upb::upcast(submsg.get()));
-  AddField(md.get(), 19, "optional_enum",   UPB_TYPE_ENUM, true,
-           upb::upcast(myenum.get()));
-
-  AddField(md.get(), 20, "map_string_string", UPB_TYPE_MESSAGE, true,
-           upb::upcast(mapentry_string_string.get()));
-  AddField(md.get(), 21, "map_int32_string", UPB_TYPE_MESSAGE, true,
-           upb::upcast(mapentry_int32_string.get()));
-  AddField(md.get(), 22, "map_bool_string", UPB_TYPE_MESSAGE, true,
-           upb::upcast(mapentry_bool_string.get()));
-  AddField(md.get(), 23, "map_string_int32", UPB_TYPE_MESSAGE, true,
-           upb::upcast(mapentry_string_int32.get()));
-  AddField(md.get(), 24, "map_string_bool", UPB_TYPE_MESSAGE, true,
-           upb::upcast(mapentry_string_bool.get()));
-  AddField(md.get(), 25, "map_string_msg", UPB_TYPE_MESSAGE, true,
-           upb::upcast(mapentry_string_msg.get()));
-
-  // Add both to our symtab.
-  upb::Def* defs[9] = {
-    upb::upcast(submsg.ReleaseTo(&defs)),
-    upb::upcast(myenum.ReleaseTo(&defs)),
-    upb::upcast(md.ReleaseTo(&defs)),
-    upb::upcast(mapentry_string_string.ReleaseTo(&defs)),
-    upb::upcast(mapentry_int32_string.ReleaseTo(&defs)),
-    upb::upcast(mapentry_bool_string.ReleaseTo(&defs)),
-    upb::upcast(mapentry_string_int32.ReleaseTo(&defs)),
-    upb::upcast(mapentry_string_bool.ReleaseTo(&defs)),
-    upb::upcast(mapentry_string_msg.ReleaseTo(&defs)),
-  };
-  symtab->Add(defs, 9, &defs, &st);
-  ASSERT(st.ok());
-
-  // Return TestMessage.
-  return symtab->LookupMessage("TestMessage");
-}
-
 class StringSink {
  public:
   StringSink() {
@@ -343,12 +202,12 @@ void test_json_roundtrip_message(const char* json_src,
 // Starts with a message in JSON format, parses and directly serializes again,
 // and compares the result.
 void test_json_roundtrip() {
-  upb::reffed_ptr<upb::SymbolTable> symtab(upb::SymbolTable::New());
-  const upb::MessageDef* md = BuildTestMessage(symtab.get());
+  upb::reffed_ptr<const upb::MessageDef> md(
+      upbdefs::upb::test::json::TestMessage::get());
   upb::reffed_ptr<const upb::Handlers> serialize_handlers(
-      upb::json::Printer::NewHandlers(md, false));
+      upb::json::Printer::NewHandlers(md.get(), false));
   upb::reffed_ptr<const upb::json::ParserMethod> parser_method(
-      upb::json::ParserMethod::New(md));
+      upb::json::ParserMethod::New(md.get()));
 
   for (const TestCase* test_case = kTestRoundtripMessages;
        test_case->input != NULL; test_case++) {
@@ -364,7 +223,7 @@ void test_json_roundtrip() {
     }
   }
 
-  serialize_handlers = upb::json::Printer::NewHandlers(md, true);
+  serialize_handlers = upb::json::Printer::NewHandlers(md.get(), true);
 
   for (const TestCase* test_case = kTestRoundtripMessagesPreserve;
        test_case->input != NULL; test_case++) {
