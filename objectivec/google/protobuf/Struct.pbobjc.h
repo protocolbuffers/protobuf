@@ -9,6 +9,9 @@
 
 // @@protoc_insertion_point(imports)
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 CF_EXTERN_C_BEGIN
 
 @class GPBListValue;
@@ -67,7 +70,7 @@ typedef GPB_ENUM(GPBStruct_FieldNumber) {
 /// The JSON representation for `Struct` is JSON object.
 @interface GPBStruct : GPBMessage
 
-/// Map of dynamically typed values.
+/// Unordered map of dynamically typed values.
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableDictionary<NSString*, GPBValue*> *fields;
 /// The number of items in @c fields without causing the array to be created.
 @property(nonatomic, readonly) NSUInteger fields_Count;
@@ -158,5 +161,7 @@ typedef GPB_ENUM(GPBListValue_FieldNumber) {
 NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END
+
+#pragma clang diagnostic pop
 
 // @@protoc_insertion_point(global_scope)

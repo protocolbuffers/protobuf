@@ -9,6 +9,9 @@
 
 // @@protoc_insertion_point(imports)
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 CF_EXTERN_C_BEGIN
 
 NS_ASSUME_NONNULL_BEGIN
@@ -104,5 +107,7 @@ typedef GPB_ENUM(GPBTimestamp_FieldNumber) {
 NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END
+
+#pragma clang diagnostic pop
 
 // @@protoc_insertion_point(global_scope)

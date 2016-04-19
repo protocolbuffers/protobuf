@@ -9,6 +9,9 @@
 
 // @@protoc_insertion_point(imports)
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 CF_EXTERN_C_BEGIN
 
 NS_ASSUME_NONNULL_BEGIN
@@ -33,8 +36,36 @@ typedef GPB_ENUM(GPBAny_FieldNumber) {
   GPBAny_FieldNumber_Value = 2,
 };
 
-/// `Any` contains an arbitrary serialized message along with a URL
-/// that describes the type of the serialized message.
+/// `Any` contains an arbitrary serialized protocol buffer message along with a
+/// URL that describes the type of the serialized message.
+///
+/// Protobuf library provides support to pack/unpack Any values in the form
+/// of utility functions or additional generated methods of the Any type.
+///
+/// Example 1: Pack and unpack a message in C++.
+///
+///     Foo foo = ...;
+///     Any any;
+///     any.PackFrom(foo);
+///     ...
+///     if (any.UnpackTo(&foo)) {
+///       ...
+///     }
+///
+/// Example 2: Pack and unpack a message in Java.
+///
+///     Foo foo = ...;
+///     Any any = Any.pack(foo);
+///     ...
+///     if (any.is(Foo.class)) {
+///       foo = any.unpack(Foo.class);
+///     }
+///
+/// The pack methods provided by protobuf library will by default use
+/// 'type.googleapis.com/full.type.name' as the type URL and the unpack
+/// methods only use the fully qualified type name after the last '/'
+/// in the type URL, for example "foo.bar.com/x/y.z" will yield type
+/// name "y.z".
 ///
 ///
 /// JSON
@@ -67,7 +98,7 @@ typedef GPB_ENUM(GPBAny_FieldNumber) {
 @interface GPBAny : GPBMessage
 
 /// A URL/resource name whose content describes the type of the
-/// serialized message.
+/// serialized protocol buffer message.
 ///
 /// For URLs which use the schema `http`, `https`, or no schema, the
 /// following restrictions and interpretations apply:
@@ -87,7 +118,7 @@ typedef GPB_ENUM(GPBAny_FieldNumber) {
 /// used with implementation specific semantics.
 @property(nonatomic, readwrite, copy, null_resettable) NSString *typeURL;
 
-/// Must be valid serialized data of the above specified type.
+/// Must be a valid serialized protocol buffer of the above specified type.
 @property(nonatomic, readwrite, copy, null_resettable) NSData *value;
 
 @end
@@ -95,5 +126,7 @@ typedef GPB_ENUM(GPBAny_FieldNumber) {
 NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END
+
+#pragma clang diagnostic pop
 
 // @@protoc_insertion_point(global_scope)
