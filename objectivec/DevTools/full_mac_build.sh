@@ -26,8 +26,9 @@ OPTIONS:
          Issue a clean before the normal build.
    -a, --autogen
          Start by rerunning autogen & configure.
-   -r, --regenerate-cpp-descriptors
-         The descriptor.proto is checked in generated, cause it to regenerate.
+   -r, --regenerate-descriptors
+         Run generate_descriptor_proto.sh to regenerate all the checked in
+         proto sources.
    -j #, --jobs #
          Force the number of parallel jobs (useful for debugging build issues).
    --core-only
@@ -71,7 +72,7 @@ fi
 
 DO_AUTOGEN=no
 DO_CLEAN=no
-REGEN_CPP_DESCRIPTORS=no
+REGEN_DESCRIPTORS=no
 CORE_ONLY=no
 DO_XCODE_IOS_TESTS=yes
 DO_XCODE_OSX_TESTS=yes
@@ -88,8 +89,8 @@ while [[ $# != 0 ]]; do
     -a | --autogen )
       DO_AUTOGEN=yes
       ;;
-    -r | --regenerate-cpp-descriptors )
-      REGEN_CPP_DESCRIPTORS=yes
+    -r | --regenerate-descriptors )
+      REGEN_DESCRIPTORS=yes
       ;;
     -j | --jobs )
       shift
@@ -164,8 +165,8 @@ if [[ "${DO_CLEAN}" == "yes" ]] ; then
   fi
 fi
 
-if [[ "${REGEN_CPP_DESCRIPTORS}" == "yes" ]] ; then
-  header "Regenerating the C++ descriptor sources."
+if [[ "${REGEN_DESCRIPTORS}" == "yes" ]] ; then
+  header "Regenerating the descriptor sources."
   ./generate_descriptor_proto.sh -j "${NUM_MAKE_JOBS}"
 fi
 
@@ -184,29 +185,8 @@ else
   cd ..
 fi
 
-header "Ensuring the ObjC descriptors are current."
-# Find the newest input file (protos, compiler, and the generator script).
-# (these patterns catch some extra stuff, but better to over sample than under)
-readonly NewestInput=$(find \
-   src/google/protobuf/*.proto \
-   src/.libs src/*.la src/protoc \
-   objectivec/generate_well_known_types.sh \
-      -type f -print0 \
-      | xargs -0 stat -f "%m %N" \
-      | sort -n | tail -n1 | cut -f2- -d" ")
-# Find the oldest output file.
-readonly OldestOutput=$(find \
-      "${ProtoRootDir}/objectivec/google" \
-      -type f -print0 \
-      | xargs -0 stat -f "%m %N" \
-      | sort -n -r | tail -n1 | cut -f2- -d" ")
-# If the newest input is newer than the oldest output, regenerate.
-if [[ "${NewestInput}" -nt "${OldestOutput}" ]] ; then
-  echo ">> Newest input is newer than oldest output, regenerating."
-  objectivec/generate_well_known_types.sh -j "${NUM_MAKE_JOBS}"
-else
-  echo ">> Newest input is older than oldest output, no need to regenerating."
-fi
+# Ensure the WKT sources checked in are current.
+objectivec/generate_well_known_types.sh --check-only -j "${NUM_MAKE_JOBS}"
 
 header "Checking on the ObjC Runtime Code"
 objectivec/DevTools/pddm_tests.py

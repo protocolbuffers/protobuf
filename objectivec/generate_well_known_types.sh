@@ -12,6 +12,13 @@ set -eu
 readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ProtoRootDir="${ScriptDir}/.."
 
+# Flag for continuous integration to check that everything is current.
+CHECK_ONLY=0
+if [[ $# -ge 1 && ( "$1" == "--check-only" ) ]] ; then
+  CHECK_ONLY=1
+  shift
+fi
+
 pushd "${ProtoRootDir}" > /dev/null
 
 if test ! -e src/google/protobuf/stubs/common.h; then
@@ -46,4 +53,24 @@ declare -a RUNTIME_PROTO_FILES=( \
   google/protobuf/type.proto \
   google/protobuf/wrappers.proto)
 
-./protoc --objc_out="${ProtoRootDir}/objectivec" ${RUNTIME_PROTO_FILES[@]}
+# Generate to a temp directory to see if they match.
+TMP_DIR=$(mktemp -d)
+trap "rm -rf ${TMP_DIR}" EXIT
+./protoc --objc_out="${TMP_DIR}" ${RUNTIME_PROTO_FILES[@]}
+set +e
+diff -r "${TMP_DIR}/google" "${ProtoRootDir}/objectivec/google" > /dev/null
+if [[ $? -eq 0 ]] ; then
+  echo "Generated source for WellKnownTypes is current."
+  exit 0
+fi
+set -e
+
+# If check only mode, error out.
+if [[ "${CHECK_ONLY}" == 1 ]] ; then
+  echo "ERROR: The WKTs need to be regenerated! Run $0"
+  exit 1
+fi
+
+# Copy them over.
+echo "Copying over updated WellKnownType sources."
+cp -r "${TMP_DIR}/google/" "${ProtoRootDir}/objectivec/google/"
