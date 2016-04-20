@@ -159,6 +159,33 @@ namespace Google.Protobuf.WellKnownTypes {
   ///      {
   ///        mask: "user.displayName,photo"
   ///      }
+  ///
+  ///  # Field Masks and Oneof Fields
+  ///
+  ///  Field masks treat fields in oneofs just as regular fields. Consider the
+  ///  following message:
+  ///
+  ///      message SampleMessage {
+  ///        oneof test_oneof {
+  ///          string name = 4;
+  ///          SubMessage sub_message = 9;
+  ///        }
+  ///      }
+  ///
+  ///  The field mask can be:
+  ///
+  ///      mask {
+  ///        paths: "name"
+  ///      }
+  ///
+  ///  Or:
+  ///
+  ///      mask {
+  ///        paths: "sub_message"
+  ///      }
+  ///
+  ///  Note that oneof type names ("test_oneof" in this case) cannot be used in
+  ///  paths.
   /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class FieldMask : pb::IMessage<FieldMask> {
