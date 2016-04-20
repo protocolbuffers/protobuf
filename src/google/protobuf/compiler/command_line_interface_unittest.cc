@@ -780,6 +780,21 @@ TEST_F(CommandLineInterfaceTest, NonRootMapping) {
   ExpectGenerated("test_generator", "", "bar/foo.proto", "Foo");
 }
 
+TEST_F(CommandLineInterfaceTest, PathWithEqualsSign) {
+  // Test setting up a search path which happens to have '=' in it.
+
+  CreateTempDir("with=sign");
+  CreateTempFile("with=sign/foo.proto",
+    "syntax = \"proto2\";\n"
+    "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir/with=sign foo.proto");
+
+  ExpectNoErrors();
+  ExpectGenerated("test_generator", "", "foo.proto", "Foo");
+}
+
 TEST_F(CommandLineInterfaceTest, MultipleGenerators) {
   // Test that we can have multiple generators and use both in one invocation,
   // each with a different output directory.
