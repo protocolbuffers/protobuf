@@ -195,7 +195,7 @@ namespace Google.Protobuf.Reflection
             Assert.AreEqual(value, enumType.Values[1]);
             Assert.AreEqual("FOREIGN_FOO", value.Name);
             Assert.AreEqual(4, value.Number);
-            Assert.AreEqual((int) ForeignEnum.FOREIGN_FOO, value.Number);
+            Assert.AreEqual((int) ForeignEnum.ForeignFoo, value.Number);
             Assert.AreEqual(value, enumType.FindValueByNumber(4));
             Assert.Null(enumType.FindValueByName("NO_SUCH_VALUE"));
             for (int i = 0; i < enumType.Values.Count; i++)

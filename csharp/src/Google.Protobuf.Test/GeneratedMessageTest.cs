@@ -66,13 +66,13 @@ namespace Google.Protobuf
             Assert.AreEqual(0, message.SingleFixed32);
             Assert.AreEqual(0L, message.SingleFixed64);
             Assert.AreEqual(0.0f, message.SingleFloat);
-            Assert.AreEqual(ForeignEnum.FOREIGN_UNSPECIFIED, message.SingleForeignEnum);
+            Assert.AreEqual(ForeignEnum.ForeignUnspecified, message.SingleForeignEnum);
             Assert.IsNull(message.SingleForeignMessage);
-            Assert.AreEqual(ImportEnum.IMPORT_ENUM_UNSPECIFIED, message.SingleImportEnum);
+            Assert.AreEqual(ImportEnum.Unspecified, message.SingleImportEnum);
             Assert.IsNull(message.SingleImportMessage);
             Assert.AreEqual(0, message.SingleInt32);
             Assert.AreEqual(0L, message.SingleInt64);
-            Assert.AreEqual(TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED, message.SingleNestedEnum);
+            Assert.AreEqual(TestAllTypes.Types.NestedEnum.Unspecified, message.SingleNestedEnum);
             Assert.IsNull(message.SingleNestedMessage);
             Assert.IsNull(message.SinglePublicImportMessage);
             Assert.AreEqual(0, message.SingleSfixed32);
@@ -145,13 +145,13 @@ namespace Google.Protobuf
                 SingleFixed32 = 23,
                 SingleFixed64 = 1234567890123,
                 SingleFloat = 12.25f,
-                SingleForeignEnum = ForeignEnum.FOREIGN_BAR,
+                SingleForeignEnum = ForeignEnum.ForeignBar,
                 SingleForeignMessage = new ForeignMessage { C = 10 },
-                SingleImportEnum = ImportEnum.IMPORT_BAZ,
+                SingleImportEnum = ImportEnum.ImportBaz,
                 SingleImportMessage = new ImportMessage { D = 20 },
                 SingleInt32 = 100,
                 SingleInt64 = 3210987654321,
-                SingleNestedEnum = TestAllTypes.Types.NestedEnum.FOO,
+                SingleNestedEnum = TestAllTypes.Types.NestedEnum.Foo,
                 SingleNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 35 },
                 SinglePublicImportMessage = new PublicImportMessage { E = 54 },
                 SingleSfixed32 = -123,
@@ -179,13 +179,13 @@ namespace Google.Protobuf
                 RepeatedFixed32 = { uint.MaxValue, 23 },
                 RepeatedFixed64 = { ulong.MaxValue, 1234567890123 },
                 RepeatedFloat = { 100f, 12.25f },
-                RepeatedForeignEnum = { ForeignEnum.FOREIGN_FOO, ForeignEnum.FOREIGN_BAR },
+                RepeatedForeignEnum = { ForeignEnum.ForeignFoo, ForeignEnum.ForeignBar },
                 RepeatedForeignMessage = { new ForeignMessage(), new ForeignMessage { C = 10 } },
-                RepeatedImportEnum = { ImportEnum.IMPORT_BAZ, ImportEnum.IMPORT_ENUM_UNSPECIFIED },
+                RepeatedImportEnum = { ImportEnum.ImportBaz, ImportEnum.Unspecified },
                 RepeatedImportMessage = { new ImportMessage { D = 20 }, new ImportMessage { D = 25 } },
                 RepeatedInt32 = { 100, 200 },
                 RepeatedInt64 = { 3210987654321, long.MaxValue },
-                RepeatedNestedEnum = { TestAllTypes.Types.NestedEnum.FOO, TestAllTypes.Types.NestedEnum.NEG },
+                RepeatedNestedEnum = { TestAllTypes.Types.NestedEnum.Foo, TestAllTypes.Types.NestedEnum.Neg },
                 RepeatedNestedMessage = { new TestAllTypes.Types.NestedMessage { Bb = 35 }, new TestAllTypes.Types.NestedMessage { Bb = 10 } },
                 RepeatedPublicImportMessage = { new PublicImportMessage { E = 54 }, new PublicImportMessage { E = -1 } },
                 RepeatedSfixed32 = { -123, 123 },
@@ -224,8 +224,8 @@ namespace Google.Protobuf
                     { 5, new ForeignMessage() },
                 },
                 MapInt32Enum = {
-                    { 1, MapEnum.MAP_ENUM_BAR },
-                    { 2000, MapEnum.MAP_ENUM_FOO }
+                    { 1, MapEnum.Bar },
+                    { 2000, MapEnum.Foo }
                 }
             };
 
@@ -249,7 +249,7 @@ namespace Google.Protobuf
             Assert.AreEqual(1, parsed.MapInt32Bytes.Count);
             Assert.AreEqual(ByteString.Empty, parsed.MapInt32Bytes[0]);
         }
-        
+
         [Test]
         public void MapWithOnlyValue()
         {
@@ -449,7 +449,7 @@ namespace Google.Protobuf
                 SingleFloat = 12.25f,
                 SingleInt32 = 100,
                 SingleInt64 = 3210987654321,
-                SingleNestedEnum = TestAllTypes.Types.NestedEnum.FOO,
+                SingleNestedEnum = TestAllTypes.Types.NestedEnum.Foo,
                 SingleSfixed32 = -123,
                 SingleSfixed64 = -12345678901234,
                 SingleSint32 = -456,
@@ -479,7 +479,7 @@ namespace Google.Protobuf
                 RepeatedFloat = { 100f, 12.25f },
                 RepeatedInt32 = { 100, 200 },
                 RepeatedInt64 = { 3210987654321, long.MaxValue },
-                RepeatedNestedEnum = { TestAllTypes.Types.NestedEnum.FOO, TestAllTypes.Types.NestedEnum.NEG },
+                RepeatedNestedEnum = { TestAllTypes.Types.NestedEnum.Foo, TestAllTypes.Types.NestedEnum.Neg },
                 RepeatedSfixed32 = { -123, 123 },
                 RepeatedSfixed64 = { -12345678901234, 12345678901234 },
                 RepeatedSint32 = { -456, 100 },
@@ -670,7 +670,7 @@ namespace Google.Protobuf
         {
             // 130, 3 is the message tag
             // 1 is the data length - but there's no data.
-            var data = new byte[] { 130, 3, 1 };            
+            var data = new byte[] { 130, 3, 1 };
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseFrom(data));
         }
 

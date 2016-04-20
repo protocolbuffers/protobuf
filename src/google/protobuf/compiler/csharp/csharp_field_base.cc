@@ -306,7 +306,9 @@ std::string FieldGeneratorBase::default_value() {
 std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor) {
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_ENUM:
-      return type_name() + "." + descriptor->default_value_enum()->name();
+      // All proto3 enums have a default value of 0, and there's an implicit conversion from the constant 0 to
+      // any C# enum. This means we don't need to work out what we actually mapped the enum value name to.
+     return "0";
     case FieldDescriptor::TYPE_MESSAGE:
     case FieldDescriptor::TYPE_GROUP:
       if (IsWrapperType(descriptor)) {

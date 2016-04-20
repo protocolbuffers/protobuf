@@ -133,41 +133,41 @@ namespace Google.Protobuf.Reflection
         {
             switch (type)
             {
-                case FieldDescriptorProto.Types.Type.TYPE_DOUBLE:
+                case FieldDescriptorProto.Types.Type.Double:
                     return FieldType.Double;
-                case FieldDescriptorProto.Types.Type.TYPE_FLOAT:
+                case FieldDescriptorProto.Types.Type.Float:
                     return FieldType.Float;
-                case FieldDescriptorProto.Types.Type.TYPE_INT64:
+                case FieldDescriptorProto.Types.Type.Int64:
                     return FieldType.Int64;
-                case FieldDescriptorProto.Types.Type.TYPE_UINT64:
+                case FieldDescriptorProto.Types.Type.Uint64:
                     return FieldType.UInt64;
-                case FieldDescriptorProto.Types.Type.TYPE_INT32:
+                case FieldDescriptorProto.Types.Type.Int32:
                     return FieldType.Int32;
-                case FieldDescriptorProto.Types.Type.TYPE_FIXED64:
+                case FieldDescriptorProto.Types.Type.Fixed64:
                     return FieldType.Fixed64;
-                case FieldDescriptorProto.Types.Type.TYPE_FIXED32:
+                case FieldDescriptorProto.Types.Type.Fixed32:
                     return FieldType.Fixed32;
-                case FieldDescriptorProto.Types.Type.TYPE_BOOL:
+                case FieldDescriptorProto.Types.Type.Bool:
                     return FieldType.Bool;
-                case FieldDescriptorProto.Types.Type.TYPE_STRING:
+                case FieldDescriptorProto.Types.Type.String:
                     return FieldType.String;
-                case FieldDescriptorProto.Types.Type.TYPE_GROUP:
+                case FieldDescriptorProto.Types.Type.Group:
                     return FieldType.Group;
-                case FieldDescriptorProto.Types.Type.TYPE_MESSAGE:
+                case FieldDescriptorProto.Types.Type.Message:
                     return FieldType.Message;
-                case FieldDescriptorProto.Types.Type.TYPE_BYTES:
+                case FieldDescriptorProto.Types.Type.Bytes:
                     return FieldType.Bytes;
-                case FieldDescriptorProto.Types.Type.TYPE_UINT32:
+                case FieldDescriptorProto.Types.Type.Uint32:
                     return FieldType.UInt32;
-                case FieldDescriptorProto.Types.Type.TYPE_ENUM:
+                case FieldDescriptorProto.Types.Type.Enum:
                     return FieldType.Enum;
-                case FieldDescriptorProto.Types.Type.TYPE_SFIXED32:
+                case FieldDescriptorProto.Types.Type.Sfixed32:
                     return FieldType.SFixed32;
-                case FieldDescriptorProto.Types.Type.TYPE_SFIXED64:
+                case FieldDescriptorProto.Types.Type.Sfixed64:
                     return FieldType.SFixed64;
-                case FieldDescriptorProto.Types.Type.TYPE_SINT32:
+                case FieldDescriptorProto.Types.Type.Sint32:
                     return FieldType.SInt32;
-                case FieldDescriptorProto.Types.Type.TYPE_SINT64:
+                case FieldDescriptorProto.Types.Type.Sint64:
                     return FieldType.SInt64;
                 default:
                     throw new ArgumentException("Invalid type specified");
@@ -177,7 +177,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Returns <c>true</c> if this field is a repeated field; <c>false</c> otherwise.
         /// </summary>
-        public bool IsRepeated => Proto.Label == FieldDescriptorProto.Types.Label.LABEL_REPEATED;
+        public bool IsRepeated => Proto.Label == FieldDescriptorProto.Types.Label.Repeated;
 
         /// <summary>
         /// Returns <c>true</c> if this field is a map field; <c>false</c> otherwise.

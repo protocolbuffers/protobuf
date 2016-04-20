@@ -75,13 +75,13 @@ namespace Google.Protobuf
                 SingleFixed32 = 23,
                 SingleFixed64 = 1234567890123,
                 SingleFloat = 12.25f,
-                SingleForeignEnum = ForeignEnum.FOREIGN_BAR,
+                SingleForeignEnum = ForeignEnum.ForeignBar,
                 SingleForeignMessage = new ForeignMessage { C = 10 },
-                SingleImportEnum = ImportEnum.IMPORT_BAZ,
+                SingleImportEnum = ImportEnum.ImportBaz,
                 SingleImportMessage = new ImportMessage { D = 20 },
                 SingleInt32 = 100,
                 SingleInt64 = 3210987654321,
-                SingleNestedEnum = TestAllTypes.Types.NestedEnum.FOO,
+                SingleNestedEnum = TestAllTypes.Types.NestedEnum.Foo,
                 SingleNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 35 },
                 SinglePublicImportMessage = new PublicImportMessage { E = 54 },
                 SingleSfixed32 = -123,
@@ -174,14 +174,14 @@ namespace Google.Protobuf
         [Test]
         public void UnknownEnumValueNumeric_RepeatedField()
         {
-            var message = new TestAllTypes { RepeatedForeignEnum = { ForeignEnum.FOREIGN_BAZ, (ForeignEnum) 100, ForeignEnum.FOREIGN_FOO } };
+            var message = new TestAllTypes { RepeatedForeignEnum = { ForeignEnum.ForeignBaz, (ForeignEnum) 100, ForeignEnum.ForeignFoo } };
             AssertJson("{ 'repeatedForeignEnum': [ 'FOREIGN_BAZ', 100, 'FOREIGN_FOO' ] }", JsonFormatter.Default.Format(message));
         }
 
         [Test]
         public void UnknownEnumValueNumeric_MapField()
         {
-            var message = new TestMap { MapInt32Enum = { { 1, MapEnum.MAP_ENUM_FOO }, { 2, (MapEnum) 100 }, { 3, MapEnum.MAP_ENUM_BAR } } };
+            var message = new TestMap { MapInt32Enum = { { 1, MapEnum.Foo }, { 2, (MapEnum) 100 }, { 3, MapEnum.Bar } } };
             AssertJson("{ 'mapInt32Enum': { '1': 'MAP_ENUM_FOO', '2': 100, '3': 'MAP_ENUM_BAR' } }", JsonFormatter.Default.Format(message));
         }
 
