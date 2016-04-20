@@ -80,7 +80,7 @@ namespace Google.Protobuf.Reflection {
             "EhMKC291dHB1dF90eXBlGAMgASgJEi8KB29wdGlvbnMYBCABKAsyHi5nb29n",
             "bGUucHJvdG9idWYuTWV0aG9kT3B0aW9ucxIfChBjbGllbnRfc3RyZWFtaW5n",
             "GAUgASgIOgVmYWxzZRIfChBzZXJ2ZXJfc3RyZWFtaW5nGAYgASgIOgVmYWxz",
-            "ZSKuBQoLRmlsZU9wdGlvbnMSFAoMamF2YV9wYWNrYWdlGAEgASgJEhwKFGph",
+            "ZSKHBQoLRmlsZU9wdGlvbnMSFAoMamF2YV9wYWNrYWdlGAEgASgJEhwKFGph",
             "dmFfb3V0ZXJfY2xhc3NuYW1lGAggASgJEiIKE2phdmFfbXVsdGlwbGVfZmls",
             "ZXMYCiABKAg6BWZhbHNlEiwKHWphdmFfZ2VuZXJhdGVfZXF1YWxzX2FuZF9o",
             "YXNoGBQgASgIOgVmYWxzZRIlChZqYXZhX3N0cmluZ19jaGVja191dGY4GBsg",
@@ -91,54 +91,53 @@ namespace Google.Protobuf.Reflection {
             "cHlfZ2VuZXJpY19zZXJ2aWNlcxgSIAEoCDoFZmFsc2USGQoKZGVwcmVjYXRl",
             "ZBgXIAEoCDoFZmFsc2USHwoQY2NfZW5hYmxlX2FyZW5hcxgfIAEoCDoFZmFs",
             "c2USGQoRb2JqY19jbGFzc19wcmVmaXgYJCABKAkSGAoQY3NoYXJwX25hbWVz",
-            "cGFjZRglIAEoCRIrCh9qYXZhbmFub191c2VfZGVwcmVjYXRlZF9wYWNrYWdl",
-            "GCYgASgIQgIYARJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5n",
+            "cGFjZRglIAEoCRJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5n",
             "b29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbiI6CgxPcHRpbWl6",
             "ZU1vZGUSCQoFU1BFRUQQARINCglDT0RFX1NJWkUQAhIQCgxMSVRFX1JVTlRJ",
-            "TUUQAyoJCOgHEICAgIACIuYBCg5NZXNzYWdlT3B0aW9ucxImChdtZXNzYWdl",
-            "X3NldF93aXJlX2Zvcm1hdBgBIAEoCDoFZmFsc2USLgofbm9fc3RhbmRhcmRf",
-            "ZGVzY3JpcHRvcl9hY2Nlc3NvchgCIAEoCDoFZmFsc2USGQoKZGVwcmVjYXRl",
-            "ZBgDIAEoCDoFZmFsc2USEQoJbWFwX2VudHJ5GAcgASgIEkMKFHVuaW50ZXJw",
-            "cmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVy",
-            "cHJldGVkT3B0aW9uKgkI6AcQgICAgAIimAMKDEZpZWxkT3B0aW9ucxI6CgVj",
-            "dHlwZRgBIAEoDjIjLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMuQ1R5",
-            "cGU6BlNUUklORxIOCgZwYWNrZWQYAiABKAgSPwoGanN0eXBlGAYgASgOMiQu",
-            "Z29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucy5KU1R5cGU6CUpTX05PUk1B",
-            "TBITCgRsYXp5GAUgASgIOgVmYWxzZRIZCgpkZXByZWNhdGVkGAMgASgIOgVm",
-            "YWxzZRITCgR3ZWFrGAogASgIOgVmYWxzZRJDChR1bmludGVycHJldGVkX29w",
+            "TUUQAyoJCOgHEICAgIACSgQIJhAnIuYBCg5NZXNzYWdlT3B0aW9ucxImChdt",
+            "ZXNzYWdlX3NldF93aXJlX2Zvcm1hdBgBIAEoCDoFZmFsc2USLgofbm9fc3Rh",
+            "bmRhcmRfZGVzY3JpcHRvcl9hY2Nlc3NvchgCIAEoCDoFZmFsc2USGQoKZGVw",
+            "cmVjYXRlZBgDIAEoCDoFZmFsc2USEQoJbWFwX2VudHJ5GAcgASgIEkMKFHVu",
+            "aW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5V",
+            "bmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIimAMKDEZpZWxkT3B0aW9u",
+            "cxI6CgVjdHlwZRgBIAEoDjIjLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlv",
+            "bnMuQ1R5cGU6BlNUUklORxIOCgZwYWNrZWQYAiABKAgSPwoGanN0eXBlGAYg",
+            "ASgOMiQuZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucy5KU1R5cGU6CUpT",
+            "X05PUk1BTBITCgRsYXp5GAUgASgIOgVmYWxzZRIZCgpkZXByZWNhdGVkGAMg",
+            "ASgIOgVmYWxzZRITCgR3ZWFrGAogASgIOgVmYWxzZRJDChR1bmludGVycHJl",
+            "dGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnBy",
+            "ZXRlZE9wdGlvbiIvCgVDVHlwZRIKCgZTVFJJTkcQABIICgRDT1JEEAESEAoM",
+            "U1RSSU5HX1BJRUNFEAIiNQoGSlNUeXBlEg0KCUpTX05PUk1BTBAAEg0KCUpT",
+            "X1NUUklORxABEg0KCUpTX05VTUJFUhACKgkI6AcQgICAgAIijQEKC0VudW1P",
+            "cHRpb25zEhMKC2FsbG93X2FsaWFzGAIgASgIEhkKCmRlcHJlY2F0ZWQYAyAB",
+            "KAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdv",
+            "b2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIi",
+            "fQoQRW51bVZhbHVlT3B0aW9ucxIZCgpkZXByZWNhdGVkGAEgASgIOgVmYWxz",
+            "ZRJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJv",
+            "dG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIACInsKDlNlcnZp",
+            "Y2VPcHRpb25zEhkKCmRlcHJlY2F0ZWQYISABKAg6BWZhbHNlEkMKFHVuaW50",
+            "ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5Vbmlu",
+            "dGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIiegoNTWV0aG9kT3B0aW9ucxIZ",
+            "CgpkZXByZWNhdGVkGCEgASgIOgVmYWxzZRJDChR1bmludGVycHJldGVkX29w",
             "dGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9w",
-            "dGlvbiIvCgVDVHlwZRIKCgZTVFJJTkcQABIICgRDT1JEEAESEAoMU1RSSU5H",
-            "X1BJRUNFEAIiNQoGSlNUeXBlEg0KCUpTX05PUk1BTBAAEg0KCUpTX1NUUklO",
-            "RxABEg0KCUpTX05VTUJFUhACKgkI6AcQgICAgAIijQEKC0VudW1PcHRpb25z",
-            "EhMKC2FsbG93X2FsaWFzGAIgASgIEhkKCmRlcHJlY2F0ZWQYAyABKAg6BWZh",
-            "bHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5w",
-            "cm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIifQoQRW51",
-            "bVZhbHVlT3B0aW9ucxIZCgpkZXByZWNhdGVkGAEgASgIOgVmYWxzZRJDChR1",
-            "bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYu",
-            "VW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIACInsKDlNlcnZpY2VPcHRp",
-            "b25zEhkKCmRlcHJlY2F0ZWQYISABKAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0",
-            "ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJl",
-            "dGVkT3B0aW9uKgkI6AcQgICAgAIiegoNTWV0aG9kT3B0aW9ucxIZCgpkZXBy",
-            "ZWNhdGVkGCEgASgIOgVmYWxzZRJDChR1bmludGVycHJldGVkX29wdGlvbhjn",
-            "ByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbioJ",
-            "COgHEICAgIACIp4CChNVbmludGVycHJldGVkT3B0aW9uEjsKBG5hbWUYAiAD",
-            "KAsyLS5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbi5OYW1l",
-            "UGFydBIYChBpZGVudGlmaWVyX3ZhbHVlGAMgASgJEhoKEnBvc2l0aXZlX2lu",
-            "dF92YWx1ZRgEIAEoBBIaChJuZWdhdGl2ZV9pbnRfdmFsdWUYBSABKAMSFAoM",
-            "ZG91YmxlX3ZhbHVlGAYgASgBEhQKDHN0cmluZ192YWx1ZRgHIAEoDBIXCg9h",
-            "Z2dyZWdhdGVfdmFsdWUYCCABKAkaMwoITmFtZVBhcnQSEQoJbmFtZV9wYXJ0",
-            "GAEgAigJEhQKDGlzX2V4dGVuc2lvbhgCIAIoCCLVAQoOU291cmNlQ29kZUlu",
-            "Zm8SOgoIbG9jYXRpb24YASADKAsyKC5nb29nbGUucHJvdG9idWYuU291cmNl",
-            "Q29kZUluZm8uTG9jYXRpb24ahgEKCExvY2F0aW9uEhAKBHBhdGgYASADKAVC",
-            "AhABEhAKBHNwYW4YAiADKAVCAhABEhgKEGxlYWRpbmdfY29tbWVudHMYAyAB",
-            "KAkSGQoRdHJhaWxpbmdfY29tbWVudHMYBCABKAkSIQoZbGVhZGluZ19kZXRh",
-            "Y2hlZF9jb21tZW50cxgGIAMoCSKnAQoRR2VuZXJhdGVkQ29kZUluZm8SQQoK",
-            "YW5ub3RhdGlvbhgBIAMoCzItLmdvb2dsZS5wcm90b2J1Zi5HZW5lcmF0ZWRD",
-            "b2RlSW5mby5Bbm5vdGF0aW9uGk8KCkFubm90YXRpb24SEAoEcGF0aBgBIAMo",
-            "BUICEAESEwoLc291cmNlX2ZpbGUYAiABKAkSDQoFYmVnaW4YAyABKAUSCwoD",
-            "ZW5kGAQgASgFQlgKE2NvbS5nb29nbGUucHJvdG9idWZCEERlc2NyaXB0b3JQ",
-            "cm90b3NIAVoKZGVzY3JpcHRvcqICA0dQQqoCGkdvb2dsZS5Qcm90b2J1Zi5S",
-            "ZWZsZWN0aW9u"));
+            "dGlvbioJCOgHEICAgIACIp4CChNVbmludGVycHJldGVkT3B0aW9uEjsKBG5h",
+            "bWUYAiADKAsyLS5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlv",
+            "bi5OYW1lUGFydBIYChBpZGVudGlmaWVyX3ZhbHVlGAMgASgJEhoKEnBvc2l0",
+            "aXZlX2ludF92YWx1ZRgEIAEoBBIaChJuZWdhdGl2ZV9pbnRfdmFsdWUYBSAB",
+            "KAMSFAoMZG91YmxlX3ZhbHVlGAYgASgBEhQKDHN0cmluZ192YWx1ZRgHIAEo",
+            "DBIXCg9hZ2dyZWdhdGVfdmFsdWUYCCABKAkaMwoITmFtZVBhcnQSEQoJbmFt",
+            "ZV9wYXJ0GAEgAigJEhQKDGlzX2V4dGVuc2lvbhgCIAIoCCLVAQoOU291cmNl",
+            "Q29kZUluZm8SOgoIbG9jYXRpb24YASADKAsyKC5nb29nbGUucHJvdG9idWYu",
+            "U291cmNlQ29kZUluZm8uTG9jYXRpb24ahgEKCExvY2F0aW9uEhAKBHBhdGgY",
+            "ASADKAVCAhABEhAKBHNwYW4YAiADKAVCAhABEhgKEGxlYWRpbmdfY29tbWVu",
+            "dHMYAyABKAkSGQoRdHJhaWxpbmdfY29tbWVudHMYBCABKAkSIQoZbGVhZGlu",
+            "Z19kZXRhY2hlZF9jb21tZW50cxgGIAMoCSKnAQoRR2VuZXJhdGVkQ29kZUlu",
+            "Zm8SQQoKYW5ub3RhdGlvbhgBIAMoCzItLmdvb2dsZS5wcm90b2J1Zi5HZW5l",
+            "cmF0ZWRDb2RlSW5mby5Bbm5vdGF0aW9uGk8KCkFubm90YXRpb24SEAoEcGF0",
+            "aBgBIAMoBUICEAESEwoLc291cmNlX2ZpbGUYAiABKAkSDQoFYmVnaW4YAyAB",
+            "KAUSCwoDZW5kGAQgASgFQlgKE2NvbS5nb29nbGUucHJvdG9idWZCEERlc2Ny",
+            "aXB0b3JQcm90b3NIAVoKZGVzY3JpcHRvcqICA0dQQqoCGkdvb2dsZS5Qcm90",
+            "b2J1Zi5SZWZsZWN0aW9u"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -152,7 +151,7 @@ namespace Google.Protobuf.Reflection {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumValueDescriptorProto), global::Google.Protobuf.Reflection.EnumValueDescriptorProto.Parser, new[]{ "Name", "Number", "Options" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.ServiceDescriptorProto), global::Google.Protobuf.Reflection.ServiceDescriptorProto.Parser, new[]{ "Name", "Method", "Options" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodDescriptorProto), global::Google.Protobuf.Reflection.MethodDescriptorProto.Parser, new[]{ "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FileOptions), global::Google.Protobuf.Reflection.FileOptions.Parser, new[]{ "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "JavananoUseDeprecatedPackage", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) }, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FileOptions), global::Google.Protobuf.Reflection.FileOptions.Parser, new[]{ "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MessageOptions), global::Google.Protobuf.Reflection.MessageOptions.Parser, new[]{ "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "UninterpretedOption" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions), global::Google.Protobuf.Reflection.FieldOptions.Parser, new[]{ "Ctype", "Packed", "Jstype", "Lazy", "Deprecated", "Weak", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.CType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.JSType) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumOptions), global::Google.Protobuf.Reflection.EnumOptions.Parser, new[]{ "AllowAlias", "Deprecated", "UninterpretedOption" }, null, null, null),
@@ -2563,7 +2562,6 @@ namespace Google.Protobuf.Reflection {
       ccEnableArenas_ = other.ccEnableArenas_;
       objcClassPrefix_ = other.objcClassPrefix_;
       csharpNamespace_ = other.csharpNamespace_;
-      javananoUseDeprecatedPackage_ = other.javananoUseDeprecatedPackage_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
 
@@ -2790,21 +2788,6 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
-    /// <summary>Field number for the "javanano_use_deprecated_package" field.</summary>
-    public const int JavananoUseDeprecatedPackageFieldNumber = 38;
-    private bool javananoUseDeprecatedPackage_;
-    /// <summary>
-    ///  Whether the nano proto compiler should generate in the deprecated non-nano
-    ///  suffixed package.
-    /// </summary>
-    [global::System.ObsoleteAttribute()]
-    public bool JavananoUseDeprecatedPackage {
-      get { return javananoUseDeprecatedPackage_; }
-      set {
-        javananoUseDeprecatedPackage_ = value;
-      }
-    }
-
     /// <summary>Field number for the "uninterpreted_option" field.</summary>
     public const int UninterpretedOptionFieldNumber = 999;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
@@ -2842,7 +2825,6 @@ namespace Google.Protobuf.Reflection {
       if (CcEnableArenas != other.CcEnableArenas) return false;
       if (ObjcClassPrefix != other.ObjcClassPrefix) return false;
       if (CsharpNamespace != other.CsharpNamespace) return false;
-      if (JavananoUseDeprecatedPackage != other.JavananoUseDeprecatedPackage) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
       return true;
     }
@@ -2863,7 +2845,6 @@ namespace Google.Protobuf.Reflection {
       if (CcEnableArenas != false) hash ^= CcEnableArenas.GetHashCode();
       if (ObjcClassPrefix.Length != 0) hash ^= ObjcClassPrefix.GetHashCode();
       if (CsharpNamespace.Length != 0) hash ^= CsharpNamespace.GetHashCode();
-      if (JavananoUseDeprecatedPackage != false) hash ^= JavananoUseDeprecatedPackage.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
       return hash;
     }
@@ -2929,10 +2910,6 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(170, 2);
         output.WriteString(CsharpNamespace);
       }
-      if (JavananoUseDeprecatedPackage != false) {
-        output.WriteRawTag(176, 2);
-        output.WriteBool(JavananoUseDeprecatedPackage);
-      }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
     }
 
@@ -2979,9 +2956,6 @@ namespace Google.Protobuf.Reflection {
       }
       if (CsharpNamespace.Length != 0) {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(CsharpNamespace);
-      }
-      if (JavananoUseDeprecatedPackage != false) {
-        size += 2 + 1;
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
       return size;
@@ -3032,9 +3006,6 @@ namespace Google.Protobuf.Reflection {
       }
       if (other.CsharpNamespace.Length != 0) {
         CsharpNamespace = other.CsharpNamespace;
-      }
-      if (other.JavananoUseDeprecatedPackage != false) {
-        JavananoUseDeprecatedPackage = other.JavananoUseDeprecatedPackage;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
     }
@@ -3100,10 +3071,6 @@ namespace Google.Protobuf.Reflection {
           }
           case 298: {
             CsharpNamespace = input.ReadString();
-            break;
-          }
-          case 304: {
-            JavananoUseDeprecatedPackage = input.ReadBool();
             break;
           }
           case 7994: {
