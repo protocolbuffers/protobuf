@@ -66,6 +66,7 @@ end
 local RealFieldDef = upb.FieldDef
 local RealEnumDef = upb.EnumDef
 local RealMessageDef = upb.MessageDef
+local RealOneofDef = upb.OneofDef
 local RealSymbolTable = upb.SymbolTable
 
 -- FieldDef constructor; a wrapper around the real constructor that can
@@ -134,6 +135,26 @@ upb.EnumDef = function(init)
   end
 
   return e
+end
+
+-- OneofDef constructor; a wrapper around the real constructor that can
+-- set initial properties.
+--
+-- User can specify initialization values like so:
+--   upb.OneofDef{name="foo", fields={...}}
+upb.OneofDef = function(init)
+  local o = RealOneofDef()
+
+  if init then
+    for _, val in pairs(init.fields or {}) do
+      o:add(val)
+    end
+    init.fields = nil
+
+    set_named(o, init)
+  end
+
+  return o
 end
 
 -- SymbolTable constructor; a wrapper around the real constructor that can

@@ -16,6 +16,18 @@ function iter_to_array(iter)
   return arr
 end
 
+function test_msgdef()
+  local f2 = upb.FieldDef{name = "field2", number = 1, type = upb.TYPE_INT32}
+  local o = upb.OneofDef{name = "field1", fields = {f2}}
+  local f = upb.FieldDef{name = "field3", number = 2, type = upb.TYPE_INT32}
+
+  local m = upb.MessageDef{fields = {o, f}}
+
+  assert_equal(f, m:lookup_name("field3"))
+  assert_equal(o, m:lookup_name("field1"))
+  assert_equal(f2, m:lookup_name("field2"))
+end
+
 function test_fielddef()
   local f = upb.FieldDef()
   assert_false(f:is_frozen())
@@ -310,6 +322,18 @@ function test_msgdef_errors()
       fields = {
         upb.FieldDef{name = "field1", number = 1, type = upb.TYPE_INT32},
         upb.FieldDef{name = "field1", number = 2, type = upb.TYPE_INT32}
+      }
+    }
+  end)
+
+  assert_error(function()
+    -- Duplicate field name.
+    upb.MessageDef{
+      fields = {
+        upb.OneofDef{name = "field1", fields = {
+          upb.FieldDef{name = "field2", number = 1, type = upb.TYPE_INT32},
+        }},
+        upb.FieldDef{name = "field2", number = 2, type = upb.TYPE_INT32}
       }
     }
   end)

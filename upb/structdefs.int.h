@@ -43,8 +43,8 @@ struct upb_def {
   bool came_from_user;
 };
 
-#define UPB_DEF_INIT(name, type, refs, ref2s) \
-    { UPB_REFCOUNT_INIT(refs, ref2s), name, NULL, type, false }
+#define UPB_DEF_INIT(name, type, vtbl, refs, ref2s) \
+    { UPB_REFCOUNT_INIT(vtbl, refs, ref2s), name, NULL, type, false }
 
 
 /* upb_fielddef ***************************************************************/
@@ -84,12 +84,14 @@ struct upb_fielddef {
   uint32_t index_;
 };
 
+extern const struct upb_refcounted_vtbl upb_fielddef_vtbl;
+
 #define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, is_extension, lazy,   \
                           packed, name, num, msgdef, subdef, selector_base,    \
                           index, defaultval, refs, ref2s)                      \
   {                                                                            \
-    UPB_DEF_INIT(name, UPB_DEF_FIELD, refs, ref2s), defaultval, {msgdef},      \
-        {subdef}, NULL, false, false,                                          \
+    UPB_DEF_INIT(name, UPB_DEF_FIELD, &upb_fielddef_vtbl, refs, ref2s),        \
+        defaultval, {msgdef}, {subdef}, NULL, false, false,                    \
         type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, true, is_extension, \
         lazy, packed, intfmt, tagdelim, type, label, num, selector_base, index \
   }
@@ -105,10 +107,7 @@ struct upb_msgdef {
 
   /* Tables for looking up fields by number and name. */
   upb_inttable itof;  /* int to field */
-  upb_strtable ntof;  /* name to field */
-
-  /* Tables for looking up oneofs by name. */
-  upb_strtable ntoo;  /* name to oneof */
+  upb_strtable ntof;  /* name to field/oneof */
 
   /* Is this a map-entry message? */
   bool map_entry;
@@ -119,14 +118,15 @@ struct upb_msgdef {
   /* TODO(haberman): proper extension ranges (there can be multiple). */
 };
 
+extern const struct upb_refcounted_vtbl upb_msgdef_vtbl;
+
 /* TODO: also support static initialization of the oneofs table. This will be
  * needed if we compile in descriptors that contain oneofs. */
 #define UPB_MSGDEF_INIT(name, selector_count, submsg_field_count, itof, ntof, \
                         map_entry, syntax, refs, ref2s)                       \
   {                                                                           \
-    UPB_DEF_INIT(name, UPB_DEF_MSG, refs, ref2s), selector_count,             \
-        submsg_field_count, itof, ntof,                                       \
-        UPB_EMPTY_STRTABLE_INIT(UPB_CTYPE_PTR), map_entry, syntax             \
+    UPB_DEF_INIT(name, UPB_DEF_MSG, &upb_fielddef_vtbl, refs, ref2s),         \
+        selector_count, submsg_field_count, itof, ntof, map_entry, syntax     \
   }
 
 
@@ -140,8 +140,11 @@ struct upb_enumdef {
   int32_t defaultval;
 };
 
+extern const struct upb_refcounted_vtbl upb_enumdef_vtbl;
+
 #define UPB_ENUMDEF_INIT(name, ntoi, iton, defaultval, refs, ref2s) \
-  { UPB_DEF_INIT(name, UPB_DEF_ENUM, refs, ref2s), ntoi, iton, defaultval }
+  { UPB_DEF_INIT(name, UPB_DEF_ENUM, &upb_enumdef_vtbl, refs, ref2s), ntoi,    \
+    iton, defaultval }
 
 
 /* upb_oneofdef ***************************************************************/
@@ -155,8 +158,10 @@ struct upb_oneofdef {
   const upb_msgdef *parent;
 };
 
+extern const struct upb_refcounted_vtbl upb_oneofdef_vtbl;
+
 #define UPB_ONEOFDEF_INIT(name, ntof, itof, refs, ref2s) \
-  { UPB_REFCOUNT_INIT(refs, ref2s), name, ntof, itof }
+  { UPB_REFCOUNT_INIT(&upb_oneofdef_vtbl, refs, ref2s), name, ntof, itof }
 
 
 /* upb_symtab *****************************************************************/
@@ -166,9 +171,6 @@ struct upb_symtab {
 
   upb_strtable symtab;
 };
-
-#define UPB_SYMTAB_INIT(symtab, refs, ref2s) \
-  { UPB_REFCOUNT_INIT(refs, ref2s), symtab }
 
 struct upb_filedef {
   upb_refcounted base;
@@ -180,5 +182,7 @@ struct upb_filedef {
   upb_inttable defs;
   upb_inttable deps;
 };
+
+extern const struct upb_refcounted_vtbl upb_filedef_vtbl;
 
 #endif  /* UPB_STATICINIT_H_ */

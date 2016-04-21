@@ -66,6 +66,22 @@ static bool upb_isident(const char *str, size_t len, bool full, upb_status *s) {
   return !start;
 }
 
+static bool upb_isoneof(const upb_refcounted *def) {
+  return def->vtbl == &upb_oneofdef_vtbl;
+}
+
+static bool upb_isfield(const upb_refcounted *def) {
+  return def->vtbl == &upb_fielddef_vtbl;
+}
+
+static const upb_oneofdef *upb_trygetoneof(const upb_refcounted *def) {
+  return upb_isoneof(def) ? (const upb_oneofdef*)def : NULL;
+}
+
+static const upb_fielddef *upb_trygetfield(const upb_refcounted *def) {
+  return upb_isfield(def) ? (const upb_fielddef*)def : NULL;
+}
+
 
 /* upb_def ********************************************************************/
 
@@ -437,12 +453,17 @@ static void upb_enumdef_free(upb_refcounted *r) {
   upb_gfree(e);
 }
 
+const struct upb_refcounted_vtbl upb_enumdef_vtbl = {NULL, &upb_enumdef_free};
+
 upb_enumdef *upb_enumdef_new(const void *owner) {
-  static const struct upb_refcounted_vtbl vtbl = {NULL, &upb_enumdef_free};
   upb_enumdef *e = upb_gmalloc(sizeof(*e));
   if (!e) return NULL;
-  if (!upb_def_init(upb_enumdef_upcast_mutable(e), UPB_DEF_ENUM, &vtbl, owner))
+
+  if (!upb_def_init(upb_enumdef_upcast_mutable(e), UPB_DEF_ENUM,
+                    &upb_enumdef_vtbl, owner)) {
     goto err2;
+  }
+
   if (!upb_strtable_init(&e->ntoi, UPB_CTYPE_INT32)) goto err2;
   if (!upb_inttable_init(&e->iton, UPB_CTYPE_CSTR)) goto err1;
   return e;
@@ -663,11 +684,13 @@ static bool enumdefaultint32(const upb_fielddef *f, int32_t *val) {
   return false;
 }
 
+const struct upb_refcounted_vtbl upb_fielddef_vtbl = {visitfield, freefield};
+
 upb_fielddef *upb_fielddef_new(const void *o) {
-  static const struct upb_refcounted_vtbl vtbl = {visitfield, freefield};
   upb_fielddef *f = upb_gmalloc(sizeof(*f));
   if (!f) return NULL;
-  if (!upb_def_init(upb_fielddef_upcast_mutable(f), UPB_DEF_FIELD, &vtbl, o)) {
+  if (!upb_def_init(upb_fielddef_upcast_mutable(f), UPB_DEF_FIELD,
+                    &upb_fielddef_vtbl, o)) {
     upb_gfree(f);
     return NULL;
   }
@@ -1378,31 +1401,32 @@ static void visitmsg(const upb_refcounted *r, upb_refcounted_visit *visit,
 
 static void freemsg(upb_refcounted *r) {
   upb_msgdef *m = (upb_msgdef*)r;
-  upb_strtable_uninit(&m->ntoo);
   upb_strtable_uninit(&m->ntof);
   upb_inttable_uninit(&m->itof);
   upb_def_uninit(upb_msgdef_upcast_mutable(m));
   upb_gfree(m);
 }
 
+const struct upb_refcounted_vtbl upb_msgdef_vtbl = {visitmsg, freemsg};
+
 upb_msgdef *upb_msgdef_new(const void *owner) {
-  static const struct upb_refcounted_vtbl vtbl = {visitmsg, freemsg};
   upb_msgdef *m = upb_gmalloc(sizeof(*m));
   if (!m) return NULL;
-  if (!upb_def_init(upb_msgdef_upcast_mutable(m), UPB_DEF_MSG, &vtbl, owner))
+
+  if (!upb_def_init(upb_msgdef_upcast_mutable(m), UPB_DEF_MSG, &upb_msgdef_vtbl,
+                    owner)) {
     goto err2;
-  if (!upb_inttable_init(&m->itof, UPB_CTYPE_PTR)) goto err3;
-  if (!upb_strtable_init(&m->ntof, UPB_CTYPE_PTR)) goto err2;
-  if (!upb_strtable_init(&m->ntoo, UPB_CTYPE_PTR)) goto err1;
+  }
+
+  if (!upb_inttable_init(&m->itof, UPB_CTYPE_PTR)) goto err2;
+  if (!upb_strtable_init(&m->ntof, UPB_CTYPE_PTR)) goto err1;
   m->map_entry = false;
   m->syntax = UPB_SYNTAX_PROTO2;
   return m;
 
 err1:
-  upb_strtable_uninit(&m->ntof);
-err2:
   upb_inttable_uninit(&m->itof);
-err3:
+err2:
   upb_gfree(m);
   return NULL;
 }
@@ -1484,9 +1508,11 @@ static bool check_field_add(const upb_msgdef *m, const upb_fielddef *f,
   } else if (upb_fielddef_name(f) == NULL || upb_fielddef_number(f) == 0) {
     upb_status_seterrmsg(s, "field name or number were not set");
     return false;
-  } else if (upb_msgdef_ntofz(m, upb_fielddef_name(f)) ||
-             upb_msgdef_itof(m, upb_fielddef_number(f))) {
-    upb_status_seterrmsg(s, "duplicate field name or number for field");
+  } else if (upb_msgdef_itof(m, upb_fielddef_number(f))) {
+    upb_status_seterrmsg(s, "duplicate field number");
+    return false;
+  } else if (upb_strtable_lookup(&m->ntof, upb_fielddef_name(f), NULL)) {
+    upb_status_seterrmsg(s, "name conflicts with existing field or oneof");
     return false;
   }
   return true;
@@ -1547,8 +1573,8 @@ bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
   } else if (upb_oneofdef_name(o) == NULL) {
     upb_status_seterrmsg(s, "oneofdef name was not set");
     return false;
-  } else if (upb_msgdef_ntooz(m, upb_oneofdef_name(o))) {
-    upb_status_seterrmsg(s, "duplicate oneof name");
+  } else if (upb_strtable_lookup(&m->ntof, upb_oneofdef_name(o), NULL)) {
+    upb_status_seterrmsg(s, "name conflicts with existing field or oneof");
     return false;
   }
 
@@ -1565,7 +1591,7 @@ bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
 
   /* Add oneof itself first. */
   o->parent = m;
-  upb_strtable_insert(&m->ntoo, upb_oneofdef_name(o), upb_value_ptr(o));
+  upb_strtable_insert(&m->ntof, upb_oneofdef_name(o), upb_value_ptr(o));
   upb_ref2(o, m);
   upb_ref2(m, o);
 
@@ -1589,23 +1615,47 @@ const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i) {
 const upb_fielddef *upb_msgdef_ntof(const upb_msgdef *m, const char *name,
                                     size_t len) {
   upb_value val;
-  return upb_strtable_lookup2(&m->ntof, name, len, &val) ?
-      upb_value_getptr(val) : NULL;
+
+  if (!upb_strtable_lookup2(&m->ntof, name, len, &val)) {
+    return NULL;
+  }
+
+  return upb_trygetfield(upb_value_getptr(val));
 }
 
 const upb_oneofdef *upb_msgdef_ntoo(const upb_msgdef *m, const char *name,
                                     size_t len) {
   upb_value val;
-  return upb_strtable_lookup2(&m->ntoo, name, len, &val) ?
-      upb_value_getptr(val) : NULL;
+
+  if (!upb_strtable_lookup2(&m->ntof, name, len, &val)) {
+    return NULL;
+  }
+
+  return upb_trygetoneof(upb_value_getptr(val));
+}
+
+bool upb_msgdef_lookupname(const upb_msgdef *m, const char *name, size_t len,
+                           const upb_fielddef **f, const upb_oneofdef **o) {
+  upb_value val;
+
+  if (!upb_strtable_lookup2(&m->ntof, name, len, &val)) {
+    return false;
+  }
+
+  *o = upb_trygetoneof(upb_value_getptr(val));
+  *f = upb_trygetfield(upb_value_getptr(val));
+  assert((*o != NULL) ^ (*f != NULL));  /* Exactly one of the two should be set. */
+  return true;
 }
 
 int upb_msgdef_numfields(const upb_msgdef *m) {
-  return upb_strtable_count(&m->ntof);
+  /* The number table contains only fields. */
+  return upb_inttable_count(&m->itof);
 }
 
 int upb_msgdef_numoneofs(const upb_msgdef *m) {
-  return upb_strtable_count(&m->ntoo);
+  /* The name table includes oneofs, and the number table does not. */
+  return upb_strtable_count(&m->ntof) - upb_inttable_count(&m->itof);
 }
 
 void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry) {
@@ -1636,10 +1686,21 @@ void upb_msg_field_iter_setdone(upb_msg_field_iter *iter) {
 }
 
 void upb_msg_oneof_begin(upb_msg_oneof_iter *iter, const upb_msgdef *m) {
-  upb_strtable_begin(iter, &m->ntoo);
+  upb_strtable_begin(iter, &m->ntof);
+  /* We need to skip past any initial fields. */
+  while (!upb_strtable_done(iter) &&
+         !upb_isoneof(upb_value_getptr(upb_strtable_iter_value(iter)))) {
+    upb_strtable_next(iter);
+  }
 }
 
-void upb_msg_oneof_next(upb_msg_oneof_iter *iter) { upb_strtable_next(iter); }
+void upb_msg_oneof_next(upb_msg_oneof_iter *iter) {
+  /* We need to skip past fields to return only oneofs. */
+  do {
+    upb_strtable_next(iter);
+  } while (!upb_strtable_done(iter) &&
+           !upb_isoneof(upb_value_getptr(upb_strtable_iter_value(iter))));
+}
 
 bool upb_msg_oneof_done(const upb_msg_oneof_iter *iter) {
   return upb_strtable_done(iter);
@@ -1676,16 +1737,26 @@ static void freeoneof(upb_refcounted *r) {
   upb_gfree(o);
 }
 
+const struct upb_refcounted_vtbl upb_oneofdef_vtbl = {visitoneof, freeoneof};
+
 upb_oneofdef *upb_oneofdef_new(const void *owner) {
-  static const struct upb_refcounted_vtbl vtbl = {visitoneof, freeoneof};
   upb_oneofdef *o = upb_gmalloc(sizeof(*o));
+
+  if (!o) {
+    return NULL;
+  }
+
   o->parent = NULL;
-  if (!o) return NULL;
-  if (!upb_refcounted_init(upb_oneofdef_upcast_mutable(o), &vtbl, owner))
-    goto err2;
   o->name = NULL;
+
+  if (!upb_refcounted_init(upb_oneofdef_upcast_mutable(o), &upb_oneofdef_vtbl,
+                           owner)) {
+    goto err2;
+  }
+
   if (!upb_inttable_init(&o->itof, UPB_CTYPE_PTR)) goto err2;
   if (!upb_strtable_init(&o->ntof, UPB_CTYPE_PTR)) goto err1;
+
   return o;
 
 err1:
@@ -1879,8 +1950,9 @@ static void freefiledef(upb_refcounted *r) {
   upb_gfree(f);
 }
 
+const struct upb_refcounted_vtbl upb_filedef_vtbl = {visitfiledef, freefiledef};
+
 upb_filedef *upb_filedef_new(const void *owner) {
-  static const struct upb_refcounted_vtbl vtbl = {visitfiledef, freefiledef};
   upb_filedef *f = upb_gmalloc(sizeof(*f));
 
   if (!f) {
@@ -1891,7 +1963,8 @@ upb_filedef *upb_filedef_new(const void *owner) {
   f->name = NULL;
   f->syntax = UPB_SYNTAX_PROTO2;
 
-  if (!upb_refcounted_init(upb_filedef_upcast_mutable(f), &vtbl, owner)) {
+  if (!upb_refcounted_init(upb_filedef_upcast_mutable(f), &upb_filedef_vtbl,
+                           owner)) {
     goto err;
   }
 

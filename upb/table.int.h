@@ -261,13 +261,18 @@ typedef struct {
 } upb_table;
 
 #ifdef NDEBUG
-#define UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries) \
-  {count, mask, ctype, size_lg2, entries}
+#  define UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries) \
+     {count, mask, ctype, size_lg2, entries}
 #else
+#  ifdef UPB_DEBUG_REFS
 /* At the moment the only mutable tables we statically initialize are debug
  * ref tables. */
-#define UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries) \
-  {count, mask, ctype, size_lg2, entries, &upb_alloc_debugrefs}
+#    define UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries) \
+       {count, mask, ctype, size_lg2, entries, &upb_alloc_debugrefs}
+#  else
+#    define UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries) \
+       {count, mask, ctype, size_lg2, entries, NULL}
+#  endif
 #endif
 
 typedef struct {

@@ -103,10 +103,11 @@ struct upb_refcounted {
 
 #ifdef UPB_DEBUG_REFS
 extern upb_alloc upb_alloc_debugrefs;
-#define UPB_REFCOUNT_INIT(refs, ref2s) \
-    {&static_refcount, NULL, NULL, 0, true, refs, ref2s}
+#define UPB_REFCOUNT_INIT(vtbl, refs, ref2s) \
+    {&static_refcount, NULL, vtbl, 0, true, refs, ref2s}
 #else
-#define UPB_REFCOUNT_INIT(refs, ref2s) {&static_refcount, NULL, NULL, 0, true}
+#define UPB_REFCOUNT_INIT(vtbl, refs, ref2s) \
+    {&static_refcount, NULL, vtbl, 0, true}
 #endif
 
 UPB_BEGIN_EXTERN_C

@@ -109,6 +109,7 @@ dep:
 clean_leave_profile:
 	@rm -rf obj lib
 	@rm -f tests/google_message?.h
+	@rm -f tests/json/test.upbdefs.o
 	@rm -f $(TESTS) tests/testmain.o tests/t.*
 	@rm -rf tools/upbc deps
 	@rm -rf upb/bindings/python/build
@@ -455,8 +456,8 @@ LUATESTS = \
 .PHONY: clean_lua testlua lua
 
 testlua: lua
-	@set -e  # Abort on error.
-	@for test in $(LUATESTS) ; do \
+	@set -e; \
+	for test in $(LUATESTS) ; do \
 	  echo LUA $$test; \
 	  LUA_PATH="third_party/lunit/?.lua;upb/bindings/lua/?.lua" \
 	    LUA_CPATH=upb/bindings/lua/?.so \

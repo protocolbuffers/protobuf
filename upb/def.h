@@ -668,6 +668,10 @@ UPB_END_EXTERN_C
 typedef upb_inttable_iter upb_msg_field_iter;
 typedef upb_strtable_iter upb_msg_oneof_iter;
 
+/* Well-known field tag numbers for map-entry messages. */
+#define UPB_MAPENTRY_KEY   1
+#define UPB_MAPENTRY_VALUE 2
+
 #ifdef __cplusplus
 
 /* Structure that describes a single .proto message type.
@@ -921,16 +925,20 @@ UPB_REFCOUNTED_CMETHODS(upb_msgdef, upb_msgdef_upcast2)
 
 bool upb_msgdef_freeze(upb_msgdef *m, upb_status *status);
 
+upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner);
 const char *upb_msgdef_fullname(const upb_msgdef *m);
 const char *upb_msgdef_name(const upb_msgdef *m);
+int upb_msgdef_numoneofs(const upb_msgdef *m);
 upb_syntax_t upb_msgdef_syntax(const upb_msgdef *m);
-bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname, upb_status *s);
 
-upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner);
 bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f, const void *ref_donor,
                          upb_status *s);
 bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
                          upb_status *s);
+bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname, upb_status *s);
+void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
+bool upb_msgdef_mapentry(const upb_msgdef *m);
+bool upb_msgdef_setsyntax(upb_msgdef *m, upb_syntax_t syntax);
 
 /* Field lookup in a couple of different variations:
  *   - itof = int to field
@@ -972,19 +980,21 @@ UPB_INLINE upb_oneofdef *upb_msgdef_ntoo_mutable(upb_msgdef *m,
   return (upb_oneofdef *)upb_msgdef_ntoo(m, name, len);
 }
 
-void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
-bool upb_msgdef_mapentry(const upb_msgdef *m);
-bool upb_msgdef_setsyntax(upb_msgdef *m, upb_syntax_t syntax);
+/* Lookup of either field or oneof by name.  Returns whether either was found.
+ * If the return is true, then the found def will be set, and the non-found
+ * one set to NULL. */
+bool upb_msgdef_lookupname(const upb_msgdef *m, const char *name, size_t len,
+                           const upb_fielddef **f, const upb_oneofdef **o);
 
-/* Well-known field tag numbers for map-entry messages. */
-#define UPB_MAPENTRY_KEY   1
-#define UPB_MAPENTRY_VALUE 2
+UPB_INLINE bool upb_msgdef_lookupnamez(const upb_msgdef *m, const char *name,
+                                       const upb_fielddef **f,
+                                       const upb_oneofdef **o) {
+  return upb_msgdef_lookupname(m, name, strlen(name), f, o);
+}
 
-const upb_oneofdef *upb_msgdef_findoneof(const upb_msgdef *m,
-                                          const char *name);
-int upb_msgdef_numoneofs(const upb_msgdef *m);
-
-/* upb_msg_field_iter i;
+/* Iteration over fields and oneofs.  For example:
+ *
+ * upb_msg_field_iter i;
  * for(upb_msg_field_begin(&i, m);
  *     !upb_msg_field_done(&i);
  *     upb_msg_field_next(&i)) {
