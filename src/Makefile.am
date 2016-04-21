@@ -507,6 +507,8 @@ protoc_inputs =                                                   \
   google/protobuf/unittest_preserve_unknown_enum.proto            \
   google/protobuf/unittest.proto                                  \
   google/protobuf/unittest_proto3_arena.proto                     \
+  google/protobuf/unittest_proto3_arena_lite.proto                     \
+  google/protobuf/unittest_proto3_lite.proto                     \
   google/protobuf/unittest_well_known_types.proto                 \
   google/protobuf/util/internal/testdata/anys.proto               \
   google/protobuf/util/internal/testdata/books.proto              \
@@ -609,6 +611,10 @@ protoc_outputs =                                                  \
   google/protobuf/unittest_preserve_unknown_enum.pb.h             \
   google/protobuf/unittest_proto3_arena.pb.cc                     \
   google/protobuf/unittest_proto3_arena.pb.h                      \
+  google/protobuf/unittest_proto3_arena_lite.pb.cc                     \
+  google/protobuf/unittest_proto3_arena_lite.pb.h                      \
+  google/protobuf/unittest_proto3_lite.pb.cc                     \
+  google/protobuf/unittest_proto3_lite.pb.h                      \
   google/protobuf/unittest_well_known_types.pb.cc                 \
   google/protobuf/unittest_well_known_types.pb.h                  \
   google/protobuf/util/internal/testdata/anys.pb.cc               \
@@ -710,6 +716,8 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/no_field_presence_test.cc                    \
   google/protobuf/preserve_unknown_enum_test.cc                \
   google/protobuf/proto3_arena_unittest.cc                     \
+  google/protobuf/proto3_arena_lite_unittest.cc                     \
+  google/protobuf/proto3_lite_unittest.cc                     \
   google/protobuf/reflection_ops_unittest.cc                   \
   google/protobuf/repeated_field_reflection_unittest.cc        \
   google/protobuf/repeated_field_unittest.cc                   \

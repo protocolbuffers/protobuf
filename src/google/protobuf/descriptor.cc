@@ -5113,11 +5113,6 @@ void DescriptorBuilder::ValidateProto3(
   for (int i = 0; i < file->enum_type_count(); ++i) {
     ValidateProto3Enum(file->enum_types_ + i, proto.enum_type(i));
   }
-  if (IsLite(file)) {
-    AddError(file->name(), proto,
-             DescriptorPool::ErrorCollector::OTHER,
-             "Lite runtime is not supported in proto3.");
-  }
 }
 
 static string ToLowercaseWithoutUnderscores(const string& name) {
