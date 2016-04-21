@@ -39,20 +39,24 @@ contextually reserved (that is, they can be used as identifiers in contexts
 where they would not be confused). As of Swift 2.2, the set of always-reserved
 words is:
 
-`_, #available, #column, #else, #elseif, #endif, #file, #function, #if, #line,
+```
+_, #available, #column, #else, #elseif, #endif, #file, #function, #if, #line,
 #selector, as, associatedtype, break, case, catch, class, continue, default,
 defer, deinit, do, dynamicType, else, enum, extension, fallthrough, false, for,
 func, guard, if, import, in, init, inout, internal, is, let, nil, operator,
 private, protocol, public, repeat, rethrows, return, self, Self, static,
 struct, subscript, super, switch, throw, throws, true, try, typealias, var,
-where, while`
+where, while
+```
 
 The set of contextually reserved words is:
 
-`associativity, convenience, dynamic, didSet, final, get, infix, indirect,
+```
+associativity, convenience, dynamic, didSet, final, get, infix, indirect,
 lazy, left, mutating, none, nonmutating, optional, override, postfix,
 precedence, prefix, Protocol, required, right, set, Type, unowned, weak,
-willSet`
+willSet
+```
 
 It is possible to use any reserved word as an identifier by escaping it with
 backticks (for example, ``let `class` = 5``). Other name-mangling schemes would
