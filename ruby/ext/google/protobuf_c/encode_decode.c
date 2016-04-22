@@ -656,7 +656,6 @@ static const upb_json_parsermethod *msgdef_jsonparsermethod(Descriptor* desc) {
 #define STACK_ENV_STACKBYTES 4096
 typedef struct {
   upb_env env;
-  upb_seededalloc alloc;
   const char* ruby_error_template;
   char allocbuf[STACK_ENV_STACKBYTES];
 } stackenv;
@@ -681,16 +680,12 @@ static bool env_error_func(void* ud, const upb_status* status) {
 
 static void stackenv_init(stackenv* se, const char* errmsg) {
   se->ruby_error_template = errmsg;
-  upb_env_init(&se->env);
-  upb_seededalloc_init(&se->alloc, &se->allocbuf, STACK_ENV_STACKBYTES);
-  upb_env_setallocfunc(
-      &se->env, upb_seededalloc_getallocfunc(&se->alloc), &se->alloc);
+  upb_env_init2(&se->env, se->allocbuf, sizeof(se->allocbuf), NULL);
   upb_env_seterrorfunc(&se->env, env_error_func, se);
 }
 
 static void stackenv_uninit(stackenv* se) {
   upb_env_uninit(&se->env);
-  upb_seededalloc_uninit(&se->alloc);
 }
 
 /*
