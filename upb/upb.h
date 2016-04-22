@@ -603,6 +603,7 @@ typedef bool upb_error_func(void *ud, const upb_status *status);
 UPB_BEGIN_EXTERN_C
 
 void upb_env_init(upb_env *e);
+void upb_env_init2(upb_env *e, void *mem, size_t n, upb_alloc *alloc);
 void upb_env_uninit(upb_env *e);
 
 void upb_env_initonly(upb_env *e);

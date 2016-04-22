@@ -280,6 +280,11 @@ void upb_env_init(upb_env *e) {
   upb_env_initonly(e);
 }
 
+void upb_env_init2(upb_env *e, void *mem, size_t n, upb_alloc *alloc) {
+  upb_arena_init2(&e->arena_, mem, n, alloc);
+  upb_env_initonly(e);
+}
+
 void upb_env_uninit(upb_env *e) {
   upb_arena_uninit(&e->arena_);
 }
