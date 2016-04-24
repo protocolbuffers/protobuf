@@ -1,6 +1,4 @@
-set(libprotoc_files
-  ${protobuf_source_dir}/src/google/protobuf/compiler/code_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/command_line_interface.cc
+set(libprotoc_files_cpp
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_enum.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_enum_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_extension.cc
@@ -14,22 +12,9 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_primitive_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_service.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_string_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_doc_comment.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_enum.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_enum_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_field_base.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_helpers.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_map_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_message.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_message_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_primitive_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_reflection_class.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_message_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc
+)
+
+set(libprotoc_files_java
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_context.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_doc_comment.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum.cc
@@ -60,18 +45,28 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_shared_code_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_string_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_string_field_lite.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_enum.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_enum_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_extension.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_file.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_helpers.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_map_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_message.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_message_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_primitive_field.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/js/js_generator.cc
+)
+
+set(libprotoc_files_csharp
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_doc_comment.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_enum.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_enum_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_field_base.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_helpers.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_map_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_message.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_message_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_primitive_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_reflection_class.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_message_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc
+)
+
+set(libprotoc_files_objc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_extension.cc
@@ -84,13 +79,74 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_message_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_oneof.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc
+)
+
+set(libprotoc_files_javanano
+  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_enum.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_enum_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_extension.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_file.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_helpers.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_map_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_message.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_message_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_primitive_field.cc
+)
+
+set(libprotoc_files_js
+  ${protobuf_source_dir}/src/google/protobuf/compiler/js/js_generator.cc
+)
+
+set(libprotoc_files_python
+  ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_generator.cc
+)
+
+set(libprotoc_files_ruby
+  ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator.cc
+)
+
+set(libprotoc_files
+  ${protobuf_source_dir}/src/google/protobuf/compiler/code_generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/command_line_interface.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.pb.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.cc
 )
+
+if (protobuf_WITHOUT_CPP_COMPILER)
+    list(APPEND libprotoc_files ${libprotoc_files_cpp})
+endif()
+
+if (protobuf_WITHOUT_JAVA_COMPILER)
+    list(APPEND libprotoc_files ${libprotoc_files_java})
+endif()
+
+if (protobuf_WITHOUT_CSHARP_COMPILER)
+    list(APPEND libprotoc_files ${libprotoc_files_csharp})
+endif()
+
+if (protobuf_WITHOUT_OBJC_COMPILER)
+    list(APPEND libprotoc_files ${libprotoc_files_objc})
+endif()
+
+if (protobuf_WITHOUT_JAVANANO_COMPILER)
+    list(APPEND libprotoc_files ${libprotoc_files_javanano})
+endif()
+
+if (protobuf_WITHOUT_JS_COMPILER)
+    list(APPEND libprotoc_files ${libprotoc_files_js})
+endif()
+
+if (protobuf_WITHOUT_PYTHON_COMPILER)
+    list(APPEND libprotoc_files ${libprotoc_files_python})
+endif()
+
+if (protobuf_WITHOUT_RUBY_COMPILER)
+    list(APPEND libprotoc_files ${libprotoc_files_ruby})
+endif()
 
 add_library(libprotoc ${protobuf_SHARED_OR_STATIC}
   ${libprotoc_files})

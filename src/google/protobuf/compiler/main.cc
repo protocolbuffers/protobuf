@@ -46,45 +46,60 @@ int main(int argc, char* argv[]) {
   cli.AllowPlugins("protoc-");
 
   // Proto2 C++
+#ifndef GOOGLE_PROTOBUFC_NO_CPP
   google::protobuf::compiler::cpp::CppGenerator cpp_generator;
   cli.RegisterGenerator("--cpp_out", "--cpp_opt", &cpp_generator,
                         "Generate C++ header and source.");
+#endif
 
   // Proto2 Java
+#ifndef GOOGLE_PROTOBUFC_NO_JAVA
   google::protobuf::compiler::java::JavaGenerator java_generator;
   cli.RegisterGenerator("--java_out", &java_generator,
                         "Generate Java source file.");
-
+#endif
 
   // Proto2 Python
+#ifndef GOOGLE_PROTOBUFC_NO_PYTHON
   google::protobuf::compiler::python::Generator py_generator;
   cli.RegisterGenerator("--python_out", &py_generator,
                         "Generate Python source file.");
+#endif
 
   // Java Nano
+#ifndef GOOGLE_PROTOBUFC_NO_JAVANANO
   google::protobuf::compiler::javanano::JavaNanoGenerator javanano_generator;
   cli.RegisterGenerator("--javanano_out", &javanano_generator,
                         "Generate Java Nano source file.");
+#endif
 
   // Ruby
+#ifndef GOOGLE_PROTOBUFC_NO_RUBY
   google::protobuf::compiler::ruby::Generator rb_generator;
   cli.RegisterGenerator("--ruby_out", &rb_generator,
                         "Generate Ruby source file.");
+#endif
 
   // CSharp
+#ifndef GOOGLE_PROTOBUFC_NO_CSHARP
   google::protobuf::compiler::csharp::Generator csharp_generator;
   cli.RegisterGenerator("--csharp_out", "--csharp_opt", &csharp_generator,
                         "Generate C# source file.");
+#endif
 
   // Objective C
+#ifndef GOOGLE_PROTOBUFC_NO_OBJC
   google::protobuf::compiler::objectivec::ObjectiveCGenerator objc_generator;
   cli.RegisterGenerator("--objc_out", "--objc_opt", &objc_generator,
                         "Generate Objective C header and source.");
+#endif
 
   // JavaScript
+#ifndef GOOGLE_PROTOBUFC_NO_JS
   google::protobuf::compiler::js::Generator js_generator;
   cli.RegisterGenerator("--js_out", &js_generator,
                         "Generate JavaScript source.");
+#endif
 
   return cli.Run(argc, argv);
 }
