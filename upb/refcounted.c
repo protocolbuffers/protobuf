@@ -709,7 +709,7 @@ static void merge(upb_refcounted *r, upb_refcounted *from) {
    * TODO(haberman): this linear algorithm can result in an overall O(n^2) bound
    * if the user continuously extends a group by one object.  Prevent this by
    * using one of the techniques in this paper:
-   *     ftp://www.ncedc.org/outgoing/geomorph/dino/orals/p245-tarjan.pdf */
+   *     http://bioinfo.ict.ac.cn/~dbu/AlgorithmCourses/Lectures/Union-Find-Tarjan.pdf */
   do { from->group = r->group; } while ((from = from->next) != base);
 
   /* Merge the two circularly linked lists by swapping their next pointers. */
