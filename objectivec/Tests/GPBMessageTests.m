@@ -1947,4 +1947,11 @@
                  EnumTestMsg_MyEnum_NegTwo);
 }
 
+- (void)testOneBasedEnumHolder {
+  // Test case for https://github.com/google/protobuf/issues/1453
+  // Message with no explicit defaults, but a non zero default for an enum.
+  MessageWithOneBasedEnum *enumMsg = [MessageWithOneBasedEnum message];
+  XCTAssertEqual(enumMsg.enumField, MessageWithOneBasedEnum_OneBasedEnum_One);
+}
+
 @end
