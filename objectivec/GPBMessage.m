@@ -2603,9 +2603,13 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       size_t fieldOffset = field->description_->offset;
       switch (fieldDataType) {
         case GPBDataTypeBool: {
-          BOOL *selfValPtr = (BOOL *)&selfStorage[fieldOffset];
-          BOOL *otherValPtr = (BOOL *)&otherStorage[fieldOffset];
-          if (*selfValPtr != *otherValPtr) {
+          // Bools are stored in has_bits to avoid needing explicit space in
+          // the storage structure.
+          // (the field number passed to the HasIvar helper doesn't really
+          // matter since the offset is never negative)
+          BOOL selfValue = GPBGetHasIvar(self, (int32_t)(fieldOffset), 0);
+          BOOL otherValue = GPBGetHasIvar(other, (int32_t)(fieldOffset), 0);
+          if (selfValue != otherValue) {
             return NO;
           }
           break;
@@ -2714,8 +2718,12 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       size_t fieldOffset = field->description_->offset;
       switch (fieldDataType) {
         case GPBDataTypeBool: {
-          BOOL *valPtr = (BOOL *)&storage[fieldOffset];
-          result = prime * result + *valPtr;
+          // Bools are stored in has_bits to avoid needing explicit space in
+          // the storage structure.
+          // (the field number passed to the HasIvar helper doesn't really
+          // matter since the offset is never negative)
+          BOOL value = GPBGetHasIvar(self, (int32_t)(fieldOffset), 0);
+          result = prime * result + value;
           break;
         }
         case GPBDataTypeSFixed32:
