@@ -151,32 +151,30 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     name_len--;
   }
 
-  // Check for a oneof name first.
-  o = upb_msgdef_ntoo(self->descriptor->msgdef,
-                                          name, name_len);
+  // See if this name corresponds to either a oneof or field in this message.
+  if (!upb_msgdef_lookupname(self->descriptor->msgdef, name, name_len, &f,
+                             &o)) {
+    return rb_call_super(argc, argv);
+  }
+
   if (o != NULL) {
+    // This is a oneof -- return which field inside the oneof is set.
     if (setter) {
       rb_raise(rb_eRuntimeError, "Oneof accessors are read-only.");
     }
     return which_oneof_field(self, o);
-  }
-
-  // Otherwise, check for a field with that name.
-  f = upb_msgdef_ntof(self->descriptor->msgdef,
-                                          name, name_len);
-
-  if (f == NULL) {
-    return rb_call_super(argc, argv);
-  }
-
-  if (setter) {
-    if (argc < 2) {
-      rb_raise(rb_eArgError, "No value provided to setter.");
-    }
-    layout_set(self->descriptor->layout, Message_data(self), f, argv[1]);
-    return Qnil;
   } else {
-    return layout_get(self->descriptor->layout, Message_data(self), f);
+    // This is a field -- get or set the field's value.
+    assert(f);
+    if (setter) {
+      if (argc < 2) {
+        rb_raise(rb_eArgError, "No value provided to setter.");
+      }
+      layout_set(self->descriptor->layout, Message_data(self), f, argv[1]);
+      return Qnil;
+    } else {
+      return layout_get(self->descriptor->layout, Message_data(self), f);
+    }
   }
 }
 

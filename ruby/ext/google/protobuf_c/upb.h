@@ -80,6 +80,18 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+namespace upb {
+class Allocator;
+class Arena;
+class Environment;
+class ErrorSpace;
+class Status;
+template <int N> class InlinedArena;
+template <int N> class InlinedEnvironment;
+}
+#endif
+
 /* UPB_INLINE: inline if possible, emit standalone code if required. */
 #ifdef __cplusplus
 #define UPB_INLINE inline
@@ -147,6 +159,7 @@
 #define UPB_ASSERT_STDLAYOUT(type) \
   static_assert(std::is_standard_layout<type>::value, \
                 #type " must be standard layout");
+#define UPB_FINAL final
 #else  /* !defined(UPB_CXX11) */
 #define UPB_DISALLOW_COPY_AND_ASSIGN(class_name) \
   class_name(const class_name&); \
@@ -156,6 +169,7 @@
   ~class_name(); \
   UPB_DISALLOW_COPY_AND_ASSIGN(class_name)
 #define UPB_ASSERT_STDLAYOUT(type)
+#define UPB_FINAL
 #endif
 
 /* UPB_DECLARE_TYPE()
@@ -257,6 +271,7 @@
 /* Generic function type. */
 typedef void upb_func();
 
+
 /* C++ Casts ******************************************************************/
 
 #ifdef __cplusplus
@@ -334,134 +349,18 @@ class PointerBase2 : public PointerBase<T, Base> {
 #endif
 
 
-/* upb::reffed_ptr ************************************************************/
+/* upb::ErrorSpace ************************************************************/
 
-#ifdef __cplusplus
-
-#include <algorithm>  /* For std::swap(). */
-
-namespace upb {
-
-/* Provides RAII semantics for upb refcounted objects.  Each reffed_ptr owns a
- * ref on whatever object it points to (if any). */
-template <class T> class reffed_ptr {
- public:
-  reffed_ptr() : ptr_(NULL) {}
-
-  /* If ref_donor is NULL, takes a new ref, otherwise adopts from ref_donor. */
-  template <class U>
-  reffed_ptr(U* val, const void* ref_donor = NULL)
-      : ptr_(upb::upcast(val)) {
-    if (ref_donor) {
-      assert(ptr_);
-      ptr_->DonateRef(ref_donor, this);
-    } else if (ptr_) {
-      ptr_->Ref(this);
-    }
-  }
-
-  template <class U>
-  reffed_ptr(const reffed_ptr<U>& other)
-      : ptr_(upb::upcast(other.get())) {
-    if (ptr_) ptr_->Ref(this);
-  }
-
-  reffed_ptr(const reffed_ptr& other)
-      : ptr_(upb::upcast(other.get())) {
-    if (ptr_) ptr_->Ref(this);
-  }
-
-  ~reffed_ptr() { if (ptr_) ptr_->Unref(this); }
-
-  template <class U>
-  reffed_ptr& operator=(const reffed_ptr<U>& other) {
-    reset(other.get());
-    return *this;
-  }
-
-  reffed_ptr& operator=(const reffed_ptr& other) {
-    reset(other.get());
-    return *this;
-  }
-
-  /* TODO(haberman): add C++11 move construction/assignment for greater
-   * efficiency. */
-
-  void swap(reffed_ptr& other) {
-    if (ptr_ == other.ptr_) {
-      return;
-    }
-
-    if (ptr_) ptr_->DonateRef(this, &other);
-    if (other.ptr_) other.ptr_->DonateRef(&other, this);
-    std::swap(ptr_, other.ptr_);
-  }
-
-  T& operator*() const {
-    assert(ptr_);
-    return *ptr_;
-  }
-
-  T* operator->() const {
-    assert(ptr_);
-    return ptr_;
-  }
-
-  T* get() const { return ptr_; }
-
-  /* If ref_donor is NULL, takes a new ref, otherwise adopts from ref_donor. */
-  template <class U>
-  void reset(U* ptr = NULL, const void* ref_donor = NULL) {
-    reffed_ptr(ptr, ref_donor).swap(*this);
-  }
-
-  template <class U>
-  reffed_ptr<U> down_cast() {
-    return reffed_ptr<U>(upb::down_cast<U*>(get()));
-  }
-
-  template <class U>
-  reffed_ptr<U> dyn_cast() {
-    return reffed_ptr<U>(upb::dyn_cast<U*>(get()));
-  }
-
-  /* Plain release() is unsafe; if we were the only owner, it would leak the
-   * object.  Instead we provide this: */
-  T* ReleaseTo(const void* new_owner) {
-    T* ret = NULL;
-    ptr_->DonateRef(this, new_owner);
-    std::swap(ret, ptr_);
-    return ret;
-  }
-
- private:
-  T* ptr_;
-};
-
-}  /* namespace upb */
-
-#endif  /* __cplusplus */
-
-
-/* upb::Status ****************************************************************/
-
-#ifdef __cplusplus
-namespace upb {
-class ErrorSpace;
-class Status;
-}
-#endif
+/* A upb::ErrorSpace represents some domain of possible error values.  This lets
+ * upb::Status attach specific error codes to operations, like POSIX/C errno,
+ * Win32 error codes, etc.  Clients who want to know the very specific error
+ * code can check the error space and then know the type of the integer code.
+ *
+ * NOTE: upb::ErrorSpace is currently not used and should be considered
+ * experimental.  It is important primarily in cases where upb is performing
+ * I/O, but upb doesn't currently have any components that do this. */
 
 UPB_DECLARE_TYPE(upb::ErrorSpace, upb_errorspace)
-UPB_DECLARE_TYPE(upb::Status, upb_status)
-
-/* The maximum length of an error message before it will get truncated. */
-#define UPB_STATUS_MAX_MESSAGE 128
-
-/* An error callback function is used to report errors from some component.
- * The function can return "true" to indicate that the component should try
- * to recover and proceed, but this is not always possible. */
-typedef bool upb_errcb_t(void *closure, const upb_status* status);
 
 #ifdef __cplusplus
 class upb::ErrorSpace {
@@ -469,67 +368,21 @@ class upb::ErrorSpace {
 struct upb_errorspace {
 #endif
   const char *name;
-  /* Should the error message in the status object according to this code. */
-  void (*set_message)(upb_status* status, int code);
 };
 
-#ifdef __cplusplus
 
-/* Object representing a success or failure status.
+/* upb::Status ****************************************************************/
+
+/* upb::Status represents a success or failure status and error message.
  * It owns no resources and allocates no memory, so it should work
  * even in OOM situations. */
+UPB_DECLARE_TYPE(upb::Status, upb_status)
 
-class upb::Status {
- public:
-  Status();
+/* The maximum length of an error message before it will get truncated. */
+#define UPB_STATUS_MAX_MESSAGE 128
 
-  /* Returns true if there is no error. */
-  bool ok() const;
+UPB_BEGIN_EXTERN_C
 
-  /* Optional error space and code, useful if the caller wants to
-   * programmatically check the specific kind of error. */
-  ErrorSpace* error_space();
-  int code() const;
-
-  const char *error_message() const;
-
-  /* The error message will be truncated if it is longer than
-   * UPB_STATUS_MAX_MESSAGE-4. */
-  void SetErrorMessage(const char* msg);
-  void SetFormattedErrorMessage(const char* fmt, ...);
-
-  /* If there is no error message already, this will use the ErrorSpace to
-   * populate the error message for this code.  The caller can still call
-   * SetErrorMessage() to give a more specific message. */
-  void SetErrorCode(ErrorSpace* space, int code);
-
-  /* Resets the status to a successful state with no message. */
-  void Clear();
-
-  void CopyFrom(const Status& other);
-
- private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(Status)
-#else
-struct upb_status {
-#endif
-  bool ok_;
-
-  /* Specific status code defined by some error space (optional). */
-  int code_;
-  upb_errorspace *error_space_;
-
-  /* Error message; NULL-terminated. */
-  char msg[UPB_STATUS_MAX_MESSAGE];
-};
-
-#define UPB_STATUS_INIT {true, 0, NULL, {0}}
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* The returned string is invalidated by any other call into the status. */
 const char *upb_status_errmsg(const upb_status *status);
 bool upb_ok(const upb_status *status);
 upb_errorspace *upb_status_errspace(const upb_status *status);
@@ -542,40 +395,384 @@ void upb_status_clear(upb_status *status);
 void upb_status_seterrmsg(upb_status *status, const char *msg);
 void upb_status_seterrf(upb_status *status, const char *fmt, ...);
 void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args);
-void upb_status_seterrcode(upb_status *status, upb_errorspace *space, int code);
 void upb_status_copy(upb_status *to, const upb_status *from);
 
+UPB_END_EXTERN_C
+
 #ifdef __cplusplus
-}  /* extern "C" */
 
-namespace upb {
+class upb::Status {
+ public:
+  Status() { upb_status_clear(this); }
 
-/* C++ Wrappers */
-inline Status::Status() { Clear(); }
-inline bool Status::ok() const { return upb_ok(this); }
-inline const char* Status::error_message() const {
-  return upb_status_errmsg(this);
-}
-inline void Status::SetErrorMessage(const char* msg) {
-  upb_status_seterrmsg(this, msg);
-}
-inline void Status::SetFormattedErrorMessage(const char* fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  upb_status_vseterrf(this, fmt, args);
-  va_end(args);
-}
-inline void Status::SetErrorCode(ErrorSpace* space, int code) {
-  upb_status_seterrcode(this, space, code);
-}
-inline void Status::Clear() { upb_status_clear(this); }
-inline void Status::CopyFrom(const Status& other) {
-  upb_status_copy(this, &other);
-}
+  /* Returns true if there is no error. */
+  bool ok() const { return upb_ok(this); }
 
-}  /* namespace upb */
+  /* Optional error space and code, useful if the caller wants to
+   * programmatically check the specific kind of error. */
+  ErrorSpace* error_space() { return upb_status_errspace(this); }
+  int error_code() const { return upb_status_errcode(this); }
 
+  /* The returned string is invalidated by any other call into the status. */
+  const char *error_message() const { return upb_status_errmsg(this); }
+
+  /* The error message will be truncated if it is longer than
+   * UPB_STATUS_MAX_MESSAGE-4. */
+  void SetErrorMessage(const char* msg) { upb_status_seterrmsg(this, msg); }
+  void SetFormattedErrorMessage(const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    upb_status_vseterrf(this, fmt, args);
+    va_end(args);
+  }
+
+  /* Resets the status to a successful state with no message. */
+  void Clear() { upb_status_clear(this); }
+
+  void CopyFrom(const Status& other) { upb_status_copy(this, &other); }
+
+ private:
+  UPB_DISALLOW_COPY_AND_ASSIGN(Status)
+#else
+struct upb_status {
 #endif
+  bool ok_;
+
+  /* Specific status code defined by some error space (optional). */
+  int code_;
+  upb_errorspace *error_space_;
+
+  /* TODO(haberman): add file/line of error? */
+
+  /* Error message; NULL-terminated. */
+  char msg[UPB_STATUS_MAX_MESSAGE];
+};
+
+#define UPB_STATUS_INIT {true, 0, NULL, {0}}
+
+
+/** Built-in error spaces. ****************************************************/
+
+/* Errors raised by upb that we want to be able to detect programmatically. */
+typedef enum {
+  UPB_NOMEM   /* Can't reuse ENOMEM because it is POSIX, not ISO C. */
+} upb_errcode_t;
+
+extern upb_errorspace upb_upberr;
+
+void upb_upberr_setoom(upb_status *s);
+
+/* Since errno is defined by standard C, we define an error space for it in
+ * core upb.  Other error spaces should be defined in other, platform-specific
+ * modules. */
+
+extern upb_errorspace upb_errnoerr;
+
+
+/** upb::Allocator ************************************************************/
+
+/* A upb::Allocator is a possibly-stateful allocator object.
+ *
+ * It could either be an arena allocator (which doesn't require individual
+ * free() calls) or a regular malloc() (which does).  The client must therefore
+ * free memory unless it knows that the allocator is an arena allocator. */
+UPB_DECLARE_TYPE(upb::Allocator, upb_alloc)
+
+/* A malloc()/free() function.
+ * If "size" is 0 then the function acts like free(), otherwise it acts like
+ * realloc().  Only "oldsize" bytes from a previous allocation are preserved. */
+typedef void *upb_alloc_func(upb_alloc *alloc, void *ptr, size_t oldsize,
+                             size_t size);
+
+#ifdef __cplusplus
+
+class upb::Allocator UPB_FINAL {
+ public:
+  Allocator() {}
+
+ private:
+  UPB_DISALLOW_COPY_AND_ASSIGN(Allocator)
+
+ public:
+#else
+struct upb_alloc {
+#endif  /* __cplusplus */
+  upb_alloc_func *func;
+};
+
+UPB_INLINE void *upb_malloc(upb_alloc *alloc, size_t size) {
+  assert(size > 0);
+  return alloc->func(alloc, NULL, 0, size);
+}
+
+UPB_INLINE void *upb_realloc(upb_alloc *alloc, void *ptr, size_t oldsize,
+                             size_t size) {
+  assert(size > 0);
+  return alloc->func(alloc, ptr, oldsize, size);
+}
+
+UPB_INLINE void upb_free(upb_alloc *alloc, void *ptr) {
+  alloc->func(alloc, ptr, 0, 0);
+}
+
+/* The global allocator used by upb.  Uses the standard malloc()/free(). */
+
+extern upb_alloc upb_alloc_global;
+
+/* Functions that hard-code the global malloc.
+ *
+ * We still get benefit because we can put custom logic into our global
+ * allocator, like injecting out-of-memory faults in debug/testing builds. */
+
+UPB_INLINE void *upb_gmalloc(size_t size) {
+  return upb_malloc(&upb_alloc_global, size);
+}
+
+UPB_INLINE void *upb_grealloc(void *ptr, size_t oldsize, size_t size) {
+  return upb_realloc(&upb_alloc_global, ptr, oldsize, size);
+}
+
+UPB_INLINE void upb_gfree(void *ptr) {
+  upb_free(&upb_alloc_global, ptr);
+}
+
+/* upb::Arena *****************************************************************/
+
+/* upb::Arena is a specific allocator implementation that uses arena allocation.
+ * The user provides an allocator that will be used to allocate the underlying
+ * arena blocks.  Arenas by nature do not require the individual allocations
+ * to be freed.  However the Arena does allow users to register cleanup
+ * functions that will run when the arena is destroyed.
+ *
+ * A upb::Arena is *not* thread-safe.
+ *
+ * You could write a thread-safe arena allocator that satisfies the
+ * upb::Allocator interface, but it would not be as efficient for the
+ * single-threaded case. */
+UPB_DECLARE_TYPE(upb::Arena, upb_arena)
+
+typedef void upb_cleanup_func(void *ud);
+
+#define UPB_ARENA_BLOCK_OVERHEAD (sizeof(size_t)*4)
+
+UPB_BEGIN_EXTERN_C
+
+void upb_arena_init(upb_arena *a);
+void upb_arena_init2(upb_arena *a, void *mem, size_t n, upb_alloc *alloc);
+void upb_arena_uninit(upb_arena *a);
+upb_alloc *upb_arena_alloc(upb_arena *a);
+bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud);
+size_t upb_arena_bytesallocated(const upb_arena *a);
+void upb_arena_setnextblocksize(upb_arena *a, size_t size);
+void upb_arena_setmaxblocksize(upb_arena *a, size_t size);
+
+UPB_END_EXTERN_C
+
+#ifdef __cplusplus
+
+class upb::Arena {
+ public:
+  /* A simple arena with no initial memory block and the default allocator. */
+  Arena() { upb_arena_init(this); }
+
+  /* Constructs an arena with the given initial block which allocates blocks
+   * with the given allocator.  The given allocator must outlive the Arena.
+   *
+   * If you pass NULL for the allocator it will default to the global allocator
+   * upb_alloc_global, and NULL/0 for the initial block will cause there to be
+   * no initial block. */
+  Arena(void *mem, size_t len, Allocator* a) {
+    upb_arena_init2(this, mem, len, a);
+  }
+
+  ~Arena() { upb_arena_uninit(this); }
+
+  /* Sets the size of the next block the Arena will request (unless the
+   * requested allocation is larger).  Each block will double in size until the
+   * max limit is reached. */
+  void SetNextBlockSize(size_t size) { upb_arena_setnextblocksize(this, size); }
+
+  /* Sets the maximum block size.  No blocks larger than this will be requested
+   * from the underlying allocator unless individual arena allocations are
+   * larger. */
+  void SetMaxBlockSize(size_t size) { upb_arena_setmaxblocksize(this, size); }
+
+  /* Allows this arena to be used as a generic allocator.
+   *
+   * The arena does not need free() calls so when using Arena as an allocator
+   * it is safe to skip them.  However they are no-ops so there is no harm in
+   * calling free() either. */
+  Allocator* allocator() { return upb_arena_alloc(this); }
+
+  /* Add a cleanup function to run when the arena is destroyed.
+   * Returns false on out-of-memory. */
+  bool AddCleanup(upb_cleanup_func* func, void* ud) {
+    return upb_arena_addcleanup(this, func, ud);
+  }
+
+  /* Total number of bytes that have been allocated.  It is undefined what
+   * Realloc() does to this counter. */
+  size_t BytesAllocated() const {
+    return upb_arena_bytesallocated(this);
+  }
+
+ private:
+  UPB_DISALLOW_COPY_AND_ASSIGN(Arena)
+
+#else
+struct upb_arena {
+#endif  /* __cplusplus */
+  /* We implement the allocator interface.
+   * This must be the first member of upb_arena! */
+  upb_alloc alloc;
+
+  /* Allocator to allocate arena blocks.  We are responsible for freeing these
+   * when we are destroyed. */
+  upb_alloc *block_alloc;
+
+  size_t bytes_allocated;
+  size_t next_block_size;
+  size_t max_block_size;
+
+  /* Linked list of blocks.  Points to an arena_block, defined in env.c */
+  void *block_head;
+
+  /* Cleanup entries.  Pointer to a cleanup_ent, defined in env.c */
+  void *cleanup_head;
+
+  /* For future expansion, since the size of this struct is exposed to users. */
+  void *future1;
+  void *future2;
+};
+
+
+/* upb::Environment ***********************************************************/
+
+/* A upb::Environment provides a means for injecting malloc and an
+ * error-reporting callback into encoders/decoders.  This allows them to be
+ * independent of nearly all assumptions about their actual environment.
+ *
+ * It is also a container for allocating the encoders/decoders themselves that
+ * insulates clients from knowing their actual size.  This provides ABI
+ * compatibility even if the size of the objects change.  And this allows the
+ * structure definitions to be in the .c files instead of the .h files, making
+ * the .h files smaller and more readable.
+ *
+ * We might want to consider renaming this to "Pipeline" if/when the concept of
+ * a pipeline element becomes more formalized. */
+UPB_DECLARE_TYPE(upb::Environment, upb_env)
+
+/* A function that receives an error report from an encoder or decoder.  The
+ * callback can return true to request that the error should be recovered, but
+ * if the error is not recoverable this has no effect. */
+typedef bool upb_error_func(void *ud, const upb_status *status);
+
+UPB_BEGIN_EXTERN_C
+
+void upb_env_init(upb_env *e);
+void upb_env_init2(upb_env *e, void *mem, size_t n, upb_alloc *alloc);
+void upb_env_uninit(upb_env *e);
+
+void upb_env_initonly(upb_env *e);
+
+upb_arena *upb_env_arena(upb_env *e);
+bool upb_env_ok(const upb_env *e);
+void upb_env_seterrorfunc(upb_env *e, upb_error_func *func, void *ud);
+
+/* Convenience wrappers around the methods of the contained arena. */
+void upb_env_reporterrorsto(upb_env *e, upb_status *s);
+bool upb_env_reporterror(upb_env *e, const upb_status *s);
+void *upb_env_malloc(upb_env *e, size_t size);
+void *upb_env_realloc(upb_env *e, void *ptr, size_t oldsize, size_t size);
+void upb_env_free(upb_env *e, void *ptr);
+bool upb_env_addcleanup(upb_env *e, upb_cleanup_func *func, void *ud);
+size_t upb_env_bytesallocated(const upb_env *e);
+
+UPB_END_EXTERN_C
+
+#ifdef __cplusplus
+
+class upb::Environment {
+ public:
+  /* The given Arena must outlive this environment. */
+  Environment() { upb_env_initonly(this); }
+
+  Environment(void *mem, size_t len, Allocator *a) : arena_(mem, len, a) {
+    upb_env_initonly(this);
+  }
+
+  Arena* arena() { return upb_env_arena(this); }
+
+  /* Set a custom error reporting function. */
+  void SetErrorFunction(upb_error_func* func, void* ud) {
+    upb_env_seterrorfunc(this, func, ud);
+  }
+
+  /* Set the error reporting function to simply copy the status to the given
+   * status and abort. */
+  void ReportErrorsTo(Status* status) { upb_env_reporterrorsto(this, status); }
+
+  /* Returns true if all allocations and AddCleanup() calls have succeeded,
+   * and no errors were reported with ReportError() (except ones that recovered
+   * successfully). */
+  bool ok() const { return upb_env_ok(this); }
+
+  /* Reports an error to this environment's callback, returning true if
+   * the caller should try to recover. */
+  bool ReportError(const Status* status) {
+    return upb_env_reporterror(this, status);
+  }
+
+ private:
+  UPB_DISALLOW_COPY_AND_ASSIGN(Environment)
+
+#else
+struct upb_env {
+#endif  /* __cplusplus */
+  upb_arena arena_;
+  upb_error_func *error_func_;
+  void *error_ud_;
+  bool ok_;
+};
+
+
+/* upb::InlinedArena **********************************************************/
+/* upb::InlinedEnvironment ****************************************************/
+
+/* upb::InlinedArena and upb::InlinedEnvironment seed their arenas with a
+ * predefined amount of memory.  No heap memory will be allocated until the
+ * initial block is exceeded.
+ *
+ * These types only exist in C++ */
+
+#ifdef __cplusplus
+
+template <int N> class upb::InlinedArena : public upb::Arena {
+ public:
+  InlinedArena() : Arena(initial_block_, N, NULL) {}
+  explicit InlinedArena(Allocator* a) : Arena(initial_block_, N, a) {}
+
+ private:
+  UPB_DISALLOW_COPY_AND_ASSIGN(InlinedArena)
+
+  char initial_block_[N + UPB_ARENA_BLOCK_OVERHEAD];
+};
+
+template <int N> class upb::InlinedEnvironment : public upb::Environment {
+ public:
+  InlinedEnvironment() : Environment(initial_block_, N, NULL) {}
+  explicit InlinedEnvironment(Allocator *a)
+      : Environment(initial_block_, N, a) {}
+
+ private:
+  UPB_DISALLOW_COPY_AND_ASSIGN(InlinedEnvironment)
+
+  char initial_block_[N + UPB_ARENA_BLOCK_OVERHEAD];
+};
+
+#endif  /* __cplusplus */
+
+
 
 #endif  /* UPB_H_ */
 
@@ -617,10 +814,14 @@ typedef struct {
 #endif
 
 /* Like strdup(), which isn't always available since it's not ANSI C. */
-char *upb_strdup(const char *s);
+char *upb_strdup(const char *s, upb_alloc *a);
 /* Variant that works with a length-delimited rather than NULL-delimited string,
  * as supported by strtable. */
-char *upb_strdup2(const char *s, size_t len);
+char *upb_strdup2(const char *s, size_t len, upb_alloc *a);
+
+UPB_INLINE char *upb_gstrdup(const char *s) {
+  return upb_strdup(s, &upb_alloc_global);
+}
 
 UPB_INLINE void _upb_value_setval(upb_value *v, uint64_t val,
                                   upb_ctype_t ctype) {
@@ -797,14 +998,40 @@ typedef struct {
    * initialize const hash tables.  Then we cast away const when we have to.
    */
   const upb_tabent *entries;
+
+#ifndef NDEBUG
+  /* This table's allocator.  We make the user pass it in to every relevant
+   * function and only use this to check it in debug mode.  We do this solely
+   * to keep upb_table as small as possible.  This might seem slightly paranoid
+   * but the plan is to use upb_table for all map fields and extension sets in
+   * a forthcoming message representation, so there could be a lot of these.
+   * If this turns out to be too annoying later, we can change it (since this
+   * is an internal-only header file). */
+  upb_alloc *alloc;
+#endif
 } upb_table;
+
+#ifdef NDEBUG
+#  define UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries) \
+     {count, mask, ctype, size_lg2, entries}
+#else
+#  ifdef UPB_DEBUG_REFS
+/* At the moment the only mutable tables we statically initialize are debug
+ * ref tables. */
+#    define UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries) \
+       {count, mask, ctype, size_lg2, entries, &upb_alloc_debugrefs}
+#  else
+#    define UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries) \
+       {count, mask, ctype, size_lg2, entries, NULL}
+#  endif
+#endif
 
 typedef struct {
   upb_table t;
 } upb_strtable;
 
 #define UPB_STRTABLE_INIT(count, mask, ctype, size_lg2, entries) \
-  {{count, mask, ctype, size_lg2, entries}}
+  {UPB_TABLE_INIT(count, mask, ctype, size_lg2, entries)}
 
 #define UPB_EMPTY_STRTABLE_INIT(ctype)                           \
   UPB_STRTABLE_INIT(0, 0, ctype, 0, NULL)
@@ -817,7 +1044,7 @@ typedef struct {
 } upb_inttable;
 
 #define UPB_INTTABLE_INIT(count, mask, ctype, size_lg2, ent, a, asize, acount) \
-  {{count, mask, ctype, size_lg2, ent}, a, asize, acount}
+  {UPB_TABLE_INIT(count, mask, ctype, size_lg2, ent), a, asize, acount}
 
 #define UPB_EMPTY_INTTABLE_INIT(ctype) \
   UPB_INTTABLE_INIT(0, 0, ctype, 0, NULL, NULL, 0, 0)
@@ -857,10 +1084,26 @@ UPB_INLINE bool upb_arrhas(upb_tabval key) {
 
 /* Initialize and uninitialize a table, respectively.  If memory allocation
  * failed, false is returned that the table is uninitialized. */
-bool upb_inttable_init(upb_inttable *table, upb_ctype_t ctype);
-bool upb_strtable_init(upb_strtable *table, upb_ctype_t ctype);
-void upb_inttable_uninit(upb_inttable *table);
-void upb_strtable_uninit(upb_strtable *table);
+bool upb_inttable_init2(upb_inttable *table, upb_ctype_t ctype, upb_alloc *a);
+bool upb_strtable_init2(upb_strtable *table, upb_ctype_t ctype, upb_alloc *a);
+void upb_inttable_uninit2(upb_inttable *table, upb_alloc *a);
+void upb_strtable_uninit2(upb_strtable *table, upb_alloc *a);
+
+UPB_INLINE bool upb_inttable_init(upb_inttable *table, upb_ctype_t ctype) {
+  return upb_inttable_init2(table, ctype, &upb_alloc_global);
+}
+
+UPB_INLINE bool upb_strtable_init(upb_strtable *table, upb_ctype_t ctype) {
+  return upb_strtable_init2(table, ctype, &upb_alloc_global);
+}
+
+UPB_INLINE void upb_inttable_uninit(upb_inttable *table) {
+  upb_inttable_uninit2(table, &upb_alloc_global);
+}
+
+UPB_INLINE void upb_strtable_uninit(upb_strtable *table) {
+  upb_strtable_uninit2(table, &upb_alloc_global);
+}
 
 /* Returns the number of values in the table. */
 size_t upb_inttable_count(const upb_inttable *t);
@@ -875,9 +1118,20 @@ UPB_INLINE size_t upb_strtable_count(const upb_strtable *t) {
  *
  * If a table resize was required but memory allocation failed, false is
  * returned and the table is unchanged. */
-bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val);
-bool upb_strtable_insert2(upb_strtable *t, const char *key, size_t len,
-                          upb_value val);
+bool upb_inttable_insert2(upb_inttable *t, uintptr_t key, upb_value val,
+                          upb_alloc *a);
+bool upb_strtable_insert3(upb_strtable *t, const char *key, size_t len,
+                          upb_value val, upb_alloc *a);
+
+UPB_INLINE bool upb_inttable_insert(upb_inttable *t, uintptr_t key,
+                                    upb_value val) {
+  return upb_inttable_insert2(t, key, val, &upb_alloc_global);
+}
+
+UPB_INLINE bool upb_strtable_insert2(upb_strtable *t, const char *key,
+                                     size_t len, upb_value val) {
+  return upb_strtable_insert3(t, key, len, val, &upb_alloc_global);
+}
 
 /* For NULL-terminated strings. */
 UPB_INLINE bool upb_strtable_insert(upb_strtable *t, const char *key,
@@ -900,8 +1154,13 @@ UPB_INLINE bool upb_strtable_lookup(const upb_strtable *t, const char *key,
 /* Removes an item from the table.  Returns true if the remove was successful,
  * and stores the removed item in *val if non-NULL. */
 bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val);
-bool upb_strtable_remove2(upb_strtable *t, const char *key, size_t len,
-                          upb_value *val);
+bool upb_strtable_remove3(upb_strtable *t, const char *key, size_t len,
+                          upb_value *val, upb_alloc *alloc);
+
+UPB_INLINE bool upb_strtable_remove2(upb_strtable *t, const char *key,
+                                     size_t len, upb_value *val) {
+  return upb_strtable_remove3(t, key, len, val, &upb_alloc_global);
+}
 
 /* For NULL-terminated strings. */
 UPB_INLINE bool upb_strtable_remove(upb_strtable *t, const char *key,
@@ -916,19 +1175,33 @@ bool upb_inttable_replace(upb_inttable *t, uintptr_t key, upb_value val);
 
 /* Handy routines for treating an inttable like a stack.  May not be mixed with
  * other insert/remove calls. */
-bool upb_inttable_push(upb_inttable *t, upb_value val);
+bool upb_inttable_push2(upb_inttable *t, upb_value val, upb_alloc *a);
 upb_value upb_inttable_pop(upb_inttable *t);
 
+UPB_INLINE bool upb_inttable_push(upb_inttable *t, upb_value val) {
+  return upb_inttable_push2(t, val, &upb_alloc_global);
+}
+
 /* Convenience routines for inttables with pointer keys. */
-bool upb_inttable_insertptr(upb_inttable *t, const void *key, upb_value val);
+bool upb_inttable_insertptr2(upb_inttable *t, const void *key, upb_value val,
+                             upb_alloc *a);
 bool upb_inttable_removeptr(upb_inttable *t, const void *key, upb_value *val);
 bool upb_inttable_lookupptr(
     const upb_inttable *t, const void *key, upb_value *val);
 
+UPB_INLINE bool upb_inttable_insertptr(upb_inttable *t, const void *key,
+                                       upb_value val) {
+  return upb_inttable_insertptr2(t, key, val, &upb_alloc_global);
+}
+
 /* Optimizes the table for the current set of entries, for both memory use and
  * lookup time.  Client should call this after all entries have been inserted;
  * inserting more entries is legal, but will likely require a table resize. */
-void upb_inttable_compact(upb_inttable *t);
+void upb_inttable_compact2(upb_inttable *t, upb_alloc *a);
+
+UPB_INLINE void upb_inttable_compact(upb_inttable *t) {
+  upb_inttable_compact2(t, &upb_alloc_global);
+}
 
 /* A special-case inlinable version of the lookup routine for 32-bit
  * integers. */
@@ -957,7 +1230,7 @@ UPB_INLINE bool upb_inttable_lookup32(const upb_inttable *t, uint32_t key,
 }
 
 /* Exposed for testing only. */
-bool upb_strtable_resize(upb_strtable *t, size_t size_lg2);
+bool upb_strtable_resize(upb_strtable *t, size_t size_lg2, upb_alloc *a);
 
 /* Iterators ******************************************************************/
 
@@ -1002,8 +1275,8 @@ typedef struct {
 void upb_strtable_begin(upb_strtable_iter *i, const upb_strtable *t);
 void upb_strtable_next(upb_strtable_iter *i);
 bool upb_strtable_done(const upb_strtable_iter *i);
-const char *upb_strtable_iter_key(upb_strtable_iter *i);
-size_t upb_strtable_iter_keylength(upb_strtable_iter *i);
+const char *upb_strtable_iter_key(const upb_strtable_iter *i);
+size_t upb_strtable_iter_keylength(const upb_strtable_iter *i);
 upb_value upb_strtable_iter_value(const upb_strtable_iter *i);
 void upb_strtable_iter_setdone(upb_strtable_iter *i);
 bool upb_strtable_iter_isequal(const upb_strtable_iter *i1,
@@ -1056,7 +1329,10 @@ bool upb_inttable_iter_isequal(const upb_inttable_iter *i1,
 /* #define UPB_DEBUG_REFS */
 
 #ifdef __cplusplus
-namespace upb { class RefCounted; }
+namespace upb {
+class RefCounted;
+template <class T> class reffed_ptr;
+}
 #endif
 
 UPB_DECLARE_TYPE(upb::RefCounted, upb_refcounted)
@@ -1124,10 +1400,12 @@ struct upb_refcounted {
 };
 
 #ifdef UPB_DEBUG_REFS
-#define UPB_REFCOUNT_INIT(refs, ref2s) \
-    {&static_refcount, NULL, NULL, 0, true, refs, ref2s}
+extern upb_alloc upb_alloc_debugrefs;
+#define UPB_REFCOUNT_INIT(vtbl, refs, ref2s) \
+    {&static_refcount, NULL, vtbl, 0, true, refs, ref2s}
 #else
-#define UPB_REFCOUNT_INIT(refs, ref2s) {&static_refcount, NULL, NULL, 0, true}
+#define UPB_REFCOUNT_INIT(vtbl, refs, ref2s) \
+    {&static_refcount, NULL, vtbl, 0, true}
 #endif
 
 UPB_BEGIN_EXTERN_C
@@ -1259,6 +1537,111 @@ inline void RefCounted::CheckRef(const void *owner) const {
 }
 }  /* namespace upb */
 #endif
+
+
+/* upb::reffed_ptr ************************************************************/
+
+#ifdef __cplusplus
+
+#include <algorithm>  /* For std::swap(). */
+
+/* Provides RAII semantics for upb refcounted objects.  Each reffed_ptr owns a
+ * ref on whatever object it points to (if any). */
+template <class T> class upb::reffed_ptr {
+ public:
+  reffed_ptr() : ptr_(NULL) {}
+
+  /* If ref_donor is NULL, takes a new ref, otherwise adopts from ref_donor. */
+  template <class U>
+  reffed_ptr(U* val, const void* ref_donor = NULL)
+      : ptr_(upb::upcast(val)) {
+    if (ref_donor) {
+      assert(ptr_);
+      ptr_->DonateRef(ref_donor, this);
+    } else if (ptr_) {
+      ptr_->Ref(this);
+    }
+  }
+
+  template <class U>
+  reffed_ptr(const reffed_ptr<U>& other)
+      : ptr_(upb::upcast(other.get())) {
+    if (ptr_) ptr_->Ref(this);
+  }
+
+  reffed_ptr(const reffed_ptr& other)
+      : ptr_(upb::upcast(other.get())) {
+    if (ptr_) ptr_->Ref(this);
+  }
+
+  ~reffed_ptr() { if (ptr_) ptr_->Unref(this); }
+
+  template <class U>
+  reffed_ptr& operator=(const reffed_ptr<U>& other) {
+    reset(other.get());
+    return *this;
+  }
+
+  reffed_ptr& operator=(const reffed_ptr& other) {
+    reset(other.get());
+    return *this;
+  }
+
+  /* TODO(haberman): add C++11 move construction/assignment for greater
+   * efficiency. */
+
+  void swap(reffed_ptr& other) {
+    if (ptr_ == other.ptr_) {
+      return;
+    }
+
+    if (ptr_) ptr_->DonateRef(this, &other);
+    if (other.ptr_) other.ptr_->DonateRef(&other, this);
+    std::swap(ptr_, other.ptr_);
+  }
+
+  T& operator*() const {
+    assert(ptr_);
+    return *ptr_;
+  }
+
+  T* operator->() const {
+    assert(ptr_);
+    return ptr_;
+  }
+
+  T* get() const { return ptr_; }
+
+  /* If ref_donor is NULL, takes a new ref, otherwise adopts from ref_donor. */
+  template <class U>
+  void reset(U* ptr = NULL, const void* ref_donor = NULL) {
+    reffed_ptr(ptr, ref_donor).swap(*this);
+  }
+
+  template <class U>
+  reffed_ptr<U> down_cast() {
+    return reffed_ptr<U>(upb::down_cast<U*>(get()));
+  }
+
+  template <class U>
+  reffed_ptr<U> dyn_cast() {
+    return reffed_ptr<U>(upb::dyn_cast<U*>(get()));
+  }
+
+  /* Plain release() is unsafe; if we were the only owner, it would leak the
+   * object.  Instead we provide this: */
+  T* ReleaseTo(const void* new_owner) {
+    T* ret = NULL;
+    ptr_->DonateRef(this, new_owner);
+    std::swap(ret, ptr_);
+    return ret;
+  }
+
+ private:
+  T* ptr_;
+};
+
+#endif  /* __cplusplus */
 
 #endif  /* UPB_REFCOUNT_H_ */
 
@@ -1510,6 +1893,11 @@ typedef enum {
   UPB_DESCRIPTOR_TYPE_SINT32   = 17,
   UPB_DESCRIPTOR_TYPE_SINT64   = 18
 } upb_descriptortype_t;
+
+typedef enum {
+  UPB_SYNTAX_PROTO2 = 2,
+  UPB_SYNTAX_PROTO3 = 3
+} upb_syntax_t;
 
 /* Maximum field number allowed for FieldDefs.  This is an inherent limit of the
  * protobuf wire format. */
@@ -1902,6 +2290,10 @@ UPB_END_EXTERN_C
 typedef upb_inttable_iter upb_msg_field_iter;
 typedef upb_strtable_iter upb_msg_oneof_iter;
 
+/* Well-known field tag numbers for map-entry messages. */
+#define UPB_MAPENTRY_KEY   1
+#define UPB_MAPENTRY_VALUE 2
+
 #ifdef __cplusplus
 
 /* Structure that describes a single .proto message type.
@@ -1959,6 +2351,11 @@ class upb::MessageDef {
    * msgdef is unchanged. */
   bool AddOneof(OneofDef* o, Status* s);
   bool AddOneof(const reffed_ptr<OneofDef>& o, Status* s);
+
+  upb_syntax_t syntax() const;
+
+  /* Returns false if we don't support this syntax value. */
+  bool set_syntax(upb_syntax_t syntax);
 
   /* Set this to false to indicate that primitive fields should not have
    * explicit presence information associated with them.  This will affect all
@@ -2150,15 +2547,20 @@ UPB_REFCOUNTED_CMETHODS(upb_msgdef, upb_msgdef_upcast2)
 
 bool upb_msgdef_freeze(upb_msgdef *m, upb_status *status);
 
+upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner);
 const char *upb_msgdef_fullname(const upb_msgdef *m);
 const char *upb_msgdef_name(const upb_msgdef *m);
-bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname, upb_status *s);
+int upb_msgdef_numoneofs(const upb_msgdef *m);
+upb_syntax_t upb_msgdef_syntax(const upb_msgdef *m);
 
-upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner);
 bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f, const void *ref_donor,
                          upb_status *s);
 bool upb_msgdef_addoneof(upb_msgdef *m, upb_oneofdef *o, const void *ref_donor,
                          upb_status *s);
+bool upb_msgdef_setfullname(upb_msgdef *m, const char *fullname, upb_status *s);
+void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
+bool upb_msgdef_mapentry(const upb_msgdef *m);
+bool upb_msgdef_setsyntax(upb_msgdef *m, upb_syntax_t syntax);
 
 /* Field lookup in a couple of different variations:
  *   - itof = int to field
@@ -2200,18 +2602,21 @@ UPB_INLINE upb_oneofdef *upb_msgdef_ntoo_mutable(upb_msgdef *m,
   return (upb_oneofdef *)upb_msgdef_ntoo(m, name, len);
 }
 
-void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry);
-bool upb_msgdef_mapentry(const upb_msgdef *m);
+/* Lookup of either field or oneof by name.  Returns whether either was found.
+ * If the return is true, then the found def will be set, and the non-found
+ * one set to NULL. */
+bool upb_msgdef_lookupname(const upb_msgdef *m, const char *name, size_t len,
+                           const upb_fielddef **f, const upb_oneofdef **o);
 
-/* Well-known field tag numbers for map-entry messages. */
-#define UPB_MAPENTRY_KEY   1
-#define UPB_MAPENTRY_VALUE 2
+UPB_INLINE bool upb_msgdef_lookupnamez(const upb_msgdef *m, const char *name,
+                                       const upb_fielddef **f,
+                                       const upb_oneofdef **o) {
+  return upb_msgdef_lookupname(m, name, strlen(name), f, o);
+}
 
-const upb_oneofdef *upb_msgdef_findoneof(const upb_msgdef *m,
-                                          const char *name);
-int upb_msgdef_numoneofs(const upb_msgdef *m);
-
-/* upb_msg_field_iter i;
+/* Iteration over fields and oneofs.  For example:
+ *
+ * upb_msg_field_iter i;
  * for(upb_msg_field_begin(&i, m);
  *     !upb_msg_field_done(&i);
  *     upb_msg_field_next(&i)) {
@@ -2522,11 +2927,6 @@ UPB_END_EXTERN_C
 
 
 /* upb::FileDef ***************************************************************/
-
-typedef enum {
-  UPB_SYNTAX_PROTO2 = 2,
-  UPB_SYNTAX_PROTO3 = 3
-} upb_syntax_t;
 
 #ifdef __cplusplus
 
@@ -2890,11 +3290,17 @@ inline const char *MessageDef::full_name() const {
 inline const char *MessageDef::name() const {
   return upb_msgdef_name(this);
 }
+inline upb_syntax_t MessageDef::syntax() const {
+  return upb_msgdef_syntax(this);
+}
 inline bool MessageDef::set_full_name(const char* fullname, Status* s) {
   return upb_msgdef_setfullname(this, fullname, s);
 }
 inline bool MessageDef::set_full_name(const std::string& fullname, Status* s) {
   return upb_msgdef_setfullname(this, upb_safecstr(fullname), s);
+}
+inline bool MessageDef::set_syntax(upb_syntax_t syntax) {
+  return upb_msgdef_setsyntax(this, syntax);
 }
 inline bool MessageDef::Freeze(Status* status) {
   return upb_msgdef_freeze(this, status);
@@ -3309,8 +3715,8 @@ struct upb_def {
   bool came_from_user;
 };
 
-#define UPB_DEF_INIT(name, type, refs, ref2s) \
-    { UPB_REFCOUNT_INIT(refs, ref2s), name, NULL, type, false }
+#define UPB_DEF_INIT(name, type, vtbl, refs, ref2s) \
+    { UPB_REFCOUNT_INIT(vtbl, refs, ref2s), name, NULL, type, false }
 
 
 /* upb_fielddef ***************************************************************/
@@ -3350,12 +3756,14 @@ struct upb_fielddef {
   uint32_t index_;
 };
 
+extern const struct upb_refcounted_vtbl upb_fielddef_vtbl;
+
 #define UPB_FIELDDEF_INIT(label, type, intfmt, tagdelim, is_extension, lazy,   \
                           packed, name, num, msgdef, subdef, selector_base,    \
                           index, defaultval, refs, ref2s)                      \
   {                                                                            \
-    UPB_DEF_INIT(name, UPB_DEF_FIELD, refs, ref2s), defaultval, {msgdef},      \
-        {subdef}, NULL, false, false,                                          \
+    UPB_DEF_INIT(name, UPB_DEF_FIELD, &upb_fielddef_vtbl, refs, ref2s),        \
+        defaultval, {msgdef}, {subdef}, NULL, false, false,                    \
         type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES, true, is_extension, \
         lazy, packed, intfmt, tagdelim, type, label, num, selector_base, index \
   }
@@ -3371,32 +3779,26 @@ struct upb_msgdef {
 
   /* Tables for looking up fields by number and name. */
   upb_inttable itof;  /* int to field */
-  upb_strtable ntof;  /* name to field */
+  upb_strtable ntof;  /* name to field/oneof */
 
-  /* Tables for looking up oneofs by name. */
-  upb_strtable ntoo;  /* name to oneof */
-
-  /* Is this a map-entry message?
-   * TODO: set this flag properly for static descriptors; regenerate
-   * descriptor.upb.c. */
+  /* Is this a map-entry message? */
   bool map_entry;
 
-  /* Whether this message has proto2 or proto3 semantics.
-   * TODO: set this flag properly for static descriptors; regenerate
-   * descriptor.upb.c. */
+  /* Whether this message has proto2 or proto3 semantics. */
   upb_syntax_t syntax;
 
   /* TODO(haberman): proper extension ranges (there can be multiple). */
 };
 
+extern const struct upb_refcounted_vtbl upb_msgdef_vtbl;
+
 /* TODO: also support static initialization of the oneofs table. This will be
  * needed if we compile in descriptors that contain oneofs. */
 #define UPB_MSGDEF_INIT(name, selector_count, submsg_field_count, itof, ntof, \
-                        refs, ref2s)                                          \
+                        map_entry, syntax, refs, ref2s)                       \
   {                                                                           \
-    UPB_DEF_INIT(name, UPB_DEF_MSG, refs, ref2s), selector_count,             \
-        submsg_field_count, itof, ntof,                                       \
-        UPB_EMPTY_STRTABLE_INIT(UPB_CTYPE_PTR), false, true                   \
+    UPB_DEF_INIT(name, UPB_DEF_MSG, &upb_fielddef_vtbl, refs, ref2s),         \
+        selector_count, submsg_field_count, itof, ntof, map_entry, syntax     \
   }
 
 
@@ -3410,8 +3812,11 @@ struct upb_enumdef {
   int32_t defaultval;
 };
 
+extern const struct upb_refcounted_vtbl upb_enumdef_vtbl;
+
 #define UPB_ENUMDEF_INIT(name, ntoi, iton, defaultval, refs, ref2s) \
-  { UPB_DEF_INIT(name, UPB_DEF_ENUM, refs, ref2s), ntoi, iton, defaultval }
+  { UPB_DEF_INIT(name, UPB_DEF_ENUM, &upb_enumdef_vtbl, refs, ref2s), ntoi,    \
+    iton, defaultval }
 
 
 /* upb_oneofdef ***************************************************************/
@@ -3425,8 +3830,10 @@ struct upb_oneofdef {
   const upb_msgdef *parent;
 };
 
+extern const struct upb_refcounted_vtbl upb_oneofdef_vtbl;
+
 #define UPB_ONEOFDEF_INIT(name, ntof, itof, refs, ref2s) \
-  { UPB_REFCOUNT_INIT(refs, ref2s), name, ntof, itof }
+  { UPB_REFCOUNT_INIT(&upb_oneofdef_vtbl, refs, ref2s), name, ntof, itof }
 
 
 /* upb_symtab *****************************************************************/
@@ -3436,9 +3843,6 @@ struct upb_symtab {
 
   upb_strtable symtab;
 };
-
-#define UPB_SYMTAB_INIT(symtab, refs, ref2s) \
-  { UPB_REFCOUNT_INIT(refs, ref2s), symtab }
 
 struct upb_filedef {
   upb_refcounted base;
@@ -3450,6 +3854,8 @@ struct upb_filedef {
   upb_inttable defs;
   upb_inttable deps;
 };
+
+extern const struct upb_refcounted_vtbl upb_filedef_vtbl;
 
 #endif  /* UPB_STATICINIT_H_ */
 /*
@@ -5392,267 +5798,6 @@ inline BytesHandler::~BytesHandler() {}
 
 #endif  /* UPB_HANDLERS_H */
 /*
-** upb::Environment (upb_env)
-**
-** A upb::Environment provides a means for injecting malloc and an
-** error-reporting callback into encoders/decoders.  This allows them to be
-** independent of nearly all assumptions about their actual environment.
-**
-** It is also a container for allocating the encoders/decoders themselves that
-** insulates clients from knowing their actual size.  This provides ABI
-** compatibility even if the size of the objects change.  And this allows the
-** structure definitions to be in the .c files instead of the .h files, making
-** the .h files smaller and more readable.
-*/
-
-
-#ifndef UPB_ENV_H_
-#define UPB_ENV_H_
-
-#ifdef __cplusplus
-namespace upb {
-class Environment;
-class SeededAllocator;
-}
-#endif
-
-UPB_DECLARE_TYPE(upb::Environment, upb_env)
-UPB_DECLARE_TYPE(upb::SeededAllocator, upb_seededalloc)
-
-typedef void *upb_alloc_func(void *ud, void *ptr, size_t oldsize, size_t size);
-typedef void upb_cleanup_func(void *ud);
-typedef bool upb_error_func(void *ud, const upb_status *status);
-
-#ifdef __cplusplus
-
-/* An environment is *not* thread-safe. */
-class upb::Environment {
- public:
-  Environment();
-  ~Environment();
-
-  /* Set a custom memory allocation function for the environment.  May ONLY
-   * be called before any calls to Malloc()/Realloc()/AddCleanup() below.
-   * If this is not called, the system realloc() function will be used.
-   * The given user pointer "ud" will be passed to the allocation function.
-   *
-   * The allocation function will not receive corresponding "free" calls.  it
-   * must ensure that the memory is valid for the lifetime of the Environment,
-   * but it may be reclaimed any time thereafter.  The likely usage is that
-   * "ud" points to a stateful allocator, and that the allocator frees all
-   * memory, arena-style, when it is destroyed.  In this case the allocator must
-   * outlive the Environment.  Another possibility is that the allocation
-   * function returns GC-able memory that is guaranteed to be GC-rooted for the
-   * life of the Environment. */
-  void SetAllocationFunction(upb_alloc_func* alloc, void* ud);
-
-  template<class T>
-  void SetAllocator(T* allocator) {
-    SetAllocationFunction(allocator->GetAllocationFunction(), allocator);
-  }
-
-  /* Set a custom error reporting function. */
-  void SetErrorFunction(upb_error_func* func, void* ud);
-
-  /* Set the error reporting function to simply copy the status to the given
-   * status and abort. */
-  void ReportErrorsTo(Status* status);
-
-  /* Returns true if all allocations and AddCleanup() calls have succeeded,
-   * and no errors were reported with ReportError() (except ones that recovered
-   * successfully). */
-  bool ok() const;
-
-  /* Functions for use by encoders/decoders. **********************************/
-
-  /* Reports an error to this environment's callback, returning true if
-   * the caller should try to recover. */
-  bool ReportError(const Status* status);
-
-  /* Allocate memory.  Uses the environment's allocation function.
-   *
-   * There is no need to free(). All memory will be freed automatically, but is
-   * guaranteed to outlive the Environment. */
-  void* Malloc(size_t size);
-
-  /* Reallocate memory.  Preserves "oldsize" bytes from the existing buffer
-   * Requires: oldsize <= existing_size.
-   *
-   * TODO(haberman): should we also enforce that oldsize <= size? */
-  void* Realloc(void* ptr, size_t oldsize, size_t size);
-
-  /* Add a cleanup function to run when the environment is destroyed.
-   * Returns false on out-of-memory.
-   *
-   * The first call to AddCleanup() after SetAllocationFunction() is guaranteed
-   * to return true -- this makes it possible to robustly set a cleanup handler
-   * for a custom allocation function. */
-  bool AddCleanup(upb_cleanup_func* func, void* ud);
-
-  /* Total number of bytes that have been allocated.  It is undefined what
-   * Realloc() does to this counter. */
-  size_t BytesAllocated() const;
-
- private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(Environment)
-
-#else
-struct upb_env {
-#endif  /* __cplusplus */
-
-  bool ok_;
-  size_t bytes_allocated;
-
-  /* Alloc function. */
-  upb_alloc_func *alloc;
-  void *alloc_ud;
-
-  /* Error-reporting function. */
-  upb_error_func *err;
-  void *err_ud;
-
-  /* Userdata for default alloc func. */
-  void *default_alloc_ud;
-
-  /* Cleanup entries.  Pointer to a cleanup_ent, defined in env.c */
-  void *cleanup_head;
-
-  /* For future expansion, since the size of this struct is exposed to users. */
-  void *future1;
-  void *future2;
-};
-
-UPB_BEGIN_EXTERN_C
-
-void upb_env_init(upb_env *e);
-void upb_env_uninit(upb_env *e);
-void upb_env_setallocfunc(upb_env *e, upb_alloc_func *func, void *ud);
-void upb_env_seterrorfunc(upb_env *e, upb_error_func *func, void *ud);
-void upb_env_reporterrorsto(upb_env *e, upb_status *status);
-bool upb_env_ok(const upb_env *e);
-bool upb_env_reporterror(upb_env *e, const upb_status *status);
-void *upb_env_malloc(upb_env *e, size_t size);
-void *upb_env_realloc(upb_env *e, void *ptr, size_t oldsize, size_t size);
-bool upb_env_addcleanup(upb_env *e, upb_cleanup_func *func, void *ud);
-size_t upb_env_bytesallocated(const upb_env *e);
-
-UPB_END_EXTERN_C
-
-#ifdef __cplusplus
-
-/* An allocator that allocates from an initial memory region (likely the stack)
- * before falling back to another allocator. */
-class upb::SeededAllocator {
- public:
-  SeededAllocator(void *mem, size_t len);
-  ~SeededAllocator();
-
-  /* Set a custom fallback memory allocation function for the allocator, to use
-   * once the initial region runs out.
-   *
-   * May ONLY be called before GetAllocationFunction().  If this is not
-   * called, the system realloc() will be the fallback allocator. */
-  void SetFallbackAllocator(upb_alloc_func *alloc, void *ud);
-
-  /* Gets the allocation function for this allocator. */
-  upb_alloc_func* GetAllocationFunction();
-
- private:
-  UPB_DISALLOW_COPY_AND_ASSIGN(SeededAllocator)
-
-#else
-struct upb_seededalloc {
-#endif  /* __cplusplus */
-
-  /* Fallback alloc function.  */
-  upb_alloc_func *alloc;
-  upb_cleanup_func *alloc_cleanup;
-  void *alloc_ud;
-  bool need_cleanup;
-  bool returned_allocfunc;
-
-  /* Userdata for default alloc func. */
-  void *default_alloc_ud;
-
-  /* Pointers for the initial memory region. */
-  char *mem_base;
-  char *mem_ptr;
-  char *mem_limit;
-
-  /* For future expansion, since the size of this struct is exposed to users. */
-  void *future1;
-  void *future2;
-};
-
-UPB_BEGIN_EXTERN_C
-
-void upb_seededalloc_init(upb_seededalloc *a, void *mem, size_t len);
-void upb_seededalloc_uninit(upb_seededalloc *a);
-void upb_seededalloc_setfallbackalloc(upb_seededalloc *a, upb_alloc_func *func,
-                                      void *ud);
-upb_alloc_func *upb_seededalloc_getallocfunc(upb_seededalloc *a);
-
-UPB_END_EXTERN_C
-
-#ifdef __cplusplus
-
-namespace upb {
-
-inline Environment::Environment() {
-  upb_env_init(this);
-}
-inline Environment::~Environment() {
-  upb_env_uninit(this);
-}
-inline void Environment::SetAllocationFunction(upb_alloc_func *alloc,
-                                               void *ud) {
-  upb_env_setallocfunc(this, alloc, ud);
-}
-inline void Environment::SetErrorFunction(upb_error_func *func, void *ud) {
-  upb_env_seterrorfunc(this, func, ud);
-}
-inline void Environment::ReportErrorsTo(Status* status) {
-  upb_env_reporterrorsto(this, status);
-}
-inline bool Environment::ok() const {
-  return upb_env_ok(this);
-}
-inline bool Environment::ReportError(const Status* status) {
-  return upb_env_reporterror(this, status);
-}
-inline void *Environment::Malloc(size_t size) {
-  return upb_env_malloc(this, size);
-}
-inline void *Environment::Realloc(void *ptr, size_t oldsize, size_t size) {
-  return upb_env_realloc(this, ptr, oldsize, size);
-}
-inline bool Environment::AddCleanup(upb_cleanup_func *func, void *ud) {
-  return upb_env_addcleanup(this, func, ud);
-}
-inline size_t Environment::BytesAllocated() const {
-  return upb_env_bytesallocated(this);
-}
-
-inline SeededAllocator::SeededAllocator(void *mem, size_t len) {
-  upb_seededalloc_init(this, mem, len);
-}
-inline SeededAllocator::~SeededAllocator() {
-  upb_seededalloc_uninit(this);
-}
-inline void SeededAllocator::SetFallbackAllocator(upb_alloc_func *alloc,
-                                                  void *ud) {
-  upb_seededalloc_setfallbackalloc(this, alloc, ud);
-}
-inline upb_alloc_func *SeededAllocator::GetAllocationFunction() {
-  return upb_seededalloc_getallocfunc(this);
-}
-
-}  /* namespace upb */
-
-#endif  /* __cplusplus */
-
-#endif  /* UPB_ENV_H_ */
-/*
 ** upb::Sink (upb_sink)
 ** upb::BytesSink (upb_bytessink)
 **
@@ -6529,7 +6674,11 @@ inline FileDef* Reader::file(size_t i) const {
  * actually storing protobufs.  It only contains *defs* which
  * let you reflect over a protobuf *schema*.
  */
-/* This file was generated by upbc (the upb compiler).
+/* This file was generated by upbc (the upb compiler) from the input
+ * file:
+ *
+ *     upb/descriptor/descriptor.proto
+ *
  * Do not edit -- your changes will be discarded when the file is
  * regenerated. */
 
@@ -6818,347 +6967,347 @@ namespace upbdefs {
 namespace google {
 namespace protobuf {
 
-class DescriptorProto : public upb::reffed_ptr<const upb::MessageDef> {
+class DescriptorProto : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  DescriptorProto(const upb::MessageDef* m, const void *ref_donor = NULL)
+  DescriptorProto(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_DescriptorProto_is(m));
   }
 
   static DescriptorProto get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_DescriptorProto_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_DescriptorProto_get(&m);
     return DescriptorProto(m, &m);
   }
 
-  class ExtensionRange : public upb::reffed_ptr<const upb::MessageDef> {
+  class ExtensionRange : public ::upb::reffed_ptr<const ::upb::MessageDef> {
    public:
-    ExtensionRange(const upb::MessageDef* m, const void *ref_donor = NULL)
+    ExtensionRange(const ::upb::MessageDef* m, const void *ref_donor = NULL)
         : reffed_ptr(m, ref_donor) {
       assert(upbdefs_google_protobuf_DescriptorProto_ExtensionRange_is(m));
     }
 
     static ExtensionRange get() {
-      const upb::MessageDef* m = upbdefs_google_protobuf_DescriptorProto_ExtensionRange_get(&m);
+      const ::upb::MessageDef* m = upbdefs_google_protobuf_DescriptorProto_ExtensionRange_get(&m);
       return ExtensionRange(m, &m);
     }
   };
 
-  class ReservedRange : public upb::reffed_ptr<const upb::MessageDef> {
+  class ReservedRange : public ::upb::reffed_ptr<const ::upb::MessageDef> {
    public:
-    ReservedRange(const upb::MessageDef* m, const void *ref_donor = NULL)
+    ReservedRange(const ::upb::MessageDef* m, const void *ref_donor = NULL)
         : reffed_ptr(m, ref_donor) {
       assert(upbdefs_google_protobuf_DescriptorProto_ReservedRange_is(m));
     }
 
     static ReservedRange get() {
-      const upb::MessageDef* m = upbdefs_google_protobuf_DescriptorProto_ReservedRange_get(&m);
+      const ::upb::MessageDef* m = upbdefs_google_protobuf_DescriptorProto_ReservedRange_get(&m);
       return ReservedRange(m, &m);
     }
   };
 };
 
-class EnumDescriptorProto : public upb::reffed_ptr<const upb::MessageDef> {
+class EnumDescriptorProto : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  EnumDescriptorProto(const upb::MessageDef* m, const void *ref_donor = NULL)
+  EnumDescriptorProto(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_EnumDescriptorProto_is(m));
   }
 
   static EnumDescriptorProto get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_EnumDescriptorProto_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_EnumDescriptorProto_get(&m);
     return EnumDescriptorProto(m, &m);
   }
 };
 
-class EnumOptions : public upb::reffed_ptr<const upb::MessageDef> {
+class EnumOptions : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  EnumOptions(const upb::MessageDef* m, const void *ref_donor = NULL)
+  EnumOptions(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_EnumOptions_is(m));
   }
 
   static EnumOptions get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_EnumOptions_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_EnumOptions_get(&m);
     return EnumOptions(m, &m);
   }
 };
 
-class EnumValueDescriptorProto : public upb::reffed_ptr<const upb::MessageDef> {
+class EnumValueDescriptorProto : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  EnumValueDescriptorProto(const upb::MessageDef* m, const void *ref_donor = NULL)
+  EnumValueDescriptorProto(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_EnumValueDescriptorProto_is(m));
   }
 
   static EnumValueDescriptorProto get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_EnumValueDescriptorProto_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_EnumValueDescriptorProto_get(&m);
     return EnumValueDescriptorProto(m, &m);
   }
 };
 
-class EnumValueOptions : public upb::reffed_ptr<const upb::MessageDef> {
+class EnumValueOptions : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  EnumValueOptions(const upb::MessageDef* m, const void *ref_donor = NULL)
+  EnumValueOptions(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_EnumValueOptions_is(m));
   }
 
   static EnumValueOptions get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_EnumValueOptions_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_EnumValueOptions_get(&m);
     return EnumValueOptions(m, &m);
   }
 };
 
-class FieldDescriptorProto : public upb::reffed_ptr<const upb::MessageDef> {
+class FieldDescriptorProto : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  FieldDescriptorProto(const upb::MessageDef* m, const void *ref_donor = NULL)
+  FieldDescriptorProto(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_FieldDescriptorProto_is(m));
   }
 
   static FieldDescriptorProto get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_FieldDescriptorProto_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_FieldDescriptorProto_get(&m);
     return FieldDescriptorProto(m, &m);
   }
 
-  class Label : public upb::reffed_ptr<const upb::EnumDef> {
+  class Label : public ::upb::reffed_ptr<const ::upb::EnumDef> {
    public:
-    Label(const upb::EnumDef* e, const void *ref_donor = NULL)
+    Label(const ::upb::EnumDef* e, const void *ref_donor = NULL)
         : reffed_ptr(e, ref_donor) {
       assert(upbdefs_google_protobuf_FieldDescriptorProto_Label_is(e));
     }
     static Label get() {
-      const upb::EnumDef* e = upbdefs_google_protobuf_FieldDescriptorProto_Label_get(&e);
+      const ::upb::EnumDef* e = upbdefs_google_protobuf_FieldDescriptorProto_Label_get(&e);
       return Label(e, &e);
     }
   };
 
-  class Type : public upb::reffed_ptr<const upb::EnumDef> {
+  class Type : public ::upb::reffed_ptr<const ::upb::EnumDef> {
    public:
-    Type(const upb::EnumDef* e, const void *ref_donor = NULL)
+    Type(const ::upb::EnumDef* e, const void *ref_donor = NULL)
         : reffed_ptr(e, ref_donor) {
       assert(upbdefs_google_protobuf_FieldDescriptorProto_Type_is(e));
     }
     static Type get() {
-      const upb::EnumDef* e = upbdefs_google_protobuf_FieldDescriptorProto_Type_get(&e);
+      const ::upb::EnumDef* e = upbdefs_google_protobuf_FieldDescriptorProto_Type_get(&e);
       return Type(e, &e);
     }
   };
 };
 
-class FieldOptions : public upb::reffed_ptr<const upb::MessageDef> {
+class FieldOptions : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  FieldOptions(const upb::MessageDef* m, const void *ref_donor = NULL)
+  FieldOptions(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_FieldOptions_is(m));
   }
 
   static FieldOptions get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_FieldOptions_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_FieldOptions_get(&m);
     return FieldOptions(m, &m);
   }
 
-  class CType : public upb::reffed_ptr<const upb::EnumDef> {
+  class CType : public ::upb::reffed_ptr<const ::upb::EnumDef> {
    public:
-    CType(const upb::EnumDef* e, const void *ref_donor = NULL)
+    CType(const ::upb::EnumDef* e, const void *ref_donor = NULL)
         : reffed_ptr(e, ref_donor) {
       assert(upbdefs_google_protobuf_FieldOptions_CType_is(e));
     }
     static CType get() {
-      const upb::EnumDef* e = upbdefs_google_protobuf_FieldOptions_CType_get(&e);
+      const ::upb::EnumDef* e = upbdefs_google_protobuf_FieldOptions_CType_get(&e);
       return CType(e, &e);
     }
   };
 
-  class JSType : public upb::reffed_ptr<const upb::EnumDef> {
+  class JSType : public ::upb::reffed_ptr<const ::upb::EnumDef> {
    public:
-    JSType(const upb::EnumDef* e, const void *ref_donor = NULL)
+    JSType(const ::upb::EnumDef* e, const void *ref_donor = NULL)
         : reffed_ptr(e, ref_donor) {
       assert(upbdefs_google_protobuf_FieldOptions_JSType_is(e));
     }
     static JSType get() {
-      const upb::EnumDef* e = upbdefs_google_protobuf_FieldOptions_JSType_get(&e);
+      const ::upb::EnumDef* e = upbdefs_google_protobuf_FieldOptions_JSType_get(&e);
       return JSType(e, &e);
     }
   };
 };
 
-class FileDescriptorProto : public upb::reffed_ptr<const upb::MessageDef> {
+class FileDescriptorProto : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  FileDescriptorProto(const upb::MessageDef* m, const void *ref_donor = NULL)
+  FileDescriptorProto(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_FileDescriptorProto_is(m));
   }
 
   static FileDescriptorProto get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_FileDescriptorProto_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_FileDescriptorProto_get(&m);
     return FileDescriptorProto(m, &m);
   }
 };
 
-class FileDescriptorSet : public upb::reffed_ptr<const upb::MessageDef> {
+class FileDescriptorSet : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  FileDescriptorSet(const upb::MessageDef* m, const void *ref_donor = NULL)
+  FileDescriptorSet(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_FileDescriptorSet_is(m));
   }
 
   static FileDescriptorSet get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_FileDescriptorSet_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_FileDescriptorSet_get(&m);
     return FileDescriptorSet(m, &m);
   }
 };
 
-class FileOptions : public upb::reffed_ptr<const upb::MessageDef> {
+class FileOptions : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  FileOptions(const upb::MessageDef* m, const void *ref_donor = NULL)
+  FileOptions(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_FileOptions_is(m));
   }
 
   static FileOptions get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_FileOptions_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_FileOptions_get(&m);
     return FileOptions(m, &m);
   }
 
-  class OptimizeMode : public upb::reffed_ptr<const upb::EnumDef> {
+  class OptimizeMode : public ::upb::reffed_ptr<const ::upb::EnumDef> {
    public:
-    OptimizeMode(const upb::EnumDef* e, const void *ref_donor = NULL)
+    OptimizeMode(const ::upb::EnumDef* e, const void *ref_donor = NULL)
         : reffed_ptr(e, ref_donor) {
       assert(upbdefs_google_protobuf_FileOptions_OptimizeMode_is(e));
     }
     static OptimizeMode get() {
-      const upb::EnumDef* e = upbdefs_google_protobuf_FileOptions_OptimizeMode_get(&e);
+      const ::upb::EnumDef* e = upbdefs_google_protobuf_FileOptions_OptimizeMode_get(&e);
       return OptimizeMode(e, &e);
     }
   };
 };
 
-class MessageOptions : public upb::reffed_ptr<const upb::MessageDef> {
+class MessageOptions : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  MessageOptions(const upb::MessageDef* m, const void *ref_donor = NULL)
+  MessageOptions(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_MessageOptions_is(m));
   }
 
   static MessageOptions get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_MessageOptions_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_MessageOptions_get(&m);
     return MessageOptions(m, &m);
   }
 };
 
-class MethodDescriptorProto : public upb::reffed_ptr<const upb::MessageDef> {
+class MethodDescriptorProto : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  MethodDescriptorProto(const upb::MessageDef* m, const void *ref_donor = NULL)
+  MethodDescriptorProto(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_MethodDescriptorProto_is(m));
   }
 
   static MethodDescriptorProto get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_MethodDescriptorProto_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_MethodDescriptorProto_get(&m);
     return MethodDescriptorProto(m, &m);
   }
 };
 
-class MethodOptions : public upb::reffed_ptr<const upb::MessageDef> {
+class MethodOptions : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  MethodOptions(const upb::MessageDef* m, const void *ref_donor = NULL)
+  MethodOptions(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_MethodOptions_is(m));
   }
 
   static MethodOptions get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_MethodOptions_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_MethodOptions_get(&m);
     return MethodOptions(m, &m);
   }
 };
 
-class OneofDescriptorProto : public upb::reffed_ptr<const upb::MessageDef> {
+class OneofDescriptorProto : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  OneofDescriptorProto(const upb::MessageDef* m, const void *ref_donor = NULL)
+  OneofDescriptorProto(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_OneofDescriptorProto_is(m));
   }
 
   static OneofDescriptorProto get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_OneofDescriptorProto_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_OneofDescriptorProto_get(&m);
     return OneofDescriptorProto(m, &m);
   }
 };
 
-class ServiceDescriptorProto : public upb::reffed_ptr<const upb::MessageDef> {
+class ServiceDescriptorProto : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  ServiceDescriptorProto(const upb::MessageDef* m, const void *ref_donor = NULL)
+  ServiceDescriptorProto(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_ServiceDescriptorProto_is(m));
   }
 
   static ServiceDescriptorProto get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_ServiceDescriptorProto_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_ServiceDescriptorProto_get(&m);
     return ServiceDescriptorProto(m, &m);
   }
 };
 
-class ServiceOptions : public upb::reffed_ptr<const upb::MessageDef> {
+class ServiceOptions : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  ServiceOptions(const upb::MessageDef* m, const void *ref_donor = NULL)
+  ServiceOptions(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_ServiceOptions_is(m));
   }
 
   static ServiceOptions get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_ServiceOptions_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_ServiceOptions_get(&m);
     return ServiceOptions(m, &m);
   }
 };
 
-class SourceCodeInfo : public upb::reffed_ptr<const upb::MessageDef> {
+class SourceCodeInfo : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  SourceCodeInfo(const upb::MessageDef* m, const void *ref_donor = NULL)
+  SourceCodeInfo(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_SourceCodeInfo_is(m));
   }
 
   static SourceCodeInfo get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_SourceCodeInfo_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_SourceCodeInfo_get(&m);
     return SourceCodeInfo(m, &m);
   }
 
-  class Location : public upb::reffed_ptr<const upb::MessageDef> {
+  class Location : public ::upb::reffed_ptr<const ::upb::MessageDef> {
    public:
-    Location(const upb::MessageDef* m, const void *ref_donor = NULL)
+    Location(const ::upb::MessageDef* m, const void *ref_donor = NULL)
         : reffed_ptr(m, ref_donor) {
       assert(upbdefs_google_protobuf_SourceCodeInfo_Location_is(m));
     }
 
     static Location get() {
-      const upb::MessageDef* m = upbdefs_google_protobuf_SourceCodeInfo_Location_get(&m);
+      const ::upb::MessageDef* m = upbdefs_google_protobuf_SourceCodeInfo_Location_get(&m);
       return Location(m, &m);
     }
   };
 };
 
-class UninterpretedOption : public upb::reffed_ptr<const upb::MessageDef> {
+class UninterpretedOption : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
-  UninterpretedOption(const upb::MessageDef* m, const void *ref_donor = NULL)
+  UninterpretedOption(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
     assert(upbdefs_google_protobuf_UninterpretedOption_is(m));
   }
 
   static UninterpretedOption get() {
-    const upb::MessageDef* m = upbdefs_google_protobuf_UninterpretedOption_get(&m);
+    const ::upb::MessageDef* m = upbdefs_google_protobuf_UninterpretedOption_get(&m);
     return UninterpretedOption(m, &m);
   }
 
-  class NamePart : public upb::reffed_ptr<const upb::MessageDef> {
+  class NamePart : public ::upb::reffed_ptr<const ::upb::MessageDef> {
    public:
-    NamePart(const upb::MessageDef* m, const void *ref_donor = NULL)
+    NamePart(const ::upb::MessageDef* m, const void *ref_donor = NULL)
         : reffed_ptr(m, ref_donor) {
       assert(upbdefs_google_protobuf_UninterpretedOption_NamePart_is(m));
     }
 
     static NamePart get() {
-      const upb::MessageDef* m = upbdefs_google_protobuf_UninterpretedOption_NamePart_get(&m);
+      const ::upb::MessageDef* m = upbdefs_google_protobuf_UninterpretedOption_NamePart_get(&m);
       return NamePart(m, &m);
     }
   };
@@ -7178,7 +7327,6 @@ class UninterpretedOption : public upb::reffed_ptr<const upb::MessageDef> {
 #ifndef UPB_DECODER_INT_H_
 #define UPB_DECODER_INT_H_
 
-#include <stdlib.h>
 /*
 ** upb::pb::Decoder
 **
@@ -7278,7 +7426,7 @@ class upb::pb::DecoderMethod {
  * constructed.  This hint may be an overestimate for some build configurations.
  * But if the decoder library is upgraded without recompiling the application,
  * it may be an underestimate. */
-#define UPB_PB_DECODER_SIZE 4408
+#define UPB_PB_DECODER_SIZE 4416
 
 #ifdef __cplusplus
 
@@ -8097,7 +8245,8 @@ extern "C" {
 #endif
 
 /* Loads a binary descriptor and returns a NULL-terminated array of unfrozen
- * filedefs.  The caller owns the returned array. */
+ * filedefs.  The caller owns the returned array, which must be freed with
+ * upb_gfree(). */
 upb_filedef **upb_loaddescriptor(const char *buf, size_t n, const void *owner,
                                  upb_status *status);
 
@@ -8244,7 +8393,7 @@ UPB_DECLARE_DERIVED_TYPE(upb::json::ParserMethod, upb::RefCounted,
  * constructed.  This hint may be an overestimate for some build configurations.
  * But if the parser library is upgraded without recompiling the application,
  * it may be an underestimate. */
-#define UPB_JSON_PARSER_SIZE 4104
+#define UPB_JSON_PARSER_SIZE 4112
 
 #ifdef __cplusplus
 
@@ -8357,7 +8506,7 @@ UPB_DECLARE_TYPE(upb::json::Printer, upb_json_printer)
 
 /* upb::json::Printer *********************************************************/
 
-#define UPB_JSON_PRINTER_SIZE 168
+#define UPB_JSON_PRINTER_SIZE 176
 
 #ifdef __cplusplus
 
