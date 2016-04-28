@@ -38,10 +38,12 @@ message BenchmarkDataset {
   string name = 1;
 
   // Fully-qualified name of the protobuf message for this dataset.
-  // It will be one of the messages defined benchmark_messages.proto.
+  // It will be one of the messages defined benchmark_messages_proto2.proto
+  // or benchmark_messages_proto3.proto.
+  //
   // Implementations that do not support reflection can implement this with
-  // an explicit "if/else" chain that lists every possible message defined
-  // in this file.
+  // an explicit "if/else" chain that lists every known message defined
+  // in those files.
   string message_name = 2;
 
   // The payload(s) for this dataset.  They should be parsed or serialized
