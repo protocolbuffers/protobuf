@@ -757,10 +757,11 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
     return false;
   }
 
-  if (!field->has_default_value()) {
-    // No custom default set in the proto file.
-    return false;
-  }
+  // As much as checking field->has_default_value() seems useful, it isn't
+  // because of enums. proto2 syntax allows the first item in an enum (the
+  // default) to be non zero. So checking field->has_default_value() would
+  // result in missing this non zero default.  See MessageWithOneBasedEnum in
+  // objectivec/Tests/unittest_objc.proto for a test Message to confirm this.
 
   // Some proto file set the default to the zero value, so make sure the value
   // isn't the zero case.

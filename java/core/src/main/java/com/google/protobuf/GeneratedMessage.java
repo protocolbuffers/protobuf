@@ -797,6 +797,8 @@ public abstract class GeneratedMessage extends AbstractMessage
       extends GeneratedMessage
       implements ExtendableMessageOrBuilder<MessageType> {
 
+    private static final long serialVersionUID = 1L;
+
     private final FieldSet<FieldDescriptor> extensions;
 
     protected ExtendableMessage() {
