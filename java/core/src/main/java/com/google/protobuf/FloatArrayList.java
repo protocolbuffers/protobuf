@@ -34,7 +34,6 @@ import com.google.protobuf.Internal.FloatList;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.RandomAccess;
 
 /**
@@ -43,8 +42,6 @@ import java.util.RandomAccess;
  * @author dweis@google.com (Daniel Weis)
  */
 final class FloatArrayList extends AbstractProtobufList<Float> implements FloatList, RandomAccess {
-  
-  private static final int DEFAULT_CAPACITY = 10;
   
   private static final FloatArrayList EMPTY_LIST = new FloatArrayList();
   static {
@@ -70,32 +67,55 @@ final class FloatArrayList extends AbstractProtobufList<Float> implements FloatL
    * Constructs a new mutable {@code FloatArrayList} with default capacity.
    */
   FloatArrayList() {
-    this(DEFAULT_CAPACITY);
-  }
-
-  /**
-   * Constructs a new mutable {@code FloatArrayList} with the provided capacity.
-   */
-  FloatArrayList(int capacity) {
-    array = new float[capacity];
-    size = 0;
+    this(new float[DEFAULT_CAPACITY], 0);
   }
 
   /**
    * Constructs a new mutable {@code FloatArrayList} containing the same elements as {@code other}.
    */
-  FloatArrayList(List<Float> other) {
-    if (other instanceof FloatArrayList) {
-      FloatArrayList list = (FloatArrayList) other;
-      array = list.array.clone();
-      size = list.size;
-    } else {
-      size = other.size();
-      array = new float[size];
-      for (int i = 0; i < size; i++) {
-        array[i] = other.get(i);
+  private FloatArrayList(float[] array, int size) {
+    this.array = array;
+    this.size = size;
+  }
+  
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof FloatArrayList)) {
+      return super.equals(o);
+    }
+    FloatArrayList other = (FloatArrayList) o;
+    if (size != other.size) {
+      return false;
+    }
+    
+    final float[] arr = other.array;
+    for (int i = 0; i < size; i++) {
+      if (array[i] != arr[i]) {
+        return false;
       }
     }
+    
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 1;
+    for (int i = 0; i < size; i++) {
+      result = (31 * result) + Float.floatToIntBits(array[i]);
+    }
+    return result;
+  }
+
+  @Override
+  public FloatList mutableCopyWithCapacity(int capacity) {
+    if (capacity < size) {
+      throw new IllegalArgumentException();
+    }
+    return new FloatArrayList(Arrays.copyOf(array, capacity), size);
   }
   
   @Override

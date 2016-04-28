@@ -72,20 +72,6 @@ public class IntArrayListTest extends TestCase {
     list.makeImmutable();
     assertImmutable(list);
   }
-  
-  public void testCopyConstructor() {
-    IntArrayList copy = new IntArrayList(TERTIARY_LIST);
-    assertEquals(TERTIARY_LIST, copy);
-
-    copy = new IntArrayList(IntArrayList.emptyList());
-    assertEquals(IntArrayList.emptyList(), copy);
-    
-    copy = new IntArrayList(asList(1, 2, 3));
-    assertEquals(asList(1, 2, 3), copy);
-
-    copy = new IntArrayList(Collections.<Integer>emptyList());
-    assertEquals(IntArrayList.emptyList(), copy);
-  }
 
   public void testModificationWithIteration() {
     list.addAll(asList(1, 2, 3, 4));

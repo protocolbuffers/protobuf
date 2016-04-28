@@ -92,7 +92,27 @@ FieldComparator::ComparisonResult DefaultFieldComparator::Compare(
     case FieldDescriptor::CPPTYPE_INT64:
       COMPARE_FIELD(Int64);
     case FieldDescriptor::CPPTYPE_STRING:
-      COMPARE_FIELD(String);
+      if (field->is_repeated()) {
+        // Allocate scratch strings to store the result if a conversion is
+        // needed.
+        string scratch1;
+        string scratch2;
+        return ResultFromBoolean(
+            CompareString(*field, reflection_1->GetRepeatedStringReference(
+                                      message_1, field, index_1, &scratch1),
+                          reflection_2->GetRepeatedStringReference(
+                              message_2, field, index_2, &scratch2)));
+      } else {
+        // Allocate scratch strings to store the result if a conversion is
+        // needed.
+        string scratch1;
+        string scratch2;
+        return ResultFromBoolean(CompareString(
+            *field,
+            reflection_1->GetStringReference(message_1, field, &scratch1),
+            reflection_2->GetStringReference(message_2, field, &scratch2)));
+      }
+      break;
     case FieldDescriptor::CPPTYPE_UINT32:
       COMPARE_FIELD(UInt32);
     case FieldDescriptor::CPPTYPE_UINT64:

@@ -32,6 +32,7 @@
 """
 
 import os
+import warnings
 import sys
 
 try:
@@ -77,6 +78,11 @@ _implementation_type = os.getenv('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION',
 
 if _implementation_type != 'python':
   _implementation_type = 'cpp'
+
+if 'PyPy' in sys.version and _implementation_type == 'cpp':
+  warnings.warn('PyPy does not work yet with cpp protocol buffers. '
+                'Falling back to the python implementation.')
+  _implementation_type = 'python'
 
 # This environment variable can be used to switch between the two
 # 'cpp' implementations, overriding the compile-time constants in the

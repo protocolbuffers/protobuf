@@ -46,6 +46,7 @@
 #include <unistd.h>
 #endif
 #include <errno.h>
+#include <fstream>
 #include <iostream>
 #include <ctype.h>
 
@@ -948,17 +949,23 @@ bool CommandLineInterface::MakeInputsBeProtoPathRelative(
   return true;
 }
 
+
 CommandLineInterface::ParseArgumentStatus
 CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
   executable_name_ = argv[0];
 
+  vector<string> arguments;
+  for (int i = 1; i < argc; ++i) {
+    arguments.push_back(argv[i]);
+  }
+
   // Iterate through all arguments and parse them.
-  for (int i = 1; i < argc; i++) {
+  for (int i = 0; i < arguments.size(); ++i) {
     string name, value;
 
-    if (ParseArgument(argv[i], &name, &value)) {
+    if (ParseArgument(arguments[i].c_str(), &name, &value)) {
       // Returned true => Use the next argument as the flag value.
-      if (i + 1 == argc || argv[i+1][0] == '-') {
+      if (i + 1 == arguments.size() || arguments[i + 1][0] == '-') {
         std::cerr << "Missing value for flag: " << name << std::endl;
         if (name == "--decode") {
           std::cerr << "To decode an unknown message, use --decode_raw."
@@ -967,7 +974,7 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
         return PARSE_ARGUMENT_FAIL;
       } else {
         ++i;
-        value = argv[i];
+        value = arguments[i];
       }
     }
 

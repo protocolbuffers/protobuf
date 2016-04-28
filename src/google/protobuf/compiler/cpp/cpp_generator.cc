@@ -96,6 +96,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.annotation_pragma_name = options[i].second;
     } else if (options[i].first == "annotation_guard_name") {
       file_options.annotation_guard_name = options[i].second;
+    } else if (options[i].first == "lite") {
+      file_options.enforce_lite = true;
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
@@ -123,7 +125,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     file_generator.GenerateProtoHeader(
         &printer, file_options.annotate_headers ? info_path : "");
     if (file_options.annotate_headers) {
-      scoped_ptr<io::ZeroCopyOutputStream> info_output(
+      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
           generator_context->Open(info_path));
       annotations.SerializeToZeroCopyStream(info_output.get());
     }
@@ -143,7 +145,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     file_generator.GeneratePBHeader(
         &printer, file_options.annotate_headers ? info_path : "");
     if (file_options.annotate_headers) {
-      scoped_ptr<io::ZeroCopyOutputStream> info_output(
+      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
           generator_context->Open(info_path));
       annotations.SerializeToZeroCopyStream(info_output.get());
     }

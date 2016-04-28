@@ -50,17 +50,23 @@ import java.util.Map;
  *
  * @author kenton@google.com Kenton Varda
  */
-public abstract class AbstractMessage extends AbstractMessageLite
-                                      implements Message {
+public abstract class AbstractMessage
+    // TODO(dweis): Update GeneratedMessage to parameterize with MessageType and BuilderType.
+    extends AbstractMessageLite
+    implements Message {
+  
+  @Override
   public boolean isInitialized() {
     return MessageReflection.isInitialized(this);
   }
 
 
+  @Override
   public List<String> findInitializationErrors() {
     return MessageReflection.findMissingFields(this);
   }
 
+  @Override
   public String getInitializationErrorString() {
     return MessageReflection.delimitWithCommas(findInitializationErrors());
   }
@@ -83,12 +89,14 @@ public abstract class AbstractMessage extends AbstractMessageLite
     return TextFormat.printToString(this);
   }
 
+  @Override
   public void writeTo(final CodedOutputStream output) throws IOException {
     MessageReflection.writeMessageTo(this, getAllFields(), output, false);
   }
 
   protected int memoizedSize = -1;
 
+  @Override
   public int getSerializedSize() {
     int size = memoizedSize;
     if (size != -1) {
@@ -288,8 +296,8 @@ public abstract class AbstractMessage extends AbstractMessageLite
    * other methods.
    */
   @SuppressWarnings("unchecked")
-  public static abstract class Builder<BuilderType extends Builder>
-      extends AbstractMessageLite.Builder<BuilderType>
+  public static abstract class Builder<BuilderType extends Builder<BuilderType>>
+      extends AbstractMessageLite.Builder
       implements Message.Builder {
     // The compiler produces an error if this is not declared explicitly.
     @Override
@@ -314,6 +322,7 @@ public abstract class AbstractMessage extends AbstractMessageLite
       throw new UnsupportedOperationException("clearOneof() is not implemented.");
     }
 
+    @Override
     public BuilderType clear() {
       for (final Map.Entry<FieldDescriptor, Object> entry :
            getAllFields().entrySet()) {
@@ -322,14 +331,22 @@ public abstract class AbstractMessage extends AbstractMessageLite
       return (BuilderType) this;
     }
 
+    @Override
     public List<String> findInitializationErrors() {
       return MessageReflection.findMissingFields(this);
     }
 
+    @Override
     public String getInitializationErrorString() {
       return MessageReflection.delimitWithCommas(findInitializationErrors());
     }
+    
+    @Override
+    protected BuilderType internalMergeFrom(AbstractMessageLite other) {
+      return mergeFrom((Message) other);
+    }
 
+    @Override
     public BuilderType mergeFrom(final Message other) {
       if (other.getDescriptorForType() != getDescriptorForType()) {
         throw new IllegalArgumentException(
@@ -407,6 +424,7 @@ public abstract class AbstractMessage extends AbstractMessageLite
       return (BuilderType) this;
     }
 
+    @Override
     public BuilderType mergeUnknownFields(final UnknownFieldSet unknownFields) {
       setUnknownFields(
         UnknownFieldSet.newBuilder(getUnknownFields())
@@ -415,17 +433,19 @@ public abstract class AbstractMessage extends AbstractMessageLite
       return (BuilderType) this;
     }
 
+    @Override
     public Message.Builder getFieldBuilder(final FieldDescriptor field) {
       throw new UnsupportedOperationException(
           "getFieldBuilder() called on an unsupported message type.");
     }
 
-    public Message.Builder getRepeatedFieldBuilder(final FieldDescriptor field,
-        int index) {
+    @Override
+    public Message.Builder getRepeatedFieldBuilder(final FieldDescriptor field, int index) {
       throw new UnsupportedOperationException(
           "getRepeatedFieldBuilder() called on an unsupported message type.");
     }
 
+    @Override
     public String toString() {
       return TextFormat.printToString(this);
     }
@@ -462,7 +482,7 @@ public abstract class AbstractMessage extends AbstractMessageLite
     @Override
     public BuilderType mergeFrom(final ByteString data)
         throws InvalidProtocolBufferException {
-      return super.mergeFrom(data);
+      return (BuilderType) super.mergeFrom(data);
     }
 
     @Override
@@ -470,20 +490,20 @@ public abstract class AbstractMessage extends AbstractMessageLite
         final ByteString data,
         final ExtensionRegistryLite extensionRegistry)
         throws InvalidProtocolBufferException {
-      return super.mergeFrom(data, extensionRegistry);
+      return (BuilderType) super.mergeFrom(data, extensionRegistry);
     }
 
     @Override
     public BuilderType mergeFrom(final byte[] data)
         throws InvalidProtocolBufferException {
-      return super.mergeFrom(data);
+      return (BuilderType) super.mergeFrom(data);
     }
 
     @Override
     public BuilderType mergeFrom(
         final byte[] data, final int off, final int len)
         throws InvalidProtocolBufferException {
-      return super.mergeFrom(data, off, len);
+      return (BuilderType) super.mergeFrom(data, off, len);
     }
 
     @Override
@@ -491,7 +511,7 @@ public abstract class AbstractMessage extends AbstractMessageLite
         final byte[] data,
         final ExtensionRegistryLite extensionRegistry)
         throws InvalidProtocolBufferException {
-      return super.mergeFrom(data, extensionRegistry);
+      return (BuilderType) super.mergeFrom(data, extensionRegistry);
     }
 
     @Override
@@ -499,13 +519,13 @@ public abstract class AbstractMessage extends AbstractMessageLite
         final byte[] data, final int off, final int len,
         final ExtensionRegistryLite extensionRegistry)
         throws InvalidProtocolBufferException {
-      return super.mergeFrom(data, off, len, extensionRegistry);
+      return (BuilderType) super.mergeFrom(data, off, len, extensionRegistry);
     }
 
     @Override
     public BuilderType mergeFrom(final InputStream input)
         throws IOException {
-      return super.mergeFrom(input);
+      return (BuilderType) super.mergeFrom(input);
     }
 
     @Override
@@ -513,7 +533,7 @@ public abstract class AbstractMessage extends AbstractMessageLite
         final InputStream input,
         final ExtensionRegistryLite extensionRegistry)
         throws IOException {
-      return super.mergeFrom(input, extensionRegistry);
+      return (BuilderType) super.mergeFrom(input, extensionRegistry);
     }
 
     @Override

@@ -34,7 +34,6 @@ import com.google.protobuf.Internal.BooleanList;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.RandomAccess;
 
 /**
@@ -44,8 +43,6 @@ import java.util.RandomAccess;
  */
 final class BooleanArrayList
     extends AbstractProtobufList<Boolean> implements BooleanList, RandomAccess {
-  
-  private static final int DEFAULT_CAPACITY = 10;
   
   private static final BooleanArrayList EMPTY_LIST = new BooleanArrayList();
   static {
@@ -60,7 +57,7 @@ final class BooleanArrayList
    * The backing store for the list.
    */
   private boolean[] array;
-  
+
   /**
    * The size of the list distinct from the length of the array. That is, it is the number of
    * elements set in the list.
@@ -71,35 +68,57 @@ final class BooleanArrayList
    * Constructs a new mutable {@code BooleanArrayList} with default capacity.
    */
   BooleanArrayList() {
-    this(DEFAULT_CAPACITY);
+    this(new boolean[DEFAULT_CAPACITY], 0);
   }
 
   /**
-   * Constructs a new mutable {@code BooleanArrayList} with the provided capacity.
+   * Constructs a new mutable {@code BooleanArrayList}.
    */
-  BooleanArrayList(int capacity) {
-    array = new boolean[capacity];
-    size = 0;
-  }
-
-  /**
-   * Constructs a new mutable {@code BooleanArrayList} containing the same elements as
-   * {@code other}.
-   */
-  BooleanArrayList(List<Boolean> other) {
-    if (other instanceof BooleanArrayList) {
-      BooleanArrayList list = (BooleanArrayList) other;
-      array = list.array.clone();
-      size = list.size;
-    } else {
-      size = other.size();
-      array = new boolean[size];
-      for (int i = 0; i < size; i++) {
-        array[i] = other.get(i);
-      }
-    }
+  private BooleanArrayList(boolean[] array, int size) {
+    this.array = array;
+    this.size = size;
   }
   
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof BooleanArrayList)) {
+      return super.equals(o);
+    }
+    BooleanArrayList other = (BooleanArrayList) o;
+    if (size != other.size) {
+      return false;
+    }
+    
+    final boolean[] arr = other.array;
+    for (int i = 0; i < size; i++) {
+      if (array[i] != arr[i]) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 1;
+    for (int i = 0; i < size; i++) {
+      result = (31 * result) + Internal.hashBoolean(array[i]);
+    }
+    return result;
+  }
+
+  @Override
+  public BooleanList mutableCopyWithCapacity(int capacity) {
+    if (capacity < size) {
+      throw new IllegalArgumentException();
+    }
+    return new BooleanArrayList(Arrays.copyOf(array, capacity), size);
+  }
+
   @Override
   public Boolean get(int index) {
     return getBoolean(index);

@@ -626,6 +626,13 @@ inline void* GenericTypeHandler<MessageLite>::GetMaybeArenaPointer(
 template <>
 void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
                                             MessageLite* to);
+template<>
+inline void GenericTypeHandler<string>::Clear(string* value) {
+  value->clear();
+}
+template<>
+void GenericTypeHandler<string>::Merge(const string& from,
+                                       string* to);
 
 // Declarations of the specialization as we cannot define them here, as the
 // header that defines ProtocolMessage depends on types defined in this header.

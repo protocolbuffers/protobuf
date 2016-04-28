@@ -215,7 +215,7 @@ GenerateMembers(io::Printer* printer) const {
       "  if ($name$_ == null) {\n"
       "    return com.google.protobuf.MapField$lite$.emptyMapField(\n"
       "        $map_field_parameter$);\n"
-      " }\n"
+      "  }\n"
       "  return $name$_;\n"
       "}\n");
   if (GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
@@ -270,7 +270,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
       "  if ($name$_ == null) {\n"
       "    return com.google.protobuf.MapField$lite$.emptyMapField(\n"
       "        $map_field_parameter$);\n"
-      " }\n"
+      "  }\n"
       "  return $name$_;\n"
       "}\n"
       "private com.google.protobuf.MapField$lite$<$type_parameters$>\n"

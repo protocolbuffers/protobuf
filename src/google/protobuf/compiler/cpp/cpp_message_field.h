@@ -46,8 +46,8 @@ namespace cpp {
 
 class MessageFieldGenerator : public FieldGenerator {
  public:
-  explicit MessageFieldGenerator(const FieldDescriptor* descriptor,
-                                 const Options& options);
+  MessageFieldGenerator(const FieldDescriptor* descriptor,
+                        const Options& options);
   ~MessageFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
@@ -83,8 +83,8 @@ class MessageFieldGenerator : public FieldGenerator {
 
 class MessageOneofFieldGenerator : public MessageFieldGenerator {
  public:
-  explicit MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
-                                      const Options& options);
+  MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
+                             const Options& options);
   ~MessageOneofFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
@@ -110,8 +110,8 @@ class MessageOneofFieldGenerator : public MessageFieldGenerator {
 
 class RepeatedMessageFieldGenerator : public FieldGenerator {
  public:
-  explicit RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
-                                         const Options& options);
+  RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
+                                const Options& options);
   ~RepeatedMessageFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------

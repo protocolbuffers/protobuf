@@ -175,12 +175,13 @@ FieldMask* FieldMask::New(::google::protobuf::Arena* arena) const {
 }
 
 void FieldMask::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FieldMask)
   paths_.Clear();
 }
 
 bool FieldMask::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.FieldMask)
   for (;;) {
@@ -262,6 +263,7 @@ void FieldMask::SerializeWithCachedSizes(
 }
 
 int FieldMask::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldMask)
   int total_size = 0;
 
   // repeated string paths = 1;
@@ -278,29 +280,35 @@ int FieldMask::ByteSize() const {
 }
 
 void FieldMask::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.FieldMask)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const FieldMask* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const FieldMask>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.FieldMask)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.FieldMask)
     MergeFrom(*source);
   }
 }
 
 void FieldMask::MergeFrom(const FieldMask& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldMask)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   paths_.MergeFrom(from.paths_);
 }
 
 void FieldMask::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.FieldMask)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void FieldMask::CopyFrom(const FieldMask& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldMask)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -361,6 +369,7 @@ void FieldMask::clear_paths() {
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldMask.paths)
 }
  ::std::string* FieldMask::add_paths() {
+  // @@protoc_insertion_point(field_add_mutable:google.protobuf.FieldMask.paths)
   return paths_.Add();
 }
  void FieldMask::add_paths(const ::std::string& value) {

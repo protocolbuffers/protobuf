@@ -250,6 +250,36 @@ class TextFormatTest(TextFormatBase):
     message.c = 123
     self.assertEqual('c: 123\n', str(message))
 
+  def testPrintField(self, message_module):
+    message = message_module.TestAllTypes()
+    field = message.DESCRIPTOR.fields_by_name['optional_float']
+    value = message.optional_float
+    out = text_format.TextWriter(False)
+    text_format.PrintField(field, value, out)
+    self.assertEqual('optional_float: 0.0\n', out.getvalue())
+    out.close()
+    # Test Printer
+    out = text_format.TextWriter(False)
+    printer = text_format._Printer(out)
+    printer.PrintField(field, value)
+    self.assertEqual('optional_float: 0.0\n', out.getvalue())
+    out.close()
+
+  def testPrintFieldValue(self, message_module):
+    message = message_module.TestAllTypes()
+    field = message.DESCRIPTOR.fields_by_name['optional_float']
+    value = message.optional_float
+    out = text_format.TextWriter(False)
+    text_format.PrintFieldValue(field, value, out)
+    self.assertEqual('0.0', out.getvalue())
+    out.close()
+    # Test Printer
+    out = text_format.TextWriter(False)
+    printer = text_format._Printer(out)
+    printer.PrintFieldValue(field, value)
+    self.assertEqual('0.0', out.getvalue())
+    out.close()
+
   def testParseAllFields(self, message_module):
     message = message_module.TestAllTypes()
     test_util.SetAllFields(message)
@@ -616,6 +646,26 @@ class Proto2Tests(TextFormatBase):
         '  text: \"bar\"\n'
         '}\n')
 
+  def testPrintMessageSetByFieldNumber(self):
+    out = text_format.TextWriter(False)
+    message = unittest_mset_pb2.TestMessageSetContainer()
+    ext1 = unittest_mset_pb2.TestMessageSetExtension1.message_set_extension
+    ext2 = unittest_mset_pb2.TestMessageSetExtension2.message_set_extension
+    message.message_set.Extensions[ext1].i = 23
+    message.message_set.Extensions[ext2].str = 'foo'
+    text_format.PrintMessage(message, out, use_field_number=True)
+    self.CompareToGoldenText(
+        out.getvalue(),
+        '1 {\n'
+        '  1545008 {\n'
+        '    15: 23\n'
+        '  }\n'
+        '  1547769 {\n'
+        '    25: \"foo\"\n'
+        '  }\n'
+        '}\n')
+    out.close()
+
   def testPrintMessageSetAsOneLine(self):
     message = unittest_mset_pb2.TestMessageSetContainer()
     ext1 = unittest_mset_pb2.TestMessageSetExtension1.message_set_extension
@@ -655,6 +705,48 @@ class Proto2Tests(TextFormatBase):
     ext2 = unittest_mset_pb2.TestMessageSetExtension2.message_set_extension
     self.assertEqual(23, message.message_set.Extensions[ext1].i)
     self.assertEqual('foo', message.message_set.Extensions[ext2].str)
+
+  def testParseMessageByFieldNumber(self):
+    message = unittest_pb2.TestAllTypes()
+    text = ('34: 1\n'
+            'repeated_uint64: 2\n')
+    text_format.Parse(text, message, allow_field_number=True)
+    self.assertEqual(1, message.repeated_uint64[0])
+    self.assertEqual(2, message.repeated_uint64[1])
+
+    message = unittest_mset_pb2.TestMessageSetContainer()
+    text = ('1 {\n'
+            '  1545008 {\n'
+            '    15: 23\n'
+            '  }\n'
+            '  1547769 {\n'
+            '    25: \"foo\"\n'
+            '  }\n'
+            '}\n')
+    text_format.Parse(text, message, allow_field_number=True)
+    ext1 = unittest_mset_pb2.TestMessageSetExtension1.message_set_extension
+    ext2 = unittest_mset_pb2.TestMessageSetExtension2.message_set_extension
+    self.assertEqual(23, message.message_set.Extensions[ext1].i)
+    self.assertEqual('foo', message.message_set.Extensions[ext2].str)
+
+    # Can't parse field number without set allow_field_number=True.
+    message = unittest_pb2.TestAllTypes()
+    text = '34:1\n'
+    six.assertRaisesRegex(
+        self,
+        text_format.ParseError,
+        (r'1:1 : Message type "\w+.TestAllTypes" has no field named '
+         r'"34".'),
+        text_format.Parse, text, message)
+
+    # Can't parse if field number is not found.
+    text = '1234:1\n'
+    six.assertRaisesRegex(
+        self,
+        text_format.ParseError,
+        (r'1:1 : Message type "\w+.TestAllTypes" has no field named '
+         r'"1234".'),
+        text_format.Parse, text, message, allow_field_number=True)
 
   def testPrintAllExtensions(self):
     message = unittest_pb2.TestAllExtensions()
@@ -696,6 +788,7 @@ class Proto2Tests(TextFormatBase):
     text = ('message_set {\n'
             '  [unknown_extension] {\n'
             '    i: 23\n'
+            '    bin: "\xe0"'
             '    [nested_unknown_ext]: {\n'
             '      i: 23\n'
             '      test: "test_string"\n'

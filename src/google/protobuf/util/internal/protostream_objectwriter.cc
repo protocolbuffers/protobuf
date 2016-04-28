@@ -182,7 +182,8 @@ ProtoStreamObjectWriter::AnyWriter::AnyWriter(ProtoStreamObjectWriter* parent)
       data_(),
       output_(&data_),
       depth_(0),
-      has_injected_value_message_(false) {}
+      is_well_known_type_(false),
+      well_known_type_render_(NULL) {}
 
 ProtoStreamObjectWriter::AnyWriter::~AnyWriter() {}
 
@@ -200,10 +201,19 @@ void ProtoStreamObjectWriter::AnyWriter::StartObject(StringPiece name) {
                                    parent_->master_type_.name()));
       invalid_ = true;
     }
-  } else if (!has_injected_value_message_ || depth_ != 1 || name != "value") {
-    // We don't propagate to ow_ StartObject("value") calls for nested Anys or
-    // Struct at depth 1 as they are nested one level deep with an injected
+  } else if (is_well_known_type_ && depth_ == 1) {
+    // For well-known types, the only other field besides "@type" should be a
     // "value" field.
+    if (name != "value" && !invalid_) {
+      parent_->InvalidValue("Any",
+                            "Expect a \"value\" field for well-known types.");
+      invalid_ = true;
+    }
+    ow_->StartObject("");
+  } else {
+    // Forward the call to the child writer if:
+    //   1. the type is not a well-known type.
+    //   2. or, we are in a nested Any, Struct, or Value object.
     ow_->StartObject(name);
   }
 }
@@ -211,10 +221,9 @@ void ProtoStreamObjectWriter::AnyWriter::StartObject(StringPiece name) {
 bool ProtoStreamObjectWriter::AnyWriter::EndObject() {
   --depth_;
   // As long as depth_ >= 0, we know we haven't reached the end of Any.
-  // Propagate these EndObject() calls to the contained ow_.  If we are in a
-  // nested Any or Struct type, ignore the second to last EndObject call (depth_
-  // == -1)
-  if (ow_ != NULL && (!has_injected_value_message_ || depth_ >= 0)) {
+  // Propagate these EndObject() calls to the contained ow_. For regular
+  // message types, we propagate the end of Any as well.
+  if (ow_ != NULL && (depth_ >= 0 || !is_well_known_type_)) {
     ow_->EndObject();
   }
   // A negative depth_ implies that we have reached the end of Any
@@ -236,6 +245,13 @@ void ProtoStreamObjectWriter::AnyWriter::StartList(StringPiece name) {
                                    parent_->master_type_.name()));
       invalid_ = true;
     }
+  } else if (is_well_known_type_ && depth_ == 1) {
+    if (name != "value" && !invalid_) {
+      parent_->InvalidValue("Any",
+                            "Expect a \"value\" field for well-known types.");
+      invalid_ = true;
+    }
+    ow_->StartList("");
   } else {
     ow_->StartList(name);
   }
@@ -266,17 +282,27 @@ void ProtoStreamObjectWriter::AnyWriter::RenderDataPiece(
                                    parent_->master_type_.name()));
       invalid_ = true;
     }
-  } else {
-    // Check to see if the data needs to be rendered with well-known-type
-    // renderer.
-    const TypeRenderer* type_renderer =
-        FindTypeRenderer(GetFullTypeWithUrl(ow_->master_type_.name()));
-    if (type_renderer) {
-      Status status = (*type_renderer)(ow_.get(), value);
-      if (!status.ok()) ow_->InvalidValue("Any", status.error_message());
-    } else {
-      ow_->RenderDataPiece(name, value);
+  } else if (depth_ == 0 && is_well_known_type_) {
+    if (name != "value" && !invalid_) {
+      parent_->InvalidValue("Any",
+                            "Expect a \"value\" field for well-known types.");
+      invalid_ = true;
     }
+    if (well_known_type_render_ == NULL) {
+      // Only Any and Struct don't have a special type render but both of
+      // them expect a JSON object (i.e., a StartObject() call).
+      if (!invalid_) {
+        parent_->InvalidValue("Any", "Expect a JSON object.");
+        invalid_ = true;
+      }
+    } else {
+      ow_->ProtoWriter::StartObject("");
+      Status status = (*well_known_type_render_)(ow_.get(), value);
+      if (!status.ok()) ow_->InvalidValue("Any", status.error_message());
+      ow_->ProtoWriter::EndObject();
+    }
+  } else {
+    ow_->RenderDataPiece(name, value);
   }
 }
 
@@ -305,19 +331,31 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
   // At this point, type is never null.
   const google::protobuf::Type* type = resolved_type.ValueOrDie();
 
-  // If this is the case of an Any in an Any or Struct in an Any, we need to
-  // expect a StartObject call with "value" while we're at depth_ 0, which we
-  // should ignore (not propagate to our nested object writer). We also need to
-  // ignore the second-to-last EndObject call, and not propagate that either.
-  if (type->name() == kAnyType || type->name() == kStructType) {
-    has_injected_value_message_ = true;
+  well_known_type_render_ = FindTypeRenderer(type_url_);
+  if (well_known_type_render_ != NULL ||
+      // Explicitly list Any and Struct here because they don't have a
+      // custom renderer.
+      type->name() == kAnyType || type->name() == kStructType) {
+    is_well_known_type_ = true;
   }
 
   // Create our object writer and initialize it with the first StartObject
   // call.
   ow_.reset(new ProtoStreamObjectWriter(parent_->typeinfo(), *type, &output_,
                                         parent_->listener()));
-  ow_->StartObject("");
+
+  // Don't call StartObject() for well-known types yet. Depending on the
+  // type of actual data, we may not need to call StartObject(). For
+  // example:
+  // {
+  //   "@type": "type.googleapis.com/google.protobuf.Value",
+  //   "value": [1, 2, 3],
+  // }
+  // With the above JSON representation, we will only call StartList() on the
+  // contained ow_.
+  if (!is_well_known_type_) {
+    ow_->StartObject("");
+  }
 }
 
 void ProtoStreamObjectWriter::AnyWriter::WriteAny() {
@@ -861,7 +899,7 @@ Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
 // conversions as much as possible. Because ToSnakeCase sometimes returns the
 // wrong value.
   google::protobuf::scoped_ptr<ResultCallback1<util::Status, StringPiece> > callback(
-      google::protobuf::internal::NewPermanentCallback(&RenderOneFieldPath, ow));
+      ::google::protobuf::internal::NewPermanentCallback(&RenderOneFieldPath, ow));
   return DecodeCompactFieldMaskPaths(data.str(), callback.get());
 }
 
@@ -986,6 +1024,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
     // not of the google.protobuf.NullType type, we do nothing.
     if (data.type() == DataPiece::TYPE_NULL &&
         field->type_url() != kStructNullValueTypeUrl) {
+      Pop();
       return this;
     }
 

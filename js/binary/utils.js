@@ -568,6 +568,56 @@ jspb.utils.hash64ArrayToDecimalStrings = function(hashes, signed) {
 
 
 /**
+ * Converts a signed or unsigned decimal string into its hash string
+ * representation.
+ * @param {string} dec
+ * @return {string}
+ */
+jspb.utils.decimalStringToHash64 = function(dec) {
+  goog.asserts.assert(dec.length > 0);
+
+  // Check for minus sign.
+  var minus = false;
+  if (dec[0] === '-') {
+    minus = true;
+    dec = dec.slice(1);
+  }
+
+  // Store result as a byte array.
+  var resultBytes = [0, 0, 0, 0, 0, 0, 0, 0];
+
+  // Set result to m*result + c.
+  function muladd(m, c) {
+    for (var i = 0; i < 8 && (m !== 1 || c > 0); i++) {
+      var r = m * resultBytes[i] + c;
+      resultBytes[i] = r & 0xFF;
+      c = r >>> 8;
+    }
+  }
+
+  // Negate the result bits.
+  function neg() {
+    for (var i = 0; i < 8; i++) {
+      resultBytes[i] = (~resultBytes[i]) & 0xFF;
+    }
+  }
+
+  // For each decimal digit, set result to 10*result + digit.
+  for (var i = 0; i < dec.length; i++) {
+    muladd(10, jspb.utils.DIGITS.indexOf(dec[i]));
+  }
+
+  // If there's a minus sign, convert into two's complement.
+  if (minus) {
+    neg();
+    muladd(1, 1);
+  }
+
+  return String.fromCharCode.apply(null, resultBytes);
+};
+
+
+/**
  * Converts an 8-character hash string into its hexadecimal representation.
  * @param {string} hash
  * @return {string}

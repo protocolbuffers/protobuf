@@ -328,25 +328,44 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message {
   // nested types ----------------------------------------------------
 
   typedef Field_Kind Kind;
-  static const Kind TYPE_UNKNOWN = Field_Kind_TYPE_UNKNOWN;
-  static const Kind TYPE_DOUBLE = Field_Kind_TYPE_DOUBLE;
-  static const Kind TYPE_FLOAT = Field_Kind_TYPE_FLOAT;
-  static const Kind TYPE_INT64 = Field_Kind_TYPE_INT64;
-  static const Kind TYPE_UINT64 = Field_Kind_TYPE_UINT64;
-  static const Kind TYPE_INT32 = Field_Kind_TYPE_INT32;
-  static const Kind TYPE_FIXED64 = Field_Kind_TYPE_FIXED64;
-  static const Kind TYPE_FIXED32 = Field_Kind_TYPE_FIXED32;
-  static const Kind TYPE_BOOL = Field_Kind_TYPE_BOOL;
-  static const Kind TYPE_STRING = Field_Kind_TYPE_STRING;
-  static const Kind TYPE_GROUP = Field_Kind_TYPE_GROUP;
-  static const Kind TYPE_MESSAGE = Field_Kind_TYPE_MESSAGE;
-  static const Kind TYPE_BYTES = Field_Kind_TYPE_BYTES;
-  static const Kind TYPE_UINT32 = Field_Kind_TYPE_UINT32;
-  static const Kind TYPE_ENUM = Field_Kind_TYPE_ENUM;
-  static const Kind TYPE_SFIXED32 = Field_Kind_TYPE_SFIXED32;
-  static const Kind TYPE_SFIXED64 = Field_Kind_TYPE_SFIXED64;
-  static const Kind TYPE_SINT32 = Field_Kind_TYPE_SINT32;
-  static const Kind TYPE_SINT64 = Field_Kind_TYPE_SINT64;
+  static const Kind TYPE_UNKNOWN =
+    Field_Kind_TYPE_UNKNOWN;
+  static const Kind TYPE_DOUBLE =
+    Field_Kind_TYPE_DOUBLE;
+  static const Kind TYPE_FLOAT =
+    Field_Kind_TYPE_FLOAT;
+  static const Kind TYPE_INT64 =
+    Field_Kind_TYPE_INT64;
+  static const Kind TYPE_UINT64 =
+    Field_Kind_TYPE_UINT64;
+  static const Kind TYPE_INT32 =
+    Field_Kind_TYPE_INT32;
+  static const Kind TYPE_FIXED64 =
+    Field_Kind_TYPE_FIXED64;
+  static const Kind TYPE_FIXED32 =
+    Field_Kind_TYPE_FIXED32;
+  static const Kind TYPE_BOOL =
+    Field_Kind_TYPE_BOOL;
+  static const Kind TYPE_STRING =
+    Field_Kind_TYPE_STRING;
+  static const Kind TYPE_GROUP =
+    Field_Kind_TYPE_GROUP;
+  static const Kind TYPE_MESSAGE =
+    Field_Kind_TYPE_MESSAGE;
+  static const Kind TYPE_BYTES =
+    Field_Kind_TYPE_BYTES;
+  static const Kind TYPE_UINT32 =
+    Field_Kind_TYPE_UINT32;
+  static const Kind TYPE_ENUM =
+    Field_Kind_TYPE_ENUM;
+  static const Kind TYPE_SFIXED32 =
+    Field_Kind_TYPE_SFIXED32;
+  static const Kind TYPE_SFIXED64 =
+    Field_Kind_TYPE_SFIXED64;
+  static const Kind TYPE_SINT32 =
+    Field_Kind_TYPE_SINT32;
+  static const Kind TYPE_SINT64 =
+    Field_Kind_TYPE_SINT64;
   static inline bool Kind_IsValid(int value) {
     return Field_Kind_IsValid(value);
   }
@@ -369,10 +388,14 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message {
   }
 
   typedef Field_Cardinality Cardinality;
-  static const Cardinality CARDINALITY_UNKNOWN = Field_Cardinality_CARDINALITY_UNKNOWN;
-  static const Cardinality CARDINALITY_OPTIONAL = Field_Cardinality_CARDINALITY_OPTIONAL;
-  static const Cardinality CARDINALITY_REQUIRED = Field_Cardinality_CARDINALITY_REQUIRED;
-  static const Cardinality CARDINALITY_REPEATED = Field_Cardinality_CARDINALITY_REPEATED;
+  static const Cardinality CARDINALITY_UNKNOWN =
+    Field_Cardinality_CARDINALITY_UNKNOWN;
+  static const Cardinality CARDINALITY_OPTIONAL =
+    Field_Cardinality_CARDINALITY_OPTIONAL;
+  static const Cardinality CARDINALITY_REQUIRED =
+    Field_Cardinality_CARDINALITY_REQUIRED;
+  static const Cardinality CARDINALITY_REPEATED =
+    Field_Cardinality_CARDINALITY_REPEATED;
   static inline bool Cardinality_IsValid(int value) {
     return Field_Cardinality_IsValid(value);
   }
@@ -865,6 +888,7 @@ inline ::std::string* Type::mutable_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Type::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Type.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -937,6 +961,7 @@ inline void Type::set_oneofs(int index, const char* value, size_t size) {
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Type.oneofs)
 }
 inline ::std::string* Type::add_oneofs() {
+  // @@protoc_insertion_point(field_add_mutable:google.protobuf.Type.oneofs)
   return oneofs_.Add();
 }
 inline void Type::add_oneofs(const ::std::string& value) {
@@ -1013,6 +1038,7 @@ inline ::google::protobuf::SourceContext* Type::mutable_source_context() {
   return source_context_;
 }
 inline ::google::protobuf::SourceContext* Type::release_source_context() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Type.source_context)
   
   ::google::protobuf::SourceContext* temp = source_context_;
   source_context_ = NULL;
@@ -1119,6 +1145,7 @@ inline ::std::string* Field::mutable_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Field::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Field.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1162,6 +1189,7 @@ inline ::std::string* Field::mutable_type_url() {
   return type_url_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Field::release_type_url() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Field.type_url)
   
   return type_url_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1263,6 +1291,7 @@ inline ::std::string* Field::mutable_json_name() {
   return json_name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Field::release_json_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Field.json_name)
   
   return json_name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1306,6 +1335,7 @@ inline ::std::string* Field::mutable_default_value() {
   return default_value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Field::release_default_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Field.default_value)
   
   return default_value_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1353,6 +1383,7 @@ inline ::std::string* Enum::mutable_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Enum::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Enum.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1447,6 +1478,7 @@ inline ::google::protobuf::SourceContext* Enum::mutable_source_context() {
   return source_context_;
 }
 inline ::google::protobuf::SourceContext* Enum::release_source_context() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Enum.source_context)
   
   ::google::protobuf::SourceContext* temp = source_context_;
   source_context_ = NULL;
@@ -1511,6 +1543,7 @@ inline ::std::string* EnumValue::mutable_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* EnumValue::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.EnumValue.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1602,6 +1635,7 @@ inline ::std::string* Option::mutable_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Option::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Option.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1636,6 +1670,7 @@ inline ::google::protobuf::Any* Option::mutable_value() {
   return value_;
 }
 inline ::google::protobuf::Any* Option::release_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Option.value)
   
   ::google::protobuf::Any* temp = value_;
   value_ = NULL;

@@ -237,5 +237,25 @@ public class FieldMaskTreeTest extends TestCase {
     builder.getPayloadBuilder().setOptionalUint32(2000);
     new FieldMaskTree().addFieldPath("payload").merge(clearedSource, builder, options);
     assertEquals(false, builder.hasPayload());
+
+    // Test merging unset primitive fields.
+    builder = source.toBuilder();
+    builder.getPayloadBuilder().clearOptionalInt32();
+    NestedTestAllTypes sourceWithPayloadInt32Unset = builder.build();
+    builder = source.toBuilder();
+    new FieldMaskTree()
+        .addFieldPath("payload.optional_int32")
+        .merge(sourceWithPayloadInt32Unset, builder, options);
+    assertEquals(true, builder.getPayload().hasOptionalInt32());
+    assertEquals(0, builder.getPayload().getOptionalInt32());
+
+    // Change to clear unset primitive fields.
+    options.setReplacePrimitiveFields(true);
+    builder = source.toBuilder();
+    new FieldMaskTree()
+        .addFieldPath("payload.optional_int32")
+        .merge(sourceWithPayloadInt32Unset, builder, options);
+    assertEquals(true, builder.hasPayload());
+    assertEquals(false, builder.getPayload().hasOptionalInt32());
   }
 }

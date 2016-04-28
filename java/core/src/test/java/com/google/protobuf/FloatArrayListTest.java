@@ -73,20 +73,6 @@ public class FloatArrayListTest extends TestCase {
     assertImmutable(list);
   }
   
-  public void testCopyConstructor() {
-    FloatArrayList copy = new FloatArrayList(TERTIARY_LIST);
-    assertEquals(TERTIARY_LIST, copy);
-
-    copy = new FloatArrayList(FloatArrayList.emptyList());
-    assertEquals(FloatArrayList.emptyList(), copy);
-    
-    copy = new FloatArrayList(asList(1F, 2F, 3F));
-    assertEquals(asList(1F, 2F, 3F), copy);
-
-    copy = new FloatArrayList(Collections.<Float>emptyList());
-    assertEquals(FloatArrayList.emptyList(), copy);
-  }
-  
   public void testModificationWithIteration() {
     list.addAll(asList(1F, 2F, 3F, 4F));
     Iterator<Float> iterator = list.iterator();

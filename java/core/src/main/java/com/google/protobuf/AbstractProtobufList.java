@@ -34,24 +34,68 @@ import com.google.protobuf.Internal.ProtobufList;
 
 import java.util.AbstractList;
 import java.util.Collection;
+import java.util.List;
+import java.util.RandomAccess;
 
 /**
  * An abstract implementation of {@link ProtobufList} which manages mutability semantics. All mutate
- * methods are check if the list is mutable before proceeding. Subclasses must invoke
+ * methods must check if the list is mutable before proceeding. Subclasses must invoke
  * {@link #ensureIsMutable()} manually when overriding those methods.
+ * <p>
+ * This implementation assumes all subclasses are array based, supporting random access.
  */
 abstract class AbstractProtobufList<E> extends AbstractList<E> implements ProtobufList<E> {
+
+  protected static final int DEFAULT_CAPACITY = 10;
 
   /**
    * Whether or not this list is modifiable.
    */
   private boolean isMutable;
-  
+
   /**
    * Constructs a mutable list by default.
    */
   AbstractProtobufList() {
     isMutable = true;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    }
+    if (!(o instanceof List)) {
+      return false;
+    }
+    // Handle lists that do not support RandomAccess as efficiently as possible by using an iterator
+    // based approach in our super class. Otherwise our index based approach will avoid those
+    // allocations.
+    if (!(o instanceof RandomAccess)) {
+      return super.equals(o);
+    }
+
+    List<?> other = (List<?>) o;
+    final int size = size();
+    if (size != other.size()) {
+      return false;
+    }
+    for (int i = 0; i < size; i++) {
+      if (!get(i).equals(other.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    final int size = size();
+    int hashCode = 1;
+    for (int i = 0; i < size; i++) {
+      hashCode = (31 * hashCode) + get(i).hashCode();
+    }
+    return hashCode;
   }
 
   @Override
