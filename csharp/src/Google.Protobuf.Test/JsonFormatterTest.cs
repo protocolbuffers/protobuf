@@ -47,21 +47,165 @@ namespace Google.Protobuf
     /// </summary>
     public class JsonFormatterTest
     {
+        #region Field descriptors
+
+        // Definitions for the field descriptors to make the tests better readable.
+        private static readonly FieldDescriptor TestAllTypesSingleInt32FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleInt32FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleInt64FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleInt64FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleUint32FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleUint32FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleUint64FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleUint64FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleSint32FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleSint32FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleSint64FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleSint64FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleFixed32FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleFixed32FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleFixed64FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleFixed64FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleSfixed32FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleSfixed32FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleSfixed64FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleSfixed64FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleFloatFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleFloatFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleDoubleFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleDoubleFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleBoolFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleBoolFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleStringFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleStringFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleBytesFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleBytesFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleNestedMessageFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleNestedMessageFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleForeignMessageFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleForeignMessageFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleImportMessageFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleImportMessageFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleNestedEnumFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleNestedEnumFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleForeignEnumFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleForeignEnumFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSingleImportEnumFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SingleImportEnumFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesSinglePublicImportMessageFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.SinglePublicImportMessageFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedInt32FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedInt32FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedInt64FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedInt64FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedUint32FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedUint32FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedUint64FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedUint64FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedSint32FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedSint32FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedSint64FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedSint64FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedFixed32FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedFixed32FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedFixed64FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedFixed64FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedSfixed32FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedSfixed32FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedSfixed64FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedSfixed64FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedFloatFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedFloatFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedDoubleFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedDoubleFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedBoolFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedBoolFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedStringFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedStringFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedBytesFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedBytesFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedNestedMessageFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedNestedMessageFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedForeignMessageFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedForeignMessageFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedImportMessageFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedImportMessageFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedNestedEnumFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedNestedEnumFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedForeignEnumFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedForeignEnumFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedImportEnumFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedImportEnumFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesRepeatedPublicImportMessageFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.RepeatedPublicImportMessageFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesOneofUint32FieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.OneofUint32FieldNumber);
+        private static readonly FieldDescriptor TestAllTypesOneofNestedMessageFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.OneofNestedMessageFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesOneofStringFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.OneofStringFieldNumber);
+        private static readonly FieldDescriptor TestAllTypesOneofBytesFieldDescriptor = TestAllTypes.Descriptor.FindFieldByNumber(TestAllTypes.OneofBytesFieldNumber);
+        private static readonly FieldDescriptor ForeignMessageCFieldDescriptor = ForeignMessage.Descriptor.FindFieldByNumber(ForeignMessage.CFieldNumber);
+        private static readonly FieldDescriptor TestMapMapInt32Int32FieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapInt32Int32FieldNumber);
+        private static readonly FieldDescriptor TestMapMapInt64Int64FieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapInt64Int64FieldNumber);
+        private static readonly FieldDescriptor TestMapMapUint32Uint32FieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapUint32Uint32FieldNumber);
+        private static readonly FieldDescriptor TestMapMapUint64Uint64FieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapUint64Uint64FieldNumber);
+        private static readonly FieldDescriptor TestMapMapSint32Sint32FieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapSint32Sint32FieldNumber);
+        private static readonly FieldDescriptor TestMapMapSint64Sint64FieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapSint64Sint64FieldNumber);
+        private static readonly FieldDescriptor TestMapMapFixed32Fixed32FieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapFixed32Fixed32FieldNumber);
+        private static readonly FieldDescriptor TestMapMapFixed64Fixed64FieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapFixed64Fixed64FieldNumber);
+        private static readonly FieldDescriptor TestMapMapSfixed32Sfixed32FieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapSfixed32Sfixed32FieldNumber);
+        private static readonly FieldDescriptor TestMapMapSfixed64Sfixed64FieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapSfixed64Sfixed64FieldNumber);
+        private static readonly FieldDescriptor TestMapMapInt32FloatFieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapInt32FloatFieldNumber);
+        private static readonly FieldDescriptor TestMapMapInt32DoubleFieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapInt32DoubleFieldNumber);
+        private static readonly FieldDescriptor TestMapMapBoolBoolFieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapBoolBoolFieldNumber);
+        private static readonly FieldDescriptor TestMapMapStringStringFieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapStringStringFieldNumber);
+        private static readonly FieldDescriptor TestMapMapInt32BytesFieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapInt32BytesFieldNumber);
+        private static readonly FieldDescriptor TestMapMapInt32EnumFieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapInt32EnumFieldNumber);
+        private static readonly FieldDescriptor TestMapMapInt32ForeignMessageFieldDescriptor = TestMap.Descriptor.FindFieldByNumber(TestMap.MapInt32ForeignMessageFieldNumber);
+        private static readonly FieldDescriptor TestOneofFooIntFieldDescriptor = TestOneof.Descriptor.FindFieldByNumber(TestOneof.FooIntFieldNumber);
+        private static readonly FieldDescriptor TestOneofFooStringFieldDescriptor = TestOneof.Descriptor.FindFieldByNumber(TestOneof.FooStringFieldNumber);
+        private static readonly FieldDescriptor TestOneofFooMessageFieldDescriptor = TestOneof.Descriptor.FindFieldByNumber(TestOneof.FooMessageFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesAnyFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.AnyFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesApiFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.ApiFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesDurationFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.DurationFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesEmptyFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.EmptyFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesFieldMaskFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.FieldMaskFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesSourceContextFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.SourceContextFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesStructFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.StructFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesTimestampFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.TimestampFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesTypeFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.TypeFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesDoubleFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.DoubleFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesFloatFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.FloatFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesInt64FieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.Int64FieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesUint64FieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.Uint64FieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesInt32FieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.Int32FieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesUint32FieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.Uint32FieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesBoolFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.BoolFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesStringFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.StringFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesBytesFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.BytesFieldFieldNumber);
+        private static readonly FieldDescriptor TestWellKnownTypesValueFieldFieldDescriptor = TestWellKnownTypes.Descriptor.FindFieldByNumber(TestWellKnownTypes.ValueFieldFieldNumber);
+
+        #endregion
+
         [Test]
         public void DefaultValues_WhenOmitted()
         {
             var formatter = new JsonFormatter(new JsonFormatter.Settings(formatDefaultValues: false));
+            var foreignMessage = new ForeignMessage();
+            var testAllTypesMessage = new TestAllTypes();
+            var testMapMessage = new TestMap();
 
-            AssertJson("{ }", formatter.Format(new ForeignMessage()));
-            AssertJson("{ }", formatter.Format(new TestAllTypes()));
-            AssertJson("{ }", formatter.Format(new TestMap()));
+            AssertJson("{ }", formatter.Format(foreignMessage));
+            AssertJson("{ }", formatter.Format(testAllTypesMessage));
+            AssertJson("{ }", formatter.Format(testMapMessage));
+
+            AssertJson("0", formatter.FormatFieldValue(foreignMessage, ForeignMessageCFieldDescriptor));
+            AssertJson("false", formatter.FormatFieldValue(testAllTypesMessage, TestAllTypesSingleBoolFieldDescriptor));
+            AssertJson("{ }", formatter.FormatFieldValue(testMapMessage, TestMapMapBoolBoolFieldDescriptor));
         }
 
         [Test]
         public void DefaultValues_WhenIncluded()
         {
             var formatter = new JsonFormatter(new JsonFormatter.Settings(formatDefaultValues: true));
-            AssertJson("{ 'c': 0 }", formatter.Format(new ForeignMessage()));
+            var foreignMessage = new ForeignMessage();
+
+            AssertJson("{ 'c': 0 }", formatter.Format(foreignMessage));
+            AssertJson("0", formatter.FormatFieldValue(foreignMessage, ForeignMessageCFieldDescriptor));
+        }
+
+        [Test]
+        public void InvalidFieldDescriptor_FormatFieldValue()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                JsonFormatter.Default.FormatFieldValue(new ForeignMessage(), TestAllTypesSingleBoolFieldDescriptor)
+            );
+        }
+
+        [Test]
+        public void InvalidFieldDescriptor_FormatRepeatedFieldValue()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                JsonFormatter.Default.FormatRepeatedFieldValue(new ForeignMessage(), TestAllTypesSingleBoolFieldDescriptor, 0)
+            );
+        }
+
+        [Test]
+        public void InvalidFieldDescriptor_FormatMapFieldValue()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                JsonFormatter.Default.FormatMapFieldValue(new ForeignMessage(), TestAllTypesSingleBoolFieldDescriptor, "bar")
+            );
+        }
+
+        [Test]
+        public void FieldNotRepeated()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                JsonFormatter.Default.FormatRepeatedFieldValue(new TestMap(), TestMapMapBoolBoolFieldDescriptor, 0)
+            );
+        }
+
+        [Test]
+        public void FieldNotMap()
+        {
+            Assert.Throws<ArgumentException>(() =>
+                JsonFormatter.Default.FormatMapFieldValue(new TestAllTypes(), TestAllTypesSingleBoolFieldDescriptor, "bar")
+            );
         }
 
         [Test]
@@ -92,64 +236,154 @@ namespace Google.Protobuf
                 SingleUint32 = uint.MaxValue,
                 SingleUint64 = ulong.MaxValue,
             };
-            var actualText = JsonFormatter.Default.Format(message);
 
             // Fields in numeric order
-            var expectedText = "{ " +
-                "'singleInt32': 100, " +
-                "'singleInt64': '3210987654321', " +
-                "'singleUint32': 4294967295, " +
-                "'singleUint64': '18446744073709551615', " +
-                "'singleSint32': -456, " +
-                "'singleSint64': '-12345678901235', " +
-                "'singleFixed32': 23, " +
-                "'singleFixed64': '1234567890123', " +
-                "'singleSfixed32': -123, " +
-                "'singleSfixed64': '-12345678901234', " +
-                "'singleFloat': 12.25, " +
-                "'singleDouble': 23.5, " +
-                "'singleBool': true, " +
-                "'singleString': 'test\\twith\\ttabs', " +
-                "'singleBytes': 'AQIDBA==', " +
-                "'singleNestedMessage': { 'bb': 35 }, " +
-                "'singleForeignMessage': { 'c': 10 }, " +
-                "'singleImportMessage': { 'd': 20 }, " +
-                "'singleNestedEnum': 'FOO', " +
-                "'singleForeignEnum': 'FOREIGN_BAR', " +
-                "'singleImportEnum': 'IMPORT_BAZ', " +
-                "'singlePublicImportMessage': { 'e': 54 }" +
+            var expectedSingleInt32Value = "100";
+            var expectedSingleInt64Value = "'3210987654321'";
+            var expectedSingleUint32Value = "4294967295";
+            var expectedSingleUint64Value = "'18446744073709551615'";
+            var expectedSingleSint32Value = "-456";
+            var expectedSingleSint64Value = "'-12345678901235'";
+            var expectedSingleFixed32Value = "23";
+            var expectedSingleFixed64Value = "'1234567890123'";
+            var expectedSingleSfixed32Value = "-123";
+            var expectedSingleSfixed64Value = "'-12345678901234'";
+            var expectedSingleFloatValue = "12.25";
+            var expectedSingleDoubleValue = "23.5";
+            var expectedSingleBoolValue = "true";
+            var expectedSingleStringValue = "'test\\twith\\ttabs'";
+            var expectedSingleBytesValue = "'AQIDBA=='";
+            var expectedSingleNestedMessageValue = "{ 'bb': 35 }";
+            var expectedSingleForeignMessageValue = "{ 'c': 10 }";
+            var expectedSingleImportMessageValue = "{ 'd': 20 }";
+            var expectedSingleNestedEnumValue = "'FOO'";
+            var expectedSingleForeignEnumValue = "'FOREIGN_BAR'";
+            var expectedSingleImportEnumValue = "'IMPORT_BAZ'";
+            var expectedSinglePublicImportMessageValue = "{ 'e': 54 }";
+            var expectedJson = "{ " +
+                "'singleInt32': " + expectedSingleInt32Value + ", " +
+                "'singleInt64': " + expectedSingleInt64Value + ", " +
+                "'singleUint32': " + expectedSingleUint32Value + ", " +
+                "'singleUint64': " + expectedSingleUint64Value + ", " +
+                "'singleSint32': " + expectedSingleSint32Value + ", " +
+                "'singleSint64': " + expectedSingleSint64Value + ", " +
+                "'singleFixed32': " + expectedSingleFixed32Value + ", " +
+                "'singleFixed64': " + expectedSingleFixed64Value + ", " +
+                "'singleSfixed32': " + expectedSingleSfixed32Value + ", " +
+                "'singleSfixed64': " + expectedSingleSfixed64Value + ", " +
+                "'singleFloat': " + expectedSingleFloatValue + ", " +
+                "'singleDouble': " + expectedSingleDoubleValue + ", " +
+                "'singleBool': " + expectedSingleBoolValue + ", " +
+                "'singleString': " + expectedSingleStringValue + ", " +
+                "'singleBytes': " + expectedSingleBytesValue + ", " +
+                "'singleNestedMessage': " + expectedSingleNestedMessageValue + ", " +
+                "'singleForeignMessage': " + expectedSingleForeignMessageValue + ", " +
+                "'singleImportMessage': " + expectedSingleImportMessageValue + ", " +
+                "'singleNestedEnum': " + expectedSingleNestedEnumValue + ", " +
+                "'singleForeignEnum': " + expectedSingleForeignEnumValue + ", " +
+                "'singleImportEnum': " + expectedSingleImportEnumValue + ", " +
+                "'singlePublicImportMessage': " + expectedSinglePublicImportMessageValue +
                 " }";
-            AssertJson(expectedText, actualText);
+            AssertJson(expectedJson, 
+                JsonFormatter.Default.Format(message));
+
+            AssertJson(expectedSingleInt32Value, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleInt32FieldDescriptor));
+            AssertJson(expectedSingleInt64Value, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleInt64FieldDescriptor));
+            AssertJson(expectedSingleUint32Value, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleUint32FieldDescriptor));
+            AssertJson(expectedSingleUint64Value, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleUint64FieldDescriptor));
+            AssertJson(expectedSingleSint32Value, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleSint32FieldDescriptor));
+            AssertJson(expectedSingleSint64Value, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleSint64FieldDescriptor));
+            AssertJson(expectedSingleFixed32Value, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleFixed32FieldDescriptor));
+            AssertJson(expectedSingleFixed64Value, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleFixed64FieldDescriptor));
+            AssertJson(expectedSingleSfixed32Value, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleSfixed32FieldDescriptor));
+            AssertJson(expectedSingleSfixed64Value, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleSfixed64FieldDescriptor));
+            AssertJson(expectedSingleFloatValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleFloatFieldDescriptor));
+            AssertJson(expectedSingleDoubleValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleDoubleFieldDescriptor));
+            AssertJson(expectedSingleBoolValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleBoolFieldDescriptor));
+            AssertJson(expectedSingleStringValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleStringFieldDescriptor));
+            AssertJson(expectedSingleBytesValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleBytesFieldDescriptor));
+            AssertJson(expectedSingleNestedMessageValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleNestedMessageFieldDescriptor));
+            AssertJson(expectedSingleForeignMessageValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleForeignMessageFieldDescriptor));
+            AssertJson(expectedSingleImportMessageValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleImportMessageFieldDescriptor));
+            AssertJson(expectedSingleNestedEnumValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleNestedEnumFieldDescriptor));
+            AssertJson(expectedSingleForeignEnumValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleForeignEnumFieldDescriptor));
+            AssertJson(expectedSingleImportEnumValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleImportEnumFieldDescriptor));
+            AssertJson(expectedSinglePublicImportMessageValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSinglePublicImportMessageFieldDescriptor));
         }
 
         [Test]
         public void RepeatedField()
         {
-            AssertJson("{ 'repeatedInt32': [ 1, 2, 3, 4, 5 ] }",
-                JsonFormatter.Default.Format(new TestAllTypes { RepeatedInt32 = { 1, 2, 3, 4, 5 } }));
+            var message = new TestAllTypes { RepeatedInt32 = { 1, 2, 3, 4, 5 } };
+            var expectedValueText = "[ 1, 2, 3, 4, 5 ]";
+            var expectedJson = "{ 'repeatedInt32': " + expectedValueText + " }";
+            AssertJson(expectedJson, JsonFormatter.Default.Format(message));
+            AssertJson(expectedValueText, JsonFormatter.Default.FormatFieldValue(message, TestAllTypesRepeatedInt32FieldDescriptor));
+            AssertJson("1", JsonFormatter.Default.FormatRepeatedFieldValue(message, TestAllTypesRepeatedInt32FieldDescriptor, 0));
+            AssertJson("2", JsonFormatter.Default.FormatRepeatedFieldValue(message, TestAllTypesRepeatedInt32FieldDescriptor, 1));
+            AssertJson("3", JsonFormatter.Default.FormatRepeatedFieldValue(message, TestAllTypesRepeatedInt32FieldDescriptor, 2));
+            AssertJson("4", JsonFormatter.Default.FormatRepeatedFieldValue(message, TestAllTypesRepeatedInt32FieldDescriptor, 3));
+            AssertJson("5", JsonFormatter.Default.FormatRepeatedFieldValue(message, TestAllTypesRepeatedInt32FieldDescriptor, 4));
         }
 
         [Test]
         public void MapField_StringString()
         {
-            AssertJson("{ 'mapStringString': { 'with spaces': 'bar', 'a': 'b' } }",
-                JsonFormatter.Default.Format(new TestMap { MapStringString = { { "with spaces", "bar" }, { "a", "b" } } }));
+            var message = new TestMap { MapStringString = { { "with spaces", "bar" }, { "a", "b" } } };
+            var expectedValueText = "{ 'with spaces': 'bar', 'a': 'b' }";
+            var expectedJson = "{ 'mapStringString': " + expectedValueText + " }";
+            AssertJson(expectedJson, JsonFormatter.Default.Format(message));
+            AssertJson(expectedValueText, JsonFormatter.Default.FormatFieldValue(message, TestMapMapStringStringFieldDescriptor));
+            AssertJson("'bar'", JsonFormatter.Default.FormatMapFieldValue(message, TestMapMapStringStringFieldDescriptor, "with spaces"));
+            AssertJson("'b'", JsonFormatter.Default.FormatMapFieldValue(message, TestMapMapStringStringFieldDescriptor, "a"));
         }
 
         [Test]
         public void MapField_Int32Int32()
         {
             // The keys are quoted, but the values aren't.
-            AssertJson("{ 'mapInt32Int32': { '0': 1, '2': 3 } }",
-                JsonFormatter.Default.Format(new TestMap { MapInt32Int32 = { { 0, 1 }, { 2, 3 } } }));
+            var expectedValueText = "{ '0': 1, '2': 3 }";
+            var expectedJson = "{ 'mapInt32Int32': " + expectedValueText + " }";
+            var message = new TestMap { MapInt32Int32 = { { 0, 1 }, { 2, 3 } } };
+            AssertJson(expectedJson, JsonFormatter.Default.Format(message));
+            AssertJson(expectedValueText, JsonFormatter.Default.FormatFieldValue(message, TestMapMapInt32Int32FieldDescriptor));
+            AssertJson("1", JsonFormatter.Default.FormatMapFieldValue(message, TestMapMapInt32Int32FieldDescriptor, 0));
+            AssertJson("3", JsonFormatter.Default.FormatMapFieldValue(message, TestMapMapInt32Int32FieldDescriptor, 2));
         }
 
         [Test]
         public void MapField_BoolBool()
         {
             // The keys are quoted, but the values aren't.
-            AssertJson("{ 'mapBoolBool': { 'false': true, 'true': false } }",
-                JsonFormatter.Default.Format(new TestMap { MapBoolBool = { { false, true }, { true, false } } }));
+            var expectedValueText = "{ 'false': true, 'true': false }";
+            var expectedJson = "{ 'mapBoolBool': " + expectedValueText + " }";
+            var message = new TestMap { MapBoolBool = { { false, true }, { true, false } } };
+            AssertJson(expectedJson, JsonFormatter.Default.Format(message));
+            AssertJson(expectedValueText, JsonFormatter.Default.FormatFieldValue(message, TestMapMapBoolBoolFieldDescriptor));
+            AssertJson("true", JsonFormatter.Default.FormatMapFieldValue(message, TestMapMapBoolBoolFieldDescriptor, false));
+            AssertJson("false", JsonFormatter.Default.FormatMapFieldValue(message, TestMapMapBoolBoolFieldDescriptor, true));
         }
 
         [TestCase(1.0, "1")]
@@ -159,37 +393,57 @@ namespace Google.Protobuf
         public void DoubleRepresentations(double value, string expectedValueText)
         {
             var message = new TestAllTypes { SingleDouble = value };
-            string actualText = JsonFormatter.Default.Format(message);
-            string expectedText = "{ 'singleDouble': " + expectedValueText + " }";
-            AssertJson(expectedText, actualText);
+            var expectedJson = "{ 'singleDouble': " + expectedValueText + " }";
+            AssertJson(expectedJson, JsonFormatter.Default.Format(message));
+            AssertJson(expectedValueText, JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleDoubleFieldDescriptor));
         }
 
         [Test]
         public void UnknownEnumValueNumeric_SingleField()
         {
-            var message = new TestAllTypes { SingleForeignEnum = (ForeignEnum) 100 };
-            AssertJson("{ 'singleForeignEnum': 100 }", JsonFormatter.Default.Format(message));
+            var message = new TestAllTypes { SingleForeignEnum = (ForeignEnum)100 };
+            var expectedValueText = "100";
+            var expectedJson = "{ 'singleForeignEnum': " + expectedValueText + " }";
+            AssertJson(expectedJson, JsonFormatter.Default.Format(message));
+            AssertJson(expectedValueText, JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleForeignEnumFieldDescriptor));
         }
 
         [Test]
         public void UnknownEnumValueNumeric_RepeatedField()
         {
-            var message = new TestAllTypes { RepeatedForeignEnum = { ForeignEnum.ForeignBaz, (ForeignEnum) 100, ForeignEnum.ForeignFoo } };
-            AssertJson("{ 'repeatedForeignEnum': [ 'FOREIGN_BAZ', 100, 'FOREIGN_FOO' ] }", JsonFormatter.Default.Format(message));
+            var message = new TestAllTypes { RepeatedForeignEnum = { ForeignEnum.ForeignBaz, (ForeignEnum)100, ForeignEnum.ForeignFoo } };
+            var expectedValueText = "[ 'FOREIGN_BAZ', 100, 'FOREIGN_FOO' ]";
+            var expectedJson = "{ 'repeatedForeignEnum': " + expectedValueText + " }";
+            AssertJson(expectedJson, JsonFormatter.Default.Format(message));
+            AssertJson(expectedValueText, JsonFormatter.Default.FormatFieldValue(message, TestAllTypesRepeatedForeignEnumFieldDescriptor));
+            AssertJson("'FOREIGN_BAZ'", JsonFormatter.Default.FormatRepeatedFieldValue(message, TestAllTypesRepeatedForeignEnumFieldDescriptor, 0));
+            AssertJson("100", JsonFormatter.Default.FormatRepeatedFieldValue(message, TestAllTypesRepeatedForeignEnumFieldDescriptor, 1));
+            AssertJson("'FOREIGN_FOO'", JsonFormatter.Default.FormatRepeatedFieldValue(message, TestAllTypesRepeatedForeignEnumFieldDescriptor, 2));
         }
 
         [Test]
         public void UnknownEnumValueNumeric_MapField()
         {
-            var message = new TestMap { MapInt32Enum = { { 1, MapEnum.Foo }, { 2, (MapEnum) 100 }, { 3, MapEnum.Bar } } };
-            AssertJson("{ 'mapInt32Enum': { '1': 'MAP_ENUM_FOO', '2': 100, '3': 'MAP_ENUM_BAR' } }", JsonFormatter.Default.Format(message));
+            var message = new TestMap { MapInt32Enum = { { 1, MapEnum.Foo }, { 2, (MapEnum)100 }, { 3, MapEnum.Bar } } };
+            var expectedValueText = "{ '1': 'MAP_ENUM_FOO', '2': 100, '3': 'MAP_ENUM_BAR' }";
+            var expectedJson = "{ 'mapInt32Enum': " + expectedValueText + " }";
+            AssertJson(expectedJson, JsonFormatter.Default.Format(message));
+            AssertJson(expectedValueText, JsonFormatter.Default.FormatFieldValue(message, TestMapMapInt32EnumFieldDescriptor));
+            AssertJson("'MAP_ENUM_FOO'", JsonFormatter.Default.FormatMapFieldValue(message, TestMapMapInt32EnumFieldDescriptor, 1));
+            AssertJson("100", JsonFormatter.Default.FormatMapFieldValue(message, TestMapMapInt32EnumFieldDescriptor, 2));
+            AssertJson("'MAP_ENUM_BAR'", JsonFormatter.Default.FormatMapFieldValue(message, TestMapMapInt32EnumFieldDescriptor, 3));
         }
 
         [Test]
         public void UnknownEnumValue_RepeatedField_AllEntriesUnknown()
         {
-            var message = new TestAllTypes { RepeatedForeignEnum = { (ForeignEnum) 200, (ForeignEnum) 100 } };
-            AssertJson("{ 'repeatedForeignEnum': [ 200, 100 ] }", JsonFormatter.Default.Format(message));
+            var message = new TestAllTypes { RepeatedForeignEnum = { (ForeignEnum)200, (ForeignEnum)100 } };
+            var expectedValueText = "[ 200, 100 ]";
+            var expectedJson = "{ 'repeatedForeignEnum': " + expectedValueText + " }";
+            AssertJson(expectedJson, JsonFormatter.Default.Format(message));
+            AssertJson(expectedValueText, JsonFormatter.Default.FormatFieldValue(message, TestAllTypesRepeatedForeignEnumFieldDescriptor));
+            AssertJson("200", JsonFormatter.Default.FormatRepeatedFieldValue(message, TestAllTypesRepeatedForeignEnumFieldDescriptor, 0));
+            AssertJson("100", JsonFormatter.Default.FormatRepeatedFieldValue(message, TestAllTypesRepeatedForeignEnumFieldDescriptor, 1));
         }
 
         [Test]
@@ -199,14 +453,20 @@ namespace Google.Protobuf
         public void SimpleNonAscii(string text, string encoded)
         {
             var message = new TestAllTypes { SingleString = text };
-            AssertJson("{ 'singleString': '" + encoded + "' }", JsonFormatter.Default.Format(message));
+            var expectedValueText = "'" + encoded + "'";
+            var expectedJson = "{ 'singleString': " + expectedValueText + " }";
+            AssertJson(expectedJson, JsonFormatter.Default.Format(message));
+            AssertJson(expectedValueText, JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleStringFieldDescriptor));
         }
 
         [Test]
         public void SurrogatePairEscaping()
         {
             var message = new TestAllTypes { SingleString = "a\uD801\uDC01b" };
-            AssertJson("{ 'singleString': 'a\\ud801\\udc01b' }", JsonFormatter.Default.Format(message));
+            var expectedValueText = "'a\\ud801\\udc01b'";
+            var expectedJson = "{ 'singleString': " + expectedValueText + " }";
+            AssertJson(expectedJson, JsonFormatter.Default.Format(message));
+            AssertJson(expectedValueText, JsonFormatter.Default.FormatFieldValue(message, TestAllTypesSingleStringFieldDescriptor));
         }
 
         [Test]
@@ -237,7 +497,7 @@ namespace Google.Protobuf
         [TestCase(null, "{ }")]
         [TestCase("x", "{ 'fooString': 'x' }")]
         [TestCase("", "{ 'fooString': '' }")]
-        public void Oneof(string fooStringValue, string expectedJson)
+        public void OneofMessage(string fooStringValue, string expectedJson)
         {
             var message = new TestOneof();
             if (fooStringValue != null)
@@ -248,8 +508,29 @@ namespace Google.Protobuf
             // We should get the same result both with and without "format default values".
             var formatter = new JsonFormatter(new JsonFormatter.Settings(false));
             AssertJson(expectedJson, formatter.Format(message));
+
             formatter = new JsonFormatter(new JsonFormatter.Settings(true));
             AssertJson(expectedJson, formatter.Format(message));
+        }
+
+        [Test]
+        [TestCase(null, "")]
+        [TestCase("x", "'x'")]
+        [TestCase("", "''")]
+        public void OneofFieldValue(string fooStringValue, string expectedValueText)
+        {
+            var message = new TestOneof();
+            if (fooStringValue != null)
+            {
+                message.FooString = fooStringValue;
+            }
+
+            // We should get the same result both with and without "format default values".
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false));
+            AssertJson(expectedValueText, formatter.FormatFieldValue(message, TestOneofFooStringFieldDescriptor));
+
+            formatter = new JsonFormatter(new JsonFormatter.Settings(true));
+            AssertJson(expectedValueText, formatter.FormatFieldValue(message, TestOneofFooStringFieldDescriptor));
         }
 
         [Test]
@@ -264,8 +545,27 @@ namespace Google.Protobuf
                 BytesField = ByteString.FromBase64("ABCD"),
                 StringField = ""
             };
-            var expectedJson = "{ 'int64Field': '10', 'int32Field': 0, 'stringField': '', 'bytesField': 'ABCD' }";
-            AssertJson(expectedJson, JsonFormatter.Default.Format(message));
+            var expectedInt64FieldValue = "'10'";
+            var expectedInt32FieldValue = "0";
+            var expectedStringFieldValue = "''";
+            var expectedBytesFieldValue = "'ABCD'";
+            var expectedJson = "{ " +
+                "'int64Field': " + expectedInt64FieldValue + ", " +
+                "'int32Field': " + expectedInt32FieldValue + ", " +
+                "'stringField': " + expectedStringFieldValue + ", " +
+                "'bytesField': " + expectedBytesFieldValue +
+                " }";
+            AssertJson(expectedJson,
+                JsonFormatter.Default.Format(message));
+
+            AssertJson(expectedInt64FieldValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestWellKnownTypesInt64FieldFieldDescriptor));
+            AssertJson(expectedInt32FieldValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestWellKnownTypesInt32FieldFieldDescriptor));
+            AssertJson(expectedStringFieldValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestWellKnownTypesStringFieldFieldDescriptor));
+            AssertJson(expectedBytesFieldValue, 
+                JsonFormatter.Default.FormatFieldValue(message, TestWellKnownTypesBytesFieldFieldDescriptor));
         }
 
         [Test]

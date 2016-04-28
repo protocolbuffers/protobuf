@@ -30,6 +30,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Reflection;
 using System;
 
 namespace Google.Protobuf
@@ -74,6 +75,19 @@ namespace Google.Protobuf
                 throw new ArgumentNullException(name);
             }
             return value;
+        }
+
+        /// <summary>
+        /// Throws an ArgumentException if the given field does not belong to the given message.
+        /// </summary>
+        /// <param name="field">The field in the message to check.</param>
+        /// <param name="message">The message the field should belong to.</param>
+        internal static void CheckContainingType(FieldDescriptor field, IMessage message)
+        {
+            if (field.ContainingType != message.Descriptor)
+            {
+                throw new ArgumentException("The FieldDescriptors does not belong to the message type.");
+            }
         }
     }
 }
